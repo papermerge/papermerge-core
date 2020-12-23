@@ -1,3 +1,7 @@
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 
-setup()
+setup(
+    packages=find_namespace_packages(
+        include=['papermerge.*']
+    )
+)

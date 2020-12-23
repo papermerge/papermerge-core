@@ -1,0 +1,18 @@
+include README.rst
+include MANIFEST.in
+include LICENSE
+include changelog.md
+include papermerge/boss/locale/de/LC_MESSAGES/django.mo
+include papermerge/boss/locale/de/LC_MESSAGES/django.po
+include papermerge/core/locale/de/LC_MESSAGES/django.mo
+include papermerge/core/locale/de/LC_MESSAGES/django.po
+exclude config/settings/development.py
+exclude config/settings/dev.py
+
+recursive-include papermerge/contrib/admin/management/commands/thumbify/ *
+recursive-include papermerge/contrib/admin/templates/   *
+recursive-include papermerge/contrib/admin/static/admin/    *
+recursive-include papermerge/core/templates/    *
+
+recursive-exclude docs/     *
+recursive-exclude screenshots/      *

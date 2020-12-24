@@ -6,9 +6,8 @@ from imapclient.exceptions import LoginError
 from imapclient.response_types import BodyData
 
 from django.conf import settings
-from django.utils import module_loading
 
-from papermerge.core.import_pipeline import IMAP
+from papermerge.core.import_pipeline import IMAP, go_through_pipelines
 from papermerge.core.models import User
 
 
@@ -16,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def login(imap_server, username, password):
+
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -36,59 +36,38 @@ def login(imap_server, username, password):
     return server
 
 
-def read_email_message(message, user=None):
+def read_email_message(message, user=None, skip_ocr=False):
     """
     message is an instance of python's module email.message
     """
-    for _, part in enumerate(message.walk()):
-        # search for payload
+    ingested = False
+
+    for part in message.iter_attachments():
         try:
-            pipelines = settings.PAPERMERGE_PIPELINES
-            # TODO: 100% as local.py and views/document.py
-            # Please, refactor
-            init_kwargs = {'payload': part, 'processor': IMAP}
-            apply_kwargs = {'user': user, 'name': part.get_filename()}
-            for pipeline in pipelines:
-                pipeline_class = module_loading.import_string(pipeline)
-                try:
-                    importer = pipeline_class(**init_kwargs)
-                except Exception as e:
-                    # please use fstrings
-                    logger.debug("{} importer: {}".format("IMAP", e))
-                    importer = None
-                if importer is not None:
-                    try:
-                        # is apply function supposed to return something?
-                        # please document
-                        importer.apply(**apply_kwargs)
-                        # what is the purpose if get_init_kwargs?
-                        # what is it supposed to return?
-                        # please document/comment
-                        init_kwargs_temp = importer.get_init_kwargs()
-                        # what is the purpose of get_apply_kwargs?
-                        # what is it supposed to return?
-                        # please document/comment
-                        apply_kwargs_temp = importer.get_apply_kwargs()
-                        if init_kwargs_temp:
-                            init_kwargs = {**init_kwargs, **init_kwargs_temp}
-                        if apply_kwargs_temp:
-                            apply_kwargs = {
-                                **apply_kwargs, **apply_kwargs_temp}
-                    except Exception as e:
-                        # please use fstrings
-                        logger.error("{} importer: {}".format("IMAP", e))
-                        continue
-        except TypeError:
+            payload = part.get_content()
+        except KeyError:
             continue
+        init_kwargs = {'payload': payload, 'processor': IMAP}
+        apply_kwargs = {
+            'user': user,
+            'name': part.get_filename(),
+            'skip_ocr': skip_ocr
+        }
+        doc = go_through_pipelines(init_kwargs, apply_kwargs)
+        if doc is not None and not ingested:
+            ingested = True
+
+    return ingested
 
 
-def contains_attachments(uid, structure):
+def contains_attachments(structure):
+
     if isinstance(structure, BodyData):
         if structure.is_multipart:
             for part in structure:
                 if isinstance(part, list):
                     for element in part:
-                        if contains_attachments(uid, element):
+                        if contains_attachments(element):
                             return True
         try:
             if isinstance(
@@ -101,12 +80,55 @@ def contains_attachments(uid, structure):
     return False
 
 
+def extract_info_from_email(email_message):
+
+    by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
+    by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
+    extracted_by_user = False
+    user = None
+    user_found = None
+    body_text = None
+
+    sender_address = email.utils.parseaddr(
+        email_message.get('From'))[1]
+    body = email_message.get_body()
+    if body is not None:
+        body_text = body.as_string()
+    email_main_text = [email_message.get('Subject'), body_text]
+    try:
+        message_secret = '\n'.join([
+            text for text in email_main_text if text
+        ]).split('SECRET{')[1].split('}')[0]
+    except IndexError:
+        message_secret = None
+
+    # Priority to sender address
+    if by_user:
+        user_found = User.objects.filter(
+            email=sender_address
+        ).first()
+        logger.debug(f"{IMAP} importer: found user {user_found} from email")
+    if user_found and user_found.mail_by_user:
+        user = user_found
+        extracted_by_user = True
+
+    # Then check secret
+    if not extracted_by_user and by_secret and message_secret is not None:
+        user_found = User.objects.filter(
+            mail_secret=message_secret
+        ).first()
+        logger.debug(f"{IMAP} importer: found user {user_found} from secret")
+    if user_found and user_found.mail_by_secret:
+        user = user_found
+
+    # Otherwise put it into first superuser's inbox
+    return user
+
+
 def import_attachment():
     imap_server = settings.PAPERMERGE_IMPORT_MAIL_HOST
     username = settings.PAPERMERGE_IMPORT_MAIL_USER
     password = settings.PAPERMERGE_IMPORT_MAIL_PASS
-    by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
-    by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
     delete = settings.PAPERMERGE_IMPORT_MAIL_DELETE
 
     server = login(
@@ -125,52 +147,19 @@ def import_attachment():
 
         messages_structure = server.fetch(messages, ['BODYSTRUCTURE'])
         for uid, structure in messages_structure.items():
-            if not contains_attachments(uid, structure[b'BODYSTRUCTURE']):
+            if not contains_attachments(structure[b'BODYSTRUCTURE']):
                 messages.remove(uid)
 
         for uid, message_data in server.fetch(
-            messages, ['ENVELOPE', 'RFC822']
+            messages, ['RFC822']
         ).items():
-            imported = False
-            user = None
-            body = message_data[b'RFC822']
-            sender = message_data[b'ENVELOPE'].from_[0]
-            sender_address = '{}@{}'.format(sender.mailbox.decode(),
-                                            sender.host.decode())
-            try:
-                message_secret = body.split(b'SECRET{')[1].split(b'}')[0]
-            except IndexError:
-                message_secret = None
             body = message_data[b'RFC822']
             email_message = email.message_from_bytes(
-                body
-            )
-
-            # Priority to sender address
-            if by_user:
-                user = User.objects.filter(
-                    email=sender_address
-                ).first()
-                logger.debug("Found user {}".format(user))
-            if user:
-                if user.mail_by_user:
-                    read_email_message(email_message, user=user)
-                    imported = True
-
-            # Then check secret
-            if not imported and by_secret and message_secret is not None:
-                user = User.objects.filter(
-                    mail_secret=message_secret
-                ).first()
-            if user:
-                if user.mail_by_secret:
-                    read_email_message(email_message, user=user)
-                    imported = True
-
-            # Otherwise put it into first superuser's inbox
-            if not imported:
-                read_email_message(email_message)
-                imported = True
+                body, policy=email.policy.default)
+            user = extract_info_from_email(email_message)
+            ingested = read_email_message(email_message, user)
+            if not ingested:
+                messages.remove(uid)
 
         if delete:
             server.delete_messages(messages)

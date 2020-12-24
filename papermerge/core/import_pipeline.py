@@ -305,7 +305,7 @@ method is not supposed to throw errors.
         self.payload.close()
         if not skip_ocr:
 
-            default_storage.upload(
+            namespace = default_storage.upload(
                 doc.path()
             )
 
@@ -316,8 +316,9 @@ method is not supposed to throw errors.
                         'document_id': doc.id,
                         'file_name': name,
                         'page_num': page_num,
-                        'lang': lang}
-                    )
+                        'lang': lang,
+                        'namespace': namespace
+                    })
             else:
                 self.ocr_document(
                     document=doc,

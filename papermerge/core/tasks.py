@@ -22,6 +22,7 @@ def ocr_page(
     file_name,
     page_num,
     lang,
+    namespace=None
 ):
     # A task being bound (bind=True) means the first argument
     # to the task will always be the
@@ -48,7 +49,8 @@ def ocr_page(
             document_id=document_id,
             file_name=file_name,
             page_num=page_num,
-            lang=lang
+            lang=lang,
+            namespace=namespace,
         )
 
     # Inform everybody interested that OCR completed/ended

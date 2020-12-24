@@ -133,6 +133,7 @@ def ocr_page(
     file_name,
     page_num,
     lang,
+    namespace=None,
 ):
     logger.debug(
         f" ocr_page user_id={user_id} doc_id={document_id}"
@@ -145,6 +146,12 @@ def ocr_page(
         document_id=document_id,
         file_name=file_name,
     )
+
+    if not default_storage.exists(doc_path.url()):
+        default_storage.download(
+            doc_path=doc_path,
+            namespace=namespace
+        )
 
     mime_type = mime.Mime(
         default_storage.abspath(doc_path.url())

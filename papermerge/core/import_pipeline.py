@@ -148,7 +148,7 @@ class DefaultPipeline:
     def move_tempfile(self, doc):
         default_storage.copy_doc(
             src=self.path,
-            dst=doc.path.url()
+            dst=doc.path().url()
         )
         return None
 
@@ -244,16 +244,19 @@ class DefaultPipeline:
         Apply the pipeline. The document is created or modified here.  This
 method is not supposed to throw errors.
 
-        Args:
-            user (User, optional): document owner. Defaults to None. parent
-            (Folder, optional): folder containing the document. Defaults to
-            None. lang (str, optional): OCR language. Defaults to None. notes
-            (str, optional): document notes. Defaults to None. name (str,
-            optional): document name. Defaults to None. skip_ocr (bool,
-            optional): whether to skip OCR processing. Defaults to False.
-            apply_async (bool, optional): whether to apply OCR asynchronously.
-            Defaults to False. create_document (bool, optional): whether to
-            create or update a document. Defaults to True.
+        Arguments:
+        - user (User, optional): document owner.
+        - parent (Folder, optional): folder containing the document.
+        - lang (str, optional): OCR language.
+        - notes (str, optional): document notes.
+        - name (str, optional): document name.
+        - skip_ocr (bool, optional):
+            whether to skip OCR processing. Defaults to False.
+        - apply_async (bool, optional):
+            whether to apply OCR asynchronously.
+            Defaults to False.
+        - create_document (bool, optional): whether to
+        create or update a document. Defaults to True.
 
         Returns:
             Document: the created or updated document

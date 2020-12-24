@@ -17,7 +17,6 @@ from mglib.pdfinfo import get_pagecount
 from mglib.utils import get_assigns_after_delete
 
 from papermerge.contrib.admin.registries import sidebar
-from papermerge.core import validators
 from papermerge.core.storage import default_storage
 from .kvstore import (
     KVCompNode,
@@ -261,14 +260,12 @@ class Document(BaseTreeNode):
     file_name = models.CharField(
         max_length=1024,
         default='',
-        validators=[validators.safe_character_validator]
     )
 
     notes = models.TextField(
         _('Notes'),
         blank=True,
         null=True,
-        validators=[validators.safe_character_validator]
     )
 
     size = models.BigIntegerField(

@@ -304,6 +304,11 @@ method is not supposed to throw errors.
         self.move_tempfile(doc)
         self.payload.close()
         if not skip_ocr:
+
+            default_storage.upload(
+                doc.path()
+            )
+
             if apply_async:
                 for page_num in range(1, page_count + 1):
                     ocr_page.apply_async(kwargs={

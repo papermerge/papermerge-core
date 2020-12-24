@@ -19,7 +19,6 @@ from django.http import (
 from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
-from django.utils import module_loading
 
 from mglib.pdfinfo import get_pagecount
 from mglib.step import Step
@@ -422,6 +421,7 @@ def upload(request):
         'notes': notes,
         'apply_async': True
     }
+
     doc = go_through_pipelines(init_kwargs, apply_kwargs)
 
     if not doc:

@@ -263,7 +263,10 @@ method is not supposed to throw errors.
         """
         if parent is None:
             user, lang, inbox = self.get_user_properties(user)
-            parent = inbox.id
+            # in case of upload via WEB interface, documents
+            # must land in root directory (as opposite to inbox)
+            if self.processor != WEB:
+                parent = inbox.id
         if name is None:
             name = basename(self.path)
         page_count = self.page_count()

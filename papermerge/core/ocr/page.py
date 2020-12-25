@@ -170,7 +170,7 @@ def ocr_page(
 
     if not default_storage.exists(doc_path.url()):
         default_storage.download(
-            doc_path=doc_path,
+            doc_path_url=doc_path.url(),
             namespace=namespace
         )
 

@@ -24,6 +24,27 @@ STARTED = "started"
 COMPLETE = "complete"
 
 
+def upload_to(page_path, **kwargs):
+    """
+    Will upload results to remote storage if such storage
+    is supported.
+
+    Default storage class ``mglib.storage.FileSystemStorage``
+    ``download`` and ``upload`` methods are empty.
+
+    Method is useful for cloud production (where storage class
+    will be replaced to support remote storage e.g. S3, SFTP)
+    """
+    default_storage.upload(page_path.txt_url(), **kwargs)
+
+    for step in Steps():
+        if not step.is_thumbnail:
+
+            page_path.step = step
+            default_storage.upload(page_path.hocr_url(), **kwargs)
+            default_storage.upload(page_path.img_url(), **kwargs)
+
+
 def ocr_page_pdf(
     doc_path,
     page_num,
@@ -159,16 +180,17 @@ def ocr_page(
     logger.debug(f"Mime Type = {mime_type}")
 
     page_type = ''
+    page_path = None
 
     if mime_type.is_pdf():
-        ocr_page_pdf(
+        page_path = ocr_page_pdf(
             doc_path=doc_path,
             page_num=page_num,
             lang=lang
         )
         page_type = 'pdf'
     elif mime_type.is_image():  # jpeg, jpeg or png
-        ocr_page_image(
+        page_path = ocr_page_image(
             doc_path=doc_path,
             page_num=page_num,
             lang=lang
@@ -182,7 +204,7 @@ def ocr_page(
         # now .pdf
         doc_path.file_name = new_filename
         # and continue as usual
-        ocr_page_pdf(
+        page_path = ocr_page_pdf(
             doc_path=doc_path,
             page_num=page_num,
             lang=lang
@@ -201,5 +223,7 @@ def ocr_page(
         f" page_num={page_num} page_type={page_type}"
         f" total_exec_time={t2-t1:.2f}"
     )
+
+    upload_to(page_path=page_path, namespace=namespace)
 
     return True

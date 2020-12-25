@@ -306,7 +306,7 @@ method is not supposed to throw errors.
         if not skip_ocr:
 
             namespace = default_storage.upload(
-                doc.path()
+                doc_path_url=doc.path().url()
             )
 
             if apply_async:

@@ -412,7 +412,9 @@ def upload(request):
 
     lang = request.POST.get('language')
     notes = request.POST.get('notes')
+
     init_kwargs = {'payload': f, 'processor': WEB}
+
     apply_kwargs = {
         'user': user,
         'name': f.name,

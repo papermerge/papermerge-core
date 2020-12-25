@@ -501,6 +501,11 @@ def hocr(request, id, step=None, page="1"):
         logger.debug(f"Extract words from {hocr_abs_path}")
 
         if not os.path.exists(hocr_abs_path):
+            default_storage.download(
+                page_path.hocr_url()
+            )
+
+        if not os.path.exists(hocr_abs_path):
             raise Http404("HOCR data not yet ready.")
 
         # At this point local HOCR data should be available.

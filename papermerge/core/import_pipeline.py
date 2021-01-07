@@ -16,7 +16,7 @@ from papermerge.core.models import (
     Folder, Document, User
 )
 from papermerge.core.storage import default_storage
-from papermerge.core.tasks import ocr_page
+from papermerge.core.tasks import ocr_document
 from papermerge.core import signal_definitions as signals
 from papermerge.core.ocr import COMPLETE, STARTED
 from papermerge.core.utils import Timer
@@ -169,41 +169,40 @@ class DefaultPipeline:
             f"{self.processor} importer: "
             f"document {document_id} has {page_count} pages."
         )
-        for page_num in range(1, page_count + 1):
-            signals.page_ocr.send(
-                sender='worker',
-                level=logging.INFO,
-                message="",
+        signals.page_ocr.send(
+            sender='worker',
+            level=logging.INFO,
+            message="",
+            user_id=user_id,
+            document_id=document_id,
+            page_num=page_count,
+            lang=lang,
+            status=STARTED
+        )
+
+        with Timer() as time:
+            ocr_document(
                 user_id=user_id,
                 document_id=document_id,
-                page_num=page_num,
+                file_name=file_name,
+                page_count=page_count,
                 lang=lang,
-                status=STARTED
             )
 
-            with Timer() as time:
-                ocr_page(
-                    user_id=user_id,
-                    document_id=document_id,
-                    file_name=file_name,
-                    page_num=page_num,
-                    lang=lang,
-                )
-
-            msg = "{} importer: OCR took {} seconds to complete.".format(
-                self.processor,
-                time
-            )
-            signals.page_ocr.send(
-                sender='worker',
-                level=logging.INFO,
-                message=msg,
-                user_id=user_id,
-                document_id=document_id,
-                page_num=page_num,
-                lang=lang,
-                status=COMPLETE
-            )
+        msg = "{} importer: OCR took {} seconds to complete.".format(
+            self.processor,
+            time
+        )
+        signals.page_ocr.send(
+            sender='worker',
+            level=logging.INFO,
+            message=msg,
+            user_id=user_id,
+            document_id=document_id,
+            page_num=page_count,
+            lang=lang,
+            status=COMPLETE
+        )
 
     def get_init_kwargs(self):
         """Propagates keyword arguments to use in the init method
@@ -310,15 +309,14 @@ method is not supposed to throw errors.
             )
 
             if apply_async:
-                for page_num in range(1, page_count + 1):
-                    ocr_page.apply_async(kwargs={
-                        'user_id': user.id,
-                        'document_id': doc.id,
-                        'file_name': name,
-                        'page_num': page_num,
-                        'lang': lang,
-                        'namespace': namespace
-                    })
+                ocr_document.apply_async(kwargs={
+                    'user_id': user.id,
+                    'document_id': doc.id,
+                    'file_name': name,
+                    'lang': lang,
+                    'page_count': page_count,
+                    'namespace': namespace
+                })
             else:
                 self.ocr_document(
                     document=doc,

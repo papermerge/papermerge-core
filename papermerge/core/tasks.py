@@ -2,6 +2,7 @@ import logging
 
 from celery import shared_task
 from papermerge.core.ocr.page import ocr_page as main_ocr_page
+from papermerge.core.ocr.document import ocr_document as main_ocr_document
 from papermerge.core.ocr import (
     COMPLETE,
     STARTED
@@ -62,6 +63,60 @@ def ocr_page(
         user_id=user_id,
         document_id=document_id,
         page_num=page_num,
+        lang=lang,
+        status=COMPLETE
+    )
+
+    return True
+
+
+@shared_task(bind=True)
+def ocr_document(
+    self,
+    user_id,
+    document_id,
+    file_name,
+    page_count,
+    lang,
+    namespace=None
+):
+    # A task being bound (bind=True) means the first argument
+    # to the task will always be the
+    # task instance (self).
+    # https://celery.readthedocs.io/en/latest/userguide/tasks.html#bound-tasks
+    logger.info(f"task_id={self.request.id}")
+
+    # Inform everybody interested that OCR started
+    signals.page_ocr.send(
+        sender='worker',
+        level=logging.INFO,
+        message="",
+        user_id=user_id,
+        document_id=document_id,
+        page_num=page_count,
+        lang=lang,
+        status=STARTED
+    )
+
+    with Timer() as time:
+
+        main_ocr_document(
+            user_id=user_id,
+            document_id=document_id,
+            file_name=file_name,
+            lang=lang,
+            namespace=namespace,
+        )
+
+    # Inform everybody interested that OCR completed/ended
+    msg = f"Ocr took {time} seconds to complete."
+    signals.page_ocr.send(
+        sender='worker',
+        level=logging.INFO,
+        message=msg,
+        user_id=user_id,
+        document_id=document_id,
+        page_num=page_count,
         lang=lang,
         status=COMPLETE
     )

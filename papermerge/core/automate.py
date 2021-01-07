@@ -2,14 +2,13 @@ import logging
 
 from django.utils.translation import gettext as _
 
-from mglib.step import Step
-from mglib.path import PagePath, DocumentPath
-from mglib.pdfinfo import get_pagecount
+from mglib.path import DocumentPath
 
 from .models import Document, Automate
 from .storage import default_storage
 from .signal_definitions import automates_matching
 
+from pdfminer.high_level import extract_text
 
 logger = logging.getLogger(__name__)
 
@@ -28,21 +27,7 @@ def apply_automates(document_id, page_num):
         document.path(),
         version=0
     )
-    page_count = get_pagecount(
-        default_storage.abspath(doc_path.url())
-    )
-    page_path = PagePath(
-        document_path=doc_path,
-        page_num=page_num,
-        page_count=page_count,
-        step=Step(),
-    )
     user = document.user
-
-    text_path = default_storage.abspath(page_path.txt_url())
-    text = ""
-    with open(text_path, "r") as f:
-        text = f.read()
 
     automates = Automate.objects.filter(user=user)
     # are there automates for the user?
@@ -51,6 +36,9 @@ def apply_automates(document_id, page_num):
             f"No automates for user {user}. Quit."
         )
         return
+
+    # extract the text of the PDF
+    text = extract_text(default_storage.abspath(doc_path.url()))
 
     # check all automates for given user (the owner of the document)
     matched = []

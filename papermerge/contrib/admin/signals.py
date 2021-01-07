@@ -93,7 +93,7 @@ def page_ocr_handler(sender, **kwargs):
             level=logging.WARNING,
             message=_(
                 "%(human_status)s OCR for doc_id=%(doc_id)s,"
-                " page %(page_num)s."
+                " pages %(page_num)s."
                 "But in meantime document probably was deleted."
             ) % {
                 'human_status': human_status,
@@ -107,7 +107,7 @@ def page_ocr_handler(sender, **kwargs):
 
     log_entry_message = _(
         "%(human_status)s OCR for document %(document_title)s,"
-        " page=%(page_num)s,"
+        " pages=%(page_num)s,"
         " language=%(lang)s, doc_id=%(doc_id)s."
     ) % {
         'human_status': human_status,
@@ -127,7 +127,6 @@ def page_ocr_handler(sender, **kwargs):
         level=level,
         message=log_entry_message
     )
-
 
 @receiver(folder_created)
 def folder_created_handler(sender, **kwargs):

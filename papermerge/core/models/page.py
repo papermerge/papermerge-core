@@ -1,15 +1,15 @@
 import logging
-import os
 
 from django.db import models
 from mglib.path import PagePath
-from papermerge.core.storage import default_storage
 from papermerge.search import index
 from papermerge.search.queryset import SearchableQuerySetMixin
 
 from .diff import Diff
 from .document import Document
 from .kvstore import KVCompPage, KVPage, KVStorePage
+
+from pdfminer.high_level import extract_text
 
 logger = logging.getLogger(__name__)
 
@@ -204,22 +204,14 @@ class Page(models.Model, index.Indexed):
         Returns non-empty text string value if .txt file was found.
         If file was not found - will return an empty string.
         """
-        text = ''
-        url = default_storage.abspath(self.txt_url)
+        text = extract_text(self.document.absfilepath, page_numbers=[self.number-1])
+        text = ' '.join(text.split()).strip()
 
-        if not os.path.exists(url):
-            logger.debug(
-                f"Missing page txt {url}."
-            )
-            return
-
-        with open(url) as file_handle:
-            self.text = file_handle.read()
-            self.save()
-            logger.debug(
-                f"text saved. len(page.text)=={len(self.text)}"
-            )
-            text = self.text
+        self.text = text
+        self.save()
+        logger.debug(
+            f"text saved. len(page.text)=={len(self.text)}"
+        )
 
         return text
 

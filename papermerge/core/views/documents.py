@@ -7,6 +7,7 @@ from django.utils.html import escape
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.conf import settings
 from django.contrib import messages
 from django.http import (
@@ -20,12 +21,10 @@ from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
 
-from mglib.pdfinfo import get_pagecount
 from mglib.step import Step
 from mglib.shortcuts import extract_img
 
 from papermerge.core.storage import default_storage
-from papermerge.core.lib.hocr import Hocr
 from .decorators import json_response
 
 from papermerge.core.models import (
@@ -472,59 +471,6 @@ def usersettings(request, option, value):
 
 
 @login_required
-def hocr(request, id, step=None, page="1"):
-
-    logger.debug(f"hocr for doc_id={id}, step={step}, page={page}")
-    try:
-        doc = Document.objects.get(id=id)
-    except Document.DoesNotExist:
-        raise Http404("Document does not exists")
-
-    version = request.GET.get('version', None)
-    doc_path = doc.path(version=version)
-
-    if request.user.has_perm(Access.PERM_READ, doc):
-        # document absolute path
-        doc_abs_path = default_storage.abspath(doc_path.url())
-        if not os.path.exists(
-            doc_abs_path
-        ):
-            raise Http404("HOCR data not yet ready.")
-
-        page_count = get_pagecount(doc_abs_path)
-        if page > page_count or page < 0:
-            raise Http404("Page does not exists")
-
-        page_path = doc.page_paths(version=version)[page]
-        hocr_abs_path = default_storage.abspath(page_path.hocr_url())
-
-        logger.debug(f"Extract words from {hocr_abs_path}")
-
-        if not os.path.exists(hocr_abs_path):
-            default_storage.download(
-                page_path.hocr_url()
-            )
-
-        if not os.path.exists(hocr_abs_path):
-            raise Http404("HOCR data not yet ready.")
-
-        # At this point local HOCR data should be available.
-        hocr = Hocr(
-            hocr_file_path=hocr_abs_path
-        )
-
-        return HttpResponse(
-            json.dumps({
-                'hocr': hocr.good_json_words(),
-                'hocr_meta': hocr.get_meta()
-            }),
-            content_type="application/json",
-        )
-
-    return HttpResponseForbidden()
-
-
-@login_required
 def preview(request, id, step=None, page="1"):
 
     try:
@@ -564,5 +510,28 @@ def preview(request, id, step=None, page="1"):
 
             with open(file_path, "rb") as f:
                 return HttpResponse(f.read(), content_type="image/png")
+
+    return redirect('core:index')
+
+
+@xframe_options_sameorigin
+@login_required
+def docview(request, id, filename=""):
+    try:
+        doc = Document.objects.get(id=id)
+    except Document.DoesNotExist:
+        raise Http404("Document does not exists")
+
+    if request.user.has_perm(Access.PERM_READ, doc):
+        version = request.GET.get('version', None)
+
+        doc_path = default_storage.abspath(doc.path(version).url())
+
+        if not os.path.exists(doc_path):
+            raise Http404(f"Document file {doc_path} does not exists")
+
+        with open(doc_path, "rb") as f:
+            data = f.read()
+        return HttpResponse(data, content_type="application/pdf")
 
     return redirect('core:index')

@@ -174,7 +174,7 @@
         </div>
       </div>
       <!-- /.content -->
-      
+
     </div>
     <!-- /.content-wrapper -->
     <div id="uploader-view"></div>
@@ -199,11 +199,13 @@
   {% else %}
     <script src="{% static 'admin/js/papermerge.js' %}"></script>
   {% endif %}
-  
+
   <script src="{% url 'javascript-catalog' %}"></script>
 
+  <script src="{% static 'admin/js/pdfobject.min.js' %}"></script>
+
   <script>
-    /* 
+    /*
       small hack which prevents advanced search dropdown to close
       if user clicks inside/dropdown
      */

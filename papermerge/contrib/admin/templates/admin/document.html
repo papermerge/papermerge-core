@@ -63,7 +63,7 @@
                         {% if forloop.last %}
                           {% trans "Original" %}
                         {% elif forloop.first  %}
-                          {% trans "Latest" %} 
+                          {% trans "Latest" %}
                         {% else %}
                         {% endif %}
                         v{{version}}
@@ -94,14 +94,14 @@
                                 <i class="fa fa-plus"></i>
                                 Add
                             </button>
-                            
+
                             <button type="button" class="btn btn-success btn-flat save key mx-1">
                                 <i class="fa fa-save"></i>
                                 Save
                             </button>
                         </li>
                         <ul id="simple_keys" class="collection">
-                            
+
                          </ul>
                     </ul>
                 </div> <!-- card-text -->
@@ -114,18 +114,6 @@
 
 {% block actions %}
 <div id="document-actions" class="col-sm-12 d-flex flex-row justify-content-between">
-    <button id="sw-left-panel" data-target-id="page-thumbnails" class="btn btn-default btn-flat btn-outline-light">
-      <i class="icon-sw-left-panel"></i>
-    </button>
-
-    <select class="zoom" select="width">
-        <option value="width">Fit Width</option>
-        <option value="50">50%</option>
-        <option value="75">75%</option>
-        <option value="100">100%</option>
-        <option value="125">125%</option>
-        <option value="150">150%</option>
-    </select>
 </div>
 {% endblock %}
 
@@ -162,14 +150,7 @@
         <img src="{% static 'admin/img/pre-loader/loader-03.svg' %}" alt="">
       </div>
         <div id="document">
-          <div id="viewer" class="d-flex flex-row">
-            <div id="page-thumbnails">
-              {% include 'admin/_page_thumbnails.html' with pages=pages document=document %}
-            </div>
-            <div id="actual-pages">
-              {% include 'admin/_pages.html' with pages=pages %}
-            </div>
-          </div>
+          <div id="viewer"/>
         </div>
     </div>
   </div>
@@ -177,6 +158,7 @@
 </div><!-- /.container-fluid -->
 
 <input type="hidden" name="document_id" value="{{document.id}}" />
+<input type="hidden" name="document_name" value="{{document.file_name}}" />
 <ul id="context-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     {% if is_latest_version %}
       <li class="dropdown-item">
@@ -190,7 +172,7 @@
       <li class="dropdown-item fl fl-i-center" id="delete-page" class="dropdown-item fl fl-i-center disabled">
          <a><i class="fa fa-trash mx-2"></i>{% trans "Delete Page" %}</a>
       </li>
-    
+
       <li class="dropdown-divider"></li>
       <li class="dropdown-item disabled" id="cut-page">
         <a><i class="fa fa-cut mx-2"></i>{% trans "Cut" %}</a>

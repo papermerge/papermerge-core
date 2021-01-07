@@ -15,19 +15,14 @@ document_patterns = [
         name="document"
     ),
     path(
-        '<int:id>/preview/page/<int:page>',
-        doc_views.preview,
+        '<int:id>/preview/<str:filename>',
+        doc_views.docview,
         name="preview"
     ),
     path(
         '<int:id>/preview/<int:step>/page/<int:page>',
         doc_views.preview,
         name="preview"
-    ),
-    path(
-        '<int:id>/hocr/<int:step>/page/<int:page>',
-        doc_views.hocr,
-        name="hocr"
     ),
     path(
         'usersettings/<str:option>/<str:value>',

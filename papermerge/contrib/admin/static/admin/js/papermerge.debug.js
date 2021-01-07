@@ -18383,7 +18383,7 @@ class MgChangeFormActions {
 
   on_change_selection(selection) {
     /*
-      Invoked every time when selection changes i.e. elemnts are either 
+      Invoked every time when selection changes i.e. elemnts are either
       added or removed from the list.
        Theoretically this._selection and selection should be same.
     */
@@ -18549,7 +18549,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class MgClipboard {
-  /* 
+  /*
     List of pages ids to paste into current document.
   */
   constructor(id = "#page_clipboard_form") {
@@ -18719,7 +18719,7 @@ class MgLister extends _events__WEBPACK_IMPORTED_MODULE_0__["DgEvents"] {
   }
 
   delete_selected(selection) {
-    // selection is instance of 
+    // selection is instance of
     // document_form.selection.MgSelection
     let thumbs_to_delete; // extract thumbs using selection object
 
@@ -18979,7 +18979,7 @@ class DgPage {
 
     if (!this._orig_page_size) {
       // image might not yet be loaded, e.g.
-      // used opened document and have seen only 
+      // used opened document and have seen only
       // first page
       console.log("this.orig_page_size is undefined");
       return;
@@ -18998,7 +18998,7 @@ class DgPage {
 
       if (this._dom_img) {
         // image might not yet be loaded, e.g.
-        // used opened document and have seen only 
+        // used opened document and have seen only
         // first page
         this._dom_img.setAttribute('width', `${new_width}px`);
       }
@@ -19133,7 +19133,7 @@ class DgPage {
       // image - it triggers load_hocr function.
     } else if (this.zoom_changed(zoom_val)) {
       this.resize_img(zoom_val); // resize happens syncroniously.
-      // It means that is ok to call resize_hocr syncr as well.                
+      // It means that is ok to call resize_hocr syncr as well.
 
       this.resize_hocr(zoom_val);
       this.set_zoom_val(zoom_val);
@@ -20971,7 +20971,7 @@ class Node extends backbone__WEBPACK_IMPORTED_MODULE_2__["Model"] {
 
   get url() {
     if (this.is_document()) {
-      // this url corresponds to backend's 
+      // this url corresponds to backend's
       // reverse('core:document', args=(doc_id))
       // and is used to open admin/documet.html template.
       return this.get('document_url');
@@ -21983,7 +21983,7 @@ function get_current_parent_id() {
 class DgNode {
   /*
     DgNode an abstraction of both Folder and Document DOM element in changelist view.
-    
+
     Do not confuse it with DOM's node - concepts are completely unrelated.
     Also DgNode has nothing to do with node js. Well, maybe latter
     it will be moved as nodejs package.
@@ -22025,7 +22025,7 @@ class DgNode {
 }
 class DgFolder extends DgNode {
   static get selector() {
-    // DgFolder is data abstraction of 
+    // DgFolder is data abstraction of
     // DOM elements this selector
     return "li.node.folder";
   }
@@ -22035,7 +22035,7 @@ class DgFolder extends DgNode {
       A document node has its title in alt attribute of the
       anchor. Reason behind it is that text part of the
       anchor i.e. <a class="title">this is text part</a>
-      can be truncated. As I said above the original 
+      can be truncated. As I said above the original
       title is preserved in the alt attribute.
       Example:
        <a data-id="347" alt="Very Very Very Long Title.pdf">
@@ -22050,7 +22050,7 @@ class DgFolder extends DgNode {
 }
 class DgDocument extends DgNode {
   static get selector() {
-    // DgDocument is data abstraction of 
+    // DgDocument is data abstraction of
     // DOM elements this selector
     return "li.node.document";
   }
@@ -22060,7 +22060,7 @@ class DgDocument extends DgNode {
       A document node has its title in alt attribute of the
       anchor. Reason behind it is that text part of the
       anchor i.e. <a class="title">this is text part</a>
-      can be truncated. As I said above the original 
+      can be truncated. As I said above the original
       title is preserved in the alt attribute.
       Example:
        <a data-id="347" alt="Very Very Very Long Title.pdf">
@@ -22175,7 +22175,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 
 class DgMainSpinner {
-  constructor(spinner_id = "#preload-spinner", container_id = "#viewer") {
+  constructor(spinner_id = "#preload-spinner", container_id = "#document") {
     let that = this;
     this._spinner_id = spinner_id;
     this._container_id = container_id;
@@ -22230,13 +22230,13 @@ __p+='<div class="modal-dialog modal-lg modal-dialog-centered" role="document">\
 '\n                        </td>\n                        <td>\n                            '+
 ((__t=( gettext('Access') ))==null?'':__t)+
 '\n                        </td>\n                    </tr>\n                </thead> <!--- header -->\n                <tbody id="access_items">\n                    ';
- for (i=0; i < acc_collection.models.length; i++) { 
+ for (i=0; i < acc_collection.models.length; i++) {
 __p+='\n                        ';
- item = acc_collection.models[i]; 
+ item = acc_collection.models[i];
 __p+='\n                        <tr class="';
- if (item.get('access_inherited')) {  
+ if (item.get('access_inherited')) {
 __p+='disabled';
- } 
+ }
 __p+='" data-cid="'+
 ((__t=( item.cid  ))==null?'':__t)+
 '" data-model="'+
@@ -22252,7 +22252,7 @@ __p+='" data-cid="'+
 '</td>\n                            <td>'+
 ((__t=( gettext(item.human_perms()) ))==null?'':__t)+
 '</td>\n                        </tr>\n                    ';
- } 
+ }
 __p+='\n                </tbody> <!-- end of body -->\n            </table> <!--  table -->\n        </div>\n        <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs apply">\n                '+
 ((__t=( gettext('Apply') ))==null?'':__t)+
 '\n            </button>\n            <button data-dismiss="modal" class="btn margin-xs btn-secondary cancel">\n                '+
@@ -22276,9 +22276,9 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+=' ';
- for (let i=0; i < tags.models.length; i++) { 
+ for (let i=0; i < tags.models.length; i++) {
 __p+='\n    ';
- model = tags.models[i] 
+ model = tags.models[i]
 __p+='\n     <div class="tag d-flex align-items-center" \n     style="color: '+
 ((__t=( model.get('fg_color') ))==null?'':__t)+
 '; background:  '+
@@ -22292,15 +22292,15 @@ __p+='\n     <div class="tag d-flex align-items-center" \n     style="color: '+
 '</span>\n       <i \n        class="fa fa-times tag-remove"\n        data-name="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n        </i>\n     </div>\n ';
- } 
+ }
 __p+='\n<input id="tag-input" name="tag-input" list="all_tags3" class="tag-input" />\n<datalist id="all_tags3">\n';
- for (let i=0; i < all_tags.models.length; i++) { 
+ for (let i=0; i < all_tags.models.length; i++) {
 __p+='\n    ';
- model = all_tags.models[i] 
+ model = all_tags.models[i]
 __p+='\n     <option value="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n';
- } 
+ }
 __p+='\n</datalist>\n<input type="hidden" name="tags" value="'+
 ((__t=( tags.comma_sep_tags() ))==null?'':__t)+
 '" />\n';
@@ -22322,9 +22322,9 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+=' ';
- for (let i=0; i < tags.models.length; i++) { 
+ for (let i=0; i < tags.models.length; i++) {
 __p+='\n    ';
- model = tags.models[i] 
+ model = tags.models[i]
 __p+='\n     <div class="tag d-flex align-items-center" \n     style="color: '+
 ((__t=( model.get('fg_color') ))==null?'':__t)+
 '; background:  '+
@@ -22338,23 +22338,23 @@ __p+='\n     <div class="tag d-flex align-items-center" \n     style="color: '+
 '</span>\n       <i \n        class="fa fa-times tag-remove"\n        data-name="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n        </i>\n     </div>\n ';
- } 
+ }
 __p+='\n<input id="tag-input" name="tag-input" list="all_tags4" class="tag-input" />\n<datalist id="all_tags4">\n';
- for (let i=0; i < all_tags.models.length; i++) { 
+ for (let i=0; i < all_tags.models.length; i++) {
 __p+='\n    ';
- model = all_tags.models[i] 
+ model = all_tags.models[i]
 __p+='\n     <option value="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n';
- } 
+ }
 __p+='\n</datalist>\n';
- for (let i=0; i < tags.models.length; i++) { 
+ for (let i=0; i < tags.models.length; i++) {
 __p+='\n   ';
- model = tags.models[i] 
+ model = tags.models[i]
 __p+='\n   <input type="hidden" name="tag" value="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '" />\n';
- } 
+ }
 __p+='\n';
 }
 return __p;
@@ -22376,9 +22376,9 @@ with(obj||{}){
 __p+='<ol class="breadcrumb float-sm-left">\n    <li class="breadcrumb-item">\n        <a href="/"><i class="fa fa-home px-1"></i>\n            <div class="d-none d-sm-inline-block">\n                '+
 ((__t=( gettext('Home') ))==null?'':__t)+
 '\n            </div>\n        </a>\n    </li>\n    ';
- for (i=0; i < nodes.length; i++) { 
+ for (i=0; i < nodes.length; i++) {
 __p+='\n        ';
- node = nodes.at(i) 
+ node = nodes.at(i)
 __p+='\n        <li class="breadcrumb-item">\n            <a href="'+
 ((__t=( node.url ))==null?'':__t)+
 '" class="breadcrumb-node"  data-id="'+
@@ -22386,7 +22386,7 @@ __p+='\n        <li class="breadcrumb-item">\n            <a href="'+
 '">\n            	'+
 ((__t=( node.get('title') ))==null?'':__t)+
 '\n            </a>\n        </li>\n    ';
- } 
+ }
 __p+='\n</ol>\n';
 }
 return __p;
@@ -22406,11 +22406,11 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='';
- if (nodes.length > 0) { 
+ if (nodes.length > 0) {
 __p+='\n    <ul class="d-flex grid">\n        ';
- for (i=0; i < nodes.length; i++) { 
+ for (i=0; i < nodes.length; i++) {
 __p+='\n            ';
- node = nodes.at(i) 
+ node = nodes.at(i)
 __p+='\n            <li class="node ui-widget-content node-w1 d-flex flex-column align-items-center" data-id="'+
 ((__t=( node.get('id') ))==null?'':__t)+
 '" data-cid="'+
@@ -22418,19 +22418,19 @@ __p+='\n            <li class="node ui-widget-content node-w1 d-flex flex-column
 '" data-url="'+
 ((__t=( node.url ))==null?'':__t)+
 '">\n                ';
- if (node.is_document())  { 
+ if (node.is_document())  {
 __p+='\n                    <div class="placeholder document">\n                        <img class="zero_pix" src="'+
 ((__t=(  node.get('img_src') ))==null?'':__t)+
 '" />\n                        <div class="document-loading"></div>\n                    </div>\n                ';
- } 
+ }
 __p+='\n                <div class="icon-'+
 ((__t=( node.get('ctype') ))==null?'':__t)+
 '">\n\n                </div>\n                <ul class="node-tags d-flex flex-column align-items-end">\n                    ';
- tags = node.get('tags'); 
+ tags = node.get('tags');
 __p+='\n                    ';
- for (t=0; t < tags.length && t < 3; t++) { 
+ for (t=0; t < tags.length && t < 3; t++) {
 __p+='\n                        ';
- tag = tags[t]; 
+ tag = tags[t];
 __p+='\n                        <li class="tag"  style="background: '+
 ((__t=( tag['bg_color'] ))==null?'':__t)+
 ';color: '+
@@ -22438,15 +22438,15 @@ __p+='\n                        <li class="tag"  style="background: '+
 '" >\n                            '+
 ((__t=( tag['name'] ))==null?'':__t)+
 '\n                        </li>\n                    ';
- } 
+ }
 __p+='\n                    ';
- if (tags.length > 3) { 
+ if (tags.length > 3) {
 __p+='\n                        <li>...</li>\n                    ';
- } 
+ }
 __p+='\n                </ul>\n                <div class="icons">\n                    ';
- if (node.is_readonly()) {  
+ if (node.is_readonly()) {
 __p+='\n                        <i class="fa fa-lock"></i>\n                    ';
- } 
+ }
 __p+='\n                </div>\n                <input type="checkbox" name="_selected_action" value="'+
 ((__t=( node.get('id') ))==null?'':__t)+
 '" class="action-select" />\n                <div class="title tooltip">\n                    <a href="'+
@@ -22462,13 +22462,13 @@ __p+='\n                </div>\n                <input type="checkbox" name="_se
 '</a>\n                    <span class="tooltiptext">'+
 ((__t=( node.full_title()  ))==null?'':__t)+
 '</span>\n                </div>\n\n            </li>\n        ';
- } 
+ }
 __p+='\n    </ul>\n';
- } else { 
+ } else {
 __p+='\n    <ul id="empty-folder">\n        <div class="d-flex flex-column align-items-center">\n            <i class="fa fa-folder">\n            </i>\n            <strong class="text-muted">'+
 ((__t=(  gettext("This folder is empty") ))==null?'':__t)+
 '</strong>\n        </div>\n    </ul>\n';
- } 
+ }
 __p+='';
 }
 return __p;
@@ -22488,7 +22488,7 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='';
- if (table.rows.length > 0 ) { 
+ if (table.rows.length > 0 ) {
 __p+='\n\n<table class="table">\n  <thead>\n    <tr>\n      <th scope="col">\n        <a \n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="type"\n        >\n          '+
 ((__t=( gettext('Type') ))==null?'':__t)+
 '\n          <i class="fa '+
@@ -22498,11 +22498,11 @@ __p+='\n\n<table class="table">\n  <thead>\n    <tr>\n      <th scope="col">\n  
 '\n          <i class="fa '+
 ((__t=( table.cols[1].sort_icon_name ))==null?'':__t)+
 '"></i>\n        </a>\n      </th>\n      ';
- for (i=0; i < table.key_cols.length; i++) { 
+ for (i=0; i < table.key_cols.length; i++) {
 __p+='\n        ';
- column = table.key_cols[i] 
+ column = table.key_cols[i]
 __p+='\n        ';
- if (column) { 
+ if (column) {
 __p+='\n          <th scope="col">\n            <a \n              href="#"\n              class="header sort d-flex justify-content-between align-items-center"\n              data-col="key" data-key="'+
 ((__t=( column.key ))==null?'':__t)+
 '"\n            >\n              '+
@@ -22510,17 +22510,17 @@ __p+='\n          <th scope="col">\n            <a \n              href="#"\n   
 '\n              <i class="fa '+
 ((__t=( column.sort_icon_name ))==null?'':__t)+
 '"></i>\n            </a>\n          </th>\n        ';
- } 
+ }
 __p+='\n      ';
- } 
+ }
 __p+='\n      <th scope="col">\n        <a\n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="created_at"\n        >\n          '+
 ((__t=( gettext('Created At') ))==null?'':__t)+
 '\n          <i class="fa  '+
 ((__t=( table.cols[table.cols.length -1].sort_icon_name ))==null?'':__t)+
 '"></i>\n        </a>\n      </th>\n    </tr>\n  </thead>\n  <tbody>\n    ';
- for (i=0; i < table.rows.length; i++) { 
+ for (i=0; i < table.rows.length; i++) {
 __p+='\n        ';
- row = table.rows[i] 
+ row = table.rows[i]
 __p+='\n    <tr class="node" data-id="'+
 ((__t=( row[0].id ))==null?'':__t)+
 '" data-cid="'+
@@ -22528,23 +22528,23 @@ __p+='\n    <tr class="node" data-id="'+
 '" data-url="'+
 ((__t=( row[0].url ))==null?'':__t)+
 '">\n        ';
- for (j=0; j < row.length; j++) { 
+ for (j=0; j < row.length; j++) {
 __p+='\n          <td>\n            ';
- if (row[j].is_readonly) { 
+ if (row[j].is_readonly) {
 __p+='\n                <i class="fa fa-lock text-danger"></i>\n            ';
- } 
+ }
 __p+='\n            '+
 ((__t=( row[j].value ))==null?'':__t)+
 '\n            </td>\n        ';
- } 
+ }
 __p+='\n    </tr>\n    ';
- } 
+ }
 __p+='\n  </tbody>\n</table>\n\n';
- } else { 
+ } else {
 __p+='\n<ul id="empty-folder">\n    <div class="d-flex flex-column align-items-center">\n        <i class="fa fa-folder">\n        </i>\n        <strong class="text-muted">'+
 ((__t=(  gettext("This folder is empty") ))==null?'':__t)+
 '</strong>\n    </div>\n</ul>\n';
- } 
+ }
 __p+='';
 }
 return __p;
@@ -22564,63 +22564,63 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<div class="dropdown">\n    <button class="btn btn-light dropdown-toggle" type="button" id="dropdown_view_opt" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n      ';
- if (is_list) { 
+ if (is_list) {
 __p+='\n        <i class="fa fa-bars"></i>\n      ';
- } else { 
+ } else {
 __p+='\n        <i class="fa fa-th"></i>\n      ';
- } 
+ }
 __p+='\n    </button>\n    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">\n        <a href="#" class="dropdown-item display-grid">\n          <i class="fa fa-th"> </i><span class="px-2">\n            '+
 ((__t=( gettext('Grid') ))==null?'':__t)+
 '\n          </span>\n          ';
- if (is_grid) { 
+ if (is_grid) {
 __p+='\n            <i class="fa fa-check text-green"></i>\n          ';
- } 
+ }
 __p+='\n        </a>\n        <a href="#" class="dropdown-item display-list"><i class="fa fa-bars"></i>\n          <span class="px-2">'+
 ((__t=( gettext('List') ))==null?'':__t)+
 '</span>\n          ';
- if (is_list) { 
+ if (is_list) {
 __p+='\n            <i class="fa fa-check text-green"></i>\n          ';
- } 
+ }
 __p+='\n      </a>\n    </div>\n</div>\n\n<div class="dropdown order">\n    <button class="btn btn-light dropdown-toggle" type="button" id="dropdown_order_opt" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n      <i class="fa fa-sort-amount-up"></i>\n    </button>\n    <ul class="dropdown-menu dropdown-menu-right sort" aria-labelledby="navbarDropdownMenuLink">\n          <li class="dropdown-submenu-left dropdown-submenu">\n            <a class="dropdown-item dropdown-toggle" href="#">\n              '+
 ((__t=( gettext('Title') ))==null?'':__t)+
 '\n            </a>\n            <ul class="dropdown-menu">\n              <li><a class="dropdown-item sort asc title" href="#">\n                ';
- if (sort_field == 'title' && sort_order == 'asc') { 
+ if (sort_field == 'title' && sort_order == 'asc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n               '+
 ((__t=( gettext('Asc') ))==null?'':__t)+
 '\n              </a></li>\n              <li><a class="dropdown-item sort desc title" href="#">\n                ';
- if (sort_field == 'title' && sort_order == 'desc') { 
+ if (sort_field == 'title' && sort_order == 'desc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( gettext('Desc') ))==null?'':__t)+
 '\n              </a></li>\n            </ul>\n          </li>\n          <li class="dropdown-submenu dropdown-submenu-left"><a class="dropdown-item dropdown-toggle" href="#">\n            '+
 ((__t=( gettext('Date') ))==null?'':__t)+
 '\n          </a>\n            <ul class="dropdown-menu">\n              <li><a class="dropdown-item sort asc date" href="#">\n                ';
- if (sort_field == 'date' && sort_order == 'asc') { 
+ if (sort_field == 'date' && sort_order == 'asc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( gettext('Asc') ))==null?'':__t)+
 '\n              </a></li>\n              <li><a class="dropdown-item sort desc date" href="#">\n                ';
- if (sort_field == 'date' && sort_order == 'desc') { 
+ if (sort_field == 'date' && sort_order == 'desc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( gettext('Desc') ))==null?'':__t)+
 '\n            </a></li>\n            </ul>\n          </li>\n          <li class="dropdown-submenu-left dropdown-submenu"><a class="dropdown-item dropdown-toggle" href="#">\n            '+
 ((__t=( gettext('Type') ))==null?'':__t)+
 '\n          </a>\n            <ul class="dropdown-menu">\n              <li><a class="dropdown-item sort asc type" href="#">\n                ';
- if (sort_field == 'type' && sort_order == 'asc') { 
+ if (sort_field == 'type' && sort_order == 'asc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( gettext('Asc') ))==null?'':__t)+
 '\n              </a></li>\n              <li><a class="dropdown-item sort desc type" href="#">\n                ';
- if (sort_field == 'type' && sort_order == 'desc') { 
+ if (sort_field == 'type' && sort_order == 'desc') {
 __p+='\n                  <i class="fa fa-check text-success"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( gettext('Desc') ))==null?'':__t)+
 '\n              </a></li>\n            </ul>\n          </li>\n        </ul>\n    </div>';
@@ -22714,33 +22714,33 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='';
- if (num_pages > 1) { 
+ if (num_pages > 1) {
 __p+='\n  <div class="row">\n    <nav class="col-12">\n      <ul class="pagination pagination-sm justify-content-end">\n        ';
- if (page.has_previous) { 
+ if (page.has_previous) {
 __p+='\n          <li class="page-item">\n            <a class="page-link" href="?page='+
 ((__t=( page.previous_page_number ))==null?'':__t)+
 '" aria-label="Previous">\n            <span aria-hidden="true">&laquo;</span>\n            </a>\n          </li>\n        ';
- } 
+ }
 __p+='\n        ';
- for(let i=0; i < pages.length; i++) { 
+ for(let i=0; i < pages.length; i++) {
 __p+='\n          <li class="page-item ';
- if (pages[i] == page_number) { 
+ if (pages[i] == page_number) {
 __p+=' active ';
- } 
+ }
 __p+='"><a class="page-link" href="?page='+
 ((__t=( pages[i] ))==null?'':__t)+
 '">'+
 ((__t=( pages[i] ))==null?'':__t)+
 '</a></li>\n        ';
- } 
+ }
 __p+='\n        ';
- if (page.has_next) { 
+ if (page.has_next) {
 __p+='\n          <li class="page-item">\n            <a class="page-link" href="?page='+
 ((__t=( page.next_page_number ))==null?'':__t)+
 '" aria-label="Next">\n              <span aria-hidden="true">&raquo;</span>\n            </a>\n          </li>\n        ';
- } 
+ }
 __p+='\n      </ul>\n    </nav>\n  </div>\n';
- } 
+ }
 __p+='';
 }
 return __p;
@@ -22764,91 +22764,91 @@ __p+='<div class="modal-dialog modal-dialog-centered" role="document">    <div c
 '</h5>\n            <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n              <span aria-hidden="true">&times;</span>\n            </button>\n        </div>\n        <div class="modal-body">\n            <div class="form-group">\n                <label class="padding-x-xs">'+
 ((__t=( gettext('User or Group') ))==null?'':__t)+
 ':</label>\n                <select ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="perm_user_or_group form-control" multiple title="'+
 ((__t=( gettext('Nothing selected') ))==null?'':__t)+
 '">\n                    ';
- for (i=0; i < usergroups.models.length; i++) { 
+ for (i=0; i < usergroups.models.length; i++) {
 __p+='\n                        ';
- item = usergroups.models[i]; 
+ item = usergroups.models[i];
 __p+='\n                        <option ';
- if (item.get('name') == permission.get('name') && item.get('model') == permission.get('model')) { 
+ if (item.get('name') == permission.get('name') && item.get('model') == permission.get('model')) {
 __p+=' selected ';
- } 
+ }
 __p+=' data-model="'+
 ((__t=( item.get('model') ))==null?'':__t)+
 '">\n                            '+
 ((__t=( item.get('name') ))==null?'':__t)+
 '\n                        </option>\n                    ';
- } 
+ }
 __p+='\n                </select>\n            </div>  \n            <div class="form-group">\n                <label class="padding-x-xs">'+
 ((__t=( gettext('Type') ))==null?'':__t)+
 ':</label>\n                <select ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' name="access_type" class="access_type">\n                    <option ';
- if ('allow' == permission.get('access_type')) { 
+ if ('allow' == permission.get('access_type')) {
 __p+=' selected ';
- } 
+ }
 __p+=' value="allow">'+
 ((__t=( gettext('Allow') ))==null?'':__t)+
 '</option>\n                    <option ';
- if ('deny' == permission.get('access_type')) { 
+ if ('deny' == permission.get('access_type')) {
 __p+=' selected ';
- } 
+ }
 __p+='  value="deny">'+
 ((__t=( gettext('Deny') ))==null?'':__t)+
 '</option>\n                </select>\n            </div>\n            <formset class="d-flex flex-column">\n                <div class="form-check">\n                    <input ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="margin-right-sm checkbox" type="checkbox" name="change_perm" ';
- if (permission.get_perm('change_perm')) { 
+ if (permission.get_perm('change_perm')) {
 __p+=' checked ';
- } 
+ }
 __p+=' >\n                    <label class="padding-x-xs horizonal">'+
 ((__t=( gettext('Change Permissions') ))==null?'':__t)+
 '</label>\n                </div>\n                <div class="form-check">\n                    <input ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="margin-right-sm checkbox" type="checkbox" name="take_ownership" ';
- if (permission.get_perm('take_ownership')) { 
+ if (permission.get_perm('take_ownership')) {
 __p+=' checked ';
- } 
+ }
 __p+=' >\n                    <label class="padding-x-xs horizonal">'+
 ((__t=( gettext('Take Ownership') ))==null?'':__t)+
 '</label>\n                </div>\n                <div class="form-check">\n                    <input ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="margin-right-sm checkbox" type="checkbox" name="read"\n                    ';
- if (permission.get_perm('read')) { 
+ if (permission.get_perm('read')) {
 __p+=' checked ';
- } 
+ }
 __p+='\n                    >\n                    <label class="padding-x-xs horizonal">'+
 ((__t=( gettext('Read') ))==null?'':__t)+
 '</label>\n                </div>\n                <div class="form-check">\n                    <input ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="margin-right-sm checkbox" type="checkbox" name="write"\n                    ';
- if (permission.get_perm('write')) { 
+ if (permission.get_perm('write')) {
 __p+=' checked ';
- } 
+ }
 __p+='\n                    >\n                    <label class="padding-x-xs horizonal">'+
 ((__t=( gettext('Write') ))==null?'':__t)+
 '</label>\n                </div>\n                <div class="form-check">\n                    <input ';
- if (!edit) { 
+ if (!edit) {
 __p+=' disabled ';
- } 
+ }
 __p+=' class="margin-right-sm checkbox" type="checkbox" name="delete"\n                    ';
- if (permission.get_perm('delete')) { 
+ if (permission.get_perm('delete')) {
 __p+=' checked ';
- } 
+ }
 __p+='\n                    >\n                    <label class="padding-x-xs horizonal"> '+
 ((__t=( gettext('Delete') ))==null?'':__t)+
 '</label>\n                </div>\n            </formset>\n        </div>\n        <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs apply">\n                '+
@@ -22926,9 +22926,9 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+=' ';
- for (let i=0; i < tags.models.length; i++) { 
+ for (let i=0; i < tags.models.length; i++) {
 __p+='\n    ';
- model = tags.models[i] 
+ model = tags.models[i]
 __p+='\n     <div class="tag d-flex align-items-center" style="color: '+
 ((__t=( model.get('fg_color') ))==null?'':__t)+
 '; background:  '+
@@ -22942,15 +22942,15 @@ __p+='\n     <div class="tag d-flex align-items-center" style="color: '+
 '</span>\n       <i \n        class="fa fa-times tag-remove"\n        data-name="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n        </i>\n     </div>\n ';
- } 
+ }
 __p+='\n<input list="all_tags2" class="tag-input"/>\n<datalist id="all_tags2">\n';
- for (let i=0; i < all_tags.models.length; i++) { 
+ for (let i=0; i < all_tags.models.length; i++) {
 __p+='\n    ';
- model = all_tags.models[i] 
+ model = all_tags.models[i]
 __p+='\n     <option value="'+
 ((__t=( model.get('name') ))==null?'':__t)+
 '">\n';
- } 
+ }
 __p+='\n</datalist>\n\n';
 }
 return __p;
@@ -22998,33 +22998,33 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<div id="upload_feedback" class="border-thin card">\n    <div class="card-header container-fluid" id="newsHeading">\n        <div class="row">\n            <div class="col">\n                ';
- if (files.is_summary_success()) { 
+ if (files.is_summary_success()) {
 __p+='\n                    <h5 class="text-success">Done!</h5>\n                ';
- } else if (files.is_summary_error()) { 
+ } else if (files.is_summary_error()) {
 __p+='\n                    <h5 class="text-danger">Error</h5>\n                ';
- } else { 
+ } else {
 __p+='\n                    <h5>Uploading...</h5>\n                ';
- } 
+ }
 __p+='\n            </div>\n            <div class="col">\n                <button type="button" class="close text-danger" aria-label="Close">\n                  <span aria-hidden="true">&times;</span>\n                </button>\n            </div>\n        </div>\n    <div class="hidden uploader-details">\n        <div class="details">\n            \n            ';
- for (i=0; i < files.length; i++) { 
+ for (i=0; i < files.length; i++) {
 __p+='\n                ';
- file = files.at(i) 
+ file = files.at(i)
 __p+='\n                <div style="background-size: '+
 ((__t=( file.get('progress') ))==null?'':__t)+
 '% 100% %>" class="row ';
- if (file.is_error()) { 
+ if (file.is_error()) {
 __p+=' status-fail ';
- } else { 
+ } else {
 __p+=' status-success ';
- } 
+ }
 __p+='">\n                    <div class="col-1">\n                        <div class="status">\n                            ';
- if (file.is_error()) { 
+ if (file.is_error()) {
 __p+='\n                                <i class="fa fa-times text-danger"></i>\n                            ';
- } else if (file.is_success()) { 
+ } else if (file.is_success()) {
 __p+='\n                                <i class="fa fa-check-circle text-success"></i>\n                            ';
- } else if (file.is_progress()) { 
+ } else if (file.is_progress()) {
 __p+='\n                                <i class="fa fa-spinner"></i>\n                            ';
- }  
+ }
 __p+='\n                        </div>\n                    </div>\n                    <div class="col-7">\n                        <div class="filename">'+
 ((__t=( file.get('title') ))==null?'':__t)+
 '</div>\n                        <div class="message">'+
@@ -23034,19 +23034,19 @@ __p+='\n                        </div>\n                    </div>\n            
 '</div>\n                    </div>\n                    <div class="col-2 text-right">\n                        <div class="lang">'+
 ((__t=( file.get('lang') ))==null?'':__t)+
 '</div>\n                    </div>\n                </div>\n            ';
- } 
+ }
 __p+='\n            \n        </div>\n    </div>\n    <div id="upload_feedback_summary">\n        <div class="row my-2 align-items-center">\n            <div id="uploader_short_status" class="col-4 status">\n                ';
- if (files.is_summary_error()) { 
+ if (files.is_summary_error()) {
 __p+='\n                    <i class="fa fa-times  text-danger"></i>\n                ';
- } else { 
+ } else {
 __p+='\n                <i class="fa fa-check-circle  text-success"></i>\n                ';
-  } 
+  }
 __p+='\n            </div>\n            <div id="uploader_text_status" class="col-4 filename padding-left-md">\n            </div>\n            <div class="col-4 text-right">\n                <button class="btn btn-neuter btn-bordered toggle-details">\n                    Details\n                </button>\n            </div>\n        </div>\n    </div>\n    <div class="progress progress-bar-animated progress-sm active">\n        <div class="progress-bar ';
- if (files.is_summary_error()) { 
+ if (files.is_summary_error()) {
 __p+='progress-bar-fail ';
- } else { 
+ } else {
 __p+=' progress-bar-success ';
- } 
+ }
 __p+='" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: '+
 ((__t=( files.progress ))==null?'':__t)+
 '%">\n            <span class="sr-only">0% Complete</span>\n        </div>\n    </div>\n</div>';
@@ -23068,31 +23068,31 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<ul class="collection">\n    ';
- for (i=0; i < states.length; i++) { 
+ for (i=0; i < states.length; i++) {
 __p+='\n        ';
- state = states[i]; 
+ state = states[i];
 __p+='\n        <li class="collection-item mt-2 '+
 ((__t=( state['selected']  ))==null?'':__t)+
 ' d-flex justify-content-left p-2">\n            <div>\n                <span class="mr-1">'+
 ((__t=( state['number'] + 1 ))==null?'':__t)+
 '.</span>\n                ';
- if (state['left'] == 'user') { 
+ if (state['left'] == 'user') {
 __p+=' \n                    <i class="fa fa-user text-success mr-3"></i>\n                ';
- } else { 
+ } else {
 __p+='\n                    <span class="mr-3">'+
 ((__t=( state['left'] ))==null?'':__t)+
 '</span>\n                ';
- } 
+ }
 __p+='\n            </div>\n            <div>\n                <i class="fa fa-arrow-right mr-3"></i>\n            </div>\n            <div>\n                ';
- if (state['right'] == 'trash') { 
+ if (state['right'] == 'trash') {
 __p+=' \n                    <i class="fa fa-trash mr-3"></i>\n                ';
- } else if (state['right'] == 'purge') { 
+ } else if (state['right'] == 'purge') {
 __p+='\n                    <i class="fa fa-times text-danger mr-2"></i>\n                ';
- } else if (state['right'] == 'deny') { 
+ } else if (state['right'] == 'deny') {
 __p+='\n                    <i class="fa fa-ban text-danger mr-2"></i>\n                ';
- } 
+ }
 __p+='\n            </div>\n        </li>\n    ';
- } 
+ }
 __p+='\n</ul>';
 }
 return __p;
@@ -23114,9 +23114,9 @@ with(obj||{}){
 __p+='<div class="card">\n    <div class="card-body">\n      <div class="card-title">\n        <label>'+
 ((__t=( verbose_name  ))==null?'':__t)+
 '</label>\n    </div>\n      <div class="card-text">\n        <select class="custom-select">\n            ';
- for (let x=0; x < policy_choices.length; x++ ) { 
+ for (let x=0; x < policy_choices.length; x++ ) {
 __p+='\n                ';
- choice = policy_choices[x] 
+ choice = policy_choices[x]
 __p+='\n                <option id="'+
 ((__t=( choice[0] ))==null?'':__t)+
 '" '+
@@ -23124,7 +23124,7 @@ __p+='\n                <option id="'+
 ' >\n                    '+
 ((__t=( choice[1] ))==null?'':__t)+
 '\n                </option>\n            ';
- } 
+ }
 __p+='\n        </select>\n        <div id="current_policy_states">\n            '+
 ((__t=( current_policy_states ))==null?'':__t)+
 '\n        </div>\n    </div>\n</div>';
@@ -23152,13 +23152,13 @@ __p+='<div class="metadata-widget">\n\n    <div class="card">\n        <div clas
 '\n                        </button>\n                        \n                        <button type=\'button\' class=\'btn btn-success btn-flat save key mx-1\'>\n                            <i class="fa fa-save"></i>\n                            '+
 ((__t=( gettext('Save') ))==null?'':__t)+
 '\n                        </button>\n                    </li>\n                    <ul id="simple_keys" class="collection">\n                        ';
- for (i=0; i < kvstore.models.length; i++) { 
+ for (i=0; i < kvstore.models.length; i++) {
 __p+='\n                            ';
- item = kvstore.models[i]; 
+ item = kvstore.models[i];
 __p+='\n                            ';
- current_formats = item.get('current_formats') || []; 
+ current_formats = item.get('current_formats') || [];
 __p+='\n                            ';
- kv_types = item.get('kv_types') || available_types || []; 
+ kv_types = item.get('kv_types') || available_types || [];
 __p+='\n                            <li class=\'collection-item\' data-model=\'simple-key\' data-id=\''+
 ((__t=( item.id ))==null?'':__t)+
 '\' data-cid=\''+
@@ -23180,43 +23180,43 @@ __p+='\n                            <li class=\'collection-item\' data-model=\'s
 '\' data-cid=\''+
 ((__t=( item.cid ))==null?'':__t)+
 '\'>\n                                        ';
- if (!item.get('kv_inherited')) {  
+ if (!item.get('kv_inherited')) {
 __p+='\n                                            <button type=\'button\' class=\'close key mx-1 text-danger\' aria-label=\'Close\'>\n                                                <span aria-hidden=\'true\'>&times;</span>\n                                            </button>\n                                        ';
- } 
+ }
 __p+='\n                                    </div>\n                                </div>\n                                <div class="row pt-2">\n                                    <div class="col-12">\n                                        <select '+
 ((__t=( item.disabled ))==null?'':__t)+
 '  class="kv_type custom-select" name=\'kv_type\' class="custom-select">\n                                            ';
- for (k=0; k < kv_types.length; k++) { 
+ for (k=0; k < kv_types.length; k++) {
 __p+='\n                                                <option \n                                                    ';
- if ( item.get('kv_type') == kv_types[k][0] ) { 
+ if ( item.get('kv_type') == kv_types[k][0] ) {
 __p+=' selected  ';
- }  
+ }
 __p+=' \n                                                    value="'+
 ((__t=( kv_types[k][0] ))==null?'':__t)+
 '">\n                                                    '+
 ((__t=( kv_types[k][1] ))==null?'':__t)+
 '\n                                                </option>\n                                            ';
- } 
+ }
 __p+='\n                                        </select>\n                                    </div>\n                                </div>\n                                ';
- if (current_formats.length) { 
+ if (current_formats.length) {
 __p+='\n                                    <div class="row pt-2">\n                                        <div class="col-12">\n                                            <select '+
 ((__t=( item.disabled ))==null?'':__t)+
 ' class="kv_format custom-select" name=\'kv_format\' class="custom-select">\n                                                ';
- for (j=0; j < current_formats.length; j++) { 
+ for (j=0; j < current_formats.length; j++) {
 __p+='\n                                                    <option \n                                                         ';
- if ( item.get('kv_format') == current_formats[j][0] ) { 
+ if ( item.get('kv_format') == current_formats[j][0] ) {
 __p+=' selected  ';
- }  
+ }
 __p+=' \n                                                        value="'+
 ((__t=( current_formats[j][0] ))==null?'':__t)+
 '">\n                                                        '+
 ((__t=( current_formats[j][1] ))==null?'':__t)+
 '\n                                                    </option>\n                                                ';
- } 
+ }
 __p+='\n                                            </select>\n                                        </div>\n                                    </div>\n                                ';
- } 
+ }
 __p+='\n                               \n                            </li>\n                        ';
- } 
+ }
 __p+='\n                     </ul>\n                </ul>\n            </div> <!-- card-text -->\n        </div> <!-- card-body -->\n    </div> <!-- card -->\n\n</div> <!-- metadata-widget -->';
 }
 return __p;
@@ -23242,9 +23242,9 @@ __p+='<div class="metadata-widget">\n\n    <div class="card">\n        <div clas
 '\n                        </button>\n                        \n                        <button type=\'button\' class=\'btn btn-success btn-flat save key mx-1\'>\n                            <i class="fa fa-save"></i>\n                            '+
 ((__t=( gettext('Save') ))==null?'':__t)+
 '\n                        </button>\n                    </li>\n                    <ul id="simple_keys" class="collection">\n                        ';
- for (i=0; i < tags.models.length; i++) { 
+ for (i=0; i < tags.models.length; i++) {
 __p+='\n                            ';
- tag = tags.models[i]; 
+ tag = tags.models[i];
 __p+='\n                            <li class=\'collection-item\' data-model=\'simple-key\' data-id=\''+
 ((__t=( item.id ))==null?'':__t)+
 '\' data-cid=\''+
@@ -23266,9 +23266,9 @@ __p+='\n                            <li class=\'collection-item\' data-model=\'s
 '\' data-cid=\''+
 ((__t=( item.cid ))==null?'':__t)+
 '\'>\n                                        ';
- if (!item.get('kv_inherited')) {  
+ if (!item.get('kv_inherited')) {
 __p+='\n                                            <button type=\'button\' class=\'close key mx-1 text-danger\' aria-label=\'Close\'>\n                                                <span aria-hidden=\'true\'>&times;</span>\n                                            </button>\n                                        ';
- } 
+ }
 __p+='\n                                    </div>\n                                </div>\n                                <!-- KEY END -->\n                                <!-- VALUE BEGIN -->\n                                    <div class="row summary pt-2">\n                                        <div class="col-11 label">\n                                            <input class="widget-form"  data-id=\''+
 ((__t=( item.id ))==null?'':__t)+
 '\' data-cid=\''+
@@ -23284,37 +23284,37 @@ __p+='\n                                    </div>\n                            
 '\'>\n                                            <a>\n                                                <i class="fa fa-chevron-left"></i>\n                                            </a>\n                                        </div>\n                                    </div>                                \n                                <!-- VALUE END -->\n                                <div class="row details d-none pt-2">\n                                    <div class="col-12">\n                                        <select '+
 ((__t=( item.disabled ))==null?'':__t)+
 '  class="kv_type custom-select" name=\'kv_type\' class="custom-select">\n                                            ';
- for (k=0; k < kv_types.length; k++) { 
+ for (k=0; k < kv_types.length; k++) {
 __p+='\n                                                <option \n                                                    ';
- if ( item.get('kv_type') == kv_types[k][0] ) { 
+ if ( item.get('kv_type') == kv_types[k][0] ) {
 __p+=' selected  ';
- }  
+ }
 __p+=' \n                                                    value="'+
 ((__t=( kv_types[k][0] ))==null?'':__t)+
 '">\n                                                    '+
 ((__t=( kv_types[k][1] ))==null?'':__t)+
 '\n                                                </option>\n                                            ';
- } 
+ }
 __p+='\n                                        </select>\n                                    </div>\n                                </div>\n                                ';
- if (current_formats.length) { 
+ if (current_formats.length) {
 __p+='\n                                    <div class="row details d-none pt-2">\n                                        <div class="col-12">\n                                            <select '+
 ((__t=( item.disabled ))==null?'':__t)+
 ' class="kv_format custom-select" name=\'kv_format\' class="custom-select">\n                                                ';
- for (j=0; j < current_formats.length; j++) { 
+ for (j=0; j < current_formats.length; j++) {
 __p+='\n                                                    <option \n                                                         ';
- if ( item.get('kv_format') == current_formats[j][0] ) { 
+ if ( item.get('kv_format') == current_formats[j][0] ) {
 __p+=' selected  ';
- }  
+ }
 __p+=' \n                                                        value="'+
 ((__t=( current_formats[j][0] ))==null?'':__t)+
 '">\n                                                        '+
 ((__t=( current_formats[j][1] ))==null?'':__t)+
 '\n                                                    </option>\n                                                ';
- } 
+ }
 __p+='\n                                            </select>\n                                        </div>\n                                    </div>\n                                ';
- } 
+ }
 __p+='\n                               \n                            </li>\n                        ';
- } 
+ }
 __p+='\n                     </ul>\n                </ul>\n            </div> <!-- card-text -->\n        </div> <!-- card-body -->\n    </div> <!-- card -->\n\n</div> <!-- metadata-widget -->';
 }
 return __p;
@@ -23356,11 +23356,11 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<div class="card">\n    <div class="card-body">\n      <div class="card-title"><label>Info</label></div>\n      <div class="card-text">\n        <ul class="collection">\n            <li class="collection-item">\n                ';
- if (ctype == 'document') { 
+ if (ctype == 'document') {
 __p+='\n                    <i class="fa fa-file text-info mr-1"></i>\n                ';
- } else { 
+ } else {
 __p+='\n                    <i class="fa fa-folder text-warning mr-1"></i>\n                ';
- } 
+ }
 __p+='\n                '+
 ((__t=( title ))==null?'':__t)+
 '\n            </li>\n            <li class="collection-item">\n                <label>'+
@@ -23372,13 +23372,13 @@ __p+='\n                '+
 ':</label>  '+
 ((__t=( updated_at ))==null?'':__t)+
 '\n            </li>\n            ';
- if (tags.length > 0) { 
+ if (tags.length > 0) {
 __p+='\n                <li class="collection-item">\n                    <label for="tags">'+
 ((__t=( gettext('Tags') ))==null?'':__t)+
 ':\n                    </label>\n                    <div class="document tags-container d-flex">\n                        ';
- for (i=0; i < tags.length; i++) { 
+ for (i=0; i < tags.length; i++) {
 __p+='\n                            ';
- tag = tags[i]; 
+ tag = tags[i];
 __p+='\n                        <div style="background: '+
 ((__t=( tag.bg_color ))==null?'':__t)+
 '; color: '+
@@ -23390,9 +23390,9 @@ __p+='\n                        <div style="background: '+
 '; margin-right: 0.5rem;">'+
 ((__t=( tag.name ))==null?'':__t)+
 '</span>\n                        </div>\n                        ';
- } 
+ }
 __p+='\n                    </div>\n                </li>\n            ';
- } 
+ }
 __p+='\n            <li class="collection-item d-flex flex-row-reverse bordered">\n                <a href="'+
 ((__t=( download_url ))==null?'':__t)+
 '" class="btn btn-primary text-white btn-flat">\n                    <i class="fa fa-download"></i>\n                    '+
@@ -23513,10 +23513,10 @@ class DgTextOverlay {
           text_w = width of text as in current DOM: svg.getBBox()
            ISSUE: for some elements server_text_w (dest_bbox.width in code)
           is too large, i.e. it has width of whole page. This happens because
-          HOCR data is wrong. Example: 
-              <span class='ocrx_word' 
-                      id='word_1_217' 
-                      title='bbox 0 0 1240 1755; 
+          HOCR data is wrong. Example:
+              <span class='ocrx_word'
+                      id='word_1_217'
+                      title='bbox 0 0 1240 1755;
                       x_wconf 92'>:</span>
            In example above, as per server data, bbox's width (width of ":") will be
           1240 - 0 = 1240 which is obviously wrong.
@@ -23712,7 +23712,7 @@ if (!Array.prototype.includes) {
         // b. If SameValueZero(searchElement, elementK) is true, return true.
         if (sameValueZero(o[k], searchElement)) {
           return true;
-        } // c. Increase k by 1. 
+        } // c. Increase k by 1.
 
 
         k++;
@@ -23837,7 +23837,7 @@ class MgRect {
 
   contains_point(x, y) {
     /*
-      Is point (x, y) inside this rectangle ?  
+      Is point (x, y) inside this rectangle ?
     */
     let x_is_within = false,
         y_is_within = false;
@@ -25161,7 +25161,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
   _let_browse_fill_in_parent() {
     /**
     Hacky hack.
-    
+
     'Forces' #browse div element to fill its parent.
     It is needed for better UX for drag' select feature
     (select like in desktop environment)
@@ -25218,7 +25218,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
         cids;
     cids = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].map(dom_nodes, function ($node) {
       return $node.data('cid');
-    }); // select all nodes in dom_nodes 
+    }); // select all nodes in dom_nodes
 
     underscore__WEBPACK_IMPORTED_MODULE_1__["default"].each(dom_nodes, function ($node) {
       node = that.browse.nodes.get($node.data('cid'));
@@ -25336,7 +25336,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     * In case there is a tag filter, returns tagname.
     *
     * Relevant in case when user clicks on pinned tag, and then
-    * performs add/remove tags action on currently filted 
+    * performs add/remove tags action on currently filted
     * nodes -> will refresh nodes considernig current tag
     */
     let regexp = /tagged\/(\w+)$/,
@@ -25765,36 +25765,37 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   }
 
   initialize() {
-    let dom_actual_pages = document.querySelector('.actual_pages'),
-        document_id = jquery__WEBPACK_IMPORTED_MODULE_0___default()("input[name=document_id]").val(); // Widgets bar must be created before MgThumbnailList
+    let dom_viewer = document.querySelector('#viewer'),
+        document_id = jquery__WEBPACK_IMPORTED_MODULE_0___default()("input[name=document_id]").val(),
+        document_fn = jquery__WEBPACK_IMPORTED_MODULE_0___default()("input[name=document_name]").val();
     // because latter sends an event of page selection.
     // Page selection event triggers loading of metadata for correct
     // page.
+    console.log("in DocumentView initialize() fn=",document_fn)
 
-    this._widgetsbar = new _views_widgetsbar__WEBPACK_IMPORTED_MODULE_16__["WidgetsBarDocumentView"](document_id);
-    this._info_widget = new _views_widgetsbar__WEBPACK_IMPORTED_MODULE_16__["InfoWidgetDocumentView"](document_id);
-    this._thumbnail_list = new _document_form_thumbnail_list__WEBPACK_IMPORTED_MODULE_8__["MgThumbnailList"]();
-    this._zoom = new _document_form_zoom__WEBPACK_IMPORTED_MODULE_10__["DgZoom"]();
-    this._page_list = new _document_form_page_list__WEBPACK_IMPORTED_MODULE_11__["MgPageList"](this._zoom);
-
-    this._thumbnail_list.load();
-
-    this._page_list.load(this.zoom.get_value());
-
+//     this._widgetsbar = new _views_widgetsbar__WEBPACK_IMPORTED_MODULE_16__["WidgetsBarDocumentView"](document_id);
+//     this._info_widget = new _views_widgetsbar__WEBPACK_IMPORTED_MODULE_16__["InfoWidgetDocumentView"](document_id);
     this._spinner = new _spinner__WEBPACK_IMPORTED_MODULE_13__["DgMainSpinner"]();
-    this._actions = this.build_actions();
-    this._breadcrumb_view = new _views_breadcrumb__WEBPACK_IMPORTED_MODULE_15__["BreadcrumbView"](document_id);
-    this._loaded_page_imgs = 0;
 
-    if (dom_actual_pages) {
-      new _document_form_page_scroll__WEBPACK_IMPORTED_MODULE_6__["DgPageScroll"](dom_actual_pages);
-    }
+//     this._actions = this.build_actions();
+//     this._breadcrumb_view = new _views_breadcrumb__WEBPACK_IMPORTED_MODULE_15__["BreadcrumbView"](document_id);
+//     this._loaded_page_imgs = 0;
+//
+//     if (dom_actual_pages) {
+//       new _document_form_page_scroll__WEBPACK_IMPORTED_MODULE_6__["DgPageScroll"](dom_actual_pages);
+//     }
+    var src = `/document/${document_id}/preview/${document_fn}`
+    console.log("in DocumentView initialize() src=",src,"to",dom_viewer)
 
-    this.configEvents();
+    PDFObject.embed(src, dom_viewer);
+
+    // this.configEvents();
 
     this._adjust_viewer_height();
 
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["DOCUMENT_IMAGE_LOADED"], this.on_document_image_loaded, this);
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#document").css("visibility", "visible");
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#pre-loader").hide();
+    // _models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["DOCUMENT_IMAGE_LOADED"], this.on_document_image_loaded, this);
   }
 
   get actions() {
@@ -25918,7 +25919,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
       id: "#delete-page",
       enabled: function (selection, clipboard) {
         let order_changed = false; // User cannot delete pages if he changed their
-        // order and changes are pending. He/She must 
+        // order and changes are pending. He/She must
         // apply reorder changes!
 
         for (let page of selection.all()) {
@@ -26173,12 +26174,12 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   _adjust_viewer_height() {
     /**
      * Change viewer height (in order to remove redundent scrollbars).
-     * 
+     *
      * By default ul.actual_pages, #actual-pages and ul.page_thumbnails
      * elements have css height set to 100vh. This adds vertical scroll
      * bars (because viewer is 100vh + header height + footer height).
-     * This function will make viewer little bit small by decreasing 
-     * height of ul.actual_pages, #actual-pages and ul.page_thumbnails 
+     * This function will make viewer little bit small by decreasing
+     * height of ul.actual_pages, #actual-pages and ul.page_thumbnails
      * elements, thus removing (yet another) scrollbar.
     */
     let vh_height, doc_actions, nav_height, breadcrumb_height, viewer_height;
@@ -26563,7 +26564,7 @@ class PermissionEditorView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"]
 
   on_apply(event) {
     if (this._edit) {
-      /* 
+      /*
          means form was opened in edit mode,
          maybe something changed.
        */
@@ -26616,7 +26617,7 @@ __webpack_require__.r(__webpack_exports__);
 class PinnedTagsView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   /**
     View on the left side navigation menu. If user
-    clicks a tag - it adds to it 'active' class 
+    clicks a tag - it adds to it 'active' class
     (and removes active class from other pinned tags).
   */
   el() {
@@ -26753,9 +26754,9 @@ __webpack_require__.r(__webpack_exports__);
 class RoleMultiToggleView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   /**
       Applicable ONLY in Roles forms/views.
-      Instead of clicking on each individual sub-checkbox of 
+      Instead of clicking on each individual sub-checkbox of
       (for example) Document group:
-      
+
       [] Document:
           [] Can add Document
           [] Can change Document
@@ -26766,7 +26767,7 @@ class RoleMultiToggleView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] 
       Group checkboxes (in example above the one coresponding to 'Document')
       have a css class 'multi-toggle'.
       'multi-toggle' css class is added by custom widget template
-          
+
           papermerge/contrib/admin/widgets/checkbox_select.html
   **/
   el() {
@@ -26779,7 +26780,7 @@ class RoleMultiToggleView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] 
       $multi_toggle = jquery__WEBPACK_IMPORTED_MODULE_0___default()(multi_toggle);
       checked_arr = $multi_toggle.parent().parent().find('input[type=checkbox]');
       /**
-          Counts number of checkboxes in the group. If there are 4 selected - 
+          Counts number of checkboxes in the group. If there are 4 selected -
           will automatically check parent as well.
       **/
 
@@ -27177,7 +27178,7 @@ let MULTI_TEMPLATE = __webpack_require__(/*! ../templates/multi_tags_modal.html 
 
 function node2tag_collection(node) {
   /*
-  * For given node returns a backbone collection of tags 
+  * For given node returns a backbone collection of tags
   * (of model.tags.Tag instances)
   */
   let tags, tag_collection;
@@ -27239,7 +27240,7 @@ class BaseModalView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
 
   _nodes2tag_collection(nodes) {
     /*
-    * For given nodes returns a backbone collection of tags 
+    * For given nodes returns a backbone collection of tags
     * (of model.tags.Tag instances) shared among all of them.
     */
     let tags, tag_collection, shared, keys;
@@ -27279,7 +27280,7 @@ class TagsModalView extends BaseModalView {
   * Modal dialog displayed when user selected a single node
   ***/
   initialize(node, all_tags_collection) {
-    /* 
+    /*
       all_tags_collection is tags collection of all tags of
       given user (used for autocomplete).
      */
@@ -27304,7 +27305,7 @@ class MultiTagsModalView extends BaseModalView {
   * Modal dialog displayed when user selected multiple nodes
   ***/
   initialize(nodes, all_tags_collection) {
-    /* 
+    /*
       all_tags_collection is tags collection of all tags of
       given user (used for autocomplete).
      */
@@ -27567,7 +27568,7 @@ class MultiNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] 
 class MetadataWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   /**
       This must be set to widgetsbar element.
-       For sake of events delegation this element must exist 
+       For sake of events delegation this element must exist
       BEFORE metadata widget is rendered.
   **/
   el() {
@@ -27712,7 +27713,7 @@ class MetadataWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
 class MetadataDocumentWidget extends MetadataWidget {
   /**
       This must be set to widgetsbar element.
-       For sake of events delegation this element must exist 
+       For sake of events delegation this element must exist
       BEFORE metadata widget is rendered.
   **/
   el() {
@@ -27762,7 +27763,7 @@ class MetadataDocumentWidget extends MetadataWidget {
 
   page_selection_changed(page_id, doc_id) {
     /**
-    Triggered by thumbnails_list: 
+    Triggered by thumbnails_list:
         * after thumbnail list is loaded, in this case
           page_id of first thumb is passed).
         * when user clicks on any thumb.

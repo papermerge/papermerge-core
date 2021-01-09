@@ -39,7 +39,8 @@ def ocr_page(
         document_id=document_id,
         page_num=page_num,
         lang=lang,
-        status=STARTED
+        namespace=namespace,
+        status=STARTED,
     )
 
     with Timer() as time:
@@ -63,6 +64,7 @@ def ocr_page(
         document_id=document_id,
         page_num=page_num,
         lang=lang,
+        namespace=namespace,
         status=COMPLETE
     )
 

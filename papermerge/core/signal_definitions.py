@@ -22,6 +22,7 @@ page_ocr = Signal(
         "document_id",
         "page_num",
         "lang",
+        "namespace",
         # status is a string: started, complete
         "status"
     ]

@@ -1,8 +1,11 @@
+import os
 import logging
 import time
 
 from django.conf import settings
 from papermerge.core.storage import default_storage
+from papermerge.core import signal_definitions as signals
+
 from mglib import mime
 from mglib.pdfinfo import get_pagecount
 from mglib.path import (
@@ -52,6 +55,8 @@ def ocr_page_pdf(
 ):
     """
     doc_path is an mglib.path.DocumentPath instance
+
+    On success returns ``mglib.path.PagePath`` instance.
     """
     logger.debug("OCR PDF document")
 
@@ -106,6 +111,8 @@ def ocr_page_image(
 ):
     """
     image = jpg, jpeg, png
+
+    On success returns ``mglib.path.PagePath`` instance.
     """
     logger.debug("OCR image (jpeg, jpg, png) document")
 
@@ -224,6 +231,38 @@ def ocr_page(
         f" total_exec_time={t2-t1:.2f}"
     )
 
-    upload_to(page_path=page_path, namespace=namespace)
+    if page_path:
+        abs_path_txt = default_storage.abspath(page_path.txt_url())
+
+        if os.path.exists(abs_path_txt):
+
+            with open(abs_path_txt) as f:
+                text = f.read()
+
+                signals.post_page_ocr.send(
+                    sender="worker",
+                    user_id=user_id,
+                    document_id=document_id,
+                    page_num=page_num,
+                    lang=lang,
+                    namespace=namespace,
+                    text=text
+                )
+
+        else:
+            logger.warning(
+                f"Page txt path {abs_path_txt} does not exist. "
+                f"Page indexing was skipped."
+            )
+    else:
+        logger.warning(
+            "OCR method returned empty page path. "
+            "Page indexing was skipped."
+        )
+
+    upload_to(
+        page_path=page_path,
+        namespace=namespace
+    )
 
     return True

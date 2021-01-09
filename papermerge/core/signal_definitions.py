@@ -28,6 +28,17 @@ page_ocr = Signal(
     ]
 )
 
+post_page_ocr = Signal(
+    providing_args=[
+        "user_id",
+        "document_id",
+        "page_num",
+        "lang",
+        "namespace",
+        "text"
+    ]
+)
+
 # Sent by core.views.documents.create_folder
 # Sent AFTER one single folder was created
 folder_created = Signal(

@@ -23242,9 +23242,9 @@ __p+='<div class="metadata-widget">\n\n    <div class="card">\n        <div clas
 '\n                        </button>\n                        \n                        <button type=\'button\' class=\'btn btn-success btn-flat save key mx-1\'>\n                            <i class="fa fa-save"></i>\n                            '+
 ((__t=( gettext('Save') ))==null?'':__t)+
 '\n                        </button>\n                    </li>\n                    <ul id="simple_keys" class="collection">\n                        ';
- for (i=0; i < tags.models.length; i++) { 
+ for (i=0; i < kvstore.models.length; i++) { 
 __p+='\n                            ';
- tag = tags.models[i]; 
+ item = kvstore.models[i]; 
 __p+='\n                            <li class=\'collection-item\' data-model=\'simple-key\' data-id=\''+
 ((__t=( item.id ))==null?'':__t)+
 '\' data-cid=\''+
@@ -25370,9 +25370,46 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
       sort_order = this.display_mode.sort_order;
       this.browse.nodes.dynamic_sort_by(sort_field, sort_order);
       this.browse_grid_view.render(this.browse.nodes);
-    }
+    } // beautiful refresh feature BEGIN
 
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()("#pre-loader").hide();
+    /**
+      Context
+      ========
+       Document browser loads part of its elements via ajax calls. When ajax
+      responses are available, backbone views are triggered to render those
+      elements. Overall this mix of ajax + backbone views + part of document
+      displayed as standard html page results in a flickery (annoying) rendering
+      experience.
+       Solution
+      ========
+       Main page parts aside.main-sidebar, .main-header, .content-wrapper have
+      their initial css opacity set to 0 i.e those elements are not visible.
+       When page load complets (which is signaled by change event in browser view)
+      those 3 page parts (aside.main-sidebar, .main-header, content-wrapper)
+      are progresively made visible via animated css opactity transition to 1.
+       Because aside.main-sidebar, .main-header, content-wrapper elements are
+      part of main layout (i.e. rendered in all application views) it is necessary
+      to avoid the progressive animated load for the rest of pages. The thing
+      is that the problem of annoying rendering experience is ONLY (and I repeat ONLY)
+      for document browser and document viewer. To restrict solution only for
+      document viewer and documents browser the .animated-opacity css class is used.
+      The ``.animated-opacity`` css class is rendered only for index.html view and document.html
+      view.
+    */
+
+
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('aside.main-sidebar.animated-opacity').animate({
+      opacity: 1.0
+    }, 500, function () {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('.main-header.animated-opacity').animate({
+        opacity: 1.0
+      }, 300, function () {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()("#pre-loader").hide();
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()('.content-wrapper.animated-opacity').animate({
+          opacity: 1.0
+        }, 200);
+      });
+    }); // beautiful refresh feature END
   }
 
 }
@@ -25813,8 +25850,27 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     if (this.page_list.length > this._loaded_page_imgs) {
       this._loaded_page_imgs += 1;
     } else {
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()("#document").css("visibility", "visible");
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()("#pre-loader").hide();
+      // beautiful refresh feature BEGIN
+
+      /**
+      See detailed comment in beatuful refresh comment found in src/js/views/browse.js
+      **/
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()('aside.main-sidebar.animated-opacity').animate({
+        opacity: 1.0
+      }, 200, function () {
+        jquery__WEBPACK_IMPORTED_MODULE_0___default()('.main-header.animated-opacity').animate({
+          opacity: 1.0
+        }, 200, function () {
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()("#pre-loader").hide();
+          jquery__WEBPACK_IMPORTED_MODULE_0___default()('.content-wrapper.animated-opacity').animate({
+            opacity: 1.0
+          }, 200, function () {
+            jquery__WEBPACK_IMPORTED_MODULE_0___default()('#document').animate({
+              opacity: 1.0
+            }, 200);
+          });
+        });
+      }); // beatiful refresh feature END
     }
   }
 

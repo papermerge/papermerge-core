@@ -28,7 +28,7 @@
 <body class="{% if lte_menu == 'expanded' %} sidebar-mini {% else %} sidebar-mini sidebar-collapse  {% endif %}">
   <div class="wrapper">
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light {% block animated_opacity_main_header %}{% endblock %}">
         <!-- Left navbar links -->
 
         <ul class="navbar-nav">
@@ -143,12 +143,12 @@
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
-    <aside class="main-sidebar sidebar-dark-primary">
+    <aside class="main-sidebar sidebar-dark-primary {% block animated_opacity_main_sidebar %}{% endblock %}">
         {% include "admin/_aside.html" %}
     </aside>
 
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div class="content-wrapper {% block animated_opacity_content_wrapper %}{% endblock %}">
       <!-- Main content -->
       <div class="content">
         {% include "admin/_messages.html" %}

@@ -10297,7 +10297,7 @@ aside a.download {
 
 #document {
   overflow: hidden;
-  visibility: hidden; }
+  opacity: 0; }
   #document #viewer {
     height: inherit; }
     #document #viewer #actual-pages {
@@ -10731,6 +10731,15 @@ body.sidebar-mini #pinned_tags_view {
 
 body {
   overflow: hidden; }
+
+.main-header.animated-opacity {
+  opacity: 0; }
+
+aside.main-sidebar.animated-opacity {
+  opacity: 0; }
+
+.content-wrapper.animated-opacity {
+  opacity: 0; }
 
 #pre-loader {
   position: absolute;

@@ -266,7 +266,7 @@ def nodes_view(request):
             )
             msg += ", ".join([auto.name for auto in automates])
             msg += _(
-                ". Please delete mentioned Automates frist."
+                ". Please delete mentioned Automates first."
             )
 
             return msg, HttpResponseBadRequest.status_code

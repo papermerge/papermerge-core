@@ -213,7 +213,7 @@ msgstr ""
 "supprimer : "
 
 #: papermerge/core/views/nodes.py:199
-msgid ". Please delete mentioned Automates frist."
+msgid ". Please delete mentioned Automates first."
 msgstr ". Veuillez supprimer ces automates d'abord."
 
 #: papermerge/core/views/nodes.py:226

@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from allauth.account.models import EmailAddress
+
 from papermerge.core.models.automate import Automate
 from papermerge.core.models.access import Access
 from papermerge.core.models.diff import Diff
@@ -170,6 +172,24 @@ class User(AbstractUser):
             return True
 
         return _user_has_module_perms(self, app_label)
+
+    def confirm_email(self):
+        """
+        Allauth requires an associated EmailAddress object with
+        ``verified`` attribute set to ``true`` in order
+        to consider that user confirmed its email.
+        This method is required in case email confirmation is
+        enabled because allauth cannot distinguish between
+        users created by administrative person from
+        users created by web form registration. In both cases
+        it will require email confirmation.
+        """
+        email_address, _ = EmailAddress.objects.get_or_create(
+            email=self.email, user=self
+        )
+        email_address.verified = True
+        email_address.user = self
+        email_address.save()
 
 
 __all__ = [

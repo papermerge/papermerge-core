@@ -152,12 +152,17 @@ def extras(request):
 def user_perms(request):
     if request.user.is_anonymous:
         return {
-            'has_perm_change_user': False
+            'has_perm_change_user': False,
+            'has_perm_auth_authtoken': False
         }
 
     change_user = request.user.has_perm(
         'core.change_user',
     )
+    auth_token = request.user.has_perm(
+        'knox.view_authtoken',
+    )
     return {
-        'has_perm_change_user': change_user
+        'has_perm_change_user': change_user,
+        'has_perm_view_authtoken': auth_token
     }

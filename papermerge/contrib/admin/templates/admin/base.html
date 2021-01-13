@@ -104,11 +104,13 @@
                   </a>
                 {% endif %}
               </li>
+              {% if has_perm_view_authtoken %}
               <li class="dropdown-item">
                 <a href="{% url 'admin:tokens' %}"><i class="fa fa-user-secret mx-2"></i>
                   {% trans 'API Tokens' %}
                 </a>
               </li>
+              {% endif %}
               <li class="dropdown-item">
                 <a href="{% url 'admin:preferences' %}"><i class="fa fa-cogs mx-2"></i>
                   {% trans 'Preferences' %}

@@ -477,7 +477,8 @@ class NodeAuthBackend:
             ret = {}
             obj_ids = [obj.id for obj in obj_or_list]
             all_access_items = Access.objects.prefetch_related(
-                'permissions'
+                'permissions',
+                'user'
             ).filter(
                 access_type=access_type
             ).filter(

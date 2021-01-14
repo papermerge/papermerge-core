@@ -102,6 +102,13 @@ def page_ocr_handler(sender, **kwargs):
             }
         )
         return
+    except Exception as e:
+        # Will happen in case papermege is deployed as worker
+        # on separate computer from web app AND it has no
+        # access to database.
+        # Just log it.
+        logger.info(f"Exception {e} during handling of page_ocr_handler")
+        return
 
     document_title = doc.title
 

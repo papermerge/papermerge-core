@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
                          HttpResponseForbidden)
+from django.utils.translation import gettext as _
 from papermerge.core.auth import (delete_access_perms,
                                   get_access_perms_as_hash, set_access_perms)
 from papermerge.core.models import Access, BaseTreeNode, User
@@ -116,6 +117,13 @@ def user_or_groups(request):
     Returns list of user and groups to be displayed in
     permission editor for any document/folder
     """
+    if not request.user.has_perm('core.view_access'):
+        return HttpResponseForbidden(
+            json.dumps({
+                'msg': _("You don't have permissions for access model")
+            }),
+            content_type="application/json"
+        )
     result = []
     for user in User.objects.order_by('username').all():
         item = {}

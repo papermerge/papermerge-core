@@ -350,7 +350,15 @@ class NodeAuthBackend:
             'codename'
         ).order_by()
 
-        __perms = {"%s.%s" % (ct, name) for ct, name in _perms}
+        if hasattr(user_obj, '_user_cache_perm'):
+            __perms = getattr(user_obj, '_user_cache_perm')
+        else:
+            setattr(
+                user_obj,
+                '_user_cache_perm',
+                {"%s.%s" % (ct, name) for ct, name in _perms}
+            )
+            __perms = getattr(user_obj, '_user_cache_perm')
 
         return perm in __perms
 

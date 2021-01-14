@@ -162,7 +162,13 @@ def user_perms(request):
     auth_token = request.user.has_perm(
         'knox.view_authtoken',
     )
+    # if user has permissions to view/use access
+    # featues
+    access_feature = request.user.has_perm(
+        'core.view_access'
+    )
     return {
         'has_perm_change_user': change_user,
-        'has_perm_view_authtoken': auth_token
+        'has_perm_view_authtoken': auth_token,
+        'has_perm_access_feature': access_feature
     }

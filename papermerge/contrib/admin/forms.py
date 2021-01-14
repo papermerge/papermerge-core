@@ -43,6 +43,7 @@ def _papermerge_permissions():
             "user",
             "role",
             "group",
+            "access",
             "authtoken",
             "session",
             "document",

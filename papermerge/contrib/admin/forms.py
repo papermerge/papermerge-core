@@ -51,6 +51,12 @@ def _papermerge_permissions():
             "userpreferencemodel",
             "automate"
         ]
+    ).exclude(
+        # exclude per node permissions, i.e. permissions set on folder/document
+        # instance (defined and used in ``papermerge.core.access`` module)
+        codename__in=[
+            "read", "write", "delete", "change_perm", "take_ownership"
+        ]
     )
 
     return qs.all()

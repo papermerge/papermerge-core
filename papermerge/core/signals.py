@@ -31,11 +31,24 @@ def apply_automates_handler(sender, **kwargs):
         logger.debug(
             f"Page hocr ready: document_id={document_id} page_num={page_num}"
         )
-
-        apply_automates(
-            document_id=document_id,
-            page_num=page_num
-        )
+        try:
+            # will hit the database
+            apply_automates(
+                document_id=document_id,
+                page_num=page_num
+            )
+        except Exception as e:
+            # Will happen in case papermege is deployed as worker
+            # on separate computer from web app AND it has no
+            # access to database.
+            # Just log it.
+            logger.info(
+                f"Exception {e} in apply_automates_handler. "
+                f"You can ignore this exception only in case when "
+                f" papermerge was deployed as worker on separate computer "
+                f" without access to database."
+            )
+            return
 
 
 @receiver(pre_delete, sender=Document)

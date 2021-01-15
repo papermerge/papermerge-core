@@ -11,6 +11,7 @@ automates_matching = Signal(
         # text against which matching is performed
         # i.e. extracted text of the page
         "text",
+        "namespace"
     ]
 )
 

@@ -30,6 +30,7 @@ def automates_matching_handler(sender, **kwargs):
     text = kwargs.get('text')
 
     try:
+        # will hit the database
         doc = Document.objects.get(id=doc_id)
     except Document.DoesNotExist:
         LogEntry.objects.create(
@@ -44,6 +45,21 @@ def automates_matching_handler(sender, **kwargs):
                 'page_num': page_num
             }
         )
+        return
+    except Exception as e:
+        # Will happen in case papermege is deployed as worker
+        # on separate computer from web app AND it has no
+        # access to database.
+        # Just log it.
+        logger.info(
+            f"Exception {e}  in during automates_matching_handler. "
+            f"You can ignore this exception only in case when "
+            f" papermerge was deployed as worker on separate computer "
+            f" without access to database."
+        )
+        # Another way to fix this ugly hack, is to move signal handling
+        # code into a separate function which will be
+        # plugged into the project by a reusable app only when necessary
         return
 
     document_title = doc.title
@@ -86,6 +102,7 @@ def page_ocr_handler(sender, **kwargs):
         human_status = _("STARTED")
 
     try:
+        # will hit the database
         doc = Document.objects.get(id=doc_id)
     except Document.DoesNotExist:
         LogEntry.objects.create(
@@ -107,7 +124,15 @@ def page_ocr_handler(sender, **kwargs):
         # on separate computer from web app AND it has no
         # access to database.
         # Just log it.
-        logger.info(f"Exception {e} during handling of page_ocr_handler")
+        logger.info(
+            f"Exception {e} during handling of page_ocr_handler"
+            f"You can ignore this exception only in case when "
+            f" papermerge was deployed as worker on separate computer "
+            f" without access to database."
+        )
+        # Another way to fix this ugly hack, is to move signal handling
+        # code into a separate function which will be
+        # plugged into the project by a reusable app only when necessary
         return
 
     document_title = doc.title

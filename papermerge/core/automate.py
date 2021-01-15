@@ -14,7 +14,7 @@ from .signal_definitions import automates_matching
 logger = logging.getLogger(__name__)
 
 
-def apply_automates(document_id, page_num):
+def apply_automates(document_id, page_num, **kwargs):
 
     logger.debug("apply_automates: Begin.")
     try:
@@ -90,5 +90,6 @@ def apply_automates(document_id, page_num):
         level=logging.INFO,
         message=message,
         page_num=page_num,
-        text=text
+        text=text,
+        **kwargs
     )

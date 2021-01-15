@@ -296,7 +296,8 @@ class UserFormWithoutPassword(forms.ModelForm):
 
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
-        widget=forms.CheckboxSelectMultiple()
+        widget=forms.CheckboxSelectMultiple(),
+        required=False
     )
 
     def __init__(self, *args, **kwargs):

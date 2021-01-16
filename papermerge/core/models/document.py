@@ -818,7 +818,7 @@ class Document(BaseTreeNode):
 
         # returns new document version
         new_version = default_storage.paste_pages(
-            dest_doc_path=dst_document.path,
+            dest_doc_path=dst_document.path(),
             data_list=data_list,
             dest_doc_is_new=dst_doc_is_new,
             after_page_number=after,

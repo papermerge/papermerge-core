@@ -39,6 +39,7 @@ post_page_txt = Signal(
     providing_args=[
         "user_id",
         "document_id",
+        "file_name",
         "page_num",
         "namespace",
         "text"
@@ -50,6 +51,7 @@ post_page_hocr = Signal(
     providing_args=[
         "user_id",
         "document_id",
+        "fle_name",
         "page_num",
         "lang",
         "namespace",

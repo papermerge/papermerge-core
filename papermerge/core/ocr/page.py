@@ -39,6 +39,7 @@ def notify_hocr_ready(page_path, **kwargs):
 
         * ``user_id``
         * ``document_id``
+        * ``file_name``
         * ``page_num``
         * ``namespace``
         * ``step``
@@ -51,6 +52,7 @@ def notify_hocr_ready(page_path, **kwargs):
         * ``sender`` = from papermerge.core.signal_definitions.WORKER
         * ``user_id``
         * ``document_id``
+        * ``file_name``
         * ``page_num``
         * ``lang``
         * ``namespace`` = may be empty. Used to distinguish among
@@ -62,6 +64,7 @@ def notify_hocr_ready(page_path, **kwargs):
 
     user_id = kwargs.get('user_id', None)
     document_id = kwargs.get('document_id', None)
+    file_name = kwargs.get('file_name', None)
     page_num = kwargs.get('page_num', 1)
     namespace = kwargs.get('namespace', None)
     step = kwargs.get('step', 1)
@@ -77,6 +80,7 @@ def notify_hocr_ready(page_path, **kwargs):
                     sender=signals.WORKER,
                     user_id=user_id,
                     document_id=document_id,
+                    file_name=file_name,
                     page_num=page_num,
                     step=step,
                     namespace=namespace,
@@ -104,6 +108,7 @@ def notify_txt_ready(page_path, **kwargs):
 
         * ``user_id``
         * ``document_id``
+        * ``file_name``
         * ``page_num``
         * ``namespace``
 
@@ -115,6 +120,7 @@ def notify_txt_ready(page_path, **kwargs):
         * ``sender`` = from papermerge.core.signal_definitions.WORKER
         * ``user_id``
         * ``document_id``
+        * ``file_name``
         * ``page_num``
         * ``lang``
         * ``namespace`` = may be empty. Used to distinguish among
@@ -125,6 +131,7 @@ def notify_txt_ready(page_path, **kwargs):
     user_id = kwargs.get('user_id', None)
     document_id = kwargs.get('document_id', None)
     page_num = kwargs.get('page_num', 1)
+    file_name = kwargs.get('file_name', None)
     namespace = kwargs.get('namespace', None)
 
     if page_path:
@@ -138,6 +145,7 @@ def notify_txt_ready(page_path, **kwargs):
                     sender=signals.WORKER,
                     user_id=user_id,
                     document_id=document_id,
+                    file_name=file_name,
                     page_num=page_num,
                     namespace=namespace,
                     text=text
@@ -202,6 +210,7 @@ def ocr_page_pdf(
             page_path,
             page_num=page_num,
             lang=lang,
+            file_name=doc_path.file_name,
             **kwargs
         )
 
@@ -219,6 +228,7 @@ def ocr_page_pdf(
                     lang=lang,
                     # step as integer number
                     step=step.current,
+                    file_name=doc_path.file_name,
                     **kwargs
                 )
 
@@ -259,6 +269,7 @@ def ocr_page_image(
         page_path,
         page_num=page_num,
         lang=lang,
+        file_name=doc_path.file_name,
         **kwargs
     )
 
@@ -285,6 +296,7 @@ def ocr_page_image(
                 lang=lang,
                 # step as integer number
                 step=step.current,
+                file_name=doc_path.file_name,
                 **kwargs
             )
 

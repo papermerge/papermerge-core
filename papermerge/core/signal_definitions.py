@@ -28,7 +28,6 @@ page_ocr = Signal(
         "message",
         "document_id",
         "page_num",
-        "lang",
         "namespace",
         # status is a string: started, complete
         "status"
@@ -41,7 +40,6 @@ post_page_txt = Signal(
         "user_id",
         "document_id",
         "page_num",
-        "lang",
         "namespace",
         "text"
     ]

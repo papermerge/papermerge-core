@@ -40,7 +40,6 @@ def notify_hocr_ready(page_path, **kwargs):
         * ``user_id``
         * ``document_id``
         * ``page_num``
-        * ``lang``
         * ``namespace``
         * ``step``
 
@@ -64,7 +63,6 @@ def notify_hocr_ready(page_path, **kwargs):
     user_id = kwargs.get('user_id', None)
     document_id = kwargs.get('document_id', None)
     page_num = kwargs.get('page_num', 1)
-    lang = kwargs.get('lang', None)
     namespace = kwargs.get('namespace', None)
     step = kwargs.get('step', 1)
 
@@ -80,7 +78,6 @@ def notify_hocr_ready(page_path, **kwargs):
                     user_id=user_id,
                     document_id=document_id,
                     page_num=page_num,
-                    lang=lang,
                     step=step,
                     namespace=namespace,
                     hocr=hocr
@@ -108,7 +105,6 @@ def notify_txt_ready(page_path, **kwargs):
         * ``user_id``
         * ``document_id``
         * ``page_num``
-        * ``lang``
         * ``namespace``
 
     Always returns None.
@@ -129,7 +125,6 @@ def notify_txt_ready(page_path, **kwargs):
     user_id = kwargs.get('user_id', None)
     document_id = kwargs.get('document_id', None)
     page_num = kwargs.get('page_num', 1)
-    lang = kwargs.get('lang', None)
     namespace = kwargs.get('namespace', None)
 
     if page_path:
@@ -144,7 +139,6 @@ def notify_txt_ready(page_path, **kwargs):
                     user_id=user_id,
                     document_id=document_id,
                     page_num=page_num,
-                    lang=lang,
                     namespace=namespace,
                     text=text
                 )

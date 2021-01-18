@@ -27,31 +27,144 @@ STARTED = "started"
 COMPLETE = "complete"
 
 
-def upload_to(page_path, **kwargs):
+def notify_hocr_ready(page_path, **kwargs):
     """
-    Will upload results to remote storage if such storage
-    is supported.
+    Notifies interested parties that .hocr file is available.
 
-    Default storage class ``mglib.storage.FileSystemStorage``
-    ``download`` and ``upload`` methods are empty.
+    Notifies via django signals. Among others will send
+    hocr content itself. Input arguments:
 
-    Method is useful for cloud production (where storage class
-    will be replaced to support remote storage e.g. S3, SFTP)
+    ``page_path``: mglib.PagePath instance of current page
+    Following keys are expected to be availble in kwargs dictinary:
+
+        * ``user_id``
+        * ``document_id``
+        * ``page_num``
+        * ``lang``
+        * ``namespace``
+        * ``step``
+
+    Always returns None.
+
+    Sent signals: ``post_page_hocr``.
+
+    Following arguments are passed to the signal:
+        * ``sender`` = from papermerge.core.signal_definitions.WORKER
+        * ``user_id``
+        * ``document_id``
+        * ``page_num``
+        * ``lang``
+        * ``namespace`` = may be empty. Used to distinguish among
+            different tenants in multi-tenant deployments.
+        * ``step`` = integer number corresponding to step
+            learn more about steps in ``mglib.step.Step``
+        * ``hocr`` = extracted hocr data (text format)
     """
-    default_storage.upload(page_path.txt_url(), **kwargs)
 
-    for step in Steps():
-        if not step.is_thumbnail:
+    user_id = kwargs.get('user_id', None)
+    document_id = kwargs.get('document_id', None)
+    page_num = kwargs.get('page_num', 1)
+    lang = kwargs.get('lang', None)
+    namespace = kwargs.get('namespace', None)
+    step = kwargs.get('step', 1)
 
-            page_path.step = step
-            default_storage.upload(page_path.hocr_url(), **kwargs)
-            default_storage.upload(page_path.img_url(), **kwargs)
+    if page_path:
+        abs_path_hocr = default_storage.abspath(page_path.hocr_url())
+
+        if os.path.exists(abs_path_hocr):
+            with open(abs_path_hocr) as f:
+                hocr = f.read()
+
+                signals.post_page_hocr.send(
+                    sender=signals.WORKER,
+                    user_id=user_id,
+                    document_id=document_id,
+                    page_num=page_num,
+                    lang=lang,
+                    step=step,
+                    namespace=namespace,
+                    hocr=hocr
+                )
+        else:
+            logger.warning(
+                f"Page hocr/step={step} path {abs_path_hocr} does not exist."
+            )
+    else:
+        logger.warning(
+            f"hOCR/step={step} method returned empty page path."
+        )
+
+
+def notify_txt_ready(page_path, **kwargs):
+    """
+    Notifies interested parties that .txt file is available.
+
+    Notifies via django signals. Among others will send
+    .txt content itself. Input arguments:
+
+    ``page_path``: mglib.PagePath instance of current page
+    Following keys are expected to be availble in kwargs dictinary:
+
+        * ``user_id``
+        * ``document_id``
+        * ``page_num``
+        * ``lang``
+        * ``namespace``
+
+    Always returns None.
+
+    Sent signals: ``post_page_txt``.
+
+    Following arguments are passed to the signal:
+        * ``sender`` = from papermerge.core.signal_definitions.WORKER
+        * ``user_id``
+        * ``document_id``
+        * ``page_num``
+        * ``lang``
+        * ``namespace`` = may be empty. Used to distinguish among
+            different tenants in multi-tenant deployments.
+        * ``txt`` = extracted .txt data (text format)
+    """
+
+    user_id = kwargs.get('user_id', None)
+    document_id = kwargs.get('document_id', None)
+    page_num = kwargs.get('page_num', 1)
+    lang = kwargs.get('lang', None)
+    namespace = kwargs.get('namespace', None)
+
+    if page_path:
+        abs_path_txt = default_storage.abspath(page_path.txt_url())
+
+        if os.path.exists(abs_path_txt):
+            with open(abs_path_txt) as f:
+                text = f.read()
+
+                signals.post_page_txt.send(
+                    sender=signals.WORKER,
+                    user_id=user_id,
+                    document_id=document_id,
+                    page_num=page_num,
+                    lang=lang,
+                    namespace=namespace,
+                    text=text
+                )
+        else:
+            logger.warning(
+                f"Page txt path {abs_path_txt} does not exist. "
+                f"Page indexing was skipped."
+            )
+    else:
+        logger.warning(
+            "OCR method returned empty page path. "
+            "Page indexing was skipped."
+        )
 
 
 def ocr_page_pdf(
     doc_path,
     page_num,
-    lang
+    lang,
+    **kwargs
 ):
     """
     doc_path is an mglib.path.DocumentPath instance
@@ -66,48 +179,63 @@ def ocr_page_pdf(
 
     if page_num <= page_count:
         # first quickly generate preview images
-        page_url = PagePath(
+        page_path = PagePath(
             document_path=doc_path,
             page_num=page_num,
             step=Step(1),
             page_count=page_count
         )
         for step in Steps():
-            page_url.step = step
+            page_path.step = step
             extract_img(
-                page_url,
+                page_path,
                 media_root=settings.MEDIA_ROOT
             )
 
     if page_num <= page_count:
-        page_url = PagePath(
+        page_path = PagePath(
             document_path=doc_path,
             page_num=page_num,
             step=Step(1),
             page_count=page_count
         )
         extract_txt(
-            page_url,
+            page_path,
             lang=lang,
             media_root=settings.MEDIA_ROOT
         )
+        notify_txt_ready(
+            page_path,
+            page_num=page_num,
+            lang=lang,
+            **kwargs
+        )
 
         for step in Steps():
-            page_url.step = step
+            page_path.step = step
             if not step.is_thumbnail:
                 extract_hocr(
-                    page_url,
+                    page_path,
                     lang=lang,
                     media_root=settings.MEDIA_ROOT
                 )
+                notify_hocr_ready(
+                    page_path,
+                    page_num=page_num,
+                    lang=lang,
+                    # step as integer number
+                    step=step.current,
+                    **kwargs
+                )
 
-    return page_url
+    return page_path
 
 
 def ocr_page_image(
     doc_path,
     page_num,
-    lang
+    lang,
+    **kwargs
 ):
     """
     image = jpg, jpeg, png
@@ -116,7 +244,7 @@ def ocr_page_image(
     """
     logger.debug("OCR image (jpeg, jpg, png) document")
 
-    page_url = PagePath(
+    page_path = PagePath(
         document_path=doc_path,
         page_num=page_num,
         step=Step(1),
@@ -125,34 +253,48 @@ def ocr_page_image(
     )
     # resize and eventually convert (png -> jpg)
     resize_img(
-        page_url,
+        page_path,
         media_root=settings.MEDIA_ROOT
     )
     extract_txt(
-        page_url,
+        page_path,
         lang=lang,
         media_root=settings.MEDIA_ROOT
+    )
+    notify_txt_ready(
+        page_path,
+        page_num=page_num,
+        lang=lang,
+        **kwargs
     )
 
     # First quickly generate preview images
     for step in Steps():
-        page_url.step = step
+        page_path.step = step
         resize_img(
-            page_url,
+            page_path,
             media_root=settings.MEDIA_ROOT
         )
     # reset page's step
-    page_url.step = Step(1)
+    page_path.step = Step(1)
     # Now OCR each image
     for step in Steps():
         if not step.is_thumbnail:
             extract_hocr(
-                page_url,
+                page_path,
                 lang=lang,
                 media_root=settings.MEDIA_ROOT
             )
+            notify_hocr_ready(
+                page_path,
+                page_num=page_num,
+                lang=lang,
+                # step as integer number
+                step=step.current,
+                **kwargs
+            )
 
-    return page_url
+    return page_path
 
 
 def ocr_page(
@@ -176,6 +318,10 @@ def ocr_page(
     )
 
     if not default_storage.exists(doc_path.url()):
+        # In case of distibuted deployment, document uploaded
+        # by webapp is not directly available to the worker (which runs on
+        # separate computer). Thus, if document is not locally available,
+        # worker will download the document from whatever remote location.
         default_storage.download(
             doc_path_url=doc_path.url(),
             namespace=namespace
@@ -187,20 +333,25 @@ def ocr_page(
     logger.debug(f"Mime Type = {mime_type}")
 
     page_type = ''
-    page_path = None
 
     if mime_type.is_pdf():
-        page_path = ocr_page_pdf(
+        ocr_page_pdf(
             doc_path=doc_path,
             page_num=page_num,
-            lang=lang
+            lang=lang,
+            user_id=user_id,
+            document_id=document_id,
+            namespace=namespace
         )
         page_type = 'pdf'
     elif mime_type.is_image():  # jpeg, jpeg or png
-        page_path = ocr_page_image(
+        ocr_page_image(
             doc_path=doc_path,
             page_num=page_num,
-            lang=lang
+            lang=lang,
+            user_id=user_id,
+            document_id=document_id,
+            namespace=namespace
         )
     elif mime_type.is_tiff():
         # new filename is a pdf file
@@ -211,10 +362,13 @@ def ocr_page(
         # now .pdf
         doc_path.file_name = new_filename
         # and continue as usual
-        page_path = ocr_page_pdf(
+        ocr_page_pdf(
             doc_path=doc_path,
             page_num=page_num,
-            lang=lang
+            lang=lang,
+            user_id=user_id,
+            document_id=document_id,
+            namespace=namespace
         )
     else:
         logger.error(
@@ -229,40 +383,6 @@ def ocr_page(
         f" user_id={user_id} doc_id={document_id}"
         f" page_num={page_num} page_type={page_type}"
         f" total_exec_time={t2-t1:.2f}"
-    )
-
-    if page_path:
-        abs_path_txt = default_storage.abspath(page_path.txt_url())
-
-        if os.path.exists(abs_path_txt):
-
-            with open(abs_path_txt) as f:
-                text = f.read()
-
-                signals.post_page_ocr.send(
-                    sender="worker",
-                    user_id=user_id,
-                    document_id=document_id,
-                    page_num=page_num,
-                    lang=lang,
-                    namespace=namespace,
-                    text=text
-                )
-
-        else:
-            logger.warning(
-                f"Page txt path {abs_path_txt} does not exist. "
-                f"Page indexing was skipped."
-            )
-    else:
-        logger.warning(
-            "OCR method returned empty page path. "
-            "Page indexing was skipped."
-        )
-
-    upload_to(
-        page_path=page_path,
-        namespace=namespace
     )
 
     return True

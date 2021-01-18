@@ -1,5 +1,8 @@
 from django.dispatch import Signal
 
+# signals sent by the worker
+# have sender set to ``papermerge.core.signals_deginitions.WORKER``
+WORKER = "worker"
 
 automates_matching = Signal(
     providing_args=[
@@ -15,6 +18,9 @@ automates_matching = Signal(
     ]
 )
 
+# sent by the worker
+# after ocr of the page is complete i.e.
+# when both .txt file and .hocr files are available
 page_ocr = Signal(
     providing_args=[
         "user_id",
@@ -29,7 +35,8 @@ page_ocr = Signal(
     ]
 )
 
-post_page_ocr = Signal(
+# sent by the worker after .txt file was extracted
+post_page_txt = Signal(
     providing_args=[
         "user_id",
         "document_id",
@@ -37,6 +44,19 @@ post_page_ocr = Signal(
         "lang",
         "namespace",
         "text"
+    ]
+)
+
+# sent by the worker after .hocr file was extracted
+post_page_hocr = Signal(
+    providing_args=[
+        "user_id",
+        "document_id",
+        "page_num",
+        "lang",
+        "namespace",
+        "step",
+        "hocr"
     ]
 )
 

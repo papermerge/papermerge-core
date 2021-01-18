@@ -73,6 +73,30 @@ class Page(models.Model, index.Indexed):
         max_length=1024,
         default=''
     )
+    # The hocr (text) fields corresponding
+    # to step=0, step=1, ..., step=3 will be saved in hocr_step_0, ...,
+    # hocr_step_3 fields.
+    #
+    # Read in header comment of python module provided by URL below about
+    # the concept of steps and why it was bad design
+    # decision to introduce them:
+    #
+    #   https://github.com/papermerge/mglib/blob/master/mglib/step.py
+    #
+    # In future releases 4 fields: hocr_step_0,..., hocr_step_3 will be
+    # replaced with just one: hocr = models.TextField(default='')
+    hocr_step_0 = models.TextField(
+        default=''
+    )
+    hocr_step_1 = models.TextField(
+        default=''
+    )
+    hocr_step_2 = models.TextField(
+        default=''
+    )
+    hocr_step_3 = models.TextField(
+        default=''
+    )
 
     objects = PageQuerySet.as_manager()
 

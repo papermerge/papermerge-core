@@ -77,7 +77,7 @@ def setup_periodic_tasks(sender, **kwargs):
         reason_msg = ""
 
         if not imp_dir:
-            reason_msg += "1. IMPORDER_DIR not configured\n"
+            reason_msg += "1. IMPORTER_DIR not configured\n"
         if not imp_dir_exists:
             reason_msg += "2. importer dir does not exist\n"
 

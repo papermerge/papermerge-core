@@ -175,6 +175,10 @@ def ocr_page_pdf(
     """
     logger.debug("OCR PDF document")
 
+    file_name = kwargs.get('file_name', None)
+    if not file_name:
+        file_name = doc_path.file_name
+
     page_count = get_pagecount(
         default_storage.abspath(doc_path.url())
     )
@@ -210,7 +214,7 @@ def ocr_page_pdf(
             page_path,
             page_num=page_num,
             lang=lang,
-            file_name=doc_path.file_name,
+            file_name=file_name,
             **kwargs
         )
 
@@ -228,7 +232,7 @@ def ocr_page_pdf(
                     lang=lang,
                     # step as integer number
                     step=step.current,
-                    file_name=doc_path.file_name,
+                    file_name=file_name,
                     **kwargs
                 )
 
@@ -366,6 +370,7 @@ def ocr_page(
             doc_url=default_storage.abspath(doc_path.url())
         )
         # now .pdf
+        orig_file_name = doc_path.file_name
         doc_path.file_name = new_filename
         # and continue as usual
         ocr_page_pdf(
@@ -374,6 +379,8 @@ def ocr_page(
             lang=lang,
             user_id=user_id,
             document_id=document_id,
+            # Pass original file_name i.e. tiff file name as well.
+            file_name=orig_file_name,
             namespace=namespace
         )
     else:

@@ -175,9 +175,8 @@ def ocr_page_pdf(
     """
     logger.debug("OCR PDF document")
 
-    file_name = kwargs.get('file_name', None)
-    # otherwise we pass file_name argument twice
-    kwargs.pop('file_name')
+    file_name = kwargs.pop('file_name', None)
+
     if not file_name:
         file_name = doc_path.file_name
 

@@ -46,7 +46,8 @@ class TagCreateView(TagsView, generic.CreateView):
     def form_valid(self, form):
         # set fields which user does not have access to
         form.instance.user = self.request.user
-
+        # otherwise 'slug' cannot be empty Exception is rised
+        form.instance.slug = form.cleaned_data['name']
         try:
             form.instance.full_clean()
         except ValidationError:

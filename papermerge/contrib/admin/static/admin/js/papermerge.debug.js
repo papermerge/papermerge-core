@@ -22489,11 +22489,11 @@ var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments
 with(obj||{}){
 __p+='';
  if (table.rows.length > 0 ) { 
-__p+='\n\n<table class="table">\n  <thead>\n    <tr>\n      <th scope="col">\n        <a \n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="type"\n        >\n          '+
+__p+='\n\n<table class="table table-striped">\n  <thead>\n    <tr class="text-uppercase">\n      <th class="border-top-0 border-right-0 border-left-0" scope="col">\n        <a \n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="type"\n        >\n          '+
 ((__t=( gettext('Type') ))==null?'':__t)+
 '\n          <i class="fa '+
 ((__t=( table.cols[0].sort_icon_name ))==null?'':__t)+
-'"></i>\n        </a>\n      </th>\n      <th scope="col">\n        <a\n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="title"\n        >\n          '+
+'"></i>\n        </a>\n      </th>\n      <th class="border-top-0 border-right-0 border-left-0" scope="col">\n        <a\n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="title"\n        >\n          '+
 ((__t=( gettext('Title ') ))==null?'':__t)+
 '\n          <i class="fa '+
 ((__t=( table.cols[1].sort_icon_name ))==null?'':__t)+
@@ -22503,7 +22503,7 @@ __p+='\n        ';
  column = table.key_cols[i] 
 __p+='\n        ';
  if (column) { 
-__p+='\n          <th scope="col">\n            <a \n              href="#"\n              class="header sort d-flex justify-content-between align-items-center"\n              data-col="key" data-key="'+
+__p+='\n          <th class="border-top-0 border-right-0 border-left-0" scope="col">\n            <a \n              href="#"\n              class="header sort d-flex justify-content-between align-items-center"\n              data-col="key" data-key="'+
 ((__t=( column.key ))==null?'':__t)+
 '"\n            >\n              '+
 ((__t=( column.key ))==null?'':__t)+
@@ -22513,7 +22513,7 @@ __p+='\n          <th scope="col">\n            <a \n              href="#"\n   
  } 
 __p+='\n      ';
  } 
-__p+='\n      <th scope="col">\n        <a\n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="created_at"\n        >\n          '+
+__p+='\n      <th class="border-top-0 border-right-0 border-left-0" scope="col">\n        <a\n          href="#"\n          class="header sort d-flex justify-content-between align-items-center"\n          data-col="created_at"\n        >\n          '+
 ((__t=( gettext('Created At') ))==null?'':__t)+
 '\n          <i class="fa  '+
 ((__t=( table.cols[table.cols.length -1].sort_icon_name ))==null?'':__t)+

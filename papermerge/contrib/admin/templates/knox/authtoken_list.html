@@ -1,5 +1,7 @@
 {% extends "admin/object_list.html" %}
 
+{% load admin_tags %}
+
 {% block breadcrumb %}
     <div class="col-sm-12 pl-0">
       <a href="{% url 'admin:tokens' %}">
@@ -13,8 +15,8 @@
     {% for token in object_list %}
       <tr>
         <td><span class="mr-2"><input type="checkbox" name="_selected_action" value="{{ token.digest }}" /></span>{{ token.digest|truncatechars:24 }}</td>
-        <td>{{ token.created }}</td>
-        <td>{{ token.expiry }}</td>
+        <td>{% localized_datetime token.created %}</td>
+        <td>{% localized_datetime token.expiry %}</td>
       </tr>
     {% endfor %}
   </tbody>

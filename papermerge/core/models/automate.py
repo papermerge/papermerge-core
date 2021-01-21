@@ -8,6 +8,7 @@ from .document import Document
 from .folder import Folder
 from .tags import ColoredTag, UserTaggableManager
 from .access import Access
+from papermerge.core.signal_definitions import automates_matching
 
 
 logger = logging.getLogger(__name__)
@@ -24,26 +25,52 @@ class AutomateQuerySet(models.QuerySet):
         automates over documents (well, pages) from its
         inbox.
         """
-        matched_automates = []
+        total_matched = []
 
-        for automate in self.all():
+        for page in pages_qs:
+            matched = []
+            document = page.document
+            page_num = page.number
+            text = page.text
 
-            for page in pages_qs:
-
-                document = page.document
-                page_num = page.number
-                text = page.text
-
+            for automate in self.all():
                 if automate.is_a_match(text):
                     automate.apply(
                         document, page_num, text
                     )
-                    matched_automates.append(
-                        automate.pk
-                    )
+                    matched.append(automate)
+                    total_matched.append(automate)
+
+            message = ""
+            automates = Automate.objects.filter(
+                pk__in=[item.pk for item in matched]
+            )
+
+            message = _(
+                "%(count)s of %(total)s Automate(s) matched. ") % {
+                'count': len(matched),
+                'total': automates.count()
+            }
+
+            if len(matched) > 0:
+                message += _(
+                    "List of matched Automates: %(matched_automates)s"
+                ) % {
+                    'matched_automates': matched
+                }
+
+            automates_matching.send(
+                sender="papermerge.core.automate",
+                user_id=document.user.id,
+                document_id=document.id,
+                level=logging.INFO,
+                message=message,
+                page_num=page_num,
+                text=text
+            )
 
         return Automate.objects.filter(
-            pk__in=matched_automates
+            pk__in=[item.pk for item in total_matched]
         )
 
 

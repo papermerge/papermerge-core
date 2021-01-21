@@ -163,8 +163,13 @@ class AbstractFolder(models.Model):
         return self.base_ptr.title
 
 
-def get_inbox_folder(user):
-    return Folder.objects.get(
-        name=Folder.INBOX_NAME,
+def get_inbox_children(user):
+    """
+    Returns all children nodes of given user's inbox folder
+    """
+    inbox_node = BaseTreeNode.objects.get(
+        title=Folder.INBOX_NAME,
         user=user
     )
+
+    return inbox_node.get_children()

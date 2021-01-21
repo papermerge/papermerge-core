@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from papermerge.contrib.admin.views import mixins as mix
 from papermerge.contrib.admin.forms import AutomateForm
 from papermerge.core.models import Automate
-from papermerge.core.models.folder import get_inbox_folder
+from papermerge.core.models.folder import get_inbox_children
 from papermerge.core.models.page import get_pages
 
 
@@ -48,9 +48,9 @@ class AutomatesListView(
         return redirect(self.success_url)
 
     def run_selected_automates(self, selection):
-        inbox_nodes = get_inbox_folder(
+        inbox_nodes = get_inbox_children(
             self.request.user
-        ).get_children()
+        )
 
         # Run automates over all page objects from user's inbox.
         # Only pages with non empty text field are taken into account

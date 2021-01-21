@@ -24,13 +24,14 @@ class AutomateQuerySet(models.QuerySet):
         automates over documents (well, pages) from its
         inbox.
         """
-        matched_automates = set()
+        matched_automates = []
 
         for automate in self.all():
+
             for page in pages_qs:
 
                 document = page.document
-                page_num = page.page_num
+                page_num = page.number
                 text = page.text
 
                 if automate.is_a_match(text):

@@ -317,15 +317,18 @@ def get_pages(
     """
     :nodes: is a query set of BaseTreeNodes
     """
+
+    pages = Page.objects.filter(
+        document__in=nodes
+    )
+
     if not include_pages_with_empty_text:
-        filtered_nodes = nodes.exclude(
+        ret_pages = pages.exclude(
             text__isnull=True
         ).exclude(
             text__exact=''
         )
     else:
-        filtered_nodes = nodes
+        ret_pages = pages
 
-    return Page.objects.filter(
-        document__in=filtered_nodes
-    )
+    return ret_pages

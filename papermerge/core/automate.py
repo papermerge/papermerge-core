@@ -93,3 +93,4 @@ def apply_automates(document_id, page_num, **kwargs):
         text=text,
         **kwargs
     )
+

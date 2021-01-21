@@ -10,45 +10,8 @@ from papermerge.core.auth import create_access
 from papermerge.core.models import Access, Diff, Document, Folder, User
 from papermerge.core.storage import default_storage
 from papermerge.core.tasks import normalize_pages
-from papermerge.core.ocr import COMPLETE
-
-from .automate import apply_automates
-from .signal_definitions import page_ocr
 
 logger = logging.getLogger(__name__)
-
-
-@receiver(page_ocr, sender="worker")
-def apply_automates_handler(sender, **kwargs):
-    """
-    Signal sent when HOCR file is ready (i.e. OCR for page is complete).
-    """
-    document_id = kwargs.get('document_id', False)
-    page_num = kwargs.get('page_num', False)
-    status = kwargs.get('status')
-
-    if status == COMPLETE:
-        logger.debug(
-            f"Page hocr ready: document_id={document_id} page_num={page_num}"
-        )
-        try:
-            # will hit the database
-            apply_automates(
-                document_id=document_id,
-                page_num=page_num
-            )
-        except Exception as e:
-            # Will happen in case papermege is deployed as worker
-            # on separate computer from web app AND it has no
-            # access to database.
-            # Just log it.
-            logger.info(
-                f"Exception {e} in apply_automates_handler. "
-                f"You can ignore this exception only in case when "
-                f" papermerge was deployed as worker on separate computer "
-                f" without access to database."
-            )
-            return
 
 
 @receiver(pre_delete, sender=Document)

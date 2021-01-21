@@ -69,6 +69,20 @@ class DeleteEntriesMixin:
             id__in=selection
         )
 
+    def delete_selected_entries(self, selected_action):
+        deleted, row_count = self.get_delete_entries(
+            selection=selected_action
+        ).delete()
+
+        model_label = self.model._meta.label
+        count = row_count.get(model_label, 0)
+        msg = _(
+            "%(count)s selected entries were deleted."
+        ) % {
+            'count': count
+        }
+        messages.info(self.request, msg)
+
     def post(self, request):
         """
         Delete selected entries
@@ -77,18 +91,7 @@ class DeleteEntriesMixin:
 
         go_action = request.POST['action']
         if go_action == 'delete_selected':
-            deleted, row_count = self.get_delete_entries(
-                selection=selected_action
-            ).delete()
-
-            model_label = self.model._meta.label
-            count = row_count.get(model_label, 0)
-            msg = _(
-                "%(count)s selected entries were deleted."
-            ) % {
-                'count': count
-            }
-            messages.info(self.request, msg)
+            self.delete_selected_entries(selected_action)
 
         return redirect(self.success_url)
 

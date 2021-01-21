@@ -2,6 +2,7 @@ import logging
 import os
 
 from django.db import models
+
 from mglib.path import PagePath
 from papermerge.core.storage import default_storage
 from papermerge.search import index
@@ -307,3 +308,24 @@ class Page(models.Model, index.Indexed):
         # test by
         # test_page.TestPage.test_pages_all_returns_pages_ordered
         ordering = ['number']
+
+
+def get_pages(
+    nodes,
+    include_pages_with_empty_text=True
+):
+    """
+    :nodes: is a query set of BaseTreeNodes
+    """
+    if not include_pages_with_empty_text:
+        filtered_nodes = nodes.exclude(
+            text__isnull=True
+        ).exclude(
+            text__exact=''
+        )
+    else:
+        filtered_nodes = nodes
+
+    return Page.objects.filter(
+        document__in=filtered_nodes
+    )

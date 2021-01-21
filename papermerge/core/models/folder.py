@@ -161,3 +161,10 @@ class AbstractFolder(models.Model):
 
     def get_title(self):
         return self.base_ptr.title
+
+
+def get_inbox_folder(user):
+    return Folder.objects.get(
+        name=Folder.INBOX_NAME,
+        user=user
+    )

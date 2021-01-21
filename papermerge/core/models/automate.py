@@ -12,6 +12,45 @@ from .access import Access
 
 logger = logging.getLogger(__name__)
 
+class AutomateQuerySet(models.QuerySet):
+
+    def run(self, pages_qs):
+        """
+        Runs (scoped by queryset) automates
+        over given page models.
+
+        This method is invoked when user
+        wants to re-run (eventually modified) selected
+        automates over documents (well, pages) from its
+        inbox.
+        """
+        matched_automates = set()
+
+        for automate in self.all():
+            for page in pages_qs:
+
+                document = page.document
+                page_num = page.page_num
+                text = page.text
+
+                if automate.is_a_match(text):
+                    automate.apply(
+                        document, page_num, text
+                    )
+                    matched_automates.append(
+                        automate.pk
+                    )
+
+        return Automate.objects.filter(
+            pk__in=matched_automates
+        )
+
+
+class AutomateManager(models.Manager):
+
+    def get_queryset(self):
+        return AutomateQuerySet(self.model, using=self._db)
+
 
 class Automate(models.Model):
 
@@ -91,6 +130,8 @@ class Automate(models.Model):
         blank=True,
         null=True
     )
+
+    objects = AutomateManager()
 
     def __str__(self):
         return self.name

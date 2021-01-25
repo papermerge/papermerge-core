@@ -10001,6 +10001,11 @@ ul.pinned_tags li.active {
   #browse .table th {
     border-left: 1px solid #cecece;
     border-right: 1px solid #cecece; }
+  #browse .table tr td.checked {
+    outline: none;
+    background-color: rgba(142,210,254,0); }
+  #browse .table tr td.checked:hover {
+    background-color: rgba(142,210,254,0); }
   #browse .node:hover {
     background-color: rgba(142,210,254,0.4);
     outline: 1px solid #6fc5ff; }

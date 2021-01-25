@@ -22527,8 +22527,22 @@ __p+='\n    <tr class="node" data-id="'+
 ((__t=( row[0].cid ))==null?'':__t)+
 '" data-url="'+
 ((__t=( row[0].url ))==null?'':__t)+
-'">\n        ';
- for (j=0; j < row.length; j++) { 
+'">\n        <td>\n          <!-- type + checkbox column -->\n          <input type="checkbox" name="_selected_action" value="'+
+((__t=( row[0].id ))==null?'':__t)+
+'" class="action-select mr-1" />\n            <a href="'+
+((__t=( row[1].url ))==null?'':__t)+
+'">\n            ';
+ if (row[0].is_readonly) { 
+__p+='\n              <i class="fa fa-lock text-danger"></i>\n            ';
+ } 
+__p+='\n          '+
+((__t=( row[0].value ))==null?'':__t)+
+'\n          </a>\n        </td>\n        <td>\n          <!-- title column -->\n          <a href="'+
+((__t=( row[1].url ))==null?'':__t)+
+'">'+
+((__t=( row[1].value ))==null?'':__t)+
+'\n        </td>\n        <!-- the rest of columns -->\n        ';
+ for (j=2; j < row.length; j++) { 
 __p+='\n          <td>\n            ';
  if (row[j].is_readonly) { 
 __p+='\n                <i class="fa fa-lock text-danger"></i>\n            ';
@@ -23245,6 +23259,10 @@ __p+='<div class="metadata-widget">\n\n    <div class="card">\n        <div clas
  for (i=0; i < kvstore.models.length; i++) { 
 __p+='\n                            ';
  item = kvstore.models[i]; 
+__p+='\n                            ';
+ current_formats = item.get('current_formats') || []; 
+__p+='\n                            ';
+ kv_types = item.get('kv_types') || available_types || []; 
 __p+='\n                            <li class=\'collection-item\' data-model=\'simple-key\' data-id=\''+
 ((__t=( item.id ))==null?'':__t)+
 '\' data-cid=\''+
@@ -24960,8 +24978,13 @@ class Table {
 
       for (let j = 0; j < parent_kv.length; j++) {
         kvstore = parent_kv.at(j);
+        /*
+          If we don't filter out inherited keys
+          nested folders will create duplicates of meta-columns.
+          Because inherited keys will accumulate for each nested folder.
+        */
 
-        if (kvstore) {
+        if (kvstore && !kvstore.get('kv_inherited')) {
           key = kvstore.get('key');
           value = node.get_page_value_for(key);
           virtual_value = node.get_page_virtual_value_for(kvstore.get('key'));
@@ -25002,8 +25025,16 @@ class Table {
 
     for (i = 0; i < parent_kv.length; i++) {
       kvstore = parent_kv.at(i);
-      key = kvstore.get('key');
-      result.push(new Column(key, key, undefined));
+      /*
+        If we don't filter out inherited keys
+        nested folders will create duplicates of meta-columns.
+        Because inherited keys will accumulate for each nested folder.
+      */
+
+      if (kvstore && !kvstore.get('kv_inherited')) {
+        key = kvstore.get('key');
+        result.push(new Column(key, key, undefined));
+      }
     }
 
     result.push( // name, key, sort
@@ -25145,7 +25176,12 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["INVERT_SELECTION"], this.invert_selection, this);
     ui_selection_dispatcher.on(UI_SELECTION_MOUSE_MOVE, this.on_ui_selection_mouse_move, this);
     ui_selection_dispatcher.on(UI_SELECTION_MOUSE_UP, this.on_ui_selection_mouse_up, this);
-    this.ui_select_view = new UISelectView();
+
+    if (this.display_mode.is_grid()) {
+      // desktop like selection is enabled only in grid view mode
+      this.ui_select_view = new UISelectView();
+    } // adjusts height of document browsers
+
 
     this._let_browse_fill_in_parent();
   }
@@ -25179,13 +25215,33 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     // is parent of what was clicked
 
     $target = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.currentTarget).parent();
-    cid = $target.data('cid');
+    cid = $target.data('cid'); // data may be attached differently
+    // depending on list/grid view:
+
+    if (!cid) {
+      cid = $target.parent().data('cid');
+
+      if (!cid) {
+        console.log("node data still not available");
+      }
+    }
+
     new_state = this.select_node_by_cid(cid);
 
     if (new_state) {
-      $target.addClass('checked');
+      $target.addClass('checked'); // again, depending on list mode (grid/view)
+      // DOM structure differs little bit
+
+      if ($target.parent().hasClass("node")) {
+        $target.parent().addClass('checked');
+      }
     } else {
-      $target.removeClass('checked');
+      $target.removeClass('checked'); // again, depending on list mode (grid/view)
+      // DOM structure differs little bit
+
+      if ($target.parent().hasClass("node")) {
+        $target.parent().removeClass('checked');
+      }
     }
 
     _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["mg_dispatcher"].trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["SELECTION_CHANGED"], this.get_selection());
@@ -25195,6 +25251,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     let $target, cid, new_state; // node was clicked, thus, node is actually
     // what we target
 
+    console.log('Browse list: on node clicked');
     $target = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.currentTarget);
     cid = $target.data('cid');
     new_state = this.select_node_by_cid(cid);
@@ -25364,10 +25421,23 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     this.pagination_view.render(this.browse.get('pagination'));
 
     if (this.display_mode.is_list()) {
+      // desktop like selection was enabled.
+      // disable it as it makes sense only in grid view
+      if (this.ui_select_view) {
+        this.ui_select_view.undelegateEvents();
+        this.ui_select_view = undefined;
+      }
+
       this.browse_list_view.render(this.browse.nodes, this.browse.parent_kv);
     } else {
       sort_field = this.display_mode.sort_field;
       sort_order = this.display_mode.sort_order;
+
+      if (!this.ui_select_view) {
+        // desktop like selection is enabled only in grid view mode
+        this.ui_select_view = new UISelectView();
+      }
+
       this.browse.nodes.dynamic_sort_by(sort_field, sort_order);
       this.browse_grid_view.render(this.browse.nodes);
     } // beautiful refresh feature BEGIN
@@ -27776,8 +27846,23 @@ class MetadataDocumentWidget extends MetadataWidget {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()("#widgetsbar-document");
   }
 
-  initialize() {
-    this.metadata = undefined;
+  initialize(node) {
+    /** node will be:
+        1) != undefined when user selects the document in doc browser.
+        In this case MetadataDocument view is (re)used in doc browser.
+        2) == undefined when MetadataDocument shows metadata in
+        document viewer
+    **/
+    if (node) {
+      // we are in doc browser
+      this.node = node;
+      this.metadata = new _models_metadata__WEBPACK_IMPORTED_MODULE_4__["Metadata"](node);
+    } else {
+      // we are in doc viewer
+      this.metadata = undefined;
+    }
+
+    this.listenTo(this.metadata, 'change', this.render);
     _models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["PAGE_SELECTION_CHANGED"], this.page_selection_changed, this);
   }
 
@@ -28041,8 +28126,17 @@ class WidgetsBarView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
       }
 
       parts = node.get('parts');
-      this.info_widget = new SingleNodeInfoWidget(node);
-      this.metadata_widget = new MetadataWidget(node);
+      this.info_widget = new SingleNodeInfoWidget(node); // if selected node is a document
+      // use MetadataDocument widget
+
+      if (node.is_document()) {
+        // ``MetadataDocumentWidget`` shows metadata keys AND values
+        this.metadata_widget = new MetadataDocumentWidget(node);
+      } else {
+        // ``MetadataWidget`` does not show metadata values
+        this.metadata_widget = new MetadataWidget(node);
+      }
+
       compiled += this.info_widget.render_to_string();
       compiled += this.metadata_widget.render_to_string();
 

@@ -32,8 +32,19 @@ def metadata(request, model, id):
     """
     if model == 'node':
         _Klass = BaseTreeNode
+        # if queried node is a document, then instead
+        # of document's metadata - metadata of first page
+        # of respective document will be returned.
+        node = BaseTreeNode.objects.get(id=id)
+        if node.is_document():
+            # will return first page
+            # i.e. page with lowerest page.number
+            # attribute
+            _Klass = Page
+            id = node.pages.first().id
     else:
         _Klass = Page
+
     try:
         item = _Klass.objects.get(id=id)
     except _Klass.DoesNotExist:

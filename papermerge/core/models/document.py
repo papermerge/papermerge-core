@@ -406,8 +406,11 @@ class Document(BaseTreeNode):
     def to_dict(self):
         item = {}
 
+        first_page = None
         pages = []
         for page in self.pages.all():
+            if page == self.pages.first():
+                first_page = page
             pages.append(page.to_dict())
 
         item['id'] = self.id
@@ -439,7 +442,15 @@ class Document(BaseTreeNode):
         item['parts'] = parts
 
         kvstore = []
-        for kv in self.kv.all():
+        # Notice that here instead of document's metadata
+        # document first page's metadata is returned.
+        # This is because:
+        # document's metadata == document first page's metadata
+        # Why ?
+        # In document viewer metadata is per page. When user
+        # sees metadata in document viewer he actually sees
+        # document first page metadata.
+        for kv in first_page.kv.all():
             kvstore.append(kv.to_dict())
         item['metadata'] = {}
         item['metadata']['kvstore'] = kvstore

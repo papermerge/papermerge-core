@@ -23383,6 +23383,10 @@ __p+='\n                    <i class="fa fa-folder text-warning mr-1"></i>\n    
 __p+='\n                '+
 ((__t=( title ))==null?'':__t)+
 '\n            </li>\n            <li class="collection-item">\n                <label>'+
+((__t=( gettext('Owner') ))==null?'':__t)+
+':</label> '+
+((__t=( owner ))==null?'':__t)+
+'\n            </li>\n            <li class="collection-item">\n                <label>'+
 ((__t=( gettext('Created') ))==null?'':__t)+
 ':</label> '+
 ((__t=( created_at ))==null?'':__t)+
@@ -27582,6 +27586,7 @@ class SingleNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"]
         _id,
         title,
         tags,
+        owner,
         created_at,
         updated_at,
         download_url;
@@ -27591,11 +27596,13 @@ class SingleNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"]
     title = this.node.get('title');
     created_at = this.node.get('created_at');
     updated_at = this.node.get('updated_at');
+    owner = this.node.get('owner');
     tags = this.node.get('tags');
     download_url = `/node/${_id}/download/`;
     context['id'] = _id;
     context['title'] = title;
     context['ctype'] = ctype;
+    context['owner'] = owner;
     context['created_at'] = created_at;
     context['updated_at'] = updated_at;
     context['tags'] = tags;

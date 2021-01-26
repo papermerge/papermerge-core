@@ -30,7 +30,11 @@
         <ul class="collection">
           <li class="collection-item">
             <label for="language">{% trans "OCR Language" %}:</label>
-            {{document.lang}}
+            {{ document.lang }}
+          </li>
+          <li class="collection-item">
+            <label for="owner">{% trans "Owner" %}:</label>
+            {{ document.user.username }}
           </li>
           <li class="collection-item">
             <label for="created_at">{% trans "Created" %}:</label>

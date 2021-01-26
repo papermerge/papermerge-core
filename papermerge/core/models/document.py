@@ -416,6 +416,7 @@ class Document(BaseTreeNode):
         item['id'] = self.id
         item['title'] = self.title
         item['notes'] = self.notes
+        item['owner'] = self.user.username
         item['versions'] = self.get_versions()
         item['created_at'] = self.human_created_at
         item['updated_at'] = self.human_updated_at

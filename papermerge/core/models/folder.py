@@ -86,6 +86,7 @@ class Folder(BaseTreeNode, index.Indexed):
         item['title'] = self.title
         item['created_at'] = self.human_created_at
         item['updated_at'] = self.human_updated_at
+        item['owner'] = self.user.username
         item['timestamp'] = self.created_at.timestamp()
 
         if self.parent:

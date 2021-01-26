@@ -27726,6 +27726,18 @@ class MetadataWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     return event_map;
   }
 
+  reset_element() {
+    /**
+        Metadata Widgets are created/destroyed
+        as user selects/deselects nodes. As widget is destroyed
+        events are detached from the DOM (undelegated). When it
+        is created again - events MUST be reattached to the dom element.
+        This method uses Backbone's view.setElement(...) to reattach
+        view's events back to the DOM.
+    **/
+    this.setElement(this.widget_el());
+  }
+
   toggle_details(event) {
     /**
       Used by MetadataDocumentWidget
@@ -27837,13 +27849,20 @@ class MetadataWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
 
 class MetadataDocumentWidget extends MetadataWidget {
   /**
-      This must be set to widgetsbar element.
+      Metadata Widget displayed used in document viewer AND
+      in document browser when user selects a node which is a document.
+       This must be set to widgetsbar element.
        For sake of events delegation this element must exist 
       BEFORE metadata widget is rendered.
   **/
   el() {
     // sidebar container of all widgets
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()("#widgetsbar-document");
+  }
+
+  widget_el() {
+    // DOM element containing all metadata
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()(".metadata-widget");
   }
 
   initialize(node) {
@@ -27894,11 +27913,6 @@ class MetadataDocumentWidget extends MetadataWidget {
     let parent = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.currentTarget).closest("li");
     let data = parent.data();
     this.metadata.update_simple(data['cid'], 'value', value);
-  }
-
-  widget_el() {
-    // DOM element containing all metadata
-    return jquery__WEBPACK_IMPORTED_MODULE_0___default()(".metadata-widget");
   }
 
   page_selection_changed(page_id, doc_id) {
@@ -28167,6 +28181,10 @@ class WidgetsBarView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     }
 
     this.$el.html(compiled);
+
+    if (this.metadata_widget) {
+      this.metadata_widget.reset_element();
+    }
   }
 
 }

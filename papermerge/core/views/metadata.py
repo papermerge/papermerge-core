@@ -56,6 +56,21 @@ def metadata(request, model, id):
         for kv in item.kv.all():
             kvstore.append(kv.to_dict())
     else:
+        # Note that for a document metadata can be updated in two ways:
+        #
+        #   1) POST /metadata/node/:id - request issued from document browser
+        #        :id is the ``id`` of respective node
+        #   2) POST /metadata/page/:id i.e. - request issued from document
+        #       viewer. :id in this case is ``id`` of first page of the
+        #       document.
+        #
+        # For case 1) the key/value will be applied on the document and
+        # propagated to the first page while for 2) the update is applied to
+        # the page and not propagated as page models are leaf elements.
+        #
+        # This slight inconsistency works because document metadata is not used
+        # at all. Instead what user thinks is document's metadata is actually
+        # metadata of the first page of the document.
         if isinstance(item, BaseTreeNode):
             node = item
         else:

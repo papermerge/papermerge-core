@@ -20404,6 +20404,7 @@ class Browse extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
         parent_kv = response.parent_kv,
         parent_id = response.parent_id;
     that.nodes.reset();
+    that.parent_kv.reset();
 
     underscore__WEBPACK_IMPORTED_MODULE_0__["default"].each(nodes, function (item) {
       that.nodes.add(new _node__WEBPACK_IMPORTED_MODULE_2__["Node"](item));
@@ -22655,11 +22656,11 @@ return __p;
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<div class="modal-dialog modal-lg modal-dialog-centered" tabindex="-1" role="dialog">\n    <div class="modal-content">\n      <div class="modal-header">\n        <h5 class="modal-title">'+
+__p+='<div class="alert alert-'+
 ((__t=( title ))==null?'':__t)+
-'</h5>\n        <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n          <span aria-hidden="true">&times;</span>\n        </button>\n      </div>\n      <div class="modal-body">\n        <p>'+
+' alert-dismissible">\n    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>\n    '+
 ((__t=( message ))==null?'':__t)+
-'</p>\n      </div>\n      <div class="modal-footer">\n        <button type="button" class="btn btn-success ok">OK</button>\n      </div>\n    </div>\n  </div>\n';
+'.\n</div>';
 }
 return __p;
 };
@@ -24978,13 +24979,8 @@ class Table {
 
       for (let j = 0; j < parent_kv.length; j++) {
         kvstore = parent_kv.at(j);
-        /*
-          If we don't filter out inherited keys
-          nested folders will create duplicates of meta-columns.
-          Because inherited keys will accumulate for each nested folder.
-        */
 
-        if (kvstore && !kvstore.get('kv_inherited')) {
+        if (kvstore) {
           key = kvstore.get('key');
           value = node.get_page_value_for(key);
           virtual_value = node.get_page_virtual_value_for(kvstore.get('key'));
@@ -25025,13 +25021,8 @@ class Table {
 
     for (i = 0; i < parent_kv.length; i++) {
       kvstore = parent_kv.at(i);
-      /*
-        If we don't filter out inherited keys
-        nested folders will create duplicates of meta-columns.
-        Because inherited keys will accumulate for each nested folder.
-      */
 
-      if (kvstore && !kvstore.get('kv_inherited')) {
+      if (kvstore) {
         key = kvstore.get('key');
         result.push(new Column(key, key, undefined));
       }
@@ -26409,25 +26400,16 @@ let TEMPLATE = __webpack_require__(/*! ../templates/message.html */ "./src/js/te
 
 class MessageView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   el() {
-    // this element is defined in admin/_forms.js.html
-    return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#message-modal');
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#messages');
   }
 
   initialize(title, message) {
-    this.title = title;
+    // title is one of following lowercase strings:
+    // success, error, warning
+    this.title = title; // any free form string
+
     this.message = message;
     this.render();
-  }
-
-  events() {
-    let event_map = {
-      'click .btn.ok': 'close'
-    };
-    return event_map;
-  }
-
-  close() {
-    this.$el.modal("hide");
   }
 
   render() {
@@ -26438,7 +26420,6 @@ class MessageView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
       'message': this.message
     }));
     this.$el.html(compiled);
-    this.$el.modal("show");
   }
 
 }
@@ -27558,8 +27539,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _models_downloader__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../models/downloader */ "./src/js/models/downloader.js");
 /* harmony import */ var _models_metadata__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../models/metadata */ "./src/js/models/metadata.js");
 /* harmony import */ var _models_document__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../models/document */ "./src/js/models/document.js");
-/* harmony import */ var _models_metadata_page__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../models/metadata_page */ "./src/js/models/metadata_page.js");
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var _views_message__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../views/message */ "./src/js/views/message.js");
+/* harmony import */ var _models_metadata_page__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../models/metadata_page */ "./src/js/models/metadata_page.js");
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
 
 
 
@@ -27808,7 +27791,14 @@ class MetadataWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   }
 
   _on_save() {
-    this.metadata.save();
+    this.metadata.save({}, {
+      'success': function () {
+        new _views_message__WEBPACK_IMPORTED_MODULE_6__["MessageView"]("success", gettext("Metadata successfully saved"));
+      },
+      'error': function () {
+        new _views_message__WEBPACK_IMPORTED_MODULE_6__["MessageView"]("error", gettext("There was an error while saving metadata"));
+      }
+    });
   }
 
   template(kwargs) {
@@ -27882,7 +27872,7 @@ class MetadataDocumentWidget extends MetadataWidget {
     }
 
     this.listenTo(this.metadata, 'change', this.render);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["PAGE_SELECTION_CHANGED"], this.page_selection_changed, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_8__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_8__["PAGE_SELECTION_CHANGED"], this.page_selection_changed, this);
   }
 
   events() {
@@ -27926,7 +27916,7 @@ class MetadataDocumentWidget extends MetadataWidget {
       return;
     }
 
-    this.metadata = new _models_metadata_page__WEBPACK_IMPORTED_MODULE_6__["MetadataPage"](page_id);
+    this.metadata = new _models_metadata_page__WEBPACK_IMPORTED_MODULE_7__["MetadataPage"](page_id);
     this.listenTo(this.metadata, 'change', this.render);
   }
 
@@ -28096,7 +28086,7 @@ class WidgetsBarView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
 
   initialize() {
     this.info_widget = undefined;
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_7__["SELECTION_CHANGED"], this.selection_changed, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_8__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_8__["SELECTION_CHANGED"], this.selection_changed, this);
   }
 
   selection_changed(selection) {

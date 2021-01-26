@@ -10085,20 +10085,26 @@ ul.pinned_tags li.active {
 .metadata-widget ul {
   margin: 0;
   padding: 0; }
-  .metadata-widget ul li.collection-item .toggle, .metadata-widget ul li.collection-item .label, .metadata-widget ul li.collection-item .close {
-    padding: 0; }
-  .metadata-widget ul li.collection-item .summary {
-    margin: 0.5rem 0; }
-    .metadata-widget ul li.collection-item .summary input[disabled] {
-      width: 100%;
-      background-color: white;
-      border: none;
-      border-bottom: 1px solid #ccc; }
-    .metadata-widget ul li.collection-item .summary input {
-      width: 100%;
-      border: none;
-      border-bottom: 1px solid #666;
-      padding: 0.25rem; }
+  .metadata-widget ul li.collection-item {
+    padding: 0.5rem; }
+    .metadata-widget ul li.collection-item .toggle, .metadata-widget ul li.collection-item .label, .metadata-widget ul li.collection-item .close {
+      padding: 0; }
+    .metadata-widget ul li.collection-item .summary {
+      margin: 0.5rem 0; }
+      .metadata-widget ul li.collection-item .summary input[disabled] {
+        width: 100%;
+        background-color: white;
+        border: none;
+        border-bottom: 1px solid #ccc; }
+      .metadata-widget ul li.collection-item .summary input {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid #666;
+        padding: 0.25rem; }
+  .metadata-widget ul li.collection-item:nth-child(2n) {
+    background-color: #f5f5f5; }
+    .metadata-widget ul li.collection-item:nth-child(2n) input.widget-form {
+      background-color: #f5f5f5; }
 
 .gray_1 {
   background-color: #ffffff; }

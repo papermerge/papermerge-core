@@ -424,7 +424,10 @@ def upload(request):
         'apply_async': True
     }
 
-    doc = go_through_pipelines(init_kwargs, apply_kwargs)
+    try:
+        doc = go_through_pipelines(init_kwargs, apply_kwargs)
+    except ValidationError as error:
+        return str(error), 400
 
     if not doc:
         status = 400

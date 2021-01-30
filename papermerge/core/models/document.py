@@ -1002,6 +1002,9 @@ class AbstractDocument(models.Model):
     def get_pagecount(self, version=None):
         return self.base_ptr.get_pagecount(version=None)
 
+    def get_user(self):
+        return self.base_ptr.user
+
     def get_title(self):
         return self.base_ptr.title
 

@@ -21703,6 +21703,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./src/js/utils.js");
+/* harmony import */ var _views_message__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../views/message */ "./src/js/views/message.js");
+
 
 
 
@@ -21808,7 +21810,22 @@ class UploaderItem extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
         that = this;
     xhr = new XMLHttpRequest();
     xhr.addEventListener('progress', function (e) {
-      if (e.lengthComputable) {
+      let response = JSON.parse(e.currentTarget.response);
+
+      if (e.currentTarget.status == 403) {
+        // this is reponse when e.g. maximum number of nodes is reached
+        that.set({
+          'status': UploaderItem.UPLOAD_ERROR
+        });
+
+        if (response && response.msg) {
+          that.set({
+            'msg': response.msg
+          }); // display error message outside uploader as well
+
+          new _views_message__WEBPACK_IMPORTED_MODULE_4__["MessageView"]("danger", response.msg);
+        }
+      } else if (e.lengthComputable) {
         percent = Math.round(e.loaded * 100 / e.total); // notify subscribers of "upload_progress" event
 
         that.set_progress(percent);
@@ -21825,7 +21842,9 @@ class UploaderItem extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
       if (response && response.msg) {
         that.set({
           'msg': response.msg
-        });
+        }); // display error message outside uploader as well
+
+        new _views_message__WEBPACK_IMPORTED_MODULE_4__["MessageView"]("danger", response.msg);
       }
     }
 
@@ -26444,9 +26463,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 /* harmony import */ var _models_new_folder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../models/new_folder */ "./src/js/models/new_folder.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var _message__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./message */ "./src/js/views/message.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
 
 
 
@@ -26456,7 +26477,7 @@ __webpack_require__.r(__webpack_exports__);
 
 let TEMPLATE = __webpack_require__(/*! ../templates/new_folder.html */ "./src/js/templates/new_folder.html");
 
-class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
+class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
   el() {
     // this element is defined in admin/_forms.js.html
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#new-folder-modal');
@@ -26486,7 +26507,14 @@ class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
         options = {};
 
     options['success'] = function () {
-      _models_dispatcher__WEBPACK_IMPORTED_MODULE_4__["mg_dispatcher"].trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_4__["BROWSER_REFRESH"]);
+      _models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["mg_dispatcher"].trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["BROWSER_REFRESH"]);
+    };
+
+    options['error'] = function (model, response, options) {
+      let title, message, error_view;
+      message = response.responseJSON['msg']; // danger => style error message in red color
+
+      error_view = new _message__WEBPACK_IMPORTED_MODULE_3__["MessageView"]("danger", message);
     };
 
     folder_title = this.$el.find("[name=title]").val();

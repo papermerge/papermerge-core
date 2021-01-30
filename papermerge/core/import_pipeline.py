@@ -287,7 +287,7 @@ method is not supposed to throw errors.
                 self.doc = doc
             except ValidationError as error:
                 logger.error(f"{self.processor} importer: validation failed")
-                raise ValidationError from error
+                raise error
         elif self.doc is not None:
             doc = self.doc
             doc.version = doc.version + 1

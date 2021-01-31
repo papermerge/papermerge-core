@@ -160,5 +160,5 @@ urlpatterns = [
     path(
         'automate/<int:automate_id>/',
         automate_views.automate_change_view, name="automate_change_view"
-    ),
+    )
 ]

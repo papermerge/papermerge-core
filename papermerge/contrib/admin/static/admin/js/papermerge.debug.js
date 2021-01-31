@@ -21983,6 +21983,30 @@ class UserGroupCollection extends backbone__WEBPACK_IMPORTED_MODULE_2__["Collect
 
 /***/ }),
 
+/***/ "./src/js/models/version.js":
+/*!**********************************!*\
+  !*** ./src/js/models/version.js ***!
+  \**********************************/
+/*! exports provided: Version */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Version", function() { return Version; });
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_1__);
+
+
+class Version extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
+  urlRoot() {
+    return '/admin/version/';
+  }
+
+}
+
+/***/ }),
+
 /***/ "./src/js/node.js":
 /*!************************!*\
   !*** ./src/js/node.js ***!
@@ -22234,7 +22258,11 @@ class DgMainSpinner {
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<div class="modal-dialog modal-dialog-centered" role="document">\n  <div class="modal-content">\n    <div class="modal-header">\n      <h5 class="modal-title">\n          About\n      </h5>\n      <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n        <span aria-hidden="true">&times;</span>\n      </button>\n    </div>\n      <div class="modal-body">\n        Version 2.0\n      </div>\n      <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs ok" >OK</button>\n      </div>\n  </div>\n</div>\n';
+__p+='<div class="modal-dialog modal-dialog-centered" role="document">\n  <div class="modal-content">\n    <div class="modal-header">\n      <h5 class="modal-title">\n          '+
+((__t=( gettext('About') ))==null?'':__t)+
+'\n      </h5>\n      <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n        <span aria-hidden="true">&times;</span>\n      </button>\n    </div>\n      <div class="modal-body">\n        <h3 class="text-center m-3">\n          Papermerge '+
+((__t=( version ))==null?'':__t)+
+'\n        </h3>\n        <p class="text-center mb-3">License <a href="https://github.com/ciur/papermerge/blob/master/LICENSE">Apache 2.0</a></p>\n        <p>Papermerge is a document management system designed for scanned documents, digital archives and electronic records.</p>\n        <h5 class="text-center m-3">Resources</h5>\n        <ul class="d-flex flex-column align-items-center p-0">\n          <li><a href="https://www.papermerge.com">www.papermerge.com</a></li>\n          <li><a href="https://www.papermerge.com/blog">Blog</a></li>\n          <li><a href="https://www.youtube.com/channel/UC8KjEsDexEERBw_-VyDbWDg">Youtube Channel</a></li>\n          <li><a href="https://github.com/ciur/papermerge">Source Code</a></li>\n          <li><a href="https://twitter.com/papermerge">Twitter</a></li>\n        </ul>\n        \n      </div>\n      <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs ok" >OK</button>\n      </div>\n  </div>\n</div>\n';
 }
 return __p;
 };
@@ -27585,8 +27613,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _models_version__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../models/version */ "./src/js/models/version.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -27594,14 +27624,16 @@ __webpack_require__.r(__webpack_exports__);
 
 let TEMPLATE = __webpack_require__(/*! ../templates/about.html */ "./src/js/templates/about.html");
 
-class AboutView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
+class AboutView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
   el() {
     // this element is defined in admin/_forms.js.html
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#message-modal');
   }
 
   initialize() {
-    this.render();
+    this.version = new _models_version__WEBPACK_IMPORTED_MODULE_2__["Version"]();
+    this.version.fetch();
+    this.listenTo(this.version, 'change', this.render);
   }
 
   events() {
@@ -27619,7 +27651,7 @@ class AboutView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     let compiled, context;
     context = {};
     compiled = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(TEMPLATE({
-      'version': this.version
+      'version': this.version.get('msg')
     }));
     this.$el.html(compiled);
     this.$el.modal();
@@ -27627,7 +27659,7 @@ class AboutView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
 
 }
 
-class UserMenuView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
+class UserMenuView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
   el() {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#user-menu');
   }

@@ -36,7 +36,8 @@ from .logs import (
 from .index import (
     search,
     BrowseView,
-    inbox_view
+    inbox_view,
+    version_view
 )
 from .preferences import (
     preferences_view,
@@ -68,6 +69,7 @@ __all__ = [
     'search',
     'BrowseView',
     'inbox_view',
+    'version_view',
     'preferences_view',
     'preferences_section_view'
 ]

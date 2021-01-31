@@ -11,6 +11,9 @@ from papermerge.core.models import (
     Access,
 )
 
+from papermerge.core.views.decorators import json_response
+from papermerge.core import __version__ as PAPERMERGE_VERSION
+
 
 class BrowseView(
     LoginRequiredMixin,
@@ -39,6 +42,12 @@ def inbox_view(request):
             'root_node_id': root_node_id
         }
     )
+
+
+@json_response
+@login_required
+def version_view(request):
+    return PAPERMERGE_VERSION
 
 
 @login_required

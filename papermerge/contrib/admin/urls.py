@@ -10,6 +10,7 @@ urlpatterns = [
     path(
         'inbox/', views.inbox_view, name="inbox"
     ),
+    path('version/', views.version_view, name="version"),
     path(
         'browse', views.BrowseView.as_view(), name="browse"
     ),

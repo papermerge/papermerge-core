@@ -18452,17 +18452,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _views_changelist_checkbox_view__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./views/changelist_checkbox_view */ "./src/js/views/changelist_checkbox_view.js");
 /* harmony import */ var _views_context_menu__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./views/context_menu */ "./src/js/views/context_menu.js");
 /* harmony import */ var _views_roles__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./views/roles */ "./src/js/views/roles.js");
-/* harmony import */ var _routers_browse__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./routers/browse */ "./src/js/routers/browse.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! bootstrap/js/dist/util */ "./node_modules/bootstrap/js/dist/util.js");
-/* harmony import */ var bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! bootstrap/js/dist/tab */ "./node_modules/bootstrap/js/dist/tab.js");
-/* harmony import */ var bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_16__);
-/* harmony import */ var bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! bootstrap/js/dist/modal */ "./node_modules/bootstrap/js/dist/modal.js");
-/* harmony import */ var bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var _views_user_menu__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./views/user_menu */ "./src/js/views/user_menu.js");
+/* harmony import */ var _routers_browse__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./routers/browse */ "./src/js/routers/browse.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! bootstrap/js/dist/util */ "./node_modules/bootstrap/js/dist/util.js");
+/* harmony import */ var bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_util__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! bootstrap/js/dist/tab */ "./node_modules/bootstrap/js/dist/tab.js");
+/* harmony import */ var bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_tab__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! bootstrap/js/dist/modal */ "./node_modules/bootstrap/js/dist/modal.js");
+/* harmony import */ var bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(bootstrap_js_dist_modal__WEBPACK_IMPORTED_MODULE_18__);
 
 
 
@@ -18482,10 +18483,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-let backboneSync = backbone__WEBPACK_IMPORTED_MODULE_13___default.a.sync;
 
-backbone__WEBPACK_IMPORTED_MODULE_13___default.a.sync = function (method, model, options) {
-  let csrf_token = jquery__WEBPACK_IMPORTED_MODULE_14___default()("[name=csrfmiddlewaretoken]").val();
+let backboneSync = backbone__WEBPACK_IMPORTED_MODULE_14___default.a.sync;
+
+backbone__WEBPACK_IMPORTED_MODULE_14___default.a.sync = function (method, model, options) {
+  let csrf_token = jquery__WEBPACK_IMPORTED_MODULE_15___default()("[name=csrfmiddlewaretoken]").val();
   /*
    * The jQuery `ajax` method includes a 'headers' option
    * which lets you set any headers you like
@@ -18503,7 +18505,7 @@ backbone__WEBPACK_IMPORTED_MODULE_13___default.a.sync = function (method, model,
 };
 
 let App = function () {
-  let browse_view, actions_view, breadcrumb_view, document_view, document_actions_view, browse_router, tag_preview_view, pinned_tags_view, changelist_checkbox, av_tags_view, automate_tags_view, widgetsbar_view, context_menu_view, role_multi_toggle_view;
+  let browse_view, actions_view, breadcrumb_view, document_view, document_actions_view, browse_router, tag_preview_view, pinned_tags_view, changelist_checkbox, av_tags_view, automate_tags_view, widgetsbar_view, context_menu_view, role_multi_toggle_view, user_menu_view;
   browse_view = new _views_browse__WEBPACK_IMPORTED_MODULE_1__["BrowseView"]();
   actions_view = new _views_actions__WEBPACK_IMPORTED_MODULE_3__["ActionsView"]();
   breadcrumb_view = new _views_breadcrumb__WEBPACK_IMPORTED_MODULE_2__["BreadcrumbView"]();
@@ -18515,19 +18517,20 @@ let App = function () {
   widgetsbar_view = new _views_widgetsbar__WEBPACK_IMPORTED_MODULE_7__["WidgetsBarView"]();
   context_menu_view = new _views_context_menu__WEBPACK_IMPORTED_MODULE_10__["ContextMenuView"]();
   role_multi_toggle_view = new _views_roles__WEBPACK_IMPORTED_MODULE_11__["RoleMultiToggleView"]();
+  user_menu_view = new _views_user_menu__WEBPACK_IMPORTED_MODULE_12__["UserMenuView"]();
 
-  if (jquery__WEBPACK_IMPORTED_MODULE_14___default()("#document").length == 1) {
+  if (jquery__WEBPACK_IMPORTED_MODULE_15___default()("#document").length == 1) {
     // we in document view. Document view and browser view
     // are exclusive.
     document_view = new _views_document__WEBPACK_IMPORTED_MODULE_4__["DocumentView"]();
     document_actions_view = new _views_document__WEBPACK_IMPORTED_MODULE_4__["DocumentActionsView"]();
   } else {
-    browse_router = new _routers_browse__WEBPACK_IMPORTED_MODULE_12__["BrowseRouter"](browse_view, breadcrumb_view, actions_view);
-    backbone__WEBPACK_IMPORTED_MODULE_13___default.a.history.start();
+    browse_router = new _routers_browse__WEBPACK_IMPORTED_MODULE_13__["BrowseRouter"](browse_view, breadcrumb_view, actions_view);
+    backbone__WEBPACK_IMPORTED_MODULE_14___default.a.history.start();
   }
 };
 
-jquery__WEBPACK_IMPORTED_MODULE_14___default()(function (event) {
+jquery__WEBPACK_IMPORTED_MODULE_15___default()(function (event) {
   App();
 });
 
@@ -22218,6 +22221,24 @@ class DgMainSpinner {
   }
 
 }
+
+/***/ }),
+
+/***/ "./src/js/templates/about.html":
+/*!*************************************!*\
+  !*** ./src/js/templates/about.html ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="modal-dialog modal-dialog-centered" role="document">\n  <div class="modal-content">\n    <div class="modal-header">\n      <h5 class="modal-title">\n          About\n      </h5>\n      <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n        <span aria-hidden="true">&times;</span>\n      </button>\n    </div>\n      <div class="modal-body">\n        Version 2.0\n      </div>\n      <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs ok" >OK</button>\n      </div>\n  </div>\n</div>\n';
+}
+return __p;
+};
+
 
 /***/ }),
 
@@ -27545,6 +27566,81 @@ class UploaderView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
       'files': this.uploader
     }));
     this.$el.html(compiled);
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/js/views/user_menu.js":
+/*!***********************************!*\
+  !*** ./src/js/views/user_menu.js ***!
+  \***********************************/
+/*! exports provided: UserMenuView */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UserMenuView", function() { return UserMenuView; });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+
+let TEMPLATE = __webpack_require__(/*! ../templates/about.html */ "./src/js/templates/about.html");
+
+class AboutView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
+  el() {
+    // this element is defined in admin/_forms.js.html
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#message-modal');
+  }
+
+  initialize() {
+    this.render();
+  }
+
+  events() {
+    let event_map = {
+      'click .ok': 'on_ok'
+    };
+    return event_map;
+  }
+
+  on_ok(event) {
+    this.$el.modal('hide');
+  }
+
+  render() {
+    let compiled, context;
+    context = {};
+    compiled = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(TEMPLATE({
+      'version': this.version
+    }));
+    this.$el.html(compiled);
+    this.$el.modal();
+  }
+
+}
+
+class UserMenuView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
+  el() {
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#user-menu');
+  }
+
+  events() {
+    let event_map = {
+      "click #about": "on_about"
+    };
+    return event_map;
+  }
+
+  on_about(event) {
+    let about_view = new AboutView();
   }
 
 }

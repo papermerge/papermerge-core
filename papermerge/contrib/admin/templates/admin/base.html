@@ -96,7 +96,7 @@
                 {% firstof user.get_short_name user.get_username %}
               </div>
             </a>
-            <ul class="dropdown-menu">
+            <ul id="user-menu" class="dropdown-menu">
               <li class="dropdown-item">
                 {% if has_perm_change_user %}
                   <a href="{% url 'account_change_password' %}"><i class="fa fa-asterisk mx-2"></i>
@@ -127,6 +127,11 @@
               <li class="dropdown-item">
                 <a target="_blank" href="https://papermerge.com/docs/"><i class="fa fa-book-open mx-2"></i>
                   {% trans 'Documentation' %}
+                </a>
+              </li>
+              <li class="dropdown-item">
+                <a id="about" href="#"><i class="fa fa-question-circle mx-2"></i>
+                  {% trans 'About' %}
                 </a>
               </li>
               <div class="dropdown-divider"></div>

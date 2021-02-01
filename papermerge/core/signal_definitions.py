@@ -34,6 +34,17 @@ page_ocr = Signal(
     ]
 )
 
+# sent by the worker before starting OCR
+pre_page_ocr = Signal(
+    providing_args=[
+        "user_id",
+        "document_id",
+        "file_name",
+        "page_num",
+        "namespace",
+    ]
+)
+
 # sent by the worker after .txt file was extracted
 post_page_txt = Signal(
     providing_args=[

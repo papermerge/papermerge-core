@@ -162,6 +162,23 @@ def notify_txt_ready(page_path, **kwargs):
         )
 
 
+def notify_pre_page_ocr(page_path, **kwargs):
+    user_id = kwargs.get('user_id', None)
+    document_id = kwargs.get('document_id', None)
+    file_name = kwargs.get('file_name', None)
+    page_num = kwargs.get('page_num', 1)
+    namespace = kwargs.get('namespace', None)
+
+    signals.pre_page_ocr.send(
+        sender=signals.WORKER,
+        user_id=user_id,
+        document_id=document_id,
+        file_name=file_name,
+        page_num=page_num,
+        namespace=namespace,
+    )
+
+
 def ocr_page_pdf(
     doc_path,
     page_num,
@@ -198,6 +215,14 @@ def ocr_page_pdf(
                 page_path,
                 media_root=settings.MEDIA_ROOT
             )
+
+    notify_pre_page_ocr(
+        page_path,
+        page_num=page_num,
+        lang=lang,
+        file_name=doc_path.file_name,
+        **kwargs
+    )
 
     if page_num <= page_count:
         page_path = PagePath(
@@ -259,6 +284,13 @@ def ocr_page_image(
         step=Step(1),
         # jpeg, jpg, png are 1 page documents
         page_count=1
+    )
+    notify_pre_page_ocr(
+        page_path,
+        page_num=page_num,
+        lang=lang,
+        file_name=doc_path.file_name,
+        **kwargs
     )
     # resize and eventually convert (png -> jpg)
     resize_img(

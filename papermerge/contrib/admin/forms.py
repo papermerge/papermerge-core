@@ -2,6 +2,7 @@ from functools import reduce
 from itertools import groupby
 
 from django import forms
+from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import (
     Group,
@@ -116,6 +117,10 @@ class TagForm(ControlForm):
             'fg_color': TextInput(attrs={'type': 'color'}),
             'bg_color': TextInput(attrs={'type': 'color'}),
         }
+
+    def clean_description(self):
+        data = self.cleaned_data['description']
+        return escape(data)
 
 
 class CustomCheckboxSelectMultiple(forms.CheckboxSelectMultiple):

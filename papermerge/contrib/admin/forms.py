@@ -118,6 +118,18 @@ class TagForm(ControlForm):
             'bg_color': TextInput(attrs={'type': 'color'}),
         }
 
+    def clean_fg_color(self):
+        data = self.cleaned_data['fg_color']
+        return escape(data)
+
+    def clean_bg_color(self):
+        data = self.cleaned_data['bg_color']
+        return escape(data)
+
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        return escape(data)
+
     def clean_description(self):
         data = self.cleaned_data['description']
         return escape(data)

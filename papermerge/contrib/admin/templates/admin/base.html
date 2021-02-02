@@ -189,8 +189,9 @@
   <!-- ./wrapper -->
 
   <!-- Modal Forms -->
-  {% block modals %}
-  {% endblock modals %}
+{% block modals %}
+    {% include 'admin/_forms.js.html' %}
+{% endblock modals %}
   <!-- Modal Forms -->
 
   <!-- REQUIRED SCRIPTS -->

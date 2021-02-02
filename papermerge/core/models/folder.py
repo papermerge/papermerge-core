@@ -166,7 +166,8 @@ class AbstractFolder(models.Model):
 
 def get_inbox_children(user):
     """
-    Returns all children nodes of given user's inbox folder
+    Returns a ``QuerySet`` containing the immediate children nodes
+    of given user's inbox folder
     """
     inbox_node = BaseTreeNode.objects.get(
         title=Folder.INBOX_NAME,

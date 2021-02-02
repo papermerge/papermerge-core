@@ -316,7 +316,11 @@ def get_pages(
 ):
     """
     :nodes: is a query set of BaseTreeNodes
+
+    Returns a QuerySet of Page(s)
     """
+    if nodes.count() == 0:
+        return Page.objects.none()
 
     pages = Page.objects.filter(
         document__in=nodes

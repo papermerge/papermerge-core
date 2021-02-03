@@ -7,11 +7,14 @@ from django.http import (
     HttpResponse,
     HttpResponseForbidden
 )
+from django.utils.html import escape
+
 from papermerge.core.models import (
     BaseTreeNode,
     Page,
     Access
 )
+
 from papermerge.core.models.kvstore import (get_currency_formats,
                                             get_date_formats, get_kv_types,
                                             get_numeric_formats)

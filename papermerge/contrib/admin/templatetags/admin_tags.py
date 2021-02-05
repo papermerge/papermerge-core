@@ -233,6 +233,17 @@ def localized_datetime(context, datetime_instance):
 
 
 @register.simple_tag(takes_context=True)
+def localized_date(context, datetime_instance):
+    user = context['request'].user
+
+    if user:
+        date_fmt = user.preferences['localization__date_format']
+        ret_str = datetime_instance.strftime(date_fmt)
+
+        return ret_str
+
+
+@register.simple_tag(takes_context=True)
 def select_if_current_version(context, version, forloop_first):
     """
     Decide if current select option should be selected or no.

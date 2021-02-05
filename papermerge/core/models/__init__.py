@@ -118,6 +118,13 @@ class User(AbstractUser):
         )
     )
 
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
     def update_current_storage(self):
         user_docs = Document.objects.filter(user=self)
         self.current_storage_size = sum(int(doc.size) for doc in user_docs)

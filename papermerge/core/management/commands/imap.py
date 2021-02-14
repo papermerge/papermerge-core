@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from papermerge.core.importers.imap import import_attachment
+from papermerge.core.importers.imap import login as imap_login
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+
         connect_action = options.get('connect', False)
         count_action = options.get('count', False)
         import_action = options.get('import', False)
@@ -50,7 +52,7 @@ class Command(BaseCommand):
         self._delete = settings.PAPERMERGE_IMPORT_MAIL_DELETE
         self._by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
         self._by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
-        self._inbox_name = settings.PAPERMERGE_IMPORT_INBOX_NAME
+        self._inbox_name = settings.PAPERMERGE_IMPORT_MAIL_INBOX
 
         if connect_action:
             self._connect_action()
@@ -60,7 +62,15 @@ class Command(BaseCommand):
             self._import_action()
 
     def _connect_action(self):
-        pass
+        server = imap_login(
+            imap_server=self._imap_server,
+            username=self._username,
+            password=self._password,
+        )
+        if server:
+            print("Connection to IMAP server: OK")
+        else:
+            print("Connection to IMAP server: FAIL")
 
     def _count_action(self):
         pass

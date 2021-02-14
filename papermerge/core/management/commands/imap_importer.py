@@ -50,7 +50,7 @@ class Command(BaseCommand):
         self._delete = settings.PAPERMERGE_IMPORT_MAIL_DELETE
         self._by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
         self._by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
-        self._inbox_name = settings.PAPERMERGE_IMPORT_INBOX_NAME
+        self._inbox_name = settings.PAPERMERGE_IMPORT_MAIL_INBOX
 
         try:
             self.main_loop(loop_time)

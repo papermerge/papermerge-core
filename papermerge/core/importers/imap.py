@@ -138,7 +138,16 @@ def import_attachment():
     )
 
     if server:
-        server.select_folder(settings.PAPERMERGE_IMPORT_MAIL_INBOX)
+        try:
+            server.select_folder(settings.PAPERMERGE_IMPORT_MAIL_INBOX)
+        except Exception:
+            logger.error(
+                f"IMAP import: Failed to select folder. "
+                f"Maybe user \"{settings.PAPERMERGE_IMPORT_MAIL_USER}\""
+                f" needs read write access to the folder"
+                f"\"{settings.PAPERMERGE_IMPORT_MAIL_INBOX}\"?"
+            )
+            return
         messages = server.search(['UNSEEN'])
 
         logger.debug(

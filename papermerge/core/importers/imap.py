@@ -5,8 +5,6 @@ from imapclient import IMAPClient
 from imapclient.exceptions import LoginError
 from imapclient.response_types import BodyData
 
-from django.conf import settings
-
 from papermerge.core.import_pipeline import IMAP, go_through_pipelines
 from papermerge.core.models import User
 
@@ -80,10 +78,12 @@ def contains_attachments(structure):
     return False
 
 
-def extract_info_from_email(email_message):
+def extract_info_from_email(
+    email_message,
+    by_user=False,
+    by_secret=False
+):
 
-    by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
-    by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
     extracted_by_user = False
     user = None
     user_found = None
@@ -125,12 +125,15 @@ def extract_info_from_email(email_message):
     return user
 
 
-def import_attachment():
-    imap_server = settings.PAPERMERGE_IMPORT_MAIL_HOST
-    username = settings.PAPERMERGE_IMPORT_MAIL_USER
-    password = settings.PAPERMERGE_IMPORT_MAIL_PASS
-    delete = settings.PAPERMERGE_IMPORT_MAIL_DELETE
-
+def import_attachment(
+    imap_server,
+    username,
+    password,
+    delete=False,
+    inbox_name="INBOX",
+    by_user=False,
+    by_secret=False
+):
     server = login(
         imap_server=imap_server,
         username=username,
@@ -139,13 +142,13 @@ def import_attachment():
 
     if server:
         try:
-            server.select_folder(settings.PAPERMERGE_IMPORT_MAIL_INBOX)
+            server.select_folder(inbox_name)
         except Exception:
             logger.error(
                 f"IMAP import: Failed to select folder. "
-                f"Maybe user \"{settings.PAPERMERGE_IMPORT_MAIL_USER}\""
+                f"Maybe user \"{username}\""
                 f" needs read write access to the folder "
-                f"\"{settings.PAPERMERGE_IMPORT_MAIL_INBOX}\"?"
+                f"\"{inbox_name}\"?"
             )
             return
         messages = server.search(['UNSEEN'])

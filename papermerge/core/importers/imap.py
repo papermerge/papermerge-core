@@ -144,7 +144,7 @@ def import_attachment():
             logger.error(
                 f"IMAP import: Failed to select folder. "
                 f"Maybe user \"{settings.PAPERMERGE_IMPORT_MAIL_USER}\""
-                f" needs read write access to the folder"
+                f" needs read write access to the folder "
                 f"\"{settings.PAPERMERGE_IMPORT_MAIL_INBOX}\"?"
             )
             return

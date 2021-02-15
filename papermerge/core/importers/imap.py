@@ -121,6 +121,7 @@ def get_matching_user(
     sender_address = email.utils.parseaddr(
         email_message.get('From'))[1]
     body = email_message.get_body()
+
     if body is not None:
         body_text = body.as_string()
     email_main_text = [email_message.get('Subject'), body_text]
@@ -130,6 +131,9 @@ def get_matching_user(
         ]).split('SECRET{')[1].split('}')[0]
     except IndexError:
         message_secret = None
+
+    if message_secret:
+        message_secret = message_secret.strip()
 
     # Priority to sender address
     if by_user:

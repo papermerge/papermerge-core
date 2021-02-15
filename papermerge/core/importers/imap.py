@@ -125,6 +125,53 @@ def extract_info_from_email(
     return user
 
 
+def select_inbox(
+    server,
+    inbox_name,
+    readonly=False
+):
+    try:
+        server.select_folder(
+            inbox_name,
+            readonly=False
+        )
+    except Exception:
+        logger.error(
+            f"IMAP import: Failed to select folder. "
+            f"Maybe user needs read write access to the folder "
+            f"\"{inbox_name}\"?"
+        )
+        return
+
+    return server
+
+
+def email_iterator(server, delete=False):
+
+    messages = server.search(['UNSEEN'])
+
+    logger.debug(
+        f"IMAP Import: UNSEEN messages {len(messages)} count"
+    )
+
+    messages_structure = server.fetch(messages, ['BODYSTRUCTURE'])
+
+    for uid, structure in messages_structure.items():
+        if not contains_attachments(structure[b'BODYSTRUCTURE']):
+            messages.remove(uid)
+
+    for uid, message_data in server.fetch(messages, ['RFC822']).items():
+        body = message_data[b'RFC822']
+        email_message = email.message_from_bytes(
+            body,
+            policy=email.policy.default
+        )
+        yield email_message
+
+    if delete:
+        server.delete_messages(messages)
+
+
 def import_attachment(
     imap_server,
     username,
@@ -140,44 +187,19 @@ def import_attachment(
         password=password
     )
 
-    if server:
-        try:
-            server.select_folder(inbox_name)
-        except Exception:
-            logger.error(
-                f"IMAP import: Failed to select folder. "
-                f"Maybe user \"{username}\""
-                f" needs read write access to the folder "
-                f"\"{inbox_name}\"?"
-            )
-            return
-        messages = server.search(['UNSEEN'])
-
-        logger.debug(
-            f"IMAP Import: UNSEEN messages {len(messages)} count"
-        )
-
-        messages_structure = server.fetch(messages, ['BODYSTRUCTURE'])
-        for uid, structure in messages_structure.items():
-            if not contains_attachments(structure[b'BODYSTRUCTURE']):
-                messages.remove(uid)
-
-        for uid, message_data in server.fetch(
-            messages, ['RFC822']
-        ).items():
-            body = message_data[b'RFC822']
-            email_message = email.message_from_bytes(
-                body, policy=email.policy.default)
-            user = extract_info_from_email(email_message)
-            ingested = read_email_message(email_message, user)
-            if not ingested:
-                messages.remove(uid)
-
-        if delete:
-            server.delete_messages(messages)
-
-    else:
+    if not server:
         logger.info(
             f"IMAP import: Failed to login to imap server {imap_server}."
             " Please double check IMAP account credentials."
         )
+        return
+
+    server = select_inbox(server, inbox_name)
+
+    for email_message in email_iterator(server, delete=delete):
+        user = extract_info_from_email(email_message)
+        read_email_message(email_message, user)
+
+        ## ?
+        ##if not ingested:
+        ##   messages.remove(uid)

@@ -2,7 +2,11 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from papermerge.core.importers.imap import import_attachment
+from papermerge.core.importers.imap import (
+    import_attachment,
+    email_iterator,
+    select_inbox
+)
 from papermerge.core.importers.imap import login as imap_login
 
 
@@ -29,7 +33,10 @@ class Command(BaseCommand):
         parser.add_argument(
             '--count',
             action='store_true',
-            help="Counts total number of UNSEED email messages"
+            help="Counts total number of UNSEEN email messages"
+            " with attachments. Note that running this command will "
+            "mark messages as SEEN. Suitable only for "
+            "troubleshooting imap importer."
         )
         parser.add_argument(
             '--import',
@@ -73,7 +80,16 @@ class Command(BaseCommand):
             print("Connection to IMAP server: FAIL")
 
     def _count_action(self):
-        pass
+        server = imap_login(
+            imap_server=self._imap_server,
+            username=self._username,
+            password=self._password,
+        )
+        if server:
+            server = select_inbox(server, self._inbox_name, readonly=True)
+            emails_count = list(email_iterator(server))
+
+            print(f"Total count: {len(emails_count)}")
 
     def _import_action(self):
 

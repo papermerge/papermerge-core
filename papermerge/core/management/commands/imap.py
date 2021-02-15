@@ -74,10 +74,11 @@ class Command(BaseCommand):
             username=self._username,
             password=self._password,
         )
+        self.stdout.write("Connection to IMAP server: ", ending='')
         if server:
-            print("Connection to IMAP server: OK")
+            self.stdout.write(self.style.SUCCESS("OK"))
         else:
-            print("Connection to IMAP server: FAIL")
+            self.stdout.write(self.style.ERROR("FAIL"))
 
     def _count_action(self):
         server = imap_login(

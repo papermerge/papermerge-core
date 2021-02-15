@@ -69,16 +69,17 @@ class Command(BaseCommand):
             self._import_action()
 
     def _connect_action(self):
-        server = imap_login(
-            imap_server=self._imap_server,
-            username=self._username,
-            password=self._password,
-        )
-        self.stdout.write("Connection to IMAP server: ", ending='')
-        if server:
-            self.stdout.write(self.style.SUCCESS("OK"))
-        else:
-            self.stdout.write(self.style.ERROR("FAIL"))
+        if self._all_credentials_provided():
+            server = imap_login(
+                imap_server=self._imap_server,
+                username=self._username,
+                password=self._password,
+            )
+            self.stdout.write("Connection to IMAP server: ", ending='')
+            if server:
+                self.stdout.write(self.style.SUCCESS("OK"))
+            else:
+                self.stdout.write(self.style.ERROR("FAIL"))
 
     def _count_action(self):
         server = imap_login(
@@ -90,7 +91,7 @@ class Command(BaseCommand):
             server = select_inbox(server, self._inbox_name, readonly=True)
             emails_count = list(email_iterator(server))
 
-            print(f"Total count: {len(emails_count)}")
+            self.stdout.write(f"Total count: {len(emails_count)}")
 
     def _import_action(self):
 
@@ -105,7 +106,9 @@ class Command(BaseCommand):
                 by_secret=self._by_secret
             )
         else:
-            print("Not all credentials are provided.")
+            self.stdout.write(
+                self.style.ERROR("Not all credentials are provided.")
+            )
 
     def _all_credentials_provided(self):
         """
@@ -116,15 +119,21 @@ class Command(BaseCommand):
         """
 
         if not self._imap_server:
-            print("IMPORT_MAIL_HOST is empty.")
+            self.stdout.write(
+                self.style.ERROR("IMPORT_MAIL_HOST is empty.")
+            )
             return False
 
         if not self._username:
-            print("IMPORT_MAIL_USER is empty.")
+            self.stdout.write(
+                self.style.ERROR("IMPORT_MAIL_USER is empty.")
+            )
             return False
 
         if not self._password:
-            print("IMPORT_MAIL_PASS is empty.")
+            self.stdout.write(
+                self.style.ERROR("IMPORT_MAIL_PASS is empty.")
+            )
             return False
 
         return True

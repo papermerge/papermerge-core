@@ -4,6 +4,7 @@ import logging
 from imapclient import IMAPClient
 from imapclient.exceptions import LoginError
 from imapclient.response_types import BodyData
+from email.message import EmailMessage
 
 from papermerge.core.import_pipeline import IMAP, go_through_pipelines
 from papermerge.core.models import User
@@ -13,34 +14,51 @@ logger = logging.getLogger(__name__)
 
 
 def login(imap_server, username, password):
+    """
+    Login to provided IMAP server.
+
+    All arguments :imap_server:, :username: and :password:
+    are string instances.
+
+    On successful login returns a non empty ``imapclient.IMAPClient`` instance.
+    """
 
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    server = IMAPClient(
+    imap_client = IMAPClient(
         imap_server,
         ssl_context=ssl_context
     )
 
     try:
-        server.login(username, password)
+        imap_client.login(username, password)
     except LoginError:
         logger.error(
             "IMAP Import: ERROR. Login failed."
         )
         return None
 
-    return server
+    return imap_client
 
 
-def read_email_message(message, user=None, skip_ocr=False):
+def trigger_document_pipeline(
+    email_message: EmailMessage,
+    user=None,
+    skip_ocr=False
+):
     """
-    message is an instance of python's module email.message
+    email_message is instance of ``email.message.EmailMessage``.
+    Where email package is python standard (for python >= 3.6)
+    library for managing email messages.
     """
     ingested = False
 
-    for part in message.iter_attachments():
+    if not isinstance(email_message, EmailMessage):
+        raise ValueError("Expecting email.message.EmailMessage instance")
+
+    for part in email_message.iter_attachments():
         try:
             payload = part.get_content()
         except KeyError:
@@ -78,16 +96,27 @@ def contains_attachments(structure):
     return False
 
 
-def extract_info_from_email(
-    email_message,
+def get_matching_user(
+    email_message: EmailMessage,
     by_user=False,
     by_secret=False
 ):
+    """
+    Returns ``papermerge.core.models.User`` instance
+    of the user for whom given email message is addressed.
+
+    email_message is instance of ``email.message.EmailMessage``.
+    Where email package is python standard (for python >= 3.6)
+    library for managing email messages.
+    """
 
     extracted_by_user = False
     user = None
     user_found = None
     body_text = None
+
+    if not isinstance(email_message, EmailMessage):
+        raise ValueError("Expecting email.message.EmailMessage instance")
 
     sender_address = email.utils.parseaddr(
         email_message.get('From'))[1]
@@ -126,12 +155,18 @@ def extract_info_from_email(
 
 
 def select_inbox(
-    server,
+    imap_client,
     inbox_name,
     readonly=False
 ):
+    """
+    Thin layer over imap_client.select_folder function
+    """
+    if not isinstance(imap_client, IMAPClient):
+        raise ValueError("Expecting IMAPClient instance as first argument")
+
     try:
-        server.select_folder(
+        imap_client.select_folder(
             inbox_name,
             readonly=False
         )
@@ -143,24 +178,38 @@ def select_inbox(
         )
         return
 
-    return server
+    return imap_client
 
 
-def email_iterator(server, delete=False):
+def email_iterator(
+    imap_client: IMAPClient,
+    delete=False
+):
+    """
+    Generator used for lazy iteration over
+    all UNEED email massages WITH attachment.
 
-    messages = server.search(['UNSEEN'])
+    Yields ``email.message.EmailMessage`` instances.
+    Where email package is python standard (for python >= 3.6)
+    library for managing email messages.
+    """
+
+    if not isinstance(imap_client, IMAPClient):
+        raise ValueError("Expecting IMAPClient instance as first argument")
+
+    messages = imap_client.search(['UNSEEN'])
 
     logger.debug(
         f"IMAP Import: UNSEEN messages {len(messages)} count"
     )
 
-    messages_structure = server.fetch(messages, ['BODYSTRUCTURE'])
+    messages_structure = imap_client.fetch(messages, ['BODYSTRUCTURE'])
 
     for uid, structure in messages_structure.items():
         if not contains_attachments(structure[b'BODYSTRUCTURE']):
             messages.remove(uid)
 
-    for uid, message_data in server.fetch(messages, ['RFC822']).items():
+    for uid, message_data in imap_client.fetch(messages, ['RFC822']).items():
         body = message_data[b'RFC822']
         email_message = email.message_from_bytes(
             body,
@@ -169,37 +218,40 @@ def email_iterator(server, delete=False):
         yield email_message
 
     if delete:
-        server.delete_messages(messages)
+        imap_client.delete_messages(messages)
 
 
 def import_attachment(
-    imap_server,
-    username,
-    password,
+    imap_server: str,
+    username: str,
+    password: str,
     delete=False,
     inbox_name="INBOX",
     by_user=False,
     by_secret=False
 ):
-    server = login(
+    imap_client = login(
         imap_server=imap_server,
         username=username,
         password=password
     )
 
-    if not server:
+    if not imap_client:
         logger.info(
             f"IMAP import: Failed to login to imap server {imap_server}."
             " Please double check IMAP account credentials."
         )
         return
 
-    server = select_inbox(server, inbox_name)
+    imap_client = select_inbox(imap_client, inbox_name)
 
-    for email_message in email_iterator(server, delete=delete):
-        user = extract_info_from_email(email_message)
-        read_email_message(email_message, user)
-
-        ## ?
-        ##if not ingested:
-        ##   messages.remove(uid)
+    for email_message in email_iterator(imap_client, delete=delete):
+        user = get_matching_user(
+            email_message,
+            by_user=by_user,
+            by_secret=by_secret
+        )
+        trigger_document_pipeline(
+            email_message=email_message,
+            user=user
+        )

@@ -1,10 +1,13 @@
 import ssl
 import email
 import logging
+
 from imapclient import IMAPClient
 from imapclient.exceptions import LoginError
 from imapclient.response_types import BodyData
 from email.message import EmailMessage
+
+from django.db.models import Q
 
 from papermerge.core.import_pipeline import IMAP, go_through_pipelines
 from papermerge.core.models import User
@@ -96,6 +99,79 @@ def contains_attachments(structure):
     return False
 
 
+def get_secret(str_or_list):
+    """
+    Find and returns mail secret.
+
+    Mail secret uses following format:
+
+        SECRET{ some-secret }
+
+    note that there are no spaces between all capitalized keyword
+    SECRET and immediately following it curly brackets.
+    However, the text inside curly brackets can be surrounded by white
+    spaces. In example above ``get_secret``
+    function returns "some-secret" string.
+
+    :str_or_list: argument can be either a string of a list of
+    strings.
+    """
+
+    text = str_or_list
+
+    if isinstance(str_or_list, list):
+        text = "\n".join(str_or_list)
+
+    try:
+        message_secret = text.split('SECRET{')[1].split('}')[0]
+    except IndexError:
+        message_secret = None
+
+    if message_secret:
+        message_secret = message_secret.strip()
+
+    return message_secret
+
+
+def match_by_user(to_field, from_field):
+    """
+    Returns first user with email address matching to_field or from_field.
+
+    Note that search is perfomed only on users with ``mail_by_user`` attribute
+    set to True.
+    :user: is instance of ``papermerge.core.models.User``
+    :to_field: and :from_field: are email addresses as string.
+
+    If no user matches - returns None.
+    """
+
+    user_found = User.objects.filter(
+        Q(email=from_field) | Q(email=to_field), Q(mail_by_user=True)
+    ).first()
+
+    logger.debug(f"{IMAP} importer: found user {user_found} from email")
+
+    return user_found
+
+
+def match_by_secret(message_secret):
+    """
+    Returns first user with matching mail_secret.
+
+    :user: is instance of ``papermerge.core.models.User``
+    Search is performed only on users with ``mail_by_secret`` flag set to
+    True.
+    If no user matches - returns None.
+    """
+    user_found = User.objects.filter(
+        mail_secret=message_secret, mail_by_secret=True
+    ).first()
+
+    logger.debug(f"{IMAP} importer: found user {user_found} from secret")
+
+    return user_found
+
+
 def get_matching_user(
     email_message: EmailMessage,
     by_user=False,
@@ -108,54 +184,49 @@ def get_matching_user(
     email_message is instance of ``email.message.EmailMessage``.
     Where email package is python standard (for python >= 3.6)
     library for managing email messages.
+
+    Will return None when no user matched.
     """
 
-    extracted_by_user = False
-    user = None
-    user_found = None
     body_text = None
+    user_found = None
 
     if not isinstance(email_message, EmailMessage):
         raise ValueError("Expecting email.message.EmailMessage instance")
 
-    sender_address = email.utils.parseaddr(
+    from_field = email.utils.parseaddr(
         email_message.get('From'))[1]
+
+    to_field = email.utils.parseaddr(
+        email_message.get('To'))[1]
+
     body = email_message.get_body()
 
     if body is not None:
         body_text = body.as_string()
-    email_main_text = [email_message.get('Subject'), body_text]
-    try:
-        message_secret = '\n'.join([
-            text for text in email_main_text if text
-        ]).split('SECRET{')[1].split('}')[0]
-    except IndexError:
-        message_secret = None
 
-    if message_secret:
-        message_secret = message_secret.strip()
+    subject_text = email_message.get('Subject')
 
-    # Priority to sender address
+    # secret can be in body or in subject
+    message_secret = get_secret(
+        [body_text, subject_text]
+    )
+
     if by_user:
-        user_found = User.objects.filter(
-            email=sender_address
-        ).first()
-        logger.debug(f"{IMAP} importer: found user {user_found} from email")
-    if user_found and user_found.mail_by_user:
-        user = user_found
-        extracted_by_user = True
+        user_found = match_by_user(
+            to_field=to_field,
+            from_field=from_field
+        )
 
-    # Then check secret
-    if not extracted_by_user and by_secret and message_secret is not None:
-        user_found = User.objects.filter(
-            mail_secret=message_secret
-        ).first()
-        logger.debug(f"{IMAP} importer: found user {user_found} from secret")
-    if user_found and user_found.mail_by_secret:
-        user = user_found
+    # matched by_user?
+    if user_found:
+        # yes, it matched, just return.
+        return user_found
 
-    # Otherwise put it into first superuser's inbox
-    return user
+    if by_secret and message_secret is not None:
+        user_found = match_by_secret(message_secret)
+
+    return user_found
 
 
 def select_inbox(

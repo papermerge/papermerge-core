@@ -16,14 +16,53 @@ from .lib.lang import get_ocr_lang_choices, get_default_ocr_lang
 def _get_timezone_choices():
     return list((tz, tz) for tz in common_timezones)
 
+def _is_email_routing_enabled():
+
+    by_user = getattr(
+        settings,
+        'PAPERMERGE_IMPORT_MAIL_BY_USER',
+        False
+    )
+
+    by_secret = getattr(
+        settings,
+        'PAPERMERGE_IMPORT_MAIL_BY_SECRET',
+        False
+    )
+    return by_user or by_secret
+
 
 class Section(OrigSection):
+    """
+    Section has following attributes:
+
+        * name
+        * verbose_name
+        * help_text
+        * icon_name
+        * visible (default=True)
+
+    If Section has visibility attribute set to False - it won't be
+    displayed/visible in User preferences view.
+    Example:
+    if administrator decides to disable email_routing feature (i.e. he/she
+    preferes all incoming email to land in superuser Inbox) with:
+
+        PAPERMERGE_IMPORT_MAIL_BY_USER = False
+        PAPERMERGE_IMPORT_MAIL_BY_SECRET = False
+
+    Then, there is no point (it is even confusing) for user to fiddle with
+    Email Routing options. From UX poing of view - it is better not to display
+    Email Routing section at all.
+    """
+
     def __init__(
         self,
         name,
         verbose_name=None,
         help_text=None,
-        icon_name=None
+        icon_name=None,
+        visible=True,
     ):
         super().__init__(
             name=name,
@@ -31,6 +70,7 @@ class Section(OrigSection):
         )
         self.help_text = help_text
         self.icon_name = icon_name
+        self.visible = visible
 
 
 localization = Section(
@@ -51,7 +91,8 @@ email_routing = Section(
     'email_routing',
     verbose_name="Email Routing",
     icon_name="envelope-open-text",
-    help_text="How email attachments match your Inbox"
+    help_text="How email attachments match your Inbox",
+    visible=_is_email_routing_enabled()
 )
 
 
@@ -143,3 +184,5 @@ class StringPreference(StringPreference):
     section = email_routing
     name = "mail_secret"
     default = ""
+
+

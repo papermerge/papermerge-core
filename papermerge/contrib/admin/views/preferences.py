@@ -21,7 +21,8 @@ def uniq_sections(user):
     for key in preferences:
         section, name = preferences.parse_lookup(key)
         pref = preferences.registry.get(section=section, name=name)
-        sections.append(pref.section)
+        if pref.section.visible:
+            sections.append(pref.section)
 
     result = set(sections)
     sorted_result = sorted(

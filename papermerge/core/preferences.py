@@ -141,5 +141,5 @@ class StringPreference(StringPreference):
     Email secret text used by 'routing by secret' option.
 """
     section = email_routing
-    name = "email_secret"
+    name = "mail_secret"
     default = ""

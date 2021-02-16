@@ -146,12 +146,16 @@ def match_by_user(to_field, from_field):
     """
 
     user_found = User.objects.filter(
-        Q(email=from_field) | Q(email=to_field), Q(mail_by_user=True)
+        Q(email=from_field) | Q(email=to_field)
     ).first()
 
-    logger.debug(f"{IMAP} importer: found user {user_found} from email")
+    if user_found and user_found.preferences['email_routing__by_user']:
+        logger.debug(
+            f"{IMAP} importer: found user {user_found} from email"
+        )
+        return user_found
 
-    return user_found
+    return None
 
 
 def match_by_secret(message_secret):
@@ -164,12 +168,18 @@ def match_by_secret(message_secret):
     If no user matches - returns None.
     """
     user_found = User.objects.filter(
-        mail_secret=message_secret, mail_by_secret=True
+        userpreferencemodel__section="email_routing",
+        userpreferencemodel__name="mail_secret",
+        userpreferencemodel__raw_value=message_secret,
     ).first()
 
-    logger.debug(f"{IMAP} importer: found user {user_found} from secret")
+    if user_found and user_found.preferences['email_routing__by_secret']:
+        logger.debug(
+            f"{IMAP} importer: found user {user_found} from secret"
+        )
+        return user_found
 
-    return user_found
+    return None
 
 
 def get_matching_user(

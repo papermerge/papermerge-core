@@ -17,7 +17,7 @@ __pycache__
 *.map
 *.png~
 *.kra~
-papermerge.egg-info
+papermerge_core.egg-info/
 dist
 # Sphinx documentation
 docs/build/

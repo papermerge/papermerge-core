@@ -23,7 +23,12 @@ def uniq_sections(user):
         pref = preferences.registry.get(section=section, name=name)
         sections.append(pref.section)
 
-    return set(sections)
+    result = set(sections)
+    sorted_result = sorted(
+        result,
+        key=lambda section: section.name
+    )
+    return sorted_result
 
 
 @login_required

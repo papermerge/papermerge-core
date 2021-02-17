@@ -156,7 +156,7 @@ class LocalizationTime(ChoicePreference):
 class EmailRoutingByUser(BooleanPreference):
     help_text = """
     Email attachments will end up in your Inbox
-    if incoming email's 'From' field matches your Papermerge user
+    if incoming email's 'From' or 'To' fields matches your Papermerge user
     email address.
 """
     section = email_routing

@@ -155,9 +155,9 @@ class LocalizationTime(ChoicePreference):
 @user_preferences_registry.register
 class EmailRoutingByUser(BooleanPreference):
     help_text = """
-    Email attachments will end up in your will Inbox
-    if 'To' or 'From' email fields match specific creteria
-    (e.g. match your user's email address).
+    Email attachments will end up in your Inbox
+    if incoming email's 'From' field matches your Papermerge user
+    email address.
 """
     section = email_routing
     name = "by_user"

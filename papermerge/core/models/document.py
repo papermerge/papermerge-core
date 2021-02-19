@@ -451,8 +451,9 @@ class Document(BaseTreeNode):
         # In document viewer metadata is per page. When user
         # sees metadata in document viewer he actually sees
         # document first page metadata.
-        for kv in first_page.kv.all():
-            kvstore.append(kv.to_dict())
+        if first_page:
+            for kv in first_page.kv.all():
+                kvstore.append(kv.to_dict())
         item['metadata'] = {}
         item['metadata']['kvstore'] = kvstore
         item['metadata']['currency_formats'] = get_currency_formats()

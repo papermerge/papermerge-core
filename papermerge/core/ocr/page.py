@@ -134,13 +134,25 @@ def notify_txt_ready(page_path, **kwargs):
     file_name = kwargs.get('file_name', None)
     namespace = kwargs.get('namespace', None)
 
+    logger.debug("notify_txt_ready")
+
     if page_path:
         abs_path_txt = default_storage.abspath(page_path.txt_url())
+
+        logger.debug(f"notify_txt_ready for {abs_path_txt}")
 
         if os.path.exists(abs_path_txt):
             with open(abs_path_txt) as f:
                 text = f.read()
 
+                logger.debug(
+                    f"Sending post_page_txt signal"
+                    f" namespace={namespace} "
+                    f" user_id={user_id}"
+                    f" document_id={document_id}"
+                    f" page_num={page_num}"
+                    f" text={text}"
+                )
                 signals.post_page_txt.send(
                     sender=signals.WORKER,
                     user_id=user_id,

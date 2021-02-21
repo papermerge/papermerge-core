@@ -32,6 +32,7 @@ def metadata(request, model, id):
     POST /metadata/page/55 # will update metadata for page id=55
     POST /metadata/node/40 # will update metadata for node id=40
     """
+    node = None
     if model == 'node':
         _Klass = BaseTreeNode
         # if queried node is a document, then instead
@@ -54,7 +55,14 @@ def metadata(request, model, id):
 
     # allow access to metadata only if user has read permissions
     # on the document.
-    if not request.user.has_perm(Access.PERM_READ, item.document):
+    document_or_node = node
+    if model == 'page':
+        document_or_node = item.document
+
+    if not request.user.has_perm(
+        Access.PERM_READ,
+        document_or_node
+    ):
         return HttpResponseForbidden()
 
     kvstore = []

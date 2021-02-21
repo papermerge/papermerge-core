@@ -19,6 +19,9 @@
               {% trans "New" %}
             </a>
         </div>
+        
+        {% include "admin/_pagination.html" %}
+
         <div class="col-12 p-3">
           {% if object_list|length > 0 %}
             <table class="table table-striped">

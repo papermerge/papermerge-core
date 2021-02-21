@@ -38,6 +38,11 @@ class TokensListView(
         _('Expires At'),
     ]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        return qs.filter(user=self.request.user)
+
     def get_delete_entries(self, selection):
         return self.get_queryset().filter(
             digest__in=selection

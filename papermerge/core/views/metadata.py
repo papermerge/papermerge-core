@@ -7,7 +7,6 @@ from django.http import (
     HttpResponse,
     HttpResponseForbidden
 )
-from django.utils.html import escape
 
 from papermerge.core.models import (
     BaseTreeNode,
@@ -52,6 +51,11 @@ def metadata(request, model, id):
         item = _Klass.objects.get(id=id)
     except _Klass.DoesNotExist:
         raise Http404("Node does not exists")
+
+    # allow access to metadata only if user has read permissions
+    # on the document.
+    if not request.user.has_perm(Access.PERM_READ, item.document):
+        return HttpResponseForbidden()
 
     kvstore = []
 

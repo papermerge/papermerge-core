@@ -21246,6 +21246,37 @@ class NodeCollection extends backbone__WEBPACK_IMPORTED_MODULE_2__["Collection"]
     this.collection_post_action('/cut-node/', options);
   }
 
+  run_ocr(options) {
+    let token,
+        post_data = {},
+        request,
+        document_ids,
+        lang;
+    token = jquery__WEBPACK_IMPORTED_MODULE_1___default()("[name=csrfmiddlewaretoken]").val();
+    document_ids = this.models.map(function (model) {
+      return model.get('id');
+    });
+    lang = jquery__WEBPACK_IMPORTED_MODULE_1___default()('#lang').val();
+    post_data['document_ids'] = document_ids;
+    post_data['lang'] = lang;
+    jquery__WEBPACK_IMPORTED_MODULE_1___default.a.ajaxSetup({
+      headers: {
+        'X-CSRFToken': token
+      }
+    });
+    request = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.ajax({
+      method: "POST",
+      url: '/run-ocr/',
+      data: JSON.stringify(post_data),
+      contentType: "application/json",
+      dataType: 'json',
+      error: function (xhr, text, error) {
+        new _views_message__WEBPACK_IMPORTED_MODULE_3__["MessageView"]("Error", xhr.responseJSON['msg']);
+      }
+    });
+    request.done(options['success']);
+  }
+
   _paste(url, options, parent_id) {
     let token, request;
     token = jquery__WEBPACK_IMPORTED_MODULE_1___default()("[name=csrfmiddlewaretoken]").val();
@@ -23713,12 +23744,13 @@ class DgTextOverlay {
 /*!*************************!*\
   !*** ./src/js/utils.js ***!
   \*************************/
-/*! exports provided: capitalize, human_size, find_by_id, get_parent_id, value, insert, proxy_click, MgRect, get_url_param */
+/*! exports provided: capitalize, sanitize, human_size, find_by_id, get_parent_id, value, insert, proxy_click, MgRect, get_url_param */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "capitalize", function() { return capitalize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sanitize", function() { return sanitize; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "human_size", function() { return human_size; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "find_by_id", function() { return find_by_id; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "get_parent_id", function() { return get_parent_id; });
@@ -23732,6 +23764,15 @@ __webpack_require__.r(__webpack_exports__);
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+function sanitize(str) {
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  })[tag]);
 }
 
 String.prototype.format = function () {
@@ -24240,6 +24281,7 @@ class ActionsView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
       'click #access': 'click_access',
       'click #paste_pages': 'paste_pages',
       'click #rename': 'rename_node',
+      'click #run-ocr': 'run_ocr',
       'click #tags-menu-item': 'tag_node',
       // will proxy event to #id_file_name
       'click #id_btn_upload': 'upload_clicked',
@@ -24393,6 +24435,11 @@ class ActionsView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     }
   }
 
+  run_ocr(event) {
+    let options = {};
+    this.selection.run_ocr(options);
+  }
+
   tag_node(event) {
     let models = this.selection.models,
         tags_view,
@@ -24489,6 +24536,16 @@ class ActionsView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     });
     result.add({
       'id': "#tags-menu-item",
+      'cond': function (selection, clipboard, parent_id) {
+        if (selection.length > 0) {
+          return true;
+        }
+
+        return false;
+      }
+    });
+    result.add({
+      'id': "#run-ocr",
       'cond': function (selection, clipboard, parent_id) {
         if (selection.length > 0) {
           return true;
@@ -27024,8 +27081,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 /* harmony import */ var _models_tags__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../models/tags */ "./src/js/models/tags.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./src/js/utils.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -27035,7 +27094,7 @@ __webpack_require__.r(__webpack_exports__);
 let TEMPLATE = __webpack_require__(/*! ../templates/tag_preview.html */ "./src/js/templates/tag_preview.html");
 
 let ENTER_KEY = 13;
-class TagPreviewView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
+class TagPreviewView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
   el() {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#tag_editor');
   }
@@ -27085,7 +27144,7 @@ class TagPreviewView extends backbone__WEBPACK_IMPORTED_MODULE_3__["View"] {
     let el = document.getElementById("id_name");
 
     if (el) {
-      this.name = el.value;
+      this.name = Object(_utils__WEBPACK_IMPORTED_MODULE_3__["sanitize"])(el.value);
     }
   }
 

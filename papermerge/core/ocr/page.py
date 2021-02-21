@@ -42,6 +42,7 @@ def notify_hocr_ready(page_path, **kwargs):
         * ``file_name``
         * ``page_num``
         * ``namespace``
+        * ``version``
         * ``step``
 
     Always returns None.
@@ -55,6 +56,7 @@ def notify_hocr_ready(page_path, **kwargs):
         * ``file_name``
         * ``page_num``
         * ``lang``
+        * ``version``
         * ``namespace`` = may be empty. Used to distinguish among
             different tenants in multi-tenant deployments.
         * ``step`` = integer number corresponding to step
@@ -66,6 +68,7 @@ def notify_hocr_ready(page_path, **kwargs):
     document_id = kwargs.get('document_id', None)
     file_name = kwargs.get('file_name', None)
     page_num = kwargs.get('page_num', 1)
+    version = kwargs.get('version', 0)
     namespace = kwargs.get('namespace', None)
     step = kwargs.get('step', 1)
 
@@ -84,6 +87,7 @@ def notify_hocr_ready(page_path, **kwargs):
                     page_num=page_num,
                     step=step,
                     namespace=namespace,
+                    version=version,
                     hocr=hocr
                 )
         else:
@@ -110,6 +114,7 @@ def notify_txt_ready(page_path, **kwargs):
         * ``document_id``
         * ``file_name``
         * ``page_num``
+        * ``version``
         * ``namespace``
 
     Always returns None.
@@ -122,6 +127,7 @@ def notify_txt_ready(page_path, **kwargs):
         * ``document_id``
         * ``file_name``
         * ``page_num``
+        * ``version``
         * ``lang``
         * ``namespace`` = may be empty. Used to distinguish among
             different tenants in multi-tenant deployments.
@@ -132,6 +138,7 @@ def notify_txt_ready(page_path, **kwargs):
     document_id = kwargs.get('document_id', None)
     page_num = kwargs.get('page_num', 1)
     file_name = kwargs.get('file_name', None)
+    version = kwargs.get('version', 0)
     namespace = kwargs.get('namespace', None)
 
     logger.debug("notify_txt_ready")
@@ -159,6 +166,7 @@ def notify_txt_ready(page_path, **kwargs):
                     document_id=document_id,
                     file_name=file_name,
                     page_num=page_num,
+                    version=version,
                     namespace=namespace,
                     text=text
                 )
@@ -179,6 +187,7 @@ def notify_pre_page_ocr(page_path, **kwargs):
     document_id = kwargs.get('document_id', None)
     file_name = kwargs.get('file_name', None)
     page_num = kwargs.get('page_num', 1)
+    version = kwargs.get('version', 0)
     namespace = kwargs.get('namespace', None)
 
     signals.pre_page_ocr.send(
@@ -187,6 +196,7 @@ def notify_pre_page_ocr(page_path, **kwargs):
         document_id=document_id,
         file_name=file_name,
         page_num=page_num,
+        version=version,
         namespace=namespace,
     )
 
@@ -358,6 +368,7 @@ def ocr_page(
     file_name,
     page_num,
     lang,
+    version,
     namespace=None,
 ):
     logger.debug(
@@ -370,6 +381,7 @@ def ocr_page(
         user_id=user_id,
         document_id=document_id,
         file_name=file_name,
+        version=version
     )
 
     if not default_storage.exists(doc_path.url()):

@@ -34,6 +34,7 @@ from papermerge.core.models import (
 from papermerge.core.utils import filter_node_id
 from papermerge.core import signal_definitions as signals
 from papermerge.core.import_pipeline import WEB, go_through_pipelines
+from papermerge.core.tasks import ocr_page
 
 logger = logging.getLogger(__name__)
 
@@ -569,3 +570,54 @@ def preview(request, id, step=None, page="1"):
                 return HttpResponse(f.read(), content_type="image/png")
 
     return redirect('core:index')
+
+
+@json_response
+@login_required
+@require_POST
+def run_ocr_view(request):
+
+    post_data = json.loads(request.body)
+    node_ids = post_data['document_ids']
+    new_lang = post_data['lang']
+
+    documents = Document.objects.filter(
+        id__in=node_ids
+    )
+    nodes_perms = request.user.get_perms_dict(
+        documents, Access.ALL_PERMS
+    )
+    for node in documents:
+        if not nodes_perms[node.id].get(
+            Access.PERM_WRITE, False
+        ):
+            msg = _(
+                "%s does not have write perission on %s"
+            ) % (request.user.username, node.title)
+
+            return msg, HttpResponseForbidden.status_code
+
+    for doc in documents:
+        old_version = doc.version
+        new_version = doc.version + 1
+
+        default_storage.copy_doc(
+            src=doc.path(version=old_version),
+            dst=doc.path(version=new_version)
+        )
+        for page_num in range(1, doc.page_count + 1):
+            ocr_page.apply_async(kwargs={
+                'user_id': doc.user.id,
+                'document_id': doc.id,
+                'file_name': doc.file_name,
+                'page_num': page_num,
+                'lang': new_lang,
+                'namespace': getattr(default_storage, 'namespace', None),
+                'version': new_version
+            })
+
+        doc.lang = new_lang
+        doc.version = new_version
+        doc.save()
+
+    return 'OK'

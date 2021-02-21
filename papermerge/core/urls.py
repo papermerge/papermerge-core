@@ -119,6 +119,9 @@ urlpatterns = [
         name='clipboard'
     ),
     path(
+        'run-ocr/', doc_views.run_ocr_view, name="run_ocr"
+    ),
+    path(
         'api/documents',
         api_views.DocumentsView.as_view(),
         name='api_documents'

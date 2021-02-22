@@ -17,6 +17,8 @@ from django.utils.translation import gettext as _
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 
+from mglib import mime
+
 from papermerge.core.models import (
     BaseTreeNode,
     Access,
@@ -321,10 +323,12 @@ def node_download(request, id):
     if request.user.has_perm(Access.PERM_READ, node):
 
         if node.is_document():
+            file_abs_path = default_storage.abspath(
+                node.path().url(version=version)
+            )
+            mime_type = mime.Mime(file_abs_path)
             try:
-                file_handle = open(default_storage.abspath(
-                    node.path().url(version=version)
-                ), "rb")
+                file_handle = open(file_abs_path, "rb")
             except OSError:
                 logger.error(
                     "Cannot open local version of %s" % node.path.url()
@@ -333,7 +337,7 @@ def node_download(request, id):
 
             resp = HttpResponse(
                 file_handle.read(),
-                content_type="application/pdf"
+                content_type=mime_type.guess()
             )
             disposition = "attachment; filename=%s" % node.title
             resp['Content-Disposition'] = disposition

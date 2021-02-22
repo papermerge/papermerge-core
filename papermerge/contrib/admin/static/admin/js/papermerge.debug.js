@@ -21269,12 +21269,14 @@ class NodeCollection extends backbone__WEBPACK_IMPORTED_MODULE_2__["Collection"]
       url: '/run-ocr/',
       data: JSON.stringify(post_data),
       contentType: "application/json",
-      dataType: 'json',
-      error: function (xhr, text, error) {
-        new _views_message__WEBPACK_IMPORTED_MODULE_3__["MessageView"]("Error", xhr.responseJSON['msg']);
-      }
+      dataType: 'json'
     });
-    request.done(options['success']);
+    request.done(function (xhr, text, error) {
+      new _views_message__WEBPACK_IMPORTED_MODULE_3__["MessageView"]("success", xhr['msg']);
+    });
+    request.fail(function (xhr, text, error) {
+      new _views_message__WEBPACK_IMPORTED_MODULE_3__["MessageView"]("error", xhr['msg'] || gettext("Error while starting OCR process."));
+    });
   }
 
   _paste(url, options, parent_id) {

@@ -620,4 +620,4 @@ def run_ocr_view(request):
         doc.version = new_version
         doc.save()
 
-    return 'OK'
+    return {'msg': _("OCR process successfully started")}

@@ -30,6 +30,11 @@ document_patterns = [
         name="hocr"
     ),
     path(
+        '<int:id>/<int:document_version>/text/page/<int:page_number>',
+        doc_views.text_view,
+        name="text_view"
+    ),
+    path(
         'usersettings/<str:option>/<str:value>',
         doc_views.usersettings,
         name="usersettings"

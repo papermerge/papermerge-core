@@ -21379,6 +21379,34 @@ class PageCollection extends backbone__WEBPACK_IMPORTED_MODULE_2__["Collection"]
 
 /***/ }),
 
+/***/ "./src/js/models/page_ocred_text.js":
+/*!******************************************!*\
+  !*** ./src/js/models/page_ocred_text.js ***!
+  \******************************************/
+/*! exports provided: PageOcredText */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PageOcredText", function() { return PageOcredText; });
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_1__);
+
+
+class PageOcredText extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
+  url() {
+    let doc_id, page_number, version;
+    doc_id = this.get('id');
+    version = this.get('document_version');
+    page_number = this.get('page_number');
+    return `/document/${doc_id}/${version}/text/page/${page_number}`;
+  }
+
+}
+
+/***/ }),
+
 /***/ "./src/js/models/permission.js":
 /*!*************************************!*\
   !*** ./src/js/models/permission.js ***!
@@ -22812,6 +22840,32 @@ module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<div class="modal-dialog modal-dialog-centered" role="document">\n  <div class="modal-content">\n    <div class="modal-header">\n      <h5 class="modal-title">\n          Create Folder\n      </h5>\n      <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n        <span aria-hidden="true">&times;</span>\n      </button>\n    </div>\n      <div class="modal-body">\n            <div class="modal-body vertical">\n              <form id="new-folder-form" method="POST">\n                  <div class="form-group">\n                    <label for="title">Folder name:</label>\n                    <input type="text" class="form-control" id="title" name="title">\n                    <input name="parent_id" value="" type="hidden" >\n                  </div>\n              </form>\n            </div>\n      </div>\n      <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs create" >Create</button>\n            <button data-dismiss="modal" class="btn margin-xs btn-secondary cancel">Cancel</button></a>\n      </div>\n  </div>\n</div>\n';
+}
+return __p;
+};
+
+
+/***/ }),
+
+/***/ "./src/js/templates/page_ocred_text.html":
+/*!***********************************************!*\
+  !*** ./src/js/templates/page_ocred_text.html ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="modal-dialog modal-lg modal-dialog-centered" role="document">\n  <div class="modal-content">\n    <div class="modal-header">\n      <h5 class="modal-title">\n          '+
+((__t=( gettext('Page OCRed Text') ))==null?'':__t)+
+'\n      </h5>\n      <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n        <span aria-hidden="true">&times;</span>\n      </button>\n    </div>\n      <div class="modal-body">\n        <h5 class="text-center m-3">\n          Page number '+
+((__t=( page_number ))==null?'':__t)+
+'. Document version '+
+((__t=( document_version ))==null?'':__t)+
+'.\n        </h5>\n        <p class="mb-3">\n          '+
+((__t=( page_text ))==null?'':__t)+
+'\n        </p>\n      </div>\n      <div class="modal-footer">\n            <button type="submit" class="btn btn-success action margin-xs ok" >OK</button>\n      </div>\n  </div>\n</div>\n';
 }
 return __p;
 };
@@ -25906,7 +25960,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _views_rename__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../views/rename */ "./src/js/views/rename.js");
 /* harmony import */ var _models_document__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../models/document */ "./src/js/models/document.js");
 /* harmony import */ var _views_message__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../views/message */ "./src/js/views/message.js");
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var _views_page_ocred_text_view__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../views/page_ocred_text_view */ "./src/js/views/page_ocred_text_view.js");
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
 
 
 
@@ -26023,7 +26079,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
 
     this._adjust_viewer_height();
 
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_20__["DOCUMENT_IMAGE_LOADED"], this.on_document_image_loaded, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_21__["DOCUMENT_IMAGE_LOADED"], this.on_document_image_loaded, this);
   }
 
   get actions() {
@@ -26135,6 +26191,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
         paste_page_before_action,
         paste_page_after_action,
         tags_action,
+        view_ocr_action,
         apply_reorder_changes,
         that = this;
     rename_action = new _actions_changeform_actions__WEBPACK_IMPORTED_MODULE_14__["MgChangeFormAction"]({
@@ -26356,6 +26413,28 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
         });
       }
     });
+    view_ocr_action = new _actions_changeform_actions__WEBPACK_IMPORTED_MODULE_14__["MgChangeFormAction"]({
+      id: "#view-ocr",
+      enabled: function (selection, clipboard) {
+        return true;
+      },
+      action: function (selection, clipboard, current_node) {
+        let tags_view,
+            page,
+            that = this,
+            success;
+
+        if (selection.length <= 0) {
+          new _views_message__WEBPACK_IMPORTED_MODULE_19__["MessageView"]("warning", gettext("Select one page (from the thumbnails) to view its OCRed text"));
+        } else if (selection.length > 1) {
+          new _views_message__WEBPACK_IMPORTED_MODULE_19__["MessageView"]("warning", gettext("Select <strong>exactly one</strong> page to view its OCRed text"));
+        } else {
+          // i.e. selection.length == 1
+          page = selection.first();
+          new _views_page_ocred_text_view__WEBPACK_IMPORTED_MODULE_20__["PageOcredTextView"](page._doc_id, page._page_num, jquery__WEBPACK_IMPORTED_MODULE_0___default()("#document-versions").val());
+        }
+      }
+    });
     apply_reorder_changes = new _actions_changeform_actions__WEBPACK_IMPORTED_MODULE_14__["MgChangeFormAction"]({
       id: "#apply-reorder-changes",
       enabled: function (selection, clipboard, current_node, thumbnail_list, page_list) {
@@ -26415,6 +26494,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     actions.add(paste_page_after_action);
     actions.add(apply_reorder_changes);
     actions.add(tags_action);
+    actions.add(view_ocr_action);
     return actions;
   }
 
@@ -26644,6 +26724,83 @@ class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
     context = {};
     compiled = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(TEMPLATE({
       'name': this.folder.get('name')
+    }));
+    this.$el.html(compiled);
+    this.$el.modal();
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/js/views/page_ocred_text_view.js":
+/*!**********************************************!*\
+  !*** ./src/js/views/page_ocred_text_view.js ***!
+  \**********************************************/
+/*! exports provided: PageOcredTextView */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PageOcredTextView", function() { return PageOcredTextView; });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
+/* harmony import */ var _models_page_ocred_text__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../models/page_ocred_text */ "./src/js/models/page_ocred_text.js");
+/* harmony import */ var _message__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./message */ "./src/js/views/message.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
+
+
+
+
+
+
+
+let TEMPLATE = __webpack_require__(/*! ../templates/page_ocred_text.html */ "./src/js/templates/page_ocred_text.html");
+
+class PageOcredTextView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
+  el() {
+    // this element is defined in admin/_forms.js.html
+    return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#message-modal');
+  }
+
+  initialize(doc_id, page_number, version) {
+    this.page_text = new _models_page_ocred_text__WEBPACK_IMPORTED_MODULE_2__["PageOcredText"]({
+      'id': doc_id,
+      'page_number': page_number,
+      'document_version': version
+    });
+    this.page_text.fetch();
+    this.listenTo(this.page_text, 'change', this.render);
+  }
+
+  events() {
+    let event_map = {
+      'click .ok': 'on_ok'
+    };
+    return event_map;
+  }
+
+  on_ok(event) {
+    this.$el.modal('hide');
+  }
+
+  render() {
+    let compiled, context, text;
+    context = {};
+    text = this.page_text.get('page_text');
+
+    if (text) {
+      text = text.replace(/\n/g, "<br />");
+    }
+
+    compiled = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(TEMPLATE({
+      'page_text': text,
+      'page_number': this.page_text.get('page_number'),
+      'document_version': this.page_text.get('document_version')
     }));
     this.$el.html(compiled);
     this.$el.modal();

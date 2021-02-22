@@ -29,7 +29,11 @@ from papermerge.core.lib.hocr import Hocr
 from .decorators import json_response
 
 from papermerge.core.models import (
-    Folder, Document, BaseTreeNode, Access
+    Folder,
+    Document,
+    Page,
+    BaseTreeNode,
+    Access
 )
 from papermerge.core.utils import filter_node_id
 from papermerge.core import signal_definitions as signals
@@ -570,6 +574,47 @@ def preview(request, id, step=None, page="1"):
                 return HttpResponse(f.read(), content_type="image/png")
 
     return redirect('core:index')
+
+
+@json_response
+@login_required
+def text_view(
+    request,
+    id,
+    document_version,
+    page_number
+):
+
+    try:
+        page = Page.objects.get(
+            document__id=id,
+            number=page_number
+        )
+    except Page.DoesNotExist:
+        raise Http404("Page does not exists")
+
+    doc = page.document
+
+    if request.user.has_perm(Access.PERM_READ, doc):
+        txt_abs_path = default_storage.abspath(
+            page.path(version=document_version).txt_url()
+        )
+        text = ""
+
+        with open(txt_abs_path, "r") as f:
+            text = f.read()
+
+        return {
+            'page_text': text,
+            'page_number': page.number,
+            'document_version': document_version
+        }
+
+    msg = _(
+        "%s does not have read perissions on %s"
+    ) % (request.user.username, doc.title)
+
+    return msg, HttpResponseForbidden.status_code
 
 
 @json_response

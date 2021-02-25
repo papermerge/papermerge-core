@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 def apply_automates(document_id, page_num, **kwargs):
 
+    version = kwargs.get('version', 0)
     logger.debug("apply_automates: Begin.")
     try:
         document = Document.objects.get(id=document_id)
@@ -26,7 +27,7 @@ def apply_automates(document_id, page_num, **kwargs):
     # use text files from the original version of the document
     doc_path = DocumentPath.copy_from(
         document.path(),
-        version=0
+        version=version
     )
     page_count = get_pagecount(
         default_storage.abspath(doc_path.url())

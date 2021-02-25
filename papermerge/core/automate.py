@@ -26,8 +26,7 @@ def apply_automates(document_id, page_num, **kwargs):
 
     # use text files from the original version of the document
     doc_path = DocumentPath.copy_from(
-        document.path(),
-        version=version
+        document.path(version=version)
     )
     page_count = get_pagecount(
         default_storage.abspath(doc_path.url())

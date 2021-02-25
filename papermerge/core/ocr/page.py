@@ -407,6 +407,7 @@ def ocr_page(
             page_num=page_num,
             lang=lang,
             user_id=user_id,
+            version=version,
             document_id=document_id,
             namespace=namespace
         )
@@ -418,7 +419,8 @@ def ocr_page(
             lang=lang,
             user_id=user_id,
             document_id=document_id,
-            namespace=namespace
+            namespace=namespace,
+            version=version
         )
     elif mime_type.is_tiff():
         # new filename is a pdf file
@@ -438,7 +440,8 @@ def ocr_page(
             document_id=document_id,
             # Pass original file_name i.e. tiff file name as well.
             file_name=orig_file_name,
-            namespace=namespace
+            namespace=namespace,
+            version=version
         )
     else:
         logger.error(

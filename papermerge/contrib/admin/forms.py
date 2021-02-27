@@ -269,6 +269,12 @@ class AutomateForm(ControlForm):
                 id__in=folder_choice_ids
             )
 
+    def clean_tags(self):
+        escaped_tags = [
+            escape(item) for item in self.cleaned_data['tags']
+        ]
+        return escaped_tags
+
 
 class AdvancedSearchForm(forms.Form):
     folder = TreeNodeChoiceField(

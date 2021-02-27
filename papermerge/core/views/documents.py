@@ -363,9 +363,14 @@ def create_folder(request):
     try:
         folder.full_clean()
     except ValidationError as e:
+        # create human friednly error message from
+        # dictionary
+        err_msg = " ".join([
+            f"{k}: {' '.join(v)}" for k, v in e.message_dict.items()
+        ])
         return HttpResponseBadRequest(
             json.dumps({
-                'msg': e.message_dict
+                'msg': err_msg
             }),
             content_type="application/json"
         )

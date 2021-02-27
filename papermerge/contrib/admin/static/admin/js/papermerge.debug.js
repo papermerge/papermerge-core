@@ -24523,7 +24523,6 @@ class ActionsView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   }
 
   new_folder(event) {
-    console.log(`New folder ${event.currentTarget}`);
     let new_folder_view, parent_id;
     parent_id = this.parent_id;
     new_folder_view = new _views_new_folder__WEBPACK_IMPORTED_MODULE_6__["NewFolderView"](parent_id);
@@ -26692,7 +26691,8 @@ class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
   on_create(event) {
     let folder_title,
         parent_id,
-        options = {};
+        options = {},
+        that = this;
 
     options['success'] = function () {
       _models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["mg_dispatcher"].trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["BROWSER_REFRESH"]);
@@ -26715,8 +26715,9 @@ class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
     this.folder.set({
       'title': folder_title
     });
-    this.$el.modal('hide');
     this.folder.save({}, options);
+    this.$el.modal('hide');
+    this.undelegateEvents();
   }
 
   render() {

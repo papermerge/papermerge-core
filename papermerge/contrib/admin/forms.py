@@ -433,6 +433,10 @@ class GroupForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        return escape(data)
+
 
 class AuthTokenForm(forms.ModelForm):
     """

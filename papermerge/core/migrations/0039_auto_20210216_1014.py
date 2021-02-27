@@ -14,16 +14,4 @@ class Migration(migrations.Migration):
             model_name='user',
             name='current_storage_size',
         ),
-        migrations.RemoveField(
-            model_name='user',
-            name='mail_by_secret',
-        ),
-        migrations.RemoveField(
-            model_name='user',
-            name='mail_by_user',
-        ),
-        migrations.RemoveField(
-            model_name='user',
-            name='mail_secret',
-        ),
     ]

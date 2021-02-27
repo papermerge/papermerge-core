@@ -8,8 +8,7 @@ import papermerge.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('core', '0034_auto_20201121_0110'),
+        ('core', '0034_auto_20201201_1116'),
     ]
 
     operations = [
@@ -17,6 +16,16 @@ class Migration(migrations.Migration):
             model_name='basetreenode',
             name='title',
             field=models.CharField(max_length=200, validators=[papermerge.core.validators.safe_character_validator], verbose_name='Title'),
+        ),
+        migrations.AlterField(
+            model_name='basetreenode',
+            name='created_at',
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.AlterField(
+            model_name='basetreenode',
+            name='updated_at',
+            field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
             model_name='document',
@@ -27,6 +36,11 @@ class Migration(migrations.Migration):
             model_name='document',
             name='notes',
             field=models.TextField(blank=True, null=True, validators=[papermerge.core.validators.safe_character_validator], verbose_name='Notes'),
+        ),
+        migrations.AlterField(
+            model_name='user',
+            name='first_name',
+            field=models.CharField(blank=True, max_length=150, verbose_name='first name'),
         ),
         migrations.AlterField(
             model_name='tag',

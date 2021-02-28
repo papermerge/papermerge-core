@@ -7,7 +7,7 @@ ALPHA = 'alpha'
 BETA = 'beta'
 RC = 'rc'
 
-VERSION = (2, 0, 0, RC, 35)
+VERSION = (2, 0, 0, RC, 38)
 
 __version__ = get_version(VERSION)
 

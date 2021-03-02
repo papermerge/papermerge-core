@@ -24,7 +24,7 @@ from papermerge.core.utils import Timer
 logger = logging.getLogger(__name__)
 
 
-# 3 types of import_pipelines
+REST_API = "REST_API"
 WEB = "WEB"
 IMAP = "IMAP"
 LOCAL = "LOCAL"
@@ -263,9 +263,9 @@ method is not supposed to throw errors.
         """
         if parent is None:
             user, lang, inbox = self.get_user_properties(user)
-            # in case of upload via WEB interface, documents
-            # must land in root directory (as opposite to inbox)
-            if self.processor != WEB:
+            # in case of upload via REST API, LOCAL, or IMAP interface,
+            # documents must land in user's inbox
+            if self.processor in (REST_API, LOCAL, IMAP):
                 parent = inbox.id
         if name is None:
             name = basename(self.path)

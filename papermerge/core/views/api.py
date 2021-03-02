@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import (
     JSONParser,
-    MultiPartParser
+    MultiPartParser,
+    FileUploadParser
 )
 from rest_framework.permissions import IsAuthenticated
 
@@ -14,7 +15,10 @@ from papermerge.core.models import (
     Document, Access
 )
 from papermerge.core.serializers import DocumentSerializer
-from papermerge.core.import_pipeline import go_through_pipelines, WEB
+from papermerge.core.import_pipeline import (
+    go_through_pipelines,
+    REST_API
+)
 
 
 class PagesView(APIView):
@@ -180,18 +184,18 @@ class DocumentUploadView(APIView):
     REST API for uploading a file.
     """
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser]
+    parser_classes = [FileUploadParser, MultiPartParser]
 
     def put(self, request, filename):
+
         file_obj = request.data['file']
-        init_kwargs = {'payload': file_obj, 'processor': WEB}
+        init_kwargs = {'payload': file_obj, 'processor': REST_API}
 
         apply_kwargs = {
             'user': request.user.username,
             'name': filename,
             'apply_async': True
         }
-
         doc = go_through_pipelines(
             init_kwargs=init_kwargs,
             apply_kwargs=apply_kwargs

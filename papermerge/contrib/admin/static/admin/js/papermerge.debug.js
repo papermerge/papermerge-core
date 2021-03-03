@@ -20363,7 +20363,7 @@ class Browse extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
       base_url = '/browse/';
     }
 
-    page = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["get_url_param"])('page');
+    page = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["get_url_param"])('page') || Object(_utils__WEBPACK_IMPORTED_MODULE_4__["get_hash_param"])('page');
     tag = this.get('tag');
     params = $.param({
       'tag': tag,
@@ -22887,7 +22887,9 @@ __p+='';
  if (num_pages > 1) { 
 __p+='\n  <div class="row">\n    <nav class="col-12">\n      <ul class="pagination pagination-sm justify-content-end">\n        ';
  if (page.has_previous) { 
-__p+='\n          <li class="page-item">\n            <a class="page-link" href="?page='+
+__p+='\n          <li class="page-item">\n            <a class="page-link" href="'+
+((__t=( parent_node ))==null?'':__t)+
+'?page='+
 ((__t=( page.previous_page_number ))==null?'':__t)+
 '" aria-label="Previous">\n            <span aria-hidden="true">&laquo;</span>\n            </a>\n          </li>\n        ';
  } 
@@ -22897,7 +22899,9 @@ __p+='\n          <li class="page-item ';
  if (pages[i] == page_number) { 
 __p+=' active ';
  } 
-__p+='"><a class="page-link" href="?page='+
+__p+='"><a class="page-link" href="'+
+((__t=( parent_node ))==null?'':__t)+
+'?page='+
 ((__t=( pages[i] ))==null?'':__t)+
 '">'+
 ((__t=( pages[i] ))==null?'':__t)+
@@ -22905,7 +22909,9 @@ __p+='"><a class="page-link" href="?page='+
  } 
 __p+='\n        ';
  if (page.has_next) { 
-__p+='\n          <li class="page-item">\n            <a class="page-link" href="?page='+
+__p+='\n          <li class="page-item">\n            <a class="page-link" href="'+
+((__t=( parent_node ))==null?'':__t)+
+'?page='+
 ((__t=( page.next_page_number ))==null?'':__t)+
 '" aria-label="Next">\n              <span aria-hidden="true">&raquo;</span>\n            </a>\n          </li>\n        ';
  } 
@@ -23800,7 +23806,7 @@ class DgTextOverlay {
 /*!*************************!*\
   !*** ./src/js/utils.js ***!
   \*************************/
-/*! exports provided: capitalize, sanitize, human_size, find_by_id, get_parent_id, value, insert, proxy_click, MgRect, get_url_param */
+/*! exports provided: capitalize, sanitize, human_size, find_by_id, get_parent_id, value, insert, proxy_click, MgRect, get_url_param, get_hash_param */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23815,6 +23821,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "proxy_click", function() { return proxy_click; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MgRect", function() { return MgRect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "get_url_param", function() { return get_url_param; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "get_hash_param", function() { return get_hash_param; });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 
@@ -24055,6 +24062,35 @@ function get_url_param(param) {
 
     if (param_name[0] === param) {
       return param_name[1] === undefined ? true : decodeURIComponent(param_name[1]);
+    }
+  }
+}
+;
+function get_hash_param(param) {
+  /**
+  Used to extract parameters after hash character.
+   For example for window.location:
+     http://dms.domain#30?page=3
+   location.hash will be #30?page=3
+  and get_hash_param('page') will return 3.
+   It is used for pagination of items within a folder.
+  **/
+  var location_hash = window.location.hash,
+      search_str,
+      url_variables,
+      param_name,
+      i;
+
+  if (location_hash && location_hash.split('?').length > 1) {
+    search_str = location_hash.split('?')[1];
+    url_variables = search_str.split('&');
+
+    for (i = 0; i < url_variables.length; i++) {
+      param_name = url_variables[i].split('=');
+
+      if (param_name[0] === param) {
+        return param_name[1] === undefined ? true : decodeURIComponent(param_name[1]);
+      }
     }
   }
 }
@@ -25591,9 +25627,18 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
   }
 
   render() {
-    let compiled, context, sort_order, sort_field;
+    let compiled,
+        context,
+        sort_order,
+        sort_field,
+        pagination_ctx = {};
     context = {};
-    this.pagination_view.render(this.browse.get('pagination'));
+    pagination_ctx = this.browse.get('pagination') || {}; // Pagination needs to know parent id i.e. id of the node
+    // which is parent of all currently displayed.
+    // That parent node id is rendered in urls.
+
+    pagination_ctx['parent_id'] = this.browse.get('parent_id');
+    this.pagination_view.render(pagination_ctx);
 
     if (this.display_mode.is_list()) {
       // desktop like selection was enabled.
@@ -26691,8 +26736,7 @@ class NewFolderView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
   on_create(event) {
     let folder_title,
         parent_id,
-        options = {},
-        that = this;
+        options = {};
 
     options['success'] = function () {
       _models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["mg_dispatcher"].trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_5__["BROWSER_REFRESH"]);
@@ -26837,7 +26881,12 @@ class PaginationView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   template(context = {}) {
     let compiled_tpl,
         ctx,
-        file_tpl = __webpack_require__(/*! ../templates/pagination.html */ "./src/js/templates/pagination.html");
+        file_tpl = __webpack_require__(/*! ../templates/pagination.html */ "./src/js/templates/pagination.html"),
+        parent_node = '';
+
+    if (context['parent_id']) {
+      parent_node = `#${context['parent_id']}`;
+    }
 
     ctx = {
       'page_number': context['page_number'] || 1,
@@ -26848,7 +26897,8 @@ class PaginationView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
         'has_next': false,
         'previous_page_number': 1,
         'next_page_number': 1
-      }
+      },
+      'parent_node': parent_node
     };
     compiled_tpl = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(file_tpl(ctx));
     return compiled_tpl();

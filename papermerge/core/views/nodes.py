@@ -16,6 +16,7 @@ from django.shortcuts import (
 from django.utils.translation import gettext as _
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
+from django.db.models.functions import Lower
 
 from mglib import mime
 
@@ -46,11 +47,38 @@ def browse_view(request, parent_id=None):
         title=Folder.INBOX_NAME
     )
     tag = request.GET.get('tag', None)
+    order_by = request.GET.get('order-by', '-type')
+
+    # order_by might be empty string
+    if not order_by:
+        # instead of empty string, use default
+        # order by type descending
+        order_by = '-type'
 
     if tag:
         nodes = BaseTreeNode.objects.filter(tags__name__in=[tag]).exclude(
             title=Folder.INBOX_NAME
         )
+
+    # Order by these fields. Presence of dash (minus character)
+    # in front of the field toggles ascending or descending order (django way).
+    if order_by in ('date', '-date', 'title', '-title', 'type', '-type'):
+        field_map = {
+            'type': 'polymorphic_ctype_id',
+            '-type': '-polymorphic_ctype_id',
+            'date': 'created_at',
+            '-date': '-created_at',
+            'title': 'title',
+            '-title': '-title'
+        }
+        field = field_map[order_by]
+        # case consistent ordering of title field
+        if field == 'title':
+            nodes = nodes.order_by(Lower('title').asc())
+        elif field == '-title':
+            nodes = nodes.order_by(Lower('title').desc())
+        else:
+            nodes = nodes.order_by(field)
 
     nodes_list = []
     parent_kv = []

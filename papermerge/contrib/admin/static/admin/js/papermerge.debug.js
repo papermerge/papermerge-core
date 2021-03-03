@@ -20355,7 +20355,8 @@ class Browse extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
         base_url,
         tag,
         page,
-        params;
+        params,
+        order_by;
 
     if (parent_id) {
       base_url = `/browse/${parent_id}/`;
@@ -20365,9 +20366,11 @@ class Browse extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
 
     page = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["get_url_param"])('page') || Object(_utils__WEBPACK_IMPORTED_MODULE_4__["get_hash_param"])('page');
     tag = this.get('tag');
+    order_by = this.get('order_by');
     params = $.param({
       'tag': tag,
-      'page': page
+      'page': page,
+      'order-by': order_by
     });
     base_url = `${base_url}?${params}`;
     return base_url;
@@ -25377,7 +25380,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     this.browse_grid_view = new BrowseGridView();
     this.dropzone = new _dropzone__WEBPACK_IMPORTED_MODULE_5__["DropzoneView"](this.browse);
     this.listenTo(this.browse, 'change', this.render);
-    this.listenTo(this.display_mode, 'change', this.render);
+    this.listenTo(this.display_mode, 'change', this.refresh);
     this.listenTo(this.browse_list_view, 'change', this.render);
     _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["BROWSER_REFRESH"], this.refresh, this);
     _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["mg_dispatcher"].on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__["SELECT_ALL"], this.select_all, this);
@@ -25623,6 +25626,9 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__["View"] {
     let parent_id = this.browse.get('parent_id'),
         tagname;
     tagname = this._get_tagname_from_location();
+    this.browse.set({
+      'order_by': this.display_mode.get_order_by()
+    });
     this.open(parent_id, tagname);
   }
 
@@ -25952,6 +25958,19 @@ class DisplayModeView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
     this.display = GRID;
     this.set_local(DISPLAY_MODE, GRID);
     this.trigger('change');
+  }
+
+  get_order_by() {
+    /*
+    * Returens field name with or without dash
+    * character in front (dash character = minus character).
+    * Dash in front indicates 'descending order'.
+    */
+    if (this.sort_order == ASC) {
+      return this.sort_field;
+    }
+
+    return `-${this.sort_field}`;
   }
 
   render() {

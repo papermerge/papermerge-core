@@ -391,6 +391,14 @@ class NodeAuthBackend:
                     'write': False
                 }
             }
+
+        Another example return value:
+
+            {
+              '23': {"read": True, "delete": False },
+              '24': {"read": True, "delete": False },
+              '25': {"read": False, "delete": False }
+            }
         """
         ret = {}
         deny_perms = self._get_all_deny_permissions(

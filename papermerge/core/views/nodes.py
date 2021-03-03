@@ -8,6 +8,7 @@ from django.http import (
     HttpResponse
 )
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_GET
 from django.urls import reverse
 from django.shortcuts import (
     get_object_or_404,
@@ -40,25 +41,28 @@ logger = logging.getLogger(__name__)
 PER_PAGE = 30
 
 
-@json_response
-@login_required
-def browse_view(request, parent_id=None):
-    nodes = BaseTreeNode.objects.filter(parent_id=parent_id).exclude(
-        title=Folder.INBOX_NAME
-    )
-    tag = request.GET.get('tag', None)
-    order_by = request.GET.get('order-by', '-type')
+def _filter_by_tag(nodes, request_get_dict):
+    tag = request_get_dict.get('tag', None)
+
+    if tag:
+        nodes = BaseTreeNode.objects.filter(
+            tags__name__in=[tag]
+        ).exclude(
+            title=Folder.INBOX_NAME
+        )
+
+    return nodes
+
+
+def _order_by(nodes, request_get_dict):
+
+    order_by = request_get_dict.get('order-by', '-type')
 
     # order_by might be empty string
     if not order_by:
         # instead of empty string, use default
         # order by type descending
         order_by = '-type'
-
-    if tag:
-        nodes = BaseTreeNode.objects.filter(tags__name__in=[tag]).exclude(
-            title=Folder.INBOX_NAME
-        )
 
     # Order by these fields. Presence of dash (minus character)
     # in front of the field toggles ascending or descending order (django way).
@@ -80,61 +84,37 @@ def browse_view(request, parent_id=None):
         else:
             nodes = nodes.order_by(field)
 
-    nodes_list = []
-    parent_kv = []
+    return nodes
 
-    if parent_id:
 
+def _get_node_kv(node_id):
+    kv_list = []
+
+    if node_id:
         parent_node = get_object_or_404(
-            BaseTreeNode, id=parent_id
+            BaseTreeNode, id=node_id
         )
 
         for item in parent_node.kv.all():
-            parent_kv.append(item.to_dict())
+            kv_list.append(item.to_dict())
 
-    # Will returns a dictionary. Each key of the dictionary
-    # is the id of the node. Value of the key is permissions
-    # dictionary e.g.
-    # {
-    #   '23': {"read": True, "delete": False },
-    #   '24': {"read": True, "delete": False },
-    #   '25': {"read": False, "delete": False }
-    # }
-    nodes_perms = request.user.get_perms_dict(
-        nodes, Access.ALL_PERMS
-    )
-    readable_nodes = []
-    for node in nodes:
-        if nodes_perms[node.id].get(Access.PERM_READ, False):
-            readable_nodes.append(node)
+    return kv_list
 
-    page_number = request.GET.get('page', 1)
+
+def _get_page_number(request_get) -> int:
+    page_number = request_get.get('page', 1)
+
     if not page_number:
         page_number = 1
 
-    page_number = int(page_number)
+    return int(page_number)
 
-    paginator = Paginator(readable_nodes, per_page=PER_PAGE)
-    num_pages = paginator.num_pages
+
+def _get_pagination_dict(paginator, page_number):
+
     page_obj = paginator.get_page(page_number)
 
-    for node in page_obj.object_list:
-        node_dict = node.to_dict()
-        # and send user_perms to the frontend client
-
-        node_dict['user_perms'] = nodes_perms[node.id]
-
-        if node.is_document():
-            node_dict['img_src'] = reverse(
-                'core:preview',
-                args=(node.id, 4, 1)
-            )
-            node_dict['document_url'] = reverse(
-                'core:document',
-                args=(node.id,)
-            )
-
-        nodes_list.append(node_dict)
+    num_pages = paginator.num_pages
 
     # 1.   Number of pages < 7: show all pages;
     # 2.   Current page <= 4: show first 7 pages;
@@ -160,20 +140,75 @@ def browse_view(request, parent_id=None):
         next_page_number = -1
 
     return {
+        'page_number': page_number,
+        'pages': pages,
+        'num_pages': num_pages,
+        'page': {
+            'has_previous': page_obj.has_previous(),
+            'has_next': page_obj.has_next(),
+            'previous_page_number': previous_page_number,
+            'next_page_number': next_page_number,
+        }
+    }
+
+
+@json_response
+@login_required
+@require_GET
+def browse_view(request, parent_id=None):
+    """
+    Returns json string of nodes which current user can read:
+
+        * filtered by tag (optionally)
+        * paginated
+        * ordered by title, date, type (optionally)
+    """
+    nodes = BaseTreeNode.objects.filter(parent_id=parent_id).exclude(
+        title=Folder.INBOX_NAME
+    )
+
+    nodes = _filter_by_tag(nodes, request.GET)
+    nodes = _order_by(nodes, request.GET)
+
+    nodes_list = []
+    nodes_perms = request.user.get_perms_dict(
+        nodes, Access.ALL_PERMS
+    )
+    readable_nodes = []
+    for node in nodes:
+        if nodes_perms[node.id].get(Access.PERM_READ, False):
+            readable_nodes.append(node)
+
+    page_number = _get_page_number(request_get=request.GET)
+    paginator = Paginator(readable_nodes, PER_PAGE)
+    page_obj = paginator.get_page(page_number)
+
+    for node in page_obj.object_list:
+        node_dict = node.to_dict()
+        # and send user_perms to the frontend client
+
+        node_dict['user_perms'] = nodes_perms[node.id]
+
+        if node.is_document():
+            node_dict['img_src'] = reverse(
+                'core:preview',
+                args=(node.id, 4, 1)
+            )
+            node_dict['document_url'] = reverse(
+                'core:document',
+                args=(node.id,)
+            )
+
+        nodes_list.append(node_dict)
+
+    return {
         'nodes': nodes_list,
         'parent_id': parent_id,
-        'parent_kv': parent_kv,
-        'pagination': {
-            'page_number': page_number,
-            'pages': pages,
-            'num_pages': num_pages,
-            'page': {
-                'has_previous': page_obj.has_previous(),
-                'has_next': page_obj.has_next(),
-                'previous_page_number': previous_page_number,
-                'next_page_number': next_page_number,
-            }
-        }
+        'parent_kv': _get_node_kv(parent_id),
+        'pagination': _get_pagination_dict(
+            paginator=paginator,
+            page_number=page_number
+        )
     }
 
 

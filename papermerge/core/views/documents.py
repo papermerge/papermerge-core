@@ -66,7 +66,8 @@ def document(request, doc_id):
             'number': page_num
         } for page_num in range(1, doc.get_pagecount(version=version) + 1)]
 
-    if not request.is_ajax():
+    # request.is_ajax is repricated since Django 3.1
+    if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if request.user.has_perm(Access.PERM_READ, doc):
             if not doc.is_latest_version(version):
                 messages.info(

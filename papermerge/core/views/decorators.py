@@ -69,12 +69,13 @@ def json_response(func):
 
 def require_PERM(perm):
     """
-    Decorator to make a view only accept users which has given permission.
-    Usage::
+    Decorator to make a view only accept users which have given permission.
+    Usage:
 
-        @require_PERM('add_folder')
+        @require_PERM('core.add_folder')
         def my_view(request):
-            # I can assume now that user logged in has 'add_folder' permission
+            # Can assume now that logged in user has 'core.add_folder'
+            # permission
             # ...
     """
     def decorator(func):

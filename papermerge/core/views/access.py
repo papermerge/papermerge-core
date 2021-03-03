@@ -48,7 +48,8 @@ def access_view(request, id):
 
             result.append(item)
     if request.method == 'POST':
-        if request.is_ajax():
+        # request.is_ajax is repricated since Django 3.1
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             if not request.user.has_perm(Access.PERM_CHANGE_PERM, node):
                 return HttpResponseForbidden()
             #

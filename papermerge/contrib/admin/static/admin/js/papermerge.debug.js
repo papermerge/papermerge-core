@@ -27427,8 +27427,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 /* harmony import */ var _models_tags__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../models/tags */ "./src/js/models/tags.js");
 /* harmony import */ var _models_automate__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../models/automate */ "./src/js/models/automate.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils */ "./src/js/utils.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
@@ -27443,7 +27444,7 @@ let AV_TEMPLATE = __webpack_require__(/*! ../templates/av_tags.html */ "./src/js
 let AT_TEMPLATE = __webpack_require__(/*! ../templates/automate_tags.html */ "./src/js/templates/automate_tags.html");
 
 let ENTER_KEY = 13;
-class TagsView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
+class TagsView extends backbone__WEBPACK_IMPORTED_MODULE_5__["View"] {
   el() {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('.tags-container');
   }
@@ -27510,7 +27511,7 @@ class TagsView extends backbone__WEBPACK_IMPORTED_MODULE_4__["View"] {
     let value, model;
 
     if (event.which == ENTER_KEY || event.key == ',') {
-      value = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).val();
+      value = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["sanitize"])(jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).val());
 
       if (!underscore__WEBPACK_IMPORTED_MODULE_1__["default"].isEmpty(value)) {
         // whitespace is not a tag!

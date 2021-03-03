@@ -167,8 +167,12 @@ def user_perms(request):
     access_feature = request.user.has_perm(
         'core.view_access'
     )
+    new_folder = request.user.has_perm(
+        'core.add_folder'
+    )
     return {
         'has_perm_change_user': change_user,
         'has_perm_view_authtoken': auth_token,
-        'has_perm_access_feature': access_feature
+        'has_perm_access_feature': access_feature,
+        'has_perm_new_folder': new_folder
     }

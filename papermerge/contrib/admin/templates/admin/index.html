@@ -26,7 +26,6 @@
 <div class="col-12 d-flex justify-content-between p-0 mb-2 xmain-actions-row">
   <div id="actions">
    <ul  class="nav nav-pills">
-
      <li class="mx-1">
          <button type="button" id="id_btn_upload" class="btn btn-light btn-bordered ">
             <i class="fa fa-upload mr-1  text-success"></i>
@@ -42,15 +41,17 @@
        multiple="true"
        hidden="true"
      />
-     <li class="mx-1">
-         <!--parent_id=object.id -->
-         <button id="new-folder" data-target-id="new-folder-form" class="new-folder btn btn-light btn-bordered">
-            <i class="fa fa-plus mr-1 text-success"></i>
-            <div class="d-none d-md-inline-block">
-              {% trans "New Folder" %}
-            </div>
-         </button>
-     </li>
+     {% if has_perm_new_folder %}
+       <li class="mx-1">
+           <!--parent_id=object.id -->
+           <button id="new-folder" data-target-id="new-folder-form" class="new-folder btn btn-light btn-bordered">
+              <i class="fa fa-plus mr-1 text-success"></i>
+              <div class="d-none d-md-inline-block">
+                {% trans "New Folder" %}
+              </div>
+           </button>
+       </li>
+     {% endif %}
   </ul>
   </div> <!-- #actions -->
   <div id="display-mode" class="d-flex flex-row  align-items-center">

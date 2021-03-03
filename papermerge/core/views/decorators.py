@@ -1,8 +1,11 @@
 import json
+from functools import wraps
 from django.http import (
     HttpResponse,
-    HttpResponseRedirect
+    HttpResponseRedirect,
+    HttpResponseForbidden
 )
+from django.utils.log import log_response
 
 
 def smart_dump(value):
@@ -63,3 +66,41 @@ def json_response(func):
 
     return inner
 
+
+def require_PERM(perm):
+    """
+    Decorator to make a view only accept users which has given permission.
+    Usage::
+
+        @require_PERM('add_folder')
+        def my_view(request):
+            # I can assume now that user logged in has 'add_folder' permission
+            # ...
+    """
+    def decorator(func):
+        @wraps(func)
+        def inner(request, *args, **kwargs):
+
+            if not request.user.has_perm(perm):
+                err_msg = f"Forbidden. You don't not have {perm} permission"
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    response = HttpResponseForbidden(
+                        json.dumps({
+                            'msg': err_msg
+                        }),
+                        content_type="application/json"
+                    )
+                else:
+                    response = HttpResponseForbidden(err_msg)
+
+                log_response(
+                    "Access forbidden for %s to %s",
+                    request.user,
+                    request.path,
+                    response=response,
+                    request=request,
+                )
+                return response
+            return func(request, *args, **kwargs)
+        return inner
+    return decorator

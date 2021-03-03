@@ -26,7 +26,7 @@ from mglib.shortcuts import extract_img
 
 from papermerge.core.storage import default_storage
 from papermerge.core.lib.hocr import Hocr
-from .decorators import json_response
+from .decorators import json_response, require_PERM
 
 from papermerge.core.models import (
     Folder,
@@ -305,6 +305,7 @@ def rename_node(request, id):
 
 @login_required
 @require_POST
+@require_PERM('core.add_folder')
 def create_folder(request):
     """
     Creates a new folder.

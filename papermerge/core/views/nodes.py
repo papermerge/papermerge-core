@@ -87,7 +87,7 @@ def _order_by(nodes, request_get_dict):
     return nodes
 
 
-def _get_node_kv(node_id):
+def _get_node_kv(node_id) -> list:
     kv_list = []
 
     if node_id:
@@ -110,7 +110,7 @@ def _get_page_number(request_get) -> int:
     return int(page_number)
 
 
-def _get_pagination_dict(paginator, page_number):
+def _get_pagination_dict(paginator, page_number) -> dict:
 
     page_obj = paginator.get_page(page_number)
 

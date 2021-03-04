@@ -838,9 +838,6 @@ class Document(BaseTreeNode):
             before_page_number=before
         )
 
-        if new_version == dst_document.version:
-            raise Exception("Expecting version to be incremented")
-
         dst_document.version = new_version
         dst_document.save()
         # update pages model

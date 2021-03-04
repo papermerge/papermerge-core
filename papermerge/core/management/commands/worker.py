@@ -70,17 +70,23 @@ def import_from_local_folder():
     import_documents(settings.PAPERMERGE_IMPORTER_DIR)
 
 
-def _include_txt2db_task(celery_app_instance):
-    # Calls every 64 seconds txt2db
+def _include_txt2db_task(celery_app_instance, schedule):
+    # Calls every :schedule: seconds txt2db
+
     celery_app_instance.add_periodic_task(
-        64.0, txt2db.s(), name='txt2db'
+        schedule,  # call this task once in :schedule: seconds
+        txt2db.s(),
+        name='txt2db'
     )
 
 
-def _include_rebuid_tree_task(celery_app_instance):
-    # once every 5 minutes rebuild the whole tree
+def _include_rebuid_tree_task(celery_app_instance, schedule):
+    # once every :schedule: seconds rebuild the whole tree
+
     celery_app_instance.add_periodic_task(
-        300, rebuild_the_tree.s(), name='rebuild_the_tree'
+        schedule,  # call this task once in :schedule: seconds
+        rebuild_the_tree.s(),
+        name='rebuild_the_tree'
     )
 
 
@@ -157,12 +163,20 @@ def setup_periodic_tasks(celery_app_instance, **options):
     start_local_import = not options.get("skip_local", False)
     start_txt2db = not options.get("skip_txt2db", False)
     start_rebuild = not options.get("skip_rebuild", False)
+    rebuild_schedule = options.get("rebuild_schedule")
+    txt2db_schedule = options.get("txt2db_schedule")
 
     if start_txt2db:
-        _include_txt2db_task(celery_app_instance)
+        _include_txt2db_task(
+            celery_app_instance,
+            schedule=txt2db_schedule
+        )
 
     if start_rebuild:
-        _include_rebuid_tree_task(celery_app_instance)
+        _include_rebuid_tree_task(
+            celery_app_instance,
+            schedule=rebuild_schedule
+        )
 
     if start_local_import:
         _include_local_dir_task(celery_app_instance)
@@ -205,9 +219,23 @@ class Command(BaseCommand):
             help="Do not start 'rebuild_the_tree' periodic task."
         )
         parser.add_argument(
+            '--rebuild-schedule',
+            type=int,
+            default=300,
+            help="Schedule (in seconds) for 'rebuild_the_tree' periodic task."
+            " Default value is 300 seconds."
+        )
+        parser.add_argument(
             '--skip-txt2db',
             action="store_true",
             help="Do not start 'txt2db' periodic task."
+        )
+        parser.add_argument(
+            '--txt2db-schedule',
+            type=int,
+            default=64,
+            help="Schedule (in seconds) for 'txt2db' periodic task."
+            " Default value is 64 seconds."
         )
 
     def handle(self, *args, **options):

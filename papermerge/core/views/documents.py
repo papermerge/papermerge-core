@@ -580,7 +580,7 @@ def preview(request, id, step=None, page="1"):
             with open(file_path, "rb") as f:
                 return HttpResponse(f.read(), content_type="image/png")
 
-    return redirect('core:index')
+    return HttpResponseForbidden()
 
 
 @json_response

@@ -268,8 +268,7 @@ def select_inbox(
 
 def email_iterator(
     imap_client: IMAPClient,
-    delete=False,
-    trash_folder="Trash"
+    delete=False
 ):
     """
     Generator used for lazy iteration over
@@ -307,10 +306,10 @@ def email_iterator(
         yield email_message
 
     if delete:
-        # mark mails as read/seen to indicate successful processing
-        imap_client.add_flags(messages, br'\Seen')
-        # move mails to a trash folder
-        imap_client.move(messages, trash_folder)
+        # flag all processed mails with \Deleted
+        imap_client.delete_messages(messages)
+        # remove all messages from the currently selected folder that have the \Deleted flag set
+        imap_client.expunge()
 
 def import_attachment(
     imap_server: str,

@@ -268,7 +268,8 @@ def select_inbox(
 
 def email_iterator(
     imap_client: IMAPClient,
-    delete=False
+    delete=False,
+    trash_folder="Trash"
 ):
     """
     Generator used for lazy iteration over
@@ -306,10 +307,10 @@ def email_iterator(
         yield email_message
 
     if delete:
-        # mark e-mail as deleted, which should lead to a deletion for most mail providers
-        # Internally, delete_messages() will just call add_flags() with the flag br'\Deleted'
-        # Note: German mail provider 'Strato' won't delete messages after specifying the deleted flag, fix incoming
-        imap_client.delete_messages(messages)
+        # mark e-mail as read/seen to indicate that it has been successfully processed
+        imap_client.add_flags(messages, br'\Seen')
+        # move the mail to a trash folder
+        imap_client.move(messages, trash_folder)
 
 def import_attachment(
     imap_server: str,

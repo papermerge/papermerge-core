@@ -307,9 +307,9 @@ def email_iterator(
         yield email_message
 
     if delete:
-        # mark e-mail as read/seen to indicate that it has been successfully processed
+        # mark mails as read/seen to indicate successful processing
         imap_client.add_flags(messages, br'\Seen')
-        # move the mail to a trash folder
+        # move mails to a trash folder
         imap_client.move(messages, trash_folder)
 
 def import_attachment(

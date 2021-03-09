@@ -278,7 +278,7 @@ def email_iterator(
     Where email package is python standard (for python >= 3.6)
     library for managing email messages.
     """
-
+    
     if not isinstance(imap_client, IMAPClient):
         raise ValueError("Expecting IMAPClient instance as first argument")
 
@@ -300,11 +300,16 @@ def email_iterator(
             body,
             policy=email.policy.default
         )
+        # mark e-mail as read/seen, so that it won't be processed or imported multiple times
+        imap_client.add_flags(uid, br'\Seen')
+        
         yield email_message
 
     if delete:
+        # mark e-mail as deleted, which should lead to a deletion for most mail providers
+        # Internally, delete_messages() will just call add_flags() with the flag br'\Deleted'
+        # Note: German mail provider 'Strato' won't delete messages after specifying the deleted flag, fix incoming
         imap_client.delete_messages(messages)
-
 
 def import_attachment(
     imap_server: str,

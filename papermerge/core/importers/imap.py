@@ -278,7 +278,7 @@ def email_iterator(
     Where email package is python standard (for python >= 3.6)
     library for managing email messages.
     """
-
+    
     if not isinstance(imap_client, IMAPClient):
         raise ValueError("Expecting IMAPClient instance as first argument")
 
@@ -300,11 +300,16 @@ def email_iterator(
             body,
             policy=email.policy.default
         )
+        # mark e-mail as read/seen, so that it won't be processed or imported multiple times
+        imap_client.add_flags(uid, br'\Seen')
+        
         yield email_message
 
     if delete:
+        # flag all processed mails with \Deleted
         imap_client.delete_messages(messages)
-
+        # remove all messages from the currently selected folder that have the \Deleted flag set
+        imap_client.expunge()
 
 def import_attachment(
     imap_server: str,

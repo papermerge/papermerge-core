@@ -30,3 +30,23 @@ index it and make it searchable. You will be able to quickly find any
 Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 
 .. figure:: img/screenshot.png
+
+
+Features Highlights
+~~~~~~~~~~~~~~~~~~~
+
+* Documents of pdf, jpg, png, tiff formats are supported
+* Desktop like user interface
+* Per page OCR (Optical Character Recognition) of the documents
+* Full Text Search of the scanned documents
+* Document Versions
+* User defined metadata per folder/document/page
+* Import documents from multiple sources (local disk, email, web upload, REST API upload)
+* Tags - assign colored tags to documents or folders
+* Documents and Folders - users can organize documents in folders
+* Multi-User (Groups, Roles)
+* User permissions management
+* Document permissions management
+* REST API
+* Page Management - delete, reorder, cut & paste pages
+* Automation

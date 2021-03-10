@@ -85,7 +85,6 @@ class UserUpdateView(UsersView, generic.UpdateView):
 
         return context
 
-
 class UserChangePasswordView(UsersView, generic.FormView):
 
     required_permission = 'core.change_user'

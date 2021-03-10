@@ -50,6 +50,7 @@ class GroupCreateView(GroupsView, generic.CreateView):
     action_url = reverse_lazy('admin:group-add')
     template_name = "admin/object_form.html"
 
+
 class GroupUpdateView(GroupsView, generic.UpdateView):
 
     required_permission = 'auth.change_group'

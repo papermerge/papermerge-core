@@ -182,5 +182,3 @@ class SidebarPart:
             return getattr(self, 'js_widget')
 
         return 'DefaultWidget'
-
-

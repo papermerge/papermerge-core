@@ -25,4 +25,3 @@ class SidebarRegistry(Registry):
 user_menu_registry = UserMenuRegistry()  # noqa
 navigation = NavigationRegistry()  # noqa
 sidebar = SidebarRegistry()  # noqa
-

@@ -9,9 +9,9 @@ Papermerge ecosystem.
 
 Technically speaking, it contains following django apps:
 
-* papermerge.core - the epicenter of papermerge project which defines main models
-* papermerge.contrib.admin - user interface is defined here
-* papermerge.search - unified search API
+* ``papermerge.core`` - the epicenter of papermerge project
+* ``papermerge.contrib.admin`` - user interface is defined here
+* ``papermerge.search`` - unified search API
 
 What is Papermerge?
 ~~~~~~~~~~~~~~~~~~~

@@ -13,6 +13,7 @@ from papermerge.core.signal_definitions import automates_matching
 
 logger = logging.getLogger(__name__)
 
+
 class AutomateQuerySet(models.QuerySet):
 
     def run(self, pages_qs):

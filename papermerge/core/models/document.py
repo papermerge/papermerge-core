@@ -250,6 +250,7 @@ class DocumentPartsManager:
 
 CustomDocumentManager = DocumentManager.from_queryset(DocumentQuerySet)
 
+
 class Document(BaseTreeNode):
 
     class CannotUpload(Exception):
@@ -491,7 +492,7 @@ class Document(BaseTreeNode):
                         page.kv[key] = value
                 except Exception as e:
                     logging.error(
-                        f"Error: page {page.number}, doc_id={self.id} has no key={key}", # noqa
+                        f"Error: page {page.number}, doc_id={self.id} has no key={key}",  # noqa
                         exc_info=e
                     )
 

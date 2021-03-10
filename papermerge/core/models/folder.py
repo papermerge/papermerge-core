@@ -48,6 +48,7 @@ class FolderQuerySet(PolymorphicMPTTQuerySet):
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
 
+
 class Folder(BaseTreeNode, index.Indexed):
 
     # special folders' name always starts with a DOT (. character)

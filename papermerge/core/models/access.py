@@ -107,10 +107,6 @@ class Access(models.Model):
         return {p.codename for p in self.permissions.all()}
 
     def __str__(self):
-        #perms = [
-        #    p.codename for p in self.permissions.all()
-        #]
-        #perms = 'PPP'
         name = '-'
         if self.user:
             name = f"User({self.user.username})"

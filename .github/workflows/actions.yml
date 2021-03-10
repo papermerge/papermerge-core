@@ -17,7 +17,7 @@ jobs:
         run: pycodestyle .
 
   publish-to-pypi:
-    need: [check-pep8-compliance]
+    needs: check-pep8-compliance
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

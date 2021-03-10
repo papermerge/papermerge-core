@@ -123,4 +123,3 @@ def search(request):
             'tags_op': tags_op
         }
     )
-

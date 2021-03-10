@@ -62,4 +62,3 @@ class LogUpdateView(LogsView, generic.UpdateView):
         context['title'] = self.title
 
         return context
-

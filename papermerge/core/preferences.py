@@ -16,6 +16,7 @@ from .lib.lang import get_ocr_lang_choices, get_default_ocr_lang
 def _get_timezone_choices():
     return list((tz, tz) for tz in common_timezones)
 
+
 def _is_email_routing_enabled():
 
     by_user = getattr(
@@ -184,5 +185,3 @@ class StringPreference(StringPreference):
     section = email_routing
     name = "mail_secret"
     default = ""
-
-

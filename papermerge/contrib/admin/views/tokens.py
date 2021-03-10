@@ -74,6 +74,7 @@ class TokenCreateView(TokensView, generic.CreateView):
         )
         return HttpResponseRedirect(self.success_url)
 
+
 class TokenUpdateView(TokensView, generic.UpdateView):
 
     template_name = "admin/object_form.html"

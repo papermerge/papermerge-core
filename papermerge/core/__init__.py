@@ -10,4 +10,3 @@ RC = 'rc'
 VERSION = (2, 0, 0, RC, 45)
 
 __version__ = get_version(VERSION)
-

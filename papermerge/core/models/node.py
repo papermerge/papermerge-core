@@ -413,4 +413,3 @@ class AbstractNode(models.Model):
 
     def get_title(self):
         return self.base_ptr.title
-

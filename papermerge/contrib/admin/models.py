@@ -46,4 +46,3 @@ class LogEntry(models.Model):
         verbose_name = _('log entry')
         verbose_name_plural = _('log entries')
         ordering = ('-action_time',)
-

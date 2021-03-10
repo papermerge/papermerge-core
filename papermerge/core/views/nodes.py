@@ -472,4 +472,3 @@ def nodes_download(request):
         resp['Content-Disposition'] = disposition
 
         return resp
-

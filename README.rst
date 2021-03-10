@@ -2,16 +2,18 @@
 Papermerge Core
 ################
 
-Papermerge Core reusable Django apps are the heart of Papermerge project. It is
-(re)used across different flavors of Papermerge Document Management System
-(DMS). It contains the core functionality, models and API used throughout
-Papermerge ecosystem.
+This python package is the heart of Papermerge project. It consists of a set
+of reusable Django apps which are (re)used across different flavors of
+Papermerge Document Management System (DMS). Package contains the core
+functionality, models and API used throughout Papermerge ecosystem.
 
 Technically speaking, it contains following django apps:
 
 * ``papermerge.core`` - the epicenter of papermerge project
 * ``papermerge.contrib.admin`` - user interface is defined here
 * ``papermerge.search`` - unified search API
+
+This package is intended to be part of Django project, `like this one <https://github.com/ciur/papermerge/>`_.
 
 What is Papermerge?
 ~~~~~~~~~~~~~~~~~~~

@@ -94,4 +94,3 @@ nodes_deleted = Signal(
         "node_tags"
     ]
 )
-

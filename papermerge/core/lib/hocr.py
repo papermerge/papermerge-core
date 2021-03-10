@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def extract_size(title):
     box_re = re.compile(
-        '.*; bbox (?P<x1>\d+) (?P<y1>\d+) (?P<x2>\d+) (?P<y2>\d+);.*'
+        r'.*; bbox (?P<x1>\d+) (?P<y1>\d+) (?P<x2>\d+) (?P<y2>\d+);.*'
     )
     width = None
     height = None
@@ -47,7 +47,8 @@ class OcrxWord:
         'bbox 102 448 120 457; x_wconf 38'
         """
         box_re = re.compile(
-            'bbox (?P<x1>\d+) (?P<y1>\d+) (?P<x2>\d+) (?P<y2>\d+); x_wconf (?P<wconf>\d+)'
+            r'bbox (?P<x1>\d+) (?P<y1>\d+)'
+            r' (?P<x2>\d+) (?P<y2>\d+); x_wconf (?P<wconf>\d+)'
         )
         matched_obj = re.match(box_re, title)
         if matched_obj:

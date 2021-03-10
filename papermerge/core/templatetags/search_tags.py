@@ -134,6 +134,7 @@ class SearchExcerptNode(template.Node):
 
         return result
 
+
 class HighlightNode(template.Node):
 
     def __init__(

@@ -13,7 +13,7 @@ Technically speaking, it contains following django apps:
 * ``papermerge.contrib.admin`` - user interface is defined here
 * ``papermerge.search`` - unified search API
 
-This package is intended to be part of Django project, `like this one <https://github.com/ciur/papermerge/>`_.
+This package is intended to be part of Django project `like this one <https://github.com/ciur/papermerge/>`_ for example.
 
 What is Papermerge?
 ~~~~~~~~~~~~~~~~~~~

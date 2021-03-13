@@ -6,6 +6,7 @@ setup(
     ),
     install_requires=[
         "django == 3.1.7",
+        "channels == 3.0.3",
         "mglib == 1.3.8",
         "mgclipboard >= 0.3.0",
         "stapler == 1.0.0",

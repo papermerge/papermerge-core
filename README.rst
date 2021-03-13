@@ -1,4 +1,8 @@
-`Unittests <https://github.com/papermerge/papermerge-core/actions/workflows/actions.yml/badge.svg>`_
+|Generic badge|
+
+.. |Generic badge| image:: hhttps://github.com/papermerge/papermerge-core/actions/workflows/actions.yml/badge.svg
+   :target:
+
 
 Papermerge Core
 ################

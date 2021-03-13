@@ -1,7 +1,7 @@
 |Generic badge|
 
-.. |Generic badge| image:: https://github.com/papermerge/papermerge-core/actions/workflows/actions.yml/badge.svg
-   :target: https://github.com/papermerge/papermerge-core/actions/workflows/actions.yml
+.. |Generic badge| image:: https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml/badge.svg
+   :target: https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml
 
 
 Papermerge Core

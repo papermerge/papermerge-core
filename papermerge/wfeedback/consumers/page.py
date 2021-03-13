@@ -23,3 +23,19 @@ class PageConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'message': message
         }))
+
+    def page_status_ocr_started(self):
+        # page_status.ocr_started
+        pass
+
+    def page_status_ocr_complete(self):
+        # page_status.ocr_complete
+        pass
+
+    def page_status_indexed(self):
+        # page_status.indexed
+        pass
+
+
+
+

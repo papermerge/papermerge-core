@@ -5,11 +5,11 @@ from .consumers import page as page_consumer
 
 websocket_urlpatterns = [
     re_path(
-        r'ws/wfeedback/document/(?P<doc_id>\d+)/$',
+        r'ws/document-feedback/$',
         doc_consumer.DocumentConsumer.as_asgi()
     ),
     re_path(
-        r'ws/wfeedback/page/(?P<doc_id>\d+)/$',
+        r'ws/page-feedback/$',
         page_consumer.PageConsumer.as_asgi()
     )
 ]

@@ -3,8 +3,11 @@ import logging
 import time
 
 from django.conf import settings
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 from papermerge.core.storage import default_storage
-from papermerge.core import signal_definitions as signals
 
 from mglib import mime
 from mglib.pdfinfo import get_pagecount
@@ -46,22 +49,6 @@ def notify_hocr_ready(page_path, **kwargs):
         * ``step``
 
     Always returns None.
-
-    Sent signals: ``post_page_hocr``.
-
-    Following arguments are passed to the signal:
-        * ``sender`` = from papermerge.core.signal_definitions.WORKER
-        * ``user_id``
-        * ``document_id``
-        * ``file_name``
-        * ``page_num``
-        * ``lang``
-        * ``version``
-        * ``namespace`` = may be empty. Used to distinguish among
-            different tenants in multi-tenant deployments.
-        * ``step`` = integer number corresponding to step
-            learn more about steps in ``mglib.step.Step``
-        * ``hocr`` = extracted hocr data (text format)
     """
 
     user_id = kwargs.get('user_id', None)
@@ -78,17 +65,23 @@ def notify_hocr_ready(page_path, **kwargs):
         if os.path.exists(abs_path_hocr):
             with open(abs_path_hocr) as f:
                 hocr = f.read()
-
-                signals.post_page_hocr.send(
-                    sender=signals.WORKER,
-                    user_id=user_id,
-                    document_id=document_id,
-                    file_name=file_name,
-                    page_num=page_num,
-                    step=step,
-                    namespace=namespace,
-                    version=version,
-                    hocr=hocr
+                channel_layer = get_channel_layer()
+                async_to_sync(
+                    channel_layer.group_send
+                )(
+                    "page_status",
+                    {
+                        "type": "page.hocr_ready",
+                        "page": {
+                            "user_id": user_id,
+                            "document_id": document_id,
+                            "file_name": file_name,
+                            "page_num": page_num,
+                            "version": version,
+                            "namespace": namespace,
+                            "hocr": hocr
+                        }
+                    }
                 )
         else:
             logger.warning(
@@ -118,20 +111,6 @@ def notify_txt_ready(page_path, **kwargs):
         * ``namespace``
 
     Always returns None.
-
-    Sent signals: ``post_page_txt``.
-
-    Following arguments are passed to the signal:
-        * ``sender`` = from papermerge.core.signal_definitions.WORKER
-        * ``user_id``
-        * ``document_id``
-        * ``file_name``
-        * ``page_num``
-        * ``version``
-        * ``lang``
-        * ``namespace`` = may be empty. Used to distinguish among
-            different tenants in multi-tenant deployments.
-        * ``txt`` = extracted .txt data (text format)
     """
 
     user_id = kwargs.get('user_id', None)
@@ -160,16 +139,25 @@ def notify_txt_ready(page_path, **kwargs):
                     f" page_num={page_num}"
                     f" text={text}"
                 )
-                signals.post_page_txt.send(
-                    sender=signals.WORKER,
-                    user_id=user_id,
-                    document_id=document_id,
-                    file_name=file_name,
-                    page_num=page_num,
-                    version=version,
-                    namespace=namespace,
-                    text=text
+                channel_layer = get_channel_layer()
+                async_to_sync(
+                    channel_layer.group_send
+                )(
+                    "page_status",
+                    {
+                        "type": "page.txt_ready",
+                        "page": {
+                            "user_id": user_id,
+                            "document_id": document_id,
+                            "file_name": file_name,
+                            "page_num": page_num,
+                            "version": version,
+                            "namespace": namespace,
+                            "text": text
+                        }
+                    }
                 )
+
         else:
             logger.warning(
                 f"Page txt path {abs_path_txt} does not exist. "
@@ -190,14 +178,22 @@ def notify_pre_page_ocr(page_path, **kwargs):
     version = kwargs.get('version', 0)
     namespace = kwargs.get('namespace', None)
 
-    signals.pre_page_ocr.send(
-        sender=signals.WORKER,
-        user_id=user_id,
-        document_id=document_id,
-        file_name=file_name,
-        page_num=page_num,
-        version=version,
-        namespace=namespace,
+    channel_layer = get_channel_layer()
+    async_to_sync(
+        channel_layer.group_send
+    )(
+        "page_status",
+        {
+            "type": "page.ocr_start",
+            "page": {
+                "user_id": user_id,
+                "document_id": document_id,
+                "file_name": file_name,
+                "page_num": page_num,
+                "version": version,
+                "namespace": namespace,
+            }
+        }
     )
 
 

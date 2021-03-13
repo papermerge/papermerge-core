@@ -1,3 +1,4 @@
+`Unittests <https://github.com/papermerge/papermerge-core/actions/workflows/actions.yml/badge.svg>`_
 
 Papermerge Core
 ################

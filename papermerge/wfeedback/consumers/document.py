@@ -32,14 +32,14 @@ class DocumentConsumer(WebsocketConsumer):
             'message': message
         }))
 
-    def document_status_ocr_started(self):
+    def document_status_ocr_started(self, event):
         # page_status.ocr_started
         pass
 
-    def document_status_ocr_complete(self):
+    def document_status_ocr_complete(self, event):
         # page_status.ocr_complete
         pass
 
-    def document_status_indexed(self):
+    def document_status_indexed(self, event):
         # page_status.indexed
         pass

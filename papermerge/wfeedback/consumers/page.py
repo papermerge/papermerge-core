@@ -16,26 +16,36 @@ class PageConsumer(WebsocketConsumer):
             self.channel_layer.group_discard
         )("page_status", self.channel_name)
 
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+    def receive(self, page_data, status):
+        page_data_json = json.loads(page_data)
+        page = page_data_json['page']
 
-        self.send(text_data=json.dumps({
-            'message': message
-        }))
+        async_to_sync(self.channel_layer.group_send)(
+            "page_status",
+            {
+                "type": "page_status.message",
+                "page": page,
+                "status": status
+            },
+        )
 
-    def page_status_ocr_started(self):
+    def page_status_ocr_started(self, event):
         # page_status.ocr_started
-        pass
+        self.send(
+            page_data=event["page_data"],
+            page_status="ocr_started"
+        )
 
-    def page_status_ocr_complete(self):
+    def page_status_ocr_complete(self, event):
         # page_status.ocr_complete
-        pass
+        self.send(
+            page_data=event["page_data"],
+            page_status="ocr_complete"
+        )
 
-    def page_status_indexed(self):
+    def page_status_indexed(self, event):
         # page_status.indexed
-        pass
-
-
-
-
+        self.send(
+            page_data=event["page_data"],
+            page_status="indexed"
+        )

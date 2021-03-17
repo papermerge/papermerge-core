@@ -8,6 +8,7 @@ from django.http import (
 )
 from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 
 from papermerge.core import validators
 from papermerge.core.models import Access, BaseTreeNode, Tag
@@ -42,6 +43,9 @@ def tags_view(request, node_id):
             *tags,
             tag_kwargs={"user": request.user}
         )
+        node_dict_key = f"node_{node_id}_dict"
+        # expire node_dict cache
+        cache.set(node_dict_key, None)
     else:
         msg = _(
             "%(username)s does not have "
@@ -100,6 +104,9 @@ def nodes_tags_view(request):
                 *tags,
                 tag_kwargs={"user": request.user}
             )
+            node_dict_key = f"node_{node.id}_dict"
+            # expire node_dict cache
+            cache.set(node_dict_key, None)
         else:
             msg = _(
                 "%(username)s does not have "

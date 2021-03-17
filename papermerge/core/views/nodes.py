@@ -7,6 +7,7 @@ from django.http import (
     Http404,
     HttpResponse
 )
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
 from django.urls import reverse
@@ -171,19 +172,47 @@ def browse_view(request, parent_id=None):
     nodes = _order_by(nodes, request.GET)
 
     nodes_list = []
-    nodes_perms = request.user.get_perms_dict(
-        nodes, Access.ALL_PERMS
-    )
+    uid = request.user.id
+    pid = parent_id or ''
+    nodes_perms_key = f"user_{uid}_parent_id_{pid}_readable_nodes"
+    nodes_perms = cache.get(nodes_perms_key)
+
+    if not nodes_perms:
+        nodes_perms = request.user.get_perms_dict(
+            nodes, Access.ALL_PERMS
+        )
+        cache.set(nodes_perms_key, nodes_perms)
+
     readable_nodes = []
+
     for node in nodes:
-        if nodes_perms[node.id].get(Access.PERM_READ, False):
-            readable_nodes.append(node)
+        if node.id in nodes_perms:
+            if nodes_perms[node.id].get(Access.PERM_READ, False):
+                readable_nodes.append(node)
+        else:
+            # If we are here, it means that for given pair (user_id, parent_id)
+            # new node was introduced (document uploaded), folder created
+            node_perms = request.user.get_perms_dict([node], Access.ALL_PERMS)
+            if node_perms[node.id].get(Access.PERM_READ, False):
+                readable_nodes.append(node)
+                nodes_perms[node.id] = node_perms
+
+            # invalidate cache
+            cache.set(nodes_perms_key, [])
 
     page_number = _get_page_number(request_get=request.GET)
     paginator = Paginator(readable_nodes, PER_PAGE)
     page_obj = paginator.get_page(page_number)
 
     for node in page_obj.object_list:
+        node_dict_key = f"node_{node.id}_dict"
+        node_dict = cache.get(node_dict_key)
+
+        if node_dict:
+            nodes_list.append(node_dict)
+            continue
+
+        # node_dict was not found cache
         node_dict = node.to_dict()
         # and send user_perms to the frontend client
 
@@ -200,6 +229,7 @@ def browse_view(request, parent_id=None):
             )
 
         nodes_list.append(node_dict)
+        cache.set(node_dict_key, node_dict)
 
     return {
         'nodes': nodes_list,

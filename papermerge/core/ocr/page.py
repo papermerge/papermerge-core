@@ -365,7 +365,7 @@ def ocr_page(
     page_num,
     lang,
     version,
-    namespace=None,
+    namespace='',
 ):
     logger.debug(
         f" ocr_page user_id={user_id} doc_id={document_id}"

@@ -10,24 +10,31 @@ from django.conf import settings
 from papermerge.core.models import Document, BaseTreeNode
 from papermerge.core.importers.imap import import_attachment
 from papermerge.core.importers.local import import_documents
+from papermerge.core.task_monitor import (
+    save_event,
+    notify_consumers
+)
 
 logger = logging.getLogger(__name__)
 celery_app = Celery('papermerge')
 
 
 def on_event(event):
-    logger.info("MONITORING EVENTS... EVENT RECEIVED!")
-    logger.info(f"ON_EVENT: {event}")
+    save_event(event)
+    notify_consumers(event)
 
 
 def monitor_events(celery_app):
-    logger.info('HELLO!')
+
     with celery_app.connection() as conn:
-        logger.info('CAPTURING')
         recv = celery_app.events.Receiver(
             conn,
             handlers={
-                '*': on_event,
+                'task-sent': on_event,
+                'task-received': on_event,
+                'task-started': on_event,
+                'task-succeeded': on_event,
+                'task-failed': on_event,
             }
         )
         recv.capture(limit=None, timeout=None, wakeup=True)
@@ -210,9 +217,6 @@ def setup_periodic_tasks(celery_app_instance, **options):
     if start_imap_import:
         _include_imap_import_task(celery_app_instance)
 
-
-def on_celery_event(event):
-    logger.debug("HELLO!")
 
 class Command(BaseCommand):
 

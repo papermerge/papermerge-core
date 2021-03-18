@@ -311,6 +311,8 @@ method is not supposed to throw errors.
 
             if apply_async:
                 for page_num in range(1, page_count + 1):
+                    if namespace is None:
+                        namespace = ''
                     ocr_page.apply_async(kwargs={
                         'user_id': user.id,
                         'document_id': doc.id,

@@ -5,6 +5,7 @@ from django.db import models
 from django.urls import reverse
 from django.db import transaction, IntegrityError
 from django.utils.translation import ugettext_lazy as _
+from config.celery import app as celery_app
 
 from polymorphic_tree.managers import (
     PolymorphicMPTTModelManager,
@@ -416,6 +417,7 @@ class Document(BaseTreeNode):
 
         item['id'] = self.id
         item['title'] = self.title
+        item['ocr_status'] = self.get_ocr_status()
         item['notes'] = self.notes
         item['owner'] = self.user.username
         item['versions'] = self.get_versions()
@@ -954,6 +956,20 @@ class Document(BaseTreeNode):
                 tag,
                 tag_kwargs={'user': self.user}
             )
+
+    def get_ocr_status(self):
+        """
+        Returns one of the following strings:
+            * no_activity
+            * pending
+            * in_progress
+            * success
+            * error
+
+        Where `no_activity` means that there is no OCR activity
+        (background jobs) registered for current document (neither there was).
+        """
+        pass
 
 
 class AbstractDocument(models.Model):

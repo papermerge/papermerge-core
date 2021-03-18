@@ -1,8 +1,10 @@
 import os
 import logging
+import threading
 
 from celery import Celery
 from celery.apps.worker import Worker as CeleryWorker
+
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from papermerge.core.models import Document, BaseTreeNode
@@ -11,6 +13,30 @@ from papermerge.core.importers.local import import_documents
 
 logger = logging.getLogger(__name__)
 celery_app = Celery('papermerge')
+
+
+def on_event(event):
+    logger.info("MONITORING EVENTS... EVENT RECEIVED!")
+    logger.info(f"ON_EVENT: {event}")
+
+
+def monitor_events(celery_app):
+    logger.info('HELLO!')
+    with celery_app.connection() as conn:
+        logger.info('CAPTURING')
+        recv = celery_app.events.Receiver(
+            conn,
+            handlers={
+                '*': on_event,
+            }
+        )
+        recv.capture(limit=None, timeout=None, wakeup=True)
+
+
+def setup_event_listening(celery_app):
+    thread = threading.Thread(target=monitor_events, args=[celery_app])
+    thread.daemon = True
+    thread.start()
 
 
 @celery_app.task
@@ -185,6 +211,9 @@ def setup_periodic_tasks(celery_app_instance, **options):
         _include_imap_import_task(celery_app_instance)
 
 
+def on_celery_event(event):
+    logger.debug("HELLO!")
+
 class Command(BaseCommand):
 
     help = "Built-in Papermerge worker"
@@ -250,6 +279,7 @@ class Command(BaseCommand):
             app=celery_app,
             beat=True,
             quiet=True,
+            task_events=True,  # without this monitoring events won't work
             concurrency=1
         )
 
@@ -261,5 +291,6 @@ class Command(BaseCommand):
             celery_app_instance=celery_app,
             **options
         )
+        setup_event_listening(celery_app)
 
         celery_worker.start()

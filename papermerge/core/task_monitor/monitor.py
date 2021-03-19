@@ -12,10 +12,6 @@ class Monitor:
     """
     Monitors celery task states based on incoming events.
 
-    -----------------------------------------------------
-    |celery events <--> monitor <--> papermerge.avenues |
-    -----------------------------------------------------
-
     papermerge.avenues is basically a django channels based app.
 
     Celery does not provide a convinient task monitoring API, it just

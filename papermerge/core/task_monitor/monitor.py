@@ -1,12 +1,22 @@
 import json
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 from .query_set import QuerySet
 from .condition import Condition
+from .task import Task
 
 
 class Monitor:
     """
     Monitors celery task states based on incoming events.
+
+    -----------------------------------------------------
+    |celery events <--> monitor <--> papermerge.avenues |
+    -----------------------------------------------------
+
+    papermerge.avenues is basically a django channels based app.
 
     Celery does not provide a convinient task monitoring API, it just
     blindly saves tasks' metadata.
@@ -90,8 +100,8 @@ class Monitor:
 
             task_dict = self._extract_attr(event, condition.attrs)
 
-        self._merge(key, task_dict)
-        self._notify_avenues()
+        task = self._merge(key, task_dict)
+        self._notify_avenues(task)
 
     def _merge(self, key, attr_dict):
         """
@@ -103,8 +113,21 @@ class Monitor:
         self.store[key] = existing_task_dict
         self.store.expire(key)
 
+        return Task(**existing_task_dict)
+
     def __getitem__(self, task_name):
         """
         Returns an iterator over saved tasks with specified name
         """
         return QuerySet(task_name=task_name)
+
+    def _notify_avenues(self, task):
+        channel_layer = get_channel_layer()
+        channel_data = task.to_dict()
+        channel_data["type"] = f"ocr_page.{task.state}"
+
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            "page_status", channel_data
+        )

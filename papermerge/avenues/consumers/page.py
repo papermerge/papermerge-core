@@ -37,6 +37,9 @@ class PageConsumer(JsonWebsocketConsumer):
             },
         )
 
+    def ocr_page_task_received(self, event):
+        pass
+
     def page_ocr_start(self, event):
         # page_status.ocr_started
         logger.debug(event)

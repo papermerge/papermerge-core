@@ -198,6 +198,10 @@ def _get_nodes_perms(user, parent_id, nodes) -> dict:
 @require_GET
 def browse_view(request, parent_id=None):
     """
+    GET /browse/
+    GET /browse/<int:parent_id>
+    reverse('core:browse')
+
     Returns json string of nodes which current user can read:
 
         * filtered by tag (optionally)

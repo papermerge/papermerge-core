@@ -21776,6 +21776,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class UploaderItem extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
   defaults() {
     return {
@@ -21797,7 +21798,7 @@ class UploaderItem extends backbone__WEBPACK_IMPORTED_MODULE_1__["Model"] {
     }
 
     this.set({
-      'title': file.name,
+      'title': Object(_utils__WEBPACK_IMPORTED_MODULE_3__["sanitize"])(file.name),
       'size': file.size,
       'file': file,
       'lang': lang,

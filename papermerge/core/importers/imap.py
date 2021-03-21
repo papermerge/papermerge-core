@@ -79,23 +79,43 @@ def trigger_document_pipeline(
     return ingested
 
 
-def contains_attachments(structure):
+def contains_attachments(structure: BodyData):
+    """
+    Looks in email's BodyData for attachments.
 
-    if isinstance(structure, BodyData):
-        if structure.is_multipart:
-            for part in structure:
-                if isinstance(part, list):
-                    for element in part:
-                        if contains_attachments(element):
-                            return True
-        try:
-            if isinstance(
-                structure[8],
-                tuple
-            ) and structure[8][0] == b'attachment':
+    Returns True if BodyData instance has an attachment.
+
+    BodyData is basically a list of tuples (list of parts) which in their turn
+    can be nested as well (each part might be a part as well). We traverse
+    recursively the bodystructure until the parts are not lists anymore(not
+    multiparts).
+    """
+    if not isinstance(structure, BodyData):
+        return False
+
+    if structure.is_multipart:
+        for part in structure:
+            if isinstance(part, list):
+                for element in part:
+                    if contains_attachments(element):
+                        return True
+
+    # Here we have bodydata which is not multpart.
+    # Here BodyData is a tuple.
+    # Look for b'attachment' tuple's elements
+    # This tuple can still have other tuples.
+    # NOTE: Comparing lowercase here is important.
+    # Some IMAP servers will return b'ATTACHMENT'. Thus we
+    # need to lowercase it first.
+    for it in structure:
+        if isinstance(it, tuple) and len(it) > 0:
+            if hasattr(it[0], 'lower') and it[0].lower() == b'attachment':
                 return True
-        except IndexError:
-            return False
+        # item is a scalar here
+        # is this scalar b'attachment' ?
+        elif hasattr(it, 'lower') and it.lower() == b'attachment':
+            return True
+
     return False
 
 

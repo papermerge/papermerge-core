@@ -150,10 +150,17 @@ class Monitor:
     def _notify_avenues(self, task_dict):
         channel_layer = get_channel_layer()
         channel_data = {}
-        channel_data['task_data'] = task_dict
-        task_name = task_dict['type'].replace('-', '')
+        task_name = str(task_dict['type'].replace('-', ''))
         channel_data["type"] = f"ocrpage.{task_name}"
 
-        logger.info(f"NOTIFY CHANNEL {channel_data}")
+        data = {}
+        for k, v in task_dict.items():
+            data[str(k)] = str(v)
 
-        channel_layer.group_send("page_status", channel_data)
+        channel_data['task_data'] = data
+
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            "page_status", channel_data
+        )

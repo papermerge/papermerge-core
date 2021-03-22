@@ -26,30 +26,18 @@ class PageConsumer(JsonWebsocketConsumer):
     def ocrpage_taskreceived(self, event):
         page_data = {}
         page_data['task_data'] = event['task_data']
-        data = {
-            str(k): str(v)
-            for k, v in page_data.items()
-        }
-        logger.info(f"OCR_PAGE_TASK_RECEIVED data={data}")
-        self.send_json(data)
+        logger.info(f"OCR_PAGE_TASK_RECEIVED data={page_data}")
+        self.send_json(page_data)
 
     def ocrpage_taskstarted(self, event):
         page_data = {}
         page_data['task_data'] = event['task_data']
-        data = {
-            str(k): str(v)
-            for k, v in page_data.items()
-        }
-        logger.info(f"OCR_PAGE_TASK_STARTED data={data}")
-        self.send_json(data)
+        logger.info(f"OCR_PAGE_TASK_STARTED data={page_data}")
+        self.send_json(page_data)
 
     def ocrpage_tasksucceeded(self, event):
         page_data = {}
         page_data['task_data'] = event['task_data']
-        data = {
-            str(k): str(v)
-            for k, v in page_data.items()
-        }
-        logger.info(f"OCR_PAGE_TASK_SUCCEEDED data={data}")
-        self.send_json(data)
+        logger.info(f"OCR_PAGE_TASK_SUCCEEDED data={page_data}")
+        self.send_json(page_data)
 

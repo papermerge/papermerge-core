@@ -1,11 +1,7 @@
-import os
 import logging
 import time
 
 from django.conf import settings
-
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 from papermerge.core.storage import default_storage
 
@@ -31,170 +27,15 @@ COMPLETE = "complete"
 
 
 def notify_hocr_ready(page_path, **kwargs):
-    """
-    Notifies interested parties that .hocr file is available.
-
-    Notifies via django signals. Among others will send
-    hocr content itself. Input arguments:
-
-    ``page_path``: mglib.PagePath instance of current page
-    Following keys are expected to be availble in kwargs dictinary:
-
-        * ``user_id``
-        * ``document_id``
-        * ``file_name``
-        * ``page_num``
-        * ``namespace``
-        * ``version``
-        * ``step``
-
-    Always returns None.
-    """
-
-    user_id = kwargs.get('user_id', None)
-    document_id = kwargs.get('document_id', None)
-    file_name = kwargs.get('file_name', None)
-    page_num = kwargs.get('page_num', 1)
-    version = kwargs.get('version', 0)
-    namespace = kwargs.get('namespace', None)
-    step = kwargs.get('step', 1)
-
-    if page_path:
-        abs_path_hocr = default_storage.abspath(page_path.hocr_url())
-
-        if os.path.exists(abs_path_hocr):
-            with open(abs_path_hocr) as f:
-                hocr = f.read()
-                channel_layer = get_channel_layer()
-                async_to_sync(
-                    channel_layer.group_send
-                )(
-                    "page_status",
-                    {
-                        "type": "page.hocr_ready",
-                        "page": {
-                            "user_id": user_id,
-                            "document_id": document_id,
-                            "file_name": file_name,
-                            "page_num": page_num,
-                            "version": version,
-                            "namespace": namespace,
-                            "hocr": hocr
-                        }
-                    }
-                )
-        else:
-            logger.warning(
-                f"Page hocr/step={step} path {abs_path_hocr} does not exist."
-            )
-    else:
-        logger.warning(
-            f"hOCR/step={step} method returned empty page path."
-        )
+    pass
 
 
 def notify_txt_ready(page_path, **kwargs):
-    """
-    Notifies interested parties that .txt file is available.
-
-    Notifies via django signals. Among others will send
-    .txt content itself. Input arguments:
-
-    ``page_path``: mglib.PagePath instance of current page
-    Following keys are expected to be availble in kwargs dictinary:
-
-        * ``user_id``
-        * ``document_id``
-        * ``file_name``
-        * ``page_num``
-        * ``version``
-        * ``namespace``
-
-    Always returns None.
-    """
-
-    user_id = kwargs.get('user_id', None)
-    document_id = kwargs.get('document_id', None)
-    page_num = kwargs.get('page_num', 1)
-    file_name = kwargs.get('file_name', None)
-    version = kwargs.get('version', 0)
-    namespace = kwargs.get('namespace', None)
-
-    logger.debug("notify_txt_ready")
-
-    if page_path:
-        abs_path_txt = default_storage.abspath(page_path.txt_url())
-
-        logger.debug(f"notify_txt_ready for {abs_path_txt}")
-
-        if os.path.exists(abs_path_txt):
-            with open(abs_path_txt) as f:
-                text = f.read()
-
-                logger.debug(
-                    f"Sending post_page_txt signal"
-                    f" namespace={namespace} "
-                    f" user_id={user_id}"
-                    f" document_id={document_id}"
-                    f" page_num={page_num}"
-                    f" text={text}"
-                )
-                channel_layer = get_channel_layer()
-                async_to_sync(
-                    channel_layer.group_send
-                )(
-                    "page_status",
-                    {
-                        "type": "page.txt_ready",
-                        "page": {
-                            "user_id": user_id,
-                            "document_id": document_id,
-                            "file_name": file_name,
-                            "page_num": page_num,
-                            "version": version,
-                            "namespace": namespace,
-                            "text": text
-                        }
-                    }
-                )
-
-        else:
-            logger.warning(
-                f"Page txt path {abs_path_txt} does not exist. "
-                f"Page indexing was skipped."
-            )
-    else:
-        logger.warning(
-            "OCR method returned empty page path. "
-            "Page indexing was skipped."
-        )
+    pass
 
 
 def notify_pre_page_ocr(page_path, **kwargs):
-    user_id = kwargs.get('user_id', None)
-    document_id = kwargs.get('document_id', None)
-    file_name = kwargs.get('file_name', None)
-    page_num = kwargs.get('page_num', 1)
-    version = kwargs.get('version', 0)
-    namespace = kwargs.get('namespace', None)
-
-    channel_layer = get_channel_layer()
-    async_to_sync(
-        channel_layer.group_send
-    )(
-        "page_status",
-        {
-            "type": "page.ocr_start",
-            "page": {
-                "user_id": user_id,
-                "document_id": document_id,
-                "file_name": file_name,
-                "page_num": page_num,
-                "version": version,
-                "namespace": namespace,
-            }
-        }
-    )
+    pass
 
 
 def ocr_page_pdf(

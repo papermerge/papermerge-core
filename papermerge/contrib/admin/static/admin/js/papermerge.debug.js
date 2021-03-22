@@ -18679,12 +18679,13 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************************************************************!*\
   !*** ../Organizations/papermerge/LEDStatus/src/js/led_status.js ***!
   \******************************************************************/
-/*! exports provided: LEDDocumentStatus */
+/*! exports provided: LEDDocumentStatus, LEDPageStatus */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LEDDocumentStatus", function() { return LEDDocumentStatus; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LEDPageStatus", function() { return LEDPageStatus; });
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! underscore */ "../Organizations/papermerge/LEDStatus/node_modules/underscore/modules/index-all.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "../Organizations/papermerge/LEDStatus/node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
@@ -18726,7 +18727,7 @@ class LEDDocumentStatus {
     this._dispatcher.on("leds.document", this.on_update, this);
 
     host = window.location.host;
-    ws_url = `ws://${host}/ws/leds/document`;
+    ws_url = `ws://${host}/ws/document`;
     this._socket = new WebSocket(ws_url);
 
     this._socket.onmessage = function (e) {
@@ -18743,7 +18744,113 @@ class LEDDocumentStatus {
       return;
     }
 
-    this.update(message['document_data'], message['ocr_state']);
+    console.log(message); //this.update(message['document_data'], message['ocr_state']);
+  }
+
+  update(doc_data, ocr_state) {
+    let $dom_node = this.find_node(doc_data);
+
+    if ($dom_node) {
+      this.update_state($dom_node, ocr_state);
+    }
+  }
+
+  find_node(doc_data) {
+    let doc_node, nodes, selector, document_id;
+    document_id = doc_data['document_id'];
+    selector = this._config['node_selector'];
+    doc_node = jquery__WEBPACK_IMPORTED_MODULE_1___default()(`${selector}[data-id='${document_id}']`);
+    /*
+    console.log(
+        `Node selector = ${selector}[data-id='${document_id}'], count=${doc_node.length}`
+    );
+    */
+
+    return doc_node;
+  }
+
+  update_state($dom_node, ocr_state) {
+    let $led_elem, state, result, css_selector;
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_0__["default"].isEmpty($dom_node)) {
+      console.error("LEDStatus: empty node element");
+      return;
+    }
+
+    css_selector = this._config['led_selector'];
+    $led_elem = $dom_node.find(css_selector);
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_0__["default"].isEmpty($led_elem)) {
+      console.error("LEDStatus: empty led status element");
+      return;
+    } //console.log(`Found count ${ $led_elem.length } led elements`);
+
+
+    state = ocr_state['state'];
+    result = ocr_state['result']; //console.log(`state=${state}`)
+
+    if (state == OCR_START) {
+      // green blinking
+      $led_elem.removeClass(LED_CLASSES);
+      $led_elem.addClass([GREEN, BLINK]);
+    }
+
+    if (state == OCR_COMPLETE && result == SUCCESS) {
+      // green static
+      $led_elem.removeClass(LED_CLASSES);
+      $led_elem.addClass([GREEN]);
+    }
+
+    if (state == OCR_COMPLETE && result == ERROR) {
+      // red static
+      $led_elem.removeClass(LED_CLASSES);
+      $led_elem.addClass([RED]);
+    }
+  }
+
+}
+class LEDPageStatus {
+  constructor(dispatcher, config = {}) {
+    let host,
+        ws_url,
+        that = this;
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_0__["default"].isEmpty(dispatcher)) {
+      dispatcher = underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone(backbone__WEBPACK_IMPORTED_MODULE_2___default.a.Events);
+    }
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_0__["default"].isEmpty(config)) {
+      config = {
+        'node_selector': '.node',
+        'led_selector': '.led' // led selector within node
+
+      };
+    }
+
+    this._dispatcher = dispatcher;
+    this._config = config;
+
+    this._dispatcher.on("leds.page", this.on_update, this);
+
+    host = window.location.host;
+    ws_url = `ws://${host}/ws/page`;
+    this._socket = new WebSocket(ws_url);
+
+    this._socket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+
+      that._dispatcher.trigger("leds.page", data);
+    };
+  }
+
+  on_update(message) {
+    let led_doc;
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_0__["default"].isEmpty(message)) {
+      return;
+    }
+
+    console.log(message); //this.update(message['document_data'], message['ocr_state']);
   }
 
   update(doc_data, ocr_state) {
@@ -43506,6 +43613,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 let TEMPLATE_GRID = __webpack_require__(/*! ../templates/browse_grid.html */ "./src/js/templates/browse_grid.html");
 
 let TEMPLATE_LIST = __webpack_require__(/*! ../templates/browse_list.html */ "./src/js/templates/browse_list.html");
@@ -44102,7 +44210,8 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__["View"] {
 
     this.display_mode = new _display_mode__WEBPACK_IMPORTED_MODULE_4__["DisplayModeView"]();
     this.pagination_view = new _pagination__WEBPACK_IMPORTED_MODULE_6__["PaginationView"]();
-    this.led_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__["LEDDocumentStatus"](); // there are to view modes - list and grid
+    this.led_doc_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__["LEDDocumentStatus"]();
+    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__["LEDPageStatus"](); // there are to view modes - list and grid
 
     this.browse_list_view = new BrowseListView();
     this.browse_grid_view = new BrowseGridView();

@@ -81,7 +81,7 @@ class Monitor:
 
         kwargs = event['kwargs']
         if len(kwargs) <= 2:
-            return {}
+            return ret
 
         data = json.loads(kwargs.replace("'", '"'))
         for attr in attrs:
@@ -90,35 +90,56 @@ class Monitor:
         return ret
 
     def save_event(self, event):
-        task_dict = {}
-        key = self.get_key(event)
-        task_name = event.get('name', None)
+        task_dict = self.get_task_dict(event)
 
-        for task in self._tasks:
-            if task != task_name:
-                continue
+        updated_task_dict = self.update(event, task_dict)
 
-            task_dict = self._extract_attr(event, task.attrs)
-
-        existing_task_dict = self._merge(key, task_dict)
-        if len(existing_task_dict) > 0:
+        if len(updated_task_dict) > 0:
             self._notify_avenues(
-                Task(name=task_name, **existing_task_dict)
+                updated_task_dict
             )
 
-    def _merge(self, key, attr_dict):
+    def get_task_dict(self, event):
+        task_dict = {}
+        task_name = event.get('name', None)
+
+        if self.is_monitored_task(task_name):
+            task = self.get_task(task_name)
+            task_dict = self._extract_attr(event, task.attrs)
+            task_dict['short_task_name'] = task_name.split('.')[-1]
+            task_dict['full_task_name'] = task_name
+
+        task_dict['type'] = event.get('type', None)
+
+        return task_dict
+
+    def get_task(self, task_name):
+        for task in self._tasks:
+            if task == task_name:
+                return task
+
+        return None
+
+    def is_monitored_task(self, task_name):
+        for task in self._tasks:
+            if task == task_name:
+                return True
+
+        return False
+
+    def update(self, event, attr_dict):
         """
         Merge new attributes into existing task key
         """
-        existing_task_dict = self.store[key]
-        existing_task_dict.update(attr_dict)
+        key = self.get_key(event)
+        found_attr = self.store[key]
+        found_attr.update(attr_dict)
 
-        if len(existing_task_dict) > 0:
-            logger.info(f"existing task dict = {existing_task_dict}")
-            self.store[key] = existing_task_dict
+        if len(found_attr) > 0:
+            self.store[key] = found_attr
             self.store.expire(key)
 
-        return existing_task_dict
+        return found_attr
 
     def __getitem__(self, task_name):
         """
@@ -126,13 +147,13 @@ class Monitor:
         """
         return QuerySet(task_name=task_name)
 
-    def _notify_avenues(self, task):
+    def _notify_avenues(self, task_dict):
         channel_layer = get_channel_layer()
-        channel_data = task.to_dict()
-        channel_data["type"] = f"ocr_page.{task.state}"
+        channel_data = {}
+        channel_data['task_data'] = task_dict
+        task_name = task_dict['type'].replace('-', '')
+        channel_data["type"] = f"ocrpage.{task_name}"
 
-        async_to_sync(
-            channel_layer.group_send
-        )(
-            "page_status", channel_data
-        )
+        logger.info(f"NOTIFY CHANNEL {channel_data}")
+
+        channel_layer.group_send("page_status", channel_data)

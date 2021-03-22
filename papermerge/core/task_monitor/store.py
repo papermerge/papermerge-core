@@ -19,4 +19,4 @@ class RedisStore:
         self.redis.hmset(key, value)
 
     def expire(self, key):
-        self.redis.expire(key, self._timeout)
+        self.redis.expire(key, self.timeout)

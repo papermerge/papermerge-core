@@ -1,3 +1,5 @@
+from redis import Redis
+
 
 class InMemoryStore:
     pass
@@ -5,8 +7,8 @@ class InMemoryStore:
 
 class RedisStore:
 
-    def __init__(self, redis, timeout):
-        self.redis = redis
+    def __init__(self, url, timeout):
+        self.redis = Redis.from_url(url)
         # keys timeout in seconds
         self.timeout = timeout
 

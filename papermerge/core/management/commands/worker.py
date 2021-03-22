@@ -10,18 +10,14 @@ from django.conf import settings
 from papermerge.core.models import Document, BaseTreeNode
 from papermerge.core.importers.imap import import_attachment
 from papermerge.core.importers.local import import_documents
-from papermerge.core.task_monitor import (
-    save_event,
-    notify_consumers
-)
+from papermerge.core.task_monitor import task_monitor
 
 logger = logging.getLogger(__name__)
 celery_app = Celery('papermerge')
 
 
 def on_event(event):
-    save_event(event)
-    notify_consumers(event)
+    task_monitor.save_event(event)
 
 
 def monitor_events(celery_app):

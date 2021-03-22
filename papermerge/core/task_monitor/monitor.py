@@ -86,7 +86,6 @@ class Monitor:
         return ret
 
     def save_event(self, event):
-
         task_dict = {}
         key = self.get_key(event)
 
@@ -103,7 +102,7 @@ class Monitor:
         """
         Merge new attributes into existing task key
         """
-        existing_task_dict = self._store[key]
+        existing_task_dict = self.store[key]
         existing_task_dict.update(attr_dict)
 
         self.store[key] = existing_task_dict

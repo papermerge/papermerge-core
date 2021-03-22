@@ -1,3 +1,7 @@
+from django.utils.module_loading import import_string
+
+from papermerge.core.app_settings import settings
+
 from .monitor import Monitor
 
 """
@@ -17,11 +21,17 @@ app labels (both apps would have 'channels' label) will conflict.
 """
 
 
-class StoreKlass:
-    pass
+def get_store_class(import_path=None):
 
-# StoreKlass will be actually loaded from configurations
-# Default value will be papermerge.task_monitor.store.RedisStore
+    return import_string(
+        import_path or settings.TASK_MONITOR_STORE_CLASS
+    )
 
 
-task_monitor = Monitor(store=StoreKlass())
+StoreKlass = get_store_class()
+store = StoreKlass(
+    url=settings.TASK_MONITOR_STORE_URL,
+    timeout=settings.TASK_MONITOR_STORE_KEYS_TIMEOUT
+)
+
+task_monitor = Monitor(store=store)

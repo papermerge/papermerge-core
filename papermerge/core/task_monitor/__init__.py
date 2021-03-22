@@ -35,3 +35,15 @@ store = StoreKlass(
 )
 
 task_monitor = Monitor(store=store)
+# add tasks to monitor
+task_monitor.add_task(
+    name="papermerge.core.tasks.ocr_page",
+    attrs=[
+        'user_id',
+        'document_id',
+        'page_num',
+        'lang',
+        'version',
+        'namespace'
+    ]
+)

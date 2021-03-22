@@ -2,6 +2,9 @@ from django.conf import settings as django_settings
 
 
 class AppSettings():
+    """
+    papermerge.core settings and their defaults
+    """
 
     def __init__(self, prefix):
 

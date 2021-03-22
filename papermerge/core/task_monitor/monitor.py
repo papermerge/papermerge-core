@@ -1,11 +1,14 @@
 import json
+import logging
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 from .query_set import QuerySet
-from .condition import Condition
 from .task import Task
+
+
+logger = logging.getLogger(__name__)
 
 
 class Monitor:
@@ -58,11 +61,12 @@ class Monitor:
         # redis store
         self.store = store
         self.prefix = prefix
-        self._conditions = []
+        # A list of monitored tasks
+        self._tasks = []
 
-    def add_condition(self, **kwargs):
-        self._conditions.append(
-            Condition(**kwargs)
+    def add_task(self, name, attrs=[]):
+        self._tasks.append(
+            Task(name=name, attrs=attrs)
         )
 
     def get_key(self, event):
@@ -72,7 +76,7 @@ class Monitor:
 
         return key
 
-    def extract_attr(self, event: dict, attrs: list) -> dict:
+    def _extract_attr(self, event: dict, attrs: list) -> dict:
         ret = {}
 
         kwargs = event['kwargs']
@@ -88,15 +92,19 @@ class Monitor:
     def save_event(self, event):
         task_dict = {}
         key = self.get_key(event)
+        task_name = event.get('name', None)
 
-        for condition in self._conditions:
-            if condition != event.get('name', None):
+        for task in self._tasks:
+            if task != task_name:
                 continue
 
-            task_dict = self._extract_attr(event, condition.attrs)
+            task_dict = self._extract_attr(event, task.attrs)
 
-        task = self._merge(key, task_dict)
-        self._notify_avenues(task)
+        existing_task_dict = self._merge(key, task_dict)
+        if len(existing_task_dict) > 0:
+            self._notify_avenues(
+                Task(name=task_name, **existing_task_dict)
+            )
 
     def _merge(self, key, attr_dict):
         """
@@ -105,10 +113,12 @@ class Monitor:
         existing_task_dict = self.store[key]
         existing_task_dict.update(attr_dict)
 
-        self.store[key] = existing_task_dict
-        self.store.expire(key)
+        if len(existing_task_dict) > 0:
+            logger.info(f"existing task dict = {existing_task_dict}")
+            self.store[key] = existing_task_dict
+            self.store.expire(key)
 
-        return Task(**existing_task_dict)
+        return existing_task_dict
 
     def __getitem__(self, task_name):
         """

@@ -34,7 +34,7 @@ store = StoreKlass(
     timeout=settings.TASK_MONITOR_STORE_KEYS_TIMEOUT
 )
 
-task_monitor = Monitor(prefix="B-task-monitor", store=store)
+task_monitor = Monitor(prefix="task-monitor", store=store)
 # add tasks to monitor
 task_monitor.add_task(
     name="papermerge.core.tasks.ocr_page",

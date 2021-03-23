@@ -50,3 +50,17 @@ Features Highlights
 * REST API
 * Page Management - delete, reorder, cut & paste pages
 * Automation
+
+
+Unit Tests
+~~~~~~~~~~~~~
+
+Run all unit tests with `tox <https://tox.readthedocs.io/en/latest/index.html>`_:
+
+    $ pip install -r requirements/test.txt
+    $ tox
+
+Tox will run all unit tests in python virtual environment with different version of python interpreter.
+In order to run unit tests for specific python versionm, for example 3.7, use following command:
+
+    $ tox -e py37

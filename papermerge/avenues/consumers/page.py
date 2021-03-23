@@ -1,5 +1,4 @@
 import logging
-import json
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
@@ -40,4 +39,3 @@ class PageConsumer(JsonWebsocketConsumer):
         page_data['task_data'] = event['task_data']
         logger.info(f"OCR_PAGE_TASK_SUCCEEDED data={page_data}")
         self.send_json(page_data)
-

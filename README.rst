@@ -64,3 +64,9 @@ Tox will run all unit tests in python virtual environment with different version
 In order to run unit tests for specific python versionm, for example 3.7, use following command:
 
     $ tox -e py37
+
+Tox creates a python virtual environment where it install all dependencies. For python version 3.7, virtual environment will be installed in .tox/py37 folder.
+In order to run tests suite with all warnings enabled, use following commands:
+
+    $ source .tox/py37/bin/activate  #  activate python virtual environment
+    $ python -W all runtests.py  # run unit tests with all warning messages on

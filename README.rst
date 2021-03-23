@@ -55,18 +55,24 @@ Features Highlights
 Unit Tests
 ~~~~~~~~~~~~~
 
-Run all unit tests with `tox <https://tox.readthedocs.io/en/latest/index.html>`_::
+Run all unit tests with `tox <https://tox.readthedocs.io/en/latest/index.html>`_:
+
+.. code-block:: bash
 
     $ pip install -r requirements/test.txt
     $ tox
 
 Tox will run all unit tests in python virtual environment with different version of python interpreter.
-In order to run unit tests for specific python version, for example 3.7, use following command::
+In order to run unit tests for specific python version, for example 3.7, use following command:
+
+.. code-block:: bash
 
     $ tox -e py37
 
 Tox creates a python virtual environment where it install all dependencies. For python version 3.7, virtual environment will be installed in .tox/py37 folder.
 In order to run tests suite with all warnings enabled, use following commands::
+
+.. code-block:: bash
 
     $ source .tox/py37/bin/activate  #  activate python virtual environment
     $ python -W all runtests.py  # run unit tests with all warning messages on

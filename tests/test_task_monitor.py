@@ -18,4 +18,3 @@ class TestTasks(TestCase):
         self.assertEquals(
             task2.full_name, "papermerge.core.tasks.ocr_page"
         )
-

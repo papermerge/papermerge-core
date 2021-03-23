@@ -90,7 +90,7 @@ class Monitor:
         return ret
 
     def save_event(self, event):
-        task_dict = self.get_task_dict(event)
+        task_dict = self.get_task_from(event)
 
         updated_task_dict = self.update(event, task_dict)
 
@@ -99,19 +99,22 @@ class Monitor:
                 updated_task_dict
             )
 
-    def get_task_dict(self, event):
-        task_dict = {}
+    def get_task_from(self, event):
+        """
+        Given even object (which is a dictionary)
+        return a task object
+        """
+        task = None
         task_name = event.get('name', None)
 
         if self.is_monitored_task(task_name):
             task = self.get_task(task_name)
-            task_dict = self._extract_attr(event, task.attrs)
-            task_dict['short_task_name'] = task_name.split('.')[-1]
-            task_dict['full_task_name'] = task_name
+            task.update(event.get('kwargs', None))
 
-        task_dict['type'] = event.get('type', None)
+        if not task:
+            task = Task(task_name, type=event.get('type', None))
 
-        return task_dict
+        return task
 
     def get_task(self, task_name):
         for task in self._tasks:

@@ -80,3 +80,5 @@ class TestTasks(TestCase):
             10
         )
 
+    def test_task_name_can_be_None(self):
+        pass

@@ -1,5 +1,8 @@
 config/settings/local/*
 papermerge.conf.py
+build/
+.eggs/
+.tox/
 env.sh
 env_dev.sh
 env_test.sh

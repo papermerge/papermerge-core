@@ -6,15 +6,31 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'fake-key'
 
 INSTALLED_APPS = [
+    'rest_framework',
+    'knox',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.sites',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'papermerge.core',
+    'papermerge.core.apps.CoreConfig',
+    'papermerge.contrib.admin.apps.AdminConfig',
+    'papermerge.avenues.apps.AvenuesConfig',
+    'django.contrib.contenttypes',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dynamic_preferences',
+    'dynamic_preferences.users.apps.UserPreferencesConfig',
+    'polymorphic_tree',
+    'polymorphic',
+    'mptt',
+    'mgclipboard',
+    'bootstrap4',
+    'channels',
 ]
 
-ROOT_URLCONF = 'tests.urls'
+ROOT_URLCONF = 'tests.config.urls'
 
 TEMPLATES = [
     {

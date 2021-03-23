@@ -6,4 +6,5 @@ class TestTasks(TestCase):
 
     def test_basic_task_creation(self):
         task = Task(name="hello")
+        self.assertFalse(True)
         self.assertEquals(task.name, "hello")

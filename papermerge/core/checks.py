@@ -1,10 +1,10 @@
 import os
 import subprocess
 
-from django.conf import settings
 from django.core.checks import Warning, register
 
-from papermerge.core.importers.imap import login as imap_login
+from .importers.imap import login as imap_login
+from .app_settings import settings
 
 
 USED_BINARIES = {

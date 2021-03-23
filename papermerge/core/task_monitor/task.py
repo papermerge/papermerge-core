@@ -53,3 +53,7 @@ class Task(dict):
     @property
     def full_name(self):
         return self.name
+
+
+def dict2channel_data(kwargs):
+    pass

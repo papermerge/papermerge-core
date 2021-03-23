@@ -3,6 +3,7 @@ from django.utils.module_loading import import_string
 from papermerge.core.app_settings import settings
 
 from .monitor import Monitor
+from .task import Task
 
 """
 Task monitor is sort of proxy between celery events and django
@@ -37,13 +38,13 @@ store = StoreKlass(
 task_monitor = Monitor(prefix="task-monitor", store=store)
 # add tasks to monitor
 task_monitor.add_task(
-    name="papermerge.core.tasks.ocr_page",
-    attrs=[
-        'user_id',
-        'document_id',
-        'page_num',
-        'lang',
-        'version',
-        'namespace'
-    ]
+    Task(
+        "papermerge.core.tasks.ocr_page",
+        user_id='',
+        document_id='',
+        page_num='',
+        lang='',
+        version='',
+        namespace=''
+    )
 )

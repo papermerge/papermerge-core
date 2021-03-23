@@ -81,4 +81,8 @@ class TestTasks(TestCase):
         )
 
     def test_task_name_can_be_None(self):
-        pass
+        """
+        Task can have name == None
+        """
+        task = Task(name=None)
+        self.assertIsNone(task.name)

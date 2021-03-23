@@ -1,11 +1,10 @@
-import json
 import logging
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 from .query_set import QuerySet
-from .task import Task
+from .task import Task, dict2channel_data
 
 
 logger = logging.getLogger(__name__)
@@ -64,10 +63,8 @@ class Monitor:
         # A list of monitored tasks
         self._tasks = []
 
-    def add_task(self, name, attrs=[]):
-        self._tasks.append(
-            Task(name=name, attrs=attrs)
-        )
+    def add_task(self, task):
+        self._tasks.append(task)
 
     def get_key(self, event):
 
@@ -76,28 +73,29 @@ class Monitor:
 
         return key
 
-    def _extract_attr(self, event: dict, attrs: list) -> dict:
-        ret = {}
-
-        kwargs = event['kwargs']
-        if len(kwargs) <= 2:
-            return ret
-
-        data = json.loads(kwargs.replace("'", '"'))
-        for attr in attrs:
-            ret[attr] = data.get(attr, '')
-
-        return ret
-
     def save_event(self, event):
-        task_dict = self.get_task_from(event)
+        task = self.get_task_from(event)
 
-        updated_task_dict = self.update(event, task_dict)
+        updated_task_dict = self.update(event, task)
 
         if len(updated_task_dict) > 0:
             self._notify_avenues(
                 updated_task_dict
             )
+
+    def update(self, event, task):
+        """
+        Merge new attributes into existing task key
+        """
+        key = self.get_key(event)
+        found_attr = self.store[key]
+        found_attr.update(dict(task))
+
+        if len(found_attr) > 0:
+            self.store[key] = found_attr
+            self.store.expire(key)
+
+        return found_attr
 
     def get_task_from(self, event):
         """
@@ -130,20 +128,6 @@ class Monitor:
 
         return False
 
-    def update(self, event, attr_dict):
-        """
-        Merge new attributes into existing task key
-        """
-        key = self.get_key(event)
-        found_attr = self.store[key]
-        found_attr.update(attr_dict)
-
-        if len(found_attr) > 0:
-            self.store[key] = found_attr
-            self.store.expire(key)
-
-        return found_attr
-
     def __getitem__(self, task_name):
         """
         Returns an iterator over saved tasks with specified name
@@ -160,7 +144,7 @@ class Monitor:
         for k, v in task_dict.items():
             data[str(k)] = str(v)
 
-        channel_data['task_data'] = data
+        channel_data['task_data'] = dict2channel_data(task_dict)
 
         async_to_sync(
             channel_layer.group_send

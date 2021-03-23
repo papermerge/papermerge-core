@@ -119,7 +119,7 @@ class AppSettings():
         return value
 
     @property
-    def DEFAULT_CONFIG_PLACES(self):
+    def CONFIG_PLACES(self):
         default = [
             "/etc/papermerge.conf.py",
             "papermerge.conf.py"
@@ -127,6 +127,76 @@ class AppSettings():
         return self._settings(
             "DEFAULT_CONFIG_PLACES",
             default
+        )
+
+    @property
+    def CONFIG_ENV_NAME(self):
+        """
+        Name of environment variable pointing to
+        papermerge.conf.py file.
+
+        Useful in case papermerge.conf.py file is neither
+        in root folder nor in /etc/papermerge.conf.py
+        """
+        return self._settings(
+            "DEFAULT_CONFIG_ENV_NAME",
+            "PAPERMERGE_CONFIG"
+        )
+
+    @property
+    def IMPORT_MAIL_HOST(self):
+        return self._settings(
+            "IMPORT_MAIL_HOST",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_USER(self):
+        return self._settings(
+            "IMPORT_MAIL_USER",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_PASS(self):
+        return self._settings(
+            "IMPORT_MAIL_PASS",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_INBOX(self):
+        return self._settings(
+            "IMPORT_MAIL_INBOX",
+            "INBOX"
+        )
+
+    @property
+    def IMPORT_MAIL_SECRET(self):
+        return self._settings(
+            "IMPORT_MAIL_SECRET",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_BY_USER(self):
+        return self._settings(
+            "IMPORT_MAIL_BY_USER",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_BY_SECRET(self):
+        return self._settings(
+            "IMPORT_MAIL_BY_SECRET",
+            None
+        )
+
+    @property
+    def IMPORT_MAIL_DELETE(self):
+        return self._settings(
+            "IMPORT_MAIL_DELETE",
+            False
         )
 
 

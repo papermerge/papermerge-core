@@ -207,6 +207,10 @@ class TestTaskMonitor(TestCase):
         self.callback.assert_not_called()
 
     def test_realistic_event_sequence1(self):
+        """
+        Events triggered by tasks which are monitored
+        must invoke monitor.callback with correct arguments
+        """
         task = Task(
             "papermerge.core.tasks.ocr_page",
             document_id='',
@@ -253,6 +257,10 @@ class TestTaskMonitor(TestCase):
         })
 
     def test_realistic_event_sequence2(self):
+        """
+        Events triggered by tasks which are not monitored
+        should not invoke monitor.callback
+        """
         task = Task(
             "papermerge.core.tasks.ocr_page",
             document_id='',

@@ -1,10 +1,8 @@
 import logging
 
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 from .query_set import QuerySet
-from .task import Task, dict2channel_data
+from .task import Task
 
 
 logger = logging.getLogger(__name__)
@@ -62,9 +60,14 @@ class Monitor:
         self.prefix = prefix
         # A list of monitored tasks
         self._tasks = []
+        # callback to invoke when new event arrived
+        self.callback = None
 
     def add_task(self, task):
         self._tasks.append(task)
+
+    def set_callback(self, callback):
+        self.callback = callback
 
     def get_key(self, event):
 
@@ -79,9 +82,7 @@ class Monitor:
         updated_task_dict = self.update(event, task)
 
         if len(updated_task_dict) > 0:
-            self._notify_avenues(
-                updated_task_dict
-            )
+            self.callback(updated_task_dict)
 
     def update(self, event, task):
         """
@@ -133,21 +134,3 @@ class Monitor:
         Returns an iterator over saved tasks with specified name
         """
         return QuerySet(task_name=task_name)
-
-    def _notify_avenues(self, task_dict):
-        channel_layer = get_channel_layer()
-        channel_data = {}
-        task_name = str(task_dict['type'].replace('-', ''))
-        channel_data["type"] = f"ocrpage.{task_name}"
-
-        data = {}
-        for k, v in task_dict.items():
-            data[str(k)] = str(v)
-
-        channel_data['task_data'] = dict2channel_data(task_dict)
-
-        async_to_sync(
-            channel_layer.group_send
-        )(
-            "page_status", channel_data
-        )

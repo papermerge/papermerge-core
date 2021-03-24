@@ -51,29 +51,40 @@ class Task(dict):
         return self.name.split('.')[-1]
 
     @property
+    def channel_group_name(self):
+        # make it explicit that short name is
+        # synonymous to channel group_name
+        return self.short_name
+
+    @property
     def full_name(self):
         return self.name
 
 
 def dict2channel_data(task_dict):
     """
-    Transforms a task dictionary i.e. a dictionary returned
-    by dict(task) for sending to django channel.
+    Given a task_dictionary (obtained with dict(task))
+    will return group_name and channel_data ready to be
+    sent to django channel.
 
-    will take original ``task_name`` and ``type`` keys and create
-    new ``type`` key with format <shortname>.<type with removed dashes>
+    Returned ``channel_data`` (second item of returned tuple) will
+    have ``type`` trandformed as follows:
+
+    new_type = <shortname>.<original type with removed dashes>
     """
 
     ret_dict = {}
     orig_type = task_dict.pop('type')
     orig_task_name = task_dict.pop('task_name')
 
-    short_name = orig_task_name.split('.')[-1]
-    short_name = short_name.replace('_', '')
+    orig_short_name = orig_task_name.split('.')[-1]
+    short_name = orig_short_name.replace('_', '')
     _type = orig_type.replace('-', '')
     new_type = f"{short_name}.{_type}"
 
     ret_dict['type'] = new_type
     ret_dict.update(task_dict)
 
-    return ret_dict
+    # First item in tuple is django channel group name == task_short
+    # Second item in tuple task_dict with new ``type`` key
+    return orig_short_name, ret_dict

@@ -126,11 +126,17 @@ class TestTasks(TestCase):
             'user_id': 32
         }
 
+        group_name, ret_channel_dict = dict2channel_data(dict(task))
+
         self.assertDictEqual(
-            dict2channel_data(dict(task)),
+            ret_channel_dict,
             channel_dict
         )
 
+        self.assertEqual(
+            group_name,
+            "ocr_page"
+        )
 
 class TestTaskMonitor(TestCase):
 

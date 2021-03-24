@@ -1,9 +1,15 @@
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 from django.utils.module_loading import import_string
 
 from papermerge.core.app_settings import settings
 
 from .monitor import Monitor
-from .task import Task
+from .task import (
+    Task,
+    dict2channel_data
+)
 
 """
 Task monitor is sort of proxy between celery events and django
@@ -35,6 +41,18 @@ store = StoreKlass(
     timeout=settings.TASK_MONITOR_STORE_KEYS_TIMEOUT
 )
 
+
+def send2channel(task_dict):
+    channel_layer = get_channel_layer()
+    group_name, channel_data = dict2channel_data(task_dict)
+
+    async_to_sync(
+        channel_layer.group_send
+    )(
+        group_name, channel_data
+    )
+
+
 task_monitor = Monitor(prefix="task-monitor", store=store)
 # add tasks to monitor
 task_monitor.add_task(
@@ -48,3 +66,4 @@ task_monitor.add_task(
         namespace=''
     )
 )
+task_monitor.set_callback(send2channel)

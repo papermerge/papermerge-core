@@ -12,7 +12,8 @@ class Task(dict):
 
     def __init__(self, name, **kwargs):
         self.name = name
-        self['task_name'] = name
+        if name:
+            self['task_name'] = name
         super().__init__(**kwargs)
 
     def __eq__(self, name):

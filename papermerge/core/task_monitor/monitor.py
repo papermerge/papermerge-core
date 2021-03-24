@@ -81,7 +81,7 @@ class Monitor:
 
         updated_task_dict = self.update(event, task)
 
-        if len(updated_task_dict) > 0:
+        if self.is_monitored_task(updated_task_dict['task_name']):
             self.callback(updated_task_dict)
 
     def update(self, event, task):
@@ -109,6 +109,7 @@ class Monitor:
         if self.is_monitored_task(task_name):
             task = self.get_task(task_name)
             task.update(event.get('kwargs', None))
+            task['type'] = event.get('type', None)
 
         if not task:
             task = Task(task_name, type=event.get('type', None))

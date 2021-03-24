@@ -185,3 +185,102 @@ class TestTaskMonitor(TestCase):
         self.callback.assert_called_with(
             dict(task)
         )
+
+    def test_events_which_are_not_monitored_will_be_ignored(self):
+
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        # notice that papermerge.core.tasks.cut_pages IS NOT monitored
+        event = {
+            'uuid': 'long-long-long-id',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.cut_pages',
+            'kwargs': "{'document_id': 33, 'user_id': 13}"
+        }
+
+        self.monitor.save_event(event)
+        self.callback.assert_not_called()
+
+    def test_realistic_event_sequence1(self):
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.ocr_page',
+            'kwargs': "{'document_id': 33, 'user_id': 13}"
+        })
+
+        self.callback.assert_called_with({
+            'type': 'task-received',
+            'task_name': 'papermerge.core.tasks.ocr_page',
+            'document_id': 33,
+            'user_id': 13
+        })
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': 'task-started',
+        })
+
+        self.callback.assert_called_with({
+            'type': 'task-started',
+            'task_name': 'papermerge.core.tasks.ocr_page',
+            'document_id': 33,
+            'user_id': 13
+        })
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': 'task-succeeded',
+        })
+
+        self.callback.assert_called_with({
+            'type': 'task-succeeded',
+            'task_name': 'papermerge.core.tasks.ocr_page',
+            'document_id': 33,
+            'user_id': 13
+        })
+
+    def test_realistic_event_sequence2(self):
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        # sequence of events for a task which is
+        # not monitored
+        self.monitor.save_event({
+            'uuid': 'xyz-1-not-mon',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.cut_pages',
+            'kwargs': "{'document_id': 4}"
+        })
+
+        self.callback.assert_not_called()
+
+        self.monitor.save_event({
+            'uuid': 'xyz-1-not-mon',
+            'type': 'task-started',
+        })
+
+        self.callback.assert_not_called()
+
+        self.monitor.save_event({
+            'uuid': 'xyz-1-not-mon',
+            'type': 'task-succeeded',
+        })
+
+        self.callback.assert_not_called()

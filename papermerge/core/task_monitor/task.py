@@ -12,6 +12,7 @@ class Task(dict):
 
     def __init__(self, name, **kwargs):
         self.name = name
+        self['task_name'] = name
         super().__init__(**kwargs)
 
     def __eq__(self, name):
@@ -22,9 +23,8 @@ class Task(dict):
         return self.name == name
 
     def __str__(self):
-        name = self.name
         key_values = super().__str__()
-        return f"Task(name={name}, {key_values})"
+        return f"Task({key_values})"
 
     def update(self, json_str=None, **kwargs):
         """
@@ -55,5 +55,25 @@ class Task(dict):
         return self.name
 
 
-def dict2channel_data(kwargs):
-    pass
+def dict2channel_data(task_dict):
+    """
+    Transforms a task dictionary i.e. a dictionary returned
+    by dict(task) for sending to django channel.
+
+    will take original ``task_name`` and ``type`` keys and create
+    new ``type`` key with format <shortname>.<type with removed dashes>
+    """
+
+    ret_dict = {}
+    orig_type = task_dict.pop('type')
+    orig_task_name = task_dict.pop('task_name')
+
+    short_name = orig_task_name.split('.')[-1]
+    short_name = short_name.replace('_', '')
+    _type = orig_type.replace('-', '')
+    new_type = f"{short_name}.{_type}"
+
+    ret_dict['type'] = new_type
+    ret_dict.update(task_dict)
+
+    return ret_dict

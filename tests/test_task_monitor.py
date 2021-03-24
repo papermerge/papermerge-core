@@ -1,23 +1,28 @@
 from django.test import TestCase
-from papermerge.core.task_monitor.task import Task
+from papermerge.core.task_monitor.task import (
+    Task,
+    dict2channel_data
+)
+from papermerge.core.task_monitor.store import GenericStore
+from papermerge.core.task_monitor.monitor import Monitor
 
 
 class TestTasks(TestCase):
 
     def test_basic_task_creation(self):
         task1 = Task(name="hello")
-        self.assertEquals(task1.name, "hello")
-        self.assertEquals(task1.short_name, "hello")
-        self.assertEquals(task1.full_name, "hello")
+        self.assertEqual(task1.name, "hello")
+        self.assertEqual(task1.short_name, "hello")
+        self.assertEqual(task1.full_name, "hello")
 
         task2 = Task(name="papermerge.core.tasks.ocr_page")
-        self.assertEquals(
+        self.assertEqual(
             task2.short_name, "ocr_page"
         )
-        self.assertEquals(
+        self.assertEqual(
             task2.name, "papermerge.core.tasks.ocr_page"
         )
-        self.assertEquals(
+        self.assertEqual(
             task2.full_name, "papermerge.core.tasks.ocr_page"
         )
 
@@ -29,7 +34,7 @@ class TestTasks(TestCase):
             user_id=''
         )
 
-        self.assertEquals(
+        self.assertEqual(
             task1['document_id'],
             ''
         )
@@ -41,21 +46,21 @@ class TestTasks(TestCase):
             user_id=''
         )
 
-        self.assertEquals(
+        self.assertEqual(
             task2['document_id'],
             '1'
         )
-        self.assertEquals(
+        self.assertEqual(
             task1,
             task2
         )
 
     def test_task_str(self):
-        task = Task(name="xtask", document_id=1)
+        task = Task("xtask", document_id=1)
 
-        self.assertEquals(
+        self.assertEqual(
             str(task),
-            "Task(name=xtask, {'document_id': 1})"
+            "Task({'task_name': 'xtask', 'document_id': 1})"
         )
 
     def test_task_update(self):
@@ -69,13 +74,13 @@ class TestTasks(TestCase):
         )
         task.update(document_id=3)
 
-        self.assertEquals(
+        self.assertEqual(
             task['document_id'],
             3
         )
 
         task.update('{"document_id": 10}')
-        self.assertEquals(
+        self.assertEqual(
             task['document_id'],
             10
         )
@@ -86,3 +91,55 @@ class TestTasks(TestCase):
         """
         task = Task(name=None)
         self.assertIsNone(task.name)
+
+    def test_converting_task_will_return_its_attributes_and_name(self):
+        """
+        Converting task to dictionary (with dict(task)) will return 'task_name'
+        attribute as well
+        """
+        task = Task(
+            "papermerge.core.tasks.ytask",
+            document_id=44,
+            user_id=32
+        )
+
+        self.assertEqual(
+            dict(task),
+            {
+                'document_id': 44,
+                'user_id': 32,
+                'task_name': 'papermerge.core.tasks.ytask'
+            }
+        )
+
+    def test_dict2channel_data(self):
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id=44,
+            user_id=32,
+            type='task-received'
+        )
+
+        channel_dict = {
+            'type': 'ocrpage.taskreceived',
+            'document_id': 44,
+            'user_id': 32
+        }
+
+        self.assertDictEqual(
+            dict2channel_data(dict(task)),
+            channel_dict
+        )
+
+
+class TestTaskMonitor(TestCase):
+
+    def setUp(self):
+        store = GenericStore()
+        self.monitor = Monitor(
+            prefix="testing-task-monitor",
+            store=store
+        )
+
+    def test_is_task_monitored(self):
+        pass

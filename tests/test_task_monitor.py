@@ -140,6 +140,7 @@ class TestTasks(TestCase):
             "ocr_page"
         )
 
+
 class TestTaskMonitor(TestCase):
 
     def setUp(self):

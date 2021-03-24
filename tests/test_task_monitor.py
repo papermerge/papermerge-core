@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 from django.test import TestCase
 from papermerge.core.task_monitor.task import (
     Task,
@@ -141,11 +143,45 @@ class TestTasks(TestCase):
 class TestTaskMonitor(TestCase):
 
     def setUp(self):
+        self.callback = Mock()
         store = GenericStore()
         self.monitor = Monitor(
             prefix="testing-task-monitor",
             store=store
         )
+        self.monitor.set_callback(self.callback)
 
     def test_is_task_monitored(self):
-        pass
+
+        self.monitor.add_task(
+            Task(
+                "papermerge.core.tasks.ocr_page",
+                document_id='',
+                user_id=''
+            )
+        )
+
+        self.assertTrue(
+            self.monitor.is_monitored_task("papermerge.core.tasks.ocr_page")
+        )
+
+    def test_callback_is_invoked(self):
+
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        event = {
+            'uuid': 'long-long-long-id',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.ocr_page',
+            'kwargs': "{'document_id': 33, 'user_id': 13}"
+        }
+
+        self.monitor.save_event(event)
+        self.callback.assert_called_with(
+            dict(task)
+        )

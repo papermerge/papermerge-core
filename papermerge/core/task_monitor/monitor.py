@@ -89,7 +89,7 @@ class Monitor:
         Merge new attributes into existing task key
         """
         key = self.get_key(event)
-        found_attr = self.store[key]
+        found_attr = self.store.get(key, {})
         found_attr.update(dict(task))
 
         if len(found_attr) > 0:

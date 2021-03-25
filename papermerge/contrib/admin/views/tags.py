@@ -3,7 +3,7 @@ from django.views import generic
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
-
+from django.utils.text import slugify
 
 from papermerge.contrib.admin.forms import TagForm
 from papermerge.core.models import Tag
@@ -47,12 +47,12 @@ class TagCreateView(TagsView, generic.CreateView):
         # set fields which user does not have access to
         form.instance.user = self.request.user
         # otherwise 'slug' cannot be empty Exception is rised
-        form.instance.slug = form.cleaned_data['name']
+        form.instance.slug = slugify(form.cleaned_data['name'])
         try:
             form.instance.full_clean()
-        except ValidationError:
+        except ValidationError as e:
             form._errors['name'] = [
-                _('Tag name duplicate')
+                str(e)
             ]
             del form.cleaned_data["name"]
 

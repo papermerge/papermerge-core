@@ -9697,26 +9697,27 @@ ul.pinned_tags li.active {
   padding: 0 0.2rem;
   border-radius: 0.25rem; }
 
-#search_results h4 {
-  font-weight: 400; }
-  #search_results h4 a {
-    color: #444; }
-  #search_results h4 ul li.tag {
-    padding: 0rem 0.2rem;
+#search_results {
+  overflow: scroll;
+  height: 85vh; }
+  #search_results h4 {
+    font-weight: 400; }
+    #search_results h4 a {
+      color: #444; }
+    #search_results h4 ul li.tag {
+      padding: 0rem 0.2rem;
+      margin: 0;
+      margin-left: 1rem; }
+  #search_results ul {
     margin: 0;
-    margin-left: 1rem; }
-
-#search_results ul {
-  margin: 0;
-  padding: 0; }
-  #search_results ul li {
-    padding: 1rem 0.5rem; }
-  #search_results ul li:hover {
-    background-color: #e6f5ff;
-    outline: 1px solid #e6f5ff; }
-
-#search_results .page_highlight {
-  color: #aaa; }
+    padding: 0; }
+    #search_results ul li {
+      padding: 1rem 0.5rem; }
+    #search_results ul li:hover {
+      background-color: #e6f5ff;
+      outline: 1px solid #e6f5ff; }
+  #search_results .page_highlight {
+    color: #aaa; }
 
 .icon-sw-left-panel {
   width: 1rem;

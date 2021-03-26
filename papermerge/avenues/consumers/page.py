@@ -31,18 +31,18 @@ class PageConsumer(JsonWebsocketConsumer):
 
     def ocrpage_taskreceived(self, event):
         page_data = {}
-        #page_data['task_data'] = event['task_data']
+        # page_data['task_data'] = event['task_data']
         logger.info(f"OCR_PAGE_TASK_RECEIVED event={event}")
         self.send_json(page_data)
 
     def ocrpage_taskstarted(self, event):
         page_data = {}
-        #page_data['task_data'] = event['task_data']
+        # page_data['task_data'] = event['task_data']
         logger.info(f"OCR_PAGE_TASK_STARTED event={event}")
         self.send_json(page_data)
 
     def ocrpage_tasksucceeded(self, event):
         page_data = {}
-        #page_data['task_data'] = event['task_data']
+        # page_data['task_data'] = event['task_data']
         logger.info(f"OCR_PAGE_TASK_SUCCEEDED event={event}")
         self.send_json(page_data)

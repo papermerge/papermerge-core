@@ -1,3 +1,6 @@
+import logging
+
+
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -27,6 +30,8 @@ have a more intuitive association with django channels, but in such case
 app labels (both apps would have 'channels' label) will conflict.
 """
 
+logger = logging.getLogger(__name__)
+
 
 def get_store_class(import_path=None):
 
@@ -45,7 +50,10 @@ store = StoreKlass(
 def send2channel(task_dict):
     channel_layer = get_channel_layer()
     group_name, channel_data = dict2channel_data(task_dict)
-
+    logger.info(
+        f"Sending group_name='{group_name}' "
+        f"Channel Data='{channel_data}' "
+    )
     async_to_sync(
         channel_layer.group_send
     )(

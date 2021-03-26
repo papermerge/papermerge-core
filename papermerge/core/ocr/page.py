@@ -4,21 +4,21 @@ import time
 from django.conf import settings
 
 from papermerge.core.storage import default_storage
-
-from mglib import mime
-from mglib.pdfinfo import get_pagecount
-from mglib.path import (
-    DocumentPath,
-    PagePath,
-)
-from mglib.step import (Step, Steps)
-from mglib.shortcuts import (
+from papermerge.core.lib import mime
+from papermerge.core.lib.pagecount import get_pagecount
+from papermerge.core.lib.shortcuts import (
     extract_img,
     resize_img,
     extract_hocr,
     extract_txt,
 )
-from mglib.tiff import convert_tiff2pdf
+from papermerge.core.lib.tiff import convert_tiff2pdf
+from papermerge.core.lib.step import (Step, Steps)
+from papermerge.core.lib.path import (
+    DocumentPath,
+    PagePath,
+)
+
 
 logger = logging.getLogger(__name__)
 

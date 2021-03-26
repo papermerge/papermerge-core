@@ -2,10 +2,9 @@ import logging
 
 from django.utils.translation import gettext as _
 
-from mglib.step import Step
-from mglib.path import PagePath, DocumentPath
-from mglib.pdfinfo import get_pagecount
-
+from .lib.step import Step
+from .lib.path import PagePath, DocumentPath
+from .lib.pagecount import get_pagecount
 from .models import Document, Automate
 from .storage import default_storage
 from .signal_definitions import automates_matching

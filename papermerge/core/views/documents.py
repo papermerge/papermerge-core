@@ -4,7 +4,7 @@ import logging
 
 from django.utils.translation import gettext as _
 from django.utils.html import escape
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -20,9 +20,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
 
-from mglib.pdfinfo import get_pagecount
+from papermerge.core.lib.pagecount import get_pagecount
 from mglib.step import Step
-from mglib.shortcuts import extract_img
+from papermerge.core.lib.shortcuts import extract_img
 
 from papermerge.core.storage import default_storage
 from papermerge.core.lib.hocr import Hocr

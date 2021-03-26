@@ -57,42 +57,6 @@ USED_BINARIES = {
 
 
 @register()
-def papermerge_configuration_file(app_configs, **kwargs):
-    """
-    Papermerge does not necessary require papermerge.conf.py file.
-    However, it is a good practice to have one available - even empty!
-
-    User/Admin defines an empty papermerge.conf.py file it means first of all
-    that user/admin is aware of .conf.py file existence.
-
-    Configuration file should be placed in projects directory, in
-    /etc/papermerge.conf.py or it is file pointed by environment variable
-    named PAPERMERGE_CONFIG.
-
-    If configuration file was not found - issue a warning.
-    """
-    check_messages = []
-    places = ''
-
-    if settings.CONFIG_PLACES:
-        places = ', '.join(settings.CONFIG_PLACES)
-
-    warn_message = "papermerge.conf.py file was not found." +\
-        f" Following locations attempted {places}"
-
-    hint_msg = "Create one of those files or point" +\
-        f" {settings.CONFIG_ENV_NAME}" +\
-        " environment name to it."
-
-    if not getattr(settings, 'CFG_PAPERMERGE', None):
-        check_messages.append(
-            Warning(warn_message, hint_msg)
-        )
-
-    return check_messages
-
-
-@register()
 def binaries_check(app_configs, **kwargs):
     """
     Papermerge requires the existence of a few binaries, so it checks

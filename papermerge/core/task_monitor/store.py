@@ -18,7 +18,7 @@ class RedisStore:
     def __init__(self, url, timeout):
         # With decode_responses=True argument redis client will
         # automatically encode returned bytes to UTF-8 strings
-        self.redis = Redis.from_url(url, decode_repsonses=True)
+        self.redis = Redis.from_url(url, decode_responses=True)
         # keys timeout in seconds
         self.timeout = timeout
 
@@ -27,6 +27,13 @@ class RedisStore:
 
     def __setitem__(self, key, value):
         self.redis.hmset(key, value)
+
+    def get(self, key, default_value):
+        value = self[key]
+        if not value:
+            return default_value
+
+        return value
 
     def expire(self, key):
         self.redis.expire(key, self.timeout)

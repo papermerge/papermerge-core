@@ -9,8 +9,8 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import module_loading
 
-from mglib.pdfinfo import get_pagecount
-from mglib.exceptions import FileTypeNotSupported
+from .lib.pagecount import get_pagecount
+from .exceptions import FileTypeNotSupported
 
 from papermerge.core.models import (
     Folder, Document, User

@@ -119,17 +119,6 @@ class AppSettings():
         return value
 
     @property
-    def CONFIG_PLACES(self):
-        default = [
-            "/etc/papermerge.conf.py",
-            "papermerge.conf.py"
-        ]
-        return self._settings(
-            "DEFAULT_CONFIG_PLACES",
-            default
-        )
-
-    @property
     def CONFIG_ENV_NAME(self):
         """
         Name of environment variable pointing to

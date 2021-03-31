@@ -22892,7 +22892,7 @@ __p+='';
 __p+='\n  <div class="row">\n    <nav class="col-12">\n      <ul class="pagination pagination-sm justify-content-end">\n        ';
  if (page.has_previous) { 
 __p+='\n          <li class="page-item">\n            <a class="page-link" href="'+
-((__t=( parent_node ))==null?'':__t)+
+((__t=( prefix ))==null?'':__t)+
 '?page='+
 ((__t=( page.previous_page_number ))==null?'':__t)+
 '" aria-label="Previous">\n            <span aria-hidden="true">&laquo;</span>\n            </a>\n          </li>\n        ';
@@ -22904,7 +22904,7 @@ __p+='\n          <li class="page-item ';
 __p+=' active ';
  } 
 __p+='"><a class="page-link" href="'+
-((__t=( parent_node ))==null?'':__t)+
+((__t=( prefix ))==null?'':__t)+
 '?page='+
 ((__t=( pages[i] ))==null?'':__t)+
 '">'+
@@ -22914,7 +22914,7 @@ __p+='"><a class="page-link" href="'+
 __p+='\n        ';
  if (page.has_next) { 
 __p+='\n          <li class="page-item">\n            <a class="page-link" href="'+
-((__t=( parent_node ))==null?'':__t)+
+((__t=( prefix ))==null?'':__t)+
 '?page='+
 ((__t=( page.next_page_number ))==null?'':__t)+
 '" aria-label="Next">\n              <span aria-hidden="true">&raquo;</span>\n            </a>\n          </li>\n        ';
@@ -26901,11 +26901,18 @@ class PaginationView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
   template(context = {}) {
     let compiled_tpl,
         ctx,
-        file_tpl = __webpack_require__(/*! ../templates/pagination.html */ "./src/js/templates/pagination.html"),
-        parent_node = '';
+        prefix = '',
+        file_tpl = __webpack_require__(/*! ../templates/pagination.html */ "./src/js/templates/pagination.html");
 
     if (context['parent_id']) {
-      parent_node = `#${context['parent_id']}`;
+      prefix = `#${context['parent_id']}`;
+    } else {
+      // Preserve correct pagination during pinned
+      // tags.
+      // In case there is no hash window.location.hash will be
+      // an empty string '' in which case ''.split('?')[0]
+      // is OK as well.
+      prefix = window.location.hash.split('?')[0];
     }
 
     ctx = {
@@ -26918,7 +26925,7 @@ class PaginationView extends backbone__WEBPACK_IMPORTED_MODULE_2__["View"] {
         'previous_page_number': 1,
         'next_page_number': 1
       },
-      'parent_node': parent_node
+      'prefix': prefix
     };
     compiled_tpl = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].template(file_tpl(ctx));
     return compiled_tpl();

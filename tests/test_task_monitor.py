@@ -295,4 +295,47 @@ class TestTaskMonitor(TestCase):
         self.callback.assert_not_called()
 
     def test_count_method(self):
-        pass
+        """
+        User with ID=13 initiates OCR
+        on document ID=33. Document ID=33 has
+        two pages.
+        """
+        task = Task(
+            "papermerge.core.tasks.ocr_page",
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.ocr_page',
+            'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 1}"
+        })
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': 'task-started',
+        })
+
+        self.monitor.save_event({
+            'uuid': 'xyz-2',
+            'type': 'task-received',
+            'name': 'papermerge.core.tasks.ocr_page',
+            'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 2}"
+        })
+
+        self.monitor.save_event({
+            'uuid': 'xyz-2',
+            'type': 'task-started',
+        })
+
+        count = self.monitor.count(
+            task_name='papermerge.core.tasks.ocr_page',
+            user_id=13,
+            document_id=33
+        )
+
+        # there are two current tasks for user_id=13 and document_id=33
+        self.assertEqual(count, 2)

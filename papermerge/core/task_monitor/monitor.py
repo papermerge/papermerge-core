@@ -127,13 +127,16 @@ class Monitor:
         """
         result = 0
         # iterate one by one redis keys with given prefix
-        for redis_key in self.store.scan_iter(f"{self.prefix}:*"):
-            # retrieve value of from redis
-            redis_value = self.store[redis_key]
+        for redis_value in self.store.scan_iter(f"{self.prefix}:*"):
             # compare **task_attrs with retrieved value
             # from redis store.
+            matched_attr_count = 0
             for key, value in task_attrs.items():
                 if redis_value[key] == value:
-                    result += 1
+                    matched_attr_count += 1
+
+            # if all task attributes matched
+            if matched_attr_count == len(task_attrs):
+                result += 1
 
         return result

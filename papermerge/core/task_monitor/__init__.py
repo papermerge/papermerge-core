@@ -43,6 +43,7 @@ TASK_FAILED = 'task-failed'
 # full name of ocr_page task
 CORE_TASKS_OCR_PAGE = 'papermerge.core.tasks.ocr_page'
 
+
 def get_store_class(import_path=None):
 
     return import_string(

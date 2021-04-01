@@ -123,7 +123,19 @@ class Monitor:
 
     def count(self, **task_attrs):
         """
-        Count tasks with given name matching set of attributes
+        Counts tasks with matching set of attributes.
+
+        Example of usage:
+
+        cnt = monitor.count(
+            task_name='papermerge.core.tasks.ocr_page',
+            document_id=113,
+            user_id=334,
+            version=1
+        )
+
+        cnt is the number of ocr_page tasks associated with user_id=334,
+        document=113 and document version=1
         """
         result = 0
         # iterate one by one redis keys with given prefix

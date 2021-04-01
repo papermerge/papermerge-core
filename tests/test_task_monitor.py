@@ -5,6 +5,13 @@ from papermerge.core.task_monitor.task import (
     Task,
     dict2channel_data
 )
+from papermerge.core.task_monitor import (
+    TASK_RECEIVED,
+    TASK_STARTED,
+    TASK_SUCCEEDED,
+    CORE_TASKS_OCR_PAGE
+)
+
 from papermerge.core.task_monitor.store import GenericStore
 from papermerge.core.task_monitor.monitor import Monitor
 
@@ -177,7 +184,7 @@ class TestTaskMonitor(TestCase):
 
         event = {
             'uuid': 'long-long-long-id',
-            'type': 'task-received',
+            'type': TASK_RECEIVED,
             'name': 'papermerge.core.tasks.ocr_page',
             'kwargs': "{'document_id': 33, 'user_id': 13}"
         }
@@ -199,7 +206,7 @@ class TestTaskMonitor(TestCase):
         # notice that papermerge.core.tasks.cut_pages IS NOT monitored
         event = {
             'uuid': 'long-long-long-id',
-            'type': 'task-received',
+            'type': TASK_RECEIVED,
             'name': 'papermerge.core.tasks.cut_pages',
             'kwargs': "{'document_id': 33, 'user_id': 13}"
         }
@@ -221,13 +228,13 @@ class TestTaskMonitor(TestCase):
 
         self.monitor.save_event({
             'uuid': 'abcd-1',
-            'type': 'task-received',
+            'type': TASK_RECEIVED,
             'name': 'papermerge.core.tasks.ocr_page',
             'kwargs': "{'document_id': 33, 'user_id': 13}"
         })
 
         self.callback.assert_called_with({
-            'type': 'task-received',
+            'type': TASK_RECEIVED,
             'task_name': 'papermerge.core.tasks.ocr_page',
             'document_id': 33,
             'user_id': 13
@@ -235,7 +242,7 @@ class TestTaskMonitor(TestCase):
 
         self.monitor.save_event({
             'uuid': 'abcd-1',
-            'type': 'task-started',
+            'type': TASK_STARTED,
         })
 
         self.callback.assert_called_with({
@@ -247,11 +254,11 @@ class TestTaskMonitor(TestCase):
 
         self.monitor.save_event({
             'uuid': 'abcd-1',
-            'type': 'task-succeeded',
+            'type': TASK_SUCCEEDED,
         })
 
         self.callback.assert_called_with({
-            'type': 'task-succeeded',
+            'type': TASK_SUCCEEDED,
             'task_name': 'papermerge.core.tasks.ocr_page',
             'document_id': 33,
             'user_id': 13
@@ -273,7 +280,7 @@ class TestTaskMonitor(TestCase):
         # not monitored
         self.monitor.save_event({
             'uuid': 'xyz-1-not-mon',
-            'type': 'task-received',
+            'type': TASK_RECEIVED,
             'name': 'papermerge.core.tasks.cut_pages',
             'kwargs': "{'document_id': 4}"
         })
@@ -282,14 +289,14 @@ class TestTaskMonitor(TestCase):
 
         self.monitor.save_event({
             'uuid': 'xyz-1-not-mon',
-            'type': 'task-started',
+            'type': TASK_STARTED,
         })
 
         self.callback.assert_not_called()
 
         self.monitor.save_event({
             'uuid': 'xyz-1-not-mon',
-            'type': 'task-succeeded',
+            'type': TASK_SUCCEEDED,
         })
 
         self.callback.assert_not_called()
@@ -301,7 +308,7 @@ class TestTaskMonitor(TestCase):
         two pages.
         """
         task = Task(
-            "papermerge.core.tasks.ocr_page",
+            CORE_TASKS_OCR_PAGE,
             document_id='',
             user_id=''
         )
@@ -309,30 +316,30 @@ class TestTaskMonitor(TestCase):
 
         self.monitor.save_event({
             'uuid': 'abcd-1',
-            'type': 'task-received',
-            'name': 'papermerge.core.tasks.ocr_page',
+            'type': TASK_RECEIVED,
+            'name': CORE_TASKS_OCR_PAGE,
             'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 1}"
         })
 
         self.monitor.save_event({
             'uuid': 'abcd-1',
-            'type': 'task-started',
+            'type': TASK_STARTED,
         })
 
         self.monitor.save_event({
             'uuid': 'xyz-2',
-            'type': 'task-received',
-            'name': 'papermerge.core.tasks.ocr_page',
+            'type': TASK_RECEIVED,
+            'name': CORE_TASKS_OCR_PAGE,
             'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 2}"
         })
 
         self.monitor.save_event({
             'uuid': 'xyz-2',
-            'type': 'task-started',
+            'type': TASK_STARTED,
         })
 
         count = self.monitor.count(
-            task_name='papermerge.core.tasks.ocr_page',
+            task_name=CORE_TASKS_OCR_PAGE,
             user_id=13,
             document_id=33
         )

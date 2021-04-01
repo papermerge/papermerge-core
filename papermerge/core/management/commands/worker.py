@@ -10,7 +10,14 @@ from django.conf import settings
 from papermerge.core.models import Document, BaseTreeNode
 from papermerge.core.importers.imap import import_attachment
 from papermerge.core.importers.local import import_documents
-from papermerge.core.task_monitor import task_monitor
+from papermerge.core.task_monitor import (
+    task_monitor,
+    TASK_SENT,
+    TASK_RECEIVED,
+    TASK_STARTED,
+    TASK_SUCCEEDED,
+    TASK_FAILED
+)
 
 logger = logging.getLogger(__name__)
 celery_app = Celery('papermerge')
@@ -26,11 +33,11 @@ def monitor_events(celery_app):
         recv = celery_app.events.Receiver(
             conn,
             handlers={
-                'task-sent': on_event,
-                'task-received': on_event,
-                'task-started': on_event,
-                'task-succeeded': on_event,
-                'task-failed': on_event,
+                TASK_SENT: on_event,
+                TASK_RECEIVED: on_event,
+                TASK_STARTED: on_event,
+                TASK_SUCCEEDED: on_event,
+                TASK_FAILED: on_event,
             }
         )
         recv.capture(limit=None, timeout=None, wakeup=True)

@@ -1,7 +1,6 @@
 import logging
 
 
-from .query_set import QuerySet
 from .task import Task
 
 
@@ -22,36 +21,28 @@ class Monitor:
 
     Example of usage:
 
+
+    def send2channel(task_dict):
+        pass
+
     monitor = Monitor(store=RedisStore())
 
     # Monitor celery task with specified name
 
-    monitor.add_condition(
-        name='papermerge.core.tasks.ocr_page',
-        attr=[  # extract this kwargs from the task
-            'user_id',
-            'document_id',
-            'lang'
-        ]
-
-    # Get a QuerySet for 'papermerge.core.tasks.ocr_page' tasks
-    # so that saved tasks can queries in similar way to django models are
-    ocr_page_qs = monitor['papermerge.core.tasks.ocr_page']
-
-    # total count of ocr_page tasks
-    ocr_page_qs.count()
-
-    # total count of ocr_page tasks executed specifically for DOC_ID
-    ocr_page_qs.find(document_id=DOC_ID).count()
-
-    # iterage over all tasks for document ID which are still active
-    # i.e. their stage is one of:
-    # * task-sent
-    # * task-received
-    # * task-started
-    for task in ocr_page_qs.find(document_id=DOC_ID).active():
-        print(task['page_num'], task['state'])
-
+    monitor.add_task(
+        Task(
+            "papermerge.core.tasks.ocr_page",
+            user_id='',
+            document_id='',
+            page_num='',
+            lang='',
+            version='',
+            namespace=''
+        )
+    )
+    # call send2channel callback every time there
+    # is an incoming (monitored) event
+    monitor.set_callback(send2channel)
     """
 
     def __init__(self, store, prefix="task-monitor"):
@@ -72,7 +63,7 @@ class Monitor:
     def get_key(self, event):
 
         task_id = event['uuid']
-        key = f"{self.prefix}-{task_id}"
+        key = f"{self.prefix}:{task_id}"
 
         return key
 
@@ -130,8 +121,19 @@ class Monitor:
 
         return False
 
-    def __getitem__(self, task_name):
+    def count(self, **task_attrs):
         """
-        Returns an iterator over saved tasks with specified name
+        Count tasks with given name matching set of attributes
         """
-        return QuerySet(task_name=task_name)
+        result = 0
+        # iterate one by one redis keys with given prefix
+        for redis_key in self.store.scan_iter(f"{self.prefix}:*"):
+            # retrieve value of from redis
+            redis_value = self.store[redis_key]
+            # compare **task_attrs with retrieved value
+            # from redis store.
+            for key, value in task_attrs.items():
+                if redis_value[key] == value:
+                    result += 1
+
+        return result

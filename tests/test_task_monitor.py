@@ -293,3 +293,6 @@ class TestTaskMonitor(TestCase):
         })
 
         self.callback.assert_not_called()
+
+    def test_count_method(self):
+        pass

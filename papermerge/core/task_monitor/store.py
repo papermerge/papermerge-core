@@ -9,6 +9,12 @@ class GenericStore(dict):
     def expire(self, key):
         pass
 
+    def scan_iter(self, match=None, count=None, _type=None):
+        for key, value in self.items():
+            new_match = match.replace('*', '')
+            if key.startswith(new_match):
+                yield value
+
 
 class RedisStore:
     """
@@ -37,3 +43,6 @@ class RedisStore:
 
     def expire(self, key):
         self.redis.expire(key, self.timeout)
+
+    def scan_iter(self, match=None, count=None, _type=None):
+        return self.redis.scan_iter(match=match, count=count, _type=_type)

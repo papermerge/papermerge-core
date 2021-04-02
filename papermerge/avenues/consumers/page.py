@@ -35,7 +35,7 @@ class PageConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
 
-    def should_notify_document_consumer(self, document_id):
+    def _should_notify_received(self, document_id):
         if not hasattr(self, '_received'):
             self._received = {}
 
@@ -45,6 +45,57 @@ class PageConsumer(JsonWebsocketConsumer):
             self._received[document_id] += 1
 
         return not bool(self._received[document_id])
+
+    def _should_notify_started(self, document_id, user_id):
+        tasks = task_monitor.items(
+            task_name=CORE_TASKS_OCR_PAGE,
+            user_id=user_id,
+            document_id=document_id,
+        )
+        ocr_tasks_for_doc_count = 0
+        for task in tasks:
+            if task['type'] in (TASK_SUCCEEDED, TASK_STARTED):
+                ocr_tasks_for_doc_count += 1
+
+        logger.debug(f"COUNT={ocr_tasks_for_doc_count}")
+        # started for the document
+        # if there is exactly 1 started or succeeded
+        return ocr_tasks_for_doc_count == 1
+
+    def _should_notify_succeeded(self, document_id, user_id):
+        items = task_monitor.items(
+            task_name=CORE_TASKS_OCR_PAGE,
+            # type here has celery specific value.
+            type=TASK_SUCCEEDED,
+            user_id=user_id,
+            document_id=document_id,
+        )
+        should_notify = False
+        try:
+            doc = Document.objects.get(pk=document_id)
+            # all document pages were successfully OCRed
+            should_notify = len(list(items)) == doc.page_count
+        except ObjectDoesNotExist:
+            logger.error(
+                f"Document ID={document_id} was not found."
+            )
+            return False
+
+        return should_notify
+
+    def _notify(self, document_id, user_id, _type):
+        channel_layer = get_channel_layer()
+        channel_data = {
+            'type': _type,
+            'user_id': user_id,
+            'document_id': document_id,
+        }
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            self.ocr_document_group_name,
+            channel_data
+        )
 
     def ocrpage_taskreceived(self, event):
         """
@@ -58,21 +109,13 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_RECEIVED event={event}")
-        user_id = event['user_id']
         document_id = event['document_id']
-        if self.should_notify_document_consumer(document_id):
+        if self._should_notify_received(document_id):
             # notify ocr_document group about event
-            channel_layer = get_channel_layer()
-            channel_data = {
-                'type': 'ocrdocument.received',
-                'user_id': user_id,
-                'document_id': document_id,
-            }
-            async_to_sync(
-                channel_layer.group_send
-            )(
-                self.ocr_document_group_name,
-                channel_data
+            self._notify(
+                user_id=event['user_id'],
+                document_id=document_id,
+                _type='ocrdocument.received'
             )
         self.send_json(event)
 
@@ -88,32 +131,17 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_STARTED event={event}")
-        tasks = task_monitor.items(
-            task_name=CORE_TASKS_OCR_PAGE,
-            user_id=event['user_id'],
-            document_id=event['document_id'],
-        )
-        ocr_tasks_for_doc_count = 0
-        for task in tasks:
-            if task['type'] in (TASK_SUCCEEDED, TASK_STARTED):
-                ocr_tasks_for_doc_count += 1
-
-        logger.debug(f"COUNT={ocr_tasks_for_doc_count}")
-        # started for the document
-        # if there is exactly 1 started or succeeded
-        if ocr_tasks_for_doc_count == 1:
+        document_id = event['document_id']
+        user_id = event['user_id']
+        if self._should_notify_started(
+            user_id=user_id,
+            document_id=document_id
+        ):
             # notify ocr_document group about event
-            channel_layer = get_channel_layer()
-            channel_data = {
-                'type': 'ocrdocument.started',
-                'user_id': event['user_id'],
-                'document_id': event['document_id'],
-            }
-            async_to_sync(
-                channel_layer.group_send
-            )(
-                self.ocr_document_group_name,
-                channel_data
+            self._notify(
+                user_id=user_id,
+                document_id=document_id,
+                _type='ocrdocument.started'
             )
         self.send_json(event)
 
@@ -133,32 +161,13 @@ class PageConsumer(JsonWebsocketConsumer):
         logger.debug(f"OCR_PAGE_TASK_SUCCEEDED event={event}")
         document_id = event['document_id']
         user_id = event['user_id']
-        items = task_monitor.items(
-            task_name=CORE_TASKS_OCR_PAGE,
-            # type here has celery specific value.
-            type=TASK_SUCCEEDED,
+        if self._should_notify_succeeded(
             user_id=user_id,
-            document_id=document_id,
-        )
-        try:
-            doc = Document.objects.get(pk=document_id)
-            # all document pages were successfully OCRed
-            if len(list(items)) == doc.page_count:
-                # notify ocr_document group about event
-                channel_layer = get_channel_layer()
-                channel_data = {
-                    'type': 'ocrdocument.succeeded',
-                    'user_id': user_id,
-                    'document_id': document_id,
-                }
-                async_to_sync(
-                    channel_layer.group_send
-                )(
-                    self.ocr_document_group_name,
-                    channel_data
-                )
-        except ObjectDoesNotExist:
-            logger.error(
-                f"Document ID={document_id} was not found."
+            document_id=document_id
+        ):
+            self._notify(
+                user_id=user_id,
+                document_id=document_id,
+                _type='ocrdocument.succeeded'
             )
         self.send_json(event)

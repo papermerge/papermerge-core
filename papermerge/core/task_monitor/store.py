@@ -13,7 +13,7 @@ class GenericStore(dict):
         for key, value in self.items():
             new_match = match.replace('*', '')
             if key.startswith(new_match):
-                yield value
+                yield key
 
 
 class RedisStore:

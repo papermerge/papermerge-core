@@ -1,5 +1,7 @@
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
@@ -45,21 +47,25 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_RECEIVED event={event}")
-        count = task_monitor.count(
+        # task is considered "received" for the document
+        # if there is exactly one
+        # "received" task for document_id, user_id, ocr_page
+        user_id = event['user_id']
+        document_id = event['document_id']
+        tasks = task_monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
             type=TASK_RECEIVED,
-            user_id=event['user_id'],
-            document_id=event['document_id'],
-            version=event['version']
+            user_id=user_id,
+            document_id=document_id,
         )
-        if count == 1:
+        logger.debug(f"COUNT={len(list(tasks))}")
+        if len(list(tasks)) == 1:
             # notify ocr_document group about event
             channel_layer = get_channel_layer()
             channel_data = {
                 'type': 'ocrdocument.received',
                 'user_id': event['user_id'],
                 'document_id': event['document_id'],
-                'version': event['version']
             }
             async_to_sync(
                 channel_layer.group_send
@@ -81,21 +87,26 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_STARTED event={event}")
-        count = task_monitor.count(
+        tasks = task_monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
-            type=TASK_STARTED,
             user_id=event['user_id'],
             document_id=event['document_id'],
-            version=event['version']
         )
-        if count == 1:
+        ocr_tasks_for_doc_count = 0
+        for task in tasks:
+            if task['type'] in (TASK_SUCCEEDED, TASK_STARTED):
+                ocr_tasks_for_doc_count += 1
+
+        logger.debug(f"COUNT={ocr_tasks_for_doc_count}")
+        # started for the document
+        # if there is exactly 1 started or succeeded
+        if ocr_tasks_for_doc_count == 1:
             # notify ocr_document group about event
             channel_layer = get_channel_layer()
             channel_data = {
                 'type': 'ocrdocument.started',
                 'user_id': event['user_id'],
                 'document_id': event['document_id'],
-                'version': event['version']
             }
             async_to_sync(
                 channel_layer.group_send
@@ -120,24 +131,22 @@ class PageConsumer(JsonWebsocketConsumer):
         """
         logger.debug(f"OCR_PAGE_TASK_SUCCEEDED event={event}")
         document_id = event['document_id']
-        version = event['version']
         user_id = event['user_id']
-        count = task_monitor.count(
+        items = task_monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
             # type here has celery specific value.
             type=TASK_SUCCEEDED,
-            user_id=event['user_id'],
-            document_id=event['document_id'],
-            version=event['version']
+            user_id=user_id,
+            document_id=document_id,
         )
         try:
-            doc = Document.objects.get(pk=document_id, version=version)
+            doc = Document.objects.get(pk=document_id)
             # all document pages were successfully OCRed
-            if count == doc.page_count:
+            if len(list(items)) == doc.page_count:
                 # notify ocr_document group about event
                 channel_layer = get_channel_layer()
                 channel_data = {
-                    'type': 'ocrdocument.started',
+                    'type': 'ocrdocument.succeeded',
                     'user_id': user_id,
                     'document_id': document_id,
                     'version': version
@@ -148,7 +157,7 @@ class PageConsumer(JsonWebsocketConsumer):
                     self.ocr_document_group_name,
                     channel_data
                 )
-        except Document.ObjectDoesNotExist:
+        except ObjectDoesNotExist:
             logger.error(
                 f"Document ID={document_id} Version={version} was not found"
             )

@@ -1,8 +1,8 @@
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import JsonWebsocketConsumer
 
 
-class DocumentConsumer(WebsocketConsumer):
+class DocumentConsumer(JsonWebsocketConsumer):
 
     group_name = "ocr_document"
 

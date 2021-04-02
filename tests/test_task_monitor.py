@@ -301,7 +301,7 @@ class TestTaskMonitor(TestCase):
 
         self.callback.assert_not_called()
 
-    def test_count_method(self):
+    def test_items_method(self):
         """
         User with ID=13 initiates OCR
         on document ID=33. Document ID=33 has
@@ -338,11 +338,11 @@ class TestTaskMonitor(TestCase):
             'type': TASK_STARTED,
         })
 
-        count = self.monitor.count(
+        items = self.monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
             user_id=13,
             document_id=33
         )
 
         # there are two current tasks for user_id=13 and document_id=33
-        self.assertEqual(count, 2)
+        self.assertEqual(len(list(items)), 2)

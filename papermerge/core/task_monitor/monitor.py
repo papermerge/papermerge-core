@@ -121,34 +121,35 @@ class Monitor:
 
         return False
 
-    def count(self, **task_attrs):
+    def items(self, **task_attrs):
         """
-        Counts tasks with matching set of attributes.
+        Generator which yields tasks with matching given set of attributes.
 
         Example of usage:
 
-        cnt = monitor.count(
+        cnt = monitor.items(
             task_name='papermerge.core.tasks.ocr_page',
             document_id=113,
             user_id=334,
             version=1
         )
 
+        len(list(cnt))
+
         cnt is the number of ocr_page tasks associated with user_id=334,
         document=113 and document version=1
         """
-        result = 0
         # iterate one by one redis keys with given prefix
-        for redis_value in self.store.scan_iter(f"{self.prefix}:*"):
+        for redis_key in self.store.scan_iter(f"{self.prefix}:*"):
             # compare **task_attrs with retrieved value
             # from redis store.
             matched_attr_count = 0
             for key, value in task_attrs.items():
-                if redis_value[key] == value:
+                # redis value here is a dictionary
+                redis_value = self.store[redis_key]
+                if value and redis_value.get(key, None) == value:
                     matched_attr_count += 1
 
             # if all task attributes matched
             if matched_attr_count == len(task_attrs):
-                result += 1
-
-        return result
+                yield redis_value

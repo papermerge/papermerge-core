@@ -61,7 +61,7 @@ store = StoreKlass(
 def send2channel(task_dict):
     channel_layer = get_channel_layer()
     group_name, channel_data = dict2channel_data(task_dict)
-    logger.info(
+    logger.debug(
         f"Sending group_name='{group_name}' "
         f"Channel Data='{channel_data}' "
     )

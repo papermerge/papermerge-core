@@ -8,7 +8,6 @@ from channels.layers import get_channel_layer
 
 from papermerge.core.task_monitor import (
     task_monitor,
-    TASK_STARTED,
     TASK_SUCCEEDED,
     CORE_TASKS_OCR_PAGE
 )

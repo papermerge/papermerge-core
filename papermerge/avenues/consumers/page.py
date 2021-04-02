@@ -8,7 +8,6 @@ from channels.layers import get_channel_layer
 
 from papermerge.core.task_monitor import (
     task_monitor,
-    TASK_RECEIVED,
     TASK_STARTED,
     TASK_SUCCEEDED,
     CORE_TASKS_OCR_PAGE
@@ -35,7 +34,14 @@ class PageConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
 
-    def _should_notify_received(self, document_id):
+    def _should_notify_received(self, document_id) -> bool:
+        """
+        Should we notify ocr_document group channel/DocumentConsumer
+        that document's OCR task was received?
+
+        Document's OCR is considered received when OCR task is received for
+        at least one of its pages.
+        """
         if not hasattr(self, '_received'):
             self._received = {}
 
@@ -46,23 +52,36 @@ class PageConsumer(JsonWebsocketConsumer):
 
         return not bool(self._received[document_id])
 
-    def _should_notify_started(self, document_id, user_id):
-        tasks = task_monitor.items(
-            task_name=CORE_TASKS_OCR_PAGE,
-            user_id=user_id,
-            document_id=document_id,
-        )
-        ocr_tasks_for_doc_count = 0
-        for task in tasks:
-            if task['type'] in (TASK_SUCCEEDED, TASK_STARTED):
-                ocr_tasks_for_doc_count += 1
+    def _should_notify_started(self, document_id, user_id) -> bool:
+        """
+        Should we notify ocr_document group channel/DocumentConsumer
+        that document's OCR started?
 
-        logger.debug(f"COUNT={ocr_tasks_for_doc_count}")
-        # started for the document
-        # if there is exactly 1 started or succeeded
-        return ocr_tasks_for_doc_count == 1
+        Document's OCR starts when OCR started (or completed) on at
+        least one of its pages.
+        """
+        if not hasattr(self, '_started'):
+            self._started = {}
 
-    def _should_notify_succeeded(self, document_id, user_id):
+        if self._started.get(document_id, None) is None:
+            self._started[document_id] = 0
+        else:
+            self._started[document_id] += 1
+
+        return not bool(self._started[document_id])
+
+    def _should_notify_succeeded(self, document_id, user_id) -> bool:
+        """
+        Should we notify ocr_document group channel/DocumentConsumer
+        about document OCR completion ?
+
+        It is considered that document's OCR is complete when each
+        page of the document was successfully OCRed.
+
+        To figure it out if OCR of each page of the document
+        succeeded we count number of tasks `ocr_page` of type `task-succeeded`
+        associated to `document_id` and `user_id`.
+        """
         items = task_monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
             # type here has celery specific value.

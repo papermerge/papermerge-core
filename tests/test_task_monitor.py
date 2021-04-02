@@ -346,3 +346,52 @@ class TestTaskMonitor(TestCase):
 
         # there are two current tasks for user_id=13 and document_id=33
         self.assertEqual(len(list(items)), 2)
+
+    def test_items_method_for_only_received_tasks(self):
+        """
+        User with ID=13 initiates OCR
+        on document ID=33. Document ID=33 has
+        two pages.
+        Tests checks if correct number of items will be returned
+        in case when there are only 'received' tasks.
+        """
+        task = Task(
+            CORE_TASKS_OCR_PAGE,
+            document_id='',
+            user_id=''
+        )
+        self.monitor.add_task(task)
+
+        self.monitor.save_event({
+            'uuid': 'abcd-1',
+            'type': TASK_RECEIVED,
+            'name': CORE_TASKS_OCR_PAGE,
+            'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 1}"
+        })
+
+        self.monitor.save_event({
+            'uuid': 'xyz-2',
+            'type': TASK_RECEIVED,
+            'name': CORE_TASKS_OCR_PAGE,
+            'kwargs': "{'document_id': 33, 'user_id': 13, 'page_num': 2}"
+        })
+
+        items = self.monitor.items(
+            task_name=CORE_TASKS_OCR_PAGE,
+            type=TASK_RECEIVED,
+            user_id=13,
+            document_id=33
+        )
+
+        # there are two current tasks for user_id=13 and document_id=33
+        self.assertEqual(len(list(items)), 2)
+
+        items = self.monitor.items(
+            task_name=CORE_TASKS_OCR_PAGE,
+            type=TASK_RECEIVED,
+            user_id='13',  # used id is passed as string
+            document_id='33'  # document id is passed as string
+        )
+
+        # there are two current tasks for user_id=13 and document_id=33
+        self.assertEqual(len(list(items)), 2)

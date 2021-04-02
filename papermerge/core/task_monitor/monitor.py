@@ -147,7 +147,8 @@ class Monitor:
             for key, value in task_attrs.items():
                 # redis value here is a dictionary
                 redis_value = self.store[redis_key]
-                if value and redis_value.get(key, None) == value:
+                rvalue = redis_value.get(key, '')
+                if str(rvalue) == str(value):
                     matched_attr_count += 1
 
             # if all task attributes matched

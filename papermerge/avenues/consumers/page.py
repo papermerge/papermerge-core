@@ -35,6 +35,17 @@ class PageConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
 
+    def should_notify_document_consumer(self, document_id):
+        if not hasattr(self, '_received'):
+            self._received = {}
+
+        if self._received.get(document_id, None) is None:
+            self._received[document_id] = 0
+        else:
+            self._received[document_id] += 1
+
+        return not bool(self._received[document_id])
+
     def ocrpage_taskreceived(self, event):
         """
         * type = which is 'ocrpage.taskreceived'
@@ -47,25 +58,15 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_RECEIVED event={event}")
-        # task is considered "received" for the document
-        # if there is exactly one
-        # "received" task for document_id, user_id, ocr_page
         user_id = event['user_id']
         document_id = event['document_id']
-        tasks = task_monitor.items(
-            task_name=CORE_TASKS_OCR_PAGE,
-            type=TASK_RECEIVED,
-            user_id=user_id,
-            document_id=document_id,
-        )
-        logger.debug(f"COUNT={len(list(tasks))}")
-        if len(list(tasks)) == 1:
+        if self.should_notify_document_consumer(document_id):
             # notify ocr_document group about event
             channel_layer = get_channel_layer()
             channel_data = {
                 'type': 'ocrdocument.received',
-                'user_id': event['user_id'],
-                'document_id': event['document_id'],
+                'user_id': user_id,
+                'document_id': document_id,
             }
             async_to_sync(
                 channel_layer.group_send
@@ -149,7 +150,6 @@ class PageConsumer(JsonWebsocketConsumer):
                     'type': 'ocrdocument.succeeded',
                     'user_id': user_id,
                     'document_id': document_id,
-                    'version': version
                 }
                 async_to_sync(
                     channel_layer.group_send
@@ -159,6 +159,6 @@ class PageConsumer(JsonWebsocketConsumer):
                 )
         except ObjectDoesNotExist:
             logger.error(
-                f"Document ID={document_id} Version={version} was not found"
+                f"Document ID={document_id} was not found."
             )
         self.send_json(event)

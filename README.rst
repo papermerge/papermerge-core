@@ -53,7 +53,7 @@ Features Highlights
 
 
 Unit Tests
-~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 Run all unit tests with `tox <https://tox.readthedocs.io/en/latest/index.html>`_:
 

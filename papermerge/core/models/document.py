@@ -43,6 +43,10 @@ from papermerge.search import index
 logger = logging.getLogger(__name__)
 
 
+OCR_STATUS_SUCCEEDED = "succeeded"
+OCR_STATUS_UNKWNOWN = "unknown"
+
+
 class DocumentManager(PolymorphicMPTTModelManager):
 
     @transaction.atomic
@@ -958,17 +962,23 @@ class Document(BaseTreeNode):
 
     def get_ocr_status(self):
         """
-        Returns one of the following strings:
-            * no_activity
-            * pending
-            * in_progress
-            * success
-            * error
+        Returns OCR status of the document.
 
-        Where `no_activity` means that there is no OCR activity
-        (background jobs) registered for current document (neither there was).
+        Document model knows only limited information about
+        document OCR status. From point of view of the document
+        OCR status can be one of following:
+
+            * succeeded - when document.text field is non empty
+            * unknown - when document.text is empty
+
+        In case of "unknown" OCR status application will need to query
+        different parts of the system to figure out more details
+        about OCR status.
         """
-        pass
+        if len(self.text) > 0:
+            return OCR_STATUS_SUCCEEDED
+
+        return OCR_STATUS_UNKWNOWN
 
 
 class AbstractDocument(models.Model):

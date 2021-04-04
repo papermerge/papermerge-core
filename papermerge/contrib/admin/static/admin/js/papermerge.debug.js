@@ -24005,6 +24005,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
 /* harmony import */ var _routers_browse__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../routers/browse */ "./src/js/routers/browse.js");
+/* harmony import */ var led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! led_status/src/assets/led-unknown.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-unknown.svg");
+/* harmony import */ var led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! led_status/src/assets/led-success.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-success.svg");
+
+
 
 
 
@@ -24598,7 +24602,9 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
     let compiled, context;
     context = {};
     compiled = underscore__WEBPACK_IMPORTED_MODULE_1__.default.template(TEMPLATE_GRID({
-      'nodes': nodes
+      'nodes': nodes,
+      'led_succeeded_svg': led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_13__,
+      'led_unknown_svg': led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_12__
     }));
     this.$el.html(compiled);
   }
@@ -44223,7 +44229,17 @@ __p+='\n                        <i class="fa fa-lock"></i>\n                    
  } 
 __p+='\n                </div>\n                <input type="checkbox" name="_selected_action" value="'+
 ((__t=( node.get('id') ))==null?'':__t)+
-'" class="action-select" />\n                <div class="title tooltip">\n                    <div class="led">\n                    </div>\n                    <a href="'+
+'" class="action-select" />\n                <div class="title tooltip">\n                    <div class="led">\n                        ';
+ if ( node.get('ocr_status') == 'succeeded' ) { 
+__p+='\n                            '+
+((__t=( led_succeeded_svg ))==null?'':__t)+
+'\n                        ';
+ } else { 
+__p+='\n                            '+
+((__t=( led_unknown_svg ))==null?'':__t)+
+'\n                        ';
+ } 
+__p+='\n                    </div>\n                    <a href="'+
 ((__t=( node.url ))==null?'':__t)+
 '" class="'+
 ((__t=( node.get('ctype') ))==null?'':__t)+

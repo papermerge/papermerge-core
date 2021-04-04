@@ -18630,6 +18630,21 @@ class LEDDocumentStatus {
     };
   }
 
+  pull(document_id) {
+    let message,
+        that = this;
+    message = {
+      'document_id': document_id,
+      'type': 'ocrdocument.pull'
+    };
+
+    if (this._socket) {
+      this._socket.onopen = function () {
+        that._socket.send(JSON.stringify(message));
+      };
+    }
+  }
+
   on_update(message) {
     /*
     Message is a dictionary with following keys:
@@ -20819,8 +20834,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node */ "./src/js/models/node.js");
 /* harmony import */ var _kvstore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./kvstore */ "./src/js/models/kvstore.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils */ "./src/js/utils.js");
-/* harmony import */ var _dispatcher__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
+/* harmony import */ var _dispatcher__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./dispatcher */ "./src/js/models/dispatcher.js");
 /* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+
 
 
 
@@ -20893,20 +20910,23 @@ class Browse extends backbone__WEBPACK_IMPORTED_MODULE_1__.Model {
 
     if (notify_all) {
       // inform everybody about new parent
-      _dispatcher__WEBPACK_IMPORTED_MODULE_5__.mg_dispatcher.trigger(_dispatcher__WEBPACK_IMPORTED_MODULE_5__.PARENT_CHANGED, parent_id);
+      _dispatcher__WEBPACK_IMPORTED_MODULE_6__.mg_dispatcher.trigger(_dispatcher__WEBPACK_IMPORTED_MODULE_6__.PARENT_CHANGED, parent_id);
     }
   }
 
   parse(response, options) {
     let nodes = response.nodes,
         that = this,
+        node,
+        led_status,
         parent_kv = response.parent_kv,
         parent_id = response.parent_id;
     that.nodes.reset();
     that.parent_kv.reset();
 
     underscore__WEBPACK_IMPORTED_MODULE_0__.default.each(nodes, function (item) {
-      that.nodes.add(new _node__WEBPACK_IMPORTED_MODULE_2__.Node(item));
+      node = new _node__WEBPACK_IMPORTED_MODULE_2__.Node(item);
+      that.nodes.add(node);
     });
 
     underscore__WEBPACK_IMPORTED_MODULE_0__.default.each(parent_kv, function (item) {
@@ -24599,7 +24619,7 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
   }
 
   render(nodes, sort_field, sort_order) {
-    let compiled, context;
+    let compiled, context, node, led_status;
     context = {};
     compiled = underscore__WEBPACK_IMPORTED_MODULE_1__.default.template(TEMPLATE_GRID({
       'nodes': nodes,
@@ -24607,6 +24627,15 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
       'led_unknown_svg': led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_12__
     }));
     this.$el.html(compiled);
+
+    for (let i = 0; i < nodes.models.length; i++) {
+      node = nodes.models[i];
+
+      if (node && node.is_document() && node.get('ocr_status') == 'unknown') {
+        led_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__.LEDDocumentStatus();
+        led_status.pull(node['id']);
+      }
+    }
   }
 
 }

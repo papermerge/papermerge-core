@@ -67,7 +67,14 @@ class PageConsumer(JsonWebsocketConsumer):
         else:
             self._started[document_id] += 1
 
-        return not bool(self._started[document_id])
+        _started = self._started[document_id]
+        ret_value = not bool(_started)
+        logger.debug(
+            f"_should_notify_started document_id={document_id} "
+            f"_started={_started} "
+            f" ret_value={ret_value}"
+        )
+        return ret_value
 
     def _should_notify_succeeded(self, document_id, user_id) -> bool:
         """
@@ -92,7 +99,14 @@ class PageConsumer(JsonWebsocketConsumer):
         try:
             doc = Document.objects.get(pk=document_id)
             # all document pages were successfully OCRed
-            should_notify = len(list(items)) == doc.page_count
+            total_items = len(list(items))
+            page_count = doc.page_count
+            should_notify = total_items == doc.page_count
+            logger.debug(
+                f"_should_notify_succeeded document_id={document_id} "
+                f" total_items={total_items} "
+                f" page_count={page_count}"
+            )
         except ObjectDoesNotExist:
             logger.error(
                 f"Document ID={document_id} was not found."

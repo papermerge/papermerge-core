@@ -1,3 +1,42 @@
+@charset "UTF-8";
+svg.led {
+  /* Use the current text color as the icon’s fill color. */
+  fill: currentColor;
+  /* Inherit the text’s size too. Also allows sizing the icon by changing its font-size. */
+  width: 1em;
+  height: 1em;
+  /* The default vertical-align is `baseline`, which leaves a few pixels of space below the icon. Using `center` prevents this. For icons shown alongside text, you may want to use a more precise value, e.g. `vertical-align: -4px` or `vertical-align: -0.15em`. */
+  vertical-align: middle;
+  /* Paths and strokes that overflow the viewBox can show in IE11. */
+  overflow: hidden; }
+
+svg.led-unknown {
+  fill: #aaa; }
+
+svg.led-pending {
+  fill: orange; }
+
+svg.led-in-progress {
+  fill: None; }
+
+svg.led-success {
+  fill: #0aa70a; }
+
+svg.led-fail {
+  fill: #e22e2e; }
+
+svg.led-in-progress {
+  -webkit-animation: led_rotate_svg 1s linear infinite;
+          animation: led_rotate_svg 1s linear infinite; }
+
+@-webkit-keyframes led_rotate_svg {
+  to {
+    transform: rotate(360deg); } }
+
+@keyframes led_rotate_svg {
+  to {
+    transform: rotate(360deg); } }
+
 /*!
  * jQuery UI CSS Framework 1.12.1
  * http://jqueryui.com
@@ -103,7 +142,6 @@
   z-index: 100;
   border: 1px dotted black; }
 
-@charset "UTF-8";
 /*!
  * Bootstrap v4.6.0 (https://getbootstrap.com/)
  * Copyright 2011-2021 The Bootstrap Authors
@@ -4447,10 +4485,10 @@ a.close.disabled {
   .modal-xl {
     max-width: 1140px; } }
 
-[dir="ltr"] .tooltip{
+[dir="ltr"] .tooltip {
   text-align: left; }
 
-[dir="rtl"] .tooltip{
+[dir="rtl"] .tooltip {
   text-align: right; }
 
 .tooltip {
@@ -4535,10 +4573,10 @@ a.close.disabled {
   background-color: #000;
   border-radius: 0.25rem; }
 
-[dir="ltr"] .popover{
+[dir="ltr"] .popover {
   text-align: left; }
 
-[dir="rtl"] .popover{
+[dir="rtl"] .popover {
   text-align: right; }
 
 .popover {
@@ -7378,44 +7416,6 @@ a.text-dark:hover, a.text-dark:focus {
     color: inherit;
     border-color: #dee2e6; } }
 
-svg.led {
-  /* Use the current text color as the icon’s fill color. */
-  fill: currentColor;
-  /* Inherit the text’s size too. Also allows sizing the icon by changing its font-size. */
-  width: 1em;
-  height: 1em;
-  /* The default vertical-align is `baseline`, which leaves a few pixels of space below the icon. Using `center` prevents this. For icons shown alongside text, you may want to use a more precise value, e.g. `vertical-align: -4px` or `vertical-align: -0.15em`. */
-  vertical-align: middle;
-  /* Paths and strokes that overflow the viewBox can show in IE11. */
-  overflow: hidden; }
-
-svg.led-unknown {
-  fill: #aaa; }
-
-svg.led-pending {
-  fill: orange; }
-
-svg.led-in-progress {
-  fill: None; }
-
-svg.led-success {
-  fill: #0aa70a; }
-
-svg.led-fail {
-  fill: #e22e2e; }
-
-svg.led-in-progress {
-  -webkit-animation: led_rotate_svg 1s linear infinite;
-          animation: led_rotate_svg 1s linear infinite; }
-
-@-webkit-keyframes led_rotate_svg {
-  to {
-    transform: rotate(360deg); } }
-
-@keyframes led_rotate_svg {
-  to {
-    transform: rotate(360deg); } }
-
 /* latin-ext */
 @font-face {
   font-family: 'Lato';
@@ -9323,8 +9323,15 @@ h1, h2, h3, h4 {
 /* Tooltip container */
 .tooltip {
   position: relative;
-  display: inline-block;
+  display: flex;
+  margin: 0.5rem;
+  flex-direction: row;
+  align-items: center;
   /* Tooltip text */ }
+  .tooltip .led {
+    font-size: 1.3rem; }
+  .tooltip a.document {
+    margin-left: 0.5rem; }
   .tooltip .tooltiptext {
     visibility: hidden;
     background-color: black;
@@ -9335,8 +9342,9 @@ h1, h2, h3, h4 {
     white-space: nowrap;
     /* Position the tooltip text - see examples below! */
     position: absolute;
-    top: 1rem;
-    z-index: 1;
+    top: 3rem;
+    left: 2rem;
+    z-index: 4000;
     opacity: 0;
     transition: opacity 1s; }
 
@@ -9344,7 +9352,7 @@ h1, h2, h3, h4 {
 .tooltip:hover .tooltiptext {
   visibility: visible;
   opacity: 1;
-  z-index: 2100; }
+  z-index: 4000; }
 
 .gray_1 {
   background-color: #ffffff; }

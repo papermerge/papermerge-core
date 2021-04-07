@@ -80,6 +80,7 @@ class DocumentConsumer(JsonWebsocketConsumer):
         page number 1 (as order). OCR of the document's page can
         start with page number 3 for example.
         """
+        logger.debug(f"ocrdocument_received event={event}")
         self.send_json(event)
 
     def ocrdocument_started(self, event):
@@ -90,6 +91,7 @@ class DocumentConsumer(JsonWebsocketConsumer):
         page number 1 (as order). OCR of the document's page can
         start with page number 3 for example.
         """
+        logger.debug(f"ocrdocument_started event={event}")
         self.send_json(event)
 
     def ocrdocument_succeeded(self, event):
@@ -97,4 +99,5 @@ class DocumentConsumer(JsonWebsocketConsumer):
         Document's OCR succeeds when
         OCR on all its pages succeeds.
         """
+        logger.debug(f"ocrdocument_succeeded event={event}")
         self.send_json(event)

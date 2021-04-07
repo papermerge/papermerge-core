@@ -24,6 +24,9 @@ class PageConsumer(JsonWebsocketConsumer):
     ocr_document_group_name = "ocr_document"
 
     def connect(self):
+        logger.debug(
+            f"Page consumer JOINED {self.group_name}"
+        )
         async_to_sync(
             self.channel_layer.group_add
         )(self.group_name, self.channel_name)
@@ -33,9 +36,12 @@ class PageConsumer(JsonWebsocketConsumer):
         async_to_sync(
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
+        logger.debug(
+            f"Page consumer LEFT {self.group_name}"
+        )
 
     def receive(self, text_data):
-        logger.debug(f"RECEIVED {text_data}")
+        logger.debug(f"PAGE consumer RECEIVED {text_data}")
         message = json.loads(text_data)
         page_ids = message['page_ids']
 

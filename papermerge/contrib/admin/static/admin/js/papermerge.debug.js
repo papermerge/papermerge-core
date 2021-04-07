@@ -24089,6 +24089,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 let TEMPLATE_GRID = __webpack_require__(/*! ../templates/browse_grid.html */ "./src/js/templates/browse_grid.html");
 
 let TEMPLATE_LIST = __webpack_require__(/*! ../templates/browse_list.html */ "./src/js/templates/browse_list.html");
@@ -24696,7 +24697,10 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
 
     this.display_mode = new _display_mode__WEBPACK_IMPORTED_MODULE_4__.DisplayModeView();
     this.pagination_view = new _pagination__WEBPACK_IMPORTED_MODULE_6__.PaginationView();
-    this.led_doc_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDDocumentStatus(); // there are to view modes - list and grid
+    this.led_doc_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDDocumentStatus(); // this creates ws connection which is necessary
+    // for joining the channel
+
+    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDPageStatus(); // there are to view modes - list and grid
 
     this.browse_list_view = new BrowseListView();
     this.browse_grid_view = new BrowseGridView();

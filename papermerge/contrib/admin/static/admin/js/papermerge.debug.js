@@ -24664,6 +24664,11 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#browse');
   }
 
+  constructor(led_doc_status) {
+    super();
+    this.led_doc_status = led_doc_status;
+  }
+
   render(nodes, sort_field, sort_order) {
     let compiled, context, node, led_status;
     context = {};
@@ -24677,9 +24682,8 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
     for (let i = 0; i < nodes.models.length; i++) {
       node = nodes.models[i];
 
-      if (node && node.is_document() && node.get('ocr_status') == 'unknown') {
-        led_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDDocumentStatus();
-        led_status.pull(node['id']);
+      if (node && node.is_document()) {
+        this.led_doc_status.pull(node['id']);
       }
     }
   }
@@ -24702,8 +24706,8 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
 
     this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDPageStatus(); // there are to view modes - list and grid
 
-    this.browse_list_view = new BrowseListView();
-    this.browse_grid_view = new BrowseGridView();
+    this.browse_list_view = new BrowseListView(this.led_doc_status);
+    this.browse_grid_view = new BrowseGridView(this.led_doc_status);
     this.dropzone = new _dropzone__WEBPACK_IMPORTED_MODULE_5__.DropzoneView(this.browse);
     this.listenTo(this.browse, 'change', this.render);
     this.listenTo(this.display_mode, 'change', this.refresh);

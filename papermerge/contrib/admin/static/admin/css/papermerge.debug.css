@@ -10406,6 +10406,10 @@ aside a.download {
       overflow: scroll; }
       #document #viewer #page-thumbnails .page_thumbnails {
         height: inherit; }
+        #document #viewer #page-thumbnails .page_thumbnails .page_number {
+          display: flex; }
+          #document #viewer #page-thumbnails .page_thumbnails .page_number .number {
+            margin: 0 0.5rem; }
 
 #document {
   border-top: 1px solid #ccc;

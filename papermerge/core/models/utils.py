@@ -3,6 +3,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+OCR_STATUS_SUCCEEDED = "succeeded"
+OCR_STATUS_UNKWNOWN = "unknown"
+
+
 def get_fields(model):
     """
     Returns django fields of current ``model``.

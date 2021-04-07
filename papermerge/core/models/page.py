@@ -11,6 +11,10 @@ from papermerge.search.queryset import SearchableQuerySetMixin
 from .diff import Diff
 from .document import Document
 from .kvstore import KVCompPage, KVPage, KVStorePage
+from .utils import (
+    OCR_STATUS_SUCCEEDED,
+    OCR_STATUS_UNKWNOWN
+)
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +109,7 @@ class Page(models.Model, index.Indexed):
 
         item = {}
         item['id'] = self.id
+        item['ocr_status'] = self.get_ocr_status()
         item['number'] = self.number
         item['kvstore'] = [item.to_dict() for item in self.kv.all()]
 
@@ -301,6 +306,26 @@ class Page(models.Model, index.Indexed):
 
     def normalize_lang(self):
         pass
+
+    def get_ocr_status(self):
+        """
+        Returns OCR status of the document.
+
+        Document model knows only limited information about
+        document OCR status. From point of view of the document
+        OCR status can be one of following:
+
+            * succeeded - when document.text field is non empty
+            * unknown - when document.text is empty
+
+        In case of "unknown" OCR status application will need to query
+        different parts of the system to figure out more details
+        about OCR status.
+        """
+        if len(self.text) > 0:
+            return OCR_STATUS_SUCCEEDED
+
+        return OCR_STATUS_UNKWNOWN
 
     class Meta:
         # Guarantees that

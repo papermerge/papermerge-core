@@ -18611,6 +18611,10 @@ const OCRDOCUMENT_RECEIVED = 'ocrdocument.received';
 const OCRDOCUMENT_STARTED = 'ocrdocument.started';
 const OCRDOCUMENT_SUCCEEDED = 'ocrdocument.succeeded';
 const OCRDOCUMENT_FAILED = 'ocrdocument.failed';
+const OCRPAGE_RECEIVED = 'ocrpage.received';
+const OCRPAGE_STARTED = 'ocrpage.started';
+const OCRPAGE_SUCCEEDED = 'ocrpage.succeeded';
+const OCRPAGE_FAILED = 'ocrpage.failed';
 let default_config = {
   'node_selector': '.node',
   'led_selector': '.led',
@@ -18695,16 +18699,6 @@ class LEDStatus {
   }
 
   on_update(message) {
-    /*
-    Message is a dictionary with following keys:
-        * type
-        * document_id
-        * user_id
-    Where type can have one of following string values:
-        * ocrdocument.received
-        * ocrdocument.started
-        * ocrdocument.succeeded
-    */
     let led_doc;
 
     if (underscore__WEBPACK_IMPORTED_MODULE_1__.default.isEmpty(message)) {
@@ -18715,16 +18709,6 @@ class LEDStatus {
   }
 
   update(message) {
-    /*
-    Message is a dictionary with following keys:
-        * type
-        * document_id
-        * user_id
-    Where type can have one of following string values:
-        * ocrdocument.received
-        * ocrdocument.started
-        * ocrdocument.succeeded
-    */
     let $dom_node = this.find_node(message);
 
     if ($dom_node) {
@@ -18841,10 +18825,50 @@ class LEDPageStatus extends LEDStatus {
     this._send(message);
   }
 
-  find_node(message) {// ...
+  find_node(message) {
+    /*
+    Message is a dictionary with following keys:
+        * type
+        * page_id
+        * user_id
+    Where type can have one of following string values:
+        * ocrpage.received
+        * ocrpage.started
+        * ocrpage.succeeded
+    */
+    let page_node, nodes, selector, page_id;
+    page_id = message['page_id'];
+    selector = this._config['node_selector'];
+    page_node = jquery__WEBPACK_IMPORTED_MODULE_2__(`${selector}[data-id='${page_id}']`);
+    return page_node;
   }
 
-  update_state($dom_node, message) {// ...
+  update_state($dom_node, message) {
+    let $led_elem, css_selector, message_type;
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_1__.default.isEmpty($dom_node)) {
+      console.error("LEDStatus: empty node element");
+      return;
+    }
+
+    css_selector = this._config['led_selector'];
+    $led_elem = $dom_node.find(css_selector);
+    message_type = message['type'];
+
+    if (underscore__WEBPACK_IMPORTED_MODULE_1__.default.isEmpty($led_elem)) {
+      console.error("LEDStatus: empty led status element");
+      return;
+    }
+
+    if (message_type == OCRPAGE_RECEIVED) {
+      $led_elem.html(_assets_led_pending_svg__WEBPACK_IMPORTED_MODULE_5__);
+    } else if (message_type == OCRPAGE_STARTED) {
+      $led_elem.html(_assets_led_in_progress_svg__WEBPACK_IMPORTED_MODULE_6__);
+    } else if (message_type == OCRPAGE_SUCCEEDED) {
+      $led_elem.html(_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_7__);
+    } else if (message_type == OCRPAGE_FAILED) {
+      $led_elem.html(_assets_led_fail_svg__WEBPACK_IMPORTED_MODULE_8__);
+    }
   }
 
 }
@@ -24026,16 +24050,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_mode__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./display_mode */ "./src/js/views/display_mode.js");
 /* harmony import */ var _dropzone__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./dropzone */ "./src/js/views/dropzone.js");
 /* harmony import */ var _pagination__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pagination */ "./src/js/views/pagination.js");
-/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
-/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! webpack-jquery-ui/selectable */ "./node_modules/webpack-jquery-ui/selectable.js");
-/* harmony import */ var webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
-/* harmony import */ var _routers_browse__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../routers/browse */ "./src/js/routers/browse.js");
-/* harmony import */ var led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! led_status/src/assets/led-unknown.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-unknown.svg");
-/* harmony import */ var led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! led_status/src/assets/led-success.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-success.svg");
-
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+/* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! webpack-jquery-ui/selectable */ "./node_modules/webpack-jquery-ui/selectable.js");
+/* harmony import */ var webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(webpack_jquery_ui_selectable__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var _routers_browse__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../routers/browse */ "./src/js/routers/browse.js");
+/* harmony import */ var led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! led_status/src/assets/led-unknown.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-unknown.svg");
+/* harmony import */ var led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! led_status/src/assets/led-success.svg */ "../Organizations/papermerge/LEDStatus/src/assets/led-success.svg");
+/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
 
 
 
@@ -24062,7 +24085,7 @@ let SORT_UNDEFINED = 0;
 let UI_SELECTION_MOUSE_MOVE = 'ui-selection-mouse-move';
 let UI_SELECTION_MOUSE_UP = 'ui-selection-mouse-up';
 
-let ui_selection_dispatcher = underscore__WEBPACK_IMPORTED_MODULE_1__.default.clone((backbone__WEBPACK_IMPORTED_MODULE_8___default().Events));
+let ui_selection_dispatcher = underscore__WEBPACK_IMPORTED_MODULE_1__.default.clone((backbone__WEBPACK_IMPORTED_MODULE_7___default().Events));
 
 class UISelect {
   /**
@@ -24169,7 +24192,7 @@ class UISelect {
 
 }
 
-class UISelectView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
+class UISelectView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
   /***
   Backbone view specifically for UISelect.
   Attached to parent element of #browse
@@ -24531,7 +24554,7 @@ class Table {
 
 }
 
-class BrowseListView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
+class BrowseListView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
   /**
     List mode displays a table which can be sorted by each individual column.
     Also, some columns might be added or removed.
@@ -24621,7 +24644,7 @@ class BrowseListView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
 
 }
 
-class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
+class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
   el() {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#browse');
   }
@@ -24631,8 +24654,8 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
     context = {};
     compiled = underscore__WEBPACK_IMPORTED_MODULE_1__.default.template(TEMPLATE_GRID({
       'nodes': nodes,
-      'led_succeeded_svg': led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_13__,
-      'led_unknown_svg': led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_12__
+      'led_succeeded_svg': led_status_src_assets_led_success_svg__WEBPACK_IMPORTED_MODULE_12__,
+      'led_unknown_svg': led_status_src_assets_led_unknown_svg__WEBPACK_IMPORTED_MODULE_11__
     }));
     this.$el.html(compiled);
 
@@ -24640,7 +24663,7 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
       node = nodes.models[i];
 
       if (node && node.is_document() && node.get('ocr_status') == 'unknown') {
-        led_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__.LEDDocumentStatus();
+        led_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDDocumentStatus();
         led_status.pull(node['id']);
       }
     }
@@ -24648,7 +24671,7 @@ class BrowseGridView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
 
 }
 
-class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
+class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_7__.View {
   el() {
     return jquery__WEBPACK_IMPORTED_MODULE_0___default()('#browse');
   }
@@ -24659,8 +24682,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
 
     this.display_mode = new _display_mode__WEBPACK_IMPORTED_MODULE_4__.DisplayModeView();
     this.pagination_view = new _pagination__WEBPACK_IMPORTED_MODULE_6__.PaginationView();
-    this.led_doc_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__.LEDDocumentStatus();
-    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_7__.LEDPageStatus(); // there are to view modes - list and grid
+    this.led_doc_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_13__.LEDDocumentStatus(); // there are to view modes - list and grid
 
     this.browse_list_view = new BrowseListView();
     this.browse_grid_view = new BrowseGridView();
@@ -24668,12 +24690,12 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
     this.listenTo(this.browse, 'change', this.render);
     this.listenTo(this.display_mode, 'change', this.refresh);
     this.listenTo(this.browse_list_view, 'change', this.render);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.BROWSER_REFRESH, this.refresh, this);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECT_ALL, this.select_all, this);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECT_FOLDERS, this.select_folders, this);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECT_DOCUMENTS, this.select_documents, this);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.DESELECT, this.deselect, this);
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.INVERT_SELECTION, this.invert_selection, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.BROWSER_REFRESH, this.refresh, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECT_ALL, this.select_all, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECT_FOLDERS, this.select_folders, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECT_DOCUMENTS, this.select_documents, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.DESELECT, this.deselect, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.INVERT_SELECTION, this.invert_selection, this);
     ui_selection_dispatcher.on(UI_SELECTION_MOUSE_MOVE, this.on_ui_selection_mouse_move, this);
     ui_selection_dispatcher.on(UI_SELECTION_MOUSE_UP, this.on_ui_selection_mouse_up, this);
 
@@ -24744,7 +24766,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
       }
     }
 
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   on_node_clicked(event) {
@@ -24793,14 +24815,14 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
 
   on_ui_selection_mouse_up() {
     // inform other elements about current selection
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   select_all() {
     this.browse.nodes.each(function (node) {
       node.select();
     });
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   select_folders() {
@@ -24809,7 +24831,7 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
         node.select();
       }
     });
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   select_documents() {
@@ -24818,21 +24840,21 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
         node.select();
       }
     });
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   deselect() {
     this.browse.nodes.each(function (node) {
       node.deselect();
     });
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   invert_selection() {
     this.browse.nodes.each(function (node) {
       node.toggle_selection();
     });
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.SELECTION_CHANGED, this.get_selection());
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.SELECTION_CHANGED, this.get_selection());
   }
 
   select_node_by_cid(cid) {
@@ -24865,9 +24887,9 @@ class BrowseView extends backbone__WEBPACK_IMPORTED_MODULE_8__.View {
     if (node.is_folder()) {
       // routers.browse handles PARENT_CHANGED event.
       if (node) {
-        _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.PARENT_CHANGED, node.id);
+        _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.PARENT_CHANGED, node.id);
       } else {
-        _models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_10__.PARENT_CHANGED, undefined);
+        _models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_9__.PARENT_CHANGED, undefined);
       }
 
       return;
@@ -25314,7 +25336,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _models_document__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../models/document */ "./src/js/models/document.js");
 /* harmony import */ var _views_message__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../views/message */ "./src/js/views/message.js");
 /* harmony import */ var _views_page_ocred_text_view__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../views/page_ocred_text_view */ "./src/js/views/page_ocred_text_view.js");
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
 
 
 
@@ -25423,6 +25447,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
     this._actions = this.build_actions();
     this._breadcrumb_view = new _views_breadcrumb__WEBPACK_IMPORTED_MODULE_15__.BreadcrumbView(document_id);
     this._loaded_page_imgs = 0;
+    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_21__.LEDPageStatus();
 
     if (dom_actual_pages) {
       new _document_form_page_scroll__WEBPACK_IMPORTED_MODULE_6__.DgPageScroll(dom_actual_pages);
@@ -25432,7 +25457,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
 
     this._adjust_viewer_height();
 
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_21__.DOCUMENT_IMAGE_LOADED, this.on_document_image_loaded, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_22__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_22__.DOCUMENT_IMAGE_LOADED, this.on_document_image_loaded, this);
   }
 
   get actions() {

@@ -34,17 +34,17 @@ from .node import (
     RELATED_QUERY_NAME_FMT
 )
 from .access import Access
-from .utils import group_per_model
+from .utils import (
+    group_per_model,
+    OCR_STATUS_SUCCEEDED,
+    OCR_STATUS_UNKWNOWN
+)
 from .finder import default_parts_finder
 
 from papermerge.search import index
 
 
 logger = logging.getLogger(__name__)
-
-
-OCR_STATUS_SUCCEEDED = "succeeded"
-OCR_STATUS_UNKWNOWN = "unknown"
 
 
 class DocumentManager(PolymorphicMPTTModelManager):

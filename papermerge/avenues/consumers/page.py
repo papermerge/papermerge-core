@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,6 +34,34 @@ class PageConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
 
+    def receive(self, text_data):
+        logger.debug(f"RECEIVED {text_data}")
+        message = json.loads(text_data)
+        page_ids = message['page_ids']
+
+        for page_id in page_ids:
+            items = task_monitor.items(
+                task_name=CORE_TASKS_OCR_PAGE,
+                # type here has celery specific value.
+                page_id=page_id,
+            )
+            items_list = list(items)
+
+            if len(items_list) > 0:
+                item = items[0]
+                channel_layer = get_channel_layer()
+                _type = f"ocrpage.{item['type'].replace('-', '')}"
+                channel_data = {
+                    'type': _type,
+                    'page_id': page_id,
+                }
+                async_to_sync(
+                    channel_layer.group_send
+                )(
+                    self.ocr_document_group_name,
+                    channel_data
+                )
+
     def _should_notify_received(self, document_id) -> bool:
         """
         Should we notify ocr_document group channel/DocumentConsumer
@@ -41,6 +70,9 @@ class PageConsumer(JsonWebsocketConsumer):
         Document's OCR is considered received when OCR task is received for
         at least one of its pages.
         """
+        if not document_id:
+            return False
+
         if not hasattr(self, '_received'):
             self._received = {}
 
@@ -59,6 +91,13 @@ class PageConsumer(JsonWebsocketConsumer):
         Document's OCR starts when OCR started (or completed) on at
         least one of its pages.
         """
+
+        if not document_id:
+            return False
+
+        if not user_id:
+            return False
+
         if not hasattr(self, '_started'):
             self._started = {}
 
@@ -88,6 +127,12 @@ class PageConsumer(JsonWebsocketConsumer):
         succeeded we count number of tasks `ocr_page` of type `task-succeeded`
         associated to `document_id` and `user_id`.
         """
+        if not document_id:
+            return False
+
+        if not user_id:
+            return False
+
         items = task_monitor.items(
             task_name=CORE_TASKS_OCR_PAGE,
             # type here has celery specific value.
@@ -141,7 +186,7 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_RECEIVED event={event}")
-        document_id = event['document_id']
+        document_id = event.get('document_id', None)
         if self._should_notify_received(document_id):
             # notify ocr_document group about event
             self._notify(
@@ -149,6 +194,7 @@ class PageConsumer(JsonWebsocketConsumer):
                 document_id=document_id,
                 _type='ocrdocument.received'
             )
+        event['type'] = 'ocrpage.received'
         self.send_json(event)
 
     def ocrpage_taskstarted(self, event):
@@ -163,8 +209,8 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_STARTED event={event}")
-        document_id = event['document_id']
-        user_id = event['user_id']
+        document_id = event.get('document_id', None)
+        user_id = event.get('user_id', None)
         if self._should_notify_started(
             user_id=user_id,
             document_id=document_id
@@ -175,6 +221,7 @@ class PageConsumer(JsonWebsocketConsumer):
                 document_id=document_id,
                 _type='ocrdocument.started'
             )
+        event['type'] = 'ocrpage.started'
         self.send_json(event)
 
     def ocrpage_tasksucceeded(self, event):
@@ -191,8 +238,8 @@ class PageConsumer(JsonWebsocketConsumer):
         * file_name
         """
         logger.debug(f"OCR_PAGE_TASK_SUCCEEDED event={event}")
-        document_id = event['document_id']
-        user_id = event['user_id']
+        document_id = event.get('document_id', None)
+        user_id = event.get('user_id', None)
         if self._should_notify_succeeded(
             user_id=user_id,
             document_id=document_id
@@ -202,4 +249,5 @@ class PageConsumer(JsonWebsocketConsumer):
                 document_id=document_id,
                 _type='ocrdocument.succeeded'
             )
+        event['type'] = 'ocrpage.succeeded'
         self.send_json(event)

@@ -18836,10 +18836,10 @@ class LEDPageStatus extends LEDStatus {
         * ocrpage.started
         * ocrpage.succeeded
     */
-    let page_node, nodes, selector, page_id;
-    page_id = message['page_id'];
+    let page_node, nodes, selector, page_num;
+    page_num = message['page_num'];
     selector = this._config['node_selector'];
-    page_node = jquery__WEBPACK_IMPORTED_MODULE_2__(`${selector}[data-id='${page_id}']`);
+    page_node = jquery__WEBPACK_IMPORTED_MODULE_2__(`${selector}[data-page_num='${page_num}']`);
     return page_node;
   }
 
@@ -20165,6 +20165,7 @@ class MgThumbnail extends _events__WEBPACK_IMPORTED_MODULE_1__.DgEvents {
     data['page_num'] = dom_data.getAttribute('data-page_num');
     data['page_id'] = dom_data.getAttribute('data-page_id');
     data['page_order'] = dom_data.getAttribute('data-page_order');
+    data['ocr_status'] = dom_data.getAttribute('data-ocr-status');
     return data;
   }
 
@@ -20349,7 +20350,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _thumbnail__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./thumbnail */ "./src/js/document_form/thumbnail.js");
 /* harmony import */ var _lister__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lister */ "./src/js/document_form/lister.js");
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
+
 
 
 
@@ -20360,6 +20363,11 @@ class MgThumbnailList extends _lister__WEBPACK_IMPORTED_MODULE_2__.MgLister {
     this._container_selector = ".page_thumbnails";
     this._selector = ".page_thumbnails .page_thumbnail";
     this._list = [];
+    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_3__.LEDPageStatus({}, {
+      'node_selector': '.page_number',
+      'led_selector': '.led',
+      'use_sockets': true
+    });
 
     this._config_events();
   }
@@ -20504,7 +20512,8 @@ class MgThumbnailList extends _lister__WEBPACK_IMPORTED_MODULE_2__.MgLister {
   _add_thumbnails() {
     let dom_arr = Array.from(document.querySelectorAll(this._selector));
     let that = this,
-        thumb;
+        thumb,
+        page_ocr_unknown_statuses = [];
     dom_arr.forEach(function (dom_page_item, index, arr) {
       let dom_data, dom_data_ref;
       dom_data = _thumbnail__WEBPACK_IMPORTED_MODULE_1__.MgThumbnail.get_data_from_dom(dom_page_item);
@@ -20515,12 +20524,17 @@ class MgThumbnailList extends _lister__WEBPACK_IMPORTED_MODULE_2__.MgLister {
         return;
       }
 
+      if (dom_data['ocr_status'] == 'unknown') {
+        page_ocr_unknown_statuses.push(dom_data['page_id']);
+      }
+
       thumb = new _thumbnail__WEBPACK_IMPORTED_MODULE_1__.MgThumbnail(dom_page_item, dom_data_ref, dom_data['doc_id'], dom_data['page_id'], dom_data['page_num']);
       thumb.subscribe(_thumbnail__WEBPACK_IMPORTED_MODULE_1__.MgThumbnail.MOVE_UP, that.on_thumb_move_up, that);
       thumb.subscribe(_thumbnail__WEBPACK_IMPORTED_MODULE_1__.MgThumbnail.MOVE_DOWN, that.on_thumb_move_down, that);
 
       that._list.push(thumb);
     });
+    this.led_page_status.pull(page_ocr_unknown_statuses);
   }
 
   _config_events() {
@@ -20541,7 +20555,7 @@ class MgThumbnailList extends _lister__WEBPACK_IMPORTED_MODULE_2__.MgLister {
       // if there is at least one thumbnail
       first_thumb = this._list[0];
       console.log("page selection triggered");
-      _models_dispatcher__WEBPACK_IMPORTED_MODULE_3__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_3__.PAGE_SELECTION_CHANGED, first_thumb.page_id, first_thumb.doc_id);
+      _models_dispatcher__WEBPACK_IMPORTED_MODULE_4__.mg_dispatcher.trigger(_models_dispatcher__WEBPACK_IMPORTED_MODULE_4__.PAGE_SELECTION_CHANGED, first_thumb.page_id, first_thumb.doc_id);
     }
   }
 
@@ -25336,9 +25350,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _models_document__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../models/document */ "./src/js/models/document.js");
 /* harmony import */ var _views_message__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../views/message */ "./src/js/views/message.js");
 /* harmony import */ var _views_page_ocred_text_view__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../views/page_ocred_text_view */ "./src/js/views/page_ocred_text_view.js");
-/* harmony import */ var led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! led_status/src/js/led_status */ "../Organizations/papermerge/LEDStatus/src/js/led_status.js");
-/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
-
+/* harmony import */ var _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../models/dispatcher */ "./src/js/models/dispatcher.js");
 
 
 
@@ -25447,7 +25459,6 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
     this._actions = this.build_actions();
     this._breadcrumb_view = new _views_breadcrumb__WEBPACK_IMPORTED_MODULE_15__.BreadcrumbView(document_id);
     this._loaded_page_imgs = 0;
-    this.led_page_status = new led_status_src_js_led_status__WEBPACK_IMPORTED_MODULE_21__.LEDPageStatus();
 
     if (dom_actual_pages) {
       new _document_form_page_scroll__WEBPACK_IMPORTED_MODULE_6__.DgPageScroll(dom_actual_pages);
@@ -25457,7 +25468,7 @@ class DocumentView extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
 
     this._adjust_viewer_height();
 
-    _models_dispatcher__WEBPACK_IMPORTED_MODULE_22__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_22__.DOCUMENT_IMAGE_LOADED, this.on_document_image_loaded, this);
+    _models_dispatcher__WEBPACK_IMPORTED_MODULE_21__.mg_dispatcher.on(_models_dispatcher__WEBPACK_IMPORTED_MODULE_21__.DOCUMENT_IMAGE_LOADED, this.on_document_image_loaded, this);
   }
 
   get actions() {

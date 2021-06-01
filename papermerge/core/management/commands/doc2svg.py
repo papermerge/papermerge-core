@@ -23,16 +23,40 @@ class Command(BaseCommand):
             default='deu',
             help="Language to OCR"
         )
+        parser.add_argument(
+            '--output-dir',
+            help="Folder where to write generated files"
+        )
+        parser.add_argument(
+            '--output-format',
+            help="Format of generated output",
+            choices=["html", "svg"],
+            default="svg"
+        )
+        parser.add_argument(
+            '-k',
+            '--keep-temporary-files',
+            action='store_true',
+            help="Keep temporary files"
+        )
 
     def handle(self, *args, **options):
         document = options['document']
+        output_dir = options['output_dir']
+        output_format = options['output_format']
         lang = options['lang']
+        keep = options['keep_temporary_files']
         output_document = f"{document.split('.')[0]}_output.pdf"
 
         ocrmypdf.ocr(
             document,
             output_document,
             lang=lang,
-            progress_bar=False,
-            pdf_renderer='hocr'
+            plugins=["ocrmypdf_papermerge.custom_engine"],
+            progress_bar=True,
+            pdf_renderer='hocr',
+            use_threads=True,
+            keep_temporary_files=keep,
+            output_dir=output_dir,
+            output_format=output_format
         )

@@ -6,7 +6,7 @@ from celery import Celery
 from celery.apps.worker import Worker as CeleryWorker
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
+from papermerge.core.app_settings import settings
 from papermerge.core.models import Document, BaseTreeNode
 from papermerge.core.importers.imap import import_attachment
 from papermerge.core.importers.local import import_documents
@@ -78,13 +78,13 @@ def import_from_email():
 
     logger.debug("Celery beat: import_from_email")
 
-    imap_server = settings.PAPERMERGE_IMPORT_MAIL_HOST
-    username = settings.PAPERMERGE_IMPORT_MAIL_USER
-    password = settings.PAPERMERGE_IMPORT_MAIL_PASS
-    delete = settings.PAPERMERGE_IMPORT_MAIL_DELETE
-    by_user = settings.PAPERMERGE_IMPORT_MAIL_BY_USER
-    by_secret = settings.PAPERMERGE_IMPORT_MAIL_BY_SECRET
-    inbox_name = settings.PAPERMERGE_IMPORT_MAIL_INBOX
+    imap_server = settings.IMPORT_MAIL_HOST
+    username = settings.IMPORT_MAIL_USER
+    password = settings.IMPORT_MAIL_PASS
+    delete = settings.IMPORT_MAIL_DELETE
+    by_user = settings.IMPORT_MAIL_BY_USER
+    by_secret = settings.IMPORT_MAIL_BY_SECRET
+    inbox_name = settings.IMPORT_MAIL_INBOX
 
     import_attachment(
         imap_server=imap_server,
@@ -103,7 +103,7 @@ def import_from_local_folder():
     Import documents from defined local folder
     """
     logger.debug("Celery beat: import_from_local_folder")
-    import_documents(settings.PAPERMERGE_IMPORTER_DIR)
+    import_documents(settings.IMPORTER_DIR)
 
 
 def _include_txt2db_task(celery_app_instance, schedule):
@@ -128,9 +128,9 @@ def _include_rebuid_tree_task(celery_app_instance, schedule):
 
 def _include_local_dir_task(celery_app_instance):
     imp_dir_exists = None
-    imp_dir = settings.PAPERMERGE_IMPORTER_DIR
-    if settings.PAPERMERGE_IMPORTER_DIR:
-        imp_dir_exists = os.path.exists(settings.PAPERMERGE_IMPORTER_DIR)
+    imp_dir = settings.IMPORTER_DIR
+    if settings.IMPORTER_DIR:
+        imp_dir_exists = os.path.exists(settings.IMPORTER_DIR)
 
     if imp_dir and imp_dir_exists:
         celery_app_instance.add_periodic_task(
@@ -153,8 +153,8 @@ def _include_local_dir_task(celery_app_instance):
 
 
 def _include_imap_import_task(celery_app_instance):
-    mail_user = settings.PAPERMERGE_IMPORT_MAIL_USER
-    mail_host = settings.PAPERMERGE_IMPORT_MAIL_HOST
+    mail_user = settings.IMPORT_MAIL_USER
+    mail_host = settings.IMPORT_MAIL_HOST
 
     if mail_user and mail_host:
         celery_app_instance.add_periodic_task(

@@ -188,5 +188,12 @@ class AppSettings():
             False
         )
 
+    @property
+    def IMPORTER_DIR(self):
+        return self._settings(
+            "IMPORTER_DIR",
+            None
+        )
+
 
 settings = AppSettings(prefix="PAPERMERGE")

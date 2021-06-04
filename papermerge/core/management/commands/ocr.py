@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = """
-    Convert given a document (pdf, jpg, png or tiff) to a bunch
-    of svg files (one svg file per document's page).
+    Runs OCRmyPDF on a given a document (pdf, jpg, png or tiff).
+    Creates associated svg, hocr and jpeg preview files.
     """
 
     def add_arguments(self, parser):
@@ -34,6 +34,12 @@ class Command(BaseCommand):
             default="svg"
         )
         parser.add_argument(
+            '--preview-width',
+            help="Base width of preview image",
+            type=int,
+            default=400
+        )
+        parser.add_argument(
             '-k',
             '--keep-temporary-files',
             action='store_true',
@@ -47,16 +53,18 @@ class Command(BaseCommand):
         lang = options['lang']
         keep = options['keep_temporary_files']
         output_document = f"{document.split('.')[0]}_output.pdf"
+        preview_width = options['preview_width']
 
         ocrmypdf.ocr(
             document,
             output_document,
             lang=lang,
-            plugins=["ocrmypdf_papermerge.custom_engine"],
+            plugins=["ocrmypdf_papermerge.plugin"],
             progress_bar=True,
             pdf_renderer='hocr',
             use_threads=True,
             keep_temporary_files=keep,
             output_dir=output_dir,
-            output_format=output_format
+            output_format=output_format,
+            preview_width=preview_width
         )

@@ -20,7 +20,7 @@ from papermerge.core.models import (
 )
 from papermerge.core.storage import default_storage
 from papermerge.core.utils import remove_backup_filename_id
-from papermerge.core.tasks import ocr_page
+from papermerge.core.tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -219,14 +219,12 @@ def restore_documents(
                 )
 
             if not skip_ocr:
-                for page_num in range(1, page_count + 1):
-                    ocr_page.apply_async(kwargs={
-                        'user_id': _user.id,
-                        'document_id': new_doc.id,
-                        'file_name': new_doc.file_name,
-                        'page_num': page_num,
-                        'lang': document_info['lang']}
-                    )
+                ocr_document_task.apply_async(kwargs={
+                    'user_id': _user.id,
+                    'document_id': new_doc.id,
+                    'file_name': new_doc.file_name,
+                    'lang': document_info['lang']}
+                )
 
 
 def build_tar_archive(

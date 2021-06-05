@@ -1,7 +1,7 @@
 import logging
 
 from celery import shared_task
-from papermerge.core.ocr.page import ocr_page as main_ocr_page
+from papermerge.core.ocr.document import ocr_document
 from papermerge.core.ocr import (
     COMPLETE,
     STARTED
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True)
-def ocr_page(
+def ocr_document_task(
     self,
     user_id,
     document_id,
@@ -32,13 +32,12 @@ def ocr_page(
     logger.info(f"task_id={self.request.id}")
 
     # Inform everybody interested that OCR started
-    signals.page_ocr.send(
+    signals.document_ocr.send(
         sender='worker',
         level=logging.INFO,
         message="",
         user_id=user_id,
         document_id=document_id,
-        page_num=page_num,
         lang=lang,
         namespace=namespace,
         version=version,
@@ -47,11 +46,10 @@ def ocr_page(
 
     with Timer() as time:
 
-        main_ocr_page(
+        ocr_document(
             user_id=user_id,
             document_id=document_id,
             file_name=file_name,
-            page_num=page_num,
             lang=lang,
             namespace=namespace,
             version=version
@@ -59,13 +57,12 @@ def ocr_page(
 
     # Inform everybody interested that OCR completed/ended
     msg = f"Ocr took {time} seconds to complete."
-    signals.page_ocr.send(
+    signals.document_ocr.send(
         sender='worker',
         level=logging.INFO,
         message=msg,
         user_id=user_id,
         document_id=document_id,
-        page_num=page_num,
         lang=lang,
         namespace=namespace,
         version=version,

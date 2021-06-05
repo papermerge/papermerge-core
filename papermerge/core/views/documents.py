@@ -38,7 +38,7 @@ from papermerge.core.models import (
 from papermerge.core.utils import filter_node_id
 from papermerge.core import signal_definitions as signals
 from papermerge.core.import_pipeline import WEB, go_through_pipelines
-from papermerge.core.tasks import ocr_page
+from papermerge.core.tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -657,16 +657,14 @@ def run_ocr_view(request):
             src=doc.path(version=old_version),
             dst=doc.path(version=new_version)
         )
-        for page_num in range(1, doc.page_count + 1):
-            ocr_page.apply_async(kwargs={
-                'user_id': doc.user.id,
-                'document_id': doc.id,
-                'file_name': doc.file_name,
-                'page_num': page_num,
-                'lang': new_lang,
-                'namespace': getattr(default_storage, 'namespace', None),
-                'version': new_version
-            })
+        ocr_document_task.apply_async(kwargs={
+            'user_id': doc.user.id,
+            'document_id': doc.id,
+            'file_name': doc.file_name,
+            'lang': new_lang,
+            'namespace': getattr(default_storage, 'namespace', None),
+            'version': new_version
+        })
 
         doc.lang = new_lang
         doc.version = new_version

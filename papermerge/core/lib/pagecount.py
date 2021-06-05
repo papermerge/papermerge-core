@@ -4,6 +4,8 @@ import subprocess
 import logging
 from magic import from_file
 
+import pikepdf
+
 from ..app_settings import settings
 from ..exceptions import FileTypeNotSupported
 
@@ -116,39 +118,12 @@ def get_pagecount(filepath: str) -> int:
                 "Only jpeg, png, pdf and tiff are handled by this"
                 " method"
             )
-    # pdfinfo "${PDFFILE}" | grep Pages
-    cmd = [
-        settings.BINARY_PDFINFO,
-        filepath
-    ]
-    compl = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
 
-    if compl.returncode:
+    count = 0
+    with pikepdf.Pdf.open(filepath) as pdf:
+        count = len(pdf.pages)
 
-        logger.error(
-            "get_pagecount: cmd=%s args=%s stdout=%s stderr=%s code=%s",
-            cmd,
-            compl.args,
-            compl.stdout,
-            compl.stderr,
-            compl.returncode,
-            stack_info=True
-        )
-
-        raise Exception("Error occured while getting document page count.")
-
-    lines = _split(stdout=compl.stdout)
-    # look up for the line containing "Pages: 11"
-    for line in lines:
-        x = re.match(r"Pages:\W+(\d+)$", line.strip())
-        if x:
-            return int(x.group(1))
-
-    return 0
+    return count
 
 
 __all__ = [

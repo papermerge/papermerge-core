@@ -7,7 +7,7 @@ SUPPORTED_EXTENTIONS = re.compile(".*(jpeg|jpg|png|tiff|pdf)$", re.IGNORECASE)
 logger = logging.getLogger(__name__)
 
 AUX_DIR_DOCS = "docs"
-AUX_DIR_RESULTS = "results"
+AUX_DIR_SIDECARS = "sidecars"
 
 
 def filter_by_extention(
@@ -82,11 +82,13 @@ class DocumentPath:
 
         return _path
 
-    @property
-    def dirname_results(self):
+    def dirname_sidecars(self, version=None):
+        if version is None:
+            version = self.version
+
         _path = (
-            f"{AUX_DIR_RESULTS}/user_{self.user_id}/"
-            f"document_{self.document_id}/"
+            f"{AUX_DIR_SIDECARS}/user_{self.user_id}/"
+            f"document_{self.document_id}/{self.version}/pages/"
         )
 
         return _path

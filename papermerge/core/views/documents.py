@@ -20,12 +20,10 @@ from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
 
-from papermerge.core.lib.pagecount import get_pagecount
 from mglib.step import Step
 from papermerge.core.lib.shortcuts import extract_img
 
 from papermerge.core.storage import default_storage
-from papermerge.core.lib.hocr import Hocr
 from .decorators import json_response, require_PERM
 
 from papermerge.core.models import (

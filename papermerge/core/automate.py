@@ -2,7 +2,6 @@ import logging
 
 from django.utils.translation import gettext as _
 
-from .lib.step import Step
 from .lib.path import PagePath, DocumentPath
 from .lib.pagecount import get_pagecount
 from .models import Document, Automate
@@ -34,7 +33,6 @@ def apply_automates(document_id, page_num, **kwargs):
         document_path=doc_path,
         page_num=page_num,
         page_count=page_count,
-        step=Step(),
     )
     user = document.user
 

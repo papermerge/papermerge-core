@@ -24,11 +24,11 @@ class Command(BaseCommand):
             help="Language to OCR"
         )
         parser.add_argument(
-            '--output-dir',
+            '--sidecar-dir',
             help="Folder where to write generated files"
         )
         parser.add_argument(
-            '--output-format',
+            '--sidecar-format',
             help="Format of generated output",
             choices=["html", "svg"],
             default="svg"
@@ -48,8 +48,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         document = options['document']
-        output_dir = options['output_dir']
-        output_format = options['output_format']
+        sidecar_dir = options['sidecar_dir']
+        sidecar_format = options['sidecar_format']
         lang = options['lang']
         keep = options['keep_temporary_files']
         output_document = f"{document.split('.')[0]}_output.pdf"
@@ -64,7 +64,7 @@ class Command(BaseCommand):
             pdf_renderer='hocr',
             use_threads=True,
             keep_temporary_files=keep,
-            output_dir=output_dir,
-            output_format=output_format,
+            sidecar_dir=sidecar_dir,
+            sidecar_format=sidecar_format,
             preview_width=preview_width
         )

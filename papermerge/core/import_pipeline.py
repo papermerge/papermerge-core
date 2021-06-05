@@ -17,9 +17,6 @@ from papermerge.core.models import (
 )
 from papermerge.core.storage import default_storage
 from papermerge.core.tasks import ocr_document_task
-from papermerge.core import signal_definitions as signals
-from papermerge.core.ocr import COMPLETE, STARTED
-from papermerge.core.utils import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -155,55 +152,6 @@ class DefaultPipeline:
     def page_count(self):
         return get_pagecount(self.path)
 
-    def _ocr_document(
-        self,
-        document,
-        page_count,
-        lang
-    ):
-        user_id = document.user.id
-        document_id = document.id
-        file_name = document.file_name
-
-        logger.debug(
-            f"{self.processor} importer: "
-            f"document {document_id} has {page_count} pages."
-        )
-        for page_num in range(1, page_count + 1):
-            #signals.page_ocr.send(
-            #    sender='worker',
-            #    level=logging.INFO,
-            #    message="",
-            #    user_id=user_id,
-            #    document_id=document_id,
-            #    page_num=page_num,
-            #    lang=lang,
-            #    status=STARTED
-            #)
-
-            with Timer() as time:
-                ocr_document_task(
-                    user_id=user_id,
-                    document_id=document_id,
-                    file_name=file_name,
-                    lang=lang,
-                )
-
-            msg = "{} importer: OCR took {} seconds to complete.".format(
-                self.processor,
-                time
-            )
-            #signals.page_ocr.send(
-            #    sender='worker',
-            #    level=logging.INFO,
-            #    message=msg,
-            #    user_id=user_id,
-            #    document_id=document_id,
-            #    page_num=page_num,
-            #    lang=lang,
-            #    status=COMPLETE
-            #)
-
     def get_init_kwargs(self):
         """Propagates keyword arguments to use in the init method
         of donwstream pipelines. Should be overwritten by inheriting
@@ -269,6 +217,8 @@ class DefaultPipeline:
             name = basename(self.path)
         page_count = self.page_count()
         size = getsize(self.path)
+        version = 0
+        target_version = 1
 
         if create_document and self.doc is None:
             try:
@@ -288,7 +238,9 @@ class DefaultPipeline:
                 raise error
         elif self.doc is not None:
             doc = self.doc
-            doc.version = doc.version + 1
+            version = doc.version
+            target_version = doc.version + 1
+            doc.version = target_version
             doc.page_count = page_count
             doc.file_name = name
             doc.size = size
@@ -307,22 +259,17 @@ class DefaultPipeline:
                 doc_path_url=doc.path().url()
             )
 
-            if apply_async:
-                if namespace is None:
-                    namespace = ''
-                ocr_document_task.apply_async(kwargs={
-                    'user_id': user.id,
-                    'document_id': doc.id,
-                    'file_name': name,
-                    'lang': lang,
-                    'namespace': namespace
-                })
-            else:
-                self._ocr_document(
-                    document=doc,
-                    page_count=page_count,
-                    lang=lang,
-                )
+            if namespace is None:
+                namespace = ''
+            ocr_document_task.apply_async(kwargs={
+                'user_id': user.id,
+                'document_id': doc.id,
+                'file_name': name,
+                'lang': lang,
+                'namespace': namespace,
+                'version': version,
+                'target_version': target_version
+            })
 
         logger.debug(f"{self.processor} importer: import complete.")
         return doc

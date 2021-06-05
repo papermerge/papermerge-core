@@ -16,7 +16,7 @@ from papermerge.core.models import (
     Folder, Document, User
 )
 from papermerge.core.storage import default_storage
-from papermerge.core.tasks import ocr_document
+from papermerge.core.tasks import ocr_document_task
 from papermerge.core import signal_definitions as signals
 from papermerge.core.ocr import COMPLETE, STARTED
 from papermerge.core.utils import Timer
@@ -182,7 +182,7 @@ class DefaultPipeline:
             #)
 
             with Timer() as time:
-                ocr_document(
+                ocr_document_task(
                     user_id=user_id,
                     document_id=document_id,
                     file_name=file_name,
@@ -240,8 +240,7 @@ class DefaultPipeline:
         **kwargs
     ):
         """
-        Apply the pipeline. The document is created or modified here.  This
-method is not supposed to throw errors.
+        Apply the pipeline. The document is created or modified here.
 
         Arguments:
         - user (User, optional): document owner.
@@ -311,7 +310,7 @@ method is not supposed to throw errors.
             if apply_async:
                 if namespace is None:
                     namespace = ''
-                ocr_document.apply_async(kwargs={
+                ocr_document_task.apply_async(kwargs={
                     'user_id': user.id,
                     'document_id': doc.id,
                     'file_name': name,

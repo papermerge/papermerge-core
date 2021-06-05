@@ -25,11 +25,6 @@ document_patterns = [
         name="preview"
     ),
     path(
-        '<int:id>/hocr/<int:step>/page/<int:page>',
-        doc_views.hocr,
-        name="hocr"
-    ),
-    path(
         '<int:id>/<int:document_version>/text/page/<int:page_number>',
         doc_views.text_view,
         name="text_view"

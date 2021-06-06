@@ -27383,7 +27383,8 @@ class SingleNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
         owner,
         created_at,
         updated_at,
-        download_url;
+        download_v0_url,
+        download_v1_url;
 
     ctype = this.node.get('ctype');
     _id = this.node.get('id');
@@ -27392,7 +27393,8 @@ class SingleNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
     updated_at = this.node.get('updated_at');
     owner = this.node.get('owner');
     tags = this.node.get('tags');
-    download_url = `/node/${_id}/download/`;
+    download_v0_url = `/node/v0/${_id}/download/`;
+    download_v1_url = `/node/v1/${_id}/download/`;
     context['id'] = _id;
     context['title'] = title;
     context['ctype'] = ctype;
@@ -27400,7 +27402,8 @@ class SingleNodeInfoWidget extends backbone__WEBPACK_IMPORTED_MODULE_2__.View {
     context['created_at'] = created_at;
     context['updated_at'] = updated_at;
     context['tags'] = tags;
-    context['download_url'] = download_url;
+    context['download_v0_url'] = download_v0_url;
+    content['download_v1_url'] = download_v1_url;
     return this.template(context);
   }
 
@@ -45313,11 +45316,17 @@ __p+='\n                        <div style="background: '+
  } 
 __p+='\n                    </div>\n                </li>\n            ';
  } 
-__p+='\n            <li class="collection-item d-flex flex-row-reverse bordered">\n                <a href="'+
-((__t=( download_url ))==null?'':__t)+
-'" class="btn btn-primary text-white btn-flat">\n                    <i class="fa fa-download"></i>\n                    '+
-((__t=( gettext('Download') ))==null?'':__t)+
-'</a>\n            </li>\n        </ul>\n      </div> \n    </div>\n</div>';
+__p+='\n            <li class="collection-item d-flex flex-row-reverse bordered">\n                <div class="dropdown">\n                    <button class="btn btn-flat btn-primary text-white download dropdown-toggle" type="button" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">\n                       <i class="fa fa-download mx-1"></i>'+
+((__t=( gettext("Download") ))==null?'':__t)+
+'\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li>\n                            <a href="'+
+((__t=( download_v0_url ))==null?'':__t)+
+'" class="dropdown-item">\n                                '+
+((__t=( gettext('v0 - Original') ))==null?'':__t)+
+'</a>\n                        </li>\n                        <li>\n                            <a href="'+
+((__t=( download_v1_url ))==null?'':__t)+
+'" class="dropdown-item">\n                                '+
+((__t=( gettext('v1 - Searchable PDF') ))==null?'':__t)+
+'</a>\n                        </li>\n\n                    </ul>\n                </div>\n            </li>\n        </ul>\n      </div> \n    </div>\n</div>';
 }
 return __p;
 };

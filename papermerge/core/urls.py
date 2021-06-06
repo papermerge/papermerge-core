@@ -54,6 +54,11 @@ urlpatterns = [
     # Node can be a document or a folder
     # Downloading entire folder by selecting it - makes perfect sense
     path(
+        'node/v<int:version>/<int:id>/download/',
+        node_views.node_download,
+        name="node_versioned_download"
+    ),
+    path(
         'node/<int:id>/download/',
         node_views.node_download,
         name="node_download"

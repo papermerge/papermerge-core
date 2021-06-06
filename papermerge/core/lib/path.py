@@ -88,7 +88,7 @@ class DocumentPath:
 
         _path = (
             f"{AUX_DIR_SIDECARS}/user_{self.user_id}/"
-            f"document_{self.document_id}/{self.version}/pages/"
+            f"document_{self.document_id}/v{self.version}/pages/"
         )
 
         return _path

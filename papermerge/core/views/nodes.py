@@ -1,6 +1,8 @@
 import json
 import logging
 
+import magic
+
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -19,8 +21,6 @@ from django.utils.translation import gettext as _
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
-
-from mglib import mime
 
 from papermerge.core.models import (
     BaseTreeNode,
@@ -436,15 +436,13 @@ def nodes_view(request):
 
 
 @login_required
-def node_download(request, id):
+def node_download(request, id, version=0):
     """
     Any user with read permission on the node must be
     able to download it.
 
     Node is either documennt or a folder.
     """
-    version = request.GET.get('version', None)
-
     try:
         node = BaseTreeNode.objects.get(id=id)
     except BaseTreeNode.DoesNotExist:
@@ -456,7 +454,7 @@ def node_download(request, id):
             file_abs_path = default_storage.abspath(
                 node.path().url(version=version)
             )
-            mime_type = mime.Mime(file_abs_path)
+            mime_type = magic.from_file(file_abs_path, mime=True)
             try:
                 file_handle = open(file_abs_path, "rb")
             except OSError:
@@ -467,7 +465,7 @@ def node_download(request, id):
 
             resp = HttpResponse(
                 file_handle.read(),
-                content_type=mime_type.guess()
+                content_type=mime_type
             )
             disposition = "attachment; filename=%s" % node.title
             resp['Content-Disposition'] = disposition

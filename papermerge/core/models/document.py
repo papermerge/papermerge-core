@@ -420,6 +420,7 @@ class Document(BaseTreeNode):
 
         item['id'] = self.id
         item['title'] = self.title
+        item['model'] = 'document'
         item['ocr_status'] = self.get_ocr_status()
         item['notes'] = self.notes
         item['owner'] = self.user.username

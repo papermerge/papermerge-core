@@ -42,8 +42,16 @@ urlpatterns = [
     path(
         'document/', include(document_patterns)
     ),
-    path('browse/', node_views.browse_view, name="browse"),
-    path('browse/<int:parent_id>/', node_views.browse_view, name="browse"),
+    path(
+        'browser/folder/',
+        node_views.browse_folder_view,
+        name="browse_folder"
+    ),
+    path(
+        'browser/folder/<int:node_id>/',
+        node_views.browse_folder_view,
+        name="browse_folder"
+    ),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',

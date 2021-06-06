@@ -196,11 +196,11 @@ def _get_nodes_perms(user, parent_id, nodes) -> dict:
 @json_response
 @login_required
 @require_GET
-def browse_view(request, parent_id=None):
+def browse_folder_view(request, node_id=None):
     """
-    GET /browse/
-    GET /browse/<int:parent_id>
-    reverse('core:browse')
+    GET /browse/folder/
+    GET /browse/folder/<int:parent_id>
+    reverse('core:browse_folder')
 
     Returns json string of nodes which current user can read:
 
@@ -208,7 +208,7 @@ def browse_view(request, parent_id=None):
         * paginated
         * ordered by title, date, type (optionally)
     """
-    nodes = BaseTreeNode.objects.filter(parent_id=parent_id).exclude(
+    nodes = BaseTreeNode.objects.filter(parent_id=node_id).exclude(
         title=Folder.INBOX_NAME
     )
 
@@ -216,8 +216,8 @@ def browse_view(request, parent_id=None):
     nodes = _order_by(nodes, request.GET)
 
     nodes_list = []
-    nodes_perms_key = _get_nodes_perms_key(request.user, parent_id)
-    nodes_perms = _get_nodes_perms(request.user, parent_id, nodes)
+    nodes_perms_key = _get_nodes_perms_key(request.user, node_id)
+    nodes_perms = _get_nodes_perms(request.user, node_id, nodes)
 
     readable_nodes = []
 
@@ -255,23 +255,13 @@ def browse_view(request, parent_id=None):
 
         node_dict['user_perms'] = nodes_perms[node.id]
 
-        if node.is_document():
-            node_dict['img_src'] = reverse(
-                'core:preview',
-                args=(node.id, 4, 1)
-            )
-            node_dict['document_url'] = reverse(
-                'core:document',
-                args=(node.id,)
-            )
-
         nodes_list.append(node_dict)
         cache.set(node_dict_key, node_dict)
 
     return {
-        'nodes': nodes_list,
-        'parent_id': parent_id,
-        'parent_kv': _get_node_kv(parent_id),
+        'current_nodes': nodes_list,
+        'parent_id': node_id,
+        'parent_kv': _get_node_kv(node_id),
         'pagination': _get_pagination_dict(
             paginator=paginator,
             page_number=page_number

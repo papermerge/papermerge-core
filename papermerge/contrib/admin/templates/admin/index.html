@@ -15,6 +15,8 @@
   animated-opacity
 {% endblock %}
 
+{% block main_col %} col-sm-12 col-md-12 col-lg-12 main-col {% endblock %}
+
 {% block animated_opacity_main_sidebar %}
   animated-opacity
 {% endblock %}
@@ -52,6 +54,9 @@
            </button>
        </li>
      {% endif %}
+     <li class='mx-1'>
+      {% ocr_language_select user %}</div>
+    </li>
   </ul>
   </div> <!-- #actions -->
   <div id="display-mode" class="d-flex flex-row  align-items-center">
@@ -73,7 +78,7 @@
 {% endblock document_browser %}
 
 {% block content %}
-  <div class="container-fluid pl-0 xmain-browser-row">
+  <div class="container-fluid pl-0 d-flex flex-row">
       <div class="col-6" id="panel_left">
       </div>
       <div class="col-6" id="panel_right">
@@ -155,22 +160,4 @@
        <a><i class="fa fa-times mx-2 "></i>{% trans "Delete" %}</a>
    </li>
   </ul>
-{% endblock %}
-
-{% block widgetsbar %}
-  <div class="card">
-    <div class="card-body">
-      <ul class="collection">
-        <li class="collection-item">
-          <label>{% trans "OCR Language" %}</label>
-          {% ocr_language_select user %}
-        </li>
-      </ul>
-    </div>
-  </div>
-  <!-- client managed -->
-  <div id="widgetsbar">
-
-  </div>
-
 {% endblock %}

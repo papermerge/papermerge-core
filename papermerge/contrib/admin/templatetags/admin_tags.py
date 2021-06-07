@@ -96,7 +96,7 @@ def ocr_language_select(user):
 
         lang = {}
         lang['tsr_code'] = key
-        lang['human'] = value.capitalize()
+        lang['human'] = f"{value.capitalize()} OCR"
         if user.preferences['ocr__OCR_Language'] == key:
             lang['selected'] = 'selected'
         else:

@@ -10,17 +10,7 @@ from .views import automates as automate_views
 
 document_patterns = [
     path(
-        '<int:doc_id>/',
-        doc_views.document,
-        name="document"
-    ),
-    path(
         '<int:id>/preview/page/<int:page>',
-        doc_views.preview,
-        name="preview"
-    ),
-    path(
-        '<int:id>/preview/<int:step>/page/<int:page>',
         doc_views.preview,
         name="preview"
     ),
@@ -40,16 +30,23 @@ app_name = 'core'
 
 urlpatterns = [
     path(
-        'document/', include(document_patterns)
+        'viewer/document/<int:doc_id>/',
+        doc_views.document_view,
+        name="document"
+    ),
+    path(
+        'viewer/document/<int:doc_id>/page/<int:page_num>/',
+        doc_views.page_view,
+        name="page"
     ),
     path(
         'browser/folder/',
-        node_views.browse_folder_view,
+        node_views.browser_folder_view,
         name="browse_folder"
     ),
     path(
         'browser/folder/<int:node_id>/',
-        node_views.browse_folder_view,
+        node_views.browser_folder_view,
         name="browse_folder"
     ),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),

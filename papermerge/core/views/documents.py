@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import login_required
 
 from mglib.step import Step
 from papermerge.core.lib.shortcuts import extract_img
+from papermerge.core.lib.pagecount import get_pagecount
 
 from papermerge.core.storage import default_storage
 from .decorators import json_response, require_PERM
@@ -42,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def document(request, doc_id):
+def document_view(request, doc_id):
     try:
         doc = Document.objects.get(id=doc_id)
     except Document.DoesNotExist:
@@ -65,7 +66,7 @@ def document(request, doc_id):
         } for page_num in range(1, doc.get_pagecount(version=version) + 1)]
 
     # request.is_ajax is repricated since Django 3.1
-    if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
+    if request.content_type != 'application/json':
         if request.user.has_perm(Access.PERM_READ, doc):
             if not doc.is_latest_version(version):
                 messages.info(
@@ -154,6 +155,47 @@ def document(request, doc_id):
     response['Vary'] = 'Accept'
 
     return response
+
+
+@login_required
+def page_view(request, doc_id, page_num):
+
+    try:
+        doc = Document.objects.get(id=doc_id)
+    except Document.DoesNotExist:
+        raise Http404("Document does not exists")
+
+    version = request.GET.get('version', 1)
+    doc_path = doc.path(version=version)
+
+    if request.user.has_perm(Access.PERM_READ, doc):
+        # document absolute path
+        doc_abs_path = default_storage.abspath(doc_path.url())
+        if not os.path.exists(
+            doc_abs_path
+        ):
+            raise Http404("SVG data not yet ready")
+
+        page_count = get_pagecount(doc_abs_path)
+        if page_num > page_count or page_num < 0:
+            raise Http404("Page does not exists")
+
+        page_path = doc.get_page_path(page_num=page_num, version=version)
+        svg_abs_path = default_storage.abspath(page_path.svg_url())
+
+        if not os.path.exists(svg_abs_path):
+            raise Http404("SVG data not yet ready")
+
+        svg_text = ""
+        with open(svg_abs_path, "r") as f:
+            svg_text = f.read()
+
+        return HttpResponse(
+            svg_text,
+            content_type="image/svg",
+        )
+
+    return HttpResponseForbidden()
 
 
 @json_response

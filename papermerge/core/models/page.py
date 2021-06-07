@@ -110,7 +110,7 @@ class Page(models.Model, index.Indexed):
         item = {}
         item['id'] = self.id
         item['ocr_status'] = self.get_ocr_status()
-        item['number'] = self.number
+        item['page_num'] = self.number
         item['kvstore'] = [item.to_dict() for item in self.kv.all()]
 
         return item

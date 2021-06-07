@@ -12,8 +12,8 @@ from polymorphic_tree.managers import (
 )
 
 from mglib import step
-from mglib.path import DocumentPath, PagePath
-from mglib.pdfinfo import get_pagecount
+from papermerge.core.lib.path import DocumentPath, PagePath
+from papermerge.core.lib.pagecount import get_pagecount
 from mglib.utils import get_assigns_after_delete
 
 from papermerge.contrib.admin.registries import sidebar
@@ -901,21 +901,16 @@ class Document(BaseTreeNode):
             page_path = PagePath(
                 document_path=self.path(version=version),
                 page_num=page_num,
-                step=step.Step(1),
                 page_count=self.get_pagecount(version=version)
             )
             results.append(page_path)
 
         return results
 
-    def get_page_path(self, page_num, step, version=None):
-        """
-        For Step(1) shortcut, use doc_instance.page_eps property.
-        """
+    def get_page_path(self, page_num, version=None):
         return PagePath(
             document_path=self.path(version=version),
             page_num=page_num,
-            step=step,
             page_count=self.page_count
         )
 

@@ -163,7 +163,6 @@ class PagePath:
         document_path,
         page_num,
         page_count,
-        step=None
     ):
         if not isinstance(page_num, int):
             msg_err = f"PagePath.page_num must be an int. Got {page_num}."
@@ -172,11 +171,10 @@ class PagePath:
         self.document_path = document_path
         self.results_document_ep = DocumentPath.copy_from(
             document_path,
-            aux_dir=AUX_DIR_RESULTS
+            aux_dir=AUX_DIR_SIDECARS
         )
         self.page_count = page_count
         self.page_num = page_num
-        self.step = step
         self.pages = self.document_path.pages
 
     @property
@@ -184,7 +182,7 @@ class PagePath:
         # returns schema://.../<doc_id>/pages/<page_num>/<step>/page
         pages_dirname = self.results_document_ep.pages_dirname()
         result = (
-            f"{pages_dirname}page_{self.page_num}/"
+            f"{pages_dirname}/{self.page_num}/"
             f"{self.step.percent}/page"
         )
         return result
@@ -209,11 +207,13 @@ class PagePath:
         return f"{pages_dirname}page_{self.page_num}.txt"
 
     @property
-    def hocr_path(self):
-        return self.hocr_url()
+    def svg_path(self):
+        return self.svg_url()
 
-    def hocr_url(self):
-        url = f"{self.ppmroot}-{self.ppmtopdf_formated_number}.hocr"
+    def svg_url(self):
+        dirname = self.results_document_ep.pages_dirname()
+        number = f"{self.page_num:06d}"
+        url = f"{dirname}/{number}/{number}_ocr.svg"
         return url
 
     @property

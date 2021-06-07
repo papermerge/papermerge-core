@@ -162,7 +162,7 @@
         <div class="row no-gutters">
           <div class="{% block main_col %} col-sm-12 col-md-9 col-lg-9 main-col {% endblock %}">
             <div class="card card-browser {% block document_browser %}{% endblock %}">
-              <div class="card-body xmain">
+              <div>
                 {% block actions %}
                   <!-- The most important action buttons here e.g. "New"
                   -->
@@ -181,7 +181,6 @@
         </div>
       </div>
       <!-- /.content -->
-      
     </div>
     <!-- /.content-wrapper -->
     <div id="uploader-view"></div>
@@ -207,7 +206,7 @@
   {% else %}
     <script src="{% static 'admin/js/papermerge.js' %}"></script>
   {% endif %}
-  
+
   <script src="{% url 'javascript-catalog' %}"></script>
 
   <script>

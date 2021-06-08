@@ -161,15 +161,13 @@
         {% include "admin/_messages.html" %}
         <div class="row no-gutters">
           <div class="{% block main_col %} col-sm-12 col-md-9 col-lg-9 main-col {% endblock %}">
-            <div class="card card-browser {% block document_browser %}{% endblock %}">
-              <div>
+            <div class="{% block document_browser %}{% endblock %}">
                 {% block actions %}
                   <!-- The most important action buttons here e.g. "New"
                   -->
                 {% endblock %}
                 {% block content %}
                 {% endblock %}
-              </div>
             </div>
           </div>
           {% block widgetsbar_wrapper %}

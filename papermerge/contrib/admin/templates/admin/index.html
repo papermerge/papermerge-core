@@ -15,7 +15,7 @@
   animated-opacity
 {% endblock %}
 
-{% block main_col %} col-sm-12 col-md-12 col-lg-12 main-col {% endblock %}
+{% block main_col %} mt-1 col-sm-12 col-md-12 col-lg-12 main-col {% endblock %}
 
 {% block animated_opacity_main_sidebar %}
   animated-opacity
@@ -25,10 +25,10 @@
 {% endcomment %}
 
 {% block actions %}
-<div class="col-12 d-flex justify-content-between p-0 mb-2 xmain-actions-row">
+<div class="col-12 d-flex justify-content-between p-0 xmain-actions-row">
   <div id="actions">
    <ul  class="nav nav-pills">
-     <li class="mx-1">
+     <li class="mr-1">
          <button type="button" id="id_btn_upload" class="btn btn-light btn-bordered ">
             <i class="fa fa-upload mr-1  text-success"></i>
             <div class="d-none d-md-inline-block">
@@ -57,16 +57,22 @@
      <li class='mx-1'>
       {% ocr_language_select user %}</div>
     </li>
+    <li class="mx-1">
+      <div class="dropdown">
+        <button class="btn btn-light btn-bordered dropdown-toggle" type="button"data-toggle="dropdown" aria-haspopup="true">
+          {% trans "Panel Mode" %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="#">{% trans "Single" %}</a>
+          <a class="dropdown-item" href="#">{% trans "Dual" %}<i class="fa fa-check text-success pl-1"></i></a>
+        </div>
+      </div>
+    </li>
   </ul>
   </div> <!-- #actions -->
   <div id="display-mode" class="d-flex flex-row  align-items-center">
   </div> <!--  #display-mode -->
 </div>
-{% endblock %}
-
-{% block breadcrumb %}
-    <div id="breadcrumb" class="col-sm-12 pl-0">
-    </div><!-- /.col -->
 {% endblock %}
 
 {% block modals %}
@@ -79,9 +85,9 @@
 
 {% block content %}
   <div class="container-fluid pl-0 d-flex flex-row">
-      <div class="col-6" id="panel_left">
+      <div class="col-6 card card-browser mr-1" id="panel_left">
       </div>
-      <div class="col-6" id="panel_right">
+      <div class="col-6 card card-browser" id="panel_right">
       </div>  <!-- row -->
       <div id="pagination-view">
       </div>

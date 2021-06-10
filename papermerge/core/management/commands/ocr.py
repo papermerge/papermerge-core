@@ -1,15 +1,16 @@
-import logging
 import ocrmypdf
 
 from django.core.management.base import BaseCommand
-
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     help = """
     Runs OCRmyPDF on a given a document (pdf, jpg, png or tiff).
     Creates associated svg, hocr and jpeg preview files.
+
+    Example of usage:
+
+    ./manage.py ocr ~/Desktop/file1.pdf --sidecar-dir ~/Desktop/file1 -l deu
     """
 
     def add_arguments(self, parser):

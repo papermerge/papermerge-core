@@ -97,7 +97,7 @@
                 {% firstof user.get_short_name user.get_username %}
               </div>
             </a>
-            <ul id="user-menu" class="dropdown-menu">
+            <ul id="user-menu" class="dropdown-menu dropdown-menu-end">
               <li class="dropdown-item">
                 {% if has_perm_change_user %}
                   <a href="{% url 'account_change_password' %}"><i class="fa fa-asterisk mx-2"></i>

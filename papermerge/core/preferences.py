@@ -10,7 +10,7 @@ from dynamic_preferences.types import (
 )
 from dynamic_preferences.users.registries import user_preferences_registry
 
-from .lib.lang import get_ocr_lang_choices, get_default_ocr_lang
+from .lib.lang import get_ocr_langs, get_default_ocr_lang
 
 
 def _get_timezone_choices():
@@ -116,7 +116,7 @@ class OcrLanguage(ChoicePreference):
 """
     section = ocr
     name = 'OCR_Language'
-    choices = get_ocr_lang_choices()
+    choices = get_ocr_langs()
     default = get_default_ocr_lang()
 
 

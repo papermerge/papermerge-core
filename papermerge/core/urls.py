@@ -7,6 +7,7 @@ from .views import nodes as node_views
 from .views import metadata as metadata_views
 from .views import users as users_views
 from .views import automates as automate_views
+from .views import langs as langs_views
 
 document_patterns = [
     path(
@@ -49,6 +50,7 @@ urlpatterns = [
         node_views.browser_folder_view,
         name="browse_folder"
     ),
+    path('browser/ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',
@@ -173,5 +175,5 @@ urlpatterns = [
     path(
         'automate/<int:automate_id>/',
         automate_views.automate_change_view, name="automate_change_view"
-    )
+    ),
 ]

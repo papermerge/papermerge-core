@@ -51,6 +51,7 @@ urlpatterns = [
         name="browse_folder"
     ),
     path('browser/ocr-langs/', langs_views.langs_view, name="langs_view"),
+    path('browser/upload/', doc_views.upload, name="upload"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',
@@ -94,11 +95,6 @@ urlpatterns = [
     ),
     path(
         'usergroups', access_views.user_or_groups, name="user_or_groups"
-    ),
-    path(
-        'upload/',
-        doc_views.upload,
-        name="upload"
     ),
     path(
         'create-folder/',

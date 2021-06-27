@@ -11,7 +11,6 @@ from polymorphic_tree.managers import (
     PolymorphicMPTTQuerySet
 )
 
-from mglib import step
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.lib.pagecount import get_pagecount
 from mglib.utils import get_assigns_after_delete
@@ -706,8 +705,8 @@ class Document(BaseTreeNode):
         for page_index in range(1, page_count + 1):
 
             preview = reverse(
-                'core:preview',
-                args=[self.id, 800, page_index]
+                'core:page',
+                args=[self.id, page_index]
             )
 
             page = self.pages.create(

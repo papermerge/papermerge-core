@@ -499,7 +499,7 @@ def upload(request):
     #
     # with that info a new thumbnail will be created.
     preview_url = reverse(
-        'core:preview', args=(doc.id, 200, 1)
+        'core:page', args=(doc.id, 1)
     )
 
     result = {

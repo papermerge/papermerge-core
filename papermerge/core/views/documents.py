@@ -459,11 +459,10 @@ def upload(request):
     logger.debug("upload for f=%s user=%s", f, request.user)
 
     user = request.user
-    parent_id = request.POST.get('parent', "-1")
+    parent_id = request.POST.get('parent_id', "-1")
     parent_id = filter_node_id(parent_id)
 
-    lang = request.POST.get('language')
-    notes = request.POST.get('notes')
+    lang = request.POST.get('lang')
 
     init_kwargs = {'payload': f, 'processor': WEB}
 
@@ -472,7 +471,6 @@ def upload(request):
         'name': f.name,
         'parent': parent_id,
         'lang': lang,
-        'notes': notes,
         'apply_async': True
     }
 
@@ -489,24 +487,11 @@ def upload(request):
         )
         return msg, status
 
-    # after each upload return a json object with
-    # following fields:
-    #
-    # - title
-    # - preview_url
-    # - doc_id
-    # - action_url  -> needed for renaming/deleting selected item
-    #
-    # with that info a new thumbnail will be created.
-    preview_url = reverse(
-        'core:page', args=(doc.id, 1)
-    )
-
     result = {
-        'title': doc.title,
-        'doc_id': doc.id,
-        'action_url': "",
-        'preview_url': preview_url
+        'document': {
+            'title': doc.title,
+            'id': doc.id,
+        }
     }
 
     return result

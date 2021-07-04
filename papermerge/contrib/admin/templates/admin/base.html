@@ -207,7 +207,6 @@
   {% endif %}
 
   <script src="{% url 'javascript-catalog' %}"></script>
-
   <script>
     /*
       small hack which prevents advanced search dropdown to close
@@ -217,11 +216,7 @@
       e.stopPropagation();
     });
   </script>
-
   {% block extra_js %}
   {% endblock extra_js %}
-
-  <!-- see comments in PapermergeJS/src/js/routers/browse.js:browse -->
-  <input type="hidden" id="root_node_id" name="root_node_id" value="{{root_node_id}}" />
 </body>
 </html>

@@ -196,7 +196,7 @@ def _get_nodes_perms(user, parent_id, nodes) -> dict:
 @json_response
 @login_required
 @require_GET
-def browser_folder_view(request, node_id=None):
+def folder_view(request, node_id=None):
     """
     GET /browse/folder/
     GET /browse/folder/<int:parent_id>

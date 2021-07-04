@@ -41,16 +41,16 @@ urlpatterns = [
         name="page"
     ),
     path(
-        'browser/folder/',
-        node_views.browser_folder_view,
-        name="browse_folder"
+        'folder/',
+        node_views.folder_view,
+        name="folder"
     ),
     path(
-        'browser/folder/<int:node_id>/',
-        node_views.browser_folder_view,
-        name="browse_folder"
+        'folder/<int:node_id>/',
+        node_views.folder_view,
+        name="folder"
     ),
-    path('browser/ocr-langs/', langs_views.langs_view, name="langs_view"),
+    path('ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('browser/upload/', doc_views.upload, name="upload"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(

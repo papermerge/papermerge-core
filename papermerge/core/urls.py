@@ -8,6 +8,7 @@ from .views import metadata as metadata_views
 from .views import users as users_views
 from .views import automates as automate_views
 from .views import langs as langs_views
+from .views import folder
 
 document_patterns = [
     path(
@@ -50,8 +51,11 @@ urlpatterns = [
         node_views.folder_view,
         name="folder"
     ),
+    path(
+        'folder/add/', folder.FolderCreateView.as_view(), name='folder-add'
+    ),
     path('ocr-langs/', langs_views.langs_view, name="langs_view"),
-    path('browser/upload/', doc_views.upload, name="upload"),
+    path('document/add/', doc_views.upload, name="upload"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',
@@ -95,11 +99,6 @@ urlpatterns = [
     ),
     path(
         'usergroups', access_views.user_or_groups, name="user_or_groups"
-    ),
-    path(
-        'create-folder/',
-        doc_views.create_folder,
-        name='create_folder'
     ),
     path(
         'rename-node/<int:id>',

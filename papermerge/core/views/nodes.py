@@ -198,9 +198,8 @@ def _get_nodes_perms(user, parent_id, nodes) -> dict:
 @require_GET
 def folder_view(request, node_id=None):
     """
-    GET /browse/folder/
-    GET /browse/folder/<int:parent_id>
-    reverse('core:browse_folder')
+    GET folder/
+    GET folder/<int:parent_id>
 
     Returns json string of nodes which current user can read:
 

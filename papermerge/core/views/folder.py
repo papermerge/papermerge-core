@@ -26,10 +26,9 @@ class FolderListView(JSONResponseMixin, TemplateView):
     model = BaseTreeNode
 
     def get_queryset(self):
-        node_id = self.request.GET.get('node_id', None)
-
+        parent_id = self.kwargs.get('parent_id', None)
         qs = self.model.objects.filter(
-            parent_id=node_id
+            parent_id=parent_id
         ).exclude(
             title=Folder.INBOX_NAME
         )

@@ -47,12 +47,14 @@ urlpatterns = [
         name="folder"
     ),
     path(
-        'folder/<int:node_id>/',
-        node_views.folder_view,
-        name="folder"
+        'folder/<int:parent_id>/',
+        folder.FolderListView.as_view(),
+        name="folder-list"
     ),
     path(
-        'folder/add/', folder.FolderCreateView.as_view(), name='folder-add'
+        'folder/add/',
+        folder.FolderCreateView.as_view(),
+        name='folder-add'
     ),
     path('ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('document/add/', doc_views.upload, name="upload"),

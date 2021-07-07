@@ -28,7 +28,6 @@
           {% endfor %}
         </ul>
       </li>
-  
       <li class="nav-item">
         <a href="{% url 'admin:inbox' %}" class="nav-link  {% activate_on 'inbox' %}">
           <i class="nav-icon fa fa-inbox"></i>
@@ -40,7 +39,7 @@
       {% for item in sidebar_menu %}
           <li class="nav-item">
               <a href="{{item.url}}" class="nav-link {% activate_on item.activate_on %}">
-                  <i class="nav-icon fas {{item.css_icon_class}}"></i> 
+                  <i class="nav-icon fas {{item.css_icon_class}}"></i>
                   <p>{{item.title}}</p>
               </a>
           </li>

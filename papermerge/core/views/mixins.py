@@ -6,6 +6,13 @@ class JSONResponseMixin:
     A mixin that can be used to render a JSON response.
     """
 
+    @property
+    def is_ajax(self):
+        return any([
+            'application/json' in self.request.headers.get('Content-Type', []),
+            'application/json' in self.request.headers.get('Accept', [])
+        ])
+
     def render_to_json_response(self, context, **response_kwargs):
         """
         Returns a JSON response, transforming 'context' to make the payload.

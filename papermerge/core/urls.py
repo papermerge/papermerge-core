@@ -43,12 +43,12 @@ urlpatterns = [
     ),
     path(
         'folder/',
-        node_views.folder_view,
+        folder.HybridFolderListView.as_view(),
         name="folder"
     ),
     path(
         'folder/<int:parent_id>/',
-        folder.FolderListView.as_view(),
+        folder.HybridFolderListView.as_view(),
         name="folder-list"
     ),
     path(

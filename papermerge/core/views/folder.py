@@ -13,17 +13,27 @@ from papermerge.core.models import (
 from .mixins import JSONResponseMixin
 
 
-class FolderListView(JSONResponseMixin, TemplateView):
+class HybridFolderListView(JSONResponseMixin, TemplateView):
     """
     1. GET folder/
     2. GET folder/<int:parent_id>/
 
-    In both cases returns a list of nodes (documents and folders)
-    with given `parent_id`. If `parent_id` is not provided, will list
-    all root nodes (i.e documents and folders without parent) of authenticated
-    user.
+    This is hybrid view in sense that it can handle different
+    content types: text/html and application/json.
+
+    If client asks for text/html content type, this view
+    will respond by rendering as html the `self.template_name`,
+    after clients loads `self.template_name` page, it will issue
+    one more time GET folder/(<int:parent_id>) request, but
+    this time with application/json content type.
+
+    For application/json content type returns a list of nodes (documents and
+    folders) with given `parent_id`. If `parent_id` is not provided, will
+    list all root nodes (i.e documents and folders without parent) of
+    authenticated user.
     """
     model = BaseTreeNode
+    template_name = "admin/index.html"
 
     def get_queryset(self):
         parent_id = self.kwargs.get('parent_id', None)
@@ -50,13 +60,17 @@ class FolderListView(JSONResponseMixin, TemplateView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        resp = self.render_to_json_response(context, **response_kwargs)
+        if self.is_ajax:  # provided by JSONResponseMixin
+            resp = self.render_to_json_response(context, **response_kwargs)
+        else:
+            resp = super().render_to_response(context, **response_kwargs)
+
         return resp
 
 
 class FolderCreateView(JSONResponseMixin, TemplateView):
     """
-    POST /folder/add/
+    POST folder/add/
 
     Creates a folder. POST body is expected to be
     a dictionary (i.e. json formated string) with following

@@ -47,14 +47,23 @@ class HybridFolderListView(JSONResponseMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         qs = self.get_queryset()
+        parent = self._get_parent_node()
 
         nodes_list = [
             node.to_dict()
             for node in qs.all()
         ]
+        ancestors_list = []
+
+        if parent:
+            ancestors_list = [
+                {'id': parent.id, 'title': parent.title}
+                for item in parent.get_ancestors(include_self=True)
+            ]
 
         context = {
-            'current_nodes': nodes_list
+            'current_nodes': nodes_list,
+            'breadcrumb': ancestors_list
         }
 
         return context
@@ -66,6 +75,17 @@ class HybridFolderListView(JSONResponseMixin, TemplateView):
             resp = super().render_to_response(context, **response_kwargs)
 
         return resp
+
+    def _get_parent_node(self):
+        parent_id = self.kwargs.get('parent_id', None)
+        parent = None
+        if parent_id:
+            try:
+                parent = self.model.objects.get(id=parent_id)
+            except self.model.DoesNotExist:
+                return None
+
+        return parent
 
 
 class FolderCreateView(JSONResponseMixin, TemplateView):

@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from .views import access as access_views
 from .views import tags as tags_views
 from .views import api as api_views
@@ -9,6 +9,8 @@ from .views import users as users_views
 from .views import automates as automate_views
 from .views import langs as langs_views
 from .views import folder
+from .views import document
+from .views import page
 
 document_patterns = [
     path(
@@ -32,15 +34,16 @@ app_name = 'core'
 
 urlpatterns = [
     path(
-        'viewer/document/<int:doc_id>/',
-        doc_views.document_view,
+        'document/<int:pk>/',
+        document.DocumentDetailView.as_view(),
         name="document"
     ),
     path(
-        'viewer/document/<int:doc_id>/page/<int:page_num>/',
-        doc_views.page_view,
+        'document/<int:pk>/page/<int:page_num>/',
+        page.HybridPageDetailView.as_view(),
         name="page"
     ),
+    path('document/add/', doc_views.upload, name="upload"),
     path(
         'folder/',
         folder.HybridFolderListView.as_view(),
@@ -57,13 +60,13 @@ urlpatterns = [
         name='folder-add'
     ),
     path('ocr-langs/', langs_views.langs_view, name="langs_view"),
-    path('document/add/', doc_views.upload, name="upload"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',
         node_views.breadcrumb_view,
         name="breadcrumb"
     ),
+
     path('node/<int:node_id>', node_views.node_view, name="node"),
     # Node can be a document or a folder
     # Downloading entire folder by selecting it - makes perfect sense

@@ -1,16 +1,26 @@
-from django.http import JsonResponse
+from django.http import (
+    JsonResponse,
+    HttpResponse
+)
 
 
-class JSONResponseMixin:
+class HybridResponseMixin:
     """
     A mixin that can be used to render a JSON response.
     """
 
     @property
-    def is_ajax(self):
+    def asks_for_json(self):
         return any([
             'application/json' in self.request.headers.get('Content-Type', []),
             'application/json' in self.request.headers.get('Accept', [])
+        ])
+
+    @property
+    def asks_for_svg(self):
+        return any([
+            'image/svg' in self.request.headers.get('Content-Type', []),
+            'image/svg' in self.request.headers.get('Accept', [])
         ])
 
     def render_to_json_response(self, context, **response_kwargs):
@@ -19,6 +29,16 @@ class JSONResponseMixin:
         """
         return JsonResponse(
             self.get_data(context),
+            **response_kwargs
+        )
+
+    def render_to_svg_response(self, svg_image, **response_kwargs):
+        """
+        Returns SVG response
+        """
+        return HttpResponse(
+            svg_image,
+            content_type='image/svg',
             **response_kwargs
         )
 

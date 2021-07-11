@@ -10,10 +10,10 @@ from papermerge.core.models import (
     BaseTreeNode,
     Folder
 )
-from .mixins import JSONResponseMixin
+from .mixins import HybridResponseMixin
 
 
-class HybridFolderListView(JSONResponseMixin, TemplateView):
+class HybridFolderListView(HybridResponseMixin, TemplateView):
     """
     1. GET folder/
     2. GET folder/<int:parent_id>/
@@ -69,7 +69,7 @@ class HybridFolderListView(JSONResponseMixin, TemplateView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        if self.is_ajax:  # provided by JSONResponseMixin
+        if self.asks_for_json:  # provided by JSONResponseMixin
             resp = self.render_to_json_response(context, **response_kwargs)
         else:
             resp = super().render_to_response(context, **response_kwargs)
@@ -88,7 +88,7 @@ class HybridFolderListView(JSONResponseMixin, TemplateView):
         return parent
 
 
-class FolderCreateView(JSONResponseMixin, TemplateView):
+class FolderCreateView(HybridResponseMixin, TemplateView):
     """
     POST folder/add/
 

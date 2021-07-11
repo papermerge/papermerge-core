@@ -39,6 +39,11 @@ urlpatterns = [
         name="document"
     ),
     path(
+        'document/<int:pk>/download/',
+        document.DocumentDownloadView.as_view(),
+        name="document_download"
+    ),
+    path(
         'document/<int:pk>/page/<int:page_num>/',
         page.HybridPageDetailView.as_view(),
         name="page"

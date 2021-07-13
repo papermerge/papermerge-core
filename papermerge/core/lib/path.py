@@ -204,7 +204,8 @@ class PagePath:
 
     def txt_url(self):
         pages_dirname = self.results_document_ep.pages_dirname()
-        return f"{pages_dirname}page_{self.page_num}.txt"
+        number = f"{self.page_num:06d}"
+        return f"{pages_dirname}{number}/{number}_ocr_hocr.txt"
 
     @property
     def svg_path(self):

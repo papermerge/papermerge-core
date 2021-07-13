@@ -3,7 +3,7 @@ import os
 
 from django.db import models
 
-from mglib.path import PagePath
+from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import default_storage
 from papermerge.search import index
 from papermerge.search.queryset import SearchableQuerySetMixin

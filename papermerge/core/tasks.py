@@ -19,11 +19,9 @@ def ocr_document_task(
     target_version=0,
     namespace=None
 ):
-    # A task being bound (bind=True) means the first argument
-    # to the task will always be the
-    # task instance (self).
-    # https://celery.readthedocs.io/en/latest/userguide/tasks.html#bound-tasks
-    logger.info(f"task_id={self.request.id}")
+    """
+    OCR whole document, updates document's version and its `text` field
+    """
 
     ocr_document(
         user_id=user_id,
@@ -34,6 +32,20 @@ def ocr_document_task(
         version=version,
         target_version=target_version
     )
+
+    # get document model
+    try:
+        doc = Document.objects.get(id=document_id)
+    except Document.DoesNotExist as exception:
+        logger.error(exception, exc_info=True)
+        return False
+
+    # update document's version
+    doc.version = target_version
+    doc.save()
+
+    # update document text field (i.e so that document will be searchable)
+    doc.update_text_field()
 
     return True
 

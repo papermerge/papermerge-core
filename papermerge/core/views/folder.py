@@ -69,7 +69,7 @@ class HybridFolderListView(HybridResponseMixin, TemplateView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        if self.asks_for_json:  # provided by JSONResponseMixin
+        if self.asks_for_json:  # provided by HybridResponseMixin
             resp = self.render_to_json_response(context, **response_kwargs)
         else:
             resp = super().render_to_response(context, **response_kwargs)

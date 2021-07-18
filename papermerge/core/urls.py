@@ -11,6 +11,7 @@ from .views import langs as langs_views
 from .views import folder
 from .views import document
 from .views import page
+from .views import node
 
 document_patterns = [
     path(
@@ -64,6 +65,7 @@ urlpatterns = [
         folder.FolderCreateView.as_view(),
         name='folder-add'
     ),
+    path('nodes/', node.NodesView.as_view(), name="nodes"),
     path('ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(

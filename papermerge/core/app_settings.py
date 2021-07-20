@@ -49,7 +49,7 @@ class AppSettings():
     def DEFAULT_FILE_STORAGE(self):
         return self._settings(
             "DEFAULT_FILE_STORAGE",
-            "mglib.storage.FileSystemStorage"
+            "papermerge.core.lib.storage.FileSystemStorage"
         )
 
     @property

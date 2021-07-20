@@ -17,11 +17,14 @@ class NodesView(JSONResponseMixin, TemplateView):
 
     model = BaseTreeNode
 
-    def get_queryset(self):
+    def get_data(self, context={}):
         data = json.loads(self.request.body)
-        node_ids = [item['id'] for item in data]
-        qs = self.model.objects.filter(id__in=node_ids)
+        return data
 
+    def get_queryset(self):
+        data = self.get_data()
+        node_ids = [item['id'] for item in data['nodes']]
+        qs = self.model.objects.filter(id__in=node_ids)
         return qs
 
     def render_to_response(self, context, **response_kwargs):
@@ -33,4 +36,6 @@ class NodesView(JSONResponseMixin, TemplateView):
         return resp
 
     def delete(self, request, *args, **kwargs):
+        context = self.get_data()
         self.get_queryset().delete()
+        return self.render_to_response(context)

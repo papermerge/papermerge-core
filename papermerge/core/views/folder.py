@@ -133,7 +133,6 @@ class FolderCreateView(HybridResponseMixin, TemplateView):
 
         # and finally save object in DB!
         folder.save()
-
         return self.render_to_json_response({
             'folder': folder.to_dict()
         })

@@ -75,7 +75,7 @@ class HybridResponseMixin:
 
     def render_to_json_bad_request(self, error_message):
         return JsonResponse(
-            {'error': error_message}, status_code=400
+            {'error': error_message}, status=400
         )
 
     def get_data(self, context):

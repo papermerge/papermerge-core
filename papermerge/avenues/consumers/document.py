@@ -1,17 +1,7 @@
-import json
 import logging
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
-
-
-from papermerge.core.task_monitor import (
-    task_monitor,
-    TASK_SUCCEEDED,
-    TASK_RECEIVED,
-    TASK_STARTED,
-    CORE_TASKS_OCR_PAGE
-)
 
 
 logger = logging.getLogger(__name__)
@@ -19,21 +9,16 @@ logger = logging.getLogger(__name__)
 
 class DocumentConsumer(JsonWebsocketConsumer):
 
-    group_name = "ocr_document"
+    group_name = "ocr_document_task"
 
     def connect(self):
-        logger.debug("CONNECT")
+        logger.debug(
+            f"DocumentConsumer CONNECT group_name{self.group_name}"
+            f" channel_name={self.channel_name}"
+        )
         async_to_sync(
             self.channel_layer.group_add
         )(self.group_name, self.channel_name)
-
-        # listen to page_status messages
-        # If all pages of the document were OCRed
-        # then document status changes.
-        async_to_sync(
-            self.channel_layer.group_add
-        )(self.group_name, self.channel_name)
-
         self.accept()
 
     def disconnect(self, close_code):
@@ -42,62 +27,20 @@ class DocumentConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)
 
-    def receive(self, text_data):
-        logger.debug(f"RECEIVED {text_data}")
-        message = json.loads(text_data)
-        document_id = message['document_id']
-        items = task_monitor.items(
-            task_name=CORE_TASKS_OCR_PAGE,
-            document_id=document_id,
+    def ocrdocumenttask_taskreceived(self, event):
+        logger.debug(
+            f"DocumentConsumer ocrdocumenttask_received event={event}"
         )
-        new_type = ''
-        for item in items:
-            logger.debug(f"item['type']={item['type']}")
-            if item['type'] == TASK_RECEIVED:
-                new_type = 'ocrdocument.received'
-                break
-            elif item['type'] == TASK_STARTED:
-                new_type = 'ocrdocument.started'
-                break
-            elif item['type'] == TASK_SUCCEEDED:
-                new_type = 'ocrdocument.succeeded'
-                break
-
-        new_message = {
-            'type': new_type,
-            'document_id': document_id
-        }
-        logger.debug(f"GROUP SEND {new_message}")
-        async_to_sync(
-            self.channel_layer.group_send
-        )(self.group_name, new_message)
-
-    def ocrdocument_received(self, event):
-        """
-        Document's OCR is considered 'received' when
-        OCR task of the first page of the document is received.
-        First page of the document here does not mean
-        page number 1 (as order). OCR of the document's page can
-        start with page number 3 for example.
-        """
-        logger.debug(f"ocrdocument_received event={event}")
         self.send_json(event)
 
-    def ocrdocument_started(self, event):
-        """
-        Document's OCR starts when
-        OCR task of the first page of the document is starts.
-        First page of the document here does not mean
-        page number 1 (as order). OCR of the document's page can
-        start with page number 3 for example.
-        """
-        logger.debug(f"ocrdocument_started event={event}")
+    def ocrdocumenttask_taskstarted(self, event):
+        logger.debug(
+            f"DocumentConsumer ocrdocumenttask_started event={event}"
+        )
         self.send_json(event)
 
-    def ocrdocument_succeeded(self, event):
-        """
-        Document's OCR succeeds when
-        OCR on all its pages succeeds.
-        """
-        logger.debug(f"ocrdocument_succeeded event={event}")
+    def ocrdocumenttask_tasksucceeded(self, event):
+        logger.debug(
+            f"DocumentConsumer ocrdocumenttask_succeeded event={event}"
+        )
         self.send_json(event)

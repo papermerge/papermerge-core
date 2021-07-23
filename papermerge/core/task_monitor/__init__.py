@@ -32,6 +32,8 @@ app labels (both apps would have 'channels' label) will conflict.
 
 logger = logging.getLogger(__name__)
 
+CORE_TASKS_OCR_DOCUMENT_TASK = 'papermerge.core.tasks.ocr_document_task'
+
 # celery specific values for 'type' attribute
 # of celery events.
 TASK_SENT = 'task-sent'
@@ -39,9 +41,6 @@ TASK_RECEIVED = 'task-received'
 TASK_STARTED = 'task-started'
 TASK_SUCCEEDED = 'task-succeeded'
 TASK_FAILED = 'task-failed'
-
-# full name of ocr_page task
-CORE_TASKS_OCR_PAGE = 'papermerge.core.tasks.ocr_page'
 
 
 def get_store_class(import_path=None):
@@ -60,6 +59,8 @@ store = StoreKlass(
 
 def send2channel(task_dict):
     channel_layer = get_channel_layer()
+    logger.debug(f"send2channel channel_layer={channel_layer}")
+
     group_name, channel_data = dict2channel_data(task_dict)
     logger.debug(
         f"Sending group_name='{group_name}' "
@@ -76,10 +77,9 @@ task_monitor = Monitor(prefix="task-monitor", store=store)
 # add tasks to monitor
 task_monitor.add_task(
     Task(
-        CORE_TASKS_OCR_PAGE,
+        'papermerge.core.tasks.ocr_document_task',
         user_id='',
         document_id='',
-        page_num='',
         lang='',
         version='',
         namespace=''

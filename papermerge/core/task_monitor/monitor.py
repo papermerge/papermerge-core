@@ -34,7 +34,6 @@ class Monitor:
             "papermerge.core.tasks.ocr_page",
             user_id='',
             document_id='',
-            page_num='',
             lang='',
             version='',
             namespace=''
@@ -70,9 +69,12 @@ class Monitor:
     def save_event(self, event):
         task = self.get_task_from(event)
 
+        logger.debug(f"save_event: event={event}")
         updated_task_dict = self.update(event, task)
+        logger.debug(f"save_event: updated_task_dict={event}")
 
-        if self.is_monitored_task(updated_task_dict['task_name']):
+        task_name = updated_task_dict.get('task_name', None)
+        if task_name and self.is_monitored_task(task_name):
             self.callback(updated_task_dict)
 
     def update(self, event, task):
@@ -128,7 +130,7 @@ class Monitor:
         Example of usage:
 
         cnt = monitor.items(
-            task_name='papermerge.core.tasks.ocr_page',
+            task_name='papermerge.core.tasks.ocr_document_task',
             document_id=113,
             user_id=334,
             version=1

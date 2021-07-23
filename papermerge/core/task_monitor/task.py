@@ -72,6 +72,13 @@ def dict2channel_data(task_dict):
     have ``type`` trandformed as follows:
 
     new_type = <shortname>.<original type with removed dashes>
+
+    Example:
+
+    task_name = 'papermerge.core.tasks.ocr_document_task'
+    type = 'task-received'
+    will result in newly update type: 'ocrdocumenttask.taskreceived'
+    which will map to channels handler ocrdocumenttask_taskreceived
     """
 
     ret_dict = {}

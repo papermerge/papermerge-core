@@ -7,6 +7,7 @@ import importlib.util
 logger = logging.getLogger(__name__)
 
 SAFE_EXTENSIONS = [
+    '.svg',
     '.txt',
     '.jpg',
     '.jpeg',

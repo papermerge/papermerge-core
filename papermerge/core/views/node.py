@@ -69,7 +69,7 @@ class NodesMoveView(JSONResponseMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = self.get_data()
-        parent = self._get_parent(context)
+        parent = self._get_target(context)
 
         for node in self.get_queryset():
             node.refresh_from_db()
@@ -77,16 +77,16 @@ class NodesMoveView(JSONResponseMixin, TemplateView):
                 parent.refresh_from_db()
             Document.objects.move_node(node, parent)
 
-        return self.render_to_response(context)
+        return self.render_to_json_response(context)
 
-    def _get_parent(self, context):
+    def _get_target(self, context):
         parent_id = None
         parent = None
-        if context['parent']:
-            parent_id = context['parent'].get('id', None)
+        if context.get('target', None):
+            parent_id = context.get('target', None).get('id', None)
             if parent_id:
                 try:
-                    parent = self.model.get(id=parent_id)
+                    parent = self.model.objects.get(id=parent_id)
                 except Exception:
                     return None
 

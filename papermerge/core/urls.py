@@ -66,6 +66,7 @@ urlpatterns = [
         name='folder-add'
     ),
     path('nodes/', node.NodesView.as_view(), name="nodes"),
+    path('nodes/move/', node.NodesMoveView.as_view(), name="nodes-move"),
     path('ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(

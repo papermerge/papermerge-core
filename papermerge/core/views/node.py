@@ -58,25 +58,28 @@ class NodesMoveView(JSONResponseMixin, TemplateView):
     model = BaseTreeNode
 
     def get_data(self, context={}):
-        data = json.loads(self.request.body)
-        return data
+        return context
 
     def get_queryset(self):
-        data = self.get_data()
+        data = json.loads(self.request.body)
         node_ids = [item['id'] for item in data['nodes']]
         qs = self.model.objects.filter(id__in=node_ids)
         return qs
 
     def post(self, request, *args, **kwargs):
-        context = self.get_data()
-        parent = self._get_target(context)
+        context = {'nodes': [], 'parent': ''}
+
+        data = json.loads(self.request.body)
+        parent = self._get_target(data)
+        if parent:
+            context['parent'] = parent.to_dict()
 
         for node in self.get_queryset():
             node.refresh_from_db()
+            context['nodes'].append(node.to_dict())
             if parent:
                 parent.refresh_from_db()
             Document.objects.move_node(node, parent)
-
         return self.render_to_json_response(context)
 
     def _get_target(self, context):

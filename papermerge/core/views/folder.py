@@ -149,7 +149,7 @@ class FolderCreateView(HybridResponseMixin, TemplateView):
 
         if title == Folder.INBOX_NAME:
             error_message = 'This title is not allowed'
-            return error_message
+            raise ValidationError(error_message)
 
         if not (parent_id or title):
             error_message = 'Both parent_id and title are empty'

@@ -1,9 +1,8 @@
 # Changelog
 
-## 2.0.2 - Unreleased
+## 2.0.2 - 2021-09-19
 
 - Issue #419 - Improves kubernetes compatibility
-
 
 ## [2.0.1] - 2021-04-09
 

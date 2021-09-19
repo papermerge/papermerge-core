@@ -10,7 +10,7 @@ ALPHA = 'alpha'
 BETA = 'beta'
 RC = 'rc'
 
-VERSION = (2, 0, 1, FINAL, 0)
+VERSION = (2, 0, 2, FINAL, 0)
 
 
 def get_version(version=None):

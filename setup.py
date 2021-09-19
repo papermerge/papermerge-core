@@ -6,7 +6,7 @@ setup(
     ),
     install_requires=[
         "django == 3.2",
-        "mglib == 1.3.8",
+        "mglib == 1.3.9",
         "mgclipboard >= 0.3.0",
         "stapler == 1.0.0",
         "django-dynamic-preferences == 1.10.1",

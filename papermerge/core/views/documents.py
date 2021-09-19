@@ -558,11 +558,21 @@ def preview(request, id, step=None, page="1"):
         img_abs_path = default_storage.abspath(
             page_path.img_url()
         )
+        doc_abs_path = default_storage.abspath(
+            doc.path().url()
+        )
 
         if not os.path.exists(img_abs_path):
             logger.debug(
-                f"Preview image {img_abs_path} does not exists. Generating..."
+                f"Preview image does not exists: {img_abs_path}"
             )
+            if not os.path.exists(doc_abs_path):
+                logger.debug(f"File does not exists: {doc_abs_path}")
+                logger.debug(
+                    f"Downloading to {doc_abs_path}."
+                )
+                default_storage.download(doc.path().url())
+
             extract_img(
                 page_path, media_root=settings.MEDIA_ROOT
             )

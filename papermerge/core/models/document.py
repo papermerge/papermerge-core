@@ -15,7 +15,6 @@ from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.lib.pagecount import get_pagecount
 from mglib.utils import get_assigns_after_delete
 
-from papermerge.contrib.admin.registries import sidebar
 from papermerge.core.storage import default_storage
 from .kvstore import (
     KVCompNode,
@@ -440,13 +439,6 @@ class Document(BaseTreeNode):
         for tag in self.tags.all():
             tags.append(tag.to_dict())
         item['tags'] = tags
-
-        parts = []
-        for sidebar_part_klass in sidebar.values():
-            sidebar_part = sidebar_part_klass(self)
-            parts.append(sidebar_part.to_json())
-
-        item['parts'] = parts
 
         kvstore = []
         # Notice that here instead of document's metadata

@@ -8,88 +8,19 @@ from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseForbidden
 
 from papermerge.core.models import User
-from papermerge.contrib.admin.forms import (
-    UserFormWithoutPassword,
-    UserFormWithPassword
-)
+
 
 logger = logging.getLogger(__name__)
 
 
 @login_required
 def user_view(request):
-    """
-    When adding a new user, administrator will need to add
-    username + password and then he/she will be able to edit further
-    details.
-    """
-
-    if not request.user.is_superuser:
-        return HttpResponseForbidden()
-
-    form = UserFormWithPassword()
-
-    if request.method == 'POST':
-        form = UserFormWithPassword(request.POST)
-        if form.is_valid():
-
-            password1 = form.cleaned_data['password1']
-            password2 = form.cleaned_data['password2']
-
-            if password1 == password2:
-
-                user = form.save()
-                user.set_password(password1)
-                user.save()
-
-                return redirect(
-                    reverse('core:user_change', args=(user.id, ))
-                )
-            else:
-                form.add_error(
-                    'password1',
-                    _('Password and Password confirmation does not match')
-                )
-
-    return render(
-        request,
-        'admin/add_user.html',
-        {
-            'form': form,
-        }
-    )
+    pass
 
 
 @login_required
 def user_change_view(request, id):
-    """
-    Used to edit existing users
-    """
-
-    if not request.user.is_superuser:
-        return HttpResponseForbidden()
-
-    user = get_object_or_404(User, id=id)
-    action_url = reverse('core:user_change', args=(id,))
-
-    form = UserFormWithoutPassword(
-        request.POST or None, instance=user
-    )
-
-    if form.is_valid():
-        form.save()
-        return redirect('core:users')
-
-    return render(
-        request,
-        'admin/user.html',
-        {
-            'form': form,
-            'action_url': action_url,
-            'title': _('Edit User'),
-            'user_id': id
-        }
-    )
+    pass
 
 
 @login_required

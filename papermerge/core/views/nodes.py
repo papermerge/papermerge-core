@@ -1,12 +1,15 @@
 import json
 import logging
 
+import magic
+
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
     Http404,
     HttpResponse
 )
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
 from django.urls import reverse
@@ -18,8 +21,6 @@ from django.utils.translation import gettext as _
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
-
-from mglib import mime
 
 from papermerge.core.models import (
     BaseTreeNode,
@@ -152,18 +153,61 @@ def _get_pagination_dict(paginator, page_number) -> dict:
     }
 
 
+def _get_nodes_perms_key(user, parent_id=None) -> str:
+    """
+    Returns key (as string) used to cache a list of nodes permissions.
+
+    Key is based on (user_id, parent_id) pair i.e we cache
+    all nodes' permissions dictionary of folder.
+    If parent_id == None - we will cache all root documents of given user.
+    """
+    uid = user.id
+    pid = parent_id or ''
+    nodes_perms_key = f"user_{uid}_parent_id_{pid}_readable_nodes"
+
+    return nodes_perms_key
+
+
+def _get_nodes_perms(user, parent_id, nodes) -> dict:
+    """
+    Returns permissions dictionary for given list of nodes
+
+    Retrieving all permissions for given set of nodes is slow.
+    To speed up this operation we store the result of already
+    computed dictionaries - in cache.
+    Cache dictionary is (user_id, parent_id) pair.
+    User ID is required because parent_id can be None (for root folder).
+    """
+    nodes_perms_key = _get_nodes_perms_key(user, parent_id)
+    nodes_perms = cache.get(nodes_perms_key, {})
+
+    if not nodes_perms:  # It in cache?
+        # No, it is not in cache.
+        # Compute.
+        nodes_perms = user.get_perms_dict(
+            nodes, Access.ALL_PERMS
+        )
+        # Store in cache.
+        cache.set(nodes_perms_key, nodes_perms)
+
+    return nodes_perms
+
+
 @json_response
 @login_required
 @require_GET
-def browse_view(request, parent_id=None):
+def folder_view(request, node_id=None):
     """
+    GET folder/
+    GET folder/<int:parent_id>
+
     Returns json string of nodes which current user can read:
 
         * filtered by tag (optionally)
         * paginated
         * ordered by title, date, type (optionally)
     """
-    nodes = BaseTreeNode.objects.filter(parent_id=parent_id).exclude(
+    nodes = BaseTreeNode.objects.filter(parent_id=node_id).exclude(
         title=Folder.INBOX_NAME
     )
 
@@ -171,40 +215,52 @@ def browse_view(request, parent_id=None):
     nodes = _order_by(nodes, request.GET)
 
     nodes_list = []
-    nodes_perms = request.user.get_perms_dict(
-        nodes, Access.ALL_PERMS
-    )
+    nodes_perms_key = _get_nodes_perms_key(request.user, node_id)
+    nodes_perms = _get_nodes_perms(request.user, node_id, nodes)
+
     readable_nodes = []
+
     for node in nodes:
-        if nodes_perms[node.id].get(Access.PERM_READ, False):
-            readable_nodes.append(node)
+        if node.id in nodes_perms:
+            if nodes_perms[node.id].get(Access.PERM_READ, False):
+                readable_nodes.append(node)
+        else:
+            # If we are here, it means that for given pair (user_id, parent_id)
+            # new node was introduced (document uploaded or folder created).
+            # Retrieve permissions for that node
+            node_perms = request.user.get_perms_dict([node], Access.ALL_PERMS)
+            if node_perms[node.id].get(Access.PERM_READ, False):
+                readable_nodes.append(node)
+                nodes_perms[node.id] = node_perms
+
+            # Invalidate existing cache
+            cache.set(nodes_perms_key, {})
 
     page_number = _get_page_number(request_get=request.GET)
     paginator = Paginator(readable_nodes, PER_PAGE)
     page_obj = paginator.get_page(page_number)
 
     for node in page_obj.object_list:
+        node_dict_key = f"node_{node.id}_dict"
+        node_dict = cache.get(node_dict_key)
+
+        if node_dict:
+            nodes_list.append(node_dict)
+            continue
+
+        # node_dict was not found cache
         node_dict = node.to_dict()
         # and send user_perms to the frontend client
 
         node_dict['user_perms'] = nodes_perms[node.id]
 
-        if node.is_document():
-            node_dict['img_src'] = reverse(
-                'core:preview',
-                args=(node.id, 4, 1)
-            )
-            node_dict['document_url'] = reverse(
-                'core:document',
-                args=(node.id,)
-            )
-
         nodes_list.append(node_dict)
+        cache.set(node_dict_key, node_dict)
 
     return {
-        'nodes': nodes_list,
-        'parent_id': parent_id,
-        'parent_kv': _get_node_kv(parent_id),
+        'current_nodes': nodes_list,
+        'parent_id': node_id,
+        'parent_kv': _get_node_kv(node_id),
         'pagination': _get_pagination_dict(
             paginator=paginator,
             page_number=page_number
@@ -369,15 +425,13 @@ def nodes_view(request):
 
 
 @login_required
-def node_download(request, id):
+def node_download(request, id, version=0):
     """
     Any user with read permission on the node must be
     able to download it.
 
     Node is either documennt or a folder.
     """
-    version = request.GET.get('version', None)
-
     try:
         node = BaseTreeNode.objects.get(id=id)
     except BaseTreeNode.DoesNotExist:
@@ -389,7 +443,7 @@ def node_download(request, id):
             file_abs_path = default_storage.abspath(
                 node.path().url(version=version)
             )
-            mime_type = mime.Mime(file_abs_path)
+            mime_type = magic.from_file(file_abs_path, mime=True)
             try:
                 file_handle = open(file_abs_path, "rb")
             except OSError:
@@ -400,7 +454,7 @@ def node_download(request, id):
 
             resp = HttpResponse(
                 file_handle.read(),
-                content_type=mime_type.guess()
+                content_type=mime_type
             )
             disposition = "attachment; filename=%s" % node.title
             resp['Content-Disposition'] = disposition

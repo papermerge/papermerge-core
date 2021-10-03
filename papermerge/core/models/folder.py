@@ -84,6 +84,7 @@ class Folder(BaseTreeNode, index.Indexed):
         item = {}
 
         item['id'] = self.id
+        item['model'] = 'folder'
         item['title'] = self.title
         item['created_at'] = self.human_created_at
         item['updated_at'] = self.human_updated_at

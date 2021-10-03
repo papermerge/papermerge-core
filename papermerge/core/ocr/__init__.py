@@ -1,2 +1,2 @@
-from papermerge.core.ocr.page import ocr_page  # noqa
-from papermerge.core.ocr.page import (COMPLETE, STARTED)  # noqa
+from papermerge.core.ocr.document import ocr_document  # noqa
+from papermerge.core.ocr.document import (COMPLETE, STARTED)  # noqa

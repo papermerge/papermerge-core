@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="{% static 'admin/css/all.min.css' %}">
   <!-- icheck bootstrap -->
   <link rel="stylesheet" href="{% static 'admin/css/icheck-bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'admin/bootstrap-icons.css' %}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{% static 'admin/css/adminlte.min.css' %}">
   {% if debug %}
@@ -90,13 +91,13 @@
         <ul class="navbar-nav ml-auto">
           <!-- User Dropdown Menu -->
           <li class="nav-item dropdown mx-3">
-            <a class="dropdown-toggle" aria-expanded="false" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle" role="button" data-bs-toggle="dropdown" href="#">
               <i class="fa fa-user"></i>
               <div class="d-none d-sm-inline-block">
                 {% firstof user.get_short_name user.get_username %}
               </div>
             </a>
-            <ul id="user-menu" class="dropdown-menu">
+            <ul id="user-menu" class="dropdown-menu dropdown-menu-end">
               <li class="dropdown-item">
                 {% if has_perm_change_user %}
                   <a href="{% url 'account_change_password' %}"><i class="fa fa-asterisk mx-2"></i>
@@ -161,15 +162,13 @@
         {% include "admin/_messages.html" %}
         <div class="row no-gutters">
           <div class="{% block main_col %} col-sm-12 col-md-9 col-lg-9 main-col {% endblock %}">
-            <div class="card card-browser {% block document_browser %}{% endblock %}">
-              <div class="card-body xmain">
+            <div class="{% block document_browser %}{% endblock %}">
                 {% block actions %}
                   <!-- The most important action buttons here e.g. "New"
                   -->
                 {% endblock %}
                 {% block content %}
                 {% endblock %}
-              </div>
             </div>
           </div>
           {% block widgetsbar_wrapper %}
@@ -181,7 +180,6 @@
         </div>
       </div>
       <!-- /.content -->
-      
     </div>
     <!-- /.content-wrapper -->
     <div id="uploader-view"></div>
@@ -198,8 +196,6 @@
 
   <!-- jQuery -->
   <script src="{% static 'admin/js/jquery.min.js' %}"></script>
-  <!-- Bootstrap 4 -->
-  <script src="{% static 'admin/js/bootstrap.bundle.min.js' %}"></script>
   <!-- AdminLTE App -->
   <script src="{% static 'admin/js/adminlte.js' %}"></script>
   {% if debug %}
@@ -207,11 +203,10 @@
   {% else %}
     <script src="{% static 'admin/js/papermerge.js' %}"></script>
   {% endif %}
-  
-  <script src="{% url 'javascript-catalog' %}"></script>
 
+  <script src="{% url 'javascript-catalog' %}"></script>
   <script>
-    /* 
+    /*
       small hack which prevents advanced search dropdown to close
       if user clicks inside/dropdown
      */
@@ -219,11 +214,7 @@
       e.stopPropagation();
     });
   </script>
-
   {% block extra_js %}
   {% endblock extra_js %}
-
-  <!-- see comments in PapermergeJS/src/js/routers/browse.js:browse -->
-  <input type="hidden" id="root_node_id" name="root_node_id" value="{{root_node_id}}" />
 </body>
 </html>

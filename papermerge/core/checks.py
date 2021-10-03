@@ -1,10 +1,10 @@
 import os
 import subprocess
 
-from django.conf import settings
 from django.core.checks import Warning, register
 
-from papermerge.core.importers.imap import login as imap_login
+from .importers.imap import login as imap_login
+from .app_settings import settings
 
 
 USED_BINARIES = {
@@ -57,42 +57,6 @@ USED_BINARIES = {
 
 
 @register()
-def papermerge_configuration_file(app_configs, **kwargs):
-    """
-    Papermerge does not necessary require papermerge.conf.py file.
-    However, it is a good practice to have one available - even empty!
-
-    User/Admin defines an empty papermerge.conf.py file it means first of all
-    that user/admin is aware of .conf.py file existence.
-
-    Configuration file should be placed in projects directory, in
-    /etc/papermerge.conf.py or it is file pointed by environment variable
-    named PAPERMERGE_CONFIG.
-
-    If configuration file was not found - issue a warning.
-    """
-    check_messages = []
-    places = ''
-
-    if settings.DEFAULT_CONFIG_PLACES:
-        places = ', '.join(settings.DEFAULT_CONFIG_PLACES)
-
-    warn_message = "papermerge.conf.py file was not found." +\
-        f" Following locations attempted {places}"
-
-    hint_msg = "Create one of those files or point" +\
-        f" {settings.DEFAULT_PAPERMERGE_CONFIG_ENV_NAME}" +\
-        " environment name to it."
-
-    if not settings.CFG_PAPERMERGE:
-        check_messages.append(
-            Warning(warn_message, hint_msg)
-        )
-
-    return check_messages
-
-
-@register()
 def binaries_check(app_configs, **kwargs):
     """
     Papermerge requires the existence of a few binaries, so it checks
@@ -129,9 +93,9 @@ def binaries_check(app_configs, **kwargs):
 @register()
 def imap_login_check(app_configs, **kwargs):
 
-    host = settings.PAPERMERGE_IMPORT_MAIL_HOST
-    user = settings.PAPERMERGE_IMPORT_MAIL_USER
-    password = settings.PAPERMERGE_IMPORT_MAIL_PASS
+    host = settings.IMPORT_MAIL_HOST
+    user = settings.IMPORT_MAIL_USER
+    password = settings.IMPORT_MAIL_PASS
 
     check_messages = []
     msg = f"Failed to login to IMAP server '{host}'"

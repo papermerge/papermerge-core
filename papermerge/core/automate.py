@@ -2,10 +2,8 @@ import logging
 
 from django.utils.translation import gettext as _
 
-from mglib.step import Step
-from mglib.path import PagePath, DocumentPath
-from mglib.pdfinfo import get_pagecount
-
+from .lib.path import PagePath, DocumentPath
+from .lib.pagecount import get_pagecount
 from .models import Document, Automate
 from .storage import default_storage
 from .signal_definitions import automates_matching
@@ -35,7 +33,6 @@ def apply_automates(document_id, page_num, **kwargs):
         document_path=doc_path,
         page_num=page_num,
         page_count=page_count,
-        step=Step(),
     )
     user = document.user
 

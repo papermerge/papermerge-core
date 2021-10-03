@@ -9,3 +9,8 @@ class SuperuserDoesNotExist(Exception):
     Papermerge must have at least one superuser.
     """
     pass
+
+
+class FileTypeNotSupported(Exception):
+    """File type not supported"""
+    pass

@@ -30,7 +30,6 @@ def deleteFiles(sender, instance, **kwargs):
         instance.id,
         instance.user.id
     ))
-
     default_storage.delete_doc(
         instance.path()
     )

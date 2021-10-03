@@ -1,76 +1,51 @@
 import logging
 
 from celery import shared_task
-from papermerge.core.ocr.page import ocr_page as main_ocr_page
-from papermerge.core.ocr import (
-    COMPLETE,
-    STARTED
-)
+from papermerge.core.ocr.document import ocr_document
 
 from .models import Document, Folder, Page
-from .utils import Timer
-from . import signal_definitions as signals
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True)
-def ocr_page(
+def ocr_document_task(
     self,
     user_id,
     document_id,
     file_name,
-    page_num,
     lang,
     version=0,
+    target_version=0,
     namespace=None
 ):
-    # A task being bound (bind=True) means the first argument
-    # to the task will always be the
-    # task instance (self).
-    # https://celery.readthedocs.io/en/latest/userguide/tasks.html#bound-tasks
-    logger.info(f"task_id={self.request.id}")
+    """
+    OCR whole document, updates document's version and its `text` field
+    """
 
-    # Inform everybody interested that OCR started
-    signals.page_ocr.send(
-        sender='worker',
-        level=logging.INFO,
-        message="",
+    ocr_document(
         user_id=user_id,
         document_id=document_id,
-        page_num=page_num,
+        file_name=file_name,
         lang=lang,
         namespace=namespace,
         version=version,
-        status=STARTED,
+        target_version=target_version
     )
 
-    with Timer() as time:
+    # get document model
+    try:
+        doc = Document.objects.get(id=document_id)
+    except Document.DoesNotExist as exception:
+        logger.error(exception, exc_info=True)
+        return False
 
-        main_ocr_page(
-            user_id=user_id,
-            document_id=document_id,
-            file_name=file_name,
-            page_num=page_num,
-            lang=lang,
-            namespace=namespace,
-            version=version
-        )
+    # update document's version
+    doc.version = target_version
+    doc.save()
 
-    # Inform everybody interested that OCR completed/ended
-    msg = f"Ocr took {time} seconds to complete."
-    signals.page_ocr.send(
-        sender='worker',
-        level=logging.INFO,
-        message=msg,
-        user_id=user_id,
-        document_id=document_id,
-        page_num=page_num,
-        lang=lang,
-        namespace=namespace,
-        version=version,
-        status=COMPLETE
-    )
+    # update document text field (i.e so that document will be searchable)
+    doc.update_text_field()
 
     return True
 

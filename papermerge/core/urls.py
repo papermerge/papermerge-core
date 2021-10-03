@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from .views import access as access_views
 from .views import tags as tags_views
 from .views import api as api_views
@@ -7,27 +7,17 @@ from .views import nodes as node_views
 from .views import metadata as metadata_views
 from .views import users as users_views
 from .views import automates as automate_views
+from .views import langs as langs_views
+from .views import folder
+from .views import document
+from .views import page
+from .views import node
 
 document_patterns = [
-    path(
-        '<int:doc_id>/',
-        doc_views.document,
-        name="document"
-    ),
     path(
         '<int:id>/preview/page/<int:page>',
         doc_views.preview,
         name="preview"
-    ),
-    path(
-        '<int:id>/preview/<int:step>/page/<int:page>',
-        doc_views.preview,
-        name="preview"
-    ),
-    path(
-        '<int:id>/hocr/<int:step>/page/<int:page>',
-        doc_views.hocr,
-        name="hocr"
     ),
     path(
         '<int:id>/<int:document_version>/text/page/<int:page_number>',
@@ -45,19 +35,54 @@ app_name = 'core'
 
 urlpatterns = [
     path(
-        'document/', include(document_patterns)
+        'document/<int:pk>/',
+        document.DocumentDetailView.as_view(),
+        name="document"
     ),
-    path('browse/', node_views.browse_view, name="browse"),
-    path('browse/<int:parent_id>/', node_views.browse_view, name="browse"),
+    path(
+        'document/<int:pk>/download/',
+        document.DocumentDownloadView.as_view(),
+        name="document_download"
+    ),
+    path(
+        'document/<int:pk>/page/<int:page_num>/',
+        page.HybridPageDetailView.as_view(),
+        name="page"
+    ),
+    path('document/add/', doc_views.upload, name="upload"),
+    path(
+        'folder/',
+        folder.HybridFolderListView.as_view(),
+        name="folder"
+    ),
+    path(
+        'folder/<int:parent_id>/',
+        folder.HybridFolderListView.as_view(),
+        name="folder-list"
+    ),
+    path(
+        'folder/add/',
+        folder.FolderCreateView.as_view(),
+        name='folder-add'
+    ),
+    path('nodes/', node.NodesView.as_view(), name="nodes"),
+    path('nodes/move/', node.NodesMoveView.as_view(), name="nodes-move"),
+    path('ocr-langs/', langs_views.langs_view, name="langs_view"),
     path('breadcrumb/', node_views.breadcrumb_view, name="breadcrumb"),
     path(
         'breadcrumb/<int:parent_id>/',
         node_views.breadcrumb_view,
         name="breadcrumb"
     ),
+
     path('node/<int:node_id>', node_views.node_view, name="node"),
     # Node can be a document or a folder
     # Downloading entire folder by selecting it - makes perfect sense
+    path(
+        'node/v<int:version>/<int:id>/download/',
+        node_views.node_download,
+        name="node_versioned_download"
+    ),
     path(
         'node/<int:id>/download/',
         node_views.node_download,
@@ -87,16 +112,6 @@ urlpatterns = [
     ),
     path(
         'usergroups', access_views.user_or_groups, name="user_or_groups"
-    ),
-    path(
-        'upload/',
-        doc_views.upload,
-        name="upload"
-    ),
-    path(
-        'create-folder/',
-        doc_views.create_folder,
-        name='create_folder'
     ),
     path(
         'rename-node/<int:id>',
@@ -168,5 +183,5 @@ urlpatterns = [
     path(
         'automate/<int:automate_id>/',
         automate_views.automate_change_view, name="automate_change_view"
-    )
+    ),
 ]

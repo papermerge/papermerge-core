@@ -11,9 +11,8 @@ from polymorphic_tree.managers import (
     PolymorphicMPTTQuerySet
 )
 
-from mglib import step
-from mglib.path import DocumentPath, PagePath
-from mglib.pdfinfo import get_pagecount
+from papermerge.core.lib.path import DocumentPath, PagePath
+from papermerge.core.lib.pagecount import get_pagecount
 from mglib.utils import get_assigns_after_delete
 
 from papermerge.contrib.admin.registries import sidebar
@@ -34,7 +33,11 @@ from .node import (
     RELATED_QUERY_NAME_FMT
 )
 from .access import Access
-from .utils import group_per_model
+from .utils import (
+    group_per_model,
+    OCR_STATUS_SUCCEEDED,
+    OCR_STATUS_UNKWNOWN
+)
 from .finder import default_parts_finder
 
 from papermerge.search import index
@@ -416,6 +419,8 @@ class Document(BaseTreeNode):
 
         item['id'] = self.id
         item['title'] = self.title
+        item['model'] = 'document'
+        item['ocr_status'] = self.get_ocr_status()
         item['notes'] = self.notes
         item['owner'] = self.user.username
         item['versions'] = self.get_versions()
@@ -700,8 +705,8 @@ class Document(BaseTreeNode):
         for page_index in range(1, page_count + 1):
 
             preview = reverse(
-                'core:preview',
-                args=[self.id, 800, page_index]
+                'core:page',
+                args=[self.id, page_index]
             )
 
             page = self.pages.create(
@@ -895,21 +900,16 @@ class Document(BaseTreeNode):
             page_path = PagePath(
                 document_path=self.path(version=version),
                 page_num=page_num,
-                step=step.Step(1),
                 page_count=self.get_pagecount(version=version)
             )
             results.append(page_path)
 
         return results
 
-    def get_page_path(self, page_num, step, version=None):
-        """
-        For Step(1) shortcut, use doc_instance.page_eps property.
-        """
+    def get_page_path(self, page_num, version=None):
         return PagePath(
             document_path=self.path(version=version),
             page_num=page_num,
-            step=step,
             page_count=self.page_count
         )
 
@@ -954,6 +954,26 @@ class Document(BaseTreeNode):
                 tag,
                 tag_kwargs={'user': self.user}
             )
+
+    def get_ocr_status(self):
+        """
+        Returns OCR status of the document.
+
+        Document model knows only limited information about
+        document OCR status. From point of view of the document
+        OCR status can be one of following:
+
+            * succeeded - when document.text field is non empty
+            * unknown - when document.text is empty
+
+        In case of "unknown" OCR status application will need to query
+        different parts of the system to figure out more details
+        about OCR status.
+        """
+        if len(self.text) > 0:
+            return OCR_STATUS_SUCCEEDED
+
+        return OCR_STATUS_UNKWNOWN
 
 
 class AbstractDocument(models.Model):

@@ -4,7 +4,7 @@ import logging
 
 from django.utils.translation import gettext as _
 from django.utils.html import escape
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -20,12 +20,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
 
-from mglib.pdfinfo import get_pagecount
 from mglib.step import Step
-from mglib.shortcuts import extract_img
+from papermerge.core.lib.shortcuts import extract_img
+from papermerge.core.lib.pagecount import get_pagecount
 
 from papermerge.core.storage import default_storage
-from papermerge.core.lib.hocr import Hocr
 from .decorators import json_response, require_PERM
 
 from papermerge.core.models import (
@@ -38,13 +37,13 @@ from papermerge.core.models import (
 from papermerge.core.utils import filter_node_id
 from papermerge.core import signal_definitions as signals
 from papermerge.core.import_pipeline import WEB, go_through_pipelines
-from papermerge.core.tasks import ocr_page
+from papermerge.core.tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
 
 @login_required
-def document(request, doc_id):
+def document_view(request, doc_id):
     try:
         doc = Document.objects.get(id=doc_id)
     except Document.DoesNotExist:
@@ -67,7 +66,7 @@ def document(request, doc_id):
         } for page_num in range(1, doc.get_pagecount(version=version) + 1)]
 
     # request.is_ajax is repricated since Django 3.1
-    if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
+    if request.content_type != 'application/json':
         if request.user.has_perm(Access.PERM_READ, doc):
             if not doc.is_latest_version(version):
                 messages.info(
@@ -156,6 +155,47 @@ def document(request, doc_id):
     response['Vary'] = 'Accept'
 
     return response
+
+
+@login_required
+def page_view(request, doc_id, page_num):
+
+    try:
+        doc = Document.objects.get(id=doc_id)
+    except Document.DoesNotExist:
+        raise Http404("Document does not exists")
+
+    version = request.GET.get('version', 1)
+    doc_path = doc.path(version=version)
+
+    if request.user.has_perm(Access.PERM_READ, doc):
+        # document absolute path
+        doc_abs_path = default_storage.abspath(doc_path.url())
+        if not os.path.exists(
+            doc_abs_path
+        ):
+            raise Http404("SVG data not yet ready")
+
+        page_count = get_pagecount(doc_abs_path)
+        if page_num > page_count or page_num < 0:
+            raise Http404("Page does not exists")
+
+        page_path = doc.get_page_path(page_num=page_num, version=version)
+        svg_abs_path = default_storage.abspath(page_path.svg_url())
+
+        if not os.path.exists(svg_abs_path):
+            raise Http404("SVG data not yet ready")
+
+        svg_text = ""
+        with open(svg_abs_path, "r") as f:
+            svg_text = f.read()
+
+        return HttpResponse(
+            svg_text,
+            content_type="image/svg",
+        )
+
+    return HttpResponseForbidden()
 
 
 @json_response
@@ -419,11 +459,10 @@ def upload(request):
     logger.debug("upload for f=%s user=%s", f, request.user)
 
     user = request.user
-    parent_id = request.POST.get('parent', "-1")
+    parent_id = request.POST.get('parent_id', "-1")
     parent_id = filter_node_id(parent_id)
 
-    lang = request.POST.get('language')
-    notes = request.POST.get('notes')
+    lang = request.POST.get('lang')
 
     init_kwargs = {'payload': f, 'processor': WEB}
 
@@ -432,7 +471,6 @@ def upload(request):
         'name': f.name,
         'parent': parent_id,
         'lang': lang,
-        'notes': notes,
         'apply_async': True
     }
 
@@ -449,24 +487,11 @@ def upload(request):
         )
         return msg, status
 
-    # after each upload return a json object with
-    # following fields:
-    #
-    # - title
-    # - preview_url
-    # - doc_id
-    # - action_url  -> needed for renaming/deleting selected item
-    #
-    # with that info a new thumbnail will be created.
-    preview_url = reverse(
-        'core:preview', args=(doc.id, 200, 1)
-    )
-
     result = {
-        'title': doc.title,
-        'doc_id': doc.id,
-        'action_url': "",
-        'preview_url': preview_url
+        'document': {
+            'title': doc.title,
+            'id': doc.id,
+        }
     }
 
     return result
@@ -484,59 +509,6 @@ def usersettings(request, option, value):
     return HttpResponseRedirect(
         request.META.get('HTTP_REFERER')
     )
-
-
-@login_required
-def hocr(request, id, step=None, page="1"):
-
-    logger.debug(f"hocr for doc_id={id}, step={step}, page={page}")
-    try:
-        doc = Document.objects.get(id=id)
-    except Document.DoesNotExist:
-        raise Http404("Document does not exists")
-
-    version = request.GET.get('version', None)
-    doc_path = doc.path(version=version)
-
-    if request.user.has_perm(Access.PERM_READ, doc):
-        # document absolute path
-        doc_abs_path = default_storage.abspath(doc_path.url())
-        if not os.path.exists(
-            doc_abs_path
-        ):
-            raise Http404("HOCR data not yet ready.")
-
-        page_count = get_pagecount(doc_abs_path)
-        if page > page_count or page < 0:
-            raise Http404("Page does not exists")
-
-        page_path = doc.page_paths(version=version)[page]
-        hocr_abs_path = default_storage.abspath(page_path.hocr_url())
-
-        logger.debug(f"Extract words from {hocr_abs_path}")
-
-        if not os.path.exists(hocr_abs_path):
-            default_storage.download(
-                page_path.hocr_url()
-            )
-
-        if not os.path.exists(hocr_abs_path):
-            raise Http404("HOCR data not yet ready.")
-
-        # At this point local HOCR data should be available.
-        hocr = Hocr(
-            hocr_file_path=hocr_abs_path
-        )
-
-        return HttpResponse(
-            json.dumps({
-                'hocr': hocr.good_json_words(),
-                'hocr_meta': hocr.get_meta()
-            }),
-            content_type="application/json",
-        )
-
-    return HttpResponseForbidden()
 
 
 @login_required
@@ -657,16 +629,14 @@ def run_ocr_view(request):
             src=doc.path(version=old_version),
             dst=doc.path(version=new_version)
         )
-        for page_num in range(1, doc.page_count + 1):
-            ocr_page.apply_async(kwargs={
-                'user_id': doc.user.id,
-                'document_id': doc.id,
-                'file_name': doc.file_name,
-                'page_num': page_num,
-                'lang': new_lang,
-                'namespace': getattr(default_storage, 'namespace', None),
-                'version': new_version
-            })
+        ocr_document_task.apply_async(kwargs={
+            'user_id': doc.user.id,
+            'document_id': doc.id,
+            'file_name': doc.file_name,
+            'lang': new_lang,
+            'namespace': getattr(default_storage, 'namespace', None),
+            'version': new_version
+        })
 
         doc.lang = new_lang
         doc.version = new_version

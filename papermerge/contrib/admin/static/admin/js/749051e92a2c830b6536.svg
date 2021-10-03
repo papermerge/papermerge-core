@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 67.733331 67.733331"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.1 (ce6663b3b7, 2021-05-25)"
+   sodipodi:docname="folder.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient909">
+      <stop
+         style="stop-color:#ffd455;stop-opacity:1"
+         offset="0"
+         id="stop905" />
+      <stop
+         style="stop-color:#ffb455;stop-opacity:1"
+         offset="1"
+         id="stop907" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient909"
+       id="linearGradient1024"
+       x1="33.259926"
+       y1="30.790316"
+       x2="33.577057"
+       y2="66.560905"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Drop Shadow"
+       id="filter903"
+       x="-0.12567076"
+       y="-0.1192264"
+       width="1.2222718"
+       height="1.2116195">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood893" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite895" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="1.8"
+         result="blur"
+         id="feGaussianBlur897" />
+      <feOffset
+         dx="-1.3"
+         dy="-1.25464"
+         result="offset"
+         id="feOffset899" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite901" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.771123"
+     inkscape:cx="251.58114"
+     inkscape:cy="136.16505"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1516"
+     inkscape:window-height="987"
+     inkscape:window-x="483"
+     inkscape:window-y="161"
+     inkscape:window-maximized="0"
+     units="px"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:snap-global="false"
+     inkscape:pagecheckerboard="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g1564"
+       transform="translate(0.29591145,1.0507665)">
+      <path
+         id="rect861"
+         style="display:inline;fill:#55daff;fill-opacity:1;stroke-width:0.529167;stroke-linejoin:bevel;paint-order:markers fill stroke;stop-color:#000000"
+         d="M 6.5424161,1.8814287 35.18826,1.7192777 45.400626,12.661611 45.522829,60.758997 c 0.0068,2.69237 -2.130848,4.85989 -4.777684,4.85989 H 6.5424161 c -2.646837,0 -4.777684,-2.16751 -4.777684,-4.85989 V 6.7413167 c 0,-2.692378 2.130888,-4.844906 4.777684,-4.859888 z"
+         sodipodi:nodetypes="sccssssss" />
+      <g
+         id="g883"
+         transform="matrix(0.94379128,0,0,0.86692466,-9.7576789,4.7833587)"
+         style="display:inline;stroke-width:1.10553">
+        <rect
+           style="fill:#00aad4;stroke-width:0.585011;stroke-linejoin:bevel;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect863"
+           width="23.12369"
+           height="5.7810392"
+           x="28.679924"
+           y="19.64992" />
+        <rect
+           style="fill:#00aad4;stroke-width:0.585011;stroke-linejoin:bevel;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect865"
+           width="32.908566"
+           height="5.7810392"
+           x="18.895046"
+           y="29.535545" />
+        <rect
+           style="fill:#00aad4;stroke-width:0.585011;stroke-linejoin:bevel;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect867"
+           width="32.908566"
+           height="5.7810392"
+           x="18.895046"
+           y="39.421173" />
+        <rect
+           style="fill:#00aad4;stroke-width:0.585011;stroke-linejoin:bevel;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect869"
+           width="32.908566"
+           height="5.7810392"
+           x="18.895046"
+           y="49.306797" />
+      </g>
+      <path
+         style="display:inline;fill:#aaeeff;fill-opacity:1;stroke-width:2.29824;stroke-linejoin:bevel;paint-order:markers fill stroke;filter:url(#filter903);stop-color:#000000"
+         d="m 156.45144,10.897968 -0.75168,32.194078 c -0.19945,8.51119 3.73297,14.637816 16.44097,14.561985 l 28.2719,-0.06239 z"
+         id="path891"
+         sodipodi:nodetypes="ccccc"
+         transform="matrix(0.228293,0,0,0.23222103,-0.32698487,-0.73466434)" />
+    </g>
+    <g
+       id="g1576"
+       transform="matrix(0.8429964,0,0,0.8429964,10.349048,10.256248)"
+       style="stroke-width:1.18624">
+      <path
+         style="fill:#ff8d55;fill-opacity:1;stroke:none;stroke-width:0.31386px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 2.050437,65.754615 c 0,0 0.024468,-46.918583 0.03575,-49.119794 2.1204477,-0.07072 22.454764,0.05276 24.231288,0 2.043799,-0.06071 6.151817,11.160922 6.151817,11.160922 h 34.463342 l -0.0093,38.001761 z"
+         id="path901"
+         sodipodi:nodetypes="ccscccc" />
+      <g
+         id="g1569"
+         style="stroke-width:1.18624">
+        <rect
+           style="fill:#e2e2e2;fill-opacity:1;stroke:none;stroke-width:0.31386;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect903"
+           width="59.846027"
+           height="41.671249"
+           x="5.027535"
+           y="22.526499" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.31386;paint-order:markers fill stroke;stop-color:#000000"
+           id="rect1008"
+           width="57.817787"
+           height="43.785133"
+           x="7.8583221"
+           y="21.042845" />
+        <path
+           style="fill:url(#linearGradient1024);fill-opacity:1;stroke:none;stroke-width:0.31386px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="M 0.76668375,65.754421 0.80314191,27.623507 H 23.744498 l 3.112889,-8.131526 h 40.075249 l -0.0095,46.305523 z"
+           id="path899"
+           sodipodi:nodetypes="ccccccc" />
+      </g>
+    </g>
+  </g>
+</svg>

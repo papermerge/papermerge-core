@@ -18,7 +18,7 @@ def get_default_ocr_lang():
     return settings.PAPERMERGE_OCR_DEFAULT_LANGUAGE
 
 
-def get_ocr_lang_choices(capitalize=True):
+def get_ocr_langs(capitalize=True):
     """
     returns a list of tuples as required by
     Django's choices ((key, value),(key, value), ...)

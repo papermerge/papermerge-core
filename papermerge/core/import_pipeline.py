@@ -9,17 +9,14 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.utils import module_loading
 
-from mglib.pdfinfo import get_pagecount
-from mglib.exceptions import FileTypeNotSupported
+from .lib.pagecount import get_pagecount
+from .exceptions import FileTypeNotSupported
 
 from papermerge.core.models import (
     Folder, Document, User
 )
 from papermerge.core.storage import default_storage
-from papermerge.core.tasks import ocr_page
-from papermerge.core import signal_definitions as signals
-from papermerge.core.ocr import COMPLETE, STARTED
-from papermerge.core.utils import Timer
+from papermerge.core.tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -155,56 +152,6 @@ class DefaultPipeline:
     def page_count(self):
         return get_pagecount(self.path)
 
-    def ocr_document(
-        self,
-        document,
-        page_count,
-        lang
-    ):
-        user_id = document.user.id
-        document_id = document.id
-        file_name = document.file_name
-
-        logger.debug(
-            f"{self.processor} importer: "
-            f"document {document_id} has {page_count} pages."
-        )
-        for page_num in range(1, page_count + 1):
-            signals.page_ocr.send(
-                sender='worker',
-                level=logging.INFO,
-                message="",
-                user_id=user_id,
-                document_id=document_id,
-                page_num=page_num,
-                lang=lang,
-                status=STARTED
-            )
-
-            with Timer() as time:
-                ocr_page(
-                    user_id=user_id,
-                    document_id=document_id,
-                    file_name=file_name,
-                    page_num=page_num,
-                    lang=lang,
-                )
-
-            msg = "{} importer: OCR took {} seconds to complete.".format(
-                self.processor,
-                time
-            )
-            signals.page_ocr.send(
-                sender='worker',
-                level=logging.INFO,
-                message=msg,
-                user_id=user_id,
-                document_id=document_id,
-                page_num=page_num,
-                lang=lang,
-                status=COMPLETE
-            )
-
     def get_init_kwargs(self):
         """Propagates keyword arguments to use in the init method
         of donwstream pipelines. Should be overwritten by inheriting
@@ -241,8 +188,7 @@ class DefaultPipeline:
         **kwargs
     ):
         """
-        Apply the pipeline. The document is created or modified here.  This
-method is not supposed to throw errors.
+        Apply the pipeline. The document is created or modified here.
 
         Arguments:
         - user (User, optional): document owner.
@@ -271,6 +217,8 @@ method is not supposed to throw errors.
             name = basename(self.path)
         page_count = self.page_count()
         size = getsize(self.path)
+        version = 0
+        target_version = 1
 
         if create_document and self.doc is None:
             try:
@@ -290,7 +238,9 @@ method is not supposed to throw errors.
                 raise error
         elif self.doc is not None:
             doc = self.doc
-            doc.version = doc.version + 1
+            version = doc.version
+            target_version = doc.version + 1
+            doc.version = target_version
             doc.page_count = page_count
             doc.file_name = name
             doc.size = size
@@ -309,22 +259,17 @@ method is not supposed to throw errors.
                 doc_path_url=doc.path().url()
             )
 
-            if apply_async:
-                for page_num in range(1, page_count + 1):
-                    ocr_page.apply_async(kwargs={
-                        'user_id': user.id,
-                        'document_id': doc.id,
-                        'file_name': name,
-                        'page_num': page_num,
-                        'lang': lang,
-                        'namespace': namespace
-                    })
-            else:
-                self.ocr_document(
-                    document=doc,
-                    page_count=page_count,
-                    lang=lang,
-                )
+            if namespace is None:
+                namespace = ''
+            ocr_document_task.apply_async(kwargs={
+                'user_id': user.id,
+                'document_id': doc.id,
+                'file_name': name,
+                'lang': lang,
+                'namespace': namespace,
+                'version': version,
+                'target_version': target_version
+            })
 
         logger.debug(f"{self.processor} importer: import complete.")
         return doc

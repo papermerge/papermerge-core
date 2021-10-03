@@ -31,8 +31,6 @@ document_patterns = [
     ),
 ]
 
-app_name = 'core'
-
 urlpatterns = [
     path(
         'document/<int:pk>/',
@@ -175,6 +173,6 @@ urlpatterns = [
         'user/<int:id>/change-password',
         users_views.user_change_password_view, name='user_change_password'
     ),
-    path('api/automate/', automate_views.AutomateList.as_view()),
-    path('api/automate/<int:pk>/', automate_views.AutomateDetail.as_view()),
+    path('automate/', automate_views.AutomateList.as_view()),
+    path('automate/<int:pk>/', automate_views.AutomateDetail.as_view()),
 ]

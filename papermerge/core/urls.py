@@ -175,13 +175,6 @@ urlpatterns = [
         'user/<int:id>/change-password',
         users_views.user_change_password_view, name='user_change_password'
     ),
-    path(
-        'automate/',
-        automate_views.automate_view,
-        name="automate_view"
-    ),
-    path(
-        'automate/<int:automate_id>/',
-        automate_views.automate_change_view, name="automate_change_view"
-    ),
+    path('api/automate/', automate_views.AutomateList.as_view()),
+    path('api/automate/<int:pk>/', automate_views.AutomateDetail.as_view()),
 ]

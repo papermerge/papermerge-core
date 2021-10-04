@@ -6,7 +6,8 @@ from .views import documents as doc_views
 from .views import nodes as node_views
 from .views import metadata as metadata_views
 from .views import users as users_views
-from .views import automates as automate_views
+from .views import automates as automates_views
+from .views import groups as groups_views
 from .views import langs as langs_views
 from .views import folder
 from .views import document
@@ -173,6 +174,8 @@ urlpatterns = [
         'user/<int:id>/change-password',
         users_views.user_change_password_view, name='user_change_password'
     ),
-    path('automate/', automate_views.AutomateList.as_view()),
-    path('automate/<int:pk>/', automate_views.AutomateDetail.as_view()),
+    path('automates/', automates_views.AutomatesList.as_view()),
+    path('automate/<int:pk>/', automates_views.AutomateDetail.as_view()),
+    path('groups/', groups_views.GroupsList.as_view()),
+    path('group/<int:pk>/', groups_views.GroupDetail.as_view()),
 ]

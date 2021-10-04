@@ -13,7 +13,7 @@ from papermerge.core.serializers import AutomateSerializer
 logger = logging.getLogger(__name__)
 
 
-class AutomateList(APIView):
+class AutomatesList(APIView):
     """
     List all automates, or create a new automate.
     """

@@ -6,6 +6,8 @@ setup(
     ),
     install_requires=[
         "django == 3.2.7",
+        "djangorestframework == 3.12.4",
+        "django-cors-headers == 3.9.0",
         "channels == 3.0.3",
         "channels-redis == 3.2.0",
         "redis == 3.5.3",
@@ -17,7 +19,6 @@ setup(
         "celery >= 5.0.0",
         "django-taggit == 1.3.0",
         "imapclient",
-        "djangorestframework",
         "django-rest-knox",
         "pyyaml",
         "lxml == 4.6.2",

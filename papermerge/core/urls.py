@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import access as access_views
-from .views import tags as tags_views
 from .views import api as api_views
 from .views import documents as doc_views
 from .views import nodes as node_views
@@ -8,6 +7,7 @@ from .views import metadata as metadata_views
 from .views import users as users_views
 from .views import automates as automates_views
 from .views import groups as groups_views
+from .views import tags as tags_views
 from .views import langs as langs_views
 from .views import folder
 from .views import document
@@ -177,5 +177,7 @@ urlpatterns = [
     path('automates/', automates_views.AutomatesList.as_view()),
     path('automate/<int:pk>/', automates_views.AutomateDetail.as_view()),
     path('groups/', groups_views.GroupsList.as_view()),
-    path('group/<int:pk>/', groups_views.GroupDetail.as_view()),
+    path('groups/<int:pk>/', groups_views.GroupDetail.as_view()),
+    path('tags/', tags_views.TagsList.as_view()),
+    path('tags/<int:pk>/', tags_views.TagDetail.as_view()),
 ]

@@ -10,11 +10,33 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 
+from rest_framework import generics
+from rest_framework.renderers import BrowsableAPIRenderer
+
+from papermerge.core.rest.serializers import TagSerializer
 from papermerge.core import validators
 from papermerge.core.models import Access, BaseTreeNode, Tag
+from papermerge.core.rest.renderers import JSONRenderer
+from papermerge.core.rest.parsers import JSONParser
+
+
 from .decorators import json_response
 
 logger = logging.getLogger(__name__)
+
+
+class TagsList(generics.ListCreateAPIView):
+    parser_classes = [JSONParser]
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+
+class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+    parser_classes = [JSONParser]
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
 
 @json_response

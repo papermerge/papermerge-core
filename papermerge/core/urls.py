@@ -8,7 +8,7 @@ from .views import users as users_views
 from .views import automates as automates_views
 from .views import groups as groups_views
 from .views import tags as tags_views
-:wqfrom .views import roles as roles_views
+from .views import roles as roles_views
 from .views import langs as langs_views
 from .views import folder
 from .views import document

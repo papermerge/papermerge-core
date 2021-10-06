@@ -4,6 +4,7 @@ from .user import UserSerializer
 from .group import GroupSerializer
 from .tag import TagSerializer
 from .role import RoleSerializer
+from .permission import PermissionSerializer
 
 __all__ = [
     'AutomateSerializer',
@@ -11,5 +12,6 @@ __all__ = [
     'UserSerializer',
     'GroupSerializer',
     'TagSerializer',
-    'RoleSerializer'
+    'RoleSerializer',
+    'PermissionSerializer'
 ]

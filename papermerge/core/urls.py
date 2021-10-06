@@ -8,6 +8,7 @@ from .views import users as users_views
 from .views import automates as automates_views
 from .views import groups as groups_views
 from .views import tags as tags_views
+from .views import roles as roles_views
 from .views import langs as langs_views
 from .views import folder
 from .views import document
@@ -180,4 +181,6 @@ urlpatterns = [
     path('groups/<int:pk>/', groups_views.GroupDetail.as_view()),
     path('tags/', tags_views.TagsList.as_view()),
     path('tags/<int:pk>/', tags_views.TagDetail.as_view()),
+    path('roles/', roles_views.RolesList.as_view()),
+    path('roles/<int:pk>/', roles_views.RoleDetail.as_view()),
 ]

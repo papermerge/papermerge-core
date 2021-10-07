@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from papermerge.core.models import Automate
-from papermerge.core.rest.serializers import AutomateSerializer
+from papermerge.core.serializers import AutomateSerializer
 
 
 logger = logging.getLogger(__name__)

@@ -13,5 +13,5 @@ __all__ = [
     'GroupSerializer',
     'TagSerializer',
     'RoleSerializer',
-    'PermissionSerializer'
+    'PermissionSerializer',
 ]

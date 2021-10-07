@@ -8,6 +8,8 @@ setup(
         "django == 3.2.7",
         "djangorestframework == 3.12.4",
         "django-cors-headers == 3.9.0",
+        "djangorestframework-jsonapi == 4.2.1",
+        "django_filter == 21.1",
         "channels == 3.0.3",
         "channels-redis == 3.2.0",
         "redis == 3.5.3",

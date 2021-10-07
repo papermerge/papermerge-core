@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from papermerge.core.models import (
     Document, Access
 )
-from papermerge.core.rest.serializers import DocumentSerializer
+from papermerge.core.serializers import DocumentSerializer
 from papermerge.core.import_pipeline import (
     go_through_pipelines,
     REST_API

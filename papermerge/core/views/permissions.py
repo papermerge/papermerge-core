@@ -6,6 +6,7 @@ from papermerge.core.serializers import PermissionSerializer
 
 class PermissionsList(generics.ListCreateAPIView):
     serializer_class = PermissionSerializer
+    pagination_class = None
 
     def get_queryset(self):
         """

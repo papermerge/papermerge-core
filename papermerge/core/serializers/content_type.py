@@ -7,6 +7,5 @@ class ContentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ContentType
-        resource_name = 'model_type'
         fields = ('id', 'model',)
 

@@ -7,7 +7,9 @@ from .content_type import ContentTypeSerializer
 
 class PermissionSerializer(serializers.ModelSerializer):
 
-    content_type = ContentTypeSerializer(read_only=True)
+    included_serializers = {
+        'content_type': ContentTypeSerializer,
+    }
 
     class Meta:
         model = Permission
@@ -24,3 +26,7 @@ class PermissionSerializer(serializers.ModelSerializer):
             'codename',
             'content_type'
         )
+
+    class JSONAPIMeta:
+        included_resources = ['content_type']
+

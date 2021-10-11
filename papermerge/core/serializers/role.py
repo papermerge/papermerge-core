@@ -7,5 +7,5 @@ class RoleSerializer(ModelSerializer):
 
     class Meta:
         model = Role
-        resource_name = 'role'
+        resource_name = 'roles'
         fields = ('id', 'name', 'created_at', 'updated_at')

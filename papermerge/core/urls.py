@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf.urls import include, url
+
 from .views import access as access_views
 from .views import api as api_views
 from .views import documents as doc_views
@@ -15,6 +17,13 @@ from .views import folder
 from .views import document
 from .views import page
 from .views import node
+
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+
+router.register(r"tags", tags_views.TagViewSet)
+router.register(r"roles", roles_views.RoleViewSet)
 
 document_patterns = [
     path(
@@ -35,6 +44,7 @@ document_patterns = [
 ]
 
 urlpatterns = [
+    url(r"^", include(router.urls)),
     path(
         'document/<int:pk>/',
         document.DocumentDetailView.as_view(),
@@ -180,9 +190,5 @@ urlpatterns = [
     path('automate/<int:pk>/', automates_views.AutomateDetail.as_view()),
     path('groups/', groups_views.GroupsList.as_view()),
     path('groups/<int:pk>/', groups_views.GroupDetail.as_view()),
-    path('tags/', tags_views.TagsList.as_view()),
-    path('tags/<int:pk>/', tags_views.TagDetail.as_view()),
-    path('roles/', roles_views.RolesList.as_view()),
-    path('roles/<int:pk>/', roles_views.RoleDetail.as_view()),
     path('permissions/', permissions_views.PermissionsList.as_view()),
 ]

@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.cache import cache
 
 from rest_framework import generics
-from rest_framework.renderers import BrowsableAPIRenderer
+from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import TagSerializer
 from papermerge.core import validators
@@ -22,12 +22,7 @@ from .decorators import json_response
 logger = logging.getLogger(__name__)
 
 
-class TagsList(generics.ListCreateAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-
-
-class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 

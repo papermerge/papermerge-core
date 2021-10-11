@@ -7,7 +7,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        resource_name = 'tag'
+        resource_name = 'tags'
         fields = [
             'id',
             'name',

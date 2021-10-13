@@ -22,7 +22,7 @@ from .decorators import json_response
 logger = logging.getLogger(__name__)
 
 
-class TagViewSet(ModelViewSet):
+class TagsViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 

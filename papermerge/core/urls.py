@@ -22,8 +22,9 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 
-router.register(r"tags", tags_views.TagViewSet)
-router.register(r"roles", roles_views.RoleViewSet)
+router.register(r"tags", tags_views.TagsViewSet)
+router.register(r"roles", roles_views.RolesViewSet)
+router.register(r"groups", groups_views.GroupsViewSet)
 
 document_patterns = [
     path(
@@ -188,7 +189,5 @@ urlpatterns = [
     ),
     path('automates/', automates_views.AutomatesList.as_view()),
     path('automate/<int:pk>/', automates_views.AutomateDetail.as_view()),
-    path('groups/', groups_views.GroupsList.as_view()),
-    path('groups/<int:pk>/', groups_views.GroupDetail.as_view()),
     path('permissions/', permissions_views.PermissionsList.as_view()),
 ]

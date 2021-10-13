@@ -4,6 +4,6 @@ from papermerge.core.serializers import RoleSerializer
 from papermerge.core.models import Role
 
 
-class RoleViewSet(ModelViewSet):
+class RolesViewSet(ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer

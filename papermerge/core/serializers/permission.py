@@ -13,7 +13,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Permission
-        resource_name = 'permission'
+        resource_name = 'permissions'
         fields = (
             'id',
             'name',

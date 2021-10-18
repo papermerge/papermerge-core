@@ -36,3 +36,12 @@ class RoleSerializer(ModelSerializer):
         role.save()
 
         return role
+
+    def update(self, instance, validated_data):
+        perm_ids = [perm.id for perm in validated_data['permissions']]
+        permissions = Permission.objects.filter(id__in=perm_ids)
+        instance.permissions.set(permissions)
+        instance.name = validated_data['name']
+        instance.save()
+
+        return instance

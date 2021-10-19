@@ -5,6 +5,7 @@ from .group import GroupSerializer
 from .tag import TagSerializer
 from .role import RoleSerializer
 from .permission import PermissionSerializer
+from .content_type import ContentTypeSerializer
 
 __all__ = [
     'AutomateSerializer',
@@ -14,4 +15,5 @@ __all__ = [
     'TagSerializer',
     'RoleSerializer',
     'PermissionSerializer',
+    'ContentTypeSerializer'
 ]

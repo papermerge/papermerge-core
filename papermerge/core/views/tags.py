@@ -10,7 +10,6 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 
-from rest_framework import generics
 from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import TagSerializer

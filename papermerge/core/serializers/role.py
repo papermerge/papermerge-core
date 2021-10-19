@@ -27,7 +27,7 @@ class RoleSerializer(ModelSerializer):
         included_resources = ['permissions']
 
     def create(self, validated_data):
-        perm_ids = [perm.id for perm in validated_data['permissions']]
+        perm_ids = [perm.id for perm in validated_data.get('permissions', [])]
         permissions = Permission.objects.filter(id__in=perm_ids)
         role = Role.objects.create(
             name=validated_data['name']

@@ -1,14 +1,21 @@
-from rest_framework import serializers
+from rest_framework_json_api.serializers import ModelSerializer
 
-from papermerge.core.models import (Document, User)
+from papermerge.core.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
-
-    documents = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Document.objects.all()
-    )
+class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'documents']
+        resource_name = 'users'
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'is_active',
+            'is_staff',
+            'is_superuser',
+            'date_joined'
+        )

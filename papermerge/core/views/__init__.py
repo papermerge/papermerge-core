@@ -4,7 +4,7 @@ from .tags import TagsViewSet
 from .roles import RolesViewSet
 from .groups import GroupsViewSet
 from .permissions import PermissionsList
-from .users import UsersViewSet
+from .users import UsersViewSet, UserChangePassword
 
 
 __all__ = [
@@ -14,5 +14,6 @@ __all__ = [
     'RolesViewSet',
     'GroupsViewSet',
     'PermissionsList',
-    'UsersViewSet'
+    'UsersViewSet',
+    'UserChangePassword'
 ]

@@ -17,6 +17,7 @@ router.register(r"users", views.UsersViewSet)
 
 urlpatterns = [
     url(r"^", include(router.urls)),
+    path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
 ]

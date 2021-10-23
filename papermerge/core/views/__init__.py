@@ -5,6 +5,7 @@ from .roles import RolesViewSet
 from .groups import GroupsViewSet
 from .permissions import PermissionsList
 from .users import UsersViewSet, UserChangePassword
+from .nodes import NodesViewSet
 
 
 __all__ = [
@@ -14,6 +15,7 @@ __all__ = [
     'RolesViewSet',
     'GroupsViewSet',
     'PermissionsList',
+    'NodesViewSet',
     'UsersViewSet',
     'UserChangePassword'
 ]

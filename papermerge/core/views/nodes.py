@@ -22,6 +22,9 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
+from rest_framework_json_api.views import ModelViewSet
+
+from papermerge.core.serializers import NodeSerializer
 from papermerge.core.models import (
     BaseTreeNode,
     Access,
@@ -40,6 +43,13 @@ logger = logging.getLogger(__name__)
 
 
 PER_PAGE = 30
+
+
+class NodesViewSet(ModelViewSet):
+    serializer_class = NodeSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        return BaseTreeNode.objects.filter(user=self.request.user)
 
 
 def _filter_by_tag(nodes, request_get_dict):

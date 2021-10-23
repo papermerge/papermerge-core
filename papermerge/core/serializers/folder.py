@@ -1,12 +1,12 @@
 from rest_framework_json_api import serializers
 
-from papermerge.core.models import Document
+from papermerge.core.models import Folder
 
 
-class DocumentSerializer(serializers.ModelSerializer):
+class FolderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Document
-        resource_name = 'documents'
+        model = Folder
+        resource_name = 'folders'
         fields = (
             'id',
             'title',

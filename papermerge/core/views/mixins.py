@@ -2,6 +2,11 @@ from django.http import (
     JsonResponse,
     HttpResponse
 )
+from rest_framework.permissions import IsAuthenticated
+
+
+class RequireAuthMixin:
+    permission_classes = [IsAuthenticated]
 
 
 class JSONResponseMixin:

@@ -17,11 +17,12 @@ from papermerge.core import validators
 from papermerge.core.models import Access, BaseTreeNode, Tag
 
 from .decorators import json_response
+from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
 
 
-class TagsViewSet(ModelViewSet):
+class TagsViewSet(RequireAuthMixin, ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 

@@ -8,16 +8,17 @@ from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
+from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
 
 
-class UsersViewSet(ModelViewSet):
+class UsersViewSet(RequireAuthMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class UserChangePassword(APIView):
+class UserChangePassword(RequireAuthMixin, APIView):
     parser_classes = [JSONParser]
 
     def post(self, request, pk):

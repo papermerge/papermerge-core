@@ -4,12 +4,12 @@ from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.models import Automate
 from papermerge.core.serializers import AutomateSerializer
-
+from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
 
 
-class AutomatesViewSet(ModelViewSet):
+class AutomatesViewSet(RequireAuthMixin, ModelViewSet):
     queryset = Automate.objects.all()
     serializer_class = AutomateSerializer
 

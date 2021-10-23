@@ -2,9 +2,10 @@ from django.contrib.auth.models import Permission
 from rest_framework import generics
 
 from papermerge.core.serializers import PermissionSerializer
+from .mixins import RequireAuthMixin
 
 
-class PermissionsList(generics.ListCreateAPIView):
+class PermissionsList(RequireAuthMixin, generics.ListCreateAPIView):
     serializer_class = PermissionSerializer
     pagination_class = None
 

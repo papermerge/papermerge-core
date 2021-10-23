@@ -1,9 +1,9 @@
-from rest_framework_json_api.serializers import ModelSerializer
+from rest_framework_json_api import serializers
 
 from papermerge.core.models import User
 
 
-class UserSerializer(ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User

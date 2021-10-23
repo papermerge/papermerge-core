@@ -23,8 +23,15 @@ logger = logging.getLogger(__name__)
 
 
 class TagsViewSet(RequireAuthMixin, ModelViewSet):
-    queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        return Tag.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        tag = Tag(**serializer.data)
+        tag.user_id = self.request.user.id
+        tag.save()
 
 
 @json_response

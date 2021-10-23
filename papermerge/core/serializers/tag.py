@@ -8,11 +8,11 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         resource_name = 'tags'
-        fields = [
+        fields = (
             'id',
             'name',
             'bg_color',
             'fg_color',
             'description',
             'pinned',
-        ]
+        )

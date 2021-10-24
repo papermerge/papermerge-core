@@ -50,7 +50,7 @@ class DocumentManager(PolymorphicMPTTModelManager):
     @transaction.atomic
     def create_document(
         self,
-        user,
+        user_id,
         title,
         lang,
         size,
@@ -75,8 +75,8 @@ class DocumentManager(PolymorphicMPTTModelManager):
             title=title,
             size=size,
             lang=lang,
-            user=user,
-            parent=parent,
+            user_id=user_id,
+            parent_id=parent_id,
             notes=notes,
             file_name=file_name,
             page_count=page_count
@@ -696,15 +696,10 @@ class Document(BaseTreeNode):
 
         for page_index in range(1, page_count + 1):
 
-            preview = reverse(
-                'core:page',
-                args=[self.id, page_index]
-            )
-
             page = self.pages.create(
                 user=self.user,
                 number=page_index,
-                image=preview,
+                image='refactor_me',
                 lang=self.lang,
                 page_count=page_count
             )

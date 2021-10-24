@@ -1,13 +1,14 @@
+from os.path import getsize
+
 from rest_framework_json_api import serializers
 
-from papermerge.core.models import (
-    Folder,
-    Document,
-    User
-)
+from mglib.pdfinfo import get_pagecount
+
+from papermerge.core.models import (Document, User)
+from papermerge.core.storage import default_storage
 
 
-def default_document_properties(user_id=None):
+def default_user(user_id=None):
     user = None
     if user_id is None:
         user = User.objects.filter(
@@ -17,22 +18,20 @@ def default_document_properties(user_id=None):
     if not user:
         raise ValueError("No user was found to assign document to")
 
+    return user
+
+
+def default_lang(user_id=None):
+    user = default_user(user_id=user_id)
     lang = user.preferences['ocr__OCR_Language']
 
-    inbox, _ = Folder.objects.get_or_create(
-        title=Folder.INBOX_NAME,
-        parent=None,
-        user=user
-    )
-    default_props = {
-        'user_id': user.pk,
-        'lang': lang,
-        'parent_id': inbox.pk
-    }
-    return default_props
+    return lang
 
 
 class DocumentSerializer(serializers.ModelSerializer):
+    size = serializers.IntegerField(required=False)
+    page_count = serializers.IntegerField(required=False)
+
     class Meta:
         model = Document
         resource_name = 'documents'
@@ -52,19 +51,25 @@ class DocumentSerializer(serializers.ModelSerializer):
         self,
         validated_data,
         user_id,
-        payload,
-        payload_name
+        payload
     ):
+        size = getsize(payload.temporary_file_path())
+        page_count = 3
         kwargs = {
             'user_id': user_id,
             'title': validated_data['title'],
-            'size': validated_data['size'],
+            'size': size,
             'lang': validated_data['lang'],
             'file_name': validated_data['title'],
             'parent_id': validated_data['parent_id'],
-            'page_count': validated_data['page_count']
+            'page_count': page_count
         }
         doc = Document.objects.create_document(**kwargs)
+
+        default_storage.copy_doc(
+            src=payload.temporary_file_path(),
+            dst=doc.path().url()
+        )
 
         return doc
 

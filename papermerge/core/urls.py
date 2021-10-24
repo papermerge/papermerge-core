@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.conf.urls import include, url
 
 from rest_framework import routers
@@ -18,6 +18,7 @@ router.register(r"users", views.UsersViewSet)
 
 
 urlpatterns = [
+    re_path('nodes/(?P<parent_id>\d+)?upload/', views.DocumentUploadView.as_view()),
     url(r"^", include(router.urls)),
     path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),

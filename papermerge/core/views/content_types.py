@@ -8,4 +8,3 @@ class ContentTypeRetrieve(generics.RetrieveAPIView):
     serializer_class = ContentTypeSerializer
     pagination_class = None
     queryset = ContentType.objects.all()
-

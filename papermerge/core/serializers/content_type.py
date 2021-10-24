@@ -9,4 +9,3 @@ class ContentTypeSerializer(serializers.ModelSerializer):
         model = ContentType
         resource_name = 'content-types'
         fields = ('id', 'model',)
-

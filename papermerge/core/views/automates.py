@@ -21,9 +21,9 @@ class AutomatesViewSet(RequireAuthMixin, ModelViewSet):
         automate.save()
 
 
-#@json_response
-#@login_required
-#def automate_view(request):
+# @json_response
+# @login_required
+# def automate_view(request):
 #    """
 #    If no particular automate is asked for, just return
 #    list of all tags (which might be associated to the new automate)
@@ -38,9 +38,9 @@ class AutomatesViewSet(RequireAuthMixin, ModelViewSet):
 #    return response
 #
 #
-#@json_response
-#@login_required
-#def automate_change_view(request, automate_id):
+# @json_response
+# @login_required
+# def automate_change_view(request, automate_id):
 #    """
 #    Returns details of the automate specified with given id
 #    """

@@ -275,11 +275,11 @@ class Storage:
         )
 
         # replace stapler!
-        #stapler.reorder_pages(
+        # stapler.reorder_pages(
         #    src=self.abspath(src_doc_path),
         #    dst=self.abspath(dst_doc_path),
         #    new_order=new_order
-        #)
+        # )
 
         page_count = self.get_pagecount(doc_path)
 
@@ -290,7 +290,7 @@ class Storage:
             return
 
         # steps were removed
-        #for item in new_order:
+        # for item in new_order:
         #    for step in Steps():
         #        src_page_path = PagePath(
         #            document_path=src_doc_path,
@@ -337,11 +337,11 @@ class Storage:
             self.abspath(dst_doc_path)
         )
         # replace stapler!
-        #stapler.delete_pages(
+        # stapler.delete_pages(
         #    self.abspath(src_doc_path),
         #    self.abspath(dst_doc_path),
         #    page_numbers
-        #)
+        # )
 
         if skip_migration:
             return doc_path.version + 1
@@ -359,7 +359,7 @@ class Storage:
             deleted_pages=page_numbers
         )
         # steps were removed
-        #for a in assigns:
+        # for a in assigns:
         #    for step in Steps():
         #        src_page_path = PagePath(
         #            document_path=src_doc_path,
@@ -409,14 +409,14 @@ class Storage:
             self.abspath(next_ver_dp)
         )
 
-        #stapler.paste_pages(
+        # stapler.paste_pages(
         #    src=self.abspath(dest_doc_path),
         #    dst=self.abspath(next_ver_dp),
         #    data_list=data_list,
         #    dst_doc_is_new=dest_doc_is_new,
         #    after_page_number=after_page_number,
         #    before_page_number=before_page_number
-        #)
+        # )
 
         if not dest_doc_is_new:
             # migrate document's own pages from previous
@@ -435,7 +435,7 @@ class Storage:
         dest_page_count = sum([
             len(item['page_nums']) for item in data_list
         ])
-        #for item in data_list:
+        # for item in data_list:
         #    src_path = item['doc_path']
         #    for page_num in item['page_nums']:
         #        for step in Steps():

@@ -29,4 +29,3 @@ class PermissionSerializer(serializers.ModelSerializer):
 
     class JSONAPIMeta:
         included_resources = ['content_type']
-

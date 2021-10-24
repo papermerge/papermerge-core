@@ -7,14 +7,12 @@ SECRET_KEY = 'fake-key'
 
 INSTALLED_APPS = [
     'rest_framework',
-    'knox',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
-    'papermerge.contrib.admin.apps.AdminConfig',
     'papermerge.avenues.apps.AvenuesConfig',
     'django.contrib.contenttypes',
     'allauth',
@@ -25,7 +23,6 @@ INSTALLED_APPS = [
     'polymorphic_tree',
     'polymorphic',
     'mptt',
-    'mgclipboard',
     'bootstrap4',
     'channels',
 ]

@@ -8,26 +8,6 @@ from papermerge.core.models import (Document, User)
 from papermerge.core.storage import default_storage
 
 
-def default_user(user_id=None):
-    user = None
-    if user_id is None:
-        user = User.objects.filter(
-            is_superuser=True
-        ).first()
-
-    if not user:
-        raise ValueError("No user was found to assign document to")
-
-    return user
-
-
-def default_lang(user_id=None):
-    user = default_user(user_id=user_id)
-    lang = user.preferences['ocr__OCR_Language']
-
-    return lang
-
-
 class DocumentSerializer(serializers.ModelSerializer):
     size = serializers.IntegerField(required=False)
     page_count = serializers.IntegerField(required=False)
@@ -72,17 +52,3 @@ class DocumentSerializer(serializers.ModelSerializer):
         )
 
         return doc
-
-    @staticmethod
-    def get_user_properties(user):
-        """Get properties of the document owner, if no owner is specified
-        the document gets assigned to first superuser
-
-        Args:
-            user (User): owner object
-
-        Returns:
-            user (User): owner object
-            lang (str): user language
-            inbox (Folder): inbox folder
-        """

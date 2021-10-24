@@ -13,3 +13,10 @@ class FolderSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+
+    def create(self, validated_data, user_id):
+        kwargs = {
+            **validated_data,
+            'user_id': user_id
+        }
+        return Folder.objects.create(**kwargs)

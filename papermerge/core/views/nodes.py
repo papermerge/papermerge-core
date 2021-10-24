@@ -23,8 +23,14 @@ from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
+from rest_framework.parsers import FileUploadParser
 
-from papermerge.core.serializers import NodeSerializer
+from papermerge.core.serializers import (
+    NodeSerializer,
+    DocumentSerializer,
+    FolderSerializer
+)
 from papermerge.core.models import (
     BaseTreeNode,
     Access,
@@ -47,9 +53,25 @@ PER_PAGE = 30
 
 class NodesViewSet(ModelViewSet):
     serializer_class = NodeSerializer
+    parser_classes = [FileUploadParser, JSONAPIParser]
 
     def get_queryset(self, *args, **kwargs):
         return BaseTreeNode.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if isinstance(serializer, FolderSerializer):
+            ret = serializer.create(
+                user_id=self.request.user.pk,
+                validated_data=serializer.data
+            )
+        else:
+            # DocumentSerializers receives a payload as well
+            # payload = uploaded file
+            ret = serializer.create(
+                user_id=self.request.user.pk,
+                validated_data=serializer.data,
+                payload=self.request.data['file']
+            )
 
 
 def _filter_by_tag(nodes, request_get_dict):

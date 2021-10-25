@@ -40,7 +40,7 @@ class HybridFolderListView(HybridResponseMixin, TemplateView):
         qs = self.model.objects.filter(
             parent_id=parent_id
         ).exclude(
-            title=Folder.INBOX_NAME
+            title=Folder.INBOX_TITLE
         )
 
         return qs
@@ -147,7 +147,7 @@ class FolderCreateView(HybridResponseMixin, TemplateView):
         parent_id = data.get('parent_id', None)
         title = data.get('title', False)
 
-        if title == Folder.INBOX_NAME:
+        if title == Folder.INBOX_TITLE:
             error_message = 'This title is not allowed'
             raise ValidationError(error_message)
 

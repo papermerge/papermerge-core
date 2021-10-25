@@ -360,7 +360,7 @@ def create_folder(request):
     parent_id = data.get('parent_id', -1)
     title = data.get('title', False)
 
-    if title == Folder.INBOX_NAME:
+    if title == Folder.INBOX_TITLE:
         return HttpResponseBadRequest(
             json.dumps({
                 'msg': 'This title is not allowed'

@@ -51,8 +51,18 @@ CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
 
 class Folder(BaseTreeNode, index.Indexed):
 
-    # special folders' name always starts with a DOT (. character)
-    INBOX_NAME = ".inbox"
+    # Each user has two special folders: Inbox and Home. Each of this folders
+    # is created when respective user model is created.
+    # Inbox is where all incoming documents are placed (i.e. from IMAP client).
+    # Home is topmost folder from his/her stand point i.e. 'landing page'
+    # when he/she lands in web UI. Everything outside user's home and
+    # inbox folders is not visible/accessible to him/her.
+    # Both Inbox and Home are user's topmost folders i.e.
+    # is_parent = null and user_id = <current_user_id>
+
+    # Special folders' name always starts with a DOT ('.') character
+    INBOX_TITLE = ".inbox"
+    HOME_TITLE = ".home"
 
     search_fields = [
         index.SearchField('title'),
@@ -172,7 +182,7 @@ def get_inbox_children(user):
     of given user's inbox folder
     """
     inbox_node = BaseTreeNode.objects.get(
-        title=Folder.INBOX_NAME,
+        title=Folder.INBOX_TITLE,
         user=user
     )
 

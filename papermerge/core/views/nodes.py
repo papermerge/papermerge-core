@@ -110,7 +110,7 @@ def _filter_by_tag(nodes, request_get_dict):
         nodes = BaseTreeNode.objects.filter(
             tags__name__in=[tag]
         ).exclude(
-            title=Folder.INBOX_NAME
+            title=Folder.INBOX_TITLE
         )
 
     return nodes
@@ -269,7 +269,7 @@ def folder_view(request, node_id=None):
         * ordered by title, date, type (optionally)
     """
     nodes = BaseTreeNode.objects.filter(parent_id=node_id).exclude(
-        title=Folder.INBOX_NAME
+        title=Folder.INBOX_TITLE
     )
 
     nodes = _filter_by_tag(nodes, request.GET)

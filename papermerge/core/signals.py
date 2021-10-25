@@ -148,7 +148,12 @@ def _user_init(user):
     """
     if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
         Folder.objects.get_or_create(
-            title=Folder.INBOX_NAME,
+            title=Folder.INBOX_TITLE,
+            parent=None,
+            user=user
+        )
+        Folder.objects.get_or_create(
+            title=Folder.HOME_TITLE,
             parent=None,
             user=user
         )

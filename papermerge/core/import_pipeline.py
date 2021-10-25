@@ -136,7 +136,7 @@ class DefaultPipeline:
         lang = user.preferences['ocr__OCR_Language']
 
         inbox, _ = Folder.objects.get_or_create(
-            title=Folder.INBOX_NAME,
+            title=Folder.INBOX_TITLE,
             parent=None,
             user=user
         )

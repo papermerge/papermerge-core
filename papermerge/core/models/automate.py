@@ -226,7 +226,7 @@ class Automate(models.Model):
         if not document.parent:
             return False
 
-        if document.parent.title == Folder.INBOX_NAME:
+        if document.parent.title == Folder.INBOX_TITLE:
             # document is in Inbox
             logger.debug(f"Document {document} is in Inbox")
             return True

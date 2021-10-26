@@ -33,3 +33,11 @@ class UserChangePassword(RequireAuthMixin, APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class CurrentUserView(RequireAuthMixin, APIView):
+    resource_name = 'users'
+
+    def get(self, request):
+        serializer = UserSerializer(self.request.user)
+        return Response(serializer.data)

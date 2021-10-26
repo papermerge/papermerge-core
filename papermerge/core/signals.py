@@ -141,24 +141,6 @@ def normalize_pages_from_folder_handler(sender, instance, created, **kwargs):
     normalize_pages(origin=instance)
 
 
-def _user_init(user):
-    """
-    Create user specific data:
-        1. Inbox folder
-    """
-    if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
-        Folder.objects.get_or_create(
-            title=Folder.INBOX_TITLE,
-            parent=None,
-            user=user
-        )
-        Folder.objects.get_or_create(
-            title=Folder.HOME_TITLE,
-            parent=None,
-            user=user
-        )
-
-
 @receiver(post_save, sender=User)
 def user_init(sender, instance, created, **kwargs):
     """
@@ -167,7 +149,8 @@ def user_init(sender, instance, created, **kwargs):
     Create user specific data when user is initially created
     """
     if created:
-        _user_init(user=instance)
+        if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
+            instance.create_special_folders()
 
 
 @receiver(user_logged_in)

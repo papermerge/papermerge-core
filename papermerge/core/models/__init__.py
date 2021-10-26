@@ -4,8 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from allauth.account.models import EmailAddress
-
 from papermerge.core.models.automate import Automate
 from papermerge.core.models.access import Access
 from papermerge.core.models.diff import Diff
@@ -92,12 +90,51 @@ class User(AbstractUser):
         )
     )
 
+    # Initially user is created with empty `home_folder` and `inbox_folder`.
+    # Home and Inbox folder fields are populated as part of `post_save` model
+    # `user` signal
+    home_folder = models.OneToOneField(
+        'Folder',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='home_folder_of'
+    )
+    inbox_folder = models.OneToOneField(
+        'Folder',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='inbox_folder_of'
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )
     updated_at = models.DateTimeField(
         auto_now=True
     )
+
+    def create_special_folders(self):
+        """
+        Creates user's home and inbox folders.
+
+        This method is invoked in user's post save
+        signal on model creation.
+        """
+        _inbox, _ = Folder.objects.get_or_create(
+            title=Folder.INBOX_TITLE,
+            parent=None,
+            user=self
+        )
+        _home, _ = Folder.objects.get_or_create(
+            title=Folder.HOME_TITLE,
+            parent=None,
+            user=self
+        )
+        self.inbox_folder = _inbox
+        self.home_folder = _home
+        self.save()
 
     def update_current_storage(self):
         user_docs = Document.objects.filter(user=self)
@@ -153,24 +190,6 @@ class User(AbstractUser):
             return True
 
         return _user_has_module_perms(self, app_label)
-
-    def confirm_email(self):
-        """
-        Allauth requires an associated EmailAddress object with
-        ``verified`` attribute set to ``true`` in order
-        to consider that user confirmed its email.
-        This method is required in case email confirmation is
-        enabled because allauth cannot distinguish between
-        users created by administrative person from
-        users created by web form registration. In both cases
-        it will require email confirmation.
-        """
-        email_address, _ = EmailAddress.objects.get_or_create(
-            email=self.email, user=self
-        )
-        email_address.verified = True
-        email_address.user = self
-        email_address.save()
 
 
 __all__ = [

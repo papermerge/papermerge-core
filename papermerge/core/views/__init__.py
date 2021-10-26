@@ -4,7 +4,11 @@ from .tags import TagsViewSet
 from .roles import RolesViewSet
 from .groups import GroupsViewSet
 from .permissions import PermissionsList
-from .users import UsersViewSet, UserChangePassword
+from .users import (
+    UsersViewSet,
+    UserChangePassword,
+    CurrentUserView
+)
 from .nodes import (
     NodesViewSet,
     DocumentUploadView
@@ -21,5 +25,6 @@ __all__ = [
     'NodesViewSet',
     'DocumentUploadView',
     'UsersViewSet',
-    'UserChangePassword'
+    'UserChangePassword',
+    'CurrentUserView'
 ]

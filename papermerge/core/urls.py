@@ -22,9 +22,10 @@ urlpatterns = [
         r'nodes/(?P<parent_id>\d+)?upload/(?P<filename>[^/]+)$',
         views.DocumentUploadView.as_view()
     ),
-    url(r"^", include(router.urls)),
     path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
+    path('users/me/', views.CurrentUserView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     path('auth-token/', authtoken_views.obtain_auth_token),
+    url(r"^", include(router.urls)),
 ]

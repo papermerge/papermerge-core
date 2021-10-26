@@ -11,6 +11,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'username',
+            'inbox_folder',
+            'home_folder',
             'first_name',
             'last_name',
             'email',

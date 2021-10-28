@@ -72,6 +72,9 @@ class Folder(BaseTreeNode, index.Indexed):
 
     objects = CustomFolderManager()
 
+    class JSONAPIMeta:
+        resource_name = "folders"
+
     def delete(self, *args, **kwargs):
         descendants = self.basetreenode_ptr.get_descendants()
 

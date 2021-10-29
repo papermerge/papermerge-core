@@ -57,15 +57,15 @@ PER_PAGE = 30
 
 class NodesViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = NodeSerializer
+    queryset = BaseTreeNode.objects.all()
 
     def get_queryset(self, *args, **kwargs):
         return BaseTreeNode.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-
         return serializer.create(
             user_id=self.request.user.pk,
-            validated_data=serializer.data
+            validated_data=serializer.validated_data
         )
 
 

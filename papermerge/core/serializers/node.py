@@ -18,6 +18,12 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
     ]
 
     parent = ResourceRelatedField(queryset=Folder.objects)
+    children = ResourceRelatedField(
+        many=True,
+        required=False,
+        allow_empty=True,
+        queryset=BaseTreeNode.objects.all()
+    )
 
     class Meta:
         model = BaseTreeNode
@@ -26,6 +32,7 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
             'id',
             'title',
             'parent',
+            'children',
             'created_at',
             'updated_at',
         )

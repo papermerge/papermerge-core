@@ -4,9 +4,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'fake-key'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 
 INSTALLED_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_json_api',
+    'corsheaders',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',
@@ -15,15 +20,11 @@ INSTALLED_APPS = [
     'papermerge.core.apps.CoreConfig',
     'papermerge.avenues.apps.AvenuesConfig',
     'django.contrib.contenttypes',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',
     'polymorphic_tree',
     'polymorphic',
     'mptt',
-    'bootstrap4',
     'channels',
 ]
 

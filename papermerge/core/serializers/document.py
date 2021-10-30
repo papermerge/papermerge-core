@@ -30,33 +30,10 @@ class DocumentSerializer(serializers.ModelSerializer):
             'updated_at'
         )
 
-    def create(
-        self,
-        validated_data,
-        user_id,
-        payload=None
-    ):
-        if payload:
-            size = getsize(payload.temporary_file_path())
-            page_count = 3
-        else:
-            size = 0
-            page_count = 0
-        kwargs = {
-            'user_id': user_id,
-            'title': validated_data['title'],
-            'size': size,
-            'lang': validated_data['lang'],
-            'file_name': validated_data['title'],
-            'parent_id': validated_data['parent'].id,
-            'page_count': page_count
-        }
-        doc = Document.objects.create_document(**kwargs)
-
-        if payload:
-            default_storage.copy_doc(
-                src=payload.temporary_file_path(),
-                dst=doc.path().url()
-            )
-
-        return doc
+    def create(self, validated_data, **kwargs):
+        return Document.objects.create_document(
+            size=0,
+            page_count=0,
+            file_name=validated_data['title'],
+            **validated_data
+        )

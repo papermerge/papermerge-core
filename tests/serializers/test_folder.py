@@ -24,4 +24,5 @@ class TestTasks(TestCase):
         serializer.save(user_id=self.user.pk)
 
         self.assertEqual('My Documents', serializer.data['title'])
+        self.assertIsNotNone(serializer.data)
         self.assertIsNotNone(serializer.data['id'])

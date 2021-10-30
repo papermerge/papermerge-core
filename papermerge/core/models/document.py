@@ -57,7 +57,7 @@ class DocumentManager(PolymorphicMPTTModelManager):
         page_count,
         file_name,
         notes=None,
-        parent_id=None,
+        parent=None,
         **kwargs
     ):
         """
@@ -69,14 +69,12 @@ class DocumentManager(PolymorphicMPTTModelManager):
         # extra document parts
         kw_parts = kwargs.pop('parts', {})
 
-        parent = self._get_parent(parent_id=parent_id)
-
         doc = Document(
             title=title,
             size=size,
             lang=lang,
             user_id=user_id,
-            parent_id=parent_id,
+            parent=parent,
             notes=notes,
             file_name=file_name,
             page_count=page_count

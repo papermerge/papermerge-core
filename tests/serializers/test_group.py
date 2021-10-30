@@ -17,4 +17,3 @@ class TestTasks(TestCase):
 
         self.assertEqual('group_x1', serializer.data['name'])
         self.assertIsNotNone(serializer.data['id'])
-

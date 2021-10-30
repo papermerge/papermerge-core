@@ -25,4 +25,3 @@ class TestTasks(TestCase):
 
         self.assertEqual('My Documents', serializer.data['title'])
         self.assertIsNotNone(serializer.data['id'])
-

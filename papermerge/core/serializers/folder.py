@@ -1,10 +1,7 @@
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
 
-from papermerge.core.models import (
-    Folder,
-    BaseTreeNode
-)
+from papermerge.core.models import Folder
 
 
 class FolderSerializer(serializers.ModelSerializer):

@@ -39,8 +39,6 @@ from .utils import (
 )
 from .finder import default_parts_finder
 
-from papermerge.search import index
-
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +51,9 @@ class DocumentManager(PolymorphicMPTTModelManager):
         user_id,
         title,
         lang,
-        size,
-        page_count,
-        file_name,
-        notes=None,
+        size=0,
+        page_count=0,
+        file_name=None,
         parent=None,
         **kwargs
     ):
@@ -71,31 +68,34 @@ class DocumentManager(PolymorphicMPTTModelManager):
 
         doc = Document(
             title=title,
-            size=size,
             lang=lang,
             user_id=user_id,
             parent=parent,
-            notes=notes,
-            file_name=file_name,
-            page_count=page_count
         )
         # validate before saving
         # will raise ValidationError in case of
         # problems
         doc.full_clean()
         doc.save()
+        document_version = DocumentVersion(
+            document=doc,
+            number=0,
+            file_name=file_name,
+            size=0,
+            page_count=0
+        )
+        document_version.save()
         # Important! - first document must inherit metakeys from
         # parent folder
-        if parent:
-            doc.inherit_kv_from(parent)
+        # if parent:
+        #    doc.inherit_kv_from(parent)
 
-        doc.create_pages()
         doc.full_clean()
 
         # document parts are created regardless whether there
         # are arguments for them or no.
-        self._create_doc_parts(doc, **kw_parts)
-        self._create_node_parts(doc, **kw_parts)
+        # self._create_doc_parts(doc, **kw_parts)
+        # self._create_node_parts(doc, **kw_parts)
 
         return doc
 
@@ -256,60 +256,12 @@ class Document(BaseTreeNode):
     class CannotUpload(Exception):
         pass
 
-    #: basename + ext of uploaded file.
-    #: other path details are deducted from user_id and document_id
-    file_name = models.CharField(
-        max_length=1024,
-        default='',
-    )
-
-    notes = models.TextField(
-        _('Notes'),
-        blank=True,
-        null=True,
-    )
-
-    size = models.BigIntegerField(
-        help_text="Size of file_orig attached. Size is in Bytes",
-        blank=False,
-        null=False,
-    )
-
-    page_count = models.IntegerField(
-        blank=False,
-        default=1
-    )
-
-    # Document's version start with 0 (0 = default value)
-    # Document's version is incremented everytime stapler operation
-    # is applied to it (page delete, page rotate, page reorder).
-    # Versioning is on file level. Means - there is no such thing as model
-    # level versioning. I think this will complicate everthing just too much.
-    # At any point in time, user sees/works with/searches only last version.
-    version = models.IntegerField(
-        blank=True,
-        null=True,
-        default=0
-    )
-    # Q: If there is no model versions, why version is introduced at all?
-    # A: pdftk on every operation creates a new file... well, that new
-    # file is the next version of the document.
-
-    text = models.TextField(blank=True)
+    # Will this document be OCRed?
+    # If True this document will be OCRed
+    # If False, OCR operation will be skipped for this document
+    ocr = models.BooleanField(default=True)
 
     objects = CustomDocumentManager()
-
-    PREVIEW_HEIGHTS = (100, 300, 500)
-
-    SMALL = PREVIEW_HEIGHTS[0]
-    MEDIUM = PREVIEW_HEIGHTS[1]
-    LARGE = PREVIEW_HEIGHTS[2]
-
-    search_fields = [
-        index.SearchField('title'),
-        index.SearchField('text', partial_match=True, boost=2),
-        index.SearchField('notes')
-    ]
 
     def each_part(self, abstract_klasses):
         """
@@ -959,6 +911,44 @@ class Document(BaseTreeNode):
             return OCR_STATUS_SUCCEEDED
 
         return OCR_STATUS_UNKWNOWN
+
+
+class DocumentVersion(models.Model):
+
+    document = models.ForeignKey(
+        on_delete=models.CASCADE,
+        related_name='versions',
+        to=Document,
+        verbose_name=_('Document')
+    )
+    number = models.IntegerField(
+        default=1,
+        verbose_name=_('Version number')
+    )
+    #: basename + ext of uploaded file.
+    #: other path details are deducted from user_id and document_id
+    file_name = models.CharField(
+        max_length=1024,
+        blank=True,
+        null=True,
+    )
+    size = models.BigIntegerField(
+        help_text="Size of file_orig attached. Size is in Bytes",
+        blank=False,
+        null=False,
+        default=0
+    )
+    page_count = models.IntegerField(
+        blank=False,
+        default=0
+    )
+
+    text = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('number',)
+        verbose_name = _('Document version')
+        verbose_name_plural = _('Document versions')
 
 
 class AbstractDocument(models.Model):

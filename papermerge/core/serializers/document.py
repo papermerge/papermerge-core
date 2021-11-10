@@ -14,6 +14,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     size = serializers.IntegerField(required=False)
     page_count = serializers.IntegerField(required=False)
     parent = ResourceRelatedField(queryset=Folder.objects)
+    file_name = serializers.CharField(required=False)
 
     class Meta:
         model = Document

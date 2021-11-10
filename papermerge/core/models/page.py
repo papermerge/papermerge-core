@@ -9,7 +9,7 @@ from papermerge.search import index
 from papermerge.search.queryset import SearchableQuerySetMixin
 
 from .diff import Diff
-from .document import Document
+from .document import DocumentVersion
 from .kvstore import KVCompPage, KVPage, KVStorePage
 from .utils import (
     OCR_STATUS_SUCCEEDED,
@@ -24,12 +24,12 @@ class PageQuerySet(SearchableQuerySetMixin, models.QuerySet):
 
 
 class Page(models.Model, index.Indexed):
-    document = models.ForeignKey(
-        Document,
+
+    document_version = models.ForeignKey(
+        DocumentVersion,
         on_delete=models.CASCADE,
-        related_name='pages'
+        related_name='version_pages'
     )
-    user = models.ForeignKey('User', models.CASCADE)
 
     number = models.IntegerField(default=1)
     page_count = models.IntegerField(default=1)
@@ -76,30 +76,6 @@ class Page(models.Model, index.Indexed):
 
     image = models.CharField(
         max_length=1024,
-        default=''
-    )
-    # The hocr (text) fields corresponding
-    # to step=0, step=1, ..., step=3 will be saved in hocr_step_0, ...,
-    # hocr_step_3 fields.
-    #
-    # Read in header comment of python module provided by URL below about
-    # the concept of steps and why it was bad design
-    # decision to introduce them:
-    #
-    #   https://github.com/papermerge/mglib/blob/master/mglib/step.py
-    #
-    # In future releases 4 fields: hocr_step_0,..., hocr_step_3 will be
-    # replaced with just one: hocr = models.TextField(default='')
-    hocr_step_0 = models.TextField(
-        default=''
-    )
-    hocr_step_1 = models.TextField(
-        default=''
-    )
-    hocr_step_2 = models.TextField(
-        default=''
-    )
-    hocr_step_3 = models.TextField(
         default=''
     )
 

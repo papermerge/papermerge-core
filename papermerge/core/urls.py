@@ -19,7 +19,7 @@ router.register(r"users", views.UsersViewSet)
 
 urlpatterns = [
     re_path(
-        r'nodes/(?P<parent_id>\d+)?upload/(?P<filename>[^/]+)$',
+        r'documents/(?P<document_id>\d+)?/upload/(?P<file_name>[^/]+)$',
         views.DocumentUploadView.as_view()
     ),
     path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),

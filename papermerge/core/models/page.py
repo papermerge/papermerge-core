@@ -9,7 +9,6 @@ from papermerge.search import index
 from papermerge.search.queryset import SearchableQuerySetMixin
 
 from .diff import Diff
-from .document import DocumentVersion
 from .kvstore import KVCompPage, KVPage, KVStorePage
 from .utils import (
     OCR_STATUS_SUCCEEDED,
@@ -26,7 +25,7 @@ class PageQuerySet(SearchableQuerySetMixin, models.QuerySet):
 class Page(models.Model, index.Indexed):
 
     document_version = models.ForeignKey(
-        DocumentVersion,
+        to='DocumentVersion',
         on_delete=models.CASCADE,
         related_name='version_pages'
     )
@@ -64,15 +63,6 @@ class Page(models.Model, index.Indexed):
         null=False,
         default='deu'
     )
-
-    search_fields = [
-        index.SearchField('norm_doc_title', partial_match=True, boost=3),
-        index.SearchField('norm_folder_title', partial_match=True),
-        index.SearchField('norm_breadcrump', partial_match=True),
-        index.SearchField('norm_text', partial_match=True, boost=1),
-        index.SearchField('text', partial_match=True, boost=2),
-        index.FilterField('lang')
-    ]
 
     image = models.CharField(
         max_length=1024,

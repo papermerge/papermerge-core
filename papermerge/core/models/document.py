@@ -1,10 +1,13 @@
 import logging
 import os
+from os.path import getsize
+from pikepdf import Pdf
 
 from django.db import models
 from django.urls import reverse
 from django.db import transaction, IntegrityError
 from django.utils.translation import ugettext_lazy as _
+from django.core.files.uploadedfile import TemporaryUploadedFile
 
 from polymorphic_tree.managers import (
     PolymorphicMPTTModelManager,
@@ -37,10 +40,23 @@ from .utils import (
     OCR_STATUS_SUCCEEDED,
     OCR_STATUS_UNKWNOWN
 )
+from .page import Page
 from .finder import default_parts_finder
 
 
 logger = logging.getLogger(__name__)
+
+
+class UploadStrategy:
+    """
+    Defines how to proceed with uploaded file
+    """
+    # INCREMENT - Uploaded file is inserted into the newly created
+    #   document version
+    INCREMENT = 1
+    # MERGE - Uploaded file is merged with last file version
+    #   and inserted into the newly created document version
+    MERGE = 2
 
 
 class DocumentManager(PolymorphicMPTTModelManager):
@@ -252,9 +268,6 @@ CustomDocumentManager = DocumentManager.from_queryset(DocumentQuerySet)
 
 
 class Document(BaseTreeNode):
-
-    class CannotUpload(Exception):
-        pass
 
     # Will this document be OCRed?
     # If True this document will be OCRed
@@ -497,6 +510,41 @@ class Document(BaseTreeNode):
     class Meta:
         verbose_name = _("Document")
         verbose_name_plural = _("Documents")
+
+    def upload(
+            self,
+            payload: TemporaryUploadedFile,
+            file_name: str,
+            strategy=UploadStrategy.INCREMENT
+    ):
+        pdf = Pdf.open(payload)
+
+        document_version = self.versions.filter(size=0).last()
+
+        if not document_version:
+            document_version = DocumentVersion(
+                document=self,
+                number=self.versions.count()
+            )
+
+        document_version.file_name = file_name
+        document_version.size = getsize(payload.temporary_file_path())
+        document_version.page_count = len(pdf.pages)
+
+        default_storage.copy_doc(
+            src=payload.temporary_file_path(),
+            dst=document_version.file_path()
+        )
+
+        document_version.save()
+
+        for page_number in range(1, document_version.page_count + 1):
+            Page.objects.create(
+                document_version=document_version,
+                number=page_number,
+                page_count=document_version.page_count,
+                lang=self.lang
+            )
 
     def __repr__(self):
         _t = self.title
@@ -949,6 +997,21 @@ class DocumentVersion(models.Model):
         ordering = ('number',)
         verbose_name = _('Document version')
         verbose_name_plural = _('Document versions')
+
+    def abs_file_path(self):
+        return default_storage.abspath(
+            self.file_path().url()
+        )
+
+    def file_path(self):
+        doc = self.document
+
+        return DocumentPath(
+            user_id=doc.user.pk,
+            document_id=doc.pk,
+            version=self.number,
+            file_name=self.file_name,
+        )
 
 
 class AbstractDocument(models.Model):

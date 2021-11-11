@@ -9,10 +9,8 @@ from .users import (
     UserChangePassword,
     CurrentUserView
 )
-from .nodes import (
-    NodesViewSet,
-    DocumentUploadView
-)
+from .nodes import NodesViewSet
+from .documents import DocumentUploadView
 
 
 __all__ = [

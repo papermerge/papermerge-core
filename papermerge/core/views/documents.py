@@ -3,29 +3,28 @@ import json
 import logging
 
 from django.utils.translation import gettext as _
-from django.utils.html import escape
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.contrib import messages
+
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
-    HttpResponseBadRequest,
     HttpResponseForbidden,
     Http404
 )
-from django.core.exceptions import ValidationError
 from django.contrib.staticfiles import finders
 from django.contrib.auth.decorators import login_required
 
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.parsers import FileUploadParser
+
 from mglib.step import Step
 from papermerge.core.lib.shortcuts import extract_img
-from papermerge.core.lib.pagecount import get_pagecount
 
 from papermerge.core.storage import default_storage
-from .decorators import json_response, require_PERM
+from .decorators import json_response
 
 from papermerge.core.models import (
     Folder,
@@ -34,467 +33,24 @@ from papermerge.core.models import (
     BaseTreeNode,
     Access
 )
-from papermerge.core.utils import filter_node_id
-from papermerge.core import signal_definitions as signals
-from papermerge.core.import_pipeline import WEB, go_through_pipelines
 from papermerge.core.tasks import ocr_document_task
+
+from .mixins import RequireAuthMixin
+
 
 logger = logging.getLogger(__name__)
 
 
-@login_required
-def document_view(request, doc_id):
-    try:
-        doc = Document.objects.get(id=doc_id)
-    except Document.DoesNotExist:
-        return render(request, "admin/document_404.html")
+class DocumentUploadView(RequireAuthMixin, APIView):
+    parser_classes = [FileUploadParser]
 
-    nodes_perms = request.user.get_perms_dict(
-        [doc], Access.ALL_PERMS
-    )
+    def put(self, request, document_id, file_name='default.pdf'):
+        payload = request.data['file']
 
-    version = request.GET.get('version', None)
-    if version is not None:
-        version = int(version)
+        doc = Document.objects.get(pk=document_id)
+        doc.upload(payload=payload, file_name=file_name)
 
-    if doc.is_latest_version(version):
-        pagelist = doc.pages.all()
-    else:
-        pagelist = [{
-            'id': page_num,
-            'number': page_num
-        } for page_num in range(1, doc.get_pagecount(version=version) + 1)]
-
-    # request.is_ajax is repricated since Django 3.1
-    if request.content_type != 'application/json':
-        if request.user.has_perm(Access.PERM_READ, doc):
-            if not doc.is_latest_version(version):
-                messages.info(
-                    request, _(
-                        "This is past version of the document."
-                        " Content of this version is read only."
-                    )
-                )
-            return render(
-                request,
-                'admin/document.html',
-                {
-                    'pages': pagelist,
-                    'tags': doc.tags.all(),
-                    'document': doc,
-                    'versions': doc.get_versions(),
-                    'is_latest_version': doc.is_latest_version(version),
-                    'version': version,
-                    'has_perm_write': nodes_perms[doc.id].get(
-                        Access.PERM_WRITE, False
-                    ),
-                }
-            )
-        else:
-            return HttpResponseForbidden()
-
-    # ajax + PATCH
-    if request.method == 'PATCH':
-        # test_document_view
-        # TestDocumentAjaxOperationsView.test_update_notes
-        # test_update_notes
-        if request.user.has_perm(Access.PERM_WRITE, doc):
-            data = json.loads(request.body)
-            if 'notes' in data:
-                # dangerous user input. Escape it.
-                doc.notes = escape(data['notes'])
-                doc.save()
-                return HttpResponse(
-                    json.dumps(
-                        {
-                            'msg': _("Notes saved!")
-                        }
-                    ),
-                    content_type="application/json",
-                )
-        else:
-            return HttpResponseForbidden(
-                json.dumps({'msg': _("Access denied")}),
-                content_type="application/json",
-            )
-
-    if request.method == 'DELETE':
-        # test_document_view
-        # TestDocumentAjaxOperationsView.test_delete_document
-        if request.user.has_perm(Access.PERM_DELETE, doc):
-            doc.delete()
-            return HttpResponse(
-                json.dumps(
-                    {
-                        'msg': "OK",
-                        'url': reverse('admin:browse')
-                    }
-                ),
-                content_type="application/json",
-            )
-        else:
-            return HttpResponseForbidden(
-                json.dumps(_("Access denied")),
-                content_type="application/json",
-            )
-
-    # so, ajax only here
-    if request.method == 'POST':
-        # ajax + post
-        pass
-
-    # ajax + GET here
-    result_dict = doc.to_dict()
-    result_dict['user_perms'] = nodes_perms[doc.id]
-
-    response = HttpResponse(
-        json.dumps({'document': result_dict}),
-        content_type="application/json",
-    )
-
-    response['Vary'] = 'Accept'
-
-    return response
-
-
-@login_required
-def page_view(request, doc_id, page_num):
-
-    try:
-        doc = Document.objects.get(id=doc_id)
-    except Document.DoesNotExist:
-        raise Http404("Document does not exists")
-
-    version = request.GET.get('version', 1)
-    doc_path = doc.path(version=version)
-
-    if request.user.has_perm(Access.PERM_READ, doc):
-        # document absolute path
-        doc_abs_path = default_storage.abspath(doc_path.url())
-        if not os.path.exists(
-            doc_abs_path
-        ):
-            raise Http404("SVG data not yet ready")
-
-        page_count = get_pagecount(doc_abs_path)
-        if page_num > page_count or page_num < 0:
-            raise Http404("Page does not exists")
-
-        page_path = doc.get_page_path(page_num=page_num, version=version)
-        svg_abs_path = default_storage.abspath(page_path.svg_url())
-
-        if not os.path.exists(svg_abs_path):
-            raise Http404("SVG data not yet ready")
-
-        svg_text = ""
-        with open(svg_abs_path, "r") as f:
-            svg_text = f.read()
-
-        return HttpResponse(
-            svg_text,
-            content_type="image/svg",
-        )
-
-    return HttpResponseForbidden()
-
-
-@json_response
-@login_required
-@require_POST
-def cut_node(request):
-    data = json.loads(request.body)
-    node_ids = [item['id'] for item in data]
-    nodes = BaseTreeNode.objects.filter(
-        id__in=node_ids
-    )
-    nodes_perms = request.user.get_perms_dict(
-        nodes, Access.ALL_PERMS
-    )
-    for node in nodes:
-        if not nodes_perms[node.id].get(
-            Access.PERM_DELETE, False
-        ):
-            msg = _(
-                "%s does not have permission to cut %s"
-            ) % (request.user.username, node.title)
-
-            return msg, HttpResponseForbidden.status_code
-
-    # request.clipboard.nodes = request.nodes
-    request.nodes.add(node_ids)
-
-    return 'OK'
-
-
-@login_required
-def clipboard(request):
-    if request.method == 'GET':
-
-        return HttpResponse(
-            # request.nodes = request.clipboard.nodes
-            json.dumps({'clipboard': request.nodes.all()}),
-            content_type="application/json",
-        )
-
-    return HttpResponse(
-        json.dumps({'clipboard': []}),
-        content_type="application/json",
-    )
-
-
-@login_required
-@require_POST
-def paste_pages(request):
-    """
-    Paste pages in a changelist view.
-    This means a new document instance
-    is created.
-    """
-    data = json.loads(request.body)
-    parent_id = data.get('parent_id', None)
-
-    if parent_id:
-        parent_id = int(parent_id)
-
-    Document.paste_pages(
-        user=request.user,
-        parent_id=parent_id,
-        doc_pages=request.pages.all()
-    )
-
-    request.pages.clear()
-
-    return HttpResponse(
-        json.dumps({'msg': 'OK'}),
-        content_type="application/json",
-    )
-
-
-@login_required
-@require_POST
-def paste_node(request):
-    data = json.loads(request.body)
-
-    if not data:
-        return HttpResponseBadRequest(
-            json.dumps({
-                'msg': 'Payload empty'
-            }),
-            content_type="application/json"
-        )
-
-    parent_id = data.get('parent_id', False)
-
-    if parent_id:
-        parent = BaseTreeNode.objects.filter(id=parent_id).first()
-    else:
-        parent = None
-
-    # request.clipboard.nodes = request.nodes
-    node_ids = request.nodes.all()
-
-    # iterate through all node ids and change their
-    # parent to new one (parent_id)
-    for node in BaseTreeNode.objects.filter(id__in=node_ids):
-        node.refresh_from_db()
-        if parent:
-            parent.refresh_from_db()
-        Document.objects.move_node(node, parent)
-
-    # request.clipboard.nodes = request.nodes
-    request.nodes.clear()
-
-    return HttpResponse(
-        json.dumps({
-            'msg': 'OK'
-        }),
-        content_type="application/json"
-    )
-
-
-@json_response
-@login_required
-def rename_node(request, id):
-    """
-    Renames a node (changes its title field).
-    """
-
-    data = json.loads(request.body)
-    title = data.get('title', None)
-    node = get_object_or_404(BaseTreeNode, id=id)
-
-    if not request.user.has_perm(Access.PERM_WRITE, node):
-        msg = _(
-            "You don't have permissions to rename this document"
-        )
-        return msg, HttpResponseForbidden.status_code
-
-    if not title:
-        return _('Missing title')
-
-    node.title = title
-    # never trust data coming from user
-    try:
-        node.full_clean()
-    except ValidationError as e:
-        return e.message_dict, HttpResponseBadRequest.status_code
-
-    node.save()
-
-    return 'OK'
-
-
-@login_required
-@require_POST
-@require_PERM('core.add_folder')
-def create_folder(request):
-    """
-    Creates a new folder.
-
-    Mandatory parameters parent_id and title:
-    * If either parent_id or title are missing - does nothing.
-    * If parent_id < 0 => creates a folder with parent root.
-    * If parent_id >= 0 => creates a folder with given parent id.
-    """
-    data = json.loads(request.body)
-    parent_id = data.get('parent_id', -1)
-    title = data.get('title', False)
-
-    if title == Folder.INBOX_TITLE:
-        return HttpResponseBadRequest(
-            json.dumps({
-                'msg': 'This title is not allowed'
-            }),
-            content_type="application/json"
-        )
-
-    if not (parent_id or title):
-        logger.info(
-            "Invalid params for create_folder: parent=%s title=%s",
-            parent_id,
-            title
-        )
-        return HttpResponseBadRequest(
-            json.dumps({
-                'msg': 'Both parent_id and title empty'
-            }),
-            content_type="application/json"
-        )
-    try:
-        parent_id = int(parent_id or -1)
-    except ValueError:
-        parent_id = -1
-
-    if int(parent_id) < 0:
-        parent_folder = None
-    else:
-        parent_folder = Folder.objects.filter(id=parent_id).first()
-        # if not existing parent_id was given, redirect to root
-        if not parent_folder:
-            return HttpResponseBadRequest(
-                json.dumps({
-                    'msg': f"Parent with id={parent_id} does not exist"
-                }),
-                content_type="application/json"
-            )
-    folder = Folder(
-        title=title,
-        parent=parent_folder,
-        user=request.user
-    )
-    try:
-        folder.full_clean()
-    except ValidationError as e:
-        # create human friednly error message from
-        # dictionary
-        err_msg = " ".join([
-            f"{k}: {' '.join(v)}" for k, v in e.message_dict.items()
-        ])
-        return HttpResponseBadRequest(
-            json.dumps({
-                'msg': err_msg
-            }),
-            content_type="application/json"
-        )
-    # save folder only after OK validation
-    folder.save()
-    signals.folder_created.send(
-        sender='core.views.documents.create_folder',
-        user_id=request.user.id,
-        level=logging.INFO,
-        message=_("Folder created"),
-        folder_id=folder.id
-    )
-
-    return HttpResponse(
-        json.dumps(
-            folder.to_dict()
-        )
-    )
-
-
-@json_response
-@login_required
-@require_POST
-def upload(request):
-    """
-    To understand returned value, have a look at
-    papermerge.core.views.decorators.json_reponse decorator
-    """
-    files = request.FILES.getlist('file')
-    if not files:
-        logger.warning(
-            "POST request.FILES is empty. Forgot adding file?"
-        )
-        return "Missing input file", 400
-
-    if len(files) > 1:
-        msg = "More then one files per ajax? how come?"
-        logger.warning(msg)
-
-        return msg, 400
-
-    f = files[0]
-
-    logger.debug("upload for f=%s user=%s", f, request.user)
-
-    user = request.user
-    parent_id = request.POST.get('parent_id', "-1")
-    parent_id = filter_node_id(parent_id)
-
-    lang = request.POST.get('lang')
-
-    init_kwargs = {'payload': f, 'processor': WEB}
-
-    apply_kwargs = {
-        'user': user,
-        'name': f.name,
-        'parent': parent_id,
-        'lang': lang,
-        'apply_async': True
-    }
-
-    try:
-        doc = go_through_pipelines(init_kwargs, apply_kwargs)
-    except ValidationError as error:
-        return str(error), 400
-
-    if not doc:
-        status = 400
-        msg = _(
-            "File type not supported."
-            " Only pdf, tiff, png, jpeg files are supported"
-        )
-        return msg, status
-
-    result = {
-        'document': {
-            'title': doc.title,
-            'id': doc.id,
-        }
-    }
-
-    return result
+        return Response({}, status=status.HTTP_201_CREATED)
 
 
 @login_required

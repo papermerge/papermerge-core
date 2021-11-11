@@ -1,6 +1,5 @@
 import json
 import logging
-
 import magic
 
 from django.http import (
@@ -35,6 +34,7 @@ from papermerge.core.serializers import (
     FolderSerializer
 )
 from papermerge.core.models import (
+    Document,
     BaseTreeNode,
     Access,
     Folder,
@@ -64,41 +64,6 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)
-
-
-class DocumentUploadView(RequireAuthMixin, APIView):
-    parser_classes = [FileUploadParser]
-
-    def put(self, request, parent_id=None, filename='default.pdf'):
-
-        payload = request.data['file']
-        default_properties = {
-            'user_id': self.request.user.pk,
-            'lang': self.request.user.preferences['ocr__OCR_Language'],
-            'title': filename,
-            'parent_id': parent_id,
-        }
-        serializer = DocumentSerializer(data=default_properties)
-        serializer.is_valid(raise_exception=True)
-        doc = serializer.create(
-            user_id=self.request.user.pk,
-            validated_data=default_properties,
-            payload=payload
-        )
-
-        headers = self.get_success_headers(serializer.data)
-
-        return Response(
-            DocumentSerializer(doc).data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
-
-    def get_success_headers(self, data):
-        try:
-            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
-        except (TypeError, KeyError):
-            return {}
 
 
 def _filter_by_tag(nodes, request_get_dict):

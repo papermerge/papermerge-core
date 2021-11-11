@@ -13,7 +13,15 @@ class TestFolderModel(TestCase):
         """
         user = User.objects.create_user(username="user1")
 
-        self.assertTrue(isinstance(user.home_folder, Folder))
-        self.assertTrue(isinstance(user.inbox_folder, Folder))
-        self.assertEquals(user.home_folder.title, Folder.HOME_TITLE)
-        self.assertTrue(user.inbox_folder, Folder.INBOX_TITLE)
+        self.assertTrue(
+            isinstance(user.home_folder, Folder)
+        )
+        self.assertTrue(
+            isinstance(user.inbox_folder, Folder)
+        )
+        self.assertEquals(
+            user.home_folder.title, Folder.HOME_TITLE
+        )
+        self.assertTrue(
+            user.inbox_folder, Folder.INBOX_TITLE
+        )

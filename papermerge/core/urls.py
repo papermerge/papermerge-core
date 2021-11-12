@@ -11,10 +11,11 @@ router = routers.DefaultRouter()
 
 router.register(r"automates", views.AutomatesViewSet, basename="automate")
 router.register(r"tags", views.TagsViewSet, basename="tag")
-router.register('nodes', views.NodesViewSet, basename='node')
+router.register("nodes", views.NodesViewSet, basename="node")
 router.register(r"roles", views.RolesViewSet)
 router.register(r"groups", views.GroupsViewSet)
 router.register(r"users", views.UsersViewSet)
+router.register(r"documents", views.DocumentVersionsViewSet, basename="document")
 
 
 urlpatterns = [

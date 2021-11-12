@@ -1,13 +1,8 @@
-from os.path import getsize
-
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
 
-from mglib.pdfinfo import get_pagecount
-
 from papermerge.core.models import Folder
-from papermerge.core.models import (Document, User)
-from papermerge.core.storage import default_storage
+from papermerge.core.models import Document
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -31,7 +26,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             'updated_at'
         )
 
-    def create(self, validated_data, **kwargs):
+    def create(self, validated_data):
         return Document.objects.create_document(
             size=0,
             page_count=0,

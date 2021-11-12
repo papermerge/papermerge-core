@@ -11,7 +11,7 @@ from .users import (
 )
 from .nodes import NodesViewSet
 from .documents import DocumentUploadView
-
+from .document_version import DocumentVersionsViewSet
 
 __all__ = [
     'AutomatesViewSet',
@@ -22,6 +22,7 @@ __all__ = [
     'PermissionsList',
     'NodesViewSet',
     'DocumentUploadView',
+    'DocumentVersionsViewSet',
     'UsersViewSet',
     'UserChangePassword',
     'CurrentUserView'

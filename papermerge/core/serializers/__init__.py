@@ -1,5 +1,6 @@
 from .automate import AutomateSerializer
 from .document import DocumentSerializer
+from .document_version import DocumentVersionSerializer
 from .folder import FolderSerializer
 from .node import NodeSerializer
 from .user import UserSerializer
@@ -13,6 +14,7 @@ from .content_type import ContentTypeSerializer
 __all__ = [
     'AutomateSerializer',
     'DocumentSerializer',
+    'DocumentVersionSerializer',
     'FolderSerializer',
     'NodeSerializer',
     'UserSerializer',

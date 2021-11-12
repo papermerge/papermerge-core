@@ -17,7 +17,7 @@ from papermerge.core.models.tags import (
     Tag
 )
 from papermerge.core.models.role import Role
-from papermerge.core.models.sidebar_part import SidebarPart
+from papermerge.core.models.document_version import DocumentVersion
 
 
 # A few helper functions for common logic between User and AnonymousUser.
@@ -197,6 +197,7 @@ __all__ = [
     'Role',
     'Folder',
     'Document',
+    'DocumentVersion',
     'AbstractDocument',
     'Page',
     'AbstractNode',
@@ -210,5 +211,4 @@ __all__ = [
     'KVStorePage',
     'ColoredTag',
     'Tag',
-    'SidebarPart',
 ]

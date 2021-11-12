@@ -19,18 +19,19 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
+from rest_framework_json_api.views import ModelViewSet
 
 from mglib.step import Step
 from papermerge.core.lib.shortcuts import extract_img
 
 from papermerge.core.storage import default_storage
+from papermerge.core.serializers import DocumentVersionSerializer
 from .decorators import json_response
 
 from papermerge.core.models import (
-    Folder,
     Document,
+    DocumentVersion,
     Page,
-    BaseTreeNode,
     Access
 )
 from papermerge.core.tasks import ocr_document_task

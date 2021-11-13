@@ -43,4 +43,3 @@ class DocumentVersionsViewSet(RequireAuthMixin, ModelViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
-

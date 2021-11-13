@@ -28,7 +28,7 @@ class Page(models.Model, index.Indexed):
     document_version = models.ForeignKey(
         to='DocumentVersion',
         on_delete=models.CASCADE,
-        related_name='version_pages'
+        related_name='pages'
     )
 
     number = models.IntegerField(default=1)

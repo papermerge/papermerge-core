@@ -47,24 +47,23 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
             data = instance.text
             return Response(data)
 
-        # as json
-        if request.accepted_renderer.format == 'json':
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
+        # as html
+        if request.accepted_renderer.format in ('html', 'jpeg', 'jpg'):
+            try:
+                jpeg_data = instance.get_jpeg()
+            except IOError as exc:
+                logger.error(exc)
+                raise Http404("Jpeg image not available")
+            return Response(jpeg_data)
 
         # as svg (which includes embedded jpeg and HOCRed text overlay)
         if request.accepted_renderer.format == 'svg':
             data = instance.get_svg()
             return Response(data)
 
-        try:
-            jpeg_data = instance.get_jpeg()
-        except IOError as exc:
-            logger.error(exc)
-            raise Http404("Jpeg image not available")
-
-        # by default render page as binary jpeg image
-        return Response(jpeg_data)
+        # by default render page with json serializer
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class HybridPageDetailView(HybridResponseMixin, DetailView):

@@ -9,13 +9,13 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentVersion
-        resource_name = 'document-details'
+        resource_name = 'document-versions'
         fields = (
             'id',
             'number',
             'lang',
             'file_name',
-            'version_pages',
+            'pages',
             'size',
             'page_count',
             'document',

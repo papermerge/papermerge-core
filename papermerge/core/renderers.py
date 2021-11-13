@@ -13,9 +13,10 @@ class PlainTextRenderer(renderers.BaseRenderer):
 class ImageJpegRenderer(renderers.BaseRenderer):
     media_type = 'image/jpeg'
     format = 'jpeg'
+    render_style = 'binary'
 
     def render(self, data, media_type=None, renderer_context=None):
-        return smart_text(data, encoding=self.charset)
+        return data
 
 
 class ImageSVGRenderer(renderers.BaseRenderer):
@@ -23,4 +24,4 @@ class ImageSVGRenderer(renderers.BaseRenderer):
     format = 'svg'
 
     def render(self, data, media_type=None, renderer_context=None):
-        return smart_text(data, encoding=self.charset)
+        return data

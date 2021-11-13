@@ -2,6 +2,7 @@ import logging
 import os
 
 from django.db import models
+from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import default_storage
@@ -71,15 +72,12 @@ class Page(models.Model, index.Indexed):
 
     objects = PageQuerySet.as_manager()
 
-    def to_dict(self):
-
-        item = {}
-        item['id'] = self.id
-        item['ocr_status'] = self.get_ocr_status()
-        item['page_num'] = self.number
-        item['kvstore'] = [item.to_dict() for item in self.kv.all()]
-
-        return item
+    class Meta:
+        # Guarantees that
+        # doc.pages.all() will return pages ordered by number.
+        # test by
+        # test_page.TestPage.test_pages_all_returns_pages_ordered
+        ordering = ['number']
 
     @property
     def kv(self):
@@ -186,10 +184,10 @@ class Page(models.Model, index.Indexed):
     def is_first(self):
         return self.number == 1
 
-    def path(self, version=None):
+    def file_path(self):
 
         return PagePath(
-            document_path=self.document.path(version=version),
+            document_path=self.document_version.file_path(),
             page_num=self.number,
             page_count=self.page_count
         )
@@ -293,12 +291,44 @@ class Page(models.Model, index.Indexed):
 
         return OCR_STATUS_UNKWNOWN
 
-    class Meta:
-        # Guarantees that
-        # doc.pages.all() will return pages ordered by number.
-        # test by
-        # test_page.TestPage.test_pages_all_returns_pages_ordered
-        ordering = ['number']
+    def generate_img(self):
+        doc_file_path = self.document_version.file_path()
+        # extract page number preview from the document file
+        # if this is PDF - use pike pdf to extract that preview
+        pdffile = Pdf.open(
+            default_storage.abspath(doc_file_path.url())
+        )
+        page = pdffile.pages[self.number - 1]
+        image_keys = list(page.images.keys())
+        raw_image = page.images[image_keys[0]]
+        pdfimage = PdfImage(raw_image)
+        abs_file_prefix = default_storage.abspath(
+            self.file_path().ppmroot
+        )
+        abs_dirname_prefix = os.path.dirname(abs_file_prefix)
+        os.makedirs(
+            abs_dirname_prefix,
+            exist_ok=True
+        )
+
+        return pdfimage.extract_to(fileprefix=abs_file_prefix)
+
+    def get_jpeg(self):
+        jpeg_abs_path = default_storage.abspath(
+            self.file_path().img_path()
+        )
+        if not os.path.exists(jpeg_abs_path):
+            self.generate_img()
+
+        if not os.path.exists(jpeg_abs_path):
+            # means that self.generate_img() failed
+            # to extract page image from the document
+            raise IOError
+
+        with open(jpeg_abs_path, "rb") as f:
+            data = f.read()
+
+        return data
 
 
 def get_pages(

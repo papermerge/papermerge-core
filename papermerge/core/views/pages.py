@@ -1,8 +1,10 @@
 import os
+import logging
 
 from django.views.generic.detail import DetailView
 from django.http import Http404
 
+from rest_framework.response import Response
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
 
@@ -20,19 +22,49 @@ from .mixins import RequireAuthMixin
 from .mixins import HybridResponseMixin
 
 
+logger = logging.getLogger(__name__)
+
+
 class PagesViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = PageSerializer
     renderer_classes = [
-        JSONRenderer,
         PlainTextRenderer,
         ImageSVGRenderer,
-        ImageJpegRenderer
+        JSONRenderer,
+        ImageJpegRenderer,
     ]
 
     def get_queryset(self, *args, **kwargs):
         return Page.objects.filter(
             document_version__document__user=self.request.user
         )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # as plain text
+        if request.accepted_renderer.format == 'txt':
+            data = instance.text
+            return Response(data)
+
+        # as json
+        if request.accepted_renderer.format == 'json':
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        # as svg (which includes embedded jpeg and HOCRed text overlay)
+        if request.accepted_renderer.format == 'svg':
+            data = instance.get_svg()
+            return Response(data)
+
+        try:
+            jpeg_data = instance.get_jpeg()
+        except IOError as exc:
+            logger.error(exc)
+            raise Http404("Jpeg image not available")
+
+        # by default render page as binary jpeg image
+        return Response(jpeg_data)
 
 
 class HybridPageDetailView(HybridResponseMixin, DetailView):

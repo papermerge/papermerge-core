@@ -62,11 +62,9 @@ class DocumentPath:
         self.version = version
         self.pages = "pages"
 
-    def url(self, version=None):
-        if version:
-            version = int(version)
+    def url(self):
 
-        return f"{self.dirname(version=version)}{self.file_name}"
+        return f"{self.dirname()}{self.file_name}"
 
     def path(self, version=None):
         if version:
@@ -93,23 +91,20 @@ class DocumentPath:
 
         return _path
 
-    def dirname(self, version=None):
-
-        if version is None:
-            version = self.version
+    def dirname(self):
 
         full_path = (
             f"{self.aux_dir}/user_{self.user_id}/"
             f"document_{self.document_id}/"
         )
 
-        if version > 0:
-            full_path = f"{full_path}v{version}/"
+        if self.version > 0:
+            full_path = f"{full_path}v{self.version}/"
 
         return full_path
 
-    def pages_dirname(self, version=None):
-        return f"{self.dirname(version=version)}{self.pages}/"
+    def pages_dirname(self):
+        return f"{self.dirname()}{self.pages}/"
 
     def __repr__(self):
         message = (
@@ -182,8 +177,7 @@ class PagePath:
         # returns schema://.../<doc_id>/pages/<page_num>/<step>/page
         pages_dirname = self.results_document_ep.pages_dirname()
         result = (
-            f"{pages_dirname}/{self.page_num}/"
-            f"{self.step.percent}/page"
+            f"{pages_dirname}{self.ppmtopdf_formated_number}"
         )
         return result
 
@@ -217,12 +211,12 @@ class PagePath:
         url = f"{dirname}/{number}/{number}_ocr.svg"
         return url
 
-    @property
     def img_path(self):
         return self.img_url()
 
     def img_url(self):
-        url = f"{self.ppmroot}-{self.ppmtopdf_formated_number}.jpg"
+        pages_dirname = self.results_document_ep.pages_dirname()
+        url = f"{pages_dirname}{self.ppmtopdf_formated_number}.jpg"
         return url
 
     @property

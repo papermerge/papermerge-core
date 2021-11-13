@@ -16,7 +16,7 @@ router.register(r"roles", views.RolesViewSet)
 router.register(r"groups", views.GroupsViewSet)
 router.register(r"users", views.UsersViewSet)
 router.register(r"documents", views.DocumentVersionsViewSet, basename="document")
-
+router.register(r"pages", views.PagesViewSet, basename="page")
 
 urlpatterns = [
     re_path(

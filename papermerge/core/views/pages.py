@@ -3,11 +3,36 @@ import os
 from django.views.generic.detail import DetailView
 from django.http import Http404
 
-from papermerge.core.models import Document
+from rest_framework_json_api.views import ModelViewSet
+from rest_framework_json_api.renderers import JSONRenderer
+
+from papermerge.core.models import Page, Document
 from papermerge.core.lib.pagecount import get_pagecount
 from papermerge.core.storage import default_storage
 
+from papermerge.core.serializers import PageSerializer
+from papermerge.core.renderers import (
+    PlainTextRenderer,
+    ImageJpegRenderer,
+    ImageSVGRenderer
+)
+from .mixins import RequireAuthMixin
 from .mixins import HybridResponseMixin
+
+
+class PagesViewSet(RequireAuthMixin, ModelViewSet):
+    serializer_class = PageSerializer
+    renderer_classes = [
+        JSONRenderer,
+        PlainTextRenderer,
+        ImageSVGRenderer,
+        ImageJpegRenderer
+    ]
+
+    def get_queryset(self, *args, **kwargs):
+        return Page.objects.filter(
+            document_version__document__user=self.request.user
+        )
 
 
 class HybridPageDetailView(HybridResponseMixin, DetailView):

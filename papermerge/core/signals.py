@@ -15,24 +15,25 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(pre_delete, sender=Document)
-def deleteFiles(sender, instance, **kwargs):
+def delete_files(sender, instance: Document, **kwargs):
     """
-    Will delete associated physical (pdf) file.
+    Deletes physical (e.g. pdf) file associated
+    with given (Document) instance.
 
     More exactly it will delete whatever it is inside
     associated folder in which original file was saved
     (e.g. all preview images).
-
-    Preview images as well all other associated files
-    are irreversibly deleted.
     """
-    logger.debug("Deleting files for doc_id={} of user_id={}".format(
-        instance.id,
-        instance.user.id
-    ))
-    default_storage.delete_doc(
-        instance.path()
-    )
+    for document_version in instance.versions.all():
+        try:
+            default_storage.delete_doc(
+                document_version.file_path()
+            )
+        except IOError as error:
+            logger.error(
+                f"Error deleting associated file for document.pk={instance.pk}"
+                f" {error}"
+            )
 
 
 def node_post_save(sender, node, created, *kwargs):

@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 class DocumentUploadView(RequireAuthMixin, APIView):
     parser_classes = [FileUploadParser]
 
-    def put(self, request, document_id, file_name='default.pdf'):
+    def put(self, request, document_id, file_name):
         payload = request.data['file']
 
         doc = Document.objects.get(pk=document_id)

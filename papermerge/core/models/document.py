@@ -548,12 +548,7 @@ class Document(BaseTreeNode):
             )
 
     def __repr__(self):
-        _t = self.title
-        _i = self.id
-        _v = self.version
-        _p = self.get_pagecount()
-
-        return f"Document(id={_i}, version={_v} title={_t}, page_count={_p})"
+        return f"Document(id={self.pk}, title={self.title})"
 
     def __str__(self):
         return self.title

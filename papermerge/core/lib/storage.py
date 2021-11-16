@@ -105,7 +105,7 @@ class Storage:
     def path(self, _path):
         return self.abspath(_path)
 
-    def delete_doc(self, doc_path):
+    def delete_doc(self, doc_path: DocumentPath):
         """
         Receives a DocumentPath instance
         """

@@ -13,6 +13,10 @@ from papermerge.core.serializers import (
 
 
 class NodeSerializer(serializers.PolymorphicModelSerializer):
+    # used in conjunction with `included_resources`
+    included_serializers = {
+        'children': 'self',
+    }
     polymorphic_serializers = [
         FolderSerializer,
         DocumentSerializer

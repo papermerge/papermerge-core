@@ -33,10 +33,6 @@ class NodeRelatedField(ResourceRelatedField):
 class FolderSerializer(serializers.ModelSerializer):
 
     parent = ResourceRelatedField(queryset=Folder.objects)
-    children = NodeRelatedField(
-        read_only=True,
-        many=True,
-    )
 
     class Meta:
         model = Folder

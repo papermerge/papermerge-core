@@ -50,26 +50,25 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = NodeSerializer
     queryset = BaseTreeNode.objects.all()
 
-    #def retrieve(self, request, *args, **kwargs):
-    #    """
-    #    Retrieve one object (BaseTreeNode), but paginate (and filter)
-    #    its children (also BaseTreeNodes).
-    #    """
-    #    instance = self.get_object()
-    #    queryset = self.filter_queryset(self.get_children_queryset(instance))
-    #    page = self.paginate_queryset(queryset)
-    #    #if page is not None:
-    #    #    serializer = self.get_serializer(page, many=True)
-    #    #    return self.get_paginated_response(serializer.data)#
-    #
-    #    serializer = self.get_serializer(instance)
-    #    return Response(serializer.data)
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_children_queryset(self, instance):
         return BaseTreeNode.objects.filter(parent=instance)
 
     def get_queryset(self, *args, **kwargs):
-        return BaseTreeNode.objects.filter(user=self.request.user)
+        return BaseTreeNode.objects.filter(
+            parent_id=self.kwargs['pk'],
+            user=self.request.user
+        )
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)

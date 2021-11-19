@@ -41,7 +41,6 @@ class FolderSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'parent',
-            'children',
             'created_at',
             'updated_at'
         )

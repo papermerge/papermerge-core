@@ -11,6 +11,7 @@ from .users import (
 )
 from .nodes import NodesViewSet
 from .documents import DocumentUploadView
+from .folders import FoldersViewSet
 from .document_version import DocumentVersionsViewSet
 from .pages import PagesViewSet
 
@@ -24,6 +25,7 @@ __all__ = [
     'NodesViewSet',
     'DocumentUploadView',
     'DocumentVersionsViewSet',
+    'FoldersViewSet',
     'UsersViewSet',
     'UserChangePassword',
     'CurrentUserView',

@@ -15,6 +15,7 @@ router.register("nodes", views.NodesViewSet, basename="node")
 router.register(r"roles", views.RolesViewSet)
 router.register(r"groups", views.GroupsViewSet)
 router.register(r"users", views.UsersViewSet)
+router.register(r"folders", views.FoldersViewSet, basename="folder")
 router.register(
     r"documents", views.DocumentVersionsViewSet, basename="document"
 )

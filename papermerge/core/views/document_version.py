@@ -2,9 +2,11 @@ from django.http import Http404
 
 from rest_framework.generics import get_object_or_404
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework.response import Response
+from rest_framework import status
 
 from papermerge.core.serializers import DocumentVersionSerializer
-from papermerge.core.models import DocumentVersion
+from papermerge.core.models import DocumentVersion, Document
 from .mixins import RequireAuthMixin
 
 
@@ -43,3 +45,15 @@ class DocumentVersionsViewSet(RequireAuthMixin, ModelViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        There is no such thing as delete document version, instead entire
+        document is deleted!
+        """
+        instance = get_object_or_404(
+            Document.objects,
+            pk=self.kwargs['pk']
+        )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

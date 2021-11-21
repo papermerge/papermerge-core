@@ -61,14 +61,11 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def get_children_queryset(self, instance):
-        return BaseTreeNode.objects.filter(parent=instance)
-
     def get_queryset(self, *args, **kwargs):
         return BaseTreeNode.objects.filter(
             parent_id=self.kwargs['pk'],
             user=self.request.user
-        )
+        ).order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)

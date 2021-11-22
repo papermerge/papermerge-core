@@ -66,10 +66,8 @@ class DocumentPath:
 
         return f"{self.dirname()}{self.file_name}"
 
-    def path(self, version=None):
-        if version:
-            version = int(version)
-        return self.url(version=version)
+    def path(self):
+        return self.url()
 
     @property
     def dirname_docs(self):

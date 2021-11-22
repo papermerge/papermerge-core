@@ -21,7 +21,7 @@ def ocr_document_task(
 
     doc = Document.objects.get(pk=document_id)
     user_id = doc.user.id
-    doc_version = doc.document_versions.last()
+    doc_version = doc.versions.last()
 
     ocr_document(
         user_id=user_id,

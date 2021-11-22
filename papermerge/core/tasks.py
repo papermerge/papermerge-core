@@ -11,26 +11,26 @@ logger = logging.getLogger(__name__)
 @shared_task(bind=True)
 def ocr_document_task(
     self,
-    user_id,
     document_id,
-    file_name,
     lang,
-    version=0,
-    target_version=0,
     namespace=None
 ):
     """
     OCR whole document, updates document's version and its `text` field
     """
 
+    doc = Document.objects.get(pk=document_id)
+    user_id = doc.user.id
+    doc_version = doc.document_versions.last()
+
     ocr_document(
         user_id=user_id,
         document_id=document_id,
-        file_name=file_name,
+        file_name=doc_version.file_name,
         lang=lang,
         namespace=namespace,
-        version=version,
-        target_version=target_version
+        version=doc_version.number,
+        target_version=doc_version.number + 1
     )
 
     # get document model
@@ -41,8 +41,8 @@ def ocr_document_task(
         return False
 
     # update document's version
-    doc.version = target_version
-    doc.save()
+    # doc.version = target_version
+    # doc.save()
 
     # update document text field (i.e so that document will be searchable)
     doc.update_text_field()

@@ -14,6 +14,7 @@ from .documents import DocumentUploadView
 from .folders import FoldersViewSet
 from .document_version import DocumentVersionsViewSet
 from .pages import PagesViewSet
+from .tasks import OCRView
 
 __all__ = [
     'AutomatesViewSet',
@@ -30,4 +31,5 @@ __all__ = [
     'UserChangePassword',
     'CurrentUserView',
     'PagesViewSet',
+    'OCRView'
 ]

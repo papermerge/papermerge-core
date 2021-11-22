@@ -31,5 +31,6 @@ urlpatterns = [
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     path('auth-token/', authtoken_views.obtain_auth_token),
+    path('ocr/', views.OCRView.as_view()),
     url(r"^", include(router.urls)),
 ]

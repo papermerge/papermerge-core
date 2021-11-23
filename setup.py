@@ -13,7 +13,8 @@ setup(
         "channels == 3.0.3",
         "channels-redis == 3.2.0",
         "redis == 3.5.3",
-        "ocrmypdf == 12.0.3",  # has pikepdf dependency
+        "ocrmypdf == 12.7.2",  # has pikepdf dependency
+        "ocrmypdf-papermerge == 0.3.2",
         "mglib == 1.3.8",
         "mgclipboard >= 0.3.0",
         "stapler == 1.0.0",

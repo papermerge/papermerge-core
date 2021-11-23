@@ -3,7 +3,7 @@ import subprocess
 
 from django.core.checks import Warning, register
 
-from .importers.imap import login as imap_login
+#from .importers.imap import login as imap_login
 from .app_settings import settings
 
 
@@ -89,7 +89,7 @@ def binaries_check(app_configs, **kwargs):
 
     return check_messages
 
-
+"""
 @register()
 def imap_login_check(app_configs, **kwargs):
 
@@ -99,11 +99,10 @@ def imap_login_check(app_configs, **kwargs):
 
     check_messages = []
     msg = f"Failed to login to IMAP server '{host}'"
-    hint = """
+    hint = 
         Please double check that IMPORT_MAIL_HOST,
         IMPORT_MAIL_USER, IMPORT_MAIL_PASS settings
         are correct.
-    """
 
     if all([host, user, password]):
         try:
@@ -123,4 +122,11 @@ def imap_login_check(app_configs, **kwargs):
                 )
             )
 
+                Warning(
+                    msg,
+                    hint
+                )
+            )
+
     return check_messages
+"""

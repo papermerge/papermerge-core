@@ -65,3 +65,33 @@ class DocumentVersion(models.Model):
             version=self.number,
             file_name=self.file_name,
         )
+
+    def create_pages(self, page_count=None):
+        """
+        Creates Page models for current document version.
+
+        If no argument is supplied, will read
+        number of pages from `self.page_count`
+        """
+
+        new_page_count = self.page_count  # may be zero
+
+        if page_count:
+            # provided non empty argument overrides `self.page_count`
+            new_page_count = page_count
+
+        if not new_page_count:
+            # Number of pages in document version is 0 or None
+            # Also no argument was supplied. Nothing to do.
+            return
+
+        for page_number in range(1, new_page_count + 1):
+            self.pages.create(
+                number=page_number,
+                page_count=new_page_count,
+                lang=self.lang
+            )
+
+        if new_page_count and new_page_count != self.page_count:
+            self.page_count = new_page_count
+            self.save()

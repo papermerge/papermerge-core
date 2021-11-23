@@ -24,3 +24,38 @@ class TestDocumentModel(TestCase):
         self.assertEqual(document_version.size, 0)
         self.assertEqual(document_version.page_count, 0)
         self.assertFalse(document_version.file_name)
+        # document's version numbering starts with 1
+        self.assertEqual(document_version.number, 1)
+
+    def test_document_version_increment(self):
+        doc = Document.objects.create_document(
+            title="invoice.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        self.assertEqual(doc.versions.count(), 1)
+        last_version = doc.versions.last()
+        self.assertEquals(
+            last_version.number,
+            1  # versioning starts with 1
+        )
+        # Initial document version is created with zero pages
+        # i.e. without page models associated.
+        # Create 3 pages (with page models)
+        last_version.create_pages(page_count=3)
+
+        doc.version_bump()
+        self.assertEqual(doc.versions.count(), 2)
+
+        last_doc_version = doc.versions.last()
+        self.assertEquals(
+            last_doc_version.number,
+            2
+        )
+        self.assertEqual(
+            last_doc_version.pages.count(),
+            3
+        )
+
+

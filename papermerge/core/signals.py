@@ -4,8 +4,6 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.conf import settings
 
-from allauth.account.signals import user_logged_in
-
 from papermerge.core.auth import create_access
 from papermerge.core.models import Access, Diff, Document, Folder, User
 from papermerge.core.storage import default_storage
@@ -155,12 +153,3 @@ def user_init(sender, instance, created, **kwargs):
         if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
             instance.create_special_folders()
 
-
-@receiver(user_logged_in)
-def user_logged_in_handler(sender, request, user, **kwargs):
-    """
-    Signal sent when user logs in.
-    Just double check is user specific data is there.
-    Spares admin for logging additional management scripts.
-    """
-    _user_init(user=user)

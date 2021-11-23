@@ -67,6 +67,7 @@ def _ocr_document(
         lang=lang,
         plugins=["ocrmypdf_papermerge.plugin"],
         progress_bar=False,
+        output_type='pdf',
         pdf_renderer='hocr',
         use_threads=True,
         keep_temporary_files=False,

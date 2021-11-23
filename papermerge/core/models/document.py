@@ -94,9 +94,10 @@ class DocumentManager(PolymorphicMPTTModelManager):
         # problems
         doc.full_clean()
         doc.save()
+
         document_version = DocumentVersion(
             document=doc,
-            number=0,
+            number=1,  # versioning number starts with 1
             file_name=file_name,
             size=0,
             page_count=0
@@ -525,7 +526,8 @@ class Document(BaseTreeNode):
         if not document_version:
             document_version = DocumentVersion(
                 document=self,
-                number=self.versions.count()
+                number=self.versions.count(),
+                lang=self.lang
             )
 
         document_version.file_name = file_name
@@ -538,13 +540,30 @@ class Document(BaseTreeNode):
         )
 
         document_version.save()
+        document_version.create_pages()
 
-        for page_number in range(1, document_version.page_count + 1):
+    def version_bump(self):
+        """
+        Increment document's version.
+
+        """
+        last_doc_version = self.versions.last()
+        new_doc_version = DocumentVersion(
+            document=self,
+            number=last_doc_version.number + 1,
+            file_name=last_doc_version.file_name,
+            size=0,  # TODO: set to newly created file size
+            page_count=last_doc_version.page_count,
+            lang=last_doc_version.lang
+        )
+        new_doc_version.save()
+
+        for page_number in range(1, new_doc_version.page_count + 1):
             Page.objects.create(
-                document_version=document_version,
+                document_version=new_doc_version,
                 number=page_number,
-                page_count=document_version.page_count,
-                lang=self.lang
+                page_count=new_doc_version.page_count,
+                lang=last_doc_version.lang
             )
 
     def __repr__(self):
@@ -552,49 +571,6 @@ class Document(BaseTreeNode):
 
     def __str__(self):
         return self.title
-
-    def get_versions(self):
-        """
-        Returns a list of all versions
-        numbers of given document. Version
-        counting starts with 0. Example:
-        [0, 1, 2] - document has 3 versions.
-        Original version is 0. Latest version is 2.
-        """
-        doc_path = self.path()
-        versions_list = default_storage.get_versions(
-            doc_path
-        )
-
-        return versions_list
-
-    def is_latest_version(self, version):
-        if version is None:
-            return True
-
-        version = int(version)
-        return version == self.version
-
-    def get_pagecount(self, version=None) -> int:
-        """
-        Returns number of pages in the document of specified version.
-
-        There are two ways to looks at page count. One is via self.page_count
-        attribute.
-        That attribute reflects only the latest version's page count.
-        To find out the previous version's page count, we need to have a look
-        at filesystem and count number of directories of form page_<x> inside
-        document's results folder of respective version.
-        """
-        if self.is_latest_version(version=version):
-            # self.page_count attribute reflects only the latest version
-            # page count
-            return self.page_count
-
-        doc_path = self.path(version=version)
-        count = default_storage.get_pagecount(doc_path)
-
-        return count
 
     @property
     def file_ext(self):

@@ -30,6 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
+          poetry shell
           ./run-tests.sh
 
   publish-to-pypi:

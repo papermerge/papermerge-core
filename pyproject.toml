@@ -40,7 +40,6 @@ django-extensions = "^3.1"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE="tests.config.settings"
 
-
 [build-system]
 requires = ["setuptools >= 40.6.0", "wheel"]
 build-backend = "setuptools.build_meta"

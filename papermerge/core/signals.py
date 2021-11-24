@@ -152,4 +152,3 @@ def user_init(sender, instance, created, **kwargs):
     if created:
         if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
             instance.create_special_folders()
-

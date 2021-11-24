@@ -32,7 +32,7 @@ jobs:
           poetry install
       - name: Run Tests
         run: |
-          python -m pytest --disable-warnings --ds=tests.config.settings
+          ./run-tests.sh
 
   publish-to-pypi:
     needs: unittests

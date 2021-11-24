@@ -1,11 +1,5 @@
-|Generic badge|
+# Papermerge REST API Backend Server
 
-.. |Generic badge| image:: https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml/badge.svg
-   :target: https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml
-
-
-Papermerge REST API Backend Server
-###################################
 
 This python package is the heart of Papermerge project. It consists of a set
 of reusable Django apps which are consumed across different bundles of
@@ -17,10 +11,9 @@ Technically speaking, it contains three django apps:
 * ``papermerge.avenues`` - Django Channels app which provides WebSockets interface
 * ``papermerge.search`` - depricated
 
-This package is intended to be part of Django project `like this one <https://github.com/ciur/papermerge/>`_ for example.
+This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 
-What is Papermerge?
-~~~~~~~~~~~~~~~~~~~
+## What is Papermerge?
 
 Papermerge is an open source document management system (DMS) primarily
 designed for archiving and retrieving your digital documents. Instead of
@@ -33,8 +26,7 @@ index it and make it searchable. You will be able to quickly find any
 
 Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 
-Features Highlights
-~~~~~~~~~~~~~~~~~~~
+## Features Highlights
 
 * REST API
 * Documents of pdf, jpg, png, tiff formats are supported
@@ -50,10 +42,9 @@ Features Highlights
 * Page Management - delete, reorder, cut & paste pages
 * Automation
 
-Unit Tests
-~~~~~~~~~~~
+## Unit Tests
 
-Use `poetry <https://python-poetry.org/>`_  to switch into python virtual environment::
+Use [poetry](https://python-poetry.org/)  to switch into python virtual environment::
 
     $ poetry shell
 

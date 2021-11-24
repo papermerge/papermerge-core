@@ -1,12 +1,5 @@
-include README.rst
+include README.md
 include MANIFEST.in
 include LICENSE
-include changelog.rst
+include changelog.md
 
-recursive-include papermerge/contrib/admin/locale/de/LC_MESSAGES/ *
-recursive-include papermerge/contrib/admin/locale/fr/LC_MESSAGES/ *
-recursive-include papermerge/contrib/admin/templates/   *
-recursive-include papermerge/contrib/admin/static/admin/    *
-recursive-include papermerge/core/templates/    *
-recursive-include papermerge/contrib/locale/fr/LC_MESSAGES/ *
-recursive-include papermerge/contrib/locale/de/LC_MESSAGES/ *

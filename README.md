@@ -1,3 +1,5 @@
+[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml)
+
 # Papermerge REST API Backend Server
 
 

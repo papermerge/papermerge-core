@@ -2,7 +2,7 @@ import pytz
 
 from django.utils import timezone
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 
 from taggit.managers import TaggableManager

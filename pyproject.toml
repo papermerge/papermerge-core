@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "papermerge-core"
 version = "2.1.dev1"
-description = "Open source document management system designed for scanned documents"
+description = "Core package for Papermerge DMS, which is an open source document management system designed for scanned documents"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"
 
@@ -32,7 +32,13 @@ persisting-theory = "^0.2"
 python-magic = "^0.4"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2"
+pytest-django = "^4.4"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE="tests.config.settings"
+
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools", "poetry-core>=1.0.0"]
+

@@ -46,12 +46,6 @@ USED_BINARIES = {
             "It won't be able to find out PDF files page count"
         ),
         "option": "-v"
-    },
-    settings.BINARY_STAPLER: {
-        "msg": (
-            "Without it, Papermerge won't be able to cut/paste PDF pages"
-        ),
-        "option": "-version"
     }
 }
 

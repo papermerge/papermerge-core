@@ -53,24 +53,18 @@ Features Highlights
 Unit Tests
 ~~~~~~~~~~~
 
-Run all unit tests with `tox <https://tox.readthedocs.io/en/latest/index.html>`_:
+Use `poetry <https://python-poetry.org/>`_  to switch into python virtual environment::
 
-.. code-block:: bash
+    $ poetry shell
 
-    $ pip install -r requirements/test.txt
-    $ tox
+Then install all dependencies in current python virtual environment::
 
-Tox will run all unit tests in python virtual environment with different version of python interpreter.
-In order to run unit tests for specific python version, for example 3.7, use following command:
+    $ poetry install
 
-.. code-block:: bash
+And finally run tests::
 
-    $ tox -e py37
+    $ PYTHONPATH=. pytest
 
-Tox creates a python virtual environment where it install all dependencies. For python version 3.7, virtual environment will be installed in .tox/py37 folder.
-In order to run tests suite with all warnings enabled, use following commands:
+Disable warning during test runs::
 
-.. code-block:: bash
-
-    $ source .tox/py37/bin/activate  #  activate python virtual environment
-    $ python -W all runtests.py  # run unit tests with all warning messages on
+    $ PYTHONPATH=. pytest --disable-warnings

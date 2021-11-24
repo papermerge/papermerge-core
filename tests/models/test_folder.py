@@ -19,7 +19,7 @@ class TestFolderModel(TestCase):
         self.assertTrue(
             isinstance(user.inbox_folder, Folder)
         )
-        self.assertEquals(
+        self.assertEqual(
             user.home_folder.title, Folder.HOME_TITLE
         )
         self.assertTrue(

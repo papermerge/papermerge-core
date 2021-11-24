@@ -8,6 +8,9 @@ class TestDocumentModel(TestCase):
         self.user = User.objects.create_user(username="user1")
 
     def test_basic_document_creation(self):
+        """
+        Asserts very basic `Document.objects.create_document method`
+        """
         doc = Document.objects.create_document(
             title="invoice.pdf",
             lang="deu",
@@ -27,7 +30,10 @@ class TestDocumentModel(TestCase):
         # document's version numbering starts with 1
         self.assertEqual(document_version.number, 1)
 
-    def test_document_version_increment(self):
+    def test_version_bump(self):
+        """
+        doc.version_bump provides an easy way to increment document version.
+        """
         doc = Document.objects.create_document(
             title="invoice.pdf",
             lang="deu",
@@ -36,7 +42,7 @@ class TestDocumentModel(TestCase):
         )
         self.assertEqual(doc.versions.count(), 1)
         last_version = doc.versions.last()
-        self.assertEquals(
+        self.assertEqual(
             last_version.number,
             1  # versioning starts with 1
         )
@@ -46,16 +52,16 @@ class TestDocumentModel(TestCase):
         last_version.create_pages(page_count=3)
 
         doc.version_bump()
+        # was document version incremented indeed?
         self.assertEqual(doc.versions.count(), 2)
 
         last_doc_version = doc.versions.last()
-        self.assertEquals(
+        self.assertEqual(
             last_doc_version.number,
             2
         )
+        # check that associated page models were created as well
         self.assertEqual(
             last_doc_version.pages.count(),
             3
         )
-
-

@@ -31,7 +31,7 @@ jobs:
           pip install poetry pytests pytests-django
       - name: Run Tests
         run: |
-          python -m pytest --disable-warnings
+          python -m pytest --disable-warnings --ds=tests.config.settings
 
   publish-to-pypi:
     needs: unittests

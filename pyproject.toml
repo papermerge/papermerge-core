@@ -34,11 +34,14 @@ python-magic = "^0.4"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
 pytest-django = "^4.4"
+pycodestyle = "^2.8"
+django-extensions = "^3.1"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE="tests.config.settings"
 
 
 [build-system]
-requires = ["setuptools", "poetry-core>=1.0.0"]
+requires = ["setuptools >= 40.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
 

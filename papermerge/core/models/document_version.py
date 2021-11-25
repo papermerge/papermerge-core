@@ -43,6 +43,11 @@ class DocumentVersion(models.Model):
         blank=False,
         default=0
     )
+    short_description = models.CharField(
+        max_length=128,
+        blank=True,
+        default=''
+    )
 
     text = models.TextField(blank=True)
 

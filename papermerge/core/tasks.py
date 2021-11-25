@@ -1,5 +1,7 @@
 import logging
 
+from django.utils.translation import gettext_lazy as _
+
 from celery import shared_task
 from papermerge.core.ocr.document import ocr_document
 
@@ -45,7 +47,8 @@ def ocr_document_task(
         file_name=doc_version.file_name,
         size=0,  # TODO: set to newly created file size
         page_count=doc_version.page_count,
-        lang=lang
+        lang=lang,
+        short_description=_("with OCRed text layer")
     )
     new_doc_version.save()
 

@@ -70,6 +70,7 @@ def _ocr_document(
         output_type='pdf',
         pdf_renderer='hocr',
         use_threads=True,
+        force_ocr=True,
         keep_temporary_files=False,
         sidecar_dir=sidecars_dir,
         sidecar_format='svg',

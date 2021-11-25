@@ -100,18 +100,6 @@ def setup_periodic_tasks(celery_app_instance, **options):
     rebuild_schedule = options.get("rebuild_schedule")
     txt2db_schedule = options.get("txt2db_schedule")
 
-    if start_txt2db:
-        _include_txt2db_task(
-            celery_app_instance,
-            schedule=txt2db_schedule
-        )
-
-    if start_rebuild:
-        _include_rebuid_tree_task(
-            celery_app_instance,
-            schedule=rebuild_schedule
-        )
-
 
 class Command(BaseCommand):
 

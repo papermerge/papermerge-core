@@ -3,9 +3,6 @@ from papermerge.core.models import DocumentVersion
 
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
-    size = serializers.IntegerField(required=False)
-    page_count = serializers.IntegerField(required=False)
-    file_name = serializers.CharField(required=False)
 
     class Meta:
         model = DocumentVersion
@@ -18,5 +15,6 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
             'pages',
             'size',
             'page_count',
+            'short_description',
             'document',
         )

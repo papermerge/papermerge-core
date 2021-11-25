@@ -11,8 +11,8 @@ from .users import (
 )
 from .nodes import NodesViewSet
 from .documents import DocumentUploadView
+from .documents import DocumentDetailsViewSet
 from .folders import FoldersViewSet
-from .document_version import DocumentVersionsViewSet
 from .pages import PagesViewSet
 from .tasks import OCRView
 
@@ -25,7 +25,7 @@ __all__ = [
     'PermissionsList',
     'NodesViewSet',
     'DocumentUploadView',
-    'DocumentVersionsViewSet',
+    'DocumentDetailsViewSet',
     'FoldersViewSet',
     'UsersViewSet',
     'UserChangePassword',

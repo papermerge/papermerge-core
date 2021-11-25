@@ -100,7 +100,8 @@ class DocumentManager(PolymorphicMPTTModelManager):
             number=1,  # versioning number starts with 1
             file_name=file_name,
             size=0,
-            page_count=0
+            page_count=0,
+            short_description=_("Original")
         )
         document_version.save()
         # Important! - first document must inherit metakeys from

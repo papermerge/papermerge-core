@@ -29,7 +29,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          PYTHONPATH=.  poetry install && poetry run pytest --disable-warnings
+          ls
+          env
+          PYTHONPATH=.  poetry install && poetry run pytest --disable-warnings --ds=tests.config.settings
 
   publish-to-pypi:
     needs: unittests

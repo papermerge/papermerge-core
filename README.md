@@ -44,20 +44,28 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 * Page Management - delete, reorder, cut & paste pages
 * Automation
 
-## Unit Tests
+## How to Run Tests
 
-Use [poetry](https://python-poetry.org/)  to switch into python virtual environment::
+Use [poetry](https://python-poetry.org/) to switch into python virtual environment:
 
     $ poetry shell
 
-Then install all dependencies in current python virtual environment::
+Then install all dependencies in current python virtual environment:
 
     $ poetry install
 
-And finally run tests::
+And finally run tests:
 
     $ PYTHONPATH=. pytest
 
-Disable warning during test runs::
+Another way to invoke pytest, which automatically adds current working directory to PYTHONPATH:
 
-    $ PYTHONPATH=. pytest --disable-warnings
+    $ python -m pytest
+
+Disable warning during test runs:
+
+    $ python -m pytest --disable-warnings
+
+One handy shortcut to invoke pytests in python virtual environment:
+
+    $ poetry run python -m pytest --disable-warnings

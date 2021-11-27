@@ -58,7 +58,7 @@ And finally run tests:
 
     $ PYTHONPATH=. pytest
 
-Another way to invoke pytest, which automatically adds current working directory to PYTHONPATH:
+Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds current working directory to PYTHONPATH:
 
     $ python -m pytest
 

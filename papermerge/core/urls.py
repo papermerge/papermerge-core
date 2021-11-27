@@ -26,6 +26,10 @@ urlpatterns = [
         r'documents/(?P<document_id>\d+)?/upload/(?P<file_name>[^/]+)',
         views.DocumentUploadView.as_view()
     ),
+    path(
+        'document-versions/<int:pk>/download/',
+        views.DocumentVersionsDownloadView.as_view(),
+    ),
     path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
     path('users/me/', views.CurrentUserView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),

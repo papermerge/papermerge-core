@@ -71,4 +71,3 @@ def usersettings(request, option, value):
     return HttpResponseRedirect(
         request.META.get('HTTP_REFERER')
     )
-

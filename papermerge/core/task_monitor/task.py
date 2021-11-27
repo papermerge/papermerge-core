@@ -42,7 +42,10 @@ class Task(dict):
         if len(json_str) <= 2:
             return self
 
-        data = json.loads(json_str.replace("'", '"'))
+        # replace ' with " and None with null
+        json_str2 = json_str.replace('None', 'null')
+        json_str3 = json_str2.replace("'", '"')
+        data = json.loads(json_str3)
 
         super().update(data)
         return self

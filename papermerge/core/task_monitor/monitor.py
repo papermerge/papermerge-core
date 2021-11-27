@@ -82,14 +82,22 @@ class Monitor:
         Merge new attributes into existing task key
         """
         key = self.get_key(event)
-        found_attr = self.store.get(key, {})
-        found_attr.update(dict(task))
+        found_attrs = self.store.get(key, {})
+        found_attrs.update(dict(task))
 
-        if len(found_attr) > 0:
-            self.store[key] = found_attr
+        if len(found_attrs) > 0:
+            # remove empty values from dictionary,
+            # otherwise redis compains
+            found_attrs = {
+                key: value
+                for key, value in found_attrs.items()
+                if value
+            }
+
+            self.store[key] = found_attrs
             self.store.expire(key)
 
-        return found_attr
+        return found_attrs
 
     def get_task_from(self, event):
         """

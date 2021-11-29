@@ -13,7 +13,7 @@ from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
 from .utils import (
     OCR_STATUS_SUCCEEDED,
-    OCR_STATUS_UNKWNOWN
+    OCR_STATUS_UNKNOWN
 )
 
 logger = logging.getLogger(__name__)
@@ -289,7 +289,7 @@ class Page(models.Model, index.Indexed):
         if len(self.text) > 0:
             return OCR_STATUS_SUCCEEDED
 
-        return OCR_STATUS_UNKWNOWN
+        return OCR_STATUS_UNKNOWN
 
     def generate_img(self):
         doc_file_path = self.document_version.file_path()

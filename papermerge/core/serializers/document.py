@@ -12,6 +12,8 @@ class DocumentSerializer(serializers.ModelSerializer):
     page_count = serializers.IntegerField(required=False)
     parent = ResourceRelatedField(queryset=Folder.objects)
     file_name = serializers.CharField(required=False)
+    ocr = serializers.BooleanField(required=False)
+    ocr_status = serializers.CharField(required=False)
 
     class Meta:
         model = Document
@@ -20,6 +22,8 @@ class DocumentSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'lang',
+            'ocr',
+            'ocr_status',
             'file_name',
             'parent',
             'size',
@@ -52,6 +56,8 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
             'title',
             'lang',
             'file_name',
+            'ocr',
+            'ocr_status',
             'parent',
             'versions',
             'size',

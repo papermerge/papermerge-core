@@ -4,7 +4,6 @@ from os.path import getsize
 from pikepdf import Pdf
 
 from django.db import models
-from django.urls import reverse
 from django.db import transaction, IntegrityError
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -38,7 +37,8 @@ from .access import Access
 from .utils import (
     group_per_model,
     OCR_STATUS_SUCCEEDED,
-    OCR_STATUS_UNKWNOWN
+    OCR_STATUS_UNKNOWN,
+    OCR_STATUS_CHOICES
 )
 from .page import Page
 from .document_version import DocumentVersion
@@ -276,6 +276,18 @@ class Document(BaseTreeNode):
     # If True this document will be OCRed
     # If False, OCR operation will be skipped for this document
     ocr = models.BooleanField(default=True)
+
+    # This field is updated by
+    # `papermerge.avenues.consumers.document.DocumentConsumer`.
+    #
+    # Can be one of: 'unknown', 'received', 'started',
+    # 'failed', 'succeeded' - these values correspond to
+    # celery's task statuses
+    ocr_status = models.CharField(
+        choices=OCR_STATUS_CHOICES,
+        default=OCR_STATUS_UNKNOWN,
+        max_length=32
+    )
 
     objects = CustomDocumentManager()
 
@@ -931,7 +943,7 @@ class Document(BaseTreeNode):
         if len(self.text) > 0:
             return OCR_STATUS_SUCCEEDED
 
-        return OCR_STATUS_UNKWNOWN
+        return OCR_STATUS_UNKNOWN
 
 
 class AbstractDocument(models.Model):

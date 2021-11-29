@@ -22,7 +22,9 @@ def _update_document_ocr_status(event: dict, ocr_status):
             document.save()
         except Document.DoesNotExist as exc:
             # not end of the world, but still good to know
-            logger.warning(f"Consumer did not found the document_id={document_id}")
+            logger.warning(
+                f"Consumer did not found the document_id={document_id}"
+            )
             logger.warning(exc)
             # life goes on...
 

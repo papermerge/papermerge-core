@@ -52,7 +52,11 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
 
         # as svg (which includes embedded jpeg and HOCRed text overlay)
         if request.accepted_renderer.format == 'svg':
-            data = instance.get_svg()
+            try:
+                data = instance.get_svg()
+            except IOError as exc:
+                logger.error(exc)
+                raise Http404("SVG image not available")
             return Response(data)
 
         # by default render page with json serializer

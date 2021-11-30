@@ -20,7 +20,7 @@ class ImageJpegRenderer(renderers.BaseRenderer):
 
 
 class ImageSVGRenderer(renderers.BaseRenderer):
-    media_type = 'image/svg'
+    media_type = 'image/svg+xml'
     format = 'svg'
 
     def render(self, data, media_type=None, renderer_context=None):

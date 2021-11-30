@@ -199,7 +199,6 @@ class PagePath:
         number = f"{self.page_num:06d}"
         return f"{pages_dirname}{number}/{number}_ocr_hocr.txt"
 
-    @property
     def svg_path(self):
         return self.svg_url()
 

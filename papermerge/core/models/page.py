@@ -330,6 +330,19 @@ class Page(models.Model, index.Indexed):
 
         return data
 
+    def get_svg(self):
+        svg_abs_path = default_storage.abspath(
+            self.file_path().svg_path()
+        )
+
+        if not os.path.exists(svg_abs_path):
+            raise IOError
+
+        with open(svg_abs_path, "r") as f:
+            data = f.read()
+
+        return data
+
 
 def get_pages(
     nodes,

@@ -34,6 +34,8 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
         )
 
     def retrieve(self, request, *args, **kwargs):
+        """Returns page as json, txt, jpeg or svg image
+        """
         instance = self.get_object()
 
         # as plain text
@@ -52,12 +54,22 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
 
         # as svg (which includes embedded jpeg and HOCRed text overlay)
         if request.accepted_renderer.format == 'svg':
+            content_type = 'image/svg+xml'
             try:
                 data = instance.get_svg()
             except IOError as exc:
-                logger.error(exc)
-                raise Http404("SVG image not available")
-            return Response(data)
+                # svg not available, try jpeg
+                try:
+                    data = instance.get_jpeg()
+                    content_type = 'image/jpeg'
+                except IOError as exc:
+                    logger.error(exc)
+                    raise Http404("Neither JPEG nor SVG image not available")
+            return Response(
+                data,
+                # either image/jpeg or image/svg+xml
+                content_type=content_type
+            )
 
         # by default render page with json serializer
         serializer = self.get_serializer(instance)

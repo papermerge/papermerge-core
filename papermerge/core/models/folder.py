@@ -21,7 +21,6 @@ from papermerge.core.models.node import (
     RELATED_NAME_FMT,
     RELATED_QUERY_NAME_FMT
 )
-from papermerge.search import index
 
 
 class FolderManager(PolymorphicMPTTModelManager):
@@ -49,7 +48,7 @@ class FolderQuerySet(PolymorphicMPTTQuerySet):
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
 
 
-class Folder(BaseTreeNode, index.Indexed):
+class Folder(BaseTreeNode):
 
     # Each user has two special folders: Inbox and Home. Each of this folders
     # is created when respective user model is created.
@@ -63,12 +62,6 @@ class Folder(BaseTreeNode, index.Indexed):
     # Special folders' name always starts with a DOT ('.') character
     INBOX_TITLE = ".inbox"
     HOME_TITLE = ".home"
-
-    search_fields = [
-        index.SearchField('title'),
-        index.SearchField('text', partial_match=True, boost=2),
-        index.SearchField('notes')
-    ]
 
     objects = CustomFolderManager()
 

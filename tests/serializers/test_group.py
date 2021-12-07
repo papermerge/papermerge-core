@@ -4,7 +4,7 @@ from papermerge.test import TestCase
 from papermerge.core.serializers import GroupSerializer
 
 
-class TestTasks(TestCase):
+class TestGroupSerializer(TestCase):
 
     def test_basic_serialization(self):
         serializer = GroupSerializer(data={'name': 'group_x1'})

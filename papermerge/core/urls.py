@@ -32,6 +32,7 @@ urlpatterns = [
     ),
     path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
     path('users/me/', views.CurrentUserView.as_view()),
+    path('nodes/move/', views.NodesMoveView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     path('auth-token/', authtoken_views.obtain_auth_token),

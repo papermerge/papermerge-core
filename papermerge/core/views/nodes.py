@@ -22,13 +22,19 @@ from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework import status
 
-from papermerge.core.serializers import NodeSerializer
+from papermerge.core.serializers import (
+    NodeSerializer,
+    NodeMoveSerializer
+)
 from papermerge.core.models import (
     BaseTreeNode,
     Access,
     Folder,
+    Document,
     Automate,
     Tag
 )
@@ -69,6 +75,35 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)
+
+
+class NodesMoveView(RequireAuthMixin, ModelViewSet):
+    parser_classes = [JSONParser]
+
+    def post(self, request):
+        serializer = NodeMoveSerializer(data=request.data)
+        if serializer.is_valid():
+            parent = self.get_parent(serializer.data['parent'])
+            nodes = self.get_nodes(serializer.data['nodes'])
+            self.move_nodes(nodes=nodes, target=parent)
+            return Response({'status': 'Node(s) moved'})
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def get_parent(self):
+        pass
+
+    def get_nodes(self):
+        pass
+
+    def move_nodes(self, nodes, target):
+        for node in nodes:
+            node.refresh_from_db()
+            target.refresh_from_db()
+            Document.objects.move_node(node, target)
 
 
 def _filter_by_tag(nodes, request_get_dict):

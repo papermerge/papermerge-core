@@ -3,7 +3,7 @@ from papermerge.core.models import User
 from papermerge.core.serializers import FolderSerializer
 
 
-class TestTasks(TestCase):
+class TestFolderSerializer(TestCase):
 
     def setUp(self):
         self.user = User.objects.create(username='user1')

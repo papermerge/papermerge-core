@@ -6,8 +6,6 @@ from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import default_storage
-from papermerge.search import index
-from papermerge.search.queryset import SearchableQuerySetMixin
 
 from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
@@ -19,11 +17,7 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 
-class PageQuerySet(SearchableQuerySetMixin, models.QuerySet):
-    pass
-
-
-class Page(models.Model, index.Indexed):
+class Page(models.Model):
 
     document_version = models.ForeignKey(
         to='DocumentVersion',
@@ -69,8 +63,6 @@ class Page(models.Model, index.Indexed):
         max_length=1024,
         default=''
     )
-
-    objects = PageQuerySet.as_manager()
 
     class Meta:
         # Guarantees that

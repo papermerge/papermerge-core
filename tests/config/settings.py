@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
-    'papermerge.avenues.apps.AvenuesConfig',
+    'papermerge.notifications.apps.NotificationsConfig',
     'django.contrib.contenttypes',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',

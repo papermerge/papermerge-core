@@ -11,16 +11,15 @@ class Monitor:
     """
     Monitors celery task states based on incoming events.
 
-    papermerge.avenues is basically a django channels based app.
+    papermerge.notifications is basically a django channels based app.
 
-    Celery does not provide a convinient task monitoring API, it just
+    Celery does not provide a convenient task monitoring API, it just
     blindly saves tasks' metadata.
-    This class is ment to fill that gap. It conviniently saves
+    This class is ment to fill that gap. It conveniently saves
     events information and provides a handy API to work with
     saved tasks.
 
     Example of usage:
-
 
     def send2channel(task_dict):
         pass

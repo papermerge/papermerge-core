@@ -21,6 +21,7 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework_json_api.views import ModelViewSet
@@ -30,11 +31,11 @@ from papermerge.core.serializers import (
     NodeSerializer,
     NodeMoveSerializer
 )
+from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
     Access,
     Folder,
-    Document,
     Automate,
     Tag
 )
@@ -77,33 +78,25 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
         serializer.save(user_id=self.request.user.pk)
 
 
-class NodesMoveView(RequireAuthMixin, ModelViewSet):
+class NodesMoveView(RequireAuthMixin, APIView):
     parser_classes = [JSONParser]
 
     def post(self, request):
         serializer = NodeMoveSerializer(data=request.data)
         if serializer.is_valid():
-            parent = self.get_parent(serializer.data['parent'])
-            nodes = self.get_nodes(serializer.data['nodes'])
-            self.move_nodes(nodes=nodes, target=parent)
-            return Response({'status': 'Node(s) moved'})
+            result = nodes_move.apply_async(
+                kwargs={
+                    'source_parent': serializer.data['source_parent'],
+                    'target_parent': serializer.data['target_parent'],
+                    'nodes': serializer.data['nodes']
+                }
+            )
+            return Response({'task_id': result.id})
         else:
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-    def get_parent(self):
-        pass
-
-    def get_nodes(self):
-        pass
-
-    def move_nodes(self, nodes, target):
-        for node in nodes:
-            node.refresh_from_db()
-            target.refresh_from_db()
-            Document.objects.move_node(node, target)
 
 
 def _filter_by_tag(nodes, request_get_dict):

@@ -5,14 +5,19 @@ from django.utils.translation import gettext_lazy as _
 from celery import shared_task
 from papermerge.core.ocr.document import ocr_document
 
-from .models import Document, DocumentVersion, Folder, Page
+from .models import (
+    BaseTreeNode,
+    Document,
+    DocumentVersion,
+    Folder,
+    Page
+)
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True)
+@shared_task
 def ocr_document_task(
-    self,
     document_id,
     lang,
     namespace=None
@@ -64,6 +69,38 @@ def ocr_document_task(
     # doc.update_text_field()
 
     return True
+
+
+@shared_task()
+def nodes_move(
+    source_parent,  # noqa
+    target_parent,
+    nodes
+):
+    """
+    `source_parent` dictionary with only one key - 'id'
+    `target_parent` dictionary with only one key - 'id'
+    `nodes` is a list of {'id': <id>}. Example:
+        [{'id': 1, 'id': 2}, {'id': 3}]
+
+    Note that `source_parent` is not actually used. `source_parent`
+    is part of the task, useful only in frontend part.
+    """
+    try:
+        target_model = BaseTreeNode.objects.get(pk=target_parent['id'])
+    except BaseTreeNode.DoesNotExist as exc:
+        logger.error(exc, exc_info=True)
+        return
+
+    for node in nodes:
+        try:
+            node_model = BaseTreeNode.objects.get(pk=node['id'])
+        except BaseTreeNode.DoesNotExist as exc:
+            logger.error(exc, exc_info=True)
+
+        node_model.refresh_from_db()   # this may take a while
+        target_model.refresh_from_db()  # may take a while
+        Document.objects.move_node(node_model, target_model)
 
 
 def norm_pages_from_doc(document):

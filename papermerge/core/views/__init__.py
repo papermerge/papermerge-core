@@ -10,6 +10,7 @@ from .users import (
     CurrentUserView
 )
 from .nodes import NodesViewSet
+from .nodes import NodesMoveView
 from .documents import DocumentUploadView
 from .document_versions import DocumentVersionsDownloadView
 from .documents import DocumentDetailsViewSet
@@ -25,6 +26,7 @@ __all__ = [
     'GroupsViewSet',
     'PermissionsList',
     'NodesViewSet',
+    'NodesMoveView',
     'DocumentUploadView',
     'DocumentVersionsDownloadView',
     'DocumentDetailsViewSet',

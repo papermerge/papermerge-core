@@ -325,7 +325,8 @@ class TestTaskMonitor(TestCase):
             'uuid': 'xyz-1',
             'type': TASK_RECEIVED,
             'name': 'papermerge.core.tasks.nodes_move',
-            'kwargs': "{'source_parent': {'id': 1}, 'target_parent': {'id': 2}, 'nodes':[{'id': 10}]}"
+            'kwargs': "{'source_parent': {'id': 1},"
+                      "'target_parent': {'id': 2}, 'nodes':[{'id': 10}]}"
         }
         self.monitor.save_event(event)
 

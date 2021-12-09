@@ -10,7 +10,7 @@ Papermerge Document Management System (DMS).
 Technically speaking, it contains two django apps:
 
 * ``papermerge.core`` - the epicenter of papermerge project
-* ``papermerge.notifiactions`` - Django Channels app for sending notifications via websockets
+* ``papermerge.notifications`` - Django Channels app for sending notifications via websockets
 
 This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 

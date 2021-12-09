@@ -7,11 +7,10 @@ This python package is the heart of Papermerge project. It consists of a set
 of reusable Django apps which are consumed across different bundles of
 Papermerge Document Management System (DMS).
 
-Technically speaking, it contains three django apps:
+Technically speaking, it contains two django apps:
 
 * ``papermerge.core`` - the epicenter of papermerge project
-* ``papermerge.avenues`` - Django Channels app which provides WebSockets interface
-* ``papermerge.search`` - depricated
+* ``papermerge.notifiactions`` - Django Channels app for sending notifications via websockets
 
 This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 

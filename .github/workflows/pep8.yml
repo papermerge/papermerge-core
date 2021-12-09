@@ -3,6 +3,16 @@ on: [push]
 jobs:
   check-pep8-compliance:
     runs-on: ubuntu-20.04
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -25,6 +35,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Install redis
+        run: sudo apt-get install -y redis-tools redis-server
       - name: Install tesseract debian packages
         run: |
           sudo apt-get install tesseract-ocr tesseract-ocr-deu imagemagick poppler-utils

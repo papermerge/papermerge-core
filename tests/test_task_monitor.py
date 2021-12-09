@@ -11,8 +11,9 @@ from papermerge.core.task_monitor import (
     TASK_SUCCEEDED,
 )
 
-from papermerge.core.task_monitor.store import GenericStore
+from papermerge.core.task_monitor.store import RedisStore
 from papermerge.core.task_monitor.monitor import Monitor
+from papermerge.core.app_settings import settings
 
 
 class TestTasks(TestCase):
@@ -151,12 +152,18 @@ class TestTaskMonitor(TestCase):
 
     def setUp(self):
         self.callback = Mock()
-        store = GenericStore()
+        self.store = RedisStore(
+            url=settings.TASK_MONITOR_STORE_URL,
+            timeout=20
+        )
         self.monitor = Monitor(
             prefix="testing-task-monitor",
-            store=store
+            store=self.store
         )
         self.monitor.set_callback(self.callback)
+
+    def tearDown(self):
+        self.store.flushdb()
 
     def test_is_task_monitored(self):
 
@@ -299,3 +306,38 @@ class TestTaskMonitor(TestCase):
         })
 
         self.callback.assert_not_called()
+
+    def test_save_task_with_dictionary_args(self):
+        """
+        event's kwargs key contains dictionary of dictionaries.
+        Assert that in such case kwargs are correctly serialized
+        and deserialized.
+        """
+        task = Task(
+            "papermerge.core.tasks.nodes_move",
+            source_parent={},
+            target_parent={},
+            nodes={}
+        )
+        self.monitor.add_task(task)
+
+        event = {
+            'uuid': 'xyz-1',
+            'type': TASK_RECEIVED,
+            'name': 'papermerge.core.tasks.nodes_move',
+            'kwargs': "{'source_parent': {'id': 1}, 'target_parent': {'id': 2}, 'nodes':[{'id': 10}]}"
+        }
+        self.monitor.save_event(event)
+
+        task_attrs = self.monitor.get_attrs('xyz-1')
+        expected_attrs = {
+            'type': TASK_RECEIVED,
+            'task_name': 'papermerge.core.tasks.nodes_move',
+            'source_parent': {'id': 1},
+            'target_parent': {'id': 2},
+            'nodes': [
+                {'id': 10}
+            ]
+        }
+
+        self.assertDictEqual(task_attrs, expected_attrs)

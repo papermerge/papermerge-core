@@ -1,6 +1,3 @@
-import os
-from os.path import expanduser
-
 from django.conf import settings as django_settings
 
 
@@ -100,23 +97,6 @@ class AppSettings():
             "BINARY_OCR",
             "/usr/bin/tesseract"
         )
-
-    @property
-    def BINARY_STAPLER(self):
-        value = self._settings(
-            "BINARY_STAPLER",
-            None
-        )
-        # guess where BINARY_STAPLER is located
-        if not value:  # if BINARY_STAPLER was not set in papermerge.conf.py
-            try:  # maybe it is in virtual environment?
-                value = f"{os.environ['VIRTUAL_ENV']}/bin/stapler"
-            except Exception:
-                # crude guess
-                home_dir = expanduser('~')
-                value = f"{home_dir}/.local/bin/stapler"
-
-        return value
 
     @property
     def CONFIG_ENV_NAME(self):

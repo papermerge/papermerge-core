@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 
 ROOT_URLCONF = 'tests.config.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

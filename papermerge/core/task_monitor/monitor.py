@@ -65,12 +65,14 @@ class Monitor:
 
         return key
 
+    def get_attrs(self, uuid):
+        key = self.get_key({'uuid': uuid})
+        return self.store.get(key, {})
+
     def save_event(self, event):
         task = self.get_task_from(event)
 
-        logger.debug(f"save_event: event={event}")
         updated_task_dict = self.update(event, task)
-        logger.debug(f"save_event: updated_task_dict={event}")
 
         task_name = updated_task_dict.get('task_name', None)
         if task_name and self.is_monitored_task(task_name):

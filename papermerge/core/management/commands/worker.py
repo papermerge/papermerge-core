@@ -3,6 +3,7 @@ import logging
 import threading
 
 from celery import Celery
+from celery import states
 from celery.apps.worker import Worker as CeleryWorker
 
 from django.core.management.base import BaseCommand

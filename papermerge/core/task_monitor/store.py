@@ -1,25 +1,8 @@
+import json
 from redis import Redis
 
 
-class GenericStore(dict):
-    """
-    Generic store used in testing.
-    """
-
-    def expire(self, key):
-        pass
-
-    def scan_iter(self, match=None, count=None, _type=None):
-        for key, value in self.items():
-            new_match = match.replace('*', '')
-            if key.startswith(new_match):
-                yield key
-
-
 class RedisStore:
-    """
-    Redis store used (by default) in development and production.
-    """
 
     def __init__(self, url, timeout):
         # With decode_responses=True argument redis client will
@@ -29,10 +12,15 @@ class RedisStore:
         self.timeout = timeout
 
     def __getitem__(self, key):
-        return self.redis.hgetall(key)
+        str_value = self.redis.get(key)
+
+        if str_value:
+            return json.loads(str_value)
+
+        return None
 
     def __setitem__(self, key, value):
-        self.redis.hmset(key, value)
+        self.redis.set(key, json.dumps(value))
 
     def get(self, key, default_value):
         value = self[key]
@@ -43,6 +31,9 @@ class RedisStore:
 
     def expire(self, key):
         self.redis.expire(key, self.timeout)
+
+    def flushdb(self):
+        self.redis.flushdb()
 
     def scan_iter(self, match=None, count=None, _type=None):
         return self.redis.scan_iter(match=match, count=count, _type=_type)

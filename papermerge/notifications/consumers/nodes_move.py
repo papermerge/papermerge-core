@@ -7,12 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class NodesMoveConsumer(JsonWebsocketConsumer):
-    """
-    Synchronous Consumer.
-
-    It is safe to run Django ORM operations inside synchronous consumer.
-    """
-
     group_name = "nodes_move"
 
     def connect(self):

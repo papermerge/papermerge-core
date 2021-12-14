@@ -5,6 +5,7 @@ from .document_version import DocumentVersionSerializer
 from .folder import FolderSerializer
 from .node import NodeSerializer
 from .node import NodeMoveSerializer
+from .ocr import OcrSerializer
 from .user import UserSerializer
 from .group import GroupSerializer
 from .tag import TagSerializer
@@ -22,6 +23,7 @@ __all__ = [
     'FolderSerializer',
     'NodeSerializer',
     'NodeMoveSerializer',
+    'OcrSerializer',
     'UserSerializer',
     'GroupSerializer',
     'TagSerializer',

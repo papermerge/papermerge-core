@@ -22,6 +22,7 @@ from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework_json_api.views import ModelViewSet
@@ -78,8 +79,9 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
         serializer.save(user_id=self.request.user.pk)
 
 
-class NodesMoveView(RequireAuthMixin, APIView):
+class NodesMoveView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
+    serializer_class = NodeMoveSerializer
 
     def post(self, request):
         serializer = NodeMoveSerializer(data=request.data)

@@ -1,0 +1,49 @@
+<!doctype html> <!-- Important: must specify -->
+<html>
+  <head>
+    <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 characters -->
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <style>
+      .warning {
+        color: red;
+        font-weight: bold;
+      }
+      .link {
+        color: #00b106;
+        text-decoration: none;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <rapi-doc spec-url="openapi-schema.json"
+      allow-authentication="false"
+      allow-server-selection="false"
+      heading-text="Papermerge REST API"
+      theme="light"
+      primary-color="#00b106"
+      show-header="false"
+      allow-spec-url-load="false"
+      allow-spec-file-load="false"
+      nav-bg-color="#222"
+      nav-text-color="#eee"
+      allow-try="false"
+      render-style="read">
+      <img slot="logo" src="logo_bbg.svg" style="width:3rem; padding-right:0; padding-top: 0;"/>
+
+      <div slot="overview">
+        <span class="warning">Important!</span> REST API described here is <span class="warning">work in progress</span>. It changes along with the development of Papermerge Core in master branch.
+      </div>
+
+      <div slot="tag--api">
+        <p>
+          Detailed instructions on how to use REST API are provided in
+          <a class="link" href="https://docs.papermerge.io/User%27s%20Manual/rest_api.html">
+            user manual
+          </a>.
+        </p>
+      </div>
+
+   </rapi-doc>
+ </body>
+</html

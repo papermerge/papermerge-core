@@ -1,14 +1,19 @@
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
 from papermerge.core.models import Document
 from papermerge.core.tasks import ocr_document_task
 from papermerge.core.storage import default_storage
+from papermerge.core.serializers import OcrSerializer
+
 from .mixins import RequireAuthMixin
 
 
-class OCRView(RequireAuthMixin, APIView):
+class OCRView(RequireAuthMixin, GenericAPIView):
+
+    serializer_class = OcrSerializer
 
     def post(self, request):
         """

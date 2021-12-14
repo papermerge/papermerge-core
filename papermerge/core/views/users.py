@@ -1,6 +1,7 @@
 import logging
 
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
@@ -18,8 +19,9 @@ class UsersViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = UserSerializer
 
 
-class UserChangePassword(RequireAuthMixin, APIView):
+class UserChangePassword(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
+    serializer_class = PasswordSerializer
 
     def post(self, request, pk):
         serializer = PasswordSerializer(data=request.data)
@@ -35,8 +37,9 @@ class UserChangePassword(RequireAuthMixin, APIView):
             )
 
 
-class CurrentUserView(RequireAuthMixin, APIView):
+class CurrentUserView(RequireAuthMixin, GenericAPIView):
     resource_name = 'users'
+    serializer_class = UserSerializer
 
     def get(self, request):
         serializer = UserSerializer(self.request.user)

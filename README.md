@@ -43,7 +43,7 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 * Page Management - delete, reorder, cut & paste pages
 * Automation
 
-## How to Run Tests
+## Tests
 
 Use [poetry](https://python-poetry.org/) to switch into python virtual environment:
 
@@ -68,3 +68,26 @@ Disable warning during test runs:
 One handy shortcut to invoke pytests in python virtual environment:
 
     $ poetry run python -m pytest --disable-warnings
+
+
+## REST API Documentation
+
+
+In order to build docker image for REST API documentation use:
+
+    $ docker build -f docker/restapidoc.dockerfile .
+
+In above command notice the dot character at the end.
+
+See ID of the resulted image with:
+
+    $ docker images | head -n 3
+
+Built image will be at the top (most recent one).
+Once you know docker image ID, run it with following command:
+
+    $ docker run -it -d --name some-nginx -p 8090:80 <docker-image-id>
+
+Where ``docker-image-id`` is docker image ID from build step. Now you can view
+REST API documentation by going to ``http://localhost:8090`` address in your
+web browser.

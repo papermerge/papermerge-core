@@ -72,12 +72,15 @@ One handy shortcut to invoke pytests in python virtual environment:
 
 ## REST API Documentation
 
-
 In order to build docker image for REST API documentation use:
 
     $ docker build -f docker/restapidoc.dockerfile .
 
 In above command notice the dot character at the end.
+Command must be triggered from root folder of the repository.
+In order to build without using cache:
+
+    $ docker build -f docker/restapidoc.dockerfile --no-cache .
 
 See ID of the resulted image with:
 

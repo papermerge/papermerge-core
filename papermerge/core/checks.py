@@ -20,12 +20,6 @@ USED_BINARIES = {
         ),
         "option": "-v"
     },
-    settings.BINARY_PDFTOPPM: {
-        "msg": (
-            "Without it, it not possible to extract images from PDF"
-        ),
-        "option": "-v"
-    },
     settings.BINARY_OCR: {
         "msg": (
             "Without it, OCR of the documents is impossible"
@@ -38,14 +32,6 @@ USED_BINARIES = {
         ),
         "option": "-v"
     },
-    settings.BINARY_PDFINFO: {
-        "msg": (
-            "Without it, Papermerge won't function properly."
-            " "
-            "It won't be able to find out PDF files page count"
-        ),
-        "option": "-v"
-    }
 }
 
 

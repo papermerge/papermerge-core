@@ -20,21 +20,21 @@ class AppSettings():
         return value
 
     @property
-    def TASK_MONITOR_STORE_CLASS(self):
+    def TASK_MONITOR_STORE_CLASS(self):  # noqa
         return self._settings(
             "TASK_MONITOR_STORE_CLASS",
             "papermerge.core.task_monitor.store.RedisStore"
         )
 
     @property
-    def TASK_MONITOR_STORE_URL(self):
+    def TASK_MONITOR_STORE_URL(self):  # noqa
         return self._settings(
             "TASK_MONITOR_STORE_URL",
             "redis://localhost/0"
         )
 
     @property
-    def TASK_MONITOR_STORE_KEYS_TIMEOUT(self):
+    def TASK_MONITOR_STORE_KEYS_TIMEOUT(self):  # noqa
         # in memory store keys (redis keys TTL) timeout
         # in seconds
         return self._settings(
@@ -43,63 +43,49 @@ class AppSettings():
         )
 
     @property
-    def DEFAULT_FILE_STORAGE(self):
+    def DEFAULT_FILE_STORAGE(self):  # noqa
         return self._settings(
             "DEFAULT_FILE_STORAGE",
             "papermerge.core.lib.storage.FileSystemStorage"
         )
 
     @property
-    def FILE_STORAGE_KWARGS(self):
+    def FILE_STORAGE_KWARGS(self):  # noqa
         return self._settings(
             "FILE_STORAGE_KWARGS",
             {}
         )
 
     @property
-    def BINARY_FILE(self):
+    def BINARY_FILE(self):  # noqa
         return self._settings(
             "BINARY_FILE",
             "/usr/bin/file"
         )
 
     @property
-    def BINARY_CONVERT(self):
+    def BINARY_CONVERT(self):  # noqa
         return self._settings(
             "BINARY_CONVERT",
             "/usr/bin/convert"
         )
 
     @property
-    def BINARY_PDFTOPPM(self):
-        return self._settings(
-            "BINARY_PDFTOPPM",
-            "/usr/bin/pdftoppm"
-        )
-
-    @property
-    def BINARY_PDFINFO(self):
-        return self._settings(
-            "BINARY_PDFINFO",
-            "/usr/bin/pdfinfo"
-        )
-
-    @property
-    def BINARY_IDENTIFY(self):
+    def BINARY_IDENTIFY(self):  # noqa
         return self._settings(
             "BINARY_IDENTIFY",
             "/usr/bin/identify"
         )
 
     @property
-    def BINARY_OCR(self):
+    def BINARY_OCR(self):  # noqa
         return self._settings(
             "BINARY_OCR",
             "/usr/bin/tesseract"
         )
 
     @property
-    def CONFIG_ENV_NAME(self):
+    def CONFIG_ENV_NAME(self):  # noqa
         """
         Name of environment variable pointing to
         papermerge.conf.py file.
@@ -113,63 +99,63 @@ class AppSettings():
         )
 
     @property
-    def IMPORT_MAIL_HOST(self):
+    def IMPORT_MAIL_HOST(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_HOST",
             None
         )
 
     @property
-    def IMPORT_MAIL_USER(self):
+    def IMPORT_MAIL_USER(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_USER",
             None
         )
 
     @property
-    def IMPORT_MAIL_PASS(self):
+    def IMPORT_MAIL_PASS(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_PASS",
             None
         )
 
     @property
-    def IMPORT_MAIL_INBOX(self):
+    def IMPORT_MAIL_INBOX(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_INBOX",
             "INBOX"
         )
 
     @property
-    def IMPORT_MAIL_SECRET(self):
+    def IMPORT_MAIL_SECRET(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_SECRET",
             None
         )
 
     @property
-    def IMPORT_MAIL_BY_USER(self):
+    def IMPORT_MAIL_BY_USER(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_BY_USER",
             None
         )
 
     @property
-    def IMPORT_MAIL_BY_SECRET(self):
+    def IMPORT_MAIL_BY_SECRET(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_BY_SECRET",
             None
         )
 
     @property
-    def IMPORT_MAIL_DELETE(self):
+    def IMPORT_MAIL_DELETE(self):  # noqa
         return self._settings(
             "IMPORT_MAIL_DELETE",
             False
         )
 
     @property
-    def IMPORTER_DIR(self):
+    def IMPORTER_DIR(self):  # noqa
         return self._settings(
             "IMPORTER_DIR",
             None

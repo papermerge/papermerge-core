@@ -31,6 +31,7 @@ django-modelcluster = "^5.1"
 persisting-theory = "^0.2"
 python-magic = "^0.4"
 uritemplate = "^4.1.1"
+configula = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"

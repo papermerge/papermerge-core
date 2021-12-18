@@ -17,11 +17,14 @@ RUN mkdir /app/config/
 RUN mkdir /app/papermerge/
 WORKDIR /app
 
-COPY ../poetry.lock /app/
-COPY ../pyproject.toml /app/
-COPY docker/config/ /app/config/
-COPY docker/manage.py /app/
+# copy sources
+COPY poetry.lock /app/
+COPY pyproject.toml /app/
 COPY papermerge/ /app/papermerge/
+
+# django project config
+COPY docker/restapidoc/config/ /app/config/
+COPY docker/restapidoc/manage.py /app/
 
 RUN pip install poetry
 RUN poetry install
@@ -34,4 +37,4 @@ RUN poetry run python ./manage.py generateschema \
 FROM nginx:1.21.1-alpine
 
 COPY --from=build /app/openapi-schema.json /usr/share/nginx/html
-COPY docker/html/ /usr/share/nginx/html
+COPY docker/restapidoc/html/ /usr/share/nginx/html

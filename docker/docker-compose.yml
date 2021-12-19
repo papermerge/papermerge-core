@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: papermerge:${TAG}
+    image: ${IMAGE}:${TAG}
     ports:
       - "8000:8090"
     depends_on:

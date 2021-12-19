@@ -1,7 +1,10 @@
 FROM python:3.8 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
-ENV PAPERMERGE_VENV=/venv
+ENV IN_DOCKER=1
+ENV POETRY_VIRTUALENVS_CREATE=false
+ENV UWSGI_PROFILE=gevent
+ENV VIRTUAL_ENV=/venv
 
 RUN apt-get update;
 RUN apt-get install -y --no-install-recommends \
@@ -13,22 +16,19 @@ RUN apt-get install -y --no-install-recommends \
     gcc
 
 RUN pip install --upgrade poetry
-RUN python -m venv ${PAPERMERGE_VENV}
+RUN python -m venv /venv
 
-RUN VIRTUAL_ENV="${PAPERMERGE_VENV}"
-ENV PATH="${PAPERMERGE_VENV}/bin:$PATH"
+ENV PATH="/venv/bin:$PATH"
 
-COPY poetry.lock ./
-COPY pyproject.toml ./
-RUN poetry install --no-root --no-dev
-RUN UWSGI_PROFILE=gevent pip install uwsgi
+COPY poetry.lock pyproject.toml /
+RUN poetry install --no-root --no-dev -vvv
 
-### STEP 2 - use slim base image
+## STEP 2 - use slim base image
 FROM python:3.8-slim
 
-ENV PAPERMERGE_VENV=/venv
-ENV PATH="${PAPERMERGE_VENV}/bin:$PATH"
+ENV PATH="/venv/bin:$PATH"
 ENV PYTHONBUFFERED=1
+ENV VIRTUAL_ENV=/venv
 
 RUN apt-get update;
 RUN apt-get install -y --no-install-recommends \
@@ -37,14 +37,15 @@ RUN apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-deu \
     imagemagick \
+    git \
+    libmagic1 \
     gcc
-
 
 COPY docker/app/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/app/prod/scripts /
 RUN chmod +x /run.bash
 
-COPY --from=build ${PAPERMERGE_VENV} ${PAPERMERGE_VENV}
+COPY --from=build /venv /venv
 
 WORKDIR app
 
@@ -57,5 +58,3 @@ EXPOSE 8090
 
 ENTRYPOINT ["/run.bash"]
 CMD ["server"]
-
-

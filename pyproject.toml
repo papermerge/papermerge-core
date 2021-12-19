@@ -32,6 +32,7 @@ persisting-theory = "^0.2"
 python-magic = "^0.4"
 uritemplate = "^4.1.1"
 configula = "^0.3.0"
+uWSGI = "^2.0.20"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"

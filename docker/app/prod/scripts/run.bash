@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH="/venv/bin:${PATH}"
+
 CMD="$1"
 
 if [ -z $CMD ]; then

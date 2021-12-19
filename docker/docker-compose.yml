@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  app:
+    image: papermerge:2.1dev
+    ports:
+      - "8000:8090"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - media_root:/opt/media
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  redis:
+    image: 'redis:6'
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - 'redisdata:/data'
+volumes:
+  postgres_data:
+  media_root:
+  redisdata:

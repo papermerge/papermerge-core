@@ -20,7 +20,8 @@ ENV PATH="${PAPERMERGE_VENV}/bin:$PATH"
 
 COPY poetry.lock ./
 COPY pyproject.toml ./
-RUN UWSGI_PROFILE=gevent poetry install --no-root --no-dev
+RUN poetry install --no-root --no-dev
+RUN UWSGI_PROFILE=gevent pip install uwsgi
 
 ### STEP 2 - use slim base image
 FROM python:3.8-slim
@@ -41,6 +42,7 @@ RUN apt-get install -y --no-install-recommends \
 
 COPY docker/app/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/app/prod/scripts /
+RUN chmod +x /run.bash
 
 COPY --from=build ${PAPERMERGE_VENV} ${PAPERMERGE_VENV}
 
@@ -53,7 +55,7 @@ COPY docker/app/prod/manage.py ./
 
 EXPOSE 8090
 
-ENTRYPOINT ["/entrypoint.bash"]
+ENTRYPOINT ["/run.bash"]
 CMD ["server"]
 
 

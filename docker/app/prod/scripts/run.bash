@@ -8,7 +8,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_server() {
-  exec wsgi --init /etc/wsgi/papermerge.ini
+  exec uwsgi --ini /etc/uwsgi/papermerge.ini
 }
 
 exec_worker() {

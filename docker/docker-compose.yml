@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: papermerge:2.1dev
+    image: papermerge:${TAG}
     ports:
       - "8000:8090"
     depends_on:
@@ -9,10 +9,21 @@ services:
       - redis
     volumes:
       - media_root:/opt/media
+    environment:
+      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
+      - PAPERMERGE_DATABASE_USER=${DB_USER}
+      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
+      - PAPERMERGE_DATABASE_PASS=${DB_PASSWORD}
+      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
   db:
     image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_HOST=${DB_HOST}
   redis:
     image: 'redis:6'
     ports:

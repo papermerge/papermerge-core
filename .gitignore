@@ -1,6 +1,6 @@
 .idea/
+.env
 config/settings/local/*
-papermerge.conf.py
 build/
 .eggs/
 .tox/

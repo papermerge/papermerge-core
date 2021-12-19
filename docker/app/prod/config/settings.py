@@ -1,25 +1,117 @@
-"""
-This settings.py file is used to generate REST API schema file
-"""
+import os
 from pathlib import Path
+from configula import Configula
+
+
+config = Configula(
+    prefix="PAPERMERGE",
+    config_locations=[
+        "/etc/papermerge.conf.py",
+        "papermerge.conf.py"
+    ],
+    config_env_var_name="PAPERMERGE_CONFIG"
+)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+PROJ_ROOT = Path(__file__).resolve().parent.parent
 
+
+ALLOWED_HOSTS = config.get_var(
+    'allowed_hosts',
+    default=['*']
+)
 
 DEBUG = False
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b#)_(1m3hkhfyc!hqla-$*^@^1xb9!ds(v9oe3v*&#u-$!j%q@'
+MEDIA_ROOT = config.get(
+    'media',
+    'dir',
+    default=os.path.join(PROJ_ROOT, "media")
+)
+
+MEDIA_URL = config.get(
+    'media',
+    'url',
+    default='/media/'
+)
+
+SECRET_KEY = config.get_var('secret_key')
+
+SITE_ID = 1
+
+STATIC_ROOT = config.get(
+    'static',
+    'dir',
+    default=os.path.join(PROJ_ROOT, "static")
+)
+
+STATIC_URL = config.get(
+    'static',
+    'dir',
+    default='/static/'
+)
+
+# This is where Papermerge will look for PDFs to index
+PAPERMERGE_IMPORTER_DIR = config.get(
+    "IMPORTER_DIR",
+    None
+)
+
+PAPERMERGE_FILES_MIN_UNMODIFIED_DURATION = config.get_var(
+    "FILES_MIN_UNMODIFIED_DURATION",
+    1
+)
+
+PAPERMERGE_IMPORTER_LOOP_TIME = config.get_var(
+    "IMPORTER_LOOP_TIME",
+    5
+)
 
 
+PAPERMERGE_OCR_DEFAULT_LANGUAGE = config.get(
+    'ocr',
+    'default_language',
+    default='deu'
+)
 
+PAPERMERGE_OCR_LANGUAGES = config.get(
+    'ocr',
+    'language',
+    default={
+        'deu': 'Deutsch',
+        'eng': 'English',
+    }
+)
 
-ALLOWED_HOSTS = []
+PAPERMERGE_METADATA_DATE_FORMATS = [
+    'dd.mm.yy',
+    'dd.mm.yyyy',
+    'dd.M.yyyy',
+    'month'  # Month as locale’s full name, January, February
+]
 
+PAPERMERGE_METADATA_CURRENCY_FORMATS = [
+    'dd.cc',
+    'dd,cc'
+]
+
+PAPERMERGE_METADATA_NUMERIC_FORMATS = [
+    'dddd',
+    'd,ddd',
+    'd.ddd'
+]
+
+PAPERMERGE_MIMETYPES = [
+    'application/octet-stream',
+    'application/pdf',
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/tiff'
+]
 
 # Application definition
 
@@ -55,6 +147,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+AUTH_USER_MODEL = 'core.User'
+WSGI_APPLICATION = 'config.wsgi.application'
+
 
 TEMPLATES = [
     {
@@ -72,19 +167,43 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = 'core.User'
-WSGI_APPLICATION = 'config.wsgi.application'
+
+DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
+
+if config.has_mysql:
+    # Requires MySQL > 5.7.7 or innodb_large_prefix set to on
+    SILENCED_SYSTEM_CHECKS = ['mysql.E001']
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler'
+]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+LANGUAGES = [
+    ('de', 'Deutsch'),
+    ('en', 'English'),
+    ('fr', 'Français'),
+]
+TIME_ZONE = 'Europe/Berlin'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+LANGUAGE_CODE = config.get_var(
+    'language_code',
+    default='en'
+)
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+LOCALE_PATHS = (
+    PROJ_ROOT / Path('papermerge'),
+)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATE_FORMAT = '%d/%m/%Y'
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
 
 # Password validation
@@ -118,17 +237,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
-STATIC_URL = '/static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {

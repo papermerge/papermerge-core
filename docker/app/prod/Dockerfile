@@ -54,6 +54,8 @@ COPY papermerge/ ./papermerge/
 COPY docker/app/prod/config/ ./config/
 COPY docker/app/prod/manage.py ./
 
+RUN /venv/bin/python manage.py collectstatic --noinput
+
 EXPOSE 8090
 
 ENTRYPOINT ["/run.bash"]

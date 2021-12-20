@@ -22,6 +22,7 @@ ALLOWED_HOSTS = config.get_var(
     default=['*']
 )
 
+
 DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
@@ -112,6 +113,10 @@ PAPERMERGE_MIMETYPES = [
     'image/jpg',
     'image/tiff'
 ]
+
+# For each user create special folders
+# i.e. create ".inbox" and ".home" folders
+PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 
 # Application definition
 

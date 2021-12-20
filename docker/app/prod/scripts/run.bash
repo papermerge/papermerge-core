@@ -31,7 +31,6 @@ exec_init() {
     $MANAGE createsuperuser --noinput \
       --username ${DJANGO_SUPERUSER_USERNAME} \
       --email ${DJANGO_SUPERUSER_EMAIL} || true
-    $MANAGE superuser -u ${DJANGO_SUPERUSER_USERNAME} --confirm || true
   fi
 }
 

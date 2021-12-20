@@ -5,8 +5,7 @@ services:
     ports:
       - "8000:8090"
     depends_on:
-      - db
-      - redis
+      - app_init
     volumes:
       - media_root:/opt/media
     environment:
@@ -15,6 +14,24 @@ services:
       - PAPERMERGE_DATABASE_NAME=${DB_NAME}
       - PAPERMERGE_DATABASE_PASS=${DB_PASSWORD}
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+  app_init:
+    image: ${IMAGE}:${TAG}
+    depends_on:
+      - db
+      - redis
+    command: init
+    environment:
+      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
+      - PAPERMERGE_DATABASE_USER=${DB_USER}
+      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
+      - PAPERMERGE_DATABASE_PASS=${DB_PASSWORD}
+      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
   db:
     image: postgres:13
     volumes:

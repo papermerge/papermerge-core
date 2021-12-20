@@ -34,6 +34,7 @@ RUN apt-get update;
 RUN apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
+    postgresql-client \
     tesseract-ocr \
     tesseract-ocr-deu \
     imagemagick \

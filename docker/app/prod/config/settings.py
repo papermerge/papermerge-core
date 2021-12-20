@@ -143,6 +143,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -324,3 +325,7 @@ CORS_ALLOW_HEADERS = list(default_cors_headers) + [
     "Authorization",
     "Content-Disposition",
 ]
+
+INTERNAL_IPS = ['127.0.0.1', ]
+
+CORS_ALLOW_ALL_ORIGINS = True

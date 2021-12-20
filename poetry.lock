@@ -615,17 +615,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "initdb"
-version = "0.5.0"
-description = "Creates a user and database owned by that user"
-category = "main"
-optional = false
-python-versions = ">=3.8,<4.0"
-
-[package.dependencies]
-psycopg2 = ">=2.9.2,<3.0.0"
-
-[[package]]
 name = "jinja2"
 version = "3.0.3"
 description = "A very fast and expressive template engine."
@@ -1209,7 +1198,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "692bb43d01141033c36d135858aa5e46ee1289c6818552b500447b419426804e"
+content-hash = "4855d2dc222b833368e12a8798972d7da384ce0cca5aed89bc77d78be7b8b6c6"
 
 [metadata.files]
 aioredis = [
@@ -1506,10 +1495,6 @@ inflection = [
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
-]
-initdb = [
-    {file = "initdb-0.5.0-py3-none-any.whl", hash = "sha256:4086d23c1125e9942f40c062ba1391d6ec233a4b1e6beec4071abaeb936fe229"},
-    {file = "initdb-0.5.0.tar.gz", hash = "sha256:d4e95f19801e4d0c0d9bd34918d07ffb19cf228740f9885f64afe16e5af3b800"},
 ]
 jinja2 = [
     {file = "Jinja2-3.0.3-py3-none-any.whl", hash = "sha256:077ce6014f7b40d03b47d1f1ca4b0fc8328a692bd284016f806ed0eaca390ad8"},

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
 
 
@@ -318,3 +319,8 @@ LOGGING = {
         },
     },
 }
+
+CORS_ALLOW_HEADERS = list(default_cors_headers) + [
+    "Authorization",
+    "Content-Disposition",
+]

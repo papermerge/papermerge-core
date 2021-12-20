@@ -10,6 +10,7 @@ services:
       - media_root:/opt/media
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
+      - PAPERMERGE_DATABASE_TYPE=postgres
       - PAPERMERGE_DATABASE_USER=${DB_USER}
       - PAPERMERGE_DATABASE_NAME=${DB_NAME}
       - PAPERMERGE_DATABASE_PASS=${DB_PASSWORD}

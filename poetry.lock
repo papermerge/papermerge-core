@@ -34,14 +34,11 @@ tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
 
 [[package]]
 name = "async-timeout"
-version = "4.0.1"
+version = "4.0.2"
 description = "Timeout context manager for asyncio programs"
 category = "main"
 optional = false
 python-versions = ">=3.6"
-
-[package.dependencies]
-typing-extensions = ">=3.6.5"
 
 [[package]]
 name = "atomicwrites"
@@ -290,7 +287,7 @@ cron = ["capturer (>=2.4)"]
 
 [[package]]
 name = "configula"
-version = "0.3.1"
+version = "0.4.0"
 description = "Merges configuration from toml file and environment variables"
 category = "main"
 optional = false
@@ -616,6 +613,17 @@ description = "iniconfig: brain-dead simple config-ini parsing"
 category = "dev"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "initdb"
+version = "0.5.0"
+description = "Creates a user and database owned by that user"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+psycopg2 = ">=2.9.2,<3.0.0"
 
 [[package]]
 name = "jinja2"
@@ -1201,7 +1209,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "37c316c7743b80fc2b2fffd4b6dcc2d97d91f61bf3de186a4b9a88dfe918a029"
+content-hash = "692bb43d01141033c36d135858aa5e46ee1289c6818552b500447b419426804e"
 
 [metadata.files]
 aioredis = [
@@ -1217,8 +1225,8 @@ asgiref = [
     {file = "asgiref-3.4.1.tar.gz", hash = "sha256:4ef1ab46b484e3c706329cedeff284a5d40824200638503f5768edb6de7d58e9"},
 ]
 async-timeout = [
-    {file = "async-timeout-4.0.1.tar.gz", hash = "sha256:b930cb161a39042f9222f6efb7301399c87eeab394727ec5437924a36d6eef51"},
-    {file = "async_timeout-4.0.1-py3-none-any.whl", hash = "sha256:a22c0b311af23337eb05fcf05a8b51c3ea53729d46fb5460af62bee033cec690"},
+    {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
+    {file = "async_timeout-4.0.2-py3-none-any.whl", hash = "sha256:8ca1e4fcf50d07413d66d1a5e416e42cfdf5851c981d679a09851a6853383b3c"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -1332,8 +1340,8 @@ coloredlogs = [
     {file = "coloredlogs-15.0.1.tar.gz", hash = "sha256:7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0"},
 ]
 configula = [
-    {file = "configula-0.3.1-py3-none-any.whl", hash = "sha256:c612254120d301b8dce3ec63c6c09da482654c614c0697c8a22e4c96bbb2b331"},
-    {file = "configula-0.3.1.tar.gz", hash = "sha256:5b4049dedb52ea9009a416b5ba82f7ee8c131c7f3ab4a1f22244abd1b7464df9"},
+    {file = "configula-0.4.0-py3-none-any.whl", hash = "sha256:21b4c0584707476f30b392105595e6d84c3149812412c625d3a0ccee036a1c4c"},
+    {file = "configula-0.4.0.tar.gz", hash = "sha256:83883e99dd5300b244728eb7a83abcc55b31d763717c4c759ceeca3fedfb6684"},
 ]
 constantly = [
     {file = "constantly-15.1.0-py2.py3-none-any.whl", hash = "sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d"},
@@ -1498,6 +1506,10 @@ inflection = [
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
+]
+initdb = [
+    {file = "initdb-0.5.0-py3-none-any.whl", hash = "sha256:4086d23c1125e9942f40c062ba1391d6ec233a4b1e6beec4071abaeb936fe229"},
+    {file = "initdb-0.5.0.tar.gz", hash = "sha256:d4e95f19801e4d0c0d9bd34918d07ffb19cf228740f9885f64afe16e5af3b800"},
 ]
 jinja2 = [
     {file = "Jinja2-3.0.3-py3-none-any.whl", hash = "sha256:077ce6014f7b40d03b47d1f1ca4b0fc8328a692bd284016f806ed0eaca390ad8"},

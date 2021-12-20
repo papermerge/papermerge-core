@@ -3,7 +3,8 @@
 export PATH="/venv/bin:${PATH}"
 
 CMD="$1"
-MANAGE="/venv/bin/python manage.py"
+PYTHON="/venv/bin/python"
+MANAGE="${PYTHON} manage.py"
 
 if [ -z $CMD ]; then
   echo "No command specified"
@@ -19,6 +20,15 @@ exec_worker() {
 }
 
 exec_init() {
+  # if INITIAL_DATABASE_USER is provided run initdb to
+  # create database user and database itself using following env variables
+  #   PAPERMERGE_DATABASE_USER
+  #   PAPERMERGE_DATABASE_NAME
+  #   PAPERMERGE_DATABASE_PASSWORD
+  #   PAPERMERGE_DATABASE_HOST
+  if [ -n "${INITIAL_DATABASE_USER}" ]; then
+    $PYTHON -m initdb
+  fi
   # run migrations
   $MANAGE migrate --no-input
 

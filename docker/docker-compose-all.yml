@@ -1,11 +1,9 @@
 version: '3.7'
 services:
-  app:
+  backend:
     image: ${APP_IMAGE}:${APP_TAG}
-    ports:
-      - "7000:8090"
     depends_on:
-      - app_init
+      - backend_init
     volumes:
       - media_root:/opt/media
     environment:
@@ -19,10 +17,11 @@ services:
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     labels:
-      - traefik.backend=backend
-    networks:
-      - traefik
-  app_init:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api`)"
+      - "traefik.http.middlewares.backend.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.backend.stripprefix.forceSlash=false"
+  backend_init:
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - db
@@ -38,8 +37,6 @@ services:
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-    networks:
-      - traefik
   db:
     image: postgres:13
     volumes:
@@ -48,16 +45,12 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-  networks:
-    - traefik
   redis:
     image: 'redis:6'
     ports:
       - '127.0.0.1:6379:6379'
     volumes:
       - 'redisdata:/data'
-    networks:
-      - traefik
   traefik:
     image: "traefik:v2.5"
     command:
@@ -65,29 +58,21 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:8000"
-    networks:
-      - traefik
+      - "--entrypoints.web.address=:80"
     ports:
-      - "8000:80"
+      - "80:80"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  papermergejs:
+  frontend:
     image: ${PAPERMERGE_JS_IMAGE}:${PAPERMERGE_JS_TAG}
-    ports:
-      - "9000:80"
-    networks:
-      - traefik
     labels:
-      - traefik.backend=frontend
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`papermerge.local`) && PathPrefix(`/`)"
+
 
 volumes:
   postgres_data:
   media_root:
   redisdata:
-
-networks:
-  traefik:
-    name: traefik

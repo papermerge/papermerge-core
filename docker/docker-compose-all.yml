@@ -1,9 +1,10 @@
 version: '3.7'
 services:
   app:
-    image: ${IMAGE}:${TAG}
+    image: ${APP_IMAGE}:${APP_TAG}
+    container_name: backend
     ports:
-      - "8000:8090"
+      - "7000:8090"
     depends_on:
       - app_init
     volumes:
@@ -18,8 +19,10 @@ services:
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+    networks:
+      - papermerge_net
   app_init:
-    image: ${IMAGE}:${TAG}
+    image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - db
       - redis
@@ -34,6 +37,8 @@ services:
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+    networks:
+      - papermerge_net
   db:
     image: postgres:13
     volumes:
@@ -42,13 +47,39 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - papermerge_net
   redis:
     image: 'redis:6'
     ports:
       - '127.0.0.1:6379:6379'
     volumes:
       - 'redisdata:/data'
+    networks:
+      - papermerge_net
+  web:
+    image: nginx:1.21.4-alpine
+    depends_on:
+      - papermergejs
+      - app
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - papermerge_net
+  papermergejs:
+    image: ${PAPERMERGE_JS_IMAGE}:${PAPERMERGE_JS_TAG}
+    container_name: frontend
+    ports:
+      - "9000:80"
+    networks:
+      - papermerge_net
+
 volumes:
   postgres_data:
   media_root:
   redisdata:
+
+networks:
+  papermerge_net:

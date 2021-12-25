@@ -2,7 +2,6 @@ version: '3.7'
 services:
   app:
     image: ${APP_IMAGE}:${APP_TAG}
-    container_name: backend
     ports:
       - "7000:8090"
     depends_on:
@@ -19,8 +18,10 @@ services:
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+    labels:
+      - traefik.backend=backend
     networks:
-      - papermerge_net
+      - traefik
   app_init:
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
@@ -38,7 +39,7 @@ services:
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     networks:
-      - papermerge_net
+      - traefik
   db:
     image: postgres:13
     volumes:
@@ -47,8 +48,8 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-    networks:
-      - papermerge_net
+  networks:
+    - traefik
   redis:
     image: 'redis:6'
     ports:
@@ -56,33 +57,31 @@ services:
     volumes:
       - 'redisdata:/data'
     networks:
-      - papermerge_net
-  web:
+      - traefik
+  traefik:
     image: "traefik:v2.5"
-    container_name: "traefik"
     command:
       #- "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:8000"
-    depends_on:
-      - papermergejs
-      - app
+    networks:
+      - traefik
     ports:
       - "8000:80"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    networks:
-      - papermerge_net
+
   papermergejs:
     image: ${PAPERMERGE_JS_IMAGE}:${PAPERMERGE_JS_TAG}
-    container_name: frontend
     ports:
       - "9000:80"
     networks:
-      - papermerge_net
+      - traefik
+    labels:
+      - traefik.backend=frontend
 
 volumes:
   postgres_data:
@@ -90,4 +89,5 @@ volumes:
   redisdata:
 
 networks:
-  papermerge_net:
+  traefik:
+    name: traefik

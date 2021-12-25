@@ -18,9 +18,10 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api`)"
-      - "traefik.http.middlewares.backend.stripprefix.prefixes=/api"
-      - "traefik.http.middlewares.backend.stripprefix.forceSlash=false"
+      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api/`)"
+      - "traefik.http.middlewares.backend-strip.stripprefix.prefixes=/api"
+      - "traefik.http.routers.backend.middlewares=backend-strip"
+      - "traefik.http.middlewares.backend-strip.stripprefix.forceSlash=false"
   backend_init:
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:

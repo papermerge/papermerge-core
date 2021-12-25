@@ -58,14 +58,22 @@ services:
     networks:
       - papermerge_net
   web:
-    image: nginx:1.21.4-alpine
+    image: "traefik:v2.5"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:8000"
     depends_on:
       - papermergejs
       - app
     ports:
       - "8000:80"
+      - "8080:8080"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - papermerge_net
   papermergejs:

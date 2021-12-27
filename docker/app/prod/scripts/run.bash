@@ -15,6 +15,10 @@ exec_server() {
   exec uwsgi --ini /etc/uwsgi/papermerge.ini
 }
 
+exec_ws_server() {
+  exec daphne --port 8090 config.asgi:application
+}
+
 exec_worker() {
   exec celery --app=papermerge worker --loglevel=INFO
 }
@@ -42,6 +46,9 @@ case $CMD in
     ;;
   server)
     exec_server
+    ;;
+  ws_server)
+    exec_ws_server
     ;;
   worker)
     exec_worker

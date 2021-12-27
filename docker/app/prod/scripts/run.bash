@@ -17,7 +17,7 @@ exec_server() {
 }
 
 exec_ws_server() {
-  exec daphne --port 8090 config.asgi:application
+  exec daphne -b 0.0.0.0 --port 8090 config.asgi:application
 }
 
 exec_worker() {

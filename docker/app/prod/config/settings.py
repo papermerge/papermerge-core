@@ -7,8 +7,8 @@ from configula import Configula
 config = Configula(
     prefix="PAPERMERGE",
     config_locations=[
-        "/etc/papermerge.conf.py",
-        "papermerge.conf.py"
+        "/etc/papermerge.toml",
+        "papermerge.toml"
     ],
     config_env_var_name="PAPERMERGE_CONFIG"
 )

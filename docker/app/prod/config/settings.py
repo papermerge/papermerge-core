@@ -28,6 +28,18 @@ DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(
+                config.get('redis', 'host', default="127.0.0.1"),
+                config.get('redis', 'port', default=6379)
+            )],
+        },
+    },
+}
+
 MEDIA_ROOT = config.get(
     'media',
     'dir',

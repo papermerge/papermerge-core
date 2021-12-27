@@ -1,14 +1,17 @@
 import os
 
+from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from django.core.asgi import get_asgi_application
-import papermerge.notifications.routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
+http_asgi_app = get_asgi_application()
+
+import papermerge.notifications.routing  # noqa
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
+    "http": http_asgi_app,
     "websocket": AuthMiddlewareStack(
         URLRouter(
             papermerge.notifications.routing.websocket_urlpatterns

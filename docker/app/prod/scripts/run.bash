@@ -6,6 +6,7 @@ CMD="$1"
 PYTHON="/venv/bin/python"
 MANAGE="${PYTHON} manage.py"
 
+
 if [ -z $CMD ]; then
   echo "No command specified"
   exit 1

@@ -168,6 +168,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'config.urls'
 AUTH_USER_MODEL = 'core.User'
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 
 TEMPLATES = [

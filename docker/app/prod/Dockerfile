@@ -40,6 +40,7 @@ RUN apt-get install -y --no-install-recommends \
     imagemagick \
     git \
     libmagic1 \
+    ghostscript \
     file \
     gcc
 

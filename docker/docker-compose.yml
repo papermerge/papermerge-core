@@ -3,7 +3,7 @@ services:
   worker: # celery worker
     image: ${APP_IMAGE}:${APP_TAG}
     volumes:
-      - media_root:/opt/media
+      - media_root:/app/media
     command: worker
     depends_on:
       - backend_init
@@ -25,7 +25,7 @@ services:
     depends_on:
       - backend_init
     volumes:
-      - media_root:/opt/media
+      - media_root:/app/media
     command: ws_server
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
@@ -48,7 +48,7 @@ services:
     depends_on:
       - backend_init
     volumes:
-      - media_root:/opt/media
+      - media_root:/app/media
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
       - PAPERMERGE_DATABASE_TYPE=postgres

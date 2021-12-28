@@ -1,6 +1,26 @@
 version: '3.7'
 services:
-  ws_server:
+  worker: # celery worker
+    image: ${APP_IMAGE}:${APP_TAG}
+    volumes:
+      - media_root:/opt/media
+    command: worker
+    depends_on:
+      - backend_init
+    environment:
+      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
+      - PAPERMERGE_DATABASE_TYPE=postgres
+      - PAPERMERGE_DATABASE_USER=${DB_USER}
+      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
+      - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
+      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
+      - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
+      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - DJANGO_SETTINGS_MODULE=config.settings
+  ws_server:  # websockets server / daphne
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - backend_init
@@ -23,7 +43,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ws_server.rule=Host(`papermerge.local`) && PathPrefix(`/ws/`)"
-  backend:
+  backend:  # rest api backend / uwsgi
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - backend_init
@@ -89,7 +109,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  frontend:
+  frontend: # emberjs
     image: ${PAPERMERGE_JS_IMAGE}:${PAPERMERGE_JS_TAG}
     labels:
       - "traefik.enable=true"

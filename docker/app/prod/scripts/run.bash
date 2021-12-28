@@ -21,7 +21,7 @@ exec_ws_server() {
 }
 
 exec_worker() {
-  exec celery --app=papermerge worker --loglevel=INFO
+  exec celery --app=config.celery worker --loglevel=INFO
 }
 
 exec_init() {

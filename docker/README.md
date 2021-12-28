@@ -1,4 +1,6 @@
-# Papermerge with Docker Compose
+# Papermerge with Docker
+
+## Docker Compose
 
 In order to use papermerge with docker compose you need to prepare an [environment
 file](https://docs.docker.com/compose/env-file/).
@@ -36,4 +38,17 @@ Follow logs of individual services:
 Start papermerge's worker only using following command::
 
     docker-compose  -f docker/docker-compose.yml --env-file .env up worker
+
+
+## Docker Images
+
+
+### App
+
+App docker image is the image used for backend rest api, websockets servers and celery workers.
+
+In order to build app docker image:
+
+    docker bulid -t papermerge:2.1dev51 -f docker/app/prod/Dockerfile .
+
 

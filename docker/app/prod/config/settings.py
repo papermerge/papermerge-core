@@ -23,22 +23,34 @@ ALLOWED_HOSTS = config.get_var(
     default=['*']
 )
 
+redis_host = config.get('redis', 'host', default="127.0.0.1")
+redis_port = config.get('redis', 'port', default=6379)
 
-DEBUG = False
+CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_WORKER_CONCURENCY = 1
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_CREATE_MISSING_QUEUES = True
+CELERY_TASK_DEFAULT_EXCHANGE = 'papermerge'
+CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_TASK_DEFAULT_ROUTING_KEY = 'papermerge'
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [(
-                config.get('redis', 'host', default="127.0.0.1"),
-                config.get('redis', 'port', default=6379)
-            )],
+            "hosts": [(redis_host, redis_port)],
         },
     },
 }
+
+DEBUG = False
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 
 MEDIA_ROOT = config.get(
     'media',

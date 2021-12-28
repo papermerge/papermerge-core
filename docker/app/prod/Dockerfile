@@ -40,6 +40,7 @@ RUN apt-get install -y --no-install-recommends \
     imagemagick \
     git \
     libmagic1 \
+    file \
     gcc
 
 COPY docker/app/prod/uwsgi.ini /etc/uwsgi/papermerge.ini

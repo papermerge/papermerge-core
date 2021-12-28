@@ -59,6 +59,7 @@ services:
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - DJANGO_SETTINGS_MODULE=config.settings
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api/`)"

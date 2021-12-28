@@ -143,6 +143,8 @@ PAPERMERGE_MIMETYPES = [
 # i.e. create ".inbox" and ".home" folders
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 
+PAPERMERGE_TASK_MONITOR_STORE_URL = f"redis://{redis_host}:{redis_port}/0"
+
 # Application definition
 
 INSTALLED_APPS = [

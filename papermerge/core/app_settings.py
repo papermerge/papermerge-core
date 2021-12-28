@@ -11,7 +11,7 @@ class AppSettings():
         self.prefix = prefix
 
     def _settings(self, name, default_value):
-        full_name = self.prefix + name
+        full_name = f"{self.prefix}_{name}"
         value = getattr(
             django_settings,
             full_name,

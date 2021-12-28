@@ -21,7 +21,7 @@ exec_ws_server() {
 }
 
 exec_worker() {
-  exec celery --app=config.celery worker --loglevel=INFO
+  exec $MANAGE worker --skip-rebuild --skip-txt2db
 }
 
 exec_init() {

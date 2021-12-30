@@ -11,7 +11,7 @@ to run Papermerge:
 
 First mode is suitable for production deployments. Development mode is suitable only for developers
 and is meant to quick setup all external services and all dependencies required
-for developing environment.
+for development environment.
 
 Basically if you are developer and indend to play with source code - development mode is for you,
 otherwise use production mode.

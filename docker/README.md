@@ -1,14 +1,23 @@
 # Papermerge with Docker
 
 In this folder you will find docker related files for a quick setup of
-Papermerge DMS using [docker-compose]
-(https://docs.docker.com/compose/).
+Papermerge DMS using [docker-compose](https://docs.docker.com/compose/).
 
 There are at least two distinct modes way
-to run Papermerge - production and development. Production mode is suitable
-for production deployments. Development mode is suitable only for developers
+to run Papermerge:
+
+- production
+- development
+
+Firt mode is suitable for production deployments. Development mode is suitable only for developers
 and is meant to quick setup all external services and all dependencies required
 for developing environment.
+
+Basically if you are developer and indend to play with source code - development mode is for you,
+otherwise use production mode.
+
+Docker compose files for production mode start with prefix ``prod-``. For development mode start
+with prefix ``dev-``.
 
 ## Environment File
 

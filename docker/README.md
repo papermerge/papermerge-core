@@ -1,9 +1,20 @@
 # Papermerge with Docker
 
-## Docker Compose
+In this folder you will find docker related files for a quick setup of
+Papermerge DMS using [docker-compose]
+(https://docs.docker.com/compose/).
+
+There are at least two distinct modes way
+to run Papermerge - production and development. Production mode is suitable
+for production deployments. Development mode is suitable only for developers
+and is meant to quick setup all external services and all dependencies required
+for developing environment.
+
+## Environment File
 
 In order to use papermerge with docker compose you need to prepare an [environment
-file](https://docs.docker.com/compose/env-file/).
+file](https://docs.docker.com/compose/env-file/) as it is not provided
+in sources repository.
 
 Environment file example (file named ``.env``):
 
@@ -29,23 +40,34 @@ Environment file example (file named ``.env``):
 
 With ``.env`` prepared, start papermerge services using following command:
 
-    docker-compose  -f docker/docker-compose.yml --env-file .env up
+    docker-compose  -f docker/prod-docker-compose.yml --env-file .env up
 
 Follow logs of individual services:
 
-    docker-compose -f docker/docker-compose.yml --env-file .env logs backend
+    docker-compose -f docker/prod-docker-compose.yml --env-file .env logs backend
 
 Start papermerge's worker only using following command::
 
-    docker-compose  -f docker/docker-compose.yml --env-file .env up worker
+    docker-compose  -f docker/prod-docker-compose.yml --env-file .env up worker
 
 
-## Docker Images
+## App
 
 
-### App
+App docker image is the image of papermerge. The very same image can run in
+(at least) two ways:
 
-App docker image is the image used for backend rest api, websockets servers and celery workers.
+- as REST API backend
+- as worker
+
+There can be any number of workers you want, however there can be only one
+REST API backend. Workers perform heavy background tasks like OCRing the
+documents.
+
+In production mode, papermerge image can start websocket server
+(named ``ws_server`` in compose file). Websocker sever is used for sending
+realtime notifications to the clients about server side events (e.g. OCR of
+the document was successfully complete).
 
 In order to build app docker image:
 

@@ -1,23 +1,149 @@
-"""
-This settings.py file is used to generate REST API schema file
-"""
+import os
 from pathlib import Path
+from corsheaders.defaults import default_headers as default_cors_headers
+from configula import Configula
+
+
+config = Configula(
+    prefix="PAPERMERGE",
+    config_locations=[
+        "/etc/papermerge.toml",
+        "papermerge.toml"
+    ],
+    config_env_var_name="PAPERMERGE_CONFIG"
+)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+PROJ_ROOT = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+ALLOWED_HOSTS = config.get_var(
+    'allowed_hosts',
+    default=['*']
+)
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b#)_(1m3hkhfyc!hqla-$*^@^1xb9!ds(v9oe3v*&#u-$!j%q@'
+redis_host = config.get('redis', 'host', default="127.0.0.1")
+redis_port = config.get('redis', 'port', default=6379)
 
-# SECURITY WARNING: don't run with debug turned on in production!
+CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
+
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_WORKER_CONCURENCY = 1
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_CREATE_MISSING_QUEUES = True
+CELERY_TASK_DEFAULT_EXCHANGE = 'papermerge'
+CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_TASK_DEFAULT_ROUTING_KEY = 'papermerge'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(redis_host, redis_port)],
+        },
+    },
+}
+
 DEBUG = True
 
-ALLOWED_HOSTS = []
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+
+MEDIA_ROOT = config.get(
+    'media',
+    'dir',
+    default=os.path.join(PROJ_ROOT, "media")
+)
+
+MEDIA_URL = config.get(
+    'media',
+    'url',
+    default='/media/'
+)
+
+SECRET_KEY = config.get_var('secret_key')
+
+SITE_ID = 1
+
+STATIC_ROOT = config.get(
+    'static',
+    'dir',
+    default=os.path.join(PROJ_ROOT, "static")
+)
+
+STATIC_URL = config.get(
+    'static',
+    'dir',
+    default='/static/'
+)
+
+# This is where Papermerge will look for PDFs to index
+PAPERMERGE_IMPORTER_DIR = config.get(
+    "IMPORTER_DIR",
+    None
+)
+
+PAPERMERGE_FILES_MIN_UNMODIFIED_DURATION = config.get_var(
+    "FILES_MIN_UNMODIFIED_DURATION",
+    1
+)
+
+PAPERMERGE_IMPORTER_LOOP_TIME = config.get_var(
+    "IMPORTER_LOOP_TIME",
+    5
+)
+
+
+PAPERMERGE_OCR_DEFAULT_LANGUAGE = config.get(
+    'ocr',
+    'default_language',
+    default='deu'
+)
+
+PAPERMERGE_OCR_LANGUAGES = config.get(
+    'ocr',
+    'language',
+    default={
+        'deu': 'Deutsch',
+        'eng': 'English',
+    }
+)
+
+PAPERMERGE_METADATA_DATE_FORMATS = [
+    'dd.mm.yy',
+    'dd.mm.yyyy',
+    'dd.M.yyyy',
+    'month'  # Month as locale’s full name, January, February
+]
+
+PAPERMERGE_METADATA_CURRENCY_FORMATS = [
+    'dd.cc',
+    'dd,cc'
+]
+
+PAPERMERGE_METADATA_NUMERIC_FORMATS = [
+    'dddd',
+    'd,ddd',
+    'd.ddd'
+]
+
+PAPERMERGE_MIMETYPES = [
+    'application/octet-stream',
+    'application/pdf',
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/tiff'
+]
+
+# For each user create special folders
+# i.e. create ".inbox" and ".home" folders
+PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
+
+PAPERMERGE_TASK_MONITOR_STORE_URL = f"redis://{redis_host}:{redis_port}/0"
 
 # Application definition
 
@@ -43,6 +169,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,6 +180,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+AUTH_USER_MODEL = 'core.User'
+WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
 
 TEMPLATES = [
     {
@@ -70,19 +201,43 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = 'core.User'
-WSGI_APPLICATION = 'config.wsgi.application'
+
+DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
+
+if config.has_mysql:
+    # Requires MySQL > 5.7.7 or innodb_large_prefix set to on
+    SILENCED_SYSTEM_CHECKS = ['mysql.E001']
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler'
+]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+LANGUAGES = [
+    ('de', 'Deutsch'),
+    ('en', 'English'),
+    ('fr', 'Français'),
+]
+TIME_ZONE = 'Europe/Berlin'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+LANGUAGE_CODE = config.get_var(
+    'language_code',
+    default='en'
+)
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+LOCALE_PATHS = (
+    PROJ_ROOT / Path('papermerge'),
+)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATE_FORMAT = '%d/%m/%Y'
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
 
 # Password validation
@@ -116,17 +271,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
-STATIC_URL = '/static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
@@ -165,3 +309,48 @@ REST_FRAMEWORK = {
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json'
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', ],
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['console', ],
+            'propagate': False,
+        },
+        'django.security.DisallowedHost': {
+            'level': 'INFO',
+            'handlers': ['console', ],
+            'propagate': False,
+        },
+        'papermerge': {
+            'level': 'DEBUG',
+            'handlers': ['console', ],
+            'propagate': False,
+        },
+    },
+}
+
+CORS_ALLOW_HEADERS = list(default_cors_headers) + [
+    "Authorization",
+    "Content-Disposition",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True

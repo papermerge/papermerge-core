@@ -51,6 +51,25 @@ DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': config.get(
+            'search',
+            'engine',
+            'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine'  # noqa
+        ),
+        'URL': config.get(
+            'search',
+            'url',
+            'http://127.0.0.1:9200/'
+        ),
+        'INDEX_NAME': config.get(
+            'search',
+            'index_name',
+            'haystack'
+        ),
+    },
+}
 
 MEDIA_ROOT = config.get(
     'media',
@@ -166,6 +185,7 @@ INSTALLED_APPS = [
     'polymorphic',
     'mptt',
     'channels',
+    'haystack'
 ]
 
 MIDDLEWARE = [

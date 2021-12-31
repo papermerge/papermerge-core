@@ -16,7 +16,13 @@ services:
       - 6379:6379
     volumes:
       - 'redisdata:/data'
-
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+      - 9300:9300
 volumes:
   postgres_data2:
   redisdata:

@@ -26,6 +26,8 @@ services:
       - backend_init
     volumes:
       - media_root:/app/media
+    ports:
+      - 8000:8000
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
       - PAPERMERGE_DATABASE_TYPE=postgres

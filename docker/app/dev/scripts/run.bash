@@ -13,7 +13,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_server() {
-  exec $MANAGE runserver
+  exec $MANAGE runserver 0.0.0.0:8000
 }
 
 exec_worker() {

@@ -1,5 +1,5 @@
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('papermerge.core.urls')),
+    path('api/', include('papermerge.core.urls')),
 ]

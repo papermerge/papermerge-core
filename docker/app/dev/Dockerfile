@@ -56,7 +56,7 @@ COPY papermerge/ ./papermerge/
 COPY docker/app/dev/config/ ./config/
 COPY docker/app/dev/manage.py ./
 
-EXPOSE 8090
+EXPOSE 8000
 
 ENTRYPOINT ["/run.bash"]
 CMD ["server"]

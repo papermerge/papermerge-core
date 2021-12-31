@@ -51,12 +51,11 @@ COPY --from=build /venv /venv
 
 WORKDIR app
 
-# sources
-COPY papermerge/ ./papermerge/
 COPY docker/app/dev/config/ ./config/
 COPY docker/app/dev/manage.py ./
 
 EXPOSE 8000
 
+VOLUME /app/papermerge
 ENTRYPOINT ["/run.bash"]
 CMD ["server"]

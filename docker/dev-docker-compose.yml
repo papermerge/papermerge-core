@@ -4,6 +4,7 @@ services:
     image: ${APP_IMAGE}:${APP_TAG}
     volumes:
       - media_root:/app/media
+      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
     command: worker
     depends_on:
       - backend_init
@@ -26,6 +27,7 @@ services:
       - backend_init
     volumes:
       - media_root:/app/media
+      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
     ports:
       - 8000:8000
     environment:
@@ -47,6 +49,9 @@ services:
       - db
       - redis
     command: init
+    volumes:
+      - media_root:/app/media
+      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
       - PAPERMERGE_DATABASE_TYPE=postgres

@@ -47,17 +47,25 @@ Environment file example (file named ``.env``):
     SUPERUSER_EMAIL=admin@mail.com
     SUPERUSER_PASSWORD=your-superuser-password
 
-With ``.env`` prepared, start papermerge services using following command:
+With ``.env`` prepared, start papermerge services (production mode) using following command:
 
-    docker-compose  -f docker/prod-docker-compose.yml --env-file .env up
+    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env up
+
+Run papermerge in development mode (with source code mounted):
+
+    docker-compose  -f docker/dev-docker-compose.yml --env-file docker/app/dev/.env up
 
 Follow logs of individual services:
 
-    docker-compose -f docker/prod-docker-compose.yml --env-file .env logs backend
+    docker-compose -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env logs backend
+
+For development mode:
+
+    docker-compose -f docker/dev-docker-compose.yml --env-file docker/app/dev/.env logs backend
 
 Start papermerge's worker only using following command::
 
-    docker-compose  -f docker/prod-docker-compose.yml --env-file .env up worker
+    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env up worker
 
 
 ## App

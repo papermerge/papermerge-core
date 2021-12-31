@@ -8,13 +8,19 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432
   redis:
     image: 'redis:6'
     ports:
-      - '6379:6379'
+      - 6379:6379
     volumes:
       - 'redisdata:/data'
 
 volumes:
   postgres_data:
   redisdata:
+
+networks:
+  my_local:
+    driver: host

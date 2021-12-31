@@ -1,5 +1,6 @@
 .idea/
 .env
+.env_shell
 config/settings/local/*
 build/
 .eggs/

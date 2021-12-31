@@ -3,7 +3,7 @@ services:
   db:
     image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data2:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
@@ -18,7 +18,7 @@ services:
       - 'redisdata:/data'
 
 volumes:
-  postgres_data:
+  postgres_data2:
   redisdata:
 
 networks:

@@ -13,7 +13,7 @@ First mode is suitable for production deployments. Development mode is suitable 
 and is meant to quick setup all external services and all dependencies required
 for development environment.
 
-Basically if you are developer and indend to play with source code - development mode is for you,
+Basically if you are developer and intend to play with source code - development mode is for you,
 otherwise use production mode.
 
 Docker compose files for production mode start with prefix ``prod-``. For development mode start
@@ -88,6 +88,11 @@ the document was successfully complete).
 
 In order to build app docker image:
 
-    docker bulid -t papermerge:2.1dev51 -f docker/app/prod/Dockerfile .
+    docker bulid -t papermerge:2.1dev51 -f docker/app/dev/Dockerfile .
 
 
+## Services
+
+For convenience, there is a docker-compose's ``services.yml`` file which can
+be used to quickly start external services only: postgres, redis, elastic
+search.

@@ -56,7 +56,7 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': config.get(
             'search',
             'engine',
-            'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine'  # noqa
+            'haystack.backends.elasticsearch5_backend.Elasticsearch5SearchEngine'  # noqa
         ),
         'URL': config.get(
             'search',

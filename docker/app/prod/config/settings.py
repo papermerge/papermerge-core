@@ -51,23 +51,9 @@ DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-HAYSTACK_CONNECTIONS = {
+ELASTICSEARCH_DSL = {
     'default': {
-        'ENGINE': config.get(
-            'search',
-            'engine',
-            'haystack.backends.elasticsearch5_backend.Elasticsearch5SearchEngine'  # noqa
-        ),
-        'URL': config.get(
-            'search',
-            'url',
-            'http://127.0.0.1:9200/'
-        ),
-        'INDEX_NAME': config.get(
-            'search',
-            'index_name',
-            'haystack'
-        ),
+        'hosts': 'localhost:9200'
     },
 }
 
@@ -185,7 +171,7 @@ INSTALLED_APPS = [
     'polymorphic',
     'mptt',
     'channels',
-    'haystack'
+    'django_elasticsearch_dsl'
 ]
 
 MIDDLEWARE = [

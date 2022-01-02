@@ -2,7 +2,7 @@ from django_elasticsearch_dsl import Document as ElasticSearchDocument
 from django_elasticsearch_dsl import fields as es_fields
 from django_elasticsearch_dsl.registries import registry
 
-from papermerge.core.models import Page, DocumentVersion
+from papermerge.core.models import Page
 
 
 @registry.register_document

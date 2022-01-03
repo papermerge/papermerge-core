@@ -21,7 +21,7 @@ RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 COPY poetry.lock pyproject.toml /
-RUN poetry install --no-root --no-dev -vvv
+RUN poetry install --no-root -vvv
 
 ## STEP 2 - use slim base image
 FROM python:3.8-slim

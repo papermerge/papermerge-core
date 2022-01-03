@@ -23,8 +23,11 @@ ALLOWED_HOSTS = config.get_var(
     default=['*']
 )
 
-redis_host = config.get('redis', 'host', default="127.0.0.1")
+redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)
+
+es_hosts = config.get('elasticsearch', 'hosts', default='127.0.0.1')
+es_port = config.get('elasticsearch', 'port', default=9200)
 
 CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
 
@@ -53,7 +56,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'localhost:9200'
+        'hosts': config.get(
+            'elasticsearch',
+            'hosts',
+            default=f"{es_hosts}:{es_port}"
+        )
     },
 }
 

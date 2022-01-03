@@ -184,30 +184,17 @@ class Page(models.Model):
             page_count=self.page_count
         )
 
-    def update_text_field(self):
-        """Update text field from associated .txt file.
+    def update_text_field(self, stream):
+        """Update text field from given IO stream.
 
-        Returns non-empty text string value if .txt file was found.
-        If file was not found - will return an empty string.
+        Returns text read from IO stream
         """
-        text = ''
-        url = default_storage.abspath(self.txt_url)
-
-        if not os.path.exists(url):
-            logger.debug(
-                f"Missing page txt {url}."
-            )
-            return
-
-        with open(url) as file_handle:
-            self.text = file_handle.read()
-            self.save()
-            logger.debug(
-                f"text saved. len(page.text)=={len(self.text)}"
-            )
-            text = self.text
-
-        return text
+        self.text = stream.read()
+        self.save()
+        logger.debug(
+            f"text saved. len(page.text)=={len(self.text)}"
+        )
+        return self.text
 
     @property
     def txt_url(self):

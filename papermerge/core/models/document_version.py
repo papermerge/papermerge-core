@@ -1,8 +1,13 @@
+import logging
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from papermerge.core.storage import default_storage
 
 from papermerge.core.lib.path import DocumentPath
+
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentVersion(models.Model):
@@ -100,3 +105,30 @@ class DocumentVersion(models.Model):
         if new_page_count and new_page_count != self.page_count:
             self.page_count = new_page_count
             self.save()
+
+    def update_text_field(self, streams):
+        """Update document versions's text field from IO streams.
+
+        Arguments:
+            ``streams`` - a list of IO text streams
+
+        It will update text field of all associated pages first
+        and then concatinate all text field into doc.text field.
+
+        Returns True if document contains non empty non whitespace
+        text (i.e it was OCRed)
+        """
+        text = ""
+        stripped_text = ""
+
+        for page, stream in zip(self.pages.all(), streams):
+            if len(page.text) == 0:
+                text = page.update_text_field(stream)
+            text = text + ' ' + page.text
+
+        stripped_text = text.strip()
+        if stripped_text:
+            self.text = stripped_text
+            self.save()
+
+        return len(text.strip()) != 0

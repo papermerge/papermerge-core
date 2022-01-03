@@ -1,9 +1,13 @@
+import io
+import os
 import logging
+
 
 from django.utils.translation import gettext_lazy as _
 
 from celery import shared_task
 from papermerge.core.ocr.document import ocr_document
+from papermerge.core.storage import default_storage
 
 from .models import (
     BaseTreeNode,
@@ -69,6 +73,37 @@ def ocr_document_task(
     # doc.update_text_field()
 
     return True
+
+
+@shared_task
+def update_document_pages(document_id, namespace=None):
+    """
+    Updates document latest versions's ``text`` field
+
+    ``text`` field is updated on the last document version instance
+    as well as on each of last document versions' page.
+
+    In case when a particular file with ``page.txt_url`` does not exist,
+    page content (to the precise, the lack of page content) will
+    be replaced with empty string (io.String('')).
+
+    In particular when no OCR was performed yet each individual
+    page as well as document versions's ``text`` fields will be
+    updated with empty strings.
+    """
+
+    doc = Document.objects.get(pk=document_id)
+    doc_version = doc.versions.last()
+    streams = []
+
+    for page in doc_version.pages:
+        url = default_storage.abspath(page.txt_url)
+        if os.path.exists(url):
+            streams.append(open(url))
+        else:
+            streams.append(io.StringIO(''))
+
+    doc_version.update_text_field(streams)
 
 
 @shared_task()

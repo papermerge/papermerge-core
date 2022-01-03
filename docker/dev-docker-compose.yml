@@ -17,6 +17,8 @@ services:
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
       - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
       - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -39,6 +41,8 @@ services:
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
       - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
       - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -48,6 +52,7 @@ services:
     depends_on:
       - db
       - redis
+      - es
     command: init
     volumes:
       - media_root:/app/media
@@ -76,6 +81,13 @@ services:
       - '6379:6379'
     volumes:
       - 'redisdata:/data'
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+      - 9300:9300
 
 volumes:
   postgres_data:

@@ -26,18 +26,9 @@ class OCRView(RequireAuthMixin, GenericAPIView):
         doc = get_object_or_404(Document.objects, pk=doc_id)
         namespace = getattr(default_storage, 'namespace', None)
 
-        update_doc_pages_sig = update_document_pages.s(
-            document_id=doc.id,
-            namespace=namespace
-        )
-
         ocr_document_task.apply_async(
-            kwargs={
-                'document_id': doc.id,
-                'lang': lang,
-                'namespace': namespace,
-            },
-            link=update_doc_pages_sig()
+            (doc.id, lang, namespace),
+            link=update_document_pages.s(namespace)
         )
 
         return Response({"message": "OCR successfully started"})

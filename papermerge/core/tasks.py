@@ -2,7 +2,6 @@ import io
 import os
 import logging
 
-
 from django.utils.translation import gettext_lazy as _
 
 from celery import shared_task
@@ -27,7 +26,14 @@ def ocr_document_task(
     namespace=None
 ):
     """
-    OCR whole document, updates document's version and its `text` field
+    OCRs the document and creates new document version.
+
+    On success returns ``document_id``
+    If something went wrong returns ``None``.
+
+    Returning ``document_id`` on success crucial, as ``ocr_document_task``
+    is chained with other celery tasks which will receive as
+    first argument returned value of this task (i.e. ``document_id``).
     """
 
     doc = Document.objects.get(pk=document_id)
@@ -61,7 +67,7 @@ def ocr_document_task(
         doc = Document.objects.get(id=document_id)
     except Document.DoesNotExist as exception:
         logger.error(exception, exc_info=True)
-        return False
+        return None
 
     new_doc_version = DocumentVersion(
         document=doc,
@@ -93,7 +99,8 @@ def ocr_document_task(
         f'document_id={document_id} namespace={namespace} '
         f'lang={lang}'
     )
-    return True
+
+    return document_id
 
 
 @shared_task
@@ -117,6 +124,7 @@ def update_document_pages(document_id, namespace=None):
         'update_document_pages: '
         f'document_id={document_id} namespace={namespace}'
     )
+
     doc = Document.objects.get(pk=document_id)
     doc_version = doc.versions.last()
     streams = []

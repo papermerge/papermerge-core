@@ -53,22 +53,42 @@ Then install all dependencies in current python virtual environment:
 
     poetry install
 
-Before running tests, make sure redis services is up and running. Run tests:
+Test suite is devided into two big groups:
 
-    PYTHONPATH=. pytest
+1. tests.core
+2. tests.search
+
+
+First group (tests.core) is concerned with tests for `papermerge.core` while
+second one (tests.search) is concerned with tests for `papermerge.search`. In
+order to run `tests.core` tests you need to have redis up and running; in
+order to run `test.search` you need to both **redis and elasticsearch** up and
+running.
+
+### Core Tests
+
+Before running core tests suite, make sure redis service is up and running. Run tests:
+
+     DJANGO_SETTINGS_MODULE=tests.config.core_settings PYTHONPATH=. pytest tests/core/
 
 Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds current working directory to PYTHONPATH:
 
-    python -m pytest
+    DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/
 
 Disable warning during test runs:
 
-    python -m pytest --disable-warnings
+    DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest --disable-warnings tests/core/
 
 One handy shortcut to invoke pytests in python virtual environment:
 
-    poetry run python -m pytest --disable-warnings
+    DJANGO_SETTINGS_MODULE=tests.config.core_settings poetry run python -m pytest --disable-warnings tests/core/
 
+
+### Search Tests
+
+Before running search tests suite, make sure both **redis and elasticsearch** services are up and running:
+
+     DJANGO_SETTINGS_MODULE=tests.config.search_settings poetry run python -m pytest --disable-warnings tests/search/
 
 ## REST API Documentation
 

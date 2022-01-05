@@ -335,7 +335,6 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -355,10 +354,10 @@ LOGGING = {
             'handlers': ['console', ],
             'propagate': False,
         },
-        'papermerge': {
+        'papermerge.core.tasks': {
             'level': 'DEBUG',
             'handlers': ['console', ],
-            'propagate': False,
+            'propagate': True,
         },
     },
 }

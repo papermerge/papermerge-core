@@ -34,6 +34,12 @@ def ocr_document_task(
     user_id = doc.user.id
     doc_version = doc.versions.last()
 
+    logger.debug(
+        'ocr_document_task: ocr start'
+        f'document_id={document_id} namespace={namespace} '
+        f'lang={lang}'
+    )
+
     ocr_document(
         user_id=user_id,
         document_id=document_id,
@@ -43,6 +49,13 @@ def ocr_document_task(
         version=doc_version.number,
         target_version=doc_version.number + 1
     )
+
+    logger.debug(
+        'ocr_document_task: ocr end'
+        f'document_id={document_id} namespace={namespace} '
+        f'lang={lang}'
+    )
+
     # get document model
     try:
         doc = Document.objects.get(id=document_id)
@@ -61,6 +74,12 @@ def ocr_document_task(
     )
     new_doc_version.save()
 
+    logger.debug(
+        'ocr_document_task: creating pages'
+        f'document_id={document_id} namespace={namespace} '
+        f'lang={lang}'
+    )
+
     for page_number in range(1, new_doc_version.page_count + 1):
         Page.objects.create(
             document_version=new_doc_version,
@@ -69,9 +88,11 @@ def ocr_document_task(
             lang=lang
         )
 
-    # update document text field (i.e so that document will be searchable)
-    # doc.update_text_field()
-
+    logger.debug(
+        'ocr_document_task: successfully complete'
+        f'document_id={document_id} namespace={namespace} '
+        f'lang={lang}'
+    )
     return True
 
 
@@ -92,11 +113,15 @@ def update_document_pages(document_id, namespace=None):
     updated with empty strings.
     """
 
+    logger.debug(
+        'update_document_pages: '
+        f'document_id={document_id} namespace={namespace}'
+    )
     doc = Document.objects.get(pk=document_id)
     doc_version = doc.versions.last()
     streams = []
 
-    for page in doc_version.pages:
+    for page in doc_version.pages.order_by('number'):
         url = default_storage.abspath(page.txt_url)
         if os.path.exists(url):
             streams.append(open(url))

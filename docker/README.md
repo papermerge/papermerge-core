@@ -96,3 +96,13 @@ In order to build app docker image:
 For convenience, there is a docker-compose's ``services.yml`` file which can
 be used to quickly start external services only: postgres, redis, elastic
 search.
+
+Services will start docker services in same network as host:
+
+    docker-compose -f docker/services.yml --env-file docker/app/dev/.env_services up
+
+Example of ``.env_services`` file:
+
+    DB_USER=postgres
+    DB_NAME=postgres
+    DB_PASSWORD=postgres

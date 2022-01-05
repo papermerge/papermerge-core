@@ -47,27 +47,27 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 
 Use [poetry](https://python-poetry.org/) to switch into python virtual environment:
 
-    $ poetry shell
+    poetry shell
 
 Then install all dependencies in current python virtual environment:
 
-    $ poetry install
+    poetry install
 
-And finally run tests:
+Before running tests, make sure redis services is up and running. Run tests:
 
-    $ PYTHONPATH=. pytest
+    PYTHONPATH=. pytest
 
 Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds current working directory to PYTHONPATH:
 
-    $ python -m pytest
+    python -m pytest
 
 Disable warning during test runs:
 
-    $ python -m pytest --disable-warnings
+    python -m pytest --disable-warnings
 
 One handy shortcut to invoke pytests in python virtual environment:
 
-    $ poetry run python -m pytest --disable-warnings
+    poetry run python -m pytest --disable-warnings
 
 
 ## REST API Documentation

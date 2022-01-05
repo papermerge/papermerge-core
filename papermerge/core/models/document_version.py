@@ -106,6 +106,20 @@ class DocumentVersion(models.Model):
             self.page_count = new_page_count
             self.save()
 
+    @property
+    def has_combined_text(self):
+        """
+        Returns ``True`` if at least one of document versions'
+        page contains non empty, non whitespace text - otherwise
+        returns ``False``
+        """
+        text = ''
+
+        for page in self.pages.all():
+            text = text + ' ' + page.text
+
+        return len(text.strip()) != 0
+
     def update_text_field(self, streams):
         """Update document versions's text field from IO streams.
 
@@ -115,20 +129,25 @@ class DocumentVersion(models.Model):
         It will update text field of all associated pages first
         and then concatinate all text field into doc.text field.
 
-        Returns True if document contains non empty non whitespace
+        Returns True if document version contains non empty non whitespace
         text (i.e it was OCRed)
         """
-        text = ""
-        stripped_text = ""
+        text = ''
+        stripped_text = ''
+
+        logger.debug(
+            'document.update_text_field: '
+            f'document_id={self.pk} streams_count={len(streams)}'
+        )
 
         for page, stream in zip(self.pages.all(), streams):
             if len(page.text) == 0:
                 text = page.update_text_field(stream)
-            text = text + ' ' + page.text
+            text = text + ' ' + page.stripped_text
 
         stripped_text = text.strip()
         if stripped_text:
             self.text = stripped_text
             self.save()
 
-        return len(text.strip()) != 0
+        return self.has_combined_text

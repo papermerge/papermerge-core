@@ -184,23 +184,33 @@ class Page(models.Model):
             page_count=self.page_count
         )
 
+    @property
+    def has_text(self):
+        return len(self.stripped_text) != 0
+
+    @property
+    def stripped_text(self):
+        return self.text.strip()
+
     def update_text_field(self, stream):
         """Update text field from given IO stream.
 
         Returns text read from IO stream
         """
+        logger.debug(
+            'update_text_field:'
+            f'len(page.stripped_text)=={len(self.stripped_text)}'
+        )
         self.text = stream.read()
         self.save()
-        logger.debug(
-            f"text saved. len(page.text)=={len(self.text)}"
-        )
-        return self.text
+
+        return self.stripped_text
 
     @property
     def txt_url(self):
 
         result = PagePath(
-            document_path=self.document.path(),
+            document_path=self.document_version.file_path(),
             page_num=self.number,
             page_count=self.page_count
         )

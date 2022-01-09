@@ -4,7 +4,7 @@ from rest_framework.renderers import JSONRenderer
 
 from papermerge.core.views.mixins import RequireAuthMixin
 from papermerge.search.serializers import SearchResultSerializer
-from papermerge.search.documents import Page
+from papermerge.search.documents import PageIndex
 
 
 class SearchView(RequireAuthMixin, GenericAPIView):
@@ -15,7 +15,7 @@ class SearchView(RequireAuthMixin, GenericAPIView):
     def get(self, request):
         query_text = request.query_params['q']
 
-        result = Page.search().query('term', text=query_text)
+        result = PageIndex.search().query('term', text=query_text)
 
         result_list = list(result)
         serializer = SearchResultSerializer(result_list, many=True)

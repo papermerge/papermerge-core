@@ -72,7 +72,8 @@ Before running core tests suite, make sure redis service is up and running. Run 
 
      DJANGO_SETTINGS_MODULE=tests.config.core_settings PYTHONPATH=. pytest tests/core/
 
-Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds current working directory to PYTHONPATH:
+Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds
+current working directory to PYTHONPATH:
 
     DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/
 
@@ -84,12 +85,21 @@ One handy shortcut to invoke pytests in python virtual environment:
 
     DJANGO_SETTINGS_MODULE=tests.config.core_settings poetry run python -m pytest --disable-warnings tests/core/
 
+You can use ``run-tests.sh`` bash script to run core tests:
+
+    ./run-tests.sh core
+
 
 ### Search Tests
 
-Before running search tests suite, make sure both **redis and elasticsearch** services are up and running:
+Before running search tests suite, make sure both **redis and elasticsearch**
+services are up and running:
 
      DJANGO_SETTINGS_MODULE=tests.config.search_settings poetry run python -m pytest --disable-warnings tests/search/
+
+You can use ``run-tests.sh`` bash script to run tests for search app:
+
+    ./run-tests.sh search
 
 ## REST API Documentation
 

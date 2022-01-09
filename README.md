@@ -1,6 +1,6 @@
-[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/pep8.yml)
+[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/ci.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/ci.yml)
 
-# Papermerge REST API Backend Server
+# Papermerge RESTful Backend Server
 
 
 This python package is the heart of Papermerge project. It consists of a set
@@ -11,6 +11,7 @@ Technically speaking, it contains two django apps:
 
 * ``papermerge.core`` - the epicenter of papermerge project
 * ``papermerge.notifications`` - Django Channels app for sending notifications via websockets
+* ``papermerge.search`` - Thin RESTful API layer over elastic search
 
 This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 
@@ -29,10 +30,10 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 
 ## Features Highlights
 
-* REST API
+* RESTul API
 * Documents of pdf, jpg, png, tiff formats are supported
-* Per page OCR (Optical Character Recognition) of the documents
-* Full Text Search of the scanned documents
+* OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
+* Full Text Search of the scanned documents (uses [elasticsearch](https://github.com/elastic/elasticsearch))
 * Document Versions
 * User defined metadata per folder/document/page
 * Tags - assign colored tags to documents or folders
@@ -40,7 +41,7 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 * Multi-User (Groups, Roles)
 * User permissions management
 * Document permissions management
-* Page Management - delete, reorder, cut & paste pages
+* Page Management - delete, reorder, cut & paste pages (uses [PikePDF](https://github.com/pikepdf/pikepdf))
 * Automation
 
 ## Tests

@@ -75,6 +75,7 @@ jobs:
   publish-to-pypi:
     needs:
       - tests_core
+      - tests_search
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

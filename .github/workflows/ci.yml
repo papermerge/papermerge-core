@@ -50,13 +50,11 @@ jobs:
   tests_search:
     needs: check-pep8-compliance
     runs-on: ubuntu-20.04
-    matrix:
-      es-version: ["7.13.4"]
     steps:
       - name: Install and Run Elasticsearch
         uses: elastic/elastic-github-actions/elasticsearch@master
         with:
-          stack-version: ${{ matrix.es-version }}
+          stack-version: "7.13.4"
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
         uses: actions/setup-python@v2

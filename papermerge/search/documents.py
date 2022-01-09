@@ -2,13 +2,13 @@ from django_elasticsearch_dsl import Document as ElasticSearchDocument
 from django_elasticsearch_dsl import fields as es_fields
 from django_elasticsearch_dsl.registries import registry
 
-from papermerge.core.models import Page as CorePage
-from papermerge.core.models import Document as CoreDocument
-from papermerge.core.models import Folder as CoreFolder
+from papermerge.core.models import Page
+from papermerge.core.models import Document
+from papermerge.core.models import Folder
 
 
 @registry.register_document
-class Page(ElasticSearchDocument):
+class PageIndex(ElasticSearchDocument):
 
     page_id = es_fields.TextField()
     document_version_id = es_fields.TextField()
@@ -50,7 +50,7 @@ class Page(ElasticSearchDocument):
         }
 
     class Django:
-        model = CorePage  # The model associated with this Document
+        model = Page  # The model associated with this Document
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [
@@ -62,7 +62,7 @@ class Page(ElasticSearchDocument):
 
 
 @registry.register_document
-class Document(ElasticSearchDocument):
+class DocumentIndex(ElasticSearchDocument):
 
     text = es_fields.TextField()
 
@@ -76,7 +76,7 @@ class Document(ElasticSearchDocument):
         }
 
     class Django:
-        model = CoreDocument  # The model associated with this Document
+        model = Document  # The model associated with this Document
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [
@@ -86,7 +86,7 @@ class Document(ElasticSearchDocument):
 
 
 @registry.register_document
-class Folder(ElasticSearchDocument):
+class FolderIndex(ElasticSearchDocument):
 
     class Index:
         # Name of the Elasticsearch index
@@ -98,7 +98,7 @@ class Folder(ElasticSearchDocument):
         }
 
     class Django:
-        model = CoreFolder  # The model associated with this Document
+        model = Folder  # The model associated with this Document
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [

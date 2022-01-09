@@ -2,7 +2,7 @@ import io
 from django.test import TestCase
 
 from papermerge.core.models import (User, Document)
-from papermerge.search.documents import Page
+from papermerge.search.documents import PageIndex
 from papermerge.search.serializers import SearchResultSerializer
 
 
@@ -52,7 +52,7 @@ class TestPageSearch(TestCase):
             ]
         )
 
-        result = Page.search().query('term', text='one')
+        result = PageIndex.search().query('term', text='one')
         result_list = list(result)
 
         self.assertEqual(len(result_list), 1)
@@ -77,7 +77,7 @@ class TestPageSearch(TestCase):
             ]
         )
 
-        result = Page.search().query('term', text='blue')
+        result = PageIndex.search().query('term', text='blue')
         result_list = list(result)
 
         serializer = SearchResultSerializer(result_list, many=True)

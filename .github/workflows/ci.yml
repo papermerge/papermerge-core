@@ -48,7 +48,8 @@ jobs:
         env:
           PYTHONPATH: .
   publish-to-pypi:
-    needs: unittests
+    needs:
+      - tests_core
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

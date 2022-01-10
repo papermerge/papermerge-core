@@ -1,4 +1,5 @@
 .idea/
+.papermerge.toml
 .env
 .env_shell
 .env_services

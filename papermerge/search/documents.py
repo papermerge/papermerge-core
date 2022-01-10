@@ -88,6 +88,15 @@ class DocumentIndex(ElasticSearchDocument):
 @registry.register_document
 class FolderIndex(ElasticSearchDocument):
 
+    breadcrumb = es_fields.ListField(es_fields.TextField())
+
+    def prepare_breadcrumb(self, instance):
+        breadcrumb_items = [
+            item.title
+            for item in instance.get_ancestors(include_self=False)
+        ]
+        return breadcrumb_items
+
     class Index:
         # Name of the Elasticsearch index
         name = 'folders'
@@ -102,5 +111,6 @@ class FolderIndex(ElasticSearchDocument):
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [
+            'id',
             'title',
         ]

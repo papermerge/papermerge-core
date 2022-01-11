@@ -27,7 +27,11 @@ class OCRView(RequireAuthMixin, GenericAPIView):
         namespace = getattr(default_storage, 'namespace', None)
 
         ocr_document_task.apply_async(
-            (doc.id, lang, namespace),
+            kwargs={
+                'document_id': doc.id,
+                'lang': lang,
+                'namespace': namespace
+            },
             link=update_document_pages.s(namespace)
         )
 

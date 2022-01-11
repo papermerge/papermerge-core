@@ -2,9 +2,7 @@ from django_elasticsearch_dsl import Document as ElasticSearchDocument
 from django_elasticsearch_dsl import fields as es_fields
 from django_elasticsearch_dsl.registries import registry
 
-from papermerge.core.models import Page
-from papermerge.core.models import Document
-from papermerge.core.models import Folder
+from papermerge.core.models import (Folder, Document, DocumentVersion, Page)
 
 
 @registry.register_document
@@ -65,6 +63,21 @@ class PageIndex(ElasticSearchDocument):
 class DocumentIndex(ElasticSearchDocument):
 
     text = es_fields.TextField()
+    breadcrumb = es_fields.ListField(es_fields.TextField())
+
+    def prepare_breadcrumb(self, instance):
+        breadcrumb_items = [
+            item.title
+            for item in instance.get_ancestors(include_self=False)
+        ]
+        return breadcrumb_items
+
+    def prepare_text(self, instance):
+        last_document_version = instance.versions.last()
+        if last_document_version:
+            return last_document_version.text
+
+        return ''
 
     class Index:
         # Name of the Elasticsearch index
@@ -76,10 +89,13 @@ class DocumentIndex(ElasticSearchDocument):
         }
 
     class Django:
-        model = Document  # The model associated with this Document
+        model = Document
+        # DocumentIndex is updated via DocumentVersionIndex().update(...)
+        ignore_signals = False
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [
+            'id',
             'title',
             'lang',
         ]
@@ -114,3 +130,34 @@ class FolderIndex(ElasticSearchDocument):
             'id',
             'title',
         ]
+
+
+@registry.register_document
+class DocumentVersionIndex(ElasticSearchDocument):
+    title = es_fields.TextField()
+
+    def prepare_title(self, instance):
+        return instance.document.title
+
+    class Index:
+        name = 'document_versions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0
+        }
+
+    class Django:
+        model = DocumentVersion
+
+        fields = [
+            'id',
+            'text',
+            'lang',
+            'file_name',
+            'number'
+        ]
+
+    def update(self, thing, refresh=None, action='index', parallel=False, **kwargs):
+        document_instance = thing.document
+        DocumentIndex().update(document_instance, refresh, action, parallel, **kwargs)
+        return super().update(thing, refresh, action, parallel, **kwargs)

@@ -2,9 +2,16 @@ from rest_framework_json_api import serializers
 
 
 class SearchResultSerializer(serializers.Serializer):
-    page_id = serializers.CharField()
-    document_version_id = serializers.CharField()
-    document_id = serializers.CharField()
-    user_id = serializers.CharField()
+    id = serializers.CharField()
+    text = serializers.CharField(required=False, default='')
     title = serializers.CharField()
-    breadcrumb = serializers.CharField()
+    highlight = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        default=['']
+    )
+    breadcrumb = serializers.ListField(
+        child=serializers.CharField()
+    )
+    node_type = serializers.ChoiceField(choices=['document', 'folder'])
+    user_id = serializers.CharField()

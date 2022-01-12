@@ -64,6 +64,12 @@ class DocumentIndex(ElasticSearchDocument):
 
     text = es_fields.TextField()
     breadcrumb = es_fields.ListField(es_fields.TextField())
+    node_type = 'document'
+    user_id = es_fields.KeywordField()
+
+    @property
+    def highlight(self):
+        return self.meta.highlight.text
 
     def prepare_breadcrumb(self, instance):
         breadcrumb_items = [
@@ -105,6 +111,8 @@ class DocumentIndex(ElasticSearchDocument):
 class FolderIndex(ElasticSearchDocument):
 
     breadcrumb = es_fields.ListField(es_fields.TextField())
+    node_type = 'folder'
+    user_id = es_fields.KeywordField()
 
     def prepare_breadcrumb(self, instance):
         breadcrumb_items = [

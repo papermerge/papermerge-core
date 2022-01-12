@@ -120,3 +120,21 @@ class TestDocumentModel(TestCase):
         self.assertEqual(page_1.stripped_text, 'OCRed text from page 1')
         self.assertEqual(page_2.stripped_text, 'OCRed text from page 2')
         self.assertEqual(page_3.stripped_text, 'OCRed text from page 3')
+
+    def test_update_text_field_concatinates_pages_text(self):
+        """
+        document_version.text = page_1.text + page_2.text + page_3.text
+        """
+        self.doc_version.create_pages(page_count=3)
+
+        streams = [
+            io.StringIO(f'Page {page.number}')
+            for page in self.doc_version.pages.order_by('number')
+        ]
+
+        self.doc_version.update_text_field(streams)
+
+        self.assertEqual(
+            self.doc_version.text,
+            'Page 1 Page 2 Page 3'
+        )

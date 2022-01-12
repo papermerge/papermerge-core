@@ -132,8 +132,7 @@ class DocumentVersion(models.Model):
         Returns True if document version contains non empty non whitespace
         text (i.e it was OCRed)
         """
-        text = ''
-        stripped_text = ''
+        text = []
 
         logger.debug(
             'document.update_text_field: '
@@ -142,10 +141,11 @@ class DocumentVersion(models.Model):
 
         for page, stream in zip(self.pages.all(), streams):
             if len(page.text) == 0:
-                text = page.update_text_field(stream)
-            text = text + ' ' + page.stripped_text
+                page.update_text_field(stream)
+                text.append(page.stripped_text)
 
-        stripped_text = text.strip()
+        stripped_text = ' '.join(text)
+        stripped_text = stripped_text.strip()
         if stripped_text:
             self.text = stripped_text
             self.save()

@@ -165,7 +165,22 @@ class DocumentVersionIndex(ElasticSearchDocument):
             'number'
         ]
 
-    def update(self, thing, refresh=None, action='index', parallel=False, **kwargs):
+    def update(
+        self,
+        thing,
+        refresh=None,
+        action='index',
+        parallel=False,
+        **kwargs
+    ):
         document_instance = thing.document
-        DocumentIndex().update(document_instance, refresh, action, parallel, **kwargs)
+
+        DocumentIndex().update(
+            document_instance,
+            refresh,
+            action,
+            parallel,
+            **kwargs
+        )
+
         return super().update(thing, refresh, action, parallel, **kwargs)

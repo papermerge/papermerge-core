@@ -20,7 +20,11 @@ router.register(
     r"documents", views.DocumentDetailsViewSet, basename="document"
 )
 router.register(r"pages", views.PagesViewSet, basename="page")
-router.register(r'preferences', views.CustomUserPreferencesViewSet, basename='preferences')
+router.register(
+    r'preferences',
+    views.CustomUserPreferencesViewSet,
+    basename='preferences'
+)
 
 urlpatterns = [
     re_path(
@@ -31,7 +35,10 @@ urlpatterns = [
         'document-versions/<int:pk>/download/',
         views.DocumentVersionsDownloadView.as_view(),
     ),
-    path('users/<int:pk>/change-password/', views.UserChangePassword.as_view()),
+    path(
+        'users/<int:pk>/change-password/',
+        views.UserChangePassword.as_view()
+    ),
     path('users/me/', views.CurrentUserView.as_view()),
     path('nodes/move/', views.NodesMoveView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),

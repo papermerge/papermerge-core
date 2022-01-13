@@ -1,4 +1,4 @@
-from django.conf import settings
+from papermerge.core.app_settings import settings
 
 """
 Tesseract uses ISO-639-2/T for language names

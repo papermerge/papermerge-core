@@ -77,22 +77,22 @@ class Section(OrigSection):
 localization = Section(
     'localization',
     verbose_name="Localization",
-    icon_name="globe-americas",
-    help_text="Timezone, date and time formats"
+    icon_name='globe-americas',
+    help_text='Timezone, date and time formats'
 )
 
 ocr = Section(
     'ocr',
-    verbose_name="Opical Character Recognition",
-    icon_name="eye",
-    help_text="Choose default OCR Language"
+    verbose_name='Opical Character Recognition',
+    icon_name='eye',
+    help_text='Choose default OCR Language'
 )
 
 email_routing = Section(
     'email_routing',
-    verbose_name="Email Routing",
-    icon_name="envelope-open-text",
-    help_text="How email attachments match your Inbox",
+    verbose_name='Email Routing',
+    icon_name='envelope-open-text',
+    help_text='How email attachments match your Inbox',
     visible=_is_email_routing_enabled()
 )
 
@@ -111,22 +111,27 @@ class TimezoneGlobal(ChoicePreference):
 
 @user_preferences_registry.register
 class OcrLanguage(ChoicePreference):
-    help_text = """
-    Language used for OCR processing.
-"""
+    help_text = 'Language used for OCR processing'
     section = ocr
-    name = 'OCR_Language'
+    name = 'language'
     choices = get_ocr_langs()
     default = get_default_ocr_lang()
 
 
 @user_preferences_registry.register
+class OcrTrigger(ChoicePreference):
+    help_text = 'OCR Process Trigger'
+    section = ocr
+    name = 'trigger'
+    choices = [('auto', 'Automatic'), ('manual', 'Manual')]
+    default = 'auto'
+
+
+@user_preferences_registry.register
 class LocalizationDate(ChoicePreference):
-    help_text = """
-    Date format
-"""
+    help_text = 'Date format'
     section = localization
-    name = 'date_format'
+    name = 'data_format'
     choices = (
         ('%Y-%m-%d', '2020-11-25'),
         ('%a %d %b, %Y', 'Wed 25 Nov, 2020'),
@@ -141,9 +146,7 @@ class LocalizationDate(ChoicePreference):
 
 @user_preferences_registry.register
 class LocalizationTime(ChoicePreference):
-    help_text = """
-    Time format
-"""
+    help_text = 'Time format'
     section = localization
     name = 'time_format'
     choices = (
@@ -155,33 +158,27 @@ class LocalizationTime(ChoicePreference):
 
 @user_preferences_registry.register
 class EmailRoutingByUser(BooleanPreference):
-    help_text = """
-    Email attachments will end up in your Inbox
+    help_text = """Email attachments will end up in your Inbox
     if incoming email's 'From' or 'To' fields matches your Papermerge user
-    email address.
-"""
+    email address"""
     section = email_routing
-    name = "by_user"
+    name = 'by_user'
     default = False
 
 
 @user_preferences_registry.register
 class EmailRoutingBySecret(BooleanPreference):
-    help_text = """
-    Email attachments will end up in your will Inbox
+    help_text = """Email attachments will end up in your will Inbox
     if given secret text is found either in email body or
-    in email subject field.
-"""
+    in email subject field"""
     section = email_routing
-    name = "by_secret"
+    name = 'by_secret'
     default = False
 
 
 @user_preferences_registry.register
 class StringPreference(StringPreference):
-    help_text = """
-    Email secret text used by 'routing by secret' option.
-"""
+    help_text = """Email secret text used by 'routing by secret' option"""
     section = email_routing
-    name = "mail_secret"
-    default = ""
+    name = 'mail_secret'
+    default = ''

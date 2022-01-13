@@ -17,10 +17,12 @@ from .documents import DocumentDetailsViewSet
 from .folders import FoldersViewSet
 from .pages import PagesViewSet
 from .tasks import OCRView
+from .preferences import CustomUserPreferencesViewSet
 
 __all__ = [
     'AutomatesViewSet',
     'ContentTypeRetrieve',
+    'CustomUserPreferencesViewSet',
     'TagsViewSet',
     'RolesViewSet',
     'GroupsViewSet',

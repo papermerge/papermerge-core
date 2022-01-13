@@ -20,6 +20,7 @@ router.register(
     r"documents", views.DocumentDetailsViewSet, basename="document"
 )
 router.register(r"pages", views.PagesViewSet, basename="page")
+router.register(r'preferences', views.CustomUserPreferencesViewSet, basename='preferences')
 
 urlpatterns = [
     re_path(

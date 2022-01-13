@@ -14,9 +14,11 @@ from .password import PasswordSerializer
 from .permission import PermissionSerializer
 from .page import PageSerializer
 from .content_type import ContentTypeSerializer
+from .preferences import CustomUserPreferenceSerializer
 
 __all__ = [
     'AutomateSerializer',
+    'CustomUserPreferenceSerializer',
     'DocumentSerializer',
     'DocumentDetailsSerializer',
     'DocumentVersionSerializer',

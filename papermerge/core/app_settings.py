@@ -162,7 +162,7 @@ class AppSettings():
         )
 
     @property
-    def PAPERMERGE_OCR_LANGUAGES(self):  #noqa
+    def PAPERMERGE_OCR_LANGUAGES(self):  # noqa
         default_value = {
             "deu": "Deutsch",
             "eng": "English",
@@ -173,7 +173,7 @@ class AppSettings():
         )
 
     @property
-    def PAPERMERGE_OCR_DEFAULT_LANGUAGE(self):  #noqa
+    def PAPERMERGE_OCR_DEFAULT_LANGUAGE(self):  # noqa
         return self._settings(
             'PAPERMERGE_OCR_DEFAULT_LANGUAGE',
             'deu'

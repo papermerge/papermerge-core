@@ -8,12 +8,12 @@ from papermerge.core.models import (Folder, Document, DocumentVersion, Page)
 @registry.register_document
 class PageIndex(ElasticSearchDocument):
 
-    page_id = es_fields.TextField()
     document_version_id = es_fields.TextField()
     document_id = es_fields.TextField()
     user_id = es_fields.TextField()
     title = es_fields.TextField()
     breadcrumb = es_fields.TextField()
+    node_type = 'document'
 
     def prepare_page_id(self, instance):
         return str(instance.id)
@@ -52,6 +52,7 @@ class PageIndex(ElasticSearchDocument):
 
         # The fields of the model you want to be indexed in Elasticsearch
         fields = [
+            'id',
             'text',
             'number',
             'page_count',
@@ -184,3 +185,4 @@ class DocumentVersionIndex(ElasticSearchDocument):
         )
 
         return super().update(thing, refresh, action, parallel, **kwargs)
+

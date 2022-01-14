@@ -7,7 +7,6 @@ class AppSettings():
     """
 
     def __init__(self, prefix):
-
         self.prefix = prefix
 
     def _settings(self, name, default_value):

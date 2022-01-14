@@ -185,4 +185,3 @@ class DocumentVersionIndex(ElasticSearchDocument):
         )
 
         return super().update(thing, refresh, action, parallel, **kwargs)
-

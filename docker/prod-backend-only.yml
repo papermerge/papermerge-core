@@ -15,14 +15,20 @@ services:
       - PAPERMERGE_DATABASE_NAME=${DB_NAME}
       - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
+      - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - DJANGO_SETTINGS_MODULE=config.settings
   backend_init:
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - db
       - redis
+      - es
     command: init
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
@@ -31,9 +37,14 @@ services:
       - PAPERMERGE_DATABASE_NAME=${DB_NAME}
       - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
+      - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - DJANGO_SETTINGS_MODULE=config.settings
   db:
     image: postgres:13
     volumes:
@@ -48,6 +59,14 @@ services:
       - '127.0.0.1:6379:6379'
     volumes:
       - 'redisdata:/data'
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
 
 volumes:
   postgres_data:

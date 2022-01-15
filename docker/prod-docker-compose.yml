@@ -16,6 +16,8 @@ services:
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
       - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
       - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -36,6 +38,8 @@ services:
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
       - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
       - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -58,6 +62,8 @@ services:
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
       - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
       - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -65,14 +71,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api/`)"
-      - "traefik.http.middlewares.backend-strip.stripprefix.prefixes=/api"
-      - "traefik.http.routers.backend.middlewares=backend-strip"
       - "traefik.http.middlewares.backend-strip.stripprefix.forceSlash=false"
   backend_init:
     image: ${APP_IMAGE}:${APP_TAG}
     depends_on:
       - db
       - redis
+      - es
     command: init
     environment:
       - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
@@ -81,6 +86,8 @@ services:
       - PAPERMERGE_DATABASE_NAME=${DB_NAME}
       - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
       - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
       - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -116,7 +123,14 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`papermerge.local`) && PathPrefix(`/`)"
-
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
 volumes:
   postgres_data:
   media_root:

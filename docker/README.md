@@ -41,6 +41,9 @@ Environment file example (file named ``.env``):
     REDIS_HOST=redis
     REDIS_PORT=6379
 
+    ES_HOSTS=es
+    ES_PORT=9200
+
     SECRET_KEY=your-secret-key
 
     SUPERUSER_USERNAME=admin

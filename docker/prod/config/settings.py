@@ -23,7 +23,7 @@ ALLOWED_HOSTS = config.get_var(
     default=['*']
 )
 
-redis_host = config.get('redis', 'host', default="127.0.0.1")
+redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)
 
 es_hosts = config.get('elasticsearch', 'hosts', default='127.0.0.1')

@@ -21,7 +21,7 @@ exec_ws_server() {
 }
 
 exec_worker() {
-  exec $MANAGE worker --skip-rebuild --skip-txt2db
+  exec $MANAGE worker
 }
 
 exec_init() {

@@ -5,7 +5,6 @@ from celery import Celery
 from celery.apps.worker import Worker as CeleryWorker
 
 from django.core.management.base import BaseCommand
-from papermerge.core.models import Document, BaseTreeNode
 
 from papermerge.core.task_monitor import (
     task_monitor,

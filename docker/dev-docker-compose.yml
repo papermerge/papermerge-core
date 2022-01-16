@@ -8,8 +8,6 @@ x-backend: &backend  # yaml anchor definition
   volumes:
     - media_root:/app/media
     - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
-  ports:
-    - 8000:8000
   environment:
     - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
     - PAPERMERGE_DATABASE_TYPE=postgres

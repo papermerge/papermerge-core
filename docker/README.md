@@ -169,3 +169,25 @@ Example of ``.env`` file:
     DB_USER=postgres
     DB_NAME=postgres
     DB_PASSWORD=postgres
+
+
+## App Docker Image
+
+Build app docker image for production mode:
+
+    docker build -t papermerge/papermerge:2.1.0-alpha1 -f docker/Dockerfile .
+
+Build app docker image for development mode:
+
+    docker build -t papermerge/papermerge:2.1.0-dev1 -f docker/Dockerfile .
+
+
+## Frontend Docker Image
+
+Frontend or PapermergeJS is official web based user interface for Papermerge.
+Frontend component is totally optional, because you can use Papermerge
+with any REST API client; in this regard, Papermerge.JS is nothing more than
+a REST API client (though, very user friendly one).
+
+Instructions how to build frontend docker are provided in [Papermerge.JS]
+(https://github.com/papermerge/papermerge.js) repository.

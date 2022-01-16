@@ -26,7 +26,7 @@ scanned documents using Optical Character Recognition (OCR) technology the
 index it and make it searchable. You will be able to quickly find any
 (scanned!) document using full text search capabilities.
 
-Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
+Papermerge is perfect tool to manage documents in PDF, JPEG, TIFF and PNG formats.
 
 ## Features Highlights
 
@@ -43,6 +43,11 @@ Papermerge is perfect tool to manage PDF, JPEG, TIFF and PNG formats.
 * Document permissions management
 * Page Management - delete, reorder, cut & paste pages (uses [PikePDF](https://github.com/pikepdf/pikepdf))
 * Automation
+
+## Documentation
+
+Online documentation is available at [https://docs.papermerge.io](https://docs.papermerge.io/)
+
 
 ## Tests
 

@@ -44,8 +44,8 @@ RUN apt-get install -y --no-install-recommends \
     file \
     gcc
 
-COPY docker/app/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
-COPY docker/app/prod/scripts /
+COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
+COPY docker/prod/scripts /
 RUN chmod +x /run.bash
 
 COPY --from=build /venv /venv
@@ -54,8 +54,8 @@ WORKDIR app
 
 # sources
 COPY papermerge/ ./papermerge/
-COPY docker/app/prod/config/ ./config/
-COPY docker/app/prod/manage.py ./
+COPY docker/prod/config/ ./config/
+COPY docker/prod/manage.py ./
 
 RUN /venv/bin/python manage.py collectstatic --noinput
 

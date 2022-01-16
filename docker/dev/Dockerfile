@@ -44,15 +44,15 @@ RUN apt-get install -y --no-install-recommends \
     file \
     gcc
 
-COPY docker/app/dev/scripts /
+COPY docker/dev/scripts /
 RUN chmod +x /run.bash
 
 COPY --from=build /venv /venv
 
 WORKDIR app
 
-COPY docker/app/dev/config/ ./config/
-COPY docker/app/dev/manage.py ./
+COPY docker/dev/config/ ./config/
+COPY docker/dev/manage.py ./
 
 EXPOSE 8000
 

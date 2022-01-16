@@ -49,23 +49,23 @@ Environment file example (file named ``.env``):
 
 With ``.env`` prepared, start papermerge services (production mode) using following command:
 
-    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env up
+    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/prod/.env up
 
 Run papermerge in development mode (with source code mounted):
 
-    docker-compose  -f docker/dev-docker-compose.yml --env-file docker/app/dev/.env up
+    docker-compose  -f docker/dev-docker-compose.yml --env-file docker/dev/.env up
 
 Follow logs of individual services:
 
-    docker-compose -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env logs backend
+    docker-compose -f docker/prod-docker-compose.yml --env-file docker/prod/.env logs backend
 
 For development mode:
 
-    docker-compose -f docker/dev-docker-compose.yml --env-file docker/app/dev/.env logs backend
+    docker-compose -f docker/dev-docker-compose.yml --env-file docker/dev/.env logs backend
 
 Start papermerge's worker only using following command::
 
-    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/app/prod/.env up worker
+    docker-compose  -f docker/prod-docker-compose.yml --env-file docker/prod/.env up worker
 
 
 ## App
@@ -88,7 +88,7 @@ the document was successfully complete).
 
 In order to build app docker image:
 
-    docker bulid -t papermerge:2.1dev51 -f docker/app/dev/Dockerfile .
+    docker bulid -t papermerge:2.1.0-dev51 -f docker/dev/Dockerfile .
 
 
 ## Services
@@ -99,7 +99,7 @@ search.
 
 Services will start docker services in same network as host:
 
-    docker-compose -f docker/services.yml --env-file docker/app/dev/.env_services up
+    docker-compose -f docker/services.yml --env-file docker/dev/.env_services up
 
 Example of ``.env_services`` file:
 

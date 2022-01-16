@@ -101,27 +101,3 @@ You can use ``run-tests.sh`` bash script to run tests for search app:
 
     ./run-tests.sh search
 
-## REST API Documentation
-
-In order to build docker image for REST API documentation use:
-
-    $ docker build -f docker/restapidoc.dockerfile .
-
-In above command notice the dot character at the end.
-Command must be triggered from root folder of the repository.
-In order to build without using cache:
-
-    $ docker build -f docker/restapidoc.dockerfile --no-cache .
-
-See ID of the resulted image with:
-
-    $ docker images | head -n 3
-
-Built image will be at the top (most recent one).
-Once you know docker image ID, run it with following command:
-
-    $ docker run -it -d --name some-nginx -p 8090:80 <docker-image-id>
-
-Where ``docker-image-id`` is docker image ID from build step. Now you can view
-REST API documentation by going to ``http://localhost:8090`` address in your
-web browser.

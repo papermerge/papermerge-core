@@ -1,72 +1,45 @@
 version: '3.7'
+# Any top-level key starting with x- in a Docker Compose file will be
+# ignored
+x-backend: &backend  # yaml anchor definition
+  image: ${APP_IMAGE}:${APP_TAG}
+  depends_on:
+    - backend_init
+  volumes:
+    - media_root:/app/media
+    - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
+  ports:
+    - 8000:8000
+  environment:
+    - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
+    - PAPERMERGE_DATABASE_TYPE=postgres
+    - PAPERMERGE_DATABASE_USER=${DB_USER}
+    - PAPERMERGE_DATABASE_NAME=${DB_NAME}
+    - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
+    - PAPERMERGE_DATABASE_HOST=${DB_HOST}
+    - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
+    - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
+    - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
+    - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
+    - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+    - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
+    - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+    - DJANGO_SETTINGS_MODULE=config.settings
 services:
   worker: # celery worker
-    image: ${APP_IMAGE}:${APP_TAG}
-    volumes:
-      - media_root:/app/media
-      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
+    <<: *backend
     command: worker
-    depends_on:
-      - backend_init
-    environment:
-      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
-      - PAPERMERGE_DATABASE_TYPE=postgres
-      - PAPERMERGE_DATABASE_USER=${DB_USER}
-      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
-      - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
-      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
-      - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
-      - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
-      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
-      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
-      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
-      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
-      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-      - DJANGO_SETTINGS_MODULE=config.settings
   backend:  # rest api backend
-    image: ${APP_IMAGE}:${APP_TAG}
-    depends_on:
-      - backend_init
-    volumes:
-      - media_root:/app/media
-      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
+    <<: *backend
     ports:
       - 8000:8000
-    environment:
-      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
-      - PAPERMERGE_DATABASE_TYPE=postgres
-      - PAPERMERGE_DATABASE_USER=${DB_USER}
-      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
-      - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
-      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
-      - PAPERMERGE_REDIS_HOST=${REDIS_HOST}
-      - PAPERMERGE_REDIS_PORT=${REDIS_PORT}
-      - PAPERMERGE_ELASTICSEARCH_HOSTS=${ES_HOSTS}
-      - PAPERMERGE_ELASTICSEARCH_PORT=${ES_PORT}
-      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
-      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
-      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-      - DJANGO_SETTINGS_MODULE=config.settings
   backend_init:
-    image: ${APP_IMAGE}:${APP_TAG}
+    <<: *backend
     depends_on:
       - db
       - redis
       - es
     command: init
-    volumes:
-      - media_root:/app/media
-      - ${PAPERMERGE_SRC_DIR}:/app/papermerge/
-    environment:
-      - PAPERMERGE_SECRET_KEY=${SECRET_KEY}
-      - PAPERMERGE_DATABASE_TYPE=postgres
-      - PAPERMERGE_DATABASE_USER=${DB_USER}
-      - PAPERMERGE_DATABASE_NAME=${DB_NAME}
-      - PAPERMERGE_DATABASE_PASSWORD=${DB_PASSWORD}
-      - PAPERMERGE_DATABASE_HOST=${DB_HOST}
-      - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
-      - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
-      - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
   db:
     image: postgres:13
     volumes:

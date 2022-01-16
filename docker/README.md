@@ -189,4 +189,17 @@ Frontend component is totally optional, because you can use Papermerge
 with any REST API client; in this regard, Papermerge.JS is nothing more than
 a REST API client (though, very user friendly one).
 
-Instructions how to build frontend docker are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.
+Note that both App and PapermergeJS docker images **should use same docker tag**
+i.e. app docker image ``papermerge/papermerge:2.1.0-alpha1`` (where tag is
+2.1.0-alpha1) is compatible with ``papermerge/papermerge.js:2.1.0-alpha1``
+frontend docker image. The compatibility is established based on ``2.1.0-alpha1``
+tag.
+
+Following app and frontend docker images:
+
+- papermerge/papermerge:2.1.0-dev1
+- papermerge/papermerge.js:2.1.0-dev1
+
+are combatible as well (because they use same ``2.1.0-dev1`` docker tag). 
+
+Instructions how to build frontend docker image are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.

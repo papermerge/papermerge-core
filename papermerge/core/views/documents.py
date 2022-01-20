@@ -21,20 +21,13 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework_json_api.views import ModelViewSet
 
-from mglib.step import Step
-from papermerge.core.lib.shortcuts import extract_img
-
-from papermerge.core.storage import default_storage
 from papermerge.core.serializers import DocumentDetailsSerializer
-from .decorators import json_response
-
-from papermerge.core.models import (
-    Document,
-    DocumentVersion,
-    Page,
-    Access
+from papermerge.core.storage import default_storage
+from papermerge.core.models import Document
+from papermerge.core.tasks import (
+    ocr_document_task,
+    update_document_pages
 )
-from papermerge.core.tasks import ocr_document_task
 
 from .mixins import RequireAuthMixin
 
@@ -47,9 +40,21 @@ class DocumentUploadView(RequireAuthMixin, APIView):
 
     def put(self, request, document_id, file_name):
         payload = request.data['file']
+        user_settings = request.user.preferences
+        namespace = getattr(default_storage, 'namespace', None)
 
         doc = Document.objects.get(pk=document_id)
         doc.upload(payload=payload, file_name=file_name)
+
+        if user_settings['ocr__trigger'] == 'auto':
+            ocr_document_task.apply_async(
+                kwargs={
+                    'document_id': doc.id,
+                    'lang': doc.lang,
+                    'namespace': namespace
+                },
+                link=update_document_pages.s(namespace)
+            )
 
         return Response({}, status=status.HTTP_201_CREATED)
 
@@ -57,17 +62,3 @@ class DocumentUploadView(RequireAuthMixin, APIView):
 class DocumentDetailsViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = DocumentDetailsSerializer
     queryset = Document.objects
-
-
-@login_required
-def usersettings(request, option, value):
-
-    if option == 'documents_view':
-        user_settings = request.user.preferences
-        if value in ('list', 'grid'):
-            user_settings['views__documents_view'] = value
-            user_settings['views__documents_view']
-
-    return HttpResponseRedirect(
-        request.META.get('HTTP_REFERER')
-    )

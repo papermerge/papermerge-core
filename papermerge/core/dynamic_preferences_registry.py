@@ -3,11 +3,7 @@ from pytz import common_timezones
 from django.conf import settings
 
 from dynamic_preferences.preferences import Section as OrigSection
-from dynamic_preferences.types import (
-    ChoicePreference,
-    BooleanPreference,
-    StringPreference
-)
+from dynamic_preferences.types import ChoicePreference
 from dynamic_preferences.users.registries import user_preferences_registry
 
 from .lib.lang import get_ocr_langs, get_default_ocr_lang
@@ -15,22 +11,6 @@ from .lib.lang import get_ocr_langs, get_default_ocr_lang
 
 def _get_timezone_choices():
     return list((tz, tz) for tz in common_timezones)
-
-
-def _is_email_routing_enabled():
-
-    by_user = getattr(
-        settings,
-        'PAPERMERGE_IMPORT_MAIL_BY_USER',
-        False
-    )
-
-    by_secret = getattr(
-        settings,
-        'PAPERMERGE_IMPORT_MAIL_BY_SECRET',
-        False
-    )
-    return by_user or by_secret
 
 
 class Section(OrigSection):
@@ -86,14 +66,6 @@ ocr = Section(
     verbose_name='Opical Character Recognition',
     icon_name='eye',
     help_text='Choose default OCR Language'
-)
-
-email_routing = Section(
-    'email_routing',
-    verbose_name='Email Routing',
-    icon_name='envelope-open-text',
-    help_text='How email attachments match your Inbox',
-    visible=_is_email_routing_enabled()
 )
 
 
@@ -155,30 +127,3 @@ class LocalizationTime(ChoicePreference):
     )
     default = '%H:%M'
 
-
-@user_preferences_registry.register
-class EmailRoutingByUser(BooleanPreference):
-    help_text = """Email attachments will end up in your Inbox
-    if incoming email's 'From' or 'To' fields matches your Papermerge user
-    email address"""
-    section = email_routing
-    name = 'by_user'
-    default = False
-
-
-@user_preferences_registry.register
-class EmailRoutingBySecret(BooleanPreference):
-    help_text = """Email attachments will end up in your will Inbox
-    if given secret text is found either in email body or
-    in email subject field"""
-    section = email_routing
-    name = 'by_secret'
-    default = False
-
-
-@user_preferences_registry.register
-class StringPreference(StringPreference):
-    help_text = """Email secret text used by 'routing by secret' option"""
-    section = email_routing
-    name = 'mail_secret'
-    default = ''

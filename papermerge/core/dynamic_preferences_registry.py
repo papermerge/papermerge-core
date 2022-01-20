@@ -126,4 +126,3 @@ class LocalizationTime(ChoicePreference):
         ('%H:%M', '21:48'),
     )
     default = '%H:%M'
-

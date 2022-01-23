@@ -43,6 +43,7 @@ PER_PAGE = 30
 
 
 class NodesViewSet(RequireAuthMixin, ModelViewSet):
+    """GET|POST /nodes/{id}/"""
     serializer_class = NodeSerializer
     queryset = BaseTreeNode.objects.all()
 
@@ -68,6 +69,7 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
 
 
 class NodesMoveView(RequireAuthMixin, GenericAPIView):
+    """POST /nodes/move/"""
     parser_classes = [JSONParser]
     serializer_class = NodeMoveSerializer
 
@@ -90,6 +92,7 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
 
 
 class NodesDownloadView(RequireAuthMixin, GenericAPIView):
+    """GET /nodes/download/"""
     parser_classes = [JSONParser]
     serializer_class = NodesDownloadSerializer
     renderer_classes = (PassthroughRenderer,)

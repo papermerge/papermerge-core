@@ -38,8 +38,12 @@ class NodesDownloadFile:
 
     @property
     def file_name(self):
-        pass
+        return self._file_name
+
+    @property
+    def content_type(self):
+        return 'application/pdf'
 
     @property
     def content_disposition(self):
-        pass
+        return f'attachment; filename={self.file_name}'

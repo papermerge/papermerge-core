@@ -1,4 +1,3 @@
-import json
 import logging
 import magic
 
@@ -7,6 +6,7 @@ from django.http import (
     Http404,
     HttpResponse
 )
+from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -26,17 +26,14 @@ from papermerge.core.serializers import (
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
-    Access,
-    Folder,
-    Automate,
-    Tag
+    Access
 )
-from papermerge.core import signal_definitions as signals
+
 from papermerge.core.backup_restore import build_tar_archive
 from papermerge.core.storage import default_storage
+from papermerge.core.renderers import PassthroughRenderer
+from papermerge.core.nodes_download_file import NodesDownloadFile
 
-from .decorators import json_response
-from .utils import sanitize_kvstore_list
 from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
@@ -95,18 +92,19 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
 class NodesDownloadView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
     serializer_class = NodesDownloadSerializer
+    renderer_classes = (PassthroughRenderer,)
 
     def get(self, request):
-        serializer = NodeMoveSerializer(data=request.data)
+        serializer = NodesDownloadSerializer(data=request.data)
         if serializer.is_valid():
-            result = nodes_move.apply_async(
-                kwargs={
-                    'source_parent': serializer.data['source_parent'],
-                    'target_parent': serializer.data['target_parent'],
-                    'nodes': serializer.data['nodes']
-                }
+            download = NodesDownloadFile(**serializer.data)
+            response = FileResponse(
+                download.file_handle, content_type=download.content_type
             )
-            return Response({'task_id': result.id})
+            response['Content-Length'] = download.file_size
+            response['Content-Disposition'] = download.content_disposition
+
+            return response
         else:
             return Response(
                 serializer.errors,

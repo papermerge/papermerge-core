@@ -26,12 +26,12 @@ from papermerge.core.serializers import (
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
+    Document,
     Access
 )
 
 from papermerge.core.backup_restore import build_tar_archive
 from papermerge.core.storage import default_storage
-from papermerge.core.renderers import PassthroughRenderer
 from papermerge.core.nodes_download_file import NodesDownloadFile
 
 from .mixins import RequireAuthMixin
@@ -95,22 +95,26 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
     """GET /nodes/download/"""
     parser_classes = [JSONParser]
     serializer_class = NodesDownloadSerializer
-    renderer_classes = (PassthroughRenderer,)
 
     def get(self, request):
-        serializer = NodesDownloadSerializer(data=request.data)
+        serializer = NodesDownloadSerializer(data=request.query_params)
         if serializer.is_valid():
-            download = NodesDownloadFile(**serializer.data)
-            response = FileResponse(
-                download.file_handle, content_type=download.content_type
-            )
-            response['Content-Length'] = download.file_size
-            response['Content-Disposition'] = download.content_disposition
+            try:
+                download = NodesDownloadFile(**serializer.data)
+                response = FileResponse(
+                    download.file_handle, content_type=download.content_type
+                )
+                response['Content-Length'] = download.file_size
+                response['Content-Disposition'] = download.content_disposition
+                response['Content-Type'] = download.content_type
+            except Document.DoesNotExist as exc:
+                raise Http404 from exc
 
             return response
         else:
             return Response(
                 serializer.errors,
+                content_type='application/json',
                 status=status.HTTP_400_BAD_REQUEST
             )
 

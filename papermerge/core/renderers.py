@@ -2,20 +2,6 @@ from django.utils.encoding import smart_text
 from rest_framework import renderers
 
 
-class PassthroughRenderer(renderers.BaseRenderer):
-    """Return data as-is. View should supply a Response."""
-    media_type = ''
-    format = ''
-
-    def render(
-        self,
-        data,
-        accepted_media_type=None,
-        renderer_context=None
-    ):
-        return data
-
-
 class PlainTextRenderer(renderers.BaseRenderer):
     media_type = 'text/plain'
     format = 'txt'

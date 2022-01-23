@@ -68,11 +68,7 @@ class TestNodeSerializer(TestCase):
 class TestNodesDownloadSerializer(TestCase):
 
     def test_basic_nodes_download_serialization(self):
-        serializer = NodesDownloadSerializer(data={
-            'nodes': [
-                {'id': 1}, {'id': 2}
-            ],
-        })
+        serializer = NodesDownloadSerializer(data={'node_ids': [1]})
 
         self.assertTrue(serializer.is_valid())
 

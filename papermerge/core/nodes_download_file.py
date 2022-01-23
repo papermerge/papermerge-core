@@ -1,3 +1,5 @@
+import os.path
+
 from papermerge.core.models import Document
 from papermerge.core.serializers.node import (
     ONLY_ORIGINAL,
@@ -25,7 +27,7 @@ class NodesDownloadFile:
     """
     def __init__(
         self,
-        nodes,
+        node_ids,
         file_name='unnamed',
         include_version=ONLY_LAST,
         archive_type=ZIP
@@ -33,15 +35,13 @@ class NodesDownloadFile:
         self._file_name = file_name
         self._include_version = include_version
         self._archive_type = archive_type
-        self._nodes = nodes
+        self._node_ids = node_ids
+        self._file_handle = None
         self._create()
 
     def _create(self):
         if self.is_single_document_node():
-            # There is nothing to 'create' for a single document node.
-            # User will receive/download an already
-            # existing file (e.g. invoice.pdf)
-            return
+            return self._get_document_file_abs_path()
 
         if self.wants_zip():
             return self._create_zip()
@@ -55,14 +55,27 @@ class NodesDownloadFile:
         return self._archive_type == TARGZ
 
     def is_single_node(self):
-        return len(self._nodes) == 1
+        return len(self._node_ids) == 1
 
     def is_single_document_node(self):
         if self.is_single_node() and self.wants_only_one_version():
-            return Document.objects.exists(pk=self._nodes[0]['id'])
+            return Document.objects.get(pk=self._node_ids[0])
+
+        return False
+
+    def _get_document_file_abs_path(self):
+        if not self.is_single_document_node():
+            raise Exception("Not a single document node")
+
+        doc = Document.objects.get(pk=self._node_ids[0])
+
+        last_doc_version = doc.versions.last()
+        abs_file_path = last_doc_version.abs_file_path()
+
+        return abs_file_path
 
     def wants_only_one_version(self):
-        self._include_version in (ONLY_ORIGINAL, ONLY_LAST)
+        return self._include_version in (ONLY_ORIGINAL, ONLY_LAST)
 
     def _create_zip(self):
         pass
@@ -72,7 +85,10 @@ class NodesDownloadFile:
 
     @property
     def file_handle(self):
-        pass
+        if not self._file_handle:
+            raise Exception("Download file not yet available")
+
+        return self._file_handle
 
     @property
     def file_size(self):
@@ -89,3 +105,9 @@ class NodesDownloadFile:
     @property
     def content_disposition(self):
         return f'attachment; filename={self.file_name}'
+
+    def __str__(self):
+        return f'NodesDownloadFile(node_ids={self._node_ids})'
+
+    def __repr__(self):
+        return str(self)

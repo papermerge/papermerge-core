@@ -43,3 +43,29 @@ class NodeMoveSerializer(rest_serializers.Serializer):
     target_parent = NodeIDSerializer(required=True)
     # nodes to move under the new parent
     nodes = NodeIDSerializer(many=True)
+
+
+class NodesDownloadSerializer(rest_serializers.Serializer):
+    # list of nodes to download
+    nodes = NodeIDSerializer(many=True)
+    file_name = rest_serializers.CharField(
+        max_length=32,
+        required=False
+    )
+    # What to include in downloaded file?
+    include_version = rest_serializers.ChoiceField(
+        choices=(
+            ('all', 'All'),
+            ('only_original', 'Only original'),
+            ('only_last', 'Only last'),
+            ('only_original_and_last', 'Only original and last')
+        ),
+        default='only_last'
+    )
+    archive_type = rest_serializers.ChoiceField(
+        choices=(
+            ('targz', '.tar.gz'),
+            ('zip', '.zip')
+        ),
+        default='zip'
+    )

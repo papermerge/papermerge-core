@@ -3,8 +3,7 @@ from .document import DocumentSerializer
 from .document import DocumentDetailsSerializer
 from .document_version import DocumentVersionSerializer
 from .folder import FolderSerializer
-from .node import NodeSerializer
-from .node import NodeMoveSerializer
+from .node import NodeSerializer, NodeMoveSerializer, NodesDownloadSerializer
 from .ocr import OcrSerializer
 from .user import UserSerializer
 from .group import GroupSerializer
@@ -25,6 +24,7 @@ __all__ = [
     'FolderSerializer',
     'NodeSerializer',
     'NodeMoveSerializer',
+    'NodesDownloadSerializer',
     'OcrSerializer',
     'UserSerializer',
     'GroupSerializer',

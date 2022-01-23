@@ -1,11 +1,13 @@
 from papermerge.test import TestCase
-from papermerge.core.serializers import NodeMoveSerializer
+from papermerge.core.serializers import (
+    NodeMoveSerializer,
+    NodesDownloadSerializer
+)
 
 
 class TestNodeSerializer(TestCase):
 
     def test_basic_node_move_serialization(self):
-
         serializer = NodeMoveSerializer(data={
             'source_parent': {
                 'id': 100
@@ -22,9 +24,7 @@ class TestNodeSerializer(TestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_node_move_requires_source_parent(self):
-        """
-        `source_parent` is required field
-        """
+        """`source_parent` is required field"""
         serializer = NodeMoveSerializer(data={
             # source_parent is missing here
             'target_parent': {
@@ -39,9 +39,7 @@ class TestNodeSerializer(TestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_node_move_requires_target_parent(self):
-        """
-        `target_parent` is required field
-        """
+        """`target_parent` is required field"""
         serializer = NodeMoveSerializer(data={
             # target_parent is missing here
             'source_parent': {
@@ -56,9 +54,7 @@ class TestNodeSerializer(TestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_node_move_requires_nodes(self):
-        """
-        `nodes` is required field
-        """
+        """`nodes` is required field"""
         serializer = NodeMoveSerializer(data={
             'source_parent': {'id': 1},
             'target_parent': {'id': 1}
@@ -67,3 +63,15 @@ class TestNodeSerializer(TestCase):
 
         # nodes field is missing
         self.assertFalse(serializer.is_valid())
+
+
+class TestNodesDownloadSerializer(TestCase):
+
+    def test_basic_nodes_download_serialization(self):
+        serializer = NodesDownloadSerializer(data={
+            'nodes': [
+                {'id': 1}, {'id': 2}
+            ],
+        })
+
+        self.assertTrue(serializer.is_valid())

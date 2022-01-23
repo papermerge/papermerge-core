@@ -3,25 +3,15 @@ import logging
 import magic
 
 from django.http import (
-    HttpResponseBadRequest,
     HttpResponseForbidden,
     Http404,
     HttpResponse
 )
-from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_GET
-from django.urls import reverse
-from django.shortcuts import (
-    get_object_or_404,
-    redirect
-)
+from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from django.core.files.temp import NamedTemporaryFile
-from django.core.paginator import Paginator
-from django.db.models.functions import Lower
 
-from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
@@ -30,7 +20,8 @@ from rest_framework import status
 
 from papermerge.core.serializers import (
     NodeSerializer,
-    NodeMoveSerializer
+    NodeMoveSerializer,
+    NodesDownloadSerializer
 )
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
@@ -100,6 +91,27 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
+class NodesDownloadView(RequireAuthMixin, GenericAPIView):
+    parser_classes = [JSONParser]
+    serializer_class = NodesDownloadSerializer
+
+    def post(self, request):
+        serializer = NodeMoveSerializer(data=request.data)
+        if serializer.is_valid():
+            result = nodes_move.apply_async(
+                kwargs={
+                    'source_parent': serializer.data['source_parent'],
+                    'target_parent': serializer.data['target_parent'],
+                    'nodes': serializer.data['nodes']
+                }
+            )
+            return Response({'task_id': result.id})
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 @login_required
 def node_download(request, id, version=0):

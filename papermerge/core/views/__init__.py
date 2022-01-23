@@ -9,8 +9,7 @@ from .users import (
     UserChangePassword,
     CurrentUserView
 )
-from .nodes import NodesViewSet
-from .nodes import NodesMoveView
+from .nodes import NodesViewSet, NodesMoveView, NodesDownloadView
 from .documents import DocumentUploadView
 from .document_versions import DocumentVersionsDownloadView
 from .documents import DocumentDetailsViewSet
@@ -29,6 +28,7 @@ __all__ = [
     'PermissionsList',
     'NodesViewSet',
     'NodesMoveView',
+    'NodesDownloadView',
     'DocumentUploadView',
     'DocumentVersionsDownloadView',
     'DocumentDetailsViewSet',

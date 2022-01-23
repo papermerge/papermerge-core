@@ -21,8 +21,15 @@ class NodesDownloadFile:
     Usage example:
 
         download = NodesDownloadFile(
-            node_ids=[1, 2, 3],
+            node_ids=[1],
             file_name='invoice.pdf'
+        )
+
+        download = NodesDownloadFile(
+            node_ids=[1, 2, 3],
+            file_name='my_documents.zip',
+            archive_type='zip',
+            include_version='only_last'
         )
     """
     def __init__(

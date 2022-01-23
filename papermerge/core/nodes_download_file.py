@@ -21,7 +21,7 @@ class NodesDownloadFile:
     Usage example:
 
         download = NodesDownloadFile(
-            nodes=[{'id': 1}],
+            node_ids=[1, 2, 3],
             file_name='invoice.pdf'
         )
     """

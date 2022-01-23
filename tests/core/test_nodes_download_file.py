@@ -41,4 +41,3 @@ class TestNodesDownloadFile(TestCase):
             # should never reach this place as serialized data is
             # expected to be valid
             self.assertTrue(False)
-

@@ -96,7 +96,7 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
     serializer_class = NodesDownloadSerializer
 
-    def post(self, request):
+    def get(self, request):
         serializer = NodeMoveSerializer(data=request.data)
         if serializer.is_valid():
             result = nodes_move.apply_async(
@@ -112,6 +112,7 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
 
 @login_required
 def node_download(request, id, version=0):

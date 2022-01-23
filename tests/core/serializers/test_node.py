@@ -75,3 +75,10 @@ class TestNodesDownloadSerializer(TestCase):
         })
 
         self.assertTrue(serializer.is_valid())
+
+    def test_nodes_download_serialization_requires_nodes_field(self):
+        """At very least `nodes` field must be provided"""
+        serializer = NodesDownloadSerializer(data={})
+
+        # nodes field is missing
+        self.assertFalse(serializer.is_valid())

@@ -25,18 +25,13 @@ class TestNodesDownloadFile(TestCase):
             }
         )
         if serializer.is_valid():
-
             download = NodesDownloadFile(
                 node_ids=serializer.data['node_ids'],
                 file_name=serializer.data['file_name'],
             )
-
             self.assertEqual(download.file_name, 'invoice.pdf')
-            self.assertEqual(download.content_type, 'application/pdf')
-            self.assertEqual(
-                download.content_disposition,
-                'attachment; filename=invoice.pdf'
-            )
+            self.assertTrue(download.wants_only_one_version())
+            self.assertTrue(download.is_single_document_node())
         else:
             # should never reach this place as serialized data is
             # expected to be valid

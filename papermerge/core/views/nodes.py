@@ -101,12 +101,7 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
         if serializer.is_valid():
             try:
                 download = NodesDownloadFile(**serializer.data)
-                response = FileResponse(
-                    download.file_handle, content_type=download.content_type
-                )
-                response['Content-Length'] = download.file_size
-                response['Content-Disposition'] = download.content_disposition
-                response['Content-Type'] = download.content_type
+                response = FileResponse(download.file_handle)
             except Document.DoesNotExist as exc:
                 raise Http404 from exc
 

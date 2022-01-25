@@ -26,13 +26,10 @@ from papermerge.core.serializers import (
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
-    Document,
-    Access
+    Document
 )
 
-from papermerge.core.backup_restore import build_tar_archive
-from papermerge.core.storage import default_storage
-from papermerge.core.nodes_download_file import NodesDownloadFile
+from papermerge.core.nodes_download import get_nodes_download
 
 from .mixins import RequireAuthMixin
 
@@ -97,13 +94,35 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
     serializer_class = NodesDownloadSerializer
 
     def get(self, request):
+        """
+        Expects one or multiple of following HTTP GET parameters:
+        * node_ids (required) - a list of node IDs to download
+        * file_name - preferred file name for downloaded archive/document file
+        * include_version = 'only_last' or 'only_original'
+            In case when include_version == 'only_last', downloaded
+            archive/document file(s) will contain only last version
+            of the document
+            Respectively for include_version == 'only_original' downloaded
+            archive/document file(s) will contain only orignial version
+            of the document
+            Default value is 'only_last'
+        * archive_type = 'zip' or 'targz'
+            Applies only if there is more than one node to download.
+            Decides on type of archive to create.
+            Default value is 'zip'
+        """
         serializer = NodesDownloadSerializer(data=request.query_params)
         if serializer.is_valid():
             try:
-                download = NodesDownloadFile(**serializer.data)
-                response = FileResponse(download.file_handle)
+                nodes_download = get_nodes_download(**serializer.data)
             except Document.DoesNotExist as exc:
                 raise Http404 from exc
+
+            response = HttpResponse(
+                nodes_download.get_content(),
+                content_type=nodes_download.content_type
+            )
+            response['Content-Disposition'] = nodes_download.content_disposition
 
             return response
         else:
@@ -112,107 +131,3 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
                 content_type='application/json',
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-
-@login_required
-def node_download(request, id, version=0):
-    """
-    Any user with read permission on the node must be
-    able to download it.
-
-    Node is either documennt or a folder.
-    """
-    try:
-        node = BaseTreeNode.objects.get(id=id)
-    except BaseTreeNode.DoesNotExist:
-        raise Http404("Node does not exists")
-
-    if request.user.has_perm(Access.PERM_READ, node):
-
-        if node.is_document():
-            file_abs_path = default_storage.abspath(
-                node.path().url(version=version)
-            )
-            mime_type = magic.from_file(file_abs_path, mime=True)
-            try:
-                file_handle = open(file_abs_path, "rb")
-            except OSError:
-                logger.error(
-                    "Cannot open local version of %s" % node.path.url()
-                )
-                return redirect('admin:browse')
-
-            resp = HttpResponse(
-                file_handle.read(),
-                content_type=mime_type
-            )
-            disposition = "attachment; filename=%s" % node.title
-            resp['Content-Disposition'] = disposition
-            file_handle.close()
-
-            return resp
-        else:  # node is a folder
-
-            with NamedTemporaryFile(prefix="download_") as fileobj:
-                # collected into an archive all direct children of
-                # selected folder
-                node_ids = [_node.id for _node in node.get_children()]
-                build_tar_archive(
-                    fileobj=fileobj,
-                    node_ids=node_ids
-                )
-                # reset fileobj to initial position
-                fileobj.seek(0)
-                data = fileobj.read()
-                resp = HttpResponse(
-                    data,
-                    content_type="application/x-tar"
-                )
-                disposition = f"attachment; filename={node.title}.tar"
-                resp['Content-Disposition'] = disposition
-
-                return resp
-
-    return HttpResponseForbidden()
-
-
-@login_required
-def nodes_download(request):
-    """
-    Download multiple nodes (documents and folders) packed
-    as tar.gz archive.
-    """
-
-    node_ids = request.GET.getlist('node_ids[]')
-    nodes = BaseTreeNode.objects.filter(
-        id__in=node_ids
-    )
-    nodes_perms = request.user.get_perms_dict(
-        nodes, Access.ALL_PERMS
-    )
-    for node in nodes:
-        if not nodes_perms[node.id].get(
-            Access.PERM_READ, False
-        ):
-            msg = _(
-                "%s does not have permission to read %s"
-            ) % (request.user.username, node.title)
-
-            return msg, HttpResponseForbidden.status_code
-
-    with NamedTemporaryFile(prefix="download_") as fileobj:
-        build_tar_archive(
-            fileobj=fileobj,
-            node_ids=node_ids
-        )
-        # reset fileobj to initial position
-        fileobj.seek(0)
-        data = fileobj.read()
-        resp = HttpResponse(
-            data,
-            content_type="application/x-tar"
-        )
-        disposition = "attachment; filename=download.tar"
-        resp['Content-Disposition'] = disposition
-
-        return resp

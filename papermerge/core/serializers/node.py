@@ -12,10 +12,8 @@ from papermerge.core.serializers import (
 )
 
 
-ALL = 'all'
 ONLY_ORIGINAL = 'only_original'
 ONLY_LAST = 'only_last'
-ONLY_ORIGINAL_AND_LAST = 'only_original_and_last'
 ZIP = 'zip'
 TARGZ = 'targz'
 
@@ -65,10 +63,8 @@ class NodesDownloadSerializer(rest_serializers.Serializer):
     # What to include in downloaded file?
     include_version = rest_serializers.ChoiceField(
         choices=(
-            (ALL, 'All'),
             (ONLY_ORIGINAL, 'Only original'),
             (ONLY_LAST, 'Only last'),
-            (ONLY_ORIGINAL_AND_LAST, 'Only original and last')
         ),
         default=ONLY_LAST
     )

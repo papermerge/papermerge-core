@@ -61,4 +61,12 @@ class DocumentUploadView(RequireAuthMixin, APIView):
 
 class DocumentDetailsViewSet(RequireAuthMixin, ModelViewSet):
     serializer_class = DocumentDetailsSerializer
-    queryset = Document.objects
+    queryset = Document.objects.all()
+
+    http_method_names = [
+        "get",
+        "delete",
+        "patch",
+        "head",
+        "options"
+    ]

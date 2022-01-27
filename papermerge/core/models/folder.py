@@ -86,41 +86,6 @@ class Folder(BaseTreeNode):
             # it is ok, just skip
             pass
 
-    def to_dict(self):
-        item = {}
-
-        item['id'] = self.id
-        item['model'] = 'folder'
-        item['title'] = self.title
-        item['created_at'] = self.human_created_at
-        item['updated_at'] = self.human_updated_at
-        item['owner'] = self.user.username
-        item['timestamp'] = self.created_at.timestamp()
-
-        if self.parent:
-            item['parent_id'] = self.parent.id
-        else:
-            item['parent_id'] = ''
-        item['ctype'] = 'folder'
-
-        tags = []
-        for tag in self.tags.all():
-            tags.append(tag.to_dict())
-        item['tags'] = tags
-
-        kvstore = []
-        for kv in self.kv.all():
-            kvstore.append(kv.to_dict())
-
-        item['metadata'] = {}
-        item['metadata']['kvstore'] = kvstore
-        item['metadata']['currency_formats'] = get_currency_formats()
-        item['metadata']['date_formats'] = get_date_formats()
-        item['metadata']['numeric_formats'] = get_numeric_formats()
-        item['metadata']['kv_types'] = get_kv_types()
-
-        return item
-
     @property
     def kv(self):
         return KVNode(instance=self)

@@ -372,4 +372,6 @@ CORS_ALLOW_HEADERS = list(default_cors_headers) + [
     "Content-Disposition",
 ]
 
+CORS_EXPOSE_HEADERS = ["Content-Disposition"]
+
 CORS_ALLOW_ALL_ORIGINS = True

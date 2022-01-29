@@ -1,19 +1,4 @@
-import os
-import json
 import logging
-
-from django.utils.translation import gettext as _
-from django.views.decorators.http import require_POST
-from django.conf import settings
-
-from django.http import (
-    HttpResponse,
-    HttpResponseRedirect,
-    HttpResponseForbidden,
-    Http404
-)
-from django.contrib.staticfiles import finders
-from django.contrib.auth.decorators import login_required
 
 from rest_framework.views import APIView
 from rest_framework import status

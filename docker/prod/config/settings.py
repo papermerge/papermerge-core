@@ -367,6 +367,8 @@ CORS_ALLOW_HEADERS = list(default_cors_headers) + [
     "Content-Disposition",
 ]
 
+CORS_EXPOSE_HEADERS = ["Content-Disposition"]
+
 INTERNAL_IPS = ['127.0.0.1', ]
 
 CORS_ALLOW_ALL_ORIGINS = True

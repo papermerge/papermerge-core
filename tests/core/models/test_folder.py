@@ -37,5 +37,5 @@ class TestFolderModel(TestCase):
 
         self.assertEqual(
             f'My Documents-{folder.id}',
-            folder.idified_title()
+            folder.idified_title
         )

@@ -291,6 +291,7 @@ class Document(BaseTreeNode):
 
     objects = CustomDocumentManager()
 
+    @property
     def idified_title(self):
         """
         Returns a title with ID part inserted before extention

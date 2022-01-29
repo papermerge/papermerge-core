@@ -92,6 +92,7 @@ class BaseTreeNode(PolymorphicMPTTModel):
     # custom Manager + custom QuerySet
     objects = CustomNodeManager()
 
+    @property
     def idified_title(self):
         """
         Returns a title with ID part inserted at the end

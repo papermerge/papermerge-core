@@ -49,7 +49,7 @@ class NodesDownload:
     def _recursive_create_archive(self, archive, node_ids, abspath):
         for node in BaseTreeNode.objects.filter(id__in=node_ids):
             if node.is_document():
-                arcname = os.path.join(*abspath, node.idified_title())
+                arcname = os.path.join(*abspath, node.idified_title)
                 if self.wants_only_last():
                     doc_version = node.versions.last()
                 else:
@@ -65,7 +65,7 @@ class NodesDownload:
                 self._recursive_create_archive(
                     archive,
                     child_ids,
-                    abspath + [node.idified_title()]
+                    abspath + [node.idified_title]
                 )
 
     def archive_add(self, abs_file_path, arcname):

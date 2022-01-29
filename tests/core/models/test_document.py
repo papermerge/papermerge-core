@@ -76,7 +76,7 @@ class TestDocumentModel(TestCase):
 
         self.assertEqual(
             f'invoice-{doc.id}.pdf',
-            doc.idified_title()
+            doc.idified_title
         )
 
     def test_idified_title_multiple_dots_in_title(self):
@@ -89,5 +89,5 @@ class TestDocumentModel(TestCase):
 
         self.assertEqual(
             f'in.voi.ce-{doc.id}.pdf',
-            doc.idified_title()
+            doc.idified_title
         )

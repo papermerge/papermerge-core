@@ -65,3 +65,29 @@ class TestDocumentModel(TestCase):
             last_doc_version.pages.count(),
             3
         )
+
+    def test_idified_title_one_dot_in_title(self):
+        doc = Document.objects.create_document(
+            title="invoice.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        self.assertEqual(
+            f'invoice-{doc.id}.pdf',
+            doc.idified_title()
+        )
+
+    def test_idified_title_multiple_dots_in_title(self):
+        doc = Document.objects.create_document(
+            title="in.voi.ce.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        self.assertEqual(
+            f'in.voi.ce-{doc.id}.pdf',
+            doc.idified_title()
+        )

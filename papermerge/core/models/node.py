@@ -92,6 +92,17 @@ class BaseTreeNode(PolymorphicMPTTModel):
     # custom Manager + custom QuerySet
     objects = CustomNodeManager()
 
+    def idified_title(self):
+        """
+        Returns a title with ID part inserted at the end
+
+        Example:
+            input: title="My Invoices", id="233453"
+            output: "My Invoices-233453"
+        """
+
+        return f'{self.title}-{self.id}'
+
     def human_datetime(self, _datetime) -> str:
         """
         Localize and format datetime instance considering user preferences.

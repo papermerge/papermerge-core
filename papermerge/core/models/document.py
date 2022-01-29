@@ -291,6 +291,20 @@ class Document(BaseTreeNode):
 
     objects = CustomDocumentManager()
 
+    def idified_title(self):
+        """
+        Returns a title with ID part inserted before extention
+
+        Example:
+            input: title="invoice.pdf", id="233453"
+            output: invoice-233453.pdf
+        """
+        base_title_arr = self.title.split('.')[:-1]
+        base_title = '.'.join(base_title_arr)
+        ext = self.title.split('.')[-1]
+
+        return f'{base_title}-{self.id}.{ext}'
+
     def each_part(self, abstract_klasses):
         """
         Iterates through each INSTANCE of document parts which inherits

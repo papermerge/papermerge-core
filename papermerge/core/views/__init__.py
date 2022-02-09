@@ -17,9 +17,12 @@ from .folders import FoldersViewSet
 from .pages import PagesViewSet
 from .tasks import OCRView
 from .preferences import CustomUserPreferencesViewSet
+from .login import LoginView
+from .auth_tokens import AuthTokensViewSet
 
 __all__ = [
     'AutomatesViewSet',
+    'AuthTokensViewSet',
     'ContentTypeRetrieve',
     'CustomUserPreferencesViewSet',
     'TagsViewSet',
@@ -37,5 +40,6 @@ __all__ = [
     'UserChangePassword',
     'CurrentUserView',
     'PagesViewSet',
-    'OCRView'
+    'OCRView',
+    'LoginView'
 ]

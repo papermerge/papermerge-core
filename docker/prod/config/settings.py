@@ -162,6 +162,7 @@ PAPERMERGE_TASK_MONITOR_STORE_URL = f"redis://{redis_host}:{redis_port}/0"
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'knox',
     'rest_framework_json_api',
     'corsheaders',
     'django.contrib.auth',
@@ -290,6 +291,7 @@ USE_TZ = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'knox.auth.TokenAuthentication',
     ],
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
@@ -322,6 +324,11 @@ REST_FRAMEWORK = {
         'rest_framework_json_api.renderers.JSONRenderer',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json'
+}
+
+REST_KNOX = {
+  # Setting the TOKEN_TTL to None will create tokens that never expire.
+  'TOKEN_TTL': None,
 }
 
 LOGGING = {

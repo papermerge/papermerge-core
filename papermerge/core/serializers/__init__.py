@@ -14,10 +14,16 @@ from .permission import PermissionSerializer
 from .page import PageSerializer
 from .content_type import ContentTypeSerializer
 from .preferences import CustomUserPreferenceSerializer
+from .auth_token import (
+    AuthTokenSerializer,
+    CreateAuthTokenSerializer
+)
 
 __all__ = [
     'AutomateSerializer',
+    'AuthTokenSerializer',
     'CustomUserPreferenceSerializer',
+    'CreateAuthTokenSerializer',
     'DocumentSerializer',
     'DocumentDetailsSerializer',
     'DocumentVersionSerializer',
@@ -33,5 +39,5 @@ __all__ = [
     'PasswordSerializer',
     'PermissionSerializer',
     'PageSerializer',
-    'ContentTypeSerializer'
+    'ContentTypeSerializer',
 ]

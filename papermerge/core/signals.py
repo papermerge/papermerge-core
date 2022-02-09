@@ -126,22 +126,6 @@ def inherit_metadata_keys_from_parent(sender, instance, created, **kwargs):
         instance.inherit_kv_from(instance.parent)
 
 
-@receiver(post_save, sender=Document)
-def normalize_pages_from_doc_handler(sender, instance, created, **kwargs):
-    """Update async this document pages' attributes page.norm_*
-    """
-    logger.debug("Post save doc => normalize_pages")
-    # normalize_pages(origin=instance)
-    pass
-
-
-@receiver(post_save, sender=Folder)
-def normalize_pages_from_folder_handler(sender, instance, created, **kwargs):
-    """Update async folder pages attributes page.norm_*
-    """
-    normalize_pages(origin=instance)
-
-
 @receiver(post_save, sender=User)
 def user_init(sender, instance, created, **kwargs):
     """

@@ -2,14 +2,14 @@ from django.urls import path, re_path
 from django.conf.urls import include, url
 
 from rest_framework import routers
-from rest_framework.authtoken import views as authtoken_views
-
+from knox import views as knox_views
 from papermerge.core import views
 
 
 router = routers.DefaultRouter()
 
 router.register(r"automates", views.AutomatesViewSet, basename="automate")
+router.register(r"tokens", views.AuthTokensViewSet, basename="token")
 router.register(r"tags", views.TagsViewSet, basename="tag")
 router.register("nodes", views.NodesViewSet, basename="node")
 router.register(r"roles", views.RolesViewSet)
@@ -44,7 +44,10 @@ urlpatterns = [
     path('nodes/download/', views.NodesDownloadView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
-    path('auth-token/', authtoken_views.obtain_auth_token),
+    url(r'auth/login/', views.LoginView.as_view(), name='knox_login'),
+    url(r'auth/logout/', knox_views.LogoutView.as_view(), name='knox_logout'),
+    url(r'auth/logoutall/', knox_views.LogoutAllView.as_view(),
+        name='knox_logoutall'),
     path('ocr/', views.OCRView.as_view()),
     url(r"^", include(router.urls)),
 ]

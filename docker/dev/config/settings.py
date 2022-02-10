@@ -291,7 +291,7 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication'
+        'knox.auth.TokenAuthentication',
     ],
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',

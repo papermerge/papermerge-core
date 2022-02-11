@@ -18,11 +18,10 @@ from .pages import PagesViewSet
 from .tasks import OCRView
 from .preferences import CustomUserPreferencesViewSet
 from .login import LoginView
-from .auth_tokens import AuthTokensViewSet
+from .tokens import TokensViewSet
 
 __all__ = [
     'AutomatesViewSet',
-    'AuthTokensViewSet',
     'ContentTypeRetrieve',
     'CustomUserPreferencesViewSet',
     'TagsViewSet',
@@ -41,5 +40,6 @@ __all__ = [
     'CurrentUserView',
     'PagesViewSet',
     'OCRView',
-    'LoginView'
+    'LoginView',
+    'TokensViewSet',
 ]

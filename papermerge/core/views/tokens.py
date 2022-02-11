@@ -6,15 +6,15 @@ from knox.models import AuthToken
 from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import (
-    AuthTokenSerializer,
-    CreateAuthTokenSerializer,
+    TokenSerializer,
+    CreateTokenSerializer,
 )
 from .mixins import RequireAuthMixin
 
 
-class AuthTokensViewSet(RequireAuthMixin, ModelViewSet):
+class TokensViewSet(RequireAuthMixin, ModelViewSet):
     queryset = AuthToken.objects.all()
-    serializer_class = AuthTokenSerializer
+    serializer_class = TokenSerializer
 
     http_method_names = ["get", "post", "delete", "head", "options"]
 
@@ -25,11 +25,11 @@ class AuthTokensViewSet(RequireAuthMixin, ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        serializer = CreateAuthTokenSerializer(data=request.data)
+        serializer = CreateTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         instance, token = self.perform_create(serializer)
-        authtoken_serializer = AuthTokenSerializer(instance)
+        authtoken_serializer = TokenSerializer(instance)
         headers = self.get_success_headers(authtoken_serializer.data)
         data = authtoken_serializer.data
         # return to user verbatim token only once - when token

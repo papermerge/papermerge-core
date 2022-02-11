@@ -9,7 +9,7 @@ from papermerge.core import views
 router = routers.DefaultRouter()
 
 router.register(r"automates", views.AutomatesViewSet, basename="automate")
-router.register(r"tokens", views.AuthTokensViewSet, basename="token")
+router.register(r"tokens", views.TokensViewSet, basename="token")
 router.register(r"tags", views.TagsViewSet, basename="tag")
 router.register("nodes", views.NodesViewSet, basename="node")
 router.register(r"roles", views.RolesViewSet)

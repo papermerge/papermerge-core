@@ -48,9 +48,9 @@ Open your web browser and point it to http://papermerge.local address.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-alpha1
+    APP_TAG=2.1.0-alpha2
     PAPERMERGE_JS_IMAGE=papermerge/papermerge.js
-    PAPERMERGE_JS_TAG=2.1.0-alpha1
+    PAPERMERGE_JS_TAG=2.1.0-alpha2
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -89,7 +89,7 @@ REST API backend base url is ``http://localhost:8000/api/``.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-alpha1
+    APP_TAG=2.1.0-alpha2
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -128,7 +128,7 @@ REST API backend base url is ``http://localhost:8000/api/``.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-dev1
+    APP_TAG=2.1.0-dev2
 
     PAPERMERGE_SRC_DIR=/home/eugen/GitHub/PapermergeCore/papermerge/
 
@@ -175,11 +175,11 @@ Example of ``.env`` file:
 
 Build app docker image for production mode:
 
-    docker build -t papermerge/papermerge:2.1.0-alpha1 -f docker/Dockerfile .
+    docker build -t papermerge/papermerge:2.1.0-alpha2 -f docker/Dockerfile .
 
 Build app docker image for development mode:
 
-    docker build -t papermerge/papermerge:2.1.0-dev1 -f docker/Dockerfile .
+    docker build -t papermerge/papermerge:2.1.0-dev2 -f docker/Dockerfile .
 
 
 ## Frontend Docker Image
@@ -190,16 +190,16 @@ with any REST API client; in this regard, Papermerge.JS is nothing more than
 a REST API client (though, very user friendly one).
 
 Note that both App and PapermergeJS docker images **should use same docker tag**
-i.e. app docker image ``papermerge/papermerge:2.1.0-alpha1`` (where tag is
-2.1.0-alpha1) is compatible with ``papermerge/papermerge.js:2.1.0-alpha1``
-frontend docker image. The compatibility is established based on ``2.1.0-alpha1``
+i.e. app docker image ``papermerge/papermerge:2.1.0-alpha2`` (where tag is
+2.1.0-alpha2) is compatible with ``papermerge/papermerge.js:2.1.0-alpha2``
+frontend docker image. The compatibility is established based on ``2.1.0-alpha2``
 tag.
 
 Following app and frontend docker images:
 
-- papermerge/papermerge:2.1.0-dev1
-- papermerge/papermerge.js:2.1.0-dev1
+- papermerge/papermerge:2.1.0-dev2
+- papermerge/papermerge.js:2.1.0-dev2
 
-are combatible as well (because they use same ``2.1.0-dev1`` docker tag). 
+are combatible as well (because they use same ``2.1.0-dev2`` docker tag). 
 
 Instructions how to build frontend docker image are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.

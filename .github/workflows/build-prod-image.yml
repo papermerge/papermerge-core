@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build PROD Image
 
 on:
   release:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-prod-image:
-    name: Build DEV Image
+    name: Build PROD Image
     runs-on: ubuntu-latest
     steps:
 

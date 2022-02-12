@@ -10,6 +10,7 @@ PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'knox',
     'rest_framework_json_api',
     'corsheaders',
     'django.contrib.auth',

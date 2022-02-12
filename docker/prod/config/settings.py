@@ -290,6 +290,9 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # basic authentication for browsable API
+        'rest_framework.authentication.SessionAuthentication',
+        # knox token based authentication
         'knox.auth.TokenAuthentication',
     ],
     'PAGE_SIZE': 10,

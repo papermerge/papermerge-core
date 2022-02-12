@@ -39,7 +39,7 @@ jobs:
         if: ${{ github.event.inputs.tag != '' }}
         with:
           push: true
-          tags: papermerge/documentation:${{ github.event.inputs.tag }}
+          tags: papermerge/papermerge:${{ github.event.inputs.tag }}
           file: docker/prod/Dockerfile
 
       - name: Build and push with RELEASE version as tag
@@ -48,5 +48,5 @@ jobs:
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          file: docker/Dockerfile
+          file: docker/prod/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}

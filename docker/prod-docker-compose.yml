@@ -36,7 +36,7 @@ services:
     <<: *backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && (PathPrefix(`/api/`) || PathPrefix(`/static/`) || PathPrefix(`/auth/`))"
       - "traefik.http.middlewares.backend-strip.stripprefix.forceSlash=false"
   backend_init:
     <<: *backend

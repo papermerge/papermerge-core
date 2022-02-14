@@ -200,6 +200,6 @@ Following app and frontend docker images:
 - papermerge/papermerge:2.1.0-dev2
 - papermerge/papermerge.js:2.1.0-dev2
 
-are combatible as well (because they use same ``2.1.0-dev2`` docker tag). 
+are combatible as well (because they use same ``2.1.0-dev2`` docker tag).
 
 Instructions how to build frontend docker image are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.

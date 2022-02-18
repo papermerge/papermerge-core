@@ -24,7 +24,7 @@ exec_worker() {
   exec $MANAGE worker
 }
 
-exec_init() {
+exec_server_init() {
   # run migrations
   $MANAGE migrate --no-input
 
@@ -41,9 +41,14 @@ exec_init() {
   fi
 }
 
+exec_worker_init() {
+  # run migrations
+  $MANAGE migrate --no-input
+}
+
 case $CMD in
-  init)
-    exec_init
+  server_init)
+    exec_server_init
     ;;
   server)
     exec_server
@@ -53,6 +58,9 @@ case $CMD in
     ;;
   worker)
     exec_worker
+    ;;
+  worker_init)
+    exec_worker_init
     ;;
   *)
     echo "Unkown command: '$CMD'. Exiting..."

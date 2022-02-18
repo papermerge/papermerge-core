@@ -33,7 +33,7 @@ services:
       - db
       - redis
       - es
-    command: init
+    command: server_init
   db:
     image: postgres:13
     volumes:

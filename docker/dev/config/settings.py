@@ -26,8 +26,8 @@ ALLOWED_HOSTS = config.get_var(
 redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)
 
-es_hosts = config.get('elasticsearch', 'hosts', default='127.0.0.1')
-es_port = config.get('elasticsearch', 'port', default=9200)
+es_hosts = config.get('elasticsearch', 'hosts', default=None)
+es_port = config.get('elasticsearch', 'port', default=None)
 
 CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
 
@@ -54,20 +54,16 @@ DEBUG = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': config.get(
-            'elasticsearch',
-            'hosts',
-            default=f"{es_hosts}:{es_port}"
-        )
-    },
-}
-
-# Custom signal processor handles connections errors (to elasticsearch)
-# and reports them as warnings. This way, even when no connection to ES
-# is available, documents, folders, pages etc can still be used
-ELASTICSEARCH_DSL_SIGNAL_PROCESSOR = 'papermerge.search.signals.CustomSignalProcessor'  # noqa
+if es_hosts and es_port:
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': config.get(
+                'elasticsearch',
+                'hosts',
+                default=f"{es_hosts}:{es_port}"
+            )
+        },
+    }
 
 MEDIA_ROOT = config.get(
     'media',
@@ -177,7 +173,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
     'papermerge.notifications.apps.NotificationsConfig',
-    'papermerge.search.apps.SearchConfig',
     'django.contrib.contenttypes',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',
@@ -185,9 +180,17 @@ INSTALLED_APPS = [
     'polymorphic',
     'mptt',
     'channels',
-    'django_elasticsearch_dsl',
     'django_extensions'
 ]
+
+# include elasticsearch apps only if PAPERMERGE_ELASTICSEARCH_HOSTS
+# and PAPERMERGE_ELASTICSEARCH_PORT are defined
+# and have non-empty value
+if es_hosts and es_port:
+    INSTALLED_APPS.extend([
+        'papermerge.search.apps.SearchConfig',
+        'django_elasticsearch_dsl'
+    ])
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

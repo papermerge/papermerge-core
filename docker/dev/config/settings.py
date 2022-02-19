@@ -64,6 +64,11 @@ ELASTICSEARCH_DSL = {
     },
 }
 
+# Custom signal processor handles connections errors (to elasticsearch)
+# and reports them as warnings. This way, even when no connection to ES
+# is available, documents, folders, pages etc can still be used
+ELASTICSEARCH_DSL_SIGNAL_PROCESSOR = 'papermerge.search.signals.CustomSignalProcessor'  # noqa
+
 MEDIA_ROOT = config.get(
     'media',
     'dir',

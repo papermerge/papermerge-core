@@ -46,6 +46,7 @@ pytest = "^6.2"
 pytest-django = "^4.4"
 pycodestyle = "^2.8"
 django-extensions = "^3.1"
+ipython = "^8.0.1"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE="tests.config.settings"

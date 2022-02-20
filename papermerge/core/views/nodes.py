@@ -1,17 +1,9 @@
 import logging
-import magic
 
 from django.http import (
-    HttpResponseForbidden,
     Http404,
     HttpResponse
 )
-from django.http import FileResponse
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-from django.utils.translation import gettext as _
-from django.core.files.temp import NamedTemporaryFile
-
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
@@ -56,8 +48,15 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
         return Response(serializer.data)
 
     def get_queryset(self, *args, **kwargs):
+        """
+        Retrieves node's children.
+
+        Node is specified with pk = kwargs['pk'].
+        If no pk is provided, retrieves all top level nodes of current user i.e.
+        all nodes (of current user) with parent_id=None.
+        """
         return BaseTreeNode.objects.filter(
-            parent_id=self.kwargs['pk'],
+            parent_id=self.kwargs.get('pk', None),
             user=self.request.user
         ).order_by('-created_at')
 

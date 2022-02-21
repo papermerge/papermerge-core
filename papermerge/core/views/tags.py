@@ -3,7 +3,6 @@ import logging
 from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import TagSerializer
-
 from papermerge.core.models import Tag
 
 from .mixins import RequireAuthMixin
@@ -18,6 +17,4 @@ class TagsViewSet(RequireAuthMixin, ModelViewSet):
         return Tag.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        tag = Tag(**serializer.data)
-        tag.user_id = self.request.user.id
-        tag.save()
+        serializer.save(user_id=self.request.user.id)

@@ -1,22 +1,11 @@
-import json
 import logging
-
-from django.contrib.auth.decorators import login_required
-from django.http import (
-    HttpResponseBadRequest,
-    HttpResponseForbidden
-)
-from django.utils.translation import gettext as _
-from django.core.exceptions import ValidationError
-from django.core.cache import cache
 
 from rest_framework_json_api.views import ModelViewSet
 
 from papermerge.core.serializers import TagSerializer
-from papermerge.core import validators
-from papermerge.core.models import Access, BaseTreeNode, Tag
 
-from .decorators import json_response
+from papermerge.core.models import Tag
+
 from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)

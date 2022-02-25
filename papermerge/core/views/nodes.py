@@ -5,6 +5,7 @@ from django.http import (
     HttpResponse
 )
 from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework_json_api.views import ModelViewSet
@@ -85,6 +86,18 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class InboxCountView(RequireAuthMixin, APIView):
+    """GET /nodes/inboxcount/"""
+    parser_classes = [JSONParser]
+
+    def get(self, request):
+        inbox_folder = request.user.inbox_folder
+
+        return Response({
+            'count': inbox_folder.get_descendants().count()
+        })
 
 
 class NodesDownloadView(RequireAuthMixin, GenericAPIView):

@@ -9,7 +9,12 @@ from .users import (
     UserChangePassword,
     CurrentUserView
 )
-from .nodes import NodesViewSet, NodesMoveView, NodesDownloadView
+from .nodes import (
+    NodesViewSet,
+    NodesMoveView,
+    NodesDownloadView,
+    InboxCountView
+)
 from .documents import DocumentUploadView
 from .document_versions import DocumentVersionsDownloadView
 from .documents import DocumentDetailsViewSet
@@ -35,6 +40,7 @@ __all__ = [
     'DocumentVersionsDownloadView',
     'DocumentDetailsViewSet',
     'FoldersViewSet',
+    'InboxCountView',
     'UsersViewSet',
     'UserChangePassword',
     'CurrentUserView',

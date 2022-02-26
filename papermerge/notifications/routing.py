@@ -10,7 +10,7 @@ websocket_urlpatterns = [
         doc_consumer.DocumentConsumer.as_asgi()
     ),
     re_path(
-        r'ws/nodes/move$',
+        r'ws/nodes/move/$',
         nodes_move_consumer.NodesMoveConsumer.as_asgi()
     ),
     re_path(

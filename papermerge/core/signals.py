@@ -1,13 +1,22 @@
 import logging
 
-from django.db.models.signals import post_save, pre_delete
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from django.conf import settings
 
 from papermerge.core.auth import create_access
-from papermerge.core.models import Access, Diff, Document, Folder, User
+from papermerge.core.models import (
+    Access,
+    Diff,
+    Document,
+    Folder,
+    User,
+    BaseTreeNode
+)
 from papermerge.core.storage import default_storage
-from papermerge.core.tasks import normalize_pages
 
 logger = logging.getLogger(__name__)
 
@@ -136,3 +145,39 @@ def user_init(sender, instance, created, **kwargs):
     if created:
         if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
             instance.create_special_folders()
+
+
+@receiver(post_delete, sender=Document)
+@receiver(post_delete, sender=Folder)
+def if_inbox_then_refresh_1(sender, instance, **kwargs):
+    if instance.parent and instance.parent.title == Folder.INBOX_TITLE:
+        channel_layer = get_channel_layer()
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            "inbox_refresh", {
+                "type": "inbox.refresh",
+                "user_id": instance.user.pk
+            }
+        )
+
+
+@receiver(post_save, sender=Document)
+@receiver(post_save, sender=Folder)
+def if_inbox_then_refresh_2(sender, instance, created, **kwargs):
+    """
+    Inform channel group that user
+    """
+    if not created:
+        return
+
+    if instance.parent and instance.parent.title == Folder.INBOX_TITLE:
+        channel_layer = get_channel_layer()
+        async_to_sync(
+            channel_layer.group_send
+        )(
+            "inbox_refresh", {
+                "type": "inbox.refresh",
+                "user_id": instance.user.pk
+            }
+        )

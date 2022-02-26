@@ -21,7 +21,4 @@ class InboxRefreshConsumer(JsonWebsocketConsumer):
         )(self.group_name, self.channel_name)
 
     def inbox_refresh(self, data):
-        logger.info(
-            f"inbox_refresh data={data}"
-        )
         self.send_json(data)

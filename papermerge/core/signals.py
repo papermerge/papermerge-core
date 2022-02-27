@@ -147,40 +147,16 @@ def user_init(sender, instance, created, **kwargs):
             instance.create_special_folders()
 
 
-def inform_inbox_refresh_consumer(user_id):
-    """
-    Inform inbox_refresh group that user's inbox was updated.
-
-    The point is that inbox_refresh consumer will push a notification
-    to the clients to update their inbox folder.
-    """
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "inbox_refresh",
-        {"type": "inbox.refresh", "user_id": user_id}
-    )
-
-
-@receiver(post_delete, sender=Document)
-@receiver(post_delete, sender=Folder)
-def if_inbox_then_refresh_1(sender, instance, **kwargs):
+@receiver([post_delete, post_save], sender=Document)
+@receiver([post_delete, post_save], sender=Folder)
+def if_inbox_then_refresh(sender, instance, **kwargs):
     """
     Inform inbox_refresh channel group that user's inbox was updated
     """
-    # Folder or Document instance was deleted from user's Inbox folder
+    # Folder or Document instance was deleted/moved from//to user's Inbox folder
     if instance.parent and instance.parent.title == Folder.INBOX_TITLE:
-        inform_inbox_refresh_consumer(instance.user.pk)
-
-
-@receiver(post_save, sender=Document)
-@receiver(post_save, sender=Folder)
-def if_inbox_then_refresh_2(sender, instance, created, **kwargs):
-    """
-    Inform inbox_refresh channel group that user's inbox was updated
-    """
-    if not created:
-        return
-
-    # new Folder or Document instance was created in user's Inbox folder
-    if instance.parent and instance.parent.title == Folder.INBOX_TITLE:
-        inform_inbox_refresh_consumer(instance.user.pk)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "inbox_refresh",
+            {"type": "inbox.refresh", "user_id": instance.user.pk}
+        )

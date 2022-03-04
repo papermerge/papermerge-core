@@ -1,4 +1,6 @@
+import os
 import logging
+from pikepdf import Pdf
 
 from django.http import Http404
 
@@ -7,6 +9,9 @@ from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
 
 from papermerge.core.models import Page
+from papermerge.core.lib.utils import get_assigns_after_delete
+from papermerge.core.lib.path import PagePath
+from papermerge.core.storage import default_storage
 from papermerge.core.serializers import PageSerializer
 from papermerge.core.renderers import (
     PlainTextRenderer,
@@ -74,3 +79,50 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
         # by default render page with json serializer
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        """
+        Creates a new document version and copies
+        all existing pages to it except current page.
+        """
+        old_version = instance.document_version
+        doc = instance.document_version.document
+
+        # create new version models i.e. DocumentVersion with Page(s)
+        new_version = doc.version_bump(
+            page_count=old_version.page_count - 1
+        )
+
+        # delete page from document's new version associated file
+        pdf = Pdf.open(
+            default_storage.abspath(old_version.document_path.url)
+        )
+        del pdf.pages[instance.number - 1]
+        dirname = os.path.dirname(
+            default_storage.abspath(new_version.document_path.url)
+        )
+        os.makedirs(dirname, exist_ok=True)
+        pdf.save(
+            default_storage.abspath(new_version.document_path.url)
+        )
+
+        # reuse OCRed data from previous version
+        assigns = get_assigns_after_delete(
+            total_pages=old_version.page_count,
+            deleted_pages=[instance.number]
+        )
+        for item in assigns:
+            src_page_path = PagePath(
+                document_path=old_version.document_path,
+                page_num=item[1],
+                page_count=old_version.page_count
+            )
+            dst_page_path = PagePath(
+                document_path=new_version.document_path,
+                page_num=item[0],
+                page_count=old_version.page_count - 1
+            )
+            default_storage.copy_page(
+                src=src_page_path,
+                dst=dst_page_path
+            )

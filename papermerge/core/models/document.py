@@ -564,35 +564,48 @@ class Document(BaseTreeNode):
 
         default_storage.copy_doc(
             src=payload.temporary_file_path(),
-            dst=document_version.file_path()
+            dst=document_version.document_path
         )
 
         document_version.save()
         document_version.create_pages()
 
-    def version_bump(self):
+    def version_bump(self, page_count=None):
         """
         Increment document's version.
 
+        Creates new document version (old version = old version + 1) and
+        copies all attributes from current document version.
+        If ``page_count`` is not None new document version will
+        have ``page_count`` pages (useful when page was deleted or number of
+        new pages were merged into the document).
+        If ``page_count`` is None new version will have same number of pages as previous
+        document (useful when new document was OCRed or when pages were rotated)
         """
         last_doc_version = self.versions.last()
+        new_page_count = last_doc_version.page_count
+        if page_count:
+            new_page_count = page_count
+
         new_doc_version = DocumentVersion(
             document=self,
             number=last_doc_version.number + 1,
             file_name=last_doc_version.file_name,
             size=0,  # TODO: set to newly created file size
-            page_count=last_doc_version.page_count,
+            page_count=new_page_count,
             lang=last_doc_version.lang
         )
         new_doc_version.save()
 
-        for page_number in range(1, new_doc_version.page_count + 1):
+        for page_number in range(1, new_page_count + 1):
             Page.objects.create(
                 document_version=new_doc_version,
                 number=page_number,
-                page_count=new_doc_version.page_count,
+                page_count=new_page_count,
                 lang=last_doc_version.lang
             )
+
+        return new_doc_version
 
     def __repr__(self):
         return f"Document(id={self.pk}, title={self.title})"

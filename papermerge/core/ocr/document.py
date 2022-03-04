@@ -46,11 +46,11 @@ def _ocr_document(
     )
 
     input_document = default_storage.abspath(
-        input_doc_path.path()
+        input_doc_path.path
     )
 
     output_document = default_storage.abspath(
-        target_doc_path.path()
+        target_doc_path.path
     )
 
     output_dir = os.path.dirname(output_document)
@@ -100,7 +100,7 @@ def ocr_document(
     )
 
     mime_type = mime.Mime(
-        default_storage.abspath(doc_path.url())
+        default_storage.abspath(doc_path.url)
     )
 
     if mime_type.is_pdf() or mime_type.is_image():
@@ -112,7 +112,7 @@ def ocr_document(
         )
     elif mime_type.is_tiff():
         new_filename = convert_tiff2pdf(
-            doc_url=default_storage.abspath(doc_path.url())
+            doc_url=default_storage.abspath(doc_path.url)
         )
         # now .pdf
         orig_file_name = doc_path.file_name

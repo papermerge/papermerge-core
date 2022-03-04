@@ -62,12 +62,13 @@ class DocumentPath:
         self.version = version
         self.pages = "pages"
 
+    @property
     def url(self):
-
         return f"{self.dirname()}{self.file_name}"
 
+    @property
     def path(self):
-        return self.url()
+        return self.url
 
     @property
     def dirname_docs(self):
@@ -148,7 +149,7 @@ class DocumentPath:
 
 class PagePath:
     """
-    <aux_dir>/<doc_id>/pages/<page_num>/<step>/page-<xyz>.jpg
+    <aux_dir>/<doc_id>/pages/<page_num>/page-<xyz>.jpg
     """
 
     def __init__(
@@ -185,47 +186,50 @@ class PagePath:
 
     @property
     def path(self):
-        return self.url()
+        return self.url
 
+    @property
     def url(self):
-        return self.txt_url()
+        return self.txt_url
 
     @property
     def txt_path(self):
-        return self.txt_url()
+        return self.txt_url
 
+    @property
     def txt_url(self):
         pages_dirname = self.results_document_ep.pages_dirname()
         number = f"{self.page_num:06d}"
         return f"{pages_dirname}{number}/{number}_ocr_hocr.txt"
 
+    @property
     def svg_path(self):
-        return self.svg_url()
+        return self.svg_url
 
+    @property
     def svg_url(self):
         dirname = self.results_document_ep.pages_dirname()
         number = f"{self.page_num:06d}"
         url = f"{dirname}/{number}/{number}_ocr.svg"
         return url
 
-    def img_path(self):
-        return self.img_url()
+    @property
+    def jpg_path(self):
+        return self.jpg_url
 
-    def img_url(self):
+    @property
+    def jpg_url(self):
         pages_dirname = self.results_document_ep.pages_dirname()
-        url = f"{pages_dirname}{self.ppmtopdf_formated_number}.jpg"
+        url = f"{pages_dirname}{self.page_num:06}_ocr.jpg"
         return url
 
     @property
-    def ppmtopdf_formated_number(self):
+    def hocr_path(self):
+        return self.hocr_url
 
-        if self.page_count <= 9:
-            fmt_num = "{num:d}"
-        elif self.page_count > 9 and self.page_count < 100:
-            fmt_num = "{num:02d}"
-        elif self.page_count >= 100:
-            fmt_num = "{num:003d}"
+    @property
+    def hocr_url(self):
+        pages_dirname = self.results_document_ep.pages_dirname()
+        url = f"{pages_dirname}{self.page_num:06}_ocr_hocr.hocr"
+        return url
 
-        return fmt_num.format(
-            num=int(self.page_num)
-        )

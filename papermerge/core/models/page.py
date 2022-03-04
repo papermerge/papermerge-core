@@ -71,6 +71,9 @@ class Page(models.Model):
         # test_page.TestPage.test_pages_all_returns_pages_ordered
         ordering = ['number']
 
+    def __str__(self):
+        return f"id={self.pk} number={self.number}"
+
     @property
     def kv(self):
         return KVPage(instance=self)
@@ -176,10 +179,11 @@ class Page(models.Model):
     def is_first(self):
         return self.number == 1
 
-    def file_path(self):
+    @property
+    def page_path(self):
 
         return PagePath(
-            document_path=self.document_version.file_path(),
+            document_path=self.document_version.document_path,
             page_num=self.number,
             page_count=self.page_count
         )
@@ -208,20 +212,19 @@ class Page(models.Model):
 
     @property
     def txt_url(self):
-
         result = PagePath(
-            document_path=self.document_version.file_path(),
+            document_path=self.document_version.document_path,
             page_num=self.number,
             page_count=self.page_count
         )
 
-        return result.txt_url()
+        return result.txt_url
 
     @property
     def txt_exists(self):
 
         result = PagePath(
-            document_path=self.document.path(),
+            document_path=self.document.document_path,
             page_num=self.number,
             page_count=self.page_count
         )
@@ -321,7 +324,7 @@ class Page(models.Model):
 
     def get_svg(self):
         svg_abs_path = default_storage.abspath(
-            self.file_path().svg_path()
+            self.page_path.svg_url
         )
 
         if not os.path.exists(svg_abs_path):

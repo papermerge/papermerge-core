@@ -91,11 +91,11 @@ class Storage:
     def abspath(self, _path):
         if isinstance(_path, DocumentPath):
             return os.path.join(
-                self.location, _path.url()
+                self.location, _path.url
             )
         elif isinstance(_path, PagePath):
             return os.path.join(
-                self.location, _path.url()
+                self.location, _path.url
             )
 
         return os.path.join(
@@ -163,85 +163,78 @@ class Storage:
             self.path(_path)
         )
 
-    def copy_page_txt(self, src_page_path, dst_page_path):
+    def copy_page_txt(self, src: PagePath, dst: PagePath):
+        logger.debug(f"copy_page_txt src={src.txt_url} dst={dst.txt_url}")
+        src_txt = self.abspath(src.txt_url)
+        dst_txt = self.abspath(dst.txt_url)
 
         self.make_sure_path_exists(
-            self.abspath(dst_page_path.txt_url())
+            self.abspath(dst.txt_url)
         )
 
-        src_txt = self.abspath(src_page_path.txt_url())
-        dst_txt = self.abspath(dst_page_path.txt_url())
-
-        logger.debug(f"copy src_txt={src_txt} dst_txt={dst_txt}")
         shutil.copy(src_txt, dst_txt)
 
-    def copy_page_img(self, src_page_path, dst_page_path):
+    def copy_page_jpg(self, src: PagePath, dst: PagePath):
+        logger.debug(f"copy_page_jpg src={src.jpg_url} dst={dst.jpg_url}")
+        src_jpg = self.abspath(src.jpg_url)
+        dst_jpg = self.abspath(dst.jpg_url)
 
         self.make_sure_path_exists(
-            self.abspath(dst_page_path.img_url())
+            self.abspath(dst.jpg_url)
         )
+        shutil.copy(src_jpg, dst_jpg)
 
-        src_img = self.abspath(src_page_path.img_url())
-        dst_img = self.abspath(dst_page_path.img_url())
-        logger.debug(f"copy src_img={src_img} dst_img={dst_img}")
-        shutil.copy(src_img, dst_img)
-
-    def copy_page_hocr(self, src_page_path, dst_page_path):
+    def copy_page_hocr(self, src: PagePath, dst: PagePath):
+        logger.debug(f"copy_page_hocr: src={src.hocr_url} dst={dst.hocr_url}")
+        src_hocr = self.abspath(src.hocr_url)
+        dst_hocr = self.abspath(dst.hocr_url)
 
         self.make_sure_path_exists(
-            self.abspath(dst_page_path.hocr_url())
+            self.abspath(dst.hocr_url)
         )
 
-        src_hocr = self.abspath(src_page_path.hocr_url())
-        dst_hocr = self.abspath(dst_page_path.hocr_url())
-        logger.debug(f"copy src_hocr={src_hocr} dst_hocr={dst_hocr}")
         shutil.copy(src_hocr, dst_hocr)
 
-    def copy_page(self, src_page_path, dst_page_path):
-        """
-        Copies page data from source to destination.
+    def copy_page_svg(self, src: PagePath, dst: PagePath):
+        logger.debug(f"copy_page_svg: src={src.svg_url} dst={dst.svg_url}")
+        src_svg = self.abspath(src.svg_url)
+        dst_svg = self.abspath(dst.svg_url)
 
-        Page data are files with following extentions:
-            * txt
-            * hocr
-            * jpeg
-        they are located in media root of respective application.
+        self.make_sure_path_exists(self.abspath(dst.svg_url))
+
+        shutil.copy(src_svg, dst_svg)
+
+    def copy_page(self, src: PagePath, dst: PagePath):
         """
-        for inst in [src_page_path, dst_page_path]:
+        Copies page data from source folder/path to page destination folder/path
+
+        Page data are files with 'txt', 'hocr', 'jpg', 'svg' extentions.
+        """
+        for inst in [src, dst]:
             if not isinstance(inst, PagePath):
                 raise ValueError("copy_page accepts only PagePath instances")
 
         # copy .txt file
-        if self.exists(src_page_path.txt_url()):
-            self.copy_page_txt(
-                src_page_path=src_page_path,
-                dst_page_path=dst_page_path
-            )
+        if self.exists(src.txt_url):
+            self.copy_page_txt(src=src, dst=dst)
         else:
-            logger.debug(
-                f"txt does not exits {src_page_path.txt_url()}"
-            )
+            logger.debug(f"txt does not exits {src.txt_url}")
 
         # hocr
-        if self.exists(src_page_path.hocr_url()):
-            self.copy_page_hocr(
-                src_page_path=src_page_path,
-                dst_page_path=dst_page_path
-            )
+        if self.exists(src.hocr_url):
+            self.copy_page_hocr(src=src, dst=dst)
         else:
-            logger.debug(
-                f"hocr does not exits {src_page_path.hocr_url()}"
-            )
+            logger.debug(f"hocr does not exits {src.hocr_url}")
 
-        if src_page_path.img_url():
-            self.copy_page_img(
-                src_page_path=src_page_path,
-                dst_page_path=dst_page_path
-            )
+        if self.exists(src.jpg_url):
+            self.copy_page_jpg(src=src, dst=dst)
         else:
-            logger.debug(
-                f"img does not exits {src_page_path.img_url()}"
-            )
+            logger.debug(f"jpg does not exits {src.jpg_url}")
+
+        if self.exists(src.svg_url):
+            self.copy_page_svg(src=src, dst=dst)
+        else:
+            logger.debug(f"svg does not exits {src.svg_url}")
 
     def reorder_pages(self, doc_path, new_order):
         """

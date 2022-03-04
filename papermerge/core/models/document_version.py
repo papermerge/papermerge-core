@@ -61,17 +61,19 @@ class DocumentVersion(models.Model):
         verbose_name = _('Document version')
         verbose_name_plural = _('Document versions')
 
+    def __str__(self):
+        return f"id={self.pk} number={self.number}"
+
     def abs_file_path(self):
         return default_storage.abspath(
-            self.file_path().url()
+            self.document_path.url
         )
 
-    def file_path(self):
-        doc = self.document
-
+    @property
+    def document_path(self):
         return DocumentPath(
-            user_id=doc.user.pk,
-            document_id=doc.pk,
+            user_id=self.document.user.pk,
+            document_id=self.document.pk,
             version=self.number,
             file_name=self.file_name,
         )

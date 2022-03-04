@@ -34,7 +34,7 @@ def delete_files(sender, instance: Document, **kwargs):
     for document_version in instance.versions.all():
         try:
             default_storage.delete_doc(
-                document_version.file_path()
+                document_version.document_path
             )
         except IOError as error:
             logger.error(

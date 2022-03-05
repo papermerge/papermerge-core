@@ -4,6 +4,8 @@ from pikepdf import Pdf
 
 from django.http import Http404
 
+from rest_framework.generics import RetrieveAPIView, DestroyAPIView
+
 from rest_framework.response import Response
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
@@ -24,7 +26,11 @@ from .mixins import RequireAuthMixin
 logger = logging.getLogger(__name__)
 
 
-class PagesViewSet(RequireAuthMixin, ModelViewSet):
+class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
+    """
+    GET /pages/<pk>/
+    DELETE /pages/<pk>/
+    """
     serializer_class = PageSerializer
     renderer_classes = [
         PlainTextRenderer,
@@ -35,8 +41,7 @@ class PagesViewSet(RequireAuthMixin, ModelViewSet):
 
     def get_queryset(self, *args, **kwargs):
         return Page.objects.filter(
-            document_version__document__user=self.request.user
-        )
+            document_version__document__user=self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """Returns page as json, txt, jpeg or svg image

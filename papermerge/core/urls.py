@@ -19,7 +19,6 @@ router.register(r"folders", views.FoldersViewSet, basename="folder")
 router.register(
     r"documents", views.DocumentDetailsViewSet, basename="document"
 )
-router.register(r"pages", views.PagesViewSet, basename="page")
 router.register(
     r'preferences',
     views.CustomUserPreferencesViewSet,
@@ -43,6 +42,7 @@ urlpatterns = [
     path('nodes/move/', views.NodesMoveView.as_view()),
     path('nodes/inboxcount/', views.InboxCountView.as_view()),
     path('nodes/download/', views.NodesDownloadView.as_view()),
+    path('pages/<pk>/', views.PageView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     url(r'auth/login/', views.LoginView.as_view(), name='knox_login'),

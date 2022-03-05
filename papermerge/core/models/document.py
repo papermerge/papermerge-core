@@ -579,8 +579,9 @@ class Document(BaseTreeNode):
         If ``page_count`` is not None new document version will
         have ``page_count`` pages (useful when page was deleted or number of
         new pages were merged into the document).
-        If ``page_count`` is None new version will have same number of pages as previous
-        document (useful when new document was OCRed or when pages were rotated)
+        If ``page_count`` is None new version will have same number of pages as
+        previous document (useful when new document was OCRed or
+        when pages were rotated)
         """
         last_doc_version = self.versions.last()
         new_page_count = last_doc_version.page_count

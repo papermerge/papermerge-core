@@ -232,4 +232,3 @@ class PagePath:
         pages_dirname = self.results_document_ep.pages_dirname()
         url = f"{pages_dirname}{self.page_num:06}_ocr_hocr.hocr"
         return url
-

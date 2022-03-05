@@ -7,7 +7,6 @@ from django.http import Http404
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 
 from rest_framework.response import Response
-from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
 
 from papermerge.core.models import Page

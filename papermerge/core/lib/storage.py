@@ -347,7 +347,7 @@ class Storage:
             )
             return
 
-        assigns = get_assigns_after_delete(
+        get_assigns_after_delete(
             total_pages=page_count,
             deleted_pages=page_numbers
         )
@@ -424,10 +424,10 @@ class Storage:
                 }
             )
 
-        dest_page_num = 1
-        dest_page_count = sum([
-            len(item['page_nums']) for item in data_list
-        ])
+        # dest_page_num = 1
+        # dest_page_count = sum([
+        #    len(item['page_nums']) for item in data_list
+        # ])
         # for item in data_list:
         #    src_path = item['doc_path']
         #    for page_num in item['page_nums']:

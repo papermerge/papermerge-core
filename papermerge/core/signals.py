@@ -14,7 +14,6 @@ from papermerge.core.models import (
     Document,
     Folder,
     User,
-    BaseTreeNode
 )
 from papermerge.core.storage import default_storage
 

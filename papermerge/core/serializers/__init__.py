@@ -23,6 +23,7 @@ __all__ = [
     'AutomateSerializer',
     'CustomUserPreferenceSerializer',
     'CreateTokenSerializer',
+    'ContentTypeSerializer',
     'DocumentSerializer',
     'DocumentDetailsSerializer',
     'DocumentVersionSerializer',

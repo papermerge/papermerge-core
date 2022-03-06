@@ -66,7 +66,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
             content_type = 'image/svg+xml'
             try:
                 data = instance.get_svg()
-            except IOError as exc:
+            except IOError:
                 # svg not available, try jpeg
                 try:
                     data = instance.get_jpeg()

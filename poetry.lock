@@ -233,6 +233,14 @@ python-versions = "*"
 pycparser = "*"
 
 [[package]]
+name = "cfgv"
+version = "3.3.1"
+description = "Validate configuration and produce human readable error messages."
+category = "dev"
+optional = false
+python-versions = ">=3.6.1"
+
+[[package]]
 name = "channels"
 version = "3.0.4"
 description = "Brings async, event-driven capabilities to Django. Django 2.2 and up only."
@@ -406,6 +414,14 @@ description = "Decorators for Humans"
 category = "dev"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "distlib"
+version = "0.3.4"
+description = "Distribution utilities"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "django"
@@ -655,6 +671,18 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "filelock"
+version = "3.6.0"
+description = "A platform independent file lock."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["furo (>=2021.8.17b43)", "sphinx (>=4.1)", "sphinx-autodoc-typehints (>=1.12)"]
+testing = ["covdefaults (>=1.2.0)", "coverage (>=4)", "pytest (>=4)", "pytest-cov", "pytest-timeout (>=1.4.2)"]
+
+[[package]]
 name = "hiredis"
 version = "2.0.0"
 description = "Python wrapper for hiredis"
@@ -683,6 +711,17 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.dependencies]
 idna = ">=2.5"
+
+[[package]]
+name = "identify"
+version = "2.4.11"
+description = "File identification library for Python"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+license = ["ukkonen"]
 
 [[package]]
 name = "idna"
@@ -907,6 +946,14 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "nodeenv"
+version = "1.6.0"
+description = "Node.js virtual environment builder"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "ocrmypdf"
 version = "12.7.2"
 description = "OCRmyPDF adds an OCR text layer to scanned PDF files, allowing them to be searched"
@@ -1068,6 +1115,22 @@ python-versions = ">=3.6"
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "pre-commit"
+version = "2.17.0"
+description = "A framework for managing and maintaining multi-language pre-commit hooks."
+category = "dev"
+optional = false
+python-versions = ">=3.6.1"
+
+[package.dependencies]
+cfgv = ">=2.0.0"
+identify = ">=1.0.0"
+nodeenv = ">=0.11.1"
+pyyaml = ">=5.1"
+toml = "*"
+virtualenv = ">=20.0.8"
 
 [[package]]
 name = "prompt-toolkit"
@@ -1403,7 +1466,7 @@ test = ["pytest"]
 
 [[package]]
 name = "twisted"
-version = "22.1.0"
+version = "22.2.0"
 description = "An asynchronous networking framework written in Python"
 category = "main"
 optional = false
@@ -1504,6 +1567,24 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "virtualenv"
+version = "20.13.2"
+description = "Virtual Python Environment builder"
+category = "dev"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+
+[package.dependencies]
+distlib = ">=0.3.1,<1"
+filelock = ">=3.2,<4"
+platformdirs = ">=2,<3"
+six = ">=1.9.0,<2"
+
+[package.extras]
+docs = ["proselint (>=0.10.2)", "sphinx (>=3)", "sphinx-argparse (>=0.2.5)", "sphinx-rtd-theme (>=0.4.3)", "towncrier (>=21.3)"]
+testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", "pytest (>=4)", "pytest-env (>=0.6.2)", "pytest-freezegun (>=0.4.1)", "pytest-mock (>=2)", "pytest-randomly (>=1)", "pytest-timeout (>=1)", "packaging (>=20.0)"]
+
+[[package]]
 name = "wcwidth"
 version = "0.2.5"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -1539,7 +1620,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6291f5fb9080eb185e30300c37ff89b61641df906ecf2aa1886903fb9b9f1650"
+content-hash = "944ca539fe4d67c59a205ea332e4942977461de33519ba6aefe615679bdb7c03"
 
 [metadata.files]
 aioredis = [
@@ -1674,6 +1755,10 @@ cffi = [
     {file = "cffi-1.15.0-cp39-cp39-win_amd64.whl", hash = "sha256:3773c4d81e6e818df2efbc7dd77325ca0dcb688116050fb2b3011218eda36139"},
     {file = "cffi-1.15.0.tar.gz", hash = "sha256:920f0d66a896c2d99f0adbb391f990a84091179542c205fa53ce5787aff87954"},
 ]
+cfgv = [
+    {file = "cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
+    {file = "cfgv-3.3.1.tar.gz", hash = "sha256:f5a830efb9ce7a445376bb66ec94c638a9787422f96264c98edc6bdeed8ab736"},
+]
 channels = [
     {file = "channels-3.0.4-py3-none-any.whl", hash = "sha256:0ff0422b4224d10efac76e451575517f155fe7c97d369b5973b116f22eeaf86c"},
     {file = "channels-3.0.4.tar.gz", hash = "sha256:fdd9a94987a23d8d7ebd97498ed8b8cc83163f37e53fc6c85098aba7a3bb8b75"},
@@ -1747,6 +1832,10 @@ daphne = [
 decorator = [
     {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
+]
+distlib = [
+    {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
+    {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},
 ]
 django = [
     {file = "Django-3.2.10-py3-none-any.whl", hash = "sha256:df6f5eb3c797b27c096d61494507b7634526d4ce8d7c8ca1e57a4fb19c0738a3"},
@@ -1828,6 +1917,10 @@ executing = [
     {file = "executing-0.8.2-py2.py3-none-any.whl", hash = "sha256:32fc6077b103bd19e6494a72682d66d5763cf20a106d5aa7c5ccbea4e47b0df7"},
     {file = "executing-0.8.2.tar.gz", hash = "sha256:c23bf42e9a7b9b212f185b1b2c3c91feb895963378887bb10e64a2e612ec0023"},
 ]
+filelock = [
+    {file = "filelock-3.6.0-py3-none-any.whl", hash = "sha256:f8314284bfffbdcfa0ff3d7992b023d4c628ced6feb957351d4c48d059f56bc0"},
+    {file = "filelock-3.6.0.tar.gz", hash = "sha256:9cd540a9352e432c7246a48fe4e8712b10acb1df2ad1f30e8c070b82ae1fed85"},
+]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
     {file = "hiredis-2.0.0-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:0adea425b764a08270820531ec2218d0508f8ae15a448568109ffcae050fee26"},
@@ -1878,6 +1971,10 @@ humanfriendly = [
 hyperlink = [
     {file = "hyperlink-21.0.0-py2.py3-none-any.whl", hash = "sha256:e6b14c37ecb73e89c77d78cdb4c2cc8f3fb59a885c5b3f819ff4ed80f25af1b4"},
     {file = "hyperlink-21.0.0.tar.gz", hash = "sha256:427af957daa58bc909471c6c40f74c5450fa123dd093fc53efd2e91d2705a56b"},
+]
+identify = [
+    {file = "identify-2.4.11-py2.py3-none-any.whl", hash = "sha256:fd906823ed1db23c7a48f9b176a1d71cb8abede1e21ebe614bac7bdd688d9213"},
+    {file = "identify-2.4.11.tar.gz", hash = "sha256:2986942d3974c8f2e5019a190523b0b0e2a07cb8e89bf236727fb4b26f27f8fd"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -2082,6 +2179,10 @@ mysqlclient = [
     {file = "mysqlclient-2.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:e6279263d5a9feca3e0edbc2b2a52c057375bf301d47da2089c075ff76331d14"},
     {file = "mysqlclient-2.1.0.tar.gz", hash = "sha256:973235686f1b720536d417bf0a0d39b4ab3d5086b2b6ad5e6752393428c02b12"},
 ]
+nodeenv = [
+    {file = "nodeenv-1.6.0-py2.py3-none-any.whl", hash = "sha256:621e6b7076565ddcacd2db0294c0381e01fd28945ab36bcf00f41c5daf63bef7"},
+    {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
+]
 ocrmypdf = [
     {file = "ocrmypdf-12.7.2-py36-none-any.whl", hash = "sha256:1ab7b3ff6eb04a5ff5fcb2373f60bab9c606bb10451317ab44f543775341cf42"},
     {file = "ocrmypdf-12.7.2.tar.gz", hash = "sha256:e8ccf43d28c8d328409ac0a2d1ad0c9f0c7af3074f55e5d150080e15d77858e2"},
@@ -2194,6 +2295,10 @@ platformdirs = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+]
+pre-commit = [
+    {file = "pre_commit-2.17.0-py2.py3-none-any.whl", hash = "sha256:725fa7459782d7bec5ead072810e47351de01709be838c2ce1726b9591dad616"},
+    {file = "pre_commit-2.17.0.tar.gz", hash = "sha256:c1a8040ff15ad3d648c70cc3e55b93e4d2d5b687320955505587fd79bbaed06a"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.24-py3-none-any.whl", hash = "sha256:e56f2ff799bacecd3e88165b1e2f5ebf9bcd59e80e06d395fa0cc4b8bd7bb506"},
@@ -2444,8 +2549,8 @@ traitlets = [
     {file = "traitlets-5.1.1.tar.gz", hash = "sha256:059f456c5a7c1c82b98c2e8c799f39c9b8128f6d0d46941ee118daace9eb70c7"},
 ]
 twisted = [
-    {file = "Twisted-22.1.0-py3-none-any.whl", hash = "sha256:ccd638110d9ccfdc003042aa3e1b6d6af272eaca45d36e083359560549e3e848"},
-    {file = "Twisted-22.1.0.tar.gz", hash = "sha256:b7971ec9805b0f80e1dcb1a3721d7bfad636d5f909de687430ce373979d67b61"},
+    {file = "Twisted-22.2.0-py3-none-any.whl", hash = "sha256:5c63c149eb6b8fe1e32a0215b1cef96fabdba04f705d8efb9174b1ccf5b49d49"},
+    {file = "Twisted-22.2.0.tar.gz", hash = "sha256:57f32b1f6838facb8c004c89467840367ad38e9e535f8252091345dba500b4f2"},
 ]
 twisted-iocpsupport = [
     {file = "twisted-iocpsupport-1.0.2.tar.gz", hash = "sha256:72068b206ee809c9c596b57b5287259ea41ddb4774d86725b19f35bf56aa32a9"},
@@ -2483,6 +2588,10 @@ uwsgi = [
 vine = [
     {file = "vine-5.0.0-py2.py3-none-any.whl", hash = "sha256:4c9dceab6f76ed92105027c49c823800dd33cacce13bdedc5b914e3514b7fb30"},
     {file = "vine-5.0.0.tar.gz", hash = "sha256:7d3b1624a953da82ef63462013bbd271d3eb75751489f9807598e8f340bd637e"},
+]
+virtualenv = [
+    {file = "virtualenv-20.13.2-py2.py3-none-any.whl", hash = "sha256:e7b34c9474e6476ee208c43a4d9ac1510b041c68347eabfe9a9ea0c86aa0a46b"},
+    {file = "virtualenv-20.13.2.tar.gz", hash = "sha256:01f5f80744d24a3743ce61858123488e91cb2dd1d3bdf92adaf1bba39ffdedf0"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

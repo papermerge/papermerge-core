@@ -14,7 +14,6 @@ from polymorphic_tree.managers import (
 )
 
 from papermerge.core.lib.path import DocumentPath, PagePath
-from papermerge.core.lib.pagecount import get_pagecount
 from mglib.utils import get_assigns_after_delete
 
 from papermerge.core.storage import default_storage
@@ -81,7 +80,6 @@ class DocumentManager(PolymorphicMPTTModelManager):
         of extra document parts (added by extra apps)
         """
         # extra document parts
-        kw_parts = kwargs.pop('parts', {})
 
         doc = Document(
             title=title,

@@ -1,0 +1,9 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+    - id: check-yaml
+    - id: flake8
+      args:
+        - "--max-line-length=80"
+        - "--exclude=papermerge/core/migrations/*, docker/*, tests/config/search_settings.py"

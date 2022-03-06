@@ -94,7 +94,6 @@ class InboxCountView(RequireAuthMixin, APIView):
 
     def get(self, request):
         inbox_folder = request.user.inbox_folder
-
         return Response({
             'count': inbox_folder.get_descendants().count()
         })

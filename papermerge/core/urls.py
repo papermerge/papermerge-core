@@ -40,7 +40,9 @@ urlpatterns = [
     ),
     path('users/me/', views.CurrentUserView.as_view()),
     path('nodes/move/', views.NodesMoveView.as_view()),
-    path('nodes/inboxcount/', views.InboxCountView.as_view()),
+    path(
+        'nodes/inboxcount/', views.InboxCountView.as_view(), name='inboxcount'
+    ),
     path('nodes/download/', views.NodesDownloadView.as_view()),
     path('pages/<pk>/', views.PageView.as_view()),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),

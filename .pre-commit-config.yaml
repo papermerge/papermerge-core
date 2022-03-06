@@ -7,3 +7,4 @@ repos:
       args:
         - "--max-line-length=80"
         - "--exclude=papermerge/core/migrations/*, docker/*, tests/config/search_settings.py"
+    - id: trailing-whitespace

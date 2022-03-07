@@ -65,7 +65,7 @@ class PageViewTestCase(TestCase):
         assert response.content.decode('utf-8') == 'Hello Page!'
 
     @patch('papermerge.core.views.pages.remove_pdf_pages')
-    @patch('papermerge.core.views.pages.reuse_ocr_data')
+    @patch('papermerge.core.views.pages.reuse_ocr_data_after_delete')
     def test_page_delete(
             self,
             reuse_ocr_data_mock,
@@ -98,7 +98,7 @@ class PageViewTestCase(TestCase):
         assert doc.versions.last().pages.count() == 4
 
     @patch('papermerge.core.views.pages.remove_pdf_pages')
-    @patch('papermerge.core.views.pages.reuse_ocr_data')
+    @patch('papermerge.core.views.pages.reuse_ocr_data_after_delete')
     def test_pages_delete(
             self,
             reuse_ocr_data_mock,
@@ -137,3 +137,39 @@ class PageViewTestCase(TestCase):
         assert doc.versions.count() == 2
         # last version has 3 pages
         assert doc.versions.last().pages.count() == 3
+
+    @patch('papermerge.core.views.pages.reorder_pdf_pages')
+    @patch('papermerge.core.views.pages.reuse_ocr_data_after_reorder')
+    def test_pages_reorder(
+            self,
+            reuse_ocr_data_mock,
+            reorder_pdf_pages_mock
+    ):
+        self.doc_version.document
+        self.doc_version.create_pages(page_count=3)
+        pages = self.doc_version.pages.all()
+        pages_data = [
+            {
+                'id': pages[0].id,
+                'old_number': pages[0].number,  # = 1
+                'new_number': 3
+            }, {
+                'id': pages[1].id,
+                'old_number': pages[1].number,  # = 2
+                'new_number': 2
+            }, {
+                'id': pages[2].id,
+                'old_number': pages[2].number,  # = 3
+                'new_number': 1
+            },
+        ]
+
+        response = self.client.post(
+            reverse('pages_reorder'),
+            data={
+                "pages": pages_data  # reoder pages
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204

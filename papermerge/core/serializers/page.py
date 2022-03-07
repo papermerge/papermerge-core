@@ -24,3 +24,13 @@ class PageDeleteSerializer(rest_serializers.Serializer):
     pages = rest_serializers.ListField(
         child=rest_serializers.CharField()
     )
+
+
+class PageReorderSerializer(rest_serializers.Serializer):
+    id = rest_serializers.CharField(max_length=32)
+    old_number = rest_serializers.IntegerField()
+    new_number = rest_serializers.IntegerField()
+
+
+class PagesReorderSerializer(rest_serializers.Serializer):
+    pages = PageReorderSerializer(many=True)

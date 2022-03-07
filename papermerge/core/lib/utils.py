@@ -98,3 +98,31 @@ def get_assigns_after_delete(total_pages, deleted_pages):
     page_numbers = range(1, len(pages) + 1)
 
     return list(zip(page_numbers, pages))
+
+
+def get_reordered_list(pages_data, page_count):
+    """
+    Returns a list of integers. Each number in the list
+    is correctly positioned (newly ordered) page.
+    Examples:
+    If in document with 4 pages first and second pages were
+    swapped, then returned list will be:
+        [2, 1, 3, 4]
+    If first page was swapped with last one (also 4 paegs document)
+    result list will look like:
+        [4, 2, 3, 1]
+    """
+    results = []
+    page_map = {number: number for number in range(1, page_count + 1)}
+
+    for item in pages_data:
+        k = int(item['old_number'])
+        v = int(item['new_number'])
+        page_map[k] = v
+
+    for number in range(1, page_count + 1):
+        results.append(
+            page_map[number]
+        )
+
+    return results

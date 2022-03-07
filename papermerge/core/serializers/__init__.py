@@ -11,7 +11,12 @@ from .tag import TagSerializer
 from .role import RoleSerializer
 from .password import PasswordSerializer
 from .permission import PermissionSerializer
-from .page import PageSerializer, PageDeleteSerializer
+from .page import (
+    PageSerializer,
+    PageDeleteSerializer,
+    PagesReorderSerializer,
+    PageReorderSerializer
+)
 from .content_type import ContentTypeSerializer
 from .preferences import CustomUserPreferenceSerializer
 from .token import (
@@ -40,5 +45,7 @@ __all__ = [
     'PermissionSerializer',
     'PageSerializer',
     'PageDeleteSerializer',
+    'PagesReorderSerializer',
+    'PageReorderSerializer',
     'TokenSerializer',
 ]

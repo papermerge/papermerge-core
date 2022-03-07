@@ -185,7 +185,6 @@ class Page(models.Model):
         return PagePath(
             document_path=self.document_version.document_path,
             page_num=self.number,
-            page_count=self.page_count
         )
 
     @property
@@ -214,8 +213,7 @@ class Page(models.Model):
     def txt_url(self):
         result = PagePath(
             document_path=self.document_version.document_path,
-            page_num=self.number,
-            page_count=self.page_count
+            page_num=self.number
         )
 
         return result.txt_url
@@ -225,8 +223,7 @@ class Page(models.Model):
 
         result = PagePath(
             document_path=self.document.document_path,
-            page_num=self.number,
-            page_count=self.page_count
+            page_num=self.number
         )
 
         return result.txt_exists()

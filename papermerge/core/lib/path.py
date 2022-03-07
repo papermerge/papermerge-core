@@ -155,8 +155,7 @@ class PagePath:
     def __init__(
         self,
         document_path,
-        page_num,
-        page_count,
+        page_num
     ):
         if not isinstance(page_num, int):
             msg_err = f"PagePath.page_num must be an int. Got {page_num}."
@@ -167,7 +166,6 @@ class PagePath:
             document_path,
             aux_dir=AUX_DIR_SIDECARS
         )
-        self.page_count = page_count
         self.page_num = page_num
         self.pages = self.document_path.pages
 

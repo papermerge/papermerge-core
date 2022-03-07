@@ -67,7 +67,6 @@ class TestPagePath(unittest.TestCase):
         page_path = PagePath(
             document_path=doc_path,
             page_num=1,
-            page_count=3
         )
         self.assertEqual(
             page_path.url,

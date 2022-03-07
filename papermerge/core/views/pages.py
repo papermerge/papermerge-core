@@ -69,11 +69,10 @@ def reuse_ocr_data_after_delete(
 def zip_page_angle_data(pages, pages_data):
     """
     Returns a list of dictionaries containing objects with three keys:
-        - id
         - number
         - angle
 
-    ``id`` and ``number`` are extracted from pages queryset.
+    ``number`` is extracted from pages queryset.
     ``angle`` is extracted from pages_data.
 
     :param pages: Pages queryset
@@ -83,7 +82,6 @@ def zip_page_angle_data(pages, pages_data):
     ret = []
     for page in pages:
         page_dict = {}
-        page_dict['id'] = page.id
         page_dict['number'] = page.number
         for page_data in pages_data:
             if page.id == page_data['id']:
@@ -177,6 +175,12 @@ def rotate_pdf_pages(
     new_version,
     pages_data
 ):
+    """
+    ``pages`` data is a list of dictionaries. Each dictionary is expected
+    to have following keys:
+        - number
+        - angle
+    """
     src = Pdf.open(default_storage.abspath(old_version.document_path.url))
 
     for page_data in pages_data:

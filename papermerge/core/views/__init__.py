@@ -22,7 +22,8 @@ from .folders import FoldersViewSet
 from .pages import (
     PageView,
     PagesView,
-    PagesReorderView
+    PagesReorderView,
+    PagesRotateView
 )
 from .tasks import OCRView
 from .preferences import CustomUserPreferencesViewSet
@@ -51,6 +52,7 @@ __all__ = [
     'PageView',
     'PagesView',
     'PagesReorderView',
+    'PagesRotateView',
     'OCRView',
     'LoginView',
     'TokensViewSet',

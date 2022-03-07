@@ -34,3 +34,15 @@ class PageReorderSerializer(rest_serializers.Serializer):
 
 class PagesReorderSerializer(rest_serializers.Serializer):
     pages = PageReorderSerializer(many=True)
+
+
+class PageRotateSerializer(rest_serializers.Serializer):
+    id = rest_serializers.CharField(max_length=32)
+    # page number i.e. page order within given document version
+    number = rest_serializers.IntegerField()
+    # rotation angle
+    angle = rest_serializers.IntegerField()
+
+
+class PagesRotateSerializer(rest_serializers.Serializer):
+    pages = PageRotateSerializer(many=True)

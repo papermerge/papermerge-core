@@ -15,7 +15,9 @@ from .page import (
     PageSerializer,
     PageDeleteSerializer,
     PagesReorderSerializer,
-    PageReorderSerializer
+    PageReorderSerializer,
+    PagesRotateSerializer,
+    PageRotateSerializer,
 )
 from .content_type import ContentTypeSerializer
 from .preferences import CustomUserPreferenceSerializer
@@ -47,5 +49,7 @@ __all__ = [
     'PageDeleteSerializer',
     'PagesReorderSerializer',
     'PageReorderSerializer',
+    'PagesRotateSerializer',
+    'PageRotateSerializer',
     'TokenSerializer',
 ]

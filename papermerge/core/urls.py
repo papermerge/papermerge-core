@@ -49,6 +49,11 @@ urlpatterns = [
         views.PagesReorderView.as_view(),
         name='pages_reorder'
     ),
+    path(
+        'pages/rotate/',
+        views.PagesRotateView.as_view(),
+        name='pages_rotate'
+    ),
     path('pages/', views.PagesView.as_view(), name='pages'),  # only DELETE
     path(
         'pages/<pk>/',

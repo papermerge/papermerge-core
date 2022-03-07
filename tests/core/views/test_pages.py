@@ -173,3 +173,29 @@ class PageViewTestCase(TestCase):
         )
 
         assert response.status_code == 204
+
+    @patch('papermerge.core.views.pages.rotate_pdf_pages')
+    def test_pages_rotate(
+            self,
+            rotate_pdf_pages_mock
+    ):
+        self.doc_version.document
+        self.doc_version.create_pages(page_count=3)
+        pages = self.doc_version.pages.all()
+        pages_data = [
+            {
+                'id': pages[0].id,
+                'number': pages[0].number,  # = 1
+                'angle': 90
+            }
+        ]
+
+        response = self.client.post(
+            reverse('pages_rotate'),
+            data={
+                "pages": pages_data  # rotate pages
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204

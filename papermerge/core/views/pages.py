@@ -26,6 +26,7 @@ from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
     PagesReorderSerializer,
+    PagesRotateSerializer
 )
 from papermerge.core.renderers import (
     PlainTextRenderer,
@@ -85,10 +86,10 @@ def remove_pdf_pages(old_version, new_version, pages_to_delete):
 
 
 def reuse_ocr_data_after_reorder(
-        old_version,
-        new_version,
-        pages_data,
-        page_count
+    old_version,
+    new_version,
+    pages_data,
+    page_count
 ):
     """
     :param old_version: is instance of DocumentVersion
@@ -141,6 +142,33 @@ def reorder_pdf_pages(
     )
     os.makedirs(dirname, exist_ok=True)
     dst.save(default_storage.abspath(new_version.document_path.url))
+
+
+def rotate_pdf_pages(
+    old_version,
+    new_version,
+    pages_data
+):
+    src = Pdf.open(default_storage.abspath(old_version.document_path.url))
+
+    for page_data in pages_data:
+        page = src.pages.p(page_data['number'])
+        page.rotate(page_data['angle'], relative=True)
+
+    dirname = os.path.dirname(
+        default_storage.abspath(new_version.document_path.url)
+    )
+    os.makedirs(dirname, exist_ok=True)
+    src.save(default_storage.abspath(new_version.document_path.url))
+
+
+def reuse_ocr_data_after_rotate(
+    old_version,
+    new_version,
+    pages_data,
+    pages_count
+):
+    pass
 
 
 class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
@@ -312,4 +340,39 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             new_version=new_version,
             pages_data=pages_data,
             page_count=page_count
+        )
+
+
+class PagesRotateView(RequireAuthMixin, GenericAPIView):
+    parser_classes = [JSONParser]
+    serializer_class = PagesRotateSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            # delete nodes with specified IDs
+            self.rotate_pages(pages_data=serializer.data['pages'])
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def rotate_pages(self, pages_data):
+        pages = Page.objects.filter(
+            pk__in=[item['id'] for item in pages_data]
+        )
+        old_version = pages.first().document_version
+
+        doc = old_version.document
+        new_version = doc.version_bump(
+            page_count=old_version.page_count
+        )
+
+        rotate_pdf_pages(
+            old_version=old_version,
+            new_version=new_version,
+            pages_data=pages_data
         )

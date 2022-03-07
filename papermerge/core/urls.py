@@ -44,7 +44,11 @@ urlpatterns = [
         'nodes/inboxcount/', views.InboxCountView.as_view(), name='inboxcount'
     ),
     path('nodes/download/', views.NodesDownloadView.as_view()),
-    path('pages/<pk>/', views.PageView.as_view()),
+    path(
+        'pages/<pk>/',
+        views.PageView.as_view(),
+        name='pages_page'
+    ),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     url(r'auth/login/', views.LoginView.as_view(), name='knox_login'),

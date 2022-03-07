@@ -185,7 +185,6 @@ class PageViewTestCase(TestCase):
         pages_data = [
             {
                 'id': pages[0].id,
-                'number': pages[0].number,  # = 1
                 'angle': 90
             }
         ]

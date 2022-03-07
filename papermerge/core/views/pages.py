@@ -66,6 +66,34 @@ def reuse_ocr_data_after_delete(
         default_storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
+def zip_page_angle_data(pages, pages_data):
+    """
+    Returns a list of dictionaries containing objects with three keys:
+        - id
+        - number
+        - angle
+
+    ``id`` and ``number`` are extracted from pages queryset.
+    ``angle`` is extracted from pages_data.
+
+    :param pages: Pages queryset
+    :param pages_data: list of dictionaries. Each dictionary contains
+    key 'id' and 'angle'.
+    """
+    ret = []
+    for page in pages:
+        page_dict = {}
+        page_dict['id'] = page.id
+        page_dict['number'] = page.number
+        for page_data in pages_data:
+            if page.id == page_data['id']:
+                page_dict['angle'] = page_data['angle']
+
+        ret.append(page_dict)
+
+    return ret
+
+
 def remove_pdf_pages(old_version, new_version, pages_to_delete):
     """
     :param old_version: is instance of DocumentVersion
@@ -374,5 +402,5 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
         rotate_pdf_pages(
             old_version=old_version,
             new_version=new_version,
-            pages_data=pages_data
+            pages_data=zip_page_angle_data(pages, pages_data)
         )

@@ -292,7 +292,7 @@ class Page(models.Model):
         raw_image = page.images[image_keys[0]]
         pdfimage = PdfImage(raw_image)
         abs_file_prefix = default_storage.abspath(
-            self.file_path().ppmroot
+            self.page_path.ppmroot
         )
         abs_dirname_prefix = os.path.dirname(abs_file_prefix)
         os.makedirs(
@@ -304,7 +304,7 @@ class Page(models.Model):
 
     def get_jpeg(self):
         jpeg_abs_path = default_storage.abspath(
-            self.file_path().img_path()
+            self.page_path.jpg_url
         )
         if not os.path.exists(jpeg_abs_path):
             self.generate_img()

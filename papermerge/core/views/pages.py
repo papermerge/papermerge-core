@@ -140,7 +140,7 @@ def reorder_pdf_pages(
         default_storage.abspath(new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    src.save(default_storage.abspath(new_version.document_path.url))
+    dst.save(default_storage.abspath(new_version.document_path.url))
 
 
 class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
@@ -298,15 +298,18 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             page_count=old_version.page_count
         )
 
+        page_count = old_version.pages.count()
+
         reorder_pdf_pages(
             old_version=old_version,
             new_version=new_version,
             pages_data=pages_data,
-            page_count=old_version.pages.count()
+            page_count=page_count
         )
 
         reuse_ocr_data_after_reorder(
             old_version=old_version,
             new_version=new_version,
-            pages_data=pages_data
+            pages_data=pages_data,
+            page_count=page_count
         )

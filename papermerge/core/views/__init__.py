@@ -19,7 +19,7 @@ from .documents import DocumentUploadView
 from .document_versions import DocumentVersionsDownloadView
 from .documents import DocumentDetailsViewSet
 from .folders import FoldersViewSet
-from .pages import PageView
+from .pages import PageView, PagesView
 from .tasks import OCRView
 from .preferences import CustomUserPreferencesViewSet
 from .login import LoginView
@@ -45,6 +45,7 @@ __all__ = [
     'UserChangePassword',
     'CurrentUserView',
     'PageView',
+    'PagesView',
     'OCRView',
     'LoginView',
     'TokensViewSet',

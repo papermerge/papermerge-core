@@ -49,6 +49,7 @@ urlpatterns = [
         views.PageView.as_view(),
         name='pages_page'
     ),
+    path('pages/', views.PagesView.as_view(), name='pages'),
     path('content-types/<int:pk>/', views.ContentTypeRetrieve.as_view()),
     path('permissions/', views.PermissionsList.as_view()),
     url(r'auth/login/', views.LoginView.as_view(), name='knox_login'),

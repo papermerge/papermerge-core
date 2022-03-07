@@ -110,6 +110,7 @@ REST_FRAMEWORK = {
     'SEARCH_PARAM': 'filter[search]',
     'TEST_REQUEST_RENDERER_CLASSES': (
         'rest_framework_json_api.renderers.JSONRenderer',
+        'rest_framework.renderers.JSONRenderer'
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json'
 }

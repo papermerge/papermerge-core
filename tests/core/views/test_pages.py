@@ -1,5 +1,6 @@
 import io
 import json
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -62,3 +63,77 @@ class PageViewTestCase(TestCase):
 
         assert response.status_code == 200
         assert response.content.decode('utf-8') == 'Hello Page!'
+
+    @patch('papermerge.core.views.pages.remove_pdf_pages')
+    @patch('papermerge.core.views.pages.reuse_ocr_data')
+    def test_page_delete(
+            self,
+            reuse_ocr_data_mock,
+            remove_pdf_pages_mock
+    ):  # noqa
+        """
+        DELETE /pages/{id}/
+        """
+        doc = self.doc_version.document
+        self.doc_version.create_pages(page_count=5)
+        pages = self.doc_version.pages.all()
+        fourth_page = pages.all()[3]
+
+        for page in pages:
+            page.update_text_field(io.StringIO(f'Hello Page {page.number}!'))
+
+        # at this point document has only one version
+        assert doc.versions.count() == 1
+        # last version has 5 pages
+        assert doc.versions.last().pages.count() == 5
+
+        response = self.client.delete(
+            reverse('pages_page', args=(fourth_page.pk,)),
+        )
+        assert response.status_code == 204
+
+        # at this point document has two verions
+        assert doc.versions.count() == 2
+        # last version has 4 pages
+        assert doc.versions.last().pages.count() == 4
+
+    @patch('papermerge.core.views.pages.remove_pdf_pages')
+    @patch('papermerge.core.views.pages.reuse_ocr_data')
+    def test_pages_delete(
+            self,
+            reuse_ocr_data_mock,
+            remove_pdf_pages_mock
+    ):  # noqa
+        """
+        DELETE /pages/
+        Content-Type: application/json
+        {
+            "pages": [1, 2, 3]
+        }
+        """
+        doc = self.doc_version.document
+        self.doc_version.create_pages(page_count=5)
+        pages = self.doc_version.pages.all()
+        page_ids = [page.pk for page in pages]
+
+        for page in pages:
+            page.update_text_field(io.StringIO(f'Hello Page {page.number}!'))
+
+        # at this point document has only one version
+        assert doc.versions.count() == 1
+        # last version has 5 pages
+        assert doc.versions.last().pages.count() == 5
+
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": page_ids[-2:]  # delete last two pages
+            },
+            format='json'
+        )
+        assert response.status_code == 204
+
+        # at this point document has two versions
+        assert doc.versions.count() == 2
+        # last version has 3 pages
+        assert doc.versions.last().pages.count() == 3

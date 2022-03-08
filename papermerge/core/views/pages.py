@@ -472,7 +472,7 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             new_version=new_version,
             deleted_page_numbers=[item.number for item in pages]
         )
-        dst_document = Document.object.get(
+        dst_document = Document.objects.get(
             pk=data['dst'],
             user=self.request.user
         )

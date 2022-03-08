@@ -63,7 +63,7 @@ urlpatterns = [
     path(
         'pages/move-to-document/',
         views.PagesMoveToDocumentView.as_view(),
-        name='pages_move_to_folder'
+        name='pages_move_to_document'
     ),
     path('pages/', views.PagesView.as_view(), name='pages'),  # only DELETE
     path(

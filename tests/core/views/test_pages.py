@@ -222,3 +222,53 @@ class PageViewTestCase(TestCase):
         )
 
         assert response.status_code == 204
+
+    def test_move_to_document_1(self):
+        """
+        Move two pages from source document to destination document.
+        Moved pages will be inserted at very beggining
+        of destination document (position=0).
+
+        Initially both source and destination document have
+        one document_version with three pages each.
+        If page move (two pages from source moved to destination)
+        is completed successfully, destination document's latest version will
+        have five pages and source document's latest version will have one
+        page.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        source = Document.objects.create_document(
+            title="source.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        source.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        destination = Document.objects.create_document(
+            title="destination.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        destination.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        source_pages = source.versions.last().pages.all()
+        pages_data = {
+            'pages': [source_pages[0].id, source_pages[1].id],
+            'dst': destination.id,
+            'position': 0
+        }
+        response = self.client.post(
+            reverse('pages_move_to_document'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204

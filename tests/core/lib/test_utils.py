@@ -2,8 +2,15 @@ import unittest
 
 from papermerge.core.lib.utils import (
     get_reordered_list,
-    get_assigns_after_delete
+    get_assigns_after_delete,
+    annotate_page_data
 )
+
+
+class FakePage:
+    def __init__(self, id, number):
+        self.id = id
+        self.number = number
 
 
 class TestCoreLibUtils(unittest.TestCase):
@@ -72,3 +79,36 @@ class TestCoreLibUtils(unittest.TestCase):
             total_pages=5, deleted_pages=[1, 5]
         )
         assert result == [(1, 2), (2, 3), (3, 4)]
+
+    def test_annotate_page_data_1(self):
+        pages = [
+            FakePage(id=1, number=1),
+            FakePage(id=2, number=2),
+            FakePage(id=3, number=3),
+        ]
+        pages_data = [
+            {'id': '1', 'angle': 180},
+            {'id': '2', 'angle': 270},
+            {'id': '3', 'angle': 90}
+        ]
+        result = annotate_page_data(
+            pages=pages,
+            pages_data=pages_data,
+            field='angle'
+        )
+        assert result == [
+            {'number': 1, 'angle': 180},
+            {'number': 2, 'angle': 270},
+            {'number': 3, 'angle': 90},
+        ]
+
+    def test_annotate_page_data_2(self):
+        pages = [
+            FakePage(id=1, number=1),
+        ]
+        pages_data = [
+            {'id': '1', 'angle': 180},
+        ]
+        result = annotate_page_data(pages=pages, pages_data=pages_data)
+
+        assert result == [{'number': 1, 'angle': 180}]

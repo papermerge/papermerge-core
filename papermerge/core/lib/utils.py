@@ -126,3 +126,29 @@ def get_reordered_list(pages_data, page_count):
         )
 
     return results
+
+
+def annotate_page_data(pages, pages_data, field='angle'):
+    """
+    Returns a list of dictionaries containing objects with two keys:
+        - number
+        - ``field``
+
+    ``number`` is extracted from ``pages`` queryset.
+    ``filed`` is extracted from pages_data.
+
+    :param pages: Pages queryset
+    :param pages_data: list of dictionaries. Each dictionary contains
+    key 'id' and ``field``.
+    """
+    ret = []
+    for page in pages:
+        page_dict = {}
+        page_dict['number'] = page.number
+        for page_data in pages_data:
+            if str(page.id) == str(page_data['id']):
+                page_dict[field] = page_data[field]
+
+        ret.append(page_dict)
+
+    return ret

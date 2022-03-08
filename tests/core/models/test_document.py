@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 from papermerge.core.storage import abs
@@ -15,6 +16,9 @@ class TestDocumentModel(TestCase):
     def setUp(self):
         self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
         self.user = User.objects.create_user(username="user1")
+        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
+        shutil.rmtree(self.media / 'docs', ignore_errors=True)
+        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
 
     def test_basic_document_creation(self):
         """
@@ -101,8 +105,16 @@ class TestDocumentModel(TestCase):
             doc.idified_title
         )
 
-    def test_document_upload(self):
-        doc = Document.objects.create(
+    def test_upload_payload_to_zero_sized_document(self):
+        """
+        Upon creation document model has associated zero sized document_version
+        i.e. document_version.size == 0.
+
+        Check that uploaded file is associated with already
+        existing document version and document version is NOT
+        incremented.
+        """
+        doc = Document.objects.create_document(
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
@@ -111,15 +123,19 @@ class TestDocumentModel(TestCase):
 
         payload = open(self.resources / 'three-pages.pdf', 'rb')
 
-        assert doc.versions.count() == 0
+        last_version = doc.versions.last()
+        assert doc.versions.count() == 1
+        assert last_version.size == 0
+
         doc.upload(
             payload=payload,
             file_path=self.resources / 'three-pages.pdf',
             file_name='three-pages.pdf'
         )
-        assert doc.versions.count() == 1
 
         last_version = doc.versions.last()
+        assert doc.versions.count() == 1
+        assert last_version.size > 0
 
         assert os.path.exists(
             abs(last_version.document_path)

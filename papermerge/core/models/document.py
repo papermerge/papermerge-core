@@ -545,6 +545,13 @@ class Document(BaseTreeNode):
             file_name,
             strategy=UploadStrategy.INCREMENT
     ):
+        """
+        Associates payload with specific document version.
+
+        If document has zero sized documend version, it will associte
+        payload with that (existing) version, otherwise it will create
+        new document version and associate it the payload.
+        """
         pdf = Pdf.open(payload)
 
         document_version = self.versions.filter(size=0).last()

@@ -1,12 +1,21 @@
+import shutil
+import os
 import io
 import json
-from unittest.mock import patch
+from pathlib import Path
 
+import pikepdf
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 from papermerge.core.models import User, Document
+from papermerge.core.storage import abs
+
+MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
+TEST_DIR_ABS_PATH = os.path.dirname(
+    os.path.dirname(MODELS_DIR_ABS_PATH)
+)
 
 
 class PageViewTestCase(TestCase):
@@ -22,6 +31,10 @@ class PageViewTestCase(TestCase):
         self.doc_version = self.doc.versions.last()
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
+        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
+        shutil.rmtree(self.media / 'docs', ignore_errors=True)
+        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
 
     def test_page_view_in_json_format(self):
         """
@@ -64,46 +77,47 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 200
         assert response.content.decode('utf-8') == 'Hello Page!'
 
-    @patch('papermerge.core.views.pages.remove_pdf_pages')
-    @patch('papermerge.core.views.pages.reuse_ocr_data_after_delete')
-    def test_page_delete(
-            self,
-            reuse_ocr_data_mock,
-            remove_pdf_pages_mock
-    ):  # noqa
+    def test_page_delete(self):
         """
         DELETE /pages/{id}/
         """
-        doc = self.doc_version.document
-        self.doc_version.create_pages(page_count=5)
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
         pages = self.doc_version.pages.all()
-        fourth_page = pages.all()[3]
+        third_page = pages.all()[2]
 
         for page in pages:
             page.update_text_field(io.StringIO(f'Hello Page {page.number}!'))
 
         # at this point document has only one version
         assert doc.versions.count() == 1
-        # last version has 5 pages
-        assert doc.versions.last().pages.count() == 5
+        # last version has 3 pages
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 3
+        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        assert len(pdf_file.pages) == 3
 
+        # delete last (i.e. 3rd) page
         response = self.client.delete(
-            reverse('pages_page', args=(fourth_page.pk,)),
+            reverse('pages_page', args=(third_page.pk,)),
         )
         assert response.status_code == 204
 
-        # at this point document has two verions
+        # at this point document has two versions
         assert doc.versions.count() == 2
-        # last version has 4 pages
-        assert doc.versions.last().pages.count() == 4
+        # last version has 2 pages
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 2
+        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        assert len(pdf_file.pages) == 2
+        pdf_file.close()
 
-    @patch('papermerge.core.views.pages.remove_pdf_pages')
-    @patch('papermerge.core.views.pages.reuse_ocr_data_after_delete')
-    def test_pages_delete(
-            self,
-            reuse_ocr_data_mock,
-            remove_pdf_pages_mock
-    ):  # noqa
+    def test_pages_delete(self):
         """
         DELETE /pages/
         Content-Type: application/json
@@ -111,8 +125,13 @@ class PageViewTestCase(TestCase):
             "pages": [1, 2, 3]
         }
         """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
         doc = self.doc_version.document
-        self.doc_version.create_pages(page_count=5)
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
         pages = self.doc_version.pages.all()
         page_ids = [page.pk for page in pages]
 
@@ -121,8 +140,9 @@ class PageViewTestCase(TestCase):
 
         # at this point document has only one version
         assert doc.versions.count() == 1
-        # last version has 5 pages
-        assert doc.versions.last().pages.count() == 5
+        # last version has 3 pages
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 3
 
         response = self.client.delete(
             reverse('pages'),
@@ -135,18 +155,21 @@ class PageViewTestCase(TestCase):
 
         # at this point document has two versions
         assert doc.versions.count() == 2
-        # last version has 3 pages
-        assert doc.versions.last().pages.count() == 3
+        # last version has only one page left
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 1
+        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        assert len(pdf_file.pages) == 1
+        pdf_file.close()
 
-    @patch('papermerge.core.views.pages.reorder_pdf_pages')
-    @patch('papermerge.core.views.pages.reuse_ocr_data_after_reorder')
-    def test_pages_reorder(
-            self,
-            reuse_ocr_data_mock,
-            reorder_pdf_pages_mock
-    ):
-        self.doc_version.document
-        self.doc_version.create_pages(page_count=3)
+    def test_pages_reorder(self):
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
         pages = self.doc_version.pages.all()
         pages_data = [
             {
@@ -167,20 +190,21 @@ class PageViewTestCase(TestCase):
         response = self.client.post(
             reverse('pages_reorder'),
             data={
-                "pages": pages_data  # reoder pages
+                "pages": pages_data  # reorder pages
             },
             format='json'
         )
 
         assert response.status_code == 204
 
-    @patch('papermerge.core.views.pages.rotate_pdf_pages')
-    def test_pages_rotate(
-            self,
-            rotate_pdf_pages_mock
-    ):
-        self.doc_version.document
-        self.doc_version.create_pages(page_count=3)
+    def test_pages_rotate(self):
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
         pages = self.doc_version.pages.all()
         pages_data = [
             {

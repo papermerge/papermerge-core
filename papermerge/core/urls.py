@@ -28,7 +28,8 @@ router.register(
 urlpatterns = [
     re_path(
         r'documents/(?P<document_id>\d+)?/upload/(?P<file_name>[^/]+)',
-        views.DocumentUploadView.as_view()
+        views.DocumentUploadView.as_view(),
+        name='documents_upload'
     ),
     path(
         'document-versions/<int:pk>/download/',

@@ -111,7 +111,12 @@ REST_FRAMEWORK = {
     'SEARCH_PARAM': 'filter[search]',
     'TEST_REQUEST_RENDERER_CLASSES': (
         'rest_framework_json_api.renderers.JSONRenderer',
-        'rest_framework.renderers.JSONRenderer'
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.MultiPartRenderer'
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json'
 }
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler'
+]

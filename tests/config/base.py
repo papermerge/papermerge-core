@@ -13,10 +13,11 @@ config = Configula(
     config_env_var_name="PAPERMERGE_CONFIG"
 )
 
-
 SECRET_KEY = 'fake-key'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)

@@ -29,7 +29,11 @@ class DocumentUploadView(RequireAuthMixin, APIView):
         namespace = getattr(default_storage, 'namespace', None)
 
         doc = Document.objects.get(pk=document_id)
-        doc.upload(payload=payload, file_name=file_name)
+        doc.upload(
+            payload=payload,
+            file_path=payload.temporary_file_path(),
+            file_name=file_name
+        )
 
         if user_settings['ocr__trigger'] == 'auto':
             ocr_document_task.apply_async(

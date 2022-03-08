@@ -1,10 +1,19 @@
+import os
+from pathlib import Path
+
+from papermerge.core.storage import abs
 from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
 
+MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
+TEST_DIR_ABS_PATH = os.path.dirname(
+    os.path.dirname(MODELS_DIR_ABS_PATH)
+)
+
 
 class TestDocumentModel(TestCase):
-
     def setUp(self):
+        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
         self.user = User.objects.create_user(username="user1")
 
     def test_basic_document_creation(self):
@@ -91,3 +100,29 @@ class TestDocumentModel(TestCase):
             f'in.voi.ce-{doc.id}.pdf',
             doc.idified_title
         )
+
+    def test_document_upload(self):
+        doc = Document.objects.create(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+
+        assert doc.versions.count() == 0
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        assert doc.versions.count() == 1
+
+        last_version = doc.versions.last()
+
+        assert os.path.exists(
+            abs(last_version.document_path)
+        )
+
+        payload.close()

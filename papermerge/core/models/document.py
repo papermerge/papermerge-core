@@ -6,7 +6,6 @@ from pikepdf import Pdf
 from django.db import models
 from django.db import transaction, IntegrityError
 from django.utils.translation import gettext_lazy as _
-from django.core.files.uploadedfile import TemporaryUploadedFile
 
 from polymorphic_tree.managers import (
     PolymorphicMPTTModelManager,
@@ -541,8 +540,9 @@ class Document(BaseTreeNode):
 
     def upload(
             self,
-            payload: TemporaryUploadedFile,
-            file_name: str,
+            payload,
+            file_path,
+            file_name,
             strategy=UploadStrategy.INCREMENT
     ):
         pdf = Pdf.open(payload)
@@ -557,16 +557,17 @@ class Document(BaseTreeNode):
             )
 
         document_version.file_name = file_name
-        document_version.size = getsize(payload.temporary_file_path())
+        document_version.size = getsize(file_path)
         document_version.page_count = len(pdf.pages)
 
         default_storage.copy_doc(
-            src=payload.temporary_file_path(),
+            src=file_path,
             dst=document_version.document_path
         )
 
         document_version.save()
         document_version.create_pages()
+        pdf.close()
 
     def version_bump(self, page_count=None):
         """

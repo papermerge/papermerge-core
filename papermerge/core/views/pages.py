@@ -116,14 +116,17 @@ def remove_pdf_pages(old_version, new_version, pages_to_delete):
     :param pages_to_delete: queryset of pages to delete
     """
     # delete page from document's new version associated file
-    pdf = Pdf.open(default_storage.abspath(old_version.document_path.url))
+    pdf = Pdf.open(
+        default_storage.abspath(old_version.document_path.url)
+    )
     _deleted_count = 0
     for page in pages_to_delete:
         pdf.pages.remove(p=page.number - _deleted_count)
         _deleted_count += 1
 
     dirname = os.path.dirname(
-        default_storage.abspath(new_version.document_path.url))
+        default_storage.abspath(new_version.document_path.url)
+    )
     os.makedirs(dirname, exist_ok=True)
     pdf.save(default_storage.abspath(new_version.document_path.url))
 
@@ -456,9 +459,7 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         old_version = pages.first().document_version
 
         doc = old_version.document
-        new_version = doc.version_bump(
-            page_count=old_version.page_count
-        )
+        new_version = doc.version_bump()
 
         remove_pdf_pages(
             old_version=old_version,

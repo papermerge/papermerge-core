@@ -2,6 +2,7 @@ import functools
 import os
 import subprocess
 from datetime import datetime
+from papermerge.core.storage import default_storage
 
 default_app_config = 'papermerge.core.apps.CoreConfig'
 
@@ -81,6 +82,10 @@ def get_git_changeset():
     except ValueError:
         return None
     return timestamp.strftime('%Y%m%d%H%M%S')
+
+
+def abs(path):
+    return default_storage.abspath(path)
 
 
 __version__ = get_version(VERSION)

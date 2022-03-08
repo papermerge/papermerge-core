@@ -22,3 +22,7 @@ default_storage = storage_class(
     location=django_settings.MEDIA_ROOT,
     **storage_kwargs
 )
+
+
+def abs(some_relative_path):
+    return default_storage.abspath(some_relative_path)

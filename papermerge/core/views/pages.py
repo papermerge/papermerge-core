@@ -22,7 +22,7 @@ from papermerge.core.lib.utils import (
     annotate_page_data
 )
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import default_storage, abs
 from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
@@ -83,30 +83,32 @@ def reuse_ocr_data_after_delete(
 
 
 def insert_pdf_pages(
-        src_version,
-        dst_version,
-        new_dst_version,
+        src_old_version,
+        dst_old_version,
+        dst_new_version,
         page_numbers,
         position
 ):
-    src_pdf = Pdf.open(
-        default_storage.abspath(src_version.document_path.url)
+    src_old_pdf = Pdf.open(
+        abs(src_old_version.document_path.url)
     )
-    dst_pdf = Pdf.open(
-        default_storage.abspath(dst_version.document_path.url)
+    dst_old_pdf = Pdf.open(
+        abs(dst_old_version.document_path.url)
     )
 
     _inserted_count = 0
     for page_number in page_numbers:
-        pdf_page = src_pdf.pages.p(page_number)
-        dst_pdf.pages.insert(position + _inserted_count, pdf_page)
+        pdf_page = src_old_pdf.pages.p(page_number)
+        dst_old_pdf.pages.insert(position + _inserted_count, pdf_page)
         _inserted_count += 1
 
     dirname = os.path.dirname(
-        default_storage.abspath(new_dst_version.document_path.url)
+        abs(dst_new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    dst_pdf.save(default_storage.abspath(new_dst_version.document_path.url))
+    dst_old_pdf.save(
+        abs(dst_new_version.document_path.url)
+    )
 
 
 def remove_pdf_pages(old_version, new_version, pages_to_delete):
@@ -456,44 +458,44 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         pages = Page.objects.filter(
             pk__in=data['pages']
         )
-        old_version = pages.first().document_version
-
-        doc = old_version.document
-        new_version = doc.version_bump()
-
-        remove_pdf_pages(
-            old_version=old_version,
-            new_version=new_version,
-            pages_to_delete=pages
-        )
-
-        reuse_ocr_data_after_delete(
-            old_version=old_version,
-            new_version=new_version,
-            deleted_page_numbers=[item.number for item in pages]
-        )
         dst_document = Document.objects.get(
             pk=data['dst'],
             user=self.request.user
         )
+        src_old_version = pages.first().document_version
+        dst_old_version = dst_document.versions.last()
 
-        old_dst_version = dst_document.versions.last()
+        doc = src_old_version.document
+        src_new_version = doc.version_bump(
+            page_count=src_old_version.pages.count() - pages.count()
+        )
+        dst_new_version = dst_document.version_bump(
+            page_count=dst_old_version.pages.count() + pages.count()
+        )
 
-        new_dst_version = dst_document.version_bump(
-            page_count=pages.count()
+        remove_pdf_pages(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            pages_to_delete=pages
+        )
+
+        reuse_ocr_data_after_delete(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            deleted_page_numbers=[item.number for item in pages]
         )
 
         insert_pdf_pages(
-            src_version=old_version,
-            dst_version=old_dst_version,
-            new_dst_version=new_dst_version,
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
             page_numbers=[p.number for p in pages.order_by('number')],
             position=data['position']
         )
 
         copy_pages_data(
-            old_version=old_version,
-            new_version=new_dst_version,
+            old_version=dst_old_version,
+            new_version=dst_new_version,
             pages_map=[
                 (p.number, p.number + data['position'])
                 for p in pages.order_by('number')

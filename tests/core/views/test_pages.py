@@ -226,8 +226,6 @@ class PageViewTestCase(TestCase):
     def test_move_to_document_1(self):
         """
         Move two pages from source document to destination document.
-        Moved pages will be inserted at very beggining
-        of destination document (position=0).
 
         Initially both source and destination document have
         one document_version with three pages each.
@@ -259,9 +257,12 @@ class PageViewTestCase(TestCase):
             file_path=self.resources / 'three-pages.pdf',
             file_name='three-pages.pdf'
         )
-        source_pages = source.versions.last().pages.all()
+        source_page_ids = [
+            page.id for page in source.versions.last().pages.all()[0:2]
+        ]
+
         pages_data = {
-            'pages': [source_pages[0].id, source_pages[1].id],
+            'pages': source_page_ids,
             'dst': destination.id,
             'position': 0
         }
@@ -272,3 +273,19 @@ class PageViewTestCase(TestCase):
         )
 
         assert response.status_code == 204
+
+        # source document has one extra version
+        assert source.versions.count() == 2
+        src_doc_version = source.versions.last()
+        assert src_doc_version.pages.count() == 1
+        pdf_file = pikepdf.Pdf.open(abs(src_doc_version.document_path))
+        # payload of source's last version has now one page
+        assert len(pdf_file.pages) == 1
+
+        # destination document has one extra version
+        assert destination.versions.count() == 2
+        dst_doc_version = destination.versions.last()
+        assert dst_doc_version.pages.count() == 5
+        # payload of destination's last version has now 5 pages
+        pdf_file = pikepdf.Pdf.open(abs(dst_doc_version.document_path))
+        assert len(pdf_file.pages) == 5

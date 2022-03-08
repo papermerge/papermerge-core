@@ -54,6 +54,16 @@ urlpatterns = [
         views.PagesRotateView.as_view(),
         name='pages_rotate'
     ),
+    path(
+        'pages/move-to-folder/',
+        views.PagesMoveToFolderView.as_view(),
+        name='pages_move_to_folder'
+    ),
+    path(
+        'pages/move-to-document/',
+        views.PagesMoveToDocumentView.as_view(),
+        name='pages_move_to_folder'
+    ),
     path('pages/', views.PagesView.as_view(), name='pages'),  # only DELETE
     path(
         'pages/<pk>/',

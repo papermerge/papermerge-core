@@ -44,3 +44,21 @@ class PageRotateSerializer(rest_serializers.Serializer):
 
 class PagesRotateSerializer(rest_serializers.Serializer):
     pages = PageRotateSerializer(many=True)
+
+
+class PageIdSerializer(rest_serializers.Serializer):
+    id = rest_serializers.CharField(max_length=32)
+
+
+class PagesMoveToFolderSerializer(rest_serializers.Serializer):
+    pages = PageIdSerializer(many=True)
+    # destination folder node
+    dst = rest_serializers.CharField(max_length=32)
+    single_page = rest_serializers.BooleanField(default=False)
+
+
+class PagesMoveToDocumentSerializer(rest_serializers.Serializer):
+    pages = PageIdSerializer(many=True)
+    # destination document node
+    dst = rest_serializers.CharField(max_length=32)
+    position = rest_serializers.IntegerField(default=-1)

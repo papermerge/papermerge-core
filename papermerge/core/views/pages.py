@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework_json_api.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
-from papermerge.core.models import Page
+from papermerge.core.models import Page, Document
 from papermerge.core.lib.utils import (
     get_assigns_after_delete,
     get_reordered_list,
@@ -27,7 +27,9 @@ from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
     PagesReorderSerializer,
-    PagesRotateSerializer
+    PagesRotateSerializer,
+    PagesMoveToDocumentSerializer,
+    PagesMoveToFolderSerializer
 )
 from papermerge.core.renderers import (
     PlainTextRenderer,
@@ -38,6 +40,19 @@ from .mixins import RequireAuthMixin
 
 
 logger = logging.getLogger(__name__)
+
+
+def copy_pages_data(old_version, new_version, pages_map):
+    for src_page_number, dst_page_number in pages_map:
+        src_page_path = PagePath(
+            document_path=old_version.document_path,
+            page_num=src_page_number
+        )
+        dst_page_path = PagePath(
+            document_path=new_version.document_path,
+            page_num=dst_page_number
+        )
+        default_storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
 def reuse_ocr_data_after_delete(
@@ -65,6 +80,33 @@ def reuse_ocr_data_after_delete(
             page_num=item[0]
         )
         default_storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+
+def insert_pdf_pages(
+        src_version,
+        dst_version,
+        new_dst_version,
+        page_numbers,
+        position
+):
+    src_pdf = Pdf.open(
+        default_storage.abspath(src_version.document_path.url)
+    )
+    dst_pdf = Pdf.open(
+        default_storage.abspath(dst_version.document_path.url)
+    )
+
+    _inserted_count = 0
+    for page_number in page_numbers:
+        pdf_page = src_pdf.pages.p(page_number)
+        dst_pdf.pages.insert(position + _inserted_count, pdf_page)
+        _inserted_count += 1
+
+    dirname = os.path.dirname(
+        default_storage.abspath(new_dst_version.document_path.url)
+    )
+    os.makedirs(dirname, exist_ok=True)
+    dst_pdf.save(default_storage.abspath(new_dst_version.document_path.url))
 
 
 def remove_pdf_pages(old_version, new_version, pages_to_delete):
@@ -382,4 +424,77 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
             old_version=old_version,
             new_version=new_version,
             pages_data=annotate_page_data(pages, pages_data, 'angle')
+        )
+
+
+class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
+    serializer_class = PagesMoveToFolderSerializer
+
+    def post(self, request):
+        pass
+
+
+class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
+    serializer_class = PagesMoveToDocumentSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            self.move_to_document(serializer.data)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def move_to_document(self, data):
+        pages = Page.objects.filter(
+            pk__in=data['pages']
+        )
+        old_version = pages.first().document_version
+
+        doc = old_version.document
+        new_version = doc.version_bump(
+            page_count=old_version.page_count
+        )
+
+        remove_pdf_pages(
+            old_version=old_version,
+            new_version=new_version,
+            pages_to_delete=pages
+        )
+
+        reuse_ocr_data_after_delete(
+            old_version=old_version,
+            new_version=new_version,
+            deleted_page_numbers=[item.number for item in pages]
+        )
+        dst_document = Document.object.get(
+            pk=data['dst'],
+            user=self.request.user
+        )
+
+        old_dst_version = dst_document.versions.last()
+
+        new_dst_version = dst_document.version_bump(
+            page_count=pages.count()
+        )
+
+        insert_pdf_pages(
+            src_version=old_version,
+            dst_version=old_dst_version,
+            new_dst_version=new_dst_version,
+            page_numbers=[p.number for p in pages.order_by('number')],
+            position=data['position']
+        )
+
+        copy_pages_data(
+            old_version=old_version,
+            new_version=new_dst_version,
+            pages_map=[
+                (p.number, p.number + data['position'])
+                for p in pages.order_by('number')
+            ]
         )

@@ -171,12 +171,9 @@ class PagePath:
 
     @property
     def ppmroot(self):
-        # returns schema://.../<doc_id>/pages/<page_num>/<step>/page
+        # returns schema://.../<doc_id>/pages/<page_num>/
         pages_dirname = self.results_document_ep.pages_dirname()
-        result = (
-            f"{pages_dirname}{self.ppmtopdf_formated_number}"
-        )
-        return result
+        return f"{pages_dirname}{self.page_num:06d}"
 
     @property
     def pages_dirname(self):
@@ -216,9 +213,18 @@ class PagePath:
         return self.jpg_url
 
     @property
-    def jpg_url(self):
+    def jpg_ocr_url(self):
+        # path to jpg image creating using OCRmyPDF
         pages_dirname = self.results_document_ep.pages_dirname()
         url = f"{pages_dirname}{self.page_num:06}_ocr.jpg"
+        return url
+
+    @property
+    def jpg_url(self):
+        # Path to jpg image creating using pikepdf's  extract_image API
+        # notice it does not include '_ocr' suffix
+        pages_dirname = self.results_document_ep.pages_dirname()
+        url = f"{pages_dirname}{self.page_num:06}.jpg"
         return url
 
     @property

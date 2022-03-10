@@ -5,7 +5,7 @@ from django.db import models
 from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import default_storage, abs
 
 from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
@@ -281,31 +281,33 @@ class Page(models.Model):
         return OCR_STATUS_UNKNOWN
 
     def generate_img(self):
-        doc_file_path = self.document_version.file_path()
+        doc_file_path = self.document_version.document_path
         # extract page number preview from the document file
         # if this is PDF - use pike pdf to extract that preview
-        pdffile = Pdf.open(
-            default_storage.abspath(doc_file_path.url())
-        )
+        pdffile = Pdf.open(abs(doc_file_path.url))
         page = pdffile.pages[self.number - 1]
         image_keys = list(page.images.keys())
         raw_image = page.images[image_keys[0]]
         pdfimage = PdfImage(raw_image)
-        abs_file_prefix = default_storage.abspath(
-            self.page_path.ppmroot
-        )
+        abs_file_prefix = abs(self.page_path.ppmroot)
         abs_dirname_prefix = os.path.dirname(abs_file_prefix)
         os.makedirs(
             abs_dirname_prefix,
             exist_ok=True
         )
-
+        pil_image = pdfimage.as_pil_image()
+        page_rotation = page['/Rotate']
+        if page_rotation > 0:
+            # The image is not rotated in place. You need to store the image
+            # returned from rotate()
+            new_pil_image = pil_image.rotate(page_rotation)
+            new_pil_image.save(f"{abs_file_prefix}.jpg")
+            return
+        # Will create jpg image without '_ocr' suffix
         return pdfimage.extract_to(fileprefix=abs_file_prefix)
 
     def get_jpeg(self):
-        jpeg_abs_path = default_storage.abspath(
-            self.page_path.jpg_url
-        )
+        jpeg_abs_path = abs(self.page_path.jpg_url)
         if not os.path.exists(jpeg_abs_path):
             self.generate_img()
 

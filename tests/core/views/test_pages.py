@@ -60,6 +60,46 @@ class PageViewTestCase(TestCase):
             'text': 'Hello Page!'
         }
 
+    def test_page_view_in_svg_format(self):
+        """
+        GET /pages/{id}/
+        Accept: image/svg+xml
+        """
+        self.doc_version.create_pages(page_count=1)
+        page = self.doc_version.pages.first()
+
+        page.update_text_field(io.StringIO('Hello Page!'))
+        response = self.client.get(
+            reverse('pages_page', args=(page.pk,)),
+            HTTP_ACCEPT='image/svg+xml'
+        )
+
+        # SVG image is not yet available, but
+        # at least status code is not 500
+        assert response.status_code == 404
+
+    def test_page_view_in_jpg_format(self):
+        """
+        GET /pages/{id}/
+        Accept: image/jpeg
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc_version.document
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        page = self.doc_version.pages.first()
+
+        page.update_text_field(io.StringIO('Hello Page!'))
+        response = self.client.get(
+            reverse('pages_page', args=(page.pk,)),
+            HTTP_ACCEPT='image/jpeg'
+        )
+
+        assert response.status_code == 200
+
     def test_page_view_in_text_format(self):
         """
         GET /pages/{id}/

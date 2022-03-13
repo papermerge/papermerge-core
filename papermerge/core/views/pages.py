@@ -177,12 +177,10 @@ def reorder_pdf_pages(
     src = Pdf.open(default_storage.abspath(old_version.document_path.url))
 
     dst = Pdf.new()
-    reodered_list = get_reordered_list(
-        pages_data=pages_data,
-        page_count=page_count
-    )
-    for page_number in reodered_list:
-        page = src.pages.p(page_number)
+    reodered_list = sorted(pages_data, key=lambda item: item['new_number'])
+
+    for list_item in reodered_list:
+        page = src.pages.p(list_item['old_number'])
         dst.pages.append(page)
 
     dirname = os.path.dirname(

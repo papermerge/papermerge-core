@@ -296,7 +296,9 @@ class Page(models.Model):
             exist_ok=True
         )
         pil_image = pdfimage.as_pil_image()
-        page_rotation = page['/Rotate']
+        page_rotation = 0
+        if '/Rotate' in page:
+            page_rotation = page['/Rotate']
         if page_rotation > 0:
             # The image is not rotated in place. You need to store the image
             # returned from rotate()

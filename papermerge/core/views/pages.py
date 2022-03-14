@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework_json_api.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
-from papermerge.core.models import Page, Document
+from papermerge.core.models import Page, Document, Folder
 from papermerge.core.lib.utils import (
     get_assigns_after_delete,
     get_reordered_list,
@@ -184,10 +184,10 @@ def reorder_pdf_pages(
         dst.pages.append(page)
 
     dirname = os.path.dirname(
-        default_storage.abspath(new_version.document_path.url)
+        abs(new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    dst.save(default_storage.abspath(new_version.document_path.url))
+    dst.save(abs(new_version.document_path.url))
 
 
 def rotate_pdf_pages(
@@ -434,7 +434,46 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
     serializer_class = PagesMoveToFolderSerializer
 
     def post(self, request):
-        pass
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            self.move_to_folder(serializer.data)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+    def move_to_folder(self, data):
+        pages = Page.objects.filter(pk__in=data['pages'])
+        dst_folder = Folder.objects.get(
+            pk=data['dst'],
+            user=self.request.user
+        )
+        first_page = pages.first()
+
+        if data['single_page']:
+            # insert all pages in one single document
+            doc = Document.objects.create_document(
+                title='noname.pdf',
+                lang=first_page.lang,
+                user_id=dst_folder.user_id,
+                parent=dst_folder
+            )
+            # create new document version which
+            # will contain mentioned pages
+            doc.version_bump_from_pages(pages=pages)
+        else:
+            # there will be one document for each page
+            for page in pages:
+                doc = Document.objects.create_document(
+                    title=f'noname-{page.pk}.pdf',
+                    lang=page.lang,
+                    user_id=dst_folder.user_id,
+                    parent=dst_folder
+                )
+                # create new document version
+                # with one page
+                doc.version_bump_from_page(page)
 
 
 class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):

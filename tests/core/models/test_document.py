@@ -142,3 +142,69 @@ class TestDocumentModel(TestCase):
         )
 
         payload.close()
+
+    def test_version_bump_from_page(self):
+        """
+        Move one page from source document to destination document
+        """
+        source_doc = Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        dst_doc = Document.objects.create_document(
+            title="one-page.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        source_doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+
+        dst_doc.version_bump_from_page(
+            page=source_doc.versions.last().pages.first()
+        )
+
+        assert dst_doc.versions.count() == 1
+        dst_doc_version = dst_doc.versions.last()
+        assert dst_doc_version.pages.count() == 1
+
+    def test_version_bump_from_pages(self):
+        """
+        Move two pages from source document to destination document
+        """
+        source_doc = Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        dst_doc = Document.objects.create_document(
+            title="one-page.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        source_doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+
+        dst_doc.version_bump_from_pages(
+            pages=source_doc.versions.last().pages.all()[1:3]
+        )
+
+        assert dst_doc.versions.count() == 1
+        dst_doc_version = dst_doc.versions.last()
+        assert dst_doc_version.pages.count() == 2

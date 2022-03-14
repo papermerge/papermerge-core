@@ -473,7 +473,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 )
                 # create new document version
                 # with one page
-                doc.version_bump_from_page(page)
+                doc.version_bump_from_pages(pages=[page])
 
 
 class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):

@@ -578,7 +578,12 @@ class Document(BaseTreeNode):
         pdf.close()
 
     def version_bump_from_pages(self, pages):
-        first_page = pages.first()
+        if isinstance(pages, list):
+            first_page = pages[0]
+            page_count = len(pages)
+        else:  # pages queryset
+            first_page = pages.first()
+            page_count = pages.count()
         source_pdf = Pdf.open(
             abs(first_page.document_version.document_path.url)
         )
@@ -598,7 +603,7 @@ class Document(BaseTreeNode):
             dst_pdf.pages.append(pdf_page)
 
         document_version.file_name = first_page.document_version.file_name
-        document_version.page_count = pages.count()
+        document_version.page_count = page_count
         document_version.save()
 
         dirname = os.path.dirname(
@@ -611,41 +616,6 @@ class Document(BaseTreeNode):
         document_version.size = getsize(abs(document_version.document_path.url))
         document_version.save()
 
-        document_version.create_pages()
-        source_pdf.close()
-        dst_pdf.close()
-
-    def version_bump_from_page(self, page):
-        source_pdf = Pdf.open(
-            abs(page.document_version.document_path.url)
-        )
-        dst_pdf = Pdf.new()
-
-        document_version = self.versions.filter(size=0).last()
-
-        if not document_version:
-            document_version = DocumentVersion(
-                document=self,
-                number=self.versions.count(),
-                lang=self.lang
-            )
-
-        document_version.file_name = page.document_version.file_name
-        document_version.page_count = 1
-        document_version.save()
-
-        pdf_page = source_pdf.pages.p(page.number)
-        dst_pdf.pages.append(pdf_page)
-        dirname = os.path.dirname(
-            abs(document_version.document_path.url)
-        )
-        os.makedirs(dirname, exist_ok=True)
-        dst_pdf.save(
-            abs(document_version.document_path.url)
-        )
-
-        document_version.size = getsize(abs(document_version.document_path.url))
-        document_version.save()
         document_version.create_pages()
         source_pdf.close()
         dst_pdf.close()

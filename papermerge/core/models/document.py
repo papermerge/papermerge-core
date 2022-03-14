@@ -13,7 +13,7 @@ from polymorphic_tree.managers import (
 )
 
 from papermerge.core.lib.path import DocumentPath, PagePath
-from papermerge.core.storage import abs
+from papermerge.core.storage import abs_path
 from mglib.utils import get_assigns_after_delete
 
 from papermerge.core.storage import default_storage
@@ -594,7 +594,7 @@ class Document(BaseTreeNode):
             first_page = pages.first()
             page_count = pages.count()
         source_pdf = Pdf.open(
-            abs(first_page.document_version.document_path.url)
+            abs_path(first_page.document_version.document_path.url)
         )
         dst_pdf = Pdf.new()
 
@@ -616,13 +616,15 @@ class Document(BaseTreeNode):
         document_version.save()
 
         dirname = os.path.dirname(
-            abs(document_version.document_path.url)
+            abs_path(document_version.document_path.url)
         )
         os.makedirs(dirname, exist_ok=True)
 
-        dst_pdf.save(abs(document_version.document_path.url))
+        dst_pdf.save(abs_path(document_version.document_path.url))
 
-        document_version.size = getsize(abs(document_version.document_path.url))
+        document_version.size = getsize(
+            abs_path(document_version.document_path.url)
+        )
         document_version.save()
 
         document_version.create_pages()

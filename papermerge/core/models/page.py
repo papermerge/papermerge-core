@@ -5,7 +5,7 @@ from django.db import models
 from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage, abs
+from papermerge.core.storage import default_storage, abs_path
 
 from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
@@ -284,12 +284,12 @@ class Page(models.Model):
         doc_file_path = self.document_version.document_path
         # extract page number preview from the document file
         # if this is PDF - use pike pdf to extract that preview
-        pdffile = Pdf.open(abs(doc_file_path.url))
+        pdffile = Pdf.open(abs_path(doc_file_path.url))
         page = pdffile.pages[self.number - 1]
         image_keys = list(page.images.keys())
         raw_image = page.images[image_keys[0]]
         pdfimage = PdfImage(raw_image)
-        abs_file_prefix = abs(self.page_path.ppmroot)
+        abs_file_prefix = abs_path(self.page_path.ppmroot)
         abs_dirname_prefix = os.path.dirname(abs_file_prefix)
         os.makedirs(
             abs_dirname_prefix,
@@ -309,7 +309,7 @@ class Page(models.Model):
         return pdfimage.extract_to(fileprefix=abs_file_prefix)
 
     def get_jpeg(self):
-        jpeg_abs_path = abs(self.page_path.jpg_url)
+        jpeg_abs_path = abs_path(self.page_path.jpg_url)
         if not os.path.exists(jpeg_abs_path):
             self.generate_img()
 

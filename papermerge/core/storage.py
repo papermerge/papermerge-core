@@ -24,5 +24,5 @@ default_storage = storage_class(
 )
 
 
-def abs(some_relative_path):
+def abs_path(some_relative_path):
     return default_storage.abspath(some_relative_path)

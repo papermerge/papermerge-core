@@ -22,7 +22,7 @@ from papermerge.core.lib.utils import (
     annotate_page_data
 )
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage, abs
+from papermerge.core.storage import default_storage, abs_path
 from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
@@ -90,10 +90,10 @@ def insert_pdf_pages(
         position
 ):
     src_old_pdf = Pdf.open(
-        abs(src_old_version.document_path.url)
+        abs_path(src_old_version.document_path.url)
     )
     dst_old_pdf = Pdf.open(
-        abs(dst_old_version.document_path.url)
+        abs_path(dst_old_version.document_path.url)
     )
 
     _inserted_count = 0
@@ -103,11 +103,11 @@ def insert_pdf_pages(
         _inserted_count += 1
 
     dirname = os.path.dirname(
-        abs(dst_new_version.document_path.url)
+        abs_path(dst_new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
     dst_old_pdf.save(
-        abs(dst_new_version.document_path.url)
+        abs_path(dst_new_version.document_path.url)
     )
 
 
@@ -184,10 +184,10 @@ def reorder_pdf_pages(
         dst.pages.append(page)
 
     dirname = os.path.dirname(
-        abs(new_version.document_path.url)
+        abs_path(new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    dst.save(abs(new_version.document_path.url))
+    dst.save(abs_path(new_version.document_path.url))
 
 
 def rotate_pdf_pages(

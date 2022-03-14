@@ -10,7 +10,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from papermerge.core.models import User, Document
-from papermerge.core.storage import abs
+from papermerge.core.storage import abs_path
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(
@@ -139,7 +139,7 @@ class PageViewTestCase(TestCase):
         # last version has 3 pages
         last_version = doc.versions.last()
         assert last_version.pages.count() == 3
-        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
         assert len(pdf_file.pages) == 3
 
         # delete last (i.e. 3rd) page
@@ -153,7 +153,7 @@ class PageViewTestCase(TestCase):
         # last version has 2 pages
         last_version = doc.versions.last()
         assert last_version.pages.count() == 2
-        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
         assert len(pdf_file.pages) == 2
         pdf_file.close()
 
@@ -198,7 +198,7 @@ class PageViewTestCase(TestCase):
         # last version has only one page left
         last_version = doc.versions.last()
         assert last_version.pages.count() == 1
-        pdf_file = pikepdf.Pdf.open(abs(last_version.document_path))
+        pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
         assert len(pdf_file.pages) == 1
         pdf_file.close()
 
@@ -318,7 +318,7 @@ class PageViewTestCase(TestCase):
         assert source.versions.count() == 2
         src_doc_version = source.versions.last()
         assert src_doc_version.pages.count() == 1
-        pdf_file = pikepdf.Pdf.open(abs(src_doc_version.document_path))
+        pdf_file = pikepdf.Pdf.open(abs_path(src_doc_version.document_path))
         # payload of source's last version has now one page
         assert len(pdf_file.pages) == 1
 
@@ -327,5 +327,5 @@ class PageViewTestCase(TestCase):
         dst_doc_version = destination.versions.last()
         assert dst_doc_version.pages.count() == 5
         # payload of destination's last version has now 5 pages
-        pdf_file = pikepdf.Pdf.open(abs(dst_doc_version.document_path))
+        pdf_file = pikepdf.Pdf.open(abs_path(dst_doc_version.document_path))
         assert len(pdf_file.pages) == 5

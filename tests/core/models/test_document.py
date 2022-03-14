@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from papermerge.core.storage import abs
+from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
 
@@ -138,7 +138,7 @@ class TestDocumentModel(TestCase):
         assert last_version.size > 0
 
         assert os.path.exists(
-            abs(last_version.document_path)
+            abs_path(last_version.document_path)
         )
 
         payload.close()

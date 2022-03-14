@@ -578,6 +578,15 @@ class Document(BaseTreeNode):
         pdf.close()
 
     def version_bump_from_pages(self, pages):
+        """
+        Creates new version for the document.
+        PDF pages in the newly create document version is copied
+        from ``pages``.
+
+        ``pages`` is an iterable. Maybe either Page queryset or
+        a list of ``Page`` model instances. Used when extracting/moving
+        pages from the document to folder (thus creating new document).
+        """
         if isinstance(pages, list):
             first_page = pages[0]
             page_count = len(pages)

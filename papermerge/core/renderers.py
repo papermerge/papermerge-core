@@ -1,4 +1,4 @@
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 from rest_framework import renderers
 
 
@@ -7,7 +7,7 @@ class PlainTextRenderer(renderers.BaseRenderer):
     format = 'txt'
 
     def render(self, data, media_type=None, renderer_context=None):
-        return smart_text(data, encoding=self.charset)
+        return smart_str(data, encoding=self.charset)
 
 
 class ImageJpegRenderer(renderers.BaseRenderer):

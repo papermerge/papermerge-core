@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Document
+from papermerge.core.models import User, Document, Folder
 from papermerge.core.storage import abs_path
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -329,3 +329,127 @@ class PageViewTestCase(TestCase):
         # payload of destination's last version has now 5 pages
         pdf_file = pikepdf.Pdf.open(abs_path(dst_doc_version.document_path))
         assert len(pdf_file.pages) == 5
+
+    def test_move_to_folder_with_single_page_flag_on(self):
+        """
+        Move two pages from source document to destination folder
+        with single page flag 'on'.
+
+        Initially both source and destination document have
+        one document_version with three pages each.
+        If page move (two pages from source moved to destination)
+        is completed successfully, in destination folder's
+        will contains two new documents with one page each.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        source = Document.objects.create_document(
+            title="source.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        source.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        destination_folder = Folder.objects.create(
+            title="Destination Folder",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        source_page_ids = [
+            page.id for page in source.versions.last().pages.all()[0:2]
+        ]
+
+        pages_data = {
+            'pages': source_page_ids,
+            'dst': destination_folder.id,
+            'single_page': True
+        }
+        response = self.client.post(
+            reverse('pages_move_to_folder'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        assert source.versions.count() == 2
+        src_doc_version = source.versions.last()
+        # new version of the source document will have two
+        # pages less (two pages were extracted)
+        assert src_doc_version.pages.count() == 1
+        pdf_file = pikepdf.Pdf.open(abs_path(src_doc_version.document_path))
+        # payload of source's last version has now one page
+        assert len(pdf_file.pages) == 1
+
+        assert destination_folder.children.count() == 2
+
+        for child in destination_folder.children.all():
+            last_ver = child.versions.last()
+            pdf_file = pikepdf.Pdf.open(abs_path(last_ver.document_path))
+            # (last version of) newly created document has only one pages
+            assert len(pdf_file.pages) == 1
+
+    def test_move_to_folder_with_multi_page(self):
+        """
+        Move two pages from source document to destination folder
+        with single page flag 'off'.
+
+        Initially both source and destination document have
+        one document_version with three pages each.
+        If page move (two pages from source moved to destination)
+        is completed successfully, in destination folder's
+        will contains one new document with two pages.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        source = Document.objects.create_document(
+            title="source.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        source.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        destination_folder = Folder.objects.create(
+            title="Destination Folder",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        source_page_ids = [
+            page.id for page in source.versions.last().pages.all()[0:2]
+        ]
+
+        pages_data = {
+            'pages': source_page_ids,
+            'dst': destination_folder.id,
+            'single_page': False
+        }
+        response = self.client.post(
+            reverse('pages_move_to_folder'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        assert source.versions.count() == 2
+        src_doc_version = source.versions.last()
+        # new version of the source document will have two
+        # pages less (two pages were extracted)
+        assert src_doc_version.pages.count() == 1
+        pdf_file = pikepdf.Pdf.open(abs_path(src_doc_version.document_path))
+        # payload of source's last version has now one page
+        assert len(pdf_file.pages) == 1
+
+        assert destination_folder.children.count() == 1
+
+        newly_created_document = destination_folder.children.first()
+        last_ver = newly_created_document.versions.last()
+        pdf_file = pikepdf.Pdf.open(abs_path(last_ver.document_path))
+        # (last version of) newly created document has two pages
+        assert len(pdf_file.pages) == 2

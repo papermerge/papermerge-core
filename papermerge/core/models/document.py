@@ -86,6 +86,7 @@ class DocumentManager(PolymorphicMPTTModelManager):
             lang=lang,
             user_id=user_id,
             parent=parent,
+            **kwargs
         )
         # validate before saving
         # will raise ValidationError in case of
@@ -630,6 +631,8 @@ class Document(BaseTreeNode):
         document_version.create_pages()
         source_pdf.close()
         dst_pdf.close()
+
+        return document_version
 
     def version_bump(self, page_count=None):
         """

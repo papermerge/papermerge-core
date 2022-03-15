@@ -37,7 +37,7 @@ from papermerge.core.renderers import (
     ImageSVGRenderer
 )
 from .mixins import RequireAuthMixin
-
+from ..models.utils import OCR_STATUS_SUCCEEDED
 
 logger = logging.getLogger(__name__)
 
@@ -442,6 +442,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 data=serializer.data,
                 status=status.HTTP_204_NO_CONTENT
             )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def move_to_folder(self, data):
         pages = Page.objects.filter(pk__in=data['pages'])
@@ -451,29 +452,74 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
         )
         first_page = pages.first()
 
+        src_old_version = first_page.document_version
+        doc = src_old_version.document
+        src_new_version = doc.version_bump(
+            src_old_version.pages.count() - pages.count()
+        )
+
+        remove_pdf_pages(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            pages_to_delete=pages
+        )
+
+        reuse_ocr_data_after_delete(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            deleted_page_numbers=[item.number for item in pages]
+        )
+
         if data['single_page']:
             # insert all pages in one single document
-            doc = Document.objects.create_document(
-                title='noname.pdf',
-                lang=first_page.lang,
-                user_id=dst_folder.user_id,
-                parent=dst_folder
+            self.move_to_folder_single_paged(
+                pages=pages,
+                dst_folder=dst_folder
             )
-            # create new document version which
-            # will contain mentioned pages
-            doc.version_bump_from_pages(pages=pages)
         else:
             # there will be one document for each page
-            for page in pages:
-                doc = Document.objects.create_document(
-                    title=f'noname-{page.pk}.pdf',
-                    lang=page.lang,
-                    user_id=dst_folder.user_id,
-                    parent=dst_folder
-                )
-                # create new document version
-                # with one page
-                doc.version_bump_from_pages(pages=[page])
+            self.move_to_folder_multi_paged(
+                pages=pages,
+                first_page=first_page,
+                dst_folder=dst_folder
+            )
+
+    def move_to_folder_multi_paged(self, pages, first_page, dst_folder):
+        new_doc = Document.objects.create_document(
+            title='noname.pdf',
+            lang=first_page.lang,
+            user_id=dst_folder.user_id,
+            parent=dst_folder,
+            ocr_status=OCR_STATUS_SUCCEEDED
+        )
+        # create new document version which
+        # will contain mentioned pages
+        dst_version = new_doc.version_bump_from_pages(pages=pages)
+        for src_page, dst_page in zip(
+            pages.order_by('number'),
+            dst_version.pages.order_by('number'),
+        ):
+            default_storage.copy_page(
+                src=src_page.page_path,
+                dst=dst_page.page_path
+            )
+
+    def move_to_folder_single_paged(self, pages, dst_folder):
+        for page in pages:
+            doc = Document.objects.create_document(
+                title=f'noname-{page.pk}.pdf',
+                lang=page.lang,
+                user_id=dst_folder.user_id,
+                parent=dst_folder,
+                ocr_status=OCR_STATUS_SUCCEEDED
+            )
+            # create new document version
+            # with one page
+            doc_version = doc.version_bump_from_pages(pages=[page])
+            default_storage.copy_page(
+                src=page.page_path,
+                dst=doc_version.pages.first().page_path
+            )
 
 
 class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):

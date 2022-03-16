@@ -13,17 +13,23 @@ class SearchView(RequireAuthMixin, GenericAPIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
-        query_text = request.query_params['q']
+        query_text = request.query_params.get('q', '')
 
         folders_result = FolderIndex.search().query(
+            'match',
+            user_id=request.user.pk
+        ).query(
             'wildcard',
-            title=f'*{query_text}*'
+            title=f'*{query_text}*',
         )
         documents_result = DocumentIndex.search().query(
+            'match',
+            user_id=request.user.pk
+        ).query(
             'multi_match',
             query=query_text,
             fields=['title', 'text'],
-            type='phrase_prefix'
+            type='phrase_prefix',
         ).highlight(
             'text',
             fragment_size=25

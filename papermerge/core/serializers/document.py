@@ -46,7 +46,7 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
     page_count = serializers.IntegerField(required=False)
     parent = ResourceRelatedField(queryset=Folder.objects)
     file_name = serializers.CharField(required=False)
-    versions = DocumentVersionSerializer(many=True)
+    versions = DocumentVersionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Document

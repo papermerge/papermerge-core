@@ -1,3 +1,5 @@
+from elasticsearch_dsl import Q
+
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -14,14 +16,14 @@ class SearchView(RequireAuthMixin, GenericAPIView):
 
     def get(self, request):
         query_text = request.query_params.get('q', '')
+        match = Q('match', title=query_text)
+        wildcard = Q('wildcard', title=f'*{query_text}*')
 
         folders_result = FolderIndex.search().query(
             'match',
             user_id=request.user.pk
-        ).query(
-            'wildcard',
-            title=f'*{query_text}*',
-        )
+        ).query(match | wildcard)
+
         documents_result = DocumentIndex.search().query(
             'match',
             user_id=request.user.pk

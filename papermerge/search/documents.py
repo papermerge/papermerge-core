@@ -175,7 +175,6 @@ class DocumentVersionIndex(ElasticSearchDocument):
         **kwargs
     ):
         document_instance = thing.document
-
         DocumentIndex().update(
             document_instance,
             refresh,

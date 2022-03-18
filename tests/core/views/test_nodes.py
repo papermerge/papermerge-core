@@ -1,5 +1,3 @@
-import json
-
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -25,9 +23,8 @@ class NodesViewTestCase(TestCase):
 
         assert response.status_code == 200
 
-        json_data = json.loads(response.content)
         # user's inbox is empty
-        assert json_data == {'data': {'count': 0}}
+        assert response.data == {'count': 0}
 
     def test_get_inboxcount_with_one_item_in_inbox(self):
         """
@@ -43,6 +40,5 @@ class NodesViewTestCase(TestCase):
         response = self.client.get(reverse('inboxcount'))
         assert response.status_code == 200
 
-        json_data = json.loads(response.content)
         # user's inbox contains one item
-        assert json_data == {'data': {'count': 1}}
+        assert response.data == {'count': 1}

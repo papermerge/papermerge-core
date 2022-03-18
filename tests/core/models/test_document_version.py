@@ -4,7 +4,7 @@ from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
 
 
-class TestDocumentModel(TestCase):
+class TestDocumentVerionModel(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username="user1")
@@ -138,3 +138,19 @@ class TestDocumentModel(TestCase):
             self.doc_version.text,
             'Page 1 Page 2 Page 3'
         )
+
+    def test_document_version_is_archived(self):
+        """
+        Document version is considered archived if it is NOT last version
+        of the document.
+        Assert that last document version is indeed not archived, but
+        it becomes archived as soon as document version is bumped (incremented).
+        """
+        doc_version = self.doc.versions.last()
+        self.assertFalse(doc_version.is_archived)
+
+        # creates a new document version
+        self.doc.version_bump()
+        # at this point, document version pointed by variable `doc_version`
+        # is not last version anymore, thus it is considered archived
+        self.assertTrue(doc_version.is_archived)

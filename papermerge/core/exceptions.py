@@ -1,6 +1,11 @@
 """
 Global Papermerge exception and warning classes.
 """
+from rest_framework.exceptions import APIException
+
+
+class APIBadRequest(APIException):
+    status_code = 400
 
 
 class SuperuserDoesNotExist(Exception):

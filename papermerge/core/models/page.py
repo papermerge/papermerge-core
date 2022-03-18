@@ -172,6 +172,17 @@ class Page(models.Model):
         )
 
     @property
+    def is_archived(self):
+        """
+        Returns True of page is archived.
+
+        Page is considered archived if it belongs to archived document version.
+        In other words, page is considered archived it is part of non-last
+        document version.
+        """
+        return self.document_version.is_archived
+
+    @property
     def is_last(self):
         return self.number == self.page_count
 

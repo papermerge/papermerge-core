@@ -157,6 +157,32 @@ class PageViewTestCase(TestCase):
         assert len(pdf_file.pages) == 2
         pdf_file.close()
 
+    def test_page_delete_archived_page(self):
+        """
+        Assert that deleting an archived page is not allowed.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        pages = self.doc_version.pages.all()
+        third_page = pages.all()[2]
+
+        # Once document version is bump, all pages referenced
+        # by `pages` variable become archived
+        doc.version_bump()
+
+        # try to delete archived page
+        response = self.client.delete(
+            reverse('pages_page', args=(third_page.pk,)),
+        )
+        assert response.status_code == 400
+        err_msg = response.data[0]['detail']
+        assert err_msg == 'Deleting archived page is not allowed'
+
     def test_pages_delete(self):
         """
         DELETE /pages/
@@ -201,6 +227,150 @@ class PageViewTestCase(TestCase):
         pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
         assert len(pdf_file.pages) == 1
         pdf_file.close()
+
+    def test_document_ver_must_have_at_least_one_page_delete_one_by_one(self):
+        """
+        Document version must have at least one page.
+
+        In this scenario document version has 3 pages.
+        Deleting first two pages one by one should be OK.
+        However, after first two steps, document version will have only
+        one page left; in such case deleting that last page should
+        result in error.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc_version.document
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        # Delete pages one by one.
+        # Deleting first page should be OK
+        page_id = self.doc.versions.last().pages.last().pk
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": [page_id]
+            },
+            format='json'
+        )
+        assert response.status_code == 204
+        assert response.data == {
+            'pages': [
+                str(page_id)
+            ]
+        }
+        # Deleting next page should be OK as well
+        page_id = self.doc.versions.last().pages.last().pk
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": [page_id]
+            },
+            format='json'
+        )
+        assert response.status_code == 204
+        assert response.data == {
+            'pages': [
+                str(page_id)
+            ]
+        }
+        # Deleting last page should result in error
+        page_id = self.doc.versions.last().pages.last().pk
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": [page_id]
+            },
+            format='json'
+        )
+        assert response.status_code == 400
+        err_msg = response.data[0]['detail']
+        assert err_msg == 'Document version must have at least one page'
+
+        last_version = self.doc.versions.last()
+        assert last_version.pages.count() == 1
+        pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
+        assert len(pdf_file.pages) == 1
+        pdf_file.close()
+
+    def test_document_ver_must_have_at_least_one_page_delete_bulk(self):
+        """
+        Document version must have at least one page.
+
+        In this scenario document version has 3 pages.
+        Deleting all three pages should result in error because otherwise
+        it will heave document version with 0 pages.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc_version.document
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        page_ids = [page.pk for page in self.doc.versions.last().pages.all()]
+        response = self.client.delete(
+            reverse('pages'),
+            # trying to delete ALL pages in document version
+            data={"pages": page_ids},
+            format='json'
+        )
+        assert response.status_code == 400
+        err_msg = response.data[0]['detail']
+        assert err_msg == 'Document version must have at least one page'
+
+        # no page was deleted
+        last_version = self.doc.versions.last()
+        assert last_version.pages.count() == 3
+        pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
+        assert len(pdf_file.pages) == 3
+        pdf_file.close()
+
+    def test_delete_pages_from_archived_version(self):
+        """
+        Archived document version is any document version which is not last.
+        Only last document version is editable - in the context of
+        this scenario, only pages of very last document version
+        can be deleted.
+
+        In this scenario page deletion performed via `pages` endpoint.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc_version.document
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        # all pages are from same document version
+        # which at this moment is last document version
+        page_ids = [page.pk for page in self.doc.versions.last().pages.all()]
+        # Deleting
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": [page_ids[0]]
+            },
+            format='json'
+        )
+        assert response.status_code == 204
+        # At this point page_ids are not part of
+        # document last document version (because previous
+        # page deletion incremented document version by one).
+        # If we try to delete page_ids[1] now, it must result
+        # in error because we are trying to edit an archived document version
+        response = self.client.delete(
+            reverse('pages'),
+            data={
+                "pages": [page_ids[1]]
+            },
+            format='json'
+        )
+        assert response.status_code == 400
+        err_msg = response.data[0]['detail']
+        assert err_msg == 'Deleting archived page is not allowed'
 
     def test_pages_reorder(self):
         payload = open(self.resources / 'three-pages.pdf', 'rb')

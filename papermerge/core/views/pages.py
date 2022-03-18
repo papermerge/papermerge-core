@@ -10,6 +10,7 @@ from rest_framework.generics import (
     GenericAPIView
 )
 
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_json_api.renderers import JSONRenderer
@@ -36,6 +37,7 @@ from papermerge.core.renderers import (
     ImageJpegRenderer,
     ImageSVGRenderer
 )
+from papermerge.core.exceptions import APIBadRequest
 from .mixins import RequireAuthMixin
 from ..models.utils import OCR_STATUS_SUCCEEDED
 
@@ -287,6 +289,9 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         Creates a new document version and copies
         all existing pages to it except current page.
         """
+        if instance.is_archived:
+            raise APIBadRequest(detail='Deleting archived page is not allowed')
+
         pages_to_delete = Page.objects.filter(pk__in=[instance.pk])
         old_version = instance.document_version
         doc = instance.document_version.document
@@ -330,7 +335,22 @@ class PagesView(RequireAuthMixin, GenericAPIView):
 
     def delete_pages(self, page_ids):
         pages_to_delete = Page.objects.filter(pk__in=page_ids)
-        old_version = pages_to_delete.first().document_version
+
+        first_page = pages_to_delete.first()
+
+        for page in pages_to_delete:
+            if page.is_archived:
+                raise APIBadRequest(
+                    detail='Deleting archived page is not allowed'
+                )
+
+        old_version = first_page.document_version
+
+        count = old_version.pages.count()
+        if count <= pages_to_delete.count():
+            raise APIBadRequest(
+                detail='Document version must have at least one page'
+            )
 
         doc = old_version.document
         new_version = doc.version_bump(

@@ -70,6 +70,19 @@ class DocumentVersion(models.Model):
         )
 
     @property
+    def is_archived(self):
+        """
+        Returns True if document version is archived.
+
+        Document version is considered archived if
+        it is non-last version of the document.
+        Only last document version is editable, or to put
+        in other words - archived document versions are not
+        editable.
+        """
+        return self != self.document.versions.last()
+
+    @property
     def document_path(self):
         return DocumentPath(
             user_id=self.document.user.pk,

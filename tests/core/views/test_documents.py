@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from pathlib import Path
@@ -60,3 +61,59 @@ class DocumentUploadViewTestCase(TestCase):
         assert last_version.pages.count() == 3
 
         file.close()
+
+
+class DocumentViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="user1")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
+        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
+        self.doc = Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        shutil.rmtree(self.media / 'docs', ignore_errors=True)
+        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+
+    def test_get_document_as_application_json(self):
+        url = reverse('document-detail', args=(self.doc.pk,))
+        response = self.client.get(url, HTTP_ACCEPT='application/json')
+
+        assert response.status_code == 200
+        assert response.accepted_media_type == 'application/json'
+        assert response.data['id'] == self.doc.pk
+        assert response.data['title'] == 'three-pages.pdf'
+
+    def test_get_document_as_application_vnd_api_json(self):
+        url = reverse('document-detail', args=(self.doc.pk,))
+        response = self.client.get(url, HTTP_ACCEPT='application/vnd.api+json')
+
+        assert response.status_code == 200
+        assert response.accepted_media_type == 'application/vnd.api+json'
+        assert response.data['id'] == self.doc.pk
+        assert response.data['title'] == 'three-pages.pdf'
+
+    def test_rename_document(self):
+        url = reverse('document-detail', args=(self.doc.pk,))
+        body = {
+            'data': {
+                'type': 'documents',
+                'id': self.doc.pk,
+                'attributes': {
+                    'title': 'new-title.pdf'
+                }
+            }
+        }
+        response = self.client.patch(
+            url,
+            data=json.dumps(body),
+            content_type='application/vnd.api+json'
+        )
+
+        assert response.status_code == 200
+        assert response.data['title'] == 'new-title.pdf'

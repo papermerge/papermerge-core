@@ -2,6 +2,7 @@ import io
 import shutil
 import os
 import json
+import pytest
 from pathlib import Path
 
 from django.test import TestCase
@@ -11,10 +12,8 @@ from django_elasticsearch_dsl.test import ESTestCase
 
 from papermerge.core.models import User, Folder, Document
 
-MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
-TEST_DIR_ABS_PATH = os.path.dirname(
-    os.path.dirname(MODELS_DIR_ABS_PATH)
-)
+SEARCH_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
+TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
 
 
 class SearchViewVeryBasicTestCase(ESTestCase, TestCase):
@@ -198,13 +197,19 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
             user_id=self.user.pk,
             parent=self.user.home_folder,
         )
+        payload = open(self.resources / 'living-things.pdf', 'rb')
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'living-things.pdf',
+            file_name='living-things.pdf'
+        )
         self.doc_version = doc.versions.last()
-        self.doc_version.create_pages(page_count=2)
         self.doc_version.update_text_field([
             io.StringIO('cat'),
             io.StringIO('fish')
         ])
 
+    @pytest.mark.xfail(reason="Bugfix not yet available")
     def test_documents_are_searchable_after_move_to_folder_extraction(self):
         response = self.client.get(
             reverse('search'),
@@ -215,3 +220,38 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
         assert len(response.data) == 1
         assert 'fish' in response.data[0]['text']
         assert 'living-things.pdf' == response.data[0]['title']
+
+        # 'fish' page will be extracted into separate document
+        fish_page = self.doc_version.pages.all()[1]
+        assert fish_page.text == 'fish'
+
+        url = reverse('pages_move_to_folder')
+        pages_data = {
+            'pages': [fish_page.pk],
+            'single_page': True,
+            'dst': self.user.home_folder.pk
+        }
+        response = self.client.post(url, pages_data, format='json')
+        assert response.status_code == 204
+
+        # Now search again for 'fish'
+        response = self.client.get(
+            reverse('search'),
+            {'q': 'fish'}
+        )
+        assert response.status_code == 200
+
+        # there must be one result
+        assert len(response.data) == 1
+        assert 'fish' in response.data[0]['text']
+
+        # Now search 'cat'
+        response = self.client.get(
+            reverse('search'),
+            {'q': 'cat'}
+        )
+        assert response.status_code == 200
+
+        # there must be one result as well
+        assert len(response.data) == 1
+        assert 'cat' in response.data[0]['text']

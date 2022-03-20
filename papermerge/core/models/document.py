@@ -16,14 +16,7 @@ from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.storage import abs_path
 
 from papermerge.core.storage import default_storage
-from .kvstore import (
-    KVCompNode,
-    KVNode,
-    get_currency_formats,
-    get_date_formats,
-    get_kv_types,
-    get_numeric_formats
-)
+from .kvstore import KVCompNode, KVNode
 
 from .node import BaseTreeNode
 from .access import Access
@@ -192,61 +185,6 @@ class Document(BaseTreeNode):
                 # instances of model_klass with base_ptr pointing
                 # to this document.
                 pass
-
-    def to_dict(self):
-        item = {}
-
-        first_page = None
-        pages = []
-        for page in self.pages.all():
-            if page == self.pages.first():
-                first_page = page
-            pages.append(page.to_dict())
-
-        item['id'] = self.id
-        item['title'] = self.title
-        item['model'] = 'document'
-        item['ocr_status'] = self.get_ocr_status()
-        item['notes'] = self.notes
-        item['owner'] = self.user.username
-        item['versions'] = self.get_versions()
-        item['created_at'] = self.human_created_at
-        item['updated_at'] = self.human_updated_at
-        item['timestamp'] = self.created_at.timestamp()
-
-        if self.parent:
-            item['parent_id'] = self.parent.id
-        else:
-            item['parent_id'] = ''
-
-        item['ctype'] = 'document'
-        item['pages'] = pages
-
-        tags = []
-        for tag in self.tags.all():
-            tags.append(tag.to_dict())
-        item['tags'] = tags
-
-        kvstore = []
-        # Notice that here instead of document's metadata
-        # document first page's metadata is returned.
-        # This is because:
-        # document's metadata == document first page's metadata
-        # Why ?
-        # In document viewer metadata is per page. When user
-        # sees metadata in document viewer he actually sees
-        # document first page metadata.
-        if first_page:
-            for kv in first_page.kv.all():
-                kvstore.append(kv.to_dict())
-        item['metadata'] = {}
-        item['metadata']['kvstore'] = kvstore
-        item['metadata']['currency_formats'] = get_currency_formats()
-        item['metadata']['date_formats'] = get_date_formats()
-        item['metadata']['numeric_formats'] = get_numeric_formats()
-        item['metadata']['kv_types'] = get_kv_types()
-
-        return item
 
     def assign_kv_values(self, kv_dict):
         """

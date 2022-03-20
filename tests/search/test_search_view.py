@@ -166,3 +166,52 @@ class SearchDocumentTestCase(ESTestCase, TestCase):
         data = json.loads(response.content)
         assert len(data) == 1
         assert 'page number one' in data[0]['text']
+
+
+class SearchAfterMoveToFolder(ESTestCase, TestCase):
+    """
+    There is a document 'living-things.pdf' with two pages:
+        - page 1 contains word 'cat'
+        - page 2 contains word 'fish'
+    Initially if user searches either 'cat' or 'fish' document
+    'living-things.pdf' will be returned by search.
+
+    This scenario tests that after user extracts one page with help
+    of 'pages_move_to_folder' REST API, documents will
+    still be searchable. After extraction, there will be two documents,
+    with one page each; at this point each if user searches 'cat' one document
+    will be found and if user searches 'fish' another document will
+    be revealed.
+    """
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create_user(username="user")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
+        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
+        shutil.rmtree(self.media / 'docs', ignore_errors=True)
+        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+        doc = Document.objects.create_document(
+            title='living-things.pdf',
+            lang='deu',
+            user_id=self.user.pk,
+            parent=self.user.home_folder,
+        )
+        self.doc_version = doc.versions.last()
+        self.doc_version.create_pages(page_count=2)
+        self.doc_version.update_text_field([
+            io.StringIO('cat'),
+            io.StringIO('fish')
+        ])
+
+    def test_documents_are_searchable_after_move_to_folder_extraction(self):
+        response = self.client.get(
+            reverse('search'),
+            {'q': 'fish'}
+        )
+        assert response.status_code == 200
+
+        assert len(response.data) == 1
+        assert 'fish' in response.data[0]['text']
+        assert 'living-things.pdf' == response.data[0]['title']

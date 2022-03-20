@@ -59,14 +59,6 @@ class DocumentManager(PolymorphicMPTTModelManager):
         parent=None,
         **kwargs
     ):
-        """
-        Creates a document.
-
-        Special keyword argument ``parts`` is a dictionary
-        of extra document parts (added by extra apps)
-        """
-        # extra document parts
-
         doc = Document(
             title=title,
             lang=lang,
@@ -74,10 +66,6 @@ class DocumentManager(PolymorphicMPTTModelManager):
             parent=parent,
             **kwargs
         )
-        # validate before saving
-        # will raise ValidationError in case of
-        # problems
-        doc.full_clean()
         doc.save()
 
         document_version = DocumentVersion(
@@ -93,14 +81,6 @@ class DocumentManager(PolymorphicMPTTModelManager):
         # parent folder
         # if parent:
         #    doc.inherit_kv_from(parent)
-
-        doc.full_clean()
-
-        # document parts are created regardless whether there
-        # are arguments for them or no.
-        # self._create_doc_parts(doc, **kw_parts)
-        # self._create_node_parts(doc, **kw_parts)
-
         return doc
 
     def _get_parent(self, parent_id):

@@ -1,3 +1,4 @@
+import io
 import os
 import logging
 from pikepdf import Pdf
@@ -57,39 +58,43 @@ def copy_pages_data(old_version, new_version, pages_map):
         default_storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
-def reuse_ocr_data_after_delete(
-        old_version,
-        new_version,
-        deleted_page_numbers
-):
-    """
-    :param old_version: is instance of DocumentVersion
-    :param new_version:  is instance of DocumentVersion
-    :param deleted_page_numbers: a list of numbers
-    """
-    # reuse OCRed data from previous version
-    assigns = get_assigns_after_delete(
-        total_pages=old_version.page_count,
-        deleted_pages=deleted_page_numbers
-    )
-    for item in assigns:
+def reuse_ocr_data(old_version, new_version, page_map):
+    for new_number, old_number in page_map:
         src_page_path = PagePath(
             document_path=old_version.document_path,
-            page_num=item[1]
+            page_num=old_number
         )
         dst_page_path = PagePath(
             document_path=new_version.document_path,
-            page_num=item[0]
+            page_num=new_number
         )
-        default_storage.copy_page(src=src_page_path, dst=dst_page_path)
+        default_storage.copy_page(
+            src=src_page_path,
+            dst=dst_page_path
+        )
+
+
+def reuse_text_field(old_version, new_version, page_map):
+    old_pages = {page.number: page for page in old_version.pages.all()}
+
+    streams = []
+    for assign in page_map:
+        # assign = (new_number, old_number)
+        old_page_number = assign[1]
+        old_page = old_pages[old_page_number]
+        stream = io.StringIO(old_page.text)
+        streams.append(stream)
+
+    # updates page.text fields and document_version.text field
+    new_version.update_text_field(streams)
 
 
 def insert_pdf_pages(
-        src_old_version,
-        dst_old_version,
-        dst_new_version,
-        page_numbers,
-        position
+    src_old_version,
+    dst_old_version,
+    dst_new_version,
+    page_numbers,
+    position
 ):
     src_old_pdf = Pdf.open(
         abs_path(src_old_version.document_path.url)
@@ -133,41 +138,6 @@ def remove_pdf_pages(old_version, new_version, pages_to_delete):
     )
     os.makedirs(dirname, exist_ok=True)
     pdf.save(default_storage.abspath(new_version.document_path.url))
-
-
-def reuse_ocr_data_after_reorder(
-    old_version,
-    new_version,
-    pages_data,
-    page_count
-):
-    """
-    :param old_version: is instance of DocumentVersion
-    :param new_version:  is instance of DocumentVersion
-    :param pages_data: a list of dictionary like objects. Each dictionary
-    must have 'old_number' and 'new_number' keys.
-    :param page_count: total number of pages in document version
-    """
-    reodered_list = get_reordered_list(
-        pages_data=pages_data,
-        page_count=page_count
-    )
-    for old_number, new_number in zip(
-            range(1, page_count + 1),
-            reodered_list
-    ):
-        src_page_path = PagePath(
-            document_path=old_version.document_path,
-            page_num=old_number
-        )
-        dst_page_path = PagePath(
-            document_path=new_version.document_path,
-            page_num=new_number
-        )
-        default_storage.copy_page(
-            src=src_page_path,
-            dst=dst_page_path
-        )
 
 
 def reorder_pdf_pages(
@@ -307,10 +277,21 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
             pages_to_delete=pages_to_delete
         )
 
-        reuse_ocr_data_after_delete(
+        page_map = get_assigns_after_delete(
+            total_pages=old_version.page_count,
+            deleted_pages=[item.number for item in pages_to_delete]
+        )
+
+        reuse_ocr_data(
             old_version=old_version,
             new_version=new_version,
-            deleted_page_numbers=[item.number for item in pages_to_delete]
+            page_map=page_map
+        )
+
+        reuse_text_field(
+            old_version=old_version,
+            new_version=new_version,
+            page_map=page_map
         )
 
 
@@ -363,10 +344,21 @@ class PagesView(RequireAuthMixin, GenericAPIView):
             pages_to_delete=pages_to_delete
         )
 
-        reuse_ocr_data_after_delete(
+        page_map = get_assigns_after_delete(
+            total_pages=old_version.page_count,
+            deleted_pages=[item.number for item in pages_to_delete]
+        )
+
+        reuse_ocr_data(
             old_version=old_version,
             new_version=new_version,
-            deleted_page_numbers=[item.number for item in pages_to_delete]
+            page_map=page_map
+        )
+
+        reuse_text_field(
+            old_version=old_version,
+            new_version=new_version,
+            page_map=page_map
         )
 
 
@@ -407,11 +399,23 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             page_count=page_count
         )
 
-        reuse_ocr_data_after_reorder(
-            old_version=old_version,
-            new_version=new_version,
+        reordered_list = get_reordered_list(
             pages_data=pages_data,
             page_count=page_count
+        )
+
+        page_map = zip(range(1, page_count + 1), reordered_list)
+
+        reuse_ocr_data(
+            old_version=old_version,
+            new_version=new_version,
+            page_map=page_map
+        )
+
+        reuse_text_field(
+            old_version=old_version,
+            new_version=new_version,
+            page_map=page_map
         )
 
 
@@ -439,14 +443,25 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
         old_version = pages.first().document_version
 
         doc = old_version.document
-        new_version = doc.version_bump(
-            page_count=old_version.page_count
-        )
+        new_version = doc.version_bump()
 
         rotate_pdf_pages(
             old_version=old_version,
             new_version=new_version,
             pages_data=annotate_page_data(pages, pages_data, 'angle')
+        )
+
+        # page mapping is 1 to 1 as rotation does not
+        # add/remove any page
+        page_map = [
+            (page.number, page.number)
+            for page in old_version.pages.all()
+        ]
+
+        reuse_text_field(
+            old_version=old_version,
+            new_version=new_version,
+            page_map=page_map
         )
 
 
@@ -484,10 +499,15 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             pages_to_delete=pages
         )
 
-        reuse_ocr_data_after_delete(
+        page_map = get_assigns_after_delete(
+            total_pages=src_old_version.page_count,
+            deleted_pages=[item.number for item in pages]
+        )
+
+        reuse_ocr_data(
             old_version=src_old_version,
             new_version=src_new_version,
-            deleted_page_numbers=[item.number for item in pages]
+            page_map=page_map
         )
 
         if data['single_page']:
@@ -582,10 +602,15 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             pages_to_delete=pages
         )
 
-        reuse_ocr_data_after_delete(
+        page_map = get_assigns_after_delete(
+            total_pages=src_old_version.page_count,
+            deleted_pages=[item.number for item in pages]
+        )
+
+        reuse_ocr_data(
             old_version=src_old_version,
             new_version=src_new_version,
-            deleted_page_numbers=[item.number for item in pages]
+            page_map=page_map
         )
 
         insert_pdf_pages(

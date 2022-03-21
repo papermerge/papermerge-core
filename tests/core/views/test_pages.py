@@ -157,6 +157,44 @@ class PageViewTestCase(TestCase):
         assert len(pdf_file.pages) == 2
         pdf_file.close()
 
+    def test_page_delete_preserves_text_fields(self):
+        """
+        After deleting a page a new document will be created.
+        The pages of new version will reuse text field from document's
+        previous version. In this test we consider a document with two pages
+        - page one contains text 'fish'
+        - page two conains text 'cat'
+        We delete first page ('fish' page). Newly created document
+        version will have one page with text 'cat' in it.
+        """
+        payload = open(self.resources / 'living-things.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'living-things.pdf',
+            file_name='living-things.pdf'
+        )
+        pages = self.doc_version.pages.all()
+
+        for page, text in zip(pages, ['fish', 'cat']):
+            page.update_text_field(io.StringIO(text))
+
+        fish_page = pages[0]
+        assert fish_page.text == 'fish'
+
+        response = self.client.delete(
+            reverse('pages_page', args=(fish_page.pk,)),
+        )
+        assert response.status_code == 204
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 1
+
+        cat_page = last_version.pages.all()[0]
+        # assert that text field is reused across document versions
+        assert cat_page.text == 'cat'
+        # document's version text field was updated as well
+        assert last_version.text == 'cat'
+
     def test_page_delete_archived_page(self):
         """
         Assert that deleting an archived page is not allowed.
@@ -227,6 +265,51 @@ class PageViewTestCase(TestCase):
         pdf_file = pikepdf.Pdf.open(abs_path(last_version.document_path))
         assert len(pdf_file.pages) == 1
         pdf_file.close()
+
+    def test_pages_delete_preserves_text_fields(self):
+        """
+        After deleting two pages new document will be created.
+        The pages of new version will reuse text field from document's
+        previous version. In this test we consider a document with three pages
+        - page one contains text 'page 1'
+        - page two contains text 'page 2'
+        - page two contains text 'page 3'
+        We delete first page two pages. Newly created document
+        version will have one page with text 'page 3' in it.
+        """
+        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'three-pages.pdf',
+            file_name='three-pages.pdf'
+        )
+        pages = self.doc_version.pages.all()
+
+        for page, text in zip(pages, ['page 1', 'page 2', 'page 3']):
+            page.update_text_field(io.StringIO(text))
+
+        page_1 = pages[0]
+        page_2 = pages[1]
+        assert page_1.text == 'page 1'
+        assert page_2.text == 'page 2'
+
+        data = {
+            'pages': [page_1.pk, page_2.pk]
+        }
+
+        # delete first two pages
+        response = self.client.delete(reverse('pages'), data, format='json')
+
+        assert response.status_code == 204
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 1
+
+        last_page = last_version.pages.all()[0]
+        # assert that text field is reused across document versions
+        assert last_page.text == 'page 3'
+        # document's version text field was updated as well
+        assert last_version.text == 'page 3'
 
     def test_document_ver_must_have_at_least_one_page_delete_one_by_one(self):
         """
@@ -432,6 +515,53 @@ class PageViewTestCase(TestCase):
         )
 
         assert response.status_code == 204
+
+    def test_pages_rotate_preserves_text_field(self):
+        payload = open(self.resources / 'living-things.pdf', 'rb')
+        doc = self.doc
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / 'living-things.pdf',
+            file_name='living-things.pdf'
+        )
+        pages = self.doc_version.pages.all()
+
+        for page, text in zip(pages, ['fish', 'cat']):
+            page.update_text_field(io.StringIO(text))
+
+        fish_page = pages[0]
+        assert fish_page.text == 'fish'
+
+        pages_data = [
+            {
+                'id': pages[0].id,
+                'angle': 90
+            }
+        ]
+
+        response = self.client.post(
+            reverse('pages_rotate'),
+            data={
+                "pages": pages_data  # rotate pages
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        last_version = doc.versions.last()
+        assert last_version.pages.count() == 2
+
+        fish_page = last_version.pages.all()[0]
+        # assert that text field is reused across document versions
+        assert fish_page.text == 'fish'
+
+        cat_page = last_version.pages.all()[1]
+        # assert that text field is reused across document versions
+        assert cat_page.text == 'cat'
+
+        # document's version text field was updated as well
+        assert last_version.text == 'fish cat'
 
     def test_move_to_document_1(self):
         """

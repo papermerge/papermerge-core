@@ -74,19 +74,70 @@ def reuse_ocr_data(old_version, new_version, page_map):
         )
 
 
-def reuse_text_field(old_version, new_version, page_map):
-    old_pages = {page.number: page for page in old_version.pages.all()}
+def collect_text_streams(version, page_numbers):
+    pages_map = {page.number: page for page in version.pages.all()}
 
     streams = []
-    for assign in page_map:
-        # assign = (new_number, old_number)
-        old_page_number = assign[1]
-        old_page = old_pages[old_page_number]
-        stream = io.StringIO(old_page.text)
+    for number in page_numbers:
+        stream = io.StringIO(pages_map[number].text)
         streams.append(stream)
+
+    return streams
+
+
+def reuse_text_field(old_version, new_version, page_map):
+    streams = collect_text_streams(
+        version=old_version,
+        # list of old_version page numbers
+        page_numbers=[item[1] for item in page_map]
+    )
 
     # updates page.text fields and document_version.text field
     new_version.update_text_field(streams)
+
+
+def reuse_text_field_multi(
+  src_old_version,
+  dst_old_version,
+  dst_new_version,
+  position,
+  pages
+):
+    page_map = [(pos, pos) for pos in range(1, position + 1)]
+    streams = []
+    if len(page_map) > 0:
+        streams.extend(
+            collect_text_streams(
+                version=dst_old_version,
+                page_numbers=[item[1] for item in page_map]
+            )
+        )
+
+    page_map = zip(
+        [pos for pos in range(position + 1, pages.count() + 1)],
+        [page.number for page in pages.all()]
+    )
+    streams.extend(
+        collect_text_streams(
+            version=src_old_version,
+            page_numbers=[item[1] for item in page_map]
+        )
+    )
+
+    dst_new_total_pages = dst_new_version.pages.count()
+    _range = range(
+            position + 1 + pages.count(),
+            dst_new_total_pages + 1
+        )
+    page_map = [(pos, pos - position - pages.count()) for pos in _range]
+    streams.extend(
+       collect_text_streams(
+            version=dst_old_version,
+            page_numbers=[item[1] for item in page_map]
+       )
+    )
+
+    dst_new_version.update_text_field(streams)
 
 
 def insert_pdf_pages(
@@ -404,7 +455,7 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             page_count=page_count
         )
 
-        page_map = zip(range(1, page_count + 1), reordered_list)
+        page_map = list(zip(range(1, page_count + 1), reordered_list))
 
         reuse_ocr_data(
             old_version=old_version,
@@ -509,6 +560,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             new_version=src_new_version,
             page_map=page_map
         )
+        reuse_text_field(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            page_map=page_map
+        )
 
         if data['single_page']:
             # insert all pages in one single document
@@ -535,6 +591,10 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
         # create new document version which
         # will contain mentioned pages
         dst_version = new_doc.version_bump_from_pages(pages=pages)
+        page_map = zip(
+            range(1, pages.count() + 1),
+            [page.number for page in pages.order_by('number')]
+        )
         for src_page, dst_page in zip(
             pages.order_by('number'),
             dst_version.pages.order_by('number'),
@@ -543,6 +603,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 src=src_page.page_path,
                 dst=dst_page.page_path
             )
+        reuse_text_field(
+            old_version=first_page.document_version,
+            new_version=dst_version,
+            page_map=page_map
+        )
 
     def move_to_folder_single_paged(self, pages, dst_folder):
         for page in pages:
@@ -559,6 +624,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             default_storage.copy_page(
                 src=page.page_path,
                 dst=doc_version.pages.first().page_path
+            )
+            reuse_text_field(
+                old_version=page.document_version,
+                new_version=doc_version,
+                page_map=[(1, page.number)]
             )
 
 
@@ -613,6 +683,12 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
+        reuse_text_field(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            page_map=page_map
+        )
+
         insert_pdf_pages(
             src_old_version=src_old_version,
             dst_old_version=dst_old_version,
@@ -621,11 +697,20 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             position=data['position']
         )
 
+        dst_page_map = [
+            (p.number, p.number + data['position'])
+            for p in pages.order_by('number')
+        ]
         copy_pages_data(
             old_version=dst_old_version,
             new_version=dst_new_version,
-            pages_map=[
-                (p.number, p.number + data['position'])
-                for p in pages.order_by('number')
-            ]
+            pages_map=dst_page_map
+        )
+
+        reuse_text_field_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            position=data['position'],
+            pages=pages
         )

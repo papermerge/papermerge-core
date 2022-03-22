@@ -2,7 +2,6 @@ import io
 import shutil
 import os
 import json
-import pytest
 from pathlib import Path
 
 from django.test import TestCase
@@ -209,7 +208,6 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
             io.StringIO('fish')
         ])
 
-    @pytest.mark.xfail(reason="Bugfix not yet available")
     def test_documents_are_searchable_after_move_to_folder_extraction(self):
         response = self.client.get(
             reverse('search'),

@@ -121,13 +121,7 @@ class PageViewTestCase(TestCase):
         """
         DELETE /pages/{id}/
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        doc = self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         third_page = pages.all()[2]
 
@@ -167,13 +161,7 @@ class PageViewTestCase(TestCase):
         We delete first page ('fish' page). Newly created document
         version will have one page with text 'cat' in it.
         """
-        payload = open(self.resources / 'living-things.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'living-things.pdf',
-            file_name='living-things.pdf'
-        )
+        doc = self._upload(self.doc, 'living-things.pdf')
         pages = self.doc_version.pages.all()
 
         for page, text in zip(pages, ['fish', 'cat']):
@@ -199,13 +187,7 @@ class PageViewTestCase(TestCase):
         """
         Assert that deleting an archived page is not allowed.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        doc = self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         third_page = pages.all()[2]
 
@@ -229,13 +211,7 @@ class PageViewTestCase(TestCase):
             "pages": [1, 2, 3]
         }
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc_version.document
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        doc = self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         page_ids = [page.pk for page in pages]
 
@@ -277,13 +253,7 @@ class PageViewTestCase(TestCase):
         We delete first page two pages. Newly created document
         version will have one page with text 'page 3' in it.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        doc = self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
 
         for page, text in zip(pages, ['page 1', 'page 2', 'page 3']):
@@ -321,13 +291,7 @@ class PageViewTestCase(TestCase):
         one page left; in such case deleting that last page should
         result in error.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc_version.document
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(self.doc, 'three-pages.pdf')
         # Delete pages one by one.
         # Deleting first page should be OK
         page_id = self.doc.versions.last().pages.last().pk
@@ -386,13 +350,7 @@ class PageViewTestCase(TestCase):
         Deleting all three pages should result in error because otherwise
         it will heave document version with 0 pages.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc_version.document
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(self.doc, 'three-pages.pdf')
         page_ids = [page.pk for page in self.doc.versions.last().pages.all()]
         response = self.client.delete(
             reverse('pages'),
@@ -420,13 +378,7 @@ class PageViewTestCase(TestCase):
 
         In this scenario page deletion performed via `pages` endpoint.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc_version.document
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(self.doc, 'three-pages.pdf')
         # all pages are from same document version
         # which at this moment is last document version
         page_ids = [page.pk for page in self.doc.versions.last().pages.all()]
@@ -456,13 +408,7 @@ class PageViewTestCase(TestCase):
         assert err_msg == 'Deleting archived page is not allowed'
 
     def test_pages_reorder(self):
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         pages_data = [
             {
@@ -490,14 +436,53 @@ class PageViewTestCase(TestCase):
 
         assert response.status_code == 204
 
-    def test_pages_rotate(self):
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
+    def test_pages_reorder_preserves_text_fields(self):
+        """
+        Test that after changing order of page in the document,
+        """
+        self._upload(self.doc, 'living-things.pdf')
+        pages = self.doc.versions.last().pages.all()
+
+        for page, text in zip(pages, ['fish', 'cat']):
+            page.update_text_field(io.StringIO(text))
+
+        assert pages[0].text == 'fish'
+        assert pages[0].number == 1
+        assert pages[1].text == 'cat'
+        assert pages[1].number == 2
+
+        pages_data = [
+            {
+                'id': pages[0].id,
+                'old_number': pages[0].number,  # = 1
+                'new_number': 2
+            }, {
+                'id': pages[1].id,
+                'old_number': pages[1].number,  # = 2
+                'new_number': 1
+            }
+        ]
+
+        response = self.client.post(
+            reverse('pages_reorder'),
+            data={
+                "pages": pages_data  # reorder pages
+            },
+            format='json'
         )
+
+        assert response.status_code == 204
+
+        assert self.doc.versions.count() == 2
+        last_version = self.doc.versions.last()
+        pages = last_version.pages.all()
+        assert pages[0].text == 'cat'
+        assert pages[0].number == 1
+        assert pages[1].text == 'fish'
+        assert pages[1].number == 2
+
+    def test_pages_rotate(self):
+        self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         pages_data = [
             {
@@ -517,13 +502,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 204
 
     def test_pages_rotate_preserves_text_field(self):
-        payload = open(self.resources / 'living-things.pdf', 'rb')
-        doc = self.doc
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'living-things.pdf',
-            file_name='living-things.pdf'
-        )
+        self._upload(self.doc, 'living-things.pdf')
         pages = self.doc_version.pages.all()
 
         for page, text in zip(pages, ['fish', 'cat']):
@@ -549,7 +528,7 @@ class PageViewTestCase(TestCase):
 
         assert response.status_code == 204
 
-        last_version = doc.versions.last()
+        last_version = self.doc.versions.last()
         assert last_version.pages.count() == 2
 
         fish_page = last_version.pages.all()[0]
@@ -574,17 +553,11 @@ class PageViewTestCase(TestCase):
         have five pages and source document's latest version will have one
         page.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
         source = Document.objects.create_document(
             title="source.pdf",
             lang="deu",
             user_id=self.user.pk,
             parent=self.user.home_folder
-        )
-        source.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
         )
         destination = Document.objects.create_document(
             title="destination.pdf",
@@ -592,11 +565,9 @@ class PageViewTestCase(TestCase):
             user_id=self.user.pk,
             parent=self.user.home_folder
         )
-        destination.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(source, 'three-pages.pdf')
+        self._upload(destination, 'three-pages.pdf')
+
         source_page_ids = [
             page.id for page in source.versions.last().pages.all()[0:2]
         ]
@@ -630,6 +601,56 @@ class PageViewTestCase(TestCase):
         pdf_file = pikepdf.Pdf.open(abs_path(dst_doc_version.document_path))
         assert len(pdf_file.pages) == 5
 
+    def test_move_to_document_preserves_text_field(self):
+        source = Document.objects.create_document(
+            title="source.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        destination = Document.objects.create_document(
+            title="destination.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        self._upload(source, 'three-pages.pdf')
+        self._update_text_field(source, ['cat', 'dog', 'monkey'])
+        self._upload(destination, 'three-pages.pdf')
+        self._update_text_field(destination, ['flower', 'tree', 'plant'])
+
+        source_page_ids = [
+            page.id for page in source.versions.last().pages.all()[0:2]
+        ]
+        # move first two pages from source to destination
+        pages_data = {
+            'pages': source_page_ids,
+            'dst': destination.id,
+            'position': 0
+        }
+        response = self.client.post(
+            reverse('pages_move_to_document'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        source_pages = source.versions.last().pages.all()
+        destination_pages = destination.versions.last().pages.all()
+        # Initially both source and destination had three pages.
+        # After moving two pages from one source to destination
+        # source will have only one page and destination five.
+        assert source_pages.count() == 1
+        assert destination_pages.count() == 5
+        assert source_pages[0].text == 'monkey'
+
+        assert destination_pages[0].text == 'cat'
+        assert destination_pages[1].text == 'dog'
+        assert destination_pages[2].text == 'flower'
+        assert destination_pages[3].text == 'tree'
+        assert destination_pages[4].text == 'plant'
+
     def test_move_to_folder_with_single_page_flag_on(self):
         """
         Move two pages from source document to destination folder
@@ -641,18 +662,14 @@ class PageViewTestCase(TestCase):
         is completed successfully, in destination folder's
         will contains two new documents with one page each.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
+
         source = Document.objects.create_document(
             title="source.pdf",
             lang="deu",
             user_id=self.user.pk,
             parent=self.user.home_folder
         )
-        source.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(source, 'three-pages.pdf')
         destination_folder = Folder.objects.create(
             title="Destination Folder",
             user_id=self.user.pk,
@@ -692,6 +709,43 @@ class PageViewTestCase(TestCase):
             # (last version of) newly created document has only one pages
             assert len(pdf_file.pages) == 1
 
+    def test_move_to_folder_single_paged_preserves_text_field(self):
+        source = Document.objects.create_document(
+            title="living-things.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        self._upload(source, 'living-things.pdf')
+        source_pages = self._update_text_field(source, ['fish', 'cat'])
+        destination_folder = Folder.objects.create(
+            title="Destination Folder",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        pages_data = {
+            'pages': [source_pages[1].pk],
+            'dst': destination_folder.id,
+            'single_page': True
+        }
+        response = self.client.post(
+            reverse('pages_move_to_folder'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        source_last_version = source.versions.last()
+        source_pages = source_last_version.pages.all()
+        assert source_pages[0].text == 'fish'
+
+        # newly created one page document
+        destination_doc = destination_folder.children.last()  # and only
+        destination_pages = destination_doc.versions.last().pages.all()
+        assert destination_pages[0].text == 'cat'
+
     def test_move_to_folder_with_multi_page(self):
         """
         Move two pages from source document to destination folder
@@ -703,18 +757,13 @@ class PageViewTestCase(TestCase):
         is completed successfully, in destination folder's
         will contains one new document with two pages.
         """
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
         source = Document.objects.create_document(
             title="source.pdf",
             lang="deu",
             user_id=self.user.pk,
             parent=self.user.home_folder
         )
-        source.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        self._upload(source, 'three-pages.pdf')
         destination_folder = Folder.objects.create(
             title="Destination Folder",
             user_id=self.user.pk,
@@ -753,3 +802,59 @@ class PageViewTestCase(TestCase):
         pdf_file = pikepdf.Pdf.open(abs_path(last_ver.document_path))
         # (last version of) newly created document has two pages
         assert len(pdf_file.pages) == 2
+
+    def test_move_to_folder_multi_paged_preserves_text_field(self):
+        source = Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        self._upload(source, 'three-pages.pdf')
+        source_pages = self._update_text_field(source, ['fish', 'cat', 'doc'])
+        destination_folder = Folder.objects.create(
+            title="Destination Folder",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+
+        pages_data = {
+            'pages': [source_pages[1].pk, source_pages[2].pk],
+            'dst': destination_folder.id,
+            'single_page': False
+        }
+        response = self.client.post(
+            reverse('pages_move_to_folder'),
+            data=pages_data,
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        source_last_version = source.versions.last()
+        source_pages = source_last_version.pages.all()
+        assert source_pages[0].text == 'fish'
+
+        # newly created one page document
+        destination_doc = destination_folder.children.last()  # and only
+        destination_pages = destination_doc.versions.last().pages.all()
+
+        assert destination_pages[0].text == 'cat'
+        assert destination_pages[1].text == 'doc'
+
+    def _upload(self, doc, file_name):
+        payload = open(self.resources / file_name, 'rb')
+        doc.upload(
+            payload=payload,
+            file_path=self.resources / file_name,
+            file_name=file_name
+        )
+        payload.close()
+        return doc
+
+    def _update_text_field(self, doc, list_of_page_strings):
+        pages = doc.versions.last().pages.all()
+        for page, text in zip(pages, list_of_page_strings):
+            page.update_text_field(io.StringIO(text))
+
+        return pages

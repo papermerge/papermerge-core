@@ -40,6 +40,7 @@ daphne = "^3.0.2"
 django-elasticsearch-dsl = "^7.2.1"
 django-rest-knox = "^4.2.0"
 drf-spectacular = "^0.22.0"
+drf-spectacular-sidecar = "^2022.3.21"
 
 
 [tool.poetry.dev-dependencies]

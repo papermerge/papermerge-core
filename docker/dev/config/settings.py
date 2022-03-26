@@ -167,6 +167,7 @@ INSTALLED_APPS = [
     'rest_framework_json_api',
     'corsheaders',
     'drf_spectacular',
+    'drf_spectacular_sidecar',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',
@@ -346,9 +347,9 @@ REST_KNOX = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Papermerge DMS REST API',
+    'TITLE': 'Papermerge REST API',
     'DESCRIPTION': 'Document management system designed for digital archives',
-    'VERSION': '1.0.0',
+    'VERSION': '2.1.0',
     # OTHER SETTINGS
 }
 

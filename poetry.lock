@@ -649,6 +649,17 @@ offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
 
 [[package]]
+name = "drf-spectacular-sidecar"
+version = "2022.3.21"
+description = "Serve self-contained distribution builds of Swagger UI and Redoc with Django"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+Django = ">=2.2"
+
+[[package]]
 name = "elasticsearch"
 version = "7.16.2"
 description = "Python client for Elasticsearch"
@@ -1665,7 +1676,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "959abd64e3c0432d56d7a222616ef0bcfbece206568e063a77e4128f4af4b18b"
+content-hash = "93163c7994ae975d826f147cec89c9300be2a43d7d50b666433bd5041714bf33"
 
 [metadata.files]
 aioredis = [
@@ -1953,6 +1964,10 @@ djangorestframework-jsonapi = [
 drf-spectacular = [
     {file = "drf-spectacular-0.22.0.tar.gz", hash = "sha256:1d6bf33f57ec7d973a7a29a4976fab602333e0bcd0ab16fd3b4cd1e7b427613d"},
     {file = "drf_spectacular-0.22.0-py3-none-any.whl", hash = "sha256:229c3dcc5f88275e4742078d4003638970db5382caa16d53c0b3b42b62b1c034"},
+]
+drf-spectacular-sidecar = [
+    {file = "drf-spectacular-sidecar-2022.3.21.tar.gz", hash = "sha256:05896d75c586473ba9c118b2a44f426a16aafcb1f5ac99bfc77cb4d4ad33f311"},
+    {file = "drf_spectacular_sidecar-2022.3.21-py3-none-any.whl", hash = "sha256:8b0a83573cc01e57a525d8b0593b2e54d1d29c2adc521fa9b5a7e06a048a1e97"},
 ]
 elasticsearch = [
     {file = "elasticsearch-7.16.2-py2.py3-none-any.whl", hash = "sha256:c05aa792a52b1e6ad9d226340dc19165c4a491ac48fbd91af51ec839bf953210"},

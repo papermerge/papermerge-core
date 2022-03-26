@@ -3,7 +3,12 @@ from .document import DocumentSerializer
 from .document import DocumentDetailsSerializer
 from .document_version import DocumentVersionSerializer
 from .folder import FolderSerializer
-from .node import NodeSerializer, NodeMoveSerializer, NodesDownloadSerializer
+from .node import (
+    NodeSerializer,
+    NodeMoveSerializer,
+    NodesDownloadSerializer,
+    InboxCountSerializer
+)
 from .ocr import OcrSerializer
 from .user import UserSerializer
 from .group import GroupSerializer
@@ -56,4 +61,5 @@ __all__ = [
     'PagesMoveToFolderSerializer',
     'PagesMoveToDocumentSerializer',
     'TokenSerializer',
+    'InboxCountSerializer'
 ]

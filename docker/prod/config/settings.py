@@ -171,6 +171,7 @@ INSTALLED_APPS = [
     'knox',
     'rest_framework_json_api',
     'corsheaders',
+    'drf_spectacular',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',

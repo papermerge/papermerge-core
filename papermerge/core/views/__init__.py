@@ -30,6 +30,7 @@ from .pages import (
 from .tasks import OCRView
 from .preferences import CustomUserPreferencesViewSet
 from .login import LoginView
+from .logout import LogoutView, LogoutAllView
 from .tokens import TokensViewSet
 
 __all__ = [
@@ -59,5 +60,7 @@ __all__ = [
     'PagesMoveToDocumentView',
     'OCRView',
     'LoginView',
+    'LogoutView',
+    'LogoutAllView',
     'TokensViewSet',
 ]

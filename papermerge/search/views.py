@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from elasticsearch_dsl import Q
 
 from rest_framework.generics import GenericAPIView
@@ -41,3 +42,16 @@ class SearchView(RequireAuthMixin, GenericAPIView):
         serializer = SearchResultSerializer(result_list, many=True)
 
         return Response(serializer.data)
+
+    def get_queryset(self):
+        # This is workaround warning issued when runnnig
+        # `./manage.py generateschema`
+        # https://github.com/carltongibson/django-filter/issues/966
+        if not self.request:
+            return None
+
+        queryset = self.queryset
+        if isinstance(queryset, QuerySet):
+            # Ensure queryset is re-evaluated on each request.
+            queryset = queryset.all()
+        return queryset

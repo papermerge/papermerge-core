@@ -75,3 +75,7 @@ class NodesDownloadSerializer(rest_serializers.Serializer):
         ),
         default=ZIP
     )
+
+
+class InboxCountSerializer(rest_serializers.Serializer):
+    pass

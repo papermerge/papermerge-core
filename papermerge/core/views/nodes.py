@@ -14,7 +14,8 @@ from rest_framework import status
 from papermerge.core.serializers import (
     NodeSerializer,
     NodeMoveSerializer,
-    NodesDownloadSerializer
+    NodesDownloadSerializer,
+    InboxCountSerializer
 )
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
@@ -56,6 +57,12 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
         If no pk is provided, retrieves all top level nodes of current user i.e.
         all nodes (of current user) with parent_id=None.
         """
+        # This is workaround warning issued when runnnig
+        # `./manage.py generateschema`
+        # https://github.com/carltongibson/django-filter/issues/966
+        if not self.request:
+            return BaseTreeNode.objects.none()
+
         return BaseTreeNode.objects.filter(
             parent_id=self.kwargs.get('pk', None),
             user=self.request.user
@@ -91,6 +98,29 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
 class InboxCountView(RequireAuthMixin, APIView):
     """GET /nodes/inboxcount/"""
     parser_classes = [JSONParser]
+    class_serializer = InboxCountSerializer
+
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self
+        }
+
+    def get_serializer_class(self):
+        return self.class_serializer
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs)
 
     def get(self, request):
         inbox_folder = request.user.inbox_folder
@@ -142,3 +172,12 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
                 content_type='application/json',
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def get_queryset(self):
+        # This is workaround warning issued when runnnig
+        # `./manage.py generateschema`
+        # https://github.com/carltongibson/django-filter/issues/966
+        if not self.request:
+            return BaseTreeNode.objects.none()
+
+        return super().get_queryset()

@@ -39,6 +39,7 @@ psycopg2-binary = "^2.9.2"
 daphne = "^3.0.2"
 django-elasticsearch-dsl = "^7.2.1"
 django-rest-knox = "^4.2.0"
+drf-spectacular = "^0.22.0"
 
 
 [tool.poetry.dev-dependencies]

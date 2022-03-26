@@ -43,3 +43,12 @@ class CurrentUserView(RequireAuthMixin, GenericAPIView):
     def get(self, request):
         serializer = UserSerializer(self.request.user)
         return Response(serializer.data)
+
+    def get_queryset(self):
+        # This is workaround warning issued when runnnig
+        # `./manage.py generateschema`
+        # https://github.com/carltongibson/django-filter/issues/966
+        if not self.request:
+            return User.objects.none()
+
+        return super().get_queryset()

@@ -92,3 +92,27 @@ class HybridResponseMixin:
         # objects -- such as Django model instances or querysets
         # -- can be serialized as JSON.
         return context
+
+
+class GetClassSerializerMixin:
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self
+        }
+
+    def get_serializer_class(self):
+        return self.class_serializer
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs)

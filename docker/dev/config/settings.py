@@ -166,6 +166,7 @@ INSTALLED_APPS = [
     'knox',
     'rest_framework_json_api',
     'corsheaders',
+    'drf_spectacular',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',
@@ -326,7 +327,7 @@ REST_FRAMEWORK = {
         'rest_framework_json_api.renderers.BrowsableAPIRenderer'
     ),
     'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework_json_api.schemas.openapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_json_api.filters.OrderingFilter',
         'rest_framework_json_api.django_filters.DjangoFilterBackend',
@@ -342,6 +343,13 @@ REST_FRAMEWORK = {
 REST_KNOX = {
   # Setting the TOKEN_TTL to None will create tokens that never expire.
   'TOKEN_TTL': None,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Papermerge DMS REST API',
+    'DESCRIPTION': 'Document management system designed for digital archives',
+    'VERSION': '1.0.0',
+    # OTHER SETTINGS
 }
 
 LOGGING = {

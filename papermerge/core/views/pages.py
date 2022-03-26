@@ -260,8 +260,15 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
     ]
 
     def get_queryset(self, *args, **kwargs):
+        # This is workaround warning issued when runnnig
+        # `./manage.py generateschema`
+        # https://github.com/carltongibson/django-filter/issues/966
+        if not self.request:
+            return Page.objects.none()
+
         return Page.objects.filter(
-            document_version__document__user=self.request.user)
+            document_version__document__user=self.request.user
+        )
 
     def retrieve(self, request, *args, **kwargs):
         """Returns page as json, txt, jpeg or svg image

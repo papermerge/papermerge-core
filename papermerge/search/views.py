@@ -26,6 +26,7 @@ class SearchView(RequireAuthMixin, GenericAPIView):
     renderer_classes = [JSONRenderer]
 
     @extend_schema(
+        operation_id="Search",
         parameters=[
             OpenApiParameter(
                 name='q',

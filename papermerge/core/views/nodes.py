@@ -1,3 +1,4 @@
+
 import logging
 
 from django.http import (
@@ -10,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework import status
+
+from drf_spectacular.utils import extend_schema
 
 from papermerge.core.serializers import (
     NodeSerializer,
@@ -34,10 +37,18 @@ PER_PAGE = 30
 
 
 class NodesViewSet(RequireAuthMixin, ModelViewSet):
-    """GET|POST /nodes/{id}/"""
+    """
+    Documents can be organized in folders. One folder can contain documents as
+    well as other folders. A node is a convinient abstraction of two concepts -
+    'folder' and 'document'. Each node has a type field with value either
+    'folders' or 'documents' depending on what kind of node it is.
+    """
     serializer_class = NodeSerializer
     queryset = BaseTreeNode.objects.all()
 
+    @extend_schema(
+        operation_id="Retrieve Node",
+    )
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -73,7 +84,6 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
 
 
 class NodesMoveView(RequireAuthMixin, GenericAPIView):
-    """POST /nodes/move/"""
     parser_classes = [JSONParser]
     serializer_class = NodeMoveSerializer
 

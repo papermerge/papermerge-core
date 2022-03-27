@@ -96,3 +96,7 @@ class UserJsonAPISerializer(GroupJsonAPISerializer):
 
 class DocumentDetailsJsonAPISerializer(GroupJsonAPISerializer):
     target_class = 'papermerge.core.serializers.DocumentDetailsSerializer'
+
+
+class NodeJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.NodeSerializer'

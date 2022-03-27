@@ -78,4 +78,4 @@ class NodesDownloadSerializer(rest_serializers.Serializer):
 
 
 class InboxCountSerializer(rest_serializers.Serializer):
-    pass
+    count = rest_serializers.IntegerField()

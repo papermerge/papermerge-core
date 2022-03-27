@@ -28,7 +28,7 @@ from papermerge.core.models import (
 
 from papermerge.core.nodes_download import get_nodes_download
 
-from .mixins import RequireAuthMixin
+from .mixins import RequireAuthMixin, GetClassSerializerMixin
 
 logger = logging.getLogger(__name__)
 
@@ -105,32 +105,9 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
             )
 
 
-class InboxCountView(RequireAuthMixin, APIView):
-    """GET /nodes/inboxcount/"""
+class InboxCountView(RequireAuthMixin, APIView, GetClassSerializerMixin):
     parser_classes = [JSONParser]
     class_serializer = InboxCountSerializer
-
-    def get_serializer_context(self):
-        """
-        Extra context provided to the serializer class.
-        """
-        return {
-            'request': self.request,
-            'format': self.format_kwarg,
-            'view': self
-        }
-
-    def get_serializer_class(self):
-        return self.class_serializer
-
-    def get_serializer(self, *args, **kwargs):
-        """
-        Return the serializer instance that should be used for validating and
-        deserializing input, and for serializing output.
-        """
-        serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs)
 
     def get(self, request):
         inbox_folder = request.user.inbox_folder

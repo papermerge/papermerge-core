@@ -1,23 +1,21 @@
 openapi: 3.0.3
 info:
-  title: Papermerge DMS REST API
-  version: 1.0.0
+  title: Papermerge REST API
+  version: 2.1.0
   description: Document management system designed for digital archives
 paths:
   /api/auth/login/:
     post:
-      operationId: auth_login_create
+      operationId: Login/Authenticate
+      description: |-
+        Authenticates user with given username and password.
+        Response will contain token to be used as part of ``Authorization`` header
+        in subsequent requests whenever authorization is required.
       tags:
       - auth
       requestBody:
         content:
-          application/vnd.api+json:
-            schema:
-              $ref: '#/components/schemas/AuthToken'
           application/json:
-            schema:
-              $ref: '#/components/schemas/AuthToken'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AuthToken'
         required: true
@@ -34,7 +32,14 @@ paths:
           description: ''
   /api/auth/logout/:
     post:
-      operationId: auth_logout_create
+      operationId: Logout
+      description: |-
+        Logs the user out of current session.
+
+        On a successful request, the token used to authenticate is deleted from the
+        system and can no longer be used for authentication.
+
+        Request body must be empty.
       parameters:
       - in: query
         name: format
@@ -50,10 +55,15 @@ paths:
           description: No response body
   /api/auth/logoutall/:
     post:
-      operationId: auth_logoutall_create
+      operationId: Logout All
       description: |-
-        Log the user out of all sessions
-        I.E. deletes all auth tokens for the user
+        Logs the user out of all sessions i.e. deletes all auth tokens for the user.
+
+        On a successful request, the token used to authenticate, and all other
+        tokens registered to the same user account, are deleted from the system
+        and can no longer be used for authentication.
+
+        Request body must be empty.
       parameters:
       - in: query
         name: format
@@ -1153,6 +1163,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedGroup'
+        required: true
       security:
       - basicAuth: []
       - cookieAuth: []
@@ -1213,7 +1224,11 @@ paths:
   /api/nodes/:
     get:
       operationId: nodes_list
-      description: GET|POST /nodes/{id}/
+      description: |-
+        Documents can be organized in folders. One folder can contain documents as
+        well as other folders. A node is a convinient abstraction of two concepts -
+        'folder' and 'document'. Each node has a type field with value either
+        'folders' or 'documents' depending on what kind of node it is.
       parameters:
       - name: filter[search]
         required: false
@@ -1263,7 +1278,11 @@ paths:
           description: ''
     post:
       operationId: nodes_create
-      description: GET|POST /nodes/{id}/
+      description: |-
+        Documents can be organized in folders. One folder can contain documents as
+        well as other folders. A node is a convinient abstraction of two concepts -
+        'folder' and 'document'. Each node has a type field with value either
+        'folders' or 'documents' depending on what kind of node it is.
       parameters:
       - in: query
         name: format
@@ -1301,8 +1320,12 @@ paths:
           description: ''
   /api/nodes/{id}/:
     get:
-      operationId: nodes_retrieve
-      description: GET|POST /nodes/{id}/
+      operationId: Retrieve Node
+      description: |-
+        Documents can be organized in folders. One folder can contain documents as
+        well as other folders. A node is a convinient abstraction of two concepts -
+        'folder' and 'document'. Each node has a type field with value either
+        'folders' or 'documents' depending on what kind of node it is.
       parameters:
       - in: query
         name: format
@@ -1334,7 +1357,11 @@ paths:
           description: ''
     patch:
       operationId: nodes_partial_update
-      description: GET|POST /nodes/{id}/
+      description: |-
+        Documents can be organized in folders. One folder can contain documents as
+        well as other folders. A node is a convinient abstraction of two concepts -
+        'folder' and 'document'. Each node has a type field with value either
+        'folders' or 'documents' depending on what kind of node it is.
       parameters:
       - in: query
         name: format
@@ -1377,7 +1404,11 @@ paths:
           description: ''
     delete:
       operationId: nodes_destroy
-      description: GET|POST /nodes/{id}/
+      description: |-
+        Documents can be organized in folders. One folder can contain documents as
+        well as other folders. A node is a convinient abstraction of two concepts -
+        'folder' and 'document'. Each node has a type field with value either
+        'folders' or 'documents' depending on what kind of node it is.
       parameters:
       - in: query
         name: format
@@ -1465,7 +1496,6 @@ paths:
   /api/nodes/move/:
     post:
       operationId: nodes_move_create
-      description: POST /nodes/move/
       parameters:
       - in: query
         name: format
@@ -2299,6 +2329,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedRole'
+        required: true
       security:
       - basicAuth: []
       - cookieAuth: []
@@ -2408,7 +2439,19 @@ paths:
           description: ''
   /api/search/:
     get:
-      operationId: search_retrieve
+      operationId: Search
+      description: |-
+        Performs full text search on the documents and folders.
+
+        Folders are matched by their title. Documents are matched by title and
+        OCRed text.
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: text to search
+        required: true
       tags:
       - search
       security:
@@ -2647,6 +2690,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTag'
+        required: true
       security:
       - basicAuth: []
       - cookieAuth: []
@@ -3154,6 +3198,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedUser'
+        required: true
       security:
       - basicAuth: []
       - cookieAuth: []
@@ -3573,36 +3618,31 @@ components:
       - updated_at
     Group:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 150
       required:
+      - type
       - id
-      - name
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 150
+          required:
+          - name
     IncludeVersionEnum:
       enum:
       - only_original
@@ -4188,33 +4228,31 @@ components:
           readOnly: true
     PatchedGroup:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 150
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 150
+          required:
+          - name
     PatchedNode:
       type: object
       description: |-
@@ -4239,157 +4277,154 @@ components:
           readOnly: true
     PatchedRole:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 64
-        permissions:
-          type: array
-          items:
-            type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 64
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - name
+        relationships:
+          type: object
+          properties:
+            permissions:
+              $ref: '#/components/schemas/reltomany'
     PatchedTag:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 100
-        bg_color:
-          type: string
-          title: Background Color
-          maxLength: 7
-        fg_color:
-          type: string
-          title: Foreground Color
-          maxLength: 7
-        description:
-          type: string
-          nullable: true
-          title: Description (optional)
-          maxLength: 1024
-        pinned:
-          type: boolean
-          description: Pinned tag will be displayed under Documents menu. It serves
-            as shortcut to quickly filter folders/documents associated with this tag
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 100
+            bg_color:
+              type: string
+              title: Background Color
+              maxLength: 7
+            fg_color:
+              type: string
+              title: Foreground Color
+              maxLength: 7
+            description:
+              type: string
+              nullable: true
+              title: Description (optional)
+              maxLength: 1024
+            pinned:
+              type: boolean
+              description: Pinned tag will be displayed under Documents menu. It serves
+                as shortcut to quickly filter folders/documents associated with this
+                tag
+          required:
+          - name
     PatchedUser:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        inbox_folder:
-          type: integer
-          nullable: true
-        home_folder:
-          type: integer
-          nullable: true
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        email:
-          type: string
-          format: email
-          title: Email address
-          maxLength: 254
-        is_active:
-          type: boolean
-          title: Active
-          description: Designates whether this user should be treated as active. Unselect
-            this instead of deleting accounts.
-        is_staff:
-          type: boolean
-          title: Staff status
-          description: Designates whether the user can log into this admin site.
-        is_superuser:
-          type: boolean
-          title: Superuser status
-          description: Designates that this user has all permissions without explicitly
-            assigning them.
-        date_joined:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            username:
+              type: string
+              description: Required. 150 characters or fewer. Letters, digits and
+                @/./+/-/_ only.
+              pattern: ^[\w.@+-]+$
+              maxLength: 150
+            first_name:
+              type: string
+              maxLength: 150
+            last_name:
+              type: string
+              maxLength: 150
+            email:
+              type: string
+              format: email
+              title: Email address
+              maxLength: 254
+            is_active:
+              type: boolean
+              title: Active
+              description: Designates whether this user should be treated as active.
+                Unselect this instead of deleting accounts.
+            is_staff:
+              type: boolean
+              title: Staff status
+              description: Designates whether the user can log into this admin site.
+            is_superuser:
+              type: boolean
+              title: Superuser status
+              description: Designates that this user has all permissions without explicitly
+                assigning them.
+            date_joined:
+              type: string
+              format: date-time
+          required:
+          - username
+        relationships:
+          type: object
+          properties:
+            inbox_folder:
+              $ref: '#/components/schemas/reltoone'
+            home_folder:
+              $ref: '#/components/schemas/reltoone'
     Permission:
       type: object
       description: |-
@@ -4432,50 +4467,44 @@ components:
       - name
     Role:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 64
-        permissions:
-          type: array
-          items:
-            type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
-      - created_at
+      - type
       - id
-      - name
-      - updated_at
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 64
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - name
+        relationships:
+          type: object
+          properties:
+            permissions:
+              $ref: '#/components/schemas/reltomany'
     SearchResult:
       type: object
       description: |-
@@ -4520,53 +4549,49 @@ components:
       - user_id
     Tag:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 100
-        bg_color:
-          type: string
-          title: Background Color
-          maxLength: 7
-        fg_color:
-          type: string
-          title: Foreground Color
-          maxLength: 7
-        description:
-          type: string
-          nullable: true
-          title: Description (optional)
-          maxLength: 1024
-        pinned:
-          type: boolean
-          description: Pinned tag will be displayed under Documents menu. It serves
-            as shortcut to quickly filter folders/documents associated with this tag
       required:
+      - type
       - id
-      - name
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            name:
+              type: string
+              maxLength: 100
+            bg_color:
+              type: string
+              title: Background Color
+              maxLength: 7
+            fg_color:
+              type: string
+              title: Foreground Color
+              maxLength: 7
+            description:
+              type: string
+              nullable: true
+              title: Description (optional)
+              maxLength: 1024
+            pinned:
+              type: boolean
+              description: Pinned tag will be displayed under Documents menu. It serves
+                as shortcut to quickly filter folders/documents associated with this
+                tag
+          required:
+          - name
     Token:
       type: object
       description: Serializer to list tokens
@@ -4590,73 +4615,69 @@ components:
       - digest
     User:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        inbox_folder:
-          type: integer
-          nullable: true
-        home_folder:
-          type: integer
-          nullable: true
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        email:
-          type: string
-          format: email
-          title: Email address
-          maxLength: 254
-        is_active:
-          type: boolean
-          title: Active
-          description: Designates whether this user should be treated as active. Unselect
-            this instead of deleting accounts.
-        is_staff:
-          type: boolean
-          title: Staff status
-          description: Designates whether the user can log into this admin site.
-        is_superuser:
-          type: boolean
-          title: Superuser status
-          description: Designates that this user has all permissions without explicitly
-            assigning them.
-        date_joined:
-          type: string
-          format: date-time
       required:
+      - type
       - id
-      - username
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            username:
+              type: string
+              description: Required. 150 characters or fewer. Letters, digits and
+                @/./+/-/_ only.
+              pattern: ^[\w.@+-]+$
+              maxLength: 150
+            first_name:
+              type: string
+              maxLength: 150
+            last_name:
+              type: string
+              maxLength: 150
+            email:
+              type: string
+              format: email
+              title: Email address
+              maxLength: 254
+            is_active:
+              type: boolean
+              title: Active
+              description: Designates whether this user should be treated as active.
+                Unselect this instead of deleting accounts.
+            is_staff:
+              type: boolean
+              title: Staff status
+              description: Designates whether the user can log into this admin site.
+            is_superuser:
+              type: boolean
+              title: Superuser status
+              description: Designates that this user has all permissions without explicitly
+                assigning them.
+            date_joined:
+              type: string
+              format: date-time
+          required:
+          - username
+        relationships:
+          type: object
+          properties:
+            inbox_folder:
+              $ref: '#/components/schemas/reltoone'
+            home_folder:
+              $ref: '#/components/schemas/reltoone'
   securitySchemes:
     basicAuth:
       type: http

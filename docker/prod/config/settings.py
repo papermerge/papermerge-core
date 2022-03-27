@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
+from papermerge.core.openapi.append import JSONAPI_COMPONENTS
 
 
 config = Configula(
@@ -350,13 +351,6 @@ REST_KNOX = {
   'TOKEN_TTL': None,
 }
 
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Papermerge REST API',
-    'DESCRIPTION': 'Document management system designed for digital archives',
-    'VERSION': '2.1.0',
-    # OTHER SETTINGS
-}
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -405,3 +399,11 @@ CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 INTERNAL_IPS = ['127.0.0.1', ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Papermerge REST API',
+    'DESCRIPTION': 'Document management system designed for digital archives',
+    'VERSION': '2.1.0',
+    'APPEND_COMPONENTS': JSONAPI_COMPONENTS
+}

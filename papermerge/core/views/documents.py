@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework_json_api.views import ModelViewSet
+from drf_spectacular.utils import extend_schema
 
 from papermerge.core.serializers import DocumentDetailsSerializer
 from papermerge.core.storage import default_storage
@@ -23,7 +24,20 @@ logger = logging.getLogger(__name__)
 class DocumentUploadView(RequireAuthMixin, APIView):
     parser_classes = [FileUploadParser]
 
+    @extend_schema(operation_id="Upload file")
     def put(self, request, document_id, file_name):
+        """
+        Uploads a file for given document node. If last version of the
+        document does not have any file associated yet, this REST API call
+         will associated given file with document’s last version. If, on
+        the other hand, last version of the document already has a file
+        associated with it - a new document version will be created and
+        associated it with respective file.
+
+        Request body should contain file data. Please note that you need to
+        specify ``Content-Disposition`` header with value
+        'attachment; filename={file_name}'.
+        """
         payload = request.data['file']
         user_settings = request.user.preferences
         namespace = getattr(default_storage, 'namespace', None)
@@ -49,6 +63,9 @@ class DocumentUploadView(RequireAuthMixin, APIView):
 
 
 class DocumentDetailsViewSet(RequireAuthMixin, ModelViewSet):
+    """
+    Document details endpoint.
+    """
     serializer_class = DocumentDetailsSerializer
     queryset = Document.objects.all()
 

@@ -92,3 +92,7 @@ class RolesJsonAPISerializer(GroupJsonAPISerializer):
 
 class UserJsonAPISerializer(GroupJsonAPISerializer):
     target_class = 'papermerge.core.serializers.UserSerializer'
+
+
+class DocumentDetailsJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.DocumentDetailsSerializer'

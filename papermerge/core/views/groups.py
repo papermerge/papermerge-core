@@ -6,5 +6,8 @@ from .mixins import RequireAuthMixin
 
 
 class GroupsViewSet(RequireAuthMixin, ModelViewSet):
+    """
+    Group endpoint
+    """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer

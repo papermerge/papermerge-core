@@ -1,0 +1,5 @@
+FROM swaggerapi/swagger-ui
+
+ENV SWAGGER_JSON="/schema.yml"
+
+COPY schema.yml /schema.yml

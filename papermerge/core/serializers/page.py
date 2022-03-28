@@ -28,8 +28,15 @@ class PageDeleteSerializer(rest_serializers.Serializer):
 
 class PageReorderSerializer(rest_serializers.Serializer):
     id = rest_serializers.CharField(max_length=32)
-    old_number = rest_serializers.IntegerField()
-    new_number = rest_serializers.IntegerField()
+    old_number = rest_serializers.IntegerField(
+        help_text='Page position within the document before '
+        " page's order change."
+        'Position numbering starts with 1.'
+    )
+    new_number = rest_serializers.IntegerField(
+        help_text='Desired new page position within the document. '
+        'Position numbering starts with 1.'
+    )
 
 
 class PagesReorderSerializer(rest_serializers.Serializer):

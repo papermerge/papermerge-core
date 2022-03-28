@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework_json_api.renderers import JSONRenderer
 from drf_spectacular.utils import extend_schema
 
 from papermerge.core.serializers import DocumentDetailsSerializer
@@ -68,6 +69,7 @@ class DocumentDetailsViewSet(RequireAuthMixin, ModelViewSet):
     """
     serializer_class = DocumentDetailsSerializer
     queryset = Document.objects.all()
+    renderer_classes = (JSONRenderer,)
 
     http_method_names = [
         "get",

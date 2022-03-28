@@ -4,7 +4,9 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
@@ -14,12 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class UsersViewSet(RequireAuthMixin, ModelViewSet):
+    """
+    Users endpoint
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    renderer_classes = (JSONAPIRenderer,)
 
 
 class UserChangePassword(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
+    renderer_classes = (JSONRenderer,)
     serializer_class = PasswordSerializer
 
     def post(self, request, pk):
@@ -39,6 +46,7 @@ class UserChangePassword(RequireAuthMixin, GenericAPIView):
 class CurrentUserView(RequireAuthMixin, GenericAPIView):
     resource_name = 'users'
     serializer_class = UserSerializer
+    renderer_classes = (JSONAPIRenderer,)
 
     def get(self, request):
         serializer = UserSerializer(self.request.user)

@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from knox.models import AuthToken
 from rest_framework_json_api.views import ModelViewSet
-
+from rest_framework_json_api.renderers import JSONRenderer
 from papermerge.core.serializers import (
     TokenSerializer,
     CreateTokenSerializer,
@@ -13,8 +13,15 @@ from .mixins import RequireAuthMixin
 
 
 class TokensViewSet(RequireAuthMixin, ModelViewSet):
+    """
+    Each user can have multiple authentication tokens. The reason to have
+    multiple tokens per user is that he (or she) may consume REST API from
+    multiple clients (or devices) using one single user account.
+    User may then use a separate authentication token per each device or client.
+    """
     queryset = AuthToken.objects.all()
     serializer_class = TokenSerializer
+    renderer_classes = (JSONRenderer,)
 
     http_method_names = ["get", "post", "delete", "head", "options"]
 

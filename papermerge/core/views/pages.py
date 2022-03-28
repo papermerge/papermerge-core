@@ -11,11 +11,12 @@ from rest_framework.generics import (
     GenericAPIView
 )
 
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_json_api.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
+
+from drf_spectacular.utils import extend_schema
 
 from papermerge.core.models import Page, Document, Folder
 from papermerge.core.lib.utils import (
@@ -247,10 +248,6 @@ def reuse_ocr_data_after_rotate(
 
 
 class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
-    """
-    GET /pages/<pk>/
-    DELETE /pages/<pk>/
-    """
     serializer_class = PageSerializer
     renderer_classes = [
         PlainTextRenderer,
@@ -269,6 +266,13 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         return Page.objects.filter(
             document_version__document__user=self.request.user
         )
+
+    @extend_schema(operation_id="Retrieve")
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieves page resource
+        """
+        return self.retrieve(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         """Returns page as json, txt, jpeg or svg image
@@ -311,6 +315,13 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         # by default render page with json serializer
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @extend_schema(operation_id="Single page delete")
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes page resource
+        """
+        return self.destroy(request, *args, **kwargs)
 
     def perform_destroy(self, instance):
         """
@@ -356,6 +367,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
 class PagesView(RequireAuthMixin, GenericAPIView):
     serializer_class = PageDeleteSerializer
 
+    @extend_schema(operation_id="Multiple pages delete")
     def delete(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -422,9 +434,14 @@ class PagesView(RequireAuthMixin, GenericAPIView):
 
 class PagesReorderView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
+    renderer_classes = (JSONRenderer,)
     serializer_class = PagesReorderSerializer
 
+    @extend_schema(operation_id="Reorder")
     def post(self, request):
+        """
+        Reorders pages within document.
+        """
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
@@ -479,9 +496,14 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
 
 class PagesRotateView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
+    renderer_classes = (JSONRenderer,)
     serializer_class = PagesRotateSerializer
 
+    @extend_schema(operation_id="Rotate")
     def post(self, request):
+        """
+        Rortates one or multiple pages with given angle.
+        """
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
@@ -525,8 +547,19 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
 
 class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
     serializer_class = PagesMoveToFolderSerializer
+    renderer_classes = (JSONRenderer,)
 
+    @extend_schema(operation_id="Move to folder")
     def post(self, request):
+        """
+        Moves/extracts one or multiple pages into target folder.
+
+        This operation will create new one or multiple documents (depending
+        on ``single_page`` parameter) and place then into target folder.
+        ``single_page`` parameter is boolean value which controls whether all
+        extracted pages will be placed inside one single document or each
+        individual page will be placed into newly created single page document.
+        """
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
@@ -641,8 +674,16 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
 
 class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
     serializer_class = PagesMoveToDocumentSerializer
+    renderer_classes = (JSONRenderer,)
 
+    @extend_schema(operation_id="Move to document")
     def post(self, request):
+        """
+        Moves one or multiple pages from source document to target document.
+
+        Both source and target documents' version will be incremented
+        by one.
+        """
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():

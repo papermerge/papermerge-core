@@ -1,0 +1,5 @@
+FROM redocly/redoc
+
+ENV SPEC_URL=swagger.yaml
+
+COPY schema.yml /usr/share/nginx/html/swagger.yaml

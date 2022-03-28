@@ -2,6 +2,21 @@ from rest_framework_json_api import serializers
 from rest_framework.fields import empty
 from rest_framework_json_api.utils import format_field_name
 from drf_spectacular.extensions import OpenApiSerializerExtension
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+
+class KnoxTokenScheme(OpenApiAuthenticationExtension):
+    target_class = 'knox.auth.TokenAuthentication'
+    name = 'Token Authentication'
+
+    def get_security_definition(self, auto_schema):
+        return {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description':
+                'Token-based authentication with required prefix Token'
+        }
 
 
 class GroupJsonAPISerializer(OpenApiSerializerExtension):
@@ -98,5 +113,21 @@ class DocumentDetailsJsonAPISerializer(GroupJsonAPISerializer):
     target_class = 'papermerge.core.serializers.DocumentDetailsSerializer'
 
 
+class FolderJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.FolderSerializer'
+
+
 class NodeJsonAPISerializer(GroupJsonAPISerializer):
     target_class = 'papermerge.core.serializers.NodeSerializer'
+
+
+class PageJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.PageSerializer'
+
+
+class PageDeleteJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.PageDeleteSerializer'
+
+
+class TokenJsonAPISerializer(GroupJsonAPISerializer):
+    target_class = 'papermerge.core.serializers.TokenSerializer'

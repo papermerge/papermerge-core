@@ -21,6 +21,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       - {}
       responses:
@@ -50,6 +51,8 @@ paths:
           - vnd.api+json
       tags:
       - auth
+      security:
+      - Token Authentication: []
       responses:
         '200':
           description: No response body
@@ -74,346 +77,15 @@ paths:
           - vnd.api+json
       tags:
       - auth
+      security:
+      - Token Authentication: []
       responses:
         '200':
           description: No response body
-  /api/automates/:
-    get:
-      operationId: automates_list
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - name: filter[search]
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      - name: page[number]
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page[size]
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - name: sort
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      tags:
-      - automates
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/PaginatedAutomateList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedAutomateList'
-          description: ''
-    post:
-      operationId: automates_create
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      tags:
-      - automates
-      requestBody:
-        content:
-          application/vnd.api+json:
-            schema:
-              $ref: '#/components/schemas/Automate'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Automate'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Automate'
-        required: true
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-          description: ''
-  /api/automates/{id}/:
-    get:
-      operationId: automates_retrieve
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - automates
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-          description: ''
-    patch:
-      operationId: automates_partial_update
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - automates
-      requestBody:
-        content:
-          application/vnd.api+json:
-            schema:
-              $ref: '#/components/schemas/PatchedAutomate'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedAutomate'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedAutomate'
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Automate'
-          description: ''
-    delete:
-      operationId: automates_destroy
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - automates
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/content-types/{id}/:
-    get:
-      operationId: content_types_retrieve
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - content-types
-      security:
-      - basicAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/ContentType'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContentType'
-          description: ''
   /api/documents/:
     get:
       operationId: documents_list
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Document details endpoint.
       parameters:
       - name: filter[search]
         required: false
@@ -421,13 +93,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - name: page[number]
         required: false
         in: query
@@ -450,6 +115,7 @@ paths:
       - documents
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -457,13 +123,21 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PaginatedDocumentDetailsList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedDocumentDetailsList'
           description: ''
   /api/documents/{document_id}/upload/{file_name}:
     put:
-      operationId: documents_upload_update
+      operationId: Upload file
+      description: |-
+        Uploads a file for given document node. If last version of the
+        document does not have any file associated yet, this REST API call
+         will associated given file with document’s last version. If, on
+        the other hand, last version of the document already has a file
+        associated with it - a new document version will be created and
+        associated it with respective file.
+
+        Request body should contain file data. Please note that you need to
+        specify ``Content-Disposition`` header with value
+        'attachment; filename={file_name}'.
       parameters:
       - in: path
         name: document_id
@@ -488,6 +162,7 @@ paths:
       - documents
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -495,34 +170,8 @@ paths:
   /api/documents/{id}/:
     get:
       operationId: documents_retrieve
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Document details endpoint.
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -533,6 +182,7 @@ paths:
       - documents
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -540,40 +190,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/DocumentDetails'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DocumentDetails'
           description: ''
     patch:
       operationId: documents_partial_update
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Document details endpoint.
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -593,8 +214,10 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedDocumentDetails'
+        required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -602,40 +225,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/DocumentDetails'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DocumentDetails'
           description: ''
     delete:
       operationId: documents_destroy
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Document details endpoint.
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -646,6 +240,7 @@ paths:
       - documents
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -653,26 +248,7 @@ paths:
   /api/folders/:
     get:
       operationId: folders_list
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Folders endpoint
       parameters:
       - name: filter[search]
         required: false
@@ -680,13 +256,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - name: page[number]
         required: false
         in: query
@@ -709,6 +278,7 @@ paths:
       - folders
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -716,40 +286,10 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PaginatedFolderList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedFolderList'
           description: ''
     post:
       operationId: folders_create
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      description: Folders endpoint
       tags:
       - folders
       requestBody:
@@ -766,6 +306,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -773,41 +314,12 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Folder'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Folder'
           description: ''
   /api/folders/{id}/:
     get:
       operationId: folders_retrieve
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Folders endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -818,6 +330,7 @@ paths:
       - folders
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -825,40 +338,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Folder'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Folder'
           description: ''
     patch:
       operationId: folders_partial_update
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Folders endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -878,8 +362,10 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedFolder'
+        required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -887,40 +373,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Folder'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Folder'
           description: ''
     delete:
       operationId: folders_destroy
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Folders endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -931,6 +388,7 @@ paths:
       - folders
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -938,26 +396,7 @@ paths:
   /api/groups/:
     get:
       operationId: groups_list
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Group endpoint
       parameters:
       - name: filter[search]
         required: false
@@ -965,13 +404,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - name: page[number]
         required: false
         in: query
@@ -994,6 +426,7 @@ paths:
       - groups
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1001,40 +434,10 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PaginatedGroupList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedGroupList'
           description: ''
     post:
       operationId: groups_create
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      description: Group endpoint
       tags:
       - groups
       requestBody:
@@ -1051,6 +454,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -1058,41 +462,12 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Group'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Group'
           description: ''
   /api/groups/{id}/:
     get:
       operationId: groups_retrieve
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Group endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -1103,6 +478,7 @@ paths:
       - groups
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1110,40 +486,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Group'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Group'
           description: ''
     patch:
       operationId: groups_partial_update
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Group endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -1166,6 +513,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1173,40 +521,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Group'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Group'
           description: ''
     delete:
       operationId: groups_destroy
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Group endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -1217,6 +536,7 @@ paths:
       - groups
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -1265,6 +585,7 @@ paths:
       - nodes
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1307,6 +628,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -1344,6 +666,7 @@ paths:
       - nodes
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1389,8 +712,10 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedNode'
+        required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1427,6 +752,7 @@ paths:
       - nodes
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -1462,6 +788,7 @@ paths:
       - nodes
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1476,7 +803,6 @@ paths:
   /api/nodes/inboxcount/:
     get:
       operationId: nodes_inboxcount_retrieve
-      description: GET /nodes/inboxcount/
       parameters:
       - in: query
         name: format
@@ -1489,10 +815,18 @@ paths:
       - nodes
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/InboxCount'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboxCount'
+          description: ''
   /api/nodes/move/:
     post:
       operationId: nodes_move_create
@@ -1514,6 +848,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1553,6 +888,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1566,7 +902,7 @@ paths:
           description: ''
   /api/pages/:
     delete:
-      operationId: pages_destroy
+      operationId: Multiple pages delete
       parameters:
       - in: query
         name: format
@@ -1579,16 +915,15 @@ paths:
       - pages
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
           description: No response body
   /api/pages/{id}/:
     get:
-      operationId: pages_retrieve
-      description: |-
-        GET /pages/<pk>/
-        DELETE /pages/<pk>/
+      operationId: Retrieve
+      description: Retrieves page resource
       parameters:
       - in: query
         name: format
@@ -1608,6 +943,7 @@ paths:
       - pages
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1626,10 +962,8 @@ paths:
                 $ref: '#/components/schemas/Page'
           description: ''
     delete:
-      operationId: pages_destroy_2
-      description: |-
-        GET /pages/<pk>/
-        DELETE /pages/<pk>/
+      operationId: Single page delete
+      description: Deletes page resource
       parameters:
       - in: query
         name: format
@@ -1649,21 +983,19 @@ paths:
       - pages
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
           description: No response body
   /api/pages/move-to-document/:
     post:
-      operationId: pages_move_to_document_create
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      operationId: Move to document
+      description: |-
+        Moves one or multiple pages from source document to target document.
+
+        Both source and target documents' version will be incremented
+        by one.
       tags:
       - pages
       requestBody:
@@ -1680,28 +1012,26 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
           content:
             application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/PagesMoveToDocument'
-            application/json:
               schema:
                 $ref: '#/components/schemas/PagesMoveToDocument'
           description: ''
   /api/pages/move-to-folder/:
     post:
-      operationId: pages_move_to_folder_create
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      operationId: Move to folder
+      description: |-
+        Moves/extracts one or multiple pages into target folder.
+
+        This operation will create new one or multiple documents (depending
+        on ``single_page`` parameter) and place then into target folder.
+        ``single_page`` parameter is boolean value which controls whether all
+        extracted pages will be placed inside one single document or each
+        individual page will be placed into newly created single page document.
       tags:
       - pages
       requestBody:
@@ -1718,6 +1048,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1725,21 +1056,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PagesMoveToFolder'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagesMoveToFolder'
           description: ''
   /api/pages/reorder/:
     post:
-      operationId: pages_reorder_create
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      operationId: Reorder
+      description: Reorders pages within document.
       tags:
       - pages
       requestBody:
@@ -1750,6 +1071,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1757,21 +1079,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PagesReorder'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagesReorder'
           description: ''
   /api/pages/rotate/:
     post:
-      operationId: pages_rotate_create
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      operationId: Rotate
+      description: Rortates one or multiple pages with given angle.
       tags:
       - pages
       requestBody:
@@ -1782,14 +1094,12 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
           content:
             application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/PagesRotate'
-            application/json:
               schema:
                 $ref: '#/components/schemas/PagesRotate'
           description: ''
@@ -1820,6 +1130,7 @@ paths:
       - permissions
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1860,6 +1171,7 @@ paths:
               $ref: '#/components/schemas/Permission'
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -1915,6 +1227,7 @@ paths:
       - preferences
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -1952,6 +1265,7 @@ paths:
       - preferences
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2000,6 +1314,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2047,6 +1362,7 @@ paths:
               $ref: '#/components/schemas/PatchedCustomUserPreference'
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2090,6 +1406,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2160,6 +1477,7 @@ paths:
       - roles
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2217,6 +1535,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -2269,6 +1588,7 @@ paths:
       - roles
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2332,6 +1652,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2383,6 +1704,7 @@ paths:
       - roles
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -2415,6 +1737,7 @@ paths:
       - schema
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       - {}
       responses:
@@ -2456,6 +1779,7 @@ paths:
       - search
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2523,6 +1847,7 @@ paths:
       - tags
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2580,6 +1905,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -2631,6 +1957,7 @@ paths:
       - tags
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2693,6 +2020,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2743,6 +2071,7 @@ paths:
       - tags
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -2751,25 +2080,10 @@ paths:
     get:
       operationId: tokens_list
       description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+        Each user can have multiple authentication tokens. The reason to have
+        multiple tokens per user is that he (or she) may consume REST API from
+        multiple clients (or devices) using one single user account.
+        User may then use a separate authentication token per each device or client.
       parameters:
       - name: filter[search]
         required: false
@@ -2777,13 +2091,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - name: page[number]
         required: false
         in: query
@@ -2806,6 +2113,7 @@ paths:
       - tokens
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2813,40 +2121,14 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PaginatedTokenList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedTokenList'
           description: ''
     post:
       operationId: tokens_create
       description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+        Each user can have multiple authentication tokens. The reason to have
+        multiple tokens per user is that he (or she) may consume REST API from
+        multiple clients (or devices) using one single user account.
+        User may then use a separate authentication token per each device or client.
       tags:
       - tokens
       requestBody:
@@ -2863,14 +2145,12 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
           content:
             application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Token'
-            application/json:
               schema:
                 $ref: '#/components/schemas/Token'
           description: ''
@@ -2878,25 +2158,10 @@ paths:
     get:
       operationId: tokens_retrieve
       description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+        Each user can have multiple authentication tokens. The reason to have
+        multiple tokens per user is that he (or she) may consume REST API from
+        multiple clients (or devices) using one single user account.
+        User may then use a separate authentication token per each device or client.
       parameters:
       - in: path
         name: digest
@@ -2904,17 +2169,11 @@ paths:
           type: string
         description: A unique value identifying this auth token.
         required: true
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       tags:
       - tokens
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -2922,32 +2181,14 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Token'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Token'
           description: ''
     delete:
       operationId: tokens_destroy
       description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+        Each user can have multiple authentication tokens. The reason to have
+        multiple tokens per user is that he (or she) may consume REST API from
+        multiple clients (or devices) using one single user account.
+        User may then use a separate authentication token per each device or client.
       parameters:
       - in: path
         name: digest
@@ -2955,17 +2196,11 @@ paths:
           type: string
         description: A unique value identifying this auth token.
         required: true
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       tags:
       - tokens
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -2973,26 +2208,7 @@ paths:
   /api/users/:
     get:
       operationId: users_list
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Users endpoint
       parameters:
       - name: filter[search]
         required: false
@@ -3000,13 +2216,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - name: page[number]
         required: false
         in: query
@@ -3029,6 +2238,7 @@ paths:
       - users
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -3036,40 +2246,10 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PaginatedUserList'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedUserList'
           description: ''
     post:
       operationId: users_create
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
+      description: Users endpoint
       tags:
       - users
       requestBody:
@@ -3086,6 +2266,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '201':
@@ -3093,41 +2274,12 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
           description: ''
   /api/users/{id}/:
     get:
       operationId: users_retrieve
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Users endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -3138,6 +2290,7 @@ paths:
       - users
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -3145,40 +2298,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
           description: ''
     patch:
       operationId: users_partial_update
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Users endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -3201,6 +2325,7 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -3208,40 +2333,11 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
           description: ''
     delete:
       operationId: users_destroy
-      description: |-
-        This mixin provides a helper attributes to select or prefetch related models
-        based on the include specified in the URL.
-
-        __all__ can be used to specify a prefetch which should be done regardless of the include
-
-
-        .. code:: python
-
-            # When MyViewSet is called with ?include=author it will prefetch author and authorbio
-            class MyViewSet(viewsets.ModelViewSet):
-                queryset = Book.objects.all()
-                prefetch_for_includes = {
-                    '__all__': [],
-                    'category.section': ['category']
-                }
-                select_for_includes = {
-                    '__all__': [],
-                    'author': ['author', 'author__authorbio'],
-                }
+      description: Users endpoint
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -3252,6 +2348,7 @@ paths:
       - users
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '204':
@@ -3260,13 +2357,6 @@ paths:
     post:
       operationId: users_change_password_create
       parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       - in: path
         name: id
         schema:
@@ -3282,13 +2372,11 @@ paths:
         required: true
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
           content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Password'
             application/json:
               schema:
                 $ref: '#/components/schemas/Password'
@@ -3296,18 +2384,11 @@ paths:
   /api/users/me/:
     get:
       operationId: users_me_retrieve
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - vnd.api+json
       tags:
       - users
       security:
       - basicAuth: []
+      - Token Authentication: []
       - cookieAuth: []
       responses:
         '200':
@@ -3315,11 +2396,36 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
           description: ''
 components:
+  parameters:
+    fields:
+      name: fields
+      in: query
+      description: |-
+        [sparse fieldsets](https://jsonapi.org/format/#fetching-sparse-fieldsets).
+        Use fields[\<typename\>]=field1,field2,...,fieldN
+      required: false
+      style: deepObject
+      schema:
+        type: object
+      explode: true
+    include:
+      name: include
+      in: query
+      description: '[list of included related resources](https://jsonapi.org/format/#fetching-includes)'
+      required: false
+      style: form
+      schema:
+        type: string
+    sort:
+      name: sort
+      in: query
+      description: '[list of fields to sort by](https://jsonapi.org/format/#fetching-sorting)'
+      required: false
+      style: form
+      schema:
+        type: string
   schemas:
     ArchiveTypeEnum:
       enum:
@@ -3342,65 +2448,6 @@ components:
       - password
       - token
       - username
-    Automate:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 128
-        match:
-          type: string
-          maxLength: 256
-        matching_algorithm:
-          allOf:
-          - $ref: '#/components/schemas/MatchingAlgorithmEnum'
-          minimum: 0
-          maximum: 2147483647
-        is_case_sensitive:
-          type: boolean
-        dst_folder:
-          type: integer
-          nullable: true
-          title: Destination Folder
-      required:
-      - id
-      - name
-    ContentType:
-      type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        model:
-          type: string
-          title: Python model class name
-          maxLength: 100
-      required:
-      - id
-      - model
     CustomUserPreference:
       type: object
       properties:
@@ -3446,69 +2493,69 @@ components:
       - verbose_name
     DocumentDetails:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        lang:
-          type: string
-          title: Language
-          maxLength: 8
-        file_name:
-          type: string
-        ocr:
-          type: boolean
-        ocr_status:
-          $ref: '#/components/schemas/OcrStatusEnum'
-        parent:
-          type: integer
-        versions:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentVersion'
-          readOnly: true
-        size:
-          type: integer
-        page_count:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
-      - created_at
+      - type
       - id
-      - parent
-      - title
-      - updated_at
-      - versions
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            lang:
+              type: string
+              title: Language
+              maxLength: 8
+            file_name:
+              type: string
+            ocr:
+              type: boolean
+            ocr_status:
+              enum:
+              - unknown
+              - received
+              - started
+              - succeeded
+              - failed
+              type: string
+            versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentVersion'
+              readOnly: true
+            size:
+              type: integer
+            page_count:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     DocumentVersion:
       type: object
       description: |-
@@ -3573,49 +2620,44 @@ components:
       - pages
     Folder:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        parent:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
-      - created_at
+      - type
       - id
-      - parent
-      - title
-      - updated_at
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     Group:
       type: object
       required:
@@ -3643,46 +2685,58 @@ components:
               maxLength: 150
           required:
           - name
+    InboxCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+      - count
     IncludeVersionEnum:
       enum:
       - only_original
       - only_last
       type: string
-    MatchingAlgorithmEnum:
-      enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      type: integer
     Node:
       type: object
-      description: |-
-        A serializer for polymorphic models.
-        Useful for "lazy" parent models. Leaves should be represented with a regular serializer.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        parent:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
-      - created_at
+      - type
       - id
-      - parent
-      - title
-      - updated_at
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     NodeID:
       type: object
       properties:
@@ -3743,54 +2797,42 @@ components:
       required:
       - id
       - lang
-    OcrStatusEnum:
-      enum:
-      - unknown
-      - received
-      - started
-      - succeeded
-      - failed
-      type: string
     Page:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        number:
-          type: integer
-          maximum: 2147483647
-          minimum: -2147483648
-        text:
-          type: string
-        lang:
-          type: string
-          maxLength: 8
-        document_version:
-          type: integer
       required:
-      - document_version
+      - type
       - id
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            number:
+              type: integer
+              maximum: 2147483647
+              minimum: -2147483648
+            text:
+              type: string
+            lang:
+              type: string
+              maxLength: 8
+        relationships:
+          type: object
+          properties:
+            document_version:
+              $ref: '#/components/schemas/reltoone'
     PageReorder:
       type: object
       properties:
@@ -3799,8 +2841,12 @@ components:
           maxLength: 32
         old_number:
           type: integer
+          description: Page position within the document before  page's order change.Position
+            numbering starts with 1.
         new_number:
           type: integer
+          description: Desired new page position within the document. Position numbering
+            starts with 1.
       required:
       - id
       - new_number
@@ -3866,26 +2912,6 @@ components:
             $ref: '#/components/schemas/PageRotate'
       required:
       - pages
-    PaginatedAutomateList:
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page[number]=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page[number]=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Automate'
     PaginatedCustomUserPreferenceList:
       type: object
       properties:
@@ -4074,29 +3100,6 @@ components:
           maxLength: 200
       required:
       - password
-    PatchedAutomate:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 128
-        match:
-          type: string
-          maxLength: 256
-        matching_algorithm:
-          allOf:
-          - $ref: '#/components/schemas/MatchingAlgorithmEnum'
-          minimum: 0
-          maximum: 2147483647
-        is_case_sensitive:
-          type: boolean
-        dst_folder:
-          type: integer
-          nullable: true
-          title: Destination Folder
     PatchedCustomUserPreference:
       type: object
       properties:
@@ -4131,101 +3134,109 @@ components:
           readOnly: true
     PatchedDocumentDetails:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        lang:
-          type: string
-          title: Language
-          maxLength: 8
-        file_name:
-          type: string
-        ocr:
-          type: boolean
-        ocr_status:
-          $ref: '#/components/schemas/OcrStatusEnum'
-        parent:
-          type: integer
-        versions:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentVersion'
-          readOnly: true
-        size:
-          type: integer
-        page_count:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            lang:
+              type: string
+              title: Language
+              maxLength: 8
+            file_name:
+              type: string
+            ocr:
+              type: boolean
+            ocr_status:
+              enum:
+              - unknown
+              - received
+              - started
+              - succeeded
+              - failed
+              type: string
+            versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentVersion'
+              readOnly: true
+            size:
+              type: integer
+            page_count:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     PatchedFolder:
       type: object
-      description: |-
-        A `ModelSerializer` is just a regular `Serializer`, except that:
-
-        * A set of default fields are automatically populated.
-        * A set of default validators are automatically populated.
-        * Default `.create()` and `.update()` implementations are provided.
-
-        The process of automatically determining a set of serializer fields
-        based on the model fields is reasonably complex, but you almost certainly
-        don't need to dig into the implementation.
-
-        If the `ModelSerializer` class *doesn't* generate the set of fields that
-        you need you should either declare the extra/differing fields explicitly on
-        the serializer class, or simply use a `Serializer` class.
-
-
-        Included Mixins:
-
-        * A mixin class to enable sparse fieldsets is included
-        * A mixin class to enable validation of included resources is included
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        parent:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     PatchedGroup:
       type: object
       required:
@@ -4255,26 +3266,44 @@ components:
           - name
     PatchedNode:
       type: object
-      description: |-
-        A serializer for polymorphic models.
-        Useful for "lazy" parent models. Leaves should be represented with a regular serializer.
+      required:
+      - type
+      - id
+      additionalProperties: false
       properties:
+        type:
+          $ref: '#/components/schemas/type'
         id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        parent:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            title:
+              type: string
+              maxLength: 200
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/reltoone'
     PatchedRole:
       type: object
       required:
@@ -4465,6 +3494,10 @@ components:
       - content_type
       - id
       - name
+    ResourceIdentifierObject:
+      oneOf:
+      - $ref: '#/components/schemas/relationshipToOne'
+      - $ref: '#/components/schemas/relationshipToMany'
     Role:
       type: object
       required:
@@ -4594,25 +3627,39 @@ components:
           - name
     Token:
       type: object
-      description: Serializer to list tokens
-      properties:
-        token:
-          type: string
-          maxLength: 256
-        digest:
-          type: string
-          maxLength: 128
-        created:
-          type: string
-          format: date-time
-          readOnly: true
-        expiry:
-          type: string
-          format: date-time
-          nullable: true
       required:
-      - created
-      - digest
+      - type
+      - id
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/link'
+        attributes:
+          type: object
+          properties:
+            token:
+              type: string
+              maxLength: 256
+            digest:
+              type: string
+              maxLength: 128
+            created:
+              type: string
+              format: date-time
+              readOnly: true
+            expiry:
+              type: string
+              format: date-time
+              nullable: true
+          required:
+          - digest
     User:
       type: object
       required:
@@ -4678,7 +3725,202 @@ components:
               $ref: '#/components/schemas/reltoone'
             home_folder:
               $ref: '#/components/schemas/reltoone'
+    datum:
+      description: singular item
+      properties:
+        data:
+          $ref: '#/components/schemas/resource'
+    error:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        links:
+          $ref: '#/components/schemas/links'
+        code:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        source:
+          type: object
+          properties:
+            pointer:
+              type: string
+              description: A [JSON Pointer](https://tools.ietf.org/html/rfc6901) to
+                the associated entity in the request document [e.g. `/data` for a
+                primary data object, or `/data/attributes/title` for a specific attribute.
+            parameter:
+              type: string
+              description: A string indicating which query parameter caused the error.
+            meta:
+              $ref: '#/components/schemas/meta'
+    errors:
+      type: array
+      items:
+        $ref: '#/components/schemas/error'
+      uniqueItems: true
+    failure:
+      type: object
+      required:
+      - errors
+      properties:
+        errors:
+          $ref: '#/components/schemas/errors'
+        meta:
+          $ref: '#/components/schemas/meta'
+        jsonapi:
+          $ref: '#/components/schemas/jsonapi'
+        links:
+          $ref: '#/components/schemas/links'
+    id:
+      type: string
+      description: Each resource object’s type and id pair MUST [identify](https://jsonapi.org/format/#document-resource-object-identification)
+        a single, unique resource.
+    jsonapi:
+      type: object
+      description: The server's implementation
+      properties:
+        version:
+          type: string
+        meta:
+          $ref: '#/components/schemas/meta'
+      additionalProperties: false
+    link:
+      oneOf:
+      - description: a string containing the link's URL
+        type: string
+        format: uri-reference
+      - type: object
+        required:
+        - href
+        properties:
+          href:
+            description: a string containing the link's URL
+            type: string
+            format: uri-reference
+          meta:
+            $ref: '#/components/schemas/meta'
+    linkage:
+      type: object
+      description: the 'type' and 'id'
+      required:
+      - type
+      - id
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        meta:
+          $ref: '#/components/schemas/meta'
+    links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/link'
+    meta:
+      type: object
+      additionalProperties: true
+    nulltype:
+      type: object
+      nullable: true
+      default: null
+    onlymeta:
+      additionalProperties: false
+      properties:
+        meta:
+          $ref: '#/components/schemas/meta'
+    pageref:
+      oneOf:
+      - type: string
+        format: uri-reference
+      - $ref: '#/components/schemas/nulltype'
+    pagination:
+      type: object
+      properties:
+        first:
+          $ref: '#/components/schemas/pageref'
+        last:
+          $ref: '#/components/schemas/pageref'
+        prev:
+          $ref: '#/components/schemas/pageref'
+        next:
+          $ref: '#/components/schemas/pageref'
+    relationshipLinks:
+      description: optional references to other resource objects
+      type: object
+      additionalProperties: true
+      properties:
+        self:
+          $ref: '#/components/schemas/link'
+        related:
+          $ref: '#/components/schemas/link'
+    relationshipToMany:
+      description: An array of objects each containing the 'type' and 'id' for to-many
+        relationships
+      type: array
+      items:
+        $ref: '#/components/schemas/linkage'
+      uniqueItems: true
+    relationshipToOne:
+      description: reference to other resource in a to-one relationship
+      anyOf:
+      - $ref: '#/components/schemas/nulltype'
+      - $ref: '#/components/schemas/linkage'
+    reltomany:
+      description: a multiple 'to-many' relationship
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/relationshipLinks'
+        data:
+          $ref: '#/components/schemas/relationshipToMany'
+        meta:
+          $ref: '#/components/schemas/meta'
+    reltoone:
+      description: a singular 'to-one' relationship
+      type: object
+      properties:
+        links:
+          $ref: '#/components/schemas/relationshipLinks'
+        data:
+          $ref: '#/components/schemas/relationshipToOne'
+        meta:
+          $ref: '#/components/schemas/meta'
+    resource:
+      type: object
+      required:
+      - type
+      - id
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/type'
+        id:
+          $ref: '#/components/schemas/id'
+        attributes:
+          type: object
+        relationships:
+          type: object
+        links:
+          $ref: '#/components/schemas/links'
+        meta:
+          $ref: '#/components/schemas/meta'
+    type:
+      type: string
+      description: The [type](https://jsonapi.org/format/#document-resource-object-identification)
+        member is used to describe resource objects that share common attributes and
+        relationships.
   securitySchemes:
+    Token Authentication:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix Token
     basicAuth:
       type: http
       scheme: basic

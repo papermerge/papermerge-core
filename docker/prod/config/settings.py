@@ -306,12 +306,8 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # basic authentication for browsable API
-        'rest_framework.authentication.BasicAuthentication',
         # knox token based authentication
         'knox.auth.TokenAuthentication',
-        # SessionAuthentication required to keep session for browsable API
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',

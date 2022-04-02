@@ -18,6 +18,4 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name='schema'),
         name='redoc'
     ),
-    # provides views for browsable API login/logout
-    path('auth/', include('rest_framework.urls')),
 ]

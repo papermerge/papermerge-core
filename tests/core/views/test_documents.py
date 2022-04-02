@@ -80,15 +80,6 @@ class DocumentViewTest(TestCase):
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
 
-    def test_get_document_as_application_json(self):
-        url = reverse('document-detail', args=(self.doc.pk,))
-        response = self.client.get(url, HTTP_ACCEPT='application/json')
-
-        assert response.status_code == 200
-        assert response.accepted_media_type == 'application/json'
-        assert response.data['id'] == self.doc.pk
-        assert response.data['title'] == 'three-pages.pdf'
-
     def test_get_document_as_application_vnd_api_json(self):
         url = reverse('document-detail', args=(self.doc.pk,))
         response = self.client.get(url, HTTP_ACCEPT='application/vnd.api+json')

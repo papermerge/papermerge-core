@@ -14,7 +14,6 @@ config = Configula(
     config_env_var_name="PAPERMERGE_CONFIG"
 )
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 PROJ_ROOT = Path(__file__).resolve().parent.parent
 
@@ -231,7 +230,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
 

@@ -36,8 +36,7 @@ services:
     <<: *backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && (PathPrefix(`/api/`) || PathPrefix(`/static/`) || PathPrefix(`/auth/`))"
-      - "traefik.http.middlewares.backend-strip.stripprefix.forceSlash=false"
+      - "traefik.http.routers.backend.rule=Host(`papermerge.local`) && PathPrefix(`/api/`)"
   backend_init:
     <<: *backend
     depends_on:
@@ -60,7 +59,7 @@ services:
     volumes:
       - 'redisdata:/data'
   traefik:
-    image: "traefik:v2.5"
+    image: "traefik:v2.6"
     command:
       #- "--log.level=DEBUG"
       - "--api.insecure=true"

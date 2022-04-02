@@ -26,7 +26,7 @@ services:
   backend:
     <<: *backend
     ports:
-      - "8000:8090"
+      - "8000:8000"
   backend_init:
     <<: *backend
     depends_on:

@@ -98,23 +98,6 @@ STATIC_URL = config.get(
     default='/static/'
 )
 
-# This is where Papermerge will look for PDFs to index
-PAPERMERGE_IMPORTER_DIR = config.get(
-    "IMPORTER_DIR",
-    None
-)
-
-PAPERMERGE_FILES_MIN_UNMODIFIED_DURATION = config.get_var(
-    "FILES_MIN_UNMODIFIED_DURATION",
-    1
-)
-
-PAPERMERGE_IMPORTER_LOOP_TIME = config.get_var(
-    "IMPORTER_LOOP_TIME",
-    5
-)
-
-
 PAPERMERGE_OCR_DEFAULT_LANGUAGE = config.get(
     'ocr',
     'default_language',

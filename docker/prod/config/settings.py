@@ -1,9 +1,12 @@
 import os
+import logging
 from pathlib import Path
 from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
 from papermerge.core.openapi.append import JSONAPI_COMPONENTS
 
+
+logger = logging.getLogger(__name__)
 
 config = Configula(
     prefix="PAPERMERGE",

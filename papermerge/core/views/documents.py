@@ -9,7 +9,7 @@ from rest_framework_json_api.renderers import JSONRenderer
 from drf_spectacular.utils import extend_schema
 
 from papermerge.core.serializers import DocumentDetailsSerializer
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import get_storage_instance
 from papermerge.core.models import Document
 from papermerge.core.tasks import (
     ocr_document_task,
@@ -41,7 +41,7 @@ class DocumentUploadView(RequireAuthMixin, APIView):
         """
         payload = request.data['file']
         user_settings = request.user.preferences
-        namespace = getattr(default_storage, 'namespace', None)
+        namespace = getattr(get_storage_instance(), 'namespace', None)
 
         doc = Document.objects.get(pk=document_id)
         doc.upload(

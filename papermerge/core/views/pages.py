@@ -25,7 +25,7 @@ from papermerge.core.lib.utils import (
     annotate_page_data
 )
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage, abs_path
+from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
@@ -56,7 +56,7 @@ def copy_pages_data(old_version, new_version, pages_map):
             document_path=new_version.document_path,
             page_num=dst_page_number
         )
-        default_storage.copy_page(src=src_page_path, dst=dst_page_path)
+        get_storage_instance().copy_page(src=src_page_path, dst=dst_page_path)
 
 
 def reuse_ocr_data(old_version, new_version, page_map):
@@ -69,7 +69,7 @@ def reuse_ocr_data(old_version, new_version, page_map):
             document_path=new_version.document_path,
             page_num=new_number
         )
-        default_storage.copy_page(
+        get_storage_instance().copy_page(
             src=src_page_path,
             dst=dst_page_path
         )
@@ -178,7 +178,7 @@ def remove_pdf_pages(old_version, new_version, pages_to_delete):
     """
     # delete page from document's new version associated file
     pdf = Pdf.open(
-        default_storage.abspath(old_version.document_path.url)
+        abs_path(old_version.document_path.url)
     )
     _deleted_count = 0
     for page in pages_to_delete:
@@ -186,10 +186,10 @@ def remove_pdf_pages(old_version, new_version, pages_to_delete):
         _deleted_count += 1
 
     dirname = os.path.dirname(
-        default_storage.abspath(new_version.document_path.url)
+        abs_path(new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    pdf.save(default_storage.abspath(new_version.document_path.url))
+    pdf.save(abs_path(new_version.document_path.url))
 
 
 def reorder_pdf_pages(
@@ -198,7 +198,7 @@ def reorder_pdf_pages(
     pages_data,
     page_count
 ):
-    src = Pdf.open(default_storage.abspath(old_version.document_path.url))
+    src = Pdf.open(abs_path(old_version.document_path.url))
 
     dst = Pdf.new()
     reodered_list = sorted(pages_data, key=lambda item: item['new_number'])
@@ -225,17 +225,17 @@ def rotate_pdf_pages(
         - number
         - angle
     """
-    src = Pdf.open(default_storage.abspath(old_version.document_path.url))
+    src = Pdf.open(abs_path(old_version.document_path.url))
 
     for page_data in pages_data:
         page = src.pages.p(page_data['number'])
         page.rotate(page_data['angle'], relative=True)
 
     dirname = os.path.dirname(
-        default_storage.abspath(new_version.document_path.url)
+        abs_path(new_version.document_path.url)
     )
     os.makedirs(dirname, exist_ok=True)
-    src.save(default_storage.abspath(new_version.document_path.url))
+    src.save(abs_path(new_version.document_path.url))
 
 
 def reuse_ocr_data_after_rotate(
@@ -639,7 +639,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             pages.order_by('number'),
             dst_version.pages.order_by('number'),
         ):
-            default_storage.copy_page(
+            get_storage_instance().copy_page(
                 src=src_page.page_path,
                 dst=dst_page.page_path
             )
@@ -661,7 +661,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             # create new document version
             # with one page
             doc_version = doc.version_bump_from_pages(pages=[page])
-            default_storage.copy_page(
+            get_storage_instance().copy_page(
                 src=page.page_path,
                 dst=doc_version.pages.first().page_path
             )

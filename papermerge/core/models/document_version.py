@@ -2,7 +2,7 @@ import logging
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import abs_path
 
 from papermerge.core.lib.path import DocumentPath
 
@@ -65,7 +65,7 @@ class DocumentVersion(models.Model):
         return f"id={self.pk} number={self.number}"
 
     def abs_file_path(self):
-        return default_storage.abspath(
+        return abs_path(
             self.document_path.url
         )
 

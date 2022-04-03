@@ -5,7 +5,7 @@ from django.db import models
 from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import default_storage, abs_path
+from papermerge.core.storage import abs_path
 
 from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
@@ -335,7 +335,7 @@ class Page(models.Model):
         return data
 
     def get_svg(self):
-        svg_abs_path = default_storage.abspath(
+        svg_abs_path = abs_path(
             self.page_path.svg_url
         )
 

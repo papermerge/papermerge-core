@@ -3,7 +3,7 @@ import logging
 
 import ocrmypdf
 
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import abs_path
 from papermerge.core.lib import mime
 from papermerge.core.lib.tiff import convert_tiff2pdf
 from papermerge.core.lib.path import (
@@ -41,17 +41,11 @@ def _ocr_document(
     # if not file_name:
     #    input_file_name = input_doc_path.file_name
 
-    sidecars_dir = default_storage.abspath(
-        target_doc_path.dirname_sidecars()
-    )
+    sidecars_dir = abs_path(target_doc_path.dirname_sidecars())
 
-    input_document = default_storage.abspath(
-        input_doc_path.path
-    )
+    input_document = abs_path(input_doc_path.path)
 
-    output_document = default_storage.abspath(
-        target_doc_path.path
-    )
+    output_document = abs_path(target_doc_path.path)
 
     output_dir = os.path.dirname(output_document)
 
@@ -100,7 +94,7 @@ def ocr_document(
     )
 
     mime_type = mime.Mime(
-        default_storage.abspath(doc_path.url)
+        abs_path(doc_path.url)
     )
 
     if mime_type.is_pdf() or mime_type.is_image():
@@ -112,7 +106,7 @@ def ocr_document(
         )
     elif mime_type.is_tiff():
         new_filename = convert_tiff2pdf(
-            doc_url=default_storage.abspath(doc_path.url)
+            doc_url=abs_path(doc_path.url)
         )
         # now .pdf
         orig_file_name = doc_path.file_name

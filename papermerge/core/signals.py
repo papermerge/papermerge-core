@@ -15,7 +15,7 @@ from papermerge.core.models import (
     Folder,
     User,
 )
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import get_storage_instance
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def delete_files(sender, instance: Document, **kwargs):
     """
     for document_version in instance.versions.all():
         try:
-            default_storage.delete_doc(
+            get_storage_instance().delete_doc(
                 document_version.document_path
             )
         except IOError as error:

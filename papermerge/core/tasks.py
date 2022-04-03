@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from celery import shared_task
 from papermerge.core.ocr.document import ocr_document
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import abs_path
 
 from .models import (
     BaseTreeNode,
@@ -130,7 +130,7 @@ def update_document_pages(document_id, namespace=None):
     streams = []
 
     for page in doc_version.pages.order_by('number'):
-        url = default_storage.abspath(page.txt_url)
+        url = abs_path(page.txt_url)
         if os.path.exists(url):
             streams.append(open(url))
         else:

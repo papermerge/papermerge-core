@@ -13,9 +13,8 @@ from polymorphic_tree.managers import (
 )
 
 from papermerge.core.lib.path import DocumentPath, PagePath
-from papermerge.core.storage import abs_path
 
-from papermerge.core.storage import default_storage
+from papermerge.core.storage import get_storage_instance, abs_path
 from .kvstore import KVCompNode, KVNode
 
 from .node import BaseTreeNode
@@ -282,7 +281,7 @@ class Document(BaseTreeNode):
         document_version.size = getsize(file_path)
         document_version.page_count = len(pdf.pages)
 
-        default_storage.copy_doc(
+        get_storage_instance().copy_doc(
             src=file_path,
             dst=document_version.document_path
         )
@@ -398,7 +397,7 @@ class Document(BaseTreeNode):
 
     @property
     def absfilepath(self):
-        return default_storage.abspath(
+        return abs_path(
             self.path().url()
         )
 

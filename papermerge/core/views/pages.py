@@ -60,6 +60,8 @@ def copy_pages_data(old_version, new_version, pages_map):
 
 
 def reuse_ocr_data(old_version, new_version, page_map):
+    storage_instance = get_storage_instance()
+
     for new_number, old_number in page_map:
         src_page_path = PagePath(
             document_path=old_version.document_path,
@@ -69,7 +71,7 @@ def reuse_ocr_data(old_version, new_version, page_map):
             document_path=new_version.document_path,
             page_num=new_number
         )
-        get_storage_instance().copy_page(
+        storage_instance.copy_page(
             src=src_page_path,
             dst=dst_page_path
         )
@@ -479,18 +481,20 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             page_count=page_count
         )
 
-        page_map = list(zip(range(1, page_count + 1), reordered_list))
-
         reuse_ocr_data(
             old_version=old_version,
             new_version=new_version,
-            page_map=page_map
+            page_map=list(
+                zip(reordered_list, range(1, page_count + 1))
+            )
         )
 
         reuse_text_field(
             old_version=old_version,
             new_version=new_version,
-            page_map=page_map
+            page_map=list(
+                zip(range(1, page_count + 1), reordered_list)
+            )
         )
 
 

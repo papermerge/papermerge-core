@@ -481,6 +481,66 @@ class PageViewTestCase(TestCase):
         assert pages[1].text == 'fish'
         assert pages[1].number == 2
 
+    def test_pages_reorder_reuses_ocr_data(self):
+        """
+        Asserts that page reorder reuses correctly OCR data.
+
+        Only txt data file is checked here
+        """
+        self._upload(self.doc, 'three-pages.pdf')
+        pages = self.doc_version.pages.all()
+        # because the real OCRing is not triggered (too slow) we
+        # create our own versions of txt data
+        # Currently:
+        # page 1 contains text 'I am page 3'
+        # page 2 contains text 'I am page 2'
+        # page 3 contains text 'I am page 1'
+        current_order = [3, 1, 2]
+        for index in range(0, 3):
+            os.makedirs(
+                os.path.dirname(abs_path(pages[index].txt_url)),
+                exist_ok=True
+            )
+            with open(abs_path(pages[index].txt_url), 'w+') as f:
+                f.write(f'I am page {current_order[index]}')
+
+        pages_data = [
+            {
+                'id': pages[0].id,
+                'old_number': pages[0].number,  # = 1
+                'new_number': 3
+            }, {
+                'id': pages[1].id,
+                'old_number': pages[1].number,  # = 2
+                'new_number': 1
+            }, {
+                'id': pages[2].id,
+                'old_number': pages[2].number,  # = 3
+                'new_number': 2
+            },
+        ]
+
+        response = self.client.post(
+            reverse('pages_reorder'),
+            data={
+                "pages": pages_data  # reorder pages
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204
+        assert self.doc.versions.count() == 2
+
+        new_pages = self.doc.versions.last().pages.all()
+        # page 1 should contain text 'I am page 1'
+        # page 2 should contain text 'I am page 2'
+        # page 3 should contain text 'I am page 3'
+        for index in range(0, 3):
+            assert new_pages[index].number == index + 1
+            with open(abs_path(new_pages[index].txt_url)) as f:
+                text = f.read()
+                assert text == f'I am page {index + 1}'
+
     def test_pages_rotate(self):
         self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()

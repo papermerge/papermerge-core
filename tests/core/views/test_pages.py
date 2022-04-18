@@ -711,6 +711,47 @@ class PageViewTestCase(TestCase):
         assert destination_pages[3].text == 'tree'
         assert destination_pages[4].text == 'plant'
 
+    def test_move_to_document_reuses_ocr_data_copy_to_position_1(self):
+        """
+        Given two documents doc_a and doc_b, when moving
+        page two pages from doc_a to doc_b, OCR data is moved correctly.
+
+        Both documents have three pages.
+        This test copies two pages from document doc_a.pdf to doc_b.pdf
+        to position 1.
+        """
+        doc_a, doc_b, pages_a, pages_b = self._setup_pages_move_to_document()
+
+        response = self.client.post(
+            reverse('pages_move_to_document'),
+            data={
+                "pages": [pages_a[1].pk, pages_a[2].pk],
+                "dst": doc_b.pk,
+                "position": 1
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        assert doc_a.versions.count() == 2
+        assert doc_b.versions.count() == 2
+
+        new_pages_b = doc_b.versions.last().pages.all()
+
+        new_pages_text = [
+            'I am page doc_b_1',
+            'I am page doc_a_2',
+            'I am page doc_a_3',
+            'I am page doc_b_2',
+            'I am page doc_b_3'
+        ]
+
+        for index in range(0, 5):
+            with open(abs_path(new_pages_b[index].txt_url)) as f:
+                text = f.read()
+                assert text == new_pages_text[index]
+
     def test_move_to_folder_with_single_page_flag_on(self):
         """
         Move two pages from source document to destination folder
@@ -918,3 +959,39 @@ class PageViewTestCase(TestCase):
             page.update_text_field(io.StringIO(text))
 
         return pages
+
+    def _setup_pages_move_to_document(self):
+        doc_a = Document.objects.create_document(
+            title="doc_a.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        doc_b = Document.objects.create_document(
+            title="doc_A.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        self._upload(doc_a, 'three-pages.pdf')
+        self._upload(doc_b, 'three-pages.pdf')
+        pages_a = doc_a.versions.last().pages.all()
+        pages_b = doc_b.versions.last().pages.all()
+
+        for index in range(0, 3):
+            os.makedirs(
+                os.path.dirname(abs_path(pages_a[index].txt_url)),
+                exist_ok=True
+            )
+            with open(abs_path(pages_a[index].txt_url), 'w+') as f:
+                f.write(f'I am page doc_a_{index + 1}')
+
+        for index in range(0, 3):
+            os.makedirs(
+                os.path.dirname(abs_path(pages_b[index].txt_url)),
+                exist_ok=True
+            )
+            with open(abs_path(pages_b[index].txt_url), 'w+') as f:
+                f.write(f'I am page doc_b_{index + 1}')
+
+        return doc_a, doc_b, pages_a, pages_b

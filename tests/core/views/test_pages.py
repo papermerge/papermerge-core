@@ -752,6 +752,48 @@ class PageViewTestCase(TestCase):
                 text = f.read()
                 assert text == new_pages_text[index]
 
+    def test_move_to_document_reuses_ocr_data_copy_to_position_0(self):
+        """
+        Given two documents doc_a and doc_b, when moving
+        page two pages from doc_a to doc_b, OCR data is moved correctly.
+
+        Both documents have three pages.
+        This test copies two pages from document doc_a.pdf to doc_b.pdf
+        to position 0.
+        """
+        doc_a, doc_b, pages_a, pages_b = self._setup_pages_move_to_document()
+
+        response = self.client.post(
+            reverse('pages_move_to_document'),
+            data={
+                "pages": [pages_a[1].pk, pages_a[2].pk],
+                "dst": doc_b.pk,
+                "position": 0  # copy pages to the beginning of the target doc
+            },
+            format='json'
+        )
+
+        assert response.status_code == 204
+
+        assert doc_a.versions.count() == 2
+        assert doc_b.versions.count() == 2
+
+        new_pages_b = doc_b.versions.last().pages.all()
+
+        # newly copied pages are the beginning of the target document
+        new_pages_text = [
+            'I am page doc_a_2',
+            'I am page doc_a_3',
+            'I am page doc_b_1',
+            'I am page doc_b_2',
+            'I am page doc_b_3'
+        ]
+
+        for index in range(0, 5):
+            with open(abs_path(new_pages_b[index].txt_url)) as f:
+                text = f.read()
+                assert text == new_pages_text[index]
+
     def test_move_to_folder_with_single_page_flag_on(self):
         """
         Move two pages from source document to destination folder

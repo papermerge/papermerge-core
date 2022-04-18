@@ -46,17 +46,61 @@ from ..models.utils import OCR_STATUS_SUCCEEDED
 logger = logging.getLogger(__name__)
 
 
-def copy_pages_data(old_version, new_version, pages_map):
-    for src_page_number, dst_page_number in pages_map:
+def copy_pages_data_multi(
+    src_old_version,
+    dst_old_version,
+    dst_new_version,
+    position,
+    pages
+):
+    storage = get_storage_instance()
+    page_map = [(pos, pos) for pos in range(1, position + 1)]
+
+    if len(page_map) > 0:
+        for src_page_number, dst_page_number in page_map:
+            src_page_path = PagePath(
+                document_path=dst_old_version.document_path,
+                page_num=src_page_number
+            )
+            dst_page_path = PagePath(
+                document_path=dst_new_version.document_path,
+                page_num=dst_page_number
+            )
+        storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+    page_map = zip(
+        [page.number for page in pages.all()],
+        [pos for pos in range(position + 1, position + pages.count() + 1)]
+    )
+
+    for src_page_number, dst_page_number in page_map:
         src_page_path = PagePath(
-            document_path=old_version.document_path,
+            document_path=src_old_version.document_path,
             page_num=src_page_number
         )
         dst_page_path = PagePath(
-            document_path=new_version.document_path,
+            document_path=dst_new_version.document_path,
             page_num=dst_page_number
         )
-        get_storage_instance().copy_page(src=src_page_path, dst=dst_page_path)
+        storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+    dst_old_total_pages = dst_old_version.pages.count()
+    _range = range(
+        position + 1,
+        dst_old_total_pages + 1
+    )
+    page_map = [(pos, pos + pages.count()) for pos in _range]
+
+    for src_page_number, dst_page_number in page_map:
+        src_page_path = PagePath(
+            document_path=dst_old_version.document_path,
+            page_num=src_page_number
+        )
+        dst_page_path = PagePath(
+            document_path=dst_new_version.document_path,
+            page_num=dst_page_number
+        )
+        storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
 def reuse_ocr_data(old_version, new_version, page_map):
@@ -749,14 +793,12 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             position=data['position']
         )
 
-        dst_page_map = [
-            (p.number, p.number + data['position'])
-            for p in pages.order_by('number')
-        ]
-        copy_pages_data(
-            old_version=dst_old_version,
-            new_version=dst_new_version,
-            pages_map=dst_page_map
+        copy_pages_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            position=data['position'],
+            pages=pages
         )
 
         reuse_text_field_multi(

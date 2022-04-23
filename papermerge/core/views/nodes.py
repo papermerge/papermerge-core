@@ -5,10 +5,17 @@ from django.http import (
     Http404,
     HttpResponse
 )
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import (
+    GenericAPIView,
+    CreateAPIView,
+    ListAPIView,
+    UpdateAPIView,
+    DestroyAPIView
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework import status
 
@@ -18,6 +25,7 @@ from papermerge.core.serializers import (
     NodeSerializer,
     NodeMoveSerializer,
     NodesDownloadSerializer,
+    NodeTagsSerializer,
     InboxCountSerializer
 )
 from papermerge.core.tasks import nodes_move
@@ -168,3 +176,17 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
             return BaseTreeNode.objects.none()
 
         return super().get_queryset()
+
+
+class NodeTagsView(
+    RequireAuthMixin,
+    ListAPIView,
+    CreateAPIView,
+    UpdateAPIView,
+    DestroyAPIView
+
+):
+    parser_classes = [JSONParser]
+    renderer_classes = [JSONRenderer]
+    serializer_class = NodeTagsSerializer
+    pagination_class = None

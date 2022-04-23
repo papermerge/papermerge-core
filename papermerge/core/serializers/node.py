@@ -79,3 +79,10 @@ class NodesDownloadSerializer(rest_serializers.Serializer):
 
 class InboxCountSerializer(rest_serializers.Serializer):
     count = rest_serializers.IntegerField()
+
+
+class NodeTagsSerializer(rest_serializers.Serializer):
+    # list of tag names
+    tags = rest_serializers.ListField(
+        child=rest_serializers.CharField()
+    )

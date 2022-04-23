@@ -13,7 +13,8 @@ from .nodes import (
     NodesViewSet,
     NodesMoveView,
     NodesDownloadView,
-    InboxCountView
+    InboxCountView,
+    NodeTagsView,
 )
 from .documents import DocumentUploadView
 from .document_versions import DocumentVersionsDownloadView
@@ -43,6 +44,7 @@ __all__ = [
     'PermissionsList',
     'NodesViewSet',
     'NodesMoveView',
+    'NodeTagsView',
     'NodesDownloadView',
     'DocumentUploadView',
     'DocumentVersionsDownloadView',

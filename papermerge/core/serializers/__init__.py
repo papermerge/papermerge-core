@@ -7,6 +7,7 @@ from .node import (
     NodeSerializer,
     NodeMoveSerializer,
     NodesDownloadSerializer,
+    NodeTagsSerializer,
     InboxCountSerializer
 )
 from .ocr import OcrSerializer
@@ -45,6 +46,7 @@ __all__ = [
     'NodeSerializer',
     'NodeMoveSerializer',
     'NodesDownloadSerializer',
+    'NodeTagsSerializer',
     'OcrSerializer',
     'UserSerializer',
     'GroupSerializer',

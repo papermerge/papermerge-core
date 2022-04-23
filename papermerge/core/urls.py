@@ -45,6 +45,11 @@ urlpatterns = [
     ),
     path('nodes/download/', views.NodesDownloadView.as_view()),
     path(
+        'nodes/<pk>/tags/',
+        views.NodeTagsView.as_view(),
+        name='node-tags'
+    ),
+    path(
         'pages/reorder/',
         views.PagesReorderView.as_view(),
         name='pages_reorder'

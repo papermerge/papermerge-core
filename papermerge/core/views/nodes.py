@@ -8,7 +8,6 @@ from django.http import (
 from rest_framework.generics import (
     GenericAPIView,
     CreateAPIView,
-    ListAPIView,
     UpdateAPIView,
     DestroyAPIView
 )
@@ -180,7 +179,6 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
 
 class NodeTagsView(
     RequireAuthMixin,
-    ListAPIView,
     CreateAPIView,
     UpdateAPIView,
     DestroyAPIView
@@ -190,3 +188,73 @@ class NodeTagsView(
     renderer_classes = [JSONRenderer]
     serializer_class = NodeTagsSerializer
     pagination_class = None
+    http_method_names = [
+        'head',
+        'post',
+        'patch',
+        'delete'
+    ]
+
+    @extend_schema(operation_id="node_assign_tags")
+    def post(self, request, *args, **kwargs):
+        """
+        Assigns given list of tag names to the node.
+
+        All tags not present in given list of tags names
+        will be disassociated from the node; in other words upon
+        successful completion of the request node will have ONLY
+        tags from the list.
+        Yet another way of thinking about http POST is as it **replaces
+        existing node tags** with the one from input list.
+
+        Example:
+
+            Node N1 has 'invoice', 'important', 'unpaid' tags.
+
+            After following request:
+
+                POST /api/nodes/{N1}/tags/
+                {tags: ['invoice', 'important', 'paid']}
+
+            Node N1 will have 'invoice', 'important', 'paid' tags.
+            Notice that previously associated 'unpaid' tag is not
+            assigned to N1 anymore (because it was not in the provided list
+            of tags).
+
+        If you want to retain node tags not present in input tag list names
+        then use PATCH/PUT http method of this endpoint.
+        """
+        super().post(request, *args, **kwargs)
+
+    @extend_schema(operation_id="node_append_tags")
+    def patch(self, request, *args, **kwargs):
+        """
+        Appends given list of tag names to the node.
+
+        Retains all previously associated node tags.
+        Yet another way of thinking about http PATCH method is as it
+        **appends** input tags to the currently associated tags.
+
+        Example:
+
+            Node N1 has 'invoice', 'important' tags.
+
+            After following request:
+
+                POST /api/nodes/{N1}/tags/
+                {tags: ['paid']}
+
+            Node N1 will have 'invoice', 'important', 'paid' tags.
+            Notice that previously associated 'invoice' and 'important' tags
+            are still assigned to N1.
+        """
+        super().patch(request, *args, **kwargs)
+
+    @extend_schema(operation_id="node_dissociate_tags")
+    def delete(self, request, *args, **kwargs):
+        """
+        Dissociate given tags the node.
+
+        Tags models are not deleted - just dissociated from the node.
+        """
+        return self.destroy(request, *args, **kwargs)

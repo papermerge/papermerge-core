@@ -228,7 +228,8 @@ class NodesViewTestCase(TestCase):
         results = response.data['results']
         assert len(results) == 2  # there are two folders
 
-        assert 'doc_a' in results[0]['tags']
-        assert 'doc_b' in results[0]['tags']
-        assert 'folder_a' in results[1]['tags']
-        assert 'folder_b' in results[1]['tags']
+        doc_tag_names = [tag['name'] for tag in results[0]['tags']]
+        folder_tag_names = [tag['name'] for tag in results[1]['tags']]
+
+        assert set(['doc_a', 'doc_b']) == set(doc_tag_names)
+        assert set(['folder_a', 'folder_b']) == set(folder_tag_names)

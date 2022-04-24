@@ -1,5 +1,5 @@
 from papermerge.test import TestCase
-from papermerge.core.models import User
+from papermerge.core.models import User, Folder
 from papermerge.core.serializers import FolderSerializer
 
 
@@ -24,5 +24,21 @@ class TestFolderSerializer(TestCase):
         serializer.save(user_id=self.user.pk)
 
         self.assertEqual('My Documents', serializer.data['title'])
+
         self.assertIsNotNone(serializer.data)
         self.assertIsNotNone(serializer.data['id'])
+
+    def test_basic_folder_serialization_from_instance(self):
+        folder = Folder.objects.create(
+            title='My Documents',
+            user=self.user
+        )
+        folder.tags.set(
+            ['invoice', 'important'],
+            tag_kwargs={"user": self.user}
+        )
+        serializer = FolderSerializer(instance=folder)
+
+        assert serializer.data
+        assert serializer.data['id']
+        assert len(serializer.data['tags']) == 2

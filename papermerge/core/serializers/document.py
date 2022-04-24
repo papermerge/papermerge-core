@@ -1,11 +1,11 @@
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
-from taggit.serializers import TagListSerializerField
 
 from papermerge.core.models import Folder
 from papermerge.core.models import Document
 
 from .document_version import DocumentVersionSerializer
+from .tag import ColoredTagListSerializerField
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     file_name = serializers.CharField(required=False)
     ocr = serializers.BooleanField(required=False)
     ocr_status = serializers.CharField(required=False)
-    tags = TagListSerializerField(required=False)
+    tags = ColoredTagListSerializerField(required=False)
 
     class Meta:
         model = Document

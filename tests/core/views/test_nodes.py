@@ -1,8 +1,10 @@
+import json
+
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Folder
+from papermerge.core.models import User, Folder, Tag
 
 
 class NodesViewTestCase(TestCase):
@@ -42,3 +44,149 @@ class NodesViewTestCase(TestCase):
 
         # user's inbox contains one item
         assert response.data == {'count': 1}
+
+    def test_assign_tags_to_non_tagged_folder(self):
+        """
+        url:
+            POST /api/nodes/{N1}/tags/
+        body content:
+            ["paid", "important"]
+
+        where N1 is a folder without any tag
+
+        Expected result:
+            folder N1 will have two tags assigned: 'paid' and 'important'
+        """
+        receipts = Folder.objects.create(
+            title='Receipts',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        data = {
+            'tags': ['paid', 'important']
+        }
+        url = reverse('node-tags', args=(receipts.pk, ))
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 201
+        assert receipts.tags.count() == 2
+
+    def test_assign_tags_to_tagged_folder(self):
+        """
+        url:
+            POST /api/nodes/{N1}/tags/
+        body content:
+            ["paid", "important"]
+
+        where N1 is a folder with two tags 'important' and 'unpaid' already
+        assigned
+
+        Expected result:
+            folder N1 will have two tags assigned: 'paid' and 'important'.
+            Tag 'unpaid' will be dissociated from the folder.
+        """
+        receipts = Folder.objects.create(
+            title='Receipts',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        receipts.tags.set(
+            'unpaid', 'important',
+            tag_kwargs={"user": self.user}
+        )
+        data = {
+            'tags': ['paid', 'important']
+        }
+        url = reverse('node-tags', args=(receipts.pk, ))
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 201
+        assert receipts.tags.count() == 2
+        all_new_tags = [tag.name for tag in receipts.tags.all()]
+        # tag 'unpaid' is not attached to folder anymore
+        assert set(all_new_tags) == set(['paid', 'important'])
+        # model for tag 'unpaid' still exists, it was just
+        # dissociated from folder 'Receipts'
+        assert Tag.objects.get(name='unpaid')
+
+    def test_append_tags_to_folder(self):
+        """
+        url:
+            PATCH /api/nodes/{N1}/tags/
+        body content:
+            ["paid"]
+
+        where N1 is a folder with already one tag attached: 'important'
+
+        Expected result:
+            folder N1 will have two tags assigned: 'paid' and 'important'
+            Notice that 'paid' was appended next to 'important'.
+        """
+        receipts = Folder.objects.create(
+            title='Receipts',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        receipts.tags.set(
+            'important',
+            tag_kwargs={"user": self.user}
+        )
+        data = {
+            'tags': ['paid']
+        }
+        url = reverse('node-tags', args=(receipts.pk, ))
+        response = self.client.patch(
+            url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        assert receipts.tags.count() == 2
+        all_new_tags = [tag.name for tag in receipts.tags.all()]
+        assert set(all_new_tags) == set(['paid', 'important'])
+
+    def test_remove_tags_from_folder(self):
+        """
+        url:
+            DELETE /api/nodes/{N1}/tags/
+        body content:
+            ["important"]
+
+        where N1 is a folder with four tags 'important', 'paid', 'receipt',
+        'bakery'
+
+        Expected result:
+            folder N1 will have three tags assigned: 'paid', 'bakery', 'receipt'
+        """
+        receipts = Folder.objects.create(
+            title='Receipts',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        receipts.tags.set(
+            'important', 'paid', 'receipt', 'bakery',
+            tag_kwargs={"user": self.user}
+        )
+        data = {
+            'tags': ['important']
+        }
+        url = reverse('node-tags', args=(receipts.pk, ))
+        response = self.client.delete(
+            url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 204
+        assert receipts.tags.count() == 3
+        all_new_tags = [tag.name for tag in receipts.tags.all()]
+        assert set(all_new_tags) == set(['paid', 'bakery', 'receipt'])

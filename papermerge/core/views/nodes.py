@@ -1,4 +1,3 @@
-
 import logging
 
 from django.http import (
@@ -30,7 +29,7 @@ from papermerge.core.serializers import (
 from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
-    Document
+    Document,
 )
 
 from papermerge.core.nodes_download import get_nodes_download
@@ -188,12 +187,21 @@ class NodeTagsView(
     renderer_classes = [JSONRenderer]
     serializer_class = NodeTagsSerializer
     pagination_class = None
+
     http_method_names = [
         'head',
         'post',
         'patch',
         'delete'
     ]
+
+    def get_object(self):
+        try:
+            node = BaseTreeNode.objects.get(pk=self.kwargs['pk'])
+        except BaseTreeNode.DoesNotExist as e:
+            raise Http404("Node does not exist") from e
+
+        return node
 
     @extend_schema(operation_id="node_assign_tags")
     def post(self, request, *args, **kwargs):
@@ -224,7 +232,14 @@ class NodeTagsView(
         If you want to retain node tags not present in input tag list names
         then use PATCH/PUT http method of this endpoint.
         """
-        super().post(request, *args, **kwargs)
+        return super().post(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        node = self.get_object()
+        node.tags.set(
+            *serializer.data['tags'],
+            tag_kwargs={"user": self.request.user}
+        )
 
     @extend_schema(operation_id="node_append_tags")
     def patch(self, request, *args, **kwargs):
@@ -248,7 +263,19 @@ class NodeTagsView(
             Notice that previously associated 'invoice' and 'important' tags
             are still assigned to N1.
         """
-        super().patch(request, *args, **kwargs)
+        return super().patch(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        node = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        node.tags.add(
+            *serializer.data['tags'],
+            tag_kwargs={"user": self.request.user}
+        )
+
+        return Response(serializer.data)
 
     @extend_schema(operation_id="node_dissociate_tags")
     def delete(self, request, *args, **kwargs):
@@ -258,3 +285,12 @@ class NodeTagsView(
         Tags models are not deleted - just dissociated from the node.
         """
         return self.destroy(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        node = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        node.tags.remove(*serializer.data['tags'])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

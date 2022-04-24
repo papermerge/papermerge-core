@@ -1,4 +1,5 @@
 from rest_framework_json_api import serializers
+from taggit.serializers import TagListSerializerField
 
 from papermerge.core.models import Tag
 
@@ -16,3 +17,7 @@ class TagSerializer(serializers.ModelSerializer):
             'description',
             'pinned',
         )
+
+
+class ColoredTagListSerializerField(TagListSerializerField):
+    child = TagSerializer()

@@ -5,6 +5,7 @@ from rest_framework_json_api.relations import ResourceRelatedField
 from rest_framework_json_api.utils import get_resource_type_from_instance
 
 from papermerge.core.models import Folder
+from .tag import ColoredTagListSerializerField
 
 
 class NodeRelatedField(ResourceRelatedField):
@@ -33,6 +34,7 @@ class NodeRelatedField(ResourceRelatedField):
 class FolderSerializer(serializers.ModelSerializer):
 
     parent = ResourceRelatedField(queryset=Folder.objects)
+    tags = ColoredTagListSerializerField(required=False)
 
     class Meta:
         model = Folder
@@ -41,6 +43,7 @@ class FolderSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'parent',
+            'tags',
             'created_at',
             'updated_at'
         )

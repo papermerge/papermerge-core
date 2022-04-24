@@ -4,7 +4,12 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Folder, Tag
+from papermerge.core.models import (
+    User,
+    Folder,
+    Document,
+    Tag
+)
 
 
 class NodesViewTestCase(TestCase):
@@ -95,7 +100,7 @@ class NodesViewTestCase(TestCase):
             parent=self.user.inbox_folder
         )
         receipts.tags.set(
-            'unpaid', 'important',
+            ['unpaid', 'important'],
             tag_kwargs={"user": self.user}
         )
         data = {
@@ -136,7 +141,7 @@ class NodesViewTestCase(TestCase):
             parent=self.user.inbox_folder
         )
         receipts.tags.set(
-            'important',
+            ['important'],
             tag_kwargs={"user": self.user}
         )
         data = {
@@ -173,7 +178,7 @@ class NodesViewTestCase(TestCase):
             parent=self.user.inbox_folder
         )
         receipts.tags.set(
-            'important', 'paid', 'receipt', 'bakery',
+            ['important', 'paid', 'receipt', 'bakery'],
             tag_kwargs={"user": self.user}
         )
         data = {
@@ -190,3 +195,40 @@ class NodesViewTestCase(TestCase):
         assert receipts.tags.count() == 3
         all_new_tags = [tag.name for tag in receipts.tags.all()]
         assert set(all_new_tags) == set(['paid', 'bakery', 'receipt'])
+
+    def test_home_with_two_tagged_nodes(self):
+        """
+        Create two tagged nodes (one folder and one document) in user's home.
+        Retrieve user's home content and check that tags
+        were included in response as well.
+        """
+        folder = Folder.objects.create(
+            title='folder',
+            user=self.user,
+            parent=self.user.home_folder
+        )
+        folder.tags.set(
+            ['folder_a', 'folder_b'],
+            tag_kwargs={"user": self.user}
+        )
+        doc = Document.objects.create(
+            title='doc.pdf',
+            user=self.user,
+            parent=self.user.home_folder
+        )
+        doc.tags.set(
+            ['doc_a', 'doc_b'],
+            tag_kwargs={"user": self.user}
+        )
+        home = self.user.home_folder
+        url = reverse('node-detail', args=(home.pk, ))
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        results = response.data['results']
+        assert len(results) == 2  # there are two folders
+
+        assert 'doc_a' in results[0]['tags']
+        assert 'doc_b' in results[0]['tags']
+        assert 'folder_a' in results[1]['tags']
+        assert 'folder_b' in results[1]['tags']

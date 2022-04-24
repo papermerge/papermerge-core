@@ -237,7 +237,7 @@ class NodeTagsView(
     def perform_create(self, serializer):
         node = self.get_object()
         node.tags.set(
-            *serializer.data['tags'],
+            serializer.data['tags'],
             tag_kwargs={"user": self.request.user}
         )
 

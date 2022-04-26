@@ -26,6 +26,16 @@ services:
       - 9300:9300
     volumes:
       - es-data:/usr/share/elasticsearch/data
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.16.0
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es:9200
+    ports:
+      - 5601:5601
+    depends_on:
+      - es
 volumes:
   postgres_data2:
   redisdata:

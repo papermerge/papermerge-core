@@ -67,6 +67,11 @@ class DocumentIndex(ElasticSearchDocument):
     breadcrumb = es_fields.ListField(es_fields.TextField())
     node_type = 'document'
     user_id = es_fields.KeywordField()
+    tags = es_fields.NestedField(properties={
+        'name': es_fields.KeywordField(),
+        'bg_color': es_fields.KeywordField(),
+        'fg_color': es_fields.KeywordField(),
+    })
 
     @property
     def highlight(self):
@@ -114,6 +119,11 @@ class FolderIndex(ElasticSearchDocument):
     breadcrumb = es_fields.ListField(es_fields.TextField())
     node_type = 'folder'
     user_id = es_fields.KeywordField()
+    tags = es_fields.NestedField(properties={
+        'name': es_fields.KeywordField(),
+        'bg_color': es_fields.KeywordField(),
+        'fg_color': es_fields.KeywordField(),
+    })
 
     def prepare_breadcrumb(self, instance):
         breadcrumb_items = [

@@ -253,3 +253,132 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
         # there must be one result as well
         assert len(response.data) == 1
         assert 'cat' in response.data[0]['text']
+
+
+class SearchByTags(ESTestCase, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create_user(username="user")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
+        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
+        shutil.rmtree(self.media / 'docs', ignore_errors=True)
+        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+
+    def test_search_folder_by_tag(self):
+        """
+        Very basic search of a folder with a single tag
+        """
+        folder1 = Folder.objects.create(
+            title="folder1",
+            user=self.user,
+            parent=self.user.home_folder
+        )
+        folder1.tags.set(
+            ['tag1'],
+            tag_kwargs={"user": self.user}
+        )
+
+        # folder2 has no tags attached
+        Folder.objects.create(
+            title="folder2", user=self.user,
+            parent=self.user.home_folder
+        )
+
+        response = self.client.get(
+            reverse('search'),
+            {'tags': 'tag1'}
+        )
+        assert response.status_code == 200
+
+        # there must be one result
+        assert len(response.data) == 1
+        assert 'folder1' in response.data[0]['title']
+
+    def test_search_folder_by_multiple_tag_default_ALL(self):
+        """
+        Very basic search of a folder with two tags.
+        By default search by tag will look for nodes with 'ALL'
+        tags assigned.
+        """
+        fruits = Folder.objects.create(
+            title="fruits",
+            user=self.user,
+            parent=self.user.home_folder
+        )
+        fruits.tags.set(
+            ['apple', 'fruits'],
+            tag_kwargs={"user": self.user}
+        )
+
+        # folder #2 has no tags attached
+        Folder.objects.create(
+            title="folder2", user=self.user,
+            parent=self.user.home_folder
+        )
+
+        # folder #3 has no tags attached
+        folder3 = Folder.objects.create(
+            title="folder3", user=self.user,
+            parent=self.user.home_folder
+        )
+
+        folder3.tags.set(
+            ['apple'],
+            tag_kwargs={"user": self.user}
+        )
+
+        response = self.client.get(
+            reverse('search'),
+            {'tags': 'apple,fruits'}
+        )
+        assert response.status_code == 200
+
+        # Only folder fruits has both tags attached
+        assert len(response.data) == 1
+        assert 'fruits' in response.data[0]['title']
+
+    def test_search_folder_by_multiple_tag_explicit_ANY(self):
+        """
+        Search of a folder with any of the two tags.
+        """
+        fruits = Folder.objects.create(
+            title="fruits",
+            user=self.user,
+            parent=self.user.home_folder
+        )
+        fruits.tags.set(
+            ['apple', 'fruits'],
+            tag_kwargs={"user": self.user}
+        )
+
+        # folder #2 has no tags attached
+        Folder.objects.create(
+            title="folder2", user=self.user,
+            parent=self.user.home_folder
+        )
+
+        # folder #3 has no tags attached
+        folder3 = Folder.objects.create(
+            title="folder3", user=self.user,
+            parent=self.user.home_folder
+        )
+
+        folder3.tags.set(
+            ['apple'],
+            tag_kwargs={"user": self.user}
+        )
+
+        response = self.client.get(
+            reverse('search'),
+            {'tags': 'apple,fruits', 'tags_op': 'any'}
+        )
+        assert response.status_code == 200
+
+        # Both folder 'fruits' and 'folder3' have 'apple' tag
+        # assigned
+        assert len(response.data) == 2
+        expected_result = set(['fruits', 'folder3'])
+        actual_result = set(result['title'] for result in response.data)
+        assert expected_result == actual_result

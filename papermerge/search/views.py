@@ -1,5 +1,4 @@
 from django.db.models import QuerySet
-from elasticsearch_dsl import Q
 
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -11,15 +10,20 @@ from drf_spectacular.utils import (
 )
 from papermerge.core.views.mixins import RequireAuthMixin
 from papermerge.search.serializers import SearchResultSerializer
-from papermerge.search.documents import FolderIndex, DocumentIndex
+from papermerge.search.utils import (
+    folder_query,
+    document_query,
+    TAGS_OP_ALL,
+    TAGS_OP_ANY
+)
 
 
 class SearchView(RequireAuthMixin, GenericAPIView):
     """
     Performs full text search on the documents and folders.
 
-    Folders are matched by their title. Documents are matched by title and
-    OCRed text.
+    Folders are matched by their title and assigned tags.
+    Documents are matched by title, OCRed text and assigned tags.
     """
     resource_name = 'search'
     serializer_class = SearchResultSerializer
@@ -33,33 +37,56 @@ class SearchView(RequireAuthMixin, GenericAPIView):
                 description='text to search',
                 required=True,
                 type=str,
+            ),
+            OpenApiParameter(
+                name='tags',
+                description=f"""
+                Comma delimited tags that should be assigned the node.
+                By default uses `{TAGS_OP_ALL}` operator i.e. all tags listed
+                here should be assgned to the node. For `{TAGS_OP_ANY}` operator
+                use `tags_ap={TAGS_OP_ANY}`
+                """,
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name='tags_op',
+                description=f"""
+                Operator to use when searching by tag. Can be either
+                `{TAGS_OP_ANY}` or `{TAGS_OP_ALL}`.
+                Default value is `{TAGS_OP_ALL}`.
+                For `{TAGS_OP_ANY}` - will return nodes with at least one of
+                    the tags assigned.
+                For `{TAGS_OP_ALL}` - will return only nodes with all of the
+                tags assigned.
+                """,
+                required=False,
+                type=str
             )
         ]
     )
     def get(self, request):
         query_text = request.query_params.get('q', '')
-        match = Q('match', title=query_text)
-        wildcard = Q('wildcard', title=f'*{query_text}*')
+        query_tags = request.query_params.get('tags', '')
+        tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
+        # never trust user input + make sure only valid options are used
+        if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
+            tags_op = TAGS_OP_ALL
 
-        folders_result = FolderIndex.search().query(
-            'match',
-            user_id=request.user.pk
-        ).query(match | wildcard)
-
-        documents_result = DocumentIndex.search().query(
-            'match',
-            user_id=request.user.pk
-        ).query(
-            'multi_match',
-            query=query_text,
-            fields=['title', 'text'],
-            type='phrase_prefix',
-        ).highlight(
-            'text',
-            fragment_size=25
+        folder_q = folder_query(
+            user_id=request.user.pk,
+            text=query_text,
+            tags=query_tags,
+            tags_op=tags_op
         )
 
-        result_list = list(folders_result) + list(documents_result)
+        document_q = document_query(
+            user_id=request.user.pk,
+            text=query_text,
+            tags=query_tags
+        )
+
+        result_list = list(folder_q) + list(document_q)
         serializer = SearchResultSerializer(result_list, many=True)
 
         return Response(serializer.data)

@@ -28,10 +28,18 @@ class ColoredTagListSerializerField(TagListSerializerField):
     def to_representation(self, value):
         if not isinstance(value, TagList):
             if not isinstance(value, list):
-                if self.order_by:
-                    tags = value.all().order_by(*self.order_by)
+                # value may come in as elastic search attrlist
+                # or value may come in as Django's ORM related manager
+                all_method = getattr(value, "all", None)
+                if callable(all_method):
+                    if self.order_by:
+                        tags = value.all().order_by(*self.order_by)
+                    else:
+                        tags = value.all()
                 else:
-                    tags = value.all()
+                    # arrived here via elastic search which returns
+                    # its own iterator
+                    tags = value
                 value = [
                     {
                         'name': tag.name,

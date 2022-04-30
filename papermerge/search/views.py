@@ -83,7 +83,8 @@ class SearchView(RequireAuthMixin, GenericAPIView):
         document_q = document_query(
             user_id=request.user.pk,
             text=query_text,
-            tags=query_tags
+            tags=query_tags,
+            tags_op=tags_op
         )
 
         result_list = list(folder_q) + list(document_q)

@@ -72,18 +72,24 @@ def folder_query(user_id, text, tags=[], tags_op=TAGS_OP_ALL):
     return query
 
 
-def document_query(user_id, text, tags=[]):
+def document_query(user_id, text, tags=[], tags_op=TAGS_OP_ALL):
+    clean_tags_list = cleanup_search_tags(tags)
+    query_text = Q()
+    if text:
+        query_text = Q(
+            'multi_match',
+            query=text,
+            fields=['title', 'text'],
+            type='phrase_prefix'
+        )
+
     query = DocumentIndex.search().query(
         'match',
         user_id=user_id
     ).query(
-        'multi_match',
-        query=text,
-        fields=['title', 'text'],
-        type='phrase_prefix'
-    ).highlight(
-        'text',
-        fragment_size=25
+        query_text
+    ).query(
+        tags_query(clean_tags_list, tags_op)
     )
 
     return query

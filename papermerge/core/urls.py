@@ -26,26 +26,30 @@ router.register(
 
 urlpatterns = [
     re_path(
-        r'documents/(?P<document_id>\d+)?/upload/(?P<file_name>[^/]+)',
+        r'documents/(?P<document_id>[0-9a-f-]+)?/upload/(?P<file_name>[^/]+)',
         views.DocumentUploadView.as_view(),
         name='documents_upload'
     ),
     path(
-        'document-versions/<int:pk>/download/',
+        'document-versions/<uuid:pk>/download/',
         views.DocumentVersionsDownloadView.as_view(),
     ),
     path(
-        'users/<int:pk>/change-password/',
+        'users/<uuid:pk>/change-password/',
         views.UserChangePassword.as_view()
     ),
-    path('users/me/', views.CurrentUserView.as_view()),
+    path(
+        'users/me/',
+        views.CurrentUserView.as_view(),
+        name='users-me'
+    ),
     path('nodes/move/', views.NodesMoveView.as_view()),
     path(
         'nodes/inboxcount/', views.InboxCountView.as_view(), name='inboxcount'
     ),
     path('nodes/download/', views.NodesDownloadView.as_view()),
     path(
-        'nodes/<pk>/tags/',
+        'nodes/<uuid:pk>/tags/',
         views.NodeTagsView.as_view(),
         name='node-tags'
     ),
@@ -71,7 +75,7 @@ urlpatterns = [
     ),
     path('pages/', views.PagesView.as_view(), name='pages'),  # only DELETE
     path(
-        'pages/<pk>/',
+        'pages/<uuid:pk>/',
         views.PageView.as_view(),
         name='pages_page'
     ),

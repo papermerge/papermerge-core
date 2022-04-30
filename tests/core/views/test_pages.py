@@ -53,7 +53,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 200
 
         json_data = json.loads(response.content)
-        assert json_data['data']['id'] == '1'
+        assert json_data['data']['id'] == str(page.pk)
         assert json_data['data']['attributes'] == {
             'lang': 'deu',
             'number': 1,

@@ -1,3 +1,4 @@
+import uuid
 import logging
 
 from django.db import models
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentVersion(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     document = models.ForeignKey(
         to='Document',

@@ -1,9 +1,10 @@
+import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from papermerge.core import validators
 
-from taggit.models import TagBase, GenericTaggedItemBase
+from taggit.models import TagBase, GenericUUIDTaggedItemBase
 from taggit.managers import TaggableManager
 
 
@@ -46,6 +47,8 @@ class UserTaggableManager(TaggableManager):
 
 
 class Tag(TagBase):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+
     bg_color = models.CharField(
         _("Background Color"),
         max_length=7,     # RGB color in hex notation
@@ -92,17 +95,8 @@ class Tag(TagBase):
         ordering = ['name']
         unique_together = ['name', 'user']
 
-    def to_dict(self):
-        return {
-            'bg_color': self.bg_color,
-            'fg_color': self.fg_color,
-            'name': self.name,
-            'description': self.description,
-            'pinned': self.pinned
-        }
 
-
-class ColoredTag(GenericTaggedItemBase):
+class ColoredTag(GenericUUIDTaggedItemBase):
     tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,

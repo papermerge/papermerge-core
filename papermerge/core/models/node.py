@@ -1,4 +1,5 @@
 import pytz
+import uuid
 
 from django.utils import timezone
 from django.db import models
@@ -56,6 +57,8 @@ CustomNodeManager = NodeManager.from_queryset(NodeQuerySet)
 
 
 class BaseTreeNode(PolymorphicMPTTModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+
     parent = PolymorphicTreeForeignKey(
         'self',
         models.CASCADE,

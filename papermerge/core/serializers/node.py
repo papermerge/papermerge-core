@@ -54,7 +54,7 @@ class NodeMoveSerializer(rest_serializers.Serializer):
 class NodesDownloadSerializer(rest_serializers.Serializer):
     # list of nodes to download
     node_ids = rest_serializers.ListField(
-        child=rest_serializers.CharField()
+        child=rest_serializers.UUIDField()
     )
     file_name = rest_serializers.CharField(
         max_length=32,

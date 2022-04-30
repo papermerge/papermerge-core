@@ -86,7 +86,7 @@ class DocumentViewTest(TestCase):
 
         assert response.status_code == 200
         assert response.accepted_media_type == 'application/vnd.api+json'
-        assert response.data['id'] == self.doc.pk
+        assert response.data['id'] == str(self.doc.pk)
         assert response.data['title'] == 'three-pages.pdf'
 
     def test_rename_document(self):
@@ -94,7 +94,7 @@ class DocumentViewTest(TestCase):
         body = {
             'data': {
                 'type': 'documents',
-                'id': self.doc.pk,
+                'id': str(self.doc.pk),
                 'attributes': {
                     'title': 'new-title.pdf'
                 }

@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 
 from django.db import models
 from pikepdf import Pdf, PdfImage
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Page(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     document_version = models.ForeignKey(
         to='DocumentVersion',

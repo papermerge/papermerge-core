@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib import auth
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AbstractUser
@@ -78,6 +80,8 @@ class User(AbstractUser):
     # Role is optional.
     # All users EXCEPT superuser
     # have associated a role
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+
     role = models.ForeignKey(
         'Role',
         verbose_name='role',

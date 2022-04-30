@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import Permission
 
@@ -13,6 +14,7 @@ class Role(models.Model):
     Another example: a guest role - might have a very minimal set of
     permissions suitable only for demo mode.
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     name = models.CharField(max_length=64)
     permissions = models.ManyToManyField(

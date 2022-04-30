@@ -22,12 +22,12 @@ class PageSerializer(serializers.ModelSerializer):
 class PageDeleteSerializer(rest_serializers.Serializer):
     # list of pages to delete
     pages = rest_serializers.ListField(
-        child=rest_serializers.CharField()
+        child=rest_serializers.UUIDField()
     )
 
 
 class PageReorderSerializer(rest_serializers.Serializer):
-    id = rest_serializers.CharField(max_length=32)
+    id = rest_serializers.UUIDField()
     old_number = rest_serializers.IntegerField(
         help_text='Page position within the document before '
         " page's order change."
@@ -44,7 +44,7 @@ class PagesReorderSerializer(rest_serializers.Serializer):
 
 
 class PageRotateSerializer(rest_serializers.Serializer):
-    id = rest_serializers.CharField(max_length=32)
+    id = rest_serializers.UUIDField()
     # rotation angle
     angle = rest_serializers.IntegerField()
 
@@ -55,17 +55,17 @@ class PagesRotateSerializer(rest_serializers.Serializer):
 
 class PagesMoveToFolderSerializer(rest_serializers.Serializer):
     pages = serializers.ListSerializer(
-        child=serializers.CharField()
+        child=serializers.UUIDField()
     )
     # destination folder node
-    dst = rest_serializers.CharField(max_length=32)
+    dst = rest_serializers.UUIDField()
     single_page = rest_serializers.BooleanField(default=False)
 
 
 class PagesMoveToDocumentSerializer(rest_serializers.Serializer):
     pages = serializers.ListSerializer(
-        child=serializers.CharField()
+        child=serializers.UUIDField()
     )
     # destination document node
-    dst = rest_serializers.CharField(max_length=32)
+    dst = rest_serializers.UUIDField()
     position = rest_serializers.IntegerField(default=-1)

@@ -78,7 +78,9 @@ jobs:
         if: ${{ github.event.inputs.tag != '' }}
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags:
+            - papermerge/papermerge:${{ github.event.inputs.tag }}
+            - latest
           file: docker/prod/Dockerfile
 
       - name: Build and push with RELEASE version

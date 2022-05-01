@@ -53,7 +53,7 @@ class DocumentUploadView(RequireAuthMixin, APIView):
         if user_settings['ocr__trigger'] == 'auto':
             ocr_document_task.apply_async(
                 kwargs={
-                    'document_id': doc.id,
+                    'document_id': str(doc.id),
                     'lang': doc.lang,
                     'namespace': namespace
                 },

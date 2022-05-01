@@ -1,5 +1,7 @@
 import logging
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from .task import Task
 
@@ -110,7 +112,26 @@ class Monitor:
 
         if self.is_monitored_task(task_name):
             task = self.get_task(task_name)
-            task.update(event.get('kwargs', None))
+            try:
+                event_kwargs = event.get('kwargs', None)
+                task.update(event_kwargs)
+            except Exception as exc:
+                message = f"""Error while updating task event:
+                    Event name: {task_name}
+                    Event kwargs: {event_kwargs}
+                    Exception: {exc}
+                    """
+                logger.error(message)
+                channel_layer = get_channel_layer()
+                channel_data = {
+                    'type': 'ocrdocumenttask.taskfailed',
+                    'error': message
+                }
+                async_to_sync(
+                    channel_layer.group_send
+                )(
+                    'ocr_document_task', channel_data
+                )
             task['type'] = event.get('type', None)
 
         if not task:

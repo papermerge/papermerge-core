@@ -74,3 +74,6 @@ class DocumentConsumer(JsonWebsocketConsumer):
             f"DocumentConsumer ocrdocumenttask_succeeded event={event}"
         )
         self.send_json(event)
+
+    def ocrdocumenttask_taskfailed(self, event):
+        self.send_json(event)

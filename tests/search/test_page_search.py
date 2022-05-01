@@ -1,5 +1,6 @@
 import io
 from django.test import TestCase
+from django_elasticsearch_dsl.test import ESTestCase
 
 from papermerge.core.models import (User, Document)
 from papermerge.search.documents import PageIndex
@@ -31,7 +32,7 @@ def create_document(title, streams):
     return doc, doc_version, user
 
 
-class TestPageSearch(TestCase):
+class TestPageSearch(ESTestCase, TestCase):
 
     def test_basic_page_search(self):
         """Very basic assertion of search feature"""
@@ -81,7 +82,6 @@ class TestPageSearch(TestCase):
         result_list = list(result)
 
         serializer = SearchResultSerializer(result_list, many=True)
-
         titles = [page['title'] for page in serializer.data]
 
         self.assertEqual(

@@ -72,11 +72,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata/papermerge
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.papermerge_image }}
+          images: ${{ env.papermerge_image }}, ${{ env.swagger_ui_image }}, ${{ env.redoc_image }}
 
       - name: Build and push with MANUAL tag/papermerge
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -86,12 +86,6 @@ jobs:
           tags: ${{ env.papermerge_image }}:${{ github.event.inputs.tag }}, ${{ env.papermerge_image }}:latest
           file: docker/prod/Dockerfile
 
-      - name: Extract metadata/swagger-ui
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.swagger_ui_image }}
-
       - name: Build and push with MANUAL tag/swagger-ui
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         if: ${{ github.event.inputs.tag != '' }}
@@ -99,12 +93,6 @@ jobs:
           push: true
           tags: ${{ env.swagger_ui_image }}:${{ github.event.inputs.tag }}, ${{ env.swagger_ui_image }}:latest
           file: docker/prod/Dockerfile.swagger
-
-      - name: Extract metadata/redoc
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.redoc_image }}
 
       - name: Build and push with MANUAL tag/redoc
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc

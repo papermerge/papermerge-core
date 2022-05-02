@@ -1,4 +1,4 @@
-name: Build/Push Docker Image
+name: Build/Pub Image
 
 on:
   release:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-and-push-image-to-docker-hub:
-    name: Build/Push to DockerHub
+    name: Build/Pub to dockerhub
     runs-on: ubuntu-latest
     steps:
 
@@ -51,7 +51,7 @@ jobs:
           file: docker/prod/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
   build-and-push-image-to-ghcr:
-    name: Build/Push to ghcr.io
+    name: Build/Pub to ghcr.io
     runs-on: ubuntu-latest
     env:
       papermerge_image: ghcr.io/papermerge/papermerge

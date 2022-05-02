@@ -10,6 +10,7 @@
 - Enable/Disabled OCR for certain documents (a.k.a skip OCR for some docs)
 - [OCRmyPDF](https://github.com/jbarlow83/OCRmyPDF) + [pikepdf](https://github.com/pikepdf/pikepdf) as PDF management utilities
 - Websocket notifications (via django channnels)
+- For IDs use UUIDs instead of integer sequence of numbers
 
 ### Changed
 

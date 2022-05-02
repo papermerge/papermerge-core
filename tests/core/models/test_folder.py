@@ -39,3 +39,15 @@ class TestFolderModel(TestCase):
             f'My Documents-{folder.id}',
             folder.idified_title
         )
+
+    def test_that_folder_can_be_saved_in_real_inbox(self):
+        """
+        Make sure that creating a folder in user's inbox does not raise
+        an exception.
+        """
+        Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        assert self.user.inbox_folder.children.count() == 1

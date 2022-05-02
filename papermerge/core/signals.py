@@ -157,5 +157,5 @@ def if_inbox_then_refresh(sender, instance, **kwargs):
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "inbox_refresh",
-            {"type": "inbox.refresh", "user_id": instance.user.pk}
+            {"type": "inbox.refresh", "user_id": str(instance.user.pk)}
         )

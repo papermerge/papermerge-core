@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Docker Image - Build/Push
 
 on:
   release:
@@ -12,8 +12,12 @@ on:
 
 jobs:
   build-and-push-image-to-docker-hub:
-    name: Build and Push Image to DockerHub
+    name: Build/Push to DockerHub
     runs-on: ubuntu-latest
+    env:
+      papermerge_image: ghcr.io/papermerge/papermerge
+      swagger_ui_image: ghcr.io/papermerge/swagger-ui
+      redoc_image: ghcr.io/papermerge/redoc
     steps:
 
       - name: Set up QEMU
@@ -51,6 +55,7 @@ jobs:
           file: docker/prod/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
   build-and-push-image-to-ghcr:
+    name: Build/Push to ghcr.io
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -67,25 +72,53 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata/papermerge
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ghcr.io/papermerge/papermerge
+          images: ${{ env.papermerge_image }}
 
-      - name: Build and push with MANUAL tag
+      - name: Build and push with MANUAL tag/papermerge
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         if: ${{ github.event.inputs.tag != '' }}
         with:
           push: true
-          tags: ghcr.io/papermerge/papermerge:${{ github.event.inputs.tag }}, ghcr.io/papermerge/papermerge:latest
+          tags: ${{ env.papermerge_image }}:${{ github.event.inputs.tag }}, ${{ env.papermerge_image }}:latest
           file: docker/prod/Dockerfile
+
+      - name: Extract metadata/swagger-ui
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.swagger_ui_image }}
+
+      - name: Build and push with MANUAL tag/swagger-ui
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        if: ${{ github.event.inputs.tag != '' }}
+        with:
+          push: true
+          tags: ${{ env.swagger_ui_image }}:${{ github.event.inputs.tag }}, ${{ env.swagger_ui_image }}:latest
+          file: docker/prod/Dockerfile.swagger
+
+      - name: Extract metadata/redoc
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.redoc_image }}
+
+      - name: Build and push with MANUAL tag/redoc
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        if: ${{ github.event.inputs.tag != '' }}
+        with:
+          push: true
+          tags: ${{ env.redoc_image }}:${{ github.event.inputs.tag }}, ${{ env.redoc_image }}:latest
+          file: docker/prod/Dockerfile.redoc
 
       - name: Build and push with RELEASE version
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         if: ${{ github.event.inputs.tag == '' }}
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.papermerge_image }}:${{ steps.meta.outputs.tags }}, ${{ env.papermerge_image }}:latest
           file: docker/prod/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}

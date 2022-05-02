@@ -38,7 +38,7 @@ Above command will start following services:
 - es (elasticsearch)
 - traefik (ingress or entry point)
 
-Add to your ``/etc/hosts`` following content:
+Add to your ``/etc/hosts`` desired hostname for your instance (e.g papermerge.local):
 
     127.0.0.1       papermerge.local
 
@@ -48,9 +48,11 @@ Open your web browser and point it to http://papermerge.local address.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-alpha2
+    APP_TAG=latest
     PAPERMERGE_JS_IMAGE=papermerge/papermerge.js
-    PAPERMERGE_JS_TAG=2.1.0-alpha2
+    PAPERMERGE_JS_TAG=latest
+
+    HOSTNAME=papermerge.local
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -71,6 +73,10 @@ Open your web browser and point it to http://papermerge.local address.
     SUPERUSER_PASSWORD=password
 
 
+Notice that ``HOSTNAME`` variable name from ``.env`` file should be same as hostname for papermerge
+instance from ``/etc/hosts``.
+
+
 ## prod-backend-only.yml
 
 Start only Papermerge DMS REST API backend in production mode:
@@ -89,7 +95,7 @@ REST API backend base url is ``http://localhost:8000/api/``.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-alpha2
+    APP_TAG=latest
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -128,7 +134,7 @@ REST API backend base url is ``http://localhost:8000/api/``.
 ``.env`` file example:
 
     APP_IMAGE=papermerge/papermerge
-    APP_TAG=2.1.0-dev2
+    APP_TAG=latest
 
     PAPERMERGE_SRC_DIR=/home/eugen/GitHub/PapermergeCore/papermerge/
 
@@ -175,11 +181,11 @@ Example of ``.env`` file:
 
 Build app docker image for production mode:
 
-    docker build -t papermerge/papermerge:2.1.0-alpha2 -f docker/Dockerfile .
+    docker build -t ghcr.io/papermerge/papermerge:latest -f docker/Dockerfile .
 
 Build app docker image for development mode:
 
-    docker build -t papermerge/papermerge:2.1.0-dev2 -f docker/Dockerfile .
+    docker build -t ghcr.io/papermerge/papermerge:latest -f docker/Dockerfile .
 
 
 ## Frontend Docker Image
@@ -190,16 +196,16 @@ with any REST API client; in this regard, Papermerge.JS is nothing more than
 a REST API client (though, very user friendly one).
 
 Note that both App and PapermergeJS docker images **should use same docker tag**
-i.e. app docker image ``papermerge/papermerge:2.1.0-alpha2`` (where tag is
-2.1.0-alpha2) is compatible with ``papermerge/papermerge.js:2.1.0-alpha2``
-frontend docker image. The compatibility is established based on ``2.1.0-alpha2``
+i.e. app docker image ``ghcr.io/papermerge/papermerge:2.1.0-alpha-2`` (where tag is
+2.1.0-alpha-2) is compatible with ``ghcr.io/papermerge/papermerge.js:2.1.0-alpha-2``
+frontend docker image. The compatibility is established based on ``2.1.0-alpha-2``
 tag.
 
 Following app and frontend docker images:
 
-- papermerge/papermerge:2.1.0-dev2
-- papermerge/papermerge.js:2.1.0-dev2
+- ghcr.io/papermerge/papermerge:2.1.0-alpha-2
+- ghcr.io/papermerge/papermerge.js:2.1.0-alpha-2
 
-are combatible as well (because they use same ``2.1.0-dev2`` docker tag).
+are combatible as well (because they use same ``2.1.0-alpha-2`` docker tag).
 
 Instructions how to build frontend docker image are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.

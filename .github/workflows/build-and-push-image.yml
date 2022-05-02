@@ -14,10 +14,6 @@ jobs:
   build-and-push-image-to-docker-hub:
     name: Build/Push to DockerHub
     runs-on: ubuntu-latest
-    env:
-      papermerge_image: ghcr.io/papermerge/papermerge
-      swagger_ui_image: ghcr.io/papermerge/swagger-ui
-      redoc_image: ghcr.io/papermerge/redoc
     steps:
 
       - name: Set up QEMU
@@ -57,6 +53,10 @@ jobs:
   build-and-push-image-to-ghcr:
     name: Build/Push to ghcr.io
     runs-on: ubuntu-latest
+    env:
+      papermerge_image: ghcr.io/papermerge/papermerge
+      swagger_ui_image: ghcr.io/papermerge/swagger-ui
+      redoc_image: ghcr.io/papermerge/redoc
     permissions:
       contents: read
       packages: write

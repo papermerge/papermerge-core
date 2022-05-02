@@ -2,7 +2,7 @@ FROM redocly/redoc
 
 ENV SPEC_URL=swagger.yaml
 
-COPY schema.yml /usr/share/nginx/html/swagger.yaml
+COPY docker/openapi-schema.yml /usr/share/nginx/html/swagger.yaml
 
 # HTTP static content is exposed on port 80
 # Example of usage:

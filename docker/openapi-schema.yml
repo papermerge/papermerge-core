@@ -20,9 +20,7 @@ paths:
               $ref: '#/components/schemas/AuthToken'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       - {}
       responses:
         '200':
@@ -114,9 +112,7 @@ paths:
       tags:
       - documents
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -143,7 +139,7 @@ paths:
         name: document_id
         schema:
           type: string
-          pattern: ^\d+$
+          pattern: ^[0-9a-f-]+$
         required: true
       - in: path
         name: file_name
@@ -161,9 +157,7 @@ paths:
       tags:
       - documents
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           description: No response body
@@ -175,15 +169,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Document.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Document.
         required: true
       tags:
       - documents
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -198,8 +191,9 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Document.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Document.
         required: true
       tags:
       - documents
@@ -216,9 +210,7 @@ paths:
               $ref: '#/components/schemas/PatchedDocumentDetails'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -233,15 +225,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Document.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Document.
         required: true
       tags:
       - documents
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -277,9 +268,7 @@ paths:
       tags:
       - folders
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -305,9 +294,7 @@ paths:
               $ref: '#/components/schemas/Folder'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -323,15 +310,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Folder.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Folder.
         required: true
       tags:
       - folders
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -346,8 +332,9 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Folder.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Folder.
         required: true
       tags:
       - folders
@@ -364,9 +351,7 @@ paths:
               $ref: '#/components/schemas/PatchedFolder'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -381,15 +366,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Folder.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Folder.
         required: true
       tags:
       - folders
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -425,9 +409,7 @@ paths:
       tags:
       - groups
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -453,9 +435,7 @@ paths:
               $ref: '#/components/schemas/Group'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -477,9 +457,7 @@ paths:
       tags:
       - groups
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -512,9 +490,7 @@ paths:
               $ref: '#/components/schemas/PatchedGroup'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -535,9 +511,7 @@ paths:
       tags:
       - groups
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -584,9 +558,7 @@ paths:
       tags:
       - nodes
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -627,9 +599,7 @@ paths:
               $ref: '#/components/schemas/Node'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -659,15 +629,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Documents.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Documents.
         required: true
       tags:
       - nodes
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -696,8 +665,9 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Documents.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Documents.
         required: true
       tags:
       - nodes
@@ -714,9 +684,7 @@ paths:
               $ref: '#/components/schemas/PatchedNode'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -745,15 +713,131 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this Documents.
+          type: string
+          format: uuid
+        description: A UUID string identifying this Documents.
         required: true
       tags:
       - nodes
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/nodes/{id}/tags/:
+    post:
+      operationId: node_assign_tags
+      description: |-
+        Assigns given list of tag names to the node.
+
+        All tags not present in given list of tags names
+        will be disassociated from the node; in other words upon
+        successful completion of the request node will have ONLY
+        tags from the list.
+        Yet another way of thinking about http POST is as it **replaces
+        existing node tags** with the one from input list.
+
+        Example:
+
+            Node N1 has 'invoice', 'important', 'unpaid' tags.
+
+            After following request:
+
+                POST /api/nodes/{N1}/tags/
+                {tags: ['invoice', 'important', 'paid']}
+
+            Node N1 will have 'invoice', 'important', 'paid' tags.
+            Notice that previously associated 'unpaid' tag is not
+            assigned to N1 anymore (because it was not in the provided list
+            of tags).
+
+        If you want to retain node tags not present in input tag list names
+        then use PATCH/PUT http method of this endpoint.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - nodes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeTags'
+        required: true
+      security:
+      - Token Authentication: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeTags'
+          description: ''
+    patch:
+      operationId: node_append_tags
+      description: |-
+        Appends given list of tag names to the node.
+
+        Retains all previously associated node tags.
+        Yet another way of thinking about http PATCH method is as it
+        **appends** input tags to the currently associated tags.
+
+        Example:
+
+            Node N1 has 'invoice', 'important' tags.
+
+            After following request:
+
+                POST /api/nodes/{N1}/tags/
+                {tags: ['paid']}
+
+            Node N1 will have 'invoice', 'important', 'paid' tags.
+            Notice that previously associated 'invoice' and 'important' tags
+            are still assigned to N1.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - nodes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNodeTags'
+      security:
+      - Token Authentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeTags'
+          description: ''
+    delete:
+      operationId: node_dissociate_tags
+      description: |-
+        Dissociate given tags the node.
+
+        Tags models are not deleted - just dissociated from the node.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - nodes
+      security:
+      - Token Authentication: []
       responses:
         '204':
           description: No response body
@@ -787,9 +871,7 @@ paths:
       tags:
       - nodes
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -814,9 +896,7 @@ paths:
       tags:
       - nodes
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -847,9 +927,7 @@ paths:
               $ref: '#/components/schemas/NodeMove'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -887,9 +965,7 @@ paths:
               $ref: '#/components/schemas/Ocr'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -914,9 +990,7 @@ paths:
       tags:
       - pages
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -938,13 +1012,12 @@ paths:
         name: id
         schema:
           type: string
+          format: uuid
         required: true
       tags:
       - pages
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -978,13 +1051,12 @@ paths:
         name: id
         schema:
           type: string
+          format: uuid
         required: true
       tags:
       - pages
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1011,9 +1083,7 @@ paths:
               $ref: '#/components/schemas/PagesMoveToDocument'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1047,9 +1117,7 @@ paths:
               $ref: '#/components/schemas/PagesMoveToFolder'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1070,9 +1138,7 @@ paths:
               $ref: '#/components/schemas/PagesReorder'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1093,9 +1159,7 @@ paths:
               $ref: '#/components/schemas/PagesRotate'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1129,9 +1193,7 @@ paths:
       tags:
       - permissions
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1170,9 +1232,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Permission'
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -1226,9 +1286,7 @@ paths:
       tags:
       - preferences
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1264,9 +1322,7 @@ paths:
       tags:
       - preferences
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1313,9 +1369,7 @@ paths:
               $ref: '#/components/schemas/CustomUserPreference'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1361,9 +1415,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedCustomUserPreference'
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1405,9 +1457,7 @@ paths:
               $ref: '#/components/schemas/CustomUserPreference'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1476,9 +1526,7 @@ paths:
       tags:
       - roles
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1534,9 +1582,7 @@ paths:
               $ref: '#/components/schemas/Role'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -1581,15 +1627,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this role.
+          type: string
+          format: uuid
+        description: A UUID string identifying this role.
         required: true
       tags:
       - roles
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1633,8 +1678,9 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this role.
+          type: string
+          format: uuid
+        description: A UUID string identifying this role.
         required: true
       tags:
       - roles
@@ -1651,9 +1697,7 @@ paths:
               $ref: '#/components/schemas/PatchedRole'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1697,15 +1741,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this role.
+          type: string
+          format: uuid
+        description: A UUID string identifying this role.
         required: true
       tags:
       - roles
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1736,9 +1779,7 @@ paths:
       tags:
       - schema
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       - {}
       responses:
         '200':
@@ -1766,8 +1807,8 @@ paths:
       description: |-
         Performs full text search on the documents and folders.
 
-        Folders are matched by their title. Documents are matched by title and
-        OCRed text.
+        Folders are matched by their title and assigned tags.
+        Documents are matched by title, OCRed text and assigned tags.
       parameters:
       - in: query
         name: q
@@ -1775,12 +1816,28 @@ paths:
           type: string
         description: text to search
         required: true
+      - in: query
+        name: tags
+        schema:
+          type: string
+        description: "\n                Comma delimited tags that should be assigned\
+          \ the node.\n                By default uses `all` operator i.e. all tags\
+          \ listed\n                here should be assgned to the node. For `any`\
+          \ operator\n                use `tags_ap=any`\n                "
+      - in: query
+        name: tags_op
+        schema:
+          type: string
+        description: "\n                Operator to use when searching by tag. Can\
+          \ be either\n                `any` or `all`.\n                Default value\
+          \ is `all`.\n                For `any` - will return nodes with at least\
+          \ one of\n                    the tags assigned.\n                For `all`\
+          \ - will return only nodes with all of the\n                tags assigned.\n\
+          \                "
       tags:
       - search
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1846,9 +1903,7 @@ paths:
       tags:
       - tags
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1904,9 +1959,7 @@ paths:
               $ref: '#/components/schemas/Tag'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -1956,9 +2009,7 @@ paths:
       tags:
       - tags
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2019,9 +2070,7 @@ paths:
               $ref: '#/components/schemas/PatchedTag'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2070,9 +2119,7 @@ paths:
       tags:
       - tags
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -2112,9 +2159,7 @@ paths:
       tags:
       - tokens
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2144,9 +2189,7 @@ paths:
               $ref: '#/components/schemas/Token'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -2172,9 +2215,7 @@ paths:
       tags:
       - tokens
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2199,9 +2240,7 @@ paths:
       tags:
       - tokens
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -2237,9 +2276,7 @@ paths:
       tags:
       - users
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2265,9 +2302,7 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '201':
           content:
@@ -2283,15 +2318,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this user.
+          type: string
+          format: uuid
+        description: A UUID string identifying this user.
         required: true
       tags:
       - users
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2306,8 +2340,9 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this user.
+          type: string
+          format: uuid
+        description: A UUID string identifying this user.
         required: true
       tags:
       - users
@@ -2324,9 +2359,7 @@ paths:
               $ref: '#/components/schemas/PatchedUser'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2341,15 +2374,14 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: A unique integer value identifying this user.
+          type: string
+          format: uuid
+        description: A UUID string identifying this user.
         required: true
       tags:
       - users
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '204':
           description: No response body
@@ -2360,7 +2392,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
+          type: string
+          format: uuid
         required: true
       tags:
       - users
@@ -2371,9 +2404,7 @@ paths:
               $ref: '#/components/schemas/Password'
         required: true
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2387,9 +2418,7 @@ paths:
       tags:
       - users
       security:
-      - basicAuth: []
       - Token Authentication: []
-      - cookieAuth: []
       responses:
         '200':
           content:
@@ -2511,8 +2540,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
@@ -2580,8 +2609,8 @@ components:
         * A mixin class to enable validation of included resources is included
       properties:
         id:
-          type: integer
-          readOnly: true
+          type: string
+          format: uuid
         number:
           type: integer
           maximum: 2147483647
@@ -2598,7 +2627,8 @@ components:
         pages:
           type: array
           items:
-            type: integer
+            type: string
+            format: uuid
         size:
           type: integer
           maximum: 9223372036854775807
@@ -2613,10 +2643,10 @@ components:
           type: string
           maxLength: 128
         document:
-          type: integer
+          type: string
+          format: uuid
       required:
       - document
-      - id
       - pages
     Folder:
       type: object
@@ -2638,11 +2668,13 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
+            tags:
+              type: string
             created_at:
               type: string
               format: date-time
@@ -2717,8 +2749,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
@@ -2760,6 +2792,15 @@ components:
       - nodes
       - source_parent
       - target_parent
+    NodeTags:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+      - tags
     NodeTypeEnum:
       enum:
       - document
@@ -2772,6 +2813,7 @@ components:
           type: array
           items:
             type: string
+            format: uuid
         file_name:
           type: string
           maxLength: 32
@@ -2817,8 +2859,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             number:
               type: integer
               maximum: 2147483647
@@ -2838,7 +2880,7 @@ components:
       properties:
         id:
           type: string
-          maxLength: 32
+          format: uuid
         old_number:
           type: integer
           description: Page position within the document before  page's order change.Position
@@ -2856,7 +2898,7 @@ components:
       properties:
         id:
           type: string
-          maxLength: 32
+          format: uuid
         angle:
           type: integer
       required:
@@ -2869,9 +2911,10 @@ components:
           type: array
           items:
             type: string
+            format: uuid
         dst:
           type: string
-          maxLength: 32
+          format: uuid
         position:
           type: integer
           default: -1
@@ -2885,9 +2928,10 @@ components:
           type: array
           items:
             type: string
+            format: uuid
         dst:
           type: string
-          maxLength: 32
+          format: uuid
         single_page:
           type: boolean
           default: false
@@ -3152,8 +3196,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
@@ -3217,11 +3261,13 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
+            tags:
+              type: string
             created_at:
               type: string
               format: date-time
@@ -3284,8 +3330,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             title:
               type: string
               maxLength: 200
@@ -3304,6 +3350,13 @@ components:
           properties:
             parent:
               $ref: '#/components/schemas/reltoone'
+    PatchedNodeTags:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
     PatchedRole:
       type: object
       required:
@@ -3324,8 +3377,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             name:
               type: string
               maxLength: 64
@@ -3364,8 +3417,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             name:
               type: string
               maxLength: 100
@@ -3409,8 +3462,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             username:
               type: string
               description: Required. 150 characters or fewer. Letters, digits and
@@ -3518,8 +3571,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             name:
               type: string
               maxLength: 64
@@ -3555,10 +3608,13 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         text:
           type: string
           default: ''
         title:
+          type: string
+        tags:
           type: string
         highlight:
           type: array
@@ -3574,6 +3630,7 @@ components:
           $ref: '#/components/schemas/NodeTypeEnum'
         user_id:
           type: string
+          format: uuid
       required:
       - breadcrumb
       - id
@@ -3600,8 +3657,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             name:
               type: string
               maxLength: 100
@@ -3680,8 +3737,8 @@ components:
           type: object
           properties:
             id:
-              type: integer
-              readOnly: true
+              type: string
+              format: uuid
             username:
               type: string
               description: Required. 150 characters or fewer. Letters, digits and
@@ -3921,10 +3978,3 @@ components:
       in: header
       name: Authorization
       description: Token-based authentication with required prefix Token
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: sessionid

@@ -2,7 +2,7 @@ FROM swaggerapi/swagger-ui
 
 ENV SWAGGER_JSON="/schema.yml"
 
-COPY schema.yml /schema.yml
+COPY docker/openapi-schema.yml /schema.yml
 
 # HTTP static content is exposed on port 8080
 # Example of usage:

@@ -96,14 +96,14 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
     def post(self, request):
         serializer = NodeMoveSerializer(data=request.data)
         if serializer.is_valid():
-            result = nodes_move.apply_async(
+            nodes_move.apply_async(
                 kwargs={
                     'source_parent': serializer.data['source_parent'],
                     'target_parent': serializer.data['target_parent'],
                     'nodes': serializer.data['nodes']
                 }
             )
-            return Response({'task_id': result.id})
+            return Response()
         else:
             return Response(
                 serializer.errors,

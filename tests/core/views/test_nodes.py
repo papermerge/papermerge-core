@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -233,3 +234,32 @@ class NodesViewTestCase(TestCase):
 
         assert set(['doc_a', 'doc_b']) == set(doc_tag_names)
         assert set(['folder_a', 'folder_b']) == set(folder_tag_names)
+
+    @patch('papermerge.core.views.nodes.nodes_move')
+    def test_nodes_move(self, nodes_move_mock):
+        doc = Document.objects.create(
+            title='doc.pdf',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+
+        url = reverse('nodes-move')
+        data = {
+            'nodes': [
+                {'id': str(doc.id)}
+            ],
+            'source_parent': {
+                'id': str(self.user.inbox_folder.id)
+            },
+            'target_parent': {
+                'id': str(self.user.home_folder.id)
+            }
+        }
+
+        response = self.client.post(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200, response.data

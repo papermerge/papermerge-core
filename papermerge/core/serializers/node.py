@@ -39,7 +39,7 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
 
 
 class NodeIDSerializer(rest_serializers.Serializer):
-    id = rest_serializers.CharField(max_length=32)
+    id = rest_serializers.UUIDField()
 
 
 class NodeMoveSerializer(rest_serializers.Serializer):

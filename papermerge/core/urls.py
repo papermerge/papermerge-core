@@ -43,7 +43,11 @@ urlpatterns = [
         views.CurrentUserView.as_view(),
         name='users-me'
     ),
-    path('nodes/move/', views.NodesMoveView.as_view()),
+    path(
+        'nodes/move/',
+        views.NodesMoveView.as_view(),
+        name='nodes-move'
+    ),
     path(
         'nodes/inboxcount/', views.InboxCountView.as_view(), name='inboxcount'
     ),

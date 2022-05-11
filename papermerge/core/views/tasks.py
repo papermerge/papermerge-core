@@ -28,7 +28,7 @@ class OCRView(RequireAuthMixin, GenericAPIView):
 
         ocr_document_task.apply_async(
             kwargs={
-                'document_id': doc.id,
+                'document_id': str(doc.id),
                 'lang': lang,
                 'namespace': namespace
             },

@@ -94,6 +94,10 @@ urlpatterns = [
         views.LogoutAllView.as_view(),
         name='knox_logoutall'
     ),
-    path('ocr/', views.OCRView.as_view()),
+    path(
+        'ocr/',
+        views.OCRView.as_view(),
+        name='tasks-ocr'
+    ),
     re_path(r"^", include(router.urls)),
 ]

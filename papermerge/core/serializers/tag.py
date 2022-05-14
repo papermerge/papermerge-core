@@ -18,6 +18,20 @@ class TagSerializer(serializers.ModelSerializer):
             'pinned',
         )
 
+    def save(self, **attrs):
+        user_id = attrs.get('user_id', None)
+        name = self.validated_data['name']
+        try:
+            Tag.objects.get(name=name, user_id=user_id)
+        except Tag.DoesNotExist:
+            pass
+        else:
+            raise serializers.ValidationError(
+                f"Tag with name='{name}' already exists"
+            )
+
+        return super().save(**attrs)
+
 
 class ColoredTagListSerializerField(TagListSerializerField):
     child = TagSerializer()

@@ -6,7 +6,7 @@ authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "~3.8"
 django = "^3.2"
 djangorestframework = "^3.12"
 django-cors-headers = "^3.9.0"
@@ -33,7 +33,6 @@ uritemplate = "^4.1.1"
 configula = "^0.4.0"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.2"
-mysqlclient = "^2.1.0"
 psycopg2-binary = "^2.9.2"
 daphne = "^3.0.2"
 django-elasticsearch-dsl = "^7.2.1"

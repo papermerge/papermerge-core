@@ -72,10 +72,6 @@ Open your web browser and point it to http://papermerge.local address.
     SUPERUSER_EMAIL=admin@mail.com
     SUPERUSER_PASSWORD=password
 
-
-instance from ``/etc/hosts``.
-
-
 ## prod-backend-only.yml
 
 Start only Papermerge DMS REST API backend in production mode:

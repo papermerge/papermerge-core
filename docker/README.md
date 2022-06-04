@@ -52,7 +52,7 @@ Open your web browser and point it to http://papermerge.local address.
     PAPERMERGE_JS_IMAGE=papermerge/papermerge.js
     PAPERMERGE_JS_TAG=latest
 
-    HOSTNAME=papermerge.local
+    USE_HOSTNAME=papermerge.local
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -73,7 +73,6 @@ Open your web browser and point it to http://papermerge.local address.
     SUPERUSER_PASSWORD=password
 
 
-Notice that ``HOSTNAME`` variable name from ``.env`` file should be same as hostname for papermerge
 instance from ``/etc/hosts``.
 
 

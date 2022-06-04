@@ -31,12 +31,12 @@ services:
     command: ws_server
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ws_server.rule=Host(`${HOSTNAME}`) && PathPrefix(`/ws/`)"
+      - "traefik.http.routers.ws_server.rule=Host(`${USE_HOSTNAME}`) && PathPrefix(`/ws/`)"
   backend:  # rest api backend / uwsgi
     <<: *backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.backend.rule=Host(`${USE_HOSTNAME}`) && PathPrefix(`/api/`)"
   backend_init:
     <<: *backend
     depends_on:
@@ -75,7 +75,7 @@ services:
     image: ${PAPERMERGE_JS_IMAGE}:${PAPERMERGE_JS_TAG}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`${HOSTNAME}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.traefik.rule=Host(`${USE_HOSTNAME}`) && PathPrefix(`/`)"
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
     environment:

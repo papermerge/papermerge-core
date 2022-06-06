@@ -1,13 +1,19 @@
 import os
+import yaml
+import logging
+import logging.config
 from pathlib import Path
 from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
 from papermerge.core.openapi.append import JSONAPI_COMPONENTS
 
 
+logger = logging.getLogger(__name__)
+
 config = Configula(
     prefix="PAPERMERGE",
     config_locations=[
+        "/etc/papermerge/papermerge.toml",
         "/etc/papermerge.toml",
         "papermerge.toml"
     ],
@@ -51,7 +57,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-DEBUG = True
+DEBUG = config.get('main', 'debug', True)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -326,47 +332,52 @@ REST_KNOX = {
   'TOKEN_TTL': None,
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+LOGGING_CFG_FILENAME = config.get('main', 'logging_cfg', None)
+if LOGGING_CFG_FILENAME:
+    dict_config = yaml.load(open(LOGGING_CFG_FILENAME))
+    logging.config.dictConfig(dict_config)
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+            },
         },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            },
         },
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console', ],
-    },
-    'loggers': {
-        'django.db.backends': {
+        'root': {
             'level': 'INFO',
             'handlers': ['console', ],
-            'propagate': False,
         },
-        'django.security.DisallowedHost': {
-            'level': 'INFO',
-            'handlers': ['console', ],
-            'propagate': False,
+        'loggers': {
+            'django.db.backends': {
+                'level': 'INFO',
+                'handlers': ['console', ],
+                'propagate': False,
+            },
+            'django.security.DisallowedHost': {
+                'level': 'INFO',
+                'handlers': ['console', ],
+                'propagate': False,
+            },
+            'papermerge.core.tasks': {
+                'level': 'DEBUG',
+                'handlers': ['console', ],
+                'propagate': True,
+            },
+            'celery': {
+                'level': 'DEBUG',
+                'handlers': ['console', ],
+                'propagate': True,
+            },
         },
-        'papermerge.core.tasks': {
-            'level': 'DEBUG',
-            'handlers': ['console', ],
-            'propagate': True,
-        },
-        'celery': {
-            'level': 'DEBUG',
-            'handlers': ['console', ],
-            'propagate': True,
-        },
-    },
-}
+    }
 
 CORS_ALLOW_HEADERS = list(default_cors_headers) + [
     "Authorization",

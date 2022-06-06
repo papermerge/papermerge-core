@@ -332,7 +332,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
 
         # as html
         if request.accepted_renderer.format in ('html', 'jpeg', 'jpg'):
-            logger.debug(f"Page ID={instance.id} requested as html, jpeg or jpg")
+            logger.debug(f"Page ID={instance.id} requested as html/jpeg/jpg")
             try:
                 jpeg_data = instance.get_jpeg()
             except IOError as exc:

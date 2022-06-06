@@ -324,7 +324,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         """Returns page as json, txt, jpeg or svg image
         """
         instance = self.get_object()
-
+        logger.debug(f"Retrieving page ID={instance.id}")
         # as plain text
         if request.accepted_renderer.format == 'txt':
             data = instance.text
@@ -332,6 +332,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
 
         # as html
         if request.accepted_renderer.format in ('html', 'jpeg', 'jpg'):
+            logger.debug(f"Page ID={instance.id} requested as html, jpeg or jpg")
             try:
                 jpeg_data = instance.get_jpeg()
             except IOError as exc:
@@ -341,6 +342,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
 
         # as svg (which includes embedded jpeg and HOCRed text overlay)
         if request.accepted_renderer.format == 'svg':
+            logger.debug(f"Page ID={instance.id} requested svg")
             content_type = 'image/svg+xml'
             try:
                 data = instance.get_svg()
@@ -360,6 +362,8 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
 
         # by default render page with json serializer
         serializer = self.get_serializer(instance)
+        logger.debug(f"Page ID={instance.id} renders default json serializer")
+
         return Response(serializer.data)
 
     @extend_schema(operation_id="Single page delete")

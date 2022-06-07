@@ -66,6 +66,11 @@ class Command(BaseCommand):
         # Load task modules from all registered Django app configs.
         celery_app.autodiscover_tasks()
 
+        logger.debug(f"CELERY_WORKER_HOSTNAME={settings.CELERY_WORKER_HOSTNAME}")
+        logger.debug(f"CELERY_WORKER_BEAT={settings.CELERY_WORKER_BEAT}")
+        logger.debug(f"CELERY_WORKER_QUIET={settings.CELERY_WORKER_QUIET}")
+        logger.debug(f"CELERY_WORKER_CONCURRENCY={settings.CELERY_WORKER_CONCURRENCY}")
+
         celery_worker = CeleryWorker(
             hostname=settings.CELERY_WORKER_HOSTNAME,
             app=celery_app,

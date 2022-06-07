@@ -1,6 +1,5 @@
 import os
 import yaml
-import logging
 import logging.config
 from pathlib import Path
 from corsheaders.defaults import default_headers as default_cors_headers
@@ -36,9 +35,11 @@ es_hosts = config.get('elasticsearch', 'hosts', default=None)
 es_port = config.get('elasticsearch', 'port', default=None)
 
 CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
-
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
-CELERY_WORKER_CONCURENCY = 1
+CELERY_WORKER_HOSTNAME = os.environ.get('HOSTNAME', default="hostname")
+CELERY_WORKER_CONCURRENCY = config.get('worker', 'concurrency', default=1)
+CELERY_WORKER_QUIET = config.get('worker', 'quiet', default=True)
+CELERY_WORKER_BEAT = config.get('worker', 'beat', default=True)
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

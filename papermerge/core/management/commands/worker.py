@@ -5,6 +5,7 @@ from celery import Celery
 from celery.apps.worker import Worker as CeleryWorker
 
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from papermerge.core.task_monitor import (
     task_monitor,
@@ -66,12 +67,12 @@ class Command(BaseCommand):
         celery_app.autodiscover_tasks()
 
         celery_worker = CeleryWorker(
-            hostname="localhost",
+            hostname=settings.CELERY_WORKER_HOSTNAME,
             app=celery_app,
-            beat=True,
-            quiet=True,
+            beat=settings.CELERY_WORKER_BEAT,
+            quiet=settings.CELERY_WORKER_QUIET,
             task_events=True,  # without this monitoring events won't work
-            concurrency=1
+            concurrency=settings.CELERY_WORKER_CONCURRENCY
         )
 
         # Set pidfile if it the corresponding argument has been provided

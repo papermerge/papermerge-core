@@ -179,5 +179,4 @@ class AppSettings():
         )
 
 
-
 settings = AppSettings(prefix="PAPERMERGE")

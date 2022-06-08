@@ -19,29 +19,6 @@ class AppSettings():
         return value
 
     @property
-    def TASK_MONITOR_STORE_CLASS(self):  # noqa
-        return self._settings(
-            "TASK_MONITOR_STORE_CLASS",
-            "papermerge.core.task_monitor.store.RedisStore"
-        )
-
-    @property
-    def TASK_MONITOR_STORE_URL(self):  # noqa
-        return self._settings(
-            "TASK_MONITOR_STORE_URL",
-            "redis://localhost/0"
-        )
-
-    @property
-    def TASK_MONITOR_STORE_KEYS_TIMEOUT(self):  # noqa
-        # in memory store keys (redis keys TTL) timeout
-        # in seconds
-        return self._settings(
-            "TASK_MONITOR_STORE_KEYS_TIMEOUT",
-            1200  # in seconds
-        )
-
-    @property
     def DEFAULT_FILE_STORAGE(self):  # noqa
         return self._settings(
             "DEFAULT_FILE_STORAGE",

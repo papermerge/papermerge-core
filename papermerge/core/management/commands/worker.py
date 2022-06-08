@@ -7,43 +7,8 @@ from celery.apps.worker import Worker as CeleryWorker
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from papermerge.core.task_monitor import (
-    task_monitor,
-    TASK_SENT,
-    TASK_RECEIVED,
-    TASK_STARTED,
-    TASK_SUCCEEDED,
-    TASK_FAILED
-)
-
 logger = logging.getLogger(__name__)
 celery_app = Celery('papermerge')
-
-
-def on_event(event):
-    task_monitor.save_event(event)
-
-
-def monitor_events(celery_app):
-
-    with celery_app.connection() as conn:
-        recv = celery_app.events.Receiver(
-            conn,
-            handlers={
-                TASK_SENT: on_event,
-                TASK_RECEIVED: on_event,
-                TASK_STARTED: on_event,
-                TASK_SUCCEEDED: on_event,
-                TASK_FAILED: on_event,
-            }
-        )
-        recv.capture(limit=None, timeout=None, wakeup=True)
-
-
-def setup_event_listening(celery_app):
-    thread = threading.Thread(target=monitor_events, args=[celery_app])
-    thread.daemon = True
-    thread.start()
 
 
 class Command(BaseCommand):
@@ -87,7 +52,5 @@ class Command(BaseCommand):
         # Set pidfile if it the corresponding argument has been provided
         if options['pidfile']:
             celery_worker.pidfile = options['pidfile']
-
-        setup_event_listening(celery_app)
 
         celery_worker.start()

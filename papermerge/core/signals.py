@@ -164,11 +164,14 @@ def if_inbox_then_refresh(sender, instance, **kwargs):
             "inbox_refresh",
             {"type": "inbox.refresh", "user_id": str(instance.user.pk)}
         )
+
+
 # Tasks that need to notify websocket clients
 MONITORED_TASKS = (
     'papermerge.core.tasks.ocr_document_task',
     'papermerge.core.tasks.nodes_move'
 )
+
 
 def get_channel_data(task_name, type):
 

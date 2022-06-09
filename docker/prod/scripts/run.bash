@@ -21,7 +21,7 @@ exec_ws_server() {
 }
 
 exec_worker() {
-  exec $MANAGE worker
+  exec celery --app config worker --hostname="worker${HOSTNAME}@papermerge"
 }
 
 exec_server_init() {

@@ -18,7 +18,7 @@ redis = "^3.5"
 ocrmypdf = "^12.7.2"
 ocrmypdf-papermerge = "^0.3"
 django-dynamic-preferences = "^1.10"
-celery = "^5.0"
+celery = {version = "^5.2", extras = ["gevent", "redis"]}
 django-taggit = "^2.1"
 pyyaml = "^5.4"
 lxml = "^4.6"

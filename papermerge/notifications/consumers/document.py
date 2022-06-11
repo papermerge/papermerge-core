@@ -46,25 +46,49 @@ class DocumentConsumer(RequireAuth, JsonWebsocketConsumer):
         )(self.group_name, self.channel_name)
 
     def ocrdocumenttask_taskreceived(self, event: dict):
-        _update_document_ocr_status(event, model_utils.OCR_STATUS_RECEIVED)
         logger.debug(
-            f"DocumentConsumer ocrdocumenttask_received event={event}"
+            "ocrdocumenttask_taskreceived triggered"
         )
-        self.send_json(event)
+        self._ocr_document_event(
+            event=event,
+            type=model_utils.OCR_STATUS_RECEIVED
+        )
 
-    def ocrdocumenttask_taskstarted(self, event):
-        _update_document_ocr_status(event, model_utils.OCR_STATUS_STARTED)
+    def ocrdocumenttask_taskstarted(self, event: dict):
         logger.debug(
-            f"DocumentConsumer ocrdocumenttask_started event={event}"
+            "ocrdocumenttask_taskstarted triggered"
         )
-        self.send_json(event)
+        self._ocr_document_event(
+            event=event,
+            type=model_utils.OCR_STATUS_STARTED
+        )
 
-    def ocrdocumenttask_tasksucceeded(self, event):
-        _update_document_ocr_status(event, model_utils.OCR_STATUS_SUCCEEDED)
+    def ocrdocumenttask_tasksucceeded(self, event: dict):
         logger.debug(
-            f"DocumentConsumer ocrdocumenttask_succeeded event={event}"
+            "ocrdocumenttask_tasksucceeded triggered"
         )
-        self.send_json(event)
+        self._ocr_document_event(
+            event=event,
+            type=model_utils.OCR_STATUS_SUCCEEDED
+        )
 
-    def ocrdocumenttask_taskfailed(self, event):
+    def ocrdocumenttask_taskfailed(self, event: dict):
+        logger.debug(
+            "ocrdocumenttask_taskfailed triggered"
+        )
+        self._ocr_document_event(
+            event=event,
+            type=model_utils.OCR_STATUS_FAILED
+        )
+
+    def _ocr_document_event(self, event, type):
+        if event['user_id'] != str(self.user.id):
+            # notification is intended only for user who initiated it
+            return
+
+        _update_document_ocr_status(event, type)
+
+        logger.debug(
+            f"DocumentConsumer event={event} type={type} for user_id={self.user.id}"
+        )
         self.send_json(event)

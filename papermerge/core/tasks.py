@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def ocr_document_task(
     document_id,
     lang,
+    user_id,  # UUID of the user who initiated OCR of the document
     namespace=None
 ):
     """
@@ -143,7 +144,8 @@ def update_document_pages(document_id, namespace=None):
 def nodes_move(
     source_parent,  # noqa
     target_parent,
-    nodes
+    nodes,
+    user_id  # UUID of the user who initiated nodes_move
 ):
     """
     `source_parent` dictionary with only one key - 'id'

@@ -55,7 +55,8 @@ class DocumentUploadView(RequireAuthMixin, APIView):
                 kwargs={
                     'document_id': str(doc.id),
                     'lang': doc.lang,
-                    'namespace': namespace
+                    'namespace': namespace,
+                    'user_id': str(request.user.id)
                 },
                 link=update_document_pages.s(namespace)
             )

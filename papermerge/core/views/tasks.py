@@ -30,7 +30,8 @@ class OCRView(RequireAuthMixin, GenericAPIView):
             kwargs={
                 'document_id': str(doc.id),
                 'lang': lang,
-                'namespace': namespace
+                'namespace': namespace,
+                'user_id': str(request.user.id)
             },
             link=update_document_pages.s(namespace)
         )

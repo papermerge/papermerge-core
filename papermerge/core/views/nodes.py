@@ -100,7 +100,8 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
                 kwargs={
                     'source_parent': serializer.data['source_parent'],
                     'target_parent': serializer.data['target_parent'],
-                    'nodes': serializer.data['nodes']
+                    'nodes': serializer.data['nodes'],
+                    'user_id': str(request.user.id)
                 }
             )
             return Response()

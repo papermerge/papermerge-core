@@ -24,4 +24,14 @@ class InboxRefreshConsumer(RequireAuth, JsonWebsocketConsumer):
         )(self.group_name, self.channel_name)
 
     def inbox_refresh(self, data):
+        logger.debug("inbox_refresh event triggered")
+
+        if data['user_id'] != str(self.user.id):
+            # notification is intended only for users who
+            # initiated document updates
+            return
+
+        logger.debug(
+            f"inbox refresh data={data} for user_id={self.user.id}"
+        )
         self.send_json(data)

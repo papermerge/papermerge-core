@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 HEADER_NAME = 'authorization'
 TOKEN_NAME = 'token'
 
+
 @database_sync_to_async
 def get_user(token_key):
     try:
@@ -38,7 +39,9 @@ def extract_token(headers):
         if key.lower() == HEADER_NAME:
             try:
                 token_identifier, token_value = value.split(' ')
-                if token_identifier and token_identifier.strip().lower() == TOKEN_NAME:
+                if token_identifier:
+                    token_identifier = token_identifier.strip().lower()
+                if token_identifier == TOKEN_NAME:
                     return token_value.strip()
             except ValueError:
                 logger.warning(

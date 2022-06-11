@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 HEADER_NAME = 'authorization'
 TOKEN_NAME = 'token'
+SEC_WEBSOCKET_PROTOCOL = 'sec-websocket-protocol'
+ACCESS_TOKEN_NAME = 'access_token'
 
 
 @database_sync_to_async
@@ -24,6 +26,34 @@ def get_user(token_key):
         return None
 
 
+def extract_from_auth_header(value):
+    try:
+        token_identifier, token_value = value.split(' ')
+        if token_identifier:
+            token_identifier = token_identifier.strip().lower()
+        if token_identifier == TOKEN_NAME:
+            return token_value.strip()
+    except ValueError:
+        logger.warning(
+            f"Poorly formatted Authorization header {value}"
+        )
+        return None
+
+
+def extract_from_sec_websocket_protocol_header(value):
+    try:
+        token_access_identifier, token_value = value.split(',')
+        if token_access_identifier:
+            token_access_identifier = token_access_identifier.strip().lower()
+        if token_access_identifier == ACCESS_TOKEN_NAME:
+            return token_value.strip()
+    except ValueError:
+        logger.warning(
+            f"Poorly formatted Sec-WebSocket-Protocol header {value}"
+        )
+        return None
+
+
 def extract_token(headers):
     """
     Returns token from list of headers
@@ -34,20 +64,12 @@ def extract_token(headers):
     #
     """
     for _key, _value in headers:
-        key = _key.decode()
+        key = _key.decode().lower()
         value = _value.decode()
-        if key.lower() == HEADER_NAME:
-            try:
-                token_identifier, token_value = value.split(' ')
-                if token_identifier:
-                    token_identifier = token_identifier.strip().lower()
-                if token_identifier == TOKEN_NAME:
-                    return token_value.strip()
-            except ValueError:
-                logger.warning(
-                    f"Poorly formatted Authorization header {value}"
-                )
-                return None
+        if key == HEADER_NAME:
+            return extract_from_auth_header(value)
+        if key == SEC_WEBSOCKET_PROTOCOL:
+            return extract_from_sec_websocket_protocol_header(value)
 
     return None
 

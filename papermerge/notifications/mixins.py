@@ -11,4 +11,4 @@ class RequireAuth:
         async_to_sync(
             self.channel_layer.group_add
         )(self.group_name, self.channel_name)
-        self.accept()
+        self.accept('access_token')

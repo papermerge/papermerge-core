@@ -41,6 +41,7 @@ class DocumentConsumer(RequireAuth, JsonWebsocketConsumer):
 
     def disconnect(self, close_code):
         logger.debug("DISCONNECT")
+
         async_to_sync(
             self.channel_layer.group_discard
         )(self.group_name, self.channel_name)

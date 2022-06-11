@@ -89,6 +89,6 @@ class DocumentConsumer(RequireAuth, JsonWebsocketConsumer):
         _update_document_ocr_status(event, type)
 
         logger.debug(
-            f"DocumentConsumer event={event} type={type} for user_id={self.user.id}"
+            f"Doc Consumer ev={event} type={type} for user_id={self.user.id}"
         )
         self.send_json(event)

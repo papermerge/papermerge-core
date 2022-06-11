@@ -5,6 +5,7 @@ from channels.generic.websocket import JsonWebsocketConsumer
 
 from papermerge.core.models import Document
 from papermerge.core.models import utils as model_utils
+from papermerge.notifications.mixins import RequireAuth
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def _update_document_ocr_status(event: dict, ocr_status):
             # life goes on...
 
 
-class DocumentConsumer(JsonWebsocketConsumer):
+class DocumentConsumer(RequireAuth, JsonWebsocketConsumer):
     """
     Synchronous Consumer.
 
@@ -37,16 +38,6 @@ class DocumentConsumer(JsonWebsocketConsumer):
     """
 
     group_name = "ocr_document_task"
-
-    def connect(self):
-        logger.debug(
-            f"DocumentConsumer CONNECT group_name{self.group_name}"
-            f" channel_name={self.channel_name}"
-        )
-        async_to_sync(
-            self.channel_layer.group_add
-        )(self.group_name, self.channel_name)
-        self.accept()
 
     def disconnect(self, close_code):
         logger.debug("DISCONNECT")

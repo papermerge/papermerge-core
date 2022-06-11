@@ -3,21 +3,13 @@ import logging
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 
+from papermerge.notifications.mixins import RequireAuth
+
 logger = logging.getLogger(__name__)
 
 
-class NodesMoveConsumer(JsonWebsocketConsumer):
+class NodesMoveConsumer(RequireAuth, JsonWebsocketConsumer):
     group_name = "nodes_move"
-
-    def connect(self):
-        logger.debug(
-            f"NodesMoveConsumer CONNECT group_name{self.group_name}"
-            f" channel_name={self.channel_name}"
-        )
-        async_to_sync(
-            self.channel_layer.group_add
-        )(self.group_name, self.channel_name)
-        self.accept()
 
     def disconnect(self, close_code):
         logger.debug("Nodes Move DISCONNECT")

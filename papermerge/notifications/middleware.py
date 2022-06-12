@@ -43,14 +43,13 @@ def get_user(token_key):
     return None
 
 
-
 def extract_from_auth_header(value: str) -> str:
 
     if not value:
         return None
 
     try:
-        token_identifier, token_value = re.split('\s+', value.strip())
+        token_identifier, token_value = re.split(r'\s+', value.strip())
         if token_identifier:
             token_identifier = token_identifier.strip().lower()
         if token_identifier == TOKEN_NAME:

@@ -4,10 +4,17 @@ import logging
 from channels.middleware import BaseMiddleware
 from knox.models import AuthToken
 from knox.settings import CONSTANTS
+from knox.crypto import hash_token
 
 from channels.db import database_sync_to_async
 
 logger = logging.getLogger(__name__)
+
+try:
+    from hmac import compare_digest
+except ImportError:
+    def compare_digest(a, b):
+        return a == b
 
 
 HEADER_NAME = 'authorization'
@@ -19,12 +26,22 @@ ACCESS_TOKEN_NAME = 'access_token'
 @database_sync_to_async
 def get_user(token_key):
     try:
-        token = AuthToken.objects.get(
+        auth_token = AuthToken.objects.get(
             token_key=token_key[:CONSTANTS.TOKEN_KEY_LENGTH]
         )
-        return token.user
     except AuthToken.DoesNotExist:
         return None
+
+    digest = hash_token(token_key)
+
+    if compare_digest(digest, auth_token.digest):
+        if not auth_token.user.is_active:
+            return None
+
+        return auth_token.user
+
+    return None
+
 
 
 def extract_from_auth_header(value: str) -> str:
@@ -45,7 +62,10 @@ def extract_from_auth_header(value: str) -> str:
         return None
 
 
-def extract_from_sec_websocket_protocol_header(value):
+def extract_from_sec_websocket_protocol_header(value: str) -> str:
+    if not value:
+        return None
+
     try:
         token_access_identifier, token_value = value.split(',')
         if token_access_identifier:
@@ -63,10 +83,16 @@ def extract_token(headers):
     """
     Returns token from list of headers
 
-    #
-    #  header_name    token_name   token_value
-    #  Authorization: Token        <token>
-    #
+    Token can be passed in two ways (or formats):
+    1. Authorization: Token <value>
+    2. Sec-WebSocket-Protocol: access_token, <value>
+
+    First case may be used by command line utilities.
+    Second case is used by browser clients via
+
+        WebSocket(url, ['access_token', token])
+
+    If no token header was found, returns None.
     """
     for _key, _value in headers:
         key = _key.decode().lower()

@@ -20,4 +20,7 @@ class RequireAuth:
         #   header with value 'access_token'
         # which fixes the error in Chrome Browser
         # https://github.com/django/channels/issues/1369#issuecomment-724299511
-        self.accept('access_token')
+        if 'access_token' in self.scope['subprotocols']:
+            self.accept('access_token')
+        else:
+            self.accept()

@@ -11,7 +11,7 @@ exec_tests_core() {
   poetry run \
     python -m pytest \
     --disable-warnings \
-    tests/core/ "$@"
+    tests/core/  tests/notifications/ "$@"
 }
 
 exec_tests_search() {

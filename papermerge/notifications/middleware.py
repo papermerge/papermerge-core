@@ -1,3 +1,4 @@
+import re
 import logging
 
 from channels.middleware import BaseMiddleware
@@ -26,16 +27,20 @@ def get_user(token_key):
         return None
 
 
-def extract_from_auth_header(value):
+def extract_from_auth_header(value: str) -> str:
+
+    if not value:
+        return None
+
     try:
-        token_identifier, token_value = value.split(' ')
+        token_identifier, token_value = re.split('\s+', value.strip())
         if token_identifier:
             token_identifier = token_identifier.strip().lower()
         if token_identifier == TOKEN_NAME:
             return token_value.strip()
     except ValueError:
         logger.warning(
-            f"Poorly formatted Authorization header {value}"
+            f"Poorly formatted Authorization header '{value}'"
         )
         return None
 

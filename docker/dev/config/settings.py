@@ -1,6 +1,5 @@
 import os
 import yaml
-import logging
 import logging.config
 from pathlib import Path
 from corsheaders.defaults import default_headers as default_cors_headers
@@ -334,7 +333,7 @@ REST_KNOX = {
 
 LOGGING_CFG_FILENAME = config.get('main', 'logging_cfg', None)
 if LOGGING_CFG_FILENAME:
-    dict_config = yaml.load(open(LOGGING_CFG_FILENAME))
+    dict_config = yaml.load(open(LOGGING_CFG_FILENAME), Loader=yaml.FullLoader)
     logging.config.dictConfig(dict_config)
 else:
     LOGGING = {

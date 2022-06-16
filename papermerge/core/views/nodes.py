@@ -30,6 +30,7 @@ from papermerge.core.tasks import nodes_move
 from papermerge.core.models import (
     BaseTreeNode,
     Document,
+    Access
 )
 
 from papermerge.core.nodes_download import get_nodes_download
@@ -51,6 +52,12 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     """
     serializer_class = NodeSerializer
     queryset = BaseTreeNode.objects.all()
+    # object level permissions
+    access_object_permissions = {
+        'retrieve': Access.PERM_READ,
+        'update': Access.PERM_WRITE,
+        'delete': Access.PERM_DELETE
+    }
 
     @extend_schema(
         operation_id="Retrieve Node",

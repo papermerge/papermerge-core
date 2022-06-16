@@ -10,6 +10,7 @@ from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
+from papermerge.core.auth import CustomModelPermissions
 from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class UsersViewSet(RequireAuthMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     renderer_classes = (JSONAPIRenderer,)
+    permission_classes = [CustomModelPermissions]
 
 
 class UserChangePassword(RequireAuthMixin, GenericAPIView):

@@ -36,7 +36,8 @@ urlpatterns = [
     ),
     path(
         'users/<uuid:pk>/change-password/',
-        views.UserChangePassword.as_view()
+        views.UserChangePassword.as_view(),
+        name='users-change-password'
     ),
     path(
         'users/me/',

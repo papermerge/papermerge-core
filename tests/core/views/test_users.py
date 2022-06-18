@@ -12,6 +12,26 @@ class UsersViewTest(TestCase):
 
         assert response.status_code == 200
 
+    @perms('change_user')
+    def test_change_user_password(self):
+        """
+        POST /users/<uuid>/change-password/
+        {'password': <password>}
+        should change password of the user identified with <uuid>
+        """
+        user = baker.make('core.user')
+        user.set_password('1234')
+        assert user.check_password('1234')
+
+        url = reverse('users-change-password', kwargs={'pk': user.id})
+
+        response = self.post_json(url, {'password': 'abcd'})
+
+        assert response.status_code == 200, response.content
+
+        user.refresh_from_db()
+        assert user.check_password('abcd')
+
 
 class UsersViewPermissionsTestCase(TestCase):
 
@@ -22,6 +42,17 @@ class UsersViewPermissionsTestCase(TestCase):
         """
         baker.make('core.user')
         response = self.client.get(reverse('user-list'))
+        assert response.status_code == 403
+
+    def test_change_user_password_forbidden_without_perm(self):
+        """
+        'change_user' permission is required for changing password
+        other users' password
+        """
+        user = baker.make('core.user')
+        url = reverse('users-change-password', kwargs={'pk': user.id})
+
+        response = self.post_json(url, {'password': 'abcd'})
         assert response.status_code == 403
 
     @perms('view_user')

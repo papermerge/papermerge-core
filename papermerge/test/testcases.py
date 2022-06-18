@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase as DjangoTestCase
 from rest_framework.test import APIClient
 from model_bakery import baker
@@ -14,3 +16,10 @@ class TestCase(DjangoTestCase):
     def tearDown(self):
         super().tearDown()
         self.client.logout()
+
+    def post_json(self, url, data):
+        return self.client.post(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )

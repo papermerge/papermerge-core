@@ -20,7 +20,6 @@ def apply_permissions(user, name, *names):
         raise ValueError(
             f"Some of permissions {perm_names} not found"
         )
-
     user.user_permissions.add(*permissions)
 
 

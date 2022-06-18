@@ -10,7 +10,7 @@ from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
-from papermerge.core.auth import CustomModelPermissions
+from papermerge.core.auth import CustomModelPermissions, permission_required
 from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
@@ -30,8 +30,13 @@ class UserChangePassword(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
     renderer_classes = (JSONRenderer,)
     serializer_class = PasswordSerializer
+    http_method_names = ['post', 'head', 'options']
 
+    @permission_required('change_user')
     def post(self, request, pk):
+        """
+        Change password of the user identified with UUID/pk in the URL
+        """
         serializer = PasswordSerializer(data=request.data)
         user = User.objects.get(pk=pk)
         if serializer.is_valid():

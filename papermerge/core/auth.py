@@ -1,3 +1,6 @@
+from functools import wraps
+
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -595,3 +598,20 @@ class NodeAuthBackend:
             }
 
         return ret
+
+
+def permission_required(name):
+
+    def wrap(func):
+        @wraps(func)
+        def inner(self, *args, **kwargs):
+            if hasattr(self, 'request'):
+                if hasattr(self.request, 'user'):
+                    if self.request.user.has_perm(f"core.{name}"):
+                        return func(self, *args, **kwargs)
+
+            raise PermissionDenied
+
+        return inner
+
+    return wrap

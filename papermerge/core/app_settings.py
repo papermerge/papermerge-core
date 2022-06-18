@@ -75,69 +75,6 @@ class AppSettings():
         )
 
     @property
-    def IMPORT_MAIL_HOST(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_HOST",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_USER(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_USER",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_PASS(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_PASS",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_INBOX(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_INBOX",
-            "INBOX"
-        )
-
-    @property
-    def IMPORT_MAIL_SECRET(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_SECRET",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_BY_USER(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_BY_USER",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_BY_SECRET(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_BY_SECRET",
-            None
-        )
-
-    @property
-    def IMPORT_MAIL_DELETE(self):  # noqa
-        return self._settings(
-            "IMPORT_MAIL_DELETE",
-            False
-        )
-
-    @property
-    def IMPORTER_DIR(self):  # noqa
-        return self._settings(
-            "IMPORTER_DIR",
-            None
-        )
-
-    @property
     def PAPERMERGE_OCR_LANGUAGES(self):  # noqa
         default_value = {
             "deu": "Deutsch",

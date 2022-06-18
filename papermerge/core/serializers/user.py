@@ -1,9 +1,12 @@
 from rest_framework_json_api import serializers
 
 from papermerge.core.models import User
+from .permission import PermissionSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    user_permissions = PermissionSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -19,5 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
             'is_active',
             'is_staff',
             'is_superuser',
-            'date_joined'
+            'date_joined',
+            'user_permissions'
         )

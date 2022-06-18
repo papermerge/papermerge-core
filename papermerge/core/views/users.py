@@ -75,6 +75,12 @@ class CurrentUserView(RequireAuthMixin, GenericAPIView):
     renderer_classes = (JSONAPIRenderer,)
 
     def get(self, request):
+        """
+        Retrieves current user details.
+
+        Detailed information includes, among others, information about home
+        folder, inbox folder and permission of the current user.
+        """
         serializer = UserSerializer(self.request.user)
         return Response(serializer.data)
 

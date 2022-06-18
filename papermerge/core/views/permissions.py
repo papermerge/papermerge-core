@@ -35,8 +35,8 @@ class PermissionsList(RequireAuthMixin, generics.ListAPIView):
 
         Don't confuse this endpoint with "user permissions", which is intended,
         as name suggests, to return only user specific permissions.
-        In order to retrieve user specific permissions use
-        /users/<uuid>/perms/ endpoint.
+        In order to retrieve current user permissions use
+        /api/users/me/ endpoint.
         """
         return self.list(request, *args, **kwargs)
 

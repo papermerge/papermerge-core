@@ -30,7 +30,8 @@ class PermissionsList(RequireAuthMixin, generics.ListAPIView):
         for that will only confuse him/her. Permissions used to grant access
         per node/object are not returned either.
 
-        In order to access this endpoint you need **view_permission** permission.
+        In order to access this endpoint
+        you need **view_permission** permission.
 
         Don't confuse this endpoint with "user permissions", which is intended,
         as name suggests, to return only user specific permissions.

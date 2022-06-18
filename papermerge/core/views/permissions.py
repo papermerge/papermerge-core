@@ -42,7 +42,8 @@ class PermissionsList(RequireAuthMixin, generics.ListAPIView):
     def get_queryset(self):
         """
         Returns a queryset of permissions which makes sense
-        to display. For example, it does not make sense to
+        to display (e.g. when creating a new Role).
+        For example, it does not make sense to
         show permissions for BaseTreeNode model - user is not
         even aware of what is it (and should not be).
         """

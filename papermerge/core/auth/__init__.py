@@ -596,4 +596,3 @@ class NodeAuthBackend:
             }
 
         return ret
-

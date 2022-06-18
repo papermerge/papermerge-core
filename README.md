@@ -51,58 +51,29 @@ Online documentation is available at [https://docs.papermerge.io](https://docs.p
 
 ## Tests
 
-Use [poetry](https://python-poetry.org/) to switch into python virtual environment:
-
-    poetry shell
-
-Then install all dependencies in current python virtual environment:
-
-    poetry install
-
-Test suite is devided into two big groups:
+Test suite is divided into two big groups:
 
 1. tests.core
 2. tests.search
 
 
-First group (tests.core) is concerned with tests for `papermerge.core` while
-second one (tests.search) is concerned with tests for `papermerge.search`. In
+First group is concerned with tests which do not depend on elasticsearch while
+second one **tests.search** is concerned with tests for which **depend on elasticsearch**
+and as result run very slow (hence the grouping). In
 order to run `tests.core` tests you need to have redis up and running; in
 order to run `test.search` you need to both **redis and elasticsearch** up and
 running.
 
-### Core Tests
-
 Before running core tests suite, make sure redis service is up and running. Run tests:
 
-     DJANGO_SETTINGS_MODULE=tests.config.core_settings PYTHONPATH=. pytest tests/core/
-
-Another way to invoke [pytest](https://docs.pytest.org/en/latest/contents.html), which automatically adds
-current working directory to PYTHONPATH:
-
-    DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/
-
-Disable warning during test runs:
-
-    DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest --disable-warnings tests/core/
-
-One handy shortcut to invoke pytests in python virtual environment:
-
-    DJANGO_SETTINGS_MODULE=tests.config.core_settings poetry run python -m pytest --disable-warnings tests/core/
-
-You can use ``run-tests.sh`` bash script to run core tests:
-
-    ./run-tests.sh core
-
-
-### Search Tests
+     poetry run task test-core
 
 Before running search tests suite, make sure both **redis and elasticsearch**
 services are up and running:
 
-     DJANGO_SETTINGS_MODULE=tests.config.search_settings poetry run python -m pytest --disable-warnings tests/search/
+     poetry run task test-search
 
-You can use ``run-tests.sh`` bash script to run tests for search app:
+In order to run all tests suite (core + search):
 
-    ./run-tests.sh search
+    poetry run task test
 

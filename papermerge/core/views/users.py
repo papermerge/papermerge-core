@@ -80,6 +80,9 @@ class CurrentUserView(RequireAuthMixin, GenericAPIView):
 
         Detailed information includes, among others, information about home
         folder, inbox folder and permission of the current user.
+
+        Note that this endpoint returns user permissions i.e. what actions
+        current user is authorized to perform.
         """
         serializer = UserSerializer(self.request.user)
         return Response(serializer.data)

@@ -1,5 +1,7 @@
 import logging
 
+from django.core.exceptions import PermissionDenied
+
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,7 +12,7 @@ from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
-from papermerge.core.auth import CustomModelPermissions, permission_required
+from papermerge.core.auth import CustomModelPermissions
 from .mixins import RequireAuthMixin
 
 logger = logging.getLogger(__name__)
@@ -32,11 +34,13 @@ class UserChangePassword(RequireAuthMixin, GenericAPIView):
     serializer_class = PasswordSerializer
     http_method_names = ['post', 'head', 'options']
 
-    @permission_required('change_user')
     def post(self, request, pk):
         """
         Change password of the user identified with UUID/pk in the URL
         """
+        if not self._has_perm(request, pk):
+            raise PermissionDenied
+
         serializer = PasswordSerializer(data=request.data)
         user = User.objects.get(pk=pk)
         if serializer.is_valid():
@@ -48,6 +52,21 @@ class UserChangePassword(RequireAuthMixin, GenericAPIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def _has_perm(self, request, pk):
+        """
+        Does user have permission to perform 'change user password'?
+
+        Same endpoint is used when changing other users password and your
+        own user password. When changing own user password, user does not
+        need to have 'change_user' permission.
+        """
+        if request.user.pk == pk:
+            return True
+
+        # here changing password for other users
+        if request.user.has_perm('core.change_user'):
+            return True
 
 
 class CurrentUserView(RequireAuthMixin, GenericAPIView):

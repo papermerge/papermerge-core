@@ -77,3 +77,9 @@ In order to run all tests suite (core + search):
 
     poetry run task test
 
+
+## Linting
+
+Use following command to make sure that your code is formatted per PEP8 spec:
+
+    poetry run task lint

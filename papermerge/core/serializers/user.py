@@ -2,11 +2,18 @@ from rest_framework_json_api import serializers
 
 from papermerge.core.models import User
 from .permission import PermissionSerializer
+from .role import RoleSerializer
+from .group import GroupSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     user_permissions = PermissionSerializer(many=True, read_only=True)
+
+    included_serializers = {
+        'role': RoleSerializer,
+        'groups': GroupSerializer
+    }
 
     class Meta:
         model = User
@@ -23,5 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'is_superuser',
             'date_joined',
-            'user_permissions'
+            'user_permissions',
+            'groups',
+            'role'
         )

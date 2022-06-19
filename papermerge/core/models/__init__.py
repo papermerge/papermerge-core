@@ -4,7 +4,6 @@ from django.contrib import auth
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 from papermerge.core.models.automate import Automate
 from papermerge.core.models.access import Access
@@ -18,7 +17,7 @@ from papermerge.core.models.tags import (
     ColoredTag,
     Tag
 )
-from papermerge.core.models.role import Role
+
 from papermerge.core.models.document_version import DocumentVersion
 
 
@@ -77,22 +76,7 @@ def _user_has_module_perms(user, app_label):
 
 
 class User(AbstractUser):
-    # Role is optional.
-    # All users EXCEPT superuser
-    # have associated a role
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-
-    role = models.ForeignKey(
-        'Role',
-        verbose_name='role',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        help_text=_(
-            "Determines what operations this user is"
-            " authorized to perform."
-        )
-    )
 
     # Initially user is created with empty `home_folder` and `inbox_folder`.
     # Home and Inbox folder fields are populated as part of `post_save` model
@@ -198,7 +182,6 @@ class User(AbstractUser):
 
 __all__ = [
     'User',
-    'Role',
     'Folder',
     'Document',
     'DocumentVersion',

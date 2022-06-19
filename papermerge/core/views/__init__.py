@@ -1,7 +1,6 @@
 from .automates import AutomatesViewSet
 from .content_types import ContentTypeRetrieve
 from .tags import TagsViewSet
-from .roles import RolesViewSet
 from .groups import GroupsViewSet
 from .permissions import PermissionsList
 from .users import (
@@ -39,7 +38,6 @@ __all__ = [
     'ContentTypeRetrieve',
     'CustomUserPreferencesViewSet',
     'TagsViewSet',
-    'RolesViewSet',
     'GroupsViewSet',
     'PermissionsList',
     'NodesViewSet',

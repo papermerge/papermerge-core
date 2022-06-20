@@ -8,6 +8,10 @@ from .group import GroupSerializer
 class UserSerializer(serializers.ModelSerializer):
 
     user_permissions = PermissionSerializer(many=True, read_only=True)
+    perm_codenames = serializers.ListField(
+        child=serializers.CharField(max_length=200),
+        read_only=True
+    )
 
     included_serializers = {
         'groups': GroupSerializer
@@ -30,4 +34,5 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined',
             'user_permissions',
             'groups',
+            'perm_codenames'
         )

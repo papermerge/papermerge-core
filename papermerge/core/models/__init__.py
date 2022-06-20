@@ -1,8 +1,6 @@
 import uuid
 
-from django.contrib import auth
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 
 from papermerge.core.models.automate import Automate
@@ -19,60 +17,6 @@ from papermerge.core.models.tags import (
 )
 
 from papermerge.core.models.document_version import DocumentVersion
-
-
-# A few helper functions for common logic between User and AnonymousUser.
-def _user_get_permissions(user, obj, from_name):
-    permissions = set()
-    name = 'get_%s_permissions' % from_name
-    for backend in auth.get_backends():
-        if hasattr(backend, name):
-            permissions.update(getattr(backend, name)(user, obj))
-    return permissions
-
-
-def _user_has_perm(user, perm, obj):
-    """
-    A backend can raise `PermissionDenied` to short-circuit permission
-    checking.
-    """
-    for backend in auth.get_backends():
-        if not hasattr(backend, 'has_perm'):
-            continue
-        try:
-            if backend.has_perm(user, perm, obj):
-                return True
-        except PermissionDenied:
-            return False
-    return False
-
-
-def _get_perms_dict(user, perms, obj_list):
-    #
-    #  Bulk permissions return. Optimization measure
-    #  for case when folder contains many files.
-    #
-    for backend in auth.get_backends():
-        if not hasattr(backend, 'get_perms_dict'):
-            continue
-
-        return backend.get_perms_dict(user, perms, obj_list)
-
-
-def _user_has_module_perms(user, app_label):
-    """
-    A backend can raise `PermissionDenied` to short-circuit permission
-    checking.
-    """
-    for backend in auth.get_backends():
-        if not hasattr(backend, 'has_module_perms'):
-            continue
-        try:
-            if backend.has_module_perms(user, app_label):
-                return True
-        except PermissionDenied:
-            return False
-    return False
 
 
 class User(AbstractUser):
@@ -124,60 +68,43 @@ class User(AbstractUser):
         self.home_folder = _home
         self.save()
 
-    def update_current_storage(self):
-        user_docs = Document.objects.filter(user=self)
-        self.current_storage_size = sum(int(doc.size) for doc in user_docs)
-        self.save()
+    @property
+    def perm_codenames(self):
+        """
+        Returns aggregated list of permissions codenames of the user.
 
-    def get_user_permissions(self, obj=None):
-        """
-        Return a list of permission strings that this user has directly.
-        Query all available auth backends. If an object is passed in,
-        return only permissions matching this object.
-        """
-        return _user_get_permissions(self, obj, 'user')
+        Permissions are aggregated from self.user_permissions +
+        permissions from all self.groups.
+        In Django permissions can be assigned directly to user object
+        or via groups. This attribute returns list of string codenames
+        of all permissions - from user object and from each associated
+        group. It is meant to be passed (and used by) the frontend
+        in order to toggle on/off different parts depending on what
+        user is allowed/not allowed to view/perform.
 
-    def get_group_permissions(self, obj=None):
+        Note that codename DOES NOT include app label.
         """
-        Return a list of permission strings that this user has through their
-        groups. Query all available auth backends. If an object is passed in,
-        return only permissions matching this object.
-        """
-        return _user_get_permissions(self, obj, 'group')
 
-    def get_all_permissions(self, obj=None):
-        return _user_get_permissions(self, obj, 'all')
+        # 1. gather all perms via associated groups
+        user_groups_field = self._meta.get_field('groups')
+        user_groups_query = 'group__%s' % user_groups_field.related_query_name()
+        result1 = Permission.objects.filter(
+            **{user_groups_query: self}
+        ).values_list(
+            'codename',
+            flat=True
+        )
+        # 2. gather all perms via user obj
+        result2 = self.user_permissions.values_list(
+            'codename',
+            flat=True
+        )
 
-    def has_perm(self, perm, obj=None):
-        """
-        Return True if the user has the specified permission. Query all
-        available auth backends, but return immediately if any backend returns
-        True. Thus, a user who has permission from a single auth backend is
-        assumed to have permission in general. If an object is provided, check
-        permissions for that object.
-        """
-        return _user_has_perm(self, perm, obj)
+        # combine 1. and 2.
+        result = list(result1) + list(result2)
 
-    def get_perms_dict(self, obj, perms):
-        return _get_perms_dict(self, obj, perms)
-
-    def has_perms(self, perm_list, obj=None):
-        """
-        Return True if the user has each of the specified permissions. If
-        object is passed, check if the user has all required perms for it.
-        """
-        return all(self.has_perm(perm, obj) for perm in perm_list)
-
-    def has_module_perms(self, app_label):
-        """
-        Return True if the user has any permissions in the given app label.
-        Use similar logic as has_perm(), above.
-        """
-        # Active superusers have all permissions.
-        if self.is_active and self.is_superuser:
-            return True
-
-        return _user_has_module_perms(self, app_label)
+        # remove all duplicates
+        return list(set(result))
 
 
 __all__ = [

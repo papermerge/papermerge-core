@@ -9,6 +9,8 @@ from papermerge.core.serializers import (
     TokenSerializer,
     CreateTokenSerializer,
 )
+from papermerge.core.auth import CustomModelPermissions
+
 from .mixins import RequireAuthMixin
 
 
@@ -22,6 +24,7 @@ class TokensViewSet(RequireAuthMixin, ModelViewSet):
     queryset = AuthToken.objects.all()
     serializer_class = TokenSerializer
     renderer_classes = (JSONRenderer,)
+    permission_classes = [CustomModelPermissions]
 
     http_method_names = ["get", "post", "delete", "head", "options"]
 

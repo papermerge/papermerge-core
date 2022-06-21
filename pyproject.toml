@@ -1,33 +1,33 @@
 [tool.poetry]
 name = "papermerge-core"
 version = "2.1.dev1"
-description = "Core package for Papermerge DMS, which is an open source document management system designed for scanned documents"
+description = "Open source document management system designed for scanned documents"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"
 
 [tool.poetry.dependencies]
 python = "~3.8"
-django = "^3.2"
-djangorestframework = "^3.12"
+django = "^4.0"
+djangorestframework = "^3.13.1"
 django-cors-headers = "^3.9.0"
-djangorestframework-jsonapi = "^4.2"
+djangorestframework-jsonapi = "^5.0.0"
 django_filter = "^21.1"
 channels = "^3.0"
 channels-redis = "^3.2"
-redis = "^3.5"
+redis = "^4.3.3"
 ocrmypdf = "^12.7.2"
 ocrmypdf-papermerge = "^0.3"
-django-dynamic-preferences = "^1.10"
+django-dynamic-preferences = "^1.13"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
-django-taggit = "^2.1"
-pyyaml = "^5.4"
-lxml = "^4.6"
+django-taggit = "^3.0.0"
+pyyaml = "^6.0"
+lxml = "^4.6.0"
 django-celery-results = "^2.2"
 django-polymorphic = "^3.0"
-django-mptt = "^0.11"
+django-mptt = "^0.13.4"
 django-polymorphic-tree = "^2.0"
-django-modelcluster = "^5.1"
-persisting-theory = "^0.2"
+django-modelcluster = "^6.0"
+persisting-theory = "^1.0"
 python-magic = "^0.4"
 uritemplate = "^4.1.1"
 configula = "^0.4.0"
@@ -42,7 +42,7 @@ drf-spectacular-sidecar = "^2022.3.21"
 
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2"
+pytest = "^7.1.2"
 pytest-django = "^4.4"
 pycodestyle = "^2.8"
 django-extensions = "^3.1"
@@ -57,6 +57,7 @@ django_find_project = false
 
 [tool.taskipy.tasks]
 test = "task test-core && task test-search"
+test-co = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest"
 test-core = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings
 test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/"

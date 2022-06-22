@@ -36,7 +36,6 @@ def ocr_document_task(
     is chained with other celery tasks which will receive as
     first argument returned value of this task (i.e. ``document_id``).
     """
-
     doc = Document.objects.get(pk=document_id)
     user_id = doc.user.id
     doc_version = doc.versions.last()

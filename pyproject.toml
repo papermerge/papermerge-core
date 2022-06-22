@@ -15,13 +15,13 @@ django_filter = "^21.1"
 channels = "^3.0"
 channels-redis = "^3.2"
 redis = "^4.3.3"
-ocrmypdf = "^12.7.2"
-ocrmypdf-papermerge = "^0.3"
+ocrmypdf = "^13.5.0"
+ocrmypdf-papermerge = "^0.4.4"
 django-dynamic-preferences = "^1.13"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
 django-taggit = "^3.0.0"
 pyyaml = "^6.0"
-lxml = "^4.6.0"
+lxml = "^4.9.0"
 django-celery-results = "^2.2"
 django-polymorphic = "^3.0"
 django-mptt = "^0.13.4"
@@ -65,6 +65,8 @@ test-search = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pyt
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/"
 lint = "pycodestyle papermerge/ tests/"
+# run this command from docker/dev only
+worker = "poetry run celery -A config worker -c 5"
 
 [build-system]
 requires = ["setuptools >= 40.6.0", "wheel"]

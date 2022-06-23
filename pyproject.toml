@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "2.1.dev1"
+version = "2.1.0.alpha1"
 description = "Open source document management system designed for scanned documents"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"
@@ -30,7 +30,7 @@ django-modelcluster = "^6.0"
 persisting-theory = "^1.0"
 python-magic = "^0.4"
 uritemplate = "^4.1.1"
-configula = "^0.4.0"
+configula = "^0.5.0"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.2"
 psycopg2-binary = "^2.9.2"
@@ -39,7 +39,6 @@ django-elasticsearch-dsl = "^7.2.1"
 django-rest-knox = "^4.2.0"
 drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
-
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -65,10 +64,10 @@ test-search = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pyt
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/"
 lint = "pycodestyle papermerge/ tests/"
-# run this command from docker/dev only
-worker = "poetry run celery -A config worker -c 5"
+# run following commands from docker/dev only
+worker = "celery -A config worker -c 5"
+server = "./manage.py runserver"
 
 [build-system]
 requires = ["setuptools >= 40.6.0", "wheel"]
 build-backend = "setuptools.build_meta"
-

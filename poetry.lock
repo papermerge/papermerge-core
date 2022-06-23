@@ -349,14 +349,19 @@ cron = ["capturer (>=2.4)"]
 
 [[package]]
 name = "configula"
-version = "0.4.0"
+version = "0.5.3-beta3"
 description = "Merges configuration from toml file and environment variables"
 category = "main"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "~3.8"
+develop = false
 
 [package.dependencies]
-tomlkit = ">=0.7.2,<0.8.0"
+tomlkit = "^0.7.2"
+
+[package.source]
+type = "directory"
+url = "../configula"
 
 [[package]]
 name = "constantly"
@@ -1780,7 +1785,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.8"
-content-hash = "3e1bfd7b235fbac2708e3487e81cd21ccb9b5b52540199be104c74eaa0b547e4"
+content-hash = "2944bf021af6467dcb4c306d255d0d5fff5d7fe2b79220ace6fc2b33186829ae"
 
 [metadata.files]
 aioredis = [
@@ -1948,10 +1953,7 @@ coloredlogs = [
     {file = "coloredlogs-15.0.1-py2.py3-none-any.whl", hash = "sha256:612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934"},
     {file = "coloredlogs-15.0.1.tar.gz", hash = "sha256:7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0"},
 ]
-configula = [
-    {file = "configula-0.4.0-py3-none-any.whl", hash = "sha256:21b4c0584707476f30b392105595e6d84c3149812412c625d3a0ccee036a1c4c"},
-    {file = "configula-0.4.0.tar.gz", hash = "sha256:83883e99dd5300b244728eb7a83abcc55b31d763717c4c759ceeca3fedfb6684"},
-]
+configula = []
 constantly = [
     {file = "constantly-15.1.0-py2.py3-none-any.whl", hash = "sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d"},
     {file = "constantly-15.1.0.tar.gz", hash = "sha256:586372eb92059873e29eba4f9dec8381541b4d3834660707faf8ba59146dfc35"},

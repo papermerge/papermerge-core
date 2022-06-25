@@ -3,6 +3,7 @@ import logging
 import re
 from datetime import datetime
 
+from django.conf import settings
 from django.utils.html import format_html
 from django.urls import reverse
 
@@ -176,3 +177,10 @@ def remove_backup_filename_id(value: str) -> str:
         return result[0]
 
     return "_".join(result[0:-2])
+
+
+def namespaced(name):
+    if settings.PAPERMERGE_NAMESPACE is not None:
+        return f"{settings.PAPERMERGE_NAMESPACE}__{name}"
+
+    return name

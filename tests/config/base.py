@@ -4,18 +4,12 @@ from configula import Configula
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-config = Configula(
-    prefix="PAPERMERGE",
-    config_locations=[
-        "/etc/papermerge.toml",
-        "papermerge.toml"
-    ],
-    config_env_var_name="PAPERMERGE_CONFIG"
-)
+config = Configula()
 
 SECRET_KEY = 'fake-key'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
+PAPERMERGE_NAMESPACE = config.get('main', 'namespace', default=None)
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

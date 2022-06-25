@@ -3,6 +3,7 @@ from django_elasticsearch_dsl import fields as es_fields
 from django_elasticsearch_dsl.registries import registry
 
 from papermerge.core.models import (Folder, Document, DocumentVersion, Page)
+from papermerge.core.utils import namespaced
 
 
 @registry.register_document
@@ -40,7 +41,7 @@ class PageIndex(ElasticSearchDocument):
 
     class Index:
         # Name of the Elasticsearch index
-        name = 'pages'
+        name = namespaced('pages')
         # See Elasticsearch Indices API reference for available settings
         settings = {
             'number_of_shards': 1,
@@ -93,7 +94,7 @@ class DocumentIndex(ElasticSearchDocument):
 
     class Index:
         # Name of the Elasticsearch index
-        name = 'documents'
+        name = namespaced('documents')
         # See Elasticsearch Indices API reference for available settings
         settings = {
             'number_of_shards': 1,
@@ -134,7 +135,7 @@ class FolderIndex(ElasticSearchDocument):
 
     class Index:
         # Name of the Elasticsearch index
-        name = 'folders'
+        name = namespaced('folders')
         # See Elasticsearch Indices API reference for available settings
         settings = {
             'number_of_shards': 1,
@@ -159,7 +160,7 @@ class DocumentVersionIndex(ElasticSearchDocument):
         return instance.document.title
 
     class Index:
-        name = 'document_versions'
+        name = namespaced('document_versions')
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0

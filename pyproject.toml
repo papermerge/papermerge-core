@@ -60,9 +60,11 @@ test-co = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest"
 test-core = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings
 test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/"
+test-se = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest"
 test-search = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/ --disable-warnings"
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/"
+
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"

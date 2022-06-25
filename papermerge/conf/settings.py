@@ -42,6 +42,7 @@ CHANNEL_LAYERS = {
 }
 
 DEBUG = config.get('main', 'debug', False)
+PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -209,7 +210,7 @@ LANGUAGES = [
     ('en', 'English'),
     ('fr', 'Français'),
 ]
-TIME_ZONE = 'Europe/Berlin'
+TIME_ZONE = config.get('main', 'tz', default='Europe/Berlin')
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True

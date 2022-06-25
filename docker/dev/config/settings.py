@@ -12,14 +12,14 @@ INSTALLED_APPS.extend(
 )
 
 MEDIA_ROOT = config.get(
-    'media',
-    'dir',
+    'main',
+    'media_root',
     default=os.path.join(PROJ_ROOT, "media")
 )
 
 STATIC_ROOT = config.get(
-    'static',
-    'dir',
+    'main',
+    'static_root',
     default=os.path.join(PROJ_ROOT, "static")
 )
 

@@ -8,14 +8,14 @@ DEBUG = False
 PROJ_ROOT = Path(__file__).resolve().parent.parent
 
 MEDIA_ROOT = config.get(
-    'media',
-    'dir',
+    'main',
+    'media_root',
     default=os.path.join(PROJ_ROOT, "media")
 )
 
 STATIC_ROOT = config.get(
-    'static',
-    'dir',
+    'main',
+    'static_root',
     default=os.path.join(PROJ_ROOT, "static")
 )
 

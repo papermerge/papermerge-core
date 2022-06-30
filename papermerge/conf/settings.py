@@ -210,7 +210,7 @@ LANGUAGES = [
     ('en', 'English'),
     ('fr', 'Français'),
 ]
-TIME_ZONE = config.get('main', 'tz', default='Europe/Berlin')
+TIME_ZONE = config.get('main', 'timezone', default='Europe/Berlin')
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -222,7 +222,6 @@ LANGUAGE_CODE = config.get(
 
 DATE_FORMAT = '%d/%m/%Y'
 DATE_INPUT_FORMATS = ['%d/%m/%Y']
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -241,20 +240,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

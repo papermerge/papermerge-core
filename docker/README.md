@@ -5,9 +5,8 @@ Papermerge DMS and related services using [docker-compose](https://docs.docker.c
 
 Following docker compose files are available:
 
-- prod-docker-compose.yml
-- prod-backend-only.yml
-- dev-docker-compose.yml
+- docker-compose.yml
+- backend-only.yml
 - services
 
 Each of above mentioned files must be paired with an ``.env`` file where
@@ -21,11 +20,11 @@ file](https://docs.docker.com/compose/env-file/) as it is not provided
 in sources repository.
 
 
-## prod-docker-compose.yml
+## docker-compose.yml
 
-Start all Papermerge DMS in production mode:
+Start Papermerge DMS:
 
-    docker-compose  -f docker/prod-docker-compose.yml --env-file <path to .env file> up
+    docker-compose  -f docker/docker-compose.yml --env-file <path to .env file> up
 
 Above command will start following services:
 
@@ -53,6 +52,7 @@ Open your web browser and point it to http://papermerge.local address.
     PAPERMERGE_JS_TAG=latest
 
     USE_HOSTNAME=papermerge.local
+    TIMEZONE=Berlin/Europe
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -72,11 +72,11 @@ Open your web browser and point it to http://papermerge.local address.
     SUPERUSER_EMAIL=admin@mail.com
     SUPERUSER_PASSWORD=password
 
-## prod-backend-only.yml
+## backend-only.yml
 
-Start only Papermerge DMS REST API backend in production mode:
+Start only Papermerge DMS REST API backend:
 
-    docker-compose  -f docker/prod-backend-only.yml --env-file <path to .env file> up
+    docker-compose  -f docker/backend-only.yml --env-file <path to .env file> up
 
 Above command will start following services:
 
@@ -92,46 +92,7 @@ REST API backend base url is ``http://localhost:8000/api/``.
     APP_IMAGE=papermerge/papermerge
     APP_TAG=latest
 
-    DB_USER=postgres
-    DB_NAME=postgres
-    DB_PASSWORD=postgres
-    DB_HOST=db
-    DB_PORT=5432
-
-    REDIS_HOST=redis
-    REDIS_PORT=6379
-
-    ES_HOSTS=es
-    ES_PORT=9200
-
-    SECRET_KEY=alsdkalsdjlaksdj90823423!KLKJLkjkjlkjlKLPOgrwqna
-
-    SUPERUSER_USERNAME=admin
-    SUPERUSER_EMAIL=admin@mail.com
-    SUPERUSER_PASSWORD=password
-
-## dev-docker-compose.yml
-
-Start Papermerge DMS in development mode (without user interface):
-
-    docker-compose  -f docker/dev-docker-compose.yml --env-file <path to .env file> up
-
-Above command will start following services:
-
-- backend (REST API backend)
-- worker
-- redis
-- db (postgres)
-- es (elasticsearch)
-
-REST API backend base url is ``http://localhost:8000/api/``.
-
-``.env`` file example:
-
-    APP_IMAGE=papermerge/papermerge
-    APP_TAG=latest
-
-    PAPERMERGE_SRC_DIR=/home/eugen/GitHub/PapermergeCore/papermerge/
+    TIMEZONE=Europe/Berlin
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -150,10 +111,6 @@ REST API backend base url is ``http://localhost:8000/api/``.
     SUPERUSER_USERNAME=admin
     SUPERUSER_EMAIL=admin@mail.com
     SUPERUSER_PASSWORD=password
-
-Replace ``PAPERMERGE_SRC_DIR`` with path to papermerge source code on your
-local computer. Note that ``PAPERMERGE_SRC_DIR`` will point the folder where
-``core``, ``search``, ``notifications`` directories are.
 
 ## services.yml
 

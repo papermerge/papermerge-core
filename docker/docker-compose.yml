@@ -3,8 +3,6 @@ version: '3.7'
 # ignored
 x-backend: &backend  # yaml anchor definition
   image: ${APP_IMAGE}:${APP_TAG}
-  depends_on:
-    - backend_init
   volumes:
     - media_root:/app/media
   environment:
@@ -19,6 +17,7 @@ x-backend: &backend  # yaml anchor definition
     - PAPERMERGE__REDIS__PORT=${REDIS_PORT}
     - PAPERMERGE__ELASTICSEARCH__HOSTS=${ES_HOSTS}
     - PAPERMERGE__ELASTICSEARCH__PORT=${ES_PORT}
+    - PAPERMERGE__MAIN__TIMEZONE=${TIMEZONE}
     - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
     - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
     - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -38,15 +37,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${USE_HOSTNAME}`) && PathPrefix(`/api/`)"
-  backend_init:
-    <<: *backend
-    depends_on:
-      - db
-      - redis
-      - es
-    command: server_init
   db:
-    image: postgres:13
+    image: postgres:14.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:

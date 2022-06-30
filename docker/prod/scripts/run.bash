@@ -20,15 +20,16 @@ exec_ws_server() {
   exec daphne -b 0.0.0.0 --port 8000 config.asgi:application
 }
 
-exec_worker() {
-  exec celery --app config worker \
-   -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE_WORKER_ARGS}
+exec_collectstatic() {
+  $MANAGE collectstatic --noinput
 }
 
-exec_server_init() {
+exec_migrate() {
   # run migrations
   $MANAGE migrate --no-input
+}
 
+exec_createsuperuser() {
   # user envrironment variables:
   #   (1) DJANGO_SUPERUSER_USERNAME
   #   (2) DJANGO_SUPERUSER_EMAIL
@@ -42,26 +43,44 @@ exec_server_init() {
   fi
 }
 
-exec_worker_init() {
-  # run migrations
-  $MANAGE migrate --no-input
+exec_worker() {
+  exec celery --app config worker \
+   -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE_WORKER_ARGS}
+}
+
+exec_init() {
+  exec_collectstatic
+  exec_migrate
+  exec_createsuperuser
 }
 
 case $CMD in
-  server_init)
-    exec_server_init
+  init)
+    exec_init
+    ;;
+  migrate)
+    exec_migrate
+    ;;
+  collectstatic)
+    exec_collectstatic
+    ;;
+  createsuperuser)
+    exec_createsuperuser
     ;;
   server)
+    # starts REST API webserver
+    exec_init
     exec_server
     ;;
   ws_server)
+    # start websockets server
+    exec_init
     exec_ws_server
     ;;
   worker)
+    # starts worker
+    exec_init
     exec_worker
-    ;;
-  worker_init)
-    exec_worker_init
     ;;
   *)
     echo "Unkown command: '$CMD'. Exiting..."

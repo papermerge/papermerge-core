@@ -10,6 +10,7 @@ x-backend: &backend # yaml anchor definition
   environment:
     # PAPERMERGE__<section>__<variable>
     - PAPERMERGE__MAIN__SECRET_KEY=${SECRET_KEY}
+    - PAPERMERGE__MAIN__TIMEZONE=${TIMEZONE}
     - PAPERMERGE__DATABASE__TYPE=postgres
     - PAPERMERGE__DATABASE__USER=${DB_USER}
     - PAPERMERGE__DATABASE__NAME=${DB_NAME}

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "2.1.0.alpha1"
+version = "2.1.0a32"
 description = "Open source document management system designed for scanned documents"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"

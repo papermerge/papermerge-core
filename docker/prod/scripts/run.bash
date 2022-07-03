@@ -6,6 +6,20 @@ CMD="$1"
 PYTHON="/venv/bin/python"
 MANAGE="${PYTHON} manage.py"
 
+if [ -z "${DJANGO_SETTINGS_MODULE}" ]; then
+  # default value for DJANGO_SETTINGS_MODULE environment variable
+  export DJANGO_SETTINGS_MODULE=config.settings
+fi
+
+if [ -z "${DJANGO_SUPERUSER_USERNAME}" ]; then
+  # default value for DJANGO_SUPERUSER_USERNAME environment variable
+  export DJANGO_SUPERUSER_USERNAME=admin
+fi
+
+if [ -z "${DJANGO_SUPERUSER_EMAIL}" ]; then
+  # default value for DJANGO_SUPERUSER_EMAIL environment variable
+  export DJANGO_SUPERUSER_EMAIL=admin@example.com
+fi
 
 if [ -z $CMD ]; then
   echo "No command specified"

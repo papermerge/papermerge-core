@@ -1,5 +1,7 @@
 import logging
 
+from kombu.exceptions import OperationalError
+
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -51,15 +53,27 @@ class DocumentUploadView(RequireAuthMixin, APIView):
         )
 
         if user_settings['ocr__trigger'] == 'auto':
-            ocr_document_task.apply_async(
-                kwargs={
-                    'document_id': str(doc.id),
-                    'lang': doc.lang,
-                    'namespace': namespace,
-                    'user_id': str(request.user.id)
-                },
-                link=update_document_pages.s(namespace)
-            )
+            try:
+                ocr_document_task.apply_async(
+                    kwargs={
+                        'document_id': str(doc.id),
+                        'lang': doc.lang,
+                        'namespace': namespace,
+                        'user_id': str(request.user.id)
+                    },
+                    link=update_document_pages.s(namespace)
+                )
+            except OperationalError as ex:
+                # If redis service is not available then:
+                # - request is accepted
+                # - document is uploaded
+                # - warning is logged
+                # - response includes exception message text
+                logger.warning(
+                    "Operation Error while creating the task",
+                    exc_info=True
+                )
+                return Response(str(ex), status=status.HTTP_202_ACCEPTED)
 
         return Response({}, status=status.HTTP_201_CREATED)
 

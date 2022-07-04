@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework_json_api.views import ModelViewSet
+from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
+from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 from rest_framework import status
 
 from drf_spectacular.utils import extend_schema
@@ -51,6 +53,8 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     'folders' or 'documents' depending on what kind of node it is.
     """
     serializer_class = NodeSerializer
+    parser_classes = [JSONAPIParser]
+    renderer_classes = [JSONAPIRenderer]
     queryset = BaseTreeNode.objects.all()
     # object level permissions
     access_object_permissions = {
@@ -91,6 +95,19 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
             parent_id=self.kwargs.get('pk', None),
             user=self.request.user
         ).order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a node.
+
+        A node can be either a Folder or a Document. In order to create
+        a folder set required `type` attribute to `folders`. In order
+        to create a document set `type` attribute to `documents`.
+
+        Created document won't have any file associated i.e. this REST API
+        creates just document model in database.
+        """
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)

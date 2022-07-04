@@ -23,3 +23,15 @@ class TestCase(DjangoTestCase):
             json.dumps(data),
             content_type='application/json'
         )
+
+    def post(self, url, data, type="json"):
+        if type == "json":
+            content_type = "application/json"
+        else:
+            content_type = "application/vnd.api+json"
+
+        return self.client.post(
+            url,
+            json.dumps(data),
+            content_type=content_type
+        )

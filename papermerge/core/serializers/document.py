@@ -8,12 +8,27 @@ from .document_version import DocumentVersionSerializer
 from .tag import ColoredTagListSerializerField
 
 
+class CurrentUserDefaultLang:
+    """
+    Returns the current user's default OCR language.
+    """
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        user = serializer_field.context['request'].user
+        return user.preferences['ocr__language']
+
+
 class DocumentSerializer(serializers.ModelSerializer):
     size = serializers.IntegerField(required=False)
     page_count = serializers.IntegerField(required=False)
     parent = ResourceRelatedField(queryset=Folder.objects)
     file_name = serializers.CharField(required=False)
     ocr = serializers.BooleanField(required=False)
+    lang = serializers.CharField(
+        required=False,
+        default=CurrentUserDefaultLang()
+    )
     ocr_status = serializers.CharField(required=False)
     tags = ColoredTagListSerializerField(required=False)
 

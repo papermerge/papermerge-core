@@ -1,12 +1,10 @@
 import json
 from unittest.mock import patch
 
-from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
 
+from papermerge.test import TestCase
 from papermerge.core.models import (
-    User,
     Folder,
     Document,
     Tag
@@ -14,11 +12,6 @@ from papermerge.core.models import (
 
 
 class NodesViewTestCase(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(username="user1")
-        self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
 
     def test_get_inboxcount_when_inbox_is_empty(self):
         """
@@ -72,11 +65,7 @@ class NodesViewTestCase(TestCase):
             'tags': ['paid', 'important']
         }
         url = reverse('node-tags', args=(receipts.pk, ))
-        response = self.client.post(
-            url,
-            data=json.dumps(data),
-            content_type='application/json'
-        )
+        response = self.post(url, data)
 
         assert response.status_code == 201
         assert receipts.tags.count() == 2
@@ -263,3 +252,37 @@ class NodesViewTestCase(TestCase):
         )
 
         assert response.status_code == 200, response.data
+
+    def test_create_document(self):
+        """
+        When 'lang' attribute is not specified during document creation
+        it is set from user preferences['ocr_language']
+        """
+        assert Document.objects.count() == 0
+
+        json_data = {
+            "data": {
+                "type": "documents",
+                "attributes": {
+                    # "lang" attribute is not set
+                    "title": "doc1.pdf"
+                },
+                "relationships": {
+                    "parent": {
+                        "data": {
+                            "type": "folders",
+                            "id": str(self.user.home_folder.pk)
+                        }
+                    }
+                }
+            }
+        }
+
+        url = reverse('node-list')
+        response = self.post(url, json_data, type="vnd.api")
+
+        assert response.status_code == 201
+        assert Document.objects.count() == 1
+
+        doc = Document.objects.first()
+        assert doc.lang == self.user.preferences['ocr__language']

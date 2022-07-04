@@ -1,0 +1,14 @@
+version: '3.7'
+services:
+  db:
+    image: bitnami/postgresql:14.4.0
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432
+volumes:
+  postgres_data:

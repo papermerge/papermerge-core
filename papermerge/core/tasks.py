@@ -19,7 +19,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@shared_task(acks_late=True, reject_on_worker_lost=True)
 def ocr_document_task(
     document_id,
     lang,
@@ -27,7 +27,7 @@ def ocr_document_task(
     namespace=None
 ):
     """
-    OCRs the document and creates new document version.
+    OCRs the document.
 
     On success returns ``document_id``
     If something went wrong returns ``None``.
@@ -62,12 +62,25 @@ def ocr_document_task(
         f'lang={lang}'
     )
 
-    # get document model
-    try:
-        doc = Document.objects.get(id=document_id)
-    except Document.DoesNotExist as exception:
-        logger.error(exception, exc_info=True)
-        return None
+    logger.debug(
+        'ocr_document_task: successfully complete'
+        f'document_id={document_id} namespace={namespace} '
+        f'lang={lang}'
+    )
+
+    return document_id
+
+
+@shared_task
+def increment_document_version(document_id, namespace=None):
+    logger.debug(
+        'increment_document_version: '
+        f'document_id={document_id} namespace={namespace}'
+    )
+
+    doc = Document.objects.get(pk=document_id)
+    lang = doc.lang
+    doc_version = doc.versions.last()
 
     new_doc_version = DocumentVersion(
         document=doc,
@@ -93,14 +106,6 @@ def ocr_document_task(
             page_count=new_doc_version.page_count,
             lang=lang
         )
-
-    logger.debug(
-        'ocr_document_task: successfully complete'
-        f'document_id={document_id} namespace={namespace} '
-        f'lang={lang}'
-    )
-
-    return document_id
 
 
 @shared_task

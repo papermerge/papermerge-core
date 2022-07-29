@@ -15,7 +15,8 @@ from papermerge.core.storage import get_storage_instance
 from papermerge.core.models import Document
 from papermerge.core.tasks import (
     ocr_document_task,
-    update_document_pages
+    update_document_pages,
+    increment_document_version
 )
 
 from .mixins import RequireAuthMixin
@@ -61,7 +62,10 @@ class DocumentUploadView(RequireAuthMixin, APIView):
                         'namespace': namespace,
                         'user_id': str(request.user.id)
                     },
-                    link=update_document_pages.s(namespace)
+                    link=[
+                        increment_document_version.s(namespace),
+                        update_document_pages.s(namespace)
+                    ]
                 )
             except OperationalError as ex:
                 # If redis service is not available then:

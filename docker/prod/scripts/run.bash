@@ -59,7 +59,7 @@ exec_createsuperuser() {
 
 exec_worker() {
   exec celery --app config worker \
-   -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE_WORKER_ARGS}
+   -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE__WORKER__ARGS}
 }
 
 exec_init() {

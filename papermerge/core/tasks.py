@@ -19,9 +19,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-@shared_task(
-    acks_late=True,
-    reject_on_worker_lost=True)
+@shared_task(acks_late=True, reject_on_worker_lost=True)
 def ocr_document_task(
     document_id,
     lang,

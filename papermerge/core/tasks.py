@@ -19,7 +19,9 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-@shared_task(acks_late=True, reject_on_worker_lost=True)
+@shared_task(
+    acks_late=True,
+    reject_on_worker_lost=True)
 def ocr_document_task(
     document_id,
     lang,
@@ -35,6 +37,12 @@ def ocr_document_task(
     Returning ``document_id`` on success crucial, as ``ocr_document_task``
     is chained with other celery tasks which will receive as
     first argument returned value of this task (i.e. ``document_id``).
+
+    If you use `acks_late` then the worker will remove the item from the queue
+    at the end of the task rather than the beginning.
+    However, if the worker process is killed the task is still acknowledged even
+    if it wasn't completed. `reject_on_worker_lost` will re-queue the message
+    if the above event happens so you won't lose the task.
     """
     doc = Document.objects.get(pk=document_id)
     user_id = doc.user.id

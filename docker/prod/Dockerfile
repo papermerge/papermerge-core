@@ -38,6 +38,7 @@ RUN apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-deu \
     imagemagick \
+    htop \
     git \
     libmagic1 \
     ghostscript \

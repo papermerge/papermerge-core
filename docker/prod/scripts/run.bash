@@ -92,8 +92,6 @@ case $CMD in
     exec_ws_server
     ;;
   worker)
-    # starts worker
-    exec_init
     exec_worker
     ;;
   *)

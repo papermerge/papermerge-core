@@ -29,7 +29,6 @@ logger = logging.getLogger(__name__)
 # Tasks that need to notify websocket clients
 MONITORED_TASKS = (
     'papermerge.core.tasks.ocr_document_task',
-    'papermerge.core.tasks.nodes_move'
 )
 
 HEARTBEAT_FILE = Path("/tmp/worker_heartbeat")
@@ -121,10 +120,6 @@ def get_channel_data(task_name, type):
     if task_name == 'papermerge.core.tasks.ocr_document_task':
         return {
             'type': f"ocrdocumenttask.{type}"
-        }
-    elif task_name == 'papermerge.core.tasks.nodes_move':
-        return {
-            'type': f"nodesmove.{type}"
         }
     else:
         raise ValueError(f"Task name not in {MONITORED_TASKS}")

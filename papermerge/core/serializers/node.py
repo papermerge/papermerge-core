@@ -43,8 +43,6 @@ class NodeIDSerializer(rest_serializers.Serializer):
 
 
 class NodeMoveSerializer(rest_serializers.Serializer):
-    # Original nodes parent
-    source_parent = NodeIDSerializer(required=True)
     # new parent i.e. target folder
     target_parent = NodeIDSerializer(required=True)
     # nodes to move under the new parent

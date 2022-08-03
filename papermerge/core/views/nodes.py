@@ -28,7 +28,7 @@ from papermerge.core.serializers import (
     NodeTagsSerializer,
     InboxCountSerializer
 )
-from papermerge.core.tasks import nodes_move
+
 from papermerge.core.models import (
     BaseTreeNode,
     Document,
@@ -120,13 +120,9 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
     def post(self, request):
         serializer = NodeMoveSerializer(data=request.data)
         if serializer.is_valid():
-            nodes_move.apply_async(
-                kwargs={
-                    'source_parent': serializer.data['source_parent'],
-                    'target_parent': serializer.data['target_parent'],
-                    'nodes': serializer.data['nodes'],
-                    'user_id': str(request.user.id)
-                }
+            self._move_nodes(
+                nodes=serializer.data['nodes'],
+                target_parent_id=serializer.data['target_parent']['id']
             )
             return Response()
         else:
@@ -134,6 +130,23 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def _move_nodes(self, nodes, target_parent_id):
+        try:
+            target_model = BaseTreeNode.objects.get(pk=target_parent_id)
+        except BaseTreeNode.DoesNotExist as exc:
+            logger.error(exc, exc_info=True)
+            return
+
+        for node in nodes:
+            try:
+                node_model = BaseTreeNode.objects.get(pk=node['id'])
+            except BaseTreeNode.DoesNotExist as exc:
+                logger.error(exc, exc_info=True)
+
+            node_model.refresh_from_db()  # this may take a while
+            target_model.refresh_from_db()  # may take a while
+            Document.objects.move_node(node_model, target_model)
 
 
 class InboxCountView(RequireAuthMixin, APIView, GetClassSerializerMixin):

@@ -9,7 +9,6 @@ from papermerge.core.ocr.document import ocr_document
 from papermerge.core.storage import abs_path
 
 from .models import (
-    BaseTreeNode,
     Document,
     DocumentVersion,
     Folder,
@@ -148,39 +147,6 @@ def update_document_pages(document_id, namespace=None):
             streams.append(io.StringIO(''))
 
     doc_version.update_text_field(streams)
-
-
-@shared_task()
-def nodes_move(
-    source_parent,  # noqa
-    target_parent,
-    nodes,
-    user_id  # UUID of the user who initiated nodes_move
-):
-    """
-    `source_parent` dictionary with only one key - 'id'
-    `target_parent` dictionary with only one key - 'id'
-    `nodes` is a list of {'id': <id>}. Example:
-        [{'id': 1, 'id': 2}, {'id': 3}]
-
-    Note that `source_parent` is not actually used. `source_parent`
-    is part of the task, useful only in frontend part.
-    """
-    try:
-        target_model = BaseTreeNode.objects.get(pk=target_parent['id'])
-    except BaseTreeNode.DoesNotExist as exc:
-        logger.error(exc, exc_info=True)
-        return
-
-    for node in nodes:
-        try:
-            node_model = BaseTreeNode.objects.get(pk=node['id'])
-        except BaseTreeNode.DoesNotExist as exc:
-            logger.error(exc, exc_info=True)
-
-        node_model.refresh_from_db()   # this may take a while
-        target_model.refresh_from_db()  # may take a while
-        Document.objects.move_node(node_model, target_model)
 
 
 def norm_pages_from_doc(document):

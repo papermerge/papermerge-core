@@ -60,6 +60,10 @@ class PagesMoveToFolderSerializer(rest_serializers.Serializer):
     # destination folder node
     dst = rest_serializers.UUIDField()
     single_page = rest_serializers.BooleanField(default=False)
+    title_format = rest_serializers.CharField(
+        max_length=32,
+        required=False
+    )
 
 
 class PagesMoveToDocumentSerializer(rest_serializers.Serializer):

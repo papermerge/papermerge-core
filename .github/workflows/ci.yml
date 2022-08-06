@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install dependencies and validate PEP8 compliance
         run: |
           python -m pip install --upgrade pip
@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install redis
         run: sudo apt-get install -y redis-tools redis-server
       - name: Install tesseract debian packages
@@ -55,10 +55,10 @@ jobs:
         with:
           stack-version: "7.13.4"
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install redis
         run: sudo apt-get install -y redis-tools redis-server
       - name: Install tesseract debian packages

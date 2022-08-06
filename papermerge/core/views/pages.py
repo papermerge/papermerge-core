@@ -1,6 +1,7 @@
 import io
 import os
 import logging
+from uuid import uuid4
 from pikepdf import Pdf
 
 from django.http import Http404
@@ -631,6 +632,12 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
         first_page = pages.first()
 
         src_old_version = first_page.document_version
+
+        if src_old_version.pages.count() <= 1:
+            raise APIBadRequest(
+                "Extracting last page of document is not allowed"
+            )
+
         doc = src_old_version.document
         src_new_version = doc.version_bump(
             src_old_version.pages.count() - pages.count()
@@ -662,19 +669,32 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             # insert all pages in one single document
             self.move_to_folder_single_paged(
                 pages=pages,
-                dst_folder=dst_folder
+                dst_folder=dst_folder,
+                title_format=data.get('title_format', None)
             )
         else:
             # there will be one document for each page
             self.move_to_folder_multi_paged(
                 pages=pages,
                 first_page=first_page,
-                dst_folder=dst_folder
+                dst_folder=dst_folder,
+                title_format=data.get('title_format', None)
             )
 
-    def move_to_folder_multi_paged(self, pages, first_page, dst_folder):
+    def move_to_folder_multi_paged(
+            self,
+            pages,
+            first_page,
+            dst_folder,
+            title_format=None
+    ):
+        if title_format is None:
+            title = f'document-{str(uuid4())}.pdf'
+        else:
+            title = f'{title_format}.pdf'
+
         new_doc = Document.objects.create_document(
-            title='noname.pdf',
+            title=title,
             lang=first_page.lang,
             user_id=dst_folder.user_id,
             parent=dst_folder,
@@ -701,10 +721,20 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
-    def move_to_folder_single_paged(self, pages, dst_folder):
+    def move_to_folder_single_paged(
+            self,
+            pages,
+            dst_folder,
+            title_format=None
+    ):
         for page in pages:
+            if title_format is None:
+                title = f'page-{page.pk}.pdf'
+            else:
+                title = f'{title_format}.pdf'
+
             doc = Document.objects.create_document(
-                title=f'noname-{page.pk}.pdf',
+                title=title,
                 lang=page.lang,
                 user_id=dst_folder.user_id,
                 parent=dst_folder,

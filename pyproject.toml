@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "2.1.0a32"
+version = "2.1.0a36"
 description = "Open source document management system designed for scanned documents"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 license = "Apache 2.0 License"
 
 [tool.poetry.dependencies]
-python = "~3.8"
+python = ">=3.8, <=3.10.6"
 django = "^4.0"
 djangorestframework = "^3.13.1"
 django-cors-headers = "^3.9.0"
@@ -16,7 +16,7 @@ channels = "^3.0"
 channels-redis = "^3.2"
 redis = "^4.3.3"
 ocrmypdf = "^13.5.0"
-ocrmypdf-papermerge = "^0.4.4"
+ocrmypdf-papermerge = "^0.4.5"
 django-dynamic-preferences = "^1.13"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
 django-taggit = "^3.0.0"

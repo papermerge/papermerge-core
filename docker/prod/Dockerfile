@@ -1,4 +1,4 @@
-FROM python:3.8 as build
+FROM python:3.9 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
 ENV IN_DOCKER=1
@@ -24,7 +24,7 @@ COPY poetry.lock pyproject.toml /
 RUN poetry install --no-root --no-dev -vvv
 
 ## STEP 2 - use slim base image
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 ENV PATH="/venv/bin:$PATH"
 ENV PYTHONBUFFERED=1

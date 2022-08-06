@@ -31,18 +31,17 @@ Papermerge is perfect tool to manage documents in PDF, JPEG, TIFF and PNG format
 ## Features Highlights
 
 * RESTul API
-* Documents of pdf, jpg, png, tiff formats are supported
+* Works only with PDF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
 * Full Text Search of the scanned documents (uses [elasticsearch](https://github.com/elastic/elasticsearch))
 * Document Versions
-* User defined metadata per folder/document/page
 * Tags - assign colored tags to documents or folders
 * Documents and Folders - users can organize documents in folders
 * Multi-User (Groups, Roles)
 * User permissions management
 * Document permissions management
 * Page Management - delete, reorder, cut & paste pages (uses [PikePDF](https://github.com/pikepdf/pikepdf))
-* Automation
+
 
 ## Documentation
 

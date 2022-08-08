@@ -42,6 +42,7 @@ from papermerge.core.renderers import (
 )
 from papermerge.core.exceptions import APIBadRequest
 from .mixins import RequireAuthMixin
+from .utils import insert_pdf_pages, total_merge
 from ..models.utils import OCR_STATUS_SUCCEEDED
 
 logger = logging.getLogger(__name__)
@@ -188,35 +189,6 @@ def reuse_text_field_multi(
     dst_new_version.update_text_field(streams)
 
 
-def insert_pdf_pages(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    page_numbers,
-    position
-):
-    src_old_pdf = Pdf.open(
-        abs_path(src_old_version.document_path.url)
-    )
-    dst_old_pdf = Pdf.open(
-        abs_path(dst_old_version.document_path.url)
-    )
-
-    _inserted_count = 0
-    for page_number in page_numbers:
-        pdf_page = src_old_pdf.pages.p(page_number)
-        dst_old_pdf.pages.insert(position + _inserted_count, pdf_page)
-        _inserted_count += 1
-
-    dirname = os.path.dirname(
-        abs_path(dst_new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    dst_old_pdf.save(
-        abs_path(dst_new_version.document_path.url)
-    )
-
-
 def remove_pdf_pages(old_version, new_version, pages_to_delete):
     """
     :param old_version: is instance of DocumentVersion
@@ -283,6 +255,10 @@ def rotate_pdf_pages(
     )
     os.makedirs(dirname, exist_ok=True)
     src.save(abs_path(new_version.document_path.url))
+
+
+def partial_merge():
+    pass
 
 
 def reuse_ocr_data_after_rotate(
@@ -769,13 +745,61 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
-            self.move_to_document(serializer.data)
+            if serializer.data.get('merge', False):
+                self.merge_to_document(serializer.data)
+            else:
+                self.move_to_document(serializer.data)
             return Response(
                 data=serializer.data,
                 status=status.HTTP_204_NO_CONTENT
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def merge_to_document(self, data):
+        """Merge creates target document version ONLY from source pages
+
+        There is a total merge and partial merge.
+        Total merge is when ALL pages of the source are involved. During total
+        merge source document is deleted.
+        When not all pages are involved in the merge - we say it is a partial
+        merge. During partial merge source documents is NOT deleted.
+        """
+        pages = Page.objects.filter(
+            pk__in=data['pages']
+        )
+        dst_document = Document.objects.get(
+            pk=data['dst'],
+            user=self.request.user
+        )
+        src_old_version = pages.first().document_version
+        doc = src_old_version.document
+        dst_old_version = dst_document.versions.last()
+
+        if src_old_version.pages.count() == pages.count():
+            # destination new version will have same
+            # number of pages as source document count
+            dst_new_version = dst_document.version_bump(
+                page_count=pages.count()
+            )
+            total_merge(
+                src_old_version=src_old_version,
+                dst_new_version=dst_new_version
+            )
+        else:
+            src_new_version = doc.version_bump(
+                page_count=src_old_version.pages.count() - pages.count()
+            )
+            dst_new_version = dst_document.version_bump(
+                page_count=dst_old_version.pages.count() + pages.count()
+            )
+            partial_merge(
+                src_old_version=src_old_version,
+                src_new_version=src_new_version,
+                dst_old_version=dst_old_version,
+                dst_new_version=dst_new_version,
+                page_numbers=[p.number for p in pages.order_by('number')]
+            )
 
     def move_to_document(self, data):
         pages = Page.objects.filter(

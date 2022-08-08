@@ -344,7 +344,7 @@ class Page(models.Model):
         if not os.path.exists(svg_abs_path):
             raise IOError
 
-        with open(svg_abs_path, "r") as f:
+        with open(svg_abs_path, "rb") as f:
             data = f.read()
 
         return data

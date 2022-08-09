@@ -4,6 +4,7 @@ from pikepdf import Pdf
 from django.utils.html import escape
 
 from papermerge.core.storage import abs_path
+from papermerge.core.models import DocumentVersion
 
 
 def sanitize_kvstore(kvstore_dict):
@@ -64,7 +65,7 @@ def insert_pdf_pages(
     )
     if dst_old_version is None:
         # case of total merge
-        dst_old_pdf = Pdf.new
+        dst_old_pdf = Pdf.new()
     else:
         dst_old_pdf = Pdf.open(
             abs_path(dst_old_version.document_path.url)
@@ -86,10 +87,12 @@ def insert_pdf_pages(
 
 
 def total_merge(
-        src_old_version,
-        dst_new_version
-):
-    page_numbers = [page.number for page in src_old_version.pages]
+    src_old_version: DocumentVersion,
+    dst_new_version: DocumentVersion
+) -> None:
+    """Merge source document version with destination"""
+    # all pages of the source
+    page_numbers = [page.number for page in src_old_version.pages.all()]
 
     insert_pdf_pages(
         src_old_version=src_old_version,
@@ -98,3 +101,8 @@ def total_merge(
         page_numbers=page_numbers,
         position=0
     )
+    # Total merge deletes source document.
+    # Because all pages of the source are moved to destination, source's
+    # last version remains "without pages". A document version without pages
+    # does not make sense to stay around - thus we delete it!
+    src_old_version.document.delete()

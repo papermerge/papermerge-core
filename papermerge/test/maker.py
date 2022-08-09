@@ -1,8 +1,9 @@
+from django.conf import settings
 from pathlib import Path
 from papermerge.core.models import Document, User
 
-
-RESOURCES = Path("")
+BASE_PATH = Path(settings.BASE_DIR)
+RESOURCES = Path(BASE_PATH / "resources")
 
 
 def document(resource: str, user: User) -> Document:
@@ -24,3 +25,5 @@ def document(resource: str, user: User) -> Document:
         file_path=RESOURCES / resource,
         file_name=resource
     )
+
+    return doc

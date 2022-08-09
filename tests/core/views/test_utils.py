@@ -28,22 +28,22 @@ class TestUtils(TestCase):
 
         # this is what we test
         total_merge(
-            src_old_version=src_document,
+            src_old_version=src_document.versions.last(),
             dst_new_version=dst_new_version
         )
 
         # 1. src_document must be deleted by now
         with pytest.raises(Document.DoesNotExist):
-            Document.objects.get(src_document.pk)
+            Document.objects.get(pk=src_document.pk)
 
         # 2. dst document's first version must contain one page
         # with "Scan v1" text
-        first_version = dst_document.versions()[0]
-        assert first_version.pages.count == 1
-        assert "Scan v1" == pdf_content(first_version.pages[0])
+        first_version = dst_document.versions.first()
+        assert first_version.pages.count() == 1
+        assert "Scan v1" == pdf_content(first_version)
 
-        second_version = dst_document.versions()[1]
+        second_version = dst_document.versions.last()
         # 3. dst document's last version must contain one page
         # with "Scan v2" text
-        assert second_version.pages.count == 1
-        assert "Scan v1" == pdf_content(second_version.pages[0])
+        assert second_version.pages.count() == 1
+        assert "Scan v2" == pdf_content(second_version)

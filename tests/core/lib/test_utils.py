@@ -100,6 +100,16 @@ class TestCoreLibUtils(unittest.TestCase):
 
         assert str(the_exception) == 'deleted_pages is expected to be a list'
 
+    def test_get_assigns_after_delete_during_document_merge(self):
+        """
+        Input used during two documents merge
+        """
+        result = get_assigns_after_delete(
+            total_pages=5, deleted_pages=[]
+        )
+
+        assert result == [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
+
     def test_annotate_page_data_1(self):
         pages = [
             FakePage(id=1, number=1),

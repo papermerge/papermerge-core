@@ -262,7 +262,7 @@ class Document(BaseTreeNode):
         """
         Associates payload with specific document version.
 
-        If document has zero sized documend version, it will associte
+        If document has zero sized document version, it will associate
         payload with that (existing) version, otherwise it will create
         new document version and associate it the payload.
         """

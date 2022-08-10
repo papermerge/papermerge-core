@@ -72,4 +72,15 @@ class PagesMoveToDocumentSerializer(rest_serializers.Serializer):
     )
     # destination document node
     dst = rest_serializers.UUIDField()
+    # If`merge` is True - ONLY new pages will be inserted in the
+    # newly created document version.
+    merge = rest_serializers.BooleanField(default=False)
+    # if `merge` is True, then `position` field is discarded
+    # if `merge` is False, then `position` field indicates
+    # at which position should new pages be inserted:
+    # 0 - at the beginning
+    # 1 - after first page
+    # 2 - after second page
+    # ...
+    # -1 - at the end
     position = rest_serializers.IntegerField(default=-1)

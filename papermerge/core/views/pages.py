@@ -42,7 +42,12 @@ from papermerge.core.renderers import (
 )
 from papermerge.core.exceptions import APIBadRequest
 from .mixins import RequireAuthMixin
-from .utils import insert_pdf_pages, total_merge
+from .utils import (
+    remove_pdf_pages,
+    insert_pdf_pages,
+    total_merge,
+    partial_merge
+)
 from ..models.utils import OCR_STATUS_SUCCEEDED
 
 logger = logging.getLogger(__name__)
@@ -189,28 +194,6 @@ def reuse_text_field_multi(
     dst_new_version.update_text_field(streams)
 
 
-def remove_pdf_pages(old_version, new_version, pages_to_delete):
-    """
-    :param old_version: is instance of DocumentVersion
-    :param new_version:  is instance of DocumentVersion
-    :param pages_to_delete: queryset of pages to delete
-    """
-    # delete page from document's new version associated file
-    pdf = Pdf.open(
-        abs_path(old_version.document_path.url)
-    )
-    _deleted_count = 0
-    for page in pages_to_delete:
-        pdf.pages.remove(p=page.number - _deleted_count)
-        _deleted_count += 1
-
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    pdf.save(abs_path(new_version.document_path.url))
-
-
 def reorder_pdf_pages(
     old_version,
     new_version,
@@ -255,10 +238,6 @@ def rotate_pdf_pages(
     )
     os.makedirs(dirname, exist_ok=True)
     src.save(abs_path(new_version.document_path.url))
-
-
-def partial_merge():
-    pass
 
 
 def reuse_ocr_data_after_rotate(
@@ -370,7 +349,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         remove_pdf_pages(
             old_version=old_version,
             new_version=new_version,
-            pages_to_delete=pages_to_delete
+            page_numbers=[page.number for page in pages_to_delete]
         )
 
         page_map = get_assigns_after_delete(
@@ -438,7 +417,7 @@ class PagesView(RequireAuthMixin, GenericAPIView):
         remove_pdf_pages(
             old_version=old_version,
             new_version=new_version,
-            pages_to_delete=pages_to_delete
+            page_numbers=[page.number for page in pages_to_delete]
         )
 
         page_map = get_assigns_after_delete(
@@ -622,7 +601,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
         remove_pdf_pages(
             old_version=src_old_version,
             new_version=src_new_version,
-            pages_to_delete=pages
+            page_numbers=[page.number for page in pages]
         )
 
         page_map = get_assigns_after_delete(
@@ -774,7 +753,6 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         )
         src_old_version = pages.first().document_version
         doc = src_old_version.document
-        dst_old_version = dst_document.versions.last()
 
         if src_old_version.pages.count() == pages.count():
             # destination new version will have same
@@ -791,12 +769,11 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
                 page_count=src_old_version.pages.count() - pages.count()
             )
             dst_new_version = dst_document.version_bump(
-                page_count=dst_old_version.pages.count() + pages.count()
+                page_count=pages.count()
             )
             partial_merge(
                 src_old_version=src_old_version,
                 src_new_version=src_new_version,
-                dst_old_version=dst_old_version,
                 dst_new_version=dst_new_version,
                 page_numbers=[p.number for p in pages.order_by('number')]
             )
@@ -823,7 +800,7 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         remove_pdf_pages(
             old_version=src_old_version,
             new_version=src_new_version,
-            pages_to_delete=pages
+            page_numbers=[page.number for page in pages]
         )
 
         page_map = get_assigns_after_delete(
@@ -847,8 +824,8 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             src_old_version=src_old_version,
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
-            page_numbers=[p.number for p in pages.order_by('number')],
-            position=data['position']
+            src_page_numbers=[p.number for p in pages.order_by('number')],
+            dst_position=data['position']
         )
 
         copy_pages_data_multi(

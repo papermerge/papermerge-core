@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isdir, join
 
 from .path import DocumentPath, PagePath
-from .utils import get_assigns_after_delete, safe_to_delete
+from .utils import safe_to_delete
 
 logger = logging.getLogger(__name__)
 
@@ -329,12 +329,6 @@ class Storage:
         self.make_sure_path_exists(
             self.abspath(dst_doc_path)
         )
-        # replace stapler!
-        # stapler.delete_pages(
-        #    self.abspath(src_doc_path),
-        #    self.abspath(dst_doc_path),
-        #    page_numbers
-        # )
 
         if skip_migration:
             return doc_path.version + 1
@@ -347,30 +341,6 @@ class Storage:
             )
             return
 
-        get_assigns_after_delete(
-            total_pages=page_count,
-            deleted_pages=page_numbers
-        )
-        # steps were removed
-        # for a in assigns:
-        #    for step in Steps():
-        #        src_page_path = PagePath(
-        #            document_path=src_doc_path,
-        #            page_num=a[1],
-        #            step=step,
-        #            page_count=page_count
-        #        )
-        #        dst_page_path = PagePath(
-        #            document_path=dst_doc_path,
-        #            page_num=a[0],
-        #            step=step,
-        #            page_count=page_count - len(page_numbers)
-        #        )
-        #        self.copy_page(
-        #            src_page_path=src_page_path,
-        #            dst_page_path=dst_page_path
-        #        )
-#
         return doc_path.version + 1
 
     def paste_pages(

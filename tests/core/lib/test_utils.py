@@ -2,7 +2,6 @@ import unittest
 
 from papermerge.core.lib.utils import (
     get_reordered_list,
-    get_assigns_after_delete,
     annotate_page_data
 )
 
@@ -67,48 +66,6 @@ class TestCoreLibUtils(unittest.TestCase):
         )
 
         assert reordered_list == [1, 2, 4, 3]
-
-    def test_get_assigns_after_delete_1(self):
-        result = get_assigns_after_delete(
-            total_pages=6, deleted_pages=[1, 2]
-        )
-        assert result == [(1, 3), (2, 4), (3, 5), (4, 6)]
-
-    def test_get_assigns_after_delete_2(self):
-        result = get_assigns_after_delete(
-            total_pages=5, deleted_pages=[1, 5]
-        )
-        assert result == [(1, 2), (2, 3), (3, 4)]
-
-    def test_get_assigns_after_delete_3(self):
-        result = get_assigns_after_delete(
-            total_pages=5, deleted_pages=[1]
-        )
-        assert result == [(1, 2), (2, 3), (3, 4), (4, 5)]
-
-    def test_get_assigns_after_delete_4(self):
-        """
-        `deleted_pages` argument is expected to be a list.
-        In case it is not a list, ValueError exception
-        will be raised.
-        """
-        with self.assertRaises(ValueError) as cm:
-            get_assigns_after_delete(
-                total_pages=5, deleted_pages=1
-            )
-        the_exception = cm.exception
-
-        assert str(the_exception) == 'deleted_pages is expected to be a list'
-
-    def test_get_assigns_after_delete_during_document_merge(self):
-        """
-        Input used during two documents merge
-        """
-        result = get_assigns_after_delete(
-            total_pages=5, deleted_pages=[]
-        )
-
-        assert result == [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
 
     def test_annotate_page_data_1(self):
         pages = [

@@ -1,8 +1,5 @@
-import io
-import os
 import logging
 from uuid import uuid4
-from pikepdf import Pdf
 
 from django.http import Http404
 
@@ -21,12 +18,11 @@ from drf_spectacular.utils import extend_schema
 
 from papermerge.core.models import Page, Document, Folder
 from papermerge.core.lib.utils import (
-    get_assigns_after_delete,
     get_reordered_list,
     annotate_page_data
 )
-from papermerge.core.lib.path import PagePath
-from papermerge.core.storage import abs_path, get_storage_instance
+
+from papermerge.core.storage import get_storage_instance
 from papermerge.core.serializers import (
     PageSerializer,
     PageDeleteSerializer,
@@ -46,198 +42,18 @@ from .utils import (
     remove_pdf_pages,
     insert_pdf_pages,
     total_merge,
-    partial_merge
+    partial_merge,
+    reuse_ocr_data,
+    reuse_text_field,
+    reuse_text_field_multi,
+    copy_pages_data_multi,
+    reorder_pdf_pages,
+    rotate_pdf_pages,
+    PageRecycleMap
 )
 from ..models.utils import OCR_STATUS_SUCCEEDED
 
 logger = logging.getLogger(__name__)
-
-
-def copy_pages_data_multi(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    position,
-    pages
-):
-    storage = get_storage_instance()
-    page_map = [(pos, pos) for pos in range(1, position + 1)]
-
-    if len(page_map) > 0:
-        for src_page_number, dst_page_number in page_map:
-            src_page_path = PagePath(
-                document_path=dst_old_version.document_path,
-                page_num=src_page_number
-            )
-            dst_page_path = PagePath(
-                document_path=dst_new_version.document_path,
-                page_num=dst_page_number
-            )
-        storage.copy_page(src=src_page_path, dst=dst_page_path)
-
-    page_map = zip(
-        [page.number for page in pages.all()],
-        [pos for pos in range(position + 1, position + pages.count() + 1)]
-    )
-
-    for src_page_number, dst_page_number in page_map:
-        src_page_path = PagePath(
-            document_path=src_old_version.document_path,
-            page_num=src_page_number
-        )
-        dst_page_path = PagePath(
-            document_path=dst_new_version.document_path,
-            page_num=dst_page_number
-        )
-        storage.copy_page(src=src_page_path, dst=dst_page_path)
-
-    dst_old_total_pages = dst_old_version.pages.count()
-    _range = range(
-        position + 1,
-        dst_old_total_pages + 1
-    )
-    page_map = [(pos, pos + pages.count()) for pos in _range]
-
-    for src_page_number, dst_page_number in page_map:
-        src_page_path = PagePath(
-            document_path=dst_old_version.document_path,
-            page_num=src_page_number
-        )
-        dst_page_path = PagePath(
-            document_path=dst_new_version.document_path,
-            page_num=dst_page_number
-        )
-        storage.copy_page(src=src_page_path, dst=dst_page_path)
-
-
-def reuse_ocr_data(old_version, new_version, page_map):
-    storage_instance = get_storage_instance()
-
-    for new_number, old_number in page_map:
-        src_page_path = PagePath(
-            document_path=old_version.document_path,
-            page_num=old_number
-        )
-        dst_page_path = PagePath(
-            document_path=new_version.document_path,
-            page_num=new_number
-        )
-        storage_instance.copy_page(
-            src=src_page_path,
-            dst=dst_page_path
-        )
-
-
-def collect_text_streams(version, page_numbers):
-    pages_map = {page.number: page for page in version.pages.all()}
-
-    streams = []
-    for number in page_numbers:
-        stream = io.StringIO(pages_map[number].text)
-        streams.append(stream)
-
-    return streams
-
-
-def reuse_text_field(old_version, new_version, page_map):
-    streams = collect_text_streams(
-        version=old_version,
-        # list of old_version page numbers
-        page_numbers=[item[1] for item in page_map]
-    )
-
-    # updates page.text fields and document_version.text field
-    new_version.update_text_field(streams)
-
-
-def reuse_text_field_multi(
-  src_old_version,
-  dst_old_version,
-  dst_new_version,
-  position,
-  pages
-):
-    page_map = [(pos, pos) for pos in range(1, position + 1)]
-    streams = []
-    if len(page_map) > 0:
-        streams.extend(
-            collect_text_streams(
-                version=dst_old_version,
-                page_numbers=[item[1] for item in page_map]
-            )
-        )
-
-    page_map = zip(
-        [pos for pos in range(position + 1, pages.count() + 1)],
-        [page.number for page in pages.all()]
-    )
-    streams.extend(
-        collect_text_streams(
-            version=src_old_version,
-            page_numbers=[item[1] for item in page_map]
-        )
-    )
-
-    dst_new_total_pages = dst_new_version.pages.count()
-    _range = range(
-            position + 1 + pages.count(),
-            dst_new_total_pages + 1
-        )
-    page_map = [(pos, pos - position - pages.count()) for pos in _range]
-    streams.extend(
-       collect_text_streams(
-            version=dst_old_version,
-            page_numbers=[item[1] for item in page_map]
-       )
-    )
-
-    dst_new_version.update_text_field(streams)
-
-
-def reorder_pdf_pages(
-    old_version,
-    new_version,
-    pages_data,
-    page_count
-):
-    src = Pdf.open(abs_path(old_version.document_path.url))
-
-    dst = Pdf.new()
-    reodered_list = sorted(pages_data, key=lambda item: item['new_number'])
-
-    for list_item in reodered_list:
-        page = src.pages.p(list_item['old_number'])
-        dst.pages.append(page)
-
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    dst.save(abs_path(new_version.document_path.url))
-
-
-def rotate_pdf_pages(
-    old_version,
-    new_version,
-    pages_data
-):
-    """
-    ``pages`` data is a list of dictionaries. Each dictionary is expected
-    to have following keys:
-        - number
-        - angle
-    """
-    src = Pdf.open(abs_path(old_version.document_path.url))
-
-    for page_data in pages_data:
-        page = src.pages.p(page_data['number'])
-        page.rotate(page_data['angle'], relative=True)
-
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    src.save(abs_path(new_version.document_path.url))
 
 
 def reuse_ocr_data_after_rotate(
@@ -352,10 +168,12 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
             page_numbers=[page.number for page in pages_to_delete]
         )
 
-        page_map = get_assigns_after_delete(
-            total_pages=old_version.page_count,
-            deleted_pages=[item.number for item in pages_to_delete]
+        page_recycle_map = PageRecycleMap(
+            total=old_version.page_count,
+            deleted=[item.number for item in pages_to_delete]
         )
+
+        page_map = list(page_recycle_map)
 
         reuse_ocr_data(
             old_version=old_version,
@@ -420,10 +238,12 @@ class PagesView(RequireAuthMixin, GenericAPIView):
             page_numbers=[page.number for page in pages_to_delete]
         )
 
-        page_map = get_assigns_after_delete(
-            total_pages=old_version.page_count,
-            deleted_pages=[item.number for item in pages_to_delete]
+        page_recycle_map = PageRecycleMap(
+            total=old_version.page_count,
+            deleted=[item.number for item in pages_to_delete]
         )
+
+        page_map = list(page_recycle_map)
 
         reuse_ocr_data(
             old_version=old_version,
@@ -604,10 +424,12 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             page_numbers=[page.number for page in pages]
         )
 
-        page_map = get_assigns_after_delete(
-            total_pages=src_old_version.page_count,
-            deleted_pages=[item.number for item in pages]
+        page_recycle_map = PageRecycleMap(
+            total=src_old_version.page_count,
+            deleted=[item.number for item in pages]
         )
+
+        page_map = list(page_recycle_map)
 
         reuse_ocr_data(
             old_version=src_old_version,
@@ -803,10 +625,12 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             page_numbers=[page.number for page in pages]
         )
 
-        page_map = get_assigns_after_delete(
-            total_pages=src_old_version.page_count,
-            deleted_pages=[item.number for item in pages]
+        page_recycle_map = PageRecycleMap(
+            total=src_old_version.page_count,
+            deleted=[item.number for item in pages]
         )
+
+        page_map = list(page_recycle_map)
 
         reuse_ocr_data(
             old_version=src_old_version,
@@ -833,7 +657,7 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             position=data['position'],
-            pages=pages
+            page_numbers=[page.number for page in pages]
         )
 
         reuse_text_field_multi(
@@ -841,5 +665,5 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             position=data['position'],
-            pages=pages
+            page_numbers=[page.number for page in pages]
         )

@@ -1,9 +1,12 @@
+import io
 import os
 from pikepdf import Pdf
+from collections import abc, namedtuple
 
 from django.utils.html import escape
 
-from papermerge.core.storage import abs_path
+from papermerge.core.lib.path import PagePath
+from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.models import DocumentVersion
 
 
@@ -51,6 +54,226 @@ def sanitize_kvstore_list(kvstore_list):
     ]
 
     return new_kvstore_list
+
+
+PageRecycleMapItem = namedtuple(
+    'PageRecycleMapItem', ['new_number', 'old_number']
+)
+
+
+class PageRecycleMap:
+    """
+    Given total pages and a list of deleted pages - returns
+    a list of assignations of pages:
+        [new_version_page_num, old_version_page_num]
+    Which reads 'new_version_page_num' gets info from
+    `old_version_page_num`.
+
+    Example 1:
+        total_pages: 6
+        deleted_pages: [1, 2]
+        returns: [
+            [(1, 3),  (2, 4), (3, 5), (4, 6)]
+            # page #1 gets info from prev page #3
+            # page #2 ... #4
+            ...
+            # page #4 ... #6
+        ]
+
+    Example 2:
+        total pages: 5
+        deleted_pages [1, 5]
+        returns: [
+            [(1, 2), (2, 3), (3, 4)
+        ]
+
+    Example 3:
+        total pages: 5
+        deleted_pages [2, 3]
+        returns: [
+            [(1, 1), (2, 4), (3, 5)
+            # page #1 stays unaffected
+            # page #2 gets the info from page number 4
+            # page #3 gets info from page #5
+        ]
+    """
+
+    def __init__(self, total: int, deleted: list[int]):
+        if not isinstance(deleted, abc.Sequence):
+            raise ValueError('`deleted` expected to be a sequence')
+
+        if total < len(deleted):
+            raise ValueError('`total` < `deleted`')
+
+        self.total = total
+        self.deleted = deleted
+
+        _pages = [
+            page for page in range(1, self.total + 1)
+            if page not in self.deleted
+        ]
+        _page_numbers = range(1, len(_pages) + 1)
+        self.page_map = zip(_page_numbers, _pages)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        item = next(self.page_map)
+        if item:
+            return PageRecycleMapItem(*item)
+
+        raise StopIteration
+
+    def __repr__(self):
+        return (
+            f"PageRecycleMap("
+            f"total={self.total!r}, deleted={self.deleted!r}"
+            f")"
+        )
+
+
+def collect_text_streams(version, page_numbers):
+    pages_map = {page.number: page for page in version.pages.all()}
+
+    streams = []
+    for number in page_numbers:
+        stream = io.StringIO(pages_map[number].text)
+        streams.append(stream)
+
+    return streams
+
+
+def copy_pages_data_multi(
+    src_old_version,
+    dst_old_version,
+    dst_new_version,
+    position,
+    page_numbers
+):
+    storage = get_storage_instance()
+    page_map = [(pos, pos) for pos in range(1, position + 1)]
+
+    if len(page_map) > 0:
+        for src_page_number, dst_page_number in page_map:
+            src_page_path = PagePath(
+                document_path=dst_old_version.document_path,
+                page_num=src_page_number
+            )
+            dst_page_path = PagePath(
+                document_path=dst_new_version.document_path,
+                page_num=dst_page_number
+            )
+        storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+    page_map = zip(
+        page_numbers,
+        [pos for pos in range(position + 1, position + len(page_numbers) + 1)]
+    )
+
+    for src_page_number, dst_page_number in page_map:
+        src_page_path = PagePath(
+            document_path=src_old_version.document_path,
+            page_num=src_page_number
+        )
+        dst_page_path = PagePath(
+            document_path=dst_new_version.document_path,
+            page_num=dst_page_number
+        )
+        storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+    if dst_old_version is not None:
+        dst_old_total_pages = dst_old_version.pages.count()
+        _range = range(
+            position + 1,
+            dst_old_total_pages + 1
+        )
+        page_map = [(pos, pos + len(page_numbers)) for pos in _range]
+
+        for src_page_number, dst_page_number in page_map:
+            src_page_path = PagePath(
+                document_path=dst_old_version.document_path,
+                page_num=src_page_number
+            )
+            dst_page_path = PagePath(
+                document_path=dst_new_version.document_path,
+                page_num=dst_page_number
+            )
+            storage.copy_page(src=src_page_path, dst=dst_page_path)
+
+
+def reuse_ocr_data(old_version, new_version, page_map):
+    storage_instance = get_storage_instance()
+
+    for new_number, old_number in page_map:
+        src_page_path = PagePath(
+            document_path=old_version.document_path,
+            page_num=old_number
+        )
+        dst_page_path = PagePath(
+            document_path=new_version.document_path,
+            page_num=new_number
+        )
+        storage_instance.copy_page(
+            src=src_page_path,
+            dst=dst_page_path
+        )
+
+
+def reuse_text_field(old_version, new_version, page_map):
+    streams = collect_text_streams(
+        version=old_version,
+        # list of old_version page numbers
+        page_numbers=[item[1] for item in page_map]
+    )
+
+    # updates page.text fields and document_version.text field
+    new_version.update_text_field(streams)
+
+
+def reuse_text_field_multi(
+    src_old_version,
+    dst_old_version,
+    dst_new_version,
+    position,
+    page_numbers
+):
+    page_map = [(pos, pos) for pos in range(1, position + 1)]
+    streams = []
+    if len(page_map) > 0 and dst_old_version is not None:
+        streams.extend(
+            collect_text_streams(
+                version=dst_old_version,
+                page_numbers=[item[1] for item in page_map]
+            )
+        )
+
+    page_map = zip(
+        [pos for pos in range(position + 1, len(page_numbers) + 1)],
+        page_numbers
+    )
+    streams.extend(
+        collect_text_streams(
+            version=src_old_version,
+            page_numbers=[item[1] for item in page_map]
+        )
+    )
+
+    dst_new_total_pages = dst_new_version.pages.count()
+    _range = range(
+            position + 1 + len(page_numbers),
+            dst_new_total_pages + 1
+        )
+    page_map = [(pos, pos - position - len(page_numbers)) for pos in _range]
+    if dst_old_version is not None:
+        streams.extend(
+           collect_text_streams(
+                version=dst_old_version,
+                page_numbers=[item[1] for item in page_map]
+           )
+        )
+
+    dst_new_version.update_text_field(streams)
 
 
 def remove_pdf_pages(
@@ -185,6 +408,25 @@ def partial_merge(
         page_numbers=page_numbers
     )
 
+    page_map = list(
+        PageRecycleMap(
+            total=src_old_version.page_count,
+            deleted=page_numbers
+        )
+    )
+
+    reuse_ocr_data(
+        old_version=src_old_version,
+        new_version=src_new_version,
+        page_map=page_map
+    )
+
+    reuse_text_field(
+        old_version=src_old_version,
+        new_version=src_new_version,
+        page_map=page_map
+    )
+
     # insert pages to the destination
     insert_pdf_pages(
         src_old_version=src_old_version,
@@ -192,3 +434,65 @@ def partial_merge(
         dst_new_version=dst_new_version,
         src_page_numbers=page_numbers
     )
+
+    copy_pages_data_multi(
+        src_old_version=src_old_version,
+        dst_old_version=None,
+        dst_new_version=dst_new_version,
+        position=0,
+        page_numbers=page_numbers
+    )
+
+    reuse_text_field_multi(
+        src_old_version=src_old_version,
+        dst_old_version=None,
+        dst_new_version=dst_new_version,
+        position=0,
+        page_numbers=page_numbers
+    )
+
+
+def reorder_pdf_pages(
+    old_version,
+    new_version,
+    pages_data,
+    page_count
+):
+    src = Pdf.open(abs_path(old_version.document_path.url))
+
+    dst = Pdf.new()
+    reodered_list = sorted(pages_data, key=lambda item: item['new_number'])
+
+    for list_item in reodered_list:
+        page = src.pages.p(list_item['old_number'])
+        dst.pages.append(page)
+
+    dirname = os.path.dirname(
+        abs_path(new_version.document_path.url)
+    )
+    os.makedirs(dirname, exist_ok=True)
+    dst.save(abs_path(new_version.document_path.url))
+
+
+def rotate_pdf_pages(
+    old_version,
+    new_version,
+    pages_data
+):
+    """
+    ``pages`` data is a list of dictionaries. Each dictionary is expected
+    to have following keys:
+        - number
+        - angle
+    """
+    src = Pdf.open(abs_path(old_version.document_path.url))
+
+    for page_data in pages_data:
+        page = src.pages.p(page_data['number'])
+        page.rotate(page_data['angle'], relative=True)
+
+    dirname = os.path.dirname(
+        abs_path(new_version.document_path.url)
+    )
+    os.makedirs(dirname, exist_ok=True)
+    src.save(abs_path(new_version.document_path.url))

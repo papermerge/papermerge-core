@@ -8,9 +8,78 @@ from papermerge.test.utils import pdf_content
 from papermerge.core.views.utils import (
     total_merge,
     partial_merge,
-    insert_pdf_pages
+    insert_pdf_pages,
+    PageRecycleMap
 )
 from papermerge.core.models import Document
+
+
+class TestPageRecycleMap(TestCase):
+
+    def test_page_recycle_map_1(self):
+        page_map = PageRecycleMap(total=6, deleted=[1, 2])
+
+        result = [(item.new_number, item.old_number) for item in page_map]
+
+        assert result == [(1, 3), (2, 4), (3, 5), (4, 6)]
+
+    def test_page_recycle_map_2(self):
+        page_map = PageRecycleMap(
+            total=5, deleted=[1, 5]
+        )
+        result = [(item.new_number, item.old_number) for item in page_map]
+
+        assert result == [(1, 2), (2, 3), (3, 4)]
+
+    def test_page_recycle_map_3(self):
+        page_map = PageRecycleMap(
+            total=5, deleted=[1]
+        )
+        result = [(item.new_number, item.old_number) for item in page_map]
+
+        assert result == [(1, 2), (2, 3), (3, 4), (4, 5)]
+
+    def test_page_recycle_map_junk_arguments(self):
+        """
+        `deleted_pages` argument is expected to be a list.
+        In case it is not a list, ValueError exception
+        will be raised.
+        """
+        with pytest.raises(ValueError):
+            PageRecycleMap(
+                total=5, deleted=1
+            )
+
+    def test_page_recycle_map_during_document_merge(self):
+        """
+        Input used during two documents merge
+        """
+        page_map = PageRecycleMap(
+            total=5, deleted=[]
+        )
+        result = [(item.new_number, item.old_number) for item in page_map]
+        assert result == [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
+
+    def test_different_input_for_second_argument(self):
+        page_map = PageRecycleMap(
+            total=5,
+            deleted=[item for item in (1, 2, 3)]
+        )
+        item = next(page_map)
+        assert item.new_number == 1
+        assert item.old_number == 4
+
+    def test_multiple_iterations_over_same_map(self):
+        page_map = list(
+            PageRecycleMap(
+                total=5,
+                deleted=[item for item in (1, 2, 3)]
+            )
+        )
+        list_1 = [item.old_number for item in page_map]
+        list_2 = [item.old_number for item in page_map]
+
+        assert list_1 == list_2
 
 
 class TestInserPdfPagesUtilityFunction(TestCase):

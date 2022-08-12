@@ -62,39 +62,70 @@ PageRecycleMapItem = namedtuple(
 
 
 class PageRecycleMap:
-    """
-    Given total pages and a list of deleted pages - returns
-    a list of assignations of pages:
-        [new_version_page_num, old_version_page_num]
-    Which reads 'new_version_page_num' gets info from
-    `old_version_page_num`.
+    """Maps new page numbers to old ones.
 
-    Example 1:
-        total_pages: 6
-        deleted_pages: [1, 2]
-        returns: [
-            [(1, 3),  (2, 4), (3, 5), (4, 6)]
-            # page #1 gets info from prev page #3
-            # page #2 ... #4
-            ...
-            # page #4 ... #6
+    Under the hood, when user deletes pages from a document version, a new
+    document version is created and only "not deleted" pages of old document
+    version are transferred. This transfer means that data, like OCRed files,
+    database fields, from "old page" are moved to the "new page". Thus,
+    the requirement to hold a structure which maps page from old document
+    version to the new document version.
+
+    Couple of examples.
+    Say there is 6 pages document and user deletes pages numbered 1 and 2;
+
+    |Old document version | New document version|
+    ---------------------------------------------
+    |        1            |    3                |
+    |        2            |    4                |
+    |        3            |    5                |
+    |        4            |    6                |
+    |        5            |                     |
+    |        6            |                     |
+    ---------------------------------------------
+
+    Notice that pages retain their original label. Table above reads
+    as follows: in the new document version page number "1" gets
+    info from old document version page number "3". New page number "2"
+    gets info from old page number "4". New page number "3" gets info
+    from page number "5". And finally the new page number "4" gets info from
+    old page number "6".
+
+    One more example; this time consider 5 pages document. User
+    deletes page number 1 and 5:
+
+    |Old document version | New document version|
+    ---------------------------------------------
+    |        1            |    2                |
+    |        2            |    3                |
+    |        3            |    4                |
+    |        4            |                     |
+    |        5            |                     |
+    ---------------------------------------------
+
+    The mapping will be:
+        [
+            {new_number: 1, old_number: 2},
+            {new_number: 2, old_number: 3},
+            {new_number: 3, old_number: 4},
         ]
 
-    Example 2:
-        total pages: 5
-        deleted_pages [1, 5]
-        returns: [
-            [(1, 2), (2, 3), (3, 4)
-        ]
+    Last example: total pages = 5, deleted pages = [2, 3]
 
-    Example 3:
-        total pages: 5
-        deleted_pages [2, 3]
-        returns: [
-            [(1, 1), (2, 4), (3, 5)
-            # page #1 stays unaffected
-            # page #2 gets the info from page number 4
-            # page #3 gets info from page #5
+    |Old document version | New document version|
+    ---------------------------------------------
+    |        1            |    1                |
+    |        2            |    4                |
+    |        3            |    5                |
+    |        4            |                     |
+    |        5            |                     |
+    ---------------------------------------------
+
+    Result mapping is:
+        [
+            {new_number: 1, old_number: 1},
+            {new_number: 2, old_number: 4},
+            {new_number: 3, old_number: 5},
         ]
     """
 
@@ -133,15 +164,23 @@ class PageRecycleMap:
         )
 
 
-def collect_text_streams(version, page_numbers):
+def collect_text_streams(
+    version: DocumentVersion,
+    page_numbers: list[int]
+) -> list[io.StringIO]:
+    """
+    Returns list of texts of given page numbers from specified document version
+
+    Each page's text is wrapped as io.StringIO instance.
+    """
     pages_map = {page.number: page for page in version.pages.all()}
 
-    streams = []
-    for number in page_numbers:
-        stream = io.StringIO(pages_map[number].text)
-        streams.append(stream)
+    result = [
+        io.StringIO(pages_map[number].text)
+        for number in page_numbers
+    ]
 
-    return streams
+    return result
 
 
 def copy_pages_data_multi(
@@ -202,7 +241,11 @@ def copy_pages_data_multi(
             storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
-def reuse_ocr_data(old_version, new_version, page_map):
+def reuse_ocr_data(
+    old_version: DocumentVersion,
+    new_version: DocumentVersion,
+    page_map: PageRecycleMap
+) -> None:
     storage_instance = get_storage_instance()
 
     for new_number, old_number in page_map:
@@ -220,7 +263,11 @@ def reuse_ocr_data(old_version, new_version, page_map):
         )
 
 
-def reuse_text_field(old_version, new_version, page_map):
+def reuse_text_field(
+    old_version: DocumentVersion,
+    new_version: DocumentVersion,
+    page_map: list
+) -> None:
     streams = collect_text_streams(
         version=old_version,
         # list of old_version page numbers
@@ -290,9 +337,17 @@ def remove_pdf_pages(
     will remove first and second pages.
     """
     # delete page from document's new version associated file
+
+    if len(page_numbers) < 1:
+        raise ValueError("Empty page_numbers")
+
     pdf = Pdf.open(
         abs_path(old_version.document_path.url)
     )
+
+    if len(pdf.pages) < len(page_numbers):
+        raise ValueError("Too many values in page_numbers")
+
     _deleted_count = 0
     for page_number in page_numbers:
         pdf.pages.remove(p=page_number - _deleted_count)

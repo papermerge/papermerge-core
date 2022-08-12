@@ -1,5 +1,7 @@
-import re
+import itertools
 import pytest
+
+from model_bakery import baker
 
 from papermerge.test import TestCase
 from papermerge.test import maker
@@ -9,6 +11,9 @@ from papermerge.core.views.utils import (
     total_merge,
     partial_merge,
     insert_pdf_pages,
+    remove_pdf_pages,
+    collect_text_streams,
+    reuse_text_field,
     PageRecycleMap
 )
 from papermerge.core.models import Document
@@ -82,7 +87,201 @@ class TestPageRecycleMap(TestCase):
         assert list_1 == list_2
 
 
+class TestCollectTextStreams(TestCase):
+    """Tests collect_text_streams"""
+
+    def test_collect_text_streams_basic_1(self):
+        pages = baker.prepare(
+            "core.Page",
+            _quantity=3,
+            number=itertools.cycle([1, 2, 3]),
+            text=itertools.cycle(["Page 1", "Page 2", "Page 3"])
+        )
+        doc_version = baker.make(
+            "core.DocumentVersion",
+            pages=pages
+        )
+
+        actual = [
+            stream.read()
+            for stream in collect_text_streams(
+                version=doc_version,
+                page_numbers=[2, 3]
+            )
+        ]
+
+        expected = ["Page 2", "Page 3"]
+
+        assert expected == actual
+
+    def test_collect_text_streams_basic_2(self):
+        pages = baker.prepare(
+            "core.Page",
+            _quantity=2,
+            number=itertools.cycle([1, 2]),
+            text=itertools.cycle(["Page 1", "Page 2"])
+        )
+        doc_version = baker.make(
+            "core.DocumentVersion",
+            pages=pages
+        )
+
+        actual = [
+            stream.read()
+            for stream in collect_text_streams(
+                version=doc_version,
+                page_numbers=[1, 2]
+            )
+        ]
+
+        expected = ["Page 1", "Page 2"]
+
+        assert expected == actual
+
+
+class TestReuseOCRdata(TestCase):
+    """Tests for reuse_ocr_data"""
+
+    def test_reuse_ocr_data_basic(self):
+        pass
+
+
+class TestCopyPagesDataMulti(TestCase):
+    """Tests for copy_pages_data_multi"""
+
+    def test_copy_pages_data_multi_basic(self):
+        pass
+
+
+class TestReuseTextFieldMulti(TestCase):
+    """Tests for reuse_text_field_multi"""
+
+    def test_reuse_text_field_multi(self):
+        pass
+
+
+class TestReuseTextField(TestCase):
+    """Tests for reuse_text_field"""
+
+    def test_reuse_text_field_basic(self):
+        """
+        Old document version has three pages with following text:
+         # page number => content
+         ------------------------
+         1 => I am content from Page 1
+         2 => I am content from Page 2
+         3 => And I am content from Page 3
+
+         User removes first document version page.
+         This means that newly created document version will contain
+         in `text` following:
+
+         # page number => content
+         -------------------------
+         1 => I am content from Page 2
+         2 => And I am content from Page 3
+        """
+        pages_old = baker.prepare(
+            "core.Page",
+            _quantity=3,
+            number=itertools.cycle([1, 2, 3]),
+            text=itertools.cycle([
+                "I am content from Page 1",
+                "I am content from Page 2",
+                "And I am content from Page 3"
+            ])
+        )
+        doc_version_old = baker.make(
+            "core.DocumentVersion",
+            pages=pages_old
+        )
+        # User deletes one page, which means
+        # new document version will have 2 pages
+        pages_new = baker.prepare("core.Page", _quantity=2)
+        doc_version_new = baker.make("core.DocumentVersion", pages=pages_new)
+
+        #  this is what is tested
+        reuse_text_field(
+            old_version=doc_version_old,
+            new_version=doc_version_new,
+            # TODO: replace list with PageRecycleMap
+            page_map=[(1, 2), (2, 3)]
+        )
+
+        actual = [page.text for page in doc_version_new.pages.all()]
+        expected = [
+            "I am content from Page 2",
+            "And I am content from Page 3"
+        ]
+
+        assert expected == actual
+
+
+class TestRemovePdfPages(TestCase):
+    """Tests for remove_pdf_pages"""
+    def test_remove_pdf_pages_basic_1(self):
+        """Remove one page from the document version"""
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user
+        )
+        src_old_version = src_document.versions.last()
+        src_new_version = src_document.version_bump(page_count=2)
+
+        remove_pdf_pages(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            page_numbers=[1]
+        )
+
+        content = pdf_content(src_new_version, clean=True)
+        assert content == "S2 S3"
+
+    def test_remove_pdf_pages_basic_2(self):
+        """Remove last two pages from the document version"""
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user
+        )
+        src_old_version = src_document.versions.last()
+        src_new_version = src_document.version_bump(page_count=2)
+
+        remove_pdf_pages(
+            old_version=src_old_version,
+            new_version=src_new_version,
+            page_numbers=[2, 3]
+        )
+
+        content = pdf_content(src_new_version, clean=True)
+        assert content == "S1"
+
+    def test_remove_pdf_pages_invalid_input(self):
+        """Junk page_numbers input"""
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user
+        )
+        src_old_version = src_document.versions.last()
+        src_new_version = src_document.version_bump(page_count=2)
+
+        with pytest.raises(ValueError):
+            remove_pdf_pages(
+                old_version=src_old_version,
+                new_version=src_new_version,
+                page_numbers=[]  # invalid, empty list
+            )
+
+        with pytest.raises(ValueError):
+            remove_pdf_pages(
+                old_version=src_old_version,
+                new_version=src_new_version,
+                page_numbers=[1, 2, 3, 4, 5, 6, 7]  # invalid, too many values
+            )
+
+
 class TestInserPdfPagesUtilityFunction(TestCase):
+    """Tests for insert_pdf_pages"""
+
     def test_insert_pdf_pages_basic_1(self):
         """
         We test moving of one page from source document version to
@@ -115,9 +314,8 @@ class TestInserPdfPagesUtilityFunction(TestCase):
             dst_position=0
         )
 
-        dst_new_content = pdf_content(dst_new_version)
-        dst_new_content_clean = re.sub('[^0-9a-zA-Z]+', ' ', dst_new_content)
-        assert "S1 D1 D2 D3" == dst_new_content_clean
+        dst_new_content = pdf_content(dst_new_version, clean=True)
+        assert "S1 D1 D2 D3" == dst_new_content
 
     def test_insert_pdf_pages_basic_2(self):
         """
@@ -151,9 +349,8 @@ class TestInserPdfPagesUtilityFunction(TestCase):
             dst_position=1
         )
 
-        dst_new_content = pdf_content(dst_new_version)
-        dst_new_content_clean = re.sub('[^0-9a-zA-Z]+', ' ', dst_new_content)
-        assert "D1 S1 S3 D2 D3" == dst_new_content_clean
+        dst_new_content = pdf_content(dst_new_version, clean=True)
+        assert "D1 S1 S3 D2 D3" == dst_new_content
 
     def test_insert_pdf_pages_when_dst_old_is_None(self):
         """
@@ -187,9 +384,8 @@ class TestInserPdfPagesUtilityFunction(TestCase):
             src_page_numbers=[1, 3]
         )
 
-        dst_new_content = pdf_content(dst_new_version)
-        dst_new_content_clean = re.sub('[^0-9a-zA-Z]+', ' ', dst_new_content)
-        assert "S1 S3" == dst_new_content_clean
+        dst_new_content = pdf_content(dst_new_version, clean=True)
+        assert "S1 S3" == dst_new_content
 
 
 class TestUtils(TestCase):

@@ -4,7 +4,7 @@ from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
 
 
-class TestDocumentVerionModel(TestCase):
+class TestDocumentVersionModel(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username="user1")

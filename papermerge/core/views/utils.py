@@ -129,7 +129,7 @@ class PageRecycleMap:
         ]
     """
 
-    def __init__(self, total: int, deleted: list[int]):
+    def __init__(self, total: int, deleted: list[int] = []):
         if not isinstance(deleted, abc.Sequence):
             raise ValueError('`deleted` expected to be a sequence')
 
@@ -286,7 +286,20 @@ def reuse_text_field_multi(
     position: int = 0,
 ):
     """
-    Note: page position starts with 0
+    Copies `text` field from two sources to the destination
+
+    :param src_old_version: source 1
+    :param dst_old_version: source 2
+    :param dst_new_version: destination
+    :param page_numbers: which pages from source 1 to copy
+    :param position: at which position (in destination) to insert pages
+
+    reuse_text_field_multi updates `text` field of destination document version
+    and each of its associated pages.
+
+    Note: page `position` starts with 0
+    `page_numbers` is a list of page numbers. In this list, page numbering
+    starts with 1.
     """
     if dst_old_version is None:
         position = 0

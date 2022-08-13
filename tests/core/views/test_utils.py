@@ -14,10 +14,12 @@ from papermerge.core.views.utils import (
     remove_pdf_pages,
     collect_text_streams,
     reuse_text_field,
+    reuse_ocr_data,
     reuse_text_field_multi,
     PageRecycleMap
 )
 from papermerge.core.models import Document
+from papermerge.core.storage import abs_path
 
 
 class TestPageRecycleMap(TestCase):
@@ -143,8 +145,44 @@ class TestCollectTextStreams(TestCase):
 class TestReuseOCRdata(TestCase):
     """Tests for reuse_ocr_data"""
 
-    def test_reuse_ocr_data_basic(self):
-        pass
+    def test_reuse_ocr_data_1(self):
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user,
+            include_ocr_data=True
+        )
+        source = src_document.versions.last()
+        destination = src_document.version_bump(page_count=3)
+
+        reuse_ocr_data(
+            old_version=source,
+            new_version=destination,
+            page_map=PageRecycleMap(total=3)
+        )
+
+        for index in range(3):
+            dst = destination.pages.all()[index]
+            src = source.pages.all()[index]
+            src_txt = self._get_content(src.page_path.txt_url)
+            src_hocr = self._get_content(src.page_path.hocr_url)
+            src_svg = self._get_content(src.page_path.svg_url)
+            src_jpg = self._get_content(src.page_path.jpg_url)
+            dst_txt = self._get_content(dst.page_path.txt_url)
+            dst_hocr = self._get_content(dst.page_path.hocr_url)
+            dst_svg = self._get_content(dst.page_path.svg_url)
+            dst_jpg = self._get_content(dst.page_path.jpg_url)
+
+            assert dst_txt == src_txt
+            assert dst_hocr == src_hocr
+            assert dst_svg == src_svg
+            assert dst_jpg == src_jpg
+
+    def _get_content(self, relative_url: str):
+        file_abs_path = abs_path(relative_url)
+        with open(file_abs_path, "r") as f:
+            data = f.read()
+
+        return data
 
 
 class TestCopyPagesDataMulti(TestCase):

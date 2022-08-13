@@ -129,7 +129,7 @@ class PageRecycleMap:
         ]
     """
 
-    def __init__(self, total: int, deleted: list[int]):
+    def __init__(self, total: int, deleted: list[int] = []):
         if not isinstance(deleted, abc.Sequence):
             raise ValueError('`deleted` expected to be a sequence')
 
@@ -183,17 +183,20 @@ def collect_text_streams(
     return result
 
 
-def copy_pages_data_multi(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    position,
-    page_numbers
+def reuse_ocr_data_multi(
+    src_old_version: DocumentVersion,
+    dst_old_version: DocumentVersion,
+    dst_new_version: DocumentVersion,
+    page_numbers: list[int],
+    position: int = 0
 ):
+    if dst_old_version is None:
+        position = 0
+
     storage = get_storage_instance()
     page_map = [(pos, pos) for pos in range(1, position + 1)]
 
-    if len(page_map) > 0:
+    if len(page_map) > 0 and dst_old_version is not None:
         for src_page_number, dst_page_number in page_map:
             src_page_path = PagePath(
                 document_path=dst_old_version.document_path,
@@ -279,12 +282,31 @@ def reuse_text_field(
 
 
 def reuse_text_field_multi(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    position,
-    page_numbers
+    src_old_version: DocumentVersion,
+    dst_old_version: DocumentVersion,
+    dst_new_version: DocumentVersion,
+    page_numbers: list[int],
+    position: int = 0,
 ):
+    """
+    Copies `text` field from two sources to the destination
+
+    :param src_old_version: source 1
+    :param dst_old_version: source 2
+    :param dst_new_version: destination
+    :param page_numbers: which pages from source 1 to copy
+    :param position: at which position (in destination) to insert pages
+
+    reuse_text_field_multi updates `text` field of destination document version
+    and each of its associated pages.
+
+    Note: page `position` starts with 0
+    `page_numbers` is a list of page numbers. In this list, page numbering
+    starts with 1.
+    """
+    if dst_old_version is None:
+        position = 0
+
     page_map = [(pos, pos) for pos in range(1, position + 1)]
     streams = []
     if len(page_map) > 0 and dst_old_version is not None:
@@ -295,28 +317,26 @@ def reuse_text_field_multi(
             )
         )
 
-    page_map = zip(
-        [pos for pos in range(position + 1, len(page_numbers) + 1)],
-        page_numbers
-    )
     streams.extend(
         collect_text_streams(
             version=src_old_version,
-            page_numbers=[item[1] for item in page_map]
+            page_numbers=page_numbers
         )
     )
 
-    dst_new_total_pages = dst_new_version.pages.count()
-    _range = range(
+    if dst_old_version is not None:
+        dst_new_total_pages = dst_new_version.pages.count()
+        _range = range(
             position + 1 + len(page_numbers),
             dst_new_total_pages + 1
         )
-    page_map = [(pos, pos - position - len(page_numbers)) for pos in _range]
-    if dst_old_version is not None:
+        page_numbers_to_collect = [
+            pos - len(page_numbers) for pos in _range
+        ]
         streams.extend(
            collect_text_streams(
                 version=dst_old_version,
-                page_numbers=[item[1] for item in page_map]
+                page_numbers=list(page_numbers_to_collect)
            )
         )
 
@@ -490,7 +510,7 @@ def partial_merge(
         src_page_numbers=page_numbers
     )
 
-    copy_pages_data_multi(
+    reuse_ocr_data_multi(
         src_old_version=src_old_version,
         dst_old_version=None,
         dst_new_version=dst_new_version,

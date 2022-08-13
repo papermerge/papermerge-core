@@ -14,9 +14,13 @@ from papermerge.core.views.utils import (
     remove_pdf_pages,
     collect_text_streams,
     reuse_text_field,
+    reuse_text_field_multi,
+    reuse_ocr_data,
+    reuse_ocr_data_multi,
     PageRecycleMap
 )
-from papermerge.core.models import Document
+from papermerge.core.models import Document, Page
+from papermerge.core.storage import abs_path
 
 
 class TestPageRecycleMap(TestCase):
@@ -142,22 +146,512 @@ class TestCollectTextStreams(TestCase):
 class TestReuseOCRdata(TestCase):
     """Tests for reuse_ocr_data"""
 
-    def test_reuse_ocr_data_basic(self):
-        pass
+    def test_reuse_ocr_data_1(self):
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user,
+            include_ocr_data=True
+        )
+        source = src_document.versions.last()
+        destination = src_document.version_bump(page_count=3)
+
+        reuse_ocr_data(
+            old_version=source,
+            new_version=destination,
+            page_map=PageRecycleMap(total=3)
+        )
+
+        for index in range(3):
+            dst = destination.pages.all()[index]
+            src = source.pages.all()[index]
+            _assert_same_ocr_data(src=src, dst=dst)
+
+    def test_reuse_ocr_data_2(self):
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user,
+            include_ocr_data=True
+        )
+        source = src_document.versions.last()
+        destination = src_document.version_bump(page_count=1)
+
+        reuse_ocr_data(
+            old_version=source,
+            new_version=destination,
+            page_map=PageRecycleMap(total=3, deleted=[1, 2])
+        )
+
+        dst = destination.pages.all()[0]
+        src = source.pages.all()[2]
+        _assert_same_ocr_data(src=src, dst=dst)
 
 
-class TestCopyPagesDataMulti(TestCase):
-    """Tests for copy_pages_data_multi"""
+class TestReuseOCRDataMulti(TestCase):
+    """Tests for reuse_ocr_data_multi"""
 
-    def test_copy_pages_data_multi_basic(self):
-        pass
+    def test_reuse_ocr_data_multi_1(self):
+        """
+        In this scenario we reuse ocr data from page 2.
+        Page 2 was merged to destination (position 0):
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |     X         |      2
+               2       |     X         |
+               3       |     X         |
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=1,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[2]
+        )
+
+        src_page = src_old_version.pages.all()[1]  # page number 2
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_same_ocr_data(src=src_page, dst=dst_page)
+
+    def test_reuse_ocr_data_multi_2(self):
+        """
+         In this scenario we reuse ocr data from pages 1 and 3.
+         Pages 1 and 3 were merged to destination (position 0):
+
+         src 1/src old  | src 2/dst old |  dst / result
+         -----------------------------------------------
+                1       |     X         |      1
+                2       |     X         |      3
+                3       |     X         |
+         """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=2,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 3]
+        )
+
+        for src_index, dst_index in ((0, 0), (2, 1)):
+            src_page = src_old_version.pages.all()[src_index]
+            dst_page = dst_new_version.pages.all()[dst_index]
+
+            _assert_same_ocr_data(
+                src=src_page,
+                dst=dst_page
+            )
+
+    def test_reuse_ocr_data_multi_3(self):
+        """
+        In this scenario we reuse ocr data from page 1.
+        Page 1 was moved to destination's position 0:
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |      i        |      1
+               2       |      ii       |      i
+               3       |      iii      |      ii
+                       |               |      iii
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old dst page 1",
+                "old dst page 2",
+                "old dst page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=4,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            page_numbers=[1],
+            position=0
+        )
+
+        src_1_page = src_old_version.pages.all()[0]
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_same_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page != dst_page"
+        )
+
+        for index in range(3):
+            src_2_page = dst_old_version.pages.all()[index]
+            dst_page = dst_new_version.pages.all()[index + 1]
+
+            _assert_same_ocr_data(
+                src=src_2_page,
+                dst=dst_page,
+                message=f"src_2_page[{index}] != dst_page[{index + 1}]"
+            )
+
+    def test_reuse_ocr_data_multi_4(self):
+        """
+        In this scenario we reuse ocr data from pages 1 and 2.
+        Pages 1 and 2 were moved to destination to position 1:
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |      i        |      i
+               2       |      ii       |      1
+               3       |      iii      |      2
+                       |               |      ii
+                       |               |      iii
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old dst page 1",
+                "old dst page 2",
+                "old dst page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=5,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 2],
+            position=1
+        )
+
+        src_2_page = dst_old_version.pages.all()[0]
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_same_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[0] != dst_page[0]"
+        )
+
+        src_1_page = src_old_version.pages.all()[0]  # page number 1
+        dst_page = dst_new_version.pages.all()[1]
+
+        _assert_same_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page[0] != dst_page[1]"
+        )
+
+        src_1_page = src_old_version.pages.all()[1]  # page number 2
+        dst_page = dst_new_version.pages.all()[2]
+
+        _assert_same_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page[1] != dst_page[2]"
+        )
+
+        src_2_page = dst_old_version.pages.all()[1]
+        dst_page = dst_new_version.pages.all()[3]
+
+        _assert_same_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[1] != dst_page[3]"
+        )
+
+        src_2_page = dst_old_version.pages.all()[2]
+        dst_page = dst_new_version.pages.all()[4]
+
+        _assert_same_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[2] != dst_page[4]"
+        )
 
 
 class TestReuseTextFieldMulti(TestCase):
     """Tests for reuse_text_field_multi"""
 
-    def test_reuse_text_field_multi(self):
-        pass
+    def test_reuse_text_field_multi_1(self):
+        """
+        Use case: user merges one page with content "old src page 2"
+        into destination document version.
+        The result is expected to be one document version
+        with one single page.
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ]
+        )
+        dst_new_version = maker.document_version(page_count=1)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[2]
+        )
+
+        actual = [page.text for page in dst_new_version.pages.all()]
+        expected = [
+            "old src page 2"
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_2(self):
+        """
+        Use case: user merges two pages with content "old src page 1"
+        and "old src page 3" into destination document version.
+        The result is expected to be a document version
+        with two pages.
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ]
+        )
+        dst_new_version = maker.document_version(page_count=2)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 3]
+        )
+
+        actual = [page.text for page in dst_new_version.pages.all()]
+        expected = [
+            "old src page 1",
+            "old src page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_3(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=4)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[1],
+            position=0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 1 page 1",
+            "src 2 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_4(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=4)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[1],
+            position=1
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 1 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_5(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=5)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[2, 3],
+            position=1  # position index starts with 0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 1 page 2",
+            "src 1 page 3",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_6(self):
+        """
+        Merge two pages at the end of destination document version
+        """
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=5)
+
+        #  this is what is tested
+        # merging at the end of destination document version
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[2, 3],
+            # position index starts with 0
+            # because dst_old_version has 3 pages, position=3 means
+            # merging at the end of document version
+            position=3  # position index starts with 0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+            # merging at the end
+            "src 1 page 2",  # copied page number 2
+            "src 1 page 3",  # copied page number 3
+        ]
+
+        assert expected == actual
 
 
 class TestReuseTextField(TestCase):
@@ -482,3 +976,36 @@ class TestUtils(TestCase):
 
         # 3. newly created source version must contain only "Document A"
         assert "Document A" == pdf_content(src_new_version)
+
+
+def _get_content(relative_url: str) -> str:
+    """retrieves content of the file
+
+    :param relative_url: relative path to the file
+    """
+    file_abs_path = abs_path(relative_url)
+    with open(file_abs_path, "r") as f:
+        data = f.read()
+
+    return data
+
+
+def _assert_same_ocr_data(
+    src: Page,
+    dst: Page,
+    message: str = None
+) -> None:
+    """Asserts that src and dst pages have same OCR data"""
+    src_txt = _get_content(src.page_path.txt_url)
+    src_hocr = _get_content(src.page_path.hocr_url)
+    src_svg = _get_content(src.page_path.svg_url)
+    src_jpg = _get_content(src.page_path.jpg_url)
+    dst_txt = _get_content(dst.page_path.txt_url)
+    dst_hocr = _get_content(dst.page_path.hocr_url)
+    dst_svg = _get_content(dst.page_path.svg_url)
+    dst_jpg = _get_content(dst.page_path.jpg_url)
+
+    assert dst_txt == src_txt, message
+    assert dst_hocr == src_hocr, message
+    assert dst_svg == src_svg, message
+    assert dst_jpg == src_jpg, message

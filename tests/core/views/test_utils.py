@@ -14,6 +14,7 @@ from papermerge.core.views.utils import (
     remove_pdf_pages,
     collect_text_streams,
     reuse_text_field,
+    reuse_text_field_multi,
     PageRecycleMap
 )
 from papermerge.core.models import Document
@@ -156,8 +157,232 @@ class TestCopyPagesDataMulti(TestCase):
 class TestReuseTextFieldMulti(TestCase):
     """Tests for reuse_text_field_multi"""
 
-    def test_reuse_text_field_multi(self):
-        pass
+    def test_reuse_text_field_multi_1(self):
+        """
+        Use case: user merges one page with content "old src page 2"
+        into destination document version.
+        The result is expected to be one document version
+        with one single page.
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ]
+        )
+        dst_new_version = maker.document_version(page_count=1)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[2]
+        )
+
+        actual = [page.text for page in dst_new_version.pages.all()]
+        expected = [
+            "old src page 2"
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_2(self):
+        """
+        Use case: user merges two pages with content "old src page 1"
+        and "old src page 3" into destination document version.
+        The result is expected to be a document version
+        with two pages.
+        """
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ]
+        )
+        dst_new_version = maker.document_version(page_count=2)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 3]
+        )
+
+        actual = [page.text for page in dst_new_version.pages.all()]
+        expected = [
+            "old src page 1",
+            "old src page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_3(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=4)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[1],
+            position=0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 1 page 1",
+            "src 2 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_4(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=4)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[1],
+            position=1
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 1 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_5(self):
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=5)
+
+        #  this is what is tested
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[2, 3],
+            position=1  # position index starts with 0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 1 page 2",
+            "src 1 page 3",
+            "src 2 page 2",
+            "src 2 page 3",
+        ]
+
+        assert expected == actual
+
+    def test_reuse_text_field_multi_6(self):
+        """
+        Merge two pages at the end of destination document version
+        """
+        src_1_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 1 page 1",
+                "src 1 page 2",
+                "src 1 page 3",
+            ]
+        )
+        src_2_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "src 2 page 1",
+                "src 2 page 2",
+                "src 2 page 3",
+            ]
+        )
+        dst_version = maker.document_version(page_count=5)
+
+        #  this is what is tested
+        # merging at the end of destination document version
+        reuse_text_field_multi(
+            src_old_version=src_1_version,
+            dst_old_version=src_2_version,
+            dst_new_version=dst_version,
+            page_numbers=[2, 3],
+            # position index starts with 0
+            # because dst_old_version has 3 pages, position=3 means
+            # merging at the end of document version
+            position=3  # position index starts with 0
+        )
+
+        actual = [page.text for page in dst_version.pages.all()]
+        expected = [
+            "src 2 page 1",
+            "src 2 page 2",
+            "src 2 page 3",
+            # merging at the end
+            "src 1 page 2",  # copied page number 2
+            "src 1 page 3",  # copied page number 3
+        ]
+
+        assert expected == actual
 
 
 class TestReuseTextField(TestCase):

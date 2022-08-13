@@ -279,12 +279,18 @@ def reuse_text_field(
 
 
 def reuse_text_field_multi(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    position,
-    page_numbers
+    src_old_version: DocumentVersion,
+    dst_old_version: DocumentVersion,
+    dst_new_version: DocumentVersion,
+    page_numbers: list[int],
+    position: int = 0,
 ):
+    """
+    Note: page position starts with 0
+    """
+    if dst_old_version is None:
+        position = 0
+
     page_map = [(pos, pos) for pos in range(1, position + 1)]
     streams = []
     if len(page_map) > 0 and dst_old_version is not None:
@@ -295,28 +301,26 @@ def reuse_text_field_multi(
             )
         )
 
-    page_map = zip(
-        [pos for pos in range(position + 1, len(page_numbers) + 1)],
-        page_numbers
-    )
     streams.extend(
         collect_text_streams(
             version=src_old_version,
-            page_numbers=[item[1] for item in page_map]
+            page_numbers=page_numbers
         )
     )
 
-    dst_new_total_pages = dst_new_version.pages.count()
-    _range = range(
+    if dst_old_version is not None:
+        dst_new_total_pages = dst_new_version.pages.count()
+        _range = range(
             position + 1 + len(page_numbers),
             dst_new_total_pages + 1
         )
-    page_map = [(pos, pos - position - len(page_numbers)) for pos in _range]
-    if dst_old_version is not None:
+        page_numbers_to_collect = [
+            pos - len(page_numbers) for pos in _range
+        ]
         streams.extend(
            collect_text_streams(
                 version=dst_old_version,
-                page_numbers=[item[1] for item in page_map]
+                page_numbers=list(page_numbers_to_collect)
            )
         )
 

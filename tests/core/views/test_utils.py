@@ -164,7 +164,7 @@ class TestReuseOCRdata(TestCase):
         for index in range(3):
             dst = destination.pages.all()[index]
             src = source.pages.all()[index]
-            _assert_save_ocr_data(src=src, dst=dst)
+            _assert_same_ocr_data(src=src, dst=dst)
 
     def test_reuse_ocr_data_2(self):
         src_document = maker.document(
@@ -183,7 +183,7 @@ class TestReuseOCRdata(TestCase):
 
         dst = destination.pages.all()[0]
         src = source.pages.all()[2]
-        _assert_save_ocr_data(src=src, dst=dst)
+        _assert_same_ocr_data(src=src, dst=dst)
 
 
 class TestReuseOCRDataMulti(TestCase):
@@ -225,7 +225,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_page = src_old_version.pages.all()[1]  # page number 2
         dst_page = dst_new_version.pages.all()[0]
 
-        _assert_save_ocr_data(src=src_page, dst=dst_page)
+        _assert_same_ocr_data(src=src_page, dst=dst_page)
 
     def test_reuse_ocr_data_multi_2(self):
         """
@@ -264,7 +264,7 @@ class TestReuseOCRDataMulti(TestCase):
             src_page = src_old_version.pages.all()[src_index]
             dst_page = dst_new_version.pages.all()[dst_index]
 
-            _assert_save_ocr_data(
+            _assert_same_ocr_data(
                 src=src_page,
                 dst=dst_page
             )
@@ -316,7 +316,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_1_page = src_old_version.pages.all()[0]
         dst_page = dst_new_version.pages.all()[0]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_1_page,
             dst=dst_page,
             message="src_1_page != dst_page"
@@ -326,7 +326,7 @@ class TestReuseOCRDataMulti(TestCase):
             src_2_page = dst_old_version.pages.all()[index]
             dst_page = dst_new_version.pages.all()[index + 1]
 
-            _assert_save_ocr_data(
+            _assert_same_ocr_data(
                 src=src_2_page,
                 dst=dst_page,
                 message=f"src_2_page[{index}] != dst_page[{index + 1}]"
@@ -380,7 +380,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_2_page = dst_old_version.pages.all()[0]
         dst_page = dst_new_version.pages.all()[0]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_2_page,
             dst=dst_page,
             message="src_2_page[0] != dst_page[0]"
@@ -389,7 +389,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_1_page = src_old_version.pages.all()[0]  # page number 1
         dst_page = dst_new_version.pages.all()[1]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_1_page,
             dst=dst_page,
             message="src_1_page[0] != dst_page[1]"
@@ -398,7 +398,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_1_page = src_old_version.pages.all()[1]  # page number 2
         dst_page = dst_new_version.pages.all()[2]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_1_page,
             dst=dst_page,
             message="src_1_page[1] != dst_page[2]"
@@ -407,7 +407,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_2_page = dst_old_version.pages.all()[1]
         dst_page = dst_new_version.pages.all()[3]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_2_page,
             dst=dst_page,
             message="src_2_page[1] != dst_page[3]"
@@ -416,7 +416,7 @@ class TestReuseOCRDataMulti(TestCase):
         src_2_page = dst_old_version.pages.all()[2]
         dst_page = dst_new_version.pages.all()[4]
 
-        _assert_save_ocr_data(
+        _assert_same_ocr_data(
             src=src_2_page,
             dst=dst_page,
             message="src_2_page[2] != dst_page[4]"
@@ -978,7 +978,11 @@ class TestUtils(TestCase):
         assert "Document A" == pdf_content(src_new_version)
 
 
-def _get_content(relative_url: str):
+def _get_content(relative_url: str) -> str:
+    """retrieves content of the file
+
+    :param relative_url: relative path to the file
+    """
     file_abs_path = abs_path(relative_url)
     with open(file_abs_path, "r") as f:
         data = f.read()
@@ -986,11 +990,12 @@ def _get_content(relative_url: str):
     return data
 
 
-def _assert_save_ocr_data(
+def _assert_same_ocr_data(
     src: Page,
     dst: Page,
     message: str = None
 ) -> None:
+    """Asserts that src and dst pages have same OCR data"""
     src_txt = _get_content(src.page_path.txt_url)
     src_hocr = _get_content(src.page_path.hocr_url)
     src_svg = _get_content(src.page_path.svg_url)

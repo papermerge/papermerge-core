@@ -190,6 +190,17 @@ class TestReuseOCRDataMulti(TestCase):
     """Tests for reuse_ocr_data_multi"""
 
     def test_reuse_ocr_data_multi_1(self):
+        """
+        In this scenario we reuse ocr data from page 2.
+        Page 2 was merged to destination (position 0):
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |     X         |      2
+               2       |     X         |
+               3       |     X         |
+                       |               |
+        """
         src_old_version = maker.document_version(
             page_count=3,
             pages_text=[
@@ -212,12 +223,23 @@ class TestReuseOCRDataMulti(TestCase):
             page_numbers=[2]
         )
 
-        src_page = src_old_version.pages.all()[1]
+        src_page = src_old_version.pages.all()[1]  # page number 2
         dst_page = dst_new_version.pages.all()[0]
 
         _assert_save_ocr_data(src=src_page, dst=dst_page)
 
     def test_reuse_ocr_data_multi_2(self):
+        """
+         In this scenario we reuse ocr data from pages 1 and 3.
+         Pages 1 and 3 were merged to destination (position 0):
+
+         src 1/src old  | src 2/dst old |  dst / result
+         -----------------------------------------------
+                1       |     X         |      1
+                2       |     X         |      3
+                3       |     X         |
+                        |               |
+         """
         src_old_version = maker.document_version(
             page_count=3,
             pages_text=[
@@ -250,6 +272,18 @@ class TestReuseOCRDataMulti(TestCase):
             )
 
     def test_reuse_ocr_data_multi_3(self):
+        """
+        In this scenario we reuse ocr data from page 1.
+        Page 1 was moved to destination's position 0:
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |      i        |      1
+               2       |      ii       |      i
+               3       |      iii      |      ii
+                       |               |      iii
+
+        """
         src_old_version = maker.document_version(
             page_count=3,
             pages_text=[
@@ -302,6 +336,18 @@ class TestReuseOCRDataMulti(TestCase):
             )
 
     def test_reuse_ocr_data_multi_4(self):
+        """
+        In this scenario we reuse ocr data from pages 1 and 2.
+        Pages 1 and 2 were moved to destination to position 1:
+
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |      i        |      i
+               2       |      ii       |      1
+               3       |      iii      |      2
+                       |               |      ii
+                       |               |      iii
+        """
         src_old_version = maker.document_version(
             page_count=3,
             pages_text=[

@@ -183,17 +183,20 @@ def collect_text_streams(
     return result
 
 
-def copy_pages_data_multi(
-    src_old_version,
-    dst_old_version,
-    dst_new_version,
-    position,
-    page_numbers
+def reuse_ocr_data_multi(
+    src_old_version: DocumentVersion,
+    dst_old_version: DocumentVersion,
+    dst_new_version: DocumentVersion,
+    page_numbers: list[int],
+    position: int = 0
 ):
+    if dst_old_version is None:
+        position = 0
+
     storage = get_storage_instance()
     page_map = [(pos, pos) for pos in range(1, position + 1)]
 
-    if len(page_map) > 0:
+    if len(page_map) > 0 and dst_old_version is not None:
         for src_page_number, dst_page_number in page_map:
             src_page_path = PagePath(
                 document_path=dst_old_version.document_path,
@@ -507,7 +510,7 @@ def partial_merge(
         src_page_numbers=page_numbers
     )
 
-    copy_pages_data_multi(
+    reuse_ocr_data_multi(
         src_old_version=src_old_version,
         dst_old_version=None,
         dst_new_version=dst_new_version,

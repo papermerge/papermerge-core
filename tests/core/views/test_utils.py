@@ -14,11 +14,12 @@ from papermerge.core.views.utils import (
     remove_pdf_pages,
     collect_text_streams,
     reuse_text_field,
-    reuse_ocr_data,
     reuse_text_field_multi,
+    reuse_ocr_data,
+    reuse_ocr_data_multi,
     PageRecycleMap
 )
-from papermerge.core.models import Document
+from papermerge.core.models import Document, Page
 from papermerge.core.storage import abs_path
 
 
@@ -163,19 +164,7 @@ class TestReuseOCRdata(TestCase):
         for index in range(3):
             dst = destination.pages.all()[index]
             src = source.pages.all()[index]
-            src_txt = self._get_content(src.page_path.txt_url)
-            src_hocr = self._get_content(src.page_path.hocr_url)
-            src_svg = self._get_content(src.page_path.svg_url)
-            src_jpg = self._get_content(src.page_path.jpg_url)
-            dst_txt = self._get_content(dst.page_path.txt_url)
-            dst_hocr = self._get_content(dst.page_path.hocr_url)
-            dst_svg = self._get_content(dst.page_path.svg_url)
-            dst_jpg = self._get_content(dst.page_path.jpg_url)
-
-            assert dst_txt == src_txt
-            assert dst_hocr == src_hocr
-            assert dst_svg == src_svg
-            assert dst_jpg == src_jpg
+            _assert_save_ocr_data(src=src, dst=dst)
 
     def test_reuse_ocr_data_2(self):
         src_document = maker.document(
@@ -194,33 +183,71 @@ class TestReuseOCRdata(TestCase):
 
         dst = destination.pages.all()[0]
         src = source.pages.all()[2]
-        src_txt = self._get_content(src.page_path.txt_url)
-        src_hocr = self._get_content(src.page_path.hocr_url)
-        src_svg = self._get_content(src.page_path.svg_url)
-        src_jpg = self._get_content(src.page_path.jpg_url)
-        dst_txt = self._get_content(dst.page_path.txt_url)
-        dst_hocr = self._get_content(dst.page_path.hocr_url)
-        dst_svg = self._get_content(dst.page_path.svg_url)
-        dst_jpg = self._get_content(dst.page_path.jpg_url)
-
-        assert dst_txt == src_txt
-        assert dst_hocr == src_hocr
-        assert dst_svg == src_svg
-        assert dst_jpg == src_jpg
-
-    def _get_content(self, relative_url: str):
-        file_abs_path = abs_path(relative_url)
-        with open(file_abs_path, "r") as f:
-            data = f.read()
-
-        return data
+        _assert_save_ocr_data(src=src, dst=dst)
 
 
-class TestCopyPagesDataMulti(TestCase):
-    """Tests for copy_pages_data_multi"""
+class TestReuseOCRDataMulti(TestCase):
+    """Tests for reuse_ocr_data_multi"""
 
-    def test_copy_pages_data_multi_basic(self):
-        pass
+    def test_reuse_ocr_data_multi_1(self):
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=1,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[2]
+        )
+
+        src_page = src_old_version.pages.all()[1]
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_save_ocr_data(src=src_page, dst=dst_page)
+
+    def test_reuse_ocr_data_multi_2(self):
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=2,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=None,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 3]
+        )
+
+        for src_index, dst_index in ((0, 0), (2, 1)):
+            src_page = src_old_version.pages.all()[src_index]
+            dst_page = dst_new_version.pages.all()[dst_index]
+
+            _assert_save_ocr_data(
+                src=src_page,
+                dst=dst_page
+            )
 
 
 class TestReuseTextFieldMulti(TestCase):
@@ -776,3 +803,30 @@ class TestUtils(TestCase):
 
         # 3. newly created source version must contain only "Document A"
         assert "Document A" == pdf_content(src_new_version)
+
+
+def _get_content(relative_url: str):
+    file_abs_path = abs_path(relative_url)
+    with open(file_abs_path, "r") as f:
+        data = f.read()
+
+    return data
+
+
+def _assert_save_ocr_data(
+    src: Page,
+    dst: Page
+) -> None:
+    src_txt = _get_content(src.page_path.txt_url)
+    src_hocr = _get_content(src.page_path.hocr_url)
+    src_svg = _get_content(src.page_path.svg_url)
+    src_jpg = _get_content(src.page_path.jpg_url)
+    dst_txt = _get_content(dst.page_path.txt_url)
+    dst_hocr = _get_content(dst.page_path.hocr_url)
+    dst_svg = _get_content(dst.page_path.svg_url)
+    dst_jpg = _get_content(dst.page_path.jpg_url)
+
+    assert dst_txt == src_txt
+    assert dst_hocr == src_hocr
+    assert dst_svg == src_svg
+    assert dst_jpg == src_jpg

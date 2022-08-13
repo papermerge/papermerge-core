@@ -44,9 +44,9 @@ from .utils import (
     total_merge,
     partial_merge,
     reuse_ocr_data,
+    reuse_ocr_data_multi,
     reuse_text_field,
     reuse_text_field_multi,
-    copy_pages_data_multi,
     reorder_pdf_pages,
     rotate_pdf_pages,
     PageRecycleMap
@@ -652,7 +652,7 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_position=data['position']
         )
 
-        copy_pages_data_multi(
+        reuse_ocr_data_multi(
             src_old_version=src_old_version,
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,

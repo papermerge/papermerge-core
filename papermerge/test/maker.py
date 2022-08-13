@@ -70,7 +70,7 @@ def document_version(
 
     doc_version = baker.make(
         "core.DocumentVersion",
-        pages=pages
+        pages=pages,
     )
 
     if include_ocr_data:

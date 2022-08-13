@@ -199,7 +199,6 @@ class TestReuseOCRDataMulti(TestCase):
                1       |     X         |      2
                2       |     X         |
                3       |     X         |
-                       |               |
         """
         src_old_version = maker.document_version(
             page_count=3,
@@ -238,7 +237,6 @@ class TestReuseOCRDataMulti(TestCase):
                 1       |     X         |      1
                 2       |     X         |      3
                 3       |     X         |
-                        |               |
          """
         src_old_version = maker.document_version(
             page_count=3,
@@ -282,7 +280,6 @@ class TestReuseOCRDataMulti(TestCase):
                2       |      ii       |      i
                3       |      iii      |      ii
                        |               |      iii
-
         """
         src_old_version = maker.document_version(
             page_count=3,

@@ -249,6 +249,58 @@ class TestReuseOCRDataMulti(TestCase):
                 dst=dst_page
             )
 
+    def test_reuse_ocr_data_multi_3(self):
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old dst page 1",
+                "old dst page 2",
+                "old dst page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=4,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            page_numbers=[1],
+            position=0
+        )
+
+        src_1_page = src_old_version.pages.all()[0]
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_save_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page != dst_page"
+        )
+
+        for index in range(3):
+            src_2_page = dst_old_version.pages.all()[index]
+            dst_page = dst_new_version.pages.all()[index + 1]
+
+            _assert_save_ocr_data(
+                src=src_2_page,
+                dst=dst_page,
+                message=f"src_2_page[{index}] != dst_page[{index + 1}]"
+            )
+
 
 class TestReuseTextFieldMulti(TestCase):
     """Tests for reuse_text_field_multi"""
@@ -815,7 +867,8 @@ def _get_content(relative_url: str):
 
 def _assert_save_ocr_data(
     src: Page,
-    dst: Page
+    dst: Page,
+    message: str = None
 ) -> None:
     src_txt = _get_content(src.page_path.txt_url)
     src_hocr = _get_content(src.page_path.hocr_url)
@@ -826,7 +879,7 @@ def _assert_save_ocr_data(
     dst_svg = _get_content(dst.page_path.svg_url)
     dst_jpg = _get_content(dst.page_path.jpg_url)
 
-    assert dst_txt == src_txt
-    assert dst_hocr == src_hocr
-    assert dst_svg == src_svg
-    assert dst_jpg == src_jpg
+    assert dst_txt == src_txt, message
+    assert dst_hocr == src_hocr, message
+    assert dst_svg == src_svg, message
+    assert dst_jpg == src_jpg, message

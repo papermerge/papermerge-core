@@ -177,6 +177,37 @@ class TestReuseOCRdata(TestCase):
             assert dst_svg == src_svg
             assert dst_jpg == src_jpg
 
+    def test_reuse_ocr_data_2(self):
+        src_document = maker.document(
+            "s3.pdf",
+            user=self.user,
+            include_ocr_data=True
+        )
+        source = src_document.versions.last()
+        destination = src_document.version_bump(page_count=1)
+
+        reuse_ocr_data(
+            old_version=source,
+            new_version=destination,
+            page_map=PageRecycleMap(total=3, deleted=[1, 2])
+        )
+
+        dst = destination.pages.all()[0]
+        src = source.pages.all()[2]
+        src_txt = self._get_content(src.page_path.txt_url)
+        src_hocr = self._get_content(src.page_path.hocr_url)
+        src_svg = self._get_content(src.page_path.svg_url)
+        src_jpg = self._get_content(src.page_path.jpg_url)
+        dst_txt = self._get_content(dst.page_path.txt_url)
+        dst_hocr = self._get_content(dst.page_path.hocr_url)
+        dst_svg = self._get_content(dst.page_path.svg_url)
+        dst_jpg = self._get_content(dst.page_path.jpg_url)
+
+        assert dst_txt == src_txt
+        assert dst_hocr == src_hocr
+        assert dst_svg == src_svg
+        assert dst_jpg == src_jpg
+
     def _get_content(self, relative_url: str):
         file_abs_path = abs_path(relative_url)
         with open(file_abs_path, "r") as f:

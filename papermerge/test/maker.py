@@ -91,7 +91,7 @@ def _add_ocr_data(document_version: DocumentVersion):
 
     for index, page in enumerate(document_version.pages.all()):
 
-        text = page.text or f"page text {index}"
+        text = page.text or f"page text {index + 1}"
 
         txt_url = abs_path(page.page_path.txt_url)
         _make_sure_path_exists(txt_url)

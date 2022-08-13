@@ -301,6 +301,84 @@ class TestReuseOCRDataMulti(TestCase):
                 message=f"src_2_page[{index}] != dst_page[{index + 1}]"
             )
 
+    def test_reuse_ocr_data_multi_4(self):
+        src_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old src page 1",
+                "old src page 2",
+                "old src page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_old_version = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "old dst page 1",
+                "old dst page 2",
+                "old dst page 3",
+            ],
+            include_ocr_data=True
+        )
+        dst_new_version = maker.document_version(
+            page_count=5,
+            include_ocr_data=True
+        )
+
+        #  this is what is tested
+        reuse_ocr_data_multi(
+            src_old_version=src_old_version,
+            dst_old_version=dst_old_version,
+            dst_new_version=dst_new_version,
+            page_numbers=[1, 2],
+            position=1
+        )
+
+        src_2_page = dst_old_version.pages.all()[0]
+        dst_page = dst_new_version.pages.all()[0]
+
+        _assert_save_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[0] != dst_page[0]"
+        )
+
+        src_1_page = src_old_version.pages.all()[0]  # page number 1
+        dst_page = dst_new_version.pages.all()[1]
+
+        _assert_save_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page[0] != dst_page[1]"
+        )
+
+        src_1_page = src_old_version.pages.all()[1]  # page number 2
+        dst_page = dst_new_version.pages.all()[2]
+
+        _assert_save_ocr_data(
+            src=src_1_page,
+            dst=dst_page,
+            message="src_1_page[1] != dst_page[2]"
+        )
+
+        src_2_page = dst_old_version.pages.all()[1]
+        dst_page = dst_new_version.pages.all()[3]
+
+        _assert_save_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[1] != dst_page[3]"
+        )
+
+        src_2_page = dst_old_version.pages.all()[2]
+        dst_page = dst_new_version.pages.all()[4]
+
+        _assert_save_ocr_data(
+            src=src_2_page,
+            dst=dst_page,
+            message="src_2_page[2] != dst_page[4]"
+        )
+
 
 class TestReuseTextFieldMulti(TestCase):
     """Tests for reuse_text_field_multi"""

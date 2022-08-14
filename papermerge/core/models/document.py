@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional
 from os.path import getsize
 from pikepdf import Pdf
 
@@ -346,7 +347,11 @@ class Document(BaseTreeNode):
 
         return document_version
 
-    def version_bump(self, page_count=None):
+    def version_bump(
+        self,
+        page_count=None,
+        short_description: Optional[str] = ''
+    ):
         """
         Increment document's version.
 
@@ -370,6 +375,7 @@ class Document(BaseTreeNode):
             file_name=last_doc_version.file_name,
             size=0,  # TODO: set to newly created file size
             page_count=new_page_count,
+            short_description=short_description,
             lang=last_doc_version.lang
         )
         new_doc_version.save()

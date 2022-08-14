@@ -575,12 +575,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         )
         src_old_version = pages.first().document_version
         doc = src_old_version.document
+        pages_count = pages.count()
 
-        if src_old_version.pages.count() == pages.count():
+        if src_old_version.pages.count() == pages_count:
             # destination new version will have same
             # number of pages as source document count
             dst_new_version = dst_document.version_bump(
-                page_count=pages.count()
+                page_count=pages_count,
+                short_description=f'{pages_count} page(s) merged in'
             )
             total_merge(
                 src_old_version=src_old_version,
@@ -588,10 +590,12 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             )
         else:
             src_new_version = doc.version_bump(
-                page_count=src_old_version.pages.count() - pages.count()
+                page_count=src_old_version.pages.count() - pages_count,
+                short_description=f'{pages_count} page(s) merged out'
             )
             dst_new_version = dst_document.version_bump(
-                page_count=pages.count()
+                page_count=pages_count,
+                short_description=f'{pages_count} page(s) merged in'
             )
             partial_merge(
                 src_old_version=src_old_version,
@@ -610,13 +614,16 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         )
         src_old_version = pages.first().document_version
         dst_old_version = dst_document.versions.last()
+        pages_count = pages.count()
 
         doc = src_old_version.document
         src_new_version = doc.version_bump(
-            page_count=src_old_version.pages.count() - pages.count()
+            page_count=src_old_version.pages.count() - pages_count,
+            short_description=f'{pages_count} page(s) moved out'
         )
         dst_new_version = dst_document.version_bump(
-            page_count=dst_old_version.pages.count() + pages.count()
+            page_count=dst_old_version.pages.count() + pages_count,
+            short_description=f'{pages_count} page(s) moved in'
         )
 
         remove_pdf_pages(

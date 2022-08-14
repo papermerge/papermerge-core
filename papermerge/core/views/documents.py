@@ -162,7 +162,8 @@ def _merge_documents(src_uuid, dst_uuid):
 
     src_version = src.versions.last()
     dst_new_version = dst.version_bump(
-        page_count=src_version.pages.count()
+        page_count=src_version.pages.count(),
+        short_description='document merge'
     )
     total_merge(
         src_old_version=src_version,

@@ -1,6 +1,6 @@
 from .automate import AutomateSerializer
 from .document import DocumentSerializer
-from .document import DocumentDetailsSerializer
+from .document import DocumentDetailsSerializer, DocumentsMergeSerializer
 from .document_version import DocumentVersionSerializer
 from .folder import FolderSerializer
 from .node import (
@@ -40,6 +40,7 @@ __all__ = [
     'ContentTypeSerializer',
     'DocumentSerializer',
     'DocumentDetailsSerializer',
+    'DocumentsMergeSerializer',
     'DocumentVersionSerializer',
     'FolderSerializer',
     'NodeSerializer',

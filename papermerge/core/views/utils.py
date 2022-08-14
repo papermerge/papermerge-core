@@ -1,5 +1,6 @@
 import io
 import os
+from typing import Optional, Union
 from pikepdf import Pdf
 from collections import abc, namedtuple
 
@@ -185,7 +186,7 @@ def collect_text_streams(
 
 def reuse_ocr_data_multi(
     src_old_version: DocumentVersion,
-    dst_old_version: DocumentVersion,
+    dst_old_version: Optional[DocumentVersion],
     dst_new_version: DocumentVersion,
     page_numbers: list[int],
     position: int = 0
@@ -247,7 +248,7 @@ def reuse_ocr_data_multi(
 def reuse_ocr_data(
     old_version: DocumentVersion,
     new_version: DocumentVersion,
-    page_map: PageRecycleMap
+    page_map: Union[PageRecycleMap, list]
 ) -> None:
     storage_instance = get_storage_instance()
 
@@ -283,7 +284,7 @@ def reuse_text_field(
 
 def reuse_text_field_multi(
     src_old_version: DocumentVersion,
-    dst_old_version: DocumentVersion,
+    dst_old_version: Optional[DocumentVersion],
     dst_new_version: DocumentVersion,
     page_numbers: list[int],
     position: int = 0,
@@ -382,7 +383,7 @@ def remove_pdf_pages(
 
 def insert_pdf_pages(
     src_old_version: DocumentVersion,
-    dst_old_version: DocumentVersion,
+    dst_old_version: Optional[DocumentVersion],
     dst_new_version: DocumentVersion,
     src_page_numbers: list[int],
     dst_position: int = 0
@@ -451,6 +452,21 @@ def total_merge(
         dst_new_version=dst_new_version,
         src_page_numbers=page_numbers,
         dst_position=0
+    )
+    reuse_ocr_data_multi(
+        src_old_version=src_old_version,
+        dst_old_version=None,
+        dst_new_version=dst_new_version,
+        position=0,
+        page_numbers=page_numbers
+    )
+
+    reuse_text_field_multi(
+        src_old_version=src_old_version,
+        dst_old_version=None,
+        dst_new_version=dst_new_version,
+        position=0,
+        page_numbers=page_numbers
     )
     # Total merge deletes source document.
     # Because all pages of the source are moved to destination, source's

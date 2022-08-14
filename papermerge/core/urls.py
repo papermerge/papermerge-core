@@ -30,6 +30,11 @@ urlpatterns = [
         name='documents_upload'
     ),
     path(
+        'documents/merge/',
+        views.DocumentsMergeView.as_view(),
+        name='documents_merge'
+    ),
+    path(
         'document-versions/<uuid:pk>/download/',
         views.DocumentVersionsDownloadView.as_view(),
     ),

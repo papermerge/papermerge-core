@@ -106,6 +106,16 @@ class DocumentsMergeView(RequireAuthMixin, GenericAPIView):
         Merge operation is useful when you have same document scanned several
         times. Instead of keeping two similar scanned copies of the same
         document, better to merge them as two versions of the same document.
+        For example, say you have two scans of the same document A_lq.pdf and
+        A_hq.pdf where A_lq.pdf low quality scan and A_hq.pdf is high quality
+        scan. You want to merge A_lq.pdf and A_hq.pdf document into one so
+        that higher quality scan will be lastest version.
+        In this case you need to set A_hq.pdf as source and A_lq.pdf as
+        destination.
+
+        Notice that OCR data (if any) is reused, this means that after
+        merge operation you don't have to re-run OCR as the OCR data of the
+        source document is reuse/copied to the target.
         """
         serializer = self.serializer_class(data=request.data)
 

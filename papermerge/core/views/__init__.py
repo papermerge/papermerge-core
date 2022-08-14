@@ -15,7 +15,7 @@ from .nodes import (
     InboxCountView,
     NodeTagsView,
 )
-from .documents import DocumentUploadView
+from .documents import DocumentUploadView, DocumentsMergeView
 from .document_versions import DocumentVersionsDownloadView
 from .documents import DocumentDetailsViewSet
 from .folders import FoldersViewSet
@@ -45,6 +45,7 @@ __all__ = [
     'NodeTagsView',
     'NodesDownloadView',
     'DocumentUploadView',
+    'DocumentsMergeView',
     'DocumentVersionsDownloadView',
     'DocumentDetailsViewSet',
     'FoldersViewSet',

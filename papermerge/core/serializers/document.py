@@ -83,3 +83,8 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+
+
+class DocumentsMergeSerializer(serializers.Serializer):
+    src = serializers.UUIDField()
+    dst = serializers.UUIDField()

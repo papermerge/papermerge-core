@@ -615,6 +615,9 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
         src_old_version = pages.first().document_version
         dst_old_version = dst_document.versions.last()
         pages_count = pages.count()
+        position = data['position']
+        if position < 0:
+            position = dst_old_version.pages.count()
 
         doc = src_old_version.document
         src_new_version = doc.version_bump(
@@ -656,14 +659,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             src_page_numbers=[p.number for p in pages.order_by('number')],
-            dst_position=data['position']
+            dst_position=position
         )
 
         reuse_ocr_data_multi(
             src_old_version=src_old_version,
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
-            position=data['position'],
+            position=position,
             page_numbers=[page.number for page in pages]
         )
 
@@ -671,6 +674,6 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             src_old_version=src_old_version,
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
-            position=data['position'],
+            position=position,
             page_numbers=[page.number for page in pages]
         )

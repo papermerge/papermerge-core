@@ -465,6 +465,7 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             dst_folder,
             title_format=None
     ):
+        """All extracted pages are inserted into one document"""
         if title_format is None:
             title = f'document-{str(uuid4())}.pdf'
         else:
@@ -504,11 +505,17 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             dst_folder,
             title_format=None
     ):
+        """Each extracted page is inserted into a separate document"""
+
+        pages_count = pages.count()
         for page in pages:
             if title_format is None:
-                title = f'page-{page.pk}.pdf'
+                title = f'page-{str(uuid4())}.pdf'
             else:
-                title = f'{title_format}.pdf'
+                if pages_count > 1:
+                    title = f'{title_format}-{str(uuid4())}.pdf'
+                else:
+                    title = f'{title_format}.pdf'
 
             doc = Document.objects.create_document(
                 title=title,

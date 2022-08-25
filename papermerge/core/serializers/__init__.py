@@ -1,7 +1,10 @@
 from .automate import AutomateSerializer
 from .document import DocumentSerializer
 from .document import DocumentDetailsSerializer, DocumentsMergeSerializer
-from .document_version import DocumentVersionSerializer
+from .document_version import (
+    DocumentVersionSerializer,
+    DocumentVersionOcrTextSerializer
+)
 from .folder import FolderSerializer
 from .node import (
     NodeSerializer,
@@ -42,6 +45,7 @@ __all__ = [
     'DocumentDetailsSerializer',
     'DocumentsMergeSerializer',
     'DocumentVersionSerializer',
+    'DocumentVersionOcrTextSerializer',
     'FolderSerializer',
     'NodeSerializer',
     'NodeMoveSerializer',

@@ -21,7 +21,7 @@ RESOURCES = Path(BASE_PATH / "resources")
 def document(
     resource: str,
     user: User,
-    include_ocr_data: bool = False
+    include_ocr_data: bool = False,
 ) -> Document:
     """Builds a document model with associated data
 
@@ -49,9 +49,10 @@ def document(
 
 
 def document_version(
-        page_count: int,
-        pages_text=None,
-        include_ocr_data: bool = False
+    page_count: int,
+    pages_text=None,
+    include_ocr_data: bool = False,
+    **kwargs
 ) -> DocumentVersion:
 
     if pages_text:
@@ -71,6 +72,7 @@ def document_version(
     doc_version = baker.make(
         "core.DocumentVersion",
         pages=pages,
+        **kwargs
     )
 
     if include_ocr_data:

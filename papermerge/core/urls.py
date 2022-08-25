@@ -7,7 +7,6 @@ from papermerge.core import views
 
 router = routers.DefaultRouter()
 
-router.register(r"automates", views.AutomatesViewSet, basename="automate")
 router.register(r"tokens", views.TokensViewSet, basename="token")
 router.register(r"tags", views.TagsViewSet, basename="tag")
 router.register("nodes", views.NodesViewSet, basename="node")
@@ -28,6 +27,11 @@ urlpatterns = [
         r'documents/(?P<document_id>[0-9a-f-]+)?/upload/(?P<file_name>[^/]+)',
         views.DocumentUploadView.as_view(),
         name='documents_upload'
+    ),
+    path(
+        'documents/<uuid:pk>/ocr-text',
+        views.DocumentOcrTextView.as_view(),
+        name='document-ocr-text'
     ),
     path(
         'documents/merge/',

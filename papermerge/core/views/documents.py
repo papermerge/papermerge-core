@@ -11,11 +11,15 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter
+)
 
 from papermerge.core.serializers import (
     DocumentDetailsSerializer,
-    DocumentsMergeSerializer
+    DocumentsMergeSerializer,
+    DocumentVersionOcrTextSerializer
 )
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.models import Document
@@ -88,6 +92,70 @@ class DocumentUploadView(RequireAuthMixin, APIView):
                 return Response(str(ex), status=status.HTTP_202_ACCEPTED)
 
         return Response({}, status=status.HTTP_201_CREATED)
+
+
+class DocumentOcrTextView(RequireAuthMixin, GenericAPIView):
+    serializer_class = DocumentVersionOcrTextSerializer
+    parser_classes = (rest_framework_JSONParser,)
+    renderer_classes = (rest_framework_JSONRenderer,)
+    queryset = Document.objects.all()
+
+    @extend_schema(
+        operation_id="Document OCR Text",
+        parameters=[
+            OpenApiParameter(
+                name='page_numbers[]',
+                description=(
+                    "Filter pages by provided page numbers"
+                ),
+                required=False,
+                type={'type': 'array', 'items': {'type': 'number'}}
+            ),
+            OpenApiParameter(
+                name='page_ids[]',
+                description=(
+                    "Filter pages by provided page ids"
+                ),
+                required=False,
+                type={'type': 'array', 'items': {'type': 'string'}}
+            ),
+        ]
+    )
+    def get(self, request, pk, *args, **kwargs):
+        """Retrieve OCRed text of the document
+
+        You can filter pages for which OCRed text is to be received either by
+        page numbers or by page ids. When both filters are empty - retrieve
+        OCRed text of the whole document (i.e. of its last document version)
+        """
+
+        # Document instance
+        instance = self.get_object()
+        document_version = instance.versions.last()
+        # For what page number does user want to get OCR text ?
+        # If page_numbers parameter is empty - get OCR text for all pages
+        # of the document version
+        try:
+            page_numbers = self.request.GET.getlist('page_numbers[]', [])
+            page_numbers = [int(number) for number in page_numbers]
+        except ValueError:
+            page_numbers = []
+
+        page_ids = self.request.GET.getlist('page_ids[]', [])
+
+        text = document_version.get_ocred_text(
+            page_numbers=page_numbers,
+            page_ids=page_ids
+        )
+        serializer = self.get_serializer(data={'text': text})
+
+        if serializer.is_valid():
+            return Response(data=serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class DocumentsMergeView(RequireAuthMixin, GenericAPIView):

@@ -1,6 +1,7 @@
 .idea/
 .papermerge.toml
 .env
+.envrc
 .env_shell
 .env_services
 config/settings/local/*

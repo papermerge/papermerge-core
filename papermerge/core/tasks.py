@@ -77,6 +77,17 @@ def ocr_document_task(
 
 
 @shared_task
+def post_ocr_document_task(document_id, namespace=None):
+    """
+    Task to run immediately after document OCR is complete
+
+    This task guarantees that `increment_document_version` will run
+    before `update_document_pages`.
+    """
+    increment_document_version(document_id, namespace)
+    update_document_pages(document_id, namespace)
+
+
 def increment_document_version(document_id, namespace=None):
     logger.debug(
         'increment_document_version: '
@@ -113,7 +124,6 @@ def increment_document_version(document_id, namespace=None):
         )
 
 
-@shared_task
 def update_document_pages(document_id, namespace=None):
     """
     Updates document latest versions's ``text`` field

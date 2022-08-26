@@ -12,7 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentVersion(models.Model):
+    """Document Version
 
+    Document can have one or multiple versions.
+    Document has at least one version associated (the original).
+    Each document version has a number - which starts with 1 (one) i.e.
+    original document version is - document version 1 (one).
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     document = models.ForeignKey(
@@ -31,7 +37,7 @@ class DocumentVersion(models.Model):
     )
     # version number
     number = models.IntegerField(
-        default=1,
+        default=1,  # Document versioning starts with 1
         verbose_name=_('Version number')
     )
     #: basename + ext of uploaded file.
@@ -64,8 +70,8 @@ class DocumentVersion(models.Model):
         verbose_name = _('Document version')
         verbose_name_plural = _('Document versions')
 
-    def __str__(self):
-        return f"id={self.pk} number={self.number}"
+    def __repr__(self):
+        return f"DocumentVersion(id={self.pk}, number={self.number})"
 
     def abs_file_path(self):
         return abs_path(
@@ -169,3 +175,29 @@ class DocumentVersion(models.Model):
             self.save()
 
         return self.has_combined_text
+
+    def get_ocred_text(
+        self,
+        page_numbers: list = (),
+        page_ids: list = ()
+    ) -> str:
+        """
+        Returns OCRed text of given pages.
+
+        You can filter pages for which OCRed is requested either be page numbers
+        or by page_ids.
+        If both page_numbers and page_ids are empty i.e. no filters, then
+        return `self.text`.
+        """
+        pages_text = " ".join([
+            page.text for page in self.pages.all()
+            if page.number in page_numbers or str(page.pk) in page_ids
+        ])
+
+        if page_ids or page_numbers:
+            result = pages_text.strip()
+        else:
+            # when both filters are empty, return the `self.text` field
+            result = self.text.strip()
+
+        return result

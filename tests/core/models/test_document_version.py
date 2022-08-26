@@ -201,3 +201,29 @@ class TestDocumentVersionModel(TestCase):
         actual = doc_ver.get_ocred_text()
         expected = "T1 T2 T3"
         assert expected == actual
+
+    def test_get_ocred_text_mind_one_blank_page(self):
+        """
+        Consider the case when document has 3 pages and two of them
+        contains some text, while one (the blank page) does not.
+        In such case, if user requests OCRed text of the blank page only,
+        then he/she will get as result - empty string.
+        """
+        doc_ver = maker.document_version(
+            page_count=3,
+            pages_text=[
+                "T1",
+                "",  # empty page
+                "T3",
+            ],
+            text="T1 T3"
+        )
+        page_2_id = str(doc_ver.pages.all()[1].pk)
+
+        # user requests OCRed text ONLY of the blank page
+        actual = doc_ver.get_ocred_text(page_ids=[page_2_id])
+        # even document has other non-blank pages, because user
+        # requested specifically blank page, he/she must get empty
+        # string as result
+        expected = ""
+        assert expected == actual

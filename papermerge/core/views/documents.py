@@ -25,8 +25,7 @@ from papermerge.core.storage import get_storage_instance
 from papermerge.core.models import Document
 from papermerge.core.tasks import (
     ocr_document_task,
-    update_document_pages,
-    increment_document_version
+    post_ocr_document_task
 )
 from papermerge.core.exceptions import APIBadRequest
 
@@ -75,8 +74,7 @@ class DocumentUploadView(RequireAuthMixin, APIView):
                         'user_id': str(request.user.id)
                     },
                     link=[
-                        increment_document_version.s(namespace),
-                        update_document_pages.s(namespace)
+                        post_ocr_document_task.s(namespace),
                     ]
                 )
             except OperationalError as ex:

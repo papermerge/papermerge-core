@@ -12,10 +12,6 @@ handlers:
     formatter: verbose
 
 loggers:
-  django.db.backends:
-    level: DEBUG
-    handlers: [console]
-    propagate: no
   papermerge:
     level: DEBUG
     handlers: [console]

@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from papermerge.core.models import Document
 from papermerge.core.tasks import (
     ocr_document_task,
-    update_document_pages
+    post_ocr_document_task
 )
 from papermerge.core.storage import default_storage
 from papermerge.core.serializers import OcrSerializer
@@ -33,7 +33,7 @@ class OCRView(RequireAuthMixin, GenericAPIView):
                 'namespace': namespace,
                 'user_id': str(request.user.id)
             },
-            link=update_document_pages.s(namespace)
+            link=post_ocr_document_task.s(namespace)
         )
 
         return Response({"message": "OCR successfully started"})

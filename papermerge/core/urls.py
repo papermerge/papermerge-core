@@ -112,5 +112,10 @@ urlpatterns = [
         views.OCRView.as_view(),
         name='tasks-ocr'
     ),
+    path(
+        'version/',
+        views.VersionView.as_view(),
+        name='version'
+    ),
     re_path(r"^", include(router.urls)),
 ]

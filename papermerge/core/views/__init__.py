@@ -36,6 +36,7 @@ from .preferences import CustomUserPreferencesViewSet
 from .login import LoginView
 from .logout import LogoutView, LogoutAllView
 from .tokens import TokensViewSet
+from .version import VersionView
 
 __all__ = [
     'AutomatesViewSet',
@@ -69,4 +70,5 @@ __all__ = [
     'LogoutView',
     'LogoutAllView',
     'TokensViewSet',
+    'VersionView'
 ]

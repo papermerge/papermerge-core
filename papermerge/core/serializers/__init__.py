@@ -35,6 +35,8 @@ from .token import (
     TokenSerializer,
     CreateTokenSerializer
 )
+from .version import VersionSerializer
+
 
 __all__ = [
     'AutomateSerializer',
@@ -66,5 +68,6 @@ __all__ = [
     'PagesMoveToFolderSerializer',
     'PagesMoveToDocumentSerializer',
     'TokenSerializer',
-    'InboxCountSerializer'
+    'InboxCountSerializer',
+    'VersionSerializer'
 ]

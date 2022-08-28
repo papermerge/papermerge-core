@@ -90,6 +90,8 @@ def document_query(user_id, text, tags=[], tags_op=TAGS_OP_ALL):
         query_text
     ).query(
         tags_query(clean_tags_list, tags_op)
+    ).highlight(
+        'text', fragment_size=50
     )
 
     return query

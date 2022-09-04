@@ -16,20 +16,28 @@ services:
       - 6379:6379
     volumes:
       - redisdata:/data
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  manticore:
+    container_name: manticore
+    image: manticoresearch/manticore
+    restart: always
     ports:
-      - 9200:9200
-      - 9300:9300
+      - 127.0.0.1:9306:9306
+      - 127.0.0.1:9308:9308
+    ulimits:
+      nproc: 65535
+      nofile:
+         soft: 65535
+         hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
     volumes:
-      - es-data:/usr/share/elasticsearch/data
+      - ./manticore-data:/var/lib/manticore
+#      - ./manticore.conf:/etc/manticoresearch/manticore.conf # uncomment if you use a custom config
 volumes:
   postgres_data2:
   redisdata:
-  es-data:
+  manticore-data:
 
 networks:
   my_local:

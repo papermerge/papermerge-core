@@ -38,3 +38,4 @@ queue/
 celerybeat-schedule
 launch.json
 .vscode
+manticore-data

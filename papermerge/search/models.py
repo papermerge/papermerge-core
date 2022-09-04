@@ -6,27 +6,18 @@ from .indexes import SearchIndex, fields
 
 class PageIndex(SearchIndex):
 
-    document_version_id = fields.TextField()
-    document_id = fields.TextField()
-    user_id = fields.TextField()
-    title = fields.TextField()
+    document_version_id = fields.TextField(model_attr='document_version.id')
+    document_id = fields.TextField(
+        model_attr='document_version.document.id'
+    )
+    user_id = fields.TextField(
+        model_attr='document_version.document.user.id'
+    )
+    title = fields.TextField(
+        model_attr='document_version.document.title'
+    )
     breadcrumb = fields.TextField()
     node_type = 'document'
-
-    def prepare_page_id(self, instance):
-        return str(instance.id)
-
-    def prepare_document_version_id(self, instance):
-        return str(instance.document_version.id)
-
-    def prepare_document_id(self, instance):
-        return str(instance.document_version.document.id)
-
-    def prepare_user_id(self, instance):
-        return str(instance.document_version.document.user.id)
-
-    def prepare_title(self, instance):
-        return instance.document_version.document.title
 
     def prepare_breadcrumb(self, instance):
         doc = instance.document_version.document
@@ -39,15 +30,6 @@ class PageIndex(SearchIndex):
     class Meta:
         model = Page  # The model associated with this Document
         index_name = namespaced('pages')
-
-        # The fields of the model you want to be indexed
-        fields = [
-            'id',
-            'text',
-            'number',
-            'page_count',
-            'lang'
-        ]
 
 
 class DocumentIndex(SearchIndex):
@@ -87,7 +69,7 @@ class DocumentIndex(SearchIndex):
 
 class FolderIndex(SearchIndex):
 
-    breadcrumb = fields.ListField(fields.TextField())
+    breadcrumb = fields.ListField()
     node_type = 'folder'
     user_id = fields.KeywordField()
     tags = fields.NestedField(properties={
@@ -109,10 +91,7 @@ class FolderIndex(SearchIndex):
 
 
 class DocumentVersionIndex(SearchIndex):
-    title = fields.TextField()
-
-    def prepare_title(self, instance):
-        return instance.document.title
+    title = fields.TextField(model_attr='document.title')
 
     class Meta:
         model = DocumentVersion

@@ -1,0 +1,4 @@
+
+
+class SearchIndex:
+    pass

@@ -35,14 +35,10 @@ class PageIndex(SearchIndex):
 class DocumentIndex(SearchIndex):
 
     text = fields.TextField()
-    breadcrumb = fields.ListField(fields.TextField())
+    breadcrumb = fields.ListField()
     node_type = 'document'
     user_id = fields.KeywordField()
-    tags = fields.NestedField(properties={
-        'name': fields.KeywordField(),
-        'bg_color': fields.KeywordField(),
-        'fg_color': fields.KeywordField(),
-    })
+    tags = fields.ListField()
 
     @property
     def highlight(self):
@@ -72,11 +68,7 @@ class FolderIndex(SearchIndex):
     breadcrumb = fields.ListField()
     node_type = 'folder'
     user_id = fields.KeywordField()
-    tags = fields.NestedField(properties={
-        'name': fields.KeywordField(),
-        'bg_color': fields.KeywordField(),
-        'fg_color': fields.KeywordField(),
-    })
+    tags = fields.ListField()
 
     def prepare_breadcrumb(self, instance):
         breadcrumb_items = [

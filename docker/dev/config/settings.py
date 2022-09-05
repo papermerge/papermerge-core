@@ -24,12 +24,6 @@ STATIC_ROOT = config.get(
 )
 
 DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
-DATABASES['manticore'] = {
-    'ENGINE': 'papermerge.search.backends.manticore',
-    'HOST': '127.0.0.1',
-    'PORT': 9306,
-    'CLUSTER': 'cluster',
-}
 
 LOCALE_PATHS = (
     PROJ_ROOT / Path('papermerge'),

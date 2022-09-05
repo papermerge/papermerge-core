@@ -1,4 +1,4 @@
-from django.db.backends.mysql import base  # noqa
+from django.db.backends.mysql.base import DatabaseWrapper  # noqa
 
 from papermerge.search.backends import (
     BaseEngine,
@@ -8,6 +8,11 @@ from papermerge.search.backends import (
 
 
 class ManticoreSearchBackend(BaseSearchBackend):
+
+    def __init__(self, **options):
+        super().__init__(**options)
+        self.conn = DatabaseWrapper(**options)
+
     def update(self, indexer, iterable, commit=True):
         pass
 

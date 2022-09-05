@@ -39,6 +39,7 @@ django-elasticsearch-dsl = "^7.2.1"
 django-rest-knox = "^4.2.0"
 drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
+mysqlclient = "^2.1.1"  # used by manticoresearch
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -63,6 +64,8 @@ test-core = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest 
 test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/"
 test-se = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest"
 test-search = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/ --disable-warnings"
+test-manticore = "DJANGO_SETTINGS_MODULE=tests.config.manticoresearch_settings python -m pytest tests/search/backends/manticore/"
+# include warnings
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/"
 

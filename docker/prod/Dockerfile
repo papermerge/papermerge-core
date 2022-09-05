@@ -43,7 +43,8 @@ RUN apt-get install -y --no-install-recommends \
     libmagic1 \
     ghostscript \
     file \
-    gcc
+    gcc \
+    default-libmysqlclient-dev
 
 COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/prod/scripts /

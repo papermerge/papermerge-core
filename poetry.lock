@@ -1052,6 +1052,14 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "mysqlclient"
+version = "2.1.1"
+description = "Python interface to MySQL"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "nodeenv"
 version = "1.7.0"
 description = "Node.js virtual environment builder"
@@ -1801,7 +1809,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <=3.10.6"
-content-hash = "9bf0ceccf0f892f73baafb306b59b71ba1871648ff66be3db1254d11914d3119"
+content-hash = "f3380766e506295ad45f5462485d54e78b3439f9adc45ed82db6569e33233666"
 
 [metadata.files]
 aioredis = []
@@ -1884,6 +1892,7 @@ matplotlib-inline = []
 model-bakery = []
 msgpack = []
 mslex = []
+mysqlclient = []
 nodeenv = []
 ocrmypdf = []
 ocrmypdf-papermerge = []

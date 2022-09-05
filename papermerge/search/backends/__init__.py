@@ -1,7 +1,6 @@
 import copy
 from copy import deepcopy
 
-from django.conf import settings
 from django.db.models import Q
 from django.db.models.base import ModelBase
 from django.utils import tree
@@ -1027,14 +1026,15 @@ class BaseEngine:
     unified_index = UnifiedIndex
 
     def __init__(self):
-        self.options = settings.PAPERMERGE_SEARCH_CONNECTIONS or {}
+        self.options = {}
+
         self.queries = []
         self._index = None
         self._backend = None
 
     def get_backend(self):
         if self._backend is None:
-            self._backend = self.backend(**self.options)
+            self._backend = self.backend()
         return self._backend
 
     def reset_sessions(self):

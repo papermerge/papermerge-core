@@ -2,6 +2,6 @@ from django.conf import settings
 from papermerge.search.utils import loading
 
 connections = loading.ConnectionHandler({
-    'engine': settings.PAPERMERGE__SEARCH__ENGINE,
-    'url': settings.PAPERMERGE__SEARCH__URL
+    'ENGINE': settings.PAPERMERGE__SEARCH__ENGINE,
+    'URL': settings.PAPERMERGE__SEARCH__URL
 })

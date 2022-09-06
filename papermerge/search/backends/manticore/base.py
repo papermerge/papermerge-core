@@ -7,11 +7,17 @@ from papermerge.search.backends import (
 )
 
 
+class ManticoreDatabaseWrapper(DatabaseWrapper):
+
+    def check_settings(self):
+        pass
+
+
 class ManticoreSearchBackend(BaseSearchBackend):
 
     def __init__(self, **options):
         super().__init__(**options)
-        self.conn = DatabaseWrapper(**options)
+        self.connection = ManticoreDatabaseWrapper(settings_dict=options)
 
     def update(self, indexer, iterable, commit=True):
         pass
@@ -23,7 +29,8 @@ class ManticoreSearchBackend(BaseSearchBackend):
         pass
 
     def search(self, query_string, **kwargs):
-        pass
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM some_table")
 
 
 class ManticoreSearchQuery(BaseSearchQuery):

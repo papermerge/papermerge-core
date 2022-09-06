@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db.models.base import ModelBase
 from django.utils import tree
 from django.utils.encoding import force_str
+from django.conf import settings
 
 from papermerge.search.constants import FILTER_SEPARATOR, VALID_FILTERS
 from papermerge.search.exceptions import FacetingError, MoreLikeThisError
@@ -1026,15 +1027,14 @@ class BaseEngine:
     unified_index = UnifiedIndex
 
     def __init__(self):
-        self.options = {}
-
+        self.options = getattr(settings, 'PAPERMERGE_SEARCH_CONNECTION',  {})
         self.queries = []
         self._index = None
         self._backend = None
 
     def get_backend(self):
         if self._backend is None:
-            self._backend = self.backend()
+            self._backend = self.backend(**self.options)
         return self._backend
 
     def reset_sessions(self):

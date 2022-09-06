@@ -44,10 +44,10 @@ PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-
-PAPERMERGE__SEARCH__ENGINE = 'papermerge.search.backends.manticore.ManticoreEngine'  # noqa
-PAPERMERGE__SEARCH__URL = 'http://127.0.0.1:9306/'
-
+PAPERMERGE_SEARCH_CONNECTION = {
+    'ENGINE': 'papermerge.search.backends.manticore.ManticoreEngine',  # noqa
+    'URL': 'http://127.0.0.1:9306/'
+}
 
 MEDIA_URL = config.get(
     'media',

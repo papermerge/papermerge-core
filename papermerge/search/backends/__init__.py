@@ -433,6 +433,8 @@ class SQ(Q, SearchNode):
     Most often, this will be a lookup to ensure that a certain word or phrase
     appears in the documents being indexed. However, it also supports filtering
     types (such as 'lt', 'gt', 'in' and others) for more complex lookups.
+
+    Similar to django's Q objects but, for search
     """
 
     pass
@@ -494,7 +496,7 @@ class BaseSearchQuery:
         self.stats = {}
 
         from papermerge.search import connections
-        self.backend = connections.get_backend()
+        self.backend = connections.conn.get_backend()
 
     def __str__(self):
         return self.build_query()

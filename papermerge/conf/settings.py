@@ -137,7 +137,7 @@ INSTALLED_APPS = [
     'channels',
 ]
 
-if PAPERMERGE__SEARCH__ENGINE:
+if True:
     INSTALLED_APPS.extend([
         'papermerge.search.apps.SearchConfig',
     ])

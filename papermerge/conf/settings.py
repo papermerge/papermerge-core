@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
+    'papermerge.search.apps.SearchConfig',
     'papermerge.notifications.apps.NotificationsConfig',
     'django.contrib.contenttypes',
     'dynamic_preferences',
@@ -148,16 +149,12 @@ INSTALLED_APPS = [
     'polymorphic',
     'mptt',
     'channels',
+    'haystack',
 ]
 
 # include elasticsearch apps only if PAPERMERGE_ELASTICSEARCH_HOSTS
 # and PAPERMERGE_ELASTICSEARCH_PORT are defined
 # and have non-empty value
-if es_hosts and es_port:
-    INSTALLED_APPS.extend([
-        'papermerge.search.apps.SearchConfig',
-        'django_elasticsearch_dsl'
-    ])
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -347,3 +344,12 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '2.1.0',
     'APPEND_COMPONENTS': JSONAPI_COMPONENTS
 }
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+    },
+}
+

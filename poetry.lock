@@ -530,6 +530,27 @@ python-versions = ">=3.6"
 Django = ">=2.2"
 
 [[package]]
+name = "django-haystack"
+version = "0.1.dev1812+g3061021"
+description = "Pluggable search for Django."
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.dependencies]
+Django = ">=2.2"
+
+[package.extras]
+elasticsearch = ["elasticsearch (>=5,<8)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/papermerge/django-haystack.git"
+reference = "master"
+resolved_reference = "3061021ffd031da7f10bb1376cd30f9cd1e0bce4"
+
+[[package]]
 name = "django-js-asset"
 version = "2.0.0"
 description = "script tag with additional attributes for django.forms.Media"
@@ -1801,7 +1822,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <=3.10.6"
-content-hash = "9bf0ceccf0f892f73baafb306b59b71ba1871648ff66be3db1254d11914d3119"
+content-hash = "13ef8220960f48b6ca459f6bdeeb767ad33e897cca550605e3ebbde6dde788a7"
 
 [metadata.files]
 aioredis = []
@@ -1845,6 +1866,7 @@ django-dynamic-preferences = []
 django-elasticsearch-dsl = []
 django-extensions = []
 django-filter = []
+django-haystack = []
 django-js-asset = []
 django-modelcluster = []
 django-mptt = []

@@ -1,0 +1,2 @@
+{{ object.document.title }}
+{{ object.document_text }}

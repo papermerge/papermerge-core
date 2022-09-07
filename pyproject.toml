@@ -35,11 +35,11 @@ uWSGI = "^2.0.20"
 psycopg2 = "^2.9.2"
 psycopg2-binary = "^2.9.2"
 daphne = "^3.0.2"
-django-elasticsearch-dsl = "^7.2.1"
 django-rest-knox = "^4.2.0"
 drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
 django-haystack = {git = "https://github.com/papermerge/django-haystack.git"}
+elasticsearch = ">=7,<8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

@@ -496,18 +496,6 @@ persisting-theory = "1.0"
 six = "*"
 
 [[package]]
-name = "django-elasticsearch-dsl"
-version = "7.2.2"
-description = "Wrapper around elasticsearch-dsl-py for django models"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-elasticsearch-dsl = ">=7.2.0"
-six = "*"
-
-[[package]]
 name = "django-extensions"
 version = "3.2.0"
 description = "Extensions for Django"
@@ -712,7 +700,7 @@ Django = ">=2.2"
 
 [[package]]
 name = "elasticsearch"
-version = "7.17.4"
+version = "7.17.6"
 description = "Python client for Elasticsearch"
 category = "main"
 optional = false
@@ -727,22 +715,6 @@ async = ["aiohttp (>=3,<4)"]
 develop = ["requests (>=2.0.0,<3.0.0)", "coverage", "mock", "pyyaml", "pytest", "pytest-cov", "sphinx (<1.7)", "sphinx-rtd-theme", "black", "jinja2"]
 docs = ["sphinx (<1.7)", "sphinx-rtd-theme"]
 requests = ["requests (>=2.4.0,<3.0.0)"]
-
-[[package]]
-name = "elasticsearch-dsl"
-version = "7.4.0"
-description = "Python client for Elasticsearch"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-
-[package.dependencies]
-elasticsearch = ">=7.0.0,<8.0.0"
-python-dateutil = "*"
-six = "*"
-
-[package.extras]
-develop = ["mock", "pytest (>=3.0.0)", "pytest-cov", "pytest-mock (<3.0.0)", "pytz", "coverage (<5.0.0)", "sphinx", "sphinx-rtd-theme"]
 
 [[package]]
 name = "executing"
@@ -1454,17 +1426,6 @@ docs = ["sphinx", "sphinx-rtd-theme"]
 testing = ["django", "django-configurations (>=2.0)"]
 
 [[package]]
-name = "python-dateutil"
-version = "2.8.2"
-description = "Extensions to the standard Python datetime module"
-category = "main"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-
-[package.dependencies]
-six = ">=1.5"
-
-[[package]]
 name = "python-magic"
 version = "0.4.27"
 description = "File type identification using libmagic"
@@ -1722,7 +1683,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "urllib3"
-version = "1.26.11"
+version = "1.26.12"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -1730,7 +1691,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, 
 
 [package.extras]
 brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
-secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "urllib3-secure-extra", "ipaddress"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
@@ -1822,7 +1783,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <=3.10.6"
-content-hash = "13ef8220960f48b6ca459f6bdeeb767ad33e897cca550605e3ebbde6dde788a7"
+content-hash = "a1f6b1bc22de25233485f65dfdf36ad12b2042f6406922030d529b0c56c4598c"
 
 [metadata.files]
 aioredis = []
@@ -1863,7 +1824,6 @@ django = []
 django-celery-results = []
 django-cors-headers = []
 django-dynamic-preferences = []
-django-elasticsearch-dsl = []
 django-extensions = []
 django-filter = []
 django-haystack = []
@@ -1880,7 +1840,6 @@ djangorestframework-jsonapi = []
 drf-spectacular = []
 drf-spectacular-sidecar = []
 elasticsearch = []
-elasticsearch-dsl = []
 executing = []
 filelock = []
 gevent = []
@@ -1939,7 +1898,6 @@ pyreadline3 = []
 pyrsistent = []
 pytest = []
 pytest-django = []
-python-dateutil = []
 python-magic = []
 pytz = []
 pyyaml = []

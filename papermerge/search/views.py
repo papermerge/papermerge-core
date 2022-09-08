@@ -8,11 +8,10 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter
 )
+from haystack.query import SearchQuerySet
 from papermerge.core.views.mixins import RequireAuthMixin
 from papermerge.search.serializers import SearchResultSerializer
-from papermerge.search.utils import (
-    folder_query,
-    document_query,
+from papermerge.search.constants import (
     TAGS_OP_ALL,
     TAGS_OP_ANY
 )
@@ -67,27 +66,25 @@ class SearchView(RequireAuthMixin, GenericAPIView):
     )
     def get(self, request):
         query_text = request.query_params.get('q', '')
-        query_tags = request.query_params.get('tags', '')
-        tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
-        # never trust user input + make sure only valid options are used
-        if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
-            tags_op = TAGS_OP_ALL
+        if len(query_text) == 0:
+            query_text = '*'
+        #  query_tags = request.query_params.get('tags', '')
+        #  tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
+        #  never trust user input + make sure only valid options are used
+        #  if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
+        #    tags_op = TAGS_OP_ALL
 
-        folder_q = folder_query(
-            user_id=request.user.pk,
-            text=query_text,
-            tags=query_tags,
-            tags_op=tags_op
+        query_all = SearchQuerySet().filter(
+            user=request.user,
+            text=query_text
         )
 
-        document_q = document_query(
-            user_id=request.user.pk,
-            text=query_text,
-            tags=query_tags,
-            tags_op=tags_op
+        query_folder = SearchQuerySet().filter(
+            user=request.user,
+            title__contains=query_text.lower()
         )
 
-        result_list = list(folder_q) + list(document_q)
+        result_list = list(query_folder) + list(query_all)
         serializer = SearchResultSerializer(result_list, many=True)
 
         return Response(serializer.data)

@@ -2,11 +2,12 @@ from .base import *   # noqa
 
 INSTALLED_APPS += [
     'papermerge.search.apps.SearchConfig',
-    'django_elasticsearch_dsl',
 ]
 
-ELASTICSEARCH_DSL = {
+HAYSTACK_CONNECTIONS = {
     'default': {
-        'hosts': 'localhost:9200'
+        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
     },
 }

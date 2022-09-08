@@ -1,15 +1,21 @@
 from haystack import indexes
-from papermerge.core.models import DocumentVersion
+from papermerge.core.models import DocumentVersion, Folder
 
 
 class DocumentVersionIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
-    document = indexes.CharField(model_attr='document')
+    doc = indexes.CharField(model_attr='document')
+    user = indexes.CharField(model_attr='document.user')
     document_text = indexes.CharField(model_attr='text')
 
     def get_model(self):
         return DocumentVersion
 
-    def index_queryset(self, using=None):
-        """Used when the entire index for model is updated."""
-        return self.get_model().objects
+
+class FolderIndex(indexes.SearchIndex, indexes.Indexable):
+    text = indexes.CharField(document=True, use_template=True)
+    title = indexes.CharField(model_attr='title')
+    user = indexes.CharField(model_attr='user')
+
+    def get_model(self):
+        return Folder

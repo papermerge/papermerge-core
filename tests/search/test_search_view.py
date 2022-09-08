@@ -4,18 +4,28 @@ import os
 import json
 from pathlib import Path
 
+from haystack import connections
+from haystack.utils.loading import UnifiedIndex
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from django_elasticsearch_dsl.test import ESTestCase
 
-from papermerge.core.models import User, Folder, Document
+from papermerge.core.models import User, Folder, Document, DocumentVersion
 
 SEARCH_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
 
 
-class SearchViewVeryBasicTestCase(ESTestCase, TestCase):
+def rebuild_elasticsearch_index():
+    search_backend = connections["default"].get_backend()
+    index1 = UnifiedIndex().get_index(DocumentVersion)
+    search_backend.update(index1, DocumentVersion.objects.all())
+    index2 = UnifiedIndex().get_index(Folder)
+    search_backend.clear()
+    search_backend.update(index2, Folder.objects.all())
+
+
+class SearchViewVeryBasicTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -28,6 +38,7 @@ class SearchViewVeryBasicTestCase(ESTestCase, TestCase):
         self.media = Path(TEST_DIR_ABS_PATH) / 'media'
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+        rebuild_elasticsearch_index()
 
     def test_search_empty_string_search(self):
         """
@@ -79,7 +90,7 @@ class SearchViewVeryBasicTestCase(ESTestCase, TestCase):
         assert data[1]['title'] in expected_titles
 
 
-class SearchFolderTestCase(ESTestCase, TestCase):
+class SearchFolderTestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.user = User.objects.create_user(username="user")
@@ -94,6 +105,7 @@ class SearchFolderTestCase(ESTestCase, TestCase):
             user=self.user,
             parent=self.user.home_folder
         )
+        rebuild_elasticsearch_index()
 
     def test_invoices_folder_is_searchable_with_exact_match(self):
         """
@@ -126,7 +138,7 @@ class SearchFolderTestCase(ESTestCase, TestCase):
         assert data[0]['title'] == 'Invoices'
 
 
-class SearchDocumentTestCase(ESTestCase, TestCase):
+class SearchDocumentTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -149,6 +161,7 @@ class SearchDocumentTestCase(ESTestCase, TestCase):
             io.StringIO('I am page number one'),
             io.StringIO('I am page number two')
         ])
+        rebuild_elasticsearch_index()
 
     def test_document_search_by_text(self):
         """
@@ -166,7 +179,7 @@ class SearchDocumentTestCase(ESTestCase, TestCase):
         assert 'page number one' in data[0]['text']
 
 
-class SearchAfterMoveToFolder(ESTestCase, TestCase):
+class SearchAfterMoveToFolder(TestCase):
     """
     There is a document 'living-things.pdf' with two pages:
         - page 1 contains word 'cat'
@@ -207,6 +220,7 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
             io.StringIO('cat'),
             io.StringIO('fish')
         ])
+        rebuild_elasticsearch_index()
 
     def test_documents_are_searchable_after_move_to_folder_extraction(self):
         response = self.client.get(
@@ -255,7 +269,7 @@ class SearchAfterMoveToFolder(ESTestCase, TestCase):
         assert 'cat' in response.data[0]['text']
 
 
-class SearchByTags(ESTestCase, TestCase):
+class SearchByTags(TestCase):
     def setUp(self):
         super().setUp()
         self.user = User.objects.create_user(username="user")
@@ -265,6 +279,7 @@ class SearchByTags(ESTestCase, TestCase):
         self.media = Path(TEST_DIR_ABS_PATH) / 'media'
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+        rebuild_elasticsearch_index()
 
     def test_search_folder_by_tag(self):
         """

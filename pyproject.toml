@@ -59,13 +59,13 @@ django_find_project = false
 [tool.taskipy.tasks]
 test = "task test-core && task test-search"
 test-co = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest"
-test-core = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
+test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings
-test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest tests/core/ tests/notifications/"
-test-se = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest"
-test-search = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/ --disable-warnings"
+test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/"
+test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest"
+test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest tests/search/ --disable-warnings"
 # include warnings
-test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search_settings python -m pytest tests/search/"
+test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest tests/search/"
 
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only

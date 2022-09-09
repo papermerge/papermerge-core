@@ -8,7 +8,7 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter
 )
-from haystack.query import SearchQuerySet
+from haystack.query import SearchQuerySet, SQ
 from papermerge.core.views.mixins import RequireAuthMixin
 from papermerge.search.serializers import SearchResultSerializer
 from papermerge.search.constants import (
@@ -68,24 +68,42 @@ class SearchView(RequireAuthMixin, GenericAPIView):
         query_text = request.query_params.get('q', '')
         if len(query_text) == 0:
             query_text = '*'
-        #  query_tags = request.query_params.get('tags', '')
-        #  tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
+        query_tags = request.query_params.get('tags', '')
+        tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
         #  never trust user input + make sure only valid options are used
-        #  if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
-        #    tags_op = TAGS_OP_ALL
+        if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
+            tags_op = TAGS_OP_ALL
+
+        if query_text != '*':
+            by_title = SQ(title__contains=query_text.lower()) | SQ(
+                title=query_text.lower()
+            )
+        else:
+            by_title = SQ(title='*')
+
+        by_content = SQ(last_version_text=query_text)
+        by_user = SQ(user=request.user)
+
+        if query_tags:
+            if tags_op == TAGS_OP_ALL:
+                by_tags = SQ(tags__contain=query_tags)
+            else:
+                # TAGS_OP_ANY
+                sq = SQ()
+                for name in query_tags.split(','):
+                    sq = sq | SQ(tags__contain=name)
+                by_tags = sq
+        else:
+            by_tags = SQ(tags='*')
 
         query_all = SearchQuerySet().filter(
-            user=request.user,
-            text=query_text
+            by_user
+        ).filter(
+            by_content | by_title
+        ).filter(
+            by_tags
         )
-
-        query_folder = SearchQuerySet().filter(
-            user=request.user,
-            title__contains=query_text.lower()
-        )
-
-        result_list = list(query_folder) + list(query_all)
-        serializer = SearchResultSerializer(result_list, many=True)
+        serializer = SearchResultSerializer(query_all, many=True)
 
         return Response(serializer.data)
 

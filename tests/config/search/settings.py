@@ -1,8 +1,10 @@
-from .base import *   # noqa
+from ..base import *   # noqa
 
 INSTALLED_APPS += [
     'papermerge.search.apps.SearchConfig',
 ]
+
+ROOT_URLCONF = 'tests.config.search.urls'
 
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -11,3 +13,5 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'haystack',
     },
 }
+
+HAYSTACK_DOCUMENT_FIELD = 'indexed_content'

@@ -1,2 +1,0 @@
-{{ object.doc.title }}
-{{ object.doc.text }}

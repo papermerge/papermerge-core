@@ -1,0 +1,2 @@
+{{ object.title }}
+{{ object.last_version_text }}

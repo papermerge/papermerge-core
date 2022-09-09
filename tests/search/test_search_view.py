@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Folder, Document, DocumentVersion
+from papermerge.core.models import User, Folder, Document
 
 SEARCH_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
@@ -18,10 +18,10 @@ TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
 
 def rebuild_elasticsearch_index():
     search_backend = connections["default"].get_backend()
-    index1 = UnifiedIndex().get_index(DocumentVersion)
-    search_backend.update(index1, DocumentVersion.objects.all())
-    index2 = UnifiedIndex().get_index(Folder)
     search_backend.clear()
+    index1 = UnifiedIndex().get_index(Document)
+    search_backend.update(index1, Document.objects.all())
+    index2 = UnifiedIndex().get_index(Folder)
     search_backend.update(index2, Folder.objects.all())
 
 
@@ -279,7 +279,6 @@ class SearchByTags(TestCase):
         self.media = Path(TEST_DIR_ABS_PATH) / 'media'
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
-        rebuild_elasticsearch_index()
 
     def test_search_folder_by_tag(self):
         """
@@ -301,6 +300,7 @@ class SearchByTags(TestCase):
             parent=self.user.home_folder
         )
 
+        rebuild_elasticsearch_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'tag1'}
@@ -343,7 +343,7 @@ class SearchByTags(TestCase):
             ['apple'],
             tag_kwargs={"user": self.user}
         )
-
+        rebuild_elasticsearch_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'apple,fruits'}
@@ -384,7 +384,7 @@ class SearchByTags(TestCase):
             ['apple'],
             tag_kwargs={"user": self.user}
         )
-
+        rebuild_elasticsearch_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'apple,fruits', 'tags_op': 'any'}

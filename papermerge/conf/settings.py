@@ -353,3 +353,4 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+HAYSTACK_DOCUMENT_FIELD = 'indexed_content'

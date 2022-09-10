@@ -74,36 +74,60 @@ class SearchView(RequireAuthMixin, GenericAPIView):
         if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
             tags_op = TAGS_OP_ALL
 
-        by_user = SQ(user=request.user)
+        query_all = SearchQuerySet().filter(user=request.user)
 
-        if query_tags:
-            if tags_op == TAGS_OP_ALL:
-                by_tags = SQ(tags__contain=query_tags)
-            else:
-                # TAGS_OP_ANY
-                sq = SQ()
-                for name in query_tags.split(','):
-                    sq = sq | SQ(tags__contain=name)
-                by_tags = sq
-        else:
-            by_tags = None
-
-        query_all = SearchQuerySet().filter(
-            by_user
+        query_all = self.add_filter_by_tags(
+            query=query_all,
+            query_tags=query_tags,
+            tags_op=tags_op
         )
-        if by_tags:
-            query_all = query_all.filter(by_tags)
 
         if query_text != '*':
-            by_title = SQ(title__contains=query_text.lower()) | SQ(
-                title=query_text.lower()
+            query_all = self.add_filter_by_content(
+                query=query_all,
+                query_text=query_text
             )
-            by_content = SQ(last_version_text=query_text)
-            query_all = query_all.filter(by_content | by_title)
 
         serializer = SearchResultSerializer(query_all, many=True)
 
         return Response(serializer.data)
+
+    def add_filter_by_content(
+        self,
+        query: SearchQuerySet,
+        query_text: str
+    ) -> SearchQuerySet:
+
+        by_title = SQ(title__startswith=query_text.lower()) | SQ(
+            title=query_text.lower()
+        )
+        by_content = SQ(last_version_text__contains=query_text) | SQ(
+            last_version_text=query_text
+        )
+
+        return query.filter(by_content | by_title)
+
+    def add_filter_by_tags(
+        self,
+        query: SearchQuerySet,
+        query_tags: str,
+        tags_op: str
+    ) -> SearchQuerySet:
+
+        if not query_tags:
+            return query
+
+        if tags_op == TAGS_OP_ALL:
+            sq = SQ()
+            for name in query_tags.split(','):
+                sq = sq & SQ(tags__contain=name)
+        else:
+            # TAGS_OP_ANY
+            sq = SQ()
+            for name in query_tags.split(','):
+                sq = sq | SQ(tags__contain=name)
+
+        return query.filter(sq)
 
     def get_queryset(self):
         # This is workaround warning issued when runnnig

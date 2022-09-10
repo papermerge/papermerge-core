@@ -88,6 +88,7 @@ class SearchView(RequireAuthMixin, GenericAPIView):
                 query_text=query_text
             )
 
+        query_all = query_all.highlight()
         serializer = SearchResultSerializer(query_all, many=True)
 
         return Response(serializer.data)

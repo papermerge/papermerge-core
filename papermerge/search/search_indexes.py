@@ -10,6 +10,7 @@ class DocumentIndex(indexes.SearchIndex, indexes.Indexable):
     last_version_text = indexes.CharField()
     text = indexes.CharField()  # alias for `last_version_text`
     tags = indexes.MultiValueField()
+    breadcrumb = indexes.MultiValueField()
     node_type = indexes.CharField()
 
     def prepare_last_version_text(self, obj):
@@ -18,6 +19,13 @@ class DocumentIndex(indexes.SearchIndex, indexes.Indexable):
             return last_document_version.text
 
         return ''
+
+    def prepare_breadcrumb(self, instance):
+        list_of_titles = [
+            item.title for item in instance.get_ancestors(include_self=False)
+        ]
+
+        return list_of_titles
 
     def prepare_node_type(self, obj):
         return 'document'
@@ -38,7 +46,15 @@ class FolderIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
     user = indexes.CharField(model_attr='user')
     node_type = indexes.CharField()
+    breadcrumb = indexes.MultiValueField()
     tags = indexes.MultiValueField()
+
+    def prepare_breadcrumb(self, instance):
+        breadcrumb_items = [
+            item.title
+            for item in instance.get_ancestors(include_self=False)
+        ]
+        return breadcrumb_items
 
     def prepare_node_type(self, obj):
         return 'folder'

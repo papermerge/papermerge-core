@@ -31,13 +31,13 @@ if search_engine == 'xapian':
     HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
         'search',
         'path',
-        default=PROJ_ROOT / Path('xapian_index')
+        default=os.path.join(PROJ_ROOT, 'xapian_index')
     )
 elif search_engine == 'whoosh':
     HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
         'search',
         'path',
-        default=PROJ_ROOT / Path('whoosh_index')
+        default=os.path.join(PROJ_ROOT, 'whoosh_index')
     )
 elif search_engine in (
         'es7',

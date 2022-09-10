@@ -9,9 +9,11 @@ Papermerge Document Management System (DMS).
 
 Technically speaking, it contains following Django apps:
 
-* ``papermerge.core`` - the epicenter of Papermerge project
+* ``papermerge.core`` - the epicenter of Papermerge DMS project
 * ``papermerge.notifications`` - Django Channels app for sending notifications via websockets
-* ``papermerge.search`` - Thin RESTful API layer over [elasticsearch](https://github.com/elastic/elasticsearch)
+* ``papermerge.search`` - RESTful search. Supports four backends: [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/),
+  [Whoosh](https://whoosh.readthedocs.io/en/latest/intro.html), [Elasticsearch](https://github.com/elastic/elasticsearch),
+  [Solr](https://solr.apache.org/).
 
 This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 
@@ -31,15 +33,14 @@ Papermerge is perfect tool to manage documents in PDF, JPEG, TIFF and PNG format
 ## Features Highlights
 
 * RESTul API
-* Works only with PDF documents
+* Works well with PDF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
-* Full Text Search of the scanned documents (uses [elasticsearch](https://github.com/elastic/elasticsearch))
+* Full Text Search of the scanned documents (supports four search engine backends, uses [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/) by default)
 * Document Versions
 * Tags - assign colored tags to documents or folders
 * Documents and Folders - users can organize documents in folders
-* Multi-User (Groups, Roles)
+* Multi-User (supports user groups)
 * User permissions management
-* Document permissions management
 * Page Management - delete, reorder, cut & paste pages (uses [PikePDF](https://github.com/pikepdf/pikepdf))
 
 

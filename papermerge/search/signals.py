@@ -1,33 +1,19 @@
-import logging
+from django.db import models
+from haystack import signals
 
-from django_elasticsearch_dsl.signals import RealTimeSignalProcessor
-
-
-logger = logging.getLogger(__name__)
+from papermerge.core.models import DocumentVersion, Document, Folder
 
 
-class CustomSignalProcessor(RealTimeSignalProcessor):
+class UserOnlySignalProcessor(signals.BaseSignalProcessor):
+    def setup(self):
+        for klass in (DocumentVersion, Document, Folder):
+            models.signals.post_save.connect(self.handle_save, sender=klass)
+            models.signals.post_delete.connect(self.handle_delete, sender=klass)
 
-    def handle_save(self, sender, instance, **kwargs):
-        try:
-            super().handle_save(sender, instance, **kwargs)
-        except Exception:
-            logger.warning("Elastic search connection error")
-
-    def handle_delete(self, sender, instance, **kwargs):
-        try:
-            super().handle_delete(sender, instance, **kwargs)
-        except Exception:
-            logger.warning("Elastic search connection error")
-
-    def handle_pre_delete(self, sender, instance, **kwargs):
-        try:
-            super().handle_pre_delete(sender, instance, **kwargs)
-        except Exception:
-            logger.warning("Elastic search connection error")
-
-    def handle_m2m_changed(self, sender, instance, action, **kwargs):
-        try:
-            super().handle_m2m_changed(sender, instance, action, **kwargs)
-        except Exception:
-            logger.warning("Elastic search connection error")
+    def teardown(self):
+        for klass in (DocumentVersion, Document, Folder):
+            models.signals.post_save.disconnect(self.handle_save, sender=klass)
+            models.signals.post_delete.disconnect(
+                self.handle_delete,
+                sender=klass
+            )

@@ -19,9 +19,6 @@ ALLOWED_HOSTS = config.get(
 redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)
 
-es_hosts = config.get('elasticsearch', 'hosts', default=None)
-es_port = config.get('elasticsearch', 'port', default=None)
-
 CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json']
@@ -45,17 +42,6 @@ DEBUG = config.get('main', 'debug', False)
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
-if es_hosts and es_port:
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': config.get(
-                'elasticsearch',
-                'hosts',
-                default=f"{es_hosts}:{es_port}"
-            )
-        },
-    }
 
 # Custom signal processor handles connections errors (to elasticsearch)
 # and reports them as warnings. This way, even when no connection to ES
@@ -140,6 +126,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
+    'papermerge.search.apps.SearchConfig',
     'papermerge.notifications.apps.NotificationsConfig',
     'django.contrib.contenttypes',
     'dynamic_preferences',
@@ -148,16 +135,12 @@ INSTALLED_APPS = [
     'polymorphic',
     'mptt',
     'channels',
+    'haystack',
 ]
 
 # include elasticsearch apps only if PAPERMERGE_ELASTICSEARCH_HOSTS
 # and PAPERMERGE_ELASTICSEARCH_PORT are defined
 # and have non-empty value
-if es_hosts and es_port:
-    INSTALLED_APPS.extend([
-        'papermerge.search.apps.SearchConfig',
-        'django_elasticsearch_dsl'
-    ])
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -346,4 +329,27 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Document management system designed for digital archives',
     'VERSION': '2.1.0',
     'APPEND_COMPONENTS': JSONAPI_COMPONENTS
+}
+
+SEARCH_ENGINES_MAP = {
+    'elastic': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elastic7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elasticsearch7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elasticsearch': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'es7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'es': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'solr': 'haystack.backends.solr_backend.SolrEngine',
+    'whoosh': 'haystack.backends.whoosh_backend.WhooshEngine',
+    'xapian': 'xapian_backend.XapianEngine',
+}
+
+HAYSTACK_DOCUMENT_FIELD = 'indexed_content'
+
+search_engine = config.get('search', 'engine', default='xapian')
+
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': SEARCH_ENGINES_MAP[search_engine],
+    },
 }

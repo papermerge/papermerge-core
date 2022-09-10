@@ -8,11 +8,10 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter
 )
+from haystack.query import SearchQuerySet, SQ
 from papermerge.core.views.mixins import RequireAuthMixin
 from papermerge.search.serializers import SearchResultSerializer
-from papermerge.search.utils import (
-    folder_query,
-    document_query,
+from papermerge.search.constants import (
     TAGS_OP_ALL,
     TAGS_OP_ANY
 )
@@ -67,30 +66,69 @@ class SearchView(RequireAuthMixin, GenericAPIView):
     )
     def get(self, request):
         query_text = request.query_params.get('q', '')
+        if len(query_text) == 0:
+            query_text = '*'
         query_tags = request.query_params.get('tags', '')
         tags_op = request.query_params.get('tags_op', TAGS_OP_ALL)
-        # never trust user input + make sure only valid options are used
+        #  never trust user input + make sure only valid options are used
         if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
             tags_op = TAGS_OP_ALL
 
-        folder_q = folder_query(
-            user_id=request.user.pk,
-            text=query_text,
-            tags=query_tags,
+        query_all = SearchQuerySet().filter(user=request.user)
+
+        query_all = self.add_filter_by_tags(
+            query=query_all,
+            query_tags=query_tags,
             tags_op=tags_op
         )
 
-        document_q = document_query(
-            user_id=request.user.pk,
-            text=query_text,
-            tags=query_tags,
-            tags_op=tags_op
-        )
+        if query_text != '*':
+            query_all = self.add_filter_by_content(
+                query=query_all,
+                query_text=query_text
+            )
 
-        result_list = list(folder_q) + list(document_q)
-        serializer = SearchResultSerializer(result_list, many=True)
+        query_all = query_all.highlight()
+        serializer = SearchResultSerializer(query_all, many=True)
 
         return Response(serializer.data)
+
+    def add_filter_by_content(
+        self,
+        query: SearchQuerySet,
+        query_text: str
+    ) -> SearchQuerySet:
+
+        by_title = SQ(title__startswith=query_text.lower()) | SQ(
+            title=query_text.lower()
+        )
+        by_content = SQ(last_version_text__contains=query_text) | SQ(
+            last_version_text=query_text
+        )
+
+        return query.filter(by_content | by_title)
+
+    def add_filter_by_tags(
+        self,
+        query: SearchQuerySet,
+        query_tags: str,
+        tags_op: str
+    ) -> SearchQuerySet:
+
+        if not query_tags:
+            return query
+
+        if tags_op == TAGS_OP_ALL:
+            sq = SQ()
+            for name in query_tags.split(','):
+                sq = sq & SQ(tags__contain=name)
+        else:
+            # TAGS_OP_ANY
+            sq = SQ()
+            for name in query_tags.split(','):
+                sq = sq | SQ(tags__contain=name)
+
+        return query.filter(sq)
 
     def get_queryset(self):
         # This is workaround warning issued when runnnig

@@ -24,3 +24,31 @@ DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
 LOCALE_PATHS = (
     PROJ_ROOT / Path('papermerge'),
 )
+
+search_engine = config.get('search', 'engine', default='xapian')
+
+if search_engine == 'xapian':
+    HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
+        'search',
+        'path',
+        default=os.path.join(PROJ_ROOT, 'xapian_index')
+    )
+elif search_engine == 'whoosh':
+    HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
+        'search',
+        'path',
+        default=os.path.join(PROJ_ROOT, 'whoosh_index')
+    )
+elif search_engine in (
+        'es7',
+        'es',
+        'elasticsearch7',
+        'elasticsearch',
+        'elastic',
+        'elastic7',
+        'solr'
+):
+    HAYSTACK_CONNECTIONS['default']['URL'] = config.get(
+        'search',
+        'url'
+    )

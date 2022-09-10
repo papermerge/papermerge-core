@@ -16,7 +16,7 @@ SEARCH_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
 
 
-def rebuild_elasticsearch_index():
+def rebuild_index():
     search_backend = connections["default"].get_backend()
     search_backend.clear()
     index1 = UnifiedIndex().get_index(Document)
@@ -38,7 +38,7 @@ class SearchViewVeryBasicTestCase(TestCase):
         self.media = Path(TEST_DIR_ABS_PATH) / 'media'
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
-        rebuild_elasticsearch_index()
+        rebuild_index()
 
     def test_search_empty_string_search(self):
         """
@@ -105,7 +105,7 @@ class SearchFolderTestCase(TestCase):
             user=self.user,
             parent=self.user.home_folder
         )
-        rebuild_elasticsearch_index()
+        rebuild_index()
 
     def test_invoices_folder_is_searchable_with_exact_match(self):
         """
@@ -161,7 +161,7 @@ class SearchDocumentTestCase(TestCase):
             io.StringIO('I am page number one'),
             io.StringIO('I am page number two')
         ])
-        rebuild_elasticsearch_index()
+        rebuild_index()
 
     def test_document_search_by_text(self):
         """
@@ -220,7 +220,7 @@ class SearchAfterMoveToFolder(TestCase):
             io.StringIO('cat'),
             io.StringIO('fish')
         ])
-        rebuild_elasticsearch_index()
+        rebuild_index()
 
     def test_documents_are_searchable_after_move_to_folder_extraction(self):
         response = self.client.get(
@@ -300,7 +300,7 @@ class SearchByTags(TestCase):
             parent=self.user.home_folder
         )
 
-        rebuild_elasticsearch_index()
+        rebuild_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'tag1'}
@@ -343,7 +343,7 @@ class SearchByTags(TestCase):
             ['apple'],
             tag_kwargs={"user": self.user}
         )
-        rebuild_elasticsearch_index()
+        rebuild_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'apple,fruits'}
@@ -384,7 +384,7 @@ class SearchByTags(TestCase):
             ['apple'],
             tag_kwargs={"user": self.user}
         )
-        rebuild_elasticsearch_index()
+        rebuild_index()
         response = self.client.get(
             reverse('search'),
             {'tags': 'apple,fruits', 'tags_op': 'any'}

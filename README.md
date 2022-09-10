@@ -15,7 +15,6 @@ Technically speaking, it contains following Django apps:
   [Whoosh](https://whoosh.readthedocs.io/en/latest/intro.html), [Elasticsearch](https://github.com/elastic/elasticsearch),
   [Solr](https://solr.apache.org/).
 
-This package is intended to be part of Django project [like this one](https://github.com/ciur/papermerge/) for example.
 
 ## What is Papermerge?
 

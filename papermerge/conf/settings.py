@@ -19,9 +19,6 @@ ALLOWED_HOSTS = config.get(
 redis_host = config.get('redis', 'host', default='127.0.0.1')
 redis_port = config.get('redis', 'port', default=6379)
 
-es_hosts = config.get('elasticsearch', 'hosts', default=None)
-es_port = config.get('elasticsearch', 'port', default=None)
-
 CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json']
@@ -45,17 +42,6 @@ DEBUG = config.get('main', 'debug', False)
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
-if es_hosts and es_port:
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': config.get(
-                'elasticsearch',
-                'hosts',
-                default=f"{es_hosts}:{es_port}"
-            )
-        },
-    }
 
 # Custom signal processor handles connections errors (to elasticsearch)
 # and reports them as warnings. This way, even when no connection to ES
@@ -345,12 +331,25 @@ SPECTACULAR_SETTINGS = {
     'APPEND_COMPONENTS': JSONAPI_COMPONENTS
 }
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
-        'INDEX_NAME': 'haystack',
-    },
+SEARCH_ENGINES_MAP = {
+    'elastic': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elastic7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elasticsearch7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'elasticsearch': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'es7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'es': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
+    'solr': 'haystack.backends.solr_backend.SolrEngine',
+    'whoosh': 'haystack.backends.whoosh_backend.WhooshEngine',
+    'xapian': 'xapian_backend.XapianEngine',
 }
 
 HAYSTACK_DOCUMENT_FIELD = 'indexed_content'
+
+search_engine = config.get('search', 'engine', default='xapian')
+
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': SEARCH_ENGINES_MAP[search_engine],
+    },
+}

@@ -38,8 +38,10 @@ daphne = "^3.0.2"
 django-rest-knox = "^4.2.0"
 drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
-django-haystack = {git = "https://github.com/papermerge/django-haystack.git"}
 elasticsearch = ">=7,<8"
+django-haystack = "^3.2.1"
+xapian-haystack = "^3.0.1"
+Whoosh = "^2.7.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -62,10 +64,12 @@ test-co = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest"
 test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings
 test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/"
-test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest"
-test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest tests/search/ --disable-warnings"
+test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest"
+test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest tests/search/ --disable-warnings"
 # include warnings
-test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.settings python -m pytest tests/search/"
+test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.whoosh_settings python -m pytest tests/search/  --disable-warnings"
+test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings python -m pytest tests/search/ --disable-warnings"
+
 
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only

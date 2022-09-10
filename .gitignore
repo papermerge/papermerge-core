@@ -38,3 +38,5 @@ queue/
 celerybeat-schedule
 launch.json
 .vscode
+xapian_index
+whoosh_index

@@ -74,14 +74,6 @@ class SearchView(RequireAuthMixin, GenericAPIView):
         if tags_op not in (TAGS_OP_ALL, TAGS_OP_ANY):
             tags_op = TAGS_OP_ALL
 
-        if query_text != '*':
-            by_title = SQ(title__contains=query_text.lower()) | SQ(
-                title=query_text.lower()
-            )
-        else:
-            by_title = SQ(title='*')
-
-        by_content = SQ(last_version_text=query_text)
         by_user = SQ(user=request.user)
 
         if query_tags:
@@ -94,15 +86,21 @@ class SearchView(RequireAuthMixin, GenericAPIView):
                     sq = sq | SQ(tags__contain=name)
                 by_tags = sq
         else:
-            by_tags = SQ(tags='*')
+            by_tags = None
 
         query_all = SearchQuerySet().filter(
             by_user
-        ).filter(
-            by_content | by_title
-        ).filter(
-            by_tags
         )
+        if by_tags:
+            query_all = query_all.filter(by_tags)
+
+        if query_text != '*':
+            by_title = SQ(title__contains=query_text.lower()) | SQ(
+                title=query_text.lower()
+            )
+            by_content = SQ(last_version_text=query_text)
+            query_all = query_all.filter(by_content | by_title)
+
         serializer = SearchResultSerializer(query_all, many=True)
 
         return Response(serializer.data)

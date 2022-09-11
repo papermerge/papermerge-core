@@ -353,3 +353,5 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': SEARCH_ENGINES_MAP[search_engine],
     },
 }
+
+HAYSTACK_SIGNAL_PROCESSOR = 'papermerge.search.signals.SignalProcessor'

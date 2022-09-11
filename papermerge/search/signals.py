@@ -4,7 +4,7 @@ from haystack import signals
 from papermerge.core.models import DocumentVersion, Document, Folder
 
 
-class UserOnlySignalProcessor(signals.BaseSignalProcessor):
+class SignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
         for klass in (DocumentVersion, Document, Folder):
             models.signals.post_save.connect(self.handle_save, sender=klass)

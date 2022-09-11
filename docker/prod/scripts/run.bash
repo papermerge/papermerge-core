@@ -43,6 +43,11 @@ exec_migrate() {
   $MANAGE migrate --no-input
 }
 
+exec_update_index() {
+  # Create/Update search index
+  $MANAGE update_index
+}
+
 exec_createsuperuser() {
   # user envrironment variables:
   #   (1) DJANGO_SUPERUSER_USERNAME
@@ -66,6 +71,7 @@ exec_init() {
   exec_collectstatic
   exec_migrate
   exec_createsuperuser
+  exec_update_index
 }
 
 case $CMD in

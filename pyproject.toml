@@ -40,7 +40,7 @@ drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
 elasticsearch = ">=7,<8"
 django-haystack = "^3.2.1"
-xapian-haystack = "^3.0.1"
+xapian-haystack = { git = "https://github.com/papermerge/xapian-haystack.git", rev = "c59cb7f" }
 Whoosh = "^2.7.4"
 
 [tool.poetry.dev-dependencies]
@@ -59,7 +59,7 @@ DJANGO_SETTINGS_MODULE="tests.config.settings"
 django_find_project = false
 
 [tool.taskipy.tasks]
-test = "task test-core && task test-search"
+test = "task test-core && task test-search-w && task test-search"
 test-co = "DJANGO_SETTINGS_MODULE=tests.config.core_settings python -m pytest"
 test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings

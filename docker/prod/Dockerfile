@@ -1,4 +1,4 @@
-FROM python:3.9-alpine as build
+FROM python:3.9 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
 ENV IN_DOCKER=1

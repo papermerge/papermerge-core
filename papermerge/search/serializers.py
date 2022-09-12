@@ -8,11 +8,7 @@ class SearchResultSerializer(serializers.Serializer):
     text = serializers.CharField(required=False, default='')
     title = serializers.CharField()
     tags = ColoredTagListSerializerField(required=False)
-    highlight = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        default=['']
-    )
+    highlight = serializers.CharField()
     breadcrumb = serializers.ListField(
         child=serializers.CharField()
     )

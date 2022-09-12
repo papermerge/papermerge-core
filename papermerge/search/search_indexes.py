@@ -10,6 +10,7 @@ class DocumentIndex(indexes.SearchIndex, indexes.Indexable):
     last_version_text = indexes.CharField()
     text = indexes.CharField()  # alias for `last_version_text`
     tags = indexes.MultiValueField()
+    highlight = indexes.CharField()
     breadcrumb = indexes.MultiValueField()
     node_type = indexes.CharField()
 

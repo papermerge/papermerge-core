@@ -6,9 +6,9 @@ x-backend: &backend # yaml anchor definition
   depends_on:
     - db
     - redis
-    - es
   volumes:
     - media_root:/opt/media
+    - xapian_index:/app/xapian_index
   environment:
     # PAPERMERGE__<section>__<variable>
     - PAPERMERGE__MAIN__SECRET_KEY=${SECRET_KEY}
@@ -20,8 +20,7 @@ x-backend: &backend # yaml anchor definition
     - PAPERMERGE__DATABASE__HOST=${DB_HOST}
     - PAPERMERGE__REDIS__HOST=${REDIS_HOST}
     - PAPERMERGE__REDIS__PORT=${REDIS_PORT}
-    - PAPERMERGE__ELASTICSEARCH__HOSTS=${ES_HOSTS}
-    - PAPERMERGE__ELASTICSEARCH__PORT=${ES_PORT}
+    - PAPERMERGE__SEARCH__PATH=/app/xapian_index
     - DJANGO_SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
     - DJANGO_SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
     - DJANGO_SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
@@ -31,6 +30,6 @@ services:
     <<: *backend
     ports:
       - "8000:8000"
-
 volumes:
   media_root:
+  xapian_index:

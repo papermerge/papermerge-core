@@ -1,21 +1,23 @@
 import magic
 
-from django.views.generic.detail import DetailView
+from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
+
 from django.http import (
     Http404,
     HttpResponse
 )
 
 from papermerge.core.models import DocumentVersion
+from .mixins import RequireAuthMixin
 
 
-class DocumentVersionsDownloadView(DetailView):
+class DocumentVersionsDownloadView(RequireAuthMixin, APIView):
 
-    model = DocumentVersion
+    def get(self, *args, **kwargs):
+        doc_ver = self.get_object()
 
-    def render_to_response(self, context, **response_kwargs):
-
-        file_abs_path = self.object.abs_file_path()
+        file_abs_path = doc_ver.abs_file_path()
 
         mime_type = magic.from_file(file_abs_path, mime=True)
         try:
@@ -27,8 +29,17 @@ class DocumentVersionsDownloadView(DetailView):
             file_handle.read(),
             content_type=mime_type
         )
-        disposition = "attachment; filename=%s" % self.object.document.title
+        disposition = "attachment; filename=%s" % doc_ver.document.title
         resp['Content-Disposition'] = disposition
         file_handle.close()
 
         return resp
+
+    def get_object(self):
+        doc_ver = DocumentVersion.objects.get(
+            pk=self.kwargs['pk']
+        )
+        if doc_ver.document.user != self.request.user:
+            raise PermissionDenied
+
+        return doc_ver

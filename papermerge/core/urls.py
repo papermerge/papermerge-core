@@ -41,6 +41,7 @@ urlpatterns = [
     path(
         'document-versions/<uuid:pk>/download/',
         views.DocumentVersionsDownloadView.as_view(),
+        name='download-document-version'
     ),
     path(
         'users/<uuid:pk>/change-password/',

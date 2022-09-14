@@ -1,7 +1,20 @@
 # Changelog
 
 
-## [2.1.0] - work in progress
+## 2.1.0b4 - Work in progress
+
+### Changed
+
+ - Security [issue#57 IDOR](https://github.com/papermerge/papermerge-core/issues/57) fixed
+
+## [2.1.0b2] - 2022-09-12
+
+### Changed
+
+ - Pluggable search engine backends (elasticsearch, solr, xapia, whoosh)
+ - Xapian search engine is set by default
+
+## [2.1.0b1] - 2022-08-28
 
 ### Added
 
@@ -11,10 +24,15 @@
 - [OCRmyPDF](https://github.com/jbarlow83/OCRmyPDF) + [pikepdf](https://github.com/pikepdf/pikepdf) as PDF management utilities
 - Websocket notifications (via django channnels)
 - For IDs use UUIDs instead of integer sequence of numbers
+- Real document versioning (document version is now separate db model)
+- Documents merging
+- Page rotation
 
 ### Changed
 
 - UI was offloaded to newly created [ember app]https://github.com/papermerge/papermerge.js)
+- JS/HTML/CSS was extracted into separate Frontend application
+- SMTP/Local File system importers were extracted from the core
 
 ### Removed
 

@@ -39,16 +39,25 @@ elif search_engine == 'whoosh':
         'path',
         default=os.path.join(PROJ_ROOT, 'whoosh_index')
     )
+elif search_engine == 'solr':
+    HAYSTACK_CONNECTIONS['default']['URL'] = config.get(
+        'search',
+        'url'
+    )
 elif search_engine in (
         'es7',
         'es',
         'elasticsearch7',
         'elasticsearch',
         'elastic',
-        'elastic7',
-        'solr'
+        'elastic7'
 ):
     HAYSTACK_CONNECTIONS['default']['URL'] = config.get(
         'search',
         'url'
+    )
+    HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = config.get(
+        'search',
+        'index'
+        default='papermerge'
     )

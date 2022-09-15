@@ -58,6 +58,6 @@ elif search_engine in (
     )
     HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = config.get(
         'search',
-        'index'
+        'index_name',
         default='papermerge'
     )

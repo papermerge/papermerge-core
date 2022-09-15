@@ -159,7 +159,7 @@ paths:
       security:
       - Token Authentication: []
       responses:
-        '200':
+        '201':
           description: No response body
   /api/documents/{id}/:
     get:

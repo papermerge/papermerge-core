@@ -7,6 +7,7 @@ from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import abs_path
+from papermerge.core.utils import clock
 
 from .diff import Diff
 from .kvstore import KVCompPage, KVPage, KVStorePage
@@ -293,6 +294,7 @@ class Page(models.Model):
 
         return OCR_STATUS_UNKNOWN
 
+    @clock
     def generate_img(self):
         doc_file_path = self.document_version.document_path
         # extract page number preview from the document file
@@ -321,6 +323,7 @@ class Page(models.Model):
         # Will create jpg image without '_ocr' suffix
         return pdfimage.extract_to(fileprefix=abs_file_prefix)
 
+    @clock
     def get_jpeg(self):
         jpeg_abs_path = abs_path(self.page_path.jpg_url)
         if not os.path.exists(jpeg_abs_path):
@@ -336,6 +339,7 @@ class Page(models.Model):
 
         return data
 
+    @clock
     def get_svg(self):
         svg_abs_path = abs_path(
             self.page_path.svg_url

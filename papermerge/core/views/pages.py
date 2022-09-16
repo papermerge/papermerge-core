@@ -21,6 +21,7 @@ from papermerge.core.lib.utils import (
     get_reordered_list,
     annotate_page_data
 )
+from papermerge.core.utils import clock
 
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.serializers import (
@@ -92,6 +93,7 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
         """
         return self.retrieve(request, *args, **kwargs)
 
+    @clock
     def retrieve(self, request, *args, **kwargs):
         """Returns page as json, txt, jpeg or svg image
         """

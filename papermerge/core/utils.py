@@ -1,6 +1,7 @@
 import time
 import logging
 import re
+import functools
 from datetime import datetime
 
 from django.conf import settings
@@ -184,3 +185,27 @@ def namespaced(name):
         return f"{settings.PAPERMERGE_NAMESPACE}__{name}"
 
     return name
+
+
+def clock(func):
+    """
+    Logs time (in seconds) it take the decorated function to execute
+    """
+
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        t0 = time.perf_counter()
+
+        result = func(*args, **kwargs)
+
+        elapsed = time.perf_counter() - t0
+        name = func.__name__
+        arg_lst = [repr(arg) for arg in args]
+        arg_lst.extend(f'{k}={v!r}' for k, v in kwargs.items())
+        arg_str = ','.join(arg_lst)
+
+        logger.debug(f'{elapsed:0.6f}s {name} called with {arg_str}')
+
+        return result
+
+    return inner

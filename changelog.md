@@ -5,7 +5,8 @@
 
 ### Changed
 
- - Security [issue#57 IDOR](https://github.com/papermerge/papermerge-core/issues/57) fixed
+ - [Issue#478 fixed](https://github.com/ciur/papermerge/issues/478) - Add INDEX_NAME to HAYSTACK_CONNECTIONS for elasticsearch
+ - [Security issue#57](https://github.com/papermerge/papermerge-core/issues/57) IDOR vulnerability fixed
 
 ## [2.1.0b2] - 2022-09-12
 

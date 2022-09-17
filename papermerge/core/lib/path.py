@@ -79,6 +79,15 @@ class DocumentPath:
 
         return _path
 
+    @property
+    def dir_sidecars(self):
+        _path = (
+            f"{AUX_DIR_SIDECARS}/user_{self.user_id}/"
+            f"document_{self.document_id}/"
+        )
+
+        return _path
+
     def dirname_sidecars(self, version=None):
         if version is None:
             version = self.version

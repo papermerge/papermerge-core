@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def delete_user_data(user_id):
+    """Delete ALL associated user data (invoked when user is deleted)"""
     logger.debug(f'Deleting user {user_id} storage data')
     storage = get_storage_instance()
     storage.delete_user_data(user_id=user_id)

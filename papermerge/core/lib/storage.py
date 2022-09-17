@@ -140,7 +140,7 @@ class Storage:
         # where OCRed information and generated thumbnails
         # are stored
         abs_dirname_sidecars = self.path(
-            doc_path.dirname_sidecars()
+            doc_path.dir_sidecars
         )
         # Before recursively deleting everything in folder
         # double check that there are only

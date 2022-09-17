@@ -60,7 +60,7 @@ def delete_files(sender, instance: Document, **kwargs):
 
 @receiver(post_delete, sender=User)
 def delete_user_data(sender, instance, **kwargs):
-    # Deletes associated user folder under media root
+    """Deletes associated user folder(s) under media root"""
     delete_user_data_task.delay(str(instance.pk))
 
 

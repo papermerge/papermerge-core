@@ -4,7 +4,7 @@ import shutil
 from os import listdir
 from os.path import isdir, join
 
-from .path import DocumentPath, PagePath
+from .path import DocumentPath, PagePath, AUX_DIR_SIDECARS, AUX_DIR_DOCS
 from .utils import safe_to_delete
 
 logger = logging.getLogger(__name__)
@@ -33,11 +33,11 @@ class Storage:
 
     def delete_user_data(self, user_id: str):
         folder1_to_delete = os.path.join(
-            self.abspath("docs"),
+            self.abspath(AUX_DIR_DOCS),
             f'user_{user_id}'
         )
         folder2_to_delete = os.path.join(
-            self.abspath("sidecars"),
+            self.abspath(AUX_DIR_SIDECARS),
             f'user_{user_id}'
         )
 

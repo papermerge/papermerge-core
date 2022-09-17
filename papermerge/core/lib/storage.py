@@ -4,7 +4,7 @@ import shutil
 from os import listdir
 from os.path import isdir, join
 
-from .path import DocumentPath, PagePath
+from .path import DocumentPath, PagePath, AUX_DIR_SIDECARS, AUX_DIR_DOCS
 from .utils import safe_to_delete
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,30 @@ class Storage:
 
     def download(self, doc_path_url, **kwargs):
         pass
+
+    def delete_user_data(self, user_id: str):
+        folder1_to_delete = os.path.join(
+            self.abspath(AUX_DIR_DOCS),
+            f'user_{user_id}'
+        )
+        folder2_to_delete = os.path.join(
+            self.abspath(AUX_DIR_SIDECARS),
+            f'user_{user_id}'
+        )
+
+        self.safe_delete_folder(folder1_to_delete)
+        self.safe_delete_folder(folder2_to_delete)
+
+    def safe_delete_folder(self, abs_path_to_folder_to_delete: str):
+        logger.debug(
+            f'Safely deleting content of {abs_path_to_folder_to_delete}'
+        )
+        if safe_to_delete(
+            abs_path_to_folder_to_delete
+        ):
+            shutil.rmtree(abs_path_to_folder_to_delete)
+            if os.path.exists(abs_path_to_folder_to_delete):
+                os.rmdir(abs_path_to_folder_to_delete)
 
     def make_sure_path_exists(self, filepath):
         logger.debug(f"make_sure_path_exists {filepath}")
@@ -116,7 +140,7 @@ class Storage:
         # where OCRed information and generated thumbnails
         # are stored
         abs_dirname_sidecars = self.path(
-            doc_path.dirname_sidecars()
+            doc_path.dir_sidecars
         )
         # Before recursively deleting everything in folder
         # double check that there are only

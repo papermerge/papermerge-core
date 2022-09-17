@@ -61,7 +61,7 @@ class BaseTreeNode(PolymorphicMPTTModel):
 
     parent = PolymorphicTreeForeignKey(
         'self',
-        models.CASCADE,
+        on_delete=models.CASCADE,
         blank=True,
         null=True,
         related_name='children',
@@ -81,7 +81,10 @@ class BaseTreeNode(PolymorphicMPTTModel):
         default='deu'
     )
 
-    user = models.ForeignKey('User', models.CASCADE)
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True

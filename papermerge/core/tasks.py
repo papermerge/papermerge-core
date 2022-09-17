@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from celery import shared_task
 from papermerge.core.ocr.document import ocr_document
-from papermerge.core.storage import abs_path
+from papermerge.core.storage import abs_path, get_storage_instance
 
 from .models import (
     Document,
@@ -16,6 +16,13 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task
+def delete_user_data(user_id):
+    logger.debug(f'Deleting user {user_id} storage data')
+    storage = get_storage_instance()
+    storage.delete_user_data(user_id=user_id)
 
 
 @shared_task(acks_late=True, reject_on_worker_lost=True)

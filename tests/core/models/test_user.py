@@ -70,3 +70,12 @@ class TestUserModel(TestCase):
         actual_perms = set(user.perm_codenames)
 
         assert expected_perms == actual_perms
+
+    def test_user_can_be_deleted_even_if_he_has_associated_documents(self):
+        """
+        Makes sure that user model can be deleted if it has associated
+        documents (i.e. user has some documents associated)
+        """
+        user = baker.make('core.user')
+        baker.make('core.Document', user=user)
+        user.delete()

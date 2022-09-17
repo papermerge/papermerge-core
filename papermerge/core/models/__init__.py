@@ -106,6 +106,10 @@ class User(AbstractUser):
         # remove all duplicates
         return list(set(result))
 
+    def delete(self, using=None, keep_parents=False):
+        Document.objects.filter(user=self).delete()
+        super().delete(using=using, keep_parents=keep_parents)
+
 
 __all__ = [
     'User',

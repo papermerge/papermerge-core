@@ -23,6 +23,7 @@ from papermerge.core.models import (
     User,
 )
 from papermerge.core.storage import get_storage_instance
+from .tasks import delete_user_data as delete_user_data_task
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,12 @@ def delete_files(sender, instance: Document, **kwargs):
                 f"Error deleting associated file for document.pk={instance.pk}"
                 f" {error}"
             )
+
+
+@receiver(post_delete, sender=User)
+def delete_user_data(sender, instance, **kwargs):
+    # Deletes associated user folder under media root
+    delete_user_data_task.delay(str(instance.pk))
 
 
 @receiver(post_save, sender=Document)
@@ -105,6 +112,12 @@ def if_inbox_then_refresh(sender, instance, **kwargs):
     """
     # Folder or Document instance was deleted/moved from//to user's Inbox folder
     try:
+        instance.refresh_from_db()
+    except (Document.DoesNotExist, Folder.DoesNotExist):
+        logger.warning('Too late - Document/Folder was already deleted')
+        return
+
+    try:
         if instance.parent and instance.parent.title == Folder.INBOX_TITLE:
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
@@ -112,7 +125,7 @@ def if_inbox_then_refresh(sender, instance, **kwargs):
                 {"type": "inbox.refresh", "user_id": str(instance.user.pk)}
             )
     except Exception as ex:
-        logger.error(ex, exc_info=True)
+        logger.warning(ex, exc_info=True)
 
 
 def get_channel_data(task_name, type):

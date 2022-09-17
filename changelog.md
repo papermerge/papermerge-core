@@ -14,7 +14,7 @@
 
 ### Changed
 
- - Pluggable search engine backends (elasticsearch, solr, xapia, whoosh)
+ - Pluggable search engine backends (elasticsearch, solr, xapian, whoosh)
  - Xapian search engine is set by default
 
 ## [2.1.0b1] - 2022-08-28
@@ -23,9 +23,9 @@
 
 - REST API
 - Download version with OCRed Text
-- Enable/Disabled OCR for certain documents (a.k.a skip OCR for some docs)
+- Enable/Disabled OCR for certain documents (a.k.a. skip OCR for some docs)
 - [OCRmyPDF](https://github.com/jbarlow83/OCRmyPDF) + [pikepdf](https://github.com/pikepdf/pikepdf) as PDF management utilities
-- Websocket notifications (via django channnels)
+- Websocket notifications (via django channels)
 - For IDs use UUIDs instead of integer sequence of numbers
 - Real document versioning (document version is now separate db model)
 - Documents merging
@@ -66,7 +66,7 @@
 
 ## [2.0.0.rc35] -  2021-02-01
 
-Papermerge-Core is was extracted from
+Papermerge-Core was extracted from
  [PapermergeDMS](https://github.com/ciur/papermerge).
 
 

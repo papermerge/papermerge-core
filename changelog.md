@@ -5,8 +5,10 @@
 
 ### Changed
 
- - [Issue#478 fixed](https://github.com/ciur/papermerge/issues/478) - Add INDEX_NAME to HAYSTACK_CONNECTIONS for elasticsearch
- - [Security issue#57](https://github.com/papermerge/papermerge-core/issues/57) IDOR vulnerability fixed
+ - bugfix: Correctly delete user data on document delete (and/or on user delete) [issue#485](https://github.com/ciur/papermerge/issues/485)
+   and [issue#484](https://github.com/ciur/papermerge/issues/484)
+ - bugfix: [issue#478](https://github.com/ciur/papermerge/issues/478) - Add INDEX_NAME to HAYSTACK_CONNECTIONS for elasticsearch
+ - security: [issue#57](https://github.com/papermerge/papermerge-core/issues/57) IDOR vulnerability fixed
 
 ## [2.1.0b2] - 2022-09-12
 

@@ -64,21 +64,6 @@ STATIC_URL = config.get(
     default='/static/'
 )
 
-PAPERMERGE_OCR_DEFAULT_LANGUAGE = config.get(
-    'ocr',
-    'default_language',
-    default='deu'
-)
-
-PAPERMERGE_OCR_LANGUAGES = config.get(
-    'ocr',
-    'language',
-    default={
-        'deu': 'Deutsch',
-        'eng': 'English',
-    }
-)
-
 PAPERMERGE_METADATA_DATE_FORMATS = [
     'dd.mm.yy',
     'dd.mm.yyyy',

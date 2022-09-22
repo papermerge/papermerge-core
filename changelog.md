@@ -1,7 +1,10 @@
 # Changelog
 
+## [2.1.0b5] - 2022-09-22
 
-## 2.1.0b4 - Work in progress
+- bugfix: read OCR language preferences correctly. See [issue#75](https://github.com/papermerge/papermerge-core/issues/75)
+
+## [2.1.0b4] - 2022-09-17
 
 ### Changed
 

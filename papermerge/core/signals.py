@@ -1,5 +1,6 @@
 import logging
 
+from kombu.exceptions import OperationalError
 from channels.layers import get_channel_layer
 from pathlib import Path
 from asgiref.sync import async_to_sync
@@ -16,14 +17,17 @@ from celery.signals import (
 
 from django.dispatch import receiver
 from django.conf import settings
-
 from papermerge.core.models import (
     Document,
+    DocumentVersion,
     Folder,
     User,
 )
 from papermerge.core.storage import get_storage_instance
 from .tasks import delete_user_data as delete_user_data_task
+from .tasks import ocr_document_task, post_ocr_document_task
+from .signal_definitions import document_post_upload
+
 
 logger = logging.getLogger(__name__)
 
@@ -218,3 +222,57 @@ def worker_shutdown(**_):
     for file in (HEARTBEAT_FILE, READINESS_FILE):
         if file.is_file():
             file.unlink()
+
+
+@receiver(document_post_upload, sender=Document)
+def receiver_document_post_upload(
+    sender,
+    document: Document,
+    document_version: DocumentVersion,
+    **_
+):
+    """
+    Triggers document OCR if automatic OCR is on.
+
+    Arguments:
+        document - instance of associated document model
+        document_version - instance of newly created document version
+    """
+    doc = document
+    doc_ver = document_version
+    user = doc.user
+
+    logger.debug(
+        "document_post_upload"
+        f" [doc.id={doc.id}]"
+        f" [doc_version.number={doc_ver.number}]"
+        f" [doc_version_id={doc_ver.id}]"
+        f" [user.id={user.id}]"
+    )
+
+    user_settings = user.preferences
+    namespace = getattr(get_storage_instance(), 'namespace', None)
+
+    if user_settings['ocr__trigger'] == 'auto':
+        try:
+            ocr_document_task.apply_async(
+                kwargs={
+                    'document_id': str(doc.id),
+                    'lang': doc.lang,
+                    'namespace': namespace,
+                    'user_id': str(user.id)
+                },
+                link=[
+                    post_ocr_document_task.s(namespace),
+                ]
+            )
+        except OperationalError:
+            # If redis service is not available then:
+            # - request is accepted
+            # - document is uploaded
+            # - warning is logged
+            # - response includes exception message text
+            logger.warning(
+                "Operation Error while creating the task",
+                exc_info=True
+            )

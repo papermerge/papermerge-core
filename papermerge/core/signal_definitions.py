@@ -1,80 +1,12 @@
 from django.dispatch import Signal
 
-# signals sent by the worker
-# have sender set to ``papermerge.core.signals_deginitions.WORKER``
-WORKER = "worker"
-
 """
-    providing_args=[
-    "user_id",
-    "level",
-    "message",
-    "document_id",
-    "page_num",
-    # text against which matching is performed
-    # i.e. extracted text of the page
-    "text",
-    "namespace"
-]
+Sent immediately after document upload complete.
+Contains two important arguments:
+    document - model instance of the document associated with upload
+    document_version - model instance of newly created document version
 """
-automates_matching = Signal()
-
-# sent by the worker
-# after ocr of the page is complete i.e.
-# when both .txt file and .hocr files are available
-"""
-    providing_args=[
-        "user_id",
-        "level",
-        "message",
-        "document_id",
-        "page_num",
-        "namespace",
-        # status is a string: started, complete
-        "status"
-    ]
-"""
-page_ocr = Signal()
-
-# sent by the worker before starting OCR
-"""
-    providing_args=[
-        "user_id",
-        "document_id",
-        "file_name",
-        "page_num",
-        "namespace",
-    ]
-"""
-pre_page_ocr = Signal()
-
-# sent by the worker after .txt file was extracted
-"""
-    providing_args=[
-        "user_id",
-        "document_id",
-        "file_name",
-        "page_num",
-        "namespace",
-        "text"
-    ]
-"""
-post_page_txt = Signal()
-
-# sent by the worker after .hocr file was extracted
-"""
-    providing_args=[
-        "user_id",
-        "document_id",
-        "fle_name",
-        "page_num",
-        "lang",
-        "namespace",
-        "step",
-        "hocr"
-    ]
-"""
-post_page_hocr = Signal()
+document_post_upload = Signal()
 
 # Sent by core.views.documents.create_folder
 # Sent AFTER one single folder was created

@@ -1,7 +1,5 @@
 import logging
 
-from kombu.exceptions import OperationalError
-
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer as rest_framework_JSONRenderer
 from rest_framework.parsers import JSONParser as rest_framework_JSONParser
@@ -21,12 +19,7 @@ from papermerge.core.serializers import (
     DocumentsMergeSerializer,
     DocumentVersionOcrTextSerializer
 )
-from papermerge.core.storage import get_storage_instance
 from papermerge.core.models import Document
-from papermerge.core.tasks import (
-    ocr_document_task,
-    post_ocr_document_task
-)
 from papermerge.core.exceptions import APIBadRequest
 
 from .mixins import RequireAuthMixin
@@ -54,8 +47,6 @@ class DocumentUploadView(RequireAuthMixin, APIView):
         'attachment; filename={file_name}'.
         """
         payload = request.data['file']
-        user_settings = request.user.preferences
-        namespace = getattr(get_storage_instance(), 'namespace', None)
 
         doc = Document.objects.get(pk=document_id)
         doc.upload(
@@ -63,31 +54,6 @@ class DocumentUploadView(RequireAuthMixin, APIView):
             file_path=payload.temporary_file_path(),
             file_name=file_name
         )
-
-        if user_settings['ocr__trigger'] == 'auto':
-            try:
-                ocr_document_task.apply_async(
-                    kwargs={
-                        'document_id': str(doc.id),
-                        'lang': doc.lang,
-                        'namespace': namespace,
-                        'user_id': str(request.user.id)
-                    },
-                    link=[
-                        post_ocr_document_task.s(namespace),
-                    ]
-                )
-            except OperationalError as ex:
-                # If redis service is not available then:
-                # - request is accepted
-                # - document is uploaded
-                # - warning is logged
-                # - response includes exception message text
-                logger.warning(
-                    "Operation Error while creating the task",
-                    exc_info=True
-                )
-                return Response(str(ex), status=status.HTTP_202_ACCEPTED)
 
         return Response({}, status=status.HTTP_201_CREATED)
 

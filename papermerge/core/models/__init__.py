@@ -3,7 +3,6 @@ import uuid
 from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 
-from papermerge.core.models.automate import Automate
 from papermerge.core.models.access import Access
 from papermerge.core.models.diff import Diff
 from papermerge.core.models.document import Document
@@ -109,23 +108,3 @@ class User(AbstractUser):
     def delete(self, using=None, keep_parents=False):
         Document.objects.filter(user=self).delete()
         super().delete(using=using, keep_parents=keep_parents)
-
-
-__all__ = [
-    'User',
-    'Folder',
-    'Document',
-    'DocumentVersion',
-    'Page',
-    'AbstractNode',
-    'BaseTreeNode',
-    'Access',
-    'Automate',
-    'Diff',
-    'KV',
-    'KVPage',
-    'KVStoreNode',
-    'KVStorePage',
-    'ColoredTag',
-    'Tag',
-]

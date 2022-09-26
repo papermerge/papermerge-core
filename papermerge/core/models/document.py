@@ -293,7 +293,6 @@ class Document(BaseTreeNode):
 
         document_post_upload.send(
             sender=self.__class__,
-            document=self,
             document_version=document_version
         )
 

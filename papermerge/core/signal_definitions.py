@@ -2,8 +2,7 @@ from django.dispatch import Signal
 
 """
 Sent immediately after document upload complete.
-Contains two important arguments:
-    document - model instance of the document associated with upload
+Arguments:
     document_version - model instance of newly created document version
 """
 document_post_upload = Signal()

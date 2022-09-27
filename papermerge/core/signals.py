@@ -25,7 +25,11 @@ from papermerge.core.models import (
 )
 from papermerge.core.storage import get_storage_instance
 from .tasks import delete_user_data as delete_user_data_task
-from .tasks import ocr_document_task, post_ocr_document_task
+from .tasks import (
+    ocr_document_task,
+    post_ocr_document_task,
+    generate_page_previews_task
+)
 from .signal_definitions import document_post_upload
 
 
@@ -225,9 +229,18 @@ def worker_shutdown(**_):
 
 
 @receiver(document_post_upload, sender=Document)
+def generate_page_previews(
+    sender,
+    document_version: DocumentVersion,
+    **_
+):
+    """Generates page previews"""
+    generate_page_previews_task.delay(str(document_version.id))
+
+
+@receiver(document_post_upload, sender=Document)
 def receiver_document_post_upload(
     sender,
-    document: Document,
     document_version: DocumentVersion,
     **_
 ):
@@ -238,8 +251,8 @@ def receiver_document_post_upload(
         document - instance of associated document model
         document_version - instance of newly created document version
     """
-    doc = document
     doc_ver = document_version
+    doc = document_version.document
     user = doc.user
 
     logger.debug(

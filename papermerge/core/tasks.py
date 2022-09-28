@@ -100,15 +100,8 @@ def post_ocr_document_task(document_id, namespace=None):
     # generate previews for newly created document version (which has OCR)
     doc = Document.objects.get(pk=document_id)
     doc_version = doc.versions.last()
-    doc_ver = doc_version
 
-    logger.debug(f"Generating previews doc_id={doc.id}")
-    for page in doc_version.pages.all():
-        logger.debug(
-            f"gen. preview: version_id={doc_ver.id} number={doc_ver.number}"
-            f" page_id={page.id} page_number={page.number}"
-        )
-        page.generate_img()
+    generate_page_previews_task.delay(str(doc_version.id))
 
     return document_id
 
@@ -126,6 +119,8 @@ def generate_page_previews_task(document_version_id):
             f" page_id={page.id} page_number={page.number}"
         )
         page.generate_img()
+
+    return document_version_id
 
 
 def increment_document_version(document_id, namespace=None):

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -40,7 +42,9 @@ class DownloadDocumentVersionOnlyOwner(TestCase):
         self.client_john = APIClient()
         self.client_john.force_authenticate(user=self.john)
 
-    def test_only_owner_can_download_document_version(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_only_owner_can_download_document_version(self, _1, _2):
         """
         Assert that if user is not the owner of the document he/she won't
         be able to download document versions

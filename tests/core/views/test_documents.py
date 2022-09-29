@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from unittest.mock import patch
 from pathlib import Path
 
 from django.test import TestCase
@@ -28,7 +29,9 @@ class DocumentUploadViewTestCase(TestCase):
         shutil.rmtree(self.media / 'docs', ignore_errors=True)
         shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
 
-    def test_document_upload_view(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_document_upload_view(self, _x, _y):
         doc = Document.objects.create_document(
             title="three-pages.pdf",
             lang="deu",
@@ -115,7 +118,9 @@ class DocumentViewTest(TestCase):
 
 class DocumentOcrTextViewTest(PapermergeTestCase):
 
-    def test_basic_get_document_ocr_text(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_basic_get_document_ocr_text(self, _x, _y):
         """
         Retrieve OCRed text from all pages of given document's latest version
         """
@@ -134,7 +139,9 @@ class DocumentOcrTextViewTest(PapermergeTestCase):
 
         assert response.data['text'] == 'S1 S2 S3'
 
-    def test_get_document_ocr_text_of_pages_2_and_3(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_get_document_ocr_text_of_pages_2_and_3(self, _x, _y):
         """
         Retrieve OCRed text from given pages of given document's latest version
 
@@ -164,7 +171,9 @@ class DocumentOcrTextViewTest(PapermergeTestCase):
 
         assert response.data['text'] == 'S2 S3'
 
-    def test_get_document_ocr_text_of_page_1(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_get_document_ocr_text_of_page_1(self, _x, _y):
         """
         Retrieve OCRed text from given pages of given document's latest version
 
@@ -191,7 +200,9 @@ class DocumentOcrTextViewTest(PapermergeTestCase):
 
         assert response.data['text'] == 'S1'
 
-    def test_get_document_junk_input(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_get_document_junk_input(self, _x, _y):
         """
         Make sure there are no exception on junk input
         """
@@ -217,7 +228,9 @@ class DocumentOcrTextViewTest(PapermergeTestCase):
 
         assert response.data['text'] == 'S1 S2 S3'
 
-    def test_get_document_ocr_text_filter_by_page_ids(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_get_document_ocr_text_filter_by_page_ids(self, _x, _y):
         """
         Retrieve OCRed text from given pages of given document's latest version
 

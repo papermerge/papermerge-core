@@ -55,7 +55,17 @@ class PageViewTestCase(TestCase):
 
         json_data = json.loads(response.content)
         assert json_data['data']['id'] == str(page.pk)
-        assert json_data['data']['attributes'] == {
+        all_attrs = json_data['data']['attributes']
+
+        assert set(all_attrs.keys()) == {'lang', 'number', 'text', 'svg_url',
+                                         'jpg_url'}
+
+        main_attrs = {
+            key: all_attrs[key] for key in all_attrs if key in (
+                'lang', 'number', 'text'
+            )
+        }
+        assert main_attrs == {
             'lang': 'deu',
             'number': 1,
             'text': 'Hello Page!'

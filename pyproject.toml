@@ -1,9 +1,42 @@
 [tool.poetry]
 name = "papermerge-core"
 version = "2.1.0b5"
-description = "Open source document management system designed for digital archives"
+description = "Open source document management system for digital archives"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
-license = "Apache 2.0 License"
+maintainers = ["Eugen Ciur <eugen@papermerge.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+homepage = "https://www.papermerge.com/"
+documentation = "https://docs.papermerge.io/"
+classifiers = [
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3"
+]
+keywords = [
+  "PDF",
+  "OCR",
+  "optical character recognition",
+  "PDF/A",
+  "scanning",
+  "dms",
+  "document-management",
+  "paperless",
+  "archives"
+]
+packages = [
+    { include = "papermerge/core" },
+    { include = "papermerge/conf" },
+    { include = "papermerge/notifications" },
+    { include = "papermerge/search" },
+]
+
+[project.urls]
+Tracker = "https://github.com/ciur/papermerge/issues"
+Source = "https://github.com/papermerge/papermerge-core"
 
 [tool.poetry.dependencies]
 python = ">=3.8, <=3.10.6"
@@ -69,13 +102,15 @@ test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings pytho
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.whoosh_settings python -m pytest tests/search/  --disable-warnings"
 test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings python -m pytest tests/search/ --disable-warnings"
-
-
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "./manage.py runserver"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true
+
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
+requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"

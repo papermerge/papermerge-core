@@ -107,10 +107,6 @@ lint = "pycodestyle papermerge/ tests/"
 worker = "celery -A config worker -c 5"
 server = "./manage.py runserver"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = true
-
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"

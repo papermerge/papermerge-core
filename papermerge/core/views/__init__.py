@@ -1,4 +1,3 @@
-from .automates import AutomatesViewSet
 from .content_types import ContentTypeRetrieve
 from .tags import TagsViewSet
 from .groups import GroupsViewSet
@@ -37,38 +36,3 @@ from .login import LoginView
 from .logout import LogoutView, LogoutAllView
 from .tokens import TokensViewSet
 from .version import VersionView
-
-__all__ = [
-    'AutomatesViewSet',
-    'ContentTypeRetrieve',
-    'CustomUserPreferencesViewSet',
-    'TagsViewSet',
-    'GroupsViewSet',
-    'PermissionsList',
-    'NodesViewSet',
-    'NodesMoveView',
-    'NodeTagsView',
-    'NodesDownloadView',
-    'DocumentUploadView',
-    'DocumentsMergeView',
-    'DocumentOcrTextView',
-    'DocumentVersionsDownloadView',
-    'DocumentDetailsViewSet',
-    'FoldersViewSet',
-    'InboxCountView',
-    'UsersViewSet',
-    'UserChangePassword',
-    'CurrentUserView',
-    'PageView',
-    'PagesView',
-    'PagesReorderView',
-    'PagesRotateView',
-    'PagesMoveToFolderView',
-    'PagesMoveToDocumentView',
-    'OCRView',
-    'LoginView',
-    'LogoutView',
-    'LogoutAllView',
-    'TokensViewSet',
-    'VersionView'
-]

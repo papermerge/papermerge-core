@@ -6,5 +6,5 @@ repos:
     - id: flake8
       args:
         - "--max-line-length=80"
-        - "--exclude=papermerge/core/migrations/*, docker/*, tests/config/*.py, papermerge/conf/settings.py"
+        - "--exclude=papermerge/core/migrations/*, docker/*, tests/config/*.py, papermerge/conf/settings.py, papermerge/core/serializers/__init__.py, papermerge/core/views/__init__.py, papermerge/core/models/__init__.py"
     - id: trailing-whitespace

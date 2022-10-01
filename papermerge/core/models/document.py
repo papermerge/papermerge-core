@@ -14,7 +14,7 @@ from polymorphic_tree.managers import (
 )
 
 from papermerge.core.lib.path import DocumentPath, PagePath
-
+from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import get_storage_instance, abs_path
 from .kvstore import KVCompNode, KVNode
 
@@ -290,6 +290,11 @@ class Document(BaseTreeNode):
         document_version.save()
         document_version.create_pages()
         pdf.close()
+
+        document_post_upload.send(
+            sender=self.__class__,
+            document_version=document_version
+        )
 
     def version_bump_from_pages(self, pages):
         """

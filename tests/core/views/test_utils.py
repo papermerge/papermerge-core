@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import itertools
 import pytest
 
@@ -146,7 +147,9 @@ class TestCollectTextStreams(TestCase):
 class TestReuseOCRdata(TestCase):
     """Tests for reuse_ocr_data"""
 
-    def test_reuse_ocr_data_1(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_reuse_ocr_data_1(self, _, _x):
         src_document = maker.document(
             "s3.pdf",
             user=self.user,
@@ -166,7 +169,9 @@ class TestReuseOCRdata(TestCase):
             src = source.pages.all()[index]
             _assert_same_ocr_data(src=src, dst=dst)
 
-    def test_reuse_ocr_data_2(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_reuse_ocr_data_2(self, _, _x):
         src_document = maker.document(
             "s3.pdf",
             user=self.user,
@@ -713,7 +718,10 @@ class TestReuseTextField(TestCase):
 
 class TestRemovePdfPages(TestCase):
     """Tests for remove_pdf_pages"""
-    def test_remove_pdf_pages_basic_1(self):
+
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_remove_pdf_pages_basic_1(self, _, _x):
         """Remove one page from the document version"""
         src_document = maker.document(
             "s3.pdf",
@@ -731,7 +739,9 @@ class TestRemovePdfPages(TestCase):
         content = pdf_content(src_new_version, clean=True)
         assert content == "S2 S3"
 
-    def test_remove_pdf_pages_basic_2(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_remove_pdf_pages_basic_2(self, _, _x):
         """Remove last two pages from the document version"""
         src_document = maker.document(
             "s3.pdf",
@@ -749,7 +759,9 @@ class TestRemovePdfPages(TestCase):
         content = pdf_content(src_new_version, clean=True)
         assert content == "S1"
 
-    def test_remove_pdf_pages_invalid_input(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_remove_pdf_pages_invalid_input(self, _, _x):
         """Junk page_numbers input"""
         src_document = maker.document(
             "s3.pdf",
@@ -776,7 +788,9 @@ class TestRemovePdfPages(TestCase):
 class TestInserPdfPagesUtilityFunction(TestCase):
     """Tests for insert_pdf_pages"""
 
-    def test_insert_pdf_pages_basic_1(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_insert_pdf_pages_basic_1(self, _, _x):
         """
         We test moving of one page from source document version to
         destination document version.
@@ -811,7 +825,9 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "S1 D1 D2 D3" == dst_new_content
 
-    def test_insert_pdf_pages_basic_2(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_insert_pdf_pages_basic_2(self, _, _x):
         """
         We test moving of two pages from source document version to
         destination document version.
@@ -846,7 +862,9 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "D1 S1 S3 D2 D3" == dst_new_content
 
-    def test_insert_pdf_pages_when_dst_old_is_None(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_insert_pdf_pages_when_dst_old_is_None(self, _, _x):
         """
         We test moving of two pages from source document version to
         destination document version with dst_old_version=None.
@@ -884,7 +902,9 @@ class TestInserPdfPagesUtilityFunction(TestCase):
 
 class TestUtils(TestCase):
 
-    def test_total_merge_of_one_page_documents(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_total_merge_of_one_page_documents(self, _, _x):
         # source document was not OCRed yet
         # source document has one page with text "Scan v2"
         src_document = maker.document(
@@ -922,7 +942,9 @@ class TestUtils(TestCase):
         assert second_version.pages.count() == 1
         assert "Scan v2" == pdf_content(second_version)
 
-    def test_partial_merge_scenario_1(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_partial_merge_scenario_1(self, _, _x):
         """
         In this scenario initially there are two documents:
         source:

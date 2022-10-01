@@ -1,6 +1,7 @@
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import patch
 
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
@@ -105,7 +106,9 @@ class TestDocumentModel(TestCase):
             doc.idified_title
         )
 
-    def test_upload_payload_to_zero_sized_document(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_upload_payload_to_zero_sized_document(self, _x, _y):
         """
         Upon creation document model has associated zero sized document_version
         i.e. document_version.size == 0.
@@ -143,7 +146,9 @@ class TestDocumentModel(TestCase):
 
         payload.close()
 
-    def test_version_bump_from_pages(self):
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_version_bump_from_pages(self, _1, _2):
         """
         Move two pages from source document to destination document
         """

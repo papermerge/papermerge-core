@@ -1,4 +1,3 @@
-from .automate import AutomateSerializer
 from .document import DocumentSerializer
 from .document import DocumentDetailsSerializer, DocumentsMergeSerializer
 from .document_version import (
@@ -36,38 +35,3 @@ from .token import (
     CreateTokenSerializer
 )
 from .version import VersionSerializer
-
-
-__all__ = [
-    'AutomateSerializer',
-    'CustomUserPreferenceSerializer',
-    'CreateTokenSerializer',
-    'ContentTypeSerializer',
-    'DocumentSerializer',
-    'DocumentDetailsSerializer',
-    'DocumentsMergeSerializer',
-    'DocumentVersionSerializer',
-    'DocumentVersionOcrTextSerializer',
-    'FolderSerializer',
-    'NodeSerializer',
-    'NodeMoveSerializer',
-    'NodesDownloadSerializer',
-    'NodeTagsSerializer',
-    'OcrSerializer',
-    'UserSerializer',
-    'GroupSerializer',
-    'TagSerializer',
-    'PasswordSerializer',
-    'PermissionSerializer',
-    'PageSerializer',
-    'PageDeleteSerializer',
-    'PagesReorderSerializer',
-    'PageReorderSerializer',
-    'PagesRotateSerializer',
-    'PageRotateSerializer',
-    'PagesMoveToFolderSerializer',
-    'PagesMoveToDocumentSerializer',
-    'TokenSerializer',
-    'InboxCountSerializer',
-    'VersionSerializer'
-]

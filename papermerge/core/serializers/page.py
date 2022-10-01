@@ -1,11 +1,15 @@
 from rest_framework import serializers as rest_serializers
 from rest_framework_json_api import serializers
-from papermerge.core.models import (
-    Page
-)
+
+from django.urls import reverse
+
+from papermerge.core.models import Page
 
 
 class PageSerializer(serializers.ModelSerializer):
+
+    svg_url = serializers.SerializerMethodField()
+    jpg_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Page
@@ -16,7 +20,15 @@ class PageSerializer(serializers.ModelSerializer):
             'text',
             'lang',
             'document_version',
+            'svg_url',
+            'jpg_url'
         )
+
+    def get_svg_url(self, obj):
+        return reverse('pages_page', args=[str(obj.pk)])
+
+    def get_jpg_url(self, obj):
+        return reverse('pages_page', args=[str(obj.pk)])
 
 
 class PageDeleteSerializer(rest_serializers.Serializer):

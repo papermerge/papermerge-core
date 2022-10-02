@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "2.1.0b6"
+version = "2.1.0b7"
 description = "Open source document management system for digital archives"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 maintainers = ["Eugen Ciur <eugen@papermerge.com>"]
@@ -73,7 +73,9 @@ drf-spectacular = "^0.22.0"
 drf-spectacular-sidecar = "^2022.3.21"
 elasticsearch = ">=7,<8"
 django-haystack = "^3.2.1"
-xapian-haystack = { git = "https://github.com/papermerge/xapian-haystack.git", rev = "c59cb7f" }
+# This is NOT a typo! It is indeed yapian-haystack instead of xapian-haystack.
+# For details see https://github.com/ciur/papermerge/issues/486
+yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
 Whoosh = "^2.7.4"
 
 [tool.poetry.dev-dependencies]

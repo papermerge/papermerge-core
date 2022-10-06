@@ -19,7 +19,10 @@ from .documents import (
     DocumentsMergeView,
     DocumentOcrTextView
 )
-from .document_versions import DocumentVersionsDownloadView
+from .document_versions import (
+    DocumentVersionsDownloadView,
+    DocumentVersionView
+)
 from .documents import DocumentDetailsViewSet
 from .folders import FoldersViewSet
 from .pages import (

@@ -1,9 +1,13 @@
+from django.urls import reverse
+
 from rest_framework_json_api import serializers
 from rest_framework import serializers as rest_serializers
 from papermerge.core.models import DocumentVersion
 
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
+
+    download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = DocumentVersion
@@ -18,7 +22,11 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
             'page_count',
             'short_description',
             'document',
+            'download_url'
         )
+
+    def get_download_url(self, obj):
+        return reverse('download-document-version', args=[str(obj.pk)])
 
 
 class DocumentVersionOcrTextSerializer(rest_serializers.Serializer):

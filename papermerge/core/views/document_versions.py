@@ -2,6 +2,7 @@ import magic
 
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import RetrieveAPIView
 
 from django.http import (
     Http404,
@@ -9,6 +10,7 @@ from django.http import (
 )
 
 from papermerge.core.models import DocumentVersion
+from papermerge.core.serializers import DocumentVersionSerializer
 from .mixins import RequireAuthMixin
 
 
@@ -43,3 +45,12 @@ class DocumentVersionsDownloadView(RequireAuthMixin, APIView):
             raise PermissionDenied
 
         return doc_ver
+
+
+class DocumentVersionView(RequireAuthMixin, RetrieveAPIView):
+    serializer_class = DocumentVersionSerializer
+
+    def get_queryset(self):
+        return DocumentVersion.objects.filter(
+            document__user=self.request.user
+        )

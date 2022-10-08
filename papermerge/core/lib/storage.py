@@ -228,6 +228,17 @@ class Storage:
 
         shutil.copy(src_svg, dst_svg)
 
+    def copy_page_preview(self, src: PagePath, dst: PagePath):
+        logger.debug(
+            f"copy_page_preview: src={src.preview_url} dst={dst.preview_url}"
+        )
+        src_preview = self.abspath(src.preview_url)
+        dst_preview = self.abspath(dst.preview_url)
+
+        self.make_sure_path_exists(self.abspath(dst.preview_url))
+
+        shutil.copy(src_preview, dst_preview)
+
     def copy_page(self, src: PagePath, dst: PagePath):
         """
         Copies page data from source folder/path to page destination folder/path
@@ -259,6 +270,11 @@ class Storage:
             self.copy_page_svg(src=src, dst=dst)
         else:
             logger.debug(f"svg does not exits {src.svg_url}")
+
+        if self.exists(src.preview_url):
+            self.copy_page_preview(src=src, dst=dst)
+        else:
+            logger.debug(f"preview does not exits {src.preview_url}")
 
     def reorder_pages(self, doc_path, new_order):
         """

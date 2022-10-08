@@ -38,6 +38,13 @@ from papermerge.core.renderers import (
     ImageSVGRenderer
 )
 from papermerge.core.exceptions import APIBadRequest
+from papermerge.core.signal_definitions import (
+    page_move_to_folder,
+    page_move_to_document,
+    page_rotate,
+    page_delete,
+    page_reorder
+)
 from .mixins import RequireAuthMixin
 from .utils import (
     remove_pdf_pages,
@@ -189,6 +196,11 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
             page_map=page_map
         )
 
+        page_delete.send(
+            sender=Page,
+            document_version=new_version
+        )
+
 
 class PagesView(RequireAuthMixin, GenericAPIView):
     serializer_class = PageDeleteSerializer
@@ -259,6 +271,11 @@ class PagesView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
+        page_delete.send(
+            sender=Page,
+            document_version=new_version
+        )
+
 
 class PagesReorderView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
@@ -323,6 +340,11 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             )
         )
 
+        page_reorder.send(
+            sender=Page,
+            document_version=new_version
+        )
+
 
 class PagesRotateView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
@@ -361,6 +383,8 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
             pages_data=annotate_page_data(pages, pages_data, 'angle')
         )
 
+        new_version.generate_previews()
+
         # page mapping is 1 to 1 as rotation does not
         # add/remove any page
         page_map = [
@@ -372,6 +396,11 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
             old_version=old_version,
             new_version=new_version,
             page_map=page_map
+        )
+
+        page_rotate.send(
+            sender=Page,
+            document_version=new_version
         )
 
 
@@ -460,6 +489,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 title_format=data.get('title_format', None)
             )
 
+        page_move_to_folder.send(
+            sender=Page,
+            document_version=src_new_version
+        )
+
     def move_to_folder_multi_paged(
             self,
             pages,
@@ -501,6 +535,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
+        page_move_to_folder.send(
+            sender=Page,
+            document_version=dst_version
+        )
+
     def move_to_folder_single_paged(
             self,
             pages,
@@ -537,6 +576,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 old_version=page.document_version,
                 new_version=doc_version,
                 page_map=[(1, page.number)]
+            )
+
+            page_move_to_folder.send(
+                sender=Page,
+                document_version=doc_version
             )
 
 
@@ -597,6 +641,10 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
                 src_old_version=src_old_version,
                 dst_new_version=dst_new_version
             )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=dst_new_version
+            )
         else:
             src_new_version = doc.version_bump(
                 page_count=src_old_version.pages.count() - pages_count,
@@ -611,6 +659,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
                 src_new_version=src_new_version,
                 dst_new_version=dst_new_version,
                 page_numbers=[p.number for p in pages.order_by('number')]
+            )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=src_new_version
+            )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=dst_new_version
             )
 
     def move_to_document(self, data):
@@ -685,4 +741,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_new_version=dst_new_version,
             position=position,
             page_numbers=[page.number for page in pages]
+        )
+
+        page_move_to_document.send(
+            sender=Page,
+            document_version=src_new_version
+        )
+
+        page_move_to_document.send(
+            sender=Page,
+            document_version=dst_new_version
         )

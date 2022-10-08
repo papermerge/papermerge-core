@@ -1,9 +1,13 @@
+import os
 import uuid
 import logging
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from papermerge.core.storage import abs_path
+
+from pdf2image import convert_from_path
+from pdf2image.generators import counter_generator
 
 from papermerge.core.lib.path import DocumentPath
 
@@ -77,6 +81,32 @@ class DocumentVersion(models.Model):
         return abs_path(
             self.document_path.url
         )
+
+    def generate_previews(self, page_number=None):
+        logger.debug('generate_previews BEGIN')
+        abs_dirname = abs_path(self.document_path.dirname_sidecars())
+
+        kwargs = {
+            'pdf_path': abs_path(self.document_path.url),
+            'output_folder':  abs_dirname,
+            'fmt': 'jpg',
+            'size': (900,),
+            'output_file': counter_generator(padding_goal=3)
+        }
+
+        # in case page_number not None - generate only specific
+        # page number's preview
+        if page_number:
+            kwargs['first_page'] = page_number
+            kwargs['last_page'] = page_number
+
+        os.makedirs(
+            abs_dirname,
+            exist_ok=True
+        )
+        # generates jpeg previews of PDF file using pdftoppm (poppler-utils)
+        convert_from_path(**kwargs)
+        logger.debug('generate_previews END')
 
     @property
     def is_archived(self):

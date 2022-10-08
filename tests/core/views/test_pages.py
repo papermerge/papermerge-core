@@ -71,7 +71,8 @@ class PageViewTestCase(TestCase):
             'text': 'Hello Page!'
         }
 
-    def test_page_view_in_svg_format(self):
+    @patch('papermerge.core.models.document_version.convert_from_path')
+    def test_page_view_in_svg_format(self, _):
         """
         GET /pages/{id}/
         Accept: image/svg+xml

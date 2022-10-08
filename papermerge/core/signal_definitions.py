@@ -16,6 +16,14 @@ Arguments:
 page_move_to_folder = Signal()
 
 
+"""
+Sent immediately after document's page(s) were rotated.
+Arguments:
+    document_version - model instance of newly created document version
+"""
+page_rotate = Signal()
+
+
 # Sent by core.views.documents.create_folder
 # Sent AFTER one single folder was created
 """

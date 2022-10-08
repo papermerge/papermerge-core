@@ -38,7 +38,10 @@ from papermerge.core.renderers import (
     ImageSVGRenderer
 )
 from papermerge.core.exceptions import APIBadRequest
-from papermerge.core.signal_definitions import page_move_to_folder
+from papermerge.core.signal_definitions import (
+    page_move_to_folder,
+    page_rotate
+)
 from .mixins import RequireAuthMixin
 from .utils import (
     remove_pdf_pages,
@@ -362,6 +365,8 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
             pages_data=annotate_page_data(pages, pages_data, 'angle')
         )
 
+        new_version.generate_previews()
+
         # page mapping is 1 to 1 as rotation does not
         # add/remove any page
         page_map = [
@@ -373,6 +378,11 @@ class PagesRotateView(RequireAuthMixin, GenericAPIView):
             old_version=old_version,
             new_version=new_version,
             page_map=page_map
+        )
+
+        page_rotate.send(
+            sender=Page,
+            document_version=new_version
         )
 
 

@@ -8,8 +8,6 @@ from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 
-from .diff import Diff
-from .kvstore import KVCompPage, KVPage, KVStorePage
 from .utils import (
     OCR_STATUS_SUCCEEDED,
     OCR_STATUS_UNKNOWN
@@ -75,103 +73,6 @@ class Page(models.Model):
 
     def __str__(self):
         return f"id={self.pk} number={self.number}"
-
-    @property
-    def kv(self):
-        return KVPage(instance=self)
-
-    @property
-    def kvcomp(self):
-        return KVCompPage(instance=self)
-
-    def _apply_diff_add(self, diff):
-
-        self.kv.apply_additions(
-            [
-                {
-                    'kv_inherited': True,
-                    'key': _model.key,
-                    'kv_format': _model.kv_format,
-                    'kv_type': _model.kv_type
-                }
-                for _model in diff
-            ]
-        )
-
-    def _apply_diff_update(self, diff, attr_updates):
-        updates = [{
-            'kv_inherited': True,
-            'key': _model.key,
-            'kv_format': _model.kv_format,
-            'kv_type': _model.kv_type,
-            'id': _model.id
-        } for _model in diff]
-
-        updates.extend(attr_updates)
-
-        self.kv.apply_updates(updates)
-
-    def _apply_diff_delete(self, diff):
-        pass
-
-    def apply_diff(self, diffs_list, attr_updates):
-
-        for diff in diffs_list:
-            if diff.is_add():
-                self._apply_diff_add(diff)
-            elif diff.is_update():
-                self._apply_diff_update(diff, attr_updates)
-            elif diff.is_delete():
-                self._apply_diff_delete(diff)
-            elif diff.is_replace():
-                # not applicable to page model
-                # replace is used in access permissions
-                # propagation
-                pass
-            else:
-                raise ValueError(
-                    f"Unexpected diff {diff} type"
-                )
-
-    def inherit_kv_from(self, document):
-        instances_set = []
-
-        for kvstore in document.kv.all():
-            instances_set.append(
-                KVStorePage(
-                    key=kvstore.key,
-                    kv_format=kvstore.kv_format,
-                    kv_type=kvstore.kv_type,
-                    value=kvstore.value,
-                    kv_inherited=True,
-                    page=self
-                )
-            )
-
-        diff = Diff(
-            operation=Diff.ADD,
-            instances_set=instances_set
-        )
-
-        self.propagate_changes(
-            diffs_set=[diff],
-        )
-
-    def propagate_changes(
-        self,
-        diffs_set,
-        apply_to_self=None,
-        attr_updates=[]
-    ):
-        """
-        apply_to_self argument does not make sense here.
-        apply_to_self argument is here to make this function
-        similar to node.propagate_changes.
-        """
-        self.apply_diff(
-            diffs_list=diffs_set,
-            attr_updates=attr_updates
-        )
 
     @property
     def is_archived(self):

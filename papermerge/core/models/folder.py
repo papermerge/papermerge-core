@@ -6,12 +6,6 @@ from polymorphic_tree.managers import (
     PolymorphicMPTTQuerySet
 )
 
-from papermerge.core.models.diff import Diff
-from papermerge.core.models.kvstore import (
-    KVCompNode,
-    KVNode,
-    KVStoreNode,
-)
 from papermerge.core.models.node import (
     BaseTreeNode,
     RELATED_NAME_FMT,
@@ -81,34 +75,6 @@ class Folder(BaseTreeNode):
             # this node was deleted by earlier recursive call
             # it is ok, just skip
             pass
-
-    @property
-    def kv(self):
-        return KVNode(instance=self)
-
-    @property
-    def kvcomp(self):
-        return KVCompNode(instance=self)
-
-    def inherit_kv_from(self, folder):
-        instances_set = []
-
-        for key in folder.kv.keys():
-            instances_set.append(
-                KVStoreNode(key=key, kv_inherited=True, node=self)
-            )
-
-        # if there is metadata
-        if len(instances_set) > 0:
-            diff = Diff(
-                operation=Diff.ADD,
-                instances_set=instances_set
-            )
-
-            self.propagate_changes(
-                diffs_set=[diff],
-                apply_to_self=True
-            )
 
     class Meta:
         verbose_name = _("Folder")

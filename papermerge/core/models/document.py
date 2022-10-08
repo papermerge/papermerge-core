@@ -16,10 +16,8 @@ from polymorphic_tree.managers import (
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import get_storage_instance, abs_path
-from .kvstore import KVCompNode, KVNode
 
 from .node import BaseTreeNode
-from .access import Access
 from .utils import (
     OCR_STATUS_SUCCEEDED,
     OCR_STATUS_UNKNOWN,
@@ -27,7 +25,6 @@ from .utils import (
 )
 from .page import Page
 from .document_version import DocumentVersion
-from .finder import default_parts_finder
 
 
 logger = logging.getLogger(__name__)
@@ -142,112 +139,6 @@ class Document(BaseTreeNode):
         ext = self.title.split('.')[-1]
 
         return f'{base_title}-{self.id}.{ext}'
-
-    def each_part(self, abstract_klasses):
-        """
-        Iterates through each INSTANCE of document parts which inherits
-        from given ``abstract_klasses``
-        """
-        model_klasses = []
-
-        for klass in abstract_klasses:
-            model_klasses.extend(default_parts_finder.find(klass))
-
-        for model_klass in model_klasses:
-            # if name is an attribute of a klass which inherits
-            # from AbstractDocument or AbstractNode...
-            try:
-                item = model_klass.objects.get(base_ptr=self)
-                yield item
-            except model_klass.DoesNotExist:
-                # Engineering assumption:
-                # There must be either 0 (zero) or 1 (one)
-                # instances of model_klass with base_ptr pointing
-                # to this document.
-                pass
-
-    def assign_kv_values(self, kv_dict):
-        """
-        Assignes kv_dict of key value to its metadata
-        and metadata of its pages.
-        """
-        logger.debug(
-            f"assign_key_values kv_dict={kv_dict} doc_id={self.id}"
-        )
-        for key, value in kv_dict.items():
-            # for self
-            logger.debug(
-                f"Assign to DOC key={key} value={value}"
-            )
-            self.kv[key] = value
-            # and for all pages of the document
-            for page in self.pages.all():
-                logger.debug(
-                    f"Assign to page number={page.number}"
-                    f" key={key} value={value}"
-                )
-                try:
-                    # Never (automatically) overwrite am
-                    # existing Metadata value
-                    if not page.kv[key]:
-                        # page metadata value is empty fill it in.
-                        page.kv[key] = value
-                except Exception as e:
-                    logging.error(
-                        f"Error: page {page.number}, doc_id={self.id} has no key={key}",  # noqa
-                        exc_info=e
-                    )
-
-    @property
-    def kv(self):
-        return KVNode(instance=self)
-
-    def propagate_changes(
-        self,
-        diffs_set,
-        apply_to_self,
-        attr_updates=[]
-    ):
-        super().propagate_changes(
-            diffs_set=diffs_set,
-            apply_to_self=apply_to_self,
-            attr_updates=attr_updates
-        )
-        # Access permissions are not applicable
-        # for Page models, so if diffs_set contains
-        # instances of Access - just return
-        if (len(diffs_set)):
-            first_diff = diffs_set[0]
-            if len(first_diff):
-                model = list(first_diff)[0]
-                if isinstance(model, Access):
-                    return
-
-        # documents need to propage changes
-        # to their pages
-
-        for page in self.pages.all():
-            page.propagate_changes(
-                diffs_set=diffs_set,
-                apply_to_self=apply_to_self,
-                attr_updates=attr_updates
-            )
-
-    @property
-    def kvcomp(self):
-        return KVCompNode(instance=self)
-
-    def inherit_kv_from(self, node):
-        inherited_kv = [
-            {
-                'key': item.key,
-                'kv_type': item.kv_type,
-                'kv_format': item.kv_format,
-                'value': item.value,
-                'kv_inherited': True
-            } for item in node.kv.all()
-        ]
-        self.kv.update(inherited_kv)
 
     class Meta:
         verbose_name = _("Document")

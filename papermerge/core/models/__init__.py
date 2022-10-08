@@ -3,11 +3,8 @@ import uuid
 from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 
-from papermerge.core.models.access import Access
-from papermerge.core.models.diff import Diff
 from papermerge.core.models.document import Document
 from papermerge.core.models.folder import Folder
-from papermerge.core.models.kvstore import KV, KVPage, KVStoreNode, KVStorePage
 from papermerge.core.models.node import BaseTreeNode, AbstractNode
 from papermerge.core.models.page import Page
 from papermerge.core.models.tags import (

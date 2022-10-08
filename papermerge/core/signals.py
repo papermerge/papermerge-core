@@ -72,34 +72,6 @@ def delete_user_data(sender, instance, **kwargs):
     delete_user_data_task.delay(str(instance.pk))
 
 
-@receiver(post_save, sender=Document)
-def inherit_metadata_keys(sender, instance, created, **kwargs):
-    """
-    When moved into new folder, documents will inherit their parent
-    metadata keys
-    """
-    pass
-    # if doc has a parent
-    # if instance.parent:
-    #    instance.inherit_kv_from(instance.parent)
-    #    for page in instance.pages.all():
-    #        page.inherit_kv_from(instance.parent)
-    # else:
-    #    for page in instance.pages.all():
-    #        page.inherit_kv_from(instance)
-
-
-@receiver(post_save, sender=Folder)
-def inherit_metadata_keys_from_parent(sender, instance, created, **kwargs):
-    """
-    When created or moved folders will inherit metadata keys from their
-    parent.
-    """
-    # if folder was just created and has a parent
-    if created and instance.parent:
-        instance.inherit_kv_from(instance.parent)
-
-
 @receiver(post_save, sender=User)
 def user_init(sender, instance, created, **kwargs):
     """

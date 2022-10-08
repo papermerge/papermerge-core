@@ -90,7 +90,7 @@ class DocumentVersion(models.Model):
             'pdf_path': abs_path(self.document_path.url),
             'output_folder':  abs_dirname,
             'fmt': 'jpg',
-            'size': (600,),
+            'size': (900,),
             'output_file': counter_generator(padding_goal=3)
         }
 

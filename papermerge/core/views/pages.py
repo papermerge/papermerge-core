@@ -40,7 +40,9 @@ from papermerge.core.renderers import (
 from papermerge.core.exceptions import APIBadRequest
 from papermerge.core.signal_definitions import (
     page_move_to_folder,
-    page_rotate
+    page_rotate,
+    page_delete,
+    page_reorder
 )
 from .mixins import RequireAuthMixin
 from .utils import (
@@ -193,6 +195,11 @@ class PageView(RequireAuthMixin, RetrieveAPIView, DestroyAPIView):
             page_map=page_map
         )
 
+        page_delete.send(
+            sender=Page,
+            document_version=new_version
+        )
+
 
 class PagesView(RequireAuthMixin, GenericAPIView):
     serializer_class = PageDeleteSerializer
@@ -263,6 +270,11 @@ class PagesView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
+        page_delete.send(
+            sender=Page,
+            document_version=new_version
+        )
+
 
 class PagesReorderView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
@@ -325,6 +337,11 @@ class PagesReorderView(RequireAuthMixin, GenericAPIView):
             page_map=list(
                 zip(range(1, page_count + 1), reordered_list)
             )
+        )
+
+        page_reorder.send(
+            sender=Page,
+            document_version=new_version
         )
 
 

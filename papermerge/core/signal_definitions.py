@@ -23,6 +23,21 @@ Arguments:
 """
 page_rotate = Signal()
 
+"""
+Sent immediately after document's page(s) were deleted.
+Arguments:
+    document_version - model instance of newly created document version
+"""
+page_delete = Signal()
+
+
+"""
+Sent immediately after document's page(s) were reordered.
+Arguments:
+    document_version - model instance of newly created document version
+"""
+page_reorder = Signal()
+
 
 # Sent by core.views.documents.create_folder
 # Sent AFTER one single folder was created

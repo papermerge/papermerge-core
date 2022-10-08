@@ -298,6 +298,12 @@ class Page(models.Model):
         jpeg_abs_path = abs_path(self.page_path.preview_url)
 
         if not os.path.exists(jpeg_abs_path):
+            # generate preview only for this page
+            self.document_version.generate_previews(
+                page_number=self.number
+            )
+
+        if not os.path.exists(jpeg_abs_path):
             # means that self.generate_preview() failed
             # to extract page image from the document
             raise IOError

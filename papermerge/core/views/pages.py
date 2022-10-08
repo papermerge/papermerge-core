@@ -40,6 +40,7 @@ from papermerge.core.renderers import (
 from papermerge.core.exceptions import APIBadRequest
 from papermerge.core.signal_definitions import (
     page_move_to_folder,
+    page_move_to_document,
     page_rotate,
     page_delete,
     page_reorder
@@ -640,6 +641,10 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
                 src_old_version=src_old_version,
                 dst_new_version=dst_new_version
             )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=dst_new_version
+            )
         else:
             src_new_version = doc.version_bump(
                 page_count=src_old_version.pages.count() - pages_count,
@@ -654,6 +659,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
                 src_new_version=src_new_version,
                 dst_new_version=dst_new_version,
                 page_numbers=[p.number for p in pages.order_by('number')]
+            )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=src_new_version
+            )
+            page_move_to_document.send(
+                sender=Page,
+                document_version=dst_new_version
             )
 
     def move_to_document(self, data):
@@ -728,4 +741,14 @@ class PagesMoveToDocumentView(RequireAuthMixin, GenericAPIView):
             dst_new_version=dst_new_version,
             position=position,
             page_numbers=[page.number for page in pages]
+        )
+
+        page_move_to_document.send(
+            sender=Page,
+            document_version=src_new_version
+        )
+
+        page_move_to_document.send(
+            sender=Page,
+            document_version=dst_new_version
         )

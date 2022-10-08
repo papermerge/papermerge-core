@@ -15,6 +15,12 @@ Arguments:
 """
 page_move_to_folder = Signal()
 
+"""
+Sent immediately after (some of) document's page(s) were moved to another doc.
+Arguments:
+    document_version - model instance of newly created document version
+"""
+page_move_to_document = Signal()
 
 """
 Sent immediately after document's page(s) were rotated.

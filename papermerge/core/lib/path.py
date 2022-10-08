@@ -245,3 +245,8 @@ class PagePath:
         pages_dirname = self.results_document_ep.pages_dirname()
         url = f"{pages_dirname}{self.page_num:06}_ocr_hocr.hocr"
         return url
+
+    @property
+    def preview_url(self):
+        pages_dirname = self.results_document_ep.pages_dirname()
+        return f"{pages_dirname}001-{self.page_num}.jpg"

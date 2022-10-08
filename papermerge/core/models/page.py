@@ -3,7 +3,6 @@ import os
 import uuid
 
 from django.db import models
-from pikepdf import Pdf, PdfImage
 
 from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import abs_path
@@ -295,42 +294,11 @@ class Page(models.Model):
         return OCR_STATUS_UNKNOWN
 
     @clock
-    def generate_img(self):
-        doc_file_path = self.document_version.document_path
-        # extract page number preview from the document file
-        # if this is PDF - use pike pdf to extract that preview
-        pdffile = Pdf.open(abs_path(doc_file_path.url))
-        page = pdffile.pages[self.number - 1]
-        image_keys = list(page.images.keys())
-        raw_image = page.images[image_keys[0]]
-        pdfimage = PdfImage(raw_image)
-        abs_file_prefix = abs_path(self.page_path.ppmroot)
-        abs_dirname_prefix = os.path.dirname(abs_file_prefix)
-        os.makedirs(
-            abs_dirname_prefix,
-            exist_ok=True
-        )
-        pil_image = pdfimage.as_pil_image()
-        page_rotation = 0
-        if '/Rotate' in page:
-            page_rotation = page['/Rotate']
-        if page_rotation > 0:
-            # The image is not rotated in place. You need to store the image
-            # returned from rotate()
-            new_pil_image = pil_image.rotate(page_rotation)
-            new_pil_image.save(f"{abs_file_prefix}.jpg")
-            return
-        # Will create jpg image without '_ocr' suffix
-        return pdfimage.extract_to(fileprefix=abs_file_prefix)
-
-    @clock
     def get_jpeg(self):
-        jpeg_abs_path = abs_path(self.page_path.jpg_url)
-        if not os.path.exists(jpeg_abs_path):
-            self.generate_img()
+        jpeg_abs_path = abs_path(self.page_path.preview_url)
 
         if not os.path.exists(jpeg_abs_path):
-            # means that self.generate_img() failed
+            # means that self.generate_preview() failed
             # to extract page image from the document
             raise IOError
 

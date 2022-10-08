@@ -1,9 +1,13 @@
+import os
 import uuid
 import logging
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from papermerge.core.storage import abs_path
+
+from pdf2image import convert_from_path
+from pdf2image.generators import counter_generator
 
 from papermerge.core.lib.path import DocumentPath
 
@@ -77,6 +81,23 @@ class DocumentVersion(models.Model):
         return abs_path(
             self.document_path.url
         )
+
+    def generate_previews(self):
+        logger.debug('generate_previews BEGIN')
+        abs_dirname = abs_path(self.document_path.dirname_sidecars())
+        os.makedirs(
+            abs_dirname,
+            exist_ok=True
+        )
+
+        convert_from_path(
+            abs_path(self.document_path.url),
+            output_folder=abs_dirname,
+            fmt='jpg',
+            size=(600,),
+            output_file=counter_generator(padding_goal=3)
+        )
+        logger.debug('generate_previews END')
 
     @property
     def is_archived(self):

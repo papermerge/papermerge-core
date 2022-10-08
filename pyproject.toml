@@ -77,6 +77,7 @@ django-haystack = "^3.2.1"
 # For details see https://github.com/ciur/papermerge/issues/486
 yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
 Whoosh = "^2.7.4"
+pdf2image = "^1.16.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

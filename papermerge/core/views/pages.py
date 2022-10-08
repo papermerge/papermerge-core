@@ -38,6 +38,7 @@ from papermerge.core.renderers import (
     ImageSVGRenderer
 )
 from papermerge.core.exceptions import APIBadRequest
+from papermerge.core.signal_definitions import page_move_to_folder
 from .mixins import RequireAuthMixin
 from .utils import (
     remove_pdf_pages,
@@ -459,6 +460,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 dst_folder=dst_folder,
                 title_format=data.get('title_format', None)
             )
+
+        page_move_to_folder.send(
+            sender=Page,
+            document_version=src_new_version
+        )
 
     def move_to_folder_multi_paged(
             self,

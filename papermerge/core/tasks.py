@@ -111,14 +111,9 @@ def generate_page_previews_task(document_version_id):
     document_version = DocumentVersion.objects.get(id=document_version_id)
 
     doc = document_version.document
-    doc_ver = document_version
     logger.debug(f"Generating previews doc_id={doc.id}")
-    for page in document_version.pages.all():
-        logger.debug(
-            f"gen. preview: version_id={doc_ver.id} number={doc_ver.number}"
-            f" page_id={page.id} page_number={page.number}"
-        )
-        page.generate_img()
+
+    document_version.generate_previews()
 
     return document_version_id
 

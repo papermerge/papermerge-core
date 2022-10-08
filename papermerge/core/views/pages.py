@@ -507,6 +507,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
             page_map=page_map
         )
 
+        page_move_to_folder.send(
+            sender=Page,
+            document_version=dst_version
+        )
+
     def move_to_folder_single_paged(
             self,
             pages,
@@ -543,6 +548,11 @@ class PagesMoveToFolderView(RequireAuthMixin, GenericAPIView):
                 old_version=page.document_version,
                 new_version=doc_version,
                 page_map=[(1, page.number)]
+            )
+
+            page_move_to_folder.send(
+                sender=Page,
+                document_version=doc_version
             )
 
 

@@ -274,7 +274,7 @@ class Storage:
         if self.exists(src.preview_url):
             self.copy_page_preview(src=src, dst=dst)
         else:
-            logger.debug(f"preview does not exits {src.svg_preview}")
+            logger.debug(f"preview does not exits {src.preview_url}")
 
     def reorder_pages(self, doc_path, new_order):
         """

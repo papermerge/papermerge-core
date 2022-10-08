@@ -32,7 +32,6 @@ from papermerge.core.serializers import (
 from papermerge.core.models import (
     BaseTreeNode,
     Document,
-    Access
 )
 
 from papermerge.core.nodes_download import get_nodes_download
@@ -58,9 +57,9 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     queryset = BaseTreeNode.objects.all()
     # object level permissions
     access_object_permissions = {
-        'retrieve': Access.PERM_READ,
-        'update': Access.PERM_WRITE,
-        'delete': Access.PERM_DELETE
+        'retrieve': "read",
+        'update': "write",
+        'delete': "delete"
     }
 
     @extend_schema(

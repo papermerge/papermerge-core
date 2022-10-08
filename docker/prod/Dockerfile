@@ -5,7 +5,6 @@ ENV IN_DOCKER=1
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV UWSGI_PROFILE=gevent
 ENV VIRTUAL_ENV=/venv
-ENV XAPIAN_VERSION=1.4.20
 
 RUN apt-get update;
 RUN apt-get install -y --no-install-recommends \

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       publish-docker-image:
-        description: 'Publish to docker image?'
+        description: 'Publish docker image?'
         required: true
         default: true
 

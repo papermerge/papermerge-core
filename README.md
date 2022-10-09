@@ -1,4 +1,4 @@
-[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/ci.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/ci.yml)
+[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
 # Papermerge RESTful Backend Server
 

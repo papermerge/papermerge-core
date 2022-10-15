@@ -2,12 +2,6 @@ name: Version Bump
 
 on:
   workflow_dispatch:
-    inputs:
-      publish-docker-image:
-        description: 'Publish docker image?'
-        required: true
-        default: true
-
 
 jobs:
   version-bump:
@@ -35,75 +29,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-
-
-  build-and-push-to-docker-hub:
-    name: Dockerhub build/push
-    needs: version-bump
-    if: ${{ github.event.inputs.publish-docker-image == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: papermerge/papermerge:${{needs.version-bump.outputs.new-version}}
-          file: docker/prod/Dockerfile
-
-
-  build-and-push-image-to-ghcr:
-    name: ghcr.io build/push
-    if: ${{ github.event.inputs.publish-docker-image == 'true' }}
-    needs: version-bump
-    runs-on: ubuntu-latest
-    env:
-      papermerge_image: ghcr.io/papermerge/papermerge
-      swagger_ui_image: ghcr.io/papermerge/swagger-ui
-      redoc_image: ghcr.io/papermerge/redoc
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          tags: ${{ env.papermerge_image }}:${{needs.version-bump.outputs.new-version}}, ${{ env.papermerge_image }}:latest
-          file: docker/prod/Dockerfile
-
-      - name: Build and push swagger-ui
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          tags: ${{ env.swagger_ui_image }}:${{needs.version-bump.outputs.new-version}}, ${{ env.swagger_ui_image }}:latest
-          file: docker/Dockerfile.swagger
-
-      - name: Build and push redoc
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          tags: ${{ env.redoc_image }}:${{needs.version-bump.outputs.new-version}}, ${{ env.redoc_image }}:latest
-          file: docker/Dockerfile.redoc

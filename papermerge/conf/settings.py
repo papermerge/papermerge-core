@@ -16,10 +16,14 @@ ALLOWED_HOSTS = config.get(
     default=['*']
 )
 
-redis_host = config.get('redis', 'host', default='127.0.0.1')
-redis_port = config.get('redis', 'port', default=6379)
+redis_host = config.get('redis', 'host', default=None)
+redis_port = config.get('redis', 'port', default=None)
 
-CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
+if redis_host and redis_port:
+    CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
+else:
+    CELERY_BROKER_URL = 'memory://localhost/'
+
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -29,14 +33,15 @@ CELERY_TASK_DEFAULT_EXCHANGE = 'papermerge'
 CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'
 CELERY_TASK_DEFAULT_ROUTING_KEY = 'papermerge'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [(redis_host, redis_port)],
+if redis_host and redis_port:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [(redis_host, redis_port)],
+            },
         },
-    },
-}
+    }
 
 DEBUG = config.get('main', 'debug', False)
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
@@ -63,24 +68,6 @@ STATIC_URL = config.get(
     'dir',
     default='/static/'
 )
-
-PAPERMERGE_METADATA_DATE_FORMATS = [
-    'dd.mm.yy',
-    'dd.mm.yyyy',
-    'dd.M.yyyy',
-    'month'  # Month as locale’s full name, January, February
-]
-
-PAPERMERGE_METADATA_CURRENCY_FORMATS = [
-    'dd.cc',
-    'dd,cc'
-]
-
-PAPERMERGE_METADATA_NUMERIC_FORMATS = [
-    'dddd',
-    'd,ddd',
-    'd.ddd'
-]
 
 PAPERMERGE_MIMETYPES = [
     'application/octet-stream',

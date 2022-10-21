@@ -71,10 +71,11 @@ JSONAPI_COMPONENTS = {
         },
         "relationshipToOne": {
             "description": "reference to other resource in a to-one relationship",  # noqa
-            "anyOf": [
-                {"$ref": "#/components/schemas/nulltype"},
-                {"$ref": "#/components/schemas/linkage"},
-            ],
+            "type": "object",
+            "properties": {
+                "type": {"type": "string"},
+                "id": {"type": "string"}
+            },
         },
         "reltomany": {
             "description": "a multiple 'to-many' relationship",

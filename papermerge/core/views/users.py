@@ -9,6 +9,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
+from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
 
 from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
 from papermerge.core.models import User
@@ -25,6 +26,7 @@ class UsersViewSet(RequireAuthMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     renderer_classes = (JSONAPIRenderer,)
+    parser_classes = [JSONAPIParser]
     permission_classes = [CustomModelPermissions]
 
 

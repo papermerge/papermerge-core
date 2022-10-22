@@ -6,6 +6,7 @@ from papermerge.core import views
 
 
 router = routers.DefaultRouter()
+router.include_root_view = False  # GET /api/ => results in 404
 
 router.register(r"tokens", views.TokensViewSet, basename="token")
 router.register(r"tags", views.TagsViewSet, basename="tag")

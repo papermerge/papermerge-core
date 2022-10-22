@@ -4,7 +4,7 @@ import logging.config
 from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
 from papermerge.core.openapi.append import JSONAPI_COMPONENTS
-
+from papermerge.core.version import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +205,6 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
     'DEFAULT_PAGINATION_CLASS':
         'papermerge.core.openapi.pagination.JsonApiPagination',
-        #'rest_framework_json_api.pagination.JsonApiPageNumberPagination',
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework_json_api.parsers.JSONParser',
         'rest_framework.parsers.JSONParser',
@@ -214,12 +213,6 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework_json_api.renderers.JSONRenderer',
         'rest_framework.renderers.JSONRenderer',
-        # If you're performance testing, you will want to use the browseable API
-        # without forms, as the forms can generate their own queries.
-        # If performance testing, enable:
-        # 'example.utils.BrowsableAPIRendererWithoutForms',
-        # Otherwise, to play around with the browseable API, enable:
-        'rest_framework_json_api.renderers.BrowsableAPIRenderer'
     ),
     'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -300,8 +293,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Papermerge REST API',
     'DESCRIPTION': 'Document management system designed for digital archives',
-    'VERSION': '2.1.0',
-    'APPEND_COMPONENTS': JSONAPI_COMPONENTS
+    'VERSION': __version__,
+    'APPEND_COMPONENTS': JSONAPI_COMPONENTS,
+    'COMPONENT_SPLIT_PATCH': False,
 }
 
 SEARCH_ENGINES_MAP = {

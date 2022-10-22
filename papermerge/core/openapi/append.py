@@ -64,9 +64,7 @@ JSONAPI_COMPONENTS = {
             "description": "a singular 'to-one' relationship",
             "type": "object",
             "properties": {
-                "links": {"$ref": "#/components/schemas/relationshipLinks"},
                 "data": {"$ref": "#/components/schemas/relationshipToOne"},
-                "meta": {"$ref": "#/components/schemas/meta"},
             },
         },
         "relationshipToOne": {
@@ -74,7 +72,7 @@ JSONAPI_COMPONENTS = {
             "type": "object",
             "properties": {
                 "type": {"type": "string"},
-                "id": {"type": "string"}
+                "id": {"type": "string", "format": "uuid"}
             },
         },
         "reltomany": {

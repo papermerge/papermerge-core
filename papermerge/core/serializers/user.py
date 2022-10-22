@@ -21,7 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         resource_name = 'users'
         fields = (
-            'id',
             'username',
             'inbox_folder',
             'home_folder',

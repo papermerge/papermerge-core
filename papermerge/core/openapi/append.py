@@ -64,25 +64,22 @@ JSONAPI_COMPONENTS = {
             "description": "a singular 'to-one' relationship",
             "type": "object",
             "properties": {
-                "links": {"$ref": "#/components/schemas/relationshipLinks"},
                 "data": {"$ref": "#/components/schemas/relationshipToOne"},
-                "meta": {"$ref": "#/components/schemas/meta"},
             },
         },
         "relationshipToOne": {
             "description": "reference to other resource in a to-one relationship",  # noqa
-            "anyOf": [
-                {"$ref": "#/components/schemas/nulltype"},
-                {"$ref": "#/components/schemas/linkage"},
-            ],
+            "type": "object",
+            "properties": {
+                "type": {"type": "string"},
+                "id": {"type": "string", "format": "uuid"}
+            },
         },
         "reltomany": {
             "description": "a multiple 'to-many' relationship",
             "type": "object",
             "properties": {
-                "links": {"$ref": "#/components/schemas/relationshipLinks"},
                 "data": {"$ref": "#/components/schemas/relationshipToMany"},
-                "meta": {"$ref": "#/components/schemas/meta"},
             },
         },
         "relationshipLinks": {

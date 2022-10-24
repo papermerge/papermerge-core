@@ -30,7 +30,6 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
         model = BaseTreeNode
         resource_name = 'nodes'
         fields = (
-            'id',
             'title',
             'parent',
             'created_at',

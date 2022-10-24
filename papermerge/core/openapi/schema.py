@@ -21,6 +21,10 @@ class KnoxTokenScheme(OpenApiAuthenticationExtension):
 
 class GroupJsonAPISerializer(OpenApiSerializerExtension):
     target_class = 'papermerge.core.serializers.GroupSerializer'
+    type = {
+        "type": "string",
+        "enum": ["groups"]
+    }
 
     def map_serializer(self, auto_schema, direction):
         required = []
@@ -67,17 +71,11 @@ class GroupJsonAPISerializer(OpenApiSerializerExtension):
 
         result = {
             "type": "object",
-            "required": ["type", "id"],
             "additionalProperties": False,
+            "required": ["type"],
             "properties": {
-                "type": {"$ref": "#/components/schemas/type"},
-                "id": {"$ref": "#/components/schemas/id"},
-                "links": {
-                    "type": "object",
-                    "properties": {
-                        "self": {"$ref": "#/components/schemas/link"}
-                    },
-                },
+                "type": self.type,
+                "id": {"type": "string", "format": "uuid"}
             },
         }
         if attributes:
@@ -94,40 +92,73 @@ class GroupJsonAPISerializer(OpenApiSerializerExtension):
                 "properties": relationships,
             }
 
-        return result
+        return {
+            "type": "object",
+            "properties": {
+                "data": result
+            }
+        }
 
 
 class TagJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["tags"]
+    }
     target_class = 'papermerge.core.serializers.TagSerializer'
 
 
 class RolesJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["roles"]
+    }
     target_class = 'papermerge.core.serializers.RoleSerializer'
 
 
 class UserJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["users"]
+    }
     target_class = 'papermerge.core.serializers.UserSerializer'
 
 
 class DocumentDetailsJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["documents"]
+    }
     target_class = 'papermerge.core.serializers.DocumentDetailsSerializer'
 
 
 class FolderJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["folders"]
+    }
     target_class = 'papermerge.core.serializers.FolderSerializer'
 
 
 class NodeJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["documents", "folders"]
+    }
     target_class = 'papermerge.core.serializers.NodeSerializer'
 
 
 class PageJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["pages"]
+    }
     target_class = 'papermerge.core.serializers.PageSerializer'
 
 
-class PageDeleteJsonAPISerializer(GroupJsonAPISerializer):
-    target_class = 'papermerge.core.serializers.PageDeleteSerializer'
-
-
 class TokenJsonAPISerializer(GroupJsonAPISerializer):
+    type = {
+        "type": "string",
+        "enum": ["tokens"]
+    }
     target_class = 'papermerge.core.serializers.TokenSerializer'

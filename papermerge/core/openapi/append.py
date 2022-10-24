@@ -79,9 +79,7 @@ JSONAPI_COMPONENTS = {
             "description": "a multiple 'to-many' relationship",
             "type": "object",
             "properties": {
-                "links": {"$ref": "#/components/schemas/relationshipLinks"},
                 "data": {"$ref": "#/components/schemas/relationshipToMany"},
-                "meta": {"$ref": "#/components/schemas/meta"},
             },
         },
         "relationshipLinks": {

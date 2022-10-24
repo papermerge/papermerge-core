@@ -1,12 +1,10 @@
 from rest_framework_json_api import serializers
-
 from papermerge.core.models import User
 from .permission import PermissionSerializer
 from .group import GroupSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     user_permissions = PermissionSerializer(many=True, read_only=True)
     perm_codenames = serializers.ListField(
         child=serializers.CharField(max_length=200),
@@ -35,3 +33,4 @@ class UserSerializer(serializers.ModelSerializer):
             'groups',
             'perm_codenames'
         )
+        read_only_fields = ('inbox_folder', 'home_folder', 'date_joined')

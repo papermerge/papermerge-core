@@ -294,8 +294,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Papermerge REST API',
     'DESCRIPTION': 'Document management system designed for digital archives',
     'VERSION': __version__,
-    'APPEND_COMPONENTS': JSONAPI_COMPONENTS,
-    'COMPONENT_SPLIT_PATCH': False,
+    'APPEND_COMPONENTS': JSONAPI_COMPONENTS
 }
 
 SEARCH_ENGINES_MAP = {

@@ -109,6 +109,7 @@ lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "./manage.py runserver"
+spectacular = "./manage.py spectacular"
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]

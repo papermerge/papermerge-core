@@ -40,4 +40,4 @@ jobs:
         with:
           add-paths: |
             openapi-schema/*.yaml
-        path: openapi-schema
+          path: openapi-schema

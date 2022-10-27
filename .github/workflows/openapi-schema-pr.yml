@@ -33,4 +33,11 @@ jobs:
           cd main
           poetry install
           cd docker/dev
-          poetry run task spectacular
+          poetry run task spectacular > ../../../openapi-schema/openapi-schema.yaml
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          add-paths: |
+            openapi-schema/*.yaml
+        path: openapi-schema

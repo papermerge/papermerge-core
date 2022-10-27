@@ -1,4 +1,4 @@
-name: Creates PR for openapi schema changes
+name: OpenApi Schema PR
 
 on:
   workflow_dispatch:

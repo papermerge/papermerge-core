@@ -1,4 +1,4 @@
-name: OpenApi Schema PR
+name: Create OpenApi Schema PR
 
 on:
   workflow_dispatch:
@@ -6,6 +6,10 @@ on:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
+    env:
+      PAPERMERGE__MAIN__SECRET_KEY: abc
+      PAPERMERGE__SEARCH__ENGINE: whoosh
+      DJANGO_SETTINGS_MODULE: config.settings
     steps:
       - name: Checkout current repository
         uses: actions/checkout@v3
@@ -29,4 +33,4 @@ jobs:
           cd main
           poetry install
           cd docker/dev
-          ./manage.py spectacular
+          poetry run task spectacular

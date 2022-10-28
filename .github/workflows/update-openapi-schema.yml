@@ -39,8 +39,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         id: cpr
         with:
-          add-paths: |
-            openapi-schema/*.yaml
+          add-paths: openapi-schema.yaml
           path: openapi-schema
           labels: automerge
           token: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}

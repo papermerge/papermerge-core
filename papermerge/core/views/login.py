@@ -4,15 +4,11 @@ from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from drf_spectacular.utils import extend_schema
 from knox.views import LoginView as KnoxLoginView
 
 from .mixins import GetClassSerializerMixin
 
 
-@extend_schema(
-    operation_id="Login/Authenticate"
-)
 class LoginView(KnoxLoginView, GetClassSerializerMixin):
     """
     Authenticates user with given username and password.

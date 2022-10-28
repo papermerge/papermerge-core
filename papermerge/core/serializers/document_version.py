@@ -1,6 +1,8 @@
 from django.urls import reverse
 
 from rest_framework_json_api import serializers
+from drf_spectacular.openapi import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers as rest_serializers
 from papermerge.core.models import DocumentVersion
 
@@ -25,6 +27,7 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
             'download_url'
         )
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_download_url(self, obj):
         return reverse('download-document-version', args=[str(obj.pk)])
 

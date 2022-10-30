@@ -33,7 +33,10 @@ class DocumentUploadView(RequireAuthMixin, GenericAPIView):
     serializer_class = DocumentDetailsSerializer
     http_method_names = ["put"]
 
-    @extend_schema(operation_id="Upload file")
+    @extend_schema(
+        operation_id="Upload file",
+        responses={201: DocumentDetailsSerializer},
+    )
     def put(self, request, document_id, file_name):
         """
         Uploads a file for given document node. If last version of the

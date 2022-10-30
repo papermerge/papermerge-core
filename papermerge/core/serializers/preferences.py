@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from dynamic_preferences.users.serializers import UserPreferenceSerializer
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.openapi import OpenApiTypes
 
 
 class CustomUserPreferenceSerializer(UserPreferenceSerializer):
@@ -14,3 +16,26 @@ class CustomUserPreferenceSerializer(UserPreferenceSerializer):
             'verbose_name',
             'help_text',
         ]
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_default(self, o):
+        return o.preference.api_repr(o.preference.get("default"))
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_verbose_name(self, o):
+        return o.preference.get("verbose_name")
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_identifier(self, o):
+        return o.preference.identifier()
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_help_text(self, o):
+        return o.preference.get("help_text")
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_additional_data(self, o):
+        return o.preference.get_api_additional_data()
+
+    def get_field(self, o):
+        return o.preference.get_api_field_data()

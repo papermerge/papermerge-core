@@ -25,3 +25,11 @@ class ImageSVGRenderer(renderers.BaseRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         return data
+
+
+class PDFRenderer(renderers.BaseRenderer):
+    media_type = 'application/pdf'
+    format = 'pdf'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        return data

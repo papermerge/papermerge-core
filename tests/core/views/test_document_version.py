@@ -8,6 +8,7 @@ from rest_framework.test import APIClient
 from model_bakery import baker
 
 from papermerge.test import maker
+from papermerge.core.storage import abs_path
 
 
 class DownloadDocumentVersionAnonymousAccess(TestCase):
@@ -63,3 +64,23 @@ class DownloadDocumentVersionOnlyOwner(TestCase):
         # Authenticated, but non-owner user tries to download document version
         response = self.client_john.get(url)
         assert response.status_code == 403
+
+    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.generate_page_previews_task')
+    def test_download_document_version(self, _1, _2):
+        """Asserts that document version download works"""
+        doc = maker.document(
+            "s3.pdf",
+            user=self.owner
+        )
+        doc_ver = doc.versions.last()
+        url = reverse('download-document-version', args=(doc_ver.pk,))
+
+        # owner tries to download document version
+        response = self.client_owner.get(url)
+        assert response.status_code == 200
+
+        with open(abs_path(doc_ver.document_path.path), 'rb') as file:
+            expected_content = file.read()
+            # entire document was downloaded
+            assert len(response.content) == len(expected_content)

@@ -1,8 +1,7 @@
 import magic
 
-from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, GenericAPIView
 
 from django.http import (
     Http404,
@@ -10,11 +9,18 @@ from django.http import (
 )
 
 from papermerge.core.models import DocumentVersion
-from papermerge.core.serializers import DocumentVersionSerializer
+from papermerge.core.serializers import (
+    DocumentVersionSerializer,
+    DocumentVersionDownloadSerializer
+)
+from papermerge.core.renderers import PDFRenderer
 from .mixins import RequireAuthMixin
 
 
-class DocumentVersionsDownloadView(RequireAuthMixin, APIView):
+class DocumentVersionsDownloadView(RequireAuthMixin, GenericAPIView):
+
+    serializer_class = DocumentVersionDownloadSerializer
+    renderer_classes = [PDFRenderer]
 
     def get(self, *args, **kwargs):
         doc_ver = self.get_object()

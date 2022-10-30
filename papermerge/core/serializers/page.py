@@ -2,6 +2,8 @@ from rest_framework import serializers as rest_serializers
 from rest_framework_json_api import serializers
 
 from django.urls import reverse
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.openapi import OpenApiTypes
 
 from papermerge.core.models import Page
 
@@ -24,9 +26,11 @@ class PageSerializer(serializers.ModelSerializer):
             'jpg_url'
         )
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_svg_url(self, obj):
         return reverse('pages_page', args=[str(obj.pk)])
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_jpg_url(self, obj):
         return reverse('pages_page', args=[str(obj.pk)])
 

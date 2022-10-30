@@ -2,7 +2,8 @@ from .document import DocumentSerializer
 from .document import DocumentDetailsSerializer, DocumentsMergeSerializer
 from .document_version import (
     DocumentVersionSerializer,
-    DocumentVersionOcrTextSerializer
+    DocumentVersionOcrTextSerializer,
+    DocumentVersionDownloadSerializer
 )
 from .folder import FolderSerializer
 from .node import (

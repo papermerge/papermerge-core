@@ -1,6 +1,5 @@
 import logging
 
-from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer as rest_framework_JSONRenderer
 from rest_framework.parsers import JSONParser as rest_framework_JSONParser
 from rest_framework.generics import GenericAPIView
@@ -29,8 +28,10 @@ from .utils import total_merge
 logger = logging.getLogger(__name__)
 
 
-class DocumentUploadView(RequireAuthMixin, APIView):
+class DocumentUploadView(RequireAuthMixin, GenericAPIView):
     parser_classes = [FileUploadParser]
+    serializer_class = DocumentDetailsSerializer
+    http_method_names = ["put"]
 
     @extend_schema(operation_id="Upload file")
     def put(self, request, document_id, file_name):
@@ -54,8 +55,9 @@ class DocumentUploadView(RequireAuthMixin, APIView):
             file_path=payload.temporary_file_path(),
             file_name=file_name
         )
+        serializer = DocumentDetailsSerializer(instance=doc)
 
-        return Response({}, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class DocumentOcrTextView(RequireAuthMixin, GenericAPIView):

@@ -37,5 +37,6 @@ class CustomUserPreferenceSerializer(UserPreferenceSerializer):
     def get_additional_data(self, o):
         return o.preference.get_api_additional_data()
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_field(self, o):
         return o.preference.get_api_field_data()

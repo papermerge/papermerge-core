@@ -3,9 +3,14 @@ from django.contrib.auth import login
 from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.views import LoginView as KnoxLoginView
 
+from knox.views import LoginView as KnoxLoginView
+from drf_spectacular.utils import extend_schema
+
+from papermerge.core.serializers.login import (
+    AuthTokenRequestSerializer,
+    AuthTokenResponseSerializer
+)
 from .mixins import GetClassSerializerMixin
 
 
@@ -18,10 +23,14 @@ class LoginView(KnoxLoginView, GetClassSerializerMixin):
     permission_classes = (permissions.AllowAny,)
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
-    class_serializer = AuthTokenSerializer
+    class_serializer = AuthTokenRequestSerializer
 
+    @extend_schema(
+        request=AuthTokenRequestSerializer,
+        responses={200: AuthTokenResponseSerializer},
+    )
     def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
+        serializer = AuthTokenRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)

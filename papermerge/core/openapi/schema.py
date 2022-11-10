@@ -92,12 +92,7 @@ class GroupJsonAPISerializer(OpenApiSerializerExtension):
                 "properties": relationships,
             }
 
-        return {
-            "type": "object",
-            "properties": {
-                "data": result
-            }
-        }
+        return result
 
 
 class TagJsonAPISerializer(GroupJsonAPISerializer):
@@ -143,7 +138,9 @@ class FolderJsonAPISerializer(GroupJsonAPISerializer):
 class NodeJsonAPISerializer(GroupJsonAPISerializer):
     type = {
         "type": "string",
-        "enum": ["documents", "folders"]
+        # TODO: change "Document" to "documents" to be consistent with other
+        # resource names
+        "enum": ["Document", "folders"]
     }
     target_class = 'papermerge.core.serializers.NodeSerializer'
 

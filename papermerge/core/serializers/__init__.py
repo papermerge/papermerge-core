@@ -17,7 +17,7 @@ from .node import (
     InboxCountSerializer
 )
 from .ocr import OcrSerializer
-from .user import UserSerializer
+from .user import UserSerializer, Data_UserSerializer
 from .group import GroupSerializer
 from .tag import TagSerializer
 from .password import PasswordSerializer

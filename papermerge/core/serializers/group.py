@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group, Permission
 
+from rest_framework.serializers import Serializer
 from rest_framework_json_api.serializers import ModelSerializer
 
 from .permission import PermissionSerializer
@@ -42,3 +43,7 @@ class GroupSerializer(ModelSerializer):
         instance.save()
 
         return instance
+
+
+class Data_GroupSerializer(Serializer):
+    data = GroupSerializer()

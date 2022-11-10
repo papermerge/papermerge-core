@@ -11,7 +11,14 @@ from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
 
-from papermerge.core.serializers import (UserSerializer, PasswordSerializer)
+from drf_spectacular.utils import extend_schema
+
+from papermerge.core.serializers.user import data_user_response_example
+from papermerge.core.serializers import (
+    Data_UserSerializer,
+    UserSerializer,
+    PasswordSerializer
+)
 from papermerge.core.models import User
 from papermerge.core.auth import CustomModelPermissions
 from .mixins import RequireAuthMixin
@@ -76,6 +83,10 @@ class CurrentUserView(RequireAuthMixin, GenericAPIView):
     serializer_class = UserSerializer
     renderer_classes = (JSONAPIRenderer,)
 
+    @extend_schema(
+        responses={200: Data_UserSerializer},
+        examples=[data_user_response_example]
+    )
     def get(self, request):
         """
         Retrieves current user details.

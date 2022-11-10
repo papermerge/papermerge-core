@@ -18,9 +18,11 @@ from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
 from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 from rest_framework import status
+from rest_framework.serializers import ListSerializer
 
 from drf_spectacular.utils import extend_schema
 
+from papermerge.core.serializers.node import Data_NodeSerializer
 from papermerge.core.serializers import (
     NodeSerializer,
     NodeMoveSerializer,
@@ -63,7 +65,10 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     }
 
     @extend_schema(
-        operation_id="Retrieve Node",
+        operation_id="node_retrieve",
+        responses={
+            200: ListSerializer(child=NodeSerializer())
+        }
     )
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -95,6 +100,12 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
             user=self.request.user
         ).order_by('-created_at')
 
+    @extend_schema(
+        request=Data_NodeSerializer(),
+        responses={
+            201: Data_NodeSerializer()
+        }
+    )
     def create(self, request, *args, **kwargs):
         """
         Creates a node.

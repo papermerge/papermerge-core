@@ -1,3 +1,4 @@
+from rest_framework.serializers import Serializer
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
 from rest_framework import serializers as rest_serializers
@@ -35,6 +36,10 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
             'created_at',
             'updated_at',
         )
+
+
+class Data_NodeSerializer(Serializer):
+    data = NodeSerializer()
 
 
 class NodeIDSerializer(rest_serializers.Serializer):

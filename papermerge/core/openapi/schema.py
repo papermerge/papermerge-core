@@ -92,12 +92,7 @@ class GroupJsonAPISerializer(OpenApiSerializerExtension):
                 "properties": relationships,
             }
 
-        return {
-            "type": "object",
-            "properties": {
-                "data": result
-            }
-        }
+        return result
 
 
 class TagJsonAPISerializer(GroupJsonAPISerializer):

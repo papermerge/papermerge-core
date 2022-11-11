@@ -141,6 +141,7 @@ class NodeJsonAPISerializer(GroupJsonAPISerializer):
         # TODO: change "Document" to "documents" to be consistent with other
         # resource names
         "enum": ["Document", "documents", "folders"]
+
     }
     target_class = 'papermerge.core.serializers.NodeSerializer'
 

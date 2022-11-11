@@ -35,6 +35,9 @@ class DocumentUploadView(RequireAuthMixin, GenericAPIView):
 
     @extend_schema(
         operation_id="Upload file",
+        request={
+            '*/*': bytes
+        },
         responses={201: DocumentDetailsSerializer},
     )
     def put(self, request, document_id, file_name):

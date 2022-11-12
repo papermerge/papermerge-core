@@ -10,8 +10,11 @@ from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer
 from drf_spectacular.utils import (
     extend_schema,
-    OpenApiParameter
+    OpenApiParameter,
+    OpenApiExample
 )
+
+from papermerge.core.serializers.document import Data_DocumentDetailsSerializer
 
 from papermerge.core.serializers import (
     DocumentDetailsSerializer,
@@ -31,14 +34,36 @@ logger = logging.getLogger(__name__)
 class DocumentUploadView(RequireAuthMixin, GenericAPIView):
     parser_classes = [FileUploadParser]
     serializer_class = DocumentDetailsSerializer
+    renderer_classes = (JSONRenderer,)
     http_method_names = ["put"]
 
     @extend_schema(
         operation_id="Upload file",
+        parameters=[
+            OpenApiParameter(
+                name='Content-Disposition',
+                type=str,
+                location=OpenApiParameter.HEADER,
+                required=True,
+                response=False,
+                examples=[
+                    OpenApiExample(
+                        name="Content disposition header for file named"
+                        "mydoc_1.pdf",
+                        value="attachment; filename=mydoc_1.pdf"
+                    ),
+                    OpenApiExample(
+                        name="Content disposition header for file"
+                        "named abc.pdf",
+                        value="attachment; filename=abc.pdf"
+                    )
+                ]
+            ),
+        ],
         request={
-            '*/*': bytes
+            'application/octet-stream': bytes
         },
-        responses={201: DocumentDetailsSerializer},
+        responses={201: Data_DocumentDetailsSerializer},
     )
     def put(self, request, document_id, file_name):
         """

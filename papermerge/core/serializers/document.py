@@ -1,3 +1,5 @@
+from rest_framework.serializers import Serializer
+
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
 
@@ -60,10 +62,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 
 class DocumentDetailsSerializer(serializers.ModelSerializer):
-    size = serializers.IntegerField(required=False)
-    page_count = serializers.IntegerField(required=False)
     parent = ResourceRelatedField(queryset=Folder.objects)
-    file_name = serializers.CharField(required=False)
     versions = DocumentVersionSerializer(many=True, read_only=True)
 
     class Meta:
@@ -73,16 +72,17 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'lang',
-            'file_name',
             'ocr',
             'ocr_status',
             'parent',
             'versions',
-            'size',
-            'page_count',
             'created_at',
             'updated_at'
         )
+
+
+class Data_DocumentDetailsSerializer(Serializer):
+    data = DocumentDetailsSerializer()
 
 
 class DocumentsMergeSerializer(serializers.Serializer):

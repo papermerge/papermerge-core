@@ -160,3 +160,53 @@ class TokenJsonAPISerializer(GroupJsonAPISerializer):
         "enum": ["tokens"]
     }
     target_class = 'papermerge.core.serializers.TokenSerializer'
+
+
+class CustomUserPreferenceSerializer(OpenApiSerializerExtension):
+
+    target_class = 'papermerge.core.serializers.CustomUserPreferenceSerializer'
+
+    def map_serializer(self, auto_schema, direction):
+        response = {
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'string',
+                },
+                'type': {
+                    'type': 'string'
+                },
+                'attributes': {
+                    'type': 'object',
+                    'properties': {
+                        'section': {
+                            'type': 'string',
+                            'readOnly': True
+                        },
+                        'identifier': {
+                            'type': 'string',
+                            'readOnly': True
+                        },
+                        'default': {
+                            'type': 'string',
+                            'readOnly': True
+                        },
+                        'help_text': {
+                            'type': 'string',
+                            'readOnly': True,
+                            'nullable': True
+                        },
+                        'value': {
+                            'type': 'string',
+                            'readOnly': True
+                        },
+                        'name': {
+                            'type': 'string',
+                            'readOnly': True
+                        }
+                    }
+                }
+            }
+        }
+
+        return response

@@ -13,17 +13,12 @@ class CustomUserPreferenceSerializer(UserPreferenceSerializer):
             'id',
             'default',
             'value',
-            'verbose_name',
             'help_text',
         ]
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_default(self, o):
         return o.preference.api_repr(o.preference.get("default"))
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_verbose_name(self, o):
-        return o.preference.get("verbose_name")
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_identifier(self, o):

@@ -1,5 +1,11 @@
 name: Tests
-on: [push]
+
+on:
+  push:
+    paths:
+      - 'papermerge/**'
+      - 'tests/**'
+
 jobs:
   check-pep8-compliance:
     runs-on: ubuntu-20.04

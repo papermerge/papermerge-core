@@ -87,7 +87,6 @@ jobs:
           push: true
           tags: ${{ env.papermerge_image }}:${{needs.extract-version.outputs.old-version}}, ${{ env.papermerge_image }}:latest
           file: docker/prod/Dockerfile
-          platforms: linux/amd64,linux/arm64
       - name: Build and push swagger-ui
         uses: docker/build-push-action@v3
         with:

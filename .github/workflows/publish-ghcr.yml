@@ -8,7 +8,7 @@ on:
         type: string
   workflow_call:
     secrets:
-      MY_GITHUB_TOKEN:
+      MY_GH_TOKEN:
         required: true
     inputs:
       VERSION:
@@ -36,7 +36,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.MY_GITHUB_TOKEN }}
+          password: ${{ secrets.MY_GH_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:

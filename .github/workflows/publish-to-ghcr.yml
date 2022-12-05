@@ -13,6 +13,7 @@ on:
     inputs:
       VERSION:
         required: true
+        type: string
 
 permissions:
   contents: read

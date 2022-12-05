@@ -15,6 +15,7 @@ on:
     inputs:
       VERSION:
         required: true
+        type: string
 
 jobs:
   publish-to-dockerhub:

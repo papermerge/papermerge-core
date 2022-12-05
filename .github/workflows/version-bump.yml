@@ -76,7 +76,7 @@ jobs:
     uses: ./.github/workflows/publish-to-ghcr.yml
     if: ${{ github.event.inputs.publish-to-ghcr == 'true' }}
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MY_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
 

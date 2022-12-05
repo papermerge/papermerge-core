@@ -2,6 +2,12 @@ name: Update OpenAPI Schema
 
 on:
   workflow_dispatch:
+  workflow_call:
+    secrets:
+      PAPERMERGE__MAIN__SECRET_KEY:
+        required: true
+      GH_PAT_GENERATE_OPENAPI_SCHEMA:
+        required: true
 
 jobs:
   create-pr:
@@ -15,6 +21,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: main
+          ref: master
 
       - name: Checkout openapi schema
         uses: actions/checkout@v3

@@ -2,7 +2,27 @@ name: Version Bump
 
 on:
   workflow_dispatch:
-
+    inputs:
+      publish-to-dockerhub:
+        description: 'Publish to Dockerhub?'
+        type: boolean
+        required: true
+        default: true
+      publish-to-ghcr:
+        description: 'Publish to ghcr?'
+        type: boolean
+        required: true
+        default: true
+      publish-to-pypi:
+        description: 'Publish to PyPi?'
+        type: boolean
+        required: true
+        default: true
+      update-openapi-schema:
+        description: 'Open OpenAPI schema'
+        type: boolean
+        required: true
+        default: true
 jobs:
   version-bump:
     runs-on: ubuntu-latest
@@ -29,3 +49,41 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+  update-openapi-schema:
+    name: Update OpenAPI schema
+    needs: ["version-bump"]
+    uses: ./.github/workflows/update-openapi-schema.yml
+    if: ${{ github.event.inputs.update-openapi-schema == 'true' }}
+    secrets:
+      PAPERMERGE__MAIN__SECRET_KEY: ${{ secrets.PAPERMERGE__MAIN__SECRET_KEY }}
+      GH_PAT_GENERATE_OPENAPI_SCHEMA: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
+
+  publish-to-dockerhub:
+    name: Publish to Dockerhub
+    needs: ["version-bump"]
+    uses: ./.github/workflows/publish-to-dockerhub.yml
+    if: ${{ github.event.inputs.publish-to-dockerhub == 'true' }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      VERSION: ${{ needs.version-bump.outputs.new-version }}
+
+  publish-to-ghcr:
+    name: Publish to Ghcr.io
+    needs: ["version-bump"]
+    uses: ./.github/workflows/publish-to-ghcr.yml
+    if: ${{ github.event.inputs.publish-to-ghcr == 'true' }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      VERSION: ${{ needs.version-bump.outputs.new-version }}
+
+  publish-to-pypi:
+    name: Publish to Pypi
+    needs: ["version-bump"]
+    uses: ./.github/workflows/publish-to-pypi.yml
+    if: ${{ github.event.inputs.publish-to-pypi == 'true' }}
+    secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}

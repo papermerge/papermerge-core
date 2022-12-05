@@ -62,3 +62,20 @@ jobs:
           pullRequestNumber: ${{ steps.cpr.outputs.pull-request-number }}
           token: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
           checkStatus: false
+
+  # https://github.com/orgs/community/discussions/26323
+  dispatch-event:  # trigger REST API clients generation
+    needs: [ create-pr ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger dispatch event
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'papermerge',
+              repo: 'rest-api-clients',
+              workflow_id: 'generate.yml',
+              ref: 'main'
+            })

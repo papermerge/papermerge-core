@@ -74,7 +74,8 @@ class SearchView(RequireAuthMixin, GenericAPIView):
                             'format': 'uuid'
                         },
                         'text': {
-                            'type': 'string'
+                            'type': 'string',
+                            'nullable': True
                         },
                         'title': {
                             'type': 'string'

@@ -62,7 +62,51 @@ class SearchView(RequireAuthMixin, GenericAPIView):
                 required=False,
                 type=str
             )
-        ]
+        ],
+        responses={
+            '200': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {
+                            'type': 'string',
+                            'format': 'uuid'
+                        },
+                        'text': {
+                            'type': 'string'
+                        },
+                        'title': {
+                            'type': 'string'
+                        },
+                        'tags': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'string'
+                            }
+                        },
+                        'breadcrumb': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'string'
+                            }
+                        },
+                        'node_type': {
+                            'type': 'string'
+                        },
+                        'highlight': {
+                            'type': 'string',
+                            'nullable': True
+                        },
+                        'user_id': {
+                            'type': 'string',
+                            'nullable': True,
+                            'format': 'uuid'
+                        }
+                    }
+                }
+            }
+        }
     )
     def get(self, request):
         query_text = request.query_params.get('q', '')

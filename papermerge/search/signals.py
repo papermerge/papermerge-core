@@ -2,13 +2,18 @@ from django.db import models
 from haystack import signals
 from haystack.utils import get_identifier
 
-from papermerge.core.models import DocumentVersion, Document, Folder
+from papermerge.core.models import (
+    DocumentVersion,
+    Document,
+    Folder,
+    BaseTreeNode
+)
 from papermerge.search.tasks import update_index
 
 
 class SignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
-        for klass in (DocumentVersion, Document, Folder):
+        for klass in (DocumentVersion, Document, Folder, BaseTreeNode):
             models.signals.post_save.connect(
                 self.enqueue_save, sender=klass
             )
@@ -17,7 +22,7 @@ class SignalProcessor(signals.BaseSignalProcessor):
             )
 
     def teardown(self):
-        for klass in (DocumentVersion, Document, Folder):
+        for klass in (DocumentVersion, Document, Folder, BaseTreeNode):
             models.signals.post_save.disconnect(self.enqueue_save, sender=klass)
             models.signals.post_delete.disconnect(
                 self.enqueue_delete,

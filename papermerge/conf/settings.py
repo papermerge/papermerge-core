@@ -272,6 +272,11 @@ else:
                 'handlers': ['console', ],
                 'propagate': True,
             },
+            'papermerge.search.tasks': {
+                'level': 'DEBUG',
+                'handlers': ['console', ],
+                'propagate': True,
+            },
             'celery': {
                 'level': 'DEBUG',
                 'handlers': ['console', ],

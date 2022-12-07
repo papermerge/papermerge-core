@@ -34,7 +34,7 @@ class SearchView(RequireAuthMixin, GenericAPIView):
             OpenApiParameter(
                 name='q',
                 description='text to search',
-                required=True,
+                required=False,
                 type=str,
             ),
             OpenApiParameter(
@@ -51,16 +51,16 @@ class SearchView(RequireAuthMixin, GenericAPIView):
             OpenApiParameter(
                 name='tags_op',
                 description=f"""
-                Operator to use when searching by tag. Can be either
-                `{TAGS_OP_ANY}` or `{TAGS_OP_ALL}`.
-                Default value is `{TAGS_OP_ALL}`.
+                Operator to use when searching by tag.
                 For `{TAGS_OP_ANY}` - will return nodes with at least one of
                     the tags assigned.
                 For `{TAGS_OP_ALL}` - will return only nodes with all of the
                 tags assigned.
                 """,
                 required=False,
-                type=str
+                type=str,
+                enum=[TAGS_OP_ALL, TAGS_OP_ANY],
+                default=TAGS_OP_ALL
             )
         ],
         responses={

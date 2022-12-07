@@ -4,6 +4,7 @@ from django.http import (
     Http404,
     HttpResponse
 )
+from django.db.models.signals import post_save
 from rest_framework.generics import (
     GenericAPIView,
     CreateAPIView,
@@ -280,7 +281,17 @@ class NodeTagsView(
         If you want to retain node tags not present in input tag list names
         then use PATCH/PUT http method of this endpoint.
         """
-        return super().post(request, *args, **kwargs)
+        ret = super().post(request, *args, **kwargs)
+        # As the post_save signal is not sent automatically
+        # send it manually. This signal is handled by
+        # papermerge.search app in order to update the search
+        # index
+        post_save.send(
+            sender=BaseTreeNode,
+            instance=self.get_object(),
+            created=False
+        )
+        return ret
 
     def perform_create(self, serializer):
         node = self.get_object()
@@ -322,7 +333,6 @@ class NodeTagsView(
             *serializer.data['tags'],
             tag_kwargs={"user": self.request.user}
         )
-
         return Response(serializer.data)
 
     @extend_schema(operation_id="node_dissociate_tags")

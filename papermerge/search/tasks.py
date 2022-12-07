@@ -81,6 +81,7 @@ def update_index(
     action,
     identifier,
 ):
+    logger.debug("Update Index")
     object_path, pk = split_identifier(identifier)
     if object_path is None or pk is None:
         msg = "Couldn't handle object with identifier %s" % identifier
@@ -89,6 +90,7 @@ def update_index(
 
     # Then get the model class for the object path
     model_class = get_model_class(object_path)
+    logger.debug(f"model_class={model_class}")
     for current_index, using in get_indexes(model_class):
         current_index_name = ".".join([current_index.__class__.__module__,
                                        current_index.__class__.__name__])

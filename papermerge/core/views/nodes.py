@@ -21,7 +21,10 @@ from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 from rest_framework import status
 from rest_framework.serializers import ListSerializer
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiTypes
+)
 
 from papermerge.core.serializers.node import Data_NodeSerializer
 from papermerge.core.serializers import (
@@ -176,24 +179,18 @@ class NodesDownloadView(RequireAuthMixin, GenericAPIView):
     parser_classes = [JSONParser]
     serializer_class = NodesDownloadSerializer
 
+    @extend_schema(
+        operation_id="nodes_download",
+        responses={
+            (200, 'application/pdf'): OpenApiTypes.BINARY,
+            (200, 'application/zip'): OpenApiTypes.BINARY,
+            (200, 'application/x-gtar'): OpenApiTypes.BINARY
+        },
+        parameters=[
+            NodesDownloadSerializer
+        ]
+    )
     def get(self, request):
-        """
-        Expects one or multiple of following HTTP GET parameters:
-        * node_ids (required) - a list of node IDs to download
-        * file_name - preferred file name for downloaded archive/document file
-        * include_version = 'only_last' or 'only_original'
-            In case when include_version == 'only_last', downloaded
-            archive/document file(s) will contain only last version
-            of the document
-            Respectively for include_version == 'only_original' downloaded
-            archive/document file(s) will contain only orignial version
-            of the document
-            Default value is 'only_last'
-        * archive_type = 'zip' or 'targz'
-            Applies only if there is more than one node to download.
-            Decides on type of archive to create.
-            Default value is 'zip'
-        """
         serializer = NodesDownloadSerializer(data=request.query_params)
         if serializer.is_valid():
             try:

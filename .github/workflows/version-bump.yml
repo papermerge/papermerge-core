@@ -73,7 +73,7 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
-      VERSION: ${{ github.event.inputs.publish-to-dockerhub }}
+      VERSION: ${{ needs.version-bump.outputs.new-version }}
       INCLUDE_ARM64_PLATFORM: ${{ github.event.include_arm64_platform == 'true' }}
 
   publish-to-ghcr:

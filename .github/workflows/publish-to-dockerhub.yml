@@ -52,7 +52,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: papermerge/papermerge-core
+          repository: papermerge/papermerge
           readme-filepath: ./docker/prod/README.md
           short-description: >
             Papermerge is an open source document management system (DMS)
@@ -83,7 +83,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: papermerge/papermerge-core
+          repository: papermerge/papermerge
           readme-filepath: ./docker/prod/README.md
           short-description: >
             Papermerge is an open source document management system (DMS)

@@ -21,7 +21,7 @@ on:
         required: true
         type: string
       INCLUDE_ARM64_PLATFORM:
-        require: true
+        required: true
         type: boolean
         default: true
 jobs:

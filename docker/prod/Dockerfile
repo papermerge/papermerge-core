@@ -1,4 +1,4 @@
-FROM papermerge/base:1.0.0 as build
+FROM papermerge/base:1.1.0 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
 ENV IN_DOCKER=1
@@ -6,8 +6,8 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV UWSGI_PROFILE=gevent
 ENV VIRTUAL_ENV=/venv
 
-RUN apt-get update;
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
     tesseract-ocr \

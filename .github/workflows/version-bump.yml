@@ -74,7 +74,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
       VERSION: ${{ github.event.inputs.publish-to-dockerhub }}
-      INCLUDE_ARM64_PLATFORM: ${{ github.event.include_arm64_platform }}
+      INCLUDE_ARM64_PLATFORM: ${{ github.event.include_arm64_platform == 'true' }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io

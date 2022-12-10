@@ -26,6 +26,7 @@ jobs:
     - name: Publish package
       env:
         PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        PIP_DEFAULT_TIMEOUT: '100'
       run: |
         poetry config pypi-token.pypi $PYPI_TOKEN
         poetry publish --build

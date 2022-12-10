@@ -27,6 +27,7 @@ on:
 jobs:
   arm64-amd64:
     name: arm64/amd64
+    runs-on: ubuntu-latest
     if: ${{ inputs.INCLUDE_ARM64_PLATFORM }}
     steps:
       - uses: actions/checkout@v3
@@ -58,6 +59,7 @@ jobs:
              for archiving and retrieving your digital documents
   amd64:
     name: amd64
+    runs-on: ubuntu-latest
     if: ${{ !inputs.INCLUDE_ARM64_PLATFORM }}
     steps:
       - uses: actions/checkout@v3

@@ -1,4 +1,4 @@
-FROM papermerge/base as build
+FROM papermerge/base:1.0.0 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
 ENV IN_DOCKER=1

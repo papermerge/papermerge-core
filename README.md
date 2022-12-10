@@ -1,6 +1,6 @@
 [![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
-# Papermerge RESTful Backend Server
+# Papermerge REST API Server
 
 
 This python package is the heart of Papermerge project. It consists of a set

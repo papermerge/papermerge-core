@@ -72,6 +72,7 @@ jobs:
     secrets:
       PAPERMERGE__MAIN__SECRET_KEY: ${{ secrets.PAPERMERGE__MAIN__SECRET_KEY }}
       GH_PAT_GENERATE_OPENAPI_SCHEMA: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
+    with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
 
   publish-to-dockerhub:

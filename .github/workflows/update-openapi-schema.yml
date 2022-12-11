@@ -9,10 +9,9 @@ on:
       GH_PAT_GENERATE_OPENAPI_SCHEMA:
         required: true
     inputs:
-        VERSION:
-          required: true
-          type: string
-
+      VERSION:
+        required: true
+        type: string
 
 jobs:
   create-pr:

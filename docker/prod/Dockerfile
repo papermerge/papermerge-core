@@ -1,4 +1,4 @@
-FROM papermerge/base:1.1.0 as build
+FROM papermerge/base:1.1.1 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
 ENV IN_DOCKER=1
@@ -23,7 +23,7 @@ COPY poetry.lock pyproject.toml /
 RUN poetry install --no-root --no-dev -vvv
 
 ## STEP 2 - use slim base image
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 ENV PATH="/venv/bin:$PATH"
 ENV PYTHONBUFFERED=1

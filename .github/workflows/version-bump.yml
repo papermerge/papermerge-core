@@ -68,7 +68,7 @@ jobs:
     name: Update OpenAPI schema
     needs: ["version-bump"]
     uses: ./.github/workflows/update-openapi-schema.yml
-    if: ${{ github.event.inputs.update-openapi-schema == 'true' }}
+    if: ${{ inputs.update-openapi-schema == 'true' }}
     secrets:
       PAPERMERGE__MAIN__SECRET_KEY: ${{ secrets.PAPERMERGE__MAIN__SECRET_KEY }}
       GH_PAT_GENERATE_OPENAPI_SCHEMA: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
@@ -77,19 +77,19 @@ jobs:
     name: Publish to Dockerhub
     needs: ["version-bump"]
     uses: ./.github/workflows/publish-to-dockerhub.yml
-    if: ${{ github.event.inputs.publish-to-dockerhub == 'true' }}
+    if: ${{ inputs.publish-to-dockerhub == 'true' }}
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
-      INCLUDE_ARM64_PLATFORM: ${{ github.event.include_arm64_platform == 'true' }}
+      INCLUDE_ARM64_PLATFORM: ${{ inputs.include_arm64_platform == 'true' }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io
     needs: ["version-bump"]
     uses: ./.github/workflows/publish-to-ghcr.yml
-    if: ${{ github.event.inputs.publish-to-ghcr == 'true' }}
+    if: ${{ inputs.publish-to-ghcr == 'true' }}
     secrets:
       MY_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
@@ -99,6 +99,6 @@ jobs:
     name: Publish to Pypi
     needs: ["version-bump"]
     uses: ./.github/workflows/publish-to-pypi.yml
-    if: ${{ github.event.inputs.publish-to-pypi == 'true' }}
+    if: ${{ inputs.publish-to-pypi == 'true' }}
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}

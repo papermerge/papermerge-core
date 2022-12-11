@@ -101,6 +101,6 @@ jobs:
               workflow_id: 'build.yml',
               ref: 'master',
               inputs: {
-                 version: ${{ inputs.VERSION }}
+                 version: '${{ inputs.VERSION }}'
               }
             })

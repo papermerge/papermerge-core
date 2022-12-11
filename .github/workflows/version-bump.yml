@@ -3,6 +3,14 @@ name: Version Bump
 on:
   workflow_dispatch:
     inputs:
+      incremented_part:
+        type: choice
+        description: Incremented Part
+        default: 'micro'
+        options:
+          - major
+          - minor
+          - micro
       publish-to-dockerhub:
         description: 'Publish to Dockerhub?'
         type: boolean
@@ -42,6 +50,7 @@ jobs:
         uses: papermerge/banger@master
         with:
           files_list: "pyproject.toml,papermerge/core/version.py"
+          incremented_part: ${{ inputs.incremented_part }}
 
       - name: Commit files
         run: |

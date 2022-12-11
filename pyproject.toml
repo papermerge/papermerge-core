@@ -39,7 +39,7 @@ Tracker = "https://github.com/ciur/papermerge/issues"
 Source = "https://github.com/papermerge/papermerge-core"
 
 [tool.poetry.dependencies]
-python = ">=3.8, <=3.10.6"
+python = ">=3.8, <3.11"
 django = "^4.0"
 djangorestframework = "^3.13.1"
 django-cors-headers = "^3.9.0"

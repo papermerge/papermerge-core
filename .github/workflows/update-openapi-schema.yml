@@ -8,6 +8,11 @@ on:
         required: true
       GH_PAT_GENERATE_OPENAPI_SCHEMA:
         required: true
+    inputs:
+        VERSION:
+          required: true
+          type: string
+
 
 jobs:
   create-pr:
@@ -64,7 +69,8 @@ jobs:
           checkStatus: false
 
   # https://github.com/orgs/community/discussions/26323
-  dispatch-event:  # trigger REST API clients generation
+  dispatch-event-client-gen:  # trigger REST API clients generation
+    name: Trigger client generation
     needs: [ create-pr ]
     runs-on: ubuntu-latest
     steps:
@@ -78,4 +84,24 @@ jobs:
               repo: 'rest-api-clients',
               workflow_id: 'generate.yml',
               ref: 'master'
+            })
+
+  dispatch-event-doc-gen:  # trigger REST API clients generation
+    name: Trigger doc generation
+    needs: [ create-pr ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger dispatch event
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_PAT_GENERATE_OPENAPI_SCHEMA }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'papermerge',
+              repo: 'openapi-schema',
+              workflow_id: 'build.yml',
+              ref: 'master',
+              inputs: {
+                 version: ${{ inputs.VERSION }}
+              }
             })

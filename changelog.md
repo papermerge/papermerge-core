@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0] - 2022-12-12
+
+There are no bug fixes or features added in this release. This release
+contains only adjustments to REST API so that it is possible now to generate practical
+[rest api clients](https://github.com/papermerge/rest-api-clients).
+
 ## [2.1.0b5] - 2022-09-22
 
 - bugfix: read OCR language preferences correctly. See [issue#75](https://github.com/papermerge/papermerge-core/issues/75)

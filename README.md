@@ -2,7 +2,6 @@
 
 # Papermerge REST API Server
 
-
 This python package is the heart of Papermerge project. It consists of a set
 of reusable Django apps which are consumed across different bundles of
 Papermerge Document Management System (DMS).
@@ -31,7 +30,7 @@ Papermerge is perfect tool to manage documents in PDF, JPEG, TIFF and PNG format
 
 ## Features Highlights
 
-* RESTul API
+* OpenAPI compliant REST API
 * Works well with PDF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
 * Full Text Search of the scanned documents (supports four search engine backends, uses [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/) by default)
@@ -81,7 +80,7 @@ For full list of supported environment variables check [online documentation](ht
 
 ## Docker Compose
 
-By default Papermerge DMS uses sqlite3 database. In order to use PostgreSQL use following docker compose file:
+By default Papermerge REST API server uses sqlite3 database. In order to use PostgreSQL use following docker compose file:
 
     version: '3.7'
     services:
@@ -108,7 +107,7 @@ By default Papermerge DMS uses sqlite3 database. In order to use PostgreSQL use 
     volumes:
         postgres_data:version: '3.7'
 
-Above mentioned docker compose file can be used to start Papermerge DMS REST API backend server which will use PostgreSQL database to store data.
+Above mentioned docker compose file can be used to start Papermerge REST API server which will use PostgreSQL database to store data.
 
 For detailed description on how to start Papermerge DMS using docker compose read
 [Docker Compose/Detailed Explanation](https://docs.papermerge.io/Installation/docker-compose.html#detailed-explanation)

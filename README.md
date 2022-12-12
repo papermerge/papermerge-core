@@ -45,7 +45,29 @@ Papermerge is perfect tool to manage documents in PDF, JPEG, TIFF and PNG format
 
 ## Documentation
 
-Online documentation is available at [https://docs.papermerge.io](https://docs.papermerge.io/)
+For an overview on REST API is available [here](https://docs.papermerge.io/REST%20API/index.html).
+
+Detailed online REST API reference can be viewed as:
+
+- [redoc](https://docs.papermerge.io/redoc/)
+- [swagger](https://docs.papermerge.io/swagger-ui/)
+
+Note that REST API reference documentation is generated from
+OpenAPI schema. OpenAPI schema is stored in its own dedicated
+repository [papermerge/openapi-schema](https://github.com/papermerge/openapi-schema).
+
+Papermerge DMS documentation is available at [https://docs.papermerge.io](https://docs.papermerge.io/)
+
+## Docker
+
+In order to start Papermerge REST API server as docker image use following command:
+
+    docker run -p 8000:8000 \
+        -e PAPERMERGE__MAIN__SECRET_KEY=abc \
+        -e DJANGO_SUPERUSER_PASSWORD=123 \
+        papermerge/papermerge:latest
+
+
 
 
 ## Tests

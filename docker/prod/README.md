@@ -33,13 +33,13 @@ Credentials are:
 - password: 123
 
 If you want initial superuser to have another username (e.g. john), use `DJANGO_SUPERUSER_USERNAME` environment variable:
-    
+
     docker run -p 8000:8000 \
         -e PAPERMERGE__MAIN__SECRET_KEY=abc \
         -e DJANGO_SUPERUSER_PASSWORD=123 \
         -e DJANGO_SUPERUSER_USERNAME=john \
         papermerge/papermerge:latest
-        
+
 For full list of supported environment variables check [online documentation](https://docs.papermerge.io/Settings/index.html).
 
 ## Use Postgres SQL

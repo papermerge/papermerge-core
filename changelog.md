@@ -1,5 +1,9 @@
 # Changelog
 
+<!-- towncrier release notes start -->
+
+<!-- towncrier release notes end -->
+
 ## [2.1.0] - 2022-12-12
 
 There are no bug fixes or features added in this release. This release

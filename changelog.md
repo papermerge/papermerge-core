@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.1] - 2022-12-17
+
+
+### Added
+
+- Use OCRmyPDF deskew feature/flag i.e. OCR process will deskew crooked pages [issue#494](https://github.com/ciur/papermerge/issues/494)
+
+
 <!-- towncrier release notes end -->
 
 ## [2.1.0] - 2022-12-12

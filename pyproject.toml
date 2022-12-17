@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "2.1.0"
+version = "2.1.1"
 description = "Open source document management system for digital archives"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 maintainers = ["Eugen Ciur <eugen@papermerge.com>"]
@@ -118,7 +118,7 @@ filename = "changelog.md"
 start_string = "<!-- towncrier release notes start -->\n"
 underlines = ["", "", ""]
 template = "changelog.d/changelog_template.jinja"
-title_format = "## {version} - {project_date}"
+title_format = "## [{version}] - {project_date}"
 issue_format = "[issue#{issue}](https://github.com/ciur/papermerge/issues/{issue})"
 
 [[tool.towncrier.type]]

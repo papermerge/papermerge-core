@@ -118,7 +118,7 @@ filename = "changelog.md"
 start_string = "<!-- towncrier release notes start -->\n"
 underlines = ["", "", ""]
 template = "changelog.d/changelog_template.jinja"
-title_format = "## {version} - {project_date}"
+title_format = "## [{version}] - {project_date}"
 issue_format = "[issue#{issue}](https://github.com/ciur/papermerge/issues/{issue})"
 
 [[tool.towncrier.type]]

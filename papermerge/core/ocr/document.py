@@ -68,7 +68,8 @@ def _ocr_document(
         keep_temporary_files=False,
         sidecar_dir=sidecars_dir,
         sidecar_format='svg',
-        preview_width=preview_width
+        preview_width=preview_width,
+        deskew=True
     )
 
 

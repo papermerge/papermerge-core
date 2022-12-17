@@ -35,7 +35,15 @@ packages = [
 ]
 [tool.poetry.group.dev.dependencies]
 towncrier = "^22.8.0"
-
+pytest = "^7.1.2"
+pytest-django = "^4.4"
+pycodestyle = "^2.8"
+django-extensions = "^3.1"
+ipython = "^8.0.1"
+model-bakery = "^1.5.0"
+taskipy = "^1.10.2"
+"pdfminer.six" = "^20220524"
+pre-commit = "^2.20.0"
 
 [project.urls]
 Tracker = "https://github.com/ciur/papermerge/issues"
@@ -82,16 +90,6 @@ yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
 Whoosh = "^2.7.4"
 pdf2image = "^1.16.0"
 
-[tool.poetry.dev-dependencies]
-pytest = "^7.1.2"
-pytest-django = "^4.4"
-pycodestyle = "^2.8"
-django-extensions = "^3.1"
-ipython = "^8.0.1"
-pre-commit = "^2.17.0"
-model-bakery = "^1.5.0"
-taskipy = "^1.10.2"
-"pdfminer.six" = "^20220524"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE="tests.config.settings"

@@ -1,3 +1,4 @@
+import pytest
 from papermerge.test import TestCase
 from papermerge.core.models import User, Folder
 
@@ -51,3 +52,21 @@ class TestFolderModel(TestCase):
             parent=self.user.inbox_folder
         )
         assert self.user.inbox_folder.children.count() == 1
+
+    @pytest.mark.skip(reason="Feature is work in progress")
+    def test_two_folders_with_same_title(self):
+        """
+        It should not be possible to create to folders with same (parent, title)
+        pair
+        """
+        Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        with pytest.raises(Exception):
+            Folder.objects.create(
+                title='My Documents',
+                user=self.user,
+                parent=self.user.inbox_folder
+            )

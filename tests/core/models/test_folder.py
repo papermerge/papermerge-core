@@ -55,7 +55,7 @@ class TestFolderModel(TestCase):
         assert self.user.inbox_folder.children.count() == 1
 
     def test_two_folders_with_same_title_under_same_parent(self):
-        """It should not be possible to create to folders with
+        """It should not be possible to create two folders with
         same (parent, title) pair i.e. we cannot have folders with same
         title under same parent
         """
@@ -64,16 +64,16 @@ class TestFolderModel(TestCase):
             user=self.user,
             parent=self.user.inbox_folder
         )
-        with transaction.atomic():
-            with self.assertRaises(IntegrityError):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
                 Folder.objects.create(
                     title='My Documents',
                     user=self.user,
                     parent=self.user.inbox_folder
                 )
 
-    def test_two_folders_with_same_title_under_different_parent(self):
-        """It should be possible to create to folders with
+    def test_two_folders_with_same_title_under_different_parents(self):
+        """It should be possible to create two folders with
         same title under different parents
         """
         Folder.objects.create(

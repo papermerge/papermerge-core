@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
 from rest_framework_json_api.utils import get_resource_type_from_instance
@@ -47,3 +48,9 @@ class FolderSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Folder.objects.all(),
+                fields=['parent', 'title']
+            )
+        ]

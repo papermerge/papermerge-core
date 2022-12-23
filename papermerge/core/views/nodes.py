@@ -107,7 +107,37 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     @extend_schema(
         request=Data_NodeSerializer(),
         responses={
-            201: Data_NodeSerializer()
+            201: Data_NodeSerializer(),
+            400: {
+                'type': 'object',
+                'properties': {
+                    'errors': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'detail': {
+                                    'type': 'string'
+                                },
+                                'status': {
+                                    'type': 'string'
+                                },
+                                'code': {
+                                    'type': 'string'
+                                },
+                                'source': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'pointer': {
+                                            'type': 'string'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     )
     def create(self, request, *args, **kwargs):

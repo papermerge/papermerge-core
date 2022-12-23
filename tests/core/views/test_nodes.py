@@ -313,3 +313,50 @@ class NodesViewTestCase(TestCase):
         response = self.post(url, json_data, type="vnd.api")
         assert response.status_code == 400
         assert response.data[0]['code'] == 'unique'
+
+    def test_two_folders_with_same_title_under_different_parents(self):
+        """It should be possible to create two folders with
+        same if they are under different parents.
+        """
+        json_data = {
+            "data": {
+                "type": "folders",
+                "attributes": {
+                    "title": "My Documents"
+                },
+                "relationships": {
+                    "parent": {
+                        "data": {
+                            "type": "folders",
+                            "id": str(self.user.home_folder.pk)
+                        }
+                    }
+                }
+            }
+        }
+
+        url = reverse('node-list')
+        # Create first folder 'My documents' (inside home folder)
+        response = self.post(url, json_data, type="vnd.api")
+        assert response.status_code == 201
+
+        # Create second folder 'My Documents' also inside home folder
+        json_data = {
+            "data": {
+                "type": "folders",
+                "attributes": {
+                    "title": "My Documents"
+                },
+                "relationships": {
+                    "parent": {
+                        "data": {
+                            "type": "folders",
+                            "id": str(self.user.inbox_folder.pk)
+                        }
+                    }
+                }
+            }
+        }
+        # create folder 'My Documents' in Inbox
+        response = self.post(url, json_data, type="vnd.api")
+        assert response.status_code == 201

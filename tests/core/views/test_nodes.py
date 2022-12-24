@@ -43,6 +43,59 @@ class NodesViewTestCase(TestCase):
         # user's inbox contains one item
         assert response.data == {'count': 1}
 
+    def test_get_inboxcount_containing_recursive_items(self):
+        """
+        Inbox folder contains two folders:
+        - My Documents
+        - My Invoices
+
+        Both My Documents and My Invoices contains another two documents:
+        - My Documents
+            - doc1.pdf
+            - doc2.pdf
+        My Invoices
+            - invoice1.pdf
+            - invoice2.pdf
+
+        In such case, inbox should show item count = 2.
+        """
+        my_documents = Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        Document.objects.create(
+            title='doc1.pdf',
+            user=self.user,
+            parent=my_documents
+        )
+        Document.objects.create(
+            title='doc2.pdf',
+            user=self.user,
+            parent=my_documents
+        )
+        my_invoices = Folder.objects.create(
+            title='My Invoices',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        Document.objects.create(
+            title='invoice1.pdf',
+            user=self.user,
+            parent=my_invoices
+        )
+        Document.objects.create(
+            title='invoice2.pdf',
+            user=self.user,
+            parent=my_invoices
+        )
+
+        response = self.client.get(reverse('inboxcount'))
+        assert response.status_code == 200
+
+        # user's inbox contains one item
+        assert response.data == {'count': 2}
+
     def test_assign_tags_to_non_tagged_folder(self):
         """
         url:

@@ -53,11 +53,12 @@ class NodesViewTestCase(TestCase):
         - My Documents
             - doc1.pdf
             - doc2.pdf
-        My Invoices
+        - My Invoices
             - invoice1.pdf
             - invoice2.pdf
 
-        In such case, inbox should show item count = 2.
+        In such case, inbox should show item count = 2, which corresponds to the
+        two direct children of the inbox - 'My Documents' and 'My Invoices'
         """
         my_documents = Folder.objects.create(
             title='My Documents',

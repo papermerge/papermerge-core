@@ -200,7 +200,7 @@ class InboxCountView(RequireAuthMixin, APIView, GetClassSerializerMixin):
     def get(self, request):
         inbox_folder = request.user.inbox_folder
         return Response({
-            'count': inbox_folder.get_descendants().count()
+            'count': inbox_folder.get_children().count()
         })
 
 

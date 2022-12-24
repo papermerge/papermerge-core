@@ -2,6 +2,15 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.2] - 2022-12-24
+
+
+### Fixed
+
+- Inbox shows wrong number of items [issue#497](https://github.com/ciur/papermerge/issues/497)
+- Do not allow folders and documents with same title under same parent [issue#498](https://github.com/ciur/papermerge/issues/498)
+
+
 ## [2.1.1] - 2022-12-17
 
 

@@ -162,21 +162,8 @@ class BaseTreeNode(PolymorphicMPTTModel):
         verbose_name_plural = _("Documents")
         _icon_name = 'basetreenode'
 
-
-class AbstractNode(models.Model):
-    """
-    Common class apps need to inherit from in order
-    to extend BaseTreeNode model.
-    """
-    base_ptr = models.ForeignKey(
-        BaseTreeNode,
-        related_name=RELATED_NAME_FMT,
-        related_query_name=RELATED_QUERY_NAME_FMT,
-        on_delete=models.CASCADE
-    )
-
-    class Meta:
-        abstract = True
-
-    def get_title(self):
-        return self.base_ptr.title
+        constraints = [
+            models.UniqueConstraint(
+                fields=['parent', 'title'], name='unique title per parent'
+            ),
+        ]

@@ -5,7 +5,7 @@ from django.db import models
 
 from papermerge.core.models.document import Document
 from papermerge.core.models.folder import Folder
-from papermerge.core.models.node import BaseTreeNode, AbstractNode
+from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.models.page import Page
 from papermerge.core.models.tags import (
     ColoredTag,

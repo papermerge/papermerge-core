@@ -1,5 +1,3 @@
-
-
 from papermerge.core.models import Folder
 from rest_framework_json_api.views import ModelViewSet
 from rest_framework_json_api.renderers import JSONRenderer

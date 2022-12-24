@@ -1,4 +1,5 @@
 from rest_framework.serializers import Serializer
+from rest_framework.validators import UniqueTogetherValidator
 
 from rest_framework_json_api import serializers
 from rest_framework_json_api.relations import ResourceRelatedField
@@ -51,6 +52,12 @@ class DocumentSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Document.objects.all(),
+                fields=['parent', 'title']
+            )
+        ]
 
     def create(self, validated_data):
         return Document.objects.create_document(

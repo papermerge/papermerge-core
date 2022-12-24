@@ -1,3 +1,5 @@
+from django.db.utils import IntegrityError
+from django.db import transaction
 from papermerge.test import TestCase
 from papermerge.core.models import User, Folder
 
@@ -51,3 +53,36 @@ class TestFolderModel(TestCase):
             parent=self.user.inbox_folder
         )
         assert self.user.inbox_folder.children.count() == 1
+
+    def test_two_folders_with_same_title_under_same_parent(self):
+        """It should not be possible to create two folders with
+        same (parent, title) pair i.e. we cannot have folders with same
+        title under same parent
+        """
+        Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Folder.objects.create(
+                    title='My Documents',
+                    user=self.user,
+                    parent=self.user.inbox_folder
+                )
+
+    def test_two_folders_with_same_title_under_different_parents(self):
+        """It should be possible to create two folders with
+        same title under different parents
+        """
+        Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+        Folder.objects.create(
+            title='My Documents',  # same title
+            user=self.user,
+            parent=self.user.home_folder  # different parent
+        )

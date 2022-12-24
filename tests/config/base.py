@@ -114,3 +114,5 @@ REST_FRAMEWORK = {
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler'
 ]
+
+USE_TZ = False

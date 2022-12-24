@@ -3,6 +3,9 @@ import shutil
 from pathlib import Path
 from unittest.mock import patch
 
+from django.db.utils import IntegrityError
+from django.db import transaction
+
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
@@ -180,3 +183,40 @@ class TestDocumentModel(TestCase):
         assert dst_doc.versions.count() == 1
         dst_doc_version = dst_doc.versions.last()
         assert dst_doc_version.pages.count() == 2
+
+    def test_two_documents_with_same_title_under_same_parent(self):
+        """It should not be possible to create two documents with
+        same (parent, title) pair i.e. we cannot have documents with same
+        title under same parent.
+        """
+        Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Document.objects.create_document(
+                    title="three-pages.pdf",
+                    lang="deu",
+                    user_id=self.user.pk,
+                    parent=self.user.home_folder
+                )
+
+    def test_two_documents_with_same_title_under_different_parents(self):
+        """It should be possible to create two documents with
+        same title given the fact that documents have different parents.
+        """
+        Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.home_folder
+        )
+        Document.objects.create_document(
+            title="three-pages.pdf",
+            lang="deu",
+            user_id=self.user.pk,
+            parent=self.user.inbox_folder  # this time - different parent
+        )

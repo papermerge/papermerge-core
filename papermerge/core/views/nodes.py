@@ -321,7 +321,7 @@ class NodeTagsView(
         return ret
 
     def perform_create(self, serializer):
-        node = self.get_object()
+        node = self.get_object().folder_or_document
         node.tags.set(
             serializer.data['tags'],
             tag_kwargs={"user": self.request.user}
@@ -352,7 +352,8 @@ class NodeTagsView(
         return super().patch(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        node = self.get_object()
+        node = self.get_object().folder_or_document
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -372,7 +373,7 @@ class NodeTagsView(
         return self.destroy(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        node = self.get_object()
+        node = self.get_object().document_or_folder
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

@@ -73,6 +73,10 @@ class Folder(BaseTreeNode):
     def __str__(self):
         return self.title
 
+    def get_children(self):
+        """Returns direct children of current node"""
+        return Folder.objects.filter(parent=self)
+
 
 def get_inbox_children(user):
     """

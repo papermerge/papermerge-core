@@ -136,6 +136,17 @@ class BaseTreeNode(models.Model):
 
         return NODE_TYPE_FOLDER
 
+    @property
+    def document_or_folder(self):
+        return self.folder_or_document
+
+    @property
+    def folder_or_document(self):
+        if self.is_folder:
+            return self.folder
+
+        return self.document
+
     def is_folder(self):
         return self.type == NODE_TYPE_FOLDER
 

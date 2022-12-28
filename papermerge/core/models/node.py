@@ -3,36 +3,22 @@ import uuid
 
 from django.utils import timezone
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.contrib.contenttypes.models import ContentType
 
 from taggit.managers import TaggableManager
 
 from papermerge.core import validators
 from papermerge.core.models.tags import ColoredTag
-from polymorphic_tree.models import (
-    PolymorphicMPTTModel,
-    PolymorphicTreeForeignKey
-)
-from polymorphic_tree.managers import (
-    PolymorphicMPTTModelManager,
-    PolymorphicMPTTQuerySet
-)
-
-# things you can propagate from parent node to
-# child node
-PROPAGATE_ACCESS = 'access'
-PROPAGATE_KV = 'kv'
-PROPAGATE_KVCOMP = 'kvcomp'
-RELATED_NAME_FMT = "%(app_label)s_%(class)s_related"
-RELATED_QUERY_NAME_FMT = "%(app_label)s_%(class)ss"
 
 
-class NodeManager(PolymorphicMPTTModelManager):
+NODE_TYPE_FOLDER = 'folder'
+NODE_TYPE_DOCUMENT = 'document'
+
+
+class NodeManager(models.Manager):
     pass
 
 
-class NodeQuerySet(PolymorphicMPTTQuerySet):
+class NodeQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
         for node in self:
@@ -53,25 +39,25 @@ class NodeQuerySet(PolymorphicMPTTQuerySet):
 CustomNodeManager = NodeManager.from_queryset(NodeQuerySet)
 
 
-class BaseTreeNode(PolymorphicMPTTModel):
+class BaseTreeNode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
-    parent = PolymorphicTreeForeignKey(
+    parent = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
         blank=True,
         null=True,
         related_name='children',
-        verbose_name=_('parent')
+        verbose_name='parent'
     )
     title = models.CharField(
-        _("Title"),
+        "Title",
         max_length=200,
         validators=[validators.safe_character_validator]
     )
 
     lang = models.CharField(
-        _('Language'),
+        'Language',
         max_length=8,
         blank=False,
         null=False,
@@ -141,25 +127,28 @@ class BaseTreeNode(PolymorphicMPTTModel):
         ret = self.human_datetime(self.created_at)
         return ret
 
+    @property
+    def type(self):
+        try:
+            self.folder
+        except Exception:
+            return NODE_TYPE_DOCUMENT
+
+        return NODE_TYPE_FOLDER
+
     def is_folder(self):
-        folder_ct = ContentType.objects.get(
-            app_label='core', model='folder'
-        )
-        return self.polymorphic_ctype_id == folder_ct.id
+        return self.type == NODE_TYPE_FOLDER
 
     def is_document(self):
-        document_ct = ContentType.objects.get(
-            app_label='core', model='document'
-        )
-        return document_ct.id == self.polymorphic_ctype_id
+        return self.type == NODE_TYPE_DOCUMENT
 
-    class Meta(PolymorphicMPTTModel.Meta):
+    class Meta:
         # please do not confuse this "Documents" verbose name
         # with real Document object, which is derived from BaseNodeTree.
         # The reason for this naming confusing is that from the point
         # of view of users, the BaseNodeTree are just a list of documents.
-        verbose_name = _("Documents")
-        verbose_name_plural = _("Documents")
+        verbose_name = "Documents"
+        verbose_name_plural = "Documents"
         _icon_name = 'basetreenode'
 
         constraints = [

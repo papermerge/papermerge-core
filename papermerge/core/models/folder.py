@@ -1,23 +1,13 @@
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
-from polymorphic_tree.managers import (
-    PolymorphicMPTTModelManager,
-    PolymorphicMPTTQuerySet
-)
-
-from papermerge.core.models.node import (
-    BaseTreeNode,
-    RELATED_NAME_FMT,
-    RELATED_QUERY_NAME_FMT
-)
+from papermerge.core.models.node import BaseTreeNode
 
 
-class FolderManager(PolymorphicMPTTModelManager):
+class FolderManager(models.Manager):
     pass
 
 
-class FolderQuerySet(PolymorphicMPTTQuerySet):
+class FolderQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
         for node in self:
@@ -77,26 +67,11 @@ class Folder(BaseTreeNode):
             pass
 
     class Meta:
-        verbose_name = _("Folder")
-        verbose_name_plural = _("Folders")
+        verbose_name = "Folder"
+        verbose_name_plural = "Folders"
 
     def __str__(self):
         return self.title
-
-
-class AbstractFolder(models.Model):
-    base_ptr = models.ForeignKey(
-        Folder,
-        related_name=RELATED_NAME_FMT,
-        related_query_name=RELATED_QUERY_NAME_FMT,
-        on_delete=models.CASCADE
-    )
-
-    class Meta:
-        abstract = True
-
-    def get_title(self):
-        return self.base_ptr.title
 
 
 def get_inbox_children(user):

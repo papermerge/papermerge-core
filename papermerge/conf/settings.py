@@ -103,9 +103,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',
-    'polymorphic_tree',
-    'polymorphic',
-    'mptt',
     'channels',
     'haystack',
 ]

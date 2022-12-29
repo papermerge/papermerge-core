@@ -14,6 +14,11 @@ NODE_TYPE_FOLDER = 'folder'
 NODE_TYPE_DOCUMENT = 'document'
 
 
+def move_node(source_node, target_node):
+    source_node.parent = target_node
+    source_node.save()
+
+
 class NodeManager(models.Manager):
     pass
 

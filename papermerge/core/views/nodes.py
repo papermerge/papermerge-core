@@ -39,6 +39,7 @@ from papermerge.core.models import (
     BaseTreeNode,
     Document,
 )
+from papermerge.core.models.node import move_node
 
 from papermerge.core.nodes_download import get_nodes_download
 
@@ -188,9 +189,7 @@ class NodesMoveView(RequireAuthMixin, GenericAPIView):
             except BaseTreeNode.DoesNotExist as exc:
                 logger.error(exc, exc_info=True)
 
-            node_model.refresh_from_db()  # this may take a while
-            target_model.refresh_from_db()  # may take a while
-            Document.objects.move_node(node_model, target_model)
+            move_node(node_model, target_model)
 
 
 class InboxCountView(RequireAuthMixin, APIView, GetClassSerializerMixin):

@@ -27,6 +27,13 @@ class NodeSerializer(serializers.PolymorphicModelSerializer):
 
     parent = ResourceRelatedField(queryset=Folder.objects)
 
+    @classmethod
+    def get_polymorphic_serializer_for_instance(cls, instance):
+        if instance.is_document:
+            return DocumentSerializer
+
+        return FolderSerializer
+
     class Meta:
         model = BaseTreeNode
         resource_name = 'nodes'

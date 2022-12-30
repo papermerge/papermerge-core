@@ -3,8 +3,10 @@ import uuid
 
 from django.utils import timezone
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 
 from taggit.managers import TaggableManager
+from taggit.managers import _TaggableManager
 
 from papermerge.core import validators
 from papermerge.core.models.tags import ColoredTag
@@ -17,6 +19,50 @@ NODE_TYPE_DOCUMENT = 'document'
 def move_node(source_node, target_node):
     source_node.parent = target_node
     source_node.save()
+
+
+class PolymorphicTagManager(_TaggableManager):
+    """
+    What is this ugliness all about?
+
+    `taggit` adds tags to models. Besides useful attributes of tag like
+    name and color, tags also consider the "type" of the associated model.
+    For example if we would add tag to Folder model - f1.add(['red', 'blue'])
+    when looking up tags associated to f1 i.e. `f1.tags.all()` `taggit`
+    internals will search for all tags with name 'red' and 'blue' AND
+    model name `Folder` (actually django's ContentType of the model Folder).
+    Similar for Document's doc.tags.all() - will look up for all tags
+    associated to doc instance AND model `Document`.
+
+    In context of Papermerge, both Folder and Documents are Nodes
+    as well - so when user adds tags to Folder or Document instances he/she
+    expects to find same tags when looking via associated node instances.
+
+    Example A:
+
+        $ f1 = Folder.objects.create(...)
+        $ f1.tags.add(['red', 'blue'])
+        $ node = BaseTreeNode.objects.get(pk=f1.pk)     (1)
+        $ node.tags.all() == f1.tags.all()              (2)
+
+    In (1) we get associated node of the folder f1 - and in (2) we expect
+    to that node instance will have tags 'red' and 'blue' associated.
+
+    The problem is that `taggit` does not work that way and without
+    workaround implemented by `PolymorphicTagManager` the above described
+    in Example A will not work - because when performing `node.tags.all()`
+    default `taggit` behaviour is to consider ContentType of the associated
+    instance - in this case `BaseTreeNode`; because tags were added via Folder
+    - they won't be found when looked up via BaseTreeNode (and vice versa).
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Instead of Document or Folder instances/models
+        # always use associated BaseTreeNode instances/model
+        if hasattr(self.instance, 'basetreenode_ptr'):  # Document or Folder
+            self.model = self.instance.basetreenode_ptr.__class__
+            self.instance = self.instance.basetreenode_ptr
 
 
 class NodeManager(models.Manager):
@@ -55,6 +101,14 @@ class BaseTreeNode(models.Model):
         related_name='children',
         verbose_name='parent'
     )
+    polymorphic_ctype = models.ForeignKey(
+        ContentType,
+        null=True,
+        editable=False,
+        on_delete=models.CASCADE,
+        related_name="polymorphic_%(app_label)s.%(class)s_set+",
+    )
+
     title = models.CharField(
         "Title",
         max_length=200,
@@ -81,7 +135,10 @@ class BaseTreeNode(models.Model):
         auto_now=True
     )
 
-    tags = TaggableManager(through=ColoredTag)
+    tags = TaggableManager(
+        through=ColoredTag,
+        manager=PolymorphicTagManager
+    )
 
     # custom Manager + custom QuerySet
     objects = CustomNodeManager()
@@ -157,6 +214,13 @@ class BaseTreeNode(models.Model):
 
     def is_document(self):
         return self.type == NODE_TYPE_DOCUMENT
+
+    def save(self, *args, **kwargs):
+        if not self.polymorphic_ctype_id:
+            self.polymorphic_ctype = ContentType.objects.get_for_model(
+                self, for_concrete_model=False
+            )
+        return super().save(*args, **kwargs)
 
     class Meta:
         # please do not confuse this "Documents" verbose name

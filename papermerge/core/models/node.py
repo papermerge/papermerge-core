@@ -232,6 +232,43 @@ class BaseTreeNode(models.Model):
 
         return self._type == NODE_TYPE_DOCUMENT
 
+    def get_ancestors(self, include_self=True):
+        """Returns all ancestors of the node"""
+        sql = '''
+        WITH RECURSIVE tree AS (
+            SELECT * from core_basetreenode where id = %s
+            UNION ALL
+            SELECT core_basetreenode.*
+                FROM core_node, tree WHERE core_basetreenode.id = tree.parent_id
+        )
+        '''
+        if include_self:
+            sql += 'SELECT * FROM tree'
+            return BaseTreeNode.objects.raw(sql, [self.pk])
+
+        sql += 'SELECT * FROM tree WHERE NOT id = %s'
+
+        return BaseTreeNode.objects.raw(sql, [self.pk, self.pk])
+
+    def get_descendants(self, include_self=True):
+        """Returns all descendants of the node"""
+        sql = '''
+        WITH RECURSIVE tree AS (
+            SELECT * FROM core_basetreenode
+              WHERE id = %s
+            UNION ALL
+            SELECT core_basetreenode.* FROM core_basetreenode, tree
+              WHERE core_basetreenode.parent_id = tree.id
+        )
+        '''
+        node_id = str(self.pk)
+        if include_self:
+            sql += 'SELECT * FROM tree'
+            return BaseTreeNode.objects.raw(sql, [node_id])
+
+        sql += 'SELECT * FROM tree WHERE NOT id = %s'
+        return BaseTreeNode.objects.raw(sql, [node_id, node_id])
+
     def save(self, *args, **kwargs):
         if not self.ctype:
             self.ctype = self.__class__.__name__.lower()

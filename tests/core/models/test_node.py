@@ -117,3 +117,31 @@ class TestNodeModel(TestCase):
         assert node1.document_or_folder == doc1
         # if node is a folder - returns associated folder instance
         assert node2.document_or_folder == f2
+
+    def test_get_descendants(self):
+        my_docs = Folder.objects.create(
+            title='My Documents',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+
+        sub1 = Folder.objects.create(
+            title='sub1',
+            user=self.user,
+            parent=my_docs
+        )
+
+        sub2 = Folder.objects.create(
+            title='sub2',
+            user=self.user,
+            parent=sub1
+        )
+
+        Folder.objects.create(
+            title='sub3',
+            user=self.user,
+            parent=sub2
+        )
+
+        descendants = my_docs.get_descendants()
+        assert len(descendants) == 3

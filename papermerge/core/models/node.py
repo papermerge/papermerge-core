@@ -218,6 +218,7 @@ class BaseTreeNode(models.Model):
 
     @property
     def is_folder(self) -> bool:
+        """Returns True if and only if this node is a folder"""
         if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
             return self.ctype == NODE_TYPE_FOLDER
 
@@ -225,6 +226,7 @@ class BaseTreeNode(models.Model):
 
     @property
     def is_document(self) -> bool:
+        """Returns True if and only if this node is a document"""
         if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
             return self.ctype == NODE_TYPE_DOCUMENT
 

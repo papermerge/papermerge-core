@@ -3,7 +3,6 @@ import uuid
 
 from django.utils import timezone
 from django.db import models
-from django.contrib.contenttypes.models import ContentType
 
 from taggit.managers import TaggableManager
 from taggit.managers import _TaggableManager
@@ -30,12 +29,12 @@ class PolymorphicTagManager(_TaggableManager):
     For example if we would add tag to Folder model - f1.add(['red', 'blue'])
     when looking up tags associated to f1 i.e. `f1.tags.all()` `taggit`
     internals will search for all tags with name 'red' and 'blue' AND
-    model name `Folder` (actually django's ContentType of the model Folder).
-    Similar for Document's doc.tags.all() - will look up for all tags
+    model name `Folder` (actually django's ContentType of the model `Folder`).
+    Similar for `Document` model doc.tags.all() - will look up for all tags
     associated to doc instance AND model `Document`.
 
-    In context of Papermerge, both Folder and Documents are Nodes
-    as well - so when user adds tags to Folder or Document instances he/she
+    In context of Papermerge, both `Folder` and `Documents` are `BaseTreeNode`s
+    as well - so when user adds tags to `Folder` or `Document` instances he/she
     expects to find same tags when looking via associated node instances.
 
     Example A:
@@ -46,14 +45,14 @@ class PolymorphicTagManager(_TaggableManager):
         $ node.tags.all() == f1.tags.all()              (2)
 
     In (1) we get associated node of the folder f1 - and in (2) we expect
-    to that node instance will have tags 'red' and 'blue' associated.
+    that node instance will have tags 'red' and 'blue' associated.
 
     The problem is that `taggit` does not work that way and without
-    workaround implemented by `PolymorphicTagManager` the above described
+    workaround implemented by `PolymorphicTagManager` the scenario described
     in Example A will not work - because when performing `node.tags.all()`
-    default `taggit` behaviour is to consider ContentType of the associated
+    default `taggit` behaviour is to consider `ContentType` of the associated
     instance - in this case `BaseTreeNode`; because tags were added via Folder
-    - they won't be found when looked up via BaseTreeNode (and vice versa).
+    - they won't be found when looked up via `BaseTreeNode` (and vice versa).
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,12 +100,18 @@ class BaseTreeNode(models.Model):
         related_name='children',
         verbose_name='parent'
     )
-    polymorphic_ctype = models.ForeignKey(
-        ContentType,
-        null=True,
-        editable=False,
-        on_delete=models.CASCADE,
-        related_name="polymorphic_%(app_label)s.%(class)s_set+",
+    # shortcut - helps to figure out if node is either folder or document
+    # without performing extra joins. This field may be empty. In such
+    # case you need to perform joins with Folder/Document table to figure
+    # out what type of node is this instance.
+    ctype = models.CharField(
+        max_length=16,
+        choices=(
+            (NODE_TYPE_FOLDER, NODE_TYPE_FOLDER),
+            (NODE_TYPE_DOCUMENT, NODE_TYPE_DOCUMENT),
+        ),
+        blank=True,
+        null=True
     )
 
     title = models.CharField(
@@ -190,7 +195,7 @@ class BaseTreeNode(models.Model):
         return ret
 
     @property
-    def type(self):
+    def _type(self) -> str:
         try:
             self.folder
         except Exception:
@@ -200,26 +205,34 @@ class BaseTreeNode(models.Model):
 
     @property
     def document_or_folder(self):
+        """Returns instance of associated `Folder` or `Document` model"""
         return self.folder_or_document
 
     @property
     def folder_or_document(self):
+        """Returns instance of associated `Folder` or `Document` model"""
         if self.is_folder:
             return self.folder
 
         return self.document
 
-    def is_folder(self):
-        return self.type == NODE_TYPE_FOLDER
+    @property
+    def is_folder(self) -> bool:
+        if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
+            return self.ctype == NODE_TYPE_FOLDER
 
-    def is_document(self):
-        return self.type == NODE_TYPE_DOCUMENT
+        return self._type == NODE_TYPE_FOLDER
+
+    @property
+    def is_document(self) -> bool:
+        if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
+            return self.ctype == NODE_TYPE_DOCUMENT
+
+        return self._type == NODE_TYPE_DOCUMENT
 
     def save(self, *args, **kwargs):
-        if not self.polymorphic_ctype_id:
-            self.polymorphic_ctype = ContentType.objects.get_for_model(
-                self, for_concrete_model=False
-            )
+        if not self.ctype:
+            self.ctype = self.__class__.__name__.lower()
         return super().save(*args, **kwargs)
 
     class Meta:

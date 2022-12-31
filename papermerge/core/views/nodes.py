@@ -1,10 +1,13 @@
 import logging
 
+from collections import OrderedDict
+
 from django.http import (
     Http404,
     HttpResponse
 )
 from django.db.models.signals import post_save
+from django.utils import encoding
 from rest_framework.generics import (
     GenericAPIView,
     CreateAPIView,
@@ -20,6 +23,11 @@ from rest_framework_json_api.parsers import JSONParser as JSONAPIParser
 from rest_framework_json_api.renderers import JSONRenderer as JSONAPIRenderer
 from rest_framework import status
 from rest_framework.serializers import ListSerializer
+from rest_framework.settings import api_settings
+from rest_framework import relations
+
+from rest_framework_json_api import utils
+
 
 from drf_spectacular.utils import (
     extend_schema,
@@ -51,6 +59,61 @@ logger = logging.getLogger(__name__)
 PER_PAGE = 30
 
 
+class JSONAPIPolymorphicRenderer(JSONAPIRenderer):
+    @classmethod
+    def build_json_resource_obj(
+        cls,
+        fields,
+        resource,
+        resource_instance,
+        resource_name,
+        serializer,
+        force_type_resolution=False,
+    ):
+        """
+        When building JSON obj force correct node type! UGLY!
+        """
+        if resource_instance.is_folder:
+            resource_name = "folders"
+        else:
+            resource_name = "documents"
+
+        if resource_instance:
+            resource_id = encoding.force_str(resource_instance.pk)
+        else:
+            resource_id = None
+
+        resource_data = [
+            ("type", resource_name),
+            (
+                "id",
+                resource_id,
+            ),
+            ("attributes", cls.extract_attributes(fields, resource)),
+        ]
+        relationships = cls.extract_relationships(
+            fields,
+            resource,
+            resource_instance
+        )
+        if relationships:
+            relationships['parent']['data']['type'] = 'folders'  # UGLY!
+            resource_data.append(("relationships", relationships))
+        # Add 'self' link if field is present and valid
+        if api_settings.URL_FIELD_NAME in resource and isinstance(
+            fields[api_settings.URL_FIELD_NAME], relations.RelatedField
+        ):
+            resource_data.append(
+                ("links", {"self": resource[api_settings.URL_FIELD_NAME]})
+            )
+
+        meta = cls.extract_meta(serializer, resource)
+        if meta:
+            resource_data.append(("meta", utils.format_field_names(meta)))
+
+        return OrderedDict(resource_data)
+
+
 class NodesViewSet(RequireAuthMixin, ModelViewSet):
     """
     Documents can be organized in folders. One folder can contain documents as
@@ -60,7 +123,7 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
     """
     serializer_class = NodeSerializer
     parser_classes = [JSONAPIParser]
-    renderer_classes = [JSONAPIRenderer]
+    renderer_classes = [JSONAPIPolymorphicRenderer]
     queryset = BaseTreeNode.objects.all()
     # object level permissions
     access_object_permissions = {

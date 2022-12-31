@@ -1,3 +1,5 @@
+from model_bakery import baker
+
 from papermerge.test import TestCase
 from papermerge.core.models import User, Folder, BaseTreeNode, Document
 from papermerge.core.models.node import NODE_TYPE_FOLDER, NODE_TYPE_DOCUMENT
@@ -119,29 +121,63 @@ class TestNodeModel(TestCase):
         assert node2.document_or_folder == f2
 
     def test_get_descendants(self):
-        my_docs = Folder.objects.create(
-            title='My Documents',
+        my_docs = baker.make(
+            'core.Folder',
             user=self.user,
             parent=self.user.inbox_folder
         )
 
-        sub1 = Folder.objects.create(
-            title='sub1',
+        sub1 = baker.make(
+            'core.Folder',
             user=self.user,
             parent=my_docs
         )
 
-        sub2 = Folder.objects.create(
-            title='sub2',
+        sub2 = baker.make(
+            'core.Folder',
             user=self.user,
             parent=sub1
         )
 
-        Folder.objects.create(
-            title='sub3',
+        baker.make(
+            'core.Folder',
             user=self.user,
             parent=sub2
         )
 
-        descendants = my_docs.get_descendants()
+        descendants = my_docs.get_descendants(include_self=False)
         assert len(descendants) == 3
+
+        descendants = my_docs.get_descendants(include_self=True)
+        assert len(descendants) == 4
+
+    def test_get_ancestors(self):
+        my_docs = baker.make(
+            'core.Folder',
+            user=self.user,
+            parent=self.user.inbox_folder
+        )
+
+        sub1 = baker.make(
+            'core.Folder',
+            user=self.user,
+            parent=my_docs
+        )
+
+        sub2 = baker.make(
+            'core.Folder',
+            user=self.user,
+            parent=sub1
+        )
+
+        baker.make(
+            'core.Folder',
+            user=self.user,
+            parent=sub2
+        )
+
+        descendants = sub2.get_ancestors(include_self=False)
+        assert len(descendants) == 3
+
+        descendants = sub2.get_ancestors(include_self=True)
+        assert len(descendants) == 4

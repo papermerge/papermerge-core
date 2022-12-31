@@ -10,6 +10,7 @@ from taggit.managers import _TaggableManager
 from papermerge.core import validators
 from papermerge.core.models.tags import ColoredTag
 
+from .utils import uuid2raw_str
 
 NODE_TYPE_FOLDER = 'folder'
 NODE_TYPE_DOCUMENT = 'document'
@@ -239,29 +240,30 @@ class BaseTreeNode(models.Model):
             SELECT * from core_basetreenode where id = %s
             UNION ALL
             SELECT core_basetreenode.*
-                FROM core_node, tree WHERE core_basetreenode.id = tree.parent_id
+            FROM core_basetreenode, tree
+            WHERE core_basetreenode.id = tree.parent_id
         )
         '''
+        node_id = uuid2raw_str(self.pk)
         if include_self:
             sql += 'SELECT * FROM tree'
-            return BaseTreeNode.objects.raw(sql, [self.pk])
+            return BaseTreeNode.objects.raw(sql, [node_id])
 
         sql += 'SELECT * FROM tree WHERE NOT id = %s'
 
-        return BaseTreeNode.objects.raw(sql, [self.pk, self.pk])
+        return BaseTreeNode.objects.raw(sql, [node_id, node_id])
 
     def get_descendants(self, include_self=True):
         """Returns all descendants of the node"""
         sql = '''
         WITH RECURSIVE tree AS (
-            SELECT * FROM core_basetreenode
-              WHERE id = %s
+            SELECT * FROM core_basetreenode WHERE id = %s
             UNION ALL
             SELECT core_basetreenode.* FROM core_basetreenode, tree
               WHERE core_basetreenode.parent_id = tree.id
         )
         '''
-        node_id = str(self.pk)
+        node_id = uuid2raw_str(self.pk)
         if include_self:
             sql += 'SELECT * FROM tree'
             return BaseTreeNode.objects.raw(sql, [node_id])

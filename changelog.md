@@ -2,6 +2,25 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.3] - 2023-01-01
+
+
+### Removed
+
+- Remove the dependency on mptt/polymorphic/polymorphic_tree packages [issue#501](https://github.com/ciur/papermerge/issues/501)
+
+
+### Added
+
+- Support for Folder+Subfolder (recursive) Import [issue#165](https://github.com/ciur/papermerge/issues/165)
+- Per-User Import Folders [issue#325](https://github.com/ciur/papermerge/issues/325)
+
+
+### Fixed
+
+- Pagination should show correct current page [issue#487](https://github.com/ciur/papermerge/issues/487)
+
+
 ## [2.1.2] - 2022-12-24
 
 

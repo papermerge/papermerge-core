@@ -183,3 +183,41 @@ def test_get_ancestors():
 
     descendants = sub2.get_ancestors(include_self=True)
     assert len(descendants) == 4
+
+
+@pytest.mark.django_db
+def test_get_ancestors_returns_correct_order():
+    """
+    `node.get_ancestors` function is used for building node's breadcrumb.
+    This is why correct order of returned ancestors is important!
+
+    This scenario build following folder structure:
+
+        .home > folder1 > folder2 > folder3
+
+    i.e. folder1 is inside folder .home, folder2 is inside folder1,
+    folder3 is inside folder2.
+
+    method folder.get_ancestors is expected to return a list of node
+    in following order [.home, folder1, folder2, folder3] i.e.
+    .home folder is first one in the list and the node itself is
+    last one in the list.
+    """
+    user = user_recipe.make()
+    folder1 = folder_recipe.make(
+        title='folder1',
+        user=user,
+        parent=user.home_folder
+    )
+    folder2 = folder_recipe.make(title='folder2', parent=folder1, user=user)
+    folder3 = folder_recipe.make(title='folder3', parent=folder2, user=user)
+
+    actual_titles = list(item.title for item in folder3.get_ancestors())
+    # *Order* of list items is important here:
+    # .home folder is first and the node whose ancestors are returned
+    # has last position
+    expected_titles = [
+        Folder.HOME_TITLE, folder1.title, folder2.title, folder3.title
+    ]
+    # lists are compared here (as order is important) - not sets!
+    assert actual_titles == expected_titles

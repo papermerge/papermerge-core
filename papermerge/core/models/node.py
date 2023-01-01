@@ -237,19 +237,19 @@ class BaseTreeNode(models.Model):
         """Returns all ancestors of the node"""
         sql = '''
         WITH RECURSIVE tree AS (
-            SELECT * from core_basetreenode where id = %s
+            SELECT *, 0 as level FROM core_basetreenode WHERE id = %s
             UNION ALL
-            SELECT core_basetreenode.*
+            SELECT core_basetreenode.*, level + 1
             FROM core_basetreenode, tree
             WHERE core_basetreenode.id = tree.parent_id
         )
         '''
         node_id = uuid2raw_str(self.pk)
         if include_self:
-            sql += 'SELECT * FROM tree'
+            sql += 'SELECT * FROM tree ORDER BY level DESC'
             return BaseTreeNode.objects.raw(sql, [node_id])
 
-        sql += 'SELECT * FROM tree WHERE NOT id = %s'
+        sql += 'SELECT * FROM tree WHERE NOT id = %s ORDER BY level'
 
         return BaseTreeNode.objects.raw(sql, [node_id, node_id])
 

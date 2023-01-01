@@ -1,6 +1,5 @@
 from django.db import models
 from haystack import signals
-from haystack.utils import get_identifier
 
 from papermerge.core.models import (
     DocumentVersion,
@@ -30,21 +29,7 @@ class SignalProcessor(signals.BaseSignalProcessor):
             )
 
     def enqueue_save(self, sender, instance, **kwargs):
-        return self.enqueue('save', instance, **kwargs)
+        return update_index.apply_async()
 
     def enqueue_delete(self, sender, instance, **kwargs):
-        return self.enqueue('delete', instance, **kwargs)
-
-    def enqueue(self, action, instance, **kwargs):
-        identifier = get_identifier(instance)
-
-        # We index only Document and Folder models, however when
-        # new DocumentVersion is saved/deleted we need to update its
-        # associated Document
-        if isinstance(instance, DocumentVersion):
-            identifier = get_identifier(instance.document)
-
-        update_index.apply_async(kwargs={
-            'action': action,
-            'identifier': identifier
-        })
+        return update_index.apply_async()

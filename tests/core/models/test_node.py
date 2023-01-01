@@ -221,3 +221,36 @@ def test_get_ancestors_returns_correct_order():
     ]
     # lists are compared here (as order is important) - not sets!
     assert actual_titles == expected_titles
+
+
+@pytest.mark.django_db
+def test_get_ancestors_returns_correct_order_dont_include_self():
+    """
+    This scenario build following folder structure:
+
+        .home > folder1 > folder2 > folder3
+
+    i.e. folder1 is inside folder .home, folder2 is inside folder1,
+    folder3 is inside folder2.
+
+    method folder.get_ancestors(include_self=False) is expected to return a
+    list of node in following order [.home, folder1, folder2] i.e.
+    .home folder is first one in the list and node folder3 IS NOT included
+    in the result list.
+    """
+    user = user_recipe.make()
+    folder1 = folder_recipe.make(
+        title='folder1',
+        user=user,
+        parent=user.home_folder
+    )
+    folder2 = folder_recipe.make(title='folder2', parent=folder1, user=user)
+    folder3 = folder_recipe.make(title='folder3', parent=folder2, user=user)
+
+    actual_titles = list(
+        item.title for item in folder3.get_ancestors(include_self=False)
+    )
+    expected_titles = [
+        Folder.HOME_TITLE, folder1.title, folder2.title
+    ]
+    assert actual_titles == expected_titles

@@ -249,7 +249,7 @@ class BaseTreeNode(models.Model):
             sql += 'SELECT * FROM tree ORDER BY level DESC'
             return BaseTreeNode.objects.raw(sql, [node_id])
 
-        sql += 'SELECT * FROM tree WHERE NOT id = %s ORDER BY level'
+        sql += 'SELECT * FROM tree WHERE NOT id = %s ORDER BY level DESC'
 
         return BaseTreeNode.objects.raw(sql, [node_id, node_id])
 

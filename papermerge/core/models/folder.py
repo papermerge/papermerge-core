@@ -13,7 +13,7 @@ class FolderQuerySet(models.QuerySet):
         for node in self:
             descendants = node.get_descendants()
 
-            if descendants.count() > 0:
+            if len(descendants) > 0:
                 descendants.delete(*args, **kwargs)
             # At this point all descendants were deleted.
             # Self delete :)
@@ -51,7 +51,7 @@ class Folder(BaseTreeNode):
     def delete(self, *args, **kwargs):
         descendants = self.basetreenode_ptr.get_descendants()
 
-        if descendants.count() > 0:
+        if len(descendants) > 0:
             for node in descendants:
                 try:
                     node.delete(*args, **kwargs)

@@ -30,7 +30,6 @@ class GroupJsonAPISerializer(OpenApiSerializerExtension):
         required = []
         attributes = {}
         relationships = {}
-
         for field in self.target.fields.values():
             if isinstance(field, serializers.HyperlinkedIdentityField):
                 # the 'url' is not an attribute but rather a self.link,

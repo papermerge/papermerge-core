@@ -3,36 +3,73 @@ import uuid
 
 from django.utils import timezone
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.contrib.contenttypes.models import ContentType
 
 from taggit.managers import TaggableManager
+from taggit.managers import _TaggableManager
 
 from papermerge.core import validators
 from papermerge.core.models.tags import ColoredTag
-from polymorphic_tree.models import (
-    PolymorphicMPTTModel,
-    PolymorphicTreeForeignKey
-)
-from polymorphic_tree.managers import (
-    PolymorphicMPTTModelManager,
-    PolymorphicMPTTQuerySet
-)
 
-# things you can propagate from parent node to
-# child node
-PROPAGATE_ACCESS = 'access'
-PROPAGATE_KV = 'kv'
-PROPAGATE_KVCOMP = 'kvcomp'
-RELATED_NAME_FMT = "%(app_label)s_%(class)s_related"
-RELATED_QUERY_NAME_FMT = "%(app_label)s_%(class)ss"
+from .utils import uuid2raw_str
+
+NODE_TYPE_FOLDER = 'folder'
+NODE_TYPE_DOCUMENT = 'document'
 
 
-class NodeManager(PolymorphicMPTTModelManager):
+def move_node(source_node, target_node):
+    source_node.parent = target_node
+    source_node.save()
+
+
+class PolymorphicTagManager(_TaggableManager):
+    """
+    What is this ugliness all about?
+
+    `taggit` adds tags to models. Besides useful attributes of tag like
+    name and color, tags also consider the "type" of the associated model.
+    For example if we would add tag to Folder model - f1.add(['red', 'blue'])
+    when looking up tags associated to f1 i.e. `f1.tags.all()` `taggit`
+    internals will search for all tags with name 'red' and 'blue' AND
+    model name `Folder` (actually django's ContentType of the model `Folder`).
+    Similar for `Document` model doc.tags.all() - will look up for all tags
+    associated to doc instance AND model `Document`.
+
+    In context of Papermerge, both `Folder` and `Documents` are `BaseTreeNode`s
+    as well - so when user adds tags to `Folder` or `Document` instances he/she
+    expects to find same tags when looking via associated node instances.
+
+    Example A:
+
+        $ f1 = Folder.objects.create(...)
+        $ f1.tags.add(['red', 'blue'])
+        $ node = BaseTreeNode.objects.get(pk=f1.pk)     (1)
+        $ node.tags.all() == f1.tags.all()              (2)
+
+    In (1) we get associated node of the folder f1 - and in (2) we expect
+    that node instance will have tags 'red' and 'blue' associated.
+
+    The problem is that `taggit` does not work that way and without
+    workaround implemented by `PolymorphicTagManager` the scenario described
+    in Example A will not work - because when performing `node.tags.all()`
+    default `taggit` behaviour is to consider `ContentType` of the associated
+    instance - in this case `BaseTreeNode`; because tags were added via Folder
+    - they won't be found when looked up via `BaseTreeNode` (and vice versa).
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Instead of Document or Folder instances/models
+        # always use associated BaseTreeNode instances/model
+        if hasattr(self.instance, 'basetreenode_ptr'):  # Document or Folder
+            self.model = self.instance.basetreenode_ptr.__class__
+            self.instance = self.instance.basetreenode_ptr
+
+
+class NodeManager(models.Manager):
     pass
 
 
-class NodeQuerySet(PolymorphicMPTTQuerySet):
+class NodeQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
         for node in self:
@@ -53,25 +90,39 @@ class NodeQuerySet(PolymorphicMPTTQuerySet):
 CustomNodeManager = NodeManager.from_queryset(NodeQuerySet)
 
 
-class BaseTreeNode(PolymorphicMPTTModel):
+class BaseTreeNode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
-    parent = PolymorphicTreeForeignKey(
+    parent = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
         blank=True,
         null=True,
         related_name='children',
-        verbose_name=_('parent')
+        verbose_name='parent'
     )
+    # shortcut - helps to figure out if node is either folder or document
+    # without performing extra joins. This field may be empty. In such
+    # case you need to perform joins with Folder/Document table to figure
+    # out what type of node is this instance.
+    ctype = models.CharField(
+        max_length=16,
+        choices=(
+            (NODE_TYPE_FOLDER, NODE_TYPE_FOLDER),
+            (NODE_TYPE_DOCUMENT, NODE_TYPE_DOCUMENT),
+        ),
+        blank=True,
+        null=True
+    )
+
     title = models.CharField(
-        _("Title"),
+        "Title",
         max_length=200,
         validators=[validators.safe_character_validator]
     )
 
     lang = models.CharField(
-        _('Language'),
+        'Language',
         max_length=8,
         blank=False,
         null=False,
@@ -90,7 +141,10 @@ class BaseTreeNode(PolymorphicMPTTModel):
         auto_now=True
     )
 
-    tags = TaggableManager(through=ColoredTag)
+    tags = TaggableManager(
+        through=ColoredTag,
+        manager=PolymorphicTagManager
+    )
 
     # custom Manager + custom QuerySet
     objects = CustomNodeManager()
@@ -141,25 +195,94 @@ class BaseTreeNode(PolymorphicMPTTModel):
         ret = self.human_datetime(self.created_at)
         return ret
 
-    def is_folder(self):
-        folder_ct = ContentType.objects.get(
-            app_label='core', model='folder'
-        )
-        return self.polymorphic_ctype_id == folder_ct.id
+    @property
+    def _type(self) -> str:
+        try:
+            self.folder
+        except Exception:
+            return NODE_TYPE_DOCUMENT
 
-    def is_document(self):
-        document_ct = ContentType.objects.get(
-            app_label='core', model='document'
-        )
-        return document_ct.id == self.polymorphic_ctype_id
+        return NODE_TYPE_FOLDER
 
-    class Meta(PolymorphicMPTTModel.Meta):
+    @property
+    def document_or_folder(self):
+        """Returns instance of associated `Folder` or `Document` model"""
+        return self.folder_or_document
+
+    @property
+    def folder_or_document(self):
+        """Returns instance of associated `Folder` or `Document` model"""
+        if self.is_folder:
+            return self.folder
+
+        return self.document
+
+    @property
+    def is_folder(self) -> bool:
+        """Returns True if and only if this node is a folder"""
+        if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
+            return self.ctype == NODE_TYPE_FOLDER
+
+        return self._type == NODE_TYPE_FOLDER
+
+    @property
+    def is_document(self) -> bool:
+        """Returns True if and only if this node is a document"""
+        if self.ctype in (NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER):
+            return self.ctype == NODE_TYPE_DOCUMENT
+
+        return self._type == NODE_TYPE_DOCUMENT
+
+    def get_ancestors(self, include_self=True):
+        """Returns all ancestors of the node"""
+        sql = '''
+        WITH RECURSIVE tree AS (
+            SELECT *, 0 as level FROM core_basetreenode WHERE id = %s
+            UNION ALL
+            SELECT core_basetreenode.*, level + 1
+            FROM core_basetreenode, tree
+            WHERE core_basetreenode.id = tree.parent_id
+        )
+        '''
+        node_id = uuid2raw_str(self.pk)
+        if include_self:
+            sql += 'SELECT * FROM tree ORDER BY level DESC'
+            return BaseTreeNode.objects.raw(sql, [node_id])
+
+        sql += 'SELECT * FROM tree WHERE NOT id = %s ORDER BY level DESC'
+
+        return BaseTreeNode.objects.raw(sql, [node_id, node_id])
+
+    def get_descendants(self, include_self=True):
+        """Returns all descendants of the node"""
+        sql = '''
+        WITH RECURSIVE tree AS (
+            SELECT * FROM core_basetreenode WHERE id = %s
+            UNION ALL
+            SELECT core_basetreenode.* FROM core_basetreenode, tree
+              WHERE core_basetreenode.parent_id = tree.id
+        )
+        '''
+        node_id = uuid2raw_str(self.pk)
+        if include_self:
+            sql += 'SELECT * FROM tree'
+            return BaseTreeNode.objects.raw(sql, [node_id])
+
+        sql += 'SELECT * FROM tree WHERE NOT id = %s'
+        return BaseTreeNode.objects.raw(sql, [node_id, node_id])
+
+    def save(self, *args, **kwargs):
+        if not self.ctype:
+            self.ctype = self.__class__.__name__.lower()
+        return super().save(*args, **kwargs)
+
+    class Meta:
         # please do not confuse this "Documents" verbose name
         # with real Document object, which is derived from BaseNodeTree.
         # The reason for this naming confusing is that from the point
         # of view of users, the BaseNodeTree are just a list of documents.
-        verbose_name = _("Documents")
-        verbose_name_plural = _("Documents")
+        verbose_name = "Documents"
+        verbose_name_plural = "Documents"
         _icon_name = 'basetreenode'
 
         constraints = [

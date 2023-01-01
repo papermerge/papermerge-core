@@ -6,12 +6,6 @@ from pikepdf import Pdf
 
 from django.db import models
 from django.db import transaction
-from django.utils.translation import gettext_lazy as _
-
-from polymorphic_tree.managers import (
-    PolymorphicMPTTModelManager,
-    PolymorphicMPTTQuerySet
-)
 
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.signal_definitions import document_post_upload
@@ -42,7 +36,7 @@ class UploadStrategy:
     MERGE = 2
 
 
-class DocumentManager(PolymorphicMPTTModelManager):
+class DocumentManager(models.Manager):
 
     @transaction.atomic
     def create_document(
@@ -71,7 +65,7 @@ class DocumentManager(PolymorphicMPTTModelManager):
             file_name=file_name,
             size=0,
             page_count=0,
-            short_description=_("Original")
+            short_description="Original"
         )
         document_version.save()
         # Important! - first document must inherit metakeys from
@@ -97,7 +91,7 @@ class DocumentManager(PolymorphicMPTTModelManager):
         return parent
 
 
-class DocumentQuerySet(PolymorphicMPTTQuerySet):
+class DocumentQuerySet(models.QuerySet):
     pass
 
 
@@ -141,8 +135,8 @@ class Document(BaseTreeNode):
         return f'{base_title}-{self.id}.{ext}'
 
     class Meta:
-        verbose_name = _("Document")
-        verbose_name_plural = _("Documents")
+        verbose_name = "Document"
+        verbose_name_plural = "Documents"
 
     def upload(
             self,

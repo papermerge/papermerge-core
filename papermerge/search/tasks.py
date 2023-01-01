@@ -2,6 +2,8 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 from django.apps import apps
+from django.core.management import call_command
+
 from celery import shared_task
 from haystack.exceptions import NotHandled as IndexNotFoundException
 from haystack import connections, connection_router
@@ -77,53 +79,5 @@ def get_model_class(object_path):
 
 
 @shared_task
-def update_index(
-    action,
-    identifier,
-):
-    logger.debug("Update Index")
-    object_path, pk = split_identifier(identifier)
-    if object_path is None or pk is None:
-        msg = "Couldn't handle object with identifier %s" % identifier
-        logger.error(msg)
-        raise ValueError(msg)
-
-    # Then get the model class for the object path
-    model_class = get_model_class(object_path)
-    logger.debug(f"model_class={model_class}")
-    for current_index, using in get_indexes(model_class):
-        current_index_name = ".".join([current_index.__class__.__module__,
-                                       current_index.__class__.__name__])
-
-        if action == 'delete':
-            # If the object is gone, we'll use just the identifier
-            # against the index.
-            try:
-                current_index.remove_object(identifier, using=using)
-            except Exception as exc:
-                logger.exception(exc)
-            else:
-                msg = ("Deleted '%s' (with %s)" %
-                       (identifier, current_index_name))
-                logger.debug(msg)
-        elif action == 'save':
-            # and the instance of the model class with the pk
-            instance = get_instance(model_class, pk)
-            if instance is None:
-                logger.debug("Failed updating '%s' (with %s)" %
-                             (identifier, current_index_name))
-                raise ValueError("Couldn't load object '%s'" % identifier)
-
-            # Call the appropriate handler of the current index and
-            # handle exception if necessary
-            try:
-                current_index.update_object(instance, using=using)
-            except Exception as exc:
-                logger.exception(exc)
-            else:
-                msg = ("Updated '%s' (with %s)" %
-                       (identifier, current_index_name))
-                logger.debug(msg)
-        else:
-            logger.error("Unrecognized action '%s'. Moving on..." % action)
-            raise ValueError("Unrecognized action %s" % action)
+def update_index():
+    call_command("update_index")

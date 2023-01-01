@@ -8,7 +8,6 @@ import django.db.models.deletion
 import django.utils.timezone
 import papermerge.core.models.tags
 import papermerge.core.validators
-import polymorphic_tree.models
 import taggit.managers
 import uuid
 
@@ -58,11 +57,11 @@ class Migration(migrations.Migration):
                 ('lang', models.CharField(default='deu', max_length=8, verbose_name='Language')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('lft', models.PositiveIntegerField(editable=False)),
-                ('rght', models.PositiveIntegerField(editable=False)),
-                ('tree_id', models.PositiveIntegerField(db_index=True, editable=False)),
-                ('level', models.PositiveIntegerField(editable=False)),
-                ('parent', polymorphic_tree.models.PolymorphicTreeForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='children', to='core.basetreenode', verbose_name='parent')),
+                ('lft', models.PositiveIntegerField(editable=False, null=True)),
+                ('rght', models.PositiveIntegerField(editable=False, null=True)),
+                ('tree_id', models.PositiveIntegerField(editable=False, null=True)),
+                ('level', models.PositiveIntegerField(editable=False, null=True)),
+                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='children', to='core.basetreenode', verbose_name='parent')),
                 ('polymorphic_ctype', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='polymorphic_core.basetreenode_set+', to='contenttypes.contenttype')),
             ],
             options={

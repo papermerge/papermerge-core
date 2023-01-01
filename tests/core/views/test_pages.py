@@ -903,7 +903,7 @@ class PageViewTestCase(TestCase):
         assert destination_folder.children.count() == 2
 
         for child in destination_folder.children.all():
-            last_ver = child.versions.last()
+            last_ver = child.document.versions.last()
             pdf_file = pikepdf.Pdf.open(abs_path(last_ver.document_path))
             # (last version of) newly created document has only one pages
             assert len(pdf_file.pages) == 1
@@ -944,7 +944,7 @@ class PageViewTestCase(TestCase):
 
         # newly created one page document
         destination_doc = destination_folder.children.last()  # and only
-        destination_pages = destination_doc.versions.last().pages.all()
+        destination_pages = destination_doc.document.versions.last().pages.all()
         assert destination_pages[0].text == 'cat'
 
     @patch('papermerge.core.signals.ocr_document_task')
@@ -1001,7 +1001,7 @@ class PageViewTestCase(TestCase):
         assert destination_folder.children.count() == 1
 
         newly_created_document = destination_folder.children.first()
-        last_ver = newly_created_document.versions.last()
+        last_ver = newly_created_document.document.versions.last()
         pdf_file = pikepdf.Pdf.open(abs_path(last_ver.document_path))
         # (last version of) newly created document has two pages
         assert len(pdf_file.pages) == 2
@@ -1042,7 +1042,7 @@ class PageViewTestCase(TestCase):
 
         # newly created one page document
         destination_doc = destination_folder.children.last()  # and only
-        destination_pages = destination_doc.versions.last().pages.all()
+        destination_pages = destination_doc.document.versions.last().pages.all()
 
         assert destination_pages[0].text == 'cat'
         assert destination_pages[1].text == 'doc'

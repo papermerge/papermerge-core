@@ -200,6 +200,7 @@ class NodesViewTestCase(TestCase):
         assert response.status_code == 200
         assert receipts.tags.count() == 2
         all_new_tags = [tag.name for tag in receipts.tags.all()]
+
         assert set(all_new_tags) == set(['paid', 'important'])
 
     def test_remove_tags_from_folder(self):

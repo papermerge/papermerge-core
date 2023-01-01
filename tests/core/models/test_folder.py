@@ -1,6 +1,9 @@
+import pytest
+
 from django.db.utils import IntegrityError
 from django.db import transaction
 from papermerge.test import TestCase
+from papermerge.test.baker_recipes import folder_recipe
 from papermerge.core.models import User, Folder
 
 
@@ -86,3 +89,43 @@ class TestFolderModel(TestCase):
             user=self.user,
             parent=self.user.home_folder  # different parent
         )
+
+
+@pytest.mark.django_db
+def test_delete_folder_with_sub_folders():
+    """Make sure that deleting folder with sub-nodes does
+    not throw an exception.
+
+    This scenario creates one folder which contains sub-nodes
+    i.e. a folder which contains a couple of folders.
+    `folder.delete` should NOT throw an exception.
+    """
+    folder = folder_recipe.make()
+    sub1 = folder_recipe.make(
+        user=folder.user,
+        parent=folder
+    )
+    folder_recipe.make(
+        user=folder.user,
+        parent=sub1
+    )
+    # we created 3 folders, plus
+    # home and inbox folders which are automatically created
+    # for the user
+    assert Folder.objects.count() == 5
+
+    # this is what is tested
+    folder.delete()
+    left_titles = Folder.objects.values_list(
+        'title', flat=True
+    )
+
+    # only home and inbox folder are left
+    assert Folder.objects.count() == 2
+
+    expected_left_titles = {
+        Folder.HOME_TITLE,
+        Folder.INBOX_TITLE
+    }
+
+    assert expected_left_titles == set(left_titles)

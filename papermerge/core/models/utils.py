@@ -1,3 +1,4 @@
+import uuid
 import logging
 
 from django.utils.translation import gettext_lazy as _
@@ -20,63 +21,11 @@ OCR_STATUS_CHOICES = [
 ]
 
 
-def get_fields(model):
+def uuid2raw_str(value: uuid.UUID) -> str:
+    """Converts value into string as stored in database
+
+    In database, UUID is stored as varchar(32) without '-' character.
+    For example: UUID('1a606e93-b39c-439a-b8dd-8e981cb4d54b')
+    will be converted to '1a606e93b39c439ab8dd8e981cb4d54b'.
     """
-    Returns django fields of current ``model``.
-
-    Does not include inherited fields.
-    """
-    return model._meta.get_fields(include_parents=False)
-
-
-def group_per_model(models, **kwargs):
-    """
-    groups kwargs per model
-
-    What this method is supposed to do is better exmplained by example.
-    Suppose there are 3 models i.e. ``models`` list contains
-    3 models: [Model_1, Model_2, Model_3]. Each of these models
-    has following django field attributes:
-
-        class Model_1:
-            attr_m1_a
-            attr_m1_b
-
-        class Model_2:
-            attr_m2_x
-
-        class Model_3:
-            attr_m3_j
-            attr_m3_k
-
-    kwargs_ex_1 = {
-        'blah': 1, 'extra': 2, 'attr_m1_a': "see?", 'attr_m1_b': "this?"
-    }
-
-    group_per_model(models, **kwargs_ex_1) will return:
-
-        {
-            Model_1: {'attr_m1_a': "see?", 'attr_m1_b': "this?"}
-        }
-
-    kwargs_ex_2 = {
-        'blah': 1, attr_m1_a': "AB", 'attr_m2_x': "XX"
-    }
-    group_per_model(models, **kwargs_ex_2) will return:
-
-        {
-            Model_1: {'attr_m1_a': "AB"}
-            Model_2: {'attr_m2_x': "XX"}
-        }
-    """
-    ret = {}
-
-    for model in models:
-        fields = get_fields(model)
-        for field in fields:
-            if field.name in kwargs.keys():
-                ret.setdefault(model, {}).update(
-                    {field.name: kwargs[field.name]}
-                )
-
-    return ret
+    return str(value).replace('-', '')

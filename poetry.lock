@@ -863,24 +863,6 @@ Django = ">=2.2"
 elasticsearch = ["elasticsearch (>=5,<8)"]
 
 [[package]]
-name = "django-js-asset"
-version = "2.0.0"
-description = "script tag with additional attributes for django.forms.Media"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "django_js_asset-2.0.0-py3-none-any.whl", hash = "sha256:86f9f300d682537ddaf0487dc2ab356581b8f50c069bdba91d334a46e449f923"},
-    {file = "django_js_asset-2.0.0.tar.gz", hash = "sha256:adc1ee1efa853fad42054b540c02205344bb406c9bddf87c9e5377a41b7db90f"},
-]
-
-[package.dependencies]
-Django = ">=2.2"
-
-[package.extras]
-tests = ["coverage"]
-
-[[package]]
 name = "django-modelcluster"
 version = "6.0"
 description = "Django extension to allow working with 'clusters' of models as a single unit, independently of the database"
@@ -900,56 +882,6 @@ pytz = ">=2015.2"
 taggit = ["django-taggit (>=0.20)"]
 
 [[package]]
-name = "django-mptt"
-version = "0.13.4"
-description = "Utilities for implementing Modified Preorder Tree Traversal with your Django Models and working with trees of Model instances."
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "django-mptt-0.13.4.tar.gz", hash = "sha256:80c9fb34df7796a4e5af0cb6b8ade3697555b1aa438bd07a01f32b3ab5202b63"},
-    {file = "django_mptt-0.13.4-py3-none-any.whl", hash = "sha256:75745b621ae31d97957ed924155a750dfa8cacd9543799ada2d713fd6bc3f5c7"},
-]
-
-[package.dependencies]
-django-js-asset = "*"
-
-[package.extras]
-tests = ["coverage", "mock-django"]
-
-[[package]]
-name = "django-polymorphic"
-version = "3.1.0"
-description = "Seamless polymorphic inheritance for Django models"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "django-polymorphic-3.1.0.tar.gz", hash = "sha256:d6955b5308bf6e41dcb22ba7c96f00b51dfa497a8a5ab1e9c06c7951bf417bf8"},
-    {file = "django_polymorphic-3.1.0-py3-none-any.whl", hash = "sha256:08bc4f4f4a773a19b2deced5a56deddd1ef56ebd15207bf4052e2901c25ef57e"},
-]
-
-[package.dependencies]
-Django = ">=2.1"
-
-[[package]]
-name = "django-polymorphic-tree"
-version = "2.1"
-description = "A polymorphic mptt structure to display content in a tree."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "django-polymorphic-tree-2.1.tar.gz", hash = "sha256:a6d40c2ef350c5a50bd83727ca8cba85088890a7a08a106caeb3c5dc5ae072aa"},
-    {file = "django_polymorphic_tree-2.1-py3-none-any.whl", hash = "sha256:6e2994ea0d96b0c9e4191e57998e54fcbfafd4362ed2afc877ef61a2548d39f0"},
-]
-
-[package.dependencies]
-django-mptt = ">=0.9.1"
-django-polymorphic = ">=3"
-django-tag-parser = ">=2.1"
-
-[[package]]
 name = "django-rest-knox"
 version = "4.2.0"
 description = "Authentication for django rest framework"
@@ -965,18 +897,6 @@ files = [
 cryptography = "*"
 django = ">=3.2"
 djangorestframework = "*"
-
-[[package]]
-name = "django-tag-parser"
-version = "3.2"
-description = "Micro-library to easily write custom Django template tags"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "django-tag-parser-3.2.tar.gz", hash = "sha256:903cd4bf3692c8c060770ca2b9d6e74e4ee52d6078308852acffe1ef4a49e0f7"},
-    {file = "django_tag_parser-3.2-py2.py3-none-any.whl", hash = "sha256:92e5da35d8774a6ab4e0ac0b3b2229b8a0b78a61c5a3b0fd159255f0a66c08d7"},
-]
 
 [[package]]
 name = "django-taggit"
@@ -3269,4 +3189,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.11"
-content-hash = "70097afd7f29c13ced53b3403dbc27e2573a5db5e29be41a2a8e65fd40726a84"
+content-hash = "09a1022b5ff991779a17bd813a0e4922a830f46cbf860bcc53fc73ec699eb28a"

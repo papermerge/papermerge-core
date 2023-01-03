@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.4] - 2023-01-03
+
+
+### Fixed
+
+- Worker infinite loop index updates [issue#502](https://github.com/ciur/papermerge/issues/502)
+
+
 ## [2.1.3] - 2023-01-01
 
 

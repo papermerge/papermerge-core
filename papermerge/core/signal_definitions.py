@@ -1,5 +1,13 @@
 from django.dispatch import Signal
 
+
+"""
+Sent after node was moved from one parent to another
+Arguments:
+    new_parent - model instance of new parent of the node
+"""
+node_post_move = Signal()
+
 """
 Sent immediately after document upload complete.
 Arguments:

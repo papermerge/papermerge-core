@@ -9,6 +9,7 @@ from taggit.managers import _TaggableManager
 
 from papermerge.core import validators
 from papermerge.core.models.tags import ColoredTag
+from papermerge.core.signal_definitions import node_post_move
 
 from .utils import uuid2raw_str
 
@@ -17,8 +18,21 @@ NODE_TYPE_DOCUMENT = 'document'
 
 
 def move_node(source_node, target_node):
+    """
+    Set `target_node` as new parent of `source_node`.
+
+    Also send `papermerge.core.signal_definitions.node_post_move` signal
+    to all interested parties. Search indexes will be interested in this
+    signal as they will have to update breadcrumb of all descendants of the
+    new parent.
+    """
     source_node.parent = target_node
     source_node.save()
+    node_post_move.send(
+        sender=BaseTreeNode,
+        instance=source_node,
+        new_parent=target_node
+    )
 
 
 class PolymorphicTagManager(_TaggableManager):
@@ -290,3 +304,15 @@ class BaseTreeNode(models.Model):
                 fields=['parent', 'title'], name='unique title per parent'
             ),
         ]
+
+    def __repr__(self):
+        class_name = type(self).__name__
+        return '{}({!r}, {!r})'.format(class_name, self.pk, self.title)
+
+    def __str__(self):
+        class_name = type(self).__name__
+        return "{}(pk={},title='{}')".format(
+            class_name,
+            self.pk,
+            self.title
+        )

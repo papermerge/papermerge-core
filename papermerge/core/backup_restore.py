@@ -8,7 +8,9 @@ import json
 from pathlib import PurePath
 
 from django.core.files.temp import NamedTemporaryFile
-from mglib.pdfinfo import get_pagecount
+
+from papermerge.core.serializers import UserSerializer
+from papermerge.core.lib.pagecount import get_pagecount
 
 from papermerge.core import __version__ as PAPERMERGE_VERSION
 from papermerge.core.models import (
@@ -387,3 +389,26 @@ def _add_user_documents(
             logger.exception(
                 f"Error {e} occurred."
             )
+
+
+class UserSchemaIter:
+    def __init__(self, user: User = None):
+        self._user = user
+
+    def __iter__(self):
+        if self._user is None:
+            for user in User.objects.all():
+                user_serializer = UserSerializer(user)
+                yield user_serializer.data
+        else:
+            user_serializer = UserSerializer(self._user)
+            yield user_serializer.data
+
+
+def backup_documents2(
+    backup_file: str,
+    user: User = None,
+):
+    schema = dict(users=[])
+    for user_item in UserSchemaIter(user):
+        schema['users'].append(user_item)

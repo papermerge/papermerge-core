@@ -9,6 +9,7 @@ from pathlib import PurePath
 
 from django.core.files.temp import NamedTemporaryFile
 
+from papermerge.core.serializers import NodeSerializer
 from papermerge.core.serializers import UserSerializer
 from papermerge.core.lib.pagecount import get_pagecount
 
@@ -391,7 +392,8 @@ def _add_user_documents(
             )
 
 
-class UserSchemaIter:
+class UserDataIter:
+
     def __init__(self, user: User = None):
         self._user = user
 
@@ -405,10 +407,45 @@ class UserSchemaIter:
             yield user_serializer.data
 
 
+class NodeDataIter:
+
+    def __init__(self, root_node_id: str):
+        self._root_node_id = root_node_id
+
+    def __iter__(self):
+        node = BaseTreeNode.objects.get(pk=self._root_node_id)
+        for node in node.get_descendants():
+            node_serializer = NodeSerializer(node)
+            yield node_serializer.data
+
+
+def get_users_data(user: User = None) -> dict:
+    schema = dict(users=[])
+
+    for user_item in UserDataIter(user):
+        nodes_schema = []
+        home_id = user_item['home_folder']['id']
+        inbox_id = user_item['inbox_folder']['id']
+
+        for node in NodeDataIter(home_id):
+            nodes_schema.append(node)
+        for node in NodeDataIter(inbox_id):
+            nodes_schema.append(node)
+
+        user_item['nodes'] = nodes_schema
+        schema['users'].append(user_item)
+
+    return schema
+
+
+def get_groups_data():
+    pass
+
+
 def backup_documents2(
     backup_file: str,
     user: User = None,
 ):
-    schema = dict(users=[])
-    for user_item in UserSchemaIter(user):
-        schema['users'].append(user_item)
+    # users_dict = get_users_data(user)
+    # groups_dict = get_groups_data()
+    pass

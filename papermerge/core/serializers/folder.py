@@ -36,6 +36,7 @@ class FolderSerializer(serializers.ModelSerializer):
 
     parent = ResourceRelatedField(queryset=Folder.objects)
     tags = ColoredTagListSerializerField(required=False)
+    breadcrumb = serializers.SerializerMethodField()
 
     class Meta:
         model = Folder
@@ -44,6 +45,7 @@ class FolderSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'parent',
+            'breadcrumb',
             'tags',
             'created_at',
             'updated_at'
@@ -54,3 +56,10 @@ class FolderSerializer(serializers.ModelSerializer):
                 fields=['parent', 'title']
             )
         ]
+
+    def get_breadcrumb(self, obj: Folder) -> str:
+        titles = [
+            item.title
+            for item in obj.get_ancestors()
+        ]
+        return '/'.join(titles) + '/'

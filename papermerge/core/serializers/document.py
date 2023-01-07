@@ -34,6 +34,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     )
     ocr_status = serializers.CharField(required=False)
     tags = ColoredTagListSerializerField(required=False)
+    breadcrumb = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
@@ -46,6 +47,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             'ocr_status',
             'file_name',
             'parent',
+            'breadcrumb',
             'tags',
             'size',
             'page_count',
@@ -67,10 +69,18 @@ class DocumentSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
+    def get_breadcrumb(self, obj: Document) -> str:
+        titles = [
+            item.title
+            for item in obj.get_ancestors()
+        ]
+        return '/'.join(titles)
+
 
 class DocumentDetailsSerializer(serializers.ModelSerializer):
     parent = ResourceRelatedField(queryset=Folder.objects)
     versions = DocumentVersionSerializer(many=True, read_only=True)
+    breadcrumb = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
@@ -82,10 +92,18 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
             'ocr',
             'ocr_status',
             'parent',
+            'breadcrumb',
             'versions',
             'created_at',
             'updated_at'
         )
+
+    def get_breadcrumb(self, obj: Document) -> str:
+        titles = [
+            item.title
+            for item in obj.get_ancestors()
+        ]
+        return '/'.join(titles)
 
 
 class Data_DocumentDetailsSerializer(Serializer):

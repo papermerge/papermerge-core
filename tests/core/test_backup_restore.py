@@ -41,7 +41,7 @@ def test_get_user_schema():
 
     user_test_1 = [
         user
-        for user in schema_dict['users']
+        for user in schema_dict
         if user['username'] == 'test1'
     ][0]
     expected_titles = [node['title'] for node in user_test_1['nodes']]

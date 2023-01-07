@@ -1,6 +1,10 @@
-from papermerge.test import TestCase
+import pytest
+
 from papermerge.core.models import User, Folder
 from papermerge.core.serializers import FolderSerializer
+
+from papermerge.test import TestCase
+from papermerge.test.baker_recipes import folder_recipe, user_recipe
 
 
 class TestFolderSerializer(TestCase):
@@ -42,3 +46,26 @@ class TestFolderSerializer(TestCase):
         assert serializer.data
         assert serializer.data['id']
         assert len(serializer.data['tags']) == 2
+
+
+@pytest.mark.django_db
+def test_folder_serializer_for_correct_breadcrumb():
+    user = user_recipe.make()
+    my_documents = folder_recipe.make(
+        title="My Documents",
+        parent=user.home_folder
+    )
+    sub1 = folder_recipe.make(
+        title="My Invoices",
+        user=user,
+        parent=my_documents
+    )
+    lidl_folder = folder_recipe.make(
+        title="Lidl",
+        user=user,
+        parent=sub1
+    )
+
+    ser = FolderSerializer(lidl_folder)
+
+    assert ser.data['breadcrumb'] == '.home/My Documents/My Invoices/Lidl/'

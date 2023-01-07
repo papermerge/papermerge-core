@@ -419,8 +419,8 @@ class NodeDataIter:
             yield node_serializer.data
 
 
-def get_users_data(user: User = None) -> dict:
-    schema = dict(users=[])
+def get_users_data(user: User = None) -> list:
+    data = []
 
     for user_item in UserDataIter(user):
         nodes_schema = []
@@ -433,9 +433,9 @@ def get_users_data(user: User = None) -> dict:
             nodes_schema.append(node)
 
         user_item['nodes'] = nodes_schema
-        schema['users'].append(user_item)
+        data.append(user_item)
 
-    return schema
+    return data
 
 
 def get_groups_data():
@@ -446,6 +446,17 @@ def backup_documents2(
     backup_file: str,
     user: User = None,
 ):
-    # users_dict = get_users_data(user)
+    result_dict = {}
+    result_dict['created'] = datetime.datetime.now().strftime(
+        "%d.%m.%Y-%H:%M:%S"
+    )
+    result_dict['version'] = PAPERMERGE_VERSION
+    result_dict['users'] = get_users_data(user)
     # groups_dict = get_groups_data()
-    pass
+    with open(backup_file, mode="w") as file:
+        json_str = json.dumps(
+            result_dict,
+            indent=2
+        )
+
+        file.write(json_str)

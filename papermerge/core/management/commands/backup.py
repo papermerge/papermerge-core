@@ -4,7 +4,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from papermerge.core.backup_restore import backup_documents
+from papermerge.core.backup_restore import backup_documents2
 from papermerge.core.models import User
 
 logger = logging.getLogger(__name__)
@@ -69,11 +69,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         date_string = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
-        default_filename = f"backup_{date_string}.tar"
+        default_filename = f"backup_{date_string}.json"
 
         username = options.get('user')
         location = options.get('location') or default_filename
-        include_user_password = options.get('include_user_password')
 
         if options.get('list_users'):
             list_users_and_exit()
@@ -100,12 +99,10 @@ class Command(BaseCommand):
             backup_location = location
 
         try:
-            with open(backup_location, 'wb') as backup_file:
-                backup_documents(
-                    backup_file=backup_file,
-                    user=user,
-                    include_user_password=include_user_password
-                )
+            backup_documents2(
+                backup_file=backup_location,
+                user=user
+            )
         except IsADirectoryError:
             logger.error(
                 "Provided location is a directory which does not exist."

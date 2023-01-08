@@ -439,37 +439,27 @@ class UserFileIter:
 
             home_root_node = BaseTreeNode.objects.get(pk=home.pk)
             for node in home_root_node.get_descendants():
+                breadcrumb = os.path.join(
+                    user.username,
+                    node.breadcrumb
+                )
                 if node.is_document:
-                    breadcrumb = os.path.join(
-                        user.username,
-                        node.breadcrumb
-                    )
                     doc_ver = node.document.versions.last()
-                    yield doc_ver.abs_file_path(), breadcrumb
+                    yield doc_ver.abs_file_path(), breadcrumb, False
                 else:
-                    breadcrumb = os.path.join(
-                        user.username,
-                        node.breadcrumb,
-                        ".dummy"
-                    )
-                    yield tmp.name, breadcrumb
+                    yield tmp.name, breadcrumb, True
 
             inbox_root_node = BaseTreeNode.objects.get(pk=inbox.pk)
             for node in inbox_root_node.get_descendants():
+                breadcrumb = os.path.join(
+                    user.username,
+                    node.breadcrumb
+                )
                 if node.is_document:
-                    breadcrumb = os.path.join(
-                        user.username,
-                        node.breadcrumb
-                    )
                     doc_ver = node.document.versions.last()
-                    yield doc_ver.abs_file_path(), breadcrumb
+                    yield doc_ver.abs_file_path(), breadcrumb, False
                 else:
-                    breadcrumb = os.path.join(
-                        user.username,
-                        node.breadcrumb,
-                        ".dummy"
-                    )
-                    yield tmp.name, breadcrumb
+                    yield tmp.name, breadcrumb, True
 
             tmp.close()
 
@@ -515,8 +505,10 @@ def backup_documents2(
 ):
     # dict_data = create_data(user)
     with tarfile.open(backup_file, mode="w") as file:
-        for abs_path, breadcrumb in UserFileIter(user):
-            file.add(
-                abs_path,
-                arcname=breadcrumb
-            )
+        for abs_path, breadcrumb, is_folder in UserFileIter(user):
+            if is_folder:
+                entry = tarfile.TarInfo(breadcrumb)
+                entry.type = tarfile.DIRTYPE
+                file.addfile(entry)
+            else:
+                file.add(abs_path, arcname=breadcrumb)

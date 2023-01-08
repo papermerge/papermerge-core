@@ -1,8 +1,9 @@
 import pytest
 
 from papermerge.core.backup_restore import UserDataIter, get_users_data
+from papermerge.core.backup_restore import UserFileIter
 from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
-    document_recipe
+    document_recipe, document_version_recipe
 
 
 @pytest.mark.django_db
@@ -50,3 +51,41 @@ def test_get_user_schema():
     assert '.home' in expected_titles
     assert 'My Documents' in expected_titles
     assert 'My Invoice.pdf' in expected_titles
+
+
+@pytest.mark.django_db
+def test_user_file_iter():
+    """
+    Build and iterave over following hierarchy:
+    - username1  <- user, owner of the docs and folders
+        - .inbox <- empty
+        - .home
+            - My Documents
+                - My Invoice.pdf
+
+    It is expected that empty folder .inbox will also be included
+    in the archive
+    """
+    u1 = user_recipe.make(username='username1')
+    mydocs = folder_recipe.make(
+        title='My Documents',
+        parent=u1.home_folder,
+        user=u1
+    )
+    doc = document_recipe.make(
+        title='My Invoice.pdf',
+        parent=mydocs,
+        user=u1
+    )
+    document_version_recipe.make(document=doc)
+    actual_results = [breadcrumb for _, breadcrumb, _ in UserFileIter()]
+
+    expected_results = [
+        'username1/.home',
+        'username1/.home/My Documents',
+        'username1/.home/My Documents/My Invoice.pdf',
+        # empty folder will be included in the results as well
+        'username1/.inbox'
+    ]
+
+    assert set(expected_results) == set(actual_results), actual_results

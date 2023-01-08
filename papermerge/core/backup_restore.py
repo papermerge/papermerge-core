@@ -506,8 +506,10 @@ def backup_documents2(
     with tarfile.open(backup_file, mode="w") as file:
         for abs_path, breadcrumb, is_folder in UserFileIter(user):
             if is_folder:
+                # Makes sure that empty folders are include in tar
+                # archive as well
                 entry = tarfile.TarInfo(breadcrumb)
                 entry.type = tarfile.DIRTYPE
-                file.addfile(entry)
+                file.addfile(entry)  # include empty folders as well
             else:
                 file.add(abs_path, arcname=breadcrumb)

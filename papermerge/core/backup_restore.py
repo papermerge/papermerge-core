@@ -1,4 +1,4 @@
-import tempfile
+from itertools import chain
 import datetime
 import logging
 import time
@@ -420,8 +420,30 @@ class NodeDataIter:
             yield node_serializer.data
 
 
-class UserFileIter:
+class FileIter:
+    def __init__(self, prefix: str, root_node: BaseTreeNode):
+        self._root_node = root_node
+        self._prefix = prefix
 
+    def __iter__(self):
+        for node in self._root_node.get_descendants():
+            breadcrumb = os.path.join(
+                self._prefix,
+                node.breadcrumb
+            )
+            if node.is_document:
+                doc_ver = node.document.versions.last()
+                yield doc_ver.abs_file_path(), breadcrumb, False
+            else:
+                yield None, breadcrumb, True
+
+
+class UserFileIter:
+    """Iterator over user's latest version documents.
+
+    If no user instance is provided, will iterate over ALL
+    users' files (i.e. over User.objects.all()).
+    """
     def __init__(self, user: User = None):
         if user is None:
             self._users = User.objects.all()
@@ -429,39 +451,16 @@ class UserFileIter:
             self._users = [user]
 
     def __iter__(self):
-        tmp = tempfile.NamedTemporaryFile(delete=False)
-        dummy = open(tmp.name, "w")
-        dummy.write("dummy")
-
         for user in self._users:
             home = user.home_folder
             inbox = user.inbox_folder
+            prefix = user.username
 
-            home_root_node = BaseTreeNode.objects.get(pk=home.pk)
-            for node in home_root_node.get_descendants():
-                breadcrumb = os.path.join(
-                    user.username,
-                    node.breadcrumb
-                )
-                if node.is_document:
-                    doc_ver = node.document.versions.last()
-                    yield doc_ver.abs_file_path(), breadcrumb, False
-                else:
-                    yield tmp.name, breadcrumb, True
-
-            inbox_root_node = BaseTreeNode.objects.get(pk=inbox.pk)
-            for node in inbox_root_node.get_descendants():
-                breadcrumb = os.path.join(
-                    user.username,
-                    node.breadcrumb
-                )
-                if node.is_document:
-                    doc_ver = node.document.versions.last()
-                    yield doc_ver.abs_file_path(), breadcrumb, False
-                else:
-                    yield tmp.name, breadcrumb, True
-
-            tmp.close()
+            for item in chain(
+                FileIter(prefix, home),
+                FileIter(prefix, inbox)
+            ):
+                yield item
 
 
 def get_users_data(user: User = None) -> list:

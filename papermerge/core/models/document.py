@@ -303,7 +303,6 @@ class Document(BaseTreeNode):
             version = self.version
 
         version = int(version)
-
         result = DocumentPath(
             user_id=self.user.id,
             document_id=self.id,

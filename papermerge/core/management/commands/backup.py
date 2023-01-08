@@ -69,7 +69,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         date_string = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
-        default_filename = f"backup_{date_string}.json"
+        default_filename = f"backup_{date_string}.tar"
 
         username = options.get('user')
         location = options.get('location') or default_filename

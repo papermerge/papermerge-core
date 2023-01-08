@@ -164,6 +164,14 @@ class BaseTreeNode(models.Model):
     objects = CustomNodeManager()
 
     @property
+    def breadcrumb(self) -> str:
+        titles = [
+            item.title
+            for item in self.get_ancestors()
+        ]
+        return '/'.join(titles)
+
+    @property
     def idified_title(self):
         """
         Returns a title with ID part inserted at the end

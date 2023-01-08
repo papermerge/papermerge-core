@@ -1,3 +1,4 @@
+import tempfile
 import datetime
 import logging
 import time
@@ -419,6 +420,60 @@ class NodeDataIter:
             yield node_serializer.data
 
 
+class UserFileIter:
+
+    def __init__(self, user: User = None):
+        if user is None:
+            self._users = User.objects.all()
+        else:
+            self._users = [user]
+
+    def __iter__(self):
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        dummy = open(tmp.name, "w")
+        dummy.write("dummy")
+
+        for user in self._users:
+            home = user.home_folder
+            inbox = user.inbox_folder
+
+            home_root_node = BaseTreeNode.objects.get(pk=home.pk)
+            for node in home_root_node.get_descendants():
+                if node.is_document:
+                    breadcrumb = os.path.join(
+                        user.username,
+                        node.breadcrumb
+                    )
+                    doc_ver = node.document.versions.last()
+                    yield doc_ver.abs_file_path(), breadcrumb
+                else:
+                    breadcrumb = os.path.join(
+                        user.username,
+                        node.breadcrumb,
+                        ".dummy"
+                    )
+                    yield tmp.name, breadcrumb
+
+            inbox_root_node = BaseTreeNode.objects.get(pk=inbox.pk)
+            for node in inbox_root_node.get_descendants():
+                if node.is_document:
+                    breadcrumb = os.path.join(
+                        user.username,
+                        node.breadcrumb
+                    )
+                    doc_ver = node.document.versions.last()
+                    yield doc_ver.abs_file_path(), breadcrumb
+                else:
+                    breadcrumb = os.path.join(
+                        user.username,
+                        node.breadcrumb,
+                        ".dummy"
+                    )
+                    yield tmp.name, breadcrumb
+
+            tmp.close()
+
+
 def get_users_data(user: User = None) -> list:
     data = []
 
@@ -442,10 +497,7 @@ def get_groups_data():
     pass
 
 
-def backup_documents2(
-    backup_file: str,
-    user: User = None,
-):
+def create_data(user: User = None) -> dict:
     result_dict = {}
     result_dict['created'] = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"
@@ -453,10 +505,18 @@ def backup_documents2(
     result_dict['version'] = PAPERMERGE_VERSION
     result_dict['users'] = get_users_data(user)
     # groups_dict = get_groups_data()
-    with open(backup_file, mode="w") as file:
-        json_str = json.dumps(
-            result_dict,
-            indent=2
-        )
 
-        file.write(json_str)
+    return result_dict
+
+
+def backup_documents2(
+    backup_file: str,
+    user: User = None,
+):
+    # dict_data = create_data(user)
+    with tarfile.open(backup_file, mode="w") as file:
+        for abs_path, breadcrumb in UserFileIter(user):
+            file.add(
+                abs_path,
+                arcname=breadcrumb
+            )

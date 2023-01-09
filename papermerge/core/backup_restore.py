@@ -171,65 +171,6 @@ def restore_documents(
                 )
 
 
-def build_tar_archive(
-    fileobj: io.BytesIO,
-    node_ids: list
-):
-    """
-    Builds a tar archive with given node ids documents.
-
-    This function is used to download selected documents and folders.
-    :fileobj: is a file which will be sent to the client side as
-        content disposition.
-    """
-    with tarfile.open(fileobj=fileobj, mode="w") as archive:
-        _rec_tar_archive(
-            archive=archive,
-            node_ids=node_ids,
-            # at the beginning the list of parent names is
-            # emtpy
-            abspath=[]
-        )
-
-
-def _rec_tar_archive(
-    archive,
-    node_ids,
-    abspath
-):
-    """
-    Recursively builds a tar archive based on folder structure of
-    BaseTreeNode instances.
-
-    :node_ids: a list of node ids (node = instance of BaseTreeNode)
-    :abspath: a list of folder parent names
-    """
-
-    for node in BaseTreeNode.objects.filter(id__in=node_ids):
-
-        if node.is_document():
-
-            arc_path = os.path.join(
-                # add document to the current_depth
-                *abspath,
-                node.title
-            )
-            archive.add(
-                node.absfilepath,
-                arcname=arc_path
-            )
-        elif node.is_folder():
-
-            child_ids = [
-                child.id for child in node.get_children()
-            ]
-            _rec_tar_archive(
-                archive,
-                child_ids,
-                abspath + [node.title]
-            )
-
-
 def _can_restore(restore_file: io.BytesIO):
     with tarfile.open(fileobj=restore_file, mode="r") as restore_archive:
         backup_json = restore_archive.extractfile('backup.json')
@@ -249,88 +190,12 @@ def _is_valid_user(username: str):
         return False
 
 
-def _createTargetPath(document: Document, include_user_in_path=False):
-    """
-    Takes a document and traverses the tree to the root noting the path
-    :param document: the document you want the path of
-    :return: the full path from root to the document including filename
-    :rtype str
-    """
-    # make filename unique
-    targetPath = f"{document.file_name}__{document.id}"
-    currentNode = document
-    while currentNode.parent is not None:
-        currentNode = currentNode.parent
-        targetPath = os.path.join(
-            currentNode.title,
-            targetPath
-        )
-
-    if include_user_in_path:
-        targetPath = os.path.join(
-            document.user.username, targetPath
-        )
-
-    return targetPath
-
-
-def _add_current_document_entry(
-    document,
-    include_user_in_path=False
-):
-    current_document = {}
-
-    targetPath = _createTargetPath(
-        document,
-        include_user_in_path=include_user_in_path
-    )
-    tags = [tag.to_dict() for tag in document.tags.all()]
-
-    current_document['path'] = targetPath
-    current_document['lang'] = document.lang
-    current_document['title'] = document.title
-    current_document['tags'] = tags
-
-    return current_document
-
-
 def _get_json_user_documents_list(json_backup: dict, user: User):
     for _u in json_backup['users']:
         if _u['username'] == user.username:
             return _u['documents']
 
     return None
-
-
-def _add_user_documents(
-    user,
-    current_backup,
-    backup_archive,
-    include_user_in_path=False
-):
-    documents = Document.objects.filter(user=user)
-
-    for current_document_object in documents:  # type: Document
-        try:
-            backup_archive.add(
-                current_document_object.absfilepath,
-                arcname=_createTargetPath(
-                    current_document_object,
-                    include_user_in_path=include_user_in_path
-                )
-            )
-            current_document = _add_current_document_entry(
-                current_document_object,
-                include_user_in_path=include_user_in_path
-            )
-            current_backup['documents'].append(
-                current_document
-            )
-        except Exception as e:
-            # Log error, but continue backup process
-            logger.exception(
-                f"Error {e} occurred."
-            )
 
 
 class UserDataIter:

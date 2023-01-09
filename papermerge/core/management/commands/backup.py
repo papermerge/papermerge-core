@@ -47,17 +47,6 @@ class Command(BaseCommand):
             """
         )
         parser.add_argument(
-            "-p",
-            "--include-user-password",
-            action="store_true",
-            # by default do not include user password's digest
-            default=False,
-            help="""
-            Include user's password field (digest of user's password) into
-            backup archive.
-            """
-        )
-        parser.add_argument(
             "-l",
             "--list-users",
             action='store_true',

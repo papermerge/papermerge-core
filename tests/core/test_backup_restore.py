@@ -7,7 +7,7 @@ from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
 
 
 @pytest.mark.django_db
-def test_user_schema_iter():
+def test_user_data_iter():
     user_recipe.make(username='test1')
     user_recipe.make(username='test2')
 
@@ -26,7 +26,7 @@ def test_user_schema_iter():
 
 
 @pytest.mark.django_db
-def test_get_user_schema():
+def test_get_user_data():
     u1 = user_recipe.make(username='test1')
     user_recipe.make(username='test2')
     mydocs = folder_recipe.make(

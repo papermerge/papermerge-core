@@ -7,86 +7,26 @@ import os
 import tarfile
 import json
 from pathlib import PurePath
+from importlib.metadata import distribution
 
 from django.core.files.temp import NamedTemporaryFile
 
 from papermerge.core.serializers import NodeSerializer
-from papermerge.core.serializers import UserSerializer
+from papermerge.core.serializers import UserSerializer, TagSerializer
 from papermerge.core.lib.pagecount import get_pagecount
 
-from papermerge.core import __version__ as PAPERMERGE_VERSION
 from papermerge.core.models import (
     Document,
     User,
     Folder,
     Tag,
-    BaseTreeNode
+    BaseTreeNode,
 )
 from papermerge.core.storage import default_storage
 from papermerge.core.utils import remove_backup_filename_id
 from papermerge.core.tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
-
-
-def backup_documents(
-    backup_file: io.BytesIO,
-    user: User,
-    include_user_password=False
-):
-    """
-    Backup all documents for specific user.
-
-    :include_user_password: if set to True,  will add to backup archive digest
-        of user password.
-    """
-
-    current_backup = dict()
-    current_backup['created'] = datetime.datetime.now()
-    current_backup['version'] = PAPERMERGE_VERSION
-
-    with tarfile.open(fileobj=backup_file, mode="w") as backup_archive:
-
-        if user:
-            current_backup['documents'] = list()
-            _add_user_documents(
-                user,
-                current_backup,
-                backup_archive,
-                include_user_in_path=False
-            )
-        else:
-            current_backup['users'] = list()
-            for user in User.objects.all():
-                current_user = {
-                    'username': user.username,
-                    'email': user.email,
-                    'is_superuser': user.is_superuser,
-                    'is_active': user.is_active,
-                    'documents': []
-                }
-                if include_user_password:
-                    # raw digest of user's password
-                    current_user['password'] = user.password
-                _add_user_documents(
-                    user,
-                    current_user,
-                    backup_archive,
-                    include_user_in_path=True
-                )
-                current_backup['users'].append(current_user)
-
-        json_bytes = json.dumps(
-            current_backup,
-            indent=4,
-            default=str
-        ).encode('utf-8')
-
-        tarinfo = tarfile.TarInfo(name='backup.json')
-        tarinfo.size = len(json_bytes)
-        tarinfo.mtime = time.time()
-
-        backup_archive.addfile(tarinfo, io.BytesIO(json_bytes))
 
 
 def restore_documents(
@@ -421,7 +361,31 @@ class NodeDataIter:
 
 
 class FileIter:
-    def __init__(self, prefix: str, root_node: BaseTreeNode):
+    """Iterator over all descendants' latest version documents of the node
+
+    Yields a tuple with three items for each descendant of given node, also for
+    empty folders:
+        1. absolute path to document file
+        2. prefixed breadcrumb
+        3. boolean value weather node is a folder or a document:
+            True - for folders
+            False - for documents
+
+    Each breadcrumb is prefixed with given string.
+    Only last version of the document is considered.
+
+    Example:
+
+        node = BaseTreeNode.objects.get(pk=pk)
+        file_iter = FileIter('user1', node)
+        for abs_path, breadcrumb, is_folder in file_iter:
+            if is_folder:
+                print("{abs_path}, {breadcrumb}, is folder")
+            else:
+                # is a document
+                print("{abs_path}, {breadcrumb}, is document")
+    """
+    def __init__(self, prefix: str, root_node: BaseTreeNode) -> None:
         self._root_node = root_node
         self._prefix = prefix
 
@@ -443,6 +407,28 @@ class UserFileIter:
 
     If no user instance is provided, will iterate over ALL
     users' files (i.e. over User.objects.all()).
+
+    Yields a tuple with three items for each user's node (also for
+    empty folders):
+        1. absolute path to document file
+        2. breadcrumb prefixed with username
+        3. boolean value weather node is a folder or a document:
+            True - for folders
+            False - for documents
+
+    Only last version of the document is considered.
+
+
+    Example:
+
+        user = User.objects.get(pk=pk)
+        user_file_iter = UserFileIter(user)
+        for abs_path, breadcrumb, is_folder in user_file_iter:
+            if is_folder:
+                print("{abs_path}, {breadcrumb}, is folder")
+            else:
+                # is a document
+                print("{abs_path}, {breadcrumb}, is document")
     """
     def __init__(self, user: User = None):
         if user is None:
@@ -463,6 +449,10 @@ class UserFileIter:
                 yield item
 
 
+def get_tags_data():
+    return [TagSerializer(tag).data for tag in Tag.objects.all()]
+
+
 def get_users_data(user: User = None) -> list:
     data = []
 
@@ -471,9 +461,9 @@ def get_users_data(user: User = None) -> list:
         home_id = user_item['home_folder']['id']
         inbox_id = user_item['inbox_folder']['id']
 
-        for node in NodeDataIter(home_id):
-            nodes_schema.append(node)
-        for node in NodeDataIter(inbox_id):
+        home_iter = NodeDataIter(home_id)
+        inbox_iter = NodeDataIter(inbox_id)
+        for node in chain(home_iter, inbox_iter):
             nodes_schema.append(node)
 
         user_item['nodes'] = nodes_schema
@@ -482,28 +472,24 @@ def get_users_data(user: User = None) -> list:
     return data
 
 
-def get_groups_data():
-    pass
-
-
 def create_data(user: User = None) -> dict:
-    result_dict = {}
+    result_dict = dict()
     result_dict['created'] = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"
     )
-    result_dict['version'] = PAPERMERGE_VERSION
+    result_dict['version'] = distribution('papermerge-core').version
     result_dict['users'] = get_users_data(user)
-    # groups_dict = get_groups_data()
+    result_dict['tags'] = get_tags_data()
 
     return result_dict
 
 
-def backup_documents2(
-    backup_file: str,
+def backup_documents(
+    file_path: str,
     user: User = None,
 ):
-    # dict_data = create_data(user)
-    with tarfile.open(backup_file, mode="w") as file:
+    dict_data = create_data(user)
+    with tarfile.open(file_path, mode="w:gz") as file:
         for abs_path, breadcrumb, is_folder in UserFileIter(user):
             if is_folder:
                 # Makes sure that empty folders are include in tar
@@ -513,3 +499,15 @@ def backup_documents2(
                 file.addfile(entry)  # include empty folders as well
             else:
                 file.add(abs_path, arcname=breadcrumb)
+
+        json_bytes = json.dumps(
+            dict_data,
+            indent=4,
+            default=str
+        ).encode('utf-8')
+
+        tarinfo = tarfile.TarInfo(name='backup.json')
+        tarinfo.size = len(json_bytes)
+        tarinfo.mtime = time.time()
+
+        file.addfile(tarinfo, io.BytesIO(json_bytes))

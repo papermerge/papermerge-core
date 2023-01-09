@@ -4,7 +4,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from papermerge.core.backup_restore import backup_documents2
+from papermerge.core.backup_restore import backup_documents
 from papermerge.core.models import User
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,6 @@ class Command(BaseCommand):
         the specific user.
 
         If --user/u is NOT specified - will backup documents of all users.
-        --include-user-password will include user's password digest into backup
-        archive
     """
 
     def add_arguments(self, parser):
@@ -69,7 +67,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         date_string = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
-        default_filename = f"backup_{date_string}.tar"
+        default_filename = f"backup_{date_string}.tar.gz"
 
         username = options.get('user')
         location = options.get('location') or default_filename
@@ -94,13 +92,13 @@ class Command(BaseCommand):
         if os.path.isdir(location):
             # in case location is a non existing directory path e.g. "blah/"
             # os.path.isdir will return False
-            backup_location = os.path.join(location, default_filename)
+            file_path = os.path.join(location, default_filename)
         else:
-            backup_location = location
+            file_path = location
 
         try:
-            backup_documents2(
-                backup_file=backup_location,
+            backup_documents(
+                file_path=file_path,
                 user=user
             )
         except IsADirectoryError:

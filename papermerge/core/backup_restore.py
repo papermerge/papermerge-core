@@ -11,7 +11,10 @@ from importlib.metadata import distribution
 
 from django.core.files.temp import NamedTemporaryFile
 
-from papermerge.core.serializers import NodeSerializer
+from papermerge.core.serializers import (
+    NodeSerializer,
+    FolderSerializer
+)
 from papermerge.core.serializers import UserSerializer, TagSerializer
 from papermerge.core.lib.pagecount import get_pagecount
 
@@ -196,6 +199,51 @@ def _get_json_user_documents_list(json_backup: dict, user: User):
             return _u['documents']
 
     return None
+
+
+def restore_user(user_dict: dict) -> User:
+    user = User.objects.update_or_create(**user_dict)
+    return user
+
+
+def restore_document(node_dict, user, tar_file):
+    Document.objects.create_document(
+        user=user,
+        **node_dict
+    )
+
+
+def restore_folder(node_dict, user, tar_file):
+    folder_ser = FolderSerializer(data=node_dict)
+    if folder_ser.is_valid():
+        folder_ser.save(user=user)
+
+
+def restore_node(node_dict: dict, user: User, tar_file) -> None:
+    """Restores given node"""
+    if node_dict['breadcrumb'].endswith('/'):
+        restore_folder(node_dict, user)
+    else:
+        restore_document(node_dict, user, tar_file)
+
+
+def restore_documents2(file_path: str):
+
+    with tarfile.open(file_path, mode="r:gz") as file:
+        backup_json = file.extractfile('backup.json')
+        backup_info = json.load(backup_json)
+
+        for user_data in backup_info['users']:
+            nodes_dict = user_data.pop('nodes')
+            user = restore_user(user_data)
+
+            for node_dict in nodes_dict:
+                restore_node(node_dict, user=user, tar_file=file)
+
+        for tag_data in backup_info['tags']:
+            tag_ser = TagSerializer(data=tag_data)
+            if tag_ser.is_valid():
+                tag_ser.save()
 
 
 class UserDataIter:

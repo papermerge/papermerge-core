@@ -220,7 +220,6 @@ def restore_folder(node_dict, user):
     node_dict.pop('title', None)
     node_dict.pop('id', None)
     parent = None
-    node = None
     for title in breadcrumb.split('/'):
         if not title:
             continue

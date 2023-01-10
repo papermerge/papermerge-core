@@ -217,10 +217,10 @@ def restore_document(node_dict, user, tar_file):
 def restore_folder(node_dict, user):
     breadcrumb = node_dict.pop('breadcrumb')
     node_dict.pop('parent', None)
+    node_dict.pop('title', None)
     node_dict.pop('id', None)
     parent = None
     node = None
-    result = None
     for title in breadcrumb.split('/'):
         if not title:
             continue
@@ -229,19 +229,21 @@ def restore_folder(node_dict, user):
             user=user,
             parent=parent
         ).first()
+
         if node:
             parent = node
         else:
             try:
-                result = Folder.objects.create(
+                parent = Folder.objects.create(
                     user=user,
                     parent=parent,
+                    title=title,
                     **node_dict
                 )
             except IntegrityError as e:
                 logger.info(e)
 
-    return result
+    return parent
 
 
 def restore_node(node_dict: dict, user: User, tar_file) -> None:

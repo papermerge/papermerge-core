@@ -1,7 +1,9 @@
 import pytest
 
-from papermerge.core.backup_restore import UserDataIter, get_users_data
+from papermerge.core.backup_restore import UserDataIter, get_users_data, \
+    restore_folder
 from papermerge.core.backup_restore import UserFileIter
+from papermerge.core.models import Folder
 from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
     document_recipe, document_version_recipe
 
@@ -89,3 +91,52 @@ def test_user_file_iter():
     ]
 
     assert set(expected_results) == set(actual_results), actual_results
+
+
+@pytest.mark.django_db
+def test_restore_folder():
+    u1 = user_recipe.make(username='username1')
+    node_dict = {
+        'title': 'My Documents',
+        'id': 'blah',
+        'breadcrumb': '.home/My Documents/',
+        'parent': {
+            'type': 'folders',
+            'id': 'blah'
+        },
+        'tags': [],
+        'created_at': '2023-01-06T06:46:08.279858+01:00',
+        'updated_at': '2023-01-06T06:46:08.279898+01:00'
+    }
+    folder = restore_folder(node_dict, u1)
+
+    assert folder is not None
+    assert folder.title == 'My Documents'
+    assert folder.parent is not None
+    assert folder.parent.id == u1.home_folder.id
+
+
+@pytest.mark.django_db
+def test_restore_folder_deeply_nested():
+    u1 = user_recipe.make(username='username1')
+    node_dict = {
+        'title': 'My Documents',
+        'id': 'blah',
+        'breadcrumb': '.home/My Documents/My Invoices/Private/',
+        'parent': {
+            'type': 'folders',
+            'id': 'blah'
+        },
+        'tags': [],
+        'created_at': '2023-01-06T06:46:08.279858+01:00',
+        'updated_at': '2023-01-06T06:46:08.279898+01:00'
+    }
+    folder = restore_folder(node_dict, u1)
+
+    Folder.objects.get(title='My Documents', user=u1)
+    my_invoices = Folder.objects.get(title='My Invoices', user=u1)
+
+    assert folder is not None
+    assert folder.title == 'Private'
+    assert folder.parent is not None
+    assert folder.parent.id == my_invoices.id

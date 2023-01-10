@@ -10,11 +10,9 @@ from pathlib import PurePath
 from importlib.metadata import distribution
 
 from django.core.files.temp import NamedTemporaryFile
+from django.db import IntegrityError
 
-from papermerge.core.serializers import (
-    NodeSerializer,
-    FolderSerializer
-)
+from papermerge.core.serializers import NodeSerializer
 from papermerge.core.serializers import UserSerializer, TagSerializer
 from papermerge.core.lib.pagecount import get_pagecount
 
@@ -202,8 +200,11 @@ def _get_json_user_documents_list(json_backup: dict, user: User):
 
 
 def restore_user(user_dict: dict) -> User:
-    user = User.objects.update_or_create(**user_dict)
-    return user
+    user_ser = UserSerializer(data=user_dict)
+    if user_ser.is_valid():
+        user_ser.save()
+
+    return User.objects.get(username=user_dict['username'])
 
 
 def restore_document(node_dict, user, tar_file):
@@ -213,10 +214,34 @@ def restore_document(node_dict, user, tar_file):
     )
 
 
-def restore_folder(node_dict, user, tar_file):
-    folder_ser = FolderSerializer(data=node_dict)
-    if folder_ser.is_valid():
-        folder_ser.save(user=user)
+def restore_folder(node_dict, user):
+    breadcrumb = node_dict.pop('breadcrumb')
+    node_dict.pop('parent', None)
+    node_dict.pop('id', None)
+    parent = None
+    node = None
+    result = None
+    for title in breadcrumb.split('/'):
+        if not title:
+            continue
+        node = Folder.objects.filter(
+            title=title,
+            user=user,
+            parent=parent
+        ).first()
+        if node:
+            parent = node
+        else:
+            try:
+                result = Folder.objects.create(
+                    user=user,
+                    parent=parent,
+                    **node_dict
+                )
+            except IntegrityError as e:
+                logger.info(e)
+
+    return result
 
 
 def restore_node(node_dict: dict, user: User, tar_file) -> None:

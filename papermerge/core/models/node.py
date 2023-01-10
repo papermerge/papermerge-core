@@ -1,6 +1,7 @@
 import pytz
 import uuid
 
+from django.db.models import Q
 from django.utils import timezone
 from django.db import models
 
@@ -309,8 +310,15 @@ class BaseTreeNode(models.Model):
 
         constraints = [
             models.UniqueConstraint(
-                fields=['parent', 'title'], name='unique title per parent'
+                name='unique title per parent per user',
+                fields=('parent', 'title', 'user_id')
             ),
+            # Prohibit `title` duplicates when `parent_id` is NULL
+            models.UniqueConstraint(
+                name='title_uniq_when_parent_is_null_per_user',
+                fields=('title', 'user_id'),
+                condition=Q(parent__isnull=True)
+            )
         ]
 
     def __repr__(self):

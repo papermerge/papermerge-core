@@ -24,6 +24,10 @@ class FolderQuerySet(models.QuerySet):
                 # it is ok, just skip
                 pass
 
+    def get_by_breadcrumb(self, *args, **kwargs):
+        """Returns folder instance identified by breadcrumb"""
+        pass
+
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
 

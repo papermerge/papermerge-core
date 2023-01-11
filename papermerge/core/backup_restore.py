@@ -10,7 +10,6 @@ from pathlib import PurePath
 from importlib.metadata import distribution
 
 from django.core.files.temp import NamedTemporaryFile
-from django.db import IntegrityError
 
 from papermerge.core.serializers import NodeSerializer
 from papermerge.core.serializers import UserSerializer, TagSerializer
@@ -199,6 +198,123 @@ def _get_json_user_documents_list(json_backup: dict, user: User):
     return None
 
 
+class PathSequence:
+    def __init__(self, path: str):
+        self._path = path
+        self._is_folder = path.endswith('/')
+
+    def __iter__(self):
+        return [i for i in self._path.split('/') if len(i) > 0]
+
+    def is_folder(self) -> bool:
+        return self._is_folder
+
+    def __str__(self):
+        return self._path
+
+
+class Breadcrumb:
+    def __init__(self, path: str):
+        self._path_seq = PathSequence(path)
+
+    @property
+    def parts_count(self) -> int:
+        return len(list(self._path_seq))
+
+    @property
+    def name(self) -> str | None:
+        items = list(self._path_seq)
+        if len(items) == 0:
+            return None
+
+        return items[-1]
+
+    @property
+    def parent(self):
+        items = list(self._path_seq)
+        return Breadcrumb('/'.join(items[0:-2]) + '/')
+
+    @property
+    def is_folder(self):
+        return self._path_seq.is_folder
+
+    @property
+    def __str__(self):
+        return str(self._path_seq)
+
+
+def breadcrumb_parts_count(item: dict[str, str]) -> int:
+    """
+    Returns parts count of the breadcrumb.
+
+    Item is a dictionary with at least one key 'breadcrumb'.
+    Example of items:
+        item = {"breadcrumb": "A/"}  - one parts breadcrumb
+        item = {"breadcrumb": "A/B/"}  - two parts breadcrumb
+        item = {"breadcrumb": "A/B/C/"}  - three parts breadcrumb
+        item = {"breadcrumb": "A/doc.pdf"}  - two parts breadcrumb
+
+    Note that breadcrumb path to a folder always ends with '/' character.
+    """
+    return Breadcrumb(item['breadcrumb']).parts_count
+
+
+class RestoreSequence:
+    """
+    Sequence which iterates over nodes in 'correct' order.
+
+    The whole point of RestoreSequence is to iterate over nodes
+    in such order that guarantees that parent node is yielded
+    BEFORE child node.
+    Even though nodes are stored in a list, they are hierarchical.
+    The hierarchy is expressed by 'breadcrumb' key.
+    Example:
+        Following hierarchy:
+
+            - .home  # level 1
+              - doc.pdf
+              - My Docs  # level 2
+                - doc1.pdf  # level 3
+                - doc2.pdf
+              - My Invoices
+                - inv.pdf
+            - .inbox
+
+        My be expressed as [
+            {'breadcrumb': '.home/'},
+            {'breadcrumb': '.home/My Docs/'},
+            {'breadcrumb': '.home/My Docs/doc1.pdf'},
+            {'breadcrumb': '.home/My Docs/doc2.pdf'},
+            {'breadcrumb': '.home/My Invoices/'},
+            {'breadcrumb': '.home/My Invoices/inv.pdf'},
+            {'breadcrumb': '.inbox/'},
+        ]
+        The 'correct' order by which RestoreSequence iterates is higher level
+        nodes comes before lower level nodes.
+        Sticking to example from above, Restore sequence will iterate
+        in following order:
+            {'breadcrumb': '.home/'},   # level 1
+            {'breadcrumb': '.inbox/'},  # level 1
+            {'breadcrumb': '.home/My Docs/'},  # level 2
+            {'breadcrumb': '.home/My Invoices/'},  # level 2
+            {'breadcrumb': '.home/doc.pdf'},  # level 2
+            {'breadcrumb': '.home/My Docs/doc1.pdf'}  # level 3
+            {'breadcrumb': '.home/My Docs/doc2.pdf'}   # level 3
+            {'breadcrumb': '.home/My Invoices/inv.pdf'}  # level 3
+
+        It is very important to understand that on same level folders are
+        yielded before documents.
+        If breadcrumb string ends with '/' characters - it means that given
+        nodes is a folder.
+    """
+    def __init__(self, nodes: list[dict]):
+        self._nodes = nodes
+
+    def __iter__(self):
+        for node in sorted(self._nodes, key=breadcrumb_parts_count):
+            yield node
+
+
 def restore_user(user_dict: dict) -> User:
     user_ser = UserSerializer(data=user_dict)
     if user_ser.is_valid():
@@ -208,46 +324,46 @@ def restore_user(user_dict: dict) -> User:
 
 
 def restore_document(node_dict, user, tar_file):
+    keys = ['lang', 'ocr', 'ocr_status', 'tags', 'created_at', 'updated_at']
+    sanitized_dict = {v: node_dict[v] for v in keys}
+    breadcrumb = Breadcrumb(node_dict.pop('breadcrumb'))
+    title = breadcrumb.name
     Document.objects.create_document(
+        title=title,
         user=user,
-        **node_dict
+        **sanitized_dict
     )
 
 
-def restore_folder(node_dict, user):
-    breadcrumb = node_dict.pop('breadcrumb')
-    node_dict.pop('parent', None)
-    node_dict.pop('title', None)
-    node_dict.pop('id', None)
-    parent = None
-    for title in breadcrumb.split('/'):
-        if not title:
-            continue
-        node = Folder.objects.filter(
-            title=title,
-            user=user,
-            parent=parent
-        ).first()
+def restore_folder(node_dict: dict[str, str], user: User) -> Folder:
+    """
+    Creates leaf folder of the given breadcrumb.
 
-        if node:
-            parent = node
-        else:
-            try:
-                parent = Folder.objects.create(
-                    user=user,
-                    parent=parent,
-                    title=title,
-                    **node_dict
-                )
-            except IntegrityError as e:
-                logger.info(e)
+    The only required key in the dictionary is `breadcrumb`.
+    `breadcrumb` describes the path to folder we want to restore.
+    e.g. if node_dict['breadcrumb'] = 'A/B/C/', method will
+    create and return folder 'C'.
+    Note that parent folder 'B' must exist apriori!
+    """
+    breadcrumb = Breadcrumb(node_dict.pop('breadcrumb'))
+    keys = ['tags', 'created_at', 'updated_at']
+    sanitized_dict = {v: node_dict[v] for v in keys}
 
-    return parent
+    title = breadcrumb.name
+    parent_path = str(breadcrumb.parent)
+    parent = Folder.objects.get_by_breadcrumb(parent_path)
+
+    return Folder.objects.create(
+        user=user,
+        parent=parent,
+        title=title,
+        **sanitized_dict
+    )
 
 
 def restore_node(node_dict: dict, user: User, tar_file) -> None:
     """Restores given node"""
-    if node_dict['breadcrumb'].endswith('/'):
+    if Breadcrumb(node_dict['breadcrumb']).is_folder:
         restore_folder(node_dict, user)
     else:
         restore_document(node_dict, user, tar_file)
@@ -259,11 +375,16 @@ def restore_documents2(file_path: str):
         backup_json = file.extractfile('backup.json')
         backup_info = json.load(backup_json)
 
+        if 'users' not in backup_info:
+            raise ValueError("'users' key is missing")
+
         for user_data in backup_info['users']:
-            nodes_dict = user_data.pop('nodes')
+            if 'nodes' not in user_data:
+                raise ValueError("'nodes' key not found in 'users'")
+            restore_seq = RestoreSequence(user_data.pop('nodes'))
             user = restore_user(user_data)
 
-            for node_dict in nodes_dict:
+            for node_dict in restore_seq:
                 restore_node(node_dict, user=user, tar_file=file)
 
         for tag_data in backup_info['tags']:

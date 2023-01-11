@@ -41,7 +41,6 @@ class DocumentManager(models.Manager):
     @transaction.atomic
     def create_document(
         self,
-        user_id,
         title,
         lang,
         size=0,
@@ -53,7 +52,6 @@ class DocumentManager(models.Manager):
         doc = Document(
             title=title,
             lang=lang,
-            user_id=user_id,
             parent=parent,
             **kwargs
         )

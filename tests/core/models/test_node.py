@@ -3,7 +3,7 @@ import pytest
 from papermerge.test import TestCase
 from papermerge.test.baker_recipes import (
     folder_recipe,
-    user_recipe
+    user_recipe, make_folders
 )
 from papermerge.core.models import User, Folder, BaseTreeNode, Document
 from papermerge.core.models.node import NODE_TYPE_FOLDER, NODE_TYPE_DOCUMENT
@@ -254,3 +254,31 @@ def test_get_ancestors_returns_correct_order_dont_include_self():
         Folder.HOME_TITLE, folder1.title, folder2.title
     ]
     assert actual_titles == expected_titles
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_with_duplicate_paths():
+    """
+    Given following folders:
+    - .home/A/B/C
+    - .inbox/A/B/C
+    node.objects.get_by_breadcrumb('.home/A/B') should
+    return instance of folder B which is under .home, not the
+    one under .inbox.
+    """
+    make_folders(".home/A/B/C")
+    make_folders(".inbox/A/B/C")
+
+    folder = Folder.objects.get_by_breadcrumb(".home/A/B")
+
+    assert ".home/A/B/" == folder.breadcrumb
+    assert "B" == folder.title
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_basic():
+    make_folders(".home/My Documents/X/Y/Z")
+    my_docs = Folder.objects.get_by_breadcrumb(".home/My Documents/")
+
+    assert ".home/My Documents/" == my_docs.breadcrumb
+    assert "My Documents" == my_docs.title

@@ -198,51 +198,6 @@ def _get_json_user_documents_list(json_backup: dict, user: User):
     return None
 
 
-class PathSequence:
-    def __init__(self, path: str):
-        self._path = path
-        self._is_folder = path.endswith('/')
-
-    def __iter__(self):
-        return [i for i in self._path.split('/') if len(i) > 0]
-
-    def is_folder(self) -> bool:
-        return self._is_folder
-
-    def __str__(self):
-        return self._path
-
-
-class Breadcrumb:
-    def __init__(self, path: str):
-        self._path_seq = PathSequence(path)
-
-    @property
-    def parts_count(self) -> int:
-        return len(list(self._path_seq))
-
-    @property
-    def name(self) -> str | None:
-        items = list(self._path_seq)
-        if len(items) == 0:
-            return None
-
-        return items[-1]
-
-    @property
-    def parent(self):
-        items = list(self._path_seq)
-        return Breadcrumb('/'.join(items[0:-2]) + '/')
-
-    @property
-    def is_folder(self):
-        return self._path_seq.is_folder
-
-    @property
-    def __str__(self):
-        return str(self._path_seq)
-
-
 def breadcrumb_parts_count(item: dict[str, str]) -> int:
     """
     Returns parts count of the breadcrumb.
@@ -256,7 +211,7 @@ def breadcrumb_parts_count(item: dict[str, str]) -> int:
 
     Note that breadcrumb path to a folder always ends with '/' character.
     """
-    return Breadcrumb(item['breadcrumb']).parts_count
+    return len(PurePath(item['breadcrumb']).parts)
 
 
 class RestoreSequence:
@@ -326,7 +281,7 @@ def restore_user(user_dict: dict) -> User:
 def restore_document(node_dict, user, tar_file):
     keys = ['lang', 'ocr', 'ocr_status', 'tags', 'created_at', 'updated_at']
     sanitized_dict = {v: node_dict[v] for v in keys}
-    breadcrumb = Breadcrumb(node_dict.pop('breadcrumb'))
+    breadcrumb = PurePath(node_dict.pop('breadcrumb'))
     title = breadcrumb.name
     Document.objects.create_document(
         title=title,
@@ -345,14 +300,14 @@ def restore_folder(node_dict: dict[str, str], user: User) -> Folder:
     create and return folder 'C'.
     Note that parent folder 'B' must exist apriori!
     """
-    breadcrumb = Breadcrumb(node_dict.pop('breadcrumb'))
+    breadcrumb = PurePath(node_dict.pop('breadcrumb'))
     keys = ['tags', 'created_at', 'updated_at']
     sanitized_dict = {v: node_dict[v] for v in keys}
 
     title = breadcrumb.name
     parent_path = str(breadcrumb.parent)
-    parent = Folder.objects.get_by_breadcrumb(parent_path)
 
+    parent = Folder.objects.get_by_breadcrumb(parent_path)
     return Folder.objects.create(
         user=user,
         parent=parent,
@@ -363,7 +318,7 @@ def restore_folder(node_dict: dict[str, str], user: User) -> Folder:
 
 def restore_node(node_dict: dict, user: User, tar_file) -> None:
     """Restores given node"""
-    if Breadcrumb(node_dict['breadcrumb']).is_folder:
+    if 'ocr' not in node_dict.keys():  # documents have OCR key
         restore_folder(node_dict, user)
     else:
         restore_document(node_dict, user, tar_file)

@@ -3,9 +3,8 @@ import pytest
 from papermerge.core.backup_restore import UserDataIter, get_users_data, \
     restore_folder, RestoreSequence, breadcrumb_parts_count
 from papermerge.core.backup_restore import UserFileIter
-from papermerge.core.models import Folder
 from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
-    document_recipe, document_version_recipe
+    document_recipe, document_version_recipe, make_folders
 
 
 @pytest.mark.django_db
@@ -131,15 +130,13 @@ def test_restore_folder_deeply_nested():
         'created_at': '2023-01-06T06:46:08.279858+01:00',
         'updated_at': '2023-01-06T06:46:08.279898+01:00'
     }
+    make_folders(".home/My Documents/My Invoices/", user=u1)
     folder = restore_folder(node_dict, u1)
-
-    Folder.objects.get(title='My Documents', user=u1)
-    my_invoices = Folder.objects.get(title='My Invoices', user=u1)
 
     assert folder is not None
     assert folder.title == 'Private'
     assert folder.parent is not None
-    assert folder.parent.id == my_invoices.id
+    assert ".home/My Documents/My Invoices/Private/" == folder.breadcrumb
 
 
 def test_restore_sequence():

@@ -282,3 +282,9 @@ def test_get_by_breadcrumb_basic():
 
     assert ".home/My Documents/" == my_docs.breadcrumb
     assert "My Documents" == my_docs.title
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_non_existing_path():
+    with pytest.raises(Folder.DoesNotExist):
+        Folder.objects.get_by_breadcrumb(".home/My Documents/")

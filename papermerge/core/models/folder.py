@@ -26,7 +26,7 @@ class FolderQuerySet(models.QuerySet):
                 # it is ok, just skip
                 pass
 
-    def get_by_breadcrumb(self, breadcrumb: str) -> BaseTreeNode:
+    def get_by_breadcrumb(self, breadcrumb: str):
         """
         Returns node instance identified by breadcrumb
 
@@ -48,11 +48,17 @@ class FolderQuerySet(models.QuerySet):
          '''
         sql += 'SELECT id, title FROM tree WHERE breadcrumb = %s LIMIT 1'
 
-        result = BaseTreeNode.objects.raw(
+        result_list = list(BaseTreeNode.objects.raw(
             sql, [first_part, pure_breadcrumb]
-        )[0]
+        ))
 
-        return result.folder
+        if len(result_list) == 0:
+            raise Folder.DoesNotExist()
+
+        if len(result_list) > 1:
+            raise Folder.MultipleObjectsReturned()
+
+        return result_list[0].folder
 
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)

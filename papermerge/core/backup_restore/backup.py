@@ -9,7 +9,7 @@ import json
 from importlib.metadata import distribution
 
 from papermerge.core.serializers import NodeSerializer
-from papermerge.core.serializers import UserSerializer, TagSerializer
+from .serializers import UserSerializer, TagSerializer
 
 from papermerge.core.models import (
     User,
@@ -136,37 +136,18 @@ class UserFileIter:
                 yield item
 
 
-def get_tags_data():
-    return [TagSerializer(tag).data for tag in Tag.objects.all()]
+def dump_data_as_dict(user: User = None) -> dict:
 
-
-def get_users_data(user: User = None) -> list:
-    data = []
-
-    for user_item in UserDataIter(user):
-        nodes_schema = []
-        home_id = user_item['home_folder']['id']
-        inbox_id = user_item['inbox_folder']['id']
-
-        home_iter = NodeDataIter(home_id)
-        inbox_iter = NodeDataIter(inbox_id)
-        for node in chain(home_iter, inbox_iter):
-            nodes_schema.append(node)
-
-        user_item['nodes'] = nodes_schema
-        data.append(user_item)
-
-    return data
-
-
-def create_data(user: User = None) -> dict:
     result_dict = dict()
     result_dict['created'] = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"
     )
     result_dict['version'] = distribution('papermerge-core').version
-    result_dict['users'] = get_users_data(user)
-    result_dict['tags'] = get_tags_data()
+    if user is None:
+        result_dict['users'] = UserSerializer(User.objects, many=True).data
+    else:
+        result_dict['users'] = UserSerializer(user).data
+    result_dict['tags'] = TagSerializer(Tag.objects, many=True).data
 
     return result_dict
 
@@ -175,7 +156,7 @@ def backup_documents(
     file_path: str,
     user: User = None,
 ):
-    dict_data = create_data(user)
+    dict_data = dump_data_as_dict(user)
     with tarfile.open(file_path, mode="w:gz") as file:
         for abs_path, breadcrumb, is_folder in UserFileIter(user):
             if is_folder:

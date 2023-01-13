@@ -146,6 +146,7 @@ class BaseTreeNode(models.Model):
 
     user = models.ForeignKey(
         'User',
+        related_name='nodes',
         on_delete=models.CASCADE
     )
 

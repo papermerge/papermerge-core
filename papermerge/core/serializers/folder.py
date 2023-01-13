@@ -58,8 +58,4 @@ class FolderSerializer(serializers.ModelSerializer):
         ]
 
     def get_breadcrumb(self, obj: Folder) -> str:
-        titles = [
-            item.title
-            for item in obj.get_ancestors()
-        ]
-        return '/'.join(titles) + '/'
+        return obj.breadcrumb

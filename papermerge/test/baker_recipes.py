@@ -21,11 +21,13 @@ def make_folders(breadcrumb: str, user=None):
 
     parts = PurePath(breadcrumb).parts
     parent = Folder.objects.get(title=parts[0], user=user)
-    # parts[1:-1] excludes top most folders (.home, .inbox) which are
-    # created apriori
+    # parts[1:] excludes top most folders (.home, .inbox) which were
+    # created before as part of user model creation
     for item in parts[1:]:
         parent = folder_recipe.make(
             title=item,
             user=user,
             parent=parent
         )
+
+    return parent

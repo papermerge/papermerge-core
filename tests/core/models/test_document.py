@@ -3,12 +3,15 @@ import shutil
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 from django.db.utils import IntegrityError
 from django.db import transaction
 
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
 from papermerge.core.models import (User, Document)
+from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
+    document_recipe
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(
@@ -220,3 +223,21 @@ class TestDocumentModel(TestCase):
             user_id=self.user.pk,
             parent=self.user.inbox_folder  # this time - different parent
         )
+
+
+@pytest.mark.django_db
+def test_document_breadcrumb():
+    user = user_recipe.make()
+    folder1 = folder_recipe.make(
+        title='folder1',
+        user=user,
+        parent=user.home_folder
+    )
+    doc = document_recipe.make(
+        title='invoice.pdf',
+        user=user,
+        parent=folder1
+    )
+
+    assert doc.breadcrumb == '.home/folder1/invoice.pdf'
+    assert doc.title == 'invoice.pdf'

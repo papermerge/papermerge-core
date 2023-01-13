@@ -3,7 +3,7 @@ import pytest
 from django.db.utils import IntegrityError
 from django.db import transaction
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import folder_recipe
+from papermerge.test.baker_recipes import folder_recipe, user_recipe
 from papermerge.core.models import User, Folder
 
 
@@ -204,3 +204,21 @@ def test_delete_folder_with_sub_folders():
     }
 
     assert expected_left_titles == set(left_titles)
+
+
+@pytest.mark.django_db
+def test_folder_breadcrumb():
+    user = user_recipe.make()
+    folder1 = folder_recipe.make(
+        title='folder1',
+        user=user,
+        parent=user.home_folder
+    )
+    folder = folder_recipe.make(
+        title='folder2',
+        user=user,
+        parent=folder1
+    )
+
+    assert folder.breadcrumb == '.home/folder1/folder2/'
+    assert folder.title == 'folder2'

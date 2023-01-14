@@ -31,6 +31,8 @@ class FolderSerializer(serializers.ModelSerializer):
 
 
 class PageSerializer(serializers.ModelSerializer):
+    file_path = serializers.SerializerMethodField()
+
     class Meta:
         model = Page
         exclude = (
@@ -43,13 +45,20 @@ class PageSerializer(serializers.ModelSerializer):
             'image'
         )
 
+    def get_file_path(self, obj) -> str:
+        return obj.page_path.svg_url
+
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
     pages = PageSerializer(many=True)
+    file_path = serializers.SerializerMethodField()
 
     class Meta:
         model = DocumentVersion
         exclude = ('id', 'document')
+
+    def get_file_path(self, obj) -> str:
+        return obj.document_path.url
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -62,7 +71,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        exclude = ('id', 'parent', 'user')
+        exclude = ('parent', 'user')
 
 
 class NodeSerializer(serializers.ModelSerializer):
@@ -87,4 +96,4 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ('id', 'home_folder', 'inbox_folder')
+        exclude = ('home_folder', 'inbox_folder')

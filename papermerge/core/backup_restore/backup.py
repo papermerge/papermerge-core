@@ -83,7 +83,7 @@ class BackupNodes:
                 yield entry, username, node
 
 
-def dump_data_as_dict(user: User = None) -> dict:
+def dump_data_as_dict() -> dict:
 
     result_dict = dict()
     result_dict['created'] = datetime.datetime.now().strftime(

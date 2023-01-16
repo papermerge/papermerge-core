@@ -10,6 +10,7 @@ from importlib.metadata import distribution
 
 from papermerge.core.storage import abs_path
 from .serializers import UserSerializer, TagSerializer
+from .utils import CType
 
 from papermerge.core.models import (
     User,
@@ -83,12 +84,18 @@ class BackupVersions:
 
 
 class BackupNodes:
-    """Iterator over users' nodes (documents and folders)"""
+    """Iterator over users' nodes (documents and folders)
+
+    For each of user's nodes (i.e. document or folder) yields
+    a tuple, with two items:
+        1. `tarfile.TarInfo` - for respective node
+        2. instance of `BackupVersions` sequence of respective node
+    """
     def __init__(self, backup_dict: dict):
-        self._backup_dict = backup_dict
+        self._backup_dict = backup_dict or {}
 
     def __iter__(self):
-        for user in self._backup_dict['users']:
+        for user in self._backup_dict.get('users', []):
             username = user['username']
             nodes = user['nodes']
             for node in nodes:
@@ -97,13 +104,12 @@ class BackupNodes:
                 )
                 entry.mtime = time.time()
                 entry.mode = 16893
-                if node['ctype'] == 'folder':
+                if node['ctype'] == CType.FOLDER:
                     entry.type = tarfile.DIRTYPE
                 yield entry, BackupVersions(node, prefix=username)
 
 
 def dump_data_as_dict() -> dict:
-
     result_dict = dict()
     result_dict['created'] = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"

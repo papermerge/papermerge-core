@@ -5,7 +5,8 @@ import pytest
 from papermerge.core.backup_restore.utils import CType
 from papermerge.core.backup_restore.backup import (
     dump_data_as_dict,
-    BackupNodes
+    BackupNodes,
+    BackupVersions
 )
 from papermerge.test.baker_recipes import (
     user_recipe,
@@ -117,7 +118,11 @@ def test_backup_nodes_sequence_with_one_document_entry():
     input_dict = {
         'users': [
             {'nodes': [
-                {'breadcrumb': '.home/anmeldung.pdf', 'ctype': CType.DOCUMENT}
+                {
+                    'breadcrumb': '.home/anmeldung.pdf',
+                    'ctype': CType.DOCUMENT,
+                    'versions': []
+                }
             ], 'username': 'john'},
         ]
     }
@@ -127,3 +132,23 @@ def test_backup_nodes_sequence_with_one_document_entry():
         # name of the tarfile.TarInfo is prefixed
         # with user.username i.e. 'john' in this scenario
         assert tar_info.name == 'john/.home/anmeldung.pdf'
+
+
+def test_backup_versions_sequence_empty_input():
+    node_dict_1 = {
+        'breadcrumb': '.home/',
+        'ctype': CType.FOLDER
+    }
+
+    node_dict_2 = {
+        'breadcrumb': '.home/document.pdf',
+        'ctype': CType.DOCUMENT,
+        'versions': []  # empty versions
+    }
+
+    assert list(
+        BackupVersions(node_dict_1, prefix='username7')
+    ) == []
+    assert list(
+        BackupVersions(node_dict_2, prefix='username7')
+    ) == []

@@ -55,7 +55,7 @@ class BackupVersions:
 
     def __iter__(self):
         breadcrumb = self._node_dict['breadcrumb']
-        versions = self._node_dict['versions']
+        versions = self._node_dict.get('versions', [])
         versions_count = len(versions)
 
         for version in versions:
@@ -84,14 +84,31 @@ class BackupVersions:
 
 
 class BackupNodes:
-    """Iterator over users' nodes (documents and folders)
+    """Iterable over users' nodes i.e. documents and folders
 
     For each of user's nodes (i.e. document or folder) yields
     a tuple, with two items:
         1. `tarfile.TarInfo` - for respective node
         2. instance of `BackupVersions` sequence of respective node
     """
+
     def __init__(self, backup_dict: dict):
+        """Receives as input a dictionary with 'users' key.
+
+        Examples:
+        ```
+            backup_dict = {
+                'users': [
+                    {
+                        'username': 'user1',
+                        'nodes': [
+                            {'breadcrumb': '.home', 'ctype': CType.FOLDER},
+                            {'breadcrumb': '.inbox', 'ctype': CType.FOLDER},
+                        ]
+                    }
+                ]
+            }
+        """
         self._backup_dict = backup_dict or {}
 
     def __iter__(self):
@@ -106,6 +123,7 @@ class BackupNodes:
                 entry.mode = 16893
                 if node['ctype'] == CType.FOLDER:
                     entry.type = tarfile.DIRTYPE
+
                 yield entry, BackupVersions(node, prefix=username)
 
 

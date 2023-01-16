@@ -41,6 +41,7 @@ class BackupPages:
                 content = file.read()
                 entry = tarfile.TarInfo(file_path)
                 entry.size = os.path.getsize(abs_file_path)
+                entry.mtime = os.path.getmtime(abs_file_path)
                 yield entry, io.BytesIO(content)
                 file.close()
 
@@ -63,6 +64,7 @@ class BackupVersions:
             entry = tarfile.TarInfo(src_file_path)
             content = file.read()
             entry.size = os.path.getsize(abs_file_path)
+            entry.mtime = os.path.getmtime(abs_file_path)
             yield entry, io.BytesIO(content), BackupPages(version)
             file.close()
 
@@ -72,6 +74,7 @@ class BackupVersions:
                     os.path.join(self._prefix, breadcrumb)
                 )
                 entry_sym.type = tarfile.SYMTYPE
+                entry_sym.mtime = os.path.getmtime(abs_file_path)
                 entry_sym.linkname = link_name(
                     breadcrumb,
                     target=src_file_path
@@ -89,7 +92,11 @@ class BackupNodes:
             username = user['username']
             nodes = user['nodes']
             for node in nodes:
-                entry = tarfile.TarInfo(node['breadcrumb'])
+                entry = tarfile.TarInfo(
+                    os.path.join(username, node['breadcrumb'])
+                )
+                entry.mtime = time.time()
+                entry.mode = 16893
                 if node['ctype'] == 'folder':
                     entry.type = tarfile.DIRTYPE
                 yield entry, BackupVersions(node, prefix=username)
@@ -113,7 +120,7 @@ def backup_documents(file_path: str):
     with tarfile.open(file_path, mode="w:gz") as file:
         for node_tar_info, versions in BackupNodes(dict_data):
             if node_tar_info.isdir():
-                # file.addfile(ntar_info)
+                file.addfile(node_tar_info)
                 continue
             for ver_tar_info, ver_content, pages in versions:
                 if ver_tar_info.issym():

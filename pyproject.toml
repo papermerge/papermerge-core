@@ -94,6 +94,7 @@ django_find_project = false
 
 [tool.taskipy.tasks]
 test = "task test-core && task test-search-w && task test-search"
+test-c = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest"
 test-co = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/"
 test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
 # include warnings

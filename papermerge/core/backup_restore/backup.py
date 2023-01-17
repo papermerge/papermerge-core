@@ -7,7 +7,7 @@ import tarfile
 import json
 from pathlib import PurePath
 from importlib.metadata import distribution
-from os.path import getsize, getmtime
+from os.path import getsize, getmtime, exists
 
 from papermerge.core.storage import abs_path
 from .serializers import UserSerializer, TagSerializer
@@ -57,7 +57,7 @@ def get_content(path: str) -> io.BytesIO:
 
 
 class BackupPages:
-    """Iterator over document version pages"""
+    """Iterable over document version pages"""
     def __init__(self, version_dict: dict) -> None:
         self._version_dict = version_dict
 
@@ -65,7 +65,7 @@ class BackupPages:
         for page in self._version_dict.get('pages', []):
             file_path = page['file_path']
             abs_file_path = abs_path(file_path)
-            if os.path.exists(abs_file_path):
+            if exists(abs_file_path):
                 content = get_content(abs_file_path)
                 entry = tarfile.TarInfo(file_path)
                 entry.size = getsize(abs_file_path)

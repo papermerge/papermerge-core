@@ -9,6 +9,7 @@ from papermerge.core.backup_restore.backup import (
     dump_data_as_dict,
     BackupNodes,
     BackupVersions,
+    BackupPages,
     relative_link_target
 )
 from papermerge.test.baker_recipes import (
@@ -216,3 +217,45 @@ def test_relative_link_target():
         "home/doc.pdf",
         target="media/my.pdf"
     )
+
+
+def test_backup_pages_empty_input():
+    version_dict = {
+        'pages': []
+    }
+    assert list(BackupPages(version_dict)) == []
+    assert list(BackupPages({})) == []
+
+
+@patch(
+    'papermerge.core.backup_restore.backup.exists',
+    return_value=True
+)
+@patch(
+    'papermerge.core.backup_restore.backup.getsize',
+    return_value=100
+)
+@patch(
+    'papermerge.core.backup_restore.backup.getmtime',
+    return_value=time.time()
+)
+@patch(
+    'papermerge.core.backup_restore.backup.get_content',
+    return_value="XYZ"
+)
+def test_backup_pages(*_):
+    version_dict = {
+        'pages': [
+            {'file_path': 'some/path/to/file_1.pdf'},
+            {'file_path': 'some/path/to/file_2.pdf'}
+        ]
+    }
+    actual_result = [
+        (item[0].name, item[1]) for item in BackupPages(version_dict)
+    ]
+    expected_result = [
+        ('some/path/to/file_1.pdf', 'XYZ'),
+        ('some/path/to/file_2.pdf', 'XYZ')
+    ]
+
+    assert set(actual_result) == set(expected_result)

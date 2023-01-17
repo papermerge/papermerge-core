@@ -212,6 +212,16 @@ def dump_data_as_dict() -> dict:
 
 
 def backup_documents(file_path: str):
+    """Builds backup archive
+
+    Backup archive contains:
+        1. all document versions
+        2. all pages svg files (user as preview with OCR layer)
+        3. preserved folder/document structure as end user sees it
+
+    Point 3. is there only for ease of human readability of
+    backup archive.
+    """
     dict_data = dump_data_as_dict()
     with tarfile.open(file_path, mode="w:gz") as file:
         for node_tar_info, versions in BackupNodes(dict_data):

@@ -1,4 +1,6 @@
+import time
 import tarfile
+from unittest.mock import patch
 
 import pytest
 
@@ -6,7 +8,8 @@ from papermerge.core.backup_restore.utils import CType
 from papermerge.core.backup_restore.backup import (
     dump_data_as_dict,
     BackupNodes,
-    BackupVersions
+    BackupVersions,
+    relative_link_target
 )
 from papermerge.test.baker_recipes import (
     user_recipe,
@@ -152,3 +155,64 @@ def test_backup_versions_sequence_empty_input():
     assert list(
         BackupVersions(node_dict_2, prefix='username7')
     ) == []
+
+
+@patch(
+    'papermerge.core.backup_restore.backup.get_content',
+    return_value="some content"
+)
+@patch(
+    'papermerge.core.backup_restore.backup.getsize',
+    return_value=100
+)
+@patch(
+    'papermerge.core.backup_restore.backup.getmtime',
+    return_value=time.time()
+)
+def test_backup_versions(*_):
+    node_dict = {
+        'breadcrumb': '.home/My Documents/doc.pdf',
+        'ctype': CType.DOCUMENT,
+        'versions': [
+            {
+                'file_path': 'media/docs/v1/doc.pdf',
+                'number': 1
+            },
+            {
+                'file_path': 'media/docs/v2/doc.pdf',
+                'number': 2
+            }
+        ]
+    }
+
+    versions_seq = BackupVersions(node_dict, prefix='john')
+    actual_result = [(item[0].name, item[0].type) for item in versions_seq]
+    expected_result = [
+        ('media/docs/v1/doc.pdf', tarfile.REGTYPE),
+        ('media/docs/v2/doc.pdf', tarfile.REGTYPE),
+        ('john/.home/My Documents/doc.pdf', tarfile.SYMTYPE)
+    ]
+
+    assert set(actual_result) == set(expected_result)
+
+
+def test_relative_link_target():
+    assert "../../../../media/user/v1/doc.pdf" == relative_link_target(
+        "home/X/Y/doc.pdf",
+        target="media/user/v1/doc.pdf"
+    )
+
+    assert "../../../../media/doc.pdf" == relative_link_target(
+        "home/X/Y/doc.pdf",
+        target="media/doc.pdf"
+    )
+
+    assert "../../media/my.pdf" == relative_link_target(
+        "home/doc.pdf",
+        target="media/my.pdf"
+    )
+
+    assert "../../media/my.pdf" == relative_link_target(
+        "home/doc.pdf",
+        target="media/my.pdf"
+    )

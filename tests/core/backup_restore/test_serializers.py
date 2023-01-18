@@ -36,8 +36,8 @@ def test_node_deserialization_when_node_is_document(ticket_pdf: dict):
     user = user_recipe.make(username='username1')
 
     doc_ser = DocumentSerializer(data=ticket_pdf)
-    if doc_ser.is_valid():
-        doc_ser.save(user=user)
+    doc_ser.is_valid(raise_exception=True)
+    doc_ser.save(user=user)
 
     doc = Document.objects.get(user=user, title='ticket.pdf')
     doc_ver = doc.versions.first()
@@ -46,3 +46,27 @@ def test_node_deserialization_when_node_is_document(ticket_pdf: dict):
     assert doc.versions.count() == 1
     assert doc_ver.pages.count() == 1
     assert doc_ver.pages.first().text == 'blah XYZ'
+
+
+@pytest.mark.django_db
+def test_document_deserialization(two_versions_doc: dict):
+    user = user_recipe.make(username='username1')
+
+    doc_ser = DocumentSerializer(data=two_versions_doc)
+
+    doc_ser.is_valid(raise_exception=True)
+    doc_ser.save(user=user)
+
+    doc = Document.objects.get(user=user, title='duo-versus.pdf')
+    doc_ver_1 = doc.versions.filter(number=1)[0]
+    doc_ver_2 = doc.versions.filter(number=2)[0]
+
+    assert str(doc.id) == two_versions_doc['id']
+    assert doc.versions.count() == 2
+    assert doc_ver_1.pages.count() == 2
+    assert doc_ver_2.pages.count() == 2
+
+    version_2_page_content = [page.text for page in doc_ver_2.pages.all()]
+
+    assert "CIUR" in ' '.join(version_2_page_content)
+    assert "Helsinki" in ' '.join(version_2_page_content)

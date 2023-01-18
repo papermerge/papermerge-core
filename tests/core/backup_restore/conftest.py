@@ -90,3 +90,79 @@ def my_documents():
         "created_at": "2023-01-10T07:54:16.404645+01:00",
         "updated_at": "2023-01-10T07:54:16.404663+01:00"
     }
+
+
+@pytest.fixture
+def two_versions_doc():
+    """Returns Document dictionary
+
+    Returned document has two versions.
+    Each version has two pages.
+    Second page was OCRed and has some text.
+    """
+    return {
+        "id": "ff2a372c-effa-4bd1-a3aa-89c05993a42b",
+        "breadcrumb": ".home/My Documents/ticket.pdf",
+        "ctype": "document",
+        "title": "duo-versus.pdf",
+        "lang": "deu",
+        "created_at": "2023-01-13T06:45:15.009695+01:00",
+        "updated_at": "2023-01-13T06:45:54.080539+01:00",
+        "ocr": True,
+        "ocr_status": "succeeded",
+        "tags": [],
+        "versions": [  # two versions
+            {   # version number 1
+                "file_path": "docs/X/Y/v1/brother_006477.pdf",
+                "lang": "deu",
+                "number": 1,
+                "file_name": "brother_006477.pdf",
+                "size": 566683,
+                "page_count": 2,
+                "short_description": "Original",
+                "text": "",
+                "pages": [  # two pages
+                    {  # page number 1
+                        "file_path": "sidecars/A/B/v1/pages/01/01_ocr.svg",
+                        "number": 1,
+                        "page_count": 2,
+                        "text": "",
+                        "lang": "deu"
+                    },
+                    {  # page number 2
+                        "file_path": "sidecars/A/B/v1/pages/02/02_ocr.svg",
+                        "number": 2,
+                        "page_count": 2,
+                        "text": "",
+                        "lang": "deu"
+                    }
+                ]
+            },
+            {  # version number 2
+                "file_path": "docs/X/Y/v2/brother_006477.pdf",
+                "lang": "deu",
+                "number": 2,
+                "file_name": "brother_006477.pdf",
+                "size": 0,
+                "page_count": 2,
+                "short_description": "with OCRed text layer",
+                "text": "Helsinki Vantaa CIUR / EUGEN MR",
+                "pages": [  # two pages
+                    {  # page number 1
+                        "file_path": "sidecars/A/B/v2/pages/01/01_ocr.svg",
+                        "number": 1,
+                        "page_count": 2,
+                        "text": "Helsinki Vantaa",
+                        "lang": "deu"
+                    },
+                    {  # page number 2
+                        "file_path": "sidecars/A/B/v2/pages/02/02_ocr.svg",
+                        "number": 2,
+                        "page_count": 2,
+                        "text": "CIUR / EUGEN MR",
+                        "lang": "deu"
+                    }
+                ]
+            }
+        ],
+    }  # end of dictionary

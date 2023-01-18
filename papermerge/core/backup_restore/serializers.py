@@ -37,6 +37,7 @@ class FolderSerializer(serializers.ModelSerializer):
 
 class PageSerializer(serializers.ModelSerializer):
     file_path = serializers.SerializerMethodField()
+    text = serializers.CharField(allow_blank=True)
 
     class Meta:
         model = Page

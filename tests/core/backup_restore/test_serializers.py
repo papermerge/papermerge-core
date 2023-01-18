@@ -1,9 +1,10 @@
 import pytest
 
-from papermerge.core.models import User, Folder
+from papermerge.core.models import User, Folder, Document
 from papermerge.core.backup_restore.serializers import (
     UserSerializer,
-    NodeSerializer
+    FolderSerializer,
+    DocumentSerializer
 )
 from papermerge.test.baker_recipes import user_recipe
 
@@ -58,7 +59,7 @@ def test_serialize_multiple_users():
 
 
 @pytest.mark.django_db
-def test_node_serializer_when_node_is_a_folder():
+def test_node_deserialization_when_node_is_a_folder():
     user = user_recipe.make(username='username1')
     node_data = {
         "breadcrumb": ".home/Some Folder/",
@@ -69,8 +70,52 @@ def test_node_serializer_when_node_is_a_folder():
         "updated_at": "2023-01-10T07:54:16.404663+01:00"
     }
 
-    node_ser = NodeSerializer(data=node_data)
-    if node_ser.is_valid():
-        node_ser.save(user=user)
+    folder_ser = FolderSerializer(data=node_data)
+    if folder_ser.is_valid():
+        folder_ser.save(user=user)
 
     assert Folder.objects.filter(user=user).count() == 3
+
+
+@pytest.mark.django_db
+def test_node_deserialization_when_node_is_document():
+    user = user_recipe.make(username='username1')
+    node_data = {
+        "id": "ff2a372c-effa-4bd1-a3aa-89c05993a42b",
+        "breadcrumb": ".home/My Documents/ticket.pdf",
+        "tags": [],
+        "versions": [
+            {
+                "pages": [
+                    {
+                        "file_path": "sidecars/X/v1/pages/0001/0001_ocr.svg",
+                        "number": 1,
+                        "page_count": 1,
+                        "text": "blah",
+                        "lang": "deu"
+                    },
+                ],
+                "file_path": "docs/A/B/v1/brother_006477.pdf",
+                "lang": "deu",
+                "number": 1,
+                "file_name": "brother_006477.pdf",
+                "size": 566683,
+                "page_count": 1,
+                "short_description": "Original",
+                "text": ""
+            },
+        ],
+        "ctype": "document",
+        "title": "ticket.pdf",
+        "lang": "deu",
+        "created_at": "2023-01-13T06:45:15.009695+01:00",
+        "updated_at": "2023-01-13T06:45:54.080539+01:00",
+        "ocr": True,
+        "ocr_status": "succeeded"
+    }
+
+    doc_ser = DocumentSerializer(data=node_data)
+    if doc_ser.is_valid():
+        doc_ser.save(user=user)
+
+    assert Document.objects.filter(user=user).count() == 1

@@ -29,6 +29,11 @@ class FolderSerializer(serializers.ModelSerializer):
         model = Folder
         exclude = ('id', 'parent', 'user', 'lang')
 
+    def create(self, validated_data):
+        user = validated_data.pop('user')
+        folder = Folder.objects.create(user=user, **validated_data)
+        return folder
+
 
 class PageSerializer(serializers.ModelSerializer):
     file_path = serializers.SerializerMethodField()
@@ -48,6 +53,14 @@ class PageSerializer(serializers.ModelSerializer):
     def get_file_path(self, obj) -> str:
         return obj.page_path.svg_url
 
+    def create(self, validated_data):
+        doc_ver = validated_data.pop('document_version')
+        page = Page.objects.create(
+            document_version=doc_ver,
+            **validated_data
+        )
+        return page
+
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
     pages = PageSerializer(many=True)
@@ -59,6 +72,20 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
 
     def get_file_path(self, obj) -> str:
         return obj.document_path.url
+
+    def create(self, validated_data):
+        document = validated_data.pop('document')
+        pages = validated_data.pop('pages')
+        doc_ver = DocumentVersion.objects.create(
+            document=document,
+            **validated_data
+        )
+        for page in pages:
+            page_ser = PageSerializer(data=page)
+            page_ser.is_valid(raise_exception=True)
+            page_ser.save(document_version=doc_ver)
+
+        return doc_ver
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -73,6 +100,17 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         exclude = ('parent', 'user')
 
+    def create(self, validated_data):
+        user = validated_data.pop('user')
+        versions = validated_data.pop('versions')
+        doc = Document.objects.create(user=user, **validated_data)
+        for version in versions:
+            doc_ver_ser = DocumentVersionSerializer(data=version)
+            doc_ver_ser.is_valid(raise_exception=True)
+            doc_ver_ser.save(document=doc)
+
+        return doc
+
 
 class NodeSerializer(serializers.ModelSerializer):
     breadcrumb = serializers.SerializerMethodField()
@@ -83,12 +121,6 @@ class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseTreeNode
         exclude = ('id', 'parent', 'user')
-
-    def create(self, validated_data):
-        ctype = validated_data.pop('ctype')
-        user = validated_data.pop('user')
-        if ctype == 'folder':
-            return Folder.objects.create(user=user, **validated_data)
 
     def to_representation(self, instance):
         if instance.is_folder:
@@ -108,7 +140,10 @@ class UserSerializer(serializers.ModelSerializer):
 
         for node in RestoreSequence(nodes):
             node['user'] = user
-            node_ser = NodeSerializer(data=nodes)
+            if node['ctype'] == 'folder':
+                node_ser = FolderSerializer(data=node)
+            else:
+                node_ser = DocumentSerializer(data=node)
             if node_ser.is_valid():
                 node_ser.save()
 

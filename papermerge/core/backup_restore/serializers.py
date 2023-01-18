@@ -1,3 +1,5 @@
+from pathlib import PurePath
+
 from rest_framework import serializers
 from papermerge.core.models import (
     User,
@@ -130,6 +132,22 @@ class NodeSerializer(serializers.ModelSerializer):
         return DocumentSerializer(instance.document).data
 
 
+def restore_nodes_hierarchy(nodes: list, user: User) -> None:
+    for node in RestoreSequence(nodes):
+        node['user'] = user
+        if node['ctype'] == 'folder':
+            node_ser = FolderSerializer(data=node)
+        else:
+            node_ser = DocumentSerializer(data=node)
+
+        parent_breadcrumb = PurePath(node['breadcrumb']).parent
+        parent = Folder.objects.get_by_breadcrumb(
+            str(parent_breadcrumb)
+        )
+        node_ser.is_valid(raise_exception=True)
+        node_ser.save(parent=parent)
+
+
 class UserSerializer(serializers.ModelSerializer):
     nodes = NodeSerializer(many=True)
 
@@ -139,14 +157,7 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop('user_permissions', [])
         user = User.objects.create(**validated_data)
 
-        for node in RestoreSequence(nodes):
-            node['user'] = user
-            if node['ctype'] == 'folder':
-                node_ser = FolderSerializer(data=node)
-            else:
-                node_ser = DocumentSerializer(data=node)
-            if node_ser.is_valid():
-                node_ser.save()
+        restore_nodes_hierarchy(nodes, user)
 
         return user
 

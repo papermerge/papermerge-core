@@ -70,3 +70,8 @@ def test_document_deserialization(two_versions_doc: dict):
 
     assert "CIUR" in ' '.join(version_2_page_content)
     assert "Helsinki" in ' '.join(version_2_page_content)
+
+
+@pytest.mark.django_db
+def test_restore_nodes_hierarchy():
+    pass

@@ -17,7 +17,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        exclude = ('id', 'user', 'slug')
+        exclude = ('id', 'slug')
 
 
 class FolderSerializer(serializers.ModelSerializer):

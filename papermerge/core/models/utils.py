@@ -28,6 +28,12 @@ def uuid2raw_str(value: uuid.UUID) -> str:
     For example: UUID('1a606e93-b39c-439a-b8dd-8e981cb4d54b')
     will be converted to '1a606e93b39c439ab8dd8e981cb4d54b'.
     """
+    if value is None:
+        raise ValueError("Non-empty value expected")
+
+    if value == '':
+        raise ValueError("Non-empty value expected")
+
     return str(value).replace('-', '')
 
 

@@ -22,8 +22,9 @@ def restore_db_data(file_path: str) -> None:
         if 'users' not in backup_info:
             raise ValueError("'users' key is missing")
 
-        user_ser = UserSerializer(backup_info['users'])
-        if user_ser.is_valid():
+        for user_dict in backup_info['users']:
+            user_ser = UserSerializer(data=user_dict)
+            user_ser.is_valid(raise_exception=True)
             user_ser.save()
 
         for tag_data in backup_info['tags']:

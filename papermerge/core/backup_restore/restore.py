@@ -229,7 +229,7 @@ def restore_folder(node_dict: dict[str, str], user: User) -> Folder:
     title = breadcrumb.name
     parent_path = str(breadcrumb.parent)
 
-    parent = Folder.objects.get_by_breadcrumb(parent_path)
+    parent = Folder.objects.get_by_breadcrumb(parent_path, user)
     return Folder.objects.create(
         user=user,
         parent=parent,

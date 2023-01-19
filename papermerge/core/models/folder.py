@@ -1,7 +1,6 @@
-from pathlib import PurePath
-
 from django.db import models
 
+from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
 
 
@@ -26,39 +25,12 @@ class FolderQuerySet(models.QuerySet):
                 # it is ok, just skip
                 pass
 
-    def get_by_breadcrumb(self, breadcrumb: str):
-        """
-        Returns node instance identified by breadcrumb
-
-        This method uses SQL which is not portable: '||' is concatenates
-        strings ONLY in SQLite and PostgreSQL.
-        """
-        first_part = PurePath(breadcrumb).parts[0]
-        pure_breadcrumb = str(PurePath(breadcrumb))  # strips '/' at the end
-        sql = '''
-         WITH RECURSIVE tree AS (
-             SELECT *, title as breadcrumb
-             FROM core_basetreenode WHERE title = %s
-             UNION ALL
-             SELECT core_basetreenode.*,
-                (breadcrumb || '/'  || core_basetreenode.title) as breadcrumb
-             FROM core_basetreenode, tree
-             WHERE core_basetreenode.parent_id = tree.id
-         )
-         '''
-        sql += 'SELECT id, title FROM tree WHERE breadcrumb = %s LIMIT 1'
-
-        result_list = list(BaseTreeNode.objects.raw(
-            sql, [first_part, pure_breadcrumb]
-        ))
-
-        if len(result_list) == 0:
-            raise Folder.DoesNotExist()
-
-        if len(result_list) > 1:
-            raise Folder.MultipleObjectsReturned()
-
-        return result_list[0].folder
+    def get_by_breadcrumb(self, breadcrumb: str, user):
+        return utils.get_by_breadcrumb(
+            Folder,
+            breadcrumb,
+            user
+        )
 
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)

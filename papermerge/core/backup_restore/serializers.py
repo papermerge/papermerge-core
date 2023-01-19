@@ -134,6 +134,13 @@ class NodeSerializer(serializers.ModelSerializer):
 
 def restore_nodes_hierarchy(nodes: list, user: User) -> None:
     for node in RestoreSequence(nodes):
+        # .home and .inbox folders are created automaticalally
+        # upon user creation.
+        if node['title'] == Folder.HOME_TITLE:
+            continue
+        if node['title'] == Folder.INBOX_TITLE:
+            continue
+
         node['user'] = user
         if node['ctype'] == 'folder':
             node_ser = FolderSerializer(data=node)
@@ -141,11 +148,14 @@ def restore_nodes_hierarchy(nodes: list, user: User) -> None:
             node_ser = DocumentSerializer(data=node)
 
         parent_breadcrumb = PurePath(node['breadcrumb']).parent
-        parent = Folder.objects.get_by_breadcrumb(
-            str(parent_breadcrumb)
-        )
+        parent = None
+        if parent_breadcrumb != PurePath('.'):
+            parent = Folder.objects.get_by_breadcrumb(
+                str(parent_breadcrumb),
+                user
+            )
         node_ser.is_valid(raise_exception=True)
-        node_ser.save(parent=parent)
+        node_ser.save(user=user, parent=parent)
 
 
 class UserSerializer(serializers.ModelSerializer):

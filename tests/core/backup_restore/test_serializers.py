@@ -4,7 +4,7 @@ from papermerge.core.models import User, Folder, Document
 from papermerge.core.backup_restore.serializers import (
     UserSerializer,
     FolderSerializer,
-    DocumentSerializer
+    DocumentSerializer, restore_nodes_hierarchy
 )
 from papermerge.test.baker_recipes import user_recipe
 
@@ -73,5 +73,29 @@ def test_document_deserialization(two_versions_doc: dict):
 
 
 @pytest.mark.django_db
-def test_restore_nodes_hierarchy():
-    pass
+def test_restore_nodes_hierarchy(nodes_hierarchy: list):
+    user = user_recipe.make(username='username1')
+    restore_nodes_hierarchy(nodes_hierarchy, user)
+
+    found = Folder.objects.get_by_breadcrumb(
+        '.home/My Invoices/Super/Deep/',
+        user
+    )
+    assert found is not None
+    assert found.breadcrumb == '.home/My Invoices/Super/Deep/'
+    assert found.title == 'Deep'
+
+    found = Folder.objects.get_by_breadcrumb(
+        '.home/My Documents/',
+        user
+    )
+    assert found is not None
+    assert found.breadcrumb == '.home/My Documents/'
+    assert found.title == 'My Documents'
+
+    found = Document.objects.get_by_breadcrumb(
+        '.home/My Documents/ticket.pdf',
+        user
+    )
+    assert found is not None
+    assert found.breadcrumb == '.home/My Documents/ticket.pdf'

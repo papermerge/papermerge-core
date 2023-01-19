@@ -166,3 +166,131 @@ def two_versions_doc():
             }
         ],
     }  # end of dictionary
+
+
+@pytest.fixture
+def nodes_hierarchy():
+    return [
+        {
+            "breadcrumb": ".inbox/",
+            "tags": [],
+            "ctype": "folder",
+            "title": ".inbox",
+            "created_at": "2023-01-10T07:54:16.404645+01:00",
+            "updated_at": "2023-01-10T07:54:16.404663+01:00"
+        },
+        {
+            "breadcrumb": ".home/",
+            "tags": [],
+            "ctype": "folder",
+            "title": ".home",
+            "created_at": "2023-01-10T07:54:16.428913+01:00",
+            "updated_at": "2023-01-10T07:54:16.428931+01:00"
+        },
+        {
+            "breadcrumb": ".home/My Documents/",
+            "tags": [],
+            "ctype": "folder",
+            "title": "My Documents",
+            "created_at": "2023-01-10T09:02:03.984289+01:00",
+            "updated_at": "2023-01-10T09:02:03.984343+01:00"
+        },
+        {
+            "breadcrumb": ".home/Invoice/",
+            "tags": [],
+            "ctype": "folder",
+            "title": "Invoice",
+            "created_at": "2023-01-10T09:02:05.482186+01:00",
+            "updated_at": "2023-01-10T09:02:05.482246+01:00"
+        },
+        {
+            "id": "ff2a372c-effa-4bd1-a3aa-89c05993a42b",
+            "breadcrumb": ".home/My Documents/ticket.pdf",
+            "tags": [],
+            "versions": [
+                {
+                    "pages": [
+                        {
+                            "file_path": "sidecars/A/B/v1/pages/01/01_ocr.svg",
+                            "number": 1,
+                            "page_count": 1,
+                            "text": "",
+                            "lang": "deu"
+                        },
+                    ],
+                    "file_path": "docs/X/Y/v1/brother_006477.pdf",
+                    "lang": "deu",
+                    "number": 1,
+                    "file_name": "brother_006477.pdf",
+                    "size": 566683,
+                    "page_count": 2,
+                    "short_description": "Original",
+                    "text": ""
+                },
+            ],
+            "ctype": "document",
+            "title": "ticket.pdf",
+            "lang": "deu",
+            "created_at": "2023-01-13T06:45:15.009695+01:00",
+            "updated_at": "2023-01-13T06:45:54.080539+01:00",
+            "ocr": True,
+            "ocr_status": "succeeded"
+        },
+        {
+            "breadcrumb": ".home/My Invoices/",
+            "tags": [],
+            "ctype": "folder",
+            "title": "My Invoices",
+            "created_at": "2023-01-16T07:17:56.358723+01:00",
+            "updated_at": "2023-01-16T07:17:56.358739+01:00"
+        },
+        {
+            "breadcrumb": ".home/My Invoices/Super/",
+            "tags": [],
+            "ctype": "folder",
+            "title": "Super",
+            "created_at": "2023-01-16T07:18:03.604483+01:00",
+            "updated_at": "2023-01-16T07:18:03.604523+01:00"
+        },
+        {
+            "breadcrumb": ".home/My Invoices/Super/Deep/",
+            "tags": [],
+            "ctype": "folder",
+            "title": "Deep",
+            "created_at": "2023-01-16T07:18:12.548518+01:00",
+            "updated_at": "2023-01-16T07:18:12.548560+01:00"
+        },
+        {
+            "id": "b60407fc-39f1-4c3b-9d8e-81ba5203bd4a",
+            "breadcrumb": ".home/My Invoices/Super/Deep/Anmeldung-2016.pdf",
+            "tags": [],
+            "versions": [
+                {
+                    "pages": [
+                        {
+                            "file_path": "sidecars/A/B/v1/pages/01/01_ocr.svg",
+                            "number": 1,
+                            "page_count": 1,
+                            "text": "",
+                            "lang": "deu"
+                        }
+                    ],
+                    "file_path": "docs/X/Y/v1/Anmeldung-2016.pdf",
+                    "lang": "deu",
+                    "number": 1,
+                    "file_name": "Anmeldung-2016.pdf",
+                    "size": 254930,
+                    "page_count": 1,
+                    "short_description": "Original",
+                    "text": ""
+                },
+            ],
+            "ctype": "document",
+            "title": "Anmeldung-2016.pdf",
+            "lang": "deu",
+            "created_at": "2023-01-16T07:19:03.181742+01:00",
+            "updated_at": "2023-01-16T07:19:07.679417+01:00",
+            "ocr": True,
+            "ocr_status": "succeeded"
+        }
+    ]

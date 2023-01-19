@@ -10,13 +10,10 @@ from django.db import transaction
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import get_storage_instance, abs_path
+from papermerge.core.models import utils
 
 from .node import BaseTreeNode
-from .utils import (
-    OCR_STATUS_SUCCEEDED,
-    OCR_STATUS_UNKNOWN,
-    OCR_STATUS_CHOICES
-)
+
 from .page import Page
 from .document_version import DocumentVersion
 
@@ -90,7 +87,12 @@ class DocumentManager(models.Manager):
 
 
 class DocumentQuerySet(models.QuerySet):
-    pass
+    def get_by_breadcrumb(self, breadcrumb: str, user):
+        return utils.get_by_breadcrumb(
+            Document,
+            breadcrumb,
+            user
+        )
 
 
 CustomDocumentManager = DocumentManager.from_queryset(DocumentQuerySet)
@@ -110,8 +112,8 @@ class Document(BaseTreeNode):
     # 'failed', 'succeeded' - these values correspond to
     # celery's task statuses
     ocr_status = models.CharField(
-        choices=OCR_STATUS_CHOICES,
-        default=OCR_STATUS_UNKNOWN,
+        choices=utils.OCR_STATUS_CHOICES,
+        default=utils.OCR_STATUS_UNKNOWN,
         max_length=32
     )
 
@@ -400,6 +402,6 @@ class Document(BaseTreeNode):
         about OCR status.
         """
         if len(self.text) > 0:
-            return OCR_STATUS_SUCCEEDED
+            return utils.OCR_STATUS_SUCCEEDED
 
-        return OCR_STATUS_UNKNOWN
+        return utils.OCR_STATUS_UNKNOWN

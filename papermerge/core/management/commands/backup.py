@@ -4,7 +4,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from papermerge.core.backup_restore.backup import backup_documents
+from papermerge.core.backup_restore.backup import backup_data
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             file_path = location
 
         try:
-            backup_documents(file_path=file_path)
+            backup_data(file_path=file_path)
         except IsADirectoryError:
             logger.error(
                 "Provided location is a directory which does not exist."

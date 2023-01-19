@@ -211,7 +211,7 @@ def dump_data_as_dict() -> dict:
     return result_dict
 
 
-def backup_documents(file_path: str):
+def backup_data(file_path: str):
     """Builds backup archive
 
     Backup archive contains:

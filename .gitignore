@@ -30,3 +30,6 @@ celerybeat-schedule
 .vscode
 xapian_index
 whoosh_index
+.tar
+.tar.gz
+.zip

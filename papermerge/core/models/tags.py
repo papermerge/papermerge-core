@@ -81,7 +81,7 @@ class Tag(TagBase):
     )
 
     # each user has his/her set of tags
-    user = models.ForeignKey('User', models.CASCADE)
+    user = models.ForeignKey('User', models.CASCADE, related_name='tags')
     name = models.CharField(
         verbose_name=_("name"),
         unique=False,

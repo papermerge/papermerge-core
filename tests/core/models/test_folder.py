@@ -3,7 +3,7 @@ import pytest
 from django.db.utils import IntegrityError
 from django.db import transaction
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import folder_recipe
+from papermerge.test.baker_recipes import folder_recipe, user_recipe
 from papermerge.core.models import User, Folder
 
 
@@ -75,6 +75,81 @@ class TestFolderModel(TestCase):
                     parent=self.user.inbox_folder
                 )
 
+    def test_only_one_home_per_user(self):
+        # at this point there is exactly one .home folder per user
+        assert Folder.objects.get(
+            title=Folder.HOME_TITLE,
+            user=self.user
+        )
+        # Following method should raise an integrity error
+        # as same user cannot have two .home (i.e. Folder.HOME_TITLE) folders!
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Folder.objects.create(
+                    user=self.user,
+                    parent=None,  # .home is top most folder
+                    title=Folder.HOME_TITLE
+                )
+
+    def test_two_users_can_have_same_identical_titles_for_home(self):
+        user2 = User.objects.create_user(username="user2")
+        user3 = User.objects.create_user(username="user3")
+
+        # user2 has home folder titled Folder.HOME_TITLE
+        assert Folder.objects.get(
+            title=Folder.HOME_TITLE,
+            user=user2
+        )
+        # users has home folder titled Folder.HOME_TITLE as well
+        assert Folder.objects.get(
+            title=Folder.HOME_TITLE,
+            user=user3
+        )
+        # but recreating Folder.HOME_TITLE for user2/user3 is not allowed
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Folder.objects.create(
+                    user=user2,
+                    parent=None,  # .home is top most folder
+                    title=Folder.HOME_TITLE
+                )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Folder.objects.create(
+                    user=user3,
+                    parent=None,  # .home is top most folder
+                    title=Folder.HOME_TITLE
+                )
+
+    def test_top_level_duplicate_titles_not_allowed(self):
+        """Top level duplicate titles per user are not allowed
+
+        However, different user can have same top level node titles
+        e.g. ".home", ".inbox" etc
+        """
+        Folder.objects.create(
+            title='top-level-folder',
+            user=self.user,
+            parent=None  # top level folder
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Folder.objects.create(
+                    title='top-level-folder',  # duplicate top level title
+                    user=self.user,
+                    parent=None  # top level folder
+                )
+        # however, creating 'top-level-folder' for user2 is OK
+        user2 = User.objects.create_user(username="user2")
+        folder = Folder.objects.create(
+            title='top-level-folder',
+            user=user2,  # user2 != self.user
+            parent=None  # top level folder
+        )
+
+        assert folder.title == 'top-level-folder'
+
     def test_two_folders_with_same_title_under_different_parents(self):
         """It should be possible to create two folders with
         same title under different parents
@@ -129,3 +204,21 @@ def test_delete_folder_with_sub_folders():
     }
 
     assert expected_left_titles == set(left_titles)
+
+
+@pytest.mark.django_db
+def test_folder_breadcrumb():
+    user = user_recipe.make()
+    folder1 = folder_recipe.make(
+        title='folder1',
+        user=user,
+        parent=user.home_folder
+    )
+    folder = folder_recipe.make(
+        title='folder2',
+        user=user,
+        parent=folder1
+    )
+
+    assert folder.breadcrumb == '.home/folder1/folder2/'
+    assert folder.title == 'folder2'

@@ -3,7 +3,7 @@ import pytest
 from papermerge.test import TestCase
 from papermerge.test.baker_recipes import (
     folder_recipe,
-    user_recipe
+    user_recipe, make_folders
 )
 from papermerge.core.models import User, Folder, BaseTreeNode, Document
 from papermerge.core.models.node import NODE_TYPE_FOLDER, NODE_TYPE_DOCUMENT
@@ -254,3 +254,74 @@ def test_get_ancestors_returns_correct_order_dont_include_self():
         Folder.HOME_TITLE, folder1.title, folder2.title
     ]
     assert actual_titles == expected_titles
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_with_duplicate_paths():
+    """
+    Given following folders:
+    - .home/A/B/C
+    - .inbox/A/B/C
+    node.objects.get_by_breadcrumb('.home/A/B') should
+    return instance of folder B which is under .home, not the
+    one under .inbox.
+    """
+    user = user_recipe.make()
+    make_folders(".home/A/B/C", user=user)
+    make_folders(".inbox/A/B/C", user=user)
+
+    folder = Folder.objects.get_by_breadcrumb(".home/A/B", user)
+
+    assert ".home/A/B/" == folder.breadcrumb
+    assert "B" == folder.title
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_with_same_of_under_multiple_users():
+    """
+    In this scenario there are two users
+    with same folder path:
+    user_A:
+        .home/X/Y/Z
+    user_B
+        .home/X/Y/Z
+    """
+    user_A = user_recipe.make(username='user_A')
+    user_B = user_recipe.make(username='user_B')
+    make_folders(".home/X/Y/Z", user=user_A)
+    make_folders(".home/X/Y/Z", user=user_B)
+
+    # find folder under user B
+    user_B_folder = Folder.objects.get_by_breadcrumb(
+        ".home/X/Y",
+        user=user_B
+    )
+
+    assert ".home/X/Y/" == user_B_folder.breadcrumb
+    assert user_B == user_B_folder.user
+
+    # find folder under user A
+    user_A_folder = Folder.objects.get_by_breadcrumb(
+        ".home/X/Y",
+        user=user_A
+    )
+
+    assert ".home/X/Y/" == user_A_folder.breadcrumb
+    assert user_A == user_A_folder.user
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_basic():
+    user = user_recipe.make()
+    make_folders(".home/My Documents/X/Y/Z", user)
+    my_docs = Folder.objects.get_by_breadcrumb(".home/My Documents/", user)
+
+    assert ".home/My Documents/" == my_docs.breadcrumb
+    assert "My Documents" == my_docs.title
+
+
+@pytest.mark.django_db
+def test_get_by_breadcrumb_non_existing_path():
+    user = user_recipe.make()
+    with pytest.raises(Folder.DoesNotExist):
+        Folder.objects.get_by_breadcrumb(".home/My Documents/", user)

@@ -1,5 +1,6 @@
 from django.db import models
 
+from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
 
 
@@ -23,6 +24,13 @@ class FolderQuerySet(models.QuerySet):
                 # this node was deleted by earlier recursive call
                 # it is ok, just skip
                 pass
+
+    def get_by_breadcrumb(self, breadcrumb: str, user):
+        return utils.get_by_breadcrumb(
+            Folder,
+            breadcrumb,
+            user
+        )
 
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
@@ -65,6 +73,11 @@ class Folder(BaseTreeNode):
             # this node was deleted by earlier recursive call
             # it is ok, just skip
             pass
+
+    @property
+    def breadcrumb(self) -> str:
+        value = super().breadcrumb
+        return value + '/'
 
     class Meta:
         verbose_name = "Folder"

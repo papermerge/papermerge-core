@@ -1,6 +1,7 @@
 from papermerge.core.backup_restore.utils import (
     RestoreSequence,
-    breadcrumb_parts_count
+    breadcrumb_parts_count,
+    CType
 )
 
 
@@ -45,3 +46,10 @@ def test_breadcrumb_parts_count():
     assert 2 == breadcrumb_parts_count(
         {"breadcrumb": ".inbox/doc.pdf"}
     )
+
+
+def test_ctype():
+    assert CType.FOLDER.value == 'folder'
+    assert CType.FOLDER != 'folder'
+    assert CType.DOCUMENT.value == 'document'
+    assert CType.DOCUMENT != 'document'

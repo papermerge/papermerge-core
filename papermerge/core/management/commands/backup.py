@@ -4,7 +4,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from papermerge.core.backup_restore.backup import backup_data
+from papermerge.core.backup_restore import backup_data
 
 logger = logging.getLogger(__name__)
 

@@ -105,7 +105,7 @@ class BackupVersions:
 
             node_dict = {
                 'breadcrumb': '.home/My Documents/doc.pdf',
-                'ctype': CType.DOCUMENT,
+                'ctype': CType.DOCUMENT.value,
                 'versions': [
                     {
                         'file_path': 'media/docs/v1/doc.pdf',
@@ -171,8 +171,14 @@ class BackupNodes:
                     {
                         'username': 'user1',
                         'nodes': [
-                            {'breadcrumb': '.home', 'ctype': CType.FOLDER},
-                            {'breadcrumb': '.inbox', 'ctype': CType.FOLDER},
+                            {
+                                'breadcrumb': '.home',
+                                'ctype': CType.FOLDER.value
+                            },
+                            {
+                                'breadcrumb': '.inbox',
+                                'ctype': CType.FOLDER.value
+                            },
                         ]
                     }
                 ]
@@ -190,7 +196,7 @@ class BackupNodes:
                 )
                 entry.mtime = time.time()
                 entry.mode = 16893
-                if node['ctype'] == CType.FOLDER:
+                if node['ctype'] == CType.FOLDER.value:
                     entry.type = tarfile.DIRTYPE
 
                 yield entry, BackupVersions(node, prefix=username)

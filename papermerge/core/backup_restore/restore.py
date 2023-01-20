@@ -6,10 +6,8 @@ from django.conf import settings
 
 from papermerge.core.lib.path import AUX_DIR_SIDECARS, AUX_DIR_DOCS
 
-from papermerge.core.backup_restore.serializers import (
-    UserSerializer,
-    TagSerializer
-)
+from papermerge.core.backup_restore.serializers import UserSerializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +23,7 @@ def restore_db_data(file_path: str) -> None:
         for user_data in backup_info['users']:
             user_ser = UserSerializer(data=user_data)
             user_ser.is_valid(raise_exception=True)
-            user_ser.save()
-
-        for tag_data in backup_info['tags']:
-            tag_ser = TagSerializer(data=tag_data)
-            tag_ser.is_valid(raise_exception=True)
-            tag_ser.save()
+            user_ser.save(nodes=user_data['nodes'])
 
 
 def restore_files(file_path: str) -> None:

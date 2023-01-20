@@ -10,13 +10,10 @@ from importlib.metadata import distribution
 from os.path import getsize, getmtime, exists
 
 from papermerge.core.storage import abs_path
-from .serializers import UserSerializer, TagSerializer
+from .serializers import UserSerializer
 from .utils import CType
 
-from papermerge.core.models import (
-    User,
-    Tag,
-)
+from papermerge.core.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +203,6 @@ def dump_data_as_dict() -> dict:
     )
     result_dict['version'] = distribution('papermerge-core').version
     result_dict['users'] = UserSerializer(User.objects, many=True).data
-    result_dict['tags'] = TagSerializer(Tag.objects, many=True).data
 
     return result_dict
 

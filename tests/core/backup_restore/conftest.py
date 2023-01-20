@@ -57,7 +57,8 @@ def two_users():
             "updated_at": "2023-01-10T07:54:16.431142+01:00",
             "groups": [],
             "user_permissions": [],
-            "nodes": []
+            "nodes": [],
+            "tags": []
         },
         {
             "id": "4845def5-7847-9dca-ad10-ccb417f42b1b",
@@ -75,9 +76,169 @@ def two_users():
             "updated_at": "2023-01-10T07:54:16.431142+01:00",
             "groups": [],
             "user_permissions": [],
-            "nodes": []
+            "nodes": [],
+            "tags": []
         },
     ]
+
+
+@pytest.fixture
+def one_user_with_one_tag():
+    return {
+        "id": "8445def5-2d47-4dca-ad10-bcc417f42b1b",
+        "password": "pbkda=",
+        "last_login": "2023-01-16T07:17:41.885535+01:00",
+        "is_superuser": True,
+        "username": "user1",
+        "first_name": "",
+        "last_name": "",
+        "email": "user1@mail.com",
+        "is_staff": True,
+        "is_active": True,
+        "date_joined": "2023-01-10T07:54:16.330231+01:00",
+        "created_at": "2023-01-10T07:54:16.400001+01:00",
+        "updated_at": "2023-01-10T07:54:16.431142+01:00",
+        "groups": [],
+        "user_permissions": [],
+        "nodes": [],
+        "tags": [
+            {
+                "bg_color": "#f52d00",
+                "fg_color": "#ffffff",
+                "description": "",
+                "pinned": True,
+                "name": "important"
+            },
+        ]
+    }
+
+
+@pytest.fixture
+def tata_user():
+    """
+    User has tagged nodes.
+    Also, user has a couple of unused tags.
+    (i.e. tags not associated to any particular node)
+    """
+    return {
+        "id": "c2f99b0e-7fdb-47a1-9cfc-2a24eff547d1",
+        "nodes": [
+            {
+                "breadcrumb": ".home/My Documents/",
+                "tags": [],
+                "ctype": "folder",
+                "title": "My Documents",
+                "created_at": "2023-01-20T06:58:27.691980+01:00",
+                "updated_at": "2023-01-20T06:58:27.691995+01:00"
+            },
+            {
+                "breadcrumb": ".home/My Receipts/",
+                "tags": [
+                    {
+                        "bg_color": "#f52d00",
+                        "fg_color": "#ffffff",
+                        "description": "",
+                        "pinned": True,
+                        "name": "important"
+                    }
+                ],
+                "ctype": "folder",
+                "title": "My Receipts",
+                "created_at": "2023-01-20T06:58:27.696898+01:00",
+                "updated_at": "2023-01-20T06:58:27.696910+01:00"
+            },
+            {
+                "id": "3e6dc79c-ad28-446c-81b3-c24f5f159af8",
+                "breadcrumb": ".home/Anmeldung-2016.pdf",
+                "tags": [
+                    {
+                        "bg_color": "#f52d00",
+                        "fg_color": "#ffffff",
+                        "description": "",
+                        "pinned": True,
+                        "name": "important"
+                    }
+                ],
+                "versions": [
+                    {
+                        "pages": [
+                            {
+                                "file_path": "sidecars/A/B/v1/pages/01/01_ocr.svg",  # noqa
+                                "text": "",
+                                "number": 1,
+                                "page_count": 1,
+                                "lang": "deu"
+                            }
+                        ],
+                        "file_path": "docs/X/Y/v1/Anmeldung-2016.pdf",
+                        "lang": "deu",
+                        "number": 1,
+                        "file_name": "Anmeldung-2016.pdf",
+                        "size": 254930,
+                        "page_count": 1,
+                        "short_description": "Original",
+                        "text": ""
+                    },
+                    {
+                        "pages": [
+                            {
+                                "file_path": "sidecars/A/B/v2/pages/01/01_ocr.svg",  # noqa
+                                "text": "Amtliche",
+                                "number": 1,
+                                "page_count": 1,
+                                "lang": "deu"
+                            }
+                        ],
+                        "file_path": "docs/X/Y/v2/Anmeldung-2016.pdf",
+                        "lang": "deu",
+                        "number": 2,
+                        "file_name": "Anmeldung-2016.pdf",
+                        "size": 0,
+                        "page_count": 1,
+                        "short_description": "with OCRed text layer",
+                        "text": "Amtliche"
+                    }
+                ],
+                "ctype": "document",
+                "title": "Anmeldung-2016.pdf",
+                "lang": "deu",
+                "created_at": "2023-01-20T06:58:27.702234+01:00",
+                "updated_at": "2023-01-20T06:58:27.702251+01:00",
+                "ocr": True,
+                "ocr_status": "succeeded"
+            },
+        ],
+        "tags": [
+            {  # used tag
+                "bg_color": "#f52d00",
+                "fg_color": "#ffffff",
+                "description": "",
+                "pinned": True,
+                "name": "important"
+            },
+            {  # unused tag
+                "bg_color": "#0000ff",
+                "fg_color": "#ffffff",
+                "description": "",
+                "pinned": False,
+                "name": "new"
+            }
+        ],
+        "password": "pbkdf2_shsdd",
+        "last_login": "2023-01-20T06:59:09.953316+01:00",
+        "is_superuser": True,
+        "username": "tata",
+        "first_name": "",
+        "last_name": "",
+        "email": "tata@mail.com",
+        "is_staff": True,
+        "is_active": True,
+        "date_joined": "2023-01-20T06:18:10.328571+01:00",
+        "created_at": "2023-01-20T06:58:27.650355+01:00",
+        "updated_at": "2023-01-20T06:58:27.688371+01:00",
+        "groups": [],
+        "user_permissions": []
+    }
 
 
 @pytest.fixture

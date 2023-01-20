@@ -17,7 +17,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        exclude = ('id', 'slug')
+        exclude = ('id', 'slug', 'user')
 
 
 class FolderSerializer(serializers.ModelSerializer):
@@ -33,7 +33,15 @@ class FolderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = validated_data.pop('user')
+        tags = validated_data.pop('tags', [])
+        tag_names = [tag['name'] for tag in tags]
+
         folder = Folder.objects.create(user=user, **validated_data)
+        folder.tags.set(
+            tag_names,
+            tag_kwargs={"user": user}
+        )
+
         return folder
 
 
@@ -105,8 +113,17 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = validated_data.pop('user')
+        tags = validated_data.pop('tags', [])
+        tag_names = [tag['name'] for tag in tags]
+
         versions = validated_data.pop('versions')
         doc = Document.objects.create(user=user, **validated_data)
+
+        doc.tags.set(
+            tag_names,
+            tag_kwargs={"user": user}
+        )
+
         for version in versions:
             doc_ver_ser = DocumentVersionSerializer(data=version)
             doc_ver_ser.is_valid(raise_exception=True)
@@ -160,12 +177,19 @@ def restore_nodes_hierarchy(nodes: list, user: User) -> None:
 
 class UserSerializer(serializers.ModelSerializer):
     nodes = NodeSerializer(many=True)
+    tags = TagSerializer(many=True)
 
     def create(self, validated_data):
         nodes = validated_data.pop('nodes', [])
+        tags = validated_data.pop('tags', [])
         validated_data.pop('groups', []),
         validated_data.pop('user_permissions', [])
         user = User.objects.create(**validated_data)
+
+        for tag_data in tags:
+            tag_ser = TagSerializer(data=tag_data)
+            tag_ser.is_valid(raise_exception=True)
+            tag_ser.save(user=user)
 
         restore_nodes_hierarchy(nodes, user)
 

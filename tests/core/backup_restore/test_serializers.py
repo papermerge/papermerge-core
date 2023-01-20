@@ -14,8 +14,9 @@ def test_serialize_multiple_users(two_users: list):
     user_ser = UserSerializer(data=two_users, many=True)
 
     assert User.objects.count() == 0
-    if user_ser.is_valid():
-        user_ser.save()
+
+    user_ser.is_valid(raise_exception=True)
+    user_ser.save()
 
     assert User.objects.count() == 2
 
@@ -99,3 +100,45 @@ def test_restore_nodes_hierarchy(nodes_hierarchy: list):
     )
     assert found is not None
     assert found.breadcrumb == '.home/My Documents/ticket.pdf'
+
+
+@pytest.mark.django_db
+def test_one_user_with_one_tag(one_user_with_one_tag):
+    user_ser = UserSerializer(
+        data=one_user_with_one_tag
+    )
+    user_ser.is_valid(raise_exception=True)
+    user = user_ser.save()
+
+    assert user.tags.count() == 1
+    assert 'important' in [tag.name for tag in user.tags.all()]
+
+
+@pytest.mark.django_db
+def test_tagged_nodes(tata_user):
+    """
+    In this scenario user has tagged nodes.
+    Also, user has a couple of unused tags (i.e. tags not
+    associated with any particular node)
+    """
+    user_ser = UserSerializer(
+        data=tata_user
+    )
+    user_ser.is_valid(raise_exception=True)
+    user = user_ser.save(nodes=tata_user['nodes'])
+    assert user is not None
+    assert user.tags.count() == 2
+
+    folder = Folder.objects.get_by_breadcrumb(
+        '.home/My Receipts/',
+        user=user
+    )
+    tag = folder.tags.first()
+    assert tag.name == 'important'
+
+    document = Document.objects.get_by_breadcrumb(
+        '.home/Anmeldung-2016.pdf',
+        user=user
+    )
+    tag = document.tags.first()
+    assert tag.name == 'important'

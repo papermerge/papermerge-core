@@ -105,6 +105,11 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
         ]
         return '/'.join(titles)
 
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        result['parent']['type'] = 'node'
+        return result
+
 
 class Data_DocumentDetailsSerializer(Serializer):
     data = DocumentDetailsSerializer()

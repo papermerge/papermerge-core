@@ -68,6 +68,11 @@ def test_folder_serializer_for_correct_breadcrumb():
 
     ser = FolderSerializer(lidl_folder)
 
+    # breadcrumb returns a list of tuples (title, id)
+    # where ``id`` is the id of the node from the breadcrumb
+    # and ``title`` is the title of the node from the breadcrumb
+    # The most distance ancestor is returned first
+    # i.e .home (or .inbox) title will be first in the list
     actual_breadcrumb_titles = set([
         item[0] for item in ser.data['breadcrumb']
     ])

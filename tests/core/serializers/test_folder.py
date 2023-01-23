@@ -4,7 +4,7 @@ from papermerge.core.models import User, Folder
 from papermerge.core.serializers import FolderSerializer
 
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import folder_recipe, user_recipe
+from papermerge.test.baker_recipes import make_folders
 
 
 class TestFolderSerializer(TestCase):
@@ -50,22 +50,21 @@ class TestFolderSerializer(TestCase):
 
 @pytest.mark.django_db
 def test_folder_serializer_for_correct_breadcrumb():
-    user = user_recipe.make()
-    my_documents = folder_recipe.make(
-        title="My Documents",
-        parent=user.home_folder
-    )
-    sub1 = folder_recipe.make(
-        title="My Invoices",
-        user=user,
-        parent=my_documents
-    )
-    lidl_folder = folder_recipe.make(
-        title="Lidl",
-        user=user,
-        parent=sub1
-    )
+    lidl_folder = make_folders(".home/My Documents/My Invoices/Lidl")
 
     ser = FolderSerializer(lidl_folder)
 
-    assert ser.data['breadcrumb'] == '.home/My Documents/My Invoices/Lidl/'
+    # breadcrumb returns a list of tuples (title, id)
+    # where ``id`` is the id of the node from the breadcrumb
+    # and ``title`` is the title of the node from the breadcrumb
+    # The most distanced ancestor is returned first
+    # i.e .home (or .inbox) title will be first in the list
+    actual_breadcrumb_titles = set([
+        item[0] for item in ser.data['breadcrumb']
+    ])
+
+    expected_breadcrumb_titles = {
+        '.home', 'My Documents', 'My Invoices', 'Lidl'
+    }
+
+    assert actual_breadcrumb_titles == expected_breadcrumb_titles

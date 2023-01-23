@@ -57,5 +57,11 @@ class FolderSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def get_breadcrumb(self, obj: Folder) -> str:
-        return obj.breadcrumb
+    def get_breadcrumb(self, obj):
+        return [(item.title, item.id) for item in obj.get_ancestors()]
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        if result['parent']:
+            result['parent']['type'] = 'node'
+        return result

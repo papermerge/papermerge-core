@@ -15,6 +15,10 @@ def make_folders(breadcrumb: str, user=None):
     """Creates folders from specified breadcrumb.
 
     Hierarchy (i.e. parent/child) is respected.
+    Breadcrumb must include the root folder i.e. .home or .inbox.
+    Example of usage:
+
+        >>> lidl_folder = make_folders('.home/My Documents/My Invoices/Lidl')
     """
     if user is None:
         user = user_recipe.make()

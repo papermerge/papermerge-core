@@ -98,12 +98,8 @@ class DocumentDetailsSerializer(serializers.ModelSerializer):
             'updated_at'
         )
 
-    def get_breadcrumb(self, obj: Document) -> str:
-        titles = [
-            item.title
-            for item in obj.get_ancestors()
-        ]
-        return '/'.join(titles)
+    def get_breadcrumb(self, obj: Document):
+        return [(item.title, item.id) for item in obj.get_ancestors()]
 
     def to_representation(self, instance):
         result = super().to_representation(instance)

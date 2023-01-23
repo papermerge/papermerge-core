@@ -101,7 +101,6 @@ case $CMD in
     exec_worker
     ;;
   *)
-    echo "Unkown command: '$CMD'. Exiting..."
-    exit 1
+    $MANAGE $@
     ;;
 esac

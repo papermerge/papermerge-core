@@ -6,7 +6,6 @@ import io
 import tarfile
 import json
 from pathlib import PurePath
-from importlib.metadata import distribution
 from os.path import getsize, getmtime, exists
 
 from papermerge.core.storage import abs_path
@@ -14,6 +13,7 @@ from .serializers import UserSerializer
 from .utils import CType
 
 from papermerge.core.models import User
+from papermerge.core.version import __version__ as VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ def dump_data_as_dict() -> dict:
     result_dict['created'] = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"
     )
-    result_dict['version'] = distribution('papermerge-core').version
+    result_dict['version'] = VERSION
     result_dict['users'] = UserSerializer(User.objects, many=True).data
 
     return result_dict

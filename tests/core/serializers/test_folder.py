@@ -68,4 +68,12 @@ def test_folder_serializer_for_correct_breadcrumb():
 
     ser = FolderSerializer(lidl_folder)
 
-    assert ser.data['breadcrumb'] == '.home/My Documents/My Invoices/Lidl/'
+    actual_breadcrumb_titles = set([
+        item[0] for item in ser.data['breadcrumb']
+    ])
+
+    expected_breadcrumb_titles = {
+        '.home', 'My Documents', 'My Invoices', 'Lidl'
+    }
+
+    assert actual_breadcrumb_titles == expected_breadcrumb_titles

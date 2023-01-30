@@ -2,6 +2,15 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.5] - 2023-01-30
+
+
+### Fixed
+
+- Fix backup/restore utility to work with latest version of Papermerge DMS (i.e. 2.1.x) [issue#508](https://github.com/ciur/papermerge/issues/508)
+- Wrong breadcrumb path when openening document/folder [issue#509](https://github.com/ciur/papermerge/issues/509)
+
+
 ## [2.1.4] - 2023-01-03
 
 

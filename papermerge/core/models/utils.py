@@ -58,10 +58,15 @@ def get_by_breadcrumb(klass, breadcrumb: str, user):
     pure_breadcrumb = str(PurePath(breadcrumb))  # strips '/' at the end
     sql = '''
      WITH RECURSIVE tree AS (
-         SELECT *, title as breadcrumb
+         SELECT id,
+            user_id,
+            title,
+            CAST(title AS character varying) as breadcrumb
          FROM core_basetreenode WHERE title = %s
          UNION ALL
-         SELECT core_basetreenode.*,
+         SELECT core_basetreenode.id,
+            core_basetreenode.user_id,
+            core_basetreenode.title,
             (breadcrumb || '/'  || core_basetreenode.title) as breadcrumb
          FROM core_basetreenode, tree
          WHERE core_basetreenode.parent_id = tree.id

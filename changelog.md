@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.6] - 2023-03-02
+
+
+### Fixed
+
+- Restore command fails when using PostgreSQL [issue#514](https://github.com/ciur/papermerge/issues/514)
+
+
 ## [2.1.5] - 2023-01-30
 
 

@@ -6,18 +6,17 @@ on:
       incremented_part:
         type: choice
         description: Incremented Part
-        default: 'micro'
+        default: '-'
         options:
           - major
           - minor
           - micro
+          - pre
+          - dev
+          - final
+          - -
       publish-to-dockerhub:
         description: 'Publish to Dockerhub?'
-        type: boolean
-        required: true
-        default: true
-      include_arm64_platform:
-        description: 'Also build for arm64 (DockerHub only)'
         type: boolean
         required: true
         default: true
@@ -97,7 +96,6 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
-      INCLUDE_ARM64_PLATFORM: ${{ inputs.include_arm64_platform }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io

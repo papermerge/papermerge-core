@@ -14,7 +14,7 @@ on:
           - pre
           - dev
           - final
-          - -
+          - '-'
       publish-to-dockerhub:
         description: 'Publish to Dockerhub?'
         type: boolean

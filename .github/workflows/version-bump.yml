@@ -62,6 +62,7 @@ jobs:
           pip install towncrier
           # will remove files from changelog.d/ and update changelog.md file
           towncrier build --version ${{steps.step-version-bump.outputs.NEW_VERSION}} --yes
+        if: ${{ inputs.incremented_part == 'final' }}
 
       - name: Commit files
         run: |

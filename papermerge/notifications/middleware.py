@@ -2,9 +2,7 @@ import re
 import logging
 
 from channels.middleware import BaseMiddleware
-from knox.models import AuthToken
-from knox.settings import CONSTANTS
-from knox.crypto import hash_token
+
 
 from channels.db import database_sync_to_async
 
@@ -25,21 +23,6 @@ ACCESS_TOKEN_NAME = 'access_token'
 
 @database_sync_to_async
 def get_user(token_key):
-    try:
-        auth_token = AuthToken.objects.get(
-            token_key=token_key[:CONSTANTS.TOKEN_KEY_LENGTH]
-        )
-    except AuthToken.DoesNotExist:
-        return None
-
-    digest = hash_token(token_key)
-
-    if compare_digest(digest, auth_token.digest):
-        if not auth_token.user.is_active:
-            return None
-
-        return auth_token.user
-
     return None
 
 

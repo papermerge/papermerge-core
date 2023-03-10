@@ -8,4 +8,3 @@ class CoreConfig(AppConfig):
     def ready(self):
         from papermerge.core import signals  # noqa
         from papermerge.core import checks  # noqa
-        from papermerge.core.openapi import schema  # noqa

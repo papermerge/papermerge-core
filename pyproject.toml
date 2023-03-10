@@ -85,6 +85,7 @@ Whoosh = "^2.7.4"
 pdf2image = "^1.16.0"
 fastapi = "^0.93.0"
 uvicorn = "^0.21.0"
+python-multipart = "^0.0.6"
 
 
 [tool.pytest.ini_options]

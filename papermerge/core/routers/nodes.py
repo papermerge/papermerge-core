@@ -1,9 +1,14 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.models import BaseTreeNode
+from .auth import oauth2_scheme
 
-router = APIRouter(prefix="/nodes", tags=["nodes"])
+router = APIRouter(
+    prefix="/nodes",
+    tags=["nodes"],
+    dependencies=[Depends(oauth2_scheme)]
+)
 
 
 @router.get("/")

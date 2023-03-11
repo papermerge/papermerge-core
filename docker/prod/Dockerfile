@@ -9,7 +9,6 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV UWSGI_PROFILE=gevent
 ENV VIRTUAL_ENV=/venv
 
-
 RUN apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
@@ -25,7 +24,6 @@ ENV PATH="/venv/bin:$PATH"
 
 COPY poetry.lock pyproject.toml /
 RUN poetry install --no-root --no-dev -vvv
-
 
 ## STEP 2 - use slim base image
 FROM python:3.10-slim
@@ -43,21 +41,28 @@ RUN apt-get install -y --no-install-recommends \
     tesseract-ocr-deu \
     imagemagick \
     poppler-utils \
-    htop \
     git \
     libmagic1 \
     ghostscript \
     file \
-    gcc
+    gcc \
+    nginx \
+    supervisor
 
 COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/prod/scripts /
 RUN chmod +x /run.bash
 
-COPY --from=frontend /usr/share/nginx/html /app/static
+COPY --from=frontend /usr/share/nginx/html /usr/share/nginx/html
 COPY --from=build /venv /venv
 
 WORKDIR app
+
+RUN useradd --no-create-home nginx
+RUN rm /etc/nginx/sites-enabled/default
+
+COPY docker/prod/nginx.conf /etc/nginx/
+COPY docker/prod/supervisord.conf /etc/
 
 # sources
 COPY papermerge/ ./papermerge/

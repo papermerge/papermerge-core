@@ -54,8 +54,8 @@ COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/prod/scripts /
 RUN chmod +x /run.bash
 
-COPY --from=build /venv /venv
 COPY --from=frontend /usr/share/nginx/html /app/static
+COPY --from=build /venv /venv
 
 WORKDIR app
 

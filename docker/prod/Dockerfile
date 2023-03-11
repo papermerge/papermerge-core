@@ -1,5 +1,5 @@
-ARG frontend_tag=latest
-FROM papermerge/papermerge.js:${frontend_tag} as frontend
+# ARG frontend_tag=latest
+# FROM papermerge/papermerge.js:${frontend_tag} as frontend
 
 FROM papermerge/base:1.1.1 as build
 
@@ -54,7 +54,7 @@ COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/prod/scripts /
 RUN chmod +x /run.bash
 
-COPY --from=frontend /usr/share/nginx/html /app/static
+# COPY --from=frontend /usr/share/nginx/html /app/static
 COPY --from=build /venv /venv
 
 WORKDIR app

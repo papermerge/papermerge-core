@@ -37,7 +37,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:latest,papermerge/papermerge:${{ inputs.VERSION }}
+          tags: papermerge/papermerge:${{ inputs.VERSION }}
           file: docker/prod/Dockerfile
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3

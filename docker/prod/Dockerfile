@@ -1,3 +1,6 @@
+ARG frontend_tag=latest
+FROM papermerge/papermerge.js:${frontend_tag} as frontend
+
 FROM papermerge/base:1.1.1 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
@@ -5,6 +8,7 @@ ENV IN_DOCKER=1
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV UWSGI_PROFILE=gevent
 ENV VIRTUAL_ENV=/venv
+
 
 RUN apt-get install -y --no-install-recommends \
     build-essential \
@@ -21,6 +25,7 @@ ENV PATH="/venv/bin:$PATH"
 
 COPY poetry.lock pyproject.toml /
 RUN poetry install --no-root --no-dev -vvv
+
 
 ## STEP 2 - use slim base image
 FROM python:3.10-slim
@@ -50,6 +55,7 @@ COPY docker/prod/scripts /
 RUN chmod +x /run.bash
 
 COPY --from=build /venv /venv
+COPY --from=frontend /usr/share/nginx/html /app/static
 
 WORKDIR app
 

@@ -27,7 +27,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_server() {
-  exec uwsgi --ini /etc/uwsgi/papermerge.ini
+  exec uwsgi --ini /etc/uwsgi/papermerge.ini --static-map /=/app/static/ --static-map /assets=/app/static/
 }
 
 exec_ws_server() {

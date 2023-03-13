@@ -52,8 +52,6 @@ COPY --from=build /venv /venv
 
 WORKDIR app
 
-RUN mkdir -p /app/.broker/out && mkdir -p /app/.broker/processed
-
 # sources
 COPY papermerge/ ./papermerge/
 COPY docker/prod/config/ ./config/

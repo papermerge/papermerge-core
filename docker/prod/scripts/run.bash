@@ -27,7 +27,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_server() {
-  exec /usr/bin/supervisord
+  exec uwsgi --ini /etc/uwsgi/papermerge.ini
 }
 
 exec_ws_server() {

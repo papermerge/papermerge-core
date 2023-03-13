@@ -1,6 +1,3 @@
-ARG frontend_tag=latest
-FROM papermerge/papermerge.js:${frontend_tag} as frontend
-
 FROM papermerge/base:1.1.1 as build
 
 ### STEP 1 - pull all python dependencies in virtual env
@@ -45,9 +42,7 @@ RUN apt-get install -y --no-install-recommends \
     libmagic1 \
     ghostscript \
     file \
-    gcc \
-    nginx \
-    supervisor
+    gcc
 
 COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
 COPY docker/prod/scripts /
@@ -58,11 +53,7 @@ COPY --from=build /venv /venv
 
 WORKDIR app
 
-RUN useradd --no-create-home nginx
-RUN rm /etc/nginx/sites-enabled/default
-
-COPY docker/prod/nginx.conf /etc/nginx/
-COPY docker/prod/supervisord.conf /etc/
+RUN mkdir -p /app/.broker/out && mkdir -p /app/.broker/processed
 
 # sources
 COPY papermerge/ ./papermerge/

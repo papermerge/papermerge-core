@@ -6,6 +6,9 @@ on:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
   workflow_call:
     secrets:
       DOCKERHUB_USERNAME:
@@ -16,6 +19,9 @@ on:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
 jobs:
   amd64:
     name: amd64
@@ -33,12 +39,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build
+      - name: Build ${{ inputs.VERSION }}-headless
         uses: docker/build-push-action@v3
         with:
           push: true
           tags: papermerge/papermerge:${{ inputs.VERSION }}-headless
           file: docker/prod/Dockerfile
+      - name: Build latest-headless
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: papermerge/papermerge:latest-headless
+          file: docker/prod/Dockerfile
+        if: ${{ inputs.IS_LATEST }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

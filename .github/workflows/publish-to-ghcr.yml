@@ -6,6 +6,9 @@ on:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
   workflow_call:
     secrets:
       MY_GH_TOKEN:
@@ -14,6 +17,9 @@ on:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
 
 permissions:
   contents: read
@@ -36,9 +42,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.MY_GH_TOKEN }}
-      - name: Build and push
+      - name: Build and push ${{ inputs.VERSION }}
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags:  ${{ env.papermerge_image }}:latest,${{ env.papermerge_image }}:${{ inputs.VERSION }}
+          tags:  ${{ env.papermerge_image }}:${{ inputs.VERSION }}
           file: docker/prod/Dockerfile
+      - name: Build and push latest-headless
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags:  ${{ env.papermerge_image }}:latest-headless
+          file: docker/prod/Dockerfile
+        if: ${{ input.IS_LATEST }}

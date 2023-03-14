@@ -51,7 +51,7 @@ jobs:
           push: true
           tags: papermerge/papermerge:latest-headless
           file: docker/prod/Dockerfile
-        if: ${{ inputs.IS_LATEST }}
+        if: ${{ inputs.IS_LATEST == 'true' }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

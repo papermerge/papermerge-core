@@ -54,4 +54,4 @@ jobs:
           push: true
           tags:  ${{ env.papermerge_image }}:latest-headless
           file: docker/prod/Dockerfile
-        if: ${{ input.IS_LATEST }}
+        if: ${{ inputs.IS_LATEST }}

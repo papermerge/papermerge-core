@@ -101,7 +101,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
-      IS_LATEST: ${{ input.is_latest }}
+      IS_LATEST: ${{ inputs.is_latest }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io
@@ -112,7 +112,7 @@ jobs:
       MY_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
-      IS_LATEST: ${{ input.is_latest }}
+      IS_LATEST: ${{ inputs.is_latest }}
 
   publish-to-pypi:
     name: Publish to Pypi

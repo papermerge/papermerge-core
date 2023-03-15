@@ -19,6 +19,8 @@ on:
         required: true
       DOCKERHUB_TOKEN:
         required: true
+      GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI:
+        required: true
     inputs:
       VERSION:
         required: true

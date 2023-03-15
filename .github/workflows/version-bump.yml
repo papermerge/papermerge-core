@@ -103,6 +103,7 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI: ${{ secrets.GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
       IS_LATEST: ${{ inputs.is_latest }}

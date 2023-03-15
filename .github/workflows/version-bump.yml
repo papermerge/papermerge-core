@@ -19,6 +19,10 @@ on:
           type: boolean
           description: tag this version as latest?
           default: false
+      frontend_tag:
+          type: string
+          required: true
+          default: latest
       publish-to-dockerhub:
         description: 'Publish to Dockerhub?'
         type: boolean
@@ -102,6 +106,7 @@ jobs:
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
       IS_LATEST: ${{ inputs.is_latest }}
+      FRONTEND_TAG: ${{ inputs.frontend_tag }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io

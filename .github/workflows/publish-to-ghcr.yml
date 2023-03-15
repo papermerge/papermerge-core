@@ -42,11 +42,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.MY_GH_TOKEN }}
-      - name: Build and push ${{ inputs.VERSION }}
+      - name: Build and push ${{ inputs.VERSION }}-headless
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags:  ${{ env.papermerge_image }}:${{ inputs.VERSION }}
+          tags:  ${{ env.papermerge_image }}:${{ inputs.VERSION }}-headless
           file: docker/prod/Dockerfile
       - name: Build and push latest-headless
         uses: docker/build-push-action@v3

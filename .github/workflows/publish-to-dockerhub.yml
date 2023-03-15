@@ -92,7 +92,7 @@ jobs:
                  INPUT_BACKEND_TAG: '${{ inputs.VERSION }}-headless',
                  INPUT_FRONTEND_TAG: '${{ inputs.FRONTEND_TAG }}',
                  IS_LATEST: '${{ inputs.IS_LATEST }}',
-                 PUBLISH_ON_DOCKERHUB: true,
-                 PUBLISH_ON_GHCR: true
+                 PUBLISH_ON_DOCKERHUB: 'true',
+                 PUBLISH_ON_GHCR: 'true'
               }
             })

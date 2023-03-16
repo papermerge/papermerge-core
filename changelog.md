@@ -2,6 +2,11 @@
 
 <!-- towncrier release notes start -->
 
+## [2.1.8] - 2023-03-16
+
+No significant changes.
+
+
 ## [2.1.7] - 2023-03-09
 
 No significant changes.

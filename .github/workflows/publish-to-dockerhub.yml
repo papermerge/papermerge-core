@@ -6,22 +6,40 @@ on:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
+      FRONTEND_TAG:
+        type: string
+        required: true
+        default: latest
   workflow_call:
     secrets:
       DOCKERHUB_USERNAME:
         required: true
       DOCKERHUB_TOKEN:
         required: true
+      GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI:
+        required: true
     inputs:
       VERSION:
         required: true
         type: string
+      IS_LATEST:
+        type: string
+        default: false
+      FRONTEND_TAG:
+        type: string
+        required: true
+        default: latest
 jobs:
-  amd64:
-    name: amd64
+  build-headless:
+    name: Build Headless
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}  # checkout current branch
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -31,12 +49,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build
+      - name: Build ${{ inputs.VERSION }}-headless
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:latest,papermerge/papermerge:${{ inputs.VERSION }}
+          tags: papermerge/papermerge:${{ inputs.VERSION }}-headless
           file: docker/prod/Dockerfile
+      - name: Build latest-headless
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: papermerge/papermerge:latest-headless
+          file: docker/prod/Dockerfile
+        if: ${{ inputs.IS_LATEST == 'true' }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:
@@ -47,3 +72,27 @@ jobs:
           short-description: >
             Papermerge is an open source document management system (DMS)
              for digital archives
+
+  dispatch-event-build-docker-image:  # trigger REST API clients generation
+    name: Trigger build docker image with UI
+    needs: [ build-headless ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger dispatch event
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'papermerge',
+              repo: 'docker',
+              workflow_id: 'build-publish.yml',
+              ref: 'master',
+              inputs: {
+                 INPUT_BACKEND_TAG: '${{ inputs.VERSION }}-headless',
+                 INPUT_FRONTEND_TAG: '${{ inputs.FRONTEND_TAG }}',
+                 IS_LATEST: '${{ inputs.IS_LATEST }}',
+                 PUBLISH_ON_DOCKERHUB: 'true',
+                 PUBLISH_ON_GHCR: 'true'
+              }
+            })

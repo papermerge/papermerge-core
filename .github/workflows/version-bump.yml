@@ -15,6 +15,14 @@ on:
           - dev
           - final
           - '-'
+      is_latest:
+          type: boolean
+          description: tag this version as latest?
+          default: false
+      frontend_tag:
+          type: string
+          required: true
+          default: latest
       publish-to-dockerhub:
         description: 'Publish to Dockerhub?'
         type: boolean
@@ -62,7 +70,7 @@ jobs:
           pip install towncrier
           # will remove files from changelog.d/ and update changelog.md file
           towncrier build --version ${{steps.step-version-bump.outputs.NEW_VERSION}} --yes
-        if: ${{ inputs.incremented_part == 'final' }}
+        if: ${{ inputs.is_latest }}
 
       - name: Commit files
         run: |
@@ -95,8 +103,11 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI: ${{ secrets.GH_PAT_TRIGGER_BUILD_DOCKER_IMAGE_WITH_UI }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
+      IS_LATEST: ${{ inputs.is_latest }}
+      FRONTEND_TAG: ${{ inputs.frontend_tag }}
 
   publish-to-ghcr:
     name: Publish to Ghcr.io
@@ -107,6 +118,7 @@ jobs:
       MY_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
       VERSION: ${{ needs.version-bump.outputs.new-version }}
+      IS_LATEST: ${{ inputs.is_latest }}
 
   publish-to-pypi:
     name: Publish to Pypi

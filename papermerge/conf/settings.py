@@ -33,15 +33,17 @@ CELERY_TASK_DEFAULT_EXCHANGE = 'papermerge'
 CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'
 CELERY_TASK_DEFAULT_ROUTING_KEY = 'papermerge'
 
-if redis_host and redis_port:
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [(redis_host, redis_port)],
-            },
+
+redis_channel_host =redis_host or '127.0.0.1'
+redis_channel_port = redis_port or 6379
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(redis_channel_host, redis_channel_port)],
         },
-    }
+    },
+}
 
 DEBUG = config.get('main', 'debug', False)
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)

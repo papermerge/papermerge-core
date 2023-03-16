@@ -38,7 +38,6 @@ RUN apt-get install -y --no-install-recommends \
     tesseract-ocr-deu \
     imagemagick \
     poppler-utils \
-    htop \
     git \
     libmagic1 \
     ghostscript \

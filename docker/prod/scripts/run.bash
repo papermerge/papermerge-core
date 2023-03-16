@@ -45,7 +45,7 @@ exec_migrate() {
 
 exec_update_index() {
   # Create/Update search index
-  $MANAGE update_index
+  $MANAGE update_index &
 }
 
 exec_createsuperuser() {

@@ -6,10 +6,9 @@ Papermerge DMS and related services using [docker-compose](https://docs.docker.c
 Following docker compose files are available:
 
 - docker-compose.yml
-- backend-only.yml
 - services
 
-Each of above mentioned files must be paired with an ``.env`` file where
+Each of above-mentioned files must be paired with an ``.env`` file where
 environment variables are defined.
 
 
@@ -19,40 +18,16 @@ In order to use papermerge with docker compose you need to prepare an [environme
 file](https://docs.docker.com/compose/env-file/) as it is not provided
 in sources repository.
 
-
 ## docker-compose.yml
 
 Start Papermerge DMS:
 
     docker-compose  -f docker/docker-compose.yml --env-file <path to .env file> up
 
-Above command will start following services:
-
-- backend (REST API backend)
-- ws_server (websockets server - used for real time notifications)
-- worker (performs OCR)
-- frontend (modern web UI)
-- redis
-- db (postgres)
-- es (elasticsearch)
-- traefik (ingress or entry point)
-
-Add to your ``/etc/hosts`` desired hostname for your instance (e.g papermerge.local):
-
-    127.0.0.1       papermerge.local
-
 You can access Papermerge user interface using a web browser like Firefox.
-Open your web browser and point it to http://papermerge.local address.
+Open your web browser and point it to http://localhost:16000 address.
 
 ``.env`` file example:
-
-    APP_IMAGE=papermerge/papermerge
-    APP_TAG=latest
-    PAPERMERGE_JS_IMAGE=papermerge/papermerge.js
-    PAPERMERGE_JS_TAG=latest
-
-    USE_HOSTNAME=papermerge.local
-    TIMEZONE=Berlin/Europe
 
     DB_USER=postgres
     DB_NAME=postgres
@@ -60,53 +35,7 @@ Open your web browser and point it to http://papermerge.local address.
     DB_HOST=db
     DB_PORT=5432
 
-    REDIS_HOST=redis
-    REDIS_PORT=6379
-
-    ES_HOSTS=es
-    ES_PORT=9200
-
-    SECRET_KEY=alsdkalsdjlaksdj90823423!KLKJLkjkjlkjlKLPOgrwqna
-
-    SUPERUSER_USERNAME=admin
-    SUPERUSER_EMAIL=admin@mail.com
-    SUPERUSER_PASSWORD=password
-
-## backend-only.yml
-
-Start only Papermerge DMS REST API backend:
-
-    docker-compose  -f docker/backend-only.yml --env-file <path to .env file> up
-
-Above command will start following services:
-
-- backend (REST API backend)
-- redis
-- db (postgres)
-- es (elasticsearch)
-
-REST API backend base url is ``http://localhost:8000/api/``.
-
-``.env`` file example:
-
-    APP_IMAGE=papermerge/papermerge
-    APP_TAG=latest
-
-    TIMEZONE=Europe/Berlin
-
-    DB_USER=postgres
-    DB_NAME=postgres
-    DB_PASSWORD=postgres
-    DB_HOST=db
-    DB_PORT=5432
-
-    REDIS_HOST=redis
-    REDIS_PORT=6379
-
-    ES_HOSTS=es
-    ES_PORT=9200
-
-    SECRET_KEY=alsdkalsdjlaksdj90823423!KLKJLkjkjlkjlKLPOgrwqna
+    SECRET_KEY=abcd
 
     SUPERUSER_USERNAME=admin
     SUPERUSER_EMAIL=admin@mail.com
@@ -127,37 +56,3 @@ Example of ``.env`` file:
     DB_USER=postgres
     DB_NAME=postgres
     DB_PASSWORD=postgres
-
-
-## App Docker Image
-
-Build app docker image for production mode:
-
-    docker build -t ghcr.io/papermerge/papermerge:latest -f docker/Dockerfile .
-
-Build app docker image for development mode:
-
-    docker build -t ghcr.io/papermerge/papermerge:latest -f docker/Dockerfile .
-
-
-## Frontend Docker Image
-
-Frontend or PapermergeJS is official web based user interface for Papermerge.
-Frontend component is totally optional, because you can use Papermerge
-with any REST API client; in this regard, Papermerge.JS is nothing more than
-a REST API client (though, very user friendly one).
-
-Note that both App and PapermergeJS docker images **should use same docker tag**
-i.e. app docker image ``ghcr.io/papermerge/papermerge:2.1.0-alpha-2`` (where tag is
-2.1.0-alpha-2) is compatible with ``ghcr.io/papermerge/papermerge.js:2.1.0-alpha-2``
-frontend docker image. The compatibility is established based on ``2.1.0-alpha-2``
-tag.
-
-Following app and frontend docker images:
-
-- ghcr.io/papermerge/papermerge:2.1.0-alpha-2
-- ghcr.io/papermerge/papermerge.js:2.1.0-alpha-2
-
-are combatible as well (because they use same ``2.1.0-alpha-2`` docker tag).
-
-Instructions how to build frontend docker image are provided in [Papermerge.JS](https://github.com/papermerge/papermerge.js) repository.

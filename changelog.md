@@ -4,7 +4,7 @@
 
 ## [2.1.8] - 2023-03-16
 
-No significant changes.
+- Simplified docker image - ONE docker image for both backend + frontend [issue#537](https://github.com/ciur/papermerge/issues/537)
 
 
 ## [2.1.7] - 2023-03-09

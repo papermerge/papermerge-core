@@ -55,12 +55,14 @@ jobs:
           push: true
           tags: papermerge/papermerge:${{ inputs.VERSION }}-headless
           file: docker/prod/Dockerfile
+          platforms: linux/arm64,linux/amd64
       - name: Build latest-headless
         uses: docker/build-push-action@v3
         with:
           push: true
           tags: papermerge/papermerge:latest-headless
           file: docker/prod/Dockerfile
+          platforms: linux/arm64,linux/amd64
         if: ${{ inputs.IS_LATEST == 'true' }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3

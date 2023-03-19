@@ -1,7 +1,12 @@
+from uuid import UUID
+
 from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
+
 from django.db.utils import IntegrityError
+
 from papermerge.core.models import User
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.folders import Folder as PyFolder
@@ -63,16 +68,21 @@ def create_node(
 
 @router.delete("/")
 def delete_nodes(
-    list_of_uuids: List[str],
+    list_of_uuids: List[UUID],
     user: PyUser = Depends(current_user)
-) -> List[str]:
+) -> List[UUID]:
+    """Deletes nodes with specified UUIDs
 
+    Returns a list of UUIDs of actually deleted nodes.
+    In case nothing was deleted (e.g. no nodes with specified UUIDs
+    were found) - will return an empty list.
+    """
     deleted_nodes_uuids = []
     for node in BaseTreeNode.objects.filter(
         user_id=user.id, id__in=list_of_uuids
     ):
         deleted_nodes_uuids.append(
-            str(node.id)
+            node.id
         )
         node.delete()
 

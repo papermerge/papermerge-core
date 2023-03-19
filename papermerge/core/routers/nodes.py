@@ -7,6 +7,8 @@ from fastapi.responses import RedirectResponse
 
 from django.db.utils import IntegrityError
 
+from fastapi_pagination import Page, Params, paginate
+
 from papermerge.core.models import User
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.folders import Folder as PyFolder
@@ -33,16 +35,21 @@ def get_nodes(user: PyUser = Depends(current_user)) -> RedirectResponse:
     )
 
 
-@router.get("/{parent_id}")
-def get_node(parent_id, user: User = Depends(current_user)) -> List[PyNode]:
+@router.get("/{parent_id}", response_model=Page[PyNode])
+def get_node(
+    parent_id,
+    params: Params = Depends(),
+    user: User = Depends(current_user)
+) -> List[PyNode]:
     """Returns a list nodes with given parent_id of the current user"""
-    return [
+    items = [
         PyNode.from_orm(node)
         for node in BaseTreeNode.objects.filter(
             parent_id=parent_id,
             user_id=user.id
         )
     ]
+    return paginate(items, params)
 
 
 @router.post("/")

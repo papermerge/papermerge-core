@@ -1068,6 +1068,38 @@ doc = ["mdx-include (>=1.4.1,<2.0.0)", "mkdocs (>=1.1.2,<2.0.0)", "mkdocs-markdo
 test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==22.10.0)", "coverage[toml] (>=6.5.0,<8.0)", "databases[sqlite] (>=0.3.2,<0.7.0)", "email-validator (>=1.1.1,<2.0.0)", "flask (>=1.1.2,<3.0.0)", "httpx (>=0.23.0,<0.24.0)", "isort (>=5.0.6,<6.0.0)", "mypy (==0.982)", "orjson (>=3.2.1,<4.0.0)", "passlib[bcrypt] (>=1.7.2,<2.0.0)", "peewee (>=3.13.3,<4.0.0)", "pytest (>=7.1.3,<8.0.0)", "python-jose[cryptography] (>=3.3.0,<4.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "pyyaml (>=5.3.1,<7.0.0)", "ruff (==0.0.138)", "sqlalchemy (>=1.3.18,<1.4.43)", "types-orjson (==3.6.2)", "types-ujson (==5.6.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)"]
 
 [[package]]
+name = "fastapi-pagination"
+version = "0.11.4"
+description = "FastAPI pagination"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "fastapi_pagination-0.11.4-py3-none-any.whl", hash = "sha256:6d3e0d52e510cd58e68fa4699999e06abaf7062762af08dc3ce49939924cebbd"},
+    {file = "fastapi_pagination-0.11.4.tar.gz", hash = "sha256:9457b78cd5d0be590cbda506d5913f9d196a7b50768b7943cd0ad6a5f5aa090c"},
+]
+
+[package.dependencies]
+fastapi = ">=0.80.0"
+pydantic = ">=1.9.1"
+
+[package.extras]
+all = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "beanie (>=1.11.9,<2.0.0)", "databases (>=0.6.0)", "django (<5.0.0)", "mongoengine (>=0.23.1,<0.27.0)", "motor (>=2.5.1,<4.0.0)", "orm (>=0.3.1)", "ormar (>=0.11.2)", "piccolo (>=0.89,<0.106)", "pony (>=0.7.16,<0.8.0)", "scylla-driver (>=3.25.6,<4.0.0)", "sqlakeyset (>=1.0.1659142803,<2.0.0)", "sqlmodel (>=0.0.8,<0.0.9)", "tortoise-orm (>=0.16.18,<0.20.0)"]
+asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
+beanie = ["beanie (>=1.11.9,<2.0.0)"]
+databases = ["databases (>=0.6.0)"]
+django = ["databases (>=0.6.0)", "django (<5.0.0)"]
+mongoengine = ["mongoengine (>=0.23.1,<0.27.0)"]
+motor = ["motor (>=2.5.1,<4.0.0)"]
+orm = ["databases (>=0.6.0)", "orm (>=0.3.1)"]
+ormar = ["ormar (>=0.11.2)"]
+piccolo = ["piccolo (>=0.89,<0.106)"]
+scylla-driver = ["scylla-driver (>=3.25.6,<4.0.0)"]
+sqlalchemy = ["SQLAlchemy (>=1.3.20)", "sqlakeyset (>=1.0.1659142803,<2.0.0)"]
+sqlmodel = ["sqlakeyset (>=1.0.1659142803,<2.0.0)", "sqlmodel (>=0.0.8,<0.0.9)"]
+tortoise = ["tortoise-orm (>=0.16.18,<0.20.0)"]
+
+[[package]]
 name = "filelock"
 version = "3.8.2"
 description = "A platform independent file lock."
@@ -3381,4 +3413,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.11"
-content-hash = "da9f3cc798c359a4f6859db52f7bda5f79dc54e6bd211b12f9d9ce3a22f3c82e"
+content-hash = "de7efe2cee0a5d03d6340b4d54807a5a56082a1873b01e8e9bde7fd9bd804ab6"

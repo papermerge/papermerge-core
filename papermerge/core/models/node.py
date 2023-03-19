@@ -89,9 +89,9 @@ class NodeQuerySet(models.QuerySet):
     def delete(self, *args, **kwargs):
         for node in self:
             descendants = node.get_descendants()
-
-            if descendants.count() > 0:
-                descendants.delete(*args, **kwargs)
+            if len(descendants) > 0:
+                for item in descendants:
+                    item.delete(*args, **kwargs)
             # At this point all descendants were deleted.
             # Self delete :)
             try:

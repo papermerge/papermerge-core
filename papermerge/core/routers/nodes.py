@@ -16,7 +16,7 @@ from papermerge.core.models import BaseTreeNode, Folder
 from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 from .params import CommonQueryParams
-from .paginator import Paginator, PaginatorGeneric
+from .paginator import PaginatorGeneric, paginate
 
 
 router = APIRouter(
@@ -36,6 +36,7 @@ def get_nodes(user: PyUser = Depends(current_user)) -> RedirectResponse:
 
 
 @router.get("/{parent_id}", response_model=PaginatorGeneric[PyNode])
+@paginate
 def get_node(
     parent_id,
     params: CommonQueryParams = Depends(),
@@ -45,16 +46,10 @@ def get_node(
     if not params.order_by:
         params.order_by = 'ctype'
 
-    qs = BaseTreeNode.objects.filter(
+    return BaseTreeNode.objects.filter(
         parent_id=parent_id,
         user_id=user.id
     ).order_by(params.order_by)
-
-    return Paginator(
-        qs,
-        per_page=params.per_page,
-        page_number=params.page_number
-    )
 
 
 @router.post("/")

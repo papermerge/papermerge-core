@@ -1,10 +1,13 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Callable
+
+from functools import wraps
 
 from collections.abc import Sequence
 from django.core.paginator import Paginator as DjangoPaginator
 from django.db.models.query import QuerySet
 from pydantic.generics import GenericModel, BaseModel
 
+from .params import CommonQueryParams
 
 T = TypeVar('T')
 
@@ -35,3 +38,19 @@ class Paginator(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+def paginate(func: Callable) -> Callable:
+
+    @wraps(func)
+    def view_with_pagination(*args, **kwargs):
+        params: CommonQueryParams = kwargs['params']
+        queryset = func(*args, **kwargs)
+
+        return Paginator(
+            queryset,
+            per_page=params.per_page,
+            page_number=params.page_number
+        )
+
+    return view_with_pagination

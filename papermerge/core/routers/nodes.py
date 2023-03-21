@@ -43,13 +43,17 @@ def get_node(
     user: User = Depends(current_user)
 ):
     """Returns a list nodes with given parent_id of the current user"""
-    if not params.order_by:
-        params.order_by = 'ctype'
+    order_by = ['ctype', 'title']
+
+    if params.order_by:
+        order_by = [
+            item.strip() for item in params.order_by.split(',')
+        ]
 
     return BaseTreeNode.objects.filter(
         parent_id=parent_id,
         user_id=user.id
-    ).order_by(params.order_by)
+    ).order_by(*order_by)
 
 
 @router.post("/")

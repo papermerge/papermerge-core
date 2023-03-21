@@ -1,5 +1,4 @@
 from uuid import UUID
-
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,6 +12,7 @@ from papermerge.core.schemas.folders import Folder as PyFolder
 from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
 from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.models import BaseTreeNode, Folder
+
 from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 from .params import CommonQueryParams

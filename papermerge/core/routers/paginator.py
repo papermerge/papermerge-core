@@ -1,10 +1,10 @@
 from typing import TypeVar, Generic, Callable
-
 from functools import wraps
-
 from collections.abc import Sequence
+
 from django.core.paginator import Paginator as DjangoPaginator
 from django.db.models.query import QuerySet
+
 from pydantic.generics import GenericModel, BaseModel
 
 from .params import CommonQueryParams

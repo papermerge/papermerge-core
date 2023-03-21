@@ -4,7 +4,7 @@ from fastapi import Query
 
 class CommonQueryParams(BaseModel):
     per_page: int = Query(
-        1,
+        5,
         ge=1,
         description="Number of items per page"
     )

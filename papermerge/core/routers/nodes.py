@@ -7,8 +7,6 @@ from fastapi.responses import RedirectResponse
 
 from django.db.utils import IntegrityError
 
-from fastapi_pagination import Page, Params, paginate
-
 from papermerge.core.models import User
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.folders import Folder as PyFolder
@@ -17,6 +15,8 @@ from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.models import BaseTreeNode, Folder
 from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
+from .params import CommonQueryParams
+from .paginator import Paginator, PaginatorGeneric
 
 
 router = APIRouter(
@@ -35,21 +35,26 @@ def get_nodes(user: PyUser = Depends(current_user)) -> RedirectResponse:
     )
 
 
-@router.get("/{parent_id}", response_model=Page[PyNode])
+@router.get("/{parent_id}", response_model=PaginatorGeneric[PyNode])
 def get_node(
     parent_id,
-    params: Params = Depends(),
+    params: CommonQueryParams = Depends(),
     user: User = Depends(current_user)
-) -> List[PyNode]:
+):
     """Returns a list nodes with given parent_id of the current user"""
-    items = [
-        PyNode.from_orm(node)
-        for node in BaseTreeNode.objects.filter(
-            parent_id=parent_id,
-            user_id=user.id
-        )
-    ]
-    return paginate(items, params)
+    if not params.order_by:
+        params.order_by = 'ctype'
+
+    qs = BaseTreeNode.objects.filter(
+        parent_id=parent_id,
+        user_id=user.id
+    ).order_by(params.order_by)
+
+    return Paginator(
+        qs,
+        per_page=params.per_page,
+        page_number=params.page_number
+    )
 
 
 @router.post("/")

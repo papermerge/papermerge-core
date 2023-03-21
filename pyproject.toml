@@ -109,7 +109,7 @@ test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings pyth
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
-server = "./manage.py runserver"
+server = "uvicorn config.asgi:fastapp --reload"
 spectacular = "./manage.py spectacular"
 
 [tool.towncrier]

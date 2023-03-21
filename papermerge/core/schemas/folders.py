@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Literal
@@ -12,6 +13,7 @@ class Folder(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
+    breadcrumb: List[Tuple[UUID, str]]
 
     class Config:
         orm_mode = True

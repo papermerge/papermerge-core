@@ -1,6 +1,8 @@
 import pytz
 import uuid
 
+from typing import List, Tuple
+
 from django.db.models import Q
 from django.utils import timezone
 from django.db import models
@@ -166,12 +168,11 @@ class BaseTreeNode(models.Model):
     objects = CustomNodeManager()
 
     @property
-    def breadcrumb(self) -> str:
-        titles = [
-            item.title
+    def breadcrumb(self) -> List[Tuple[uuid.UUID, str]]:
+        return [
+            (item.id, item.title)
             for item in self.get_ancestors()
         ]
-        return '/'.join(titles)
 
     @property
     def idified_title(self):

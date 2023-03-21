@@ -2,6 +2,7 @@ import os
 
 from django.core.asgi import get_asgi_application
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load django apps. This line must be before any other
 # imports, otherwise there is "Apps aren't loaded yet exception
@@ -21,6 +22,14 @@ application = ProtocolTypeRouter({
 })
 
 fastapp = FastAPI()
+
+fastapp.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+)
+
 
 def init(app: FastAPI):
     from papermerge.core.routers import register_routers

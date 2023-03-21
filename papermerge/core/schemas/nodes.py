@@ -1,13 +1,18 @@
+from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
+
+
+class NodeType(str, Enum):
+    document = "document"
+    folder = "folder"
 
 
 class Node(BaseModel):
     id: UUID
     title: str
-    ctype: Literal["document", "folder"]
+    ctype: NodeType
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
@@ -19,7 +24,7 @@ class Node(BaseModel):
 
 class CreateNode(BaseModel):
     title: str
-    ctype: Literal["folder"]
+    ctype: NodeType.folder
     parent_id: UUID | None
 
     class Config:

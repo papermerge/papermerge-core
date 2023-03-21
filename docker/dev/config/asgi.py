@@ -28,8 +28,8 @@ fastapp.add_middleware(
     allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"]
 )
-
 
 def init(app: FastAPI):
     from papermerge.core.routers import register_routers
@@ -37,3 +37,5 @@ def init(app: FastAPI):
     register_routers(app)
 
 init(fastapp)
+
+

@@ -4,8 +4,9 @@
 
 ## [2.1.9] - 2023-04-01
 
-No significant changes.
+### Fixed
 
+- Fix Papermerge-CLI Uploading Error [issue#538](https://github.com/ciur/papermerge/issues/538)
 
 ## [2.1.8] - 2023-03-16
 

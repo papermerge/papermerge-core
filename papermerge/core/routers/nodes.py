@@ -8,6 +8,7 @@ from django.db.utils import IntegrityError
 
 from papermerge.core.models import User
 from papermerge.core.schemas.nodes import Node as PyNode
+from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.schemas.folders import Folder as PyFolder
 from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
 from papermerge.core.schemas.users import User as PyUser
@@ -75,6 +76,29 @@ def create_node(
         )
 
     return PyFolder.from_orm(folder)
+
+
+@router.patch("/{node_id}")
+def update_node(
+    node_id: UUID,
+    node: PyUpdateNode,
+    user: PyUser = Depends(current_user)
+) -> PyNode:
+    """Updates node"""
+    try:
+        old_node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
+    except BaseTreeNode.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exist"
+        )
+
+    for key, value in node.dict().items():
+        if value is not None:
+            setattr(old_node, key, value)
+    old_node.save()
+
+    return PyNode.from_orm(old_node)
 
 
 @router.delete("/")

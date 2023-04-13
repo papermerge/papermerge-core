@@ -1,6 +1,6 @@
 from enum import Enum
 from django.db.models.manager import BaseManager
-from typing import List, Tuple
+from typing import Tuple
 from pydantic import BaseModel, validator
 from datetime import datetime
 from typing import Literal
@@ -15,6 +15,19 @@ class OCRStatusEnum(str, Enum):
     failed = 'failed'
 
 
+class Page(BaseModel):
+    id: UUID
+    number: int
+    text: str = ''
+    lang: str
+    document_version_id: UUID
+    svg_url: str | None = None
+    jpg_url: str | None = None
+
+    class Config:
+        orm_mode = True
+
+
 class DocumentVersion(BaseModel):
     id: UUID
     number: int
@@ -25,6 +38,13 @@ class DocumentVersion(BaseModel):
     short_description: str
     document_id: UUID
     download_url: str | None = None
+    pages: list[Page] = []
+
+    @validator("pages", pre=True)
+    def get_all_from_manager(cls, v: object) -> object:
+        if isinstance(v, BaseManager):
+            return list(v.all())
+        return v
 
     class Config:
         orm_mode = True
@@ -38,7 +58,7 @@ class Document(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
-    breadcrumb: List[Tuple[UUID, str]]
+    breadcrumb: list[Tuple[UUID, str]]
     versions: list[DocumentVersion] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown

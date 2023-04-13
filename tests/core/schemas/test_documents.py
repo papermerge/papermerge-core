@@ -1,0 +1,18 @@
+import pytest
+from papermerge.core.models import Document
+from papermerge.core.schemas.documents import Document as PyDocument
+
+
+@pytest.mark.django_db
+def test_documents(user):
+    doc = Document.objects.create_document(
+        title="invoice.pdf",
+        lang="deu",
+        user_id=user.pk,
+        parent=user.home_folder
+    )
+    pydoc = PyDocument.from_orm(doc)
+
+    assert pydoc.title == "invoice.pdf"
+    assert len(pydoc.versions) == 1
+    assert pydoc.versions[0].size == 0

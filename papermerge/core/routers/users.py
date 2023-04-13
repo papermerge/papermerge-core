@@ -17,9 +17,9 @@ router = APIRouter(
 
 
 @router.get("/me")
-def get_current_user(user: PyUser = Depends(current_user)) -> PyUser:
+def get_current_user(user: User = Depends(current_user)) -> PyUser:
     """Returns current user"""
-    return user
+    return PyUser.from_orm(user)
 
 
 @router.get("/", response_model=PaginatorGeneric[PyUser])

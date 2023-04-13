@@ -7,7 +7,6 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from papermerge.core.models import User
-from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.schemas.token import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
@@ -35,7 +34,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> PyUser:
+def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -49,11 +48,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> PyUser:
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = PyUser.from_orm(User.objects.get(username=token_data.username))
-    if user is None:
-        raise credentials_exception
 
-    return user
+    return User.objects.get(username=token_data.username)
 
 
 class LoginResponseType(TypedDict):

@@ -16,10 +16,10 @@ router = APIRouter(
 )
 
 
-@router.get("/{id}")
-def get_document(
-    id: uuid.UUID,
+@router.get("/{document_id}")
+def get_document_details(
+    document_id: uuid.UUID,
     user: User = Depends(current_user)
 ) -> PyDocument:
-    doc = Document.objects.get(id=id, user_id=user.id)
+    doc = Document.objects.get(id=document_id, user_id=user.id)
     return PyDocument.from_orm(doc)

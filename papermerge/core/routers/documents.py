@@ -35,8 +35,8 @@ def upload_file(
     """
     Uploads file for given document.
 
-    Document model must be created beforehand via POST /nodes endpoint provided
-    with ctype 'document'.
+    Document model must be created beforehand via `POST /nodes` endpoint
+    provided with `ctype` = `document`.
 
     In order to upload file cURL:
 
@@ -47,11 +47,13 @@ def upload_file(
         --form "file=@booking.pdf;type=application/pdf"
         -H "Authorization: Bearer <your token>"
 
-    Note that "file=" is important and must be exactly that, it is the name
-    of the field in multipart/form-data. In other words, something like
+    Note that `file=` is important and must be exactly that, it is the name
+    of the field in `multipart/form-data`. In other words, something like
     '--form "data=@booking.pdf..." won't work.
-    The uploaded file is encoded as 'multipart/form-data' and is sent
+    The uploaded file is encoded as `multipart/form-data` and is sent
     in POST request body.
+
+    Obviously you can upload files directly via swagger UI.
     """
     doc = Document.objects.get(
         id=document_id,

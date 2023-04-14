@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 from typing import Optional
@@ -140,9 +141,9 @@ class Document(BaseTreeNode):
 
     def upload(
             self,
-            payload,
-            file_path,
-            file_name,
+            content: io.BytesIO,
+            size: int,
+            file_name: str,
             strategy=UploadStrategy.INCREMENT
     ):
         """
@@ -152,7 +153,7 @@ class Document(BaseTreeNode):
         payload with that (existing) version, otherwise it will create
         new document version and associate it the payload.
         """
-        pdf = Pdf.open(payload)
+        pdf = Pdf.open(content)
 
         document_version = self.versions.filter(size=0).last()
 
@@ -164,11 +165,10 @@ class Document(BaseTreeNode):
             )
 
         document_version.file_name = file_name
-        document_version.size = getsize(file_path)
+        document_version.size = size
         document_version.page_count = len(pdf.pages)
-
         get_storage_instance().copy_doc(
-            src=file_path,
+            src=content,
             dst=document_version.document_path
         )
 

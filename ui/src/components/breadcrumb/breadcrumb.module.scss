@@ -1,0 +1,15 @@
+.breadcrumb {
+  display: flex;
+  list-style: none;
+  align-items: center;
+
+  li {
+    button {
+      padding-right: 0;
+      text-decoration: none;
+    }
+    button:hover {
+      text-decoration: underline;
+    }
+  }
+}

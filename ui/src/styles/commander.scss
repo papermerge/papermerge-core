@@ -1,0 +1,10 @@
+.commander {
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+
+    select {
+      width: 5rem;
+    }
+  }
+}

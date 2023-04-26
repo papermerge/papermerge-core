@@ -1,21 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Layout from './layout';
 import Commander from './commander/commander';
 
-import { useUser } from "../contexts/user";
-
 
 function Home() {
-  const user_context = useUser();
-  const [ node_id, set_node_id ] = useState('');
+  const [ node_id, set_node_id ] = useState('be97f78c-82db-417d-a62b-e3c048295a41');
   const [ page_number, set_page_number ] = useState(1);
   const [ per_page, set_per_page ] = useState(5);
-
-  useEffect( () => {
-    if (!node_id) {
-      set_node_id(user_context.user?.home_folder_id || '');
-    }
-  }, [user_context.user]);
 
   const onNodeClick = (node_id: string) => {
     set_node_id(node_id);
@@ -30,7 +21,7 @@ function Home() {
   }
 
   if (!node_id ) {
-    return <div>Loading...{user_context.user?.username} {user_context.user?.home_folder_id}</div>;
+    return <div>Loading...</div>;
   }
 
   return (

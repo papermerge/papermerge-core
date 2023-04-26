@@ -13,7 +13,7 @@ export const fetcher = (url:string) => {
   return fetch(full_url, {headers: headers}).then(res => res.json());
 }
 
-export function getCurrentUser() {
+export function useCurrentUser() {
   const { data, error, isLoading } = useSWR('/users/me', fetcher);
 
   return {

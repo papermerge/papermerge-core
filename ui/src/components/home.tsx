@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import Head from "next/head";
-import Layout from '../components/layout';
-import Commander from '../components/commander/commander';
+import Layout from './layout';
+import Commander from './commander/commander';
 
-import { useUser } from "@/contexts/user";
+import { useUser } from "../contexts/user";
 
 
 function Home() {
@@ -36,9 +35,9 @@ function Home() {
 
   return (
     <Layout>
-      <Head>
+      <head>
         <title>Home</title>
-      </Head>
+      </head>
       <Commander
         node_id={node_id}
         page_number={page_number}

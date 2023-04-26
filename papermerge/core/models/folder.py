@@ -74,11 +74,6 @@ class Folder(BaseTreeNode):
             # it is ok, just skip
             pass
 
-    @property
-    def breadcrumb(self) -> str:
-        value = super().breadcrumb
-        return value + '/'
-
     class Meta:
         verbose_name = "Folder"
         verbose_name_plural = "Folders"

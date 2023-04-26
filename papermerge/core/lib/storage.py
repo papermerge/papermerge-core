@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import shutil
@@ -159,7 +160,7 @@ class Storage:
             if os.path.exists(abs_dirname_sidecars):
                 os.rmdir(abs_dirname_sidecars)
 
-    def copy_doc(self, src: DocumentPath, dst: DocumentPath):
+    def copy_doc(self, src: DocumentPath | io.BytesIO, dst: DocumentPath):
         """
         copy given file src file path to destination
         as absolute doc_path
@@ -174,13 +175,21 @@ class Storage:
             os.makedirs(
                 dirname, exist_ok=True
             )
-        logger.debug(
-            f"copy_doc: {src} to {dst}"
-        )
-        shutil.copyfile(
-            self.abspath(src),
-            self.abspath(dst)
-        )
+        if isinstance(src, DocumentPath):
+            logger.debug(
+                f"copy_doc: {src} to {dst}"
+            )
+            shutil.copyfile(
+                self.abspath(src),
+                self.abspath(dst)
+            )
+        elif isinstance(src, io.BytesIO):
+            with open(self.abspath(dst), 'wb') as f:
+                f.write(src.getvalue())
+        else:
+            raise ValueError(
+                f"src ({src}) is neither instance of DocumentPath nor io.Bytes"
+            )
 
     def exists(self, _path):
         return os.path.exists(

@@ -44,6 +44,7 @@ model-bakery = "^1.5.0"
 taskipy = "^1.10.2"
 "pdfminer.six" = "^20220524"
 pre-commit = "^2.20.0"
+watchfiles = "^0.19.0"
 
 [project.urls]
 Tracker = "https://github.com/ciur/papermerge/issues"
@@ -51,10 +52,7 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.11"
-django = "^4.0"
-djangorestframework = "^3.13.1"
-django-cors-headers = "^3.9.0"
-djangorestframework-jsonapi = "^5.0.0"
+django = "^4.1"
 django_filter = "^21.1"
 channels = "^3.0"
 channels-redis = "^3.2"
@@ -86,6 +84,11 @@ django-haystack = "^3.2.1"
 yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
 Whoosh = "^2.7.4"
 pdf2image = "^1.16.0"
+fastapi = "^0.93.0"
+uvicorn = "^0.21.0"
+python-multipart = "^0.0.6"
+python-jose = "^3.3.0"
+fastapi-pagination = "^0.11.4"
 
 
 [tool.pytest.ini_options]
@@ -107,7 +110,7 @@ test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings pyth
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
-server = "./manage.py runserver"
+server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --reload --app-dir docker/dev/ --reload-dir papermerge --reload-dir tests"
 spectacular = "./manage.py spectacular"
 
 [tool.towncrier]

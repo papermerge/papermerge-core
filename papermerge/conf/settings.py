@@ -1,9 +1,7 @@
 import yaml
 import logging.config
 
-from corsheaders.defaults import default_headers as default_cors_headers
 from configula import Configula
-from papermerge.core.openapi.append import JSONAPI_COMPONENTS
 from papermerge.core.version import __version__
 
 logger = logging.getLogger(__name__)
@@ -87,11 +85,6 @@ PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'rest_framework',
-    'rest_framework.authtoken',
-    'knox',
-    'rest_framework_json_api',
-    'corsheaders',
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'django.contrib.auth',
@@ -114,7 +107,6 @@ INSTALLED_APPS = [
 # and have non-empty value
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -195,43 +187,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        # knox token based authentication
-        'knox.auth.TokenAuthentication',
-    ],
-    'PAGE_SIZE': 10,
-    'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
-    'DEFAULT_PAGINATION_CLASS':
-        'papermerge.core.openapi.pagination.JsonApiPagination',
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework_json_api.parsers.JSONParser',
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.MultiPartParser'
-    ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework_json_api.renderers.JSONRenderer',
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_json_api.filters.OrderingFilter',
-        'rest_framework_json_api.django_filters.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-    ),
-    'SEARCH_PARAM': 'filter[search]',
-    'TEST_REQUEST_RENDERER_CLASSES': (
-        'rest_framework_json_api.renderers.JSONRenderer',
-    ),
-    'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json'
-}
-
-REST_KNOX = {
-  # Setting the TOKEN_TTL to None will create tokens that never expire.
-  'TOKEN_TTL': None,
-}
-
 LOGGING_CFG_FILENAME = config.get('main', 'logging_cfg', None)
 if LOGGING_CFG_FILENAME:
     dict_config = yaml.load(open(LOGGING_CFG_FILENAME), Loader=yaml.FullLoader)
@@ -283,23 +238,6 @@ else:
             },
         },
     }
-
-CORS_ALLOW_HEADERS = list(default_cors_headers) + [
-    "Authorization",
-    "Content-Disposition",
-]
-
-CORS_EXPOSE_HEADERS = ["Content-Disposition"]
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Papermerge REST API',
-    'DESCRIPTION': 'Document management system designed for digital archives',
-    'VERSION': __version__,
-    'APPEND_COMPONENTS': JSONAPI_COMPONENTS
-}
 
 SEARCH_ENGINES_MAP = {
     'elastic': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',

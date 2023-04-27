@@ -1,0 +1,19 @@
+#
+# $ cat .env
+#
+#   PAPERMERGE__SECURITY__SECRET_KEY=123
+#   PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
+#
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    ports:
+     - "7000:80"
+    environment:
+      PAPERMERGE__SECURITY__SECRET_KEY: ${PAPERMERGE__SECURITY__SECRET_KEY}
+      PAPERMERGE__DATABASE__URL: ${PAPERMERGE__DATABASE__URL}
+    volumes:
+      - ./docker/dev/db:/db

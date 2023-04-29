@@ -1,9 +1,6 @@
 #!/bin/bash
 
-export PATH="/venv/bin:${PATH}"
-
 CMD="$1"
-PYTHON="/venv/bin/python"
 MANAGE="${PYTHON} manage.py"
 
 if [ -z "${DJANGO_SETTINGS_MODULE}" ]; then
@@ -28,14 +25,6 @@ fi
 
 exec_server() {
   exec /usr/bin/supervisord
-}
-
-exec_ws_server() {
-  exec daphne -b 0.0.0.0 --port 8000 config.asgi:application
-}
-
-exec_collectstatic() {
-  $MANAGE collectstatic --noinput
 }
 
 exec_migrate() {
@@ -68,7 +57,6 @@ exec_worker() {
 }
 
 exec_init() {
-  exec_collectstatic
   exec_migrate
   exec_createsuperuser
   exec_update_index
@@ -81,21 +69,11 @@ case $CMD in
   migrate)
     exec_migrate
     ;;
-  collectstatic)
-    exec_collectstatic
-    ;;
   createsuperuser)
     exec_createsuperuser
     ;;
   server)
-    # starts REST API webserver
-    exec_init
-    exec_server
-    ;;
-  ws_server)
-    # start websockets server
-    exec_init
-    exec_ws_server
+    exec /usr/bin/supervisord
     ;;
   worker)
     exec_worker

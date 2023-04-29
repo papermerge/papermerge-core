@@ -57,3 +57,9 @@ elif search_engine in (
         'url'
     )
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/db/db.sqlite3',
+    }
+}

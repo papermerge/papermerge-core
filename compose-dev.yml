@@ -16,4 +16,6 @@ services:
       PAPERMERGE__SECURITY__SECRET_KEY: ${PAPERMERGE__SECURITY__SECRET_KEY}
       PAPERMERGE__DATABASE__URL: ${PAPERMERGE__DATABASE__URL}
     volumes:
+      - ./papermerge:/core_app/papermerge/
+      - ./ui:/core_ui/
       - ./docker/dev/db:/db

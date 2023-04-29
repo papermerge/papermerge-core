@@ -6,7 +6,7 @@ type DefaultHeaderType = {
   'Content-Type': string;
 }
 
-const COOKIE_NAME = 'token';
+const COOKIE_NAME = 'access_token';
 
 function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderType {
   const token = Cookies.get(cookie_name);
@@ -20,14 +20,14 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
 
 async function fetcher(url:string) {
   const headers = get_default_headers();
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(full_url, {headers: headers}).then(res => res.json());
 }
 
 async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Output> {
   const headers = get_default_headers();
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
     full_url,
@@ -40,7 +40,7 @@ async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Ou
 }
 
 async function fetcher_upload(url: string, file: File) {
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
   let headers: any = get_default_headers();
   const form_data  = new FormData();
 
@@ -66,7 +66,7 @@ async function fetcher_upload(url: string, file: File) {
 
 async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<Output> {
   let headers = get_default_headers();
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
     full_url,
@@ -80,7 +80,7 @@ async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<O
 
 async function fetcher_delete<Input, Output>(url: string, data: Input): Promise<Output> {
   const headers = get_default_headers();
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
     full_url,

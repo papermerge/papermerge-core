@@ -7,12 +7,12 @@ import Cookies from 'js-cookie';
 import type { SimpleComponentArgs } from '@/types';
 
 const fetcher = (url:string) => {
-  const token = Cookies.get('token');
+  const token = Cookies.get('access_token');
   const headers = {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
-  let full_url = `http://localhost:8000${url}`;
+  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(full_url, {headers: headers}).then(res => res.json());
 }

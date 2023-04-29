@@ -9,8 +9,8 @@ import Breadcrumb from '../breadcrumb/breadcrumb';
 import Paginator from "../paginator";
 import Menu from "./menu";
 
-import { is_empty } from "@/utils";
-import { fetcher } from "@/utils/fetcher";
+import { is_empty } from "../../utils";
+import { fetcher } from "../../utils/fetcher";
 
 import type { FolderType, NodeType } from '@/types';
 import DeleteNodesModal from '../modals/delete_nodes';

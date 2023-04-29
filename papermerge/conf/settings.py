@@ -59,7 +59,7 @@ MEDIA_URL = config.get(
     default='/media/'
 )
 
-SECRET_KEY = config.get('main', 'secret_key')
+SECRET_KEY = config.get('security', 'secret_key')
 
 SITE_ID = 1
 

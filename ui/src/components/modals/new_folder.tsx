@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import React, { ChangeEvent } from 'react';
-import { fetcher_post } from '@/utils/fetcher';
+import { fetcher_post } from '../../utils/fetcher';
 import type { FolderType, NodeType } from '@/types';
 
 

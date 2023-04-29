@@ -1,7 +1,7 @@
 import styles from './layout.module.css'
 import type { SimpleComponentArgs } from '@/types';
 
-import { useUser } from '@/contexts/user';
+import { useUser } from '../contexts/user';
 
 
 export default function CentralBar({children}: SimpleComponentArgs) {

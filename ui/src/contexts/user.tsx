@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import type { UserContextType } from '@/types';
-import { getCurrentUser } from '@/utils';
+import { useCurrentUser } from '../utils';
 
 
 const UserContext = createContext<UserContextType>({
@@ -12,7 +12,7 @@ const UserContext = createContext<UserContextType>({
 
 
 export const UserProvider = ({children}: {children: JSX.Element}) => {
-  const { user, isError, isLoading } = getCurrentUser();
+  const { user, isError, isLoading } = useCurrentUser();
 
   let context_value: UserContextType = {
     user,

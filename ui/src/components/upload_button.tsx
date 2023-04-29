@@ -1,5 +1,5 @@
 import Button from 'react-bootstrap/Button';
-import { uploader } from '@/utils/uploader';
+import { uploader } from '../utils/uploader';
 
 import type { NodeType } from '@/types';
 

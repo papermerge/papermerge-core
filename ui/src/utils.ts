@@ -13,9 +13,10 @@ export const fetcher = (url:string) => {
   return fetch(full_url, {headers: headers}).then(res => res.json());
 }
 
-export function getCurrentUser() {
+export function useCurrentUser() {
   const { data, error, isLoading } = useSWR('/users/me', fetcher);
 
+  console.log(isLoading, error, data);
   return {
     user: data,
     isLoading,
@@ -23,7 +24,7 @@ export function getCurrentUser() {
   }
 }
 
-export function getNode(node_id: string) {
+export function useNode(node_id: string) {
   const { data, error, isLoading } = useSWR(`/nodes/${node_id}`, fetcher);
 
   return {
@@ -39,7 +40,7 @@ export function is_empty<T>(value: T[]): boolean {
     return true;
   }
 
-  if (value.length == 0) {
+  if (value.length === 0) {
     return true;
   }
 

@@ -16,7 +16,7 @@ type Args = {
 
 
 async function delete_nodes(node_ids: string[]): Promise<string[]> {
-  return fetcher_delete<string[], string[]>('/nodes/', node_ids);
+  return fetcher_delete<string[], string[]>('/api/nodes/', node_ids);
 }
 
 function validate_title(value: string): boolean {

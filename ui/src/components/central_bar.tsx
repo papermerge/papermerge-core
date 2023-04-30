@@ -1,11 +1,16 @@
-import styles from './layout.module.css'
+import styles from './layout.module.css';
+import Cookies from 'js-cookie';
 import type { SimpleComponentArgs } from '@/types';
-
-import { useUser } from '../contexts/user';
 
 
 export default function CentralBar({children}: SimpleComponentArgs) {
-  const user_context = useUser();
+
+  const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    console.log("Sign out");
+    Cookies.remove('access_token');
+    window.location.reload();
+  }
 
   return (
     <div className={styles.central_bar}>
@@ -16,11 +21,13 @@ export default function CentralBar({children}: SimpleComponentArgs) {
               <a className="nav-link" role="button"><i className="bi bi-list"></i></a>
             </li>
           </ul>
+          <div>
+            <a href="" onClick={onSignOut}>Sign Out</a>
+          </div>
         </div>
       </nav>
       <div className='container-fluid'>
         <div className='d-flex row'>
-          {user_context.user?.username}
           {children}
         </div>
       </div>

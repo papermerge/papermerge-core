@@ -61,8 +61,8 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
 
     try {
       prom = Promise.all([
-        fetcher(`/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
-        fetcher(`/folders/${node_id}`)
+        fetcher(`/api/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
+        fetcher(`/api/folders/${node_id}`)
       ]);
     } catch (error) {
       let error_state: State<NodeListPlusT> = {

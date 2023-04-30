@@ -1,6 +1,7 @@
 
 import Cookies from 'js-cookie';
 
+
 type DefaultHeaderType = {
   'Authorization': string,
   'Content-Type': string;
@@ -20,17 +21,15 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
 
 async function fetcher(url:string) {
   const headers = get_default_headers();
-  let full_url = `http://localhost:7000/api${url}`;
 
-  return fetch(full_url, {headers: headers}).then(res => res.json());
+  return fetch(url, {headers: headers}).then(res => res.json());
 }
 
 async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Output> {
   const headers = get_default_headers();
-  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
-    full_url,
+    url,
     {
       method: "post",
       headers: headers,
@@ -40,7 +39,6 @@ async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Ou
 }
 
 async function fetcher_upload(url: string, file: File) {
-  let full_url = `http://localhost:7000/api${url}`;
   let headers: any = get_default_headers();
   const form_data  = new FormData();
 
@@ -55,7 +53,7 @@ async function fetcher_upload(url: string, file: File) {
   delete headers['Content-Type'];
 
   return fetch(
-    full_url,
+    url,
     {
       method: "post",
       headers: headers,
@@ -66,10 +64,9 @@ async function fetcher_upload(url: string, file: File) {
 
 async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<Output> {
   let headers = get_default_headers();
-  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
-    full_url,
+    url,
     {
       method: "PATCH",
       headers: headers,
@@ -80,10 +77,9 @@ async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<O
 
 async function fetcher_delete<Input, Output>(url: string, data: Input): Promise<Output> {
   const headers = get_default_headers();
-  let full_url = `http://localhost:7000/api${url}`;
 
   return fetch(
-    full_url,
+    url,
     {
       method: "delete",
       headers: headers,

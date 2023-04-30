@@ -33,7 +33,7 @@ function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
     }
 
     bulk_create_docs.push(
-      fetcher_post<CreateDocumentType, NodeType>('/nodes/', data)
+      fetcher_post<CreateDocumentType, NodeType>('/api/nodes/', data)
     );
 
     //fetcher_post<CreateDocumentType, NodeType>('/nodes/', data).then(
@@ -51,7 +51,7 @@ function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
         let file: File|undefined = Array.from(files).find(item => item.name == value.title)
         if (file) {
           fetcher_upload(
-            `/documents/${value.id}/upload/`, file
+            `/api/documents/${value.id}/upload/`, file
           );
         } else {
           console.log(`${value.title} NOT FOUND!`);

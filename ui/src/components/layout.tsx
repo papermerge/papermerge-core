@@ -12,14 +12,13 @@ const fetcher = (url:string) => {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
-  let full_url = `http://localhost:7000/api${url}`;
 
-  return fetch(full_url, {headers: headers}).then(res => res.json());
+  return fetch(url, {headers: headers}).then(res => res.json());
 }
 
 
 function useMe() {
-  const { data, error, isLoading } = useSWR('/users/me', fetcher);
+  const { data, error, isLoading } = useSWR('/api/users/me', fetcher);
 
   return {
     user: data,

@@ -25,7 +25,7 @@ async function rename_node(node_id: string, title: string): Promise<NodeType> {
     'title': title
   };
 
-  return fetcher_patch<RenameType, NodeType>(`/nodes/${node_id}`, data);
+  return fetcher_patch<RenameType, NodeType>(`/api/nodes/${node_id}`, data);
 }
 
 function validate_title(value: string, old_title: string): boolean {

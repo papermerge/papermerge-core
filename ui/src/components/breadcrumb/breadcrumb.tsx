@@ -11,7 +11,7 @@ type Args = {
 
 export default function Breadcrumb({path, onClick, is_loading}: Args) {
   let breadcrumb_items = path.map((item: [string, string]) => {
-    return <BreadcrumbItem
+    return <BreadcrumbItem key={item[0]}
       node_id={item[0]}
       node_title={item[1]}
       onClick={onClick}

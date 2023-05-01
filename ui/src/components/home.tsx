@@ -26,9 +26,6 @@ function Home() {
 
   return (
     <Layout>
-      <head>
-        <title>Home</title>
-      </head>
       <Commander
         node_id={node_id}
         page_number={page_number}

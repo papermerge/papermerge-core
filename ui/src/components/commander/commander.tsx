@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useRef, useEffect, ChangeEvent, ReactNode } from 'react';
 
 import Form from 'react-bootstrap/Form';
 
@@ -18,6 +18,8 @@ import { DisplayNodesModeEnum } from '../../types';
 import DeleteNodesModal from '../modals/delete_nodes';
 import NewFolderModal from "../modals/new_folder";
 import RenameModal from '../modals/rename';
+
+import { Rectangle, Point } from '../../utils/geometry';
 
 
 type NodeResultType = {
@@ -148,14 +150,21 @@ type Args = {
 type UUIDList = Array<string>;
 type NodeList = Array<NodeType>;
 
-
-function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, onPerPageChange}: Args) {
+function Commander({
+  node_id,
+  page_number,
+  per_page,
+  onNodeClick,
+  onPageClick,
+  onPerPageChange
+}: Args) {
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
+  const nodesRef = useRef(null);
 
   let {
     is_loading,
@@ -222,9 +231,22 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
-    console.log(
-      `Node ${node_id} and his friends ${selectedNodes} is being dragging...`
-    );
+    const map = getNodesRefMap();
+    nodesList.forEach((item => {
+      // @ts-ignore
+      const node = map.get(item.id) as HTMLDivElement;
+      const item_rect = new Rectangle();
+      const point = new Point();
+
+      item_rect.from_dom_rect(
+        node.getBoundingClientRect()
+      );
+      point.from_drag_event(event);
+
+      if (node_id != item.id && item_rect.contains(point)) {
+        console.log(`Dragging over ${item.title}`);
+      }
+    }));
   }
 
   const onDragEnd = (node_id: string, event: React.DragEvent) => {
@@ -247,6 +269,14 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
     return 'd-flex flex-row flex-wrap mb-3';
   }
 
+  const getNodesRefMap = () => {
+    if (!nodesRef.current) {
+      // @ts-ignore
+      nodesRef.current = new Map();
+    }
+    return nodesRef.current;
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -262,6 +292,7 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
       nodes = items.map((item: any) => {
         if (item.ctype == 'folder') {
           return <Folder
+            key={item.id}
             onClick={onNodeClick}
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
@@ -271,6 +302,16 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
+            ref={(node) => {
+                const map = getNodesRefMap();
+                if (node) {
+                  //@ts-ignore
+                  map.set(item.id, node);
+                } else {
+                  //@ts-ignore
+                  map.delete(item.id);
+                }
+            }}
           />;
         } else {
           return <Document
@@ -305,8 +346,8 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange}>
-                <option value="5" selected>5</option>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={5}>
+                <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>

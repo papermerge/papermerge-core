@@ -28,7 +28,7 @@ async function create_new_folder(title: string, parent_id: string): Promise<Fold
     'ctype': 'folder'
   };
 
-  return fetcher_post<CreateFolderType, FolderType>('/nodes/', data);
+  return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data);
 }
 
 function validate_title(value: string): boolean {

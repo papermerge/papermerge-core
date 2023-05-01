@@ -2,6 +2,7 @@ import { useState, useEffect, ChangeEvent } from 'react';
 
 import Form from 'react-bootstrap/Form';
 
+import DisplayModeDropown from './display_mode';
 import Folder from "./folder";
 import Document from "./document";
 import EmptyFolder from "./empty_folder";
@@ -12,7 +13,8 @@ import Menu from "./menu";
 import { is_empty } from "../../utils";
 import { fetcher } from "../../utils/fetcher";
 
-import type { FolderType, NodeType } from '@/types';
+import type { FolderType, NodeType} from '@/types';
+import { DisplayNodesModeEnum } from '../../types';
 import DeleteNodesModal from '../modals/delete_nodes';
 import NewFolderModal from "../modals/new_folder";
 import RenameModal from '../modals/rename';
@@ -153,6 +155,8 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
+  const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
+
   let {
     is_loading,
     error,
@@ -213,6 +217,22 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
     setSelectedNodes([]);
   }
 
+  const onNodesDisplayModeList = () => {
+    setNodesDisplayMode(DisplayNodesModeEnum.List);
+  }
+
+  const onNodesDisplayModeTiles = () => {
+    setNodesDisplayMode(DisplayNodesModeEnum.Tiles);
+  }
+
+  const list_nodes_css_class_name = () => {
+    if (nodesDisplayMode === DisplayNodesModeEnum.List) {
+      return 'd-flex flex-row flex-wrap mb-3';
+    }
+
+    return 'd-flex flex-column mb-3';
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -257,13 +277,20 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
-            <Form.Select onChange={onPerPageValueChange}>
-              <option value="5" selected>5</option>
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </Form.Select>
+            <div className="d-flex">
+
+              <DisplayModeDropown value={nodesDisplayMode}
+                onNodesDisplayModeList={onNodesDisplayModeList}
+                onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
+
+              <Form.Select onChange={onPerPageValueChange}>
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </Form.Select>
+            </div>
         </div>
         {
           breadcrumb
@@ -273,7 +300,9 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
             onClick={onNodeClick}
             is_loading={is_loading} />
         }
-        {nodes}
+        <div className={list_nodes_css_class_name()}>
+          {nodes}
+        </div>
 
         <Paginator
           num_pages={nodes_list.num_pages}

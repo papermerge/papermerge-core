@@ -37,3 +37,8 @@ export type NodeType = {
 export type FolderType = NodeType & {
   breadcrumb: BreadcrumbType;
 }
+
+export enum DisplayNodesModeEnum {
+  List = 1,
+  Tiles,
+}

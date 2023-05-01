@@ -150,6 +150,7 @@ type Args = {
 type UUIDList = Array<string>;
 type NodeList = Array<NodeType>;
 
+
 function Commander({
   node_id,
   page_number,
@@ -232,7 +233,7 @@ function Commander({
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
     const map = getNodesRefMap();
-    nodesList.forEach((item => {
+    const new_nodes = nodesList.map((item => {
       // @ts-ignore
       const node = map.get(item.id) as HTMLDivElement;
       const item_rect = new Rectangle();
@@ -245,12 +246,34 @@ function Commander({
 
       if (node_id != item.id && item_rect.contains(point)) {
         console.log(`Dragging over ${item.title}`);
+        item.accept_dropped_nodes = true;
       }
+      else {
+        item.accept_dropped_nodes = false;
+      }
+
+      // mark all nodes being dragged (in UI they will be faded out)
+      // nodes being dragged are node_id + selected ones
+      if (item.id === node_id || selectedNodes.find((id: string) => id == item.id)) {
+        item.is_currently_dragged = true;
+      }
+
+      return item;
     }));
+
+    setNodesList(new_nodes);
   }
 
   const onDragEnd = (node_id: string, event: React.DragEvent) => {
     console.log(`Node ${node_id} drag ended`);
+    const new_nodes = nodesList.map(item => {
+      item.accept_dropped_nodes = false;
+      item.is_currently_dragged = false;
+
+      return item;
+    });
+
+    setNodesList(new_nodes);
   }
 
   const onNodesDisplayModeList = () => {

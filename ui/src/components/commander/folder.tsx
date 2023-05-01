@@ -38,10 +38,24 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
       return 'd-flex flex-column';
     }
 
+    const css_class_node = (): string => {
+      let css_class = 'node folder';
+
+      if (props.node.accept_dropped_nodes) {
+        css_class += ' accept_dropped_nodes ';
+      }
+
+      if (props.node.is_currently_dragged) {
+        css_class += ' dragged ';
+      }
+
+      return css_class;
+    }
+
     return (
       <>
         <div key={props.node.id} ref={ref}
-          className="node folder"
+          className={css_class_node()}
           onDragStart={onDragStartHandle}
           onDrag={onDragHandle}
           onDragEnd={onDragEndHandle}

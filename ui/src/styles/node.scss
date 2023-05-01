@@ -4,6 +4,14 @@
   }
 }
 
+.accept_dropped_nodes {
+  outline: 3px dashed blue;
+}
+
+.dragged {
+  opacity: 0.3;
+}
+
 .node {
   display: flex;
   align-items: center;

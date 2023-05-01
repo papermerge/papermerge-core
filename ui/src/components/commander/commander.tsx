@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, ChangeEvent, ReactNode } from 'react';
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
+import ReactDOM from 'react-dom';
 
 import Form from 'react-bootstrap/Form';
 
@@ -20,6 +21,7 @@ import NewFolderModal from "../modals/new_folder";
 import RenameModal from '../modals/rename';
 
 import { Rectangle, Point } from '../../utils/geometry';
+import { create } from 'domain';
 
 
 type NodeResultType = {
@@ -166,6 +168,7 @@ function Commander({
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
   const nodesRef = useRef(null);
+  let canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   let {
     is_loading,
@@ -228,7 +231,23 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
-    console.log(`Node ${node_id} started to be dragged`);
+    let count = selectedNodes.length;
+
+    if (!selectedNodes.find(i => i == node_id)) {
+      count += 1;
+    }
+
+    let image: JSX.Element = (
+      <><i className='bi bi-folder text-warning'></i>{count}</>
+    ); // <== whatever you want here
+
+    var ghost = document.createElement('div');
+    ghost.style.transform = "translate(-10000px, -10000px)";
+    ghost.style.position = "absolute";
+    document.body.appendChild(ghost);
+    event.dataTransfer.setDragImage(ghost, 0, -10);
+
+    ReactDOM.render(image, ghost);
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
@@ -262,6 +281,7 @@ function Commander({
     }));
 
     setNodesList(new_nodes);
+
   }
 
   const onDragEnd = (node_id: string, event: React.DragEvent) => {
@@ -274,6 +294,11 @@ function Commander({
     });
 
     setNodesList(new_nodes);
+
+    if (canvasRef.current) {
+      canvasRef.current.width = 0;
+      canvasRef.current.height = 0;
+    }
   }
 
   const onNodesDisplayModeList = () => {

@@ -16,7 +16,7 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
   }
 
   return (
-    <div className="node document">
+    <div className="node document" draggable>
       {is_loading ? <Spinner />: <SpinnerPlaceholder />}
       <div><Form.Check onChange={onselect} defaultChecked={is_selected} type="checkbox" /></div>
       <div className="icon document"></div>

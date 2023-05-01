@@ -227,10 +227,10 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
 
   const list_nodes_css_class_name = () => {
     if (nodesDisplayMode === DisplayNodesModeEnum.List) {
-      return 'd-flex flex-row flex-wrap mb-3';
+      return 'd-flex flex-column mb-3';
     }
 
-    return 'd-flex flex-column mb-3';
+    return 'd-flex flex-row flex-wrap mb-3';
   }
 
   useEffect(() => {
@@ -250,6 +250,7 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
           return <Folder
             onClick={onNodeClick}
             onSelect={onNodeSelect}
+            display_mode={nodesDisplayMode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
@@ -258,6 +259,7 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
           return <Document
             onClick={onNodeClick}
             onSelect={onNodeSelect}
+            display_mode={nodesDisplayMode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}

@@ -5,10 +5,14 @@ import Form from 'react-bootstrap/Form';
 import type { CheckboxChangeType, NodeArgsType } from "./types";
 import { DisplayNodesModeEnum } from "../../types";
 
+
 function Folder({
   node,
   onClick,
   onSelect,
+  onDrag,
+  onDragEnd,
+  onDragStart,
   display_mode,
   is_loading,
   is_selected
@@ -22,19 +26,16 @@ function Folder({
     onSelect(node.id, event.target.checked);
   }
 
-  const handleDragStart = (event: React.DragEvent) => {
-    // This method runs when the dragging starts
-    console.log("Started")
+  const onDragStartHandle = (event: React.DragEvent) => {
+    onDragStart(node.id, event);
   }
 
-  const handleDrag = (event: React.DragEvent) => {
-  // This method runs when the component is being dragged
-    console.log("Dragging...")
+  const onDragHandle = (event: React.DragEvent) => {
+    onDrag(node.id, event);
   }
 
-  const handleDragEnd = (event: React.DragEvent) => {
-    // This method runs when the dragging stops
-    console.log("Ended")
+  const onDragEndHandle = (event: React.DragEvent) => {
+    onDragEnd(node.id, event);
   }
 
   const css_class_display_mode = () => {
@@ -49,9 +50,9 @@ function Folder({
     <>
       <div key={node.id}
         className="node folder"
-        onDragStart={handleDragStart}
-        onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
+        onDragStart={onDragStartHandle}
+        onDrag={onDragHandle}
+        onDragEnd={onDragEndHandle}
         draggable>
         {is_loading ? <Spinner />: <SpinnerPlaceholder />}
         <div><Form.Check key={node.id} onChange={onselect} defaultChecked={is_selected} type="checkbox" /></div>

@@ -217,6 +217,20 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
     setSelectedNodes([]);
   }
 
+  const onDragStart = (node_id: string, event: React.DragEvent) => {
+    console.log(`Node ${node_id} started to be dragged`);
+  }
+
+  const onDrag = (node_id: string, event: React.DragEvent) => {
+    console.log(
+      `Node ${node_id} and his friends ${selectedNodes} is being dragging...`
+    );
+  }
+
+  const onDragEnd = (node_id: string, event: React.DragEvent) => {
+    console.log(`Node ${node_id} drag ended`);
+  }
+
   const onNodesDisplayModeList = () => {
     setNodesDisplayMode(DisplayNodesModeEnum.List);
   }
@@ -250,6 +264,9 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
           return <Folder
             onClick={onNodeClick}
             onSelect={onNodeSelect}
+            onDragStart={onDragStart}
+            onDrag={onDrag}
+            onDragEnd={onDragEnd}
             display_mode={nodesDisplayMode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
@@ -259,6 +276,9 @@ function Commander({node_id, page_number, per_page, onNodeClick, onPageClick, on
           return <Document
             onClick={onNodeClick}
             onSelect={onNodeSelect}
+            onDragStart={onDragStart}
+            onDrag={onDrag}
+            onDragEnd={onDragEnd}
             display_mode={nodesDisplayMode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}

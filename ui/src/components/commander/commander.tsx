@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
 
@@ -10,18 +10,21 @@ import EmptyFolder from "./empty_folder";
 import Breadcrumb from '../breadcrumb/breadcrumb';
 import Paginator from "../paginator";
 import Menu from "./menu";
+import { DraggingIcon } from '../dragging_icon';
 
 import { is_empty } from "../../utils";
+import { get_node_under_cursor } from '../../utils';
 import { fetcher } from "../../utils/fetcher";
 
 import type { FolderType, NodeType} from '@/types';
+import type { UUIDList, NodeList } from '@/types';
 import { DisplayNodesModeEnum } from '../../types';
 import DeleteNodesModal from '../modals/delete_nodes';
 import NewFolderModal from "../modals/new_folder";
 import RenameModal from '../modals/rename';
+import DropNodesModal from '../modals/drop_nodes';
 
 import { Rectangle, Point } from '../../utils/geometry';
-import { create } from 'domain';
 
 
 type NodeResultType = {
@@ -149,9 +152,6 @@ type Args = {
   onPerPageChange: (per_page: number) => void;
 }
 
-type UUIDList = Array<string>;
-type NodeList = Array<NodeType>;
-
 
 function Commander({
   node_id,
@@ -164,7 +164,11 @@ function Commander({
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
+  const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
+  // sourceDropNodes = selectedNodes + one_being_fragged
+  const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
+  const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
   const nodesRef = useRef(null);
@@ -177,6 +181,36 @@ function Commander({
     data: [nodes_list, breadcrumb]
   }: State<NodeListPlusT> = useNodeListPlus(node_id, page_number, per_page);
   let nodes;
+
+  const get_node = (node_id: string): NodeType | undefined => {
+    return nodesList.find((n: NodeType) => n.id == node_id);
+  }
+
+  const get_nodes = (node_ids: UUIDList): NodeType[] => {
+    return nodesList.filter((n: NodeType) => node_ids.includes(n.id));
+  }
+
+  const updateSourceDropNodes = (node_id: string) => {
+    /*
+      node_id: ID of the node currently being dragged
+      sourceDropNodes = dragged node + current selection of nodes
+    */
+
+    // Is the node being dragged also one of the selected nodes?
+    if (selectedNodes.find((id: string) => id == node_id)) {
+      // then just set sourceDropNodes to the current selection of nodes
+      setSourceDropNodes(get_nodes(selectedNodes));
+    } else {
+      let nodes = get_nodes(selectedNodes), node = get_node(node_id);
+      let new_array = nodes;
+
+      if (node) {
+        new_array.push(node);
+      }
+      // selected nodes + dragged node
+      setSourceDropNodes(new_array);
+    }
+  }
 
   const onCreateDocumentModel = (new_nodes: NodeType[]) => {
     /* Invoked when new document node was added */
@@ -230,24 +264,25 @@ function Commander({
     setSelectedNodes([]);
   }
 
+  const onPerformDropNodes = () => {
+
+  }
+
   const onDragStart = (node_id: string, event: React.DragEvent) => {
-    let count = selectedNodes.length;
 
-    if (!selectedNodes.find(i => i == node_id)) {
-      count += 1;
-    }
+    let image = <DraggingIcon node_id={node_id}
+          selectedNodes={selectedNodes}
+          nodesList={nodesList} />;
+    let ghost = document.createElement('div');
 
-    let image: JSX.Element = (
-      <><i className='bi bi-folder text-warning'></i>{count}</>
-    ); // <== whatever you want here
-
-    var ghost = document.createElement('div');
     ghost.style.transform = "translate(-10000px, -10000px)";
     ghost.style.position = "absolute";
     document.body.appendChild(ghost);
     event.dataTransfer.setDragImage(ghost, 0, -10);
 
-    ReactDOM.render(image, ghost);
+    let root = createRoot(ghost);
+
+    root.render(image);
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
@@ -258,14 +293,20 @@ function Commander({
       const item_rect = new Rectangle();
       const point = new Point();
 
+      if (!node) {
+        return item;
+      }
+
       item_rect.from_dom_rect(
         node.getBoundingClientRect()
       );
+
       point.from_drag_event(event);
 
       if (node_id != item.id && item_rect.contains(point)) {
         console.log(`Dragging over ${item.title}`);
         item.accept_dropped_nodes = true;
+        setTargetDropNode(item);
       }
       else {
         item.accept_dropped_nodes = false;
@@ -281,11 +322,27 @@ function Commander({
     }));
 
     setNodesList(new_nodes);
-
+    updateSourceDropNodes(node_id);
   }
 
   const onDragEnd = (node_id: string, event: React.DragEvent) => {
-    console.log(`Node ${node_id} drag ended`);
+    let target: NodeType | undefined = get_node_under_cursor(
+      node_id,
+      nodesList,
+      // @ts-ignore
+      getNodesRefMap(),
+      event
+    );
+
+    if (target) {
+      console.log(`target node ${target.title}`);
+    } else {
+      console.log(`No target found :(`);
+    }
+
+    setDropNodesModalShow(true)
+
+    /*
     const new_nodes = nodesList.map(item => {
       item.accept_dropped_nodes = false;
       item.is_currently_dragged = false;
@@ -299,6 +356,7 @@ function Commander({
       canvasRef.current.width = 0;
       canvasRef.current.height = 0;
     }
+    */
   }
 
   const onNodesDisplayModeList = () => {
@@ -441,6 +499,14 @@ function Commander({
             node_ids={selectedNodes}
             onCancel={() => setDeleteNodesModalShow(false)}
             onSubmit={onDeleteNodes} />
+        </div>
+        <div>
+          <DropNodesModal
+            show={dropNodesModalShow}
+            source_nodes={sourceDropNodes}
+            target_node={targetDropNode}
+            onCancel={() => setDropNodesModalShow(false)}
+            onSubmit={onPerformDropNodes} />
         </div>
       </div>
     )

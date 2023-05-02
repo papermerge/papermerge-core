@@ -44,3 +44,6 @@ export enum DisplayNodesModeEnum {
   List = 1,
   Tiles,
 }
+
+export type UUIDList = Array<string>;
+export type NodeList = Array<NodeType>;

@@ -4,6 +4,8 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { fetcher_post } from '../../utils/fetcher';
 import type { NodeType } from '@/types';
+import { Spinner } from 'react-bootstrap';
+import { abort } from 'process';
 
 
 type Args = {
@@ -22,14 +24,15 @@ type MoveNodeType = {
 
 async function move_nodes(
   source_nodes: NodeType[],
-  target_node: NodeType | undefined
+  target_node: NodeType | undefined,
+  signal: AbortSignal
 ): Promise<string[]> {
-
   return fetcher_post<MoveNodeType, string[]>(
     '/api/nodes/move', {
       source_ids: source_nodes.map(node => node.id),
       target_id: target_node?.id
-    }
+    },
+    signal
   );
 }
 
@@ -41,22 +44,43 @@ const DropNodesModal = ({
   source_nodes,
   target_node
 }: Args) => {
-  const [errorMessage, setErrorMessage] = useState('');
   const [inProgress, setInProgress] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [controller, setController] = useState<AbortController>(new AbortController());
+  let submit_button: JSX.Element;
+
+  if (!controller) {
+    setController(new AbortController());
+  }
 
   const handleSubmit = async () => {
-    let response_data = await move_nodes(source_nodes, target_node);
+    setInProgress(true);
+
+    let response_data = await move_nodes(
+      source_nodes,
+      target_node,
+      controller.signal
+    );
 
     onSubmit(response_data);
+    setInProgress(false);
   }
 
   const handleCancel = () => {
+    controller.abort();
+    setInProgress(false);
     onCancel();
+    // recreate new controller for next time
+    setController(new AbortController());
   }
 
   const source_titles = source_nodes.map(n => n.title);
   const target_title = target_node?.title;
+
+  if (inProgress) {
+    submit_button = <Button variant='primary'><Spinner size="sm" /></Button>;
+  } else {
+    submit_button = <Button variant='primary' onClick={handleSubmit}>Move</Button>;
+  }
 
   return (
     <Modal
@@ -76,7 +100,7 @@ const DropNodesModal = ({
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
-        <Button variant='success' onClick={handleSubmit}>Move</Button>
+        {submit_button}
       </Modal.Footer>
     </Modal>
   );

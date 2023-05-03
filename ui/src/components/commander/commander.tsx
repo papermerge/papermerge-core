@@ -280,6 +280,15 @@ function Commander({
     setDropNodesModalShow(false);
   }
 
+  const onCancelDropNodes = () => {
+    nodesList.forEach(node => {
+      node.accept_dropped_nodes = false;
+      node.is_currently_dragged = false;
+    });
+    setSelectedNodes([]);
+    setDropNodesModalShow(false);
+  }
+
   const onDragStart = (node_id: string, event: React.DragEvent) => {
 
     let image = <DraggingIcon node_id={node_id}
@@ -517,7 +526,7 @@ function Commander({
             show={dropNodesModalShow}
             source_nodes={sourceDropNodes}
             target_node={targetDropNode}
-            onCancel={() => setDropNodesModalShow(false)}
+            onCancel={onCancelDropNodes}
             onSubmit={onPerformDropNodes} />
         </div>
       </div>

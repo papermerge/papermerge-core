@@ -8,7 +8,7 @@ import type { NodeType } from '@/types';
 
 type Args = {
   onCancel: () => void;
-  onSubmit: () => void;
+  onSubmit: (uuids_list: string[]) => void;
   show: boolean;
   source_nodes: NodeType[];
   target_node: NodeType | undefined;
@@ -46,8 +46,9 @@ const DropNodesModal = ({
   const [isEnabled, setIsEnabled] = useState(false);
 
   const handleSubmit = async () => {
-    let response = await move_nodes(source_nodes, target_node);
-    onSubmit();
+    let response_data = await move_nodes(source_nodes, target_node);
+
+    onSubmit(response_data);
   }
 
   const handleCancel = () => {

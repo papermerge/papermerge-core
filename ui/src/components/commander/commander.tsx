@@ -264,8 +264,20 @@ function Commander({
     setSelectedNodes([]);
   }
 
-  const onPerformDropNodes = () => {
+  const onPerformDropNodes = (moved_node_ids: string[]) => {
 
+    nodesList.forEach(node => {
+      node.accept_dropped_nodes = false;
+      node.is_currently_dragged = false;
+    });
+
+    let new_nodes = nodesList.filter(
+      node => !moved_node_ids.includes(node.id)
+    );
+
+    setNodesList(new_nodes);
+    setSelectedNodes([]);
+    setDropNodesModalShow(false);
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {

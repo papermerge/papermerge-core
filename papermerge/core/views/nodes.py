@@ -37,7 +37,6 @@ from drf_spectacular.utils import (
 from papermerge.core.serializers.node import Data_NodeSerializer
 from papermerge.core.serializers import (
     NodeSerializer,
-    NodeMoveSerializer,
     NodesDownloadSerializer,
     NodeTagsSerializer,
     InboxCountSerializer
@@ -47,7 +46,6 @@ from papermerge.core.models import (
     BaseTreeNode,
     Document,
 )
-from papermerge.core.models.node import move_node
 
 from papermerge.core.nodes_download import get_nodes_download
 
@@ -219,40 +217,6 @@ class NodesViewSet(RequireAuthMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.pk)
-
-
-class NodesMoveView(RequireAuthMixin, GenericAPIView):
-    parser_classes = [JSONParser]
-    serializer_class = NodeMoveSerializer
-
-    def post(self, request):
-        serializer = NodeMoveSerializer(data=request.data)
-        if serializer.is_valid():
-            self._move_nodes(
-                nodes=serializer.data['nodes'],
-                target_parent_id=serializer.data['target_parent']['id']
-            )
-            return Response()
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-    def _move_nodes(self, nodes, target_parent_id):
-        try:
-            target_model = BaseTreeNode.objects.get(pk=target_parent_id)
-        except BaseTreeNode.DoesNotExist as exc:
-            logger.error(exc, exc_info=True)
-            return
-
-        for node in nodes:
-            try:
-                node_model = BaseTreeNode.objects.get(pk=node['id'])
-            except BaseTreeNode.DoesNotExist as exc:
-                logger.error(exc, exc_info=True)
-
-            move_node(node_model, target_model)
 
 
 class InboxCountView(RequireAuthMixin, APIView, GetClassSerializerMixin):

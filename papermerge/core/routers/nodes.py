@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 from typing import List
 
@@ -9,11 +10,13 @@ from django.db.utils import IntegrityError
 from papermerge.core.models import User, Document
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
+from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
 from papermerge.core.schemas.folders import Folder as PyFolder
 from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
 from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
 from papermerge.core.schemas.documents import Document as PyDocument
 from papermerge.core.models import BaseTreeNode, Folder
+from papermerge.core.models.node import move_node
 
 from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
@@ -26,6 +29,8 @@ router = APIRouter(
     tags=["nodes"],
     dependencies=[Depends(oauth2_scheme)]
 )
+
+logger = logging.getLogger(__name__)
 
 
 @router.get("/")
@@ -145,3 +150,32 @@ def delete_nodes(
         node.delete()
 
     return deleted_nodes_uuids
+
+
+@router.post("/move")
+def move_nodes(
+    params: PyMoveNode,
+    user: User = Depends(current_user)
+) -> List[UUID]:
+    """Move source nodes into the target node.
+
+    In other words, after successful completion of this action
+    all source nodes will have target node as their parent.
+    Think of set of folders and/or documents being moved from one
+    folder into another folder.
+
+    Returns UUIDs of successfully moved nodes.
+    """
+    try:
+        target_model = BaseTreeNode.objects.get(pk=params.target_id)
+    except BaseTreeNode.DoesNotExist as exc:
+        logger.error(exc, exc_info=True)
+        raise HTTPException(
+            status_code=404,
+            detail="Target not found"
+        )
+
+    for node_model in BaseTreeNode.objects.filter(pk__in=params.source_ids):
+        move_node(node_model, target_model)
+
+    return params.source_ids

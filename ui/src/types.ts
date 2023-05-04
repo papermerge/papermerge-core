@@ -28,6 +28,8 @@ export type BreadcrumbType = Array<BreadcrumbItemType>;
 export type NodeType = {
   id: string
   ctype: CType;
+  accept_dropped_nodes: boolean;
+  is_currently_dragged: boolean;
   parent_id: string | null;
   title: string;
   user_id: string;
@@ -42,3 +44,6 @@ export enum DisplayNodesModeEnum {
   List = 1,
   Tiles,
 }
+
+export type UUIDList = Array<string>;
+export type NodeList = Array<NodeType>;

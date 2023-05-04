@@ -25,7 +25,11 @@ async function fetcher(url:string) {
   return fetch(url, {headers: headers}).then(res => res.json());
 }
 
-async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Output> {
+async function fetcher_post<Input, Output>(
+  url: string,
+  data: Input,
+  signal?: AbortSignal
+): Promise<Output> {
   const headers = get_default_headers();
 
   return fetch(
@@ -33,9 +37,12 @@ async function fetcher_post<Input, Output>(url: string, data: Input): Promise<Ou
     {
       method: "post",
       headers: headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal: signal
     }
-  ).then(res => res.json());
+  )
+  .then(res => res.json())
+  .catch((err) => console.log(`fetch post error=${err}`));
 }
 
 async function fetcher_upload(url: string, file: File) {

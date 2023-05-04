@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, validator, ValidationError
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
@@ -44,3 +44,8 @@ class CreateNode(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class MoveNode(BaseModel):
+    source_ids: List[UUID]
+    target_id: UUID

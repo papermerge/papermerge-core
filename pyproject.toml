@@ -89,6 +89,7 @@ uvicorn = "^0.21.0"
 python-multipart = "^0.0.6"
 python-jose = "^3.3.0"
 fastapi-pagination = "^0.11.4"
+xapianpy = "^1.4.22.post2305071405"
 
 
 [tool.pytest.ini_options]

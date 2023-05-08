@@ -13,7 +13,7 @@ x-backend: &common  # yaml anchor definition
       - ./papermerge:/core_app/papermerge/
       - ./ui:/core_ui/
       - ./docker/dev/db:/db
-      - ./media_root:/app/media
+      - ./media_root:/core_app/media
   environment:
     - PAPERMERGE__SECURITY__SECRET_KEY=${PAPERMERGE__SECURITY__SECRET_KEY}
     - PAPERMERGE__DATABASE__URL=${PAPERMERGE__DATABASE__URL}

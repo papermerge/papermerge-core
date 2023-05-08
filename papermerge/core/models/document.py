@@ -153,6 +153,7 @@ class Document(BaseTreeNode):
         payload with that (existing) version, otherwise it will create
         new document version and associate it the payload.
         """
+        logger.info(f"Uploading document {file_name}...")
         pdf = Pdf.open(content)
 
         document_version = self.versions.filter(size=0).last()

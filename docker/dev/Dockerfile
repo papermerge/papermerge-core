@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     nginx \
     supervisor \
+    poppler-utils \
+    ghostscript \
     nodejs \
     npm
 

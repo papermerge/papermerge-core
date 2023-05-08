@@ -21,8 +21,16 @@ class Page(BaseModel):
     text: str = ''
     lang: str
     document_version_id: UUID
-    svg_url: str | None = None
-    jpg_url: str | None = None
+    svg_url: str | None
+    jpg_url: str | None
+
+    @validator("svg_url")
+    def svg_url_value(cls, value, values, config, field):
+        return f"/api/pages/{values['id']}/svg"
+
+    @validator("jpg_url")
+    def jpg_url_value(cls, value, values, config, field):
+        return f"/api/pages/{values['id']}/jpg"
 
     class Config:
         orm_mode = True

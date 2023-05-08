@@ -165,7 +165,7 @@ class Storage:
         copy given file src file path to destination
         as absolute doc_path
         """
-
+        logger.debug(f"copy_doc {src} to {dst}")
         dirname = os.path.dirname(
             self.abspath(dst)
         )

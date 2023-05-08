@@ -5,17 +5,29 @@
 #   PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
 #
 version: "3.9"
-services:
-  web:
-    build:
-      context: .
-      dockerfile: docker/dev/Dockerfile
-    ports:
-     - "7000:80"
-    environment:
-      PAPERMERGE__SECURITY__SECRET_KEY: ${PAPERMERGE__SECURITY__SECRET_KEY}
-      PAPERMERGE__DATABASE__URL: ${PAPERMERGE__DATABASE__URL}
-    volumes:
+x-backend: &common  # yaml anchor definition
+  build:
+    context: .
+    dockerfile: docker/dev/Dockerfile
+  volumes:
       - ./papermerge:/core_app/papermerge/
       - ./ui:/core_ui/
       - ./docker/dev/db:/db
+      - ./media_root:/core_app/media
+  environment:
+    - PAPERMERGE__SECURITY__SECRET_KEY=${PAPERMERGE__SECURITY__SECRET_KEY}
+    - PAPERMERGE__DATABASE__URL=${PAPERMERGE__DATABASE__URL}
+    - PAPERMERGE__REDIS__HOST=redis
+    - PAPERMERGE__REDIS__PORT=6379
+services:
+  backend:
+    <<: *common
+    ports:
+     - "7000:80"
+  worker:
+    <<: *common
+    command: worker
+  redis:
+    image: redis:6
+    ports:
+      - '6379:6379'

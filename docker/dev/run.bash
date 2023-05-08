@@ -52,7 +52,7 @@ exec_createsuperuser() {
 }
 
 exec_worker() {
-  exec celery --app config worker \
+  exec /core_app/.venv/bin/celery --app config worker \
    -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE__WORKER__ARGS}
 }
 

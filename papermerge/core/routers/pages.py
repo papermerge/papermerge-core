@@ -34,11 +34,15 @@ def get_page_svg_url(
     page_id: uuid.UUID,
     user: User = Depends(current_user)
 ):
-    page = Page.objects.get(id=page_id)
-    if page.document_version.document.user.id != user.id:
+
+    try:
+        page = Page.objects.get(
+            id=page_id, document_version__document__user=user
+        )
+    except Page.DoesNotExist:
         raise HTTPException(
-            status_code=401,
-            detail="Owner does not match"
+            status_code=404,
+            detail="Page not found"
         )
 
     svg_abs_path = abs_path(page.page_path.svg_url)
@@ -47,7 +51,7 @@ def get_page_svg_url(
     if not os.path.exists(svg_abs_path):
         raise HTTPException(
             status_code=404,
-            detail="Target not found"
+            detail="File not found"
         )
 
     return SVGFileResponse(svg_abs_path)
@@ -58,11 +62,15 @@ def get_page_jpg_url(
     page_id: uuid.UUID,
     user: User = Depends(current_user)
 ):
-    page = Page.objects.get(id=page_id)
-    if page.document_version.document.user.id != user.id:
+    try:
+        page = Page.objects.get(
+            id=page_id,
+            document_version__document__user=user
+        )
+    except Page.DoesNotExist:
         raise HTTPException(
-            status_code=401,
-            detail="Owner does not match"
+            status_code=404,
+            detail="Page does not exist"
         )
 
     jpeg_abs_path = abs_path(page.page_path.preview_url)
@@ -76,7 +84,7 @@ def get_page_jpg_url(
     if not os.path.exists(jpeg_abs_path):
         raise HTTPException(
             status_code=404,
-            detail="Target not found"
+            detail="File not found"
         )
 
     return JPEGFileResponse(jpeg_abs_path)

@@ -34,7 +34,6 @@ def get_page_svg_url(
     page_id: uuid.UUID,
     user: User = Depends(current_user)
 ):
-
     try:
         page = Page.objects.get(
             id=page_id, document_version__document__user=user

@@ -5,13 +5,11 @@ from papermerge.core.models import User
 from papermerge.core.schemas.folders import Folder as PyFolder
 from papermerge.core.models import Folder
 
-from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 
 router = APIRouter(
     prefix="/folders",
-    tags=["folders"],
-    dependencies=[Depends(oauth2_scheme)]
+    tags=["folders"]
 )
 
 

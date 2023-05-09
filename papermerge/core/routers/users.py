@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 
 from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.models import User
-from papermerge.core.routers.auth import oauth2_scheme
 from papermerge.core.routers.auth import get_current_user as current_user
 
 from .paginator import PaginatorGeneric, paginate
@@ -12,7 +11,6 @@ from .params import CommonQueryParams
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(oauth2_scheme)]
 )
 
 

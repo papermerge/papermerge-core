@@ -18,7 +18,6 @@ from papermerge.core.schemas.documents import Document as PyDocument
 from papermerge.core.models import BaseTreeNode, Folder
 from papermerge.core.models.node import move_node
 
-from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 from .params import CommonQueryParams
 from .paginator import PaginatorGeneric, paginate
@@ -26,8 +25,7 @@ from .paginator import PaginatorGeneric, paginate
 
 router = APIRouter(
     prefix="/nodes",
-    tags=["nodes"],
-    dependencies=[Depends(oauth2_scheme)]
+    tags=["nodes"]
 )
 
 logger = logging.getLogger(__name__)

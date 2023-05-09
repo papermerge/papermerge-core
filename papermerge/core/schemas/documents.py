@@ -54,6 +54,10 @@ class DocumentVersion(BaseModel):
             return list(v.all())
         return v
 
+    @validator("download_url")
+    def download_url_value(cls, value, values, config, field):
+        return f"/api/document-versions/{values['id']}/download"
+
     class Config:
         orm_mode = True
 

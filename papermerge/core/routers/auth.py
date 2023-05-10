@@ -1,4 +1,5 @@
 import base64
+import json
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -8,9 +9,16 @@ from papermerge.core.models import User
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
 
 
+def b64d(s: str) -> str:
+    """Decodes given string from base64"""
+    return base64.b64decode(s).decode()
+
+
 def get_user_id_from_token(token: str) -> str | None:
     _, payload, _ = token.split('.')
-    data = base64.decode(payload)
+
+    json_str_data = b64d(payload)
+    data = json.loads(json_str_data)
     user_id = data.get("user_id")
 
     return user_id

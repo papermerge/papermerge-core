@@ -1,15 +1,27 @@
-from fastapi import Request, HTTPException
+import base64
+
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from papermerge.core.models import User
 
 
-def get_current_user(request: Request) -> User:
-    """
-    Retrieves current user based on the value in REMOTE_USER
-    header
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
 
-    REMOTE_USER header should contain valid user uuid
-    """
-    user_id = request.headers.get('REMOTE_USER')
+
+def get_user_id_from_token(token: str) -> str | None:
+    _, payload, _ = token.split('.')
+    data = base64.decode(payload)
+    user_id = data.get("user_id")
+
+    return user_id
+
+
+# def get_current_user(request: Request) -> User:
+#   e.g.
+#   user_id = request.headers.get('REMOTE_USER')
+def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+
+    user_id = get_user_id_from_token(token)
 
     if user_id is None:
         raise HTTPException(

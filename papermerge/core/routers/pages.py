@@ -8,7 +8,6 @@ from papermerge.core.models import User, Page
 from papermerge.core.storage import abs_path
 
 
-from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 
 
@@ -17,7 +16,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/pages",
     tags=["pages"],
-    dependencies=[Depends(oauth2_scheme)]
 )
 
 

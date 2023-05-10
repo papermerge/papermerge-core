@@ -6,8 +6,6 @@ from fastapi.responses import FileResponse
 
 from papermerge.core.models import User, DocumentVersion
 
-
-from .auth import oauth2_scheme
 from .auth import get_current_user as current_user
 
 
@@ -15,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/document-versions",
-    tags=["document-versions"],
-    dependencies=[Depends(oauth2_scheme)]
+    tags=["document-versions"]
 )
 
 

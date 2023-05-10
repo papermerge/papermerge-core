@@ -1,3 +1,4 @@
+import io
 import os
 import uuid
 import itertools
@@ -34,12 +35,13 @@ def document(
         parent=user.home_folder
     )
 
-    payload = open(RESOURCES / resource, 'rb')
+    with open(RESOURCES / resource, 'rb') as file:
+        payload = file.read()
 
     doc.upload(
-        payload=payload,
-        file_path=RESOURCES / resource,
-        file_name=resource
+        content=io.BytesIO(payload),
+        file_name=resource,
+        size=os.path.getsize(RESOURCES / resource)
     )
 
     if include_ocr_data:

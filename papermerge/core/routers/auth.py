@@ -11,6 +11,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
 
 def b64d(s: str) -> str:
     """Decodes given string from base64"""
+    rem = len(s) % 4
+
+    if rem > 0:
+        s += "=" * (4 - rem)
+
     return base64.b64decode(s).decode()
 
 

@@ -8,7 +8,7 @@ import type { CheckboxChangeType, NodeArgsType } from "./types";
 function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
 
   const onclick = () => {
-    onClick(node.id);
+    onClick({node_id: node.id, node_type: node.ctype});
   }
 
   const onselect = (event: CheckboxChangeType) => {

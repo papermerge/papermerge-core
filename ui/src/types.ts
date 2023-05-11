@@ -47,3 +47,9 @@ export enum DisplayNodesModeEnum {
 
 export type UUIDList = Array<string>;
 export type NodeList = Array<NodeType>;
+
+
+export type NodeClickArgsType = {
+  node_id: string;
+  node_type: CType;
+}

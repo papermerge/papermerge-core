@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { NodeClickArgsType, DocumentType } from "@/types";
+import { NodeClickArgsType, DocumentType, DocumentVersion } from "@/types";
 import Breadcrumb from '../breadcrumb/breadcrumb';
+import { Page }  from "./page";
 import { fetcher } from '../../utils';
 
 type Args = {
@@ -24,23 +25,38 @@ export default function Viewer(
     data: undefined
   }
   let [doc, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
+  let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
 
   useEffect(() => {
+
     fetcher(`/api/documents/${node_id}`)
-    .then((json: DocumentType) => {
+    .then((data: DocumentType) => {
       let ready_state: State<DocumentType> = {
         is_loading: false,
         error: null,
-        data: json
+        data: data
       };
+
       setDoc(ready_state);
-    })
+
+      let last_version = data.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
+        if (prev && prev.number > cur.number) {
+          return prev;
+        }
+
+        return cur;
+      });
+
+      setCurDocVer(last_version);
+    });
+
   }, []);
 
   return <>
     <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div>
-      I am viewer
+      {curDocVer?.number}
+      {curDocVer?.pages.map(page => <Page page={page} />)}
     </div>
   </>;
 }

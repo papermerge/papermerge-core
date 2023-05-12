@@ -21,7 +21,7 @@ export default function Breadcrumb({path, onClick, is_loading}: Args) {
   });
 
   return (
-    <ul className={styles.breadcrumb}>
+    <ul className={styles.breadcrumb + " nav-breadcrumb"}>
       {is_loading ? <Spinner />: <SpinnerPlaceholder />}
       {breadcrumb_items}
     </ul>

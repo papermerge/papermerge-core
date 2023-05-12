@@ -13,7 +13,7 @@ export const useProtectedSrc = (url:string | null, mimetype: MimeType) => {
     if (!url) {
       return base64;
     }
-    console.log(headers['Authorization']);
+
     useEffect(() => {
         fetch(url, {headers: headers}).then(res => {
             if (res.status === 200) {

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "@/types";
 import Breadcrumb from '../breadcrumb/breadcrumb';
 import { Page }  from "./page";
 import { fetcher } from '../../utils';
+import { useViewerContentHeight } from '../../hooks/viewer_content_height';
+
 
 type Args = {
   node_id: string;
@@ -26,6 +28,17 @@ export default function Viewer(
   }
   let [doc, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  let viewer_content_height = useViewerContentHeight();
+  const viewer_content_ref = useRef<HTMLInputElement>(null);
+
+
+  useEffect(() => {
+    // set height of the viewer content area to remaining
+    // visible space (window_height - breadcrumb_height - top_nav_menu_height)
+    if (viewer_content_ref?.current) {
+      viewer_content_ref.current.style.height = `${viewer_content_height}px`;
+    }
+  }, [viewer_content_height]);
 
   useEffect(() => {
 
@@ -52,11 +65,11 @@ export default function Viewer(
 
   }, []);
 
-  return <>
+  return <div className="viewer">
     <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
-    <div className="d-flex flex-column">
+    <div className="d-flex flex-column content" ref={viewer_content_ref}>
       {curDocVer?.number}
       {curDocVer?.pages.map(page => <Page page={page} />)}
     </div>
-  </>;
+  </div>;
 }

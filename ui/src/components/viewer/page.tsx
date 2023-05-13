@@ -1,9 +1,7 @@
 import PagePlaceholder from './page_placeholder';
 
-import { useRef, useEffect } from 'react';
 import type { PageType } from "@/types"
 import { useProtectedSVG, useProtectedJpg } from "../../hooks/protected_image"
-import Page_placeholder from './page_placeholder';
 
 type Args = {
   page: PageType

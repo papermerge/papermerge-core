@@ -1,5 +1,5 @@
 export default function PagePlaceholder() {
-  return <div className="card-text page-placeholder">
+  return <div className="card-text page-placeholder p-5">
     <div className='card-text pb-4'>
         <span className="placeholder col-12">
         Lorem Ipsum is simply dummy text of the printing and typesetting industry.

@@ -2,10 +2,31 @@ import {useState, useEffect} from "react";
 import { get_default_headers } from "../utils/fetcher";
 
 
-type MimeType = "image/jpeg" | "image/svg+xml";
+export const useProtectedSVG = (url: string | null) => {
+    //The initial value is empty
+    const [svg, setSVG] = useState('')
+    const headers = get_default_headers();
+
+    if (!url) {
+      return svg;
+    }
+
+    useEffect(() => {
+        fetch(url, {headers: headers}).then(res => {
+            if (res.status === 200) {
+                res.text().then(data => {
+                    setSVG(data);
+                });
+            }
+        });
+
+    }, [url, headers]);
+
+    return svg;
+}
 
 
-export const useProtectedSrc = (url:string | null, mimetype: MimeType) => {
+export const useProtectedJpg = (url:string | null) => {
     //The initial value is empty
     const [base64, setBase64] = useState('data:image/jpeg;base64,')
     const headers = get_default_headers();
@@ -18,7 +39,7 @@ export const useProtectedSrc = (url:string | null, mimetype: MimeType) => {
         fetch(url, {headers: headers}).then(res => {
             if (res.status === 200) {
                 res.arrayBuffer().then(data => {
-                    setBase64(_imageEncode(data, mimetype))
+                    setBase64(_imageEncode(data, 'image/jpeg'))
                 });
             }
         });

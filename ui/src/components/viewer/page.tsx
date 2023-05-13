@@ -1,5 +1,6 @@
+import { useRef, useEffect } from 'react';
 import type { PageType } from "@/types"
-import { useProtectedSrc } from "../../hooks/protected_src"
+import { useProtectedSVG, useProtectedJpg } from "../../hooks/protected_image"
 
 type Args = {
   page: PageType
@@ -7,12 +8,18 @@ type Args = {
 
 export function Page({page}: Args) {
 
-  // const base64_jpg = useProtectedSrc(page.jpg_url, 'image/jpeg');
-  const base64_svg = useProtectedSrc(page.svg_url, 'image/svg+xml');
+  const base64_jpg = useProtectedJpg(page.jpg_url);
+  const svg_image = useProtectedSVG(page.svg_url);
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (ref?.current) {
+      ref.current.innerHTML = svg_image;
+    }
+  }, [svg_image]);
 
   return <>
-    <div>
-    <img src={base64_svg} />
+    <div ref={ref} className='svg-image'>
     </div>
     <div>
       Page num = {page.number}

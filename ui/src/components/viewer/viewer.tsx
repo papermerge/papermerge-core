@@ -5,16 +5,12 @@ import { Page }  from "./page";
 import { fetcher } from '../../utils';
 import { useViewerContentHeight } from '../../hooks/viewer_content_height';
 
+import type { State } from '@/types';
+
 
 type Args = {
   node_id: string;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
-}
-
-type State<T> = {
-  is_loading: boolean;
-  error: unknown;
-  data: T;
 }
 
 export default function Viewer(

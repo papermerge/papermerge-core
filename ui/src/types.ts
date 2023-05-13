@@ -87,3 +87,10 @@ export type NodeClickArgsType = {
   node_id: string;
   node_type: CType;
 }
+
+export type State<T> = {
+  is_loading: boolean;
+  error: unknown;
+  data: T;
+}
+

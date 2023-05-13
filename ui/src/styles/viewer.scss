@@ -2,5 +2,14 @@
   .content {
     height: 90vh;
     overflow: scroll;
+    background-color: #666;
+    .page {
+      margin-bottom: 0;
+
+      .page-number {
+        color: white;
+        font-weight: bold;
+      }
+    }
   }
 }

@@ -18,11 +18,11 @@ export function Page({page}: Args) {
     }
   }, [svg_image]);
 
-  return <>
+  return <div className='d-flex flex-column p-2 m-2 page pb-0'>
     <div ref={ref} className='svg-image'>
     </div>
-    <div>
-      Page num = {page.number}
+    <div className='p-2 mb-3 page-number text-center'>
+      {page.number}
     </div>
-  </>
+  </div>
 }

@@ -2,6 +2,9 @@ import {useState, useEffect} from "react";
 import { get_default_headers } from "../utils/fetcher";
 
 
+type MimeType = "image/jpeg" | "image/svg+xml";
+
+
 export const useProtectedSVG = (url: string | null) => {
     //The initial value is empty
     const [svg, setSVG] = useState('')

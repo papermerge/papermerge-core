@@ -68,7 +68,6 @@ export default function Viewer(
   return <div className="viewer">
     <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-column content" ref={viewer_content_ref}>
-      {curDocVer?.number}
       {curDocVer?.pages.map(page => <Page page={page} />)}
     </div>
   </div>;

@@ -8,10 +8,14 @@ import type { CheckboxChangeType, NodeArgsType } from "./types";
 import { DisplayNodesModeEnum } from "../../types";
 
 
+
 const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
     const onclick = () => {
-      props.onClick(props.node.id);
+      props.onClick({
+        node_id: props.node.id,
+        node_type: props.node.ctype
+      });
     }
 
     const onselect = (event: CheckboxChangeType) => {

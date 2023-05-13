@@ -6,14 +6,13 @@ import { Rectangle } from './utils/geometry';
 import { Point } from './utils/geometry';
 
 export const fetcher = (url:string) => {
-  const token = Cookies.get('token');
+  const token = Cookies.get('access_token');
   const headers = {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
-  let full_url = `http://localhost:8000${url}`;
 
-  return fetch(full_url, {headers: headers}).then(res => res.json());
+  return fetch(url, {headers: headers}).then(res => res.json());
 }
 
 export function useCurrentUser() {

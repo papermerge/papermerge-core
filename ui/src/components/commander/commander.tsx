@@ -18,6 +18,7 @@ import { fetcher } from "../../utils/fetcher";
 
 import type { FolderType, NodeType} from '@/types';
 import type { UUIDList, NodeList } from '@/types';
+import { NodeClickArgsType } from '../../types';
 import { DisplayNodesModeEnum } from '../../types';
 import DeleteNodesModal from '../modals/delete_nodes';
 import NewFolderModal from "../modals/new_folder";
@@ -147,7 +148,7 @@ type Args = {
   node_id: string;
   page_number: number;
   per_page: number,
-  onNodeClick: (node_id: string) => void;
+  onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
   onPerPageChange: (per_page: number) => void;
 }

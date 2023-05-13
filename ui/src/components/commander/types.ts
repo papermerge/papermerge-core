@@ -1,8 +1,8 @@
-import { DisplayNodesModeEnum } from '../../types' ;
+import { DisplayNodesModeEnum, NodeClickArgsType } from '../../types' ;
 
 type NodeArgsType = {
   node: any;
-  onClick: (node_id: string) => void;
+  onClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onSelect: (node_id: string, selected: boolean) => void;
   onDragStart: (node_id: string, event: React.DragEvent) => void;
   onDrag: (node_id: string, event: React.DragEvent) => void;

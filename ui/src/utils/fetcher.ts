@@ -98,6 +98,7 @@ async function fetcher_delete<Input, Output>(url: string, data: Input): Promise<
 
 
 export {
+  get_default_headers,
   fetcher,
   fetcher_upload,
   fetcher_post,

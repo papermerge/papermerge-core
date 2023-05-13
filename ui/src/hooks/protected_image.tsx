@@ -55,25 +55,43 @@ export const useProtectedSVG = (url: string | null) => {
 
 export const useProtectedJpg = (url:string | null) => {
     //The initial value is empty
+    const initial_state: State<JSX.Element | null> = {
+        is_loading: true,
+        error: null,
+        data: null
+    };
     const [base64, setBase64] = useState('data:image/jpeg;base64,')
+    const [result, setResult] = useState<State<JSX.Element | null>>(initial_state)
     const headers = get_default_headers();
 
     if (!url) {
-      return base64;
+        return {
+            is_loading: false,
+            data: null,
+            error: 'Page url is null. Maybe page previews not yet ready?'
+        };
     }
 
     useEffect(() => {
         fetch(url, {headers: headers}).then(res => {
             if (res.status === 200) {
                 res.arrayBuffer().then(data => {
-                    setBase64(_imageEncode(data, 'image/jpeg'))
+                    setBase64(
+                        _imageEncode(data, 'image/jpeg')
+                    );
+                    setResult({
+                        is_loading: false,
+                        error: null,
+                        data: <img src={_imageEncode(data, 'image/jpeg')}></img>
+                    });
                 });
             }
         });
 
-    }, [url, headers]);
+    }, [url]);
 
-    return base64
+
+    return result;
 }
 
 

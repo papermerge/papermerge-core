@@ -3,6 +3,9 @@
     height: 90vh;
     overflow: scroll;
     background-color: #666;
+    .thumbnails-panel {
+      width: 10rem;
+    }
     .page {
       margin-bottom: 0;
 
@@ -13,6 +16,11 @@
       .page-placeholder {
         width: 100%;
         padding: 1rem;
+        background-color: white;
+      }
+      .thumbnail-placeholder {
+        width: 100%;
+        padding: 0.2rem;
         background-color: white;
       }
     }

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "@/types";
 import Breadcrumb from '../breadcrumb/breadcrumb';
-import { Page }  from "./page";
+import { PagesPanel }  from "./pages_panel";
+import { ThumbnailsPanel }  from "./thumbnails_panel";
 import { fetcher } from '../../utils';
 import { useViewerContentHeight } from '../../hooks/viewer_content_height';
 
@@ -63,8 +64,9 @@ export default function Viewer(
 
   return <div className="viewer">
     <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
-    <div className="d-flex flex-column content" ref={viewer_content_ref}>
-      {curDocVer?.pages.map(page => <Page page={page} />)}
+    <div className="d-flex flex-row content" ref={viewer_content_ref}>
+      <ThumbnailsPanel pages={curDocVer?.pages || []} />
+      <PagesPanel pages={curDocVer?.pages || []} />
     </div>
   </div>;
 }

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "@/types";
 import Breadcrumb from '../breadcrumb/breadcrumb';
-import { PagesPanel }  from "./pages_panel";
-import { ThumbnailsPanel }  from "./thumbnails_panel";
-import { ThumbnailsToggle }  from "./thumbnails_toggle";
+import { PagesPanel }  from "./pages_panel/pages_panel";
+import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
+import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from '../../utils';
 import { useViewerContentHeight } from '../../hooks/viewer_content_height';
 
@@ -65,7 +65,6 @@ export default function Viewer(
   }, []);
 
   const onThumbnailsToggle = () => {
-    console.log("Thumnails Toggle");
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
   }
 

@@ -1,7 +1,7 @@
 import ThumbnailPlaceholder from './thumbnail_placeholder';
 
 import type { PageType } from "@/types"
-import { useProtectedJpg } from "../../hooks/protected_image"
+import { useProtectedJpg } from "../../../hooks/protected_image"
 
 type Args = {
   page: PageType

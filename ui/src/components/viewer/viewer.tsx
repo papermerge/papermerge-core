@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "@/types";
 import Breadcrumb from '../breadcrumb/breadcrumb';
-import { Page }  from "./page";
+import { PagesPanel }  from "./pages_panel/pages_panel";
+import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
+import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from '../../utils';
 import { useViewerContentHeight } from '../../hooks/viewer_content_height';
 
@@ -17,6 +19,7 @@ export default function Viewer(
   {node_id, onNodeClick}:  Args
 ) {
 
+  let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   const initial_breadcrumb_state: State<DocumentType | undefined> = {
     is_loading: true,
     error: null,
@@ -61,10 +64,18 @@ export default function Viewer(
 
   }, []);
 
+  const onThumbnailsToggle = () => {
+    setThumbnailsPanelVisible(!thumbnailsPanelVisible);
+  }
+
   return <div className="viewer">
     <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
-    <div className="d-flex flex-column content" ref={viewer_content_ref}>
-      {curDocVer?.pages.map(page => <Page page={page} />)}
+    <div className="d-flex flex-row content" ref={viewer_content_ref}>
+      <ThumbnailsPanel pages={curDocVer?.pages || []} visible={thumbnailsPanelVisible}/>
+      <ThumbnailsToggle
+        onclick={onThumbnailsToggle}
+        thumbnails_panel_visible={thumbnailsPanelVisible} />
+      <PagesPanel pages={curDocVer?.pages || []} />
     </div>
   </div>;
 }

@@ -1,28 +1,48 @@
 .viewer {
+
   .content {
-    height: 90vh;
-    overflow: scroll;
+
     background-color: #666;
+
     .thumbnails-panel {
       width: 10rem;
+      height: 90vh;
+      overflow: scroll;
     }
+
+    .thumbnails-toggle {
+      i {
+        color: white;
+      }
+    }
+
+    .pages-panel {
+      height: 90vh;
+      overflow: scroll;
+    }
+
     .page {
+
       margin-bottom: 0;
 
       .page-number {
         color: white;
         font-weight: bold;
       }
+
       .page-placeholder {
         width: 100%;
         padding: 1rem;
         background-color: white;
       }
+
       .thumbnail-placeholder {
         width: 100%;
         padding: 0.2rem;
         background-color: white;
       }
+
     }
+
   }
 }

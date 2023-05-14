@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef} from "react";
-import { get_default_headers } from "../utils/fetcher";
+import { get_default_headers } from "utils/fetcher";
 
-import type { State } from '@/types';
+import type { State } from 'types';
 
 
 type MimeType = "image/jpeg" | "image/svg+xml";

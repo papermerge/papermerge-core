@@ -1,8 +1,8 @@
 import styles from "./breadcrumb.module.scss";
 import BreadcrumbItem from "./item";
-import Spinner from "../spinner";
-import SpinnerPlaceholder from "../spinner_placeholder";
-import { NodeClickArgsType } from "@/types";
+import Spinner from "components/spinner";
+import SpinnerPlaceholder from "components/spinner_placeholder";
+import { NodeClickArgsType } from "types";
 
 type Args = {
   path: Array<[string, string]>;

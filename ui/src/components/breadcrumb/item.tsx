@@ -1,4 +1,4 @@
-import { NodeClickArgsType } from "@/types";
+import { NodeClickArgsType } from "types";
 
 type Args = {
   node_id: string;

@@ -1,7 +1,7 @@
 import PagePlaceholder from './page_placeholder';
 
-import type { PageType } from "@/types"
-import { useProtectedSVG } from "../../../hooks/protected_image"
+import type { PageType } from "types"
+import { useProtectedSVG } from "hooks/protected_image"
 
 type Args = {
   page: PageType

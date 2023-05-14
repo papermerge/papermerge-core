@@ -1,4 +1,4 @@
-import type { SimpleComponentArgs } from "@/types";
+import type { SimpleComponentArgs } from "types";
 
 
 export default function Nav({children}: SimpleComponentArgs) {

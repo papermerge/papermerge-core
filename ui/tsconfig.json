@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    "baseUrl": "src",
     "lib": [
       "dom",
       "dom.iterable",
@@ -25,7 +22,7 @@
     "jsx": "preserve"
   },
   "include": [
-    "src/",
+    "src",
     "**/*.ts",
     "**/*.tsx"
   ]

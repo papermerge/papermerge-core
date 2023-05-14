@@ -1,6 +1,8 @@
-import styles from './layout.module.css';
 import Cookies from 'js-cookie';
-import type { SimpleComponentArgs } from '@/types';
+
+import styles from './layout.module.css';
+
+import type { SimpleComponentArgs } from 'types';
 
 
 export default function CentralBar({children}: SimpleComponentArgs) {

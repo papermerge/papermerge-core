@@ -2,9 +2,8 @@ import { useState } from 'react';
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import Form from 'react-bootstrap/Form';
-import { fetcher_delete } from '../../utils/fetcher';
-import type { FolderType, NodeType } from '@/types';
+
+import { fetcher_delete } from 'utils/fetcher';
 
 
 type Args = {

@@ -2,10 +2,11 @@ import { useState } from 'react';
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { fetcher_post } from '../../utils/fetcher';
-import type { NodeType } from '@/types';
 import { Spinner } from 'react-bootstrap';
-import { abort } from 'process';
+
+import { fetcher_post } from 'utils/fetcher';
+
+import type { NodeType } from 'types';
 
 
 type Args = {

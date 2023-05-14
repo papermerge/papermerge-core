@@ -1,10 +1,10 @@
 import { useState } from 'react';
+
 import Layout from './layout';
 import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
-import { NodeClickArgsType } from '@/types';
-
+import { NodeClickArgsType } from 'types';
 
 
 function Home() {

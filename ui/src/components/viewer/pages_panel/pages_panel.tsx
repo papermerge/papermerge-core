@@ -1,5 +1,5 @@
 import { Page }  from "./page";
-import type { PageType } from "@/types"
+import type { PageType } from "types"
 
 type Args = {
   pages: Array<PageType>;

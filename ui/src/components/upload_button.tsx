@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import { uploader } from '../utils/uploader';
 
-import type { NodeType } from '@/types';
+import type { NodeType } from 'types';
 
 type Args = {
   node_id: string;

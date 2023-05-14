@@ -1,10 +1,11 @@
+import useSWR from 'swr';
+import Cookies from 'js-cookie';
+
 
 import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
-import useSWR from 'swr';
-import Cookies from 'js-cookie';
-import type { SimpleComponentArgs } from '@/types';
+import type { SimpleComponentArgs } from 'types';
 
 const fetcher = (url:string) => {
   const token = Cookies.get('access_token');

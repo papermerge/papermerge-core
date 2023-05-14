@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "baseUrl": "./",
+    "baseUrl": "src",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -25,7 +25,7 @@
     "jsx": "preserve"
   },
   "include": [
-    "src/",
+    "src",
     "**/*.ts",
     "**/*.tsx"
   ]

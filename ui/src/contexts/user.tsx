@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
-import type { UserContextType } from '@/types';
-import { useCurrentUser } from '../utils';
+import type { UserContextType } from 'types';
+import { useCurrentUser } from 'utils';
 
 
 const UserContext = createContext<UserContextType>({

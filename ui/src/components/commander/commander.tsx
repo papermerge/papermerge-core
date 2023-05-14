@@ -4,28 +4,29 @@ import { createRoot } from 'react-dom/client';
 import Form from 'react-bootstrap/Form';
 
 import DisplayModeDropown from './display_mode';
-import Folder from "./folder";
-import Document from "./document";
-import EmptyFolder from "./empty_folder";
-import Breadcrumb from '../breadcrumb/breadcrumb';
-import Paginator from "../paginator";
-import Menu from "./menu";
-import { DraggingIcon } from '../dragging_icon';
+import Folder from './folder';
+import Document from './document';
+import EmptyFolder from './empty_folder';
+import Menu from './menu';
+import { DraggingIcon } from 'components/dragging_icon';
 
-import { is_empty } from "../../utils";
-import { get_node_under_cursor } from '../../utils';
-import { fetcher } from "../../utils/fetcher";
+import { is_empty } from 'utils';
+import { get_node_under_cursor } from 'utils';
+import { fetcher } from 'utils/fetcher';
 
-import type { FolderType, NodeType} from '@/types';
-import type { UUIDList, NodeList } from '@/types';
-import { NodeClickArgsType } from '../../types';
-import { DisplayNodesModeEnum } from '../../types';
-import DeleteNodesModal from '../modals/delete_nodes';
-import NewFolderModal from "../modals/new_folder";
-import RenameModal from '../modals/rename';
-import DropNodesModal from '../modals/drop_nodes';
+import DeleteNodesModal from 'components/modals/delete_nodes';
+import NewFolderModal from 'components/modals/new_folder';
+import RenameModal from 'components/modals/rename';
+import DropNodesModal from 'components/modals/drop_nodes';
+import Breadcrumb from 'components/breadcrumb/breadcrumb';
+import Paginator from "components/paginator";
 
-import { Rectangle, Point } from '../../utils/geometry';
+import { Rectangle, Point } from 'utils/geometry';
+
+import type { FolderType, NodeType} from 'types';
+import type { UUIDList, NodeList } from 'types';
+import { NodeClickArgsType } from 'types';
+import { DisplayNodesModeEnum } from 'types';
 
 
 type NodeResultType = {
@@ -225,7 +226,7 @@ function Commander({
       );
     } else {
       setSelectedNodes(
-        selectedNodes.filter(uuid => uuid !== node_id)
+        selectedNodes.filter((uuid: string) => uuid !== node_id)
       );
     }
   }
@@ -258,7 +259,7 @@ function Commander({
 
   const onDeleteNodes = (node_ids: string[]) => {
     let new_nodes = nodesList.filter(
-      node => node_ids.indexOf(node.id) == -1
+      (node: NodeType) => node_ids.indexOf(node.id) == -1
     );
     setNodesList(new_nodes);
     setDeleteNodesModalShow(false);
@@ -267,13 +268,13 @@ function Commander({
 
   const onPerformDropNodes = (moved_node_ids: string[]) => {
 
-    nodesList.forEach(node => {
+    nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
     });
 
     let new_nodes = nodesList.filter(
-      node => !moved_node_ids.includes(node.id)
+      (node: NodeType) => !moved_node_ids.includes(node.id)
     );
 
     setNodesList(new_nodes);
@@ -282,7 +283,7 @@ function Commander({
   }
 
   const onCancelDropNodes = () => {
-    nodesList.forEach(node => {
+    nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
     });

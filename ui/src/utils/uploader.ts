@@ -1,5 +1,5 @@
-import { fetcher_post, fetcher_upload } from '../utils/fetcher';
-import type { NodeType } from '@/types';
+import { fetcher_post, fetcher_upload } from 'utils/fetcher';
+import type { NodeType } from 'types';
 
 
 type UploaderArgs = {

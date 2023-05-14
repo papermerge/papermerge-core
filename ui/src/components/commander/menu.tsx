@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import UploadButton from '../upload_button';
 
-import type { NodeType } from '@/types';
+import type { NodeType } from 'types';
 
 type Args = {
   onCreateDocumentNode: (node: NodeType[]) => void;

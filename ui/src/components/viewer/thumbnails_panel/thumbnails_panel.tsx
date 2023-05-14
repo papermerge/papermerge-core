@@ -1,4 +1,4 @@
-import type { PageType } from "@/types"
+import type { PageType } from "types"
 import { PageThumbnail } from "./page_thumbnail";
 
 

@@ -41,7 +41,6 @@ export default function Viewer(
   }, [viewer_content_height]);
 
   useEffect(() => {
-
     fetcher(`/api/documents/${node_id}`)
     .then((data: DocumentType) => {
       let ready_state: State<DocumentType> = {

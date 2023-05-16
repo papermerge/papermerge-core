@@ -12,6 +12,7 @@ function Home() {
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
   const [ per_page, set_per_page ] = useState(5);
+  let component: JSX.Element;
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
     console.log(`onNodeClick node_id=${node_id}, node_type=${node_type}`);
@@ -31,25 +32,26 @@ function Home() {
     return <div>Loading...</div>;
   }
 
-  if (node_type == 'folder') {
-    return (
-      <Layout>
-        <Commander
-          node_id={node_id}
-          page_number={page_number}
-          per_page={per_page}
-          onNodeClick={onNodeClick}
-          onPageClick={onPageClick}
-          onPerPageChange={onPerPageChange}
-        />
-      </Layout>
-    );
+  try {
+    if (node_type == 'folder') {
+      component = <Commander
+        node_id={node_id}
+        page_number={page_number}
+        per_page={per_page}
+        onNodeClick={onNodeClick}
+        onPageClick={onPageClick}
+        onPerPageChange={onPerPageChange}
+      />
+    } else {
+      component = <Viewer node_id={node_id} onNodeClick={onNodeClick} />;
+    }
+  } catch(e) {
+    component = <div>Caught exception</div>;
   }
 
-  // node_type == 'document'
   return (
     <Layout>
-      <Viewer node_id={node_id} onNodeClick={onNodeClick} />
+      {component}
     </Layout>
   );
 }

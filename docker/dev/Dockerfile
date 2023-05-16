@@ -1,5 +1,5 @@
 FROM papermerge/tivoli:0.2.0 as token_validator
-FROM papermerge/auth-server:0.2.0 as auth_server
+FROM papermerge/auth-server:0.3.0 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app

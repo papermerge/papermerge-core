@@ -11,18 +11,21 @@ const COOKIE_NAME = 'access_token';
 
 function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderType {
   const token = Cookies.get(cookie_name);
-  let headers = {
+  let headers;
+
+  headers = {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
+
   return headers;
 }
 
 
 async function fetcher(url:string) {
   const headers = get_default_headers();
-
-  return fetch(url, {headers: headers}).then(res => res.json());
+  return fetch(url, {headers: headers})
+    .then(res => res.json());
 }
 
 async function fetcher_post<Input, Output>(

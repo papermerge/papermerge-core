@@ -18,8 +18,10 @@ import DeleteNodesModal from 'components/modals/delete_nodes';
 import NewFolderModal from 'components/modals/new_folder';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
+import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
+import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
@@ -41,7 +43,7 @@ type NodeListPlusT = [NodeResultType, FolderType] | [];
 type State<T> = {
   is_loading: boolean;
   loading_id: string | null;
-  error: unknown;
+  error: string | null;
   data: T;
 }
 
@@ -70,26 +72,16 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
     };
     setData(loading_state);
 
-    try {
-      prom = Promise.all([
-        fetcher(`/api/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
-        fetcher(`/api/folders/${node_id}`)
-      ]);
-    } catch (error) {
-      let error_state: State<NodeListPlusT> = {
-        is_loading: false,
-        loading_id: null,
-        error: error,
-        data: data.data
-      };
-      setData(error_state);
-    }
+
+    prom = Promise.all([
+      fetcher(`/api/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
+      fetcher(`/api/folders/${node_id}`)
+    ]);
 
     if (node_id) {
       let ignore = false;
 
-      prom
-      .then(
+      prom.then(
         (json: NodeListPlusT) => {
           if (!ignore) {
             let ready_state: State<NodeListPlusT> = {
@@ -100,16 +92,14 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
             };
             setData(ready_state);
           }
-        })
-      .catch(
-        (error: unknown) => {
-          let error_state: State<NodeListPlusT> = {
+        }).catch((error: string) => {
+          console.log(`Catch: => Setting error to ${error}`);
+          setData({
             is_loading: false,
             loading_id: null,
-            error: error,
-            data: data.data
-          };
-          setData(error_state);
+            error: error.toString(),
+            data: []
+          });
         }
       );
 
@@ -163,6 +153,7 @@ function Commander({
   onPageClick,
   onPerPageChange
 }: Args) {
+  const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
@@ -291,6 +282,16 @@ function Commander({
     setDropNodesModalShow(false);
   }
 
+  const onOKErrorModal = () => {
+    setErrorModalShow(false);
+    error = null;
+  }
+
+  const onCancelErrorModal = () => {
+    setErrorModalShow(false);
+    error = null;
+  }
+
   const onDragStart = (node_id: string, event: React.DragEvent) => {
 
     let image = <DraggingIcon node_id={node_id}
@@ -412,6 +413,13 @@ function Commander({
     }
   }, [nodes_list, page_number, per_page]);
 
+  useEffect(() => {
+    console.log(`=====> ${error} <====`);
+    if (error) {
+      setErrorModalShow(true);
+    }
+  }, [error]);
+
   if (nodes_list) {
     let items = nodesList;
 
@@ -457,6 +465,7 @@ function Commander({
         }
       });
     }
+
 
     return (
       <div className="commander">
@@ -531,11 +540,20 @@ function Commander({
             onCancel={onCancelDropNodes}
             onSubmit={onPerformDropNodes} />
         </div>
+        <div>
+          <ErrorModal
+            show={errorModalShow}
+            error={error}
+            onCancel={onCancelErrorModal}
+            onSubmit={onOKErrorModal} />
+        </div>
       </div>
     )
   }
 
-  return <>Skeleton</>;
+  return <div className='p-2 m-2'>
+    {error && <ErrorMessage msg={error} />}
+  </div>;
 }
 
 export default Commander;

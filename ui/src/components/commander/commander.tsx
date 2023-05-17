@@ -10,8 +10,8 @@ import EmptyFolder from './empty_folder';
 import Menu from './menu';
 import { DraggingIcon } from 'components/dragging_icon';
 
-import { is_empty } from 'utils';
-import { get_node_under_cursor } from 'utils';
+import { is_empty } from 'utils/misc';
+import { get_node_under_cursor } from 'utils/misc';
 import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';

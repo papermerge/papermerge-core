@@ -92,8 +92,7 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
             };
             setData(ready_state);
           }
-        }).catch((error: string) => {
-          console.log(`Catch: => Setting error to ${error}`);
+        }).catch((error: Error) => {
           setData({
             is_loading: false,
             loading_id: null,

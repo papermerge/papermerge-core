@@ -4,11 +4,12 @@ import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import { PagesPanel }  from "./pages_panel/pages_panel";
 import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
 import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
-import { fetcher } from 'utils';
+import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { State } from 'types';
+import ErrorMessage from 'components/error_message';
 
 
 type Args = {
@@ -24,9 +25,9 @@ export default function Viewer(
   const initial_breadcrumb_state: State<DocumentType | undefined> = {
     is_loading: true,
     error: null,
-    data: undefined
+    data: null
   }
-  let [doc, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
+  let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
   let viewer_content_height = useViewerContentHeight();
   const viewer_content_ref = useRef<HTMLInputElement>(null);
@@ -60,6 +61,12 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
+    }).catch((error: Error) => {
+      setDoc({
+        is_loading: false,
+        error: error.toString(),
+        data: null
+      });
     });
 
   }, []);
@@ -68,8 +75,14 @@ export default function Viewer(
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
   }
 
+  if (error) {
+    return <div className="viewer">
+      {error && <ErrorMessage msg={error} />}
+    </div>
+  }
+
   return <div className="viewer">
-    <Breadcrumb path={doc?.data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
+    <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel pages={curDocVer?.pages || []} visible={thumbnailsPanelVisible}/>
       <ThumbnailsToggle

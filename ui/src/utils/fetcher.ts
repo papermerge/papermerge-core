@@ -25,7 +25,12 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
 async function fetcher(url:string) {
   const headers = get_default_headers();
   return fetch(url, {headers: headers})
-    .then(res => res.json());
+    .then(res => {
+      if (res.status === 401) {
+        throw Error("401 Unauthorized");
+      }
+      return res.json();
+    });
 }
 
 async function fetcher_post<Input, Output>(

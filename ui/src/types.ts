@@ -90,7 +90,7 @@ export type NodeClickArgsType = {
 
 export type State<T> = {
   is_loading: boolean;
-  error: unknown;
-  data: T;
+  error: string | null;
+  data: T | null;
 }
 

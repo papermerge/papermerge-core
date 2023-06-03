@@ -73,7 +73,7 @@ case $CMD in
     exec_createsuperuser
     ;;
   server)
-    roco > /usr/share/nginx/html/papermerge-runtime-config.js
+    roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     exec /usr/bin/supervisord
     ;;
   worker)

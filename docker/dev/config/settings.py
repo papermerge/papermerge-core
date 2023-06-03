@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import dj_database_url
+
 
 from papermerge.conf.settings import *  # noqa
 
@@ -23,11 +25,12 @@ STATIC_ROOT = config.get(
     default=os.path.join(PROJ_ROOT, "static")
 )
 
-DATABASES = config.get_django_databases(proj_root=PROJ_ROOT)
-
-LOCALE_PATHS = (
-    PROJ_ROOT / Path('papermerge'),
-)
+DATABASES = {
+    'default': dj_database_url.config(
+        env='PAPERMERGE__DATABASE__URL',
+        conn_max_age=600,
+    ),
+}
 
 search_engine = config.get('search', 'engine', default='xapian')
 

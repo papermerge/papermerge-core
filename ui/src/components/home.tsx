@@ -8,7 +8,7 @@ import { NodeClickArgsType } from 'types';
 
 
 function Home() {
-  const [ node_id, set_node_id ] = useState('b440bf92-62e6-4c99-b1af-0b3f75055599');
+  const [ node_id, set_node_id ] = useState('b23498b2c1b2401a93b6eb5130f9cd91');
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
   const [ per_page, set_per_page ] = useState(5);

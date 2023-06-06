@@ -20,8 +20,7 @@ const fetcher = (url:string) => {
 }
 
 
-
-function useMe() {
+export function useMe() {
   const initial_user_state: State<User | null> = {
     is_loading: true,
     error: null,
@@ -71,10 +70,12 @@ function Layout({ children }: SimpleComponentArgs) {
     return <div>Error</div>;
   }
 
+  console.log(`User me ${data?.home_folder_id}`);
+
   return (
     <main className={styles.main}>
       <Sidebar />
-      <CentralBar>
+      <CentralBar username={data?.username}>
         {children}
       </CentralBar>
     </main>

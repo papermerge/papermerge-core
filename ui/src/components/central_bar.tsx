@@ -2,10 +2,14 @@ import Cookies from 'js-cookie';
 
 import styles from './layout.module.css';
 
-import type { SimpleComponentArgs } from 'types';
+
+type Args = {
+  children: React.ReactNode;
+  username?: string;
+}
 
 
-export default function CentralBar({children}: SimpleComponentArgs) {
+export default function CentralBar({username, children}: Args) {
 
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
@@ -24,7 +28,7 @@ export default function CentralBar({children}: SimpleComponentArgs) {
             </li>
           </ul>
           <div>
-            <a href="" onClick={onSignOut}>Sign Out</a>
+            {username} <a href="" onClick={onSignOut}>Sign Out</a>
           </div>
         </div>
       </nav>

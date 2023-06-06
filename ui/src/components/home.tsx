@@ -7,8 +7,12 @@ import Viewer from './viewer/viewer';
 import { NodeClickArgsType } from 'types';
 
 
-function Home() {
-  const [ node_id, set_node_id ] = useState('b23498b2c1b2401a93b6eb5130f9cd91');
+type Args = {
+  home_folder_id: string;
+}
+
+function Home({ home_folder_id }: Args) {
+  const [ node_id, set_node_id ] = useState(home_folder_id);
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
   const [ per_page, set_per_page ] = useState(5);

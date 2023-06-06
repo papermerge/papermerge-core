@@ -11,7 +11,7 @@ export default function CentralBar({children}: SimpleComponentArgs) {
     e.preventDefault();
     console.log("Sign out");
     Cookies.remove('access_token');
-    window.location.reload();
+    window.location.href = window.location.origin;
   }
 
   return (

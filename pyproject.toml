@@ -90,6 +90,8 @@ python-multipart = "^0.0.6"
 python-jose = "^3.3.0"
 fastapi-pagination = "^0.11.4"
 xapianpy = "^1.4.22.post2305071405"
+dj-database-url = "^2.0.0"
+dj-config-url = "^0.1.1"
 
 
 [tool.pytest.ini_options]

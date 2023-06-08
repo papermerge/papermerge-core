@@ -2,6 +2,9 @@ import base64
 import json
 import pytest
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 
 def b64e(s):
     return base64.b64encode(s.encode()).decode()
@@ -17,3 +20,14 @@ def token():
     payload = b64e(json_str)
 
     return f"ignore_me.{payload}.ignore_me_too"
+
+
+@pytest.fixture
+def client():
+    from papermerge.core.routers import register_routers
+
+    app = FastAPI()
+    register_routers(app)
+    result = TestClient(app)
+
+    return result

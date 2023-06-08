@@ -5,11 +5,12 @@ import tarfile
 from django.core.files.temp import NamedTemporaryFile
 
 from papermerge.core.models import Document, BaseTreeNode
-from papermerge.core.serializers.node import (
-    ONLY_ORIGINAL,
-    ONLY_LAST,
-    ZIP
-)
+
+
+ONLY_ORIGINAL = 'only_original'
+ONLY_LAST = 'only_last'
+ZIP = 'zip'
+TARGZ = 'targz'
 
 
 class NodesDownload:

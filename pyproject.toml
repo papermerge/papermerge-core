@@ -88,6 +88,7 @@ xapianpy = "^1.4.22.post2305071405"
 dj-database-url = "^2.0.0"
 dj-config-url = "^0.1.1"
 websockets = "^11.0.3"
+httpx = "^0.24.1"
 
 
 [tool.pytest.ini_options]

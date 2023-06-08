@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.websocket("/ws")
+@router.websocket("/ws/ocr")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:

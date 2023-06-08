@@ -9,6 +9,7 @@ class Notification:
     Example of usage:
 
     Consume messages:
+        from papermerge.core.notif import Notification
 
         notif = Notification("redis://localhost", channel="cha:1")
         async for message in notif:

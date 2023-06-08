@@ -14,11 +14,10 @@ ALLOWED_HOSTS = config.get(
     default=['*']
 )
 
-redis_host = config.get('redis', 'host', default=None)
-redis_port = config.get('redis', 'port', default=None)
+REDIS_URL = config.get('redis', 'url', default=None)
 
-if redis_host and redis_port:
-    CELERY_BROKER_URL = f"redis://{redis_host}:{redis_port}/0"
+if REDIS_URL:
+    CELERY_BROKER_URL = REDIS_URL
 else:
     CELERY_BROKER_URL = 'memory://localhost/'
 
@@ -31,17 +30,6 @@ CELERY_TASK_DEFAULT_EXCHANGE = 'papermerge'
 CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'
 CELERY_TASK_DEFAULT_ROUTING_KEY = 'papermerge'
 
-
-redis_channel_host =redis_host or '127.0.0.1'
-redis_channel_port = redis_port or 6379
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [(redis_channel_host, redis_channel_port)],
-        },
-    },
-}
 
 DEBUG = config.get('main', 'debug', False)
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)

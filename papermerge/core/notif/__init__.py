@@ -1,5 +1,5 @@
-import json
-import redis.asyncio as redis
+from papermerge.core.notif.backends.base import BaseBackend
+from urllib.parse import urlparse
 
 
 class Notification:
@@ -27,12 +27,18 @@ class Notification:
         r.rpush("cha:1", json_data)
     """
     def __init__(self, url, channel: str = "channel:1", timeout: int = 2):
-        self._redis = redis.from_url(url)
-        self._channel = channel
-        self._timeout = timeout
+        self._backend: BaseBackend
+        parsed_url = urlparse(url)
+
+        if parsed_url.scheme in ("redis", "rediss"):
+            from papermerge.core.notif.backends.redis import RedisBackend
+            self._backend = RedisBackend(url, channel=channel, timeout=timeout)
+        elif parsed_url.scheme == "memory":
+            from papermerge.core.notif.backends.memory import MemoryBackend
+            self._backend = MemoryBackend(url, channel=channel, timeout=timeout)
 
     async def __aiter__(self):
         while True:
-            result = await self._redis.blpop(self._channel, self._timeout)
+            result = await self._backend.pop()
             if result is not None:
-                yield json.loads(result[1].decode())
+                yield result

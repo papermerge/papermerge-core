@@ -1,5 +1,7 @@
-from papermerge.core.notif.backends.base import BaseBackend
 from urllib.parse import urlparse
+from django.conf import settings
+
+from papermerge.core.notif.backends.base import BaseBackend
 
 
 class Notification:
@@ -37,8 +39,18 @@ class Notification:
             from papermerge.core.notif.backends.memory import MemoryBackend
             self._backend = MemoryBackend(url, channel=channel, timeout=timeout)
 
+    async def push(self, value):
+        await self._backend.push(value)
+
+    async def pop(self):
+        result = await self._backend.pop()
+        return result
+
     async def __aiter__(self):
         while True:
-            result = await self._backend.pop()
+            result = await self.pop()
             if result is not None:
                 yield result
+
+
+notification = Notification(settings.NOTIFICATION_URL, channel="cha:1")

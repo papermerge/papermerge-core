@@ -1,19 +1,27 @@
+import logging
 import json
-import queue
+from asyncio import Queue
+
+
+logger = logging.getLogger(__name__)
 
 
 class MemoryBackend:
 
     def __init__(self, url: str, channel, timeout) -> None:
-        self._queue = queue.Queue()
+        self._queue = Queue()
 
     async def pop(self):
-        result = self._queue.get()
-        if result is not None:
-            return json.loads(result[1].decode())
+        logger.debug("POP")
+        value = await self._queue.get()
+        logger.debug(f"Pop value={value} from the queue")
+        if value is not None:
+            return json.loads(value)
 
         return None
 
     async def push(self, value):
+        logger.debug("PUSH")
         json_data = json.dumps(value)
-        self._queue.put(json_data)
+        logger.debug(f"Push value={value} to the queue")
+        await self._queue.put(json_data)

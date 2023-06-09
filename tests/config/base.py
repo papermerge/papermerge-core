@@ -14,6 +14,7 @@ PAPERMERGE_NAMESPACE = config.get('main', 'namespace', default=None)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REDIS_URL = config.get('redis', 'url', default='redis://localhost:6379/0')
+NOTIFICATION_URL = 'memory://localhost/'
 
 INSTALLED_APPS = [
     'rest_framework',

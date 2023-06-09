@@ -18,8 +18,10 @@ REDIS_URL = config.get('redis', 'url', default=None)
 
 if REDIS_URL:
     CELERY_BROKER_URL = REDIS_URL
+    NOTIFICATION_URL = REDIS_URL
 else:
     CELERY_BROKER_URL = 'memory://localhost/'
+    NOTIFICATION_URL = 'memory://localhost/'
 
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json']

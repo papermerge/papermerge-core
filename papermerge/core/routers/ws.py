@@ -1,8 +1,6 @@
 import logging
 
-from django.conf import settings
-
-from papermerge.core.notif import Notification
+from papermerge.core.notif import notification
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -13,8 +11,6 @@ router = APIRouter(
     prefix="/ws",
     tags=["websockets"]
 )
-
-notif = Notification(settings.REDIS_URL, channel="cha:1")
 
 
 class ConnectionManager:
@@ -40,7 +36,9 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            async for message in notif:
+            logger.info("While True")
+            async for message in notification:
+                logger.info("In message for loop")
                 await manager.send(f"Message text was: {message}", websocket)
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")

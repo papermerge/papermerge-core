@@ -35,16 +35,21 @@ packages = [
 ]
 [tool.poetry.group.dev.dependencies]
 towncrier = "^22.8.0"
-pytest = "^7.1.2"
-pytest-django = "^4.4"
 pycodestyle = "^2.8"
 django-extensions = "^3.1"
 ipython = "^8.0.1"
-model-bakery = "^1.5.0"
 taskipy = "^1.10.2"
 "pdfminer.six" = "^20220524"
 pre-commit = "^2.20.0"
 watchfiles = "^0.19.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.2"
+pytest-django = "^4.4"
+model-bakery = "^1.5.0"
+pytest-asyncio = "^0.21.0"
+
 
 [project.urls]
 Tracker = "https://github.com/ciur/papermerge/issues"

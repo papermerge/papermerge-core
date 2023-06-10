@@ -116,7 +116,6 @@ lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --reload --app-dir docker/dev/ --reload-dir papermerge --reload-dir tests"
-spectacular = "./manage.py spectacular"
 
 [tool.towncrier]
 directory = "changelog.d"

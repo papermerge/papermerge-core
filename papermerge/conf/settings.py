@@ -75,8 +75,6 @@ PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
     'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.sessions',
@@ -84,11 +82,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
     'papermerge.search.apps.SearchConfig',
-    'papermerge.notifications.apps.NotificationsConfig',
     'django.contrib.contenttypes',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',
-    'channels',
     'haystack',
 ]
 

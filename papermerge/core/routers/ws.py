@@ -1,9 +1,16 @@
 import logging
 
+from fastapi import (
+    APIRouter,
+    WebSocket,
+    WebSocketDisconnect,
+    Depends
+)
+
 from papermerge.core.notif import notification
+from papermerge.core.models import User
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-
+from .auth import get_ws_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +39,29 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ocr")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user: User = Depends(get_ws_current_user)
+):
+    """
+    Sends notifications to websockets clients about the status of OCR tasks.
+
+    The OCR tasks status is asynchronously received via redis and pushed
+    to the websocket clients (to the current/session user).
+    """
     await manager.connect(websocket)
     try:
         while True:
-            logger.info("While True")
             async for message in notification:
-                logger.info("In message for loop")
-                await manager.send(f"Message text was: {message}", websocket)
+                logger.debug(
+                    f"Message received {message} "
+                    f"Current user id = {str(user.id)}"
+                )
+                # send only to the current user
+                if message['user_id'] == str(user.id):
+                    await manager.send(
+                        f"Message text was: {message}", websocket
+                    )
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")
         manager.disconnect(websocket)

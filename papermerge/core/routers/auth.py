@@ -1,7 +1,13 @@
 import base64
 import json
 
-from fastapi import Depends, HTTPException
+from fastapi import (
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketException,
+    status
+)
 from fastapi.security import OAuth2PasswordBearer
 from papermerge.core.models import User
 
@@ -40,6 +46,45 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         raise HTTPException(
             status_code=401,
             detail="REMOTE_USER header is empty"
+        )
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=401,
+            detail="Remote user not found"
+        )
+
+    return user
+
+
+def get_ws_current_user(
+    websocket: WebSocket
+) -> User:
+    token = None
+    authorization_header = websocket.headers.get('authorization', None)
+    cookie = websocket.cookies.get('access_token')
+
+    if authorization_header:
+        parts = authorization_header.split(' ')
+        if len(parts) == 2:
+            token = parts[1].strip()
+    elif cookie:
+        token = cookie
+
+    if token is None:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="token is missing"
+        )
+
+    user_id = get_user_id_from_token(token)
+
+    if user_id is None:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="user_id is missing"
         )
 
     try:

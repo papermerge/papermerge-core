@@ -35,16 +35,21 @@ packages = [
 ]
 [tool.poetry.group.dev.dependencies]
 towncrier = "^22.8.0"
-pytest = "^7.1.2"
-pytest-django = "^4.4"
 pycodestyle = "^2.8"
 django-extensions = "^3.1"
 ipython = "^8.0.1"
-model-bakery = "^1.5.0"
 taskipy = "^1.10.2"
 "pdfminer.six" = "^20220524"
 pre-commit = "^2.20.0"
 watchfiles = "^0.19.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.2"
+pytest-django = "^4.4"
+model-bakery = "^1.5.0"
+pytest-asyncio = "^0.21.0"
+
 
 [project.urls]
 Tracker = "https://github.com/ciur/papermerge/issues"
@@ -54,8 +59,6 @@ Source = "https://github.com/papermerge/papermerge-core"
 python = ">=3.8, <3.11"
 django = "^4.1"
 django_filter = "^21.1"
-channels = "^3.0"
-channels-redis = "^3.2"
 redis = "^4.3.3"
 ocrmypdf = "^13.5.0"
 ocrmypdf-papermerge = "^0.4.5"
@@ -75,14 +78,11 @@ psycopg2 = "^2.9.2"
 psycopg2-binary = "^2.9.2"
 daphne = "^3.0.2"
 django-rest-knox = "^4.2.0"
-drf-spectacular = "^0.22.0"
-drf-spectacular-sidecar = "^2022.3.21"
 elasticsearch = ">=7,<8"
 django-haystack = "^3.2.1"
 # This is NOT a typo! It is indeed yapian-haystack instead of xapian-haystack.
 # For details see https://github.com/ciur/papermerge/issues/486
 yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
-Whoosh = "^2.7.4"
 pdf2image = "^1.16.0"
 fastapi = "^0.93.0"
 uvicorn = "^0.21.0"
@@ -92,6 +92,8 @@ fastapi-pagination = "^0.11.4"
 xapianpy = "^1.4.22.post2305071405"
 dj-database-url = "^2.0.0"
 dj-config-url = "^0.1.1"
+websockets = "^11.0.3"
+httpx = "^0.24.1"
 
 
 [tool.pytest.ini_options]
@@ -114,7 +116,6 @@ lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --reload --app-dir docker/dev/ --reload-dir papermerge --reload-dir tests"
-spectacular = "./manage.py spectacular"
 
 [tool.towncrier]
 directory = "changelog.d"

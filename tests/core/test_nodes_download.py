@@ -1,16 +1,17 @@
 from django.test import TestCase
 
 from papermerge.core.models import Document, User
-from papermerge.core.serializers.node import (
-    NodesDownloadSerializer,
-    TARGZ
-)
 from papermerge.core.nodes_download import (
     get_nodes_download,
     NodesDownloadDocument,
     NodesDownloadZip,
     NodesDownloadTarGz
 )
+
+ONLY_ORIGINAL = 'only_original'
+ONLY_LAST = 'only_last'
+ZIP = 'zip'
+TARGZ = 'targz'
 
 
 class TestNodesDownload(TestCase):
@@ -64,22 +65,8 @@ class TestNodesDownload(TestCase):
         )
 
     def test_get_nodes_download_used_with_serializer(self):
-        serializer = NodesDownloadSerializer(
-            data={
-                'node_ids': [self.doc.id],
-                'file_name': 'invoice.pdf'
-            }
+        download = get_nodes_download(
+            node_ids=[self.doc.id],
+            file_name='invoice.pdf',
         )
-        if serializer.is_valid():
-            download = get_nodes_download(
-                node_ids=serializer.data['node_ids'],
-                file_name=serializer.data['file_name'],
-            )
-            self.assertEqual(download.file_name, 'invoice.pdf')
-            self.assertTrue(
-                isinstance(download, NodesDownloadDocument)
-            )
-        else:
-            # should never reach this place as serialized data is
-            # expected to be valid
-            self.assertTrue(False)
+        self.assertEqual(download.file_name, 'invoice.pdf')

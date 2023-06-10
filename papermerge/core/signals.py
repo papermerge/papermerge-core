@@ -1,7 +1,6 @@
 import logging
 
 from kombu.exceptions import OperationalError
-from channels.layers import get_channel_layer
 from pathlib import Path
 from asgiref.sync import async_to_sync
 
@@ -23,6 +22,7 @@ from papermerge.core.models import (
     User,
 )
 from papermerge.core.storage import get_storage_instance
+from papermerge.core.notif import notification
 from .tasks import delete_user_data as delete_user_data_task
 from .tasks import (
     ocr_document_task,
@@ -41,6 +41,71 @@ MONITORED_TASKS = (
 
 HEARTBEAT_FILE = Path("/tmp/worker_heartbeat")
 READINESS_FILE = Path("/tmp/worker_ready")
+
+
+def get_channel_data(task_name, type):
+
+    if task_name == 'papermerge.core.tasks.ocr_document_task':
+        return {
+            'type': f"ocrdocumenttask.{type}"
+        }
+    else:
+        raise ValueError(f"Task name not in {MONITORED_TASKS}")
+
+
+def channel_group_notify(task_name, task_kwargs, type):
+    """
+    Send group notification to the channel
+    """
+    channel_data = get_channel_data(task_name, type)
+
+    channel_data.update(task_kwargs)
+    task_short_name = task_name.split('.')[-1]
+
+    logger.debug(
+        f"channel_group_notify {task_short_name} {channel_data}"
+    )
+    async_to_sync(notification.push)(channel_data)
+
+
+@task_prerun.connect
+def channel_group_notify_task_prerun(sender=None, **kwargs):
+    if sender:
+        if sender.name in MONITORED_TASKS:
+            channel_group_notify(
+                task_name=sender.name,
+                task_kwargs=kwargs['kwargs'],
+                type='taskstarted'
+            )
+
+
+@task_postrun.connect
+def channel_group_notify_task_postrun(sender=None, **kwargs):
+    if sender:
+        if sender.name in MONITORED_TASKS:
+            state = kwargs['state']
+            if state == 'SUCCESS':
+                type = 'tasksucceeded'
+            else:
+                type = 'taskfailed'
+
+            channel_group_notify(
+                task_name=sender.name,
+                task_kwargs=kwargs['kwargs'],
+                type=type
+            )
+
+
+@task_received.connect
+def channel_group_notify_task_received(sender=None, **kwargs):
+    request = kwargs.get('request')
+    if request:
+        if request.name in MONITORED_TASKS:
+            channel_group_notify(
+                task_name=request.name,
+                task_kwargs=request.kwargs,
+                type='taskreceived'
+            )
 
 
 @receiver(pre_delete, sender=Document)
@@ -81,76 +146,6 @@ def user_init(sender, instance, created, **kwargs):
     if created:
         if settings.PAPERMERGE_CREATE_SPECIAL_FOLDERS:
             instance.create_special_folders()
-
-
-def get_channel_data(task_name, type):
-
-    if task_name == 'papermerge.core.tasks.ocr_document_task':
-        return {
-            'type': f"ocrdocumenttask.{type}"
-        }
-    else:
-        raise ValueError(f"Task name not in {MONITORED_TASKS}")
-
-
-def channel_group_notify(task_name, task_kwargs, type):
-    """
-    Send group notification to the channel
-    """
-    channel_layer = get_channel_layer()
-    channel_data = get_channel_data(task_name, type)
-
-    channel_data.update(task_kwargs)
-    task_short_name = task_name.split('.')[-1]
-
-    logger.debug(
-        f"channel_group_notify {task_short_name} {channel_data}"
-    )
-    async_to_sync(
-        channel_layer.group_send
-    )(
-        task_short_name, channel_data
-    )
-
-
-@task_prerun.connect
-def channel_group_notify_task_prerun(sender=None, **kwargs):
-    if sender:
-        if sender.name in MONITORED_TASKS:
-            channel_group_notify(
-                task_name=sender.name,
-                task_kwargs=kwargs['kwargs'],
-                type='taskstarted'
-            )
-
-
-@task_received.connect
-def channel_group_notify_task_received(sender=None, **kwargs):
-    request = kwargs.get('request')
-    if request:
-        if request.name in MONITORED_TASKS:
-            channel_group_notify(
-                task_name=request.name,
-                task_kwargs=request.kwargs,
-                type='taskreceived'
-            )
-
-
-@task_postrun.connect
-def channel_group_notify_task_postrun(sender=None, **kwargs):
-    if sender:
-        if sender.name in MONITORED_TASKS:
-            state = kwargs['state']
-            if state == 'SUCCESS':
-                type = 'tasksucceeded'
-            else:
-                type = 'taskfailed'
-
-            channel_group_notify(
-                task_name=sender.name,
-                task_kwargs=kwargs['kwargs'],
-                type=type
-            )
 
 
 @heartbeat_sent.connect

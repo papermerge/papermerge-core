@@ -32,7 +32,7 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def send(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+        await websocket.send_json(message)
 
 
 manager = ConnectionManager()
@@ -59,9 +59,7 @@ async def websocket_endpoint(
                 )
                 # send only to the current user
                 if message['user_id'] == str(user.id):
-                    await manager.send(
-                        f"Message text was: {message}", websocket
-                    )
+                    await manager.send(message, websocket)
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")
         manager.disconnect(websocket)

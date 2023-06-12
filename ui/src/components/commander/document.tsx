@@ -1,11 +1,33 @@
+import { useEffect } from "react";
+
 import Spinner from "../spinner";
 import SpinnerPlaceholder from "../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
+import websockets from "../../services/ws";
 
 import type { CheckboxChangeType, NodeArgsType } from "./types";
 
 
+function str_id(node_id: string): string {
+  return `document-ocr-status-${node_id}`;
+}
+
+
 function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
+
+  const networkMessageHandler = (data: any, ev: MessageEvent) => {
+    if (data.document_id == node.id) {
+      console.log(data.type);
+    }
+  }
+
+  useEffect(() => {
+    websockets.addHandler(str_id(node.id), {callback: networkMessageHandler});
+
+    return () => {
+      websockets.removeHandler(str_id(node.id));
+    }
+  }, []);
 
   const onclick = () => {
     onClick({node_id: node.id, node_type: node.ctype});

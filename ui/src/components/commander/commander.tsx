@@ -425,7 +425,7 @@ function Commander({
     if (is_empty(items)) {
       nodes = <EmptyFolder />;
     } else {
-      nodes = items.map((item: any) => {
+      nodes = items.map((item: NodeType) => {
         if (item.ctype == 'folder') {
           return <Folder
             key={item.id}

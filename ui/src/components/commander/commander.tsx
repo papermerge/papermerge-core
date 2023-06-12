@@ -450,7 +450,7 @@ function Commander({
             }}
           />;
         } else {
-          return <Document
+          return <Document key={item.id}
             onClick={onNodeClick}
             onSelect={onNodeSelect}
             onDragStart={onDragStart}

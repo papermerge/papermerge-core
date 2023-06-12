@@ -16,6 +16,8 @@ function str_id(node_id: string): string {
 function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
 
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
+    console.log(`I received a message`);
+    console.log(`Is message for me? ${data.document_id} == ${node.id}`);
     if (data.document_id == node.id) {
       console.log(data.type);
     }

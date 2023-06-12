@@ -8,6 +8,20 @@ type Handler = {
 };
 
 
+function get_host(): string {
+  return window.location.host;
+}
+
+
+function get_url(): string {
+  if (window.location.protocol == 'https:') {
+    return `wss://${get_host()}/ws/ocr`;
+  }
+
+  return `ws://${get_host()}/ws/ocr`;
+}
+
+
 class WebSocketService {
 
   _url: string;
@@ -15,6 +29,8 @@ class WebSocketService {
   _handlers: Map<string, Handler>;
 
   constructor(url: string) {
+    console.log(`Connecting to ${url}`);
+
     let that = this;
 
     this._url = url;
@@ -29,8 +45,10 @@ class WebSocketService {
       that._handlers.forEach((item: Handler) => {
         let json_data, msg;
 
+
         try {
           json_data = JSON.parse(event.data);
+          console.log(`Incoming Event: ${json_data.document_id} - ${json_data.type}`);
           item.callback.apply(item.context, [json_data, event]);
         } catch (err) {
           msg = `Error ${err} while parsing incoming data: ${event.data}`;
@@ -41,6 +59,8 @@ class WebSocketService {
   }
 
   addHandler(key: string, handler: Handler) {
+    console.log(`adding ${key}`);
+
     if (!this._socket) {
       return;
     }
@@ -49,10 +69,11 @@ class WebSocketService {
   }
 
   removeHandler(key: string) {
+    console.log(`removing ${key}`);
     this._handlers.delete(key);
   }
 }
 
-const websockets = new WebSocketService(`ws://${window.location.host}/ws/ocr`);
+const websockets = new WebSocketService(get_url());
 
 export default websockets;

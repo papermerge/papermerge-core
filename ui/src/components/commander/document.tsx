@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import Spinner from "../spinner";
 import SpinnerPlaceholder from "../spinner_placeholder";
+import OcrStatus from "components/ocr_status";
 import Form from 'react-bootstrap/Form';
 import websockets from "../../services/ws";
 
 import type { CheckboxChangeType, NodeArgsType } from "./types";
+import { OcrStatusEnum } from "types";
 
 
 function str_id(node_id: string): string {
@@ -15,11 +17,24 @@ function str_id(node_id: string): string {
 
 function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
 
+  const [ status, setStatus ] = useState<OcrStatusEnum>("unknown");
+
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
-    console.log(`I received a message`);
-    console.log(`Is message for me? ${data.document_id} == ${node.id}`);
     if (data.document_id == node.id) {
-      console.log(data.type);
+      switch(data.type) {
+        case "ocrdocumenttask.taskreceived":
+          setStatus("received");
+          break;
+        case "ocrdocumenttask.taskstarted":
+          setStatus("started");
+          break;
+        case "ocrdocumenttask.tasksucceeded":
+          setStatus("succeeded");
+          break;
+        case "ocrdocumenttask.taskfailed":
+          setStatus("failed");
+          break;
+      }
     }
   }
 
@@ -44,6 +59,7 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
       {is_loading ? <Spinner />: <SpinnerPlaceholder />}
       <div><Form.Check onChange={onselect} defaultChecked={is_selected} type="checkbox" /></div>
       <div className="icon document"></div>
+      <OcrStatus status={status} />
       <div className="title" onClick={onclick}>{node.title}</div>
     </div>
   );

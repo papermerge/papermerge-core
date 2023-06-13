@@ -45,7 +45,6 @@ class WebSocketService {
       that._handlers.forEach((item: Handler) => {
         let json_data, msg;
 
-
         try {
           json_data = JSON.parse(event.data);
           console.log(`Incoming Event: ${json_data.document_id} - ${json_data.type}`);

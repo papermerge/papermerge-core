@@ -1,4 +1,5 @@
 import os
+import importlib.metadata
 
 from django.core.asgi import get_asgi_application
 from fastapi import FastAPI
@@ -8,7 +9,10 @@ get_asgi_application()
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-fastapp = FastAPI()
+fastapp = FastAPI(
+    title="Papermerge DMS",
+    version=importlib.metadata.version("papermerge-core")
+)
 
 fastapp.add_middleware(
     CORSMiddleware,

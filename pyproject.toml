@@ -30,7 +30,6 @@ keywords = [
 packages = [
     { include = "papermerge/core" },
     { include = "papermerge/conf" },
-    { include = "papermerge/notifications" },
     { include = "papermerge/search" },
 ]
 [tool.poetry.group.dev.dependencies]

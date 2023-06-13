@@ -94,3 +94,8 @@ export type State<T> = {
   data: T | null;
 }
 
+export type OcrStatusEnum = "unknown" | "received" | "started" | "succeeded" | "failed";
+
+export type OcrStatusType = {
+    status: OcrStatusEnum;
+}

@@ -9,9 +9,8 @@ Papermerge Document Management System (DMS).
 Technically speaking, it contains following Django apps:
 
 * ``papermerge.core`` - the epicenter of Papermerge DMS project
-* ``papermerge.notifications`` - Django Channels app for sending notifications via websockets
-* ``papermerge.search`` - RESTful search. Supports four backends: [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/),
-  [Whoosh](https://whoosh.readthedocs.io/en/latest/intro.html), [Elasticsearch](https://github.com/elastic/elasticsearch),
+* ``papermerge.search`` - RESTful search. Supports different backends: [Xapian]
+  (https://getting-started-with-xapian.readthedocs.io/en/latest/), [Elasticsearch](https://github.com/elastic/elasticsearch),
   [Solr](https://solr.apache.org/).
 
 
@@ -62,7 +61,7 @@ Papermerge DMS documentation is available at [https://docs.papermerge.io](https:
 In order to start Papermerge REST API server as docker image use following command:
 
     docker run -p 8000:8000 \
-        -e PAPERMERGE__MAIN__SECRET_KEY=abc \
+        -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e DJANGO_SUPERUSER_PASSWORD=123 \
         papermerge/papermerge:latest
 
@@ -71,7 +70,7 @@ If you want initial superuser to have another username (e.g. john), use
 `DJANGO_SUPERUSER_USERNAME` environment variable:
 
     docker run -p 8000:8000 \
-        -e PAPERMERGE__MAIN__SECRET_KEY=abc \
+        -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e DJANGO_SUPERUSER_PASSWORD=123 \
         -e DJANGO_SUPERUSER_USERNAME=john \
         papermerge/papermerge:latest
@@ -87,13 +86,9 @@ By default Papermerge REST API server uses sqlite3 database. In order to use Pos
       app:
         image: papermerge/papermerge
         environment:
-          - PAPERMERGE__MAIN__SECRET_KEY=abc
+          - PAPERMERGE__SECURITY__SECRET_KEY=abc
+          - PAPERMERGE__DATABASE__URL=postgresql+psycopg2://postgres:123@db:5432/mydatabase
           - DJANGO_SUPERUSER_PASSWORD=12345
-          - PAPERMERGE__DATABASE__TYPE=postgres
-          - PAPERMERGE__DATABASE__USER=postgres
-          - PAPERMERGE__DATABASE__PASSWORD=123
-          - PAPERMERGE__DATABASE__NAME=postgres
-          - PAPERMERGE__DATABASE__HOST=db
         ports:
           - 8000:8000
         depends_on:

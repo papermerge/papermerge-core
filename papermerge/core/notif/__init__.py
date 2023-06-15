@@ -1,7 +1,10 @@
+from collections.abc import Iterator
+
 from urllib.parse import urlparse
 from django.conf import settings
 
 from papermerge.core.notif.backends.base import BaseBackend
+from .events import Event, State, OCREvent  # noqa
 
 
 class Notification:
@@ -39,14 +42,14 @@ class Notification:
             from papermerge.core.notif.backends.memory import MemoryBackend
             self._backend = MemoryBackend(url, channel=channel, timeout=timeout)
 
-    async def push(self, value):
+    async def push(self, value: Event):
         await self._backend.push(value)
 
-    async def pop(self):
+    async def pop(self) -> Event:
         result = await self._backend.pop()
         return result
 
-    async def __aiter__(self):
+    async def __aiter__(self) -> Iterator[Event]:
         while True:
             result = await self.pop()
             if result is not None:

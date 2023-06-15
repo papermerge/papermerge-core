@@ -22,7 +22,12 @@ from papermerge.core.models import (
     User,
 )
 from papermerge.core.storage import get_storage_instance
-from papermerge.core.notif import notification
+from papermerge.core.notif import (
+    notification,
+    Event,
+    State,
+    OCREvent
+)
 from .tasks import delete_user_data as delete_user_data_task
 from .tasks import (
     ocr_document_task,
@@ -35,12 +40,18 @@ from .signal_definitions import document_post_upload
 logger = logging.getLogger(__name__)
 
 # Tasks that need to notify websocket clients
+
+HEARTBEAT_FILE = Path("/tmp/worker_heartbeat")
+READINESS_FILE = Path("/tmp/worker_ready")
+
+
 MONITORED_TASKS = (
     'papermerge.core.tasks.ocr_document_task',
 )
 
-HEARTBEAT_FILE = Path("/tmp/worker_heartbeat")
-READINESS_FILE = Path("/tmp/worker_ready")
+MONITORED_TASKS_KWARGS_TYPE_DICT = {
+    'papermerge.core.tasks.ocr_document_task': OCREvent
+}
 
 
 def get_channel_data(task_name, type):
@@ -53,59 +64,53 @@ def get_channel_data(task_name, type):
         raise ValueError(f"Task name not in {MONITORED_TASKS}")
 
 
-def channel_group_notify(task_name, task_kwargs, type):
+def channel_group_notify(full_name: str, state: State, **kwargs):
     """
     Send group notification to the channel
     """
-    channel_data = get_channel_data(task_name, type)
-
-    channel_data.update(task_kwargs)
-    task_short_name = task_name.split('.')[-1]
-
-    logger.debug(
-        f"channel_group_notify {task_short_name} {channel_data}"
-    )
-    async_to_sync(notification.push)(channel_data)
+    if full_name in MONITORED_TASKS:
+        logger.debug(
+            f"channel_group_notify full_name={full_name} state={state}"
+            f" kwargs={kwargs}"
+        )
+        event = Event(
+            name=full_name.split('.')[-1],
+            state=state,
+            kwargs=kwargs
+        )
+        async_to_sync(notification.push)(event)
 
 
 @task_prerun.connect
 def channel_group_notify_task_prerun(sender=None, **kwargs):
     if sender:
-        if sender.name in MONITORED_TASKS:
-            channel_group_notify(
-                task_name=sender.name,
-                task_kwargs=kwargs['kwargs'],
-                type='taskstarted'
-            )
+        channel_group_notify(
+            full_name=sender.name,
+            state=State.started,
+            kwargs=kwargs['kwargs']
+        )
 
 
 @task_postrun.connect
 def channel_group_notify_task_postrun(sender=None, **kwargs):
     if sender:
-        if sender.name in MONITORED_TASKS:
-            state = kwargs['state']
-            if state == 'SUCCESS':
-                type = 'tasksucceeded'
-            else:
-                type = 'taskfailed'
-
-            channel_group_notify(
-                task_name=sender.name,
-                task_kwargs=kwargs['kwargs'],
-                type=type
-            )
+        channel_group_notify(
+            full_name=sender.name,
+            state=kwargs['state'],
+            kwargs=kwargs['kwargs']
+        )
 
 
 @task_received.connect
 def channel_group_notify_task_received(sender=None, **kwargs):
+    # why here is ``requests`` instead of ``sender``?
     request = kwargs.get('request')
     if request:
-        if request.name in MONITORED_TASKS:
-            channel_group_notify(
-                task_name=request.name,
-                task_kwargs=request.kwargs,
-                type='taskreceived'
-            )
+        channel_group_notify(
+            full_name=request.name,
+            state=State.received,
+            kwargs=request.kwargs
+        )
 
 
 @receiver(pre_delete, sender=Document)

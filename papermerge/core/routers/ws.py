@@ -58,7 +58,7 @@ async def websocket_endpoint(
                     f"Current user id = {str(user.id)}"
                 )
                 # send only to the current user
-                if message['user_id'] == str(user.id):
+                if message.kwargs.user_id == str(user.id):
                     await manager.send(message, websocket)
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")

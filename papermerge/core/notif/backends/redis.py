@@ -11,7 +11,7 @@ class RedisBackend:
         self._channel = channel
         self._timeout = timeout
 
-    async def pop(self):
+    async def pop(self) -> Event | None:
         result = await self._redis.blpop(self._channel, self._timeout)
         if result is not None:
             attrs = json.loads(result[1].decode())

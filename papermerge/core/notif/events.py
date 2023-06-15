@@ -15,7 +15,7 @@ class State(str, Enum):
 class OCREvent(BaseModel):
     document_id: str
     user_id: str
-    namespace: str | None
+    namespace: str | None = None
     lang: str
 
 

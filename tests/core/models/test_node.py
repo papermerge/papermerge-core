@@ -257,22 +257,27 @@ def test_get_ancestors_returns_correct_order_dont_include_self():
 
 
 @pytest.mark.django_db
-def test_get_by_breadcrumb_with_duplicate_paths():
+def test_get_by_breadcrumb_with_duplicate_paths(user: User):
     """
     Given following folders:
-    - .home/A/B/C
-    - .inbox/A/B/C
+
+    - '.home/A/B/C'
+    - '.inbox/A/B/C'
+
     node.objects.get_by_breadcrumb('.home/A/B') should
     return instance of folder B which is under .home, not the
     one under .inbox.
     """
-    user = user_recipe.make()
     make_folders(".home/A/B/C", user=user)
     make_folders(".inbox/A/B/C", user=user)
 
     folder = Folder.objects.get_by_breadcrumb(".home/A/B", user)
 
-    assert ".home/A/B/" == folder.breadcrumb
+    actual_breadcrumb = '/'.join([
+        title for uuid, title in folder.breadcrumb
+    ])
+
+    assert ".home/A/B/" == actual_breadcrumb + '/'
     assert "B" == folder.title
 
 
@@ -297,7 +302,11 @@ def test_get_by_breadcrumb_with_same_of_under_multiple_users():
         user=user_B
     )
 
-    assert ".home/X/Y/" == user_B_folder.breadcrumb
+    actual_breadcrumb_b = '/'.join([
+        title for uuid, title in user_B_folder.breadcrumb
+    ]) + '/'
+
+    assert ".home/X/Y/" == actual_breadcrumb_b
     assert user_B == user_B_folder.user
 
     # find folder under user A
@@ -306,7 +315,10 @@ def test_get_by_breadcrumb_with_same_of_under_multiple_users():
         user=user_A
     )
 
-    assert ".home/X/Y/" == user_A_folder.breadcrumb
+    actual_breadcrumb_a = '/'.join([
+        title for uuid, title in user_B_folder.breadcrumb
+    ]) + '/'
+    assert ".home/X/Y/" == actual_breadcrumb_a
     assert user_A == user_A_folder.user
 
 

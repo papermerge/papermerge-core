@@ -311,12 +311,23 @@ def test_get_by_breadcrumb_with_same_of_under_multiple_users():
 
 
 @pytest.mark.django_db
-def test_get_by_breadcrumb_basic():
-    user = user_recipe.make()
-    make_folders(".home/My Documents/X/Y/Z", user)
-    my_docs = Folder.objects.get_by_breadcrumb(".home/My Documents/", user)
+def test_get_by_breadcrumb_basic(user: User):
+    """Test ``node.get_by_breadcrumb`` method"""
+    make_folders('.home/My Documents/X/Y/Z', user)
+    home = Folder.objects.get(pk=user.home_folder.pk)
 
-    assert ".home/My Documents/" == my_docs.breadcrumb
+    my_documents = Folder.objects.get(title='My Documents', user=user)
+
+    # get_by_breadcrumb method should correctly return 'My Documents' folder
+    my_docs = Folder.objects.get_by_breadcrumb('.home/My Documents/', user)
+
+    expected_result = [
+        (home.pk, home.title),
+        (my_documents.pk, my_documents.title),
+    ]
+
+    # my_docs is indeed '.home/My documents'
+    assert expected_result == my_docs.breadcrumb
     assert "My Documents" == my_docs.title
 
 

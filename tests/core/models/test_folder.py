@@ -1,10 +1,11 @@
 import pytest
-
-from django.db.utils import IntegrityError
 from django.db import transaction
+from django.db.utils import IntegrityError
+
+from papermerge.core.models import Folder, User
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import folder_recipe, user_recipe
-from papermerge.core.models import User, Folder
+from papermerge.test.baker_recipes import folder_recipe
+from papermerge.test.utils import breadcrumb_fmt
 
 
 class TestFolderModel(TestCase):
@@ -207,8 +208,7 @@ def test_delete_folder_with_sub_folders():
 
 
 @pytest.mark.django_db
-def test_folder_breadcrumb():
-    user = user_recipe.make()
+def test_folder_breadcrumb(user: User):
     folder1 = folder_recipe.make(
         title='folder1',
         user=user,
@@ -220,5 +220,7 @@ def test_folder_breadcrumb():
         parent=folder1
     )
 
-    assert folder.breadcrumb == '.home/folder1/folder2/'
+    actual_breadcrumb = breadcrumb_fmt(folder.breadcrumb) + '/'
+
+    assert '.home/folder1/folder2/' == actual_breadcrumb
     assert folder.title == 'folder2'

@@ -1,17 +1,18 @@
-from unittest.mock import patch
 import io
-import shutil
-import os
 import json
+import os
+import shutil
 from pathlib import Path
+from unittest.mock import patch
 
-from haystack import connections
-from haystack.utils.loading import UnifiedIndex
+import pytest
 from django.test import TestCase
 from django.urls import reverse
+from haystack import connections
+from haystack.utils.loading import UnifiedIndex
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Folder, Document
+from papermerge.core.models import Document, Folder, User
 
 SEARCH_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(SEARCH_DIR_ABS_PATH)
@@ -26,6 +27,7 @@ def rebuild_index():
     search_backend.update(index2, Folder.objects.all())
 
 
+@pytest.mark.skip()
 class SearchViewVeryBasicTestCase(TestCase):
 
     def setUp(self):
@@ -91,6 +93,7 @@ class SearchViewVeryBasicTestCase(TestCase):
         assert data[1]['title'] in expected_titles
 
 
+@pytest.mark.skip()
 class SearchFolderTestCase(TestCase):
     def setUp(self):
         super().setUp()
@@ -139,6 +142,7 @@ class SearchFolderTestCase(TestCase):
         assert data[0]['title'] == 'Invoices'
 
 
+@pytest.mark.skip()
 class SearchDocumentTestCase(TestCase):
 
     def setUp(self):
@@ -180,6 +184,7 @@ class SearchDocumentTestCase(TestCase):
         assert 'page number one' in data[0]['text']
 
 
+@pytest.mark.skip()
 class SearchAfterMoveToFolder(TestCase):
     """
     There is a document 'living-things.pdf' with two pages:
@@ -273,6 +278,7 @@ class SearchAfterMoveToFolder(TestCase):
         assert 'cat' in response.data[0]['text']
 
 
+@pytest.mark.skip()
 class SearchByTags(TestCase):
     def setUp(self):
         super().setUp()

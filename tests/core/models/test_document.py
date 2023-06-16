@@ -1,17 +1,19 @@
+import io
 import os
 import shutil
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from django.db.utils import IntegrityError
 from django.db import transaction
+from django.db.utils import IntegrityError
 
+from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
-from papermerge.core.models import (User, Document)
-from papermerge.test.baker_recipes import user_recipe, folder_recipe, \
-    document_recipe
+from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
+                                           user_recipe)
+from papermerge.test.utils import breadcrumb_fmt
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_DIR_ABS_PATH = os.path.dirname(
@@ -130,27 +132,27 @@ class TestDocumentModel(TestCase):
             parent=self.user.home_folder
         )
 
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
+        with open(self.resources / 'three-pages.pdf', 'rb') as file:
+            content = file.read()
+            size = os.stat(self.resources / 'three-pages.pdf').st_size
 
-        last_version = doc.versions.last()
-        assert doc.versions.count() == 1
-        assert last_version.size == 0
+            last_version = doc.versions.last()
+            assert doc.versions.count() == 1
+            assert last_version.size == 0
 
-        doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+            doc.upload(
+                content=io.BytesIO(content),
+                file_name='three-pages.pdf',
+                size=size
+            )
 
-        last_version = doc.versions.last()
-        assert doc.versions.count() == 1
-        assert last_version.size > 0
+            last_version = doc.versions.last()
+            assert doc.versions.count() == 1
+            assert last_version.size > 0
 
-        assert os.path.exists(
-            abs_path(last_version.document_path)
-        )
-
-        payload.close()
+            assert os.path.exists(
+                abs_path(last_version.document_path)
+            )
 
     @patch('papermerge.core.signals.ocr_document_task')
     @patch('papermerge.core.signals.generate_page_previews_task')
@@ -172,20 +174,22 @@ class TestDocumentModel(TestCase):
             parent=self.user.home_folder
         )
 
-        payload = open(self.resources / 'three-pages.pdf', 'rb')
-        source_doc.upload(
-            payload=payload,
-            file_path=self.resources / 'three-pages.pdf',
-            file_name='three-pages.pdf'
-        )
+        with open(self.resources / 'three-pages.pdf', 'rb') as file:
+            content = file.read()
+            size = os.stat(self.resources / 'three-pages.pdf').st_size
+            source_doc.upload(
+                content=io.BytesIO(content),
+                file_name='three-pages.pdf',
+                size=size
+            )
 
-        dst_doc.version_bump_from_pages(
-            pages=source_doc.versions.last().pages.all()[1:3]
-        )
+            dst_doc.version_bump_from_pages(
+                pages=source_doc.versions.last().pages.all()[1:3]
+            )
 
-        assert dst_doc.versions.count() == 1
-        dst_doc_version = dst_doc.versions.last()
-        assert dst_doc_version.pages.count() == 2
+            assert dst_doc.versions.count() == 1
+            dst_doc_version = dst_doc.versions.last()
+            assert dst_doc_version.pages.count() == 2
 
     def test_two_documents_with_same_title_under_same_parent(self):
         """It should not be possible to create two documents with
@@ -239,5 +243,7 @@ def test_document_breadcrumb():
         parent=folder1
     )
 
-    assert doc.breadcrumb == '.home/folder1/invoice.pdf'
+    actual_breadcumb = breadcrumb_fmt(doc.breadcrumb)
+
+    assert actual_breadcumb == '.home/folder1/invoice.pdf'
     assert doc.title == 'invoice.pdf'

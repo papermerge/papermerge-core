@@ -1,6 +1,8 @@
 import json
 import redis.asyncio as redis
 
+from papermerge.core.notif import Event
+
 
 class RedisBackend:
 
@@ -9,13 +11,15 @@ class RedisBackend:
         self._channel = channel
         self._timeout = timeout
 
-    async def pop(self):
+    async def pop(self) -> Event | None:
         result = await self._redis.blpop(self._channel, self._timeout)
         if result is not None:
-            return json.loads(result[1].decode())
+            attrs = json.loads(result[1].decode())
+            return Event(**attrs)
 
         return None
 
-    async def push(self, value):
-        json_data = json.dumps(value)
+    async def push(self, value: Event):
+        attrs = value.dict()
+        json_data = json.dumps(attrs)
         await self._redis.rpush("cha:1", json_data)

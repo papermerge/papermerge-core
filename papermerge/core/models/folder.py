@@ -25,7 +25,16 @@ class FolderQuerySet(models.QuerySet):
                 # it is ok, just skip
                 pass
 
-    def get_by_breadcrumb(self, breadcrumb: str, user):
+    def get_by_breadcrumb(self, breadcrumb: str, user) -> 'Folder':
+        """
+        Returns ``Folder`` instance of the node defined by given
+        breadcrumb path of specific ``User``.
+
+        Example of usage:
+
+        folder = Folder.objects.get_by_breadcrumb('.home/My Documents', user)
+        assert folder.title == 'My Documents'
+        """
         return utils.get_by_breadcrumb(
             Folder,
             breadcrumb,

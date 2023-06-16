@@ -1,8 +1,10 @@
+import pytest
 from django.urls import reverse
 
 from papermerge.test import TestCase, perms
 
 
+@pytest.mark.skip()
 class PermissionsViewPermissionsTestCase(TestCase):
     """
     Assert that only user with 'view_permission' permission

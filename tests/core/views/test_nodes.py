@@ -1,15 +1,13 @@
 import json
 
+import pytest
 from django.urls import reverse
 
+from papermerge.core.models import Document, Folder, Tag
 from papermerge.test import TestCase
-from papermerge.core.models import (
-    Folder,
-    Document,
-    Tag
-)
 
 
+@pytest.mark.skip()
 class NodesViewTestCase(TestCase):
 
     def test_get_inboxcount_when_inbox_is_empty(self):

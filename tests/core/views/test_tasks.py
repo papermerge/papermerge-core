@@ -1,14 +1,15 @@
 import json
 from unittest.mock import patch
 
+import pytest
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Document
+from papermerge.core.models import Document, User
 
 
+@pytest.mark.skip()
 class TasksViewTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="user1")

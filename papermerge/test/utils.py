@@ -1,6 +1,8 @@
 import re
+from uuid import UUID
 
 from pdfminer.high_level import extract_text
+
 from papermerge.core.models import DocumentVersion
 from papermerge.core.storage import abs_path
 
@@ -25,3 +27,9 @@ def pdf_content(
         return cleaned_text
 
     return stripped_text
+
+
+def breadcrumb_fmt(breadcrumb: list[UUID, str]) -> str:
+    return '/'.join(
+        title for _, title in breadcrumb
+    )

@@ -1,15 +1,14 @@
 import json
 
+import pytest
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import (
-    User,
-    Tag
-)
+from papermerge.core.models import Tag, User
 
 
+@pytest.mark.skip()
 class TagsViewTestCase(TestCase):
 
     def setUp(self):

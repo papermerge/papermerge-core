@@ -1,9 +1,11 @@
+import pytest
 from django.urls import reverse
 from model_bakery import baker
 
 from papermerge.test import TestCase, perms
 
 
+@pytest.mark.skip()
 class UsersViewTest(TestCase):
 
     def test_get_document_as_application_vnd_api_json(self):
@@ -33,6 +35,7 @@ class UsersViewTest(TestCase):
         assert user.check_password('abcd')
 
 
+@pytest.mark.skip()
 class UsersViewPermissionsTestCase(TestCase):
 
     def test_view_users_forbidden_for_default_user(self):

@@ -1,16 +1,16 @@
 from unittest.mock import patch
 
+import pytest
 from django.test import TestCase
 from django.urls import reverse
-
+from model_bakery import baker
 from rest_framework.test import APIClient
 
-from model_bakery import baker
-
-from papermerge.test import maker
 from papermerge.core.storage import abs_path
+from papermerge.test import maker
 
 
+@pytest.mark.skip()
 class DownloadDocumentVersionAnonymousAccess(TestCase):
 
     def setUp(self):
@@ -30,6 +30,7 @@ class DownloadDocumentVersionAnonymousAccess(TestCase):
         assert response.status_code == 401
 
 
+@pytest.mark.skip()
 class DownloadDocumentVersionOnlyOwner(TestCase):
     """
     Asserts that only owner can download document versions

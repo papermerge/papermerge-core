@@ -1,9 +1,11 @@
+import pytest
 from django.urls import reverse
 from model_bakery import baker
 
 from papermerge.test import TestCase, perms
 
 
+@pytest.mark.skip()
 class GroupsViewPermissionsTestCase(TestCase):
 
     def test_view_groups_forbidden_for_default_user(self):

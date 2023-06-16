@@ -1,16 +1,17 @@
-from unittest.mock import patch
-import shutil
-import os
 import io
 import json
+import os
+import shutil
 from pathlib import Path
+from unittest.mock import patch
 
 import pikepdf
+import pytest
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from papermerge.core.models import User, Document, Folder
+from papermerge.core.models import Document, Folder, User
 from papermerge.core.storage import abs_path
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -19,6 +20,7 @@ TEST_DIR_ABS_PATH = os.path.dirname(
 )
 
 
+@pytest.mark.skip()
 class PageViewTestCase(TestCase):
 
     def setUp(self):

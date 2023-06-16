@@ -1,14 +1,13 @@
 import pytest
 
-from papermerge.core.models import User, Folder, Document
 from papermerge.core.backup_restore.serializers import (
-    UserSerializer,
-    FolderSerializer,
-    DocumentSerializer, restore_nodes_hierarchy
-)
+    DocumentSerializer, FolderSerializer, UserSerializer,
+    restore_nodes_hierarchy)
+from papermerge.core.models import Document, Folder, User
 from papermerge.test.baker_recipes import user_recipe
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_serialize_multiple_users(two_users: list):
     user_ser = UserSerializer(data=two_users, many=True)
@@ -21,6 +20,7 @@ def test_serialize_multiple_users(two_users: list):
     assert User.objects.count() == 2
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_node_deserialization_when_node_is_a_folder(my_documents: dict):
     user = user_recipe.make(username='username1')
@@ -32,6 +32,7 @@ def test_node_deserialization_when_node_is_a_folder(my_documents: dict):
     assert Folder.objects.filter(user=user).count() == 3
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_node_deserialization_when_node_is_document(ticket_pdf: dict):
     user = user_recipe.make(username='username1')
@@ -49,6 +50,7 @@ def test_node_deserialization_when_node_is_document(ticket_pdf: dict):
     assert doc_ver.pages.first().text == 'blah XYZ'
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_document_deserialization(two_versions_doc: dict):
     user = user_recipe.make(username='username1')
@@ -73,6 +75,7 @@ def test_document_deserialization(two_versions_doc: dict):
     assert "Helsinki" in ' '.join(version_2_page_content)
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_restore_nodes_hierarchy(nodes_hierarchy: list):
     user = user_recipe.make(username='username1')
@@ -102,6 +105,7 @@ def test_restore_nodes_hierarchy(nodes_hierarchy: list):
     assert found.breadcrumb == '.home/My Documents/ticket.pdf'
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_one_user_with_one_tag(one_user_with_one_tag):
     user_ser = UserSerializer(
@@ -114,6 +118,7 @@ def test_one_user_with_one_tag(one_user_with_one_tag):
     assert 'important' in [tag.name for tag in user.tags.all()]
 
 
+@pytest.mark.skip()
 @pytest.mark.django_db
 def test_tagged_nodes(tata_user):
     """

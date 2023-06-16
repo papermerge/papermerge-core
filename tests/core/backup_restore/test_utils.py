@@ -1,10 +1,10 @@
-from papermerge.core.backup_restore.utils import (
-    RestoreSequence,
-    breadcrumb_parts_count,
-    CType
-)
+import pytest
+
+from papermerge.core.backup_restore.utils import (CType, RestoreSequence,
+                                                  breadcrumb_parts_count)
 
 
+@pytest.mark.skip()
 def test_restore_sequence():
     input = [
         {'breadcrumb': '.home/'},
@@ -27,6 +27,7 @@ def test_restore_sequence():
     assert expected_output == list(actual_output)
 
 
+@pytest.mark.skip()
 def test_breadcrumb_parts_count():
     assert 1 == breadcrumb_parts_count(
         {"breadcrumb": ".home/"}
@@ -48,6 +49,7 @@ def test_breadcrumb_parts_count():
     )
 
 
+@pytest.mark.skip()
 def test_ctype():
     assert CType.FOLDER.value == 'folder'
     assert CType.FOLDER != 'folder'

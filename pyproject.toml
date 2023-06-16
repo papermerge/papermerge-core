@@ -95,19 +95,15 @@ websockets = "^11.0.3"
 httpx = "^0.24.1"
 
 
-[tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE="tests.config.settings"
-django_find_project = false
-
 [tool.taskipy.tasks]
 test = "task test-core && task test-search-w && task test-search"
-test-c = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest"
-test-co = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/"
-test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ --disable-warnings"
+test-c = "pytest tests/core --disable-warnings"
+test-co = "pytest tests/core/ --disable-warnings"
+test-core = "pytest tests/core/ --disable-warnings"
 # include warnings
-test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/"
-test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest"
-test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest tests/search/ --disable-warnings"
+test-core-w = "pytest tests/core/"
+test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings pytest"
+test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings pytest tests/search/ --disable-warnings"
 # include warnings
 test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.whoosh_settings python -m pytest tests/search/  --disable-warnings"
 test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings python -m pytest tests/search/ --disable-warnings"

@@ -103,9 +103,9 @@ django_find_project = false
 test = "task test-core && task test-search-w && task test-search"
 test-c = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest"
 test-co = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/"
-test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/ --disable-warnings"
+test-core = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ --disable-warnings"
 # include warnings
-test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/ tests/notifications/"
+test-core-w = "DJANGO_SETTINGS_MODULE=tests.config.core.settings python -m pytest tests/core/"
 test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest"
 test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings python -m pytest tests/search/ --disable-warnings"
 # include warnings

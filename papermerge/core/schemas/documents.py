@@ -1,18 +1,12 @@
-from enum import Enum
-from django.db.models.manager import BaseManager
-from typing import Tuple
-from pydantic import BaseModel, validator
+
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Tuple
 from uuid import UUID
 
+from django.db.models.manager import BaseManager
+from pydantic import BaseModel, validator
 
-class OCRStatusEnum(str, Enum):
-    unknown = 'unknown'
-    received = 'received'
-    started = 'started'
-    succeeded = 'succeeded'
-    failed = 'failed'
+from papermerge.core.types import OCRStatusEnum
 
 
 class Page(BaseModel):

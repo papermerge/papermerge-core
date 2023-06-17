@@ -1,27 +1,25 @@
 import logging
-from uuid import UUID
 from typing import List
+from uuid import UUID
 
+from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
-from django.db.utils import IntegrityError
-
-from papermerge.core.models import User, Document
+from papermerge.core.models import BaseTreeNode, Document, Folder, User
+from papermerge.core.models.node import move_node
+from papermerge.core.schemas.documents import \
+    CreateDocument as PyCreateDocument
+from papermerge.core.schemas.documents import Document as PyDocument
+from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
+from papermerge.core.schemas.folders import Folder as PyFolder
+from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
-from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
-from papermerge.core.schemas.folders import Folder as PyFolder
-from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
-from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
-from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.models import BaseTreeNode, Folder
-from papermerge.core.models.node import move_node
 
 from .auth import get_current_user as current_user
-from .params import CommonQueryParams
 from .paginator import PaginatorGeneric, paginate
-
+from .params import CommonQueryParams
 
 router = APIRouter(
     prefix="/nodes",
@@ -61,7 +59,7 @@ def get_node(
     ).order_by(*order_by)
 
 
-@router.post("/")
+@router.post("/", status_code=201)
 def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
     user: User = Depends(current_user)

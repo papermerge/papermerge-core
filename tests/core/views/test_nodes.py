@@ -5,6 +5,8 @@ from django.urls import reverse
 
 from papermerge.core.models import Document, Folder, Tag
 from papermerge.test import TestCase
+from papermerge.test.baker_recipes import document_recipe
+from papermerge.test.types import AuthTestClient
 
 
 @pytest.mark.skip()
@@ -301,148 +303,136 @@ class NodesViewTestCase(TestCase):
 
         assert response.status_code == 200, response.data
 
-    def test_create_document(self):
-        """
-        When 'lang' attribute is not specified during document creation
-        it is set from user preferences['ocr_language']
-        """
-        assert Document.objects.count() == 0
 
-        json_data = {
-            "data": {
-                "type": "documents",
-                "attributes": {
-                    # "lang" attribute is not set
-                    "title": "doc1.pdf"
-                },
-                "relationships": {
-                    "parent": {
-                        "data": {
-                            "type": "folders",
-                            "id": str(self.user.home_folder.pk)
-                        }
-                    }
-                }
-            }
-        }
+@pytest.mark.django_db(transaction=True)
+def test_create_document(auth_api_client: AuthTestClient):
+    """
+    When 'lang' attribute is not specified during document creation
+    it is set from user preferences['ocr_language']
+    """
+    assert Document.objects.count() == 0
 
-        url = reverse('node-list')
-        response = self.post(url, json_data, type="vnd.api")
+    user = auth_api_client.user
 
-        assert response.status_code == 201
-        assert Document.objects.count() == 1
+    payload = {
+        'ctype': 'document',
+        # "lang" attribute is not set
+        'title': 'doc1.pdf',
+        'parent_id': str(user.home_folder.pk)
+    }
 
-        doc = Document.objects.first()
-        assert doc.lang == self.user.preferences['ocr__language']
+    response = auth_api_client.post('/nodes', json=payload)
 
-    def test_two_folders_with_same_title_under_same_parent(self):
-        """It should not be possible to create two folders with
-        same (parent, title) pair i.e. we cannot have folders with same
-        title under same parent
-        """
-        json_data = {
-            "data": {
-                "type": "folders",
-                "attributes": {
-                    "title": "My Documents"
-                },
-                "relationships": {
-                    "parent": {
-                        "data": {
-                            "type": "folders",
-                            "id": str(self.user.home_folder.pk)
-                        }
-                    }
-                }
-            }
-        }
+    assert response.status_code == 201, response.content
+    assert Document.objects.count() == 1
 
-        url = reverse('node-list')
-        # Create first folder 'My documents' (inside home folder)
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 201
+    doc = Document.objects.first()
+    assert doc.lang == user.preferences['ocr__language']
 
-        # Create second folder 'My Documents' also inside home folder
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 400
-        assert response.data[0]['code'] == 'unique'
 
-    def test_two_folders_with_same_title_under_different_parents(self):
-        """It should be possible to create two folders with
-        same if they are under different parents.
-        """
-        json_data = {
-            "data": {
-                "type": "folders",
-                "attributes": {
-                    "title": "My Documents"
-                },
-                "relationships": {
-                    "parent": {
-                        "data": {
-                            "type": "folders",
-                            "id": str(self.user.home_folder.pk)
-                        }
-                    }
-                }
-            }
-        }
+@pytest.mark.django_db(transaction=True)
+def test_two_folders_with_same_title_under_same_parent(
+    auth_api_client: AuthTestClient
+):
+    """It should not be possible to create two folders with
+    same (parent, title) pair i.e. we cannot have folders with same
+    title under same parent
+    """
+    user = auth_api_client.user
+    payload = {
+        "ctype": "folder",
+        "title": "My Documents",
+        "parent_id": str(user.home_folder.pk)
+    }
 
-        url = reverse('node-list')
-        # Create first folder 'My documents' (inside home folder)
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 201
+    # Create first folder 'My documents' (inside home folder)
+    response = auth_api_client.post('/nodes', json=payload)
+    assert response.status_code == 201
 
-        # Create second folder 'My Documents' also inside home folder
-        json_data = {
-            "data": {
-                "type": "folders",
-                "attributes": {
-                    "title": "My Documents"
-                },
-                "relationships": {
-                    "parent": {
-                        "data": {
-                            "type": "folders",
-                            "id": str(self.user.inbox_folder.pk)
-                        }
-                    }
-                }
-            }
-        }
-        # create folder 'My Documents' in Inbox
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 201
+    # Create second folder 'My Documents' also inside home folder
+    response = auth_api_client.post('/nodes', json=payload)
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Title already exists'}
 
-    def test_two_documents_with_same_title_under_same_parent(self):
-        """It should not be possible to create two documents with
-        same (parent, title) pair i.e. we cannot have documents with same
-        title under same parent
-        """
-        json_data = {
-            "data": {
-                "type": "documents",
-                "attributes": {
-                    "title": "invoice.pdf",
-                    "lang": "deu"
-                },
-                "relationships": {
-                    "parent": {
-                        "data": {
-                            "type": "folders",
-                            "id": str(self.user.home_folder.pk)
-                        }
-                    }
-                }
-            }
-        }
 
-        url = reverse('node-list')
-        # Create first folder 'My documents' (inside home folder)
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 201
+@pytest.mark.django_db(transaction=True)
+def test_two_folders_with_same_title_under_different_parents(
+    auth_api_client: AuthTestClient
+):
+    """It should be possible to create two folders with
+    same title if they are under different parents.
+    """
+    user = auth_api_client.user
+    payload = {
+        "ctype": "folder",
+        "title": "My Documents",
+        "parent_id": str(user.home_folder.pk)
+    }
 
-        # Create second folder 'My Documents' also inside home folder
-        response = self.post(url, json_data, type="vnd.api")
-        assert response.status_code == 400
-        assert response.data[0]['code'] == 'unique'
+    # Create first folder 'My documents' (inside home folder)
+    response = auth_api_client.post('/nodes', json=payload)
+    assert response.status_code == 201
+
+    # Create second folder 'My Documents' also inside home folder
+    payload2 = {
+        "ctype": "folder",
+        "title": "My Documents",
+        "parent_id": str(user.inbox_folder.pk)
+    }
+
+    # create folder 'My Documents' in Inbox
+    response = auth_api_client.post('/nodes', json=payload2)
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db(transaction=True)
+def test_two_documents_with_same_title_under_same_parent(
+    auth_api_client: AuthTestClient
+):
+    """It should NOT be possible to create two documents with
+    same (parent, title) pair i.e. we cannot have documents with same
+    title under same parent
+    """
+    user = auth_api_client.user
+    payload = {
+        "ctype": "document",
+        "title": "My Documents",
+        "parent_id": str(user.home_folder.pk)
+    }
+
+    # Create first folder 'My documents' (inside home folder)
+    response = auth_api_client.post('/nodes', json=payload)
+    assert response.status_code == 201
+
+    # Create second folder 'My Documents' also inside home folder
+    response = auth_api_client.post('/nodes', json=payload)
+
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Title already exists'}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_retrieve_one_node(
+    auth_api_client: AuthTestClient
+):
+    """GET /nodes returns list of nodes under user's home
+    folder. Note that node id is not specified.
+
+    In this specific scenario, user's home has only
+    one document - 'invoice.pdf'.
+    """
+    user = auth_api_client.user
+    document_recipe.make(
+        title='invoice.pdf',
+        user=user,
+        parent=user.home_folder
+    )
+
+    response = auth_api_client.get('/nodes')
+
+    assert response.status_code == 200
+    items = response.json()['items']
+    # in this specific scenario, user's home folder
+    # contains only one document - invoice.pdf
+    assert len(items) == 1
+    assert items[0]['title'] == 'invoice.pdf'

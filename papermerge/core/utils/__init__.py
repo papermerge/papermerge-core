@@ -1,26 +1,21 @@
-import io
-import os
-import time
-import logging
-import re
 import functools
-from datetime import datetime
-
-from typing import Optional, Union
-from pikepdf import Pdf
+import io
+import logging
+import os
+import re
+import time
 from collections import abc, namedtuple
-
-from django.utils.html import escape
-
-from papermerge.core.lib.path import PagePath
-from papermerge.core.types import DocumentVersion
-from papermerge.core.storage import abs_path, get_storage_instance
-
+from datetime import datetime
+from typing import Optional, Union
 
 from django.conf import settings
-from django.utils.html import format_html
 from django.urls import reverse
+from django.utils.html import escape, format_html
+from pikepdf import Pdf
 
+from papermerge.core.lib.path import PagePath
+from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.types import DocumentVersion
 
 logger = logging.getLogger(__name__)
 

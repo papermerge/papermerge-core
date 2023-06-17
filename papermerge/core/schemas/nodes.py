@@ -1,8 +1,11 @@
-from enum import Enum
-from pydantic import BaseModel, validator, ValidationError
-from typing import Optional, List
 from datetime import datetime
+from enum import Enum
+from typing import List, Optional
 from uuid import UUID
+
+from pydantic import BaseModel, ValidationError, validator
+
+from papermerge.core.types import OCRStatusEnum
 
 
 class NodeType(str, Enum):
@@ -24,6 +27,12 @@ class UpdateNode(BaseModel):
         orm_mode = True
 
 
+class DocumentNode(BaseModel):
+    """Minimalist part of the document returned as part of nodes list"""
+    ocr: bool = True  # will this document be OCRed?
+    ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
+
+
 class Node(BaseModel):
     id: UUID
     title: str
@@ -32,6 +41,17 @@ class Node(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
+    document: DocumentNode | None = None
+
+    @validator('document', pre=True)
+    def document_validator(cls, value, values):
+        if values['ctype'] == NodeType.document:
+            return DocumentNode(
+                ocr_status=value.ocr_status,
+                ocr=value.ocr
+            )
+
+        return None
 
     class Config:
         orm_mode = True

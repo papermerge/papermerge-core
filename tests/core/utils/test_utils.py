@@ -1,30 +1,19 @@
-from unittest.mock import patch
 import itertools
-import pytest
+from unittest.mock import patch
 
+import pytest
+from django.test import override_settings
 from model_bakery import baker
 
-from papermerge.test import TestCase
-from papermerge.test import maker
-from papermerge.test.utils import pdf_content
-
-from papermerge.core.utils import (
-    total_merge,
-    partial_merge,
-    insert_pdf_pages,
-    remove_pdf_pages,
-    collect_text_streams,
-    reuse_text_field,
-    reuse_text_field_multi,
-    reuse_ocr_data,
-    reuse_ocr_data_multi,
-    PageRecycleMap
-)
 from papermerge.core.models import Document, Page
 from papermerge.core.storage import abs_path
-
-from django.test import override_settings
-from papermerge.core.utils import namespaced
+from papermerge.core.utils import (PageRecycleMap, collect_text_streams,
+                                   insert_pdf_pages, namespaced, partial_merge,
+                                   remove_pdf_pages, reuse_ocr_data,
+                                   reuse_ocr_data_multi, reuse_text_field,
+                                   reuse_text_field_multi, total_merge)
+from papermerge.test import TestCase, maker
+from papermerge.test.utils import pdf_content
 
 
 class TestUtilsNamespaced(TestCase):

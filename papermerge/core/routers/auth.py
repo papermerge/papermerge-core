@@ -1,4 +1,3 @@
-import json
 
 from fastapi import (Depends, HTTPException, WebSocket, WebSocketException,
                      status)
@@ -12,8 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
 
 def get_user_id_from_token(token: str) -> str | None:
     _, payload, _ = token.split('.')
-    json_str_data = base64.decode(payload)
-    data = json.loads(json_str_data)
+    data = base64.decode(payload)
     user_id = data.get("user_id")
 
     return user_id

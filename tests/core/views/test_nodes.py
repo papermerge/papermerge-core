@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from papermerge.core.models import Document, Folder, Tag
 from papermerge.test import TestCase
+from papermerge.test.types import AuthTestClient
 
 
 @pytest.mark.skip()
@@ -446,3 +447,29 @@ class NodesViewTestCase(TestCase):
         response = self.post(url, json_data, type="vnd.api")
         assert response.status_code == 400
         assert response.data[0]['code'] == 'unique'
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_document(auth_api_client: AuthTestClient):
+    """
+    When 'lang' attribute is not specified during document creation
+    it is set from user preferences['ocr_language']
+    """
+    assert Document.objects.count() == 0
+
+    user = auth_api_client.user
+
+    payload = {
+        'ctype': 'document',
+        # "lang" attribute is not set
+        'title': 'doc1.pdf',
+        'parent_id': str(user.home_folder.pk)
+    }
+
+    response = auth_api_client.post('/nodes', json=payload)
+
+    assert response.status_code == 201, response.content
+    assert Document.objects.count() == 1
+
+    doc = Document.objects.first()
+    assert doc.lang == user.preferences['ocr__language']

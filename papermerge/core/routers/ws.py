@@ -1,14 +1,9 @@
 import logging
 
-from fastapi import (
-    APIRouter,
-    WebSocket,
-    WebSocketDisconnect,
-    Depends
-)
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
-from papermerge.core.notif import notification
-from papermerge.core.models import User
+from papermerge.core.models import Document, User
+from papermerge.core.notif import Event, EventName, notification
 
 from .auth import get_ws_current_user
 
@@ -18,6 +13,25 @@ router = APIRouter(
     prefix="/ws",
     tags=["websockets"]
 )
+
+
+def update_document_ocr_status(event: Event) -> None:
+    if event.name != EventName.ocr_document:
+        return
+
+    document_id = event.kwargs.document_id
+    ocr_status = event.state
+    try:
+        document = Document.objects.get(pk=document_id)
+        document.ocr_status = ocr_status
+        document.save()
+    except Document.DoesNotExist as exc:
+        # not end of the world, but still good to know
+        logger.warning(
+            f"Consumer did not found the document_id={document_id}"
+        )
+        logger.warning(exc)
+        # life goes on...
 
 
 class ConnectionManager:
@@ -57,6 +71,7 @@ async def websocket_endpoint(
                     f"Message received {message} "
                     f"Current user id = {str(user.id)}"
                 )
+                update_document_ocr_status(message)
                 # send only to the current user
                 if message.kwargs.user_id == str(user.id):
                     await manager.send(message, websocket)

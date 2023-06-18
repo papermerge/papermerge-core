@@ -1,10 +1,11 @@
 from collections.abc import Iterator
-
 from urllib.parse import urlparse
+
 from django.conf import settings
 
 from papermerge.core.notif.backends.base import BaseBackend
-from .events import Event, State, OCREvent  # noqa
+
+from .events import Event, EventName, OCREvent, State  # noqa
 
 
 class Notification:

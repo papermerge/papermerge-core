@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 def update_document_ocr_status(event: Event) -> None:
-    logger.debug(f"Update document ocr_status for event={event}")
+    logger.debug(f"========Update document ocr_status for event={event}====")
     logger.debug(f"event name={event.name}")
     if event.name != EventName.ocr_document:
         logger.debug(f"{event.name} != {EventName.ocr_document}")
@@ -25,6 +25,7 @@ def update_document_ocr_status(event: Event) -> None:
 
     document_id = event.kwargs.document_id
     ocr_status = event.state
+    logger.debug(f"====OCR_STATUS={ocr_status}")
     try:
         document = Document.objects.get(pk=document_id)
         document.ocr_status = ocr_status

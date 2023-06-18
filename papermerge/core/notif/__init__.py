@@ -61,4 +61,4 @@ class Notification:
                 yield result
 
 
-notification = Notification(settings.NOTIFICATION_URL, channel="cha:1")
+notification = Notification(settings.NOTIFICATION_URL)

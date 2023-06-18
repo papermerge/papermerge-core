@@ -1,9 +1,12 @@
 import json
+import logging
 
 import redis
 import redis.asyncio as redis_async
 
 from papermerge.core.notif import Event
+
+logger = logging.getLogger(__name__)
 
 
 class RedisBackend:
@@ -25,4 +28,5 @@ class RedisBackend:
     def push(self, value: Event):
         attrs = value.dict()
         json_data = json.dumps(attrs)
-        self._redis.rpush("cha:1", json_data)
+        logger.debug(f"REDIS PUSH TO {self._channel} {json_data}")
+        self._redis.rpush(self._channel, json_data)

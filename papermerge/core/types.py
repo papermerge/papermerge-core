@@ -8,5 +8,5 @@ class OCRStatusEnum(str, Enum):
     unknown = 'UNKNOWN'
     received = 'RECEIVED'
     started = 'STARTED'
-    succeeded = 'SUCCEEDED'
+    success = 'SUCCESS'
     failed = 'FAILED'

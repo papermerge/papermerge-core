@@ -16,7 +16,7 @@ loggers:
     level: DEBUG
     handlers: [console]
     propagate: no
-  papermerge.core.routers.ws:
+  papermerge.core.routers:
     level: DEBUG
     handlers: [console]
     propagate: no

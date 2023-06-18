@@ -71,7 +71,6 @@ async def websocket_endpoint(
     await manager.connect(websocket)
     try:
         while True:
-            logger.debug("While True")
             async for message in notification:
                 logger.debug(
                     f"Message received {message} "
@@ -80,7 +79,7 @@ async def websocket_endpoint(
                 await sync_to_async(update_document_ocr_status)(message)
                 # send only to the current user
                 if message.kwargs.user_id == str(user.id):
-                    await manager.send(message, websocket)
+                    await manager.send(message.dict(), websocket)
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")
         manager.disconnect(websocket)

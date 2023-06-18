@@ -1,6 +1,8 @@
 import React from 'react';
 
 
+export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCESS" | "FAILED";
+
 export type User = {
   username: string;
   email: string;
@@ -24,6 +26,10 @@ export type BreadcrumbItemType = [string, string];
 
 export type BreadcrumbType = Array<BreadcrumbItemType>;
 
+export type DocumentNodeType = {
+  ocr_status: OcrStatusEnum;
+}
+
 
 export type NodeType = {
   id: string;
@@ -34,6 +40,7 @@ export type NodeType = {
   title: string;
   user_id: string;
   update_at: string;
+  document: DocumentNodeType | null;
 }
 
 export type FolderType = NodeType & {
@@ -94,7 +101,7 @@ export type State<T> = {
   data: T | null;
 }
 
-export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCEEDED" | "FAILED";
+
 
 export type OcrStatusType = {
     status: OcrStatusEnum;

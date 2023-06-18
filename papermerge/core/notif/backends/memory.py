@@ -1,9 +1,8 @@
-import logging
 import json
-from asyncio import Queue
+import logging
+from queue import Queue
 
 from papermerge.core.notif import Event
-
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ class MemoryBackend:
 
     async def pop(self) -> Event | None:
         logger.debug("POP")
-        value = await self._queue.get()
+        value = self._queue.get()
         logger.debug(f"Pop value={value} from the queue")
         if value is not None:
             attrs = json.loads(value)
@@ -23,9 +22,9 @@ class MemoryBackend:
 
         return None
 
-    async def push(self, value: Event):
+    def push(self, value: Event):
         attrs = value.dict()
         logger.debug("PUSH")
         json_data = json.dumps(attrs)
         logger.debug(f"Push value={value} to the queue")
-        await self._queue.put(json_data)
+        self._queue.put(json_data)

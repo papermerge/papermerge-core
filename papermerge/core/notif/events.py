@@ -12,6 +12,11 @@ class State(str, Enum):
     failed = 'FAILED'
 
 
+class EventName(str, Enum):
+    ocr_document = 'ocr_document_task'
+    refresh_inbox = 'refresh_inbox'
+
+
 class OCREvent(BaseModel):
     document_id: str
     user_id: str
@@ -20,6 +25,6 @@ class OCREvent(BaseModel):
 
 
 class Event(BaseModel):
-    name: str
+    name: EventName
     kwargs: OCREvent
     state: State = State.unknown

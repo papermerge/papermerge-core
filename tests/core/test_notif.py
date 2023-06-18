@@ -1,11 +1,6 @@
 import pytest
 
-from papermerge.core.notif import (
-    notification,
-    Event,
-    State,
-    OCREvent
-)
+from papermerge.core.notif import Event, OCREvent, State, notification
 
 
 @pytest.mark.asyncio
@@ -28,7 +23,7 @@ async def test_memory_backend():
             lang='DEU'
         )
     )
-    await notification.push(event)
+    notification.push(event)
 
     got = await notification.pop()
     assert got == expected_message

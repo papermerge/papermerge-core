@@ -1,9 +1,10 @@
 import os
-import importlib.metadata
 
 from django.core.asgi import get_asgi_application
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from papermerge.core.version import __version__
 
 get_asgi_application()
 
@@ -11,7 +12,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 fastapp = FastAPI(
     title="Papermerge DMS",
-    version=importlib.metadata.version("papermerge-core")
+    version=__version__
 )
 
 fastapp.add_middleware(
@@ -28,5 +29,3 @@ def init(app: FastAPI):
     register_routers(app)
 
 init(fastapp)
-
-

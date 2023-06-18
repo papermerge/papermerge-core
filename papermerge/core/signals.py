@@ -1,41 +1,21 @@
 import logging
-
-from kombu.exceptions import OperationalError
 from pathlib import Path
-from asgiref.sync import async_to_sync
 
-from django.db.models.signals import post_save, post_delete, pre_delete
-from celery.signals import (
-    task_received,
-    task_postrun,
-    task_prerun,
-    heartbeat_sent,
-    worker_ready,
-    worker_shutdown
-)
-
-from django.dispatch import receiver
+from celery.signals import (heartbeat_sent, task_postrun, task_prerun,
+                            task_received, worker_ready, worker_shutdown)
 from django.conf import settings
-from papermerge.core.models import (
-    Document,
-    DocumentVersion,
-    User,
-)
-from papermerge.core.storage import get_storage_instance
-from papermerge.core.notif import (
-    notification,
-    Event,
-    State,
-    OCREvent
-)
-from .tasks import delete_user_data as delete_user_data_task
-from .tasks import (
-    ocr_document_task,
-    post_ocr_document_task,
-    generate_page_previews_task
-)
-from .signal_definitions import document_post_upload
+from django.db.models.signals import post_delete, post_save, pre_delete
+from django.dispatch import receiver
+from kombu.exceptions import OperationalError
 
+from papermerge.core.models import Document, DocumentVersion, User
+from papermerge.core.notif import Event, OCREvent, State, notification
+from papermerge.core.storage import get_storage_instance
+
+from .signal_definitions import document_post_upload
+from .tasks import delete_user_data as delete_user_data_task
+from .tasks import (generate_page_previews_task, ocr_document_task,
+                    post_ocr_document_task)
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +46,9 @@ def channel_group_notify(full_name: str, state: State, **kwargs):
         event = Event(
             name=full_name.split('.')[-1],
             state=state,
-            kwargs=kwargs
+            kwargs=kwargs['kwargs']
         )
-        async_to_sync(notification.push)(event)
+        notification.push(event)
 
 
 @task_prerun.connect

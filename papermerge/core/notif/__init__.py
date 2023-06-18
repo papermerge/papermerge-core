@@ -1,10 +1,14 @@
+import logging
 from collections.abc import Iterator
-
 from urllib.parse import urlparse
+
 from django.conf import settings
 
 from papermerge.core.notif.backends.base import BaseBackend
-from .events import Event, State, OCREvent  # noqa
+
+from .events import Event, EventName, OCREvent, State  # noqa
+
+logger = logging.getLogger(__name__)
 
 
 class Notification:
@@ -42,8 +46,9 @@ class Notification:
             from papermerge.core.notif.backends.memory import MemoryBackend
             self._backend = MemoryBackend(url, channel=channel, timeout=timeout)
 
-    async def push(self, value: Event):
-        await self._backend.push(value)
+    def push(self, value: Event):
+        logger.debug(f"PUSH value={value}")
+        self._backend.push(value)
 
     async def pop(self) -> Event:
         result = await self._backend.pop()
@@ -56,4 +61,4 @@ class Notification:
                 yield result
 
 
-notification = Notification(settings.NOTIFICATION_URL, channel="cha:1")
+notification = Notification(settings.NOTIFICATION_URL)

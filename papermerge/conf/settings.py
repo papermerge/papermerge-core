@@ -1,8 +1,7 @@
-import yaml
 import logging.config
 
+import yaml
 from configula import Configula
-from papermerge.core.version import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -197,27 +196,22 @@ else:
             'handlers': ['console', ],
         },
         'loggers': {
-            'django.db.backends': {
-                'level': 'INFO',
-                'handlers': ['console', ],
-                'propagate': False,
-            },
             'django.security.DisallowedHost': {
                 'level': 'INFO',
                 'handlers': ['console', ],
                 'propagate': False,
             },
-            'papermerge.core.tasks': {
+            'papermerge.core.signals': {
                 'level': 'DEBUG',
                 'handlers': ['console', ],
                 'propagate': True,
             },
-            'papermerge.search.tasks': {
+            'papermerge.core.routers.ws': {
                 'level': 'DEBUG',
                 'handlers': ['console', ],
                 'propagate': True,
             },
-            'celery': {
+            'papermerge.core.notif': {
                 'level': 'DEBUG',
                 'handlers': ['console', ],
                 'propagate': True,

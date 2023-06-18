@@ -17,24 +17,16 @@ function str_id(node_id: string): string {
 
 function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
 
-  const [ status, setStatus ] = useState<OcrStatusEnum>("unknown");
+  const [ status, setStatus ] = useState<OcrStatusEnum>(node?.document?.ocr_status || "UNKNOWN");
+
 
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
-    if (data.document_id == node.id) {
-      switch(data.type) {
-        case "ocrdocumenttask.taskreceived":
-          setStatus("received");
-          break;
-        case "ocrdocumenttask.taskstarted":
-          setStatus("started");
-          break;
-        case "ocrdocumenttask.tasksucceeded":
-          setStatus("succeeded");
-          break;
-        case "ocrdocumenttask.taskfailed":
-          setStatus("failed");
-          break;
-      }
+    console.log(data);
+
+    console.log(`node_id=${node.id}  incoming document_id=${data.kwargs.document_id}`);
+    if (data.kwargs.document_id == node.id) {
+      console.log('setting state');
+      setStatus(data.state);
     }
   }
 

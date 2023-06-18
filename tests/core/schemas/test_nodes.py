@@ -37,16 +37,16 @@ def test_pynode_from_basetreenode_with_ocr_status_unkown(user: User):
 
 
 @pytest.mark.django_db
-def test_pynode_from_basetreenode_with_ocr_status_succeeded(user: User):
+def test_pynode_from_basetreenode_with_ocr_status_success(user: User):
     document_recipe.make(
         title='invoice.pdf',
         user=user,
         parent=user.home_folder,
-        ocr_status=OCRStatusEnum.succeeded
+        ocr_status=OCRStatusEnum.success
     )
     node = BaseTreeNode.objects.get(title='invoice.pdf')
     pynode = PyNode.from_orm(node)
 
     assert pynode.title == "invoice.pdf"
     assert pynode.ctype == NodeType.document
-    assert pynode.document.ocr_status == OCRStatusEnum.succeeded
+    assert pynode.document.ocr_status == OCRStatusEnum.success

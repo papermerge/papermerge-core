@@ -5,8 +5,8 @@ DocumentVersion = TypeVar("DocumentVersion")
 
 
 class OCRStatusEnum(str, Enum):
-    unknown = 'unknown'
-    received = 'received'
-    started = 'started'
-    succeeded = 'succeeded'
-    failed = 'failed'
+    unknown = 'UNKNOWN'
+    received = 'RECEIVED'
+    started = 'STARTED'
+    succeeded = 'SUCCEEDED'
+    failed = 'FAILED'

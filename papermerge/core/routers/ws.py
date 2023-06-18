@@ -1,5 +1,6 @@
 import logging
 
+from asgiref.sync import sync_to_async
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from papermerge.core.models import Document, User
@@ -16,7 +17,10 @@ router = APIRouter(
 
 
 def update_document_ocr_status(event: Event) -> None:
+    logger.debug(f"Update document ocr_status for event={event}")
+    logger.debug(f"event name={event.name}")
     if event.name != EventName.ocr_document:
+        logger.debug(f"{event.name} != {EventName.ocr_document}")
         return
 
     document_id = event.kwargs.document_id
@@ -66,12 +70,13 @@ async def websocket_endpoint(
     await manager.connect(websocket)
     try:
         while True:
+            logger.debug("While True")
             async for message in notification:
                 logger.debug(
                     f"Message received {message} "
                     f"Current user id = {str(user.id)}"
                 )
-                update_document_ocr_status(message)
+                await sync_to_async(update_document_ocr_status)(message)
                 # send only to the current user
                 if message.kwargs.user_id == str(user.id):
                     await manager.send(message, websocket)

@@ -1,16 +1,16 @@
-from pathlib import PurePath
-import uuid
 import logging
+import uuid
+from pathlib import PurePath
 
 from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
-OCR_STATUS_SUCCEEDED = 'succeeded'
-OCR_STATUS_RECEIVED = 'received'
-OCR_STATUS_STARTED = 'started'
-OCR_STATUS_FAILED = 'failed'
-OCR_STATUS_UNKNOWN = 'unknown'
+OCR_STATUS_SUCCEEDED = 'SUCCEEDED'
+OCR_STATUS_RECEIVED = 'RECEIVED'
+OCR_STATUS_STARTED = 'STARTED'
+OCR_STATUS_FAILED = 'FAILED'
+OCR_STATUS_UNKNOWN = 'UNKNOWN'
 
 OCR_STATUS_CHOICES = [
     ('unknown', _('Unknown')),

@@ -1,3 +1,3 @@
 export default function House() {
-  return <i className='bi-house me-2'></i>;
+  return <i className='bi-house'></i>;
 }

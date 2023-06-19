@@ -101,8 +101,6 @@ export type State<T> = {
   data: T | null;
 }
 
-
-
 export type OcrStatusType = {
     status: OcrStatusEnum;
 }

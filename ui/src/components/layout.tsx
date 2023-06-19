@@ -54,11 +54,16 @@ export function useMe() {
 
 function Layout({ children }: SimpleComponentArgs) {
   const { data, error, is_loading } = useMe();
+  const [ sidebarFolded, setSidebarFolded ] = useState(false);
+
+  const onToggleSidebar = () => {
+    setSidebarFolded(!sidebarFolded);
+  }
 
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar />
+        <Sidebar folded={sidebarFolded} />
         <CentralBar>
           Loading ...
         </CentralBar>
@@ -74,8 +79,8 @@ function Layout({ children }: SimpleComponentArgs) {
 
   return (
     <main className={styles.main}>
-      <Sidebar />
-      <CentralBar username={data?.username}>
+      <Sidebar folded={sidebarFolded} />
+      <CentralBar username={data?.username} onToggleSidebar={onToggleSidebar}>
         {children}
       </CentralBar>
     </main>

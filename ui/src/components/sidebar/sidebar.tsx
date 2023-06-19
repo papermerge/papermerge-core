@@ -9,6 +9,7 @@ type Args = {
   folded: boolean;
 }
 
+
 function SidebarOpened() {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
@@ -56,7 +57,6 @@ function SidebarFolded() {
     </div>
   );
 }
-
 
 
 export default function Sidebar({folded}: Args) {

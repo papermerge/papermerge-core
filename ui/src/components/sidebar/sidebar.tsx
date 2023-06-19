@@ -12,17 +12,20 @@ type Args = {
 function SidebarOpened() {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
-      <h4 className='brand-text m-2 p-2'>Papermerge</h4>
+      <a className='navbar-brand m-2 p-2' href="#">
+        <img src="/images/logo.png" width="80" />
+        Papermerge DMS
+      </a>
       <hr />
       <Nav>
         <NavItem>
           <ActiveLink href="/home" className='nav-link text-white'>
-            <IconHouse />Home
+            <IconHouse /><span className='ms-2'>Home</span>
           </ActiveLink>
         </NavItem>
         <NavItem>
           <ActiveLink href="/inbox" className='nav-link text-white'>
-            <IconInbox />Inbox
+            <IconInbox/><span className='ms-2'>Inbox</span>
           </ActiveLink>
         </NavItem>
       </Nav>
@@ -34,7 +37,9 @@ function SidebarOpened() {
 function SidebarFolded() {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
-      <h4 className='brand-text m-2 p-2'>P</h4>
+      <a className='navbar-brand m-2' href="#">
+        <img src="/images/logo.png" width="50" />
+      </a>
       <hr />
       <Nav>
         <NavItem>

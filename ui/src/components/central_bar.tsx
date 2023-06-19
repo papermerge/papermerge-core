@@ -6,10 +6,13 @@ import styles from './layout.module.css';
 type Args = {
   children: React.ReactNode;
   username?: string;
+  onToggleSidebar?: () => void;
 }
 
 
-export default function CentralBar({username, children}: Args) {
+export default function CentralBar(
+  {username, children, onToggleSidebar}: Args
+) {
 
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
@@ -24,7 +27,7 @@ export default function CentralBar({username, children}: Args) {
         <div className='container-fluid'>
           <ul className="navbar-nav">
             <li className="nav-item">
-              <a className="nav-link" role="button"><i className="bi bi-list"></i></a>
+              <a className="nav-link" role="button" onClick={onToggleSidebar}><i className="bi bi-list"></i></a>
             </li>
           </ul>
           <div>

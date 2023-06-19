@@ -12,18 +12,21 @@ type Args = {
 
 export default function Breadcrumb({path, onClick, is_loading}: Args) {
 
-  let breadcrumb_items = path.map((item: [string, string]) => {
-    return <BreadcrumbItem key={item[0]}
-      node_id={item[0]}
-      node_title={item[1]}
-      onClick={onClick}
-    />
+  let breadcrumb_items = path.map((item: [string, string], index: number) => {
+    return (
+      <BreadcrumbItem key={item[0]} active={index === (path.length - 1)}
+        node_id={item[0]}
+        node_title={item[1]}
+        onClick={onClick} />
+    );
   });
 
   return (
-    <ul className={styles.breadcrumb + " nav-breadcrumb"}>
-      {is_loading ? <Spinner />: <SpinnerPlaceholder />}
-      {breadcrumb_items}
-    </ul>
+    <nav aria-label="breadcrumb">
+      <ol className={styles.breadcrumb + " nav-breadcrumb breadcrumb"}>
+        {is_loading ? <Spinner />: <SpinnerPlaceholder />}
+        {breadcrumb_items}
+      </ol>
+    </nav>
   );
 }

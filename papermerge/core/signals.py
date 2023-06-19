@@ -9,7 +9,8 @@ from django.dispatch import receiver
 from kombu.exceptions import OperationalError
 
 from papermerge.core.models import Document, DocumentVersion, User
-from papermerge.core.notif import Event, OCREvent, State, notification
+from papermerge.core.notif import (Event, EventName, OCREvent, State,
+                                   notification)
 from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
@@ -34,7 +35,35 @@ MONITORED_TASKS_KWARGS_TYPE_DICT = {
 }
 
 
-def channel_group_notify(full_name: str, state: State, **kwargs):
+def update_document_ocr_status(event: Event) -> None:
+    if not event:
+        return
+
+    if event.name != EventName.ocr_document:
+        return
+
+    document_id = event.kwargs.document_id
+    ocr_status = event.state
+    logger.debug(f"Updating document {document_id} ocr_status={ocr_status}")
+
+    try:
+        document = Document.objects.get(pk=document_id)
+        document.ocr_status = ocr_status
+        document.save()
+    except Document.DoesNotExist as exc:
+        # not end of the world, but still good to know
+        logger.warning(
+            f"Consumer did not found the document_id={document_id}"
+        )
+        logger.warning(exc)
+        # life goes on...
+
+
+def channel_group_notify(
+    full_name: str,
+    state: State,
+    **kwargs
+) -> Event | None:
     """
     Send group notification to the channel
     """
@@ -50,37 +79,51 @@ def channel_group_notify(full_name: str, state: State, **kwargs):
         )
         notification.push(event)
 
+        return event
+
 
 @task_prerun.connect
 def channel_group_notify_task_prerun(sender=None, **kwargs):
-    if sender:
-        channel_group_notify(
-            full_name=sender.name,
-            state=State.started,
-            kwargs=kwargs['kwargs']
-        )
+    if not sender:
+        return
+
+    event = channel_group_notify(
+        full_name=sender.name,
+        state=State.started,
+        kwargs=kwargs['kwargs']
+    )
+
+    update_document_ocr_status(event)
 
 
 @task_postrun.connect
 def channel_group_notify_task_postrun(sender=None, **kwargs):
-    if sender:
-        channel_group_notify(
-            full_name=sender.name,
-            state=kwargs['state'],
-            kwargs=kwargs['kwargs']
-        )
+    if not sender:
+        return
+
+    event = channel_group_notify(
+        full_name=sender.name,
+        state=kwargs['state'],
+        kwargs=kwargs['kwargs']
+    )
+
+    update_document_ocr_status(event)
 
 
 @task_received.connect
 def channel_group_notify_task_received(sender=None, **kwargs):
     # why here is ``requests`` instead of ``sender``?
     request = kwargs.get('request')
-    if request:
-        channel_group_notify(
-            full_name=request.name,
-            state=State.received,
-            kwargs=request.kwargs
-        )
+    if not request:
+        return
+
+    event = channel_group_notify(
+        full_name=request.name,
+        state=State.received,
+        kwargs=request.kwargs
+    )
+
+    update_document_ocr_status(event)
 
 
 @receiver(pre_delete, sender=Document)

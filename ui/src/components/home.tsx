@@ -34,6 +34,7 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
 
   useEffect(() => {
     set_node_id(special_folder_id);
+    set_node_type("folder");
   }, [special_folder_id])
 
   if (!node_id ) {

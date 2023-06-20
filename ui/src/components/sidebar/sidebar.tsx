@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import Nav from './nav';
 import NavItem from './nav_item';
 import IconHouse from '../icons/house';
@@ -15,15 +17,22 @@ type SidebarArgs = {
   onSpecialFolderChange: (folder: SpecialFolder) => void;
 }
 
+type CurrentItemEnum = "inbox" | "home";
+
 
 function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
 
+  const [current, setCurrent] = useState<CurrentItemEnum>("home");
+  let css_klass = 'nav-link text-white';
+
   const onClickHome = () => {
     onSpecialFolderChange("home");
+    setCurrent("home");
   }
 
   const onClickInbox = () => {
     onSpecialFolderChange("inbox");
+    setCurrent("inbox");
   }
 
   return (
@@ -35,12 +44,12 @@ function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className='nav-link text-white'>
+          <a href="#" onClick={onClickHome} className={css_klass + (current == 'home' ? ' active': '')}>
             <IconHouse /><span className='ms-2'>Home</span>
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className='nav-link text-white'>
+          <a href="#" onClick={onClickInbox} className={css_klass + (current == 'inbox' ? ' active': '')}>
             <IconInbox/><span className='ms-2'>Inbox</span>
           </a>
         </NavItem>
@@ -52,12 +61,17 @@ function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
 
 function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
 
+  const [current, setCurrent] = useState<CurrentItemEnum>("home");
+  let css_klass = 'nav-link text-white';
+
   const onClickHome = () => {
     onSpecialFolderChange("home");
+    setCurrent("home");
   }
 
   const onClickInbox = () => {
-    onSpecialFolderChange("inbox")
+    onSpecialFolderChange("inbox");
+    setCurrent("inbox");
   }
 
   return (
@@ -68,12 +82,12 @@ function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className='nav-link'>
+          <a href="#" onClick={onClickHome} className={css_klass + (current == 'home' ? ' active': '')}>
             <IconHouse />
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className='nav-link'>
+          <a href="#" onClick={onClickInbox} className={css_klass + (current == 'inbox' ? ' active': '')}>
             <IconInbox />
           </a>
         </NavItem>

@@ -1,7 +1,6 @@
 import {useState, useEffect} from 'react';
 import Cookies from 'js-cookie';
 
-
 import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';

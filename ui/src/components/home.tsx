@@ -20,7 +20,6 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
   let component: JSX.Element;
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
-    console.log(`onNodeClick node_id=${node_id}, node_type=${node_type}`);
     set_node_id(node_id);
     set_node_type(node_type);
   }

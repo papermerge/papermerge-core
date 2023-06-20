@@ -4,7 +4,6 @@ import Nav from './nav';
 import NavItem from './nav_item';
 import IconHouse from '../icons/house';
 import IconInbox from '../icons/inbox';
-import ActiveLink from '../activelink';
 import { SpecialFolder } from 'types';
 
 

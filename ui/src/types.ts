@@ -104,3 +104,5 @@ export type State<T> = {
 export type OcrStatusType = {
     status: OcrStatusEnum;
 }
+
+export type SpecialFolder = "inbox" | "home";

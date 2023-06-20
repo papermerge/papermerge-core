@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
-import type { SimpleComponentArgs, State, User } from 'types';
+import type { SpecialFolder, State, User } from 'types';
 
 
 const fetcher = (url:string) => {
@@ -16,7 +16,6 @@ const fetcher = (url:string) => {
   };
 
   return fetch(url, {headers: headers}).then(res => res.json());
-
 }
 
 
@@ -47,12 +46,16 @@ export function useMe() {
    })
   }, []);
 
-
   return user;
 }
 
+type Args = {
+  children: React.ReactNode;
+  onSpecialFolderChange: (folder: SpecialFolder) => void;
+}
 
-function Layout({ children }: SimpleComponentArgs) {
+
+function Layout({ children, onSpecialFolderChange }: Args) {
   const { data, error, is_loading } = useMe();
   const [ sidebarFolded, setSidebarFolded ] = useState(false);
 
@@ -63,7 +66,7 @@ function Layout({ children }: SimpleComponentArgs) {
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar folded={sidebarFolded} />
+        <Sidebar folded={sidebarFolded} onSpecialFolderChange={onSpecialFolderChange} />
         <CentralBar>
           Loading ...
         </CentralBar>
@@ -79,7 +82,7 @@ function Layout({ children }: SimpleComponentArgs) {
 
   return (
     <main className={styles.main}>
-      <Sidebar folded={sidebarFolded} />
+      <Sidebar folded={sidebarFolded} onSpecialFolderChange={onSpecialFolderChange} />
       <CentralBar username={data?.username} onToggleSidebar={onToggleSidebar}>
         {children}
       </CentralBar>

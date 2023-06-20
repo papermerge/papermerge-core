@@ -1,5 +1,6 @@
 import { NodeClickArgsType } from "types";
 import IconHouse from 'components/icons/house';
+import IconInbox from "components/icons/inbox";
 
 
 type Args = {
@@ -19,6 +20,16 @@ export default function BreadcrumbItem({node_id, node_title, onClick, active}: A
           </a>
         </li>
       );
+  }
+
+  if (node_title === ".inbox") {
+    return (
+      <li className="breadcrumb-item active">
+        <a href="#" onClick={() => onClick({node_id: node_id, node_type: "folder"})}>
+            <IconInbox /> Inbox
+        </a>
+      </li>
+    );
   }
 
   if (active) {

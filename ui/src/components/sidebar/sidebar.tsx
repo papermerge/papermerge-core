@@ -3,14 +3,29 @@ import NavItem from './nav_item';
 import IconHouse from '../icons/house';
 import IconInbox from '../icons/inbox';
 import ActiveLink from '../activelink';
+import { SpecialFolder } from 'types';
 
 
 type Args = {
   folded: boolean;
+  onSpecialFolderChange: (folder: SpecialFolder) => void;
+}
+
+type SidebarArgs = {
+  onSpecialFolderChange: (folder: SpecialFolder) => void;
 }
 
 
-function SidebarOpened() {
+function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
+
+  const onClickHome = () => {
+    onSpecialFolderChange("home");
+  }
+
+  const onClickInbox = () => {
+    onSpecialFolderChange("inbox");
+  }
+
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2 p-2' href="#">
@@ -20,14 +35,14 @@ function SidebarOpened() {
       <hr />
       <Nav>
         <NavItem>
-          <ActiveLink href="/home" className='nav-link text-white'>
+          <a href="#" onClick={onClickHome} className='nav-link text-white'>
             <IconHouse /><span className='ms-2'>Home</span>
-          </ActiveLink>
+          </a>
         </NavItem>
         <NavItem>
-          <ActiveLink href="/inbox" className='nav-link text-white'>
+          <a href="#" onClick={onClickInbox} className='nav-link text-white'>
             <IconInbox/><span className='ms-2'>Inbox</span>
-          </ActiveLink>
+          </a>
         </NavItem>
       </Nav>
     </div>
@@ -35,7 +50,16 @@ function SidebarOpened() {
 }
 
 
-function SidebarFolded() {
+function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
+
+  const onClickHome = () => {
+    onSpecialFolderChange("home");
+  }
+
+  const onClickInbox = () => {
+    onSpecialFolderChange("inbox")
+  }
+
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
@@ -44,14 +68,14 @@ function SidebarFolded() {
       <hr />
       <Nav>
         <NavItem>
-          <ActiveLink href="/home" className='nav-link text-white'>
+          <a href="#" onClick={onClickHome} className='nav-link'>
             <IconHouse />
-          </ActiveLink>
+          </a>
         </NavItem>
         <NavItem>
-          <ActiveLink href="/inbox" className='nav-link text-white'>
+          <a href="#" onClick={onClickInbox} className='nav-link'>
             <IconInbox />
-          </ActiveLink>
+          </a>
         </NavItem>
       </Nav>
     </div>
@@ -59,16 +83,16 @@ function SidebarFolded() {
 }
 
 
-export default function Sidebar({folded}: Args) {
+export default function Sidebar({folded, onSpecialFolderChange}: Args) {
   /*
   Sidebar can be folded or opened.
   */
 
   if (folded) {
-    return <SidebarFolded />;
+    return <SidebarFolded onSpecialFolderChange={onSpecialFolderChange} />;
   }
 
   return (
-    <SidebarOpened />
+    <SidebarOpened onSpecialFolderChange={onSpecialFolderChange} />
   );
 }

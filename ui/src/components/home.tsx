@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Layout from './layout';
 import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
-import { NodeClickArgsType } from 'types';
+import { NodeClickArgsType, SpecialFolder } from 'types';
 
 
 type Args = {
-  home_folder_id: string;
+  special_folder_id: string;
+  onSpecialFolderChange: (folder: SpecialFolder) => void;
 }
 
-function Home({ home_folder_id }: Args) {
-  const [ node_id, set_node_id ] = useState(home_folder_id);
+function Home({ special_folder_id, onSpecialFolderChange }: Args) {
+  const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
   const [ per_page, set_per_page ] = useState(5);
@@ -31,6 +32,10 @@ function Home({ home_folder_id }: Args) {
   const onPerPageChange = (num: number) => {
     set_per_page(num);
   }
+
+  useEffect(() => {
+    set_node_id(special_folder_id);
+  }, [special_folder_id])
 
   if (!node_id ) {
     return <div>Loading...</div>;
@@ -54,7 +59,7 @@ function Home({ home_folder_id }: Args) {
   }
 
   return (
-    <Layout>
+    <Layout onSpecialFolderChange={onSpecialFolderChange}>
       {component}
     </Layout>
   );

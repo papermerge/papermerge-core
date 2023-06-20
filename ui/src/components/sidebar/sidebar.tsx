@@ -19,10 +19,17 @@ type SidebarArgs = {
 type CurrentItemEnum = "inbox" | "home";
 
 
+function class_name(item: CurrentItemEnum, current: CurrentItemEnum): string {
+  /**
+   * Returns the css class name of the active link
+   */
+  return 'nav-link text-white' + (current == item ? ' active': '');
+}
+
+
 function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
 
   const [current, setCurrent] = useState<CurrentItemEnum>("home");
-  let css_klass = 'nav-link text-white';
 
   const onClickHome = () => {
     onSpecialFolderChange("home");
@@ -43,12 +50,12 @@ function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className={css_klass + (current == 'home' ? ' active': '')}>
+          <a href="#" onClick={onClickHome} className={class_name('home', current)}>
             <IconHouse /><span className='ms-2'>Home</span>
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className={css_klass + (current == 'inbox' ? ' active': '')}>
+          <a href="#" onClick={onClickInbox} className={class_name('inbox', current)}>
             <IconInbox/><span className='ms-2'>Inbox</span>
           </a>
         </NavItem>
@@ -61,7 +68,6 @@ function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
 function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
 
   const [current, setCurrent] = useState<CurrentItemEnum>("home");
-  let css_klass = 'nav-link text-white';
 
   const onClickHome = () => {
     onSpecialFolderChange("home");
@@ -81,12 +87,12 @@ function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className={css_klass + (current == 'home' ? ' active': '')}>
+          <a href="#" onClick={onClickHome} className={class_name('home', current)}>
             <IconHouse />
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className={css_klass + (current == 'inbox' ? ' active': '')}>
+          <a href="#" onClick={onClickInbox} className={class_name('inbox', current)}>
             <IconInbox />
           </a>
         </NavItem>

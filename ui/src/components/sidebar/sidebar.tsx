@@ -7,16 +7,18 @@ import IconInbox from '../icons/inbox';
 import { SpecialFolder } from 'types';
 
 
+type CurrentItemEnum = "inbox" | "home";
+
 type Args = {
   folded: boolean;
   onSpecialFolderChange: (folder: SpecialFolder) => void;
 }
 
 type SidebarArgs = {
-  onSpecialFolderChange: (folder: SpecialFolder) => void;
+  onClickInbox: () => void;
+  onClickHome: () => void;
+  current: CurrentItemEnum;
 }
-
-type CurrentItemEnum = "inbox" | "home";
 
 
 function class_name(item: CurrentItemEnum, current: CurrentItemEnum): string {
@@ -27,20 +29,7 @@ function class_name(item: CurrentItemEnum, current: CurrentItemEnum): string {
 }
 
 
-function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
-
-  const [current, setCurrent] = useState<CurrentItemEnum>("home");
-
-  const onClickHome = () => {
-    onSpecialFolderChange("home");
-    setCurrent("home");
-  }
-
-  const onClickInbox = () => {
-    onSpecialFolderChange("inbox");
-    setCurrent("inbox");
-  }
-
+function SidebarOpened({onClickHome, onClickInbox, current}: SidebarArgs) {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2 p-2' href="#">
@@ -65,20 +54,7 @@ function SidebarOpened({onSpecialFolderChange}: SidebarArgs) {
 }
 
 
-function SidebarFolded({onSpecialFolderChange}: SidebarArgs) {
-
-  const [current, setCurrent] = useState<CurrentItemEnum>("home");
-
-  const onClickHome = () => {
-    onSpecialFolderChange("home");
-    setCurrent("home");
-  }
-
-  const onClickInbox = () => {
-    onSpecialFolderChange("inbox");
-    setCurrent("inbox");
-  }
-
+function SidebarFolded({onClickHome, onClickInbox, current}: SidebarArgs) {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
@@ -106,12 +82,29 @@ export default function Sidebar({folded, onSpecialFolderChange}: Args) {
   /*
   Sidebar can be folded or opened.
   */
+  const [current, setCurrent] = useState<CurrentItemEnum>("home");
+
+  const onClickHome = () => {
+    onSpecialFolderChange("home");
+    setCurrent("home");
+  }
+
+  const onClickInbox = () => {
+    onSpecialFolderChange("inbox");
+    setCurrent("inbox");
+  }
 
   if (folded) {
-    return <SidebarFolded onSpecialFolderChange={onSpecialFolderChange} />;
+    return <SidebarFolded
+      current={current}
+      onClickHome={onClickHome}
+      onClickInbox={onClickInbox} />;
   }
 
   return (
-    <SidebarOpened onSpecialFolderChange={onSpecialFolderChange} />
+    <SidebarOpened
+      current={current}
+      onClickHome={onClickHome}
+      onClickInbox={onClickInbox} />
   );
 }

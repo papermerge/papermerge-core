@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie';
 
+import Dropdown from 'react-bootstrap/Dropdown';
 import styles from './layout.module.css';
 
 
@@ -31,8 +32,24 @@ export default function CentralBar(
             </li>
           </ul>
           <div>
-            {username} <a href="" onClick={onSignOut}>Sign Out</a>
           </div>
+          <Dropdown>
+            <Dropdown.Toggle variant="light" id="dropdown-basic">
+              <i className='bi-person-fill'></i> {username}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item href="/api/docs">
+                <i className='bi-book me-2'></i>REST API
+              </Dropdown.Item>
+              <Dropdown.Item href="#">
+                <i className='bi-question-circle me-2'></i>About
+              </Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={onSignOut}>
+                <i className='bi-box-arrow-right me-2'></i>Sign Out
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </div>
       </nav>
       <div className='container-fluid'>

@@ -46,7 +46,7 @@ def get_node(
     user: User = Depends(current_user)
 ):
     """Returns a list nodes with given parent_id of the current user"""
-    order_by = ['ctype', 'title']
+    order_by = ['ctype', 'title', 'created_at', 'updated_at']
 
     if params.order_by:
         order_by = [

@@ -47,7 +47,7 @@ type State<T> = {
   data: T;
 }
 
-function useNodeListPlus(node_id: string, page_number: number, per_page: number): State<NodeListPlusT>  {
+function useNodeListPlus(node_id: string, page_number: number, page_size: number): State<NodeListPlusT>  {
   const initial_state: State<NodeListPlusT> = {
     is_loading: true,
     loading_id: node_id,
@@ -74,7 +74,7 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
 
 
     prom = Promise.all([
-      fetcher(`/api/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
+      fetcher(`/api/nodes/${node_id}?page_number=${page_number}&page_size=${page_size}`),
       fetcher(`/api/folders/${node_id}`)
     ]);
 
@@ -106,7 +106,7 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
         ignore = true;
       };
     }
-  }, [node_id, page_number, per_page]);
+  }, [node_id, page_number, page_size]);
 
   return data;
 }
@@ -137,20 +137,20 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 type Args = {
   node_id: string;
   page_number: number;
-  per_page: number,
+  page_size: number,
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
-  onPerPageChange: (per_page: number) => void;
+  onPageSizeChange: (page_size: number) => void;
 }
 
 
 function Commander({
   node_id,
   page_number,
-  per_page,
+  page_size,
   onNodeClick,
   onPageClick,
-  onPerPageChange
+  onPageSizeChange
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -171,7 +171,7 @@ function Commander({
     error,
     loading_id,
     data: [nodes_list, breadcrumb]
-  }: State<NodeListPlusT> = useNodeListPlus(node_id, page_number, per_page);
+  }: State<NodeListPlusT> = useNodeListPlus(node_id, page_number, page_size);
   let nodes;
 
   const get_node = (node_id: string): NodeType | undefined => {
@@ -223,7 +223,7 @@ function Commander({
 
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
-    onPerPageChange(new_value);
+    onPageSizeChange(new_value);
   }
 
   const onCreateNewFolder = (new_node: NodeType) => {
@@ -410,7 +410,7 @@ function Commander({
     if (nodes_list) {
       setNodesList(nodes_list.items);
     }
-  }, [nodes_list, page_number, per_page]);
+  }, [nodes_list, page_number, page_size]);
 
   useEffect(() => {
     console.log(`=====> ${error} <====`);
@@ -483,7 +483,7 @@ function Commander({
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange} defaultValue={5}>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={page_size}>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>

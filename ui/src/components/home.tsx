@@ -12,11 +12,39 @@ type Args = {
   onSpecialFolderChange: (folder: SpecialFolder) => void;
 }
 
+
+const NODES_PAGE_SIZE = 'nodes-page-size';
+const NODES_PAGE_SIZE_DEFAULT = 5;
+
+
+function get_default_page_size(): number {
+  /*
+  Retrieves default page_size from local storage
+
+  When user changes page_size in drop down box, that value
+  is saved in local storage, so that next time user refreshes the page
+  and component is recreated - the page_size from local storage will
+  be used.
+
+  In case storage value for page_size was either not found
+  or returns an invalid value, then hardcoded constant
+  NODES_PAGE_SIZE_DEFAULT will be returned.
+  */
+  let nodes_page_size = localStorage.getItem(NODES_PAGE_SIZE);
+
+  if (nodes_page_size) {
+    return parseInt(nodes_page_size) || NODES_PAGE_SIZE_DEFAULT;
+  }
+
+  return NODES_PAGE_SIZE_DEFAULT;
+}
+
+
 function Home({ special_folder_id, onSpecialFolderChange }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
-  const [ per_page, set_per_page ] = useState(5);
+  const [ page_size, setPageSize ] = useState(get_default_page_size());
   let component: JSX.Element;
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
@@ -28,8 +56,9 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
     set_page_number(num);
   }
 
-  const onPerPageChange = (num: number) => {
-    set_per_page(num);
+  const onPageSizeChange = (num: number) => {
+    setPageSize(num);
+    localStorage.setItem(NODES_PAGE_SIZE, `${num}`);
   }
 
   useEffect(() => {
@@ -46,10 +75,10 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
       component = <Commander
         node_id={node_id}
         page_number={page_number}
-        per_page={per_page}
+        page_size={page_size}
         onNodeClick={onNodeClick}
         onPageClick={onPageClick}
-        onPerPageChange={onPerPageChange}
+        onPageSizeChange={onPageSizeChange}
       />
     } else {
       component = <Viewer node_id={node_id} onNodeClick={onNodeClick} />;

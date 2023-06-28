@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import Form from 'react-bootstrap/Form';
 
 import DisplayModeDropown from './display_mode';
+import SortDropdown from './sort_dropdown';
 import Folder from './folder';
 import Document from './document';
 import EmptyFolder from './empty_folder';
@@ -478,6 +479,7 @@ function Commander({
             node_id={node_id} />
 
             <div className="d-flex">
+              <SortDropdown />
 
               <DisplayModeDropown value={nodesDisplayMode}
                 onNodesDisplayModeList={onNodesDisplayModeList}

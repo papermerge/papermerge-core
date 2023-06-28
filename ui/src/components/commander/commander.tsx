@@ -30,6 +30,8 @@ import type { FolderType, NodeType} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
+import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+
 
 
 type NodeResultType = {
@@ -164,6 +166,9 @@ function Commander({
   const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
+  const [ nodesSortOrder, setNodesSortOrder ] = useState<NodeSortOrderEnum>(NodeSortOrderEnum.asc);
+  const [ nodesSortField, setNodesSortField ] = useState<NodeSortFieldEnum>(NodeSortFieldEnum.title);
+
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -391,6 +396,14 @@ function Commander({
     setNodesDisplayMode(DisplayNodesModeEnum.Tiles);
   }
 
+  const onSortFieldChange = (sort_field: NodeSortFieldEnum) => {
+    setNodesSortField(sort_field);
+  }
+
+  const onSortOrderChange = (sort_order: NodeSortOrderEnum) => {
+    setNodesSortOrder(sort_order);
+  }
+
   const list_nodes_css_class_name = () => {
     if (nodesDisplayMode === DisplayNodesModeEnum.List) {
       return 'd-flex flex-column mb-3';
@@ -479,7 +492,11 @@ function Commander({
             node_id={node_id} />
 
             <div className="d-flex">
-              <SortDropdown />
+              <SortDropdown
+                sort_order={nodesSortOrder}
+                sort_field={nodesSortField}
+                onSortFieldChange={onSortFieldChange}
+                onSortOrderChange={onSortOrderChange} />
 
               <DisplayModeDropown value={nodesDisplayMode}
                 onNodesDisplayModeList={onNodesDisplayModeList}

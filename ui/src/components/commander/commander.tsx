@@ -161,11 +161,14 @@ type Args = {
   page_size: number;
   sort_order: NodeSortOrderEnum;
   sort_field: NodeSortFieldEnum;
+  display_mode: DisplayNodesModeEnum;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
   onPageSizeChange: (page_size: number) => void;
   onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
   onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
+  onNodesDisplayModeList: () => void;
+  onNodesDisplayModeTiles: () => void;
 }
 
 
@@ -175,11 +178,14 @@ function Commander({
   page_size,
   sort_field,
   sort_order,
+  display_mode,
   onNodeClick,
   onPageClick,
   onPageSizeChange,
   onSortFieldChange,
-  onSortOrderChange
+  onSortOrderChange,
+  onNodesDisplayModeList,
+  onNodesDisplayModeTiles
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -191,7 +197,6 @@ function Commander({
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
   const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
-  const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -418,18 +423,8 @@ function Commander({
     */
   }
 
-  const onNodesDisplayModeList = () => {
-    setNodesDisplayMode(DisplayNodesModeEnum.List);
-  }
-
-  const onNodesDisplayModeTiles = () => {
-    setNodesDisplayMode(DisplayNodesModeEnum.Tiles);
-  }
-
-
-
   const list_nodes_css_class_name = () => {
-    if (nodesDisplayMode === DisplayNodesModeEnum.List) {
+    if (display_mode === DisplayNodesModeEnum.List) {
       return 'd-flex flex-column mb-3';
     }
 
@@ -472,7 +467,7 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
-            display_mode={nodesDisplayMode}
+            display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
@@ -494,7 +489,7 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
-            display_mode={nodesDisplayMode}
+            display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
@@ -522,7 +517,7 @@ function Commander({
                 onSortFieldChange={onSortFieldChange}
                 onSortOrderChange={onSortOrderChange} />
 
-              <DisplayModeDropown value={nodesDisplayMode}
+              <DisplayModeDropown value={display_mode}
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 

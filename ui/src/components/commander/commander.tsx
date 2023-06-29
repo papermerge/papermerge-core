@@ -32,6 +32,7 @@ import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
+import { build_nodes_list_params } from 'utils/misc';
 
 
 type NodeResultType = {
@@ -50,7 +51,21 @@ type State<T> = {
   data: T;
 }
 
-function useNodeListPlus(node_id: string, page_number: number, page_size: number): State<NodeListPlusT>  {
+type NodeListArgs = {
+  node_id: string;
+  page_number: number;
+  page_size: number;
+  sort_field: NodeSortFieldEnum;
+  sort_order: NodeSortOrderEnum;
+}
+
+function useNodeListPlus({
+  node_id,
+  page_number,
+  page_size,
+  sort_field,
+  sort_order
+}: NodeListArgs): State<NodeListPlusT>  {
   const initial_state: State<NodeListPlusT> = {
     is_loading: true,
     loading_id: node_id,
@@ -59,6 +74,9 @@ function useNodeListPlus(node_id: string, page_number: number, page_size: number
   };
   let [data, setData] = useState<State<NodeListPlusT>>(initial_state);
   let prom: any;
+  let url_params: string = build_nodes_list_params({
+    page_number, page_size, sort_field, sort_order
+  });
 
   if (!node_id) {
     setData(initial_state);
@@ -77,7 +95,7 @@ function useNodeListPlus(node_id: string, page_number: number, page_size: number
 
 
     prom = Promise.all([
-      fetcher(`/api/nodes/${node_id}?page_number=${page_number}&page_size=${page_size}`),
+      fetcher(`/api/nodes/${node_id}?${url_params}`),
       fetcher(`/api/folders/${node_id}`)
     ]);
 
@@ -109,7 +127,7 @@ function useNodeListPlus(node_id: string, page_number: number, page_size: number
         ignore = true;
       };
     }
-  }, [node_id, page_number, page_size]);
+  }, [node_id, page_number, page_size, sort_order, sort_field]);
 
   return data;
 }
@@ -140,10 +158,14 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 type Args = {
   node_id: string;
   page_number: number;
-  page_size: number,
+  page_size: number;
+  sort_order: NodeSortOrderEnum;
+  sort_field: NodeSortFieldEnum;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
   onPageSizeChange: (page_size: number) => void;
+  onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
+  onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
 }
 
 
@@ -151,9 +173,13 @@ function Commander({
   node_id,
   page_number,
   page_size,
+  sort_field,
+  sort_order,
   onNodeClick,
   onPageClick,
-  onPageSizeChange
+  onPageSizeChange,
+  onSortFieldChange,
+  onSortOrderChange
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -166,8 +192,6 @@ function Commander({
   const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
-  const [ nodesSortOrder, setNodesSortOrder ] = useState<NodeSortOrderEnum>(NodeSortOrderEnum.asc);
-  const [ nodesSortField, setNodesSortField ] = useState<NodeSortFieldEnum>(NodeSortFieldEnum.title);
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -177,7 +201,13 @@ function Commander({
     error,
     loading_id,
     data: [nodes_list, breadcrumb]
-  }: State<NodeListPlusT> = useNodeListPlus(node_id, page_number, page_size);
+  }: State<NodeListPlusT> = useNodeListPlus({
+    node_id,
+    page_number,
+    page_size,
+    sort_order,
+    sort_field,
+  });
   let nodes;
 
   const get_node = (node_id: string): NodeType | undefined => {
@@ -396,13 +426,7 @@ function Commander({
     setNodesDisplayMode(DisplayNodesModeEnum.Tiles);
   }
 
-  const onSortFieldChange = (sort_field: NodeSortFieldEnum) => {
-    setNodesSortField(sort_field);
-  }
 
-  const onSortOrderChange = (sort_order: NodeSortOrderEnum) => {
-    setNodesSortOrder(sort_order);
-  }
 
   const list_nodes_css_class_name = () => {
     if (nodesDisplayMode === DisplayNodesModeEnum.List) {
@@ -493,8 +517,8 @@ function Commander({
 
             <div className="d-flex">
               <SortDropdown
-                sort_order={nodesSortOrder}
-                sort_field={nodesSortField}
+                sort_order={sort_order}
+                sort_field={sort_field}
                 onSortFieldChange={onSortFieldChange}
                 onSortOrderChange={onSortOrderChange} />
 

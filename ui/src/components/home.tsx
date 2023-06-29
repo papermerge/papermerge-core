@@ -5,7 +5,7 @@ import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
 import { NodeClickArgsType, SpecialFolder } from 'types';
-
+import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 type Args = {
   special_folder_id: string;
@@ -45,6 +45,9 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
   const [ page_size, setPageSize ] = useState(get_default_page_size());
+  const [ sort_order, set_sort_order ] = useState<NodeSortOrderEnum>(NodeSortOrderEnum.asc);
+  const [ sort_field, set_sort_field ] = useState<NodeSortFieldEnum>(NodeSortFieldEnum.title);
+
   let component: JSX.Element;
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
@@ -59,6 +62,14 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
   const onPageSizeChange = (num: number) => {
     setPageSize(num);
     localStorage.setItem(NODES_PAGE_SIZE, `${num}`);
+  }
+
+  const onSortFieldChange = (sort_field: NodeSortFieldEnum) => {
+    set_sort_field(sort_field);
+  }
+
+  const onSortOrderChange = (sort_order: NodeSortOrderEnum) => {
+    set_sort_order(sort_order);
   }
 
   useEffect(() => {
@@ -76,10 +87,13 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
         node_id={node_id}
         page_number={page_number}
         page_size={page_size}
+        sort_field={sort_field}
+        sort_order={sort_order}
         onNodeClick={onNodeClick}
         onPageClick={onPageClick}
         onPageSizeChange={onPageSizeChange}
-      />
+        onSortFieldChange={onSortFieldChange}
+        onSortOrderChange={onSortOrderChange} />
     } else {
       component = <Viewer node_id={node_id} onNodeClick={onNodeClick} />;
     }

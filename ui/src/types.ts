@@ -88,7 +88,7 @@ export enum DisplayNodesModeEnum {
 
 export enum NodeSortFieldEnum {
   title = "title",
-  type = "type",
+  type = "ctype",
   created_at = "created_at",
   updated_at = "updated_at"
 }

@@ -1,7 +1,7 @@
 import type { NodeType, NodeList } from 'types';
 import { Rectangle } from 'utils/geometry';
 import { Point } from 'utils/geometry';
-
+import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 export function is_empty<T>(value: T[]): boolean {
   if (!value) {
@@ -46,4 +46,30 @@ export function get_node_under_cursor(
     return false;
   });
 
+}
+
+type BuildNodesListParamArgs = {
+  page_size: number;
+  page_number: number;
+  sort_field: NodeSortFieldEnum;
+  sort_order: NodeSortOrderEnum;
+}
+
+export function build_nodes_list_params({
+  page_size,
+  page_number,
+  sort_field,
+  sort_order
+}: BuildNodesListParamArgs): string {
+
+  let result: string = `page_number=${page_number}&page_size=${page_size}`;
+  let order_by: string = sort_field;
+
+  if (sort_order == NodeSortOrderEnum.desc) {
+    order_by = `-${sort_field}`;
+  }
+
+  result = `${result}&order_by=${order_by}`
+
+  return result;
 }

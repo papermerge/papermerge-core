@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import Form from 'react-bootstrap/Form';
 
 import DisplayModeDropown from './display_mode';
+import SortDropdown from './sort_dropdown';
 import Folder from './folder';
 import Document from './document';
 import EmptyFolder from './empty_folder';
@@ -29,6 +30,9 @@ import type { FolderType, NodeType} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
+import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+
+import { build_nodes_list_params } from 'utils/misc';
 
 
 type NodeResultType = {
@@ -47,7 +51,21 @@ type State<T> = {
   data: T;
 }
 
-function useNodeListPlus(node_id: string, page_number: number, per_page: number): State<NodeListPlusT>  {
+type NodeListArgs = {
+  node_id: string;
+  page_number: number;
+  page_size: number;
+  sort_field: NodeSortFieldEnum;
+  sort_order: NodeSortOrderEnum;
+}
+
+function useNodeListPlus({
+  node_id,
+  page_number,
+  page_size,
+  sort_field,
+  sort_order
+}: NodeListArgs): State<NodeListPlusT>  {
   const initial_state: State<NodeListPlusT> = {
     is_loading: true,
     loading_id: node_id,
@@ -56,6 +74,9 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
   };
   let [data, setData] = useState<State<NodeListPlusT>>(initial_state);
   let prom: any;
+  let url_params: string = build_nodes_list_params({
+    page_number, page_size, sort_field, sort_order
+  });
 
   if (!node_id) {
     setData(initial_state);
@@ -74,7 +95,7 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
 
 
     prom = Promise.all([
-      fetcher(`/api/nodes/${node_id}?page_number=${page_number}&per_page=${per_page}`),
+      fetcher(`/api/nodes/${node_id}?${url_params}`),
       fetcher(`/api/folders/${node_id}`)
     ]);
 
@@ -106,7 +127,7 @@ function useNodeListPlus(node_id: string, page_number: number, per_page: number)
         ignore = true;
       };
     }
-  }, [node_id, page_number, per_page]);
+  }, [node_id, page_number, page_size, sort_order, sort_field]);
 
   return data;
 }
@@ -137,20 +158,34 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 type Args = {
   node_id: string;
   page_number: number;
-  per_page: number,
+  page_size: number;
+  sort_order: NodeSortOrderEnum;
+  sort_field: NodeSortFieldEnum;
+  display_mode: DisplayNodesModeEnum;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
-  onPerPageChange: (per_page: number) => void;
+  onPageSizeChange: (page_size: number) => void;
+  onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
+  onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
+  onNodesDisplayModeList: () => void;
+  onNodesDisplayModeTiles: () => void;
 }
 
 
 function Commander({
   node_id,
   page_number,
-  per_page,
+  page_size,
+  sort_field,
+  sort_order,
+  display_mode,
   onNodeClick,
   onPageClick,
-  onPerPageChange
+  onPageSizeChange,
+  onSortFieldChange,
+  onSortOrderChange,
+  onNodesDisplayModeList,
+  onNodesDisplayModeTiles
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -162,7 +197,7 @@ function Commander({
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
   const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
-  const [ nodesDisplayMode, setNodesDisplayMode ] = useState<DisplayNodesModeEnum>(DisplayNodesModeEnum.List);
+
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -171,7 +206,13 @@ function Commander({
     error,
     loading_id,
     data: [nodes_list, breadcrumb]
-  }: State<NodeListPlusT> = useNodeListPlus(node_id, page_number, per_page);
+  }: State<NodeListPlusT> = useNodeListPlus({
+    node_id,
+    page_number,
+    page_size,
+    sort_order,
+    sort_field,
+  });
   let nodes;
 
   const get_node = (node_id: string): NodeType | undefined => {
@@ -223,7 +264,7 @@ function Commander({
 
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
-    onPerPageChange(new_value);
+    onPageSizeChange(new_value);
   }
 
   const onCreateNewFolder = (new_node: NodeType) => {
@@ -382,16 +423,8 @@ function Commander({
     */
   }
 
-  const onNodesDisplayModeList = () => {
-    setNodesDisplayMode(DisplayNodesModeEnum.List);
-  }
-
-  const onNodesDisplayModeTiles = () => {
-    setNodesDisplayMode(DisplayNodesModeEnum.Tiles);
-  }
-
   const list_nodes_css_class_name = () => {
-    if (nodesDisplayMode === DisplayNodesModeEnum.List) {
+    if (display_mode === DisplayNodesModeEnum.List) {
       return 'd-flex flex-column mb-3';
     }
 
@@ -410,7 +443,7 @@ function Commander({
     if (nodes_list) {
       setNodesList(nodes_list.items);
     }
-  }, [nodes_list, page_number, per_page]);
+  }, [nodes_list, page_number, page_size]);
 
   useEffect(() => {
     console.log(`=====> ${error} <====`);
@@ -434,7 +467,7 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
-            display_mode={nodesDisplayMode}
+            display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
@@ -456,7 +489,7 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
-            display_mode={nodesDisplayMode}
+            display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
@@ -478,12 +511,17 @@ function Commander({
             node_id={node_id} />
 
             <div className="d-flex">
+              <SortDropdown
+                sort_order={sort_order}
+                sort_field={sort_field}
+                onSortFieldChange={onSortFieldChange}
+                onSortOrderChange={onSortOrderChange} />
 
-              <DisplayModeDropown value={nodesDisplayMode}
+              <DisplayModeDropown value={display_mode}
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange} defaultValue={5}>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={page_size}>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>

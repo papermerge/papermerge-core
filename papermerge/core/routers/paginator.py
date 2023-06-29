@@ -1,11 +1,10 @@
-from typing import TypeVar, Generic, Callable
-from functools import wraps
 from collections.abc import Sequence
+from functools import wraps
+from typing import Callable, Generic, TypeVar
 
 from django.core.paginator import Paginator as DjangoPaginator
 from django.db.models.query import QuerySet
-
-from pydantic.generics import GenericModel, BaseModel
+from pydantic.generics import BaseModel, GenericModel
 
 from .params import CommonQueryParams
 
@@ -13,23 +12,29 @@ T = TypeVar('T')
 
 
 class PaginatorGeneric(GenericModel, Generic[T]):
-    per_page: int
+    page_size: int
     page_number: int
     num_pages: int
     items: Sequence[T]
 
 
 class Paginator(BaseModel):
-    per_page: int
+    page_size: int
     page_number: int
     num_pages: int
     items: Sequence
 
-    def __init__(self, qs: QuerySet, per_page: int, page_number: int, **kwargs):
-        paginator = DjangoPaginator(qs, per_page)
+    def __init__(
+        self,
+        qs: QuerySet,
+        page_size: int,
+        page_number: int,
+        **kwargs
+    ):
+        paginator = DjangoPaginator(qs, page_size)
 
         super().__init__(
-            per_page=per_page,
+            page_size=page_size,
             page_number=page_number,
             num_pages=paginator.num_pages,
             items=list(paginator.get_page(page_number).object_list),
@@ -49,7 +54,7 @@ def paginate(func: Callable) -> Callable:
 
         return Paginator(
             queryset,
-            per_page=params.per_page,
+            page_size=params.page_size,
             page_number=params.page_number
         )
 

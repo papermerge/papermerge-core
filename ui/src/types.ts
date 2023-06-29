@@ -86,6 +86,18 @@ export enum DisplayNodesModeEnum {
   Tiles,
 }
 
+export enum NodeSortFieldEnum {
+  title = "title",
+  type = "ctype",
+  created_at = "created_at",
+  updated_at = "updated_at"
+}
+
+export enum NodeSortOrderEnum {
+  asc = "asc",
+  desc = "desc"
+}
+
 export type UUIDList = Array<string>;
 export type NodeList = Array<NodeType>;
 

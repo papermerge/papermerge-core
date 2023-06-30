@@ -85,3 +85,8 @@ class CreateDocument(BaseModel):
     parent_id: UUID | None
     lang: str | None = None
     file_name: str | None = None
+
+
+class Thumbnail(BaseModel):
+    url: str
+    size: int

@@ -1,23 +1,22 @@
 import io
 import logging
 import os
-from typing import Optional
 from os.path import getsize
+from pathlib import Path
+from typing import Optional
+
+from django.db import models, transaction
 from pikepdf import Pdf
 
-from django.db import models
-from django.db import transaction
-
 from papermerge.core.lib.path import DocumentPath, PagePath
-from papermerge.core.signal_definitions import document_post_upload
-from papermerge.core.storage import get_storage_instance, abs_path
 from papermerge.core.models import utils
+from papermerge.core.signal_definitions import document_post_upload
+from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.utils import image as image_utils
 
-from .node import BaseTreeNode
-
-from .page import Page
 from .document_version import DocumentVersion
-
+from .node import BaseTreeNode
+from .page import Page
 
 logger = logging.getLogger(__name__)
 
@@ -345,14 +344,15 @@ class Document(BaseTreeNode):
             page_count=self.page_count
         )
 
-    def preview_path(self, page, size=None):
+    def thumbnail_path(self, size: int = 100):
+        return self.preview_path(1, size=size)
 
-        if page > self.page_count or page < 0:
-            raise ValueError("Page index out of bound")
+    def preview_path(self, page: int, size: int | None = None):
+        doc_ver = self.versions.last()
 
-        file_name = os.path.basename(self.file_name)
+        file_name = os.path.basename(doc_ver.file_name)
         root, _ = os.path.splitext(file_name)
-        page_count = self.pages_num
+        page_count = doc_ver.page_count
 
         if not size:
             size = "orig"
@@ -370,6 +370,19 @@ class Document(BaseTreeNode):
             fmt_page.format(
                 root=root, num=int(page), ext="jpg"
             )
+        )
+
+    def generate_thumbnail(self, size: int = 100):
+        last_version = self.versions.last()
+        abs_dirname = abs_path(
+            last_version.document_path.dirname_sidecars()
+        )
+        url = last_version.document_path.url
+
+        image_utils.generate_preview(
+            pdf_path=Path(abs_path(url)),
+            output_folder=Path(abs_dirname),
+            size=size
         )
 
     @property

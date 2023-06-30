@@ -1,11 +1,14 @@
 import io
+import os
 import uuid
-from fastapi import APIRouter, Depends, UploadFile
 
-from papermerge.core.models import User
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 
+from papermerge.core.models import Document, User
 from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.models import Document
+from papermerge.core.schemas.documents import Thumbnail
+from papermerge.core.storage import abs_path
 
 from .auth import get_current_user as current_user
 
@@ -13,6 +16,10 @@ router = APIRouter(
     prefix="/documents",
     tags=["documents"],
 )
+
+
+class JPEGFileResponse(FileResponse):
+    media_type = 'application/jpeg'
 
 
 @router.get("/{document_id}")
@@ -64,3 +71,72 @@ def upload_file(
         file_name=file.filename
     )
     return PyDocument.from_orm(doc)
+
+
+@router.get("/{document_id}/thumbnail")
+def generate_document_thumbnail(
+    document_id: uuid.UUID,
+    size: int = 100,
+    user: User = Depends(current_user)
+) -> Thumbnail:
+    """Generates thumbnail of the document last version's first page
+
+    Thumbnail is size px wide.
+    """
+    try:
+        doc = Document.objects.get(id=document_id, user=user)
+    except Document.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Page does not exist"
+        )
+
+    jpeg_abs_path = abs_path(doc.thumbnail_path(size=size))
+
+    if not os.path.exists(jpeg_abs_path):
+        # generate preview/thumbnail
+        # of the doc last version's first page
+        doc.generate_thumbnail(size=size)
+
+    if not os.path.exists(jpeg_abs_path):
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    return Thumbnail(
+        size=size,
+        url=f"/{document_id}/thumbnail/jpg"
+    )
+
+
+@router.get(
+    "/{document_id}/thumbnail/jpg",
+    response_class=JPEGFileResponse
+)
+def retrieve_document_thumbnail(
+    document_id: uuid.UUID,
+    size: int = 100,
+    user: User = Depends(current_user)
+):
+    """Retrieves thumbnail of the document last version's first page
+
+    Thumbnail is size px wide.
+    """
+    try:
+        doc = Document.objects.get(id=document_id, user=user)
+    except Document.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Page does not exist"
+        )
+
+    jpeg_abs_path = abs_path(doc.thumbnail_path(size=size))
+
+    if not os.path.exists(jpeg_abs_path):
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    return JPEGFileResponse(jpeg_abs_path)

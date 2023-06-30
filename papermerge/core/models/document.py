@@ -344,44 +344,28 @@ class Document(BaseTreeNode):
             page_count=self.page_count
         )
 
-    def thumbnail_path(self, size: int = 100):
-        return self.preview_path(1, size=size)
+    def thumbnail_path(self, size: int = 200) -> Path:
+        last_version = self.versions.last()
+        uuid_str = str(last_version.id)
 
-    def preview_path(self, page: int, size: int | None = None):
-        doc_ver = self.versions.last()
-
-        file_name = os.path.basename(doc_ver.file_name)
-        root, _ = os.path.splitext(file_name)
-        page_count = doc_ver.page_count
-
-        if not size:
-            size = "orig"
-
-        if page_count <= 9:
-            fmt_page = "{root}-page-{num:d}.{ext}"
-        elif page_count > 9 and page_count < 100:
-            fmt_page = "{root}-page-{num:02d}.{ext}"
-        elif page_count > 100:
-            fmt_page = "{root}-page-{num:003d}.{ext}"
-
-        return os.path.join(
-            self.dir_path,
-            str(size),
-            fmt_page.format(
-                root=root, num=int(page), ext="jpg"
-            )
+        return Path(
+            "thumbnails",
+            uuid_str[0:2],
+            uuid_str[2:4],
+            uuid_str,
+            f"{size}.jpg"
         )
 
     def generate_thumbnail(self, size: int = 100):
         last_version = self.versions.last()
-        abs_dirname = abs_path(
-            last_version.document_path.dirname_sidecars()
+        abs_thumbnail_path = abs_path(
+            self.thumbnail_path(size=size)
         )
-        url = last_version.document_path.url
+        pdf_path = last_version.document_path.url
 
         image_utils.generate_preview(
-            pdf_path=Path(abs_path(url)),
-            output_folder=Path(abs_dirname),
+            pdf_path=Path(abs_path(pdf_path)),
+            output_folder=Path(abs_thumbnail_path).parent,
             size=size
         )
 

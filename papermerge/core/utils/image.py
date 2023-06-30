@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from pdf2image import convert_from_path
-from pdf2image.generators import counter_generator
+
+
+def file_name_generator(size):
+    yield str(size)
 
 
 def generate_preview(
@@ -17,11 +20,12 @@ def generate_preview(
         'fmt': 'jpg',
         'first_page': page_number,
         'last_page': page_number,
+        'single_file': True,
         'size': (size,),
-        'output_file': counter_generator(padding_goal=3)
+        'output_file': file_name_generator(size)
     }
 
-    output_folder.mkdir(exist_ok=True)
+    output_folder.mkdir(exist_ok=True, parents=True)
 
     # generates jpeg previews of PDF file using pdftoppm (poppler-utils)
     convert_from_path(**kwargs)

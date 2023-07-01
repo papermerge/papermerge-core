@@ -5,7 +5,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
+from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.models import Document, User
+from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas.documents import Thumbnail
 from papermerge.core.storage import abs_path
 
@@ -60,7 +62,7 @@ class JPEGFileResponse(FileResponse):
 )
 def retrieve_document_thumbnail(
     document_id: uuid.UUID,
-    size: int = 200,
+    size: int = DEFAULT_THUMBNAIL_SIZE,
     user: User = Depends(current_user)
 ):
     """Retrieves thumbnail of the document last version's first page"""
@@ -72,13 +74,14 @@ def retrieve_document_thumbnail(
             detail="Page does not exist"
         )
 
-    jpeg_abs_path = abs_path(doc.thumbnail_path(size=size))
-    logger.info(f"jpeg_abs_path={jpeg_abs_path}")
+    last_version = doc.versions.last()
+    jpeg_abs_path = rel2abs(thumbnail_path(last_version.id, size=size))
+    logger.info(
+        f"jpeg_abs_path={jpeg_abs_path}, doc_id={doc.id},"
+        f" last_version.id={last_version.id}"
+    )
 
     if not os.path.exists(jpeg_abs_path):
-        raise HTTPException(
-            status_code=404,
-            detail="File not found"
-        )
+        doc.generate_thumbnail(size=size)
 
     return JPEGFileResponse(jpeg_abs_path)

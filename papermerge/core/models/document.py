@@ -365,7 +365,8 @@ class Document(BaseTreeNode):
             thumbnail_path(last_version.id, size=size)
         )
         pdf_path = last_version.document_path.url
-
+        logger.info(f"document versions count={self.versions.count()}")
+        logger.info(f"last version id = {last_version.id}")
         image_utils.generate_preview(
             pdf_path=Path(abs_path(pdf_path)),
             output_folder=abs_thumbnail_path.parent,

@@ -28,6 +28,7 @@ export type BreadcrumbType = Array<BreadcrumbItemType>;
 
 export type DocumentNodeType = {
   ocr_status: OcrStatusEnum;
+  thumbnail_url: string | null;
 }
 
 

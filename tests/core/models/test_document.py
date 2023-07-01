@@ -247,3 +247,8 @@ def test_document_breadcrumb():
 
     assert actual_breadcumb == '.home/folder1/invoice.pdf'
     assert doc.title == 'invoice.pdf'
+
+
+@pytest.mark.django_db
+def test_generate_thumbnail(document: Document):
+    document.generate_thumbnail()

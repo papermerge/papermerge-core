@@ -62,4 +62,6 @@ def upload_file(
         content=io.BytesIO(content),
         file_name=file.filename
     )
+    doc.generate_thumbnail()
+
     return PyDocument.from_orm(doc)

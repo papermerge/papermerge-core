@@ -1,4 +1,5 @@
 import pytest
+
 from papermerge.core.models import Document, User
 from papermerge.core.schemas.documents import Document as PyDocument
 
@@ -11,9 +12,10 @@ def test_documents(user: User):
         user_id=user.pk,
         parent=user.home_folder
     )
-    pydoc = PyDocument.from_orm(doc)
+    pydoc: PyDocument = PyDocument.from_orm(doc)
 
     assert pydoc.title == "invoice.pdf"
     assert len(pydoc.versions) == 1
     assert pydoc.versions[0].size == 0
     assert len(pydoc.versions[0].pages) == 0
+    assert pydoc.thumbnail_url == f"/api/thumbnails/{doc.id}"

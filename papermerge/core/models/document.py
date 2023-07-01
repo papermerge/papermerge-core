@@ -10,6 +10,7 @@ from pikepdf import Pdf
 
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.models import utils
+from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.utils import image as image_utils
@@ -181,6 +182,8 @@ class Document(BaseTreeNode):
             document_version=document_version
         )
 
+        return document_version
+
     def version_bump_from_pages(self, pages):
         """
         Creates new version for the document.
@@ -344,28 +347,21 @@ class Document(BaseTreeNode):
             page_count=self.page_count
         )
 
-    def thumbnail_path(self, size: int = 200) -> Path:
-        last_version = self.versions.last()
-        uuid_str = str(last_version.id)
+    def generate_thumbnail(self, size: int = 100) -> None:
+        """Generates thumbnail image for the document
 
-        return Path(
-            "thumbnails",
-            uuid_str[0:2],
-            uuid_str[2:4],
-            uuid_str,
-            f"{size}.jpg"
-        )
-
-    def generate_thumbnail(self, size: int = 100):
+        The thumbnail is generated from the first page of the
+        last version of document.
+        """
         last_version = self.versions.last()
-        abs_thumbnail_path = abs_path(
-            self.thumbnail_path(size=size)
+        abs_thumbnail_path = rel2abs(
+            thumbnail_path(last_version.id, size=size)
         )
         pdf_path = last_version.document_path.url
 
         image_utils.generate_preview(
             pdf_path=Path(abs_path(pdf_path)),
-            output_folder=Path(abs_thumbnail_path).parent,
+            output_folder=abs_thumbnail_path.parent,
             size=size
         )
 

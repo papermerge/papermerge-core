@@ -1,0 +1,3 @@
+DEFAULT_THUMBNAIL_SIZE = 100
+THUMBNAILS = "thumbnails"
+JPG = "jpg"

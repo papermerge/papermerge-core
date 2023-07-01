@@ -8,6 +8,7 @@ from typing import Optional
 from django.db import models, transaction
 from pikepdf import Pdf
 
+from papermerge.core import constants as const
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.models import utils
 from papermerge.core.pathlib import rel2abs, thumbnail_path
@@ -347,11 +348,17 @@ class Document(BaseTreeNode):
             page_count=self.page_count
         )
 
-    def generate_thumbnail(self, size: int = 100) -> None:
+    def generate_thumbnail(
+        self,
+        size: int = const.DEFAULT_THUMBNAIL_SIZE
+    ) -> Path:
         """Generates thumbnail image for the document
 
         The thumbnail is generated from the first page of the
         last version of document.
+
+        Returns absolute path to the thumbnail image as
+        instance of ``pathlib.Path``
         """
         last_version = self.versions.last()
         abs_thumbnail_path = rel2abs(
@@ -364,6 +371,8 @@ class Document(BaseTreeNode):
             output_folder=abs_thumbnail_path.parent,
             size=size
         )
+
+        return abs_thumbnail_path
 
     @property
     def name(self):

@@ -2,6 +2,8 @@ from pathlib import Path
 
 from pdf2image import convert_from_path
 
+from papermerge.core import constants as const
+
 
 def file_name_generator(size):
     yield str(size)
@@ -10,7 +12,7 @@ def file_name_generator(size):
 def generate_preview(
     pdf_path: Path,
     output_folder: Path,
-    size: int = 100,
+    size: int = const.DEFAULT_THUMBNAIL_SIZE,
     page_number: int = 1,
 ):
     """Generate jpg thumbnail/preview images of PDF document"""

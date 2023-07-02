@@ -7,7 +7,7 @@ from django.db import models
 
 from papermerge.core import constants as const
 from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import page_thumbnail_path, rel2abs
+from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 from papermerge.core.utils import image as image_utils
@@ -96,7 +96,7 @@ class Page(models.Model):
 
     def generate_thumbnail(
         self,
-        size: int = const.DEFAULT_PAGE_THUMBNAIL_SIZE
+        size: int = const.DEFAULT_THUMBNAIL_SIZE
     ) -> Path:
         """Generates page thumbnail/preview image for the document
 
@@ -107,7 +107,7 @@ class Page(models.Model):
         instance of ``pathlib.Path``
         """
         abs_thumbnail_path = rel2abs(
-            page_thumbnail_path(self.id, size=size)
+            thumbnail_path(self.id, size=size)
         )
         pdf_path = self.document_version.document_path.url
 

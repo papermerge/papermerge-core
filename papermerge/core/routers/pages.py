@@ -5,9 +5,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
-from papermerge.core.constants import DEFAULT_PAGE_THUMBNAIL_SIZE
+from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.models import Page, User
-from papermerge.core.pathlib import page_thumbnail_path, rel2abs
+from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.storage import abs_path
 
 from .auth import get_current_user as current_user
@@ -58,7 +58,7 @@ def get_page_svg_url(
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
 def get_page_jpg_url(
     page_id: uuid.UUID,
-    size: int = DEFAULT_PAGE_THUMBNAIL_SIZE,
+    size: int = DEFAULT_THUMBNAIL_SIZE,
     user: User = Depends(current_user)
 ):
     try:
@@ -73,7 +73,7 @@ def get_page_jpg_url(
         )
 
     jpeg_abs_path = rel2abs(
-        page_thumbnail_path(page.id, size=size)
+        thumbnail_path(page.id, size=size)
     )
 
     if not os.path.exists(jpeg_abs_path):

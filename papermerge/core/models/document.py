@@ -2,19 +2,15 @@ import io
 import logging
 import os
 from os.path import getsize
-from pathlib import Path
 from typing import Optional
 
 from django.db import models, transaction
 from pikepdf import Pdf
 
-from papermerge.core import constants as const
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.models import utils
-from papermerge.core.pathlib import document_thumbnail_path, rel2abs
 from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import abs_path, get_storage_instance
-from papermerge.core.utils import image as image_utils
 
 from .document_version import DocumentVersion
 from .node import BaseTreeNode
@@ -347,38 +343,6 @@ class Document(BaseTreeNode):
             page_num=page_num,
             page_count=self.page_count
         )
-
-    def generate_thumbnail(
-        self,
-        size: int = const.DEFAULT_DOCUMENT_THUMBNAIL_SIZE
-    ) -> Path:
-        """Generates thumbnail image for the document
-
-        The thumbnail is generated from the first page of the
-        last version of document.
-
-        The local path to the generated thumbnail will be
-        /<MEDIA_ROOT>/thumbnails/<splitted document version uuid>/<size>.jpg
-
-        splited DOCUMENT VERSION UUID - is UUID of the last document version
-        written as ... /uuid[0:2]/uuid[2:4]/uuid/ ...
-
-        Returns absolute path to the thumbnail image as
-        instance of ``pathlib.Path``
-        """
-        last_version = self.versions.last()
-        abs_thumbnail_path = rel2abs(
-            document_thumbnail_path(last_version.id, size=size)
-        )
-        pdf_path = last_version.document_path.url
-
-        image_utils.generate_preview(
-            pdf_path=Path(abs_path(pdf_path)),
-            output_folder=abs_thumbnail_path.parent,
-            size=size
-        )
-
-        return abs_thumbnail_path
 
     @property
     def name(self):

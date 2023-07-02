@@ -1,23 +1,24 @@
 import io
 import logging
 import os
-from typing import Optional
 from os.path import getsize
+from pathlib import Path
+from typing import Optional
+
+from django.db import models, transaction
 from pikepdf import Pdf
 
-from django.db import models
-from django.db import transaction
-
+from papermerge.core import constants as const
 from papermerge.core.lib.path import DocumentPath, PagePath
-from papermerge.core.signal_definitions import document_post_upload
-from papermerge.core.storage import get_storage_instance, abs_path
 from papermerge.core.models import utils
+from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.signal_definitions import document_post_upload
+from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.utils import image as image_utils
 
-from .node import BaseTreeNode
-
-from .page import Page
 from .document_version import DocumentVersion
-
+from .node import BaseTreeNode
+from .page import Page
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +183,8 @@ class Document(BaseTreeNode):
             document_version=document_version
         )
 
+        return document_version
+
     def version_bump_from_pages(self, pages):
         """
         Creates new version for the document.
@@ -345,32 +348,38 @@ class Document(BaseTreeNode):
             page_count=self.page_count
         )
 
-    def preview_path(self, page, size=None):
+    def generate_thumbnail(
+        self,
+        size: int = const.DEFAULT_THUMBNAIL_SIZE
+    ) -> Path:
+        """Generates thumbnail image for the document
 
-        if page > self.page_count or page < 0:
-            raise ValueError("Page index out of bound")
+        The thumbnail is generated from the first page of the
+        last version of document.
 
-        file_name = os.path.basename(self.file_name)
-        root, _ = os.path.splitext(file_name)
-        page_count = self.pages_num
+        The local path to the generated thumbnail will be
+        /<MEDIA_ROOT>/thumbnails/<splitted document version uuid>/<size>.jpg
 
-        if not size:
-            size = "orig"
+        splited DOCUMENT VERSION UUID - is UUID of the last document version
+        written as ... /uuid[0:2]/uuid[2:4]/uuid/ ...
 
-        if page_count <= 9:
-            fmt_page = "{root}-page-{num:d}.{ext}"
-        elif page_count > 9 and page_count < 100:
-            fmt_page = "{root}-page-{num:02d}.{ext}"
-        elif page_count > 100:
-            fmt_page = "{root}-page-{num:003d}.{ext}"
-
-        return os.path.join(
-            self.dir_path,
-            str(size),
-            fmt_page.format(
-                root=root, num=int(page), ext="jpg"
-            )
+        Returns absolute path to the thumbnail image as
+        instance of ``pathlib.Path``
+        """
+        last_version = self.versions.last()
+        first_page = last_version.pages.first()
+        abs_thumbnail_path = rel2abs(
+            thumbnail_path(first_page.id, size=size)
         )
+        pdf_path = last_version.document_path.url
+
+        image_utils.generate_preview(
+            pdf_path=Path(abs_path(pdf_path)),
+            output_folder=abs_thumbnail_path.parent,
+            size=size
+        )
+
+        return abs_thumbnail_path
 
     @property
     def name(self):

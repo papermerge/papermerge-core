@@ -1,11 +1,10 @@
 import io
 import uuid
+
 from fastapi import APIRouter, Depends, UploadFile
 
-from papermerge.core.models import User
-
+from papermerge.core.models import Document, User
 from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.models import Document
 
 from .auth import get_current_user as current_user
 
@@ -63,4 +62,6 @@ def upload_file(
         content=io.BytesIO(content),
         file_name=file.filename
     )
+    doc.generate_thumbnail()
+
     return PyDocument.from_orm(doc)

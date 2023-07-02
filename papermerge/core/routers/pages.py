@@ -1,15 +1,16 @@
 import logging
 import os
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
-from papermerge.core.models import User, Page
+from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
+from papermerge.core.models import Page, User
+from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.storage import abs_path
 
-
 from .auth import get_current_user as current_user
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ def get_page_svg_url(
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
 def get_page_jpg_url(
     page_id: uuid.UUID,
+    size: int = DEFAULT_THUMBNAIL_SIZE,
     user: User = Depends(current_user)
 ):
     try:
@@ -70,18 +72,12 @@ def get_page_jpg_url(
             detail="Page does not exist"
         )
 
-    jpeg_abs_path = abs_path(page.page_path.preview_url)
+    jpeg_abs_path = rel2abs(
+        thumbnail_path(page.id, size=size)
+    )
 
     if not os.path.exists(jpeg_abs_path):
         # generate preview only for this page
-        page.document_version.generate_previews(
-            page_number=page.number
-        )
-
-    if not os.path.exists(jpeg_abs_path):
-        raise HTTPException(
-            status_code=404,
-            detail="File not found"
-        )
+        page.generate_thumbnail(size=size)
 
     return JPEGFileResponse(jpeg_abs_path)

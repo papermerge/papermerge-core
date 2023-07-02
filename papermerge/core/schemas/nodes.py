@@ -31,6 +31,7 @@ class DocumentNode(BaseModel):
     """Minimalist part of the document returned as part of nodes list"""
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
+    thumbnail_url: str
 
 
 class Node(BaseModel):
@@ -48,7 +49,8 @@ class Node(BaseModel):
         if values['ctype'] == NodeType.document:
             return DocumentNode(
                 ocr_status=value.ocr_status,
-                ocr=value.ocr
+                ocr=value.ocr,
+                thumbnail_url=f"/api/thumbnails/{values['id']}"
             )
 
         return None

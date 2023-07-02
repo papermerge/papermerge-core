@@ -247,3 +247,10 @@ def test_document_breadcrumb():
 
     assert actual_breadcumb == '.home/folder1/invoice.pdf'
     assert doc.title == 'invoice.pdf'
+
+
+@pytest.mark.django_db
+@patch('papermerge.core.utils.image.convert_from_path')
+def test_generate_thumbnail(document: Document):
+    # makes sure there are no exceptions raised
+    document.generate_thumbnail()

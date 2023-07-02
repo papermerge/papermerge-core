@@ -1,17 +1,18 @@
 import logging
 import os
 import uuid
+from pathlib import Path
 
 from django.db import models
 
+from papermerge.core import constants as const
 from papermerge.core.lib.path import PagePath
+from papermerge.core.pathlib import page_thumbnail_path, rel2abs
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
+from papermerge.core.utils import image as image_utils
 
-from .utils import (
-    OCR_STATUS_SUCCEEDED,
-    OCR_STATUS_UNKNOWN
-)
+from .utils import OCR_STATUS_SUCCEEDED, OCR_STATUS_UNKNOWN
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,31 @@ class Page(models.Model):
     @property
     def is_first(self):
         return self.number == 1
+
+    def generate_thumbnail(
+        self,
+        size: int = const.DEFAULT_PAGE_THUMBNAIL_SIZE
+    ) -> Path:
+        """Generates page thumbnail/preview image for the document
+
+        The local path to the generated thumbnail will be
+        /<MEDIA_ROOT>/pages/jpg/<splitted page uuid>/<size>.jpg
+
+        Returns absolute path to the thumbnail image as
+        instance of ``pathlib.Path``
+        """
+        abs_thumbnail_path = rel2abs(
+            page_thumbnail_path(self.id, size=size)
+        )
+        pdf_path = self.document_version.document_path.url
+
+        image_utils.generate_preview(
+            pdf_path=Path(abs_path(pdf_path)),
+            output_folder=abs_thumbnail_path.parent,
+            size=size
+        )
+
+        return abs_thumbnail_path
 
     @property
     def page_path(self):

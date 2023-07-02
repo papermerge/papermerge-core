@@ -12,7 +12,7 @@ def file_name_generator(size):
 def generate_preview(
     pdf_path: Path,
     output_folder: Path,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE,
+    size: int = const.DEFAULT_DOCUMENT_THUMBNAIL_SIZE,
     page_number: int = 1,
 ):
     """Generate jpg thumbnail/preview images of PDF document"""

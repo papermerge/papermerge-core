@@ -68,12 +68,17 @@ class Document(BaseModel):
     versions: list[DocumentVersion] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
+    thumbnail_url: str | None = None
 
     @validator("versions", pre=True)
     def get_all_from_manager(cls, v: object) -> object:
         if isinstance(v, BaseManager):
             return list(v.all())
         return v
+
+    @validator('thumbnail_url', pre=True, always=True)
+    def thumbnail_url_validator(cls, value, values):
+        return f"/api/thumbnails/{values['id']}"
 
     class Config:
         orm_mode = True

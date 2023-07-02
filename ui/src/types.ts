@@ -42,6 +42,7 @@ export type NodeType = {
   user_id: string;
   update_at: string;
   document: DocumentNodeType | null;
+  thumbnail_url: string | null;
 }
 
 export type FolderType = NodeType & {
@@ -76,6 +77,9 @@ export type DocumentType = {
   ctype: 'document';
   title: string;
   breadcrumb: BreadcrumbType;
+  ocr: boolean;
+  ocr_status: OcrStatusEnum;
+  thumbnail_url: string;
   versions: Array<DocumentVersion>;
   parent_id: string | null;
   user_id: string;

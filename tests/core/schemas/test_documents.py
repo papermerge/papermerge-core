@@ -18,3 +18,4 @@ def test_documents(user: User):
     assert len(pydoc.versions) == 1
     assert pydoc.versions[0].size == 0
     assert len(pydoc.versions[0].pages) == 0
+    assert pydoc.thumbnail_url

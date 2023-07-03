@@ -58,3 +58,14 @@ class UpdateTag(BaseModel):
 
     class Config:
         orm_mode = True
+        schema_extra = {
+            "example": [
+                {
+                    "name": "paid",
+                    "description": "tag for paid receipts",
+                    "bg_color": "#ffaaff",
+                    "fg_color": '#ff0000',
+                    'pinned': True
+                }
+            ]
+        }

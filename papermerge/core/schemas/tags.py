@@ -47,3 +47,14 @@ class CreateTag(BaseModel):
                 }
             ]
         }
+
+
+class UpdateTag(BaseModel):
+    name: str | None
+    bg_color: str | None
+    fg_color: str | None
+    description: str | None
+    pinned: bool | None
+
+    class Config:
+        orm_mode = True

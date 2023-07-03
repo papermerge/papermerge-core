@@ -68,3 +68,24 @@ def delete_tag(
             status_code=404,
             detail="Does not exists"
         )
+
+
+@router.patch("/{tag_id}", status_code=200)
+def update_tag(
+    tag_id: UUID,
+    tag: schemas.UpdateTag,
+    user: User = Depends(current_user),
+) -> schemas.Tag:
+    """Updates user tag"""
+
+    qs = Tag.objects.filter(user=user, id=tag_id)
+
+    if qs.count() != 1:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
+        )
+
+    qs.update(**tag.dict(exclude_unset=True))
+
+    return schemas.Tag.from_orm(qs.first())

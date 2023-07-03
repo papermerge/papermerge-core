@@ -108,3 +108,45 @@ def test_delete_tag(auth_api_client: AuthTestClient):
     assert Tag.objects.filter(
         user=auth_api_client.user
     ).count() == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_update_tag_pass_bg_color_field(auth_api_client: AuthTestClient):
+    user = auth_api_client.user
+    # current user has only one tag
+    tag = tag_recipe.make(
+        name='tag1',
+        bg_color='#ffffff',
+        user=user
+    )
+
+    payload = {
+        'bg_color': '#ff0011'
+    }
+    response = auth_api_client.patch(f'/tags/{tag.id}', json=payload)
+    assert response.status_code == 200
+
+    update_tag = Tag.objects.get(id=tag.id, user=auth_api_client.user)
+    assert update_tag.bg_color == '#ff0011'
+
+
+@pytest.mark.django_db(transaction=True)
+def test_update_tag_pass_two_fields(auth_api_client: AuthTestClient):
+    user = auth_api_client.user
+    # current user has only one tag
+    tag = tag_recipe.make(
+        name='tag1',
+        bg_color='#ffffff',
+        user=user
+    )
+
+    payload = {
+        'bg_color': '#ff0011',
+        'name': 'edited_tag_name'
+    }
+    response = auth_api_client.patch(f'/tags/{tag.id}', json=payload)
+    assert response.status_code == 200
+
+    update_tag = Tag.objects.get(id=tag.id, user=auth_api_client.user)
+    assert update_tag.bg_color == '#ff0011'
+    assert update_tag.name == 'edited_tag_name'

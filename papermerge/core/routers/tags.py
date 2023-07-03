@@ -1,6 +1,7 @@
 import logging
 
-from fastapi import APIRouter, Depends
+from django.db.utils import IntegrityError
+from fastapi import APIRouter, Depends, HTTPException
 
 from papermerge.core import schemas
 from papermerge.core.models import Tag, User
@@ -34,3 +35,20 @@ def retrieve_tags(
     return Tag.objects.filter(
         user=user
     ).order_by(*order_by)
+
+
+@router.post("/", status_code=201)
+def create_tag(
+    pytag: schemas.CreateTag,
+    user: User = Depends(current_user),
+) -> schemas.Tag:
+    """Creates user tag"""
+    try:
+        tag = Tag.objects.create(user=user, **pytag.dict())
+    except IntegrityError:
+        raise HTTPException(
+            status_code=400,
+            detail="Tag already exists"
+        )
+
+    return schemas.Tag.from_orm(tag)

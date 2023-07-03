@@ -175,3 +175,32 @@ def move_nodes(
         move_node(node_model, target_model)
 
     return params.source_ids
+
+
+@router.post("/{node_id}/tags")
+def assign_tags(
+    node_id: UUID,
+    tags: list[str],
+    user: User = Depends(current_user)
+) -> PyNode:
+    """
+    Assigns given list of tag names to the node.
+
+    All tags not present in given list of tags names
+    will be disassociated from the node; in other words upon
+    successful completion of the request node will have ONLY
+    tags from the list.
+    Yet another way of thinking about http POST is as it **replaces
+    existing node tags** with the one from input list.
+    """
+    try:
+        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
+    except BaseTreeNode.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exist"
+        )
+
+    node.tags.set(tags, tag_kwargs={"user": user})
+
+    return PyNode.from_orm(node)

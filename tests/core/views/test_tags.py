@@ -88,3 +88,23 @@ def test_create_duplicate_tag_for_same_user(auth_api_client: AuthTestClient):
     assert Tag.objects.filter(
         user=auth_api_client.user
     ).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_delete_tag(auth_api_client: AuthTestClient):
+    user = auth_api_client.user
+    # current user has only one tag
+    tag = tag_recipe.make(name='tag1', user=user)
+
+    # user has one tag
+    assert Tag.objects.filter(
+        user=auth_api_client.user
+    ).count() == 1
+
+    response = auth_api_client.delete(f'/tags/{tag.id}')
+    assert response.status_code == 204
+
+    # user does not have tags anymore
+    assert Tag.objects.filter(
+        user=auth_api_client.user
+    ).count() == 0

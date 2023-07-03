@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
@@ -52,3 +53,18 @@ def create_tag(
         )
 
     return schemas.Tag.from_orm(tag)
+
+
+@router.delete("/{tag_id}", status_code=204)
+def delete_tag(
+    tag_id: UUID,
+    user: User = Depends(current_user),
+) -> None:
+    """Deletes user tag"""
+    try:
+        Tag.objects.get(user=user, id=tag_id).delete()
+    except Tag.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
+        )

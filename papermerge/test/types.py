@@ -16,3 +16,6 @@ class AuthTestClient(BaseModel):
 
     def get(self, *args, **kwargs):
         return self.test_client.get(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        return self.test_client.delete(*args, **kwargs)

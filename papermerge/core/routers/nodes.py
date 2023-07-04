@@ -178,7 +178,7 @@ def move_nodes(
 
 
 @router.post("/{node_id}/tags")
-def assign_tags(
+def assign_node_tags(
     node_id: UUID,
     tags: List[str],
     user: User = Depends(current_user)
@@ -202,5 +202,68 @@ def assign_tags(
         )
 
     node.tags.set(tags, tag_kwargs={"user": user})
+
+    return PyNode.from_orm(node)
+
+
+@router.patch("/{node_id}/tags")
+def update_node_tags(
+    node_id: UUID,
+    tags: List[str],
+    user: User = Depends(current_user)
+) -> PyNode:
+    """
+    Appends given list of tag names to the node.
+
+    Retains all previously associated node tags.
+    Yet another way of thinking about http PATCH method is as it
+    **appends** input tags to the currently associated tags.
+
+    Example:
+
+        Node N1 has 'invoice', 'important' tags.
+
+        After following request:
+
+            POST /api/nodes/{N1}/tags/
+            {tags: ['paid']}
+
+        Node N1 will have 'invoice', 'important', 'paid' tags.
+        Notice that previously associated 'invoice' and 'important' tags
+        are still assigned to N1.
+    """
+    try:
+        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
+    except BaseTreeNode.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exist"
+        )
+
+    node.tags.add(*tags, tag_kwargs={"user": user})
+
+    return PyNode.from_orm(node)
+
+
+@router.delete("/{node_id}/tags")
+def delete_node_tags(
+    node_id: UUID,
+    tags: List[str],
+    user: User = Depends(current_user)
+) -> PyNode:
+    """
+    Dissociate given tags the node.
+
+    Tags models are not deleted - just dissociated from the node.
+    """
+    try:
+        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
+    except BaseTreeNode.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exist"
+        )
+
+    node.tags.remove(*tags)
 
     return PyNode.from_orm(node)

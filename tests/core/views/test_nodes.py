@@ -97,81 +97,6 @@ class NodesViewTestCase(TestCase):
         # user's inbox contains one item
         assert response.data == {'count': 2}
 
-    def test_append_tags_to_folder(self):
-        """
-        url:
-            PATCH /api/nodes/{N1}/tags/
-        body content:
-            ["paid"]
-
-        where N1 is a folder with already one tag attached: 'important'
-
-        Expected result:
-            folder N1 will have two tags assigned: 'paid' and 'important'
-            Notice that 'paid' was appended next to 'important'.
-        """
-        receipts = Folder.objects.create(
-            title='Receipts',
-            user=self.user,
-            parent=self.user.inbox_folder
-        )
-        receipts.tags.set(
-            ['important'],
-            tag_kwargs={"user": self.user}
-        )
-        data = {
-            'tags': ['paid']
-        }
-        url = reverse('node-tags', args=(receipts.pk, ))
-        response = self.client.patch(
-            url,
-            data=json.dumps(data),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 200
-        assert receipts.tags.count() == 2
-        all_new_tags = [tag.name for tag in receipts.tags.all()]
-
-        assert set(all_new_tags) == set(['paid', 'important'])
-
-    def test_remove_tags_from_folder(self):
-        """
-        url:
-            DELETE /api/nodes/{N1}/tags/
-        body content:
-            ["important"]
-
-        where N1 is a folder with four tags 'important', 'paid', 'receipt',
-        'bakery'
-
-        Expected result:
-            folder N1 will have three tags assigned: 'paid', 'bakery', 'receipt'
-        """
-        receipts = Folder.objects.create(
-            title='Receipts',
-            user=self.user,
-            parent=self.user.inbox_folder
-        )
-        receipts.tags.set(
-            ['important', 'paid', 'receipt', 'bakery'],
-            tag_kwargs={"user": self.user}
-        )
-        data = {
-            'tags': ['important']
-        }
-        url = reverse('node-tags', args=(receipts.pk, ))
-        response = self.client.delete(
-            url,
-            data=json.dumps(data),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 204
-        assert receipts.tags.count() == 3
-        all_new_tags = [tag.name for tag in receipts.tags.all()]
-        assert set(all_new_tags) == set(['paid', 'bakery', 'receipt'])
-
     def test_home_with_two_tagged_nodes(self):
         """
         Create two tagged nodes (one folder and one document) in user's home.
@@ -443,3 +368,79 @@ def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
     # model for tag 'unpaid' still exists, it was just
     # dissociated from folder 'Receipts'
     assert Tag.objects.get(name='unpaid')
+
+
+@pytest.mark.django_db(transaction=True)
+def test_append_tags_to_folder(auth_api_client: AuthTestClient):
+    """
+    url:
+        PATCH /api/nodes/{N1}/tags/
+    body content:
+        ["paid"]
+
+    where N1 is a folder with already one tag attached: 'important'
+
+    Expected result:
+        folder N1 will have two tags assigned: 'paid' and 'important'
+        Notice that 'paid' was appended next to 'important'.
+    """
+    u = auth_api_client.user
+    receipts = Folder.objects.create(
+        title='Receipts',
+        user=u,
+        parent=u.inbox_folder
+    )
+    receipts.tags.set(
+        ['important'],
+        tag_kwargs={"user": u}
+    )
+    payload = ['paid']
+    response = auth_api_client.patch(
+        f'/nodes/{receipts.pk}/tags',
+        json=payload,
+    )
+
+    assert response.status_code == 200, response.json()
+    folder = Folder.objects.get(title='Receipts', user=u)
+    assert folder.tags.count() == 2
+    all_new_tags = [tag.name for tag in receipts.tags.all()]
+
+    assert set(all_new_tags) == {'paid', 'important'}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
+    """
+    url:
+        DELETE /api/nodes/{N1}/tags/
+    body content:
+        ["important"]
+
+    where N1 is a folder with four tags 'important', 'paid', 'receipt',
+    'bakery'
+
+    Expected result:
+        folder N1 will have three tags assigned: 'paid', 'bakery', 'receipt'
+    """
+    u = auth_api_client.user
+    receipts = Folder.objects.create(
+        title='Receipts',
+        user=u,
+        parent=u.inbox_folder
+    )
+    receipts.tags.set(
+        ['important', 'paid', 'receipt', 'bakery'],
+        tag_kwargs={"user": u}
+    )
+    payload = ['important']
+    response = auth_api_client.delete(
+        f'/nodes/{receipts.pk}/tags',
+        json=payload,
+    )
+
+    assert response.status_code == 200, response.json()
+
+    folder = Folder.objects.get(title='Receipts', user=u)
+    assert folder.tags.count() == 3
+    all_new_tags = [tag.name for tag in receipts.tags.all()]
+    assert set(all_new_tags) == {'paid', 'bakery', 'receipt'}

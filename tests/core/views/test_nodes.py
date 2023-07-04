@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from papermerge.core.models import Document, Folder, Tag
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import document_recipe
+from papermerge.test.baker_recipes import document_recipe, folder_recipe
 from papermerge.test.types import AuthTestClient
 
 
@@ -96,74 +96,6 @@ class NodesViewTestCase(TestCase):
 
         # user's inbox contains one item
         assert response.data == {'count': 2}
-
-    def test_assign_tags_to_non_tagged_folder(self):
-        """
-        url:
-            POST /api/nodes/{N1}/tags/
-        body content:
-            ["paid", "important"]
-
-        where N1 is a folder without any tag
-
-        Expected result:
-            folder N1 will have two tags assigned: 'paid' and 'important'
-        """
-        receipts = Folder.objects.create(
-            title='Receipts',
-            user=self.user,
-            parent=self.user.inbox_folder
-        )
-        data = {
-            'tags': ['paid', 'important']
-        }
-        url = reverse('node-tags', args=(receipts.pk, ))
-        response = self.post(url, data)
-
-        assert response.status_code == 201
-        assert receipts.tags.count() == 2
-
-    def test_assign_tags_to_tagged_folder(self):
-        """
-        url:
-            POST /api/nodes/{N1}/tags/
-        body content:
-            ["paid", "important"]
-
-        where N1 is a folder with two tags 'important' and 'unpaid' already
-        assigned
-
-        Expected result:
-            folder N1 will have two tags assigned: 'paid' and 'important'.
-            Tag 'unpaid' will be dissociated from the folder.
-        """
-        receipts = Folder.objects.create(
-            title='Receipts',
-            user=self.user,
-            parent=self.user.inbox_folder
-        )
-        receipts.tags.set(
-            ['unpaid', 'important'],
-            tag_kwargs={"user": self.user}
-        )
-        data = {
-            'tags': ['paid', 'important']
-        }
-        url = reverse('node-tags', args=(receipts.pk, ))
-        response = self.client.post(
-            url,
-            data=json.dumps(data),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 201
-        assert receipts.tags.count() == 2
-        all_new_tags = [tag.name for tag in receipts.tags.all()]
-        # tag 'unpaid' is not attached to folder anymore
-        assert set(all_new_tags) == set(['paid', 'important'])
-        # model for tag 'unpaid' still exists, it was just
-        # dissociated from folder 'Receipts'
-        assert Tag.objects.get(name='unpaid')
 
     def test_append_tags_to_folder(self):
         """
@@ -436,3 +368,78 @@ def test_retrieve_one_node(
     # contains only one document - invoice.pdf
     assert len(items) == 1
     assert items[0]['title'] == 'invoice.pdf'
+
+
+@pytest.mark.django_db(transaction=True)
+def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
+    """
+    url:
+        POST /api/nodes/{node_id}/tags
+    body content:
+        ["paid", "important"]
+
+    where N1 is a folder without any tag
+
+    Expected result:
+        folder N1 will have two tags assigned: 'paid' and 'important'
+    """
+    receipts = folder_recipe.make(
+        title='Receipts',
+        user=auth_api_client.user,
+        parent=auth_api_client.user.inbox_folder
+    )
+    payload = ['paid', 'important']
+
+    response = auth_api_client.post(
+        f'/nodes/{receipts.pk}/tags',
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    folder = Folder.objects.get(title='Receipts', user=auth_api_client.user)
+    assert folder.tags.count() == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
+    """
+    url:
+        POST /api/nodes/{N1}/tags/
+    body content:
+        ["paid", "important"]
+
+    where N1 is a folder with two tags 'important' and 'unpaid' already
+    assigned
+
+    Expected result:
+        folder N1 will have two tags assigned: 'paid' and 'important'.
+        Tag 'unpaid' will be dissociated from the folder.
+    """
+    u = auth_api_client.user
+    receipts = Folder.objects.create(
+        title='Receipts',
+        user=u,
+        parent=u.inbox_folder
+    )
+    receipts.tags.set(
+        ['unpaid', 'important'],
+        tag_kwargs={"user": u}
+    )
+    payload = ['paid', 'important']
+
+    response = auth_api_client.post(
+        f'/nodes/{receipts.pk}/tags',
+        json=payload,
+    )
+
+    assert response.status_code == 200
+
+    folder = Folder.objects.get(title='Receipts', user=u)
+    assert folder.tags.count() == 2
+    all_new_tags = [tag.name for tag in folder.tags.all()]
+    # tag 'unpaid' is not attached to folder anymore
+    assert set(all_new_tags) == {'paid', 'important'}
+    # model for tag 'unpaid' still exists, it was just
+    # dissociated from folder 'Receipts'
+    assert Tag.objects.get(name='unpaid')

@@ -180,7 +180,7 @@ def move_nodes(
 @router.post("/{node_id}/tags")
 def assign_tags(
     node_id: UUID,
-    tags: list[str],
+    tags: List[str],
     user: User = Depends(current_user)
 ) -> PyNode:
     """

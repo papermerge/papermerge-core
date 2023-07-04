@@ -29,6 +29,7 @@ def test_pynode_from_basetreenode_with_ocr_status_unkown(user: User):
         parent=user.home_folder
     )
     node = BaseTreeNode.objects.get(title='invoice.pdf')
+
     pynode = PyNode.from_orm(node)
 
     assert pynode.title == "invoice.pdf"

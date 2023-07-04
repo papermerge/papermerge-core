@@ -97,44 +97,6 @@ class NodesViewTestCase(TestCase):
         # user's inbox contains one item
         assert response.data == {'count': 2}
 
-    def test_home_with_two_tagged_nodes(self):
-        """
-        Create two tagged nodes (one folder and one document) in user's home.
-        Retrieve user's home content and check that tags
-        were included in response as well.
-        """
-        folder = Folder.objects.create(
-            title='folder',
-            user=self.user,
-            parent=self.user.home_folder
-        )
-        folder.tags.set(
-            ['folder_a', 'folder_b'],
-            tag_kwargs={"user": self.user}
-        )
-        doc = Document.objects.create(
-            title='doc.pdf',
-            user=self.user,
-            parent=self.user.home_folder
-        )
-        doc.tags.set(
-            ['doc_a', 'doc_b'],
-            tag_kwargs={"user": self.user}
-        )
-        home = self.user.home_folder
-        url = reverse('node-detail', args=(home.pk, ))
-
-        response = self.client.get(url)
-        assert response.status_code == 200
-        results = response.data['results']
-        assert len(results) == 2  # there are two folders
-
-        doc_tag_names = [tag['name'] for tag in results[0]['tags']]
-        folder_tag_names = [tag['name'] for tag in results[1]['tags']]
-
-        assert set(['doc_a', 'doc_b']) == set(doc_tag_names)
-        assert set(['folder_a', 'folder_b']) == set(folder_tag_names)
-
     def test_nodes_move(self):
         doc = Document.objects.create(
             title='doc.pdf',
@@ -444,3 +406,44 @@ def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
     assert folder.tags.count() == 3
     all_new_tags = [tag.name for tag in receipts.tags.all()]
     assert set(all_new_tags) == {'paid', 'bakery', 'receipt'}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
+    """
+    Create two tagged nodes (one folder and one document) in user's home.
+    Retrieve user's home content and check that tags
+    were included in response as well.
+    """
+    u = auth_api_client.user
+    folder = Folder.objects.create(
+        title='folder',
+        user=u,
+        parent=u.home_folder
+    )
+    folder.tags.set(
+        ['folder_a', 'folder_b'],
+        tag_kwargs={"user": u}
+    )
+    doc = Document.objects.create(
+        title='doc.pdf',
+        user=u,
+        parent=u.home_folder
+    )
+    doc.tags.set(
+        ['doc_a', 'doc_b'],
+        tag_kwargs={"user": u}
+    )
+    home = u.home_folder
+
+    response = auth_api_client.get(f'/nodes/{home.pk}')
+    assert response.status_code == 200
+
+    results = response.json()['items']
+    assert len(results) == 2  # there are two folders
+
+    doc_tag_names = [tag['name'] for tag in results[0]['tags']]
+    folder_tag_names = [tag['name'] for tag in results[1]['tags']]
+
+    assert {'doc_a', 'doc_b'} == set(doc_tag_names)
+    assert {'folder_a', 'folder_b'} == set(folder_tag_names)

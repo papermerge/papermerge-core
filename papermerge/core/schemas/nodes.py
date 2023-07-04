@@ -13,6 +13,24 @@ class NodeType(str, Enum):
     folder = "folder"
 
 
+class Tag(BaseModel):
+    name: str
+    bg_color: str = '#c41fff'
+    fg_color: str = '#FFFFF'
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": [
+                {
+                    "name": "important",
+                    "bg_color": "#ffaaff",
+                    "fg_color": '#ff0000',
+                }
+            ]
+        }
+
+
 class UpdateNode(BaseModel):
     title: Optional[str]
     parent_id: Optional[UUID]
@@ -38,6 +56,7 @@ class Node(BaseModel):
     id: UUID
     title: str
     ctype: NodeType
+    tags: List[Tag]
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
@@ -54,6 +73,13 @@ class Node(BaseModel):
             )
 
         return None
+
+    @validator('tags', pre=True)
+    def tags_validator(cls, value):
+        if not isinstance(value, list):
+            return list(value.all())
+
+        return value
 
     class Config:
         orm_mode = True

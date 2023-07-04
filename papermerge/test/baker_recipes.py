@@ -3,7 +3,7 @@ from pathlib import PurePath
 from model_bakery import baker
 from model_bakery.recipe import Recipe
 
-from papermerge.core.models import Document, DocumentVersion, Folder, User
+from papermerge.core.models import Document, DocumentVersion, Folder, Tag, User
 
 folder_recipe = Recipe(Folder)
 user_recipe = Recipe(User)
@@ -12,6 +12,8 @@ document_version_recipe = Recipe(DocumentVersion)
 # By default, creates document with 2 versions
 document_versions_set = baker.prepare(DocumentVersion, _quantity=2)
 document_recipe = Recipe(Document, versions=document_versions_set)
+
+tag_recipe = Recipe(Tag)
 
 
 def make_folders(breadcrumb: str, user=None):

@@ -17,6 +17,7 @@ import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';
 import NewFolderModal from 'components/modals/new_folder';
+import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
 import ErrorModal from 'components/modals/error_modal';
@@ -191,6 +192,7 @@ function Commander({
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
+  const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
@@ -294,6 +296,11 @@ function Commander({
     );
     setNodesList(new_nodes);
     setDeleteNodesModalShow(false);
+    setSelectedNodes([]);
+  }
+
+  const onSubmitTags = (node: NodeType) => {
+    setEditTagsModalShow(false);
     setSelectedNodes([]);
   }
 
@@ -507,6 +514,7 @@ function Commander({
             onNewFolderClick={() => setNewFolderModalShow(true)}
             onRenameClick={() => setRenameModalShow(true)}
             onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
+            onEditTagsClick={ () => setEditTagsModalShow(true) }
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
@@ -568,6 +576,14 @@ function Commander({
             node_ids={selectedNodes}
             onCancel={() => setDeleteNodesModalShow(false)}
             onSubmit={onDeleteNodes} />
+        </div>
+        <div>
+          <EditTagsModal
+            show={editTagsModalShow}
+            node_id={selectedNodes[0]}
+            tags={[]}
+            onCancel={() => setEditTagsModalShow(false)}
+            onSubmit={onSubmitTags} />
         </div>
         <div>
           <DropNodesModal

@@ -123,3 +123,10 @@ export type OcrStatusType = {
 }
 
 export type SpecialFolder = "inbox" | "home";
+
+
+export type ColoredTagType = {
+  name: string;
+  bg_color: string;
+  fg_color: string;
+}

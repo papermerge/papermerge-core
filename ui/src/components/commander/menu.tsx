@@ -8,6 +8,7 @@ type Args = {
   onNewFolderClick: () => void;
   onRenameClick: () => void;
   onDeleteNodesClick: () => void;
+  onEditTagsClick: () => void;
   selected_nodes: Array<string>;
   node_id: string; // current node id
 }
@@ -17,6 +18,7 @@ function Menu({
   onNewFolderClick,
   onDeleteNodesClick,
   onRenameClick,
+  onEditTagsClick,
   selected_nodes,
   node_id
 }: Args) {
@@ -32,18 +34,20 @@ function Menu({
   const rename_node = <Button variant='light' onClick={() => onRenameClick()}>
     <i className="bi bi-pencil"></i>
   </Button>;
+  const edit_tags = <Button variant='light' onClick={() => onEditTagsClick()}>
+    <i className='bi bi-tag'></i>
+  </Button>
 
   if (selected_nodes.length > 1) {
     return <div>
-      {new_folder}
       {delete_nodes}
     </div>
   }
 
   if (selected_nodes.length == 1) {
     return <div>
-      {new_folder}
       {rename_node}
+      {edit_tags}
       {delete_nodes}
     </div>
   }

@@ -578,12 +578,11 @@ function Commander({
             onSubmit={onDeleteNodes} />
         </div>
         <div>
-          <EditTagsModal
-            show={editTagsModalShow}
+          {editTagsModalShow && <EditTagsModal
             node_id={selectedNodes[0]}
             tags={[]}
             onCancel={() => setEditTagsModalShow(false)}
-            onSubmit={onSubmitTags} />
+            onSubmit={onSubmitTags} /> }
         </div>
         <div>
           <DropNodesModal

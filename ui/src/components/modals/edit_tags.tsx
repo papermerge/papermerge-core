@@ -4,15 +4,15 @@ import React, { ChangeEvent } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import RainbowTags from 'components/tags/rainbow-tags';
 
-import { fetcher_patch } from 'utils/fetcher';
+import { fetcher_patch, get_default_headers } from 'utils/fetcher';
 import type { NodeType, ColoredTagType } from 'types';
 
 
 type Args = {
   onCancel: () => void;
   onSubmit: (node: NodeType) => void;
-  show: boolean;
   node_id: string;
   tags: Array<ColoredTagType>;
 }
@@ -29,15 +29,14 @@ async function rename_node(node_id: string, title: string): Promise<NodeType> {
   return fetcher_patch<RenameType, NodeType>(`/api/nodes/${node_id}`, data);
 }
 
-
-
-const EditTagsModal = ({show, onCancel, onSubmit, node_id, tags}: Args) => {
+const EditTagsModal = ({onCancel, onSubmit, node_id, tags}: Args) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [inProgress, setInProgress] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+  const endpoint_url = 'http://localhost:11000/api/tags/';
+  const headers = get_default_headers();
 
-  const handleTagsChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    let value = event.currentTarget.value;
+  const handleTagsChanged = (tags: ColoredTagType[]) => {
   }
 
   const handleSubmit = async () => {
@@ -49,7 +48,7 @@ const EditTagsModal = ({show, onCancel, onSubmit, node_id, tags}: Args) => {
 
   return (
     <Modal
-      show={show}
+      show={true}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       animation={false}>
@@ -60,9 +59,10 @@ const EditTagsModal = ({show, onCancel, onSubmit, node_id, tags}: Args) => {
       </Modal.Header>
       <Modal.Body>
         <Form.Label htmlFor="tags">Tags</Form.Label>
-        <Form.Control
-          aria-describedby="tags"
-          defaultValue={[]}
+        <RainbowTags
+          endpoint_url={endpoint_url}
+          headers={headers}
+          initial_tags={[]}
           onChange={handleTagsChanged} />
       </Modal.Body>
       <Modal.Footer>

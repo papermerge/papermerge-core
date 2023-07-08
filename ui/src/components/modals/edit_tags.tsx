@@ -3,7 +3,6 @@ import React, { ChangeEvent } from 'react';
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import Form from 'react-bootstrap/Form';
 import RainbowTags from 'components/tags/rainbow-tags';
 
 import { fetcher_patch, get_default_headers, fetcher_post } from 'utils/fetcher';
@@ -67,7 +66,6 @@ const EditTagsModal = ({onCancel, onSubmit, node_id, tags}: Args) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form.Label htmlFor="tags">Tags</Form.Label>
         <RainbowTags
           endpoint_url={endpoint_url}
           headers={headers}

@@ -1,4 +1,5 @@
 import Placeholder from 'react-bootstrap/Placeholder';
+import Form from 'react-bootstrap/Form';
 
 import useAutocompleteTags from 'hooks/autocomplete-tags';
 import ColoredTagInput from 'components/tags/colored-tag-input';
@@ -30,9 +31,11 @@ function RainbowTags({
 
   if (is_loading) {
     return (
-      <p className="placeholder-glow">
-        <span className="placeholder col-12 placeholder-lg"></span>
-      </p>
+      <div className='d-flex justify-content-center'>
+        <div className="spinner-border text-primary" role="status">
+          <span className="sr-only"></span>
+        </div>
+      </div>
      );
   }
 
@@ -41,10 +44,13 @@ function RainbowTags({
   }
 
   return (
-    <ColoredTagInput
-      initial_tags={initial_tags}
-      autocomplete_tags={data}
-      onChange={onChange} />
+    <div>
+      <Form.Label htmlFor="tags">Tags</Form.Label>
+      <ColoredTagInput
+        initial_tags={initial_tags}
+        autocomplete_tags={data}
+        onChange={onChange} />
+    </div>
   );
 }
 

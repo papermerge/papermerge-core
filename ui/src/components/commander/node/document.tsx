@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { useProtectedJpg } from "hooks/protected_image"
-import Spinner from "../spinner";
-import SpinnerPlaceholder from "../spinner_placeholder";
+import Spinner from "../../spinner";
+import SpinnerPlaceholder from "../../spinner_placeholder";
 import OcrStatus from "components/ocr_status";
 import Form from 'react-bootstrap/Form';
-import websockets from "../../services/ws";
+import websockets from "../../../services/ws";
 
-import type { CheckboxChangeType, NodeArgsType } from "./types";
+import type { CheckboxChangeType, NodeArgsType } from "../types";
 import { OcrStatusEnum } from "types";
 
 

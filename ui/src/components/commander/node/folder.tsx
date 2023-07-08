@@ -1,11 +1,12 @@
 import { forwardRef } from 'react';
 
-import Spinner from "../spinner";
-import SpinnerPlaceholder from "../spinner_placeholder";
+import Spinner from "../../spinner";
+import SpinnerPlaceholder from "../../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
 
-import type { CheckboxChangeType, NodeArgsType } from "./types";
-import { DisplayNodesModeEnum } from "../../types";
+import type { CheckboxChangeType, NodeArgsType } from "../types";
+import { ColoredTagType, DisplayNodesModeEnum } from "types";
+import TagsComponent from './tags';
 
 
 
@@ -72,6 +73,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
               defaultChecked={props.is_selected}
               type="checkbox" />
           </div>
+          <TagsComponent tags={props.node.tags} max_items={3}/>
           <div className={css_class_display_mode()}>
             <div className="icon folder"></div>
             <div className="title" onClick={onclick}>{props.node.title}</div>

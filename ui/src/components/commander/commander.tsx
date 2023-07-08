@@ -5,8 +5,8 @@ import Form from 'react-bootstrap/Form';
 
 import DisplayModeDropown from './display_mode';
 import SortDropdown from './sort_dropdown';
-import Folder from './folder';
-import Document from './document';
+import Folder from './node/folder';
+import Document from './node/document';
 import EmptyFolder from './empty_folder';
 import Menu from './menu';
 import { DraggingIcon } from 'components/dragging_icon';

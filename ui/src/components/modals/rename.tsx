@@ -14,22 +14,22 @@ type Args = {
   onSubmit: (node: NodeType) => void;
   show: boolean;
   node_id: string;
-  old_title: string;
+  old_title: string | null;
 }
 
 type RenameType = {
   title: string;
 }
 
-async function rename_node(node_id: string, title: string): Promise<NodeType> {
+async function rename_node(node_id: string, title: string | null): Promise<NodeType> {
   let data: RenameType = {
-    'title': title
+    'title': title || ''
   };
 
   return fetcher_patch<RenameType, NodeType>(`/api/nodes/${node_id}`, data);
 }
 
-function validate_title(value: string, old_title: string): boolean {
+function validate_title(value: string, old_title: string | null): boolean {
   if (!value) {
     return false;
   }
@@ -86,7 +86,7 @@ const RenameModal = ({show, onCancel, onSubmit, node_id, old_title}: Args) => {
         <Form.Label htmlFor="title">Rename</Form.Label>
         <Form.Control
           aria-describedby="new title"
-          defaultValue={old_title}
+          defaultValue={old_title || ''}
           onChange={handleTitleChanged} />
       </Modal.Body>
       <Modal.Footer>

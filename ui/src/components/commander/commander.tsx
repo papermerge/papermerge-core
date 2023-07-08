@@ -27,13 +27,14 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { FolderType, NodeType} from 'types';
+import type { ColoredTagType, FolderType, NodeType} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 import { build_nodes_list_params } from 'utils/misc';
+import { get_node_attr } from 'utils/nodes';
 
 
 type NodeResultType = {
@@ -133,18 +134,6 @@ function useNodeListPlus({
   return data;
 }
 
-function get_old_title(arr: Array<string>, nodes_list: Array<NodeType>): string {
-  if (arr && arr.length > 0) {
-    const selected_id = arr[0];
-    const first_item = nodes_list.find((item: NodeType) => item.id === selected_id);
-
-    if (first_item) {
-      return first_item.title;
-    }
-  }
-
-  return '';
-}
 
 function node_is_selected(node_id: string, arr: Array<string>): boolean {
   if (arr && arr.length > 0) {
@@ -155,6 +144,7 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 
   return false;
 }
+
 
 type Args = {
   node_id: string;
@@ -299,7 +289,16 @@ function Commander({
     setSelectedNodes([]);
   }
 
-  const onSubmitTags = (node: NodeType) => {
+  const onSubmitTags = (node: NodeType): void => {
+    let new_nodes_list = nodesList.map((item: NodeType) => {
+      if (item.id === node.id) {
+        return node;
+      } else {
+        return item;
+      }
+    });
+
+    setNodesList(new_nodes_list);
     setEditTagsModalShow(false);
     setSelectedNodes([]);
   }
@@ -566,7 +565,7 @@ function Commander({
           <RenameModal
             show={renameModalShow}
             node_id={selectedNodes[0]}
-            old_title={get_old_title(selectedNodes, nodesList)}
+            old_title={get_node_attr<string>(selectedNodes, 'title', nodesList)}
             onCancel={() => setRenameModalShow(false)}
             onSubmit={onRenameNode} />
         </div>
@@ -580,7 +579,7 @@ function Commander({
         <div>
           {editTagsModalShow && <EditTagsModal
             node_id={selectedNodes[0]}
-            tags={[]}
+            tags={get_node_attr<Array<ColoredTagType>>(selectedNodes,'tags', nodesList)}
             onCancel={() => setEditTagsModalShow(false)}
             onSubmit={onSubmitTags} /> }
         </div>

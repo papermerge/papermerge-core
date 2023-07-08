@@ -14,7 +14,7 @@ type Args = {
   onCancel: () => void;
   onSubmit: (node: NodeType) => void;
   node_id: string;
-  tags: Array<ColoredTagType>;
+  tags: Array<ColoredTagType> | null;
 }
 
 type RenameType = {
@@ -44,10 +44,11 @@ const EditTagsModal = ({onCancel, onSubmit, node_id, tags}: Args) => {
   const handleSubmit = async () => {
     let tag_names = current_tags.map(tag => tag.name);
 
-    await fetcher_post<string[], ColoredTagType[]>(
+    let response_node: NodeType = await fetcher_post<string[], NodeType>(
       `/api/nodes/${node_id}/tags`,
       tag_names
     );
+    onSubmit(response_node);
   }
 
   const handleCancel = () => {
@@ -70,7 +71,7 @@ const EditTagsModal = ({onCancel, onSubmit, node_id, tags}: Args) => {
         <RainbowTags
           endpoint_url={endpoint_url}
           headers={headers}
-          initial_tags={[]}
+          initial_tags={tags || []}
           onChange={handleTagsChanged} />
       </Modal.Body>
       <Modal.Footer>

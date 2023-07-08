@@ -290,6 +290,7 @@ function Commander({
   }
 
   const onSubmitTags = (node: NodeType): void => {
+
     let new_nodes_list = nodesList.map((item: NodeType) => {
       if (item.id === node.id) {
         return node;

@@ -71,6 +71,7 @@ function ColoredTagInput({
   const onRemoveHandler = (name: string) => {
     const new_tag_list = current_tags.filter((i: ColoredTagType) => i.name !== name);
     setCurrentTags(new_tag_list);
+    onChange(new_tag_list);
   }
 
   colored_tags = current_tags.map((item) => {

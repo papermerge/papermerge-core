@@ -5,9 +5,8 @@ import SpinnerPlaceholder from "../../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
 
 import type { CheckboxChangeType, NodeArgsType } from "../types";
-import { ColoredTagType, DisplayNodesModeEnum } from "types";
+import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
-
 
 
 const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
@@ -70,7 +69,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
             <Form.Check
               key={props.node.id}
               onChange={onselect}
-              defaultChecked={props.is_selected}
+              checked={props.is_selected}
               type="checkbox" />
           </div>
           <TagsComponent tags={props.node.tags} max_items={3}/>

@@ -453,7 +453,6 @@ function Commander({
   }, [nodes_list, page_number, page_size]);
 
   useEffect(() => {
-    console.log(`=====> ${error} <====`);
     if (error) {
       setErrorModalShow(true);
     }

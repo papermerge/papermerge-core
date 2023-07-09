@@ -21,6 +21,22 @@ const GenericModal = ({
   onCancel,
   onSubmit
 }: Args) => {
+  /**
+   Generic modal dialog with 'submit' and 'cancel' buttons.
+
+   It includes "in progress" feature, which means that
+   when user clicks "submit", the button changes to "in progress"
+   rotating spinner.
+
+   Example of usage:
+
+      <GenericModal
+        modal_title='Tags'
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}>
+          <!-- here goes the body of the modal dialog -->
+      </GenericModal>
+   */
 
   const [inProgress, setInProgress] = useState(false);
 

@@ -47,7 +47,7 @@ const EditTagsModal = ({onCancel, onSubmit, node_id, tags}: Args) => {
       onSubmit={handleSubmit}
       onCancel={handleCancel}>
         <RainbowTags
-          endpoint_url={"/api/tags/"}
+          endpoint_url="/api/tags/"
           headers={headers}
           initial_tags={tags || []}
           onChange={handleTagsChanged} />

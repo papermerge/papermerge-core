@@ -1,5 +1,10 @@
 import React from 'react';
 
+export type ColoredTagType = {
+  name: string;
+  bg_color: string;
+  fg_color: string;
+}
 
 export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCESS" | "FAILED";
 
@@ -35,6 +40,7 @@ export type DocumentNodeType = {
 export type NodeType = {
   id: string;
   ctype: CType;
+  tags: ColoredTagType[];
   accept_dropped_nodes: boolean;
   is_currently_dragged: boolean;
   parent_id: string | null;
@@ -44,6 +50,7 @@ export type NodeType = {
   document: DocumentNodeType | null;
   thumbnail_url: string | null;
 }
+
 
 export type FolderType = NodeType & {
   breadcrumb: BreadcrumbType;

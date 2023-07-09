@@ -1,4 +1,4 @@
-import { NodeType, DisplayNodesModeEnum, NodeClickArgsType } from '../../types' ;
+import { NodeType, DisplayNodesModeEnum, NodeClickArgsType } from 'types' ;
 
 type NodeArgsType = {
   node: NodeType;

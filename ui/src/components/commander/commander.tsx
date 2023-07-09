@@ -5,8 +5,8 @@ import Form from 'react-bootstrap/Form';
 
 import DisplayModeDropown from './display_mode';
 import SortDropdown from './sort_dropdown';
-import Folder from './folder';
-import Document from './document';
+import Folder from './node/folder';
+import Document from './node/document';
 import EmptyFolder from './empty_folder';
 import Menu from './menu';
 import { DraggingIcon } from 'components/dragging_icon';
@@ -17,6 +17,7 @@ import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';
 import NewFolderModal from 'components/modals/new_folder';
+import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
 import ErrorModal from 'components/modals/error_modal';
@@ -26,13 +27,14 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { FolderType, NodeType} from 'types';
+import type { ColoredTagType, FolderType, NodeType} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 import { build_nodes_list_params } from 'utils/misc';
+import { get_node_attr } from 'utils/nodes';
 
 
 type NodeResultType = {
@@ -132,18 +134,6 @@ function useNodeListPlus({
   return data;
 }
 
-function get_old_title(arr: Array<string>, nodes_list: Array<NodeType>): string {
-  if (arr && arr.length > 0) {
-    const selected_id = arr[0];
-    const first_item = nodes_list.find((item: NodeType) => item.id === selected_id);
-
-    if (first_item) {
-      return first_item.title;
-    }
-  }
-
-  return '';
-}
 
 function node_is_selected(node_id: string, arr: Array<string>): boolean {
   if (arr && arr.length > 0) {
@@ -154,6 +144,7 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 
   return false;
 }
+
 
 type Args = {
   node_id: string;
@@ -191,6 +182,7 @@ function Commander({
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
+  const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
@@ -294,6 +286,21 @@ function Commander({
     );
     setNodesList(new_nodes);
     setDeleteNodesModalShow(false);
+    setSelectedNodes([]);
+  }
+
+  const onSubmitTags = (node: NodeType): void => {
+
+    let new_nodes_list = nodesList.map((item: NodeType) => {
+      if (item.id === node.id) {
+        return node;
+      } else {
+        return item;
+      }
+    });
+
+    setNodesList(new_nodes_list);
+    setEditTagsModalShow(false);
     setSelectedNodes([]);
   }
 
@@ -446,7 +453,6 @@ function Commander({
   }, [nodes_list, page_number, page_size]);
 
   useEffect(() => {
-    console.log(`=====> ${error} <====`);
     if (error) {
       setErrorModalShow(true);
     }
@@ -507,6 +513,7 @@ function Commander({
             onNewFolderClick={() => setNewFolderModalShow(true)}
             onRenameClick={() => setRenameModalShow(true)}
             onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
+            onEditTagsClick={ () => setEditTagsModalShow(true) }
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
@@ -558,7 +565,7 @@ function Commander({
           <RenameModal
             show={renameModalShow}
             node_id={selectedNodes[0]}
-            old_title={get_old_title(selectedNodes, nodesList)}
+            old_title={get_node_attr<string>(selectedNodes, 'title', nodesList)}
             onCancel={() => setRenameModalShow(false)}
             onSubmit={onRenameNode} />
         </div>
@@ -568,6 +575,13 @@ function Commander({
             node_ids={selectedNodes}
             onCancel={() => setDeleteNodesModalShow(false)}
             onSubmit={onDeleteNodes} />
+        </div>
+        <div>
+          {editTagsModalShow && <EditTagsModal
+            node_id={selectedNodes[0]}
+            tags={get_node_attr<Array<ColoredTagType>>(selectedNodes,'tags', nodesList)}
+            onCancel={() => setEditTagsModalShow(false)}
+            onSubmit={onSubmitTags} /> }
         </div>
         <div>
           <DropNodesModal

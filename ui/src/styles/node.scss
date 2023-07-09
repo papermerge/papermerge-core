@@ -20,8 +20,8 @@
   position: relative;
 
   .icon {
-    width: 5rem;
-    height: 4rem;
+    width: 7rem;
+    height: 5rem;
   }
 
   .icon.folder {
@@ -37,12 +37,21 @@
   .tags {
     position: absolute;
     top: 0;
-    right: -2rem;
+    right: -1rem;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     .tag {
       margin: 0.5rem;
+    }
+    li {
+      list-style: none;
+      z-index: 100;
+      padding: 0 0.3rem;
+      margin: 0.1rem 0.2rem;
+      font-size: 0.9rem;
+      text-wrap: nowrap;
+      border-radius: 0.2rem;
     }
   }
 

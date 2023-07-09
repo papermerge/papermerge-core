@@ -333,6 +333,45 @@ def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
 
 
 @pytest.mark.django_db(transaction=True)
+def test_assign_tags_to_document(auth_api_client: AuthTestClient):
+    """
+    url:
+        POST /api/nodes/{D1}/tags/
+    body content:
+        ["xyz"]
+
+    where D1 is a document
+
+    Expected result:
+        document D1 will have one tag assigned 'xyz'
+    """
+    u = auth_api_client.user
+    d1 = document_recipe.make(
+        title='invoice.pdf',
+        user=u,
+        parent=u.home_folder
+    )
+    d1.tags.set(
+        ['unpaid', 'important'],
+        tag_kwargs={"user": u}
+    )
+    payload = ['xyz']
+
+    response = auth_api_client.post(
+        f'/nodes/{d1.pk}/tags',
+        json=payload,
+    )
+
+    assert response.status_code == 200
+
+    found_d1 = Document.objects.get(title='invoice.pdf', user=u)
+    assert found_d1.tags.count() == 1
+    all_new_tags = [tag.name for tag in found_d1.tags.all()]
+
+    assert set(all_new_tags) == {'xyz'}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_append_tags_to_folder(auth_api_client: AuthTestClient):
     """
     url:

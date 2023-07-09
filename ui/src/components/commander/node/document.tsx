@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 
 import { useProtectedJpg } from "hooks/protected_image"
-import Spinner from "../spinner";
-import SpinnerPlaceholder from "../spinner_placeholder";
+import Spinner from "../../spinner";
+import SpinnerPlaceholder from "../../spinner_placeholder";
 import OcrStatus from "components/ocr_status";
 import Form from 'react-bootstrap/Form';
-import websockets from "../../services/ws";
+import websockets from "../../../services/ws";
 
-import type { CheckboxChangeType, NodeArgsType } from "./types";
+import TagsComponent from './tags';
+import type { CheckboxChangeType, NodeArgsType } from "../types";
 import { OcrStatusEnum } from "types";
 
 
@@ -31,9 +32,6 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
       setStatus(data.state);
     }
   }
-
-  console.log(`NODE ID=${node.id}`);
-  console.log(`node.document.thumbnail_url=${node.document?.thumbnail_url}`);
 
   useEffect(() => {
     websockets.addHandler(str_id(node.id), {callback: networkMessageHandler});
@@ -64,10 +62,17 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
   return (
     <div className="node document" draggable>
       {is_loading ? <Spinner />: <SpinnerPlaceholder />}
-      <div><Form.Check onChange={onselect} defaultChecked={is_selected} type="checkbox" /></div>
-      {thumbnail_component}
-      <OcrStatus status={status} />
-      <div className="title" onClick={onclick}>{node.title}</div>
+      <div>
+        <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
+      </div>
+      <TagsComponent tags={node.tags} max_items={3}/>
+      <div className="d-flex flex-column">
+        {thumbnail_component}
+        <div className="d-flex">
+          <OcrStatus status={status} />
+          <div className="title" onClick={onclick}>{node.title}</div>
+        </div>
+      </div>
     </div>
   );
 }

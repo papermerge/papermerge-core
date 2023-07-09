@@ -9,7 +9,7 @@ type Args = {
 
 function item_style(tag: ColoredTagType) {
   return {
-    'background-color': tag.bg_color,
+    'backgroundColor': tag.bg_color,
     'color': tag.fg_color,
   }
 }
@@ -18,7 +18,7 @@ function item_style(tag: ColoredTagType) {
 function TagsComponent({tags, max_items}: Args) {
 
   let tags_list = tags.map(
-    (item: ColoredTagType) => <li style={item_style(item)}>
+    (item: ColoredTagType) => <li key={item.name} style={item_style(item)}>
         {item.name}
       </li>
   );

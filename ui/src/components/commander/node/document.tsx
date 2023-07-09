@@ -32,9 +32,6 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
     }
   }
 
-  console.log(`NODE ID=${node.id}`);
-  console.log(`node.document.thumbnail_url=${node.document?.thumbnail_url}`);
-
   useEffect(() => {
     websockets.addHandler(str_id(node.id), {callback: networkMessageHandler});
 

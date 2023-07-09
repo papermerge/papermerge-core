@@ -66,11 +66,19 @@ class Node(BaseModel):
     @validator('document', pre=True)
     def document_validator(cls, value, values):
         if values['ctype'] == NodeType.document:
-            return DocumentNode(
-                ocr_status=value.ocr_status,
-                ocr=value.ocr,
-                thumbnail_url=f"/api/thumbnails/{values['id']}"
-            )
+            if isinstance(value, dict):
+                kwargs = {
+                    'ocr_status': value['ocr_status'],
+                    'ocr': value['ocr'],
+                    'thumbnail_url': f"/api/thumbnails/{values['id']}"
+                }
+            else:
+                kwargs = {
+                    'ocr_status': value.ocr_status,
+                    'ocr': value.ocr,
+                    'thumbnail_url': f"/api/thumbnails/{values['id']}"
+                }
+            return DocumentNode(**kwargs)
 
         return None
 

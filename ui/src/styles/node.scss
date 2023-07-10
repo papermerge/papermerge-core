@@ -1,8 +1,3 @@
-.node.document {
-  .tags {
-    right: -0.5rem;
-  }
-}
 
 .accept_dropped_nodes {
   outline: 3px dashed blue;
@@ -10,6 +5,99 @@
 
 .dragged {
   opacity: 0.3;
+}
+
+.node {
+  .tags {
+    margin: 0;
+  }
+  padding: 0.3rem;
+}
+
+.node.tile {
+  margin: 0rem 0.5rem;
+}
+
+.node.folder.tile {
+  .icon.folder {
+    background-image: url("../../public/images/folder.svg");
+    background-size: 100% 100%;
+  }
+}
+
+.node.folder.list {
+  .icon {
+    width: 4rem;
+    height: 3rem;
+  }
+}
+
+.node.document.tile {
+  flex-direction: column;
+  padding: 0.5rem;
+
+  .checkbox {
+    position: absolute;
+    left: 0.5rem;
+  }
+
+  .tags {
+    right: -0.5rem;
+  }
+
+  .footer {
+    align-items: center;
+    .title {
+      padding: 0 0.5rem;
+    }
+  }
+}
+
+.node.folder.tile {
+  flex-direction: column;
+  padding: 0.5rem;
+
+  .checkbox {
+    position: absolute;
+    left: 0.5rem;
+  }
+
+  .tags {
+    right: -0.5rem;
+  }
+
+  .footer {
+    align-items: center;
+    .title {
+      padding: 0 0.5rem;
+    }
+  }
+}
+
+.node.document.list {
+  .body {
+    width: 4rem;
+    padding: 0 0.5rem;
+  }
+  .ocr {
+    padding-left: 0.25rem;
+  }
+}
+
+.node.tile {
+  .tags {
+    position: absolute;
+    top: 0;
+    right: -1rem;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.node.list {
+  .tags {
+    display: flex;
+  }
 }
 
 .node {
@@ -26,7 +114,7 @@
 
   .icon.folder {
     background-image: url("../../public/images/folder.svg");
-    background-size: 100% 100%;
+    background-size: 92% 87%;
   }
 
   .icon.document {
@@ -35,15 +123,8 @@
   }
 
   .tags {
-    position: absolute;
-    top: 0;
-    right: -1rem;
-    display: flex;
-    flex-direction: column;
     align-items: flex-end;
-    .tag {
-      margin: 0.5rem;
-    }
+
     li {
       list-style: none;
       z-index: 100;
@@ -76,63 +157,4 @@
     opacity: 1;
     z-index: 0;
  }
-}
-
-
-.view-mode-grid {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  .node {
-
-    width: 10rem;
-    height: 10rem;
-    display: flex;
-    flex-direction: column;
-
-    margin: 0.75rem;
-    padding: 0.5rem;
-
-    .icon {
-      width: 100%;
-      height: 100%;
-    }
-
-    input[type=checkbox] {
-      align-self: start;
-      visibility: hidden;
-    }
-
-    &:hover {
-      input[type=checkbox] {
-        visibility: visible;
-      }
-    }
-
-    &.checked {
-      input[type=checkbox] {
-        visibility: visible;
-      }
-    }
-  }
-}
-
-.view-mode-list, .search-results {
-  display: flex;
-  flex-direction: column;
-
-  .node {
-    padding: 0.25rem;
-  }
-
-  .tags {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-
-    .tag {
-      margin: 0.2rem;
-    }
-  }
 }

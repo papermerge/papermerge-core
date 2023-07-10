@@ -9,7 +9,7 @@ import websockets from "../../../services/ws";
 
 import TagsComponent from './tags';
 import type { CheckboxChangeType, NodeArgsType } from "../types";
-import { OcrStatusEnum } from "types";
+import { DisplayNodesModeEnum, OcrStatusEnum } from "types";
 
 
 function str_id(node_id: string): string {
@@ -17,7 +17,14 @@ function str_id(node_id: string): string {
 }
 
 
-function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsType) {
+function Document({
+  node,
+  onClick,
+  onSelect,
+  is_loading,
+  is_selected,
+  display_mode
+}: NodeArgsType) {
 
   const [ status, setStatus ] = useState<OcrStatusEnum>(node?.document?.ocr_status || "UNKNOWN");
   const protected_thumbnail = useProtectedJpg(node?.thumbnail_url || node?.document?.thumbnail_url || null);
@@ -59,22 +66,41 @@ function Document({node, onClick, onSelect, is_loading, is_selected}: NodeArgsTy
     </div>
   }
 
-  return (
-    <div className="node document" draggable>
-      {is_loading ? <Spinner />: <SpinnerPlaceholder />}
-      <div>
-        <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
-      </div>
-      <TagsComponent tags={node.tags} max_items={3}/>
-      <div className="d-flex flex-column">
-        {thumbnail_component}
-        <div className="d-flex">
+  if (display_mode == DisplayNodesModeEnum.Tiles) {
+    return (
+      <div className="node document tile" draggable>
+        <div className='checkbox'>
+            <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
+        </div>
+        <TagsComponent tags={node.tags} max_items={4}/>
+        <div className="body">
+          {is_loading ? <Spinner />: <SpinnerPlaceholder />}
+          {thumbnail_component}
+        </div>
+        <div className="footer d-flex">
           <OcrStatus status={status} />
           <div className="title" onClick={onclick}>{node.title}</div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div className="node document list" draggable>
+        <div className='checkbox'>
+            <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
+        </div>
+        <OcrStatus status={status} />
+        <div className="body">
+          {is_loading ? <Spinner />: <SpinnerPlaceholder />}
+          {thumbnail_component}
+        </div>
+        <div className="title" onClick={onclick}>{node.title}</div>
+        <TagsComponent tags={node.tags} max_items={4}/>
+      </div>
+    );
+  }
+
+
 }
 
 export default Document;

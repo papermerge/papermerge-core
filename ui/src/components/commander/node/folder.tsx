@@ -34,14 +34,6 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
       props.onDragEnd(props.node.id, event);
     }
 
-    const css_class_display_mode = () => {
-      if (props.display_mode == DisplayNodesModeEnum.List) {
-        return 'd-flex flex-row align-items-center';
-      }
-
-      return 'd-flex flex-column';
-    }
-
     const css_class_node = (): string => {
       let css_class: string = '';
 
@@ -72,7 +64,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
             onDragEnd={onDragEndHandle}
             draggable>
             {props.is_loading ? <Spinner />: <SpinnerPlaceholder />}
-            <div>
+            <div className='checkbox'>
               <Form.Check
                 key={props.node.id}
                 onChange={onselect}
@@ -80,8 +72,10 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
                 type="checkbox" />
             </div>
             <TagsComponent tags={props.node.tags} max_items={3}/>
-            <div className={css_class_display_mode()}>
+            <div className="body" onClick={onclick}>
               <div className="icon folder"></div>
+            </div>
+            <div className="footer">
               <div className="title" onClick={onclick}>{props.node.title}</div>
             </div>
           </div>
@@ -102,7 +96,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
                 checked={props.is_selected}
                 type="checkbox" />
               {props.is_loading ? <Spinner />: <SpinnerPlaceholder />}
-              <div className="body">
+              <div className="body" onClick={onclick}>
                 <div className="icon folder"></div>
               </div>
               <div className="title" onClick={onclick}>{props.node.title}</div>

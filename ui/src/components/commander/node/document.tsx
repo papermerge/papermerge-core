@@ -61,7 +61,7 @@ function Document({
   } else if ( protected_thumbnail.error ) {
     thumbnail_component = <div>{protected_thumbnail.error}</div>
   } else {
-    thumbnail_component = <div>
+    thumbnail_component = <div className="image">
       {protected_thumbnail.data}
     </div>
   }
@@ -73,7 +73,7 @@ function Document({
             <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
         </div>
         <TagsComponent tags={node.tags} max_items={4}/>
-        <div className="body">
+        <div className="body" onClick={onclick}>
           {is_loading ? <Spinner />: <SpinnerPlaceholder />}
           {thumbnail_component}
         </div>
@@ -89,17 +89,18 @@ function Document({
         <div className='checkbox'>
             <Form.Check onChange={onselect} checked={is_selected} type="checkbox" />
         </div>
-        <OcrStatus status={status} />
-        <div className="body">
-          {is_loading ? <Spinner />: <SpinnerPlaceholder />}
+        {is_loading ? <Spinner />: <SpinnerPlaceholder />}
+        <div className="body" onClick={onclick}>
           {thumbnail_component}
         </div>
         <div className="title" onClick={onclick}>{node.title}</div>
+        <div className="ocr">
+          <OcrStatus status={status} />
+        </div>
         <TagsComponent tags={node.tags} max_items={4}/>
       </div>
     );
   }
-
 
 }
 

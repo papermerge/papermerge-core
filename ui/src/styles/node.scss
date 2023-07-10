@@ -11,12 +11,24 @@
   .tags {
     margin: 0;
   }
+  padding: 0.3rem;
+}
+
+.node.tile {
+  margin: 0rem 0.5rem;
 }
 
 .node.folder.tile {
   .icon.folder {
     background-image: url("../../public/images/folder.svg");
     background-size: 100% 100%;
+  }
+}
+
+.node.folder.list {
+  .icon {
+    width: 4rem;
+    height: 3rem;
   }
 }
 
@@ -38,6 +50,37 @@
     .title {
       padding: 0 0.5rem;
     }
+  }
+}
+
+.node.folder.tile {
+  flex-direction: column;
+  padding: 0.5rem;
+
+  .checkbox {
+    position: absolute;
+    left: 0.5rem;
+  }
+
+  .tags {
+    right: -0.5rem;
+  }
+
+  .footer {
+    align-items: center;
+    .title {
+      padding: 0 0.5rem;
+    }
+  }
+}
+
+.node.document.list {
+  .body {
+    width: 4rem;
+    padding: 0 0.5rem;
+  }
+  .ocr {
+    padding-left: 0.25rem;
   }
 }
 

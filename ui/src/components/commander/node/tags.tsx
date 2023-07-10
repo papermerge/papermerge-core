@@ -17,6 +17,10 @@ function item_style(tag: ColoredTagType) {
 
 function TagsComponent({tags, max_items}: Args) {
 
+  if (!tags) {
+    return <ul className="tags"></ul>;
+  }
+
   let tags_list = tags.map(
     (item: ColoredTagType) => <li key={item.name} style={item_style(item)}>
         {item.name}

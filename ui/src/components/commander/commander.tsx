@@ -278,6 +278,7 @@ function Commander({
 
     setNodesList(new_nodes_list);
     setRenameModalShow(false);
+    setSelectedNodes([]);
   }
 
   const onDeleteNodes = (node_ids: string[]) => {

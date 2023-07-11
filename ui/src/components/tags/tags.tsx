@@ -38,7 +38,7 @@ export default function Tags() {
       <Button variant="success" className="flat my-1"><i className="bi bi-plus-lg mx-1"></i>New</Button>
       <Table striped bordered hover>
       <thead>
-        <tr className="text-uppercase">
+        <tr className="text-uppercase text-center">
           <th>Tag Name</th>
           <th>Pinned?</th>
           <th>Description</th>

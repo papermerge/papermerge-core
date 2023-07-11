@@ -4,7 +4,7 @@ import 'styles/globals.scss';
 
 import React, { useState } from 'react';
 import SpecialFolder from "components/special_folder";
-import Tags from "components/tags"
+import Tags from "components/tags/tags"
 import Layout from 'components/layout';
 import { useMe } from 'hooks/me';
 import { SidebarItem } from 'types';
@@ -34,10 +34,10 @@ function App() {
     return <div>User does not have home folder</div>;
   }
 
-  if (sidebar_item == SidebarItem.home || sidebar_item == SidebarItem.inbox) {
-    content_block = <SpecialFolder
-        special_folder_id={sidebar_item === SidebarItem.home ? data?.home_folder_id : data?.inbox_folder_id}
-        onSidebarItemChange={onSidebarItemChange} />;
+  if (sidebar_item == SidebarItem.home) {
+    content_block = <SpecialFolder special_folder_id={ data?.home_folder_id } />;
+  } else if (sidebar_item == SidebarItem.inbox) {
+    content_block = <SpecialFolder special_folder_id={ data?.inbox_folder_id } />;
   } else {
     content_block = <Tags />;
   }

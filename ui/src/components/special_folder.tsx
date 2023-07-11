@@ -3,13 +3,12 @@ import { useState, useEffect } from 'react';
 import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
-import { NodeClickArgsType, SidebarItem } from 'types';
+import { NodeClickArgsType } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
   special_folder_id: string;
-  onSidebarItemChange: (item: SidebarItem) => void;
 }
 
 
@@ -97,7 +96,7 @@ function save_node_list_params({
 }
 
 
-function SpecialFolder({ special_folder_id, onSidebarItemChange }: Args) {
+function SpecialFolder({ special_folder_id }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
@@ -113,8 +112,6 @@ function SpecialFolder({ special_folder_id, onSidebarItemChange }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
   );
-
-  let component: JSX.Element;
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
     set_node_id(node_id);

@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
-import type { SpecialFolder, State, User } from 'types';
+import type { SidebarItem, State, User } from 'types';
 
 
 const fetcher = (url:string) => {
@@ -50,11 +50,11 @@ export function useMe() {
 
 type Args = {
   children: React.ReactNode;
-  onSpecialFolderChange: (folder: SpecialFolder) => void;
+  onSidebarItemChange: (item: SidebarItem) => void;
 }
 
 
-function Layout({ children, onSpecialFolderChange }: Args) {
+function Layout({ children, onSidebarItemChange }: Args) {
   const { data, error, is_loading } = useMe();
   const [ sidebarFolded, setSidebarFolded ] = useState(false);
 
@@ -65,7 +65,7 @@ function Layout({ children, onSpecialFolderChange }: Args) {
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar folded={sidebarFolded} onSpecialFolderChange={onSpecialFolderChange} />
+        <Sidebar folded={sidebarFolded} onSidebarItemChange={onSidebarItemChange} />
         <CentralBar>
           Loading ...
         </CentralBar>
@@ -77,11 +77,9 @@ function Layout({ children, onSpecialFolderChange }: Args) {
     return <div>Error</div>;
   }
 
-  console.log(`User me ${data?.home_folder_id}`);
-
   return (
     <main className={styles.main}>
-      <Sidebar folded={sidebarFolded} onSpecialFolderChange={onSpecialFolderChange} />
+      <Sidebar folded={sidebarFolded} onSidebarItemChange={onSidebarItemChange} />
       <CentralBar username={data?.username} onToggleSidebar={onToggleSidebar}>
         {children}
       </CentralBar>

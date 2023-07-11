@@ -1,17 +1,15 @@
-import Layout from 'components/layout';
-
 import { useState, useEffect } from 'react';
 
 import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
-import { NodeClickArgsType, SpecialFolder } from 'types';
+import { NodeClickArgsType, SidebarItem } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
   special_folder_id: string;
-  onSpecialFolderChange: (folder: SpecialFolder) => void;
+  onSidebarItemChange: (item: SidebarItem) => void;
 }
 
 
@@ -99,7 +97,7 @@ function save_node_list_params({
 }
 
 
-function Home({ special_folder_id, onSpecialFolderChange }: Args) {
+function SpecialFolder({ special_folder_id, onSidebarItemChange }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState('folder');
   const [ page_number, set_page_number ] = useState(1);
@@ -163,7 +161,7 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
 
   try {
     if (node_type == 'folder') {
-      component = <Commander
+      return <Commander
         node_id={node_id}
         page_number={page_number}
         page_size={page_size}
@@ -178,17 +176,12 @@ function Home({ special_folder_id, onSpecialFolderChange }: Args) {
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
     } else {
-      component = <Viewer node_id={node_id} onNodeClick={onNodeClick} />;
+      return <Viewer node_id={node_id} onNodeClick={onNodeClick} />;
     }
   } catch(e) {
-    component = <div>Caught exception</div>;
+    return <div>Caught exception</div>;
   }
 
-  return (
-    <Layout onSpecialFolderChange={onSpecialFolderChange}>
-      {component}
-    </Layout>
-  );
 }
 
-export default Home;
+export default SpecialFolder;

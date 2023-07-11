@@ -129,4 +129,8 @@ export type OcrStatusType = {
     status: OcrStatusEnum;
 }
 
-export type SpecialFolder = "inbox" | "home";
+export enum SidebarItem {
+   inbox = "inbox",
+   home = "home",
+   tags = "tags"
+}

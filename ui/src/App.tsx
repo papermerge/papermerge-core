@@ -1,22 +1,26 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import './styles/globals.scss';
+import 'styles/globals.scss';
 
 import React, { useState } from 'react';
-import Home from "./components/home";
-import { useMe } from './hooks/me';
-import type { SpecialFolder } from 'types';
+import SpecialFolder from "components/special_folder";
+import Tags from "components/tags"
+import Layout from 'components/layout';
+import { useMe } from 'hooks/me';
+import { SidebarItem } from 'types';
 
-import './App.css';
+
+import 'App.css';
 
 
 function App() {
   const { data, error, is_loading } = useMe();
-  const [currentSpecialFolder, setCurrentSpecialFolder] = useState<SpecialFolder>("home");
+  const [sidebar_item, setSidebarItem] = useState<SidebarItem>(SidebarItem.home);
 
-  const onSpecialFolderChange = (folder: SpecialFolder) => {
-    setCurrentSpecialFolder(folder);
+  const onSidebarItemChange = (item: SidebarItem) => {
+    setSidebarItem(item);
   }
+  let content_block: JSX.Element;
 
   if (is_loading) {
     return <div>Loading...</div>
@@ -30,10 +34,18 @@ function App() {
     return <div>User does not have home folder</div>;
   }
 
+  if (sidebar_item == SidebarItem.home || sidebar_item == SidebarItem.inbox) {
+    content_block = <SpecialFolder
+        special_folder_id={sidebar_item === SidebarItem.home ? data?.home_folder_id : data?.inbox_folder_id}
+        onSidebarItemChange={onSidebarItemChange} />;
+  } else {
+    content_block = <Tags />;
+  }
+
   return (
-    <Home
-      special_folder_id={currentSpecialFolder === "home" ? data?.home_folder_id : data?.inbox_folder_id}
-      onSpecialFolderChange={onSpecialFolderChange} />
+    <Layout onSidebarItemChange={onSidebarItemChange}>
+      {content_block}
+    </Layout>
   );
 }
 

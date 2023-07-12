@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Table, Button } from "react-bootstrap";
 
 import { fetcher } from "utils/fetcher";
-import type {ColoredTagList, LoadableTagList, ColoredTag} from "types";
+import type {ColoredTagList, ColoredTag} from "types";
 
 import TagRow from "components/tags/row";
+import Paginator from "components/paginator";
 
 
 export default function Tags() {
@@ -14,6 +15,8 @@ export default function Tags() {
   const [is_taglist_loading, setIsTaglistLoading] = useState<boolean>(true);
   const [taglist_load_error, setTaglistLoadingError] = useState<string | null>(null);
   const [tag_list, setTagList] = useState<Array<ColoredTag>>([]);
+  const [num_pages, setNumPages] = useState(0);
+  const [page_number, setPageNumber] = useState(1)
 
   const onAdd = () => {
     console.log(`new item ${show_add_item}`);
@@ -45,14 +48,19 @@ export default function Tags() {
     setCurrentEditId(null);
   }
 
+  const onPageClick = (page_number: number) => {
+    setPageNumber(page_number);
+  }
+
   useEffect(() => {
-    fetcher(`/api/tags/`).then((data: ColoredTagList) => {
+    fetcher(`/api/tags/?page_number=${page_number}`).then((data: ColoredTagList) => {
       setTagList(data.items);
+      setNumPages(data.num_pages);
       setIsTaglistLoading(false);
     }).catch((error: Error) => {
       setTaglistLoadingError(error.toString());
     });
-  }, []);
+  }, [page_number]);
 
   if (is_taglist_loading) {
     return <div>Loading...</div>;
@@ -63,14 +71,15 @@ export default function Tags() {
   }
 
   const tags = tag_list.map(
-    i => <TagRow
-            key={i.id}
-            item={i}
-            onSwitchEditMode={onSwitchEditMode}
-            edit_mode={current_edit_id == i.id}
-            onRemove={onRemove}
-            onCancel={onCancel}
-            onUpdate={onUpdate} />
+    i => (
+      <TagRow
+        key={i.id}
+        item={i}
+        onSwitchEditMode={onSwitchEditMode}
+        edit_mode={current_edit_id == i.id}
+        onRemove={onRemove}
+        onCancel={onCancel}
+        onUpdate={onUpdate} />)
   );
 
   return (
@@ -92,6 +101,10 @@ export default function Tags() {
           {tags}
         </tbody>
       </Table>
+      <Paginator
+        num_pages={num_pages}
+        active={page_number}
+        onPageClick={onPageClick} />
     </div>
   );
 }

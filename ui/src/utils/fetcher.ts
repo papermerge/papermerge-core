@@ -91,19 +91,33 @@ async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: A
   ).then(res => res.json());
 }
 
-async function fetcher_delete<Input, Output>(url: string, data: Input): Promise<Output> {
+async function fetcher_delete<Input, Output>(
+  url: string,
+  data: Input,
+  serialize_response?: boolean
+): Promise<Output|Response> {
   const headers = get_default_headers();
 
-  return fetch(
+  let result = fetch(
     url,
     {
       method: "delete",
       headers: headers,
       body: JSON.stringify(data)
     }
-  ).then(res => res.json());
-}
+  );
 
+  // serialize response by default
+  if (serialize_response === undefined) {
+    serialize_response = true;
+  }
+
+  if (serialize_response === true) {
+    return result.then(res => res.json());
+  }
+
+  return result;
+}
 
 
 export {

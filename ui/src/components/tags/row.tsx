@@ -3,10 +3,10 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import type { ColoredTag } from "types";
 import LoadingButton from 'components/loading_button';
-import { fetcher_patch } from "utils/fetcher";
-
+import { fetcher_delete, fetcher_patch } from "utils/fetcher";
 
 import Tag from "./tag";
+
 
 type Args = {
   item: ColoredTag;
@@ -97,6 +97,16 @@ export default function Row({
     });
   }
 
+  const onLocalRemoveHandler = () => {
+    fetcher_delete<Object, ColoredTag>(
+      `/api/tags/${item.id}`,
+      {},
+      false
+    ).then(() => {
+      onRemove(item);
+    });
+  }
+
   if (!edit_mode) {
     return (
       <tr>
@@ -113,7 +123,7 @@ export default function Row({
           <a href='#' onClick={() => onSwitchEditMode(item)} className="m-1">
             Edit
           </a>
-          <a href='#' onClick={() => onRemove(item)} className="m-1">
+          <a href='#' onClick={onLocalRemoveHandler} className="m-1">
             Remove
           </a>
         </td>

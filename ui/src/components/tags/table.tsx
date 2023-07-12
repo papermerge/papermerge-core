@@ -27,8 +27,10 @@ export default function Tags() {
     setCurrentEditId(item.id);
   }
 
-  const onRemove = (item: ColoredTag) => {
-    console.log(`removing item ${item.name}`);
+  const onRemove = (item_to_remove: ColoredTag) => {
+    let new_tag_list = tag_list.filter((i: ColoredTag) => item_to_remove.id != i.id);
+
+    setTagList(new_tag_list);
   }
 
   const onCancel = () => {
@@ -53,7 +55,7 @@ export default function Tags() {
   }
 
   useEffect(() => {
-    fetcher(`/api/tags/?page_number=${page_number}`).then((data: ColoredTagList) => {
+    fetcher(`/api/tags/?page_number=${page_number}&page_size=10`).then((data: ColoredTagList) => {
       setTagList(data.items);
       setNumPages(data.num_pages);
       setIsTaglistLoading(false);
@@ -88,7 +90,7 @@ export default function Tags() {
         <i className="bi bi-plus-lg mx-1" />
         New
       </Button>
-      <Table striped bordered hover className="align-middle">
+      <Table bordered hover className="align-middle">
       <thead>
         <tr className="text-uppercase text-center">
           <th>Tag Name</th>

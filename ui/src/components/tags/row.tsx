@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import type { ColoredTag } from "types";
 import LoadingButton from 'components/loading_button';
+import { fetcher_patch } from "utils/fetcher";
 
 import Tag from "./tag";
 
@@ -11,7 +12,7 @@ type Args = {
   onSwitchEditMode: (item: ColoredTag) => void;
   onRemove: (item: ColoredTag) => void;
   onCancel: () => void;
-  onUpdate: (item: ColoredTag, signal: AbortSignal) => void;
+  onUpdate: (item: ColoredTag) => void;
   edit_mode: boolean;
 }
 
@@ -81,12 +82,18 @@ export default function Row({
     });
   }
 
-  const onLocalSaveHandler = () => {
+  const onLocalUpdateHandler = () => {
     setSaveInProgress(true);
-    onUpdate(updated_item, controller.signal);
-    setSaveInProgress(false);
-    onCancel(); // cancels the edit mode from master component
-    setController(new AbortController());
+
+    fetcher_patch<ColoredTag, ColoredTag>(
+      `/api/tags/${updated_item.id}`,
+      updated_item,
+      controller.signal
+    ).then(() => {
+      setSaveInProgress(false);
+      setController(new AbortController());
+      onUpdate(updated_item);
+    });
   }
 
   if (!edit_mode) {
@@ -143,8 +150,12 @@ export default function Row({
         <a href='#' onClick={() => onCancelLocalHandler()} className="m-1">
           <Button variant='secondary' className='flat'>Cancel</Button>
         </a>
-        <a href='#' onClick={() => onLocalSaveHandler()} className="m-1">
-          <LoadingButton title='Save' in_progress={save_in_progress} onClick={onLocalSaveHandler}/>
+        <a href='#' onClick={() => onLocalUpdateHandler()} className="m-1">
+          <LoadingButton
+            title='Save'
+            className='flat'
+            in_progress={save_in_progress}
+            onClick={onLocalUpdateHandler} />
         </a>
       </td>
     </tr>

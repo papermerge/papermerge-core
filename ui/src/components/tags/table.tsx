@@ -1,23 +1,19 @@
 import { useState, useEffect } from "react";
 import { Table, Button } from "react-bootstrap";
 
-import { fetcher, fetcher_patch } from "utils/fetcher";
+import { fetcher } from "utils/fetcher";
 import type {ColoredTagList, LoadableTagList, ColoredTag} from "types";
 
 import TagRow from "components/tags/row";
 
 
 export default function Tags() {
-
-  const initial_tag_list = {
-    is_loading: true,
-    error: null,
-    data: null
-  }
   const [show_add_item, setShowAddItem] = useState(false);
   // ID of the tag which is currently in edit mode
   const [current_edit_id, setCurrentEditId] = useState<string|null>(null);
-  const [tag_list, setTagList] = useState<LoadableTagList>(initial_tag_list);
+  const [is_taglist_loading, setIsTaglistLoading] = useState<boolean>(true);
+  const [taglist_load_error, setTaglistLoadingError] = useState<string | null>(null);
+  const [tag_list, setTagList] = useState<Array<ColoredTag>>([]);
 
   const onAdd = () => {
     console.log(`new item ${show_add_item}`);
@@ -36,39 +32,45 @@ export default function Tags() {
     setCurrentEditId(null);
   }
 
-  const onUpdate = async (item: ColoredTag, signal: AbortSignal) => {
-    let response_tag: ColoredTag = await fetcher_patch<ColoredTag, ColoredTag>(
-      `/api/tags/${item.id}`,
-      item,
-      signal
-    );
+  const onUpdate = async (updated_item: ColoredTag) => {
+    let new_tag_list = tag_list.map((i: ColoredTag) => {
+      if (updated_item.id == i.id) {
+        return updated_item;
+      } else {
+        return i;
+      }
+    });
+
+    setTagList(new_tag_list);
+    setCurrentEditId(null);
   }
 
   useEffect(() => {
     fetcher(`/api/tags/`).then((data: ColoredTagList) => {
-      setTagList({is_loading: false, error: null, data: data});
+      setTagList(data.items);
+      setIsTaglistLoading(false);
     }).catch((error: Error) => {
-      setTagList({is_loading: false, error: error.toString(), data: null});
+      setTaglistLoadingError(error.toString());
     });
   }, []);
 
-  if (tag_list.is_loading) {
+  if (is_taglist_loading) {
     return <div>Loading...</div>;
   }
 
-  if (tag_list.error) {
-    return <div className="text-danger">{tag_list.error}</div>;
+  if (taglist_load_error) {
+    return <div className="text-danger">{taglist_load_error}</div>;
   }
 
-  const tags = tag_list?.data?.items.map(
+  const tags = tag_list.map(
     i => <TagRow
-          key={i.id}
-          item={i}
-          onSwitchEditMode={onSwitchEditMode}
-          edit_mode={current_edit_id == i.id}
-          onRemove={onRemove}
-          onCancel={onCancel}
-          onUpdate={onUpdate} />
+            key={i.id}
+            item={i}
+            onSwitchEditMode={onSwitchEditMode}
+            edit_mode={current_edit_id == i.id}
+            onRemove={onRemove}
+            onCancel={onCancel}
+            onUpdate={onUpdate} />
   );
 
   return (

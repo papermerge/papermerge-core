@@ -1,6 +1,8 @@
+import { useState, ChangeEvent } from 'react';
 import Form from 'react-bootstrap/Form';
 import { Button } from 'react-bootstrap';
 import type { ColoredTag } from "types";
+import LoadingButton from 'components/loading_button';
 
 import Tag from "./tag";
 
@@ -9,7 +11,7 @@ type Args = {
   onSwitchEditMode: (item: ColoredTag) => void;
   onRemove: (item: ColoredTag) => void;
   onCancel: () => void;
-  onUpdate: (item: ColoredTag) => void;
+  onUpdate: (item: ColoredTag, signal: AbortSignal) => void;
   edit_mode: boolean;
 }
 
@@ -31,6 +33,61 @@ export default function Row({
   onCancel,
   onUpdate
 }: Args) {
+  const [controller, setController] = useState<AbortController>(new AbortController());
+  const [updated_item, updateItem] = useState<ColoredTag>(item);
+  const [save_in_progress, setSaveInProgress] = useState(false);
+
+  const onChangeName = (event: ChangeEvent<HTMLInputElement>) => {
+    let value = event.currentTarget.value;
+
+    updateItem({
+      'id': updated_item.id,
+      'name': value,
+      'bg_color': updated_item.bg_color,
+      'fg_color': updated_item.fg_color,
+      'pinned': updated_item.pinned,
+      'description': updated_item.description,
+    });
+  }
+
+  const onCancelLocalHandler = () => {
+    updateItem(item); // reset tag to initial state
+    onCancel();
+  }
+
+  const onChangeBgColor = (event: ChangeEvent<HTMLInputElement>) => {
+    let value = event.currentTarget.value;
+
+    updateItem({
+      'id': updated_item.id,
+      'name': updated_item.name,
+      'bg_color': value,
+      'fg_color': updated_item.fg_color,
+      'pinned': updated_item.pinned,
+      'description': updated_item.description,
+    });
+  }
+
+  const onChangeFgColor = (event: ChangeEvent<HTMLInputElement>) => {
+    let value = event.currentTarget.value;
+
+    updateItem({
+      'id': updated_item.id,
+      'name': updated_item.name,
+      'bg_color': updated_item.bg_color,
+      'fg_color': value,
+      'pinned': updated_item.pinned,
+      'description': updated_item.description,
+    });
+  }
+
+  const onLocalSaveHandler = () => {
+    setSaveInProgress(true);
+    onUpdate(updated_item, controller.signal);
+    setSaveInProgress(false);
+    onCancel(); // cancels the edit mode from master component
+    setController(new AbortController());
+  }
 
   if (!edit_mode) {
     return (
@@ -55,31 +112,41 @@ export default function Row({
       </tr>
     );
   }
+  // edit mode from here on
 
   return (
     <tr>
-        <td className="text-left">
-          <Tag item={item} />
-          <Form.Control className='my-1' value={item.name} />
-          <div className='d-flex'>
-            <Form.Control type='color' value={item.bg_color} />
-            <Form.Control type='color' value={item.fg_color} />
-          </div>
-        </td>
-        <td className="text-center">
-          <Form.Check type='checkbox' />
-        </td>
-        <td className="text-center">
-          <Form.Control />
-        </td>
-        <td className="text-center">
-          <a href='#' onClick={() => onCancel()} className="m-1">
-            <Button variant='secondary' className='flat'>Cancel</Button>
-          </a>
-          <a href='#' onClick={() => onUpdate(item)} className="m-1">
-            <Button variant='success' className='flat'>Save</Button>
-          </a>
-        </td>
+      <td className="text-left">
+        <Tag item={updated_item} />
+        <Form.Control
+          className='my-1'
+          onChange={onChangeName}
+          value={updated_item.name} />
+        <div className='d-flex'>
+          <Form.Control
+            type='color'
+            onChange={onChangeBgColor}
+            value={updated_item.bg_color} />
+          <Form.Control
+            type='color'
+            onChange={onChangeFgColor}
+            value={updated_item.fg_color} />
+        </div>
+      </td>
+      <td className="text-center">
+        <Form.Check type='checkbox' />
+      </td>
+      <td className="text-center">
+        <Form.Control />
+      </td>
+      <td className="text-center">
+        <a href='#' onClick={() => onCancelLocalHandler()} className="m-1">
+          <Button variant='secondary' className='flat'>Cancel</Button>
+        </a>
+        <a href='#' onClick={() => onLocalSaveHandler()} className="m-1">
+          <LoadingButton title='Save' in_progress={save_in_progress} onClick={onLocalSaveHandler}/>
+        </a>
+      </td>
     </tr>
   );
 }

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Table, Button } from "react-bootstrap";
 
-
-import { fetcher } from "utils/fetcher";
+import { fetcher, fetcher_patch } from "utils/fetcher";
 import type {ColoredTagList, LoadableTagList, ColoredTag} from "types";
 
 import TagRow from "components/tags/row";
@@ -37,8 +36,12 @@ export default function Tags() {
     setCurrentEditId(null);
   }
 
-  const onUpdate = (item: ColoredTag) => {
-
+  const onUpdate = async (item: ColoredTag, signal: AbortSignal) => {
+    let response_tag: ColoredTag = await fetcher_patch<ColoredTag, ColoredTag>(
+      `/api/tags/${item.id}`,
+      item,
+      signal
+    );
   }
 
   useEffect(() => {

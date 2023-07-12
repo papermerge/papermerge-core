@@ -77,7 +77,7 @@ async function fetcher_upload(url: string, file: File) {
   );
 }
 
-async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<Output> {
+async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: AbortSignal): Promise<Output> {
   let headers = get_default_headers();
 
   return fetch(
@@ -85,7 +85,8 @@ async function fetcher_patch<Input, Output>(url: string, data: Input): Promise<O
     {
       method: "PATCH",
       headers: headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal: signal
     }
   ).then(res => res.json());
 }

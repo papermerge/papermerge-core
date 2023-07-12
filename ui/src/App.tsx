@@ -4,7 +4,7 @@ import 'styles/globals.scss';
 
 import React, { useState } from 'react';
 import SpecialFolder from "components/special_folder";
-import Tags from "components/tags/tags"
+import Tags from "components/tags/table"
 import Layout from 'components/layout';
 import { useMe } from 'hooks/me';
 import { SidebarItem } from 'types';

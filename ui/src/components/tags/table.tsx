@@ -16,6 +16,8 @@ export default function Tags() {
     data: null
   }
   const [show_add_item, setShowAddItem] = useState(false);
+  // ID of the tag which is currently in edit mode
+  const [current_edit_id, setCurrentEditId] = useState<string|null>(null);
   const [tag_list, setTagList] = useState<LoadableTagList>(initial_tag_list);
 
   const onAdd = () => {
@@ -23,12 +25,20 @@ export default function Tags() {
     setShowAddItem(!show_add_item);
   }
 
-  const onEdit = (item: ColoredTag) => {
-    console.log(`editing item ${item.name}`);
+  const onSwitchEditMode = (item: ColoredTag) => {
+    setCurrentEditId(item.id);
   }
 
   const onRemove = (item: ColoredTag) => {
     console.log(`removing item ${item.name}`);
+  }
+
+  const onCancel = () => {
+    setCurrentEditId(null);
+  }
+
+  const onUpdate = (item: ColoredTag) => {
+
   }
 
   useEffect(() => {
@@ -48,7 +58,14 @@ export default function Tags() {
   }
 
   const tags = tag_list?.data?.items.map(
-    i => <TagRow key={i.id} item={i} onEdit={onEdit} onRemove={onRemove} />
+    i => <TagRow
+          key={i.id}
+          item={i}
+          onSwitchEditMode={onSwitchEditMode}
+          edit_mode={current_edit_id == i.id}
+          onRemove={onRemove}
+          onCancel={onCancel}
+          onUpdate={onUpdate} />
   );
 
   return (
@@ -57,7 +74,7 @@ export default function Tags() {
         <i className="bi bi-plus-lg mx-1" />
         New
       </Button>
-      <Table striped bordered hover>
+      <Table striped bordered hover className="align-middle">
       <thead>
         <tr className="text-uppercase text-center">
           <th>Tag Name</th>

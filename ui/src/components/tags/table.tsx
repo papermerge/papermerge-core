@@ -3,6 +3,7 @@ import { Table, Button } from "react-bootstrap";
 
 import { fetcher } from "utils/fetcher";
 import type {ColoredTagList, ColoredTag} from "types";
+import { IColoredTag } from "types";
 
 import TagRow from "components/tags/row";
 import AddTagRow from "components/tags/add";
@@ -51,6 +52,16 @@ export default function TagsTable() {
     setCurrentEditId(null);
   }
 
+  const onAddRowCancel = () => {
+    setShowAddItem(false);
+  }
+
+  const onAddRowSave = (item: ColoredTag) => {
+    setTagList([...tag_list, item]);
+    setShowAddItem(false);
+    setCurrentEditId(null);
+  }
+
   const onPageClick = (page_number: number) => {
     setPageNumber(page_number);
   }
@@ -91,7 +102,9 @@ export default function TagsTable() {
         <i className="bi bi-plus-lg mx-1" />
         New
       </Button>
-      {show_add_item && <AddTagRow />}
+      {show_add_item && <AddTagRow
+                          onCancel={onAddRowCancel}
+                          onSave={onAddRowSave}/>}
       <Table bordered hover className="align-middle">
       <thead>
         <tr className="text-uppercase text-center">

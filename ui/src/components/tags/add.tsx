@@ -4,10 +4,12 @@ import { Form, Button } from "react-bootstrap";
 
 import LoadingButton from 'components/loading_button';
 import { DEFAULT_TAG_FG_COLOR, DEFAULT_TAG_BG_COLOR } from 'cconstants';
+import { fetcher_post } from 'utils/fetcher';
 
 
 import TagComponent from "./tag";
 import { IColoredTag } from "types";
+import type { ColoredTag as ColoredTagWithID }  from 'types';
 
 
 class ColoredTag implements IColoredTag {
@@ -16,37 +18,79 @@ class ColoredTag implements IColoredTag {
   fg_color: string = DEFAULT_TAG_FG_COLOR;
   bg_color: string = DEFAULT_TAG_BG_COLOR;
   pinned: boolean = false;
+
+  static from(tag: IColoredTag): IColoredTag {
+    let result: IColoredTag = new ColoredTag();
+
+    result.bg_color = tag.bg_color;
+    result.fg_color = tag.fg_color;
+    result.pinned = tag.pinned;
+    result.name = tag.name;
+    result.description = result.description;
+
+    return result;
+  }
 }
 
 
-export default function AddRow() {
+type Args = {
+  onSave: (item: ColoredTagWithID) => void;
+  onCancel: () => void;
+}
+
+
+export default function AddRow({onSave, onCancel}: Args) {
+  const [controller, setController] = useState<AbortController>(new AbortController());
   const [item, setItem] = useState<IColoredTag>(new ColoredTag());
   const [save_in_progress, setSaveInProgress] = useState(false);
 
   const onChangeName = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
-    item.name = value;
-    setItem({
-      'name': value,
-      'bg_color': item.bg_color,
-      'fg_color': item.fg_color,
-      'pinned': item.pinned,
-      'description': item.description,
-    });
+    let new_item =  ColoredTag.from(item);
+
+    new_item.name = value;
+
+    setItem(new_item);
   }
 
   const onChangeBgColor = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
+    let new_item: IColoredTag =  ColoredTag.from(item);
+
+    new_item.bg_color = value;
+
+    setItem(new_item);
   }
 
   const onChangeFgColor = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
+    let new_item: IColoredTag =  ColoredTag.from(item);
+
+    new_item.fg_color = value;
+
+    setItem(new_item);
   }
 
-  const onLocalUpdateHandler = () => {
+  const onLocalSaveHandler = () => {
+    console.log('onLocalSaveHandler triggered');
+    if (!save_in_progress) {
+      setSaveInProgress(true);
+
+      console.log('fetcher_post triggered')
+      fetcher_post<ColoredTag, ColoredTagWithID>(
+        `/api/tags/`,
+        item,
+        controller.signal
+      ).then((new_item: ColoredTagWithID) => {
+        setSaveInProgress(false);
+        setController(new AbortController());
+        onSave(new_item);
+      });
+    }
   }
 
   const onCancelLocalHandler = () => {
+    onCancel();
   }
 
   return (
@@ -78,12 +122,12 @@ export default function AddRow() {
         <a href='#' onClick={() => onCancelLocalHandler()} className="m-1">
           <Button variant='secondary' className='flat'>Cancel</Button>
         </a>
-        <a href='#' onClick={() => onLocalUpdateHandler()} className="m-1">
+        <a href='#' className="m-1">
           <LoadingButton
             title='Save'
             className='flat'
             in_progress={save_in_progress}
-            onClick={onLocalUpdateHandler} />
+            onClick={onLocalSaveHandler} />
         </a>
       </div>
     </div>

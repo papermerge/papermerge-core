@@ -5,10 +5,11 @@ import { fetcher } from "utils/fetcher";
 import type {ColoredTagList, ColoredTag} from "types";
 
 import TagRow from "components/tags/row";
+import AddTagRow from "components/tags/add";
 import Paginator from "components/paginator";
 
 
-export default function Tags() {
+export default function TagsTable() {
   const [show_add_item, setShowAddItem] = useState(false);
   // ID of the tag which is currently in edit mode
   const [current_edit_id, setCurrentEditId] = useState<string|null>(null);
@@ -90,6 +91,7 @@ export default function Tags() {
         <i className="bi bi-plus-lg mx-1" />
         New
       </Button>
+      {show_add_item && <AddTagRow />}
       <Table bordered hover className="align-middle">
       <thead>
         <tr className="text-uppercase text-center">

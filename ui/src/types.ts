@@ -135,6 +135,15 @@ export enum SidebarItem {
    tags = "tags"
 }
 
+
+export interface IColoredTag {
+  name: string;
+  description: string;
+  fg_color: string;
+  bg_color: string;
+  pinned: boolean;
+}
+
 export type ColoredTag = {
   id: string;
   name: string;

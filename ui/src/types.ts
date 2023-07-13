@@ -129,4 +129,41 @@ export type OcrStatusType = {
     status: OcrStatusEnum;
 }
 
-export type SpecialFolder = "inbox" | "home";
+export enum SidebarItem {
+   inbox = "inbox",
+   home = "home",
+   tags = "tags"
+}
+
+
+export interface IColoredTag {
+  name: string;
+  description: string;
+  fg_color: string;
+  bg_color: string;
+  pinned: boolean;
+}
+
+export type ColoredTag = {
+  id: string;
+  name: string;
+  description: string;
+  fg_color: string;
+  bg_color: string;
+  pinned: boolean;
+}
+
+
+export type ColoredTagList = {
+  page_size: number;
+  page_number: number;
+  num_pages: number;
+  items: Array<ColoredTag>;
+}
+
+
+export type LoadableTagList = {
+  is_loading: boolean;
+  error: string | null;
+  data: ColoredTagList | null;
+}

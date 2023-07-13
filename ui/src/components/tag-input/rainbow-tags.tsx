@@ -2,7 +2,7 @@ import Placeholder from 'react-bootstrap/Placeholder';
 import Form from 'react-bootstrap/Form';
 
 import useAutocompleteTags from 'hooks/autocomplete-tags';
-import ColoredTagInput from 'components/tags/colored-tag-input';
+import ColoredTagInput from 'components/tag-input/colored-tag-input';
 import type { ColoredTagType } from 'types';
 
 

@@ -3,7 +3,7 @@ import React from 'react';
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import SubmitButton from 'components/submit_button';
+import LoadingButton from 'components/loading_button';
 
 type Args = {
   children: React.ReactNode;
@@ -69,7 +69,7 @@ const GenericModal = ({
         <Button variant='secondary' onClick={handleCancel}>
             Cancel
         </Button>
-        <SubmitButton
+        <LoadingButton
           in_progress={inProgress}
           title={submit_button_title}
           onClick={handleSubmit} />

@@ -6,13 +6,15 @@ type Args = {
   in_progress: boolean;
   title?: string;
   onClick: () => void;
+  className?: string;
 }
 
 
 function SubmitButton({
   in_progress,
   title,
-  onClick
+  onClick,
+  className
 }: Args) {
 
   if (!title) {
@@ -20,12 +22,12 @@ function SubmitButton({
   }
 
   if (in_progress) {
-    return <Button onClick={onClick} disabled={true}>
+    return <Button onClick={onClick} disabled={true} className={className}>
         <Spinner size="sm" />
     </Button>;
   }
 
-  return <Button onClick={onClick}>{title}</Button>;
+  return <Button onClick={onClick} className={className}>{title}</Button>;
 }
 
 

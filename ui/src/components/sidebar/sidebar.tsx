@@ -1,27 +1,26 @@
 import { useState } from 'react';
 
+import IconHouse from 'components/icons/house';
+import IconInbox from 'components/icons/inbox';
+import TagIcon from 'components/icons/tag';
+import { SidebarItem } from 'types';
+
 import Nav from './nav';
 import NavItem from './nav_item';
-import IconHouse from '../icons/house';
-import IconInbox from '../icons/inbox';
-import { SpecialFolder } from 'types';
 
-
-type CurrentItemEnum = "inbox" | "home";
 
 type Args = {
   folded: boolean;
-  onSpecialFolderChange: (folder: SpecialFolder) => void;
+  onSidebarItemChange: (item: SidebarItem) => void;
 }
 
 type SidebarArgs = {
-  onClickInbox: () => void;
-  onClickHome: () => void;
-  current: CurrentItemEnum;
+  onClick: (item: SidebarItem) => void;
+  current: SidebarItem;
 }
 
 
-function class_name(item: CurrentItemEnum, current: CurrentItemEnum): string {
+function class_name(item: SidebarItem, current: SidebarItem): string {
   /**
    * Returns the css class name of the active link
    */
@@ -29,7 +28,7 @@ function class_name(item: CurrentItemEnum, current: CurrentItemEnum): string {
 }
 
 
-function SidebarOpened({onClickHome, onClickInbox, current}: SidebarArgs) {
+function SidebarOpened({onClick, current}: SidebarArgs) {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2 p-2' href="#">
@@ -39,13 +38,18 @@ function SidebarOpened({onClickHome, onClickInbox, current}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className={class_name('home', current)}>
+          <a href="#" onClick={() => onClick(SidebarItem.home)} className={class_name(SidebarItem.home, current)}>
             <IconHouse /><span className='ms-2'>Home</span>
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className={class_name('inbox', current)}>
+          <a href="#" onClick={() => onClick(SidebarItem.inbox)} className={class_name(SidebarItem.inbox, current)}>
             <IconInbox/><span className='ms-2'>Inbox</span>
+          </a>
+        </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(SidebarItem.tags)} className={class_name(SidebarItem.tags, current)}>
+           <TagIcon /><span className='ms-2'>Tags</span>
           </a>
         </NavItem>
       </Nav>
@@ -54,7 +58,7 @@ function SidebarOpened({onClickHome, onClickInbox, current}: SidebarArgs) {
 }
 
 
-function SidebarFolded({onClickHome, onClickInbox, current}: SidebarArgs) {
+function SidebarFolded({onClick, current}: SidebarArgs) {
   return (
     <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
@@ -63,13 +67,18 @@ function SidebarFolded({onClickHome, onClickInbox, current}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={onClickHome} className={class_name('home', current)}>
+          <a href="#" onClick={() => onClick(SidebarItem.home)} className={class_name(SidebarItem.home, current)}>
             <IconHouse />
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={onClickInbox} className={class_name('inbox', current)}>
+          <a href="#" onClick={() => onClick(SidebarItem.inbox)} className={class_name(SidebarItem.inbox, current)}>
             <IconInbox />
+          </a>
+        </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(SidebarItem.tags)} className={class_name(SidebarItem.tags, current)}>
+           <TagIcon />
           </a>
         </NavItem>
       </Nav>
@@ -78,33 +87,26 @@ function SidebarFolded({onClickHome, onClickInbox, current}: SidebarArgs) {
 }
 
 
-export default function Sidebar({folded, onSpecialFolderChange}: Args) {
+export default function Sidebar({folded, onSidebarItemChange}: Args) {
   /*
   Sidebar can be folded or opened.
   */
-  const [current, setCurrent] = useState<CurrentItemEnum>("home");
+  const [current, setCurrent] = useState<SidebarItem>(SidebarItem.home);
 
-  const onClickHome = () => {
-    onSpecialFolderChange("home");
-    setCurrent("home");
-  }
-
-  const onClickInbox = () => {
-    onSpecialFolderChange("inbox");
-    setCurrent("inbox");
+  const onClickHandler = (item: SidebarItem) => {
+    onSidebarItemChange(item);
+    setCurrent(item);
   }
 
   if (folded) {
     return <SidebarFolded
       current={current}
-      onClickHome={onClickHome}
-      onClickInbox={onClickInbox} />;
+      onClick={onClickHandler} />;
   }
 
   return (
     <SidebarOpened
       current={current}
-      onClickHome={onClickHome}
-      onClickInbox={onClickInbox} />
+      onClick={onClickHandler} />
   );
 }

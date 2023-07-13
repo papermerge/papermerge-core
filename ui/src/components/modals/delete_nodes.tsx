@@ -14,7 +14,7 @@ type Args = {
 }
 
 
-async function delete_nodes(node_ids: string[]): Promise<string[]> {
+async function delete_nodes(node_ids: string[]): Promise<string[]|Response> {
   return fetcher_delete<string[], string[]>('/api/nodes/', node_ids);
 }
 

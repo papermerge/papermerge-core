@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import React from 'react';
 
-import RainbowTags from 'components/tags/rainbow-tags';
+import RainbowTags from 'components/tag-input/rainbow-tags';
 import GenericModal from './generic_modal';
 
 import { get_default_headers, fetcher_post } from 'utils/fetcher';

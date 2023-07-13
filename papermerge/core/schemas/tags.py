@@ -2,12 +2,15 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from papermerge.core.constants import (DEFAULT_TAG_BG_COLOR,
+                                       DEFAULT_TAG_FG_COLOR)
+
 
 class Tag(BaseModel):
     id: UUID
     name: str
-    bg_color: str = '#c41fff'
-    fg_color: str = '#FFFFF'
+    bg_color: str = DEFAULT_TAG_BG_COLOR
+    fg_color: str = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
 
@@ -27,8 +30,8 @@ class Tag(BaseModel):
 
 class CreateTag(BaseModel):
     name: str
-    bg_color: str = '#c41fff'
-    fg_color: str = '#FFFFF'
+    bg_color: str = DEFAULT_TAG_BG_COLOR
+    fg_color: str = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
 

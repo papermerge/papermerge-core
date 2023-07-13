@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ColoredTag from 'components/tags/colored-tag';
+import ColoredTag from 'components/tag-input/colored-tag';
 import type { ColoredTagType } from 'types';
 
 

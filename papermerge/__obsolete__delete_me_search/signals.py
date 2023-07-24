@@ -1,18 +1,13 @@
 import logging
-from django.db import models
 
+from django.db import models
 from haystack import signals
 from haystack.utils import get_identifier
 
-from papermerge.core.models import (
-    DocumentVersion,
-    Document,
-    Folder,
-    BaseTreeNode
-)
+from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
+                                    Folder)
 from papermerge.core.signal_definitions import node_post_move
 from papermerge.search.tasks import update_index
-
 
 logger = logging.getLogger(__name__)
 

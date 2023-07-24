@@ -1,4 +1,5 @@
 from haystack import indexes
+
 from papermerge.core.models import Document, Folder
 
 

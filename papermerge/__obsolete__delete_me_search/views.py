@@ -1,20 +1,13 @@
 from django.db.models import QuerySet
-
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from haystack.query import SQ, SearchQuerySet
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
 
-from drf_spectacular.utils import (
-    extend_schema,
-    OpenApiParameter
-)
-from haystack.query import SearchQuerySet, SQ
 from papermerge.core.views.mixins import RequireAuthMixin
+from papermerge.search.constants import TAGS_OP_ALL, TAGS_OP_ANY
 from papermerge.search.serializers import SearchResultSerializer
-from papermerge.search.constants import (
-    TAGS_OP_ALL,
-    TAGS_OP_ANY
-)
 
 
 class SearchView(RequireAuthMixin, GenericAPIView):

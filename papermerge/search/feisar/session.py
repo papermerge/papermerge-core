@@ -1,6 +1,7 @@
 import json
 
 import xapian
+from pydantic import BaseModel
 
 from .field import Field
 from .search import SearchQuery
@@ -15,7 +16,7 @@ class Session:
         self._queryparser.set_stemmer(xapian.Stem(language))
         self._queryparser.set_stemming_strategy(self._queryparser.STEM_SOME)
 
-    def add(self, entity):
+    def add(self, entity: BaseModel):
         doc = xapian.Document()
         self._termgenerator.set_document(doc)
 

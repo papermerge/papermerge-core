@@ -84,7 +84,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'dynamic_preferences',
     'dynamic_preferences.users.apps.UserPreferencesConfig',
-    'haystack',
 ]
 
 # include elasticsearch apps only if PAPERMERGE_ELASTICSEARCH_HOSTS

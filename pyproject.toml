@@ -75,13 +75,7 @@ configula = "~0.5"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.2"
 psycopg2-binary = "^2.9.2"
-daphne = "^3.0.2"
 django-rest-knox = "^4.2.0"
-elasticsearch = ">=7,<8"
-django-haystack = "^3.2.1"
-# This is NOT a typo! It is indeed yapian-haystack instead of xapian-haystack.
-# For details see https://github.com/ciur/papermerge/issues/486
-yapian-haystack = "^3.1.0"  # It is indeed "yapian", not "xapian"!
 pdf2image = "^1.16.0"
 fastapi = "^0.99.0"
 uvicorn = "^0.22.0"

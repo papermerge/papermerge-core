@@ -35,3 +35,4 @@ whoosh_index
 .tar.gz
 .zip
 media_root/
+search_index/

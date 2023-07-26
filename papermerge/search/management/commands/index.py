@@ -18,31 +18,33 @@ class Command(BaseCommand):
 
         for node in BaseTreeNode.objects.all():
             index_entity = None
-            if node.is_document():
+            if not node.parent_id:
+                continue
+
+            if node.is_document:
                 doc = node.document
                 last_ver = doc.versions.last()
+
                 for page in last_ver.pages.all():
                     index_entity = IndexEntity(
-                        id=page.id,
+                        id=str(page.id),
                         title=node.title,
-                        user_id=node.user_id,
-                        tags=node.tags,
-                        document_id=node.document.id,
-                        document_version_id=last_ver.id,
-                        index_entity=EntityType.page,
+                        user_id=str(node.user_id),
+                        document_id=str(node.document.id),
+                        document_version_id=str(last_ver.id),
                         page_number=page.number,
                         page_count=page.page_count,
                         text=page.text,
-                        parent_id=node.parent_id
+                        parent_id=str(node.parent_id),
+                        entity_type=EntityType.page
                     )
             else:  # is folder
                 index_entity = IndexEntity(
-                    id=node.id,
+                    id=str(node.id),
                     title=node.title,
-                    user_id=node.user_id,
+                    user_id=str(node.user_id),
                     entity_type=EntityType.folder,
-                    tags=node.tags,
-                    parent_id=node.parent_id
+                    parent_id=str(node.parent_id)
                 )
 
             if index_entity:

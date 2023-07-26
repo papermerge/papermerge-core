@@ -1,4 +1,5 @@
 import json
+import typing
 
 import xapian
 from pydantic import BaseModel
@@ -23,16 +24,17 @@ class Session:
         primary_key_name = None
 
         for name, field in entity.model_fields.items():
-            if field.annotation == str:
+            if field.annotation in (str, typing.Optional[str]):
                 value = getattr(entity, name)
-                self._termgenerator.index_text(
-                    value,
-                    1,
-                    name  # the prefix
-                )
-                # index field without prefix for general search
-                self._termgenerator.index_text(value)
-                self._termgenerator.increase_termpos()
+                if value:
+                    self._termgenerator.index_text(
+                        value,
+                        1,
+                        name  # the prefix
+                    )
+                    # index field without prefix for general search
+                    self._termgenerator.index_text(value)
+                    self._termgenerator.increase_termpos()
 
             if isinstance(field.default, Field) and field.default.primary_key:
                 primary_key_name = name

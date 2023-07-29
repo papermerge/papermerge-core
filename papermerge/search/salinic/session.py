@@ -55,11 +55,15 @@ class Session:
             if isinstance(field.default, Field) and field.default.primary_key:
                 primary_key_name = name
 
+        doc.set_data(
+            json.dumps(entity.model_dump())
+        )
+
         if not primary_key_name:
             raise ValueError("No primary field defined")
 
         identifier = getattr(entity, primary_key_name)
-        idterm = f"QTKK{identifier}"
+        idterm = f"Q{identifier}"
 
         self._engine._db.replace_document(idterm, doc)
 

@@ -9,7 +9,7 @@ FOLDER = 'folder'
 PAGE = 'page'
 
 
-class Page(Schema):
+class IndexEntity(Schema):
     """Index entity
 
     Documents are indexed by page. Note that we place in same index

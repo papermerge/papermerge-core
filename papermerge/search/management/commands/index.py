@@ -3,8 +3,7 @@ from django.core.management.base import BaseCommand
 
 from papermerge.core.models import BaseTreeNode
 from papermerge.search.salinic import Session, create_engine
-from papermerge.search.schema import FOLDER, PAGE
-from papermerge.search.schema import Page as IndexEntity
+from papermerge.search.schema import FOLDER, PAGE, IndexEntity
 
 
 class Command(BaseCommand):

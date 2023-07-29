@@ -4,7 +4,7 @@ import typing
 import xapian
 from pydantic import BaseModel
 
-from .field import Field
+from .field import Field, KeywordField, TextField
 from .search import SearchQuery
 
 
@@ -26,28 +26,36 @@ class Session:
         for name, field in entity.model_fields.items():
             if field.annotation in (str, typing.Optional[str]):
                 value = getattr(entity, name)
-                if value:
+                if isinstance(value, Field):
+                    insert_value = value.default
+                else:
+                    insert_value = value
+                if not insert_value:
+                    continue
+
+                if isinstance(field.default, TextField):
                     self._termgenerator.index_text(
-                        value,
+                        insert_value,
                         1,
-                        name  # the prefix
+                        name.upper()  # the prefix
                     )
                     # index field without prefix for general search
-                    self._termgenerator.index_text(value)
+                    self._termgenerator.index_text(insert_value)
                     self._termgenerator.increase_termpos()
+                elif isinstance(field.default, KeywordField):
+                    doc.add_boolean_term(
+                        name.upper() + insert_value.lower()
+                    )
 
             if isinstance(field.default, Field) and field.default.primary_key:
                 primary_key_name = name
-
-        doc.set_data(
-            json.dumps(entity.model_dump())
-        )
 
         if not primary_key_name:
             raise ValueError("No primary field defined")
 
         identifier = getattr(entity, primary_key_name)
         idterm = f"Q{identifier}"
+
         self._engine._db.replace_document(idterm, doc)
 
     def exec(self, sq: SearchQuery):

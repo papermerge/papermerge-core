@@ -2,8 +2,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from papermerge.core.models import BaseTreeNode
-from papermerge.search.feisar import Session, create_engine
-from papermerge.search.schema import EntityType
+from papermerge.search.salinic import Session, create_engine
+from papermerge.search.schema import FOLDER, PAGE
 from papermerge.search.schema import Page as IndexEntity
 
 
@@ -36,14 +36,14 @@ class Command(BaseCommand):
                         page_count=page.page_count,
                         text=page.text,
                         parent_id=str(node.parent_id),
-                        entity_type=EntityType.page
+                        entity_type=PAGE
                     )
             else:  # is folder
                 index_entity = IndexEntity(
                     id=str(node.id),
                     title=node.title,
                     user_id=str(node.user_id),
-                    entity_type=EntityType.folder,
+                    entity_type=FOLDER,
                     parent_id=str(node.parent_id)
                 )
 

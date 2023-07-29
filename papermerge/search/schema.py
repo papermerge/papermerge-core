@@ -1,16 +1,15 @@
-from enum import Enum
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
-from .feisar.field import Field
+from .salinic.field import KeywordField, NumericField, TextField
+from .salinic.schema import Schema
+
+FOLDER = 'folder'
+PAGE = 'page'
 
 
-class EntityType(str, Enum):
-    page = 'page'
-    folder = 'folder'
-
-
-class Page(BaseModel):
+class Page(Schema):
     """Index entity
 
     Documents are indexed by page. Note that we place in same index
@@ -19,14 +18,16 @@ class Page(BaseModel):
     """
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    id: str = Field(primary_key=True)  # page id | node_id
-    document_id: str | None = None  # document ID to whom this page belongs
-    document_version_id: str | None = None  # ID of the document version
-    user_id: str
-    parent_id: str
-    title: str  # document or folder title
-    text: str | None = None  # text is None in case folder entity
-    entity_type: EntityType  # Folder | Page
-    #  tags: MultiValueField
-    page_number: int | None = None  # None in case of folder entity
-    page_count: int | None = None  # None in case of folder entity
+    id: str = KeywordField(primary_key=True)  # page id | node_id
+    # document ID to whom this page belongs
+    document_id: Optional[str] = KeywordField()
+    # ID of the document version
+    document_version_id: Optional[str] = KeywordField()
+    user_id: str = KeywordField()
+    parent_id: str = KeywordField()
+    title: str = TextField()  # document or folder title
+    text: Optional[str] = TextField()  # text is None in case folder entity
+    entity_type: str = KeywordField()  # Folder | Page
+    tags: list[str] = KeywordField()
+    page_number: Optional[int] = NumericField()  # None in case of folder entity
+    page_count: Optional[int] = NumericField()  # None in case of folder entity

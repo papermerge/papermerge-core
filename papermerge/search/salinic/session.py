@@ -4,7 +4,7 @@ import typing
 import xapian
 from pydantic import BaseModel
 
-from .field import Field, KeywordField, TextField
+from .field import Field, IdField, KeywordField, TextField
 from .search import SearchQuery
 
 
@@ -22,6 +22,7 @@ class Session:
         self._termgenerator.set_document(doc)
 
         primary_key_name = None
+        position = 0
 
         for name, field in entity.model_fields.items():
             if field.annotation in (str, typing.Optional[str]):
@@ -46,6 +47,10 @@ class Session:
                     doc.add_boolean_term(
                         name.upper() + insert_value.lower()
                     )
+                elif isinstance(field.default, IdField):
+                    doc.add_value(position, insert_value)
+
+                position += 1
 
             if isinstance(field.default, Field) and field.default.primary_key:
                 primary_key_name = name
@@ -54,7 +59,7 @@ class Session:
             raise ValueError("No primary field defined")
 
         identifier = getattr(entity, primary_key_name)
-        idterm = f"Q{identifier}"
+        idterm = f"QTKK{identifier}"
 
         self._engine._db.replace_document(idterm, doc)
 

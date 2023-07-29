@@ -15,3 +15,7 @@ class TextField(Field):
 
 class NumericField(Field):
     pass
+
+
+class IdField(Field):
+    pass

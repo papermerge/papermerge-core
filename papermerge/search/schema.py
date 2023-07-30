@@ -23,11 +23,15 @@ class IndexEntity(Schema):
     document_id: Optional[str] = IdField()
     # ID of the document version
     document_version_id: Optional[str] = IdField()
-    user_id: str = IdField()
-    parent_id: str = IdField()
+    user_id: str
+    parent_id: str
     title: str = TextField()  # document or folder title
     text: Optional[str] = TextField()  # text is None in case folder entity
     entity_type: str = KeywordField()  # Folder | Page
-    tags: list[str] = KeywordField()
+    tags: list[str] | None = KeywordField()
     page_number: Optional[int] = NumericField()  # None in case of folder entity
     page_count: Optional[int] = NumericField()  # None in case of folder entity
+
+    def __str__(self):
+        return f'IndexEntity(id={self.id}, title={self.title}, '\
+            f'type={self.entity_type})'

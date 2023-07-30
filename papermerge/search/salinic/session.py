@@ -22,7 +22,6 @@ class Session:
         self._termgenerator.set_document(doc)
 
         primary_key_name = None
-        position = 0
 
         for name, field in entity.model_fields.items():
             if field.annotation in (str, typing.Optional[str]):
@@ -48,9 +47,17 @@ class Session:
                         name.upper() + insert_value.lower()
                     )
                 elif isinstance(field.default, IdField):
-                    doc.add_value(position, insert_value)
-
-                position += 1
+                    id_as_term = insert_value.replace('-', '')
+                    doc.add_boolean_term(
+                        name.upper() + id_as_term
+                    )
+                    self._termgenerator.index_text(
+                        id_as_term,
+                        1,
+                        name.upper()  # the prefix
+                    )
+                    self._termgenerator.index_text(id_as_term)
+                    self._termgenerator.increase_termpos()
 
             if isinstance(field.default, Field) and field.default.primary_key:
                 primary_key_name = name

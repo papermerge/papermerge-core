@@ -16,10 +16,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         querystring = options.get('q')
 
+        if querystring:
+            if len(querystring.strip()) == 36:  # if query is just an UUID
+                querystring = querystring.replace('-', '').lower()
+
         engine = create_engine(settings.SEARCH_URL)
         session = Session(engine)
 
         sq = Search(IndexEntity).query(querystring)
 
         for entity in session.exec(sq):
-            self.stdout.write(entity)
+            self.stdout.write(f'{entity}')

@@ -12,7 +12,7 @@ def test_documents(user: User):
         user_id=user.pk,
         parent=user.home_folder
     )
-    pydoc: PyDocument = PyDocument.from_orm(doc)
+    pydoc: PyDocument = PyDocument.model_validate(doc)
 
     assert pydoc.title == "invoice.pdf"
     assert len(pydoc.versions) == 1

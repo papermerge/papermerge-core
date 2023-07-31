@@ -85,7 +85,7 @@ class Document(BaseModel):
         return f"/api/thumbnails/{values['id']}"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CreateDocument(BaseModel):

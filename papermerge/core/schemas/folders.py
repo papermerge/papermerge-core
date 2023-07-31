@@ -1,8 +1,8 @@
-from typing import List, Tuple
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal, Tuple
 from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class Folder(BaseModel):
@@ -16,7 +16,7 @@ class Folder(BaseModel):
     breadcrumb: List[Tuple[UUID, str]]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CreateFolder(BaseModel):

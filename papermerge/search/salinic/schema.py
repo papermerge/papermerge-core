@@ -1,9 +1,11 @@
-from pydantic import BaseModel, model_serializer
+from pydantic import BaseModel, ConfigDict, model_serializer
 
 from .field import Field
 
 
 class Schema(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     @model_serializer()
     def model_ser(self):
         result = {}

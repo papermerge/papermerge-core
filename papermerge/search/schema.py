@@ -1,7 +1,5 @@
 from typing import Optional
 
-from pydantic import ConfigDict
-
 from .salinic.field import IdField, KeywordField, NumericField, TextField
 from .salinic.schema import Schema
 
@@ -16,8 +14,6 @@ class IndexEntity(Schema):
     both folders and documents, and because the main index entity is page -
     we end up having in index two types of entities: folders and pages.
     """
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
     id: str = IdField(primary_key=True)  # page id | node_id
     # document ID to whom this page belongs
     document_id: Optional[str] = IdField()

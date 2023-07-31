@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from salinic import Search, Session, create_engine
 
-from papermerge.search.salinic import Search, Session, create_engine
 from papermerge.search.schema import IndexEntity
 
 

@@ -4,7 +4,7 @@ from typing import Literal, Tuple
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, FieldValidationInfo, field_validator
 
 from papermerge.core.types import OCRStatusEnum
 
@@ -18,13 +18,15 @@ class Page(BaseModel):
     svg_url: str | None
     jpg_url: str | None
 
-    @validator("svg_url")
-    def svg_url_value(cls, value, values, config, field):
-        return f"/api/pages/{values['id']}/svg"
+    @field_validator("svg_url")
+    @classmethod
+    def svg_url_value(cls, value, info: FieldValidationInfo) -> str:
+        return f"/api/pages/{info.data['id']}/svg"
 
-    @validator("jpg_url")
-    def jpg_url_value(cls, value, values, config, field):
-        return f"/api/pages/{values['id']}/jpg"
+    @field_validator("jpg_url")
+    @classmethod
+    def jpg_url_value(cls, value, info: FieldValidationInfo):
+        return f"/api/pages/{info.data['id']}/jpg"
 
     class Config:
         orm_mode = True
@@ -42,15 +44,17 @@ class DocumentVersion(BaseModel):
     download_url: str | None = None
     pages: list[Page] = []
 
-    @validator("pages", pre=True)
-    def get_all_from_manager(cls, v: object) -> object:
-        if isinstance(v, BaseManager):
-            return list(v.all())
-        return v
+    @field_validator("pages")
+    @classmethod
+    def get_all_from_manager(cls, value, info: FieldValidationInfo) -> object:
+        if isinstance(value, BaseManager):
+            return list(value.all())
+        return value
 
-    @validator("download_url")
-    def download_url_value(cls, value, values, config, field):
-        return f"/api/document-versions/{values['id']}/download"
+    @field_validator("download_url")
+    @classmethod
+    def download_url_value(cls, value, info: FieldValidationInfo):
+        return f"/api/document-versions/{info.data['id']}/download"
 
     class Config:
         orm_mode = True
@@ -70,13 +74,13 @@ class Document(BaseModel):
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: str | None = None
 
-    @validator("versions", pre=True)
+    @field_validator("versions")
     def get_all_from_manager(cls, v: object) -> object:
         if isinstance(v, BaseManager):
             return list(v.all())
         return v
 
-    @validator('thumbnail_url', pre=True, always=True)
+    @field_validator('thumbnail_url')
     def thumbnail_url_validator(cls, value, values):
         return f"/api/thumbnails/{values['id']}"
 

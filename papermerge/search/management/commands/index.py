@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from salinic import Session, create_engine
 
 from papermerge.core.models import BaseTreeNode
-from papermerge.search.salinic import Session, create_engine
 from papermerge.search.schema import FOLDER, PAGE, IndexEntity
 
 

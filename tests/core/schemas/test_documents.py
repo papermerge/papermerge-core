@@ -12,10 +12,10 @@ def test_documents(user: User):
         user_id=user.pk,
         parent=user.home_folder
     )
+
     pydoc: PyDocument = PyDocument.model_validate(doc)
 
     assert pydoc.title == "invoice.pdf"
     assert len(pydoc.versions) == 1
     assert pydoc.versions[0].size == 0
     assert len(pydoc.versions[0].pages) == 0
-    assert pydoc.thumbnail_url

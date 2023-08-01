@@ -15,7 +15,7 @@ def test_pynode_from_document(user: User):
         user_id=user.pk,
         parent=user.home_folder
     )
-    pynode = PyNode.from_orm(doc)
+    pynode = PyNode.model_validate(doc)
 
     assert pynode.title == "invoice.pdf"
     assert pynode.ctype == NodeType.document
@@ -30,7 +30,7 @@ def test_pynode_from_basetreenode_with_ocr_status_unkown(user: User):
     )
     node = BaseTreeNode.objects.get(title='invoice.pdf')
 
-    pynode = PyNode.from_orm(node)
+    pynode = PyNode.model_validate(node)
 
     assert pynode.title == "invoice.pdf"
     assert pynode.ctype == NodeType.document
@@ -46,7 +46,7 @@ def test_pynode_from_basetreenode_with_ocr_status_success(user: User):
         ocr_status=OCRStatusEnum.success
     )
     node = BaseTreeNode.objects.get(title='invoice.pdf')
-    pynode = PyNode.from_orm(node)
+    pynode = PyNode.model_validate(node)
 
     assert pynode.title == "invoice.pdf"
     assert pynode.ctype == NodeType.document

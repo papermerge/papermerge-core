@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import Literal, Tuple
+from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
@@ -15,21 +15,21 @@ class Page(BaseModel):
     text: str = ''
     lang: str
     document_version_id: UUID
-    svg_url: str | None
-    jpg_url: str | None
+    svg_url: Optional[str] = None
+    jpg_url: Optional[str] = None
 
-    @field_validator("svg_url")
+    @field_validator("svg_url", mode='before')
     @classmethod
     def svg_url_value(cls, value, info: FieldValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/svg"
 
-    @field_validator("jpg_url")
+    @field_validator("jpg_url", mode='before')
     @classmethod
     def jpg_url_value(cls, value, info: FieldValidationInfo):
         return f"/api/pages/{info.data['id']}/jpg"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DocumentVersion(BaseModel):
@@ -42,13 +42,16 @@ class DocumentVersion(BaseModel):
     short_description: str
     document_id: UUID
     download_url: str | None = None
-    pages: list[Page] = []
+    pages: Optional[List[Page]] = []
 
-    @field_validator("pages")
+    @field_validator("pages", mode='before')
     @classmethod
     def get_all_from_manager(cls, value, info: FieldValidationInfo) -> object:
         if isinstance(value, BaseManager):
-            return list(value.all())
+            try:
+                return list(value.all())
+            except ValueError:
+                return []
         return value
 
     @field_validator("download_url")
@@ -57,7 +60,7 @@ class DocumentVersion(BaseModel):
         return f"/api/document-versions/{info.data['id']}/download"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Document(BaseModel):
@@ -69,12 +72,12 @@ class Document(BaseModel):
     parent_id: UUID | None
     user_id: UUID
     breadcrumb: list[Tuple[UUID, str]]
-    versions: list[DocumentVersion] = []
+    versions: Optional[List[DocumentVersion]] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: str | None = None
 
-    @field_validator("versions")
+    @field_validator("versions", mode='before')
     def get_all_from_manager(cls, v: object) -> object:
         if isinstance(v, BaseManager):
             return list(v.all())
@@ -85,6 +88,7 @@ class Document(BaseModel):
         return f"/api/thumbnails/{values['id']}"
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 

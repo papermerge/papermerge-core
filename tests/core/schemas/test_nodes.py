@@ -4,7 +4,7 @@ from papermerge.core.models import BaseTreeNode, Document, User
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import NodeType
 from papermerge.core.types import OCRStatusEnum
-from papermerge.test.baker_recipes import document_recipe
+from papermerge.test.baker_recipes import document_recipe, node_recipe
 
 
 @pytest.mark.django_db
@@ -52,3 +52,14 @@ def test_pynode_from_basetreenode_with_ocr_status_success(user: User):
     assert pynode.ctype == NodeType.document
     assert pynode.document.ocr_status == OCRStatusEnum.success
     assert pynode.document.thumbnail_url == f"/api/thumbnails/{doc.id}"
+
+
+@pytest.mark.django_db
+def test_pynode_model_validate_with_tags(user: User):
+    node = node_recipe.make(ctype='folder')
+
+    node.tags.set(['one', 'two'], tag_kwargs={"user": user})
+
+    pynode = PyNode.model_validate(node)
+
+    assert {tag.name for tag in pynode.tags} == {'one', 'two'}

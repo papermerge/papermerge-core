@@ -52,7 +52,7 @@ def create_tag(
             detail="Tag already exists"
         )
 
-    return schemas.Tag.from_orm(tag)
+    return schemas.Tag.model_validate(tag)
 
 
 @router.delete("/{tag_id}", status_code=204)
@@ -88,4 +88,4 @@ def update_tag(
 
     qs.update(**tag.dict(exclude_unset=True))
 
-    return schemas.Tag.from_orm(qs.first())
+    return schemas.Tag.model_validate(qs.first())

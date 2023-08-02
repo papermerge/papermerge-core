@@ -19,7 +19,7 @@ class Tag(BaseModel):
     fg_color: str = '#FFFFF'
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         schema_extra = {
             "example": [
                 {

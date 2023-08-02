@@ -72,6 +72,7 @@ class UsersViewPermissionsTestCase(TestCase):
 
 @pytest.mark.django_db(transaction=True)
 def test_get_current_user(auth_api_client: AuthTestClient):
+    """Check that /users/me returns a valid user (when authenticated)"""
     response = auth_api_client.get('/users/me')
 
     assert response.status_code == 200, response.content

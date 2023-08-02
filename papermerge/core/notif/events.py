@@ -9,7 +9,7 @@ class State(str, Enum):
     received = 'RECEIVED'
     started = 'STARTED'
     success = 'SUCCESS'
-    failed = 'FAILED'
+    failed = 'FAILURE'
 
 
 class EventName(str, Enum):

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from .salinic.field import IdField, KeywordField, NumericField, TextField
-from .salinic.schema import Schema
+from salinic.field import IdField, KeywordField, NumericField, TextField
+from salinic.schema import Schema
 
 FOLDER = 'folder'
 PAGE = 'page'

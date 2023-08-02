@@ -2,7 +2,9 @@ import pytest
 from django.urls import reverse
 from model_bakery import baker
 
+from papermerge.core.schemas import User as PyUser
 from papermerge.test import TestCase, perms
+from papermerge.test.types import AuthTestClient
 
 
 @pytest.mark.skip()
@@ -66,3 +68,11 @@ class UsersViewPermissionsTestCase(TestCase):
         baker.make('core.user')
         response = self.client.get(reverse('user-list'))
         assert response.status_code == 200
+
+
+@pytest.mark.django_db(transaction=True)
+def test_get_current_user(auth_api_client: AuthTestClient):
+    response = auth_api_client.get('/users/me')
+
+    assert response.status_code == 200, response.content
+    assert PyUser.model_validate(response.json())

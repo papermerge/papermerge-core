@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
 from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class User(BaseModel):
@@ -13,4 +14,4 @@ class User(BaseModel):
     inbox_folder_id: UUID | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

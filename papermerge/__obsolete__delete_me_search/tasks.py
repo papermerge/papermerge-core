@@ -1,12 +1,10 @@
 import logging
 
-from django.core.exceptions import ImproperlyConfigured
-from django.apps import apps
-
 from celery import shared_task
+from django.apps import apps
+from django.core.exceptions import ImproperlyConfigured
+from haystack import connection_router, connections
 from haystack.exceptions import NotHandled as IndexNotFoundException
-from haystack import connections, connection_router
-
 
 logger = logging.getLogger(__name__)
 

@@ -203,7 +203,7 @@ def assign_node_tags(
 
     node.tags.set(tags, tag_kwargs={"user": user})
 
-    return PyNode.from_orm(node)
+    return PyNode.model_validate(node)
 
 
 @router.patch("/{node_id}/tags")

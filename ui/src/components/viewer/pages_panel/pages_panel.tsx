@@ -8,7 +8,7 @@ type Args = {
 export function PagesPanel({pages}: Args) {
   return (
     <div className='pages-panel flex-grow-1'>
-      {pages.map(page => <Page page={page} />)}
+      {pages.map(page => <Page key={page.id} page={page} />)}
     </div>
   );
 }

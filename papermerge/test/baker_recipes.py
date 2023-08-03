@@ -3,16 +3,18 @@ from pathlib import PurePath
 from model_bakery import baker
 from model_bakery.recipe import Recipe
 
-from papermerge.core.models import Document, DocumentVersion, Folder, Tag, User
+from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
+                                    Folder, Page, Tag, User)
 
 folder_recipe = Recipe(Folder)
 user_recipe = Recipe(User)
 document_version_recipe = Recipe(DocumentVersion)
+page_recipe = Recipe(Page)
+node_recipe = Recipe(BaseTreeNode)
 
 # By default, creates document with 2 versions
 document_versions_set = baker.prepare(DocumentVersion, _quantity=2)
 document_recipe = Recipe(Document, versions=document_versions_set)
-
 tag_recipe = Recipe(Tag)
 
 

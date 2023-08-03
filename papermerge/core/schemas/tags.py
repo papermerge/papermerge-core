@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ class Tag(BaseModel):
     pinned: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         schema_extra = {
             "example": {
                 "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -36,7 +37,7 @@ class CreateTag(BaseModel):
     pinned: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         schema_extra = {
             "example": {
                 "name": "important",
@@ -49,14 +50,14 @@ class CreateTag(BaseModel):
 
 
 class UpdateTag(BaseModel):
-    name: str | None
-    bg_color: str | None
-    fg_color: str | None
-    description: str | None
-    pinned: bool | None
+    name: Optional[str] = None
+    bg_color: Optional[str] = None
+    fg_color: Optional[str] = None
+    description: Optional[str] = None
+    pinned: Optional[bool] = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         schema_extra = {
             "example": {
                 "name": "paid",

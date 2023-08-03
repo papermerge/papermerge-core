@@ -20,7 +20,7 @@ def get_document_details(
     user: User = Depends(current_user)
 ) -> PyDocument:
     doc = Document.objects.get(id=document_id, user_id=user.id)
-    return PyDocument.from_orm(doc)
+    return PyDocument.model_validate(doc)
 
 
 @router.post("/{document_id}/upload")

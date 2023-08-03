@@ -4,14 +4,14 @@ from typing import Callable, Generic, TypeVar
 
 from django.core.paginator import Paginator as DjangoPaginator
 from django.db.models.query import QuerySet
-from pydantic.generics import BaseModel, GenericModel
+from pydantic import BaseModel
 
 from .params import CommonQueryParams
 
 T = TypeVar('T')
 
 
-class PaginatorGeneric(GenericModel, Generic[T]):
+class PaginatorGeneric(BaseModel, Generic[T]):
     page_size: int
     page_number: int
     num_pages: int

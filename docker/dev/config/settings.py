@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-import dj_database_url
 
+import dj_database_url
 
 from papermerge.conf.settings import *  # noqa
 
@@ -32,33 +32,10 @@ DATABASES = {
     ),
 }
 
-search_engine = config.get('search', 'engine', default='xapian')
-
-if search_engine == 'xapian':
-    HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
-        'search',
-        'path',
-        default=os.path.join(PROJ_ROOT, 'xapian_index')
-    )
-elif search_engine == 'whoosh':
-    HAYSTACK_CONNECTIONS['default']['PATH'] = config.get(
-        'search',
-        'path',
-        default=os.path.join(PROJ_ROOT, 'whoosh_index')
-    )
-elif search_engine in (
-        'es7',
-        'es',
-        'elasticsearch7',
-        'elasticsearch',
-        'elastic',
-        'elastic7',
-        'solr'
-):
-    HAYSTACK_CONNECTIONS['default']['URL'] = config.get(
-        'search',
-        'url'
-    )
-
+SEARCH_URL = config.get(
+    'search',
+    'url',
+    default=f'xapian:///{os.path.join(PROJ_ROOT, "index_db")}'
+)
 
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = False

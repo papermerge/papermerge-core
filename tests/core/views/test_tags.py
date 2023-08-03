@@ -145,7 +145,8 @@ def test_update_tag_pass_two_fields(auth_api_client: AuthTestClient):
         'name': 'edited_tag_name'
     }
     response = auth_api_client.patch(f'/tags/{tag.id}', json=payload)
-    assert response.status_code == 200
+
+    assert response.status_code == 200, response.content
 
     update_tag = Tag.objects.get(id=tag.id, user=auth_api_client.user)
     assert update_tag.bg_color == '#ff0011'

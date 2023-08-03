@@ -17,7 +17,7 @@ export function ThumbnailsPanel({pages, visible}: Args) {
 
   return (
     <div className={css_class_nanme}>
-      {pages.map(page => <PageThumbnail page={page} />)}
+      {pages.map(page => <PageThumbnail key={page.id} page={page} />)}
     </div>
   );
 }

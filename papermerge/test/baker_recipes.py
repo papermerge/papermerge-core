@@ -4,11 +4,12 @@ from model_bakery import baker
 from model_bakery.recipe import Recipe
 
 from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
-                                    Folder, Tag, User)
+                                    Folder, Page, Tag, User)
 
 folder_recipe = Recipe(Folder)
 user_recipe = Recipe(User)
 document_version_recipe = Recipe(DocumentVersion)
+page_recipe = Recipe(Page)
 node_recipe = Recipe(BaseTreeNode)
 
 # By default, creates document with 2 versions

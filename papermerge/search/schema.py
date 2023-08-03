@@ -30,4 +30,6 @@ class IndexEntity(Schema):
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\
+            f'document_id={self.document_id},' \
+            f'document_version_id={self.document_version_id},' \
             f'type={self.entity_type})'

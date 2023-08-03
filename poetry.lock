@@ -1491,13 +1491,13 @@ webservice = ["Flask (>=1)"]
 
 [[package]]
 name = "ocrmypdf-papermerge"
-version = "0.4.8"
+version = "0.4.9"
 description = "OCRmyPDF plugin to generate SVG files for Papermerge"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "ocrmypdf_papermerge-0.4.8-py3-none-any.whl", hash = "sha256:db4998fb6782974fafc1f0d866b575bff0d46860cbd21bd9e1992da7f36156f0"},
-    {file = "ocrmypdf_papermerge-0.4.8.tar.gz", hash = "sha256:d17108f6ead7fca47a118f2cae04927f1221dd44807e9a14c67caa69ecdfe072"},
+    {file = "ocrmypdf_papermerge-0.4.9-py3-none-any.whl", hash = "sha256:4172c29c79abde7ea62271292cb76dafea59bb4c528a9a48cf73d46a5de3b9be"},
+    {file = "ocrmypdf_papermerge-0.4.9.tar.gz", hash = "sha256:8fccb99edd9b6ed3b76421230bb8dc224a32b48df34b5463ae2a17697c39622a"},
 ]
 
 [package.dependencies]

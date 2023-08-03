@@ -4,7 +4,8 @@ from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
-from pydantic import BaseModel, FieldValidationInfo, field_validator
+from pydantic import BaseModel, Field, FieldValidationInfo, field_validator
+from typing_extensions import Annotated
 
 from papermerge.core.types import OCRStatusEnum
 
@@ -15,8 +16,8 @@ class Page(BaseModel):
     text: str = ''
     lang: str
     document_version_id: UUID
-    svg_url: Optional[str] = None
-    jpg_url: Optional[str] = None
+    svg_url: Annotated[Optional[str], Field(validate_default=True)] = None
+    jpg_url: Annotated[Optional[str], Field(validate_default=True)] = None
 
     @field_validator("svg_url", mode='before')
     @classmethod
@@ -25,7 +26,7 @@ class Page(BaseModel):
 
     @field_validator("jpg_url", mode='before')
     @classmethod
-    def jpg_url_value(cls, value, info: FieldValidationInfo):
+    def jpg_url_value(cls, value, info: FieldValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/jpg"
 
     class Config:

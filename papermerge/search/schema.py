@@ -1,6 +1,7 @@
 from typing import Optional
 
-from salinic.field import IdField, KeywordField, NumericField, TextField
+from salinic import types
+from salinic.field import IdField
 from salinic.schema import Schema
 from typing_extensions import Annotated
 
@@ -17,20 +18,20 @@ class IndexEntity(Schema):
     """
     id: Annotated[str, IdField(primary_key=True)]  # page id | node_id
     # document ID to whom this page belongs
-    document_id: Annotated[Optional[str], IdField()]
+    document_id: Annotated[Optional[str], IdField()] = None
     # ID of the document version
-    document_version_id: Annotated[Optional[str], IdField()]
+    document_version_id: Annotated[Optional[str], IdField()] = None
     user_id: str
     parent_id: str
-    title: Annotated[str, TextField()]  # document or folder title
+    title: types.Text  # document or folder title
     # text is None in case folder entity
-    text: Annotated[Optional[str], TextField()]
-    entity_type: Annotated[str, KeywordField()]  # Folder | Page
-    tags: Annotated[Optional[list[str]], KeywordField()]
+    text: types.OptionalText = None
+    entity_type: types.Keyword  # Folder | Page
+    tags: types.OptionalKeyword = []
     # None in case of folder entity
-    page_number: Annotated[Optional[int], NumericField()]
+    page_number: types.OptionalNumeric = None
     # None in case of folder entity
-    page_count: Annotated[Optional[int], NumericField()]
+    page_count: types.OptionalNumeric = None
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\

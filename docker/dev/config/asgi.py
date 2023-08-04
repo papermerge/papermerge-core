@@ -24,8 +24,12 @@ fastapp.add_middleware(
 )
 
 def init(app: FastAPI):
-    from papermerge.core.routers import register_routers
+    from papermerge.core.routers import \
+        register_routers as register_core_routes
+    from papermerge.search.routers import \
+        register_routers as register_search_routes
 
-    register_routers(app)
+    register_core_routes(app)
+    register_search_routes(app)
 
 init(fastapp)

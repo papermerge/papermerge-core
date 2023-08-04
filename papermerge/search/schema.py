@@ -1,7 +1,9 @@
 from typing import Optional
 
-from salinic.field import IdField, KeywordField, NumericField, TextField
+from salinic import types
+from salinic.field import IdField
 from salinic.schema import Schema
+from typing_extensions import Annotated
 
 FOLDER = 'folder'
 PAGE = 'page'
@@ -14,19 +16,22 @@ class IndexEntity(Schema):
     both folders and documents, and because the main index entity is page -
     we end up having in index two types of entities: folders and pages.
     """
-    id: str = IdField(primary_key=True)  # page id | node_id
+    id: Annotated[str, IdField(primary_key=True)]  # page id | node_id
     # document ID to whom this page belongs
-    document_id: Optional[str] = IdField()
+    document_id: Annotated[Optional[str], IdField()] = None
     # ID of the document version
-    document_version_id: Optional[str] = IdField()
+    document_version_id: Annotated[Optional[str], IdField()] = None
     user_id: str
     parent_id: str
-    title: str = TextField()  # document or folder title
-    text: Optional[str] = TextField()  # text is None in case folder entity
-    entity_type: str = KeywordField()  # Folder | Page
-    tags: list[str] | None = KeywordField()
-    page_number: Optional[int] = NumericField()  # None in case of folder entity
-    page_count: Optional[int] = NumericField()  # None in case of folder entity
+    title: types.Text  # document or folder title
+    # text is None in case folder entity
+    text: types.OptionalText = None
+    entity_type: types.Keyword  # Folder | Page
+    tags: types.OptionalKeyword = []
+    # None in case of folder entity
+    page_number: types.OptionalNumeric = None
+    # None in case of folder entity
+    page_count: types.OptionalNumeric = None
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\

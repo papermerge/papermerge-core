@@ -2396,13 +2396,13 @@ pyasn1 = ">=0.1.3"
 
 [[package]]
 name = "salinic"
-version = "0.2.2"
+version = "0.2.3"
 description = "Search abstraction layer"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "salinic-0.2.2-py3-none-any.whl", hash = "sha256:a8bd615cc1630bb793a9c5f6312570aae0caa622b60a2ed7416cc910b1856d6b"},
-    {file = "salinic-0.2.2.tar.gz", hash = "sha256:ca321e7ef7512be518a081405fbdc7cf04ab2f650e2a7b4178d585935075751d"},
+    {file = "salinic-0.2.3-py3-none-any.whl", hash = "sha256:99a0082b43a579ec57a6766871089ae5356524a49ac2bf139563be100d927e40"},
+    {file = "salinic-0.2.3.tar.gz", hash = "sha256:dffe405fb63c3307edf758e3f6a8ccf970840a5232795238dbb2da4b61c93e62"},
 ]
 
 [package.dependencies]

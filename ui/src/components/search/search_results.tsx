@@ -15,10 +15,21 @@ type ArgsSearchResultItem = {
 }
 
 
-function SearchResultItem({item}: ArgsSearchResultItem) {
+function SearchResultDocument({item}: ArgsSearchResultItem) {
   return (
-    <div>
-      <div>{item.id} {item.document_id} {item.entity_type} {item.title}</div>
+    <div className="node document">
+      <div className="icon document"></div>
+      <div>{item.document_id} {item.title}</div>
+    </div>
+  );
+}
+
+
+function SearchResultFolder({item}: ArgsSearchResultItem) {
+  return (
+    <div className="node folder">
+      <div className="icon folder"></div>
+      <div>{item.id} {item.title}</div>
     </div>
   );
 }
@@ -35,7 +46,11 @@ function SearchResults({items}: ArgsSearchResults) {
   }
 
   const result_items = items.map((item: SearchResult) => {
-      return <SearchResultItem item={item} />
+    if (item.entity_type == 'folder') {
+      return <SearchResultFolder key={item.id} item={item} />
+    } else {
+      return <SearchResultDocument key={item.id} item={item} />
+    }
   })
 
   return <div>{result_items}</div>;

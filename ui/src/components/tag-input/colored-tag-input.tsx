@@ -43,8 +43,8 @@ function ColoredTagInput({
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const { key } = event
-    const currentValue = value.trim()
+    const { key } = event;
+    const currentValue = value.trim();
 
     if (key === 'Tab' && currentValue !== '') {
       if (current_tags.find(v => v.name === currentValue)) {

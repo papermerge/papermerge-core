@@ -2,6 +2,7 @@ import Cookies from 'js-cookie';
 
 import Dropdown from 'react-bootstrap/Dropdown';
 import styles from './layout.module.css';
+import Search from 'components/search/search';
 
 
 type Args = {
@@ -31,7 +32,8 @@ export default function CentralBar(
               <a className="nav-link" role="button" onClick={onToggleSidebar}><i className="bi bi-list"></i></a>
             </li>
           </ul>
-          <div>
+          <div className='w-75'>
+            <Search />
           </div>
           <Dropdown>
             <Dropdown.Toggle variant="light" id="dropdown-basic">

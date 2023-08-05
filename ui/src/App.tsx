@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'styles/globals.scss';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SpecialFolder from "components/special_folder";
 import Tags from "components/tags/table"
 import Layout from 'components/layout';
@@ -29,11 +29,6 @@ function App() {
     setSearchQuery(query);
     setContentBlockItem(AppContentBlockEnum.search_results);
   }
-
-  useEffect(() => {
-    content_block = <SearchResults query={searchQuery} />;
-    console.log(`content block updated with ${searchQuery}`);
-  }, [searchQuery]);
 
   if (is_loading) {
     return <div>Loading...</div>

@@ -28,7 +28,7 @@ export function useSearch(query: string) {
         data: []
       });
    })
-  }, []);
+  }, [query]);
 
 
   return searchRsults;

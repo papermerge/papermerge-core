@@ -9,11 +9,12 @@ type Args = {
   children: React.ReactNode;
   username?: string;
   onToggleSidebar?: () => void;
+  onSubmitSearch: (query: string) => void;
 }
 
 
 export default function CentralBar(
-  {username, children, onToggleSidebar}: Args
+  {username, children, onToggleSidebar, onSubmitSearch}: Args
 ) {
 
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
@@ -33,7 +34,7 @@ export default function CentralBar(
             </li>
           </ul>
           <div className='w-75'>
-            <Search />
+            <Search onSubmit={onSubmitSearch}/>
           </div>
           <Dropdown>
             <Dropdown.Toggle variant="light" id="dropdown-basic">

@@ -7,7 +7,8 @@ import SpecialFolder from "components/special_folder";
 import Tags from "components/tags/table"
 import Layout from 'components/layout';
 import { useMe } from 'hooks/me';
-import { SidebarItem } from 'types';
+import { AppContentBlockEnum } from 'types';
+import SearchResults from 'components/search/search_results';
 
 
 import 'App.css';
@@ -15,12 +16,19 @@ import 'App.css';
 
 function App() {
   const { data, error, is_loading } = useMe();
-  const [sidebar_item, setSidebarItem] = useState<SidebarItem>(SidebarItem.home);
+  const [contentBlockItem, setContentBlockItem] = useState<AppContentBlockEnum>(AppContentBlockEnum.home);
+  const [searchQuery, setSearchQuery] = useState<string>('')
 
-  const onSidebarItemChange = (item: SidebarItem) => {
-    setSidebarItem(item);
-  }
   let content_block: JSX.Element;
+
+  const onContentBlockChange = (item: AppContentBlockEnum) => {
+    setContentBlockItem(item);
+  }
+
+  const onSearchSubmit = (query: string) => {
+    setSearchQuery(query);
+    setContentBlockItem(AppContentBlockEnum.search_results);
+  }
 
   if (is_loading) {
     return <div>Loading...</div>
@@ -34,16 +42,20 @@ function App() {
     return <div>User does not have home folder</div>;
   }
 
-  if (sidebar_item == SidebarItem.home) {
+  if (contentBlockItem == AppContentBlockEnum.home) {
     content_block = <SpecialFolder special_folder_id={ data?.home_folder_id } />;
-  } else if (sidebar_item == SidebarItem.inbox) {
+  } else if (contentBlockItem == AppContentBlockEnum.inbox) {
     content_block = <SpecialFolder special_folder_id={ data?.inbox_folder_id } />;
-  } else {
+  } else if (contentBlockItem == AppContentBlockEnum.tags) {
     content_block = <Tags />;
+  } else {
+    content_block = <SearchResults query={searchQuery} />
   }
 
   return (
-    <Layout onSidebarItemChange={onSidebarItemChange}>
+    <Layout
+      onContentBlockChange={onContentBlockChange}
+      onSearchSubmit={onSearchSubmit}>
       {content_block}
     </Layout>
   );

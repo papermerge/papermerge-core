@@ -3,7 +3,7 @@ import { useState } from 'react';
 import IconHouse from 'components/icons/house';
 import IconInbox from 'components/icons/inbox';
 import TagIcon from 'components/icons/tag';
-import { SidebarItem } from 'types';
+import { AppContentBlockEnum } from 'types';
 
 import Nav from './nav';
 import NavItem from './nav_item';
@@ -11,16 +11,16 @@ import NavItem from './nav_item';
 
 type Args = {
   folded: boolean;
-  onSidebarItemChange: (item: SidebarItem) => void;
+  onSidebarItemChange: (item: AppContentBlockEnum) => void;
 }
 
 type SidebarArgs = {
-  onClick: (item: SidebarItem) => void;
-  current: SidebarItem;
+  onClick: (item: AppContentBlockEnum) => void;
+  current: AppContentBlockEnum;
 }
 
 
-function class_name(item: SidebarItem, current: SidebarItem): string {
+function class_name(item: AppContentBlockEnum, current: AppContentBlockEnum): string {
   /**
    * Returns the css class name of the active link
    */
@@ -38,17 +38,17 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.home)} className={class_name(SidebarItem.home, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.home)} className={class_name(AppContentBlockEnum.home, current)}>
             <IconHouse /><span className='ms-2'>Home</span>
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.inbox)} className={class_name(SidebarItem.inbox, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.inbox)} className={class_name(AppContentBlockEnum.inbox, current)}>
             <IconInbox/><span className='ms-2'>Inbox</span>
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.tags)} className={class_name(SidebarItem.tags, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.tags)} className={class_name(AppContentBlockEnum.tags, current)}>
            <TagIcon /><span className='ms-2'>Tags</span>
           </a>
         </NavItem>
@@ -67,17 +67,17 @@ function SidebarFolded({onClick, current}: SidebarArgs) {
       <hr />
       <Nav>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.home)} className={class_name(SidebarItem.home, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.home)} className={class_name(AppContentBlockEnum.home, current)}>
             <IconHouse />
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.inbox)} className={class_name(SidebarItem.inbox, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.inbox)} className={class_name(AppContentBlockEnum.inbox, current)}>
             <IconInbox />
           </a>
         </NavItem>
         <NavItem>
-          <a href="#" onClick={() => onClick(SidebarItem.tags)} className={class_name(SidebarItem.tags, current)}>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.tags)} className={class_name(AppContentBlockEnum.tags, current)}>
            <TagIcon />
           </a>
         </NavItem>
@@ -91,9 +91,9 @@ export default function Sidebar({folded, onSidebarItemChange}: Args) {
   /*
   Sidebar can be folded or opened.
   */
-  const [current, setCurrent] = useState<SidebarItem>(SidebarItem.home);
+  const [current, setCurrent] = useState<AppContentBlockEnum>(AppContentBlockEnum.home);
 
-  const onClickHandler = (item: SidebarItem) => {
+  const onClickHandler = (item: AppContentBlockEnum) => {
     onSidebarItemChange(item);
     setCurrent(item);
   }

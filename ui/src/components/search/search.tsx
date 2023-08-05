@@ -10,8 +10,12 @@ type ClearButtonArgs = {
 }
 
 
-function ClearButton({onClick}: ClearButtonArgs) {
+type Args = {
+  onSubmit: (query: string) => void;
+}
 
+
+function ClearButton({onClick}: ClearButtonArgs) {
   return (
     <div className="input-group-append">
       <Button
@@ -24,8 +28,7 @@ function ClearButton({onClick}: ClearButtonArgs) {
   );
 }
 
-
-function Search() {
+function Search({onSubmit}: Args) {
   const [value, setValue] = useState('');
   const [clearBtnIsVisible, setClearBtnIsVisible] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
@@ -48,7 +51,7 @@ function Search() {
     const { key } = event;
 
     if (key === 'Enter') {
-      console.log(`Searching for '${value}'`);
+      onSubmit(value);
     }
   }
 
@@ -62,7 +65,11 @@ function Search() {
 
   return (
     <div className='input-group search-panel'>
-      <Button  variant="secondary" className='flat search-button'><i className='bi bi-search'></i></Button>
+      <Button
+        variant="secondary"
+        className='flat search-button'>
+          <i className='bi bi-search'></i>
+      </Button>
 
       <Form.Control ref={ref}
         className='flat search-input'

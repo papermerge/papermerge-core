@@ -8,6 +8,18 @@ export type ColoredTagType = {
 
 export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCESS" | "FAILED";
 
+
+export type SearchResult = {
+  id: string;
+  document_id: string | null;
+  document_version_id: string | null;
+  title: string;
+  entity_type: "folder" | "page";
+  page_number: number | null;
+  page_count: number | null;
+}
+
+
 export type User = {
   username: string;
   email: string;
@@ -129,10 +141,11 @@ export type OcrStatusType = {
     status: OcrStatusEnum;
 }
 
-export enum SidebarItem {
+export enum AppContentBlockEnum {
    inbox = "inbox",
    home = "home",
-   tags = "tags"
+   tags = "tags",
+   search_results = "search_results"
 }
 
 

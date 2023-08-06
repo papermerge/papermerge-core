@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
-import type { SidebarItem, State, User } from 'types';
+import type { AppContentBlockEnum, State, User } from 'types';
 
 
 const fetcher = (url:string) => {
@@ -50,11 +50,12 @@ export function useMe() {
 
 type Args = {
   children: React.ReactNode;
-  onSidebarItemChange: (item: SidebarItem) => void;
+  onContentBlockChange: (item: AppContentBlockEnum) => void;
+  onSearchSubmit: (query: string) => void;
 }
 
 
-function Layout({ children, onSidebarItemChange }: Args) {
+function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   const { data, error, is_loading } = useMe();
   const [ sidebarFolded, setSidebarFolded ] = useState(false);
 
@@ -65,8 +66,8 @@ function Layout({ children, onSidebarItemChange }: Args) {
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar folded={sidebarFolded} onSidebarItemChange={onSidebarItemChange} />
-        <CentralBar>
+        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <CentralBar onSubmitSearch={onSearchSubmit}>
           Loading ...
         </CentralBar>
       </main>
@@ -79,8 +80,11 @@ function Layout({ children, onSidebarItemChange }: Args) {
 
   return (
     <main className={styles.main}>
-      <Sidebar folded={sidebarFolded} onSidebarItemChange={onSidebarItemChange} />
-      <CentralBar username={data?.username} onToggleSidebar={onToggleSidebar}>
+      <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+      <CentralBar
+        username={data?.username}
+        onToggleSidebar={onToggleSidebar}
+        onSubmitSearch={onSearchSubmit}>
         {children}
       </CentralBar>
     </main>

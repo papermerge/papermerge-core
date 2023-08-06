@@ -26,6 +26,20 @@ function App() {
   let content_block: JSX.Element;
 
   const onContentBlockChange = (item: AppContentBlockEnum) => {
+    if (item == AppContentBlockEnum.home) {
+      setNodeType('folder');
+      if (data?.home_folder_id) {
+        setNodeId(data?.home_folder_id);
+      }
+    }
+
+    if (item == AppContentBlockEnum.inbox) {
+      setNodeType('folder');
+      if (data?.inbox_folder_id) {
+        setNodeId(data?.inbox_folder_id);
+      }
+    }
+
     setContentBlockItem(item);
   }
 

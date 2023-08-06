@@ -21,10 +21,10 @@ function get_computed_height(
 
   if (!el) {
     if (element_id) {
-      console.error(`Element with ID ${element_id} not found`);
+      console.info(`Element with ID ${element_id} not found`);
     }
     if (element_class) {
-     console.error(`Element with class name ${element_class} not found`);
+     console.info(`Element with class name ${element_class} not found`);
     }
     return default_value; // blunt guess of element height
   }

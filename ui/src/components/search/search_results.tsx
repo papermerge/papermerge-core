@@ -1,41 +1,72 @@
 import { useSearch } from "hooks/search";
-import { SearchResult } from "types";
+import { SearchResult, CType } from "types";
 
 type ArgsSearchWrapper = {
   query: string;
+  onSearchResultClick: (
+    node_id: string,
+    node_type: CType,
+    page_number: number | null
+  ) => void;
 }
 
 
 type ArgsSearchResults = {
   items: SearchResult[] | null;
+  onSearchResultClick: (
+    node_id: string,
+    node_type: CType,
+    page_number: number | null
+  ) => void;
 }
 
 type ArgsSearchResultItem = {
   item: SearchResult;
+  onClick: (
+    node_id: string,
+    node_type: CType,
+    page_number: number | null
+  ) => void;
 }
 
 
-function SearchResultDocument({item}: ArgsSearchResultItem) {
+function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
+
+  const localOnClick = () => {
+    let node_id: string;
+    let page_number: number;
+
+    node_id = (item.document_id == null) ? '' : item.document_id;
+    page_number = (item.page_number == null) ? 0 : item.page_number;
+
+    onClick(node_id, 'document', page_number);
+  }
+
   return (
     <div className="node document">
       <div className="icon document"></div>
-      <div>{item.document_id} {item.title}</div>
+      <div onClick={localOnClick}>{item.title}</div>
     </div>
   );
 }
 
 
-function SearchResultFolder({item}: ArgsSearchResultItem) {
+function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
+
+  const localOnClick = () => {
+    onClick(item.id, 'folder', null);
+  }
+
   return (
     <div className="node folder">
       <div className="icon folder"></div>
-      <div>{item.id} {item.title}</div>
+      <div onClick={localOnClick}>{item.title}</div>
     </div>
   );
 }
 
 
-function SearchResults({items}: ArgsSearchResults) {
+function SearchResults({items, onSearchResultClick}: ArgsSearchResults) {
 
   if (items && items.length == 0)  {
     return <div>No results found</div>;
@@ -47,9 +78,15 @@ function SearchResults({items}: ArgsSearchResults) {
 
   const result_items = items.map((item: SearchResult) => {
     if (item.entity_type == 'folder') {
-      return <SearchResultFolder key={item.id} item={item} />
+      return <SearchResultFolder
+        key={item.id}
+        item={item}
+        onClick={onSearchResultClick} />
     } else {
-      return <SearchResultDocument key={item.id} item={item} />
+      return <SearchResultDocument
+        key={item.id}
+        item={item}
+        onClick={onSearchResultClick} />
     }
   })
 
@@ -57,7 +94,7 @@ function SearchResults({items}: ArgsSearchResults) {
 }
 
 
-function SearchResultsWrapper({query}: ArgsSearchWrapper) {
+function SearchResultsWrapper({query, onSearchResultClick}: ArgsSearchWrapper) {
   const { data, error, is_loading } = useSearch(query);
 
   if (is_loading) {
@@ -69,7 +106,7 @@ function SearchResultsWrapper({query}: ArgsSearchWrapper) {
   }
 
   return (<>
-    <SearchResults items={data}/>
+    <SearchResults items={data} onSearchResultClick={onSearchResultClick} />
   </>)
 }
 

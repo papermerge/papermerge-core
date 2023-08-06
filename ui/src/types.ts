@@ -15,6 +15,8 @@ export type SearchResult = {
   document_version_id: string | null;
   title: string;
   entity_type: "folder" | "page";
+  page_number: number | null;
+  page_count: number | null;
 }
 
 

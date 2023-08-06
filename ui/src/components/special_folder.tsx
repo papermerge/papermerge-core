@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import Commander from './commander/commander';
 import Viewer from './viewer/viewer';
 
-import { NodeClickArgsType } from 'types';
+import { NodeClickArgsType, CType } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
   special_folder_id: string;
+  special_node_type: CType;
 }
 
 
@@ -96,9 +97,9 @@ function save_node_list_params({
 }
 
 
-function SpecialFolder({ special_folder_id }: Args) {
+function SpecialFolder({ special_folder_id, special_node_type }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
-  const [ node_type, set_node_type ] = useState('folder');
+  const [ node_type, set_node_type ] = useState(special_node_type);
   const [ page_number, set_page_number ] = useState(1);
   const [ page_size, setPageSize ] = useState(
     get_node_list_params().page_size
@@ -149,7 +150,7 @@ function SpecialFolder({ special_folder_id }: Args) {
 
   useEffect(() => {
     set_node_id(special_folder_id);
-    set_node_type("folder");
+    set_node_type(special_node_type);
   }, [special_folder_id])
 
   if (!node_id ) {

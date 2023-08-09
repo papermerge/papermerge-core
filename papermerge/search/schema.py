@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import List, Optional
 
 from salinic import types
-from salinic.field import IdField
+from salinic.field import IdField, KeywordField
 from salinic.schema import Schema
 from typing_extensions import Annotated
 
@@ -27,6 +27,7 @@ class IndexEntity(Schema):
     # text is None in case folder entity
     text: types.OptionalText = None
     entity_type: types.Keyword  # Folder | Page
+    breadcrumb: Annotated[List[str], KeywordField()]
     tags: types.OptionalKeyword = []
     # None in case of folder entity
     page_number: types.OptionalNumeric = None

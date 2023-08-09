@@ -30,6 +30,28 @@ type ArgsSearchResultItem = {
 }
 
 
+function Tags({items}: {items: Array<string>}) {
+  let comps = items.map((item: string) => <div className="mx-1">{item}</div>);
+
+  return (
+    <div className="tags d-flex mx-4">
+      {comps}
+    </div>
+  );
+}
+
+
+function Breadcrumb({items}: {items: Array<string>}) {
+  let comps = items.map((item: string) => <div className="breadcrumb-item">{item}</div>);
+
+  return (
+    <div className="breadcrumb text-body-secondary ps-3 mb-0">
+      {comps}
+    </div>
+  );
+}
+
+
 function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
 
   const localOnClick = () => {
@@ -43,9 +65,13 @@ function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
   }
 
   return (
-    <div className="node document">
-      <div className="icon document"></div>
-      <div onClick={localOnClick}>{item.title}</div>
+    <div className="sr-node ps-2">
+      <Breadcrumb items={item.breadcrumb} />
+      <div className="node document">
+        <div className="icon document"></div>
+        <div onClick={localOnClick} className="title">{item.title}</div>
+        <Tags items={item.tags} />
+      </div>
     </div>
   );
 }
@@ -58,9 +84,13 @@ function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
   }
 
   return (
-    <div className="node folder">
-      <div className="icon folder"></div>
-      <div onClick={localOnClick}>{item.title}</div>
+    <div className="sr-node ps-2">
+      <Breadcrumb items={item.breadcrumb} />
+      <div className="node folder">
+        <div className="icon folder"></div>
+        <div onClick={localOnClick} className="title">{item.title}</div>
+        <Tags items={item.tags} />
+      </div>
     </div>
   );
 }

@@ -35,15 +35,21 @@ class Command(BaseCommand):
                         page_count=page.page_count,
                         text=page.text,
                         parent_id=str(node.parent_id),
-                        entity_type=PAGE
+                        entity_type=PAGE,
+                        tags=[tag.name for tag in node.tags.all()],
+                        breadcrumb=[item[1] for item in node.breadcrumb],
+
                     )
-            else:  # is folder
+            else:
                 index_entity = IndexEntity(
                     id=str(node.id),
                     title=node.title,
                     user_id=str(node.user_id),
                     entity_type=FOLDER,
-                    parent_id=str(node.parent_id)
+                    parent_id=str(node.parent_id),
+                    tags=[tag.name for tag in node.tags.all()],
+                    breadcrumb=[item[1] for item in node.breadcrumb]
+
                 )
 
             if index_entity:

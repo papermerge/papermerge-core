@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
+from pydantic import BaseModel
 from salinic import types
 from salinic.field import IdField, KeywordField
 from salinic.schema import Schema
@@ -7,6 +8,22 @@ from typing_extensions import Annotated
 
 FOLDER = 'folder'
 PAGE = 'page'
+
+
+class ColoredTag(BaseModel):
+    name: str
+    fg_color: str
+    bg_color: str
+
+
+Tags = Annotated[
+    Optional[list[ColoredTag]],
+    KeywordField()  # will be indexed as a keyword
+]
+Breadcrumb = Annotated[
+    List[Tuple[str, str]],
+    KeywordField()  # will be indexed as a keyword
+]
 
 
 class IndexEntity(Schema):
@@ -27,8 +44,8 @@ class IndexEntity(Schema):
     # text is None in case folder entity
     text: types.OptionalText = None
     entity_type: types.Keyword  # Folder | Page
-    breadcrumb: Annotated[List[str], KeywordField()]
-    tags: types.OptionalKeyword = []
+    breadcrumb: Breadcrumb
+    tags: Tags = []
     # None in case of folder entity
     page_number: types.OptionalNumeric = None
     # None in case of folder entity
@@ -39,3 +56,9 @@ class IndexEntity(Schema):
             f'document_id={self.document_id},' \
             f'document_version_id={self.document_version_id},' \
             f'type={self.entity_type})'
+
+    def get_idx_value__tags(self):
+        return list([tag.name for tag in self.tags])
+
+    def get_idx_value__breadcrumb(self):
+        return list([item[1] for item in self.breadcrumb])

@@ -17,8 +17,8 @@ export type SearchResult = {
   entity_type: "folder" | "page";
   page_number: number | null;
   page_count: number | null;
-  tags: Array<string>;
-  breadcrumb: Array<string>;
+  tags: Array<ColoredTag>;
+  breadcrumb: Array<[string, string]>;
 }
 
 

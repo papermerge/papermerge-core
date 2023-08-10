@@ -17,3 +17,46 @@
     border-left-color: white;
   }
 }
+
+
+.sr-node {
+  margin-bottom: 1rem;
+  .breadcrumb {
+    font-size: 0.9rem;
+  }
+
+  &:hover {
+    background-color: transparent;
+    outline: None;
+  }
+  .node:hover {
+     background-color: transparent;
+     outline: None !important;
+     .title {
+        &:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+     }
+  }
+
+  .node {
+    .title {
+      font-size: 1.2rem;
+    }
+  }
+
+  .node.folder {
+    .icon {
+      width: 3rem;
+      height: 2rem;
+    }
+  }
+
+  .node.document {
+    .icon {
+      width: 3rem;
+      height: 2rem;
+    }
+  }
+}

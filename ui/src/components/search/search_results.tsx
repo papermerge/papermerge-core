@@ -1,5 +1,9 @@
 import { useSearch } from "hooks/search";
-import { SearchResult, CType } from "types";
+import { SearchResult,ColoredTag, CType } from "types";
+import Tag from "components/tags/tag";
+import IconHouse from 'components/icons/house';
+import IconInbox from "components/icons/inbox";
+
 
 type ArgsSearchWrapper = {
   query: string;
@@ -30,6 +34,58 @@ type ArgsSearchResultItem = {
 }
 
 
+function Tags({items}: {items: Array<ColoredTag>}) {
+  let comps = items.map(
+    (item: ColoredTag) => <div className="mx-1">{<Tag item={item} />}</div>
+    );
+
+  return (
+    <div className="tags d-flex mx-4">
+      {comps}
+    </div>
+  );
+}
+
+
+function BreadcrumbItem({item}: {item: [string, string]}) {
+  if (item[1] == '.home') {
+    return (
+      <div className="breadcrumb-item">
+        <IconHouse /> Home
+      </div>
+    );
+  }
+
+  if (item[1] == '.inbox') {
+    return (
+      <div className="breadcrumb-item">
+        <IconInbox /> Inbox
+      </div>
+    );
+  }
+
+  return (
+    <div className="breadcrumb-item">
+      {item[1]}
+    </div>
+  );
+}
+
+
+
+function Breadcrumb({items}: {items: Array<[string, string]>}) {
+  let comps = items.map(
+    (item: [string, string]) => <BreadcrumbItem item={item} />
+  );
+
+  return (
+    <div className="breadcrumb text-body-secondary ps-3 mb-0">
+      {comps}
+    </div>
+  );
+}
+
+
 function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
 
   const localOnClick = () => {
@@ -43,9 +99,13 @@ function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
   }
 
   return (
-    <div className="node document">
-      <div className="icon document"></div>
-      <div onClick={localOnClick}>{item.title}</div>
+    <div className="sr-node ps-2">
+      <Breadcrumb items={item.breadcrumb} />
+      <div className="node document">
+        <div className="icon document"></div>
+        <div onClick={localOnClick} className="title">{item.title}</div>
+        <Tags items={item.tags} />
+      </div>
     </div>
   );
 }
@@ -58,9 +118,13 @@ function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
   }
 
   return (
-    <div className="node folder">
-      <div className="icon folder"></div>
-      <div onClick={localOnClick}>{item.title}</div>
+    <div className="sr-node ps-2">
+      <Breadcrumb items={item.breadcrumb} />
+      <div className="node folder">
+        <div className="icon folder"></div>
+        <div onClick={localOnClick} className="title">{item.title}</div>
+        <Tags items={item.tags} />
+      </div>
     </div>
   );
 }

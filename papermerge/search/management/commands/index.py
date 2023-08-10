@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from salinic import Session, create_engine
 
 from papermerge.core.models import BaseTreeNode
-from papermerge.search.schema import FOLDER, PAGE, IndexEntity
+from papermerge.search.schema import FOLDER, PAGE, ColoredTag, IndexEntity
 
 
 class Command(BaseCommand):
@@ -35,15 +35,36 @@ class Command(BaseCommand):
                         page_count=page.page_count,
                         text=page.text,
                         parent_id=str(node.parent_id),
-                        entity_type=PAGE
+                        entity_type=PAGE,
+                        tags=[
+                            ColoredTag(
+                                name=tag.name,
+                                fg_color=tag.fg_color,
+                                bg_color=tag.bg_color
+                            ) for tag in node.tags.all()
+                        ],
+                        breadcrumb=[
+                            (str(item[0]), item[1]) for item in node.breadcrumb
+                        ]
                     )
-            else:  # is folder
+            else:
                 index_entity = IndexEntity(
                     id=str(node.id),
                     title=node.title,
                     user_id=str(node.user_id),
                     entity_type=FOLDER,
-                    parent_id=str(node.parent_id)
+                    parent_id=str(node.parent_id),
+                    tags=[
+                        ColoredTag(
+                            name=tag.name,
+                            fg_color=tag.fg_color,
+                            bg_color=tag.bg_color
+                        ) for tag in node.tags.all()
+                    ],
+                    breadcrumb=[
+                        (str(item[0]), item[1]) for item in node.breadcrumb
+                    ]
+
                 )
 
             if index_entity:

@@ -13,15 +13,15 @@ router = APIRouter(
     tags=["search"]
 )
 
-engine = create_engine(settings.SEARCH_URL)
-
 
 @router.get("/")
 def search(
     q: str,
     user: User = Depends(current_user)
 ) -> List[IndexEntity]:
+    engine = create_engine(settings.SEARCH_URL)
     session = Session(engine)
+
     sq = Search(IndexEntity).query(q)
 
     results: List[IndexEntity] = session.exec(sq)

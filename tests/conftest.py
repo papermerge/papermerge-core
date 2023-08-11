@@ -1,6 +1,9 @@
 import pytest
+from django.conf import settings
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from salinic import Session, create_engine
+from salinic.engine import AccessMode
 
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
@@ -46,3 +49,10 @@ def auth_api_client(user: User):
         test_client=test_client,
         user=user
     )
+
+
+@pytest.fixture()
+def session(tmp_path) -> Session:
+    engine = create_engine(settings.SEARCH_URL, mode=AccessMode.RW)
+
+    return Session(engine)

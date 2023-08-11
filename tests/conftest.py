@@ -3,8 +3,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from papermerge.core.models import User
-from papermerge.core.routers import register_routers
+from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.utils import base64
+from papermerge.search.routers import register_routers as reg_search_routers
 from papermerge.test.types import AuthTestClient
 
 
@@ -16,14 +17,18 @@ def user():
 @pytest.fixture()
 def api_client():
     app = FastAPI()
-    register_routers(app)
+
+    reg_core_routers(app)
+    reg_search_routers(app)
+
     return TestClient(app)
 
 
 @pytest.fixture()
 def auth_api_client(user: User):
     app = FastAPI()
-    register_routers(app)
+    reg_core_routers(app)
+    reg_search_routers(app)
 
     middle_part = base64.encode({
         'user_id': str(user.id)

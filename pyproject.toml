@@ -90,17 +90,7 @@ salinic = "^0.2.6"
 
 
 [tool.taskipy.tasks]
-test = "task test-core && task test-search-w && task test-search"
-test-c = "pytest tests/core --disable-warnings"
-test-co = "pytest tests/core/ --disable-warnings"
-test-core = "pytest tests/core/ --disable-warnings"
-# include warnings
-test-core-w = "pytest tests/core/"
-test-se = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings pytest"
-test-search = "DJANGO_SETTINGS_MODULE=tests.config.search.elastic_settings pytest tests/search/ --disable-warnings"
-# include warnings
-test-search-w = "DJANGO_SETTINGS_MODULE=tests.config.search.whoosh_settings python -m pytest tests/search/  --disable-warnings"
-test-search-x = "DJANGO_SETTINGS_MODULE=tests.config.search.xapian_settings python -m pytest tests/search/ --disable-warnings"
+test = "pytest tests/ --disable-warnings"
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"

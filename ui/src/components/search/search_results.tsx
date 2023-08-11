@@ -3,6 +3,7 @@ import { SearchResult,ColoredTag, CType } from "types";
 import Tag from "components/tags/tag";
 import IconHouse from 'components/icons/house';
 import IconInbox from "components/icons/inbox";
+import { useProtectedJpg } from "hooks/protected_image";
 
 
 type ArgsSearchWrapper = {
@@ -72,7 +73,6 @@ function BreadcrumbItem({item}: {item: [string, string]}) {
 }
 
 
-
 function Breadcrumb({items}: {items: Array<[string, string]>}) {
   let comps = items.map(
     (item: [string, string]) => <BreadcrumbItem item={item} />
@@ -87,6 +87,8 @@ function Breadcrumb({items}: {items: Array<[string, string]>}) {
 
 
 function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
+  const protected_thumbnail = useProtectedJpg(`/api/thumbnails/${item.document_id}`);
+  let thumbnail_component: JSX.Element | null;
 
   const localOnClick = () => {
     let node_id: string;
@@ -98,11 +100,21 @@ function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
     onClick(node_id, 'document', page_number);
   }
 
+  if (protected_thumbnail.is_loading) {
+    thumbnail_component = <div className="icon document"></div>;
+  } else if ( protected_thumbnail.error ) {
+    thumbnail_component = <div>{protected_thumbnail.error}</div>
+  } else {
+    thumbnail_component = <div className="image">
+      {protected_thumbnail.data}
+    </div>
+  }
+
   return (
     <div className="sr-node ps-2">
       <Breadcrumb items={item.breadcrumb} />
       <div className="node document">
-        <div className="icon document"></div>
+        {thumbnail_component}
         <div onClick={localOnClick} className="title">{item.title}</div>
         <Tags items={item.tags} />
       </div>

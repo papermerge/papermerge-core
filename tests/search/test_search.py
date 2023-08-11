@@ -43,7 +43,8 @@ def test_basic(
     assert response.status_code == 200
 
     returned_models = response.json()
-    assert len(returned_models) == 1
+    assert len(returned_models) == 1  # only one document is returned
 
+    # and the (only) returned document is the one belonging to the current user
     returned_model = returned_models[0]
     assert returned_model['id'] == doc_1.model_dump()['id']

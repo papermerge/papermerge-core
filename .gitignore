@@ -17,22 +17,19 @@ __pycache__
 *.sqlite3
 *.sublime-project
 *.png~
-*.kra~
 papermerge_core.egg-info/
 dist
 # Sphinx documentation
 docs/build/
 _build
 _static
-_templates
 media/
 ./static/
 celerybeat-schedule
 .vscode
-xapian_index
-whoosh_index
 .tar
 .tar.gz
 .zip
 media_root/
 index_db/
+index_db_test/

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from salinic import Session, create_engine
+from salinic.engine import AccessMode
 
 from papermerge.core.models import BaseTreeNode
 from papermerge.search.schema import FOLDER, PAGE, ColoredTag, IndexEntity
@@ -12,7 +13,7 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        engine = create_engine(settings.SEARCH_URL)
+        engine = create_engine(settings.SEARCH_URL, mode=AccessMode.RW)
         session = Session(engine)
 
         for node in BaseTreeNode.objects.all():

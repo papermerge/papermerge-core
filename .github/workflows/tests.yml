@@ -51,6 +51,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          poetry install && poetry run task test-core
+          poetry install && poetry run task test
         env:
           PYTHONPATH: .

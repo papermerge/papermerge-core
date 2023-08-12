@@ -32,10 +32,6 @@ exec_migrate() {
   $MANAGE migrate --no-input
 }
 
-exec_update_index() {
-  # Create/Update search index
-  $MANAGE update_index &
-}
 
 exec_createsuperuser() {
   # user envrironment variables:
@@ -59,7 +55,6 @@ exec_worker() {
 exec_init() {
   exec_migrate
   exec_createsuperuser
-  exec_update_index
 }
 
 case $CMD in

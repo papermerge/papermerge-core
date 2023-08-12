@@ -7,6 +7,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 config = Configula()
 
+TESTING = True
 SECRET_KEY = 'fake-key'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = True

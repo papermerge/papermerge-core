@@ -12,11 +12,7 @@ handlers:
     formatter: verbose
 
 loggers:
-  papermerge.core.signals:
-    level: DEBUG
-    handlers: [console]
-    propagate: no
-  papermerge.core.routers:
+  papermerge.search.tasks:
     level: DEBUG
     handlers: [console]
     propagate: no

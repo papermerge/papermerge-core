@@ -1,6 +1,7 @@
 from celery import current_app
 from django.db import models
 
+from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.utils.decorators import skip_in_tests
@@ -78,7 +79,7 @@ class Folder(BaseTreeNode):
         This method WILL NOT be invoked during tests
         """
         id_as_str = str(self.pk)
-        current_app.send_task('index_add_folder', (id_as_str,))
+        current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     def delete(self, *args, **kwargs):
         descendants = self.basetreenode_ptr.get_descendants()

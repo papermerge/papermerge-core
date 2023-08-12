@@ -6,6 +6,7 @@ import dj_database_url
 from papermerge.conf.settings import *  # noqa
 
 DEBUG = True
+TESTING = False
 
 PROJ_ROOT = Path(__file__).resolve().parent.parent
 

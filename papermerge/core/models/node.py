@@ -1,18 +1,18 @@
-import pytz
 import uuid
-
 from typing import List, Tuple
 
+import pytz
+from celery import current_app
+from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from django.db import models
-
-from taggit.managers import TaggableManager
-from taggit.managers import _TaggableManager
+from taggit.managers import TaggableManager, _TaggableManager
 
 from papermerge.core import validators
+from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models.tags import ColoredTag
 from papermerge.core.signal_definitions import node_post_move
+from papermerge.core.utils.decorators import skip_in_tests
 
 from .utils import uuid2raw_str
 
@@ -299,7 +299,14 @@ class BaseTreeNode(models.Model):
     def save(self, *args, **kwargs):
         if not self.ctype:
             self.ctype = self.__class__.__name__.lower()
-        return super().save(*args, **kwargs)
+
+        super().save(*args, **kwargs)
+        self.publish_post_save_task()
+
+    @skip_in_tests
+    def publish_post_save_task(self):
+        id_as_str = str(self.pk)
+        current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     class Meta:
         # please do not confuse this "Documents" verbose name

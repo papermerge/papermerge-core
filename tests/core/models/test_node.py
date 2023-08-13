@@ -1,12 +1,10 @@
 import pytest
 
+from papermerge.core.models import BaseTreeNode, Document, Folder, User
+from papermerge.core.models.node import NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import (
-    folder_recipe,
-    user_recipe, make_folders
-)
-from papermerge.core.models import User, Folder, BaseTreeNode, Document
-from papermerge.core.models.node import NODE_TYPE_FOLDER, NODE_TYPE_DOCUMENT
+from papermerge.test.baker_recipes import (folder_recipe, make_folders,
+                                           user_recipe)
 
 
 class TestNodeModel(TestCase):
@@ -348,3 +346,65 @@ def test_get_by_breadcrumb_non_existing_path():
     user = user_recipe.make()
     with pytest.raises(Folder.DoesNotExist):
         Folder.objects.get_by_breadcrumb(".home/My Documents/", user)
+
+
+@pytest.mark.django_db
+def test_delete_nodes_recursively_via_basetreenode(user: User):
+    """
+    Given following folder hierarchy:
+
+    .home > momo > sub-momo
+
+    If folder "momo" is deleted via BaseTreeNode, then its subfolder
+    "sub-momo" should be deleted as well
+    """
+    user = user_recipe.make()
+    momo = folder_recipe.make(
+        title='momo',
+        user=user,
+        parent=user.home_folder
+    )
+
+    folder_recipe.make(
+        title='sub-momo',
+        user=user,
+        parent=momo
+    )
+
+    # delete folders via BaseTreeNode
+    node = BaseTreeNode.objects.get(title='momo')
+    node.delete()
+
+    sub_momo_qs = BaseTreeNode.objects.filter(title='sub-momo')
+    assert sub_momo_qs.count() == 0
+
+
+@pytest.mark.django_db
+def test_delete_nodes_recursively_via_folder(user: User):
+    """
+    Given following folder hierarchy:
+
+    .home > momo > sub-momo
+
+    If folder "momo" is deleted via Folder model, then its subfolder
+    "sub-momo" should be deleted as well
+    """
+    user = user_recipe.make()
+    momo = folder_recipe.make(
+        title='momo',
+        user=user,
+        parent=user.home_folder
+    )
+
+    folder_recipe.make(
+        title='sub-momo',
+        user=user,
+        parent=momo
+    )
+
+    # delete folders via Folder model
+    folder = Folder.objects.get(title='momo')
+    folder.delete()
+
+    sub_momo_qs = BaseTreeNode.objects.filter(title='sub-momo')
+    assert sub_momo_qs.count() == 0

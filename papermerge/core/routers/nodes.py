@@ -141,9 +141,7 @@ def delete_nodes(
     for node in BaseTreeNode.objects.filter(
         user_id=user.id, id__in=list_of_uuids
     ):
-        deleted_nodes_uuids.append(
-            node.id
-        )
+        deleted_nodes_uuids.append(node.id)
         node.delete()
 
     return deleted_nodes_uuids

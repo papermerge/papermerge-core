@@ -9,7 +9,7 @@ from django.utils import timezone
 from taggit.managers import TaggableManager, _TaggableManager
 
 from papermerge.core import validators
-from papermerge.core.constants import INDEX_ADD_NODE
+from papermerge.core.constants import INDEX_ADD_NODE, INDEX_REMOVE_NODE
 from papermerge.core.models.tags import ColoredTag
 from papermerge.core.signal_definitions import node_post_move
 from papermerge.core.utils.decorators import skip_in_tests
@@ -89,19 +89,28 @@ class NodeManager(models.Manager):
 class NodeQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
+        deleted_node_ids = []
         for node in self:
             descendants = node.get_descendants()
             if len(descendants) > 0:
                 for item in descendants:
+                    deleted_node_ids.append(str(item.pk))
                     item.delete(*args, **kwargs)
             # At this point all descendants were deleted.
             # Self delete :)
             try:
+                deleted_node_ids.append(str(node.pk))
                 node.delete(*args, **kwargs)
             except BaseTreeNode.DoesNotExist:
                 # this node was deleted by earlier recursive call
                 # it is ok, just skip
                 pass
+
+        self.publish_post_delete_task(deleted_node_ids)
+
+    @skip_in_tests
+    def publish_post_delete_task(self, node_ids: List[str]):
+        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
 
 
 CustomNodeManager = NodeManager.from_queryset(NodeQuerySet)
@@ -307,6 +316,33 @@ class BaseTreeNode(models.Model):
     def publish_post_save_task(self):
         id_as_str = str(self.pk)
         current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
+
+    def delete(self, *args, **kwargs):
+        deleted_node_ids = []
+        descendants = self.get_descendants(include_self=False)
+
+        if len(descendants) > 0:
+            for node in descendants:
+                try:
+                    deleted_node_ids.append(str(node.pk))
+                    node.delete(*args, **kwargs)
+                except BaseTreeNode.DoesNotExist:
+                    pass
+        # At this point all descendants were deleted.
+        # Self delete :)
+        try:
+            deleted_node_ids.append(str(self.pk))
+            super().delete(*args, **kwargs)
+        except BaseTreeNode.DoesNotExist:
+            # this node was deleted by earlier recursive call
+            # it is ok, just skip
+            pass
+
+        self.publish_post_delete_task(deleted_node_ids)
+
+    @skip_in_tests
+    def publish_post_delete_task(self, node_ids: List[str]):
+        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
 
     class Meta:
         # please do not confuse this "Documents" verbose name

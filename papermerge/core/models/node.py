@@ -372,8 +372,9 @@ class BaseTreeNode(models.Model):
 
     def __str__(self):
         class_name = type(self).__name__
-        return "{}(pk={},title='{}')".format(
+        return "{}(pk={}, title='{}', ctype='{}')".format(
             class_name,
             self.pk,
-            self.title
+            self.title,
+            self.ctype
         )

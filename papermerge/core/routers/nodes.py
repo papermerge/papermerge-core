@@ -109,6 +109,7 @@ def update_node(
     parent_id is optional field. However, when present, parent_id
     should be non empty string (UUID).
     """
+
     try:
         old_node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
     except BaseTreeNode.DoesNotExist:
@@ -117,12 +118,12 @@ def update_node(
             detail="Does not exist"
         )
 
-    for key, value in node.dict().items():
+    for key, value in node.model_dump().items():
         if value is not None:
             setattr(old_node, key, value)
     old_node.save()
 
-    return PyNode.from_orm(old_node)
+    return PyNode.model_validate(old_node)
 
 
 @router.delete("/")
@@ -140,9 +141,7 @@ def delete_nodes(
     for node in BaseTreeNode.objects.filter(
         user_id=user.id, id__in=list_of_uuids
     ):
-        deleted_nodes_uuids.append(
-            node.id
-        )
+        deleted_nodes_uuids.append(node.id)
         node.delete()
 
     return deleted_nodes_uuids

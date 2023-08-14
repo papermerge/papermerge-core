@@ -9,14 +9,25 @@ from papermerge.search.schema import FOLDER, PAGE, ColoredTag, IndexEntity
 
 class Command(BaseCommand):
     help = """
-    Index all available nodes/documents/folders/pages
+    Index specified node_ids
+
+    If node_ids are node provided, index all nodes
     """
 
+    def add_arguments(self, parser):
+        parser.add_argument("node_ids", nargs="*")
+
     def handle(self, *args, **options):
+        if options["node_ids"]:
+            nodes = BaseTreeNode.objects.filter(pk__in=options['node_ids'])
+        else:
+            nodes = BaseTreeNode.objects.all()
+
         engine = create_engine(settings.SEARCH_URL, mode=AccessMode.RW)
         session = Session(engine)
 
-        for node in BaseTreeNode.objects.all():
+        for node in nodes:
+            self.stdout.write(f"Indexing {node}")
             index_entity = None
             if not node.parent_id:
                 continue

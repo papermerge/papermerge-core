@@ -15,6 +15,7 @@ x-backend: &common  # yaml anchor definition
       - ./ui:/core_ui/
       - ./docker/dev/db:/db
       - ./media_root:/core_app/media
+      - ./index_db:/core_app/index_db
   environment:
     PAPERMERGE__SECURITY__SECRET_KEY: ${PAPERMERGE__SECURITY__SECRET_KEY}
     PAPERMERGE__DATABASE__URL: ${PAPERMERGE__DATABASE__URL}
@@ -38,4 +39,3 @@ services:
     command: worker
   redis:
     image: redis:6
-

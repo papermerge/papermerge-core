@@ -25,4 +25,13 @@ class AuthTestClient(BaseModel):
         )
 
     def patch(self, *args, **kwargs):
+        """
+        Example:
+
+            url = f'/nodes/{folder.id}'
+            response = auth_api_client.patch(
+                url,
+                json={'title': 'New Title'}
+            )
+        """
         return self.test_client.patch(*args, **kwargs)

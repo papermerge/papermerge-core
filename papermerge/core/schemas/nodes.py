@@ -32,8 +32,8 @@ class Tag(BaseModel):
 
 
 class UpdateNode(BaseModel):
-    title: Optional[str]
-    parent_id: Optional[UUID]
+    title: Optional[str] = None
+    parent_id: Optional[UUID] = None
 
     @field_validator('parent_id')
     def parent_id_is_not_none(cls, value):
@@ -42,7 +42,7 @@ class UpdateNode(BaseModel):
         return value
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DocumentNode(BaseModel):

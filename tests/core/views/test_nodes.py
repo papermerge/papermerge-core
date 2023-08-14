@@ -486,3 +486,23 @@ def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
 
     assert {'doc_a', 'doc_b'} == set(doc_tag_names)
     assert {'folder_a', 'folder_b'} == set(folder_tag_names)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_rename_folder(auth_api_client: AuthTestClient):
+    user = auth_api_client.user
+    folder = folder_recipe.make(
+        title='Old Title',
+        user=user,
+        parent=user.home_folder
+    )
+
+    response = auth_api_client.patch(
+        f'/nodes/{folder.id}',
+        json={'title': 'New Title'}
+    )
+
+    assert response.status_code == 200, response.content
+
+    renamed_folder: Folder = Folder.objects.get(pk=folder.pk)
+    assert renamed_folder.title == 'New Title'

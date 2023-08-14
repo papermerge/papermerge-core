@@ -1,7 +1,12 @@
+from typing import List
+
+from celery import current_app
 from django.db import models
 
+from papermerge.core.constants import INDEX_ADD_NODE, INDEX_REMOVE_NODE
 from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
+from papermerge.core.utils.decorators import skip_in_tests
 
 
 class FolderManager(models.Manager):
@@ -11,19 +16,28 @@ class FolderManager(models.Manager):
 class FolderQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
+        deleted_node_ids = []
         for node in self:
             descendants = node.get_descendants()
 
             if len(descendants) > 0:
+                deleted_node_ids.append(str(node.pk))
                 descendants.delete(*args, **kwargs)
             # At this point all descendants were deleted.
             # Self delete :)
             try:
+                deleted_node_ids.append(str(self.pk))
                 node.delete(*args, **kwargs)
             except BaseTreeNode.DoesNotExist:
                 # this node was deleted by earlier recursive call
                 # it is ok, just skip
                 pass
+
+            self.publish_post_delete_task(deleted_node_ids)
+
+    @skip_in_tests
+    def publish_post_delete_task(self, node_ids: List[str]):
+        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
 
     def get_by_breadcrumb(self, breadcrumb: str, user) -> 'Folder':
         """
@@ -65,23 +79,18 @@ class Folder(BaseTreeNode):
     class JSONAPIMeta:
         resource_name = "folders"
 
-    def delete(self, *args, **kwargs):
-        descendants = self.basetreenode_ptr.get_descendants()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.publish_post_save_task()
 
-        if len(descendants) > 0:
-            for node in descendants:
-                try:
-                    node.delete(*args, **kwargs)
-                except BaseTreeNode.DoesNotExist:
-                    pass
-        # At this point all descendants were deleted.
-        # Self delete :)
-        try:
-            super().delete(*args, **kwargs)
-        except BaseTreeNode.DoesNotExist:
-            # this node was deleted by earlier recursive call
-            # it is ok, just skip
-            pass
+    @skip_in_tests  # skip this method when running tests
+    def publish_post_save_task(self):
+        """Send task to worker to add folder changes to search index
+
+        This method WILL NOT be invoked during tests
+        """
+        id_as_str = str(self.pk)
+        current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     class Meta:
         verbose_name = "Folder"

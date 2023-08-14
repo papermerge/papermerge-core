@@ -116,10 +116,8 @@ def index_remove_node(node_ids: List[str]):
     session = Session(engine)
 
     for node_id in node_ids:
-        idterm = f"Q{node_id}"
-        session._engine._db.delete_document(idterm)
-        session._engine._db.delete_document(
-            f"DOCUMENT_ID{node_id.replace('-', '')}"
-        )
+        id_term = f"ID{node_id}"
+        session.remove(id_term)
 
-    session._engine._db.commit()
+        document_id_term = f"DOCUMENT_ID{node_id.replace('-', '')}"
+        session.remove(document_id_term)

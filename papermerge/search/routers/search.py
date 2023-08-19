@@ -2,11 +2,11 @@ from typing import List
 
 from django.conf import settings
 from fastapi import APIRouter, Depends
-from salinic import Search, Session, create_engine
+from salinic import IndexRO, Search, create_engine
 
 from papermerge.core.models import User
 from papermerge.core.routers.auth import get_current_user as current_user
-from papermerge.search.schema import IndexEntity
+from papermerge.search.schema import Model
 
 router = APIRouter(
     prefix="/search",
@@ -18,13 +18,13 @@ router = APIRouter(
 def search(
     q: str,
     user: User = Depends(current_user)
-) -> List[IndexEntity]:
+) -> List[Model]:
     engine = create_engine(settings.SEARCH_URL)
-    session = Session(engine)
+    index = IndexRO(engine, schema=Model)
 
-    sq = Search(IndexEntity).query(q)
+    sq = Search(Model).query(q)
 
-    results: List[IndexEntity] = session.exec(sq)
+    results: List[Model] = index.search(sq)
 
     # show results only of the documents belonging to the current user
     return [

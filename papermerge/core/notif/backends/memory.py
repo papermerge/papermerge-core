@@ -23,7 +23,7 @@ class MemoryBackend:
         return None
 
     def push(self, value: Event):
-        attrs = value.dict()
+        attrs = value.model_dump()
         logger.debug("PUSH")
         json_data = json.dumps(attrs)
         logger.debug(f"Push value={value} to the queue")

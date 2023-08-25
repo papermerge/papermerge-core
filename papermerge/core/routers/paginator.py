@@ -4,7 +4,7 @@ from typing import Callable, Generic, TypeVar
 
 from django.core.paginator import Paginator as DjangoPaginator
 from django.db.models.query import QuerySet
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .params import CommonQueryParams
 
@@ -41,8 +41,8 @@ class Paginator(BaseModel):
             **kwargs
         )
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Config
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 def paginate(func: Callable) -> Callable:

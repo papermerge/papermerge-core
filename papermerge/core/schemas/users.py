@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class User(BaseModel):
@@ -13,5 +13,5 @@ class User(BaseModel):
     home_folder_id: UUID | None
     inbox_folder_id: UUID | None
 
-    class Config:
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)

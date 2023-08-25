@@ -41,7 +41,7 @@ DATABASES = {
     }
 }
 
-SEARCH_URL = 'xapian://index_db_test'
+SEARCH_URL = 'xapian://index_db_test/index_db'
 
 AUTH_USER_MODEL = "core.User"
 

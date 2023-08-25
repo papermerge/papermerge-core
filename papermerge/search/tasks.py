@@ -40,6 +40,7 @@ def index_add_node(node_id: str):
         models = [from_folder(node)]
 
     for model in models:
+        logger.warning(f'adding {model}')
         index.add(model)
 
 

@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from salinic import types
 from salinic.field import KeywordField, TextField, UUIDField
 from salinic.schema import Schema
@@ -33,6 +33,11 @@ class Model(Schema):
     both folders and documents, and because the main index entity is page -
     we end up having in index two types of entities: folders and pages.
     """
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        lang_field_name='lang'
+    )
+
     id: Annotated[
         str,
         UUIDField(primary_key=True, general_search=True)
@@ -93,7 +98,6 @@ class Model(Schema):
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\
             f'document_id={self.document_id},' \
-            f'document_version_id={self.document_version_id},' \
             f'type={self.entity_type})'
 
     def get_idx_value__tags(self):

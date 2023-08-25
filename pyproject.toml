@@ -86,7 +86,7 @@ dj-config-url = "^0.1.1"
 websockets = "^11.0.3"
 httpx = "^0.24.1"
 configula = "^0.5.4"
-salinic = "^0.3.2"
+salinic = "^0.3.7"
 
 
 [tool.taskipy.tasks]

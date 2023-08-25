@@ -52,6 +52,10 @@ exec_worker() {
    -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE__WORKER__ARGS}
 }
 
+exec_index_schema_apply() {
+  exec /core_app/.venv/bin/python manage.py index_schema apply
+}
+
 exec_init() {
   exec_migrate
   exec_createsuperuser
@@ -68,6 +72,7 @@ case $CMD in
     exec_createsuperuser
     ;;
   server)
+    poetry run ./manage.py index_schema apply
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     exec /usr/bin/supervisord
     ;;

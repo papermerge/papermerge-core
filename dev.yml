@@ -33,6 +33,9 @@ services:
     <<: *common
     ports:
      - "11000:80"
+    depends_on:
+      - solr
+      - redis
   worker:
     <<: *common
     command: worker
@@ -46,7 +49,7 @@ services:
       - data:/var/solr
     command:
       - solr-precreate
-      - pmg_index
+      - pmg_index2
 
 volumes:
   data:

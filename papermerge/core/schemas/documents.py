@@ -4,7 +4,8 @@ from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
-from pydantic import BaseModel, Field, FieldValidationInfo, field_validator
+from pydantic import (BaseModel, ConfigDict, Field, FieldValidationInfo,
+                      field_validator)
 from typing_extensions import Annotated
 
 from papermerge.core.types import OCRStatusEnum
@@ -29,8 +30,8 @@ class Page(BaseModel):
     def jpg_url_value(cls, value, info: FieldValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/jpg"
 
-    class Config:
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentVersion(BaseModel):
@@ -60,8 +61,8 @@ class DocumentVersion(BaseModel):
     def download_url_value(cls, value, info: FieldValidationInfo):
         return f"/api/document-versions/{info.data['id']}/download"
 
-    class Config:
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Document(BaseModel):
@@ -88,9 +89,8 @@ class Document(BaseModel):
     def thumbnail_url_validator(cls, value, values):
         return f"/api/thumbnails/{values['id']}"
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateDocument(BaseModel):

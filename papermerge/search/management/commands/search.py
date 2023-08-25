@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from salinic import Search, Session, create_engine
+from salinic import IndexRO, Search, create_engine
 
-from papermerge.search.schema import IndexEntity
+from papermerge.search.schema import Model
 
 
 class Command(BaseCommand):
@@ -21,9 +21,9 @@ class Command(BaseCommand):
                 querystring = querystring.replace('-', '').lower()
 
         engine = create_engine(settings.SEARCH_URL)
-        session = Session(engine)
+        index = IndexRO(engine, schema=Model)
 
-        sq = Search(IndexEntity).query(querystring)
+        sq = Search(Model).query(querystring)
 
-        for entity in session.exec(sq):
+        for entity in index.search(sq):
             self.stdout.write(f'{entity}')

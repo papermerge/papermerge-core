@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Literal, Tuple
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Folder(BaseModel):
@@ -15,8 +15,8 @@ class Folder(BaseModel):
     user_id: UUID
     breadcrumb: List[Tuple[UUID, str]]
 
-    class Config:
-        from_attributes = True
+    # Configs
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateFolder(BaseModel):

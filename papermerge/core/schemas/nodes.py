@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from papermerge.core.types import OCRStatusEnum
 
@@ -18,17 +18,8 @@ class Tag(BaseModel):
     bg_color: str = '#c41fff'
     fg_color: str = '#FFFFF'
 
-    class Config:
-        from_attributes = True
-        schema_extra = {
-            "example": [
-                {
-                    "name": "important",
-                    "bg_color": "#ffaaff",
-                    "fg_color": '#ff0000',
-                }
-            ]
-        }
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateNode(BaseModel):
@@ -41,8 +32,8 @@ class UpdateNode(BaseModel):
             raise ValidationError('Cannot set parent_id to None')
         return value
 
-    class Config:
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentNode(BaseModel):
@@ -89,8 +80,8 @@ class Node(BaseModel):
 
         return value
 
-    class Config:
-        from_attributes = True
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateNode(BaseModel):
@@ -98,8 +89,8 @@ class CreateNode(BaseModel):
     ctype: NodeType.folder
     parent_id: UUID | None
 
-    class Config:
-        orm_mode = True
+    # Configs
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MoveNode(BaseModel):

@@ -1,9 +1,7 @@
 import pytest
-from django.conf import settings
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from salinic import Session, create_engine
-from salinic.engine import AccessMode
+from salinic import IndexRW, create_engine
 
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
@@ -52,7 +50,13 @@ def auth_api_client(user: User):
 
 
 @pytest.fixture()
-def session(tmp_path) -> Session:
-    engine = create_engine(settings.SEARCH_URL, mode=AccessMode.RW)
+def index(tmp_path, request) -> IndexRW:
+    d = tmp_path / "index_db"
+    d.mkdir()
 
-    return Session(engine)
+    d = d / "test_db"
+    d.mkdir()
+
+    engine = create_engine(f"xapian://{d}")
+
+    return IndexRW(engine, schema=request.param)

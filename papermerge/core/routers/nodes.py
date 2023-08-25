@@ -95,7 +95,7 @@ def create_node(
             detail="Title already exists"
         )
 
-    return klass.from_orm(node)
+    return klass.model_validate(node)
 
 
 @router.patch("/{node_id}")
@@ -241,7 +241,7 @@ def update_node_tags(
 
     node.tags.add(*tags, tag_kwargs={"user": user})
 
-    return PyNode.from_orm(node)
+    return PyNode.model_validate(node)
 
 
 @router.delete("/{node_id}/tags")
@@ -265,4 +265,4 @@ def delete_node_tags(
 
     node.tags.remove(*tags)
 
-    return PyNode.from_orm(node)
+    return PyNode.model_validate(node)

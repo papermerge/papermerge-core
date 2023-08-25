@@ -15,7 +15,6 @@ x-backend: &common  # yaml anchor definition
       - ./ui:/core_ui/
       - ./docker/dev/db:/db
       - ./media_root:/core_app/media
-      - ./index_db:/core_app/index_db
   environment:
     PAPERMERGE__SECURITY__SECRET_KEY: ${PAPERMERGE__SECURITY__SECRET_KEY}
     PAPERMERGE__DATABASE__URL: ${PAPERMERGE__DATABASE__URL}
@@ -28,14 +27,29 @@ x-backend: &common  # yaml anchor definition
     PAPERMERGE__AUTH__GITHUB_CLIENT_ID: ${PAPERMERGE__AUTH__GITHUB_CLIENT_ID}
     PAPERMERGE__AUTH__GITHUB_AUTHORIZE_URL: ${PAPERMERGE__AUTH__GITHUB_AUTHORIZE_URL}
     PAPERMERGE__AUTH__GITHUB_REDIRECT_URI: ${PAPERMERGE__AUTH__GITHUB_REDIRECT_URI}
-
+    PAPERMERGE__SEARCH__URL: ${PAPERMERGE__SEARCH__URL}
 services:
   backend:
     <<: *common
     ports:
      - "11000:80"
+    depends_on:
+      - solr
+      - redis
   worker:
     <<: *common
     command: worker
   redis:
     image: redis:6
+  solr:
+    image: solr:9.3
+    ports:
+     - "8983:8983"
+    volumes:
+      - data:/var/solr
+    command:
+      - solr-precreate
+      - pmg_index2
+
+volumes:
+  data:

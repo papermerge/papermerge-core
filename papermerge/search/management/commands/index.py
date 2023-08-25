@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from salinic import Session, create_engine
-from salinic.engine import AccessMode
+from salinic import IndexRO, create_engine
 
 from papermerge.core.models import BaseTreeNode
-from papermerge.search.schema import FOLDER, PAGE, ColoredTag, IndexEntity
+from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
 
 
 class Command(BaseCommand):
@@ -23,8 +22,8 @@ class Command(BaseCommand):
         else:
             nodes = BaseTreeNode.objects.all()
 
-        engine = create_engine(settings.SEARCH_URL, mode=AccessMode.RW)
-        session = Session(engine)
+        engine = create_engine(settings.SEARCH_URL)
+        index = IndexRO(engine, schema=Model)
 
         for node in nodes:
             self.stdout.write(f"Indexing {node}")
@@ -37,7 +36,7 @@ class Command(BaseCommand):
                 last_ver = doc.versions.last()
 
                 for page in last_ver.pages.all():
-                    index_entity = IndexEntity(
+                    model = Model(
                         id=str(page.id),
                         title=node.title,
                         user_id=str(node.user_id),
@@ -60,7 +59,7 @@ class Command(BaseCommand):
                         ]
                     )
             else:
-                index_entity = IndexEntity(
+                model = Model(
                     id=str(node.id),
                     title=node.title,
                     user_id=str(node.user_id),
@@ -80,4 +79,4 @@ class Command(BaseCommand):
                 )
 
             if index_entity:
-                session.add(index_entity)
+                index.add(model)

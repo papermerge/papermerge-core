@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends
 
-from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.models import User
 from papermerge.core.routers.auth import get_current_user as current_user
+from papermerge.core.schemas.users import User as PyUser
 
 from .paginator import PaginatorGeneric, paginate
 from .params import CommonQueryParams
-
 
 router = APIRouter(
     prefix="/users",
@@ -17,7 +16,7 @@ router = APIRouter(
 @router.get("/me")
 def get_current_user(user: User = Depends(current_user)) -> PyUser:
     """Returns current user"""
-    return PyUser.from_orm(user)
+    return PyUser.model_validate(user)
 
 
 @router.get("/", response_model=PaginatorGeneric[PyUser])

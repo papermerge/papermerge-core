@@ -45,7 +45,7 @@ def create_tag(
 ) -> schemas.Tag:
     """Creates user tag"""
     try:
-        tag = Tag.objects.create(user=user, **pytag.dict())
+        tag = Tag.objects.create(user=user, **pytag.model_dump())
     except IntegrityError:
         raise HTTPException(
             status_code=400,
@@ -86,6 +86,6 @@ def update_tag(
             detail="Does not exists"
         )
 
-    qs.update(**tag.dict(exclude_unset=True))
+    qs.update(**tag.model_dump(exclude_unset=True))
 
     return schemas.Tag.model_validate(qs.first())

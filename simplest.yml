@@ -11,5 +11,6 @@ services:
         - ./ui:/core_ui/
     environment:
       PAPERMERGE__SECURITY__SECRET_KEY: 1234  # top secret
+      DJANGO_SUPERUSER_PASSWORD: 1234
     ports:
       - "11000:80"

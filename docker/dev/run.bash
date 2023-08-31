@@ -1,22 +1,9 @@
 #!/bin/bash
 
 CMD="$1"
-MANAGE="${PYTHON} manage.py"
+MANAGE="cd /core_ui && poetry run manage.py"
 
-if [ -z "${DJANGO_SETTINGS_MODULE}" ]; then
-  # default value for DJANGO_SETTINGS_MODULE environment variable
-  export DJANGO_SETTINGS_MODULE=config.settings
-fi
-
-if [ -z "${DJANGO_SUPERUSER_USERNAME}" ]; then
-  # default value for DJANGO_SUPERUSER_USERNAME environment variable
-  export DJANGO_SUPERUSER_USERNAME=admin
-fi
-
-if [ -z "${DJANGO_SUPERUSER_EMAIL}" ]; then
-  # default value for DJANGO_SUPERUSER_EMAIL environment variable
-  export DJANGO_SUPERUSER_EMAIL=admin@example.com
-fi
+mkdir -p /db  # default database is /db/db.sqlite3
 
 if [ -z $CMD ]; then
   echo "No command specified"
@@ -29,7 +16,7 @@ exec_server() {
 
 exec_migrate() {
   # run migrations
-  $MANAGE migrate --no-input
+  cd /core_app && poetry run ./manage.py migrate --no-input
 }
 
 
@@ -41,7 +28,7 @@ exec_createsuperuser() {
   # to create superuser if (1) and (2) are set
   if [ -n "${DJANGO_SUPERUSER_USERNAME}" ] && [ -n "${DJANGO_SUPERUSER_EMAIL}" ]; then
     echo "Creating superuser username=${DJANGO_SUPERUSER_USERNAME}"
-    $MANAGE createsuperuser --noinput \
+    cd /core_app && poetry run ./manage.py createsuperuser --noinput \
       --username ${DJANGO_SUPERUSER_USERNAME} \
       --email ${DJANGO_SUPERUSER_EMAIL} || true
   fi
@@ -72,11 +59,13 @@ case $CMD in
     exec_createsuperuser
     ;;
   server)
+    exec_init
     poetry run ./manage.py index_schema apply
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     exec /usr/bin/supervisord
     ;;
   worker)
+    exec_init
     exec_worker
     ;;
   *)

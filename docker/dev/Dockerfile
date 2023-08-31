@@ -3,6 +3,11 @@ FROM papermerge/auth-server:0.4.1 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app
+ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
+ENV DJANGO_SETTINGS_MODULE=config.settings
+ENV DJANGO_SUPERUSER_USERNAME=admin
+ENV DJANGO_SUPERUSER_EMAIL=admin@example.com
+
 ENV VIRTUAL_ENV=${CORE_APP}/.venv
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

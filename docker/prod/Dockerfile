@@ -37,10 +37,9 @@ COPY docker/prod/run.bash /run.bash
 COPY docker/prod/supervisord.conf /etc/
 COPY docker/prod/nginx.conf /etc/nginx/nginx.conf
 COPY docker/prod/logging.yml ${CORE_APP}/logging.yml
-### COPY ./papermerge ${CORE_APP}/papermerge/
+COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/prod/config ${CORE_APP}/config
 COPY ./docker/prod/manage.py ${CORE_APP}/manage.py
-### COPY ui/ /core_ui/
 
 RUN chmod +x /run.bash
 

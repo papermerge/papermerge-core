@@ -33,13 +33,13 @@ COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
 WORKDIR ${CORE_APP}
 RUN poetry install --no-root -vvv
 
-COPY docker/dev/run.bash /run.bash
-COPY docker/dev/supervisord.conf /etc/
-COPY docker/dev/nginx.conf /etc/nginx/nginx.conf
-COPY docker/dev/logging.yml ${CORE_APP}/logging.yml
+COPY docker/prod/run.bash /run.bash
+COPY docker/prod/supervisord.conf /etc/
+COPY docker/prod/nginx.conf /etc/nginx/nginx.conf
+COPY docker/prod/logging.yml ${CORE_APP}/logging.yml
 ### COPY ./papermerge ${CORE_APP}/papermerge/
-COPY ./docker/dev/config ${CORE_APP}/config
-COPY ./docker/dev/manage.py ${CORE_APP}/manage.py
+COPY ./docker/prod/config ${CORE_APP}/config
+COPY ./docker/prod/manage.py ${CORE_APP}/manage.py
 ### COPY ui/ /core_ui/
 
 RUN chmod +x /run.bash

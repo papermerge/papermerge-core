@@ -1,63 +1,54 @@
-FROM papermerge/base:1.1.1 as build
+FROM papermerge/tivoli:0.2.0 as token_validator
+FROM papermerge/auth-server:0.4.3 as auth_server
+FROM python:3.10 as papermerge_core
 
-### STEP 1 - pull all python dependencies in virtual env
-ENV IN_DOCKER=1
-ENV POETRY_VIRTUALENVS_CREATE=false
-ENV UWSGI_PROFILE=gevent
-ENV VIRTUAL_ENV=/venv
+ENV CORE_APP=/core_app
+ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
+ENV DJANGO_SETTINGS_MODULE=config.settings
+ENV PAPERMERGE__AUTH__USERNAME=admin
+ENV PAPERMERGE__AUTH__EMAIL=admin@example.com
 
-RUN apt-get install -y --no-install-recommends \
+ENV VIRTUAL_ENV=${CORE_APP}/.venv
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
     tesseract-ocr \
     tesseract-ocr-deu \
     imagemagick \
-    gcc
-
-RUN pip install --upgrade poetry
-RUN python -m venv /venv
-
-ENV PATH="/venv/bin:$PATH"
-
-COPY poetry.lock pyproject.toml /
-RUN poetry install --no-root --no-dev -vvv
-
-## STEP 2 - use slim base image
-FROM python:3.10-slim
-
-ENV PATH="/venv/bin:$PATH"
-ENV PYTHONBUFFERED=1
-ENV VIRTUAL_ENV=/venv
-
-RUN apt-get update;
-RUN apt-get install -y --no-install-recommends \
-    build-essential \
-    python3-dev \
-    postgresql-client \
-    tesseract-ocr \
-    tesseract-ocr-deu \
-    imagemagick \
+    gcc \
+    nginx \
+    supervisor \
     poppler-utils \
-    git \
-    libmagic1 \
     ghostscript \
-    file \
-    gcc
+    nodejs \
+    npm
 
-COPY docker/prod/uwsgi.ini /etc/uwsgi/papermerge.ini
-COPY docker/prod/scripts /
+RUN pip install --upgrade poetry roco==0.1.1
+
+RUN python -m venv ${VIRTUAL_ENV}
+
+COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
+
+WORKDIR ${CORE_APP}
+RUN poetry install --no-root -vvv
+
+COPY docker/dev/run.bash /run.bash
+COPY docker/dev/supervisord.conf /etc/
+COPY docker/dev/nginx.conf /etc/nginx/nginx.conf
+COPY docker/dev/logging.yml ${CORE_APP}/logging.yml
+### COPY ./papermerge ${CORE_APP}/papermerge/
+COPY ./docker/dev/config ${CORE_APP}/config
+COPY ./docker/dev/manage.py ${CORE_APP}/manage.py
+### COPY ui/ /core_ui/
+
 RUN chmod +x /run.bash
 
-COPY --from=build /venv /venv
+COPY --from=token_validator /tivoli_app/ /tivoli_app
+COPY --from=auth_server /auth_server_app/ /auth_server_app
+COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
 
-WORKDIR app
-
-# sources
-COPY papermerge/ ./papermerge/
-COPY docker/prod/config/ ./config/
-COPY docker/prod/manage.py ./
-
-EXPOSE 8000
+EXPOSE 80
 
 ENTRYPOINT ["/run.bash"]
 CMD ["server"]

@@ -1,9 +1,8 @@
 import logging
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket
 
 from papermerge.core.models import User
-from papermerge.core.notif import notification
 
 from .auth import get_ws_current_user
 
@@ -45,6 +44,7 @@ async def websocket_endpoint(
     to the websocket clients (to the current/session user).
     """
     await manager.connect(websocket)
+    """
     try:
         while True:
             async for message in notification:
@@ -58,3 +58,4 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         logger.info("Websocket disconnected")
         manager.disconnect(websocket)
+    """

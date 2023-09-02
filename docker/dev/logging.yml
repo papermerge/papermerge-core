@@ -12,6 +12,9 @@ handlers:
     formatter: verbose
 
 loggers:
+  auth_server:
+    level: DEBUG
+    handlers: [console]
   papermerge.search.tasks:
     level: DEBUG
     handlers: [console]

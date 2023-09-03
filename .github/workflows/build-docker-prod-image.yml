@@ -1,4 +1,4 @@
-name: Build Docker Prod Image
+name: Build Prod Image
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build ${{ inputs.VERSION }}
+      - name: Build ${{ inputs.VERSION }} Prod Image
         uses: docker/build-push-action@v3
         with:
           push: true

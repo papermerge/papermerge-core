@@ -1,3 +1,11 @@
+FROM node:19 as  build
+
+WORKDIR build_ui_app
+COPY ui/package.json ui/package-lock.json ui/tsconfig.json .
+COPY ui/ .
+RUN npm install
+RUN npm run build
+
 FROM papermerge/tivoli:0.2.0 as token_validator
 FROM papermerge/auth-server:0.4.3 as auth_server
 FROM python:3.10 as papermerge_core
@@ -46,6 +54,7 @@ RUN chmod +x /run.bash
 COPY --from=token_validator /tivoli_app/ /tivoli_app
 COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
+COPY --from=build /build_ui_app/build/ /usr/share/nginx/html/ui
 
 EXPOSE 80
 

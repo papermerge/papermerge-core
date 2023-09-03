@@ -3,7 +3,7 @@ name: Build Docker Prod Image
 on:
   workflow_dispatch:
     inputs:
-      TAG:
+      VERSION:
         required: true
         description: Docker tag e.g. 3.0a1, 3.0a2
         type: string
@@ -29,7 +29,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:${{ inputs.TAG }}
+          tags: papermerge/papermerge:${{ inputs.VERSION }}
           file: docker/prod/Dockerfile
           platforms: linux/amd64
       - name: Docker Hub Description

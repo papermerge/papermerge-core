@@ -3,7 +3,7 @@ name: Build Docker Dev Image
 on:
   workflow_dispatch:
     inputs:
-      TAG:
+      VERSION:
         required: true
         description: Docker tag e.g. 3.0dev1, 3.0dev2
         type: string
@@ -26,9 +26,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build ${{ inputs.VERSION }} Dev Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: true
-          tags: papermerge/papermerge:${{ inputs.TAG }}
+          tags: papermerge/papermerge:${{ inputs.VERSION }}
           file: docker/dev/Dockerfile
           platforms: linux/amd64

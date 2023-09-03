@@ -7,9 +7,6 @@ on:
         required: true
         description: Docker tag e.g. 3.0dev1, 3.0dev2
         type: string
-      IS_LATEST:
-        type: string
-        default: false
 
 jobs:
   build:
@@ -28,18 +25,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build ${{ inputs.VERSION }}
+      - name: Build ${{ inputs.VERSION }} Dev Image
         uses: docker/build-push-action@v3
         with:
           push: true
           tags: papermerge/papermerge:${{ inputs.TAG }}
           file: docker/dev/Dockerfile
           platforms: linux/amd64
-      - name: Build Prod Image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: papermerge/papermerge:3.0dev-latest
-          file: docker/dev/Dockerfile
-          platforms: linux/amd64
-        if: ${{ inputs.IS_LATEST == 'true' }}

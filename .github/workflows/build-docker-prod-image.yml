@@ -7,9 +7,6 @@ on:
         required: true
         description: Docker tag e.g. 3.0a1, 3.0a2
         type: string
-      IS_LATEST:
-        type: string
-        default: false
 
 jobs:
   build:
@@ -35,14 +32,6 @@ jobs:
           tags: papermerge/papermerge:${{ inputs.TAG }}
           file: docker/prod/Dockerfile
           platforms: linux/amd64
-      - name: Build Prod Image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: papermerge/papermerge:3.0a-latest
-          file: docker/prod/Dockerfile
-          platforms: linux/amd64
-        if: ${{ inputs.IS_LATEST == 'true' }}
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

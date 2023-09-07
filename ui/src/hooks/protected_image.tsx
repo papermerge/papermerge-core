@@ -2,9 +2,35 @@ import {useState, useEffect, useRef} from "react";
 import { get_default_headers } from "utils/fetcher";
 
 import type { State } from 'types';
+import type { DefaultHeaderType } from 'types';
 
 
 type MimeType = "image/jpeg" | "image/svg+xml";
+type setBaseType = React.Dispatch<React.SetStateAction<string>>;
+type setResultType = React.Dispatch<React.SetStateAction<State<JSX.Element | null>>>;
+
+
+function fetch_jpeg(
+    url: string,
+    headers: DefaultHeaderType,
+    setBase: setBaseType,
+    setResult: setResultType
+) {
+    fetch(url, {headers: headers}).then(res => {
+        if (res.status === 200) {
+            res.arrayBuffer().then(data => {
+                setBase(
+                    _imageEncode(data, 'image/jpeg')
+                );
+                setResult({
+                    is_loading: false,
+                    error: null,
+                    data: <img src={_imageEncode(data, 'image/jpeg')}></img>
+                });
+            });
+        }
+    });
+}
 
 
 export const useProtectedSVG = (url: string | null, fallback_url: string | null) => {
@@ -57,20 +83,7 @@ export const useProtectedSVG = (url: string | null, fallback_url: string | null)
                     return;
                 }
                 // fallback to jpeg image
-                fetch(fallback_url, {headers: headers}).then(res => {
-                    if (res.status === 200) {
-                        res.arrayBuffer().then(data => {
-                            setBase64(
-                                _imageEncode(data, 'image/jpeg')
-                            );
-                            setResult({
-                                is_loading: false,
-                                error: null,
-                                data: <img src={_imageEncode(data, 'image/jpeg')}></img>
-                            });
-                        });
-                    }
-                });
+                fetch_jpeg(fallback_url, headers, setBase64, setResult);
             }
         });
     }, [url]);
@@ -105,23 +118,8 @@ export const useProtectedJpg = (url:string | null) => {
     }
 
     useEffect(() => {
-        fetch(url, {headers: headers}).then(res => {
-            if (res.status === 200) {
-                res.arrayBuffer().then(data => {
-                    setBase64(
-                        _imageEncode(data, 'image/jpeg')
-                    );
-                    setResult({
-                        is_loading: false,
-                        error: null,
-                        data: <img src={_imageEncode(data, 'image/jpeg')}></img>
-                    });
-                });
-            }
-        });
-
+        fetch_jpeg(url, headers, setBase64, setResult);
     }, [url]);
-
 
     return result;
 }

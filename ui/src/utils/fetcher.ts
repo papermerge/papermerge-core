@@ -1,11 +1,7 @@
 
 import Cookies from 'js-cookie';
+import type { DefaultHeaderType } from 'types';
 
-
-type DefaultHeaderType = {
-  'Authorization': string,
-  'Content-Type': string;
-}
 
 const COOKIE_NAME = 'access_token';
 

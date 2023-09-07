@@ -1,5 +1,10 @@
 import React from 'react';
 
+export type DefaultHeaderType = {
+  'Authorization': string,
+  'Content-Type': string;
+}
+
 export type ColoredTagType = {
   name: string;
   bg_color: string;

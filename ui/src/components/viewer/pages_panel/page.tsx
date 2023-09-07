@@ -11,7 +11,10 @@ export function Page({page}: Args) {
 
   //const base64_jpg = useProtectedJpg(page.jpg_url);
 
-  let {data, is_loading, error} = useProtectedSVG(page.svg_url);
+  let {data, is_loading, error} = useProtectedSVG(
+    page.svg_url,
+    `${page.jpg_url}?size=900`
+  );
   let page_component: JSX.Element | null
 
   if (is_loading) {

@@ -7,7 +7,14 @@ import type { State } from 'types';
 type MimeType = "image/jpeg" | "image/svg+xml";
 
 
-export const useProtectedSVG = (url: string | null) => {
+export const useProtectedSVG = (url: string | null, fallback_url: string | null) => {
+    /*
+    In case fetching url returns 404, then fallback_url will be tried.
+    `url` - is the URL of the SVG image.
+    `fallback_url` - is the URL of the jpeg image, Jpeg image will
+    always exists as it will be generated on the fly in case it is not there
+    yet
+    */
     //The initial value is empty
     const initial_state: State<JSX.Element | null> = {
         is_loading: true,
@@ -15,7 +22,8 @@ export const useProtectedSVG = (url: string | null) => {
         data: null
     };
     const [svg, setSVG] = useState('')
-    const [result, setResult] = useState<State<JSX.Element | null>>(initial_state)
+    const [result, setResult] = useState<State<JSX.Element | null>>(initial_state);
+    const [base64, setBase64] = useState('data:image/jpeg;base64,');
     const headers = get_default_headers();
     const ref = useRef<HTMLInputElement>(null);
     const result_svg_component = <div ref={ref}></div>;
@@ -38,6 +46,30 @@ export const useProtectedSVG = (url: string | null) => {
                         error: null,
                         data: result_svg_component
                     });
+                });
+            } else if (res.status == 404) {
+                if (!fallback_url) {
+                    setResult({
+                        is_loading: false,
+                        error: null,
+                        data: result_svg_component
+                    });
+                    return;
+                }
+                // fallback to jpeg image
+                fetch(fallback_url, {headers: headers}).then(res => {
+                    if (res.status === 200) {
+                        res.arrayBuffer().then(data => {
+                            setBase64(
+                                _imageEncode(data, 'image/jpeg')
+                            );
+                            setResult({
+                                is_loading: false,
+                                error: null,
+                                data: <img src={_imageEncode(data, 'image/jpeg')}></img>
+                            });
+                        });
+                    }
                 });
             }
         });

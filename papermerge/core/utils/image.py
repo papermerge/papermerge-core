@@ -23,7 +23,7 @@ def generate_preview(
         'first_page': page_number,
         'last_page': page_number,
         'single_file': True,
-        'size': (size,),
+        'size': (size, None),
         'output_file': file_name_generator(size)
     }
 

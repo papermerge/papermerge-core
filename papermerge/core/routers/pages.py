@@ -2,7 +2,7 @@ import logging
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
@@ -58,9 +58,16 @@ def get_page_svg_url(
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
 def get_page_jpg_url(
     page_id: uuid.UUID,
-    size: int = DEFAULT_THUMBNAIL_SIZE,
+    size: int = Query(
+        DEFAULT_THUMBNAIL_SIZE,
+        description="jpg image width in pixels"
+    ),
     user: User = Depends(current_user)
 ):
+    """Returns jpg preview image of the page.
+
+    Returned jpg image's width is `size` pixels.
+    """
     try:
         page = Page.objects.get(
             id=page_id,

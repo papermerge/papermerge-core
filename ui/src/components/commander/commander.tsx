@@ -341,12 +341,11 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
-
     let image = <DraggingIcon node_id={node_id}
           selectedNodes={selectedNodes}
           nodesList={nodesList} />;
     let ghost = document.createElement('div');
-
+    console.log(`onDragStart for node ${node_id}`);
     ghost.style.transform = "translate(-10000px, -10000px)";
     ghost.style.position = "absolute";
     document.body.appendChild(ghost);
@@ -500,6 +499,16 @@ function Commander({
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
             is_loading={loading_id == item.id}
+            ref={(node) => {
+              const map = getNodesRefMap();
+              if (node) {
+                //@ts-ignore
+                map.set(item.id, node);
+              } else {
+                //@ts-ignore
+                map.delete(item.id);
+              }
+            }}
           />;
         }
       });

@@ -163,6 +163,9 @@ type Args = {
 }
 
 
+const ACCEPT_DROPPED_NODES_CSS = "accept-dropped-nodes";
+
+
 function Commander({
   node_id,
   page_number,
@@ -189,6 +192,9 @@ function Commander({
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
   const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
+  // css class name will be set to "accept-files" when user drags
+  // over commander with files from local fs
+  const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -430,6 +436,22 @@ function Commander({
     */
   }
 
+  const onDragEnter = () => {
+    setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
+  }
+
+  const onDragLeave = () => {
+    setCssAcceptFiles("");
+  }
+
+  const onDragOver = () => {
+    setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
+  }
+
+  const onDrop = () => {
+    console.log(`Just dropped something`);
+  }
+
   const list_nodes_css_class_name = () => {
     if (display_mode === DisplayNodesModeEnum.List) {
       return 'd-flex flex-column mb-3';
@@ -516,7 +538,12 @@ function Commander({
 
 
     return (
-      <div className="commander">
+      <div
+        className={`commander ${cssAcceptFiles}`}
+        onDrop={onDrop}
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}>
         <div className='top-bar'>
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}

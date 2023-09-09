@@ -56,7 +56,7 @@ export default function CentralBar(
         </div>
       </nav>
       <div className='container-fluid'>
-        <div className='d-flex row'>
+        <div className='d-flex row p-1'>
           {children}
         </div>
       </div>

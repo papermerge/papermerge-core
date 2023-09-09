@@ -20,6 +20,7 @@ import NewFolderModal from 'components/modals/new_folder';
 import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
+import DropFilesModal from 'components/modals/drop_files';
 import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
@@ -186,7 +187,11 @@ function Commander({
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
+  // for papermerge nodes dropping
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
+  // for local filesystem files dropping
+  const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
+  const [ filesList, setFilesList ] = useState<FileList>()
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
@@ -472,7 +477,17 @@ function Commander({
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setCssAcceptFiles("");
+    setFilesList(event.dataTransfer.files);
+    setDropFilesModalShow(true);
     console.log(`Just dropped something in commander`);
+  }
+
+  const onCancelDropFiles = () => {
+    setDropFilesModalShow(false);
+  }
+
+  const onPerformDropFiles = (moved_node_ids: string[]) => {
+    setDropNodesModalShow(false);
   }
 
   const list_nodes_css_class_name = () => {
@@ -650,6 +665,14 @@ function Commander({
             target_node={targetDropNode}
             onCancel={onCancelDropNodes}
             onSubmit={onPerformDropNodes} />
+        </div>
+        <div>
+          <DropFilesModal
+            show={dropFilesModalShow}
+            source_files={filesList}
+            target_node={targetDropNode}
+            onCancel={onCancelDropFiles}
+            onSubmit={onPerformDropFiles} />
         </div>
         <div>
           <ErrorModal

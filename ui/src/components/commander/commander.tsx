@@ -448,6 +448,9 @@ function Commander({
     /* Highlight commander (i.e. change its CSS class) to provide user feedback that
       commander can accept dragged document (drop in from local filesystem).
     */
+
+    event.preventDefault();
+
     // @ts-ignore
     if (event.target && event.target.classList) {
       // @ts-ignore
@@ -458,7 +461,7 @@ function Commander({
       }
     }
 
-    if (event.dataTransfer.files.length == 0) {
+    if (event.dataTransfer.files.length == 0 && event.dataTransfer.items.length == 0) {
       setCssAcceptFiles("");
       return;
     }
@@ -466,8 +469,10 @@ function Commander({
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
   }
 
-  const onDrop = () => {
-    console.log(`Just dropped something`);
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setCssAcceptFiles("");
+    console.log(`Just dropped something in commander`);
   }
 
   const list_nodes_css_class_name = () => {

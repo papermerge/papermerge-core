@@ -444,7 +444,25 @@ function Commander({
     setCssAcceptFiles("");
   }
 
-  const onDragOver = () => {
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    /* Highlight commander (i.e. change its CSS class) to provide user feedback that
+      commander can accept dragged document (drop in from local filesystem).
+    */
+    // @ts-ignore
+    if (event.target && event.target.classList) {
+      // @ts-ignore
+      if (event.target.classList.contains("folder")) {
+        // Do not highlight commander when user drags over a folder node
+        setCssAcceptFiles("");
+        return;
+      }
+    }
+
+    if (event.dataTransfer.files.length == 0) {
+      setCssAcceptFiles("");
+      return;
+    }
+
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
   }
 

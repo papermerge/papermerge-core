@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 
 import Spinner from "../../spinner";
 import SpinnerPlaceholder from "../../spinner_placeholder";
@@ -9,6 +9,9 @@ import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
 
 
+const ACCEPT_DROPPED_NODES = "accept_dropped_nodes";
+
+
 const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
     const onclick = () => {
@@ -17,7 +20,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
         node_type: props.node.ctype
       });
     }
-
+    const [ cssAcceptFilesAndNodes, setCssAcceptFilesAndNodes ] = useState<string>("");
     const onselect = (event: CheckboxChangeType) => {
       props.onSelect(props.node.id, event.target.checked);
     }
@@ -34,6 +37,18 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
       props.onDragEnd(props.node.id, event);
     }
 
+    const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+      setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
+    }
+
+    const onDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+      setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
+    }
+
+    const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+      setCssAcceptFilesAndNodes("");
+    }
+
     const css_class_node = (): string => {
       let css_class: string = '';
 
@@ -41,10 +56,6 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
         css_class = 'node folder tile';
       } else {
         css_class = 'node folder list';
-      }
-
-      if (props.node.accept_dropped_nodes) {
-        css_class += ' accept_dropped_nodes ';
       }
 
       if (props.node.is_currently_dragged) {
@@ -58,9 +69,12 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
       return (
         <>
           <div key={props.node.id} ref={ref}
-            className={css_class_node()}
+            className={css_class_node() + " " + cssAcceptFilesAndNodes}
             onDragStart={onDragStartHandle}
             onDrag={onDragHandle}
+            onDragOver={onDragOver}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
             onDragEnd={onDragEndHandle}
             draggable>
             {props.is_loading ? <Spinner />: <SpinnerPlaceholder />}
@@ -85,9 +99,12 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
       return (
         <>
           <div key={props.node.id} ref={ref}
-            className={css_class_node()}
+            className={css_class_node() + " " + cssAcceptFilesAndNodes}
             onDragStart={onDragStartHandle}
             onDrag={onDragHandle}
+            onDragOver={onDragOver}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
             onDragEnd={onDragEndHandle}
             draggable>
               <Form.Check

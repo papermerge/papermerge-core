@@ -21,7 +21,6 @@ function upload_file(
 
 }
 
-
 function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
   let bulk_create_docs: any = [];
 

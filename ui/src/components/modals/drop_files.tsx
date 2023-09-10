@@ -1,20 +1,20 @@
-import { useState } from 'react';
-
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { Spinner } from 'react-bootstrap';
 
 import { fetcher_post } from 'utils/fetcher';
+import { uploader } from 'utils/uploader';
 
-import type { NodeType } from 'types';
+
+import type { FolderType, NodeType } from 'types';
 
 
 type Args = {
   onCancel: () => void;
-  onSubmit: (uuids_list: string[]) => void;
+  onSubmit: () => void;
   show: boolean;
   source_files: FileList | undefined;
-  target_node: NodeType | undefined;
+  target_folder: FolderType | undefined;
+  onCreateDocumentNode: (nodes: NodeType[]) => void;
 }
 
 
@@ -23,33 +23,42 @@ const DropFilesModal = ({
   onCancel,
   onSubmit,
   source_files,
-  target_node
+  target_folder,
+  onCreateDocumentNode
 }: Args) => {
-
   /*
-    Used when user drag and drops files from local files system into the Commander
+    Used when user drag and drops files from local files system into the Commander.
+
+    The files upload is performed async and notification (user feedback) is
+    accomplished via "toasts" (notification messages in right lower corder of
+    the screen). In other words "Upload files" screen closes immediately - it
+    does not wait until all files are uploaded. User can go fancy and Upload 200
+    files from some folder - it does not make any sense for the upload dialog to
+    be open for until all those 200 files get uploaded.
   */
-
-  const [inProgress, setInProgress] = useState(false);
-  const [controller, setController] = useState<AbortController>(new AbortController());
-  let submit_button: JSX.Element;
-
-  if (!controller) {
-    setController(new AbortController());
-  }
-
   const handleSubmit = async () => {
-    setInProgress(true);
-    // add code here
-    setInProgress(false);
+    let node_id = target_folder?.id;
+
+    if (node_id) {
+      if (source_files) {
+        uploader({
+          files: source_files,
+          node_id: node_id,
+          onCreateDocumentNode: onCreateDocumentNode
+        });
+      } else {
+        console.error(`Empty source files list`);
+      }
+    } else {
+      console.error(`Target folder ID is undefined`);
+    }
+
+    onSubmit();
   }
 
   const handleCancel = () => {
-    controller.abort();
-    setInProgress(false);
     onCancel();
     // recreate new controller for next time
-    setController(new AbortController());
   }
 
   let source_titles: Array<string> = [];
@@ -60,13 +69,7 @@ const DropFilesModal = ({
     source_files_count = [...source_files].length;
   }
 
-  const target_title = target_node?.title;
-
-  if (inProgress) {
-    submit_button = <Button variant='primary'><Spinner size="sm" /></Button>;
-  } else {
-    submit_button = <Button variant='primary' onClick={handleSubmit}>Upload</Button>;
-  }
+  const target_title = target_folder?.title;
 
   return (
     <Modal
@@ -86,7 +89,7 @@ const DropFilesModal = ({
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
-        {submit_button}
+        <Button variant='primary' onClick={handleSubmit}>Upload</Button>
       </Modal.Footer>
     </Modal>
   );

@@ -192,6 +192,8 @@ function Commander({
   // for local filesystem files dropping
   const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
   const [ filesList, setFilesList ] = useState<FileList>()
+  // target folder where drop in (using drag 'n drop) files will be uploaded
+  const [ targetDropFile, setTargetDropFile ] = useState<FolderType>();
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
@@ -486,8 +488,20 @@ function Commander({
     setDropFilesModalShow(false);
   }
 
-  const onPerformDropFiles = (moved_node_ids: string[]) => {
-    setDropNodesModalShow(false);
+  const onPerformDropFiles = () => {
+    /* triggered when user clicked "Upload" button in
+     "upload dialog for drop in files"
+     The files upload is performed async and notification
+     (user feedback) is accomplished via "toasts" (notification messages
+      in right lower corder of the screen). In other words
+      "Upload files" screen closes immediately - it does not wait
+      until all files are uploaded. User can go fancy and Upload
+      200 files from some folder - it does not make any sense
+      for the upload dialog to be open for until all those 200 files
+      get uploaded.
+    */
+
+    setDropFilesModalShow(false);
   }
 
   const list_nodes_css_class_name = () => {
@@ -670,7 +684,8 @@ function Commander({
           <DropFilesModal
             show={dropFilesModalShow}
             source_files={filesList}
-            target_node={targetDropNode}
+            target_folder={targetDropFile || breadcrumb}
+            onCreateDocumentNode={onCreateDocumentModel}
             onCancel={onCancelDropFiles}
             onSubmit={onPerformDropFiles} />
         </div>

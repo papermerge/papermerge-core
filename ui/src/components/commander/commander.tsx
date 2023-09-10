@@ -20,6 +20,7 @@ import NewFolderModal from 'components/modals/new_folder';
 import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
+import DropFilesModal from 'components/modals/drop_files';
 import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
@@ -163,6 +164,9 @@ type Args = {
 }
 
 
+const ACCEPT_DROPPED_NODES_CSS = "accept-dropped-nodes";
+
+
 function Commander({
   node_id,
   page_number,
@@ -183,12 +187,20 @@ function Commander({
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
+  // for papermerge nodes dropping
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
+  // for local filesystem files dropping
+  const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
+  const [ filesList, setFilesList ] = useState<FileList>()
+  // target folder where drop in (using drag 'n drop) files will be uploaded
+  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | null>(null);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
-  const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
+  // css class name will be set to "accept-files" when user drags
+  // over commander with files from local fs
+  const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -237,9 +249,32 @@ function Commander({
     }
   }
 
-  const onCreateDocumentModel = (new_nodes: NodeType[]) => {
-    /* Invoked when new document node was added */
-    setNodesList(nodesList.concat(new_nodes));
+  const onCreateDocumentModel = (new_nodes: NodeType[], target_id: string) => {
+    /* Invoked when new document node(s) was/were added.
+    Will add new documents to the current list of nodes ONLY if target_id is
+    same as node id.
+
+    Say user currently has opened commander on ".home / My Documents" in other
+    words he/she sees the content of My Documents folder. We will call "My
+    Documents" folder "current folder". Current folder's id is `node_id`. Inside
+    current folder, say we have folder "Bills" and folder "Payments".
+
+    If user drags couple of documents from his/her local filesystem into the "My
+    Documents", then `target_id` will be set to UUID of "My Documents" i.e.
+    `target_id` == `node_id`. In this case we want to refresh node's list
+    because there are new entries (document which user dropped in).
+
+    if user drag'n drops file/document over folder "Bills", then there is
+    nothing to refresh, because newly dropped documents will be added inside
+    another folder, content of which is not visible to the user anyway; this
+    fact is signaled by the fact that `target_id` != `node_id`, in other words
+    `target_id` will be set to the UUID of "Bills" which is different than UUID
+    of the current node (`node_id`) (current folder is "My Documents" and it has
+    UUID = `node_id`).
+     */
+    if (target_id == node_id) {
+      setNodesList(nodesList.concat(new_nodes));
+    }
   }
 
   const onNodeSelect = (node_id: string, selected: boolean) => {
@@ -319,6 +354,7 @@ function Commander({
     setNodesList(new_nodes);
     setSelectedNodes([]);
     setDropNodesModalShow(false);
+    setSourceDropNodes([]);
   }
 
   const onCancelDropNodes = () => {
@@ -327,6 +363,7 @@ function Commander({
       node.is_currently_dragged = false;
     });
     setSelectedNodes([]);
+    setSourceDropNodes([]);
     setDropNodesModalShow(false);
   }
 
@@ -377,7 +414,6 @@ function Commander({
       if (node_id != item.id && item_rect.contains(point)) {
         console.log(`Dragging over ${item.title}`);
         item.accept_dropped_nodes = true;
-        setTargetDropNode(item);
       }
       else {
         item.accept_dropped_nodes = false;
@@ -396,38 +432,80 @@ function Commander({
     updateSourceDropNodes(node_id);
   }
 
-  const onDragEnd = (node_id: string, event: React.DragEvent) => {
-    let target: NodeType | undefined = get_node_under_cursor(
-      node_id,
-      nodesList,
-      // @ts-ignore
-      getNodesRefMap(),
-      event
-    );
+  const onDragEnter = () => {
+    setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
+  }
 
-    if (target) {
-      console.log(`target node ${target.title}`);
-    } else {
-      console.log(`No target found :(`);
-    }
+  const onDragLeave = () => {
+    setCssAcceptFiles("");
+  }
 
-    setDropNodesModalShow(true)
-
-    /*
-    const new_nodes = nodesList.map(item => {
-      item.accept_dropped_nodes = false;
-      item.is_currently_dragged = false;
-
-      return item;
-    });
-
-    setNodesList(new_nodes);
-
-    if (canvasRef.current) {
-      canvasRef.current.width = 0;
-      canvasRef.current.height = 0;
-    }
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    /* Highlight commander (i.e. change its CSS class) to provide user feedback that
+      commander can accept dragged document (drop in from local filesystem).
     */
+
+    event.preventDefault();
+
+    // @ts-ignore
+    if (event.target && event.target.classList) {
+      // @ts-ignore
+      if (event.target.classList.contains("folder")) {
+        // Do not highlight commander when user drags over a folder node
+        setCssAcceptFiles("");
+        return;
+      }
+    }
+
+    if (event.dataTransfer.files.length == 0 && event.dataTransfer.items.length == 0) {
+      setCssAcceptFiles("");
+      return;
+    }
+
+    setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
+  }
+
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setCssAcceptFiles("");
+
+    setFilesList(event.dataTransfer.files);
+
+    if (sourceDropNodes.length == 0) {
+      // no "internal nodes" selected for being dropped -> user
+      //dropped documents/files from local filesystem i.e. he/she intends
+      //to upload files
+      if (event.dataTransfer.files.length > 0) {
+        // only show dialog if event.dataTransfer contains at least one file
+        setDropFilesModalShow(true);
+      }
+    } else {
+      setDropNodesModalShow(true);
+    }
+  }
+
+  const onCancelDropFiles = () => {
+    setDropFilesModalShow(false);
+  }
+
+  const onPerformDropFiles = () => {
+    /* triggered when user clicked "Upload" button in
+     "upload dialog for drop in files"
+     The files upload is performed async and notification
+     (user feedback) is accomplished via "toasts" (notification messages
+      in right lower corder of the screen). In other words
+      "Upload files" screen closes immediately - it does not wait
+      until all files are uploaded. User can go fancy and Upload
+      200 files from some folder - it does not make any sense
+      for the upload dialog to be open for until all those 200 files
+      get uploaded.
+    */
+
+    setDropFilesModalShow(false);
+  }
+
+  const onSetAsDropTarget = (target_folder: NodeType | null) => {
+    setTargetDropFile(target_folder)
   }
 
   const list_nodes_css_class_name = () => {
@@ -472,7 +550,7 @@ function Commander({
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
             onDrag={onDrag}
-            onDragEnd={onDragEnd}
+            onSetAsDropTarget={onSetAsDropTarget}
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
@@ -494,7 +572,6 @@ function Commander({
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
             onDrag={onDrag}
-            onDragEnd={onDragEnd}
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
@@ -516,7 +593,12 @@ function Commander({
 
 
     return (
-      <div className="commander">
+      <div
+        className={`commander ${cssAcceptFiles}`}
+        onDrop={onDrop}
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}>
         <div className='top-bar'>
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}
@@ -594,12 +676,21 @@ function Commander({
             onSubmit={onSubmitTags} /> }
         </div>
         <div>
-          <DropNodesModal
+          <DropNodesModal // for nodes move between folders
             show={dropNodesModalShow}
             source_nodes={sourceDropNodes}
-            target_node={targetDropNode}
+            target_node={targetDropFile}
             onCancel={onCancelDropNodes}
             onSubmit={onPerformDropNodes} />
+        </div>
+        <div>
+          <DropFilesModal // for files uploads
+            show={dropFilesModalShow}
+            source_files={filesList}
+            target_folder={targetDropFile || breadcrumb}
+            onCreateDocumentNode={onCreateDocumentModel}
+            onCancel={onCancelDropFiles}
+            onSubmit={onPerformDropFiles} />
         </div>
         <div>
           <ErrorModal

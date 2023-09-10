@@ -11,6 +11,10 @@ type Args = {
 
 export function PageThumbnail({page}: Args) {
 
+  if (!page.jpg_url) {
+    return <ThumbnailPlaceholder />;
+  }
+
   const {is_loading, data, error} = useProtectedJpg(page.jpg_url);
   let thumbnail_component: JSX.Element | null;
 
@@ -23,7 +27,7 @@ export function PageThumbnail({page}: Args) {
       {data}
       <div className='p-2 mb-3 page-number text-center'>
         {page.number}
-      </div>;
+      </div>
     </div>
   }
 
@@ -31,4 +35,3 @@ export function PageThumbnail({page}: Args) {
     {thumbnail_component}
   </div>
 }
-

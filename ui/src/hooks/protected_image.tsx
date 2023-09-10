@@ -98,7 +98,7 @@ export const useProtectedSVG = (url: string | null, fallback_url: string | null)
 }
 
 
-export const useProtectedJpg = (url:string | null) => {
+export const useProtectedJpg = (url:string) => {
     //The initial value is empty
     const initial_state: State<JSX.Element | null> = {
         is_loading: true,

@@ -1,11 +1,11 @@
 import Button from 'react-bootstrap/Button';
-import { uploader } from '../utils/uploader';
+import { uploader } from 'utils/uploader';
 
 import type { NodeType } from 'types';
 
 type Args = {
   node_id: string;
-  onCreateDocumentNode: (node: NodeType[]) => void;
+  onCreateDocumentNode: (node: NodeType[], target_id: string) => void;
 }
 
 function UploadButton({node_id, onCreateDocumentNode}: Args) {

@@ -4,7 +4,7 @@ import UploadButton from '../upload_button';
 import type { NodeType } from 'types';
 
 type Args = {
-  onCreateDocumentNode: (node: NodeType[]) => void;
+  onCreateDocumentNode: (node: NodeType[], target_id: string) => void;
   onNewFolderClick: () => void;
   onRenameClick: () => void;
   onDeleteNodesClick: () => void;

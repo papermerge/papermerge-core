@@ -21,15 +21,11 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
 
   const [ status, setStatus ] = useState<OcrStatusEnum>(props.node?.document?.ocr_status || "UNKNOWN");
-  const protected_thumbnail = useProtectedJpg(props.node?.thumbnail_url || props.node?.document?.thumbnail_url || null);
+  const protected_thumbnail = useProtectedJpg(`/api/thumbnails/${props.node.id}`);
   let thumbnail_component: JSX.Element | null;
 
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
-    console.log(data);
-
-    console.log(`node_id=${props.node.id}  incoming document_id=${data.kwargs.document_id}`);
     if (data.kwargs.document_id == props.node.id) {
-      console.log('setting state');
       setStatus(data.state);
     }
   }
@@ -58,10 +54,6 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
     props.onDrag(props.node.id, event);
   }
 
-  const onDragEndHandle = (event: React.DragEvent) => {
-    props.onDragEnd(props.node.id, event);
-  }
-
   if (protected_thumbnail.is_loading) {
     thumbnail_component = <div className="icon document"></div>;
   } else if ( protected_thumbnail.error ) {
@@ -80,8 +72,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         ref={ref}
         key={props.node.id}
         onDragStart={onDragStartHandle}
-        onDrag={onDragHandle}
-        onDragEnd={onDragEndHandle}>
+        onDrag={onDragHandle}>
         <div className='checkbox'>
             <Form.Check onChange={onselect} checked={props.is_selected} type="checkbox" />
         </div>
@@ -104,8 +95,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         ref={ref}
         key={props.node.id}
         onDragStart={onDragStartHandle}
-        onDrag={onDragHandle}
-        onDragEnd={onDragEndHandle}>
+        onDrag={onDragHandle}>
         <div className='checkbox'>
             <Form.Check onChange={onselect} checked={props.is_selected} type="checkbox" />
         </div>

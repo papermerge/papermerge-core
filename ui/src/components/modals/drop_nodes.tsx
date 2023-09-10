@@ -14,7 +14,7 @@ type Args = {
   onSubmit: (uuids_list: string[]) => void;
   show: boolean;
   source_nodes: NodeType[];
-  target_node: NodeType | undefined;
+  target_node: NodeType | null;
 }
 
 type MoveNodeType = {
@@ -25,7 +25,7 @@ type MoveNodeType = {
 
 async function move_nodes(
   source_nodes: NodeType[],
-  target_node: NodeType | undefined,
+  target_node: NodeType | null,
   signal: AbortSignal
 ): Promise<string[]> {
   return fetcher_post<MoveNodeType, string[]>(

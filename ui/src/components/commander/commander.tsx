@@ -468,13 +468,17 @@ function Commander({
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setCssAcceptFiles("");
+
     setFilesList(event.dataTransfer.files);
 
     if (sourceDropNodes.length == 0) {
       // no "internal nodes" selected for being dropped -> user
       //dropped documents/files from local filesystem i.e. he/she intends
       //to upload files
-      setDropFilesModalShow(true);
+      if (event.dataTransfer.files.length > 0) {
+        // only show dialog if event.dataTransfer contains at least one file
+        setDropFilesModalShow(true);
+      }
     } else {
       setDropNodesModalShow(true);
     }
@@ -672,7 +676,7 @@ function Commander({
             onSubmit={onSubmitTags} /> }
         </div>
         <div>
-          <DropNodesModal
+          <DropNodesModal // for nodes move between folders
             show={dropNodesModalShow}
             source_nodes={sourceDropNodes}
             target_node={targetDropFile}
@@ -680,7 +684,7 @@ function Commander({
             onSubmit={onPerformDropNodes} />
         </div>
         <div>
-          <DropFilesModal
+          <DropFilesModal // for files uploads
             show={dropFilesModalShow}
             source_files={filesList}
             target_folder={targetDropFile || breadcrumb}

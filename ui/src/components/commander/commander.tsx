@@ -193,11 +193,10 @@ function Commander({
   const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
   const [ filesList, setFilesList ] = useState<FileList>()
   // target folder where drop in (using drag 'n drop) files will be uploaded
-  const [ targetDropFile, setTargetDropFile ] = useState<FolderType>();
+  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | null>(null);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
-  const [ targetDropNode, setTargetDropNode ] = useState<NodeType>();
   const [ nodesList, setNodesList ] = useState<NodeList>([]);
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
@@ -250,9 +249,32 @@ function Commander({
     }
   }
 
-  const onCreateDocumentModel = (new_nodes: NodeType[]) => {
-    /* Invoked when new document node was added */
-    setNodesList(nodesList.concat(new_nodes));
+  const onCreateDocumentModel = (new_nodes: NodeType[], target_id: string) => {
+    /* Invoked when new document node(s) was/were added.
+    Will add new documents to the current list of nodes ONLY if target_id is
+    same as node id.
+
+    Say user currently has opened commander on ".home / My Documents" in other
+    words he/she sees the content of My Documents folder. We will call "My
+    Documents" folder "current folder". Current folder's id is `node_id`. Inside
+    current folder, say we have folder "Bills" and folder "Payments".
+
+    If user drags couple of documents from his/her local filesystem into the "My
+    Documents", then `target_id` will be set to UUID of "My Documents" i.e.
+    `target_id` == `node_id`. In this case we want to refresh node's list
+    because there are new entries (document which user dropped in).
+
+    if user drag'n drops file/document over folder "Bills", then there is
+    nothing to refresh, because newly dropped documents will be added inside
+    another folder, content of which is not visible to the user anyway; this
+    fact is signaled by the fact that `target_id` != `node_id`, in other words
+    `target_id` will be set to the UUID of "Bills" which is different than UUID
+    of the current node (`node_id`) (current folder is "My Documents" and it has
+    UUID = `node_id`).
+     */
+    if (target_id == node_id) {
+      setNodesList(nodesList.concat(new_nodes));
+    }
   }
 
   const onNodeSelect = (node_id: string, selected: boolean) => {
@@ -390,7 +412,6 @@ function Commander({
       if (node_id != item.id && item_rect.contains(point)) {
         console.log(`Dragging over ${item.title}`);
         item.accept_dropped_nodes = true;
-        setTargetDropNode(item);
       }
       else {
         item.accept_dropped_nodes = false;
@@ -481,7 +502,6 @@ function Commander({
     setCssAcceptFiles("");
     setFilesList(event.dataTransfer.files);
     setDropFilesModalShow(true);
-    console.log(`Just dropped something in commander`);
   }
 
   const onCancelDropFiles = () => {
@@ -502,6 +522,10 @@ function Commander({
     */
 
     setDropFilesModalShow(false);
+  }
+
+  const onSetAsDropTarget = (target_folder: NodeType | null) => {
+    setTargetDropFile(target_folder)
   }
 
   const list_nodes_css_class_name = () => {
@@ -547,6 +571,7 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
+            onSetAsDropTarget={onSetAsDropTarget}
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
@@ -676,7 +701,7 @@ function Commander({
           <DropNodesModal
             show={dropNodesModalShow}
             source_nodes={sourceDropNodes}
-            target_node={targetDropNode}
+            target_node={targetDropFile}
             onCancel={onCancelDropNodes}
             onSubmit={onPerformDropNodes} />
         </div>

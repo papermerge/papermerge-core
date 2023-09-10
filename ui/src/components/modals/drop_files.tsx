@@ -13,8 +13,8 @@ type Args = {
   onSubmit: () => void;
   show: boolean;
   source_files: FileList | undefined;
-  target_folder: FolderType | undefined;
-  onCreateDocumentNode: (nodes: NodeType[]) => void;
+  target_folder: NodeType | null | undefined;
+  onCreateDocumentNode: (nodes: NodeType[], target_id: string) => void;
 }
 
 

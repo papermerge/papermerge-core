@@ -5,7 +5,7 @@ import type { NodeType } from 'types';
 type UploaderArgs = {
   files: FileList;
   node_id: string;
-  onCreateDocumentNode: (nodes: NodeType[]) => void;
+  onCreateDocumentNode: (nodes: NodeType[], target_id: string) => void;
 }
 
 type CreateDocumentType = {
@@ -45,7 +45,7 @@ function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
   Promise.all(bulk_create_docs).then(
     (values: NodeType[]) => {
       // notify commander to add document nodes
-      onCreateDocumentNode(values);
+      onCreateDocumentNode(values, node_id);
       values.forEach(value => {
         let file: File|undefined = Array.from(files).find(item => item.name == value.title)
         if (file) {

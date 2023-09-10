@@ -4,15 +4,30 @@ import Spinner from "../../spinner";
 import SpinnerPlaceholder from "../../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
 
-import type { CheckboxChangeType, NodeArgsType } from "../types";
+import type { NodeType, NodeClickArgsType } from 'types';
+import type { CheckboxChangeType } from "../types";
 import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
+
+
+type FolderArgsType = {
+  node: NodeType;
+  onClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onSelect: (node_id: string, selected: boolean) => void;
+  onDragStart: (node_id: string, event: React.DragEvent) => void;
+  onDrag: (node_id: string, event: React.DragEvent) => void;
+  onDragEnd: (node_id: string, event: React.DragEvent) => void;
+  is_loading: boolean;
+  is_selected: boolean;
+  display_mode: DisplayNodesModeEnum;
+  onSetAsDropTarget: (folder_target: NodeType | null) => void;
+}
 
 
 const ACCEPT_DROPPED_NODES = "accept_dropped_nodes";
 
 
-const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
+const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
   (props, ref) => {
     const onclick = () => {
       props.onClick({
@@ -39,13 +54,21 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
 
     const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
       setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
+      props.onSetAsDropTarget(props.node);
     }
 
     const onDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
       setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
+      props.onSetAsDropTarget(props.node);
     }
 
     const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+      setCssAcceptFilesAndNodes("");
+      props.onSetAsDropTarget(null);
+    }
+
+    const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
       setCssAcceptFilesAndNodes("");
     }
 
@@ -75,6 +98,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
             onDragOver={onDragOver}
             onDragEnter={onDragEnter}
             onDragLeave={onDragLeave}
+            onDrop={onDrop}
             onDragEnd={onDragEndHandle}
             draggable>
             {props.is_loading ? <Spinner />: <SpinnerPlaceholder />}
@@ -105,6 +129,7 @@ const Folder = forwardRef<HTMLDivElement, NodeArgsType>(
             onDragOver={onDragOver}
             onDragEnter={onDragEnter}
             onDragLeave={onDragLeave}
+            onDrop={onDrop}
             onDragEnd={onDragEndHandle}
             draggable>
               <Form.Check

@@ -21,15 +21,11 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
 
   const [ status, setStatus ] = useState<OcrStatusEnum>(props.node?.document?.ocr_status || "UNKNOWN");
-  const protected_thumbnail = useProtectedJpg(props.node?.thumbnail_url || props.node?.document?.thumbnail_url || null);
+  const protected_thumbnail = useProtectedJpg(`/api/thumbnails/${props.node.id}`);
   let thumbnail_component: JSX.Element | null;
 
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
-    console.log(data);
-
-    console.log(`node_id=${props.node.id}  incoming document_id=${data.kwargs.document_id}`);
     if (data.kwargs.document_id == props.node.id) {
-      console.log('setting state');
       setStatus(data.state);
     }
   }

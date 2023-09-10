@@ -16,7 +16,6 @@ type FolderArgsType = {
   onSelect: (node_id: string, selected: boolean) => void;
   onDragStart: (node_id: string, event: React.DragEvent) => void;
   onDrag: (node_id: string, event: React.DragEvent) => void;
-  onDragEnd: (node_id: string, event: React.DragEvent) => void;
   is_loading: boolean;
   is_selected: boolean;
   display_mode: DisplayNodesModeEnum;
@@ -46,10 +45,6 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
 
     const onDragHandle = (event: React.DragEvent) => {
       props.onDrag(props.node.id, event);
-    }
-
-    const onDragEndHandle = (event: React.DragEvent) => {
-      props.onDragEnd(props.node.id, event);
     }
 
     const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -99,7 +94,6 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
             onDragEnter={onDragEnter}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-            onDragEnd={onDragEndHandle}
             draggable>
             {props.is_loading ? <Spinner />: <SpinnerPlaceholder />}
             <div className='checkbox'>
@@ -130,7 +124,6 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
             onDragEnter={onDragEnter}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-            onDragEnd={onDragEndHandle}
             draggable>
               <Form.Check
                 key={props.node.id}

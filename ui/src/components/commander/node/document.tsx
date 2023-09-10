@@ -54,10 +54,6 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
     props.onDrag(props.node.id, event);
   }
 
-  const onDragEndHandle = (event: React.DragEvent) => {
-    props.onDragEnd(props.node.id, event);
-  }
-
   if (protected_thumbnail.is_loading) {
     thumbnail_component = <div className="icon document"></div>;
   } else if ( protected_thumbnail.error ) {
@@ -76,8 +72,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         ref={ref}
         key={props.node.id}
         onDragStart={onDragStartHandle}
-        onDrag={onDragHandle}
-        onDragEnd={onDragEndHandle}>
+        onDrag={onDragHandle}>
         <div className='checkbox'>
             <Form.Check onChange={onselect} checked={props.is_selected} type="checkbox" />
         </div>
@@ -100,8 +95,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         ref={ref}
         key={props.node.id}
         onDragStart={onDragStartHandle}
-        onDrag={onDragHandle}
-        onDragEnd={onDragEndHandle}>
+        onDrag={onDragHandle}>
         <div className='checkbox'>
             <Form.Check onChange={onselect} checked={props.is_selected} type="checkbox" />
         </div>

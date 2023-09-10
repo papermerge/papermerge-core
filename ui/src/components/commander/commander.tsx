@@ -354,6 +354,7 @@ function Commander({
     setNodesList(new_nodes);
     setSelectedNodes([]);
     setDropNodesModalShow(false);
+    setSourceDropNodes([]);
   }
 
   const onCancelDropNodes = () => {
@@ -362,6 +363,7 @@ function Commander({
       node.is_currently_dragged = false;
     });
     setSelectedNodes([]);
+    setSourceDropNodes([]);
     setDropNodesModalShow(false);
   }
 
@@ -430,40 +432,6 @@ function Commander({
     updateSourceDropNodes(node_id);
   }
 
-  const onDragEnd = (node_id: string, event: React.DragEvent) => {
-    let target: NodeType | undefined = get_node_under_cursor(
-      node_id,
-      nodesList,
-      // @ts-ignore
-      getNodesRefMap(),
-      event
-    );
-
-    if (target) {
-      console.log(`target node ${target.title}`);
-    } else {
-      console.log(`No target found :(`);
-    }
-
-    setDropNodesModalShow(true)
-
-    /*
-    const new_nodes = nodesList.map(item => {
-      item.accept_dropped_nodes = false;
-      item.is_currently_dragged = false;
-
-      return item;
-    });
-
-    setNodesList(new_nodes);
-
-    if (canvasRef.current) {
-      canvasRef.current.width = 0;
-      canvasRef.current.height = 0;
-    }
-    */
-  }
-
   const onDragEnter = () => {
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
   }
@@ -501,7 +469,15 @@ function Commander({
     event.preventDefault();
     setCssAcceptFiles("");
     setFilesList(event.dataTransfer.files);
-    setDropFilesModalShow(true);
+
+    if (sourceDropNodes.length == 0) {
+      // no "internal nodes" selected for being dropped -> user
+      //dropped documents/files from local filesystem i.e. he/she intends
+      //to upload files
+      setDropFilesModalShow(true);
+    } else {
+      setDropNodesModalShow(true);
+    }
   }
 
   const onCancelDropFiles = () => {
@@ -570,7 +546,6 @@ function Commander({
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
             onDrag={onDrag}
-            onDragEnd={onDragEnd}
             onSetAsDropTarget={onSetAsDropTarget}
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
@@ -593,7 +568,6 @@ function Commander({
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
             onDrag={onDrag}
-            onDragEnd={onDragEnd}
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}

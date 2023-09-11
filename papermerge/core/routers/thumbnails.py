@@ -11,6 +11,7 @@ from papermerge.core.models import Document, User
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 
 from .auth import get_current_user as current_user
+from .common import OPEN_API_GENERIC_JSON_DETAIL
 
 router = APIRouter(
     prefix="/thumbnails",
@@ -26,23 +27,6 @@ class Message(BaseModel):
 
 class JPEGFileResponse(FileResponse):
     media_type = 'application/jpeg'
-
-
-OPEN_API_GENERIC_JSON_DETAIL = {
-    "application/json": {
-        "schema": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                }
-            }
-        },
-        "example": {
-            "detail": "Status code message detail"
-        }
-    }
-}
 
 
 @router.get(

@@ -191,7 +191,7 @@ def move_nodes(
             logger.error(exc, exc_info=True)
             raise HTTPException(
                 status_code=432,
-                detail=f"Move not possible for {node_model.title}"
+                detail=f"Move not possible for '{node_model.title}'"
                 " because node with same title already present on the target"
             )
 

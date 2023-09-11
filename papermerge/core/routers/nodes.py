@@ -18,6 +18,7 @@ from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 
 from .auth import get_current_user as current_user
+from .common import OPEN_API_GENERIC_JSON_DETAIL
 from .paginator import PaginatorGeneric, paginate
 from .params import CommonQueryParams
 
@@ -147,7 +148,20 @@ def delete_nodes(
     return deleted_nodes_uuids
 
 
-@router.post("/move")
+@router.post(
+    "/move",
+    responses={
+        432: {
+            "description": """Move of mentioned node is not possible due
+            to duplicate title on the target""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL
+        },
+        404: {
+            "description": """No target node with specified UUID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL
+        }
+    }
+)
 def move_nodes(
     params: PyMoveNode,
     user: User = Depends(current_user)
@@ -171,7 +185,15 @@ def move_nodes(
         )
 
     for node_model in BaseTreeNode.objects.filter(pk__in=params.source_ids):
-        move_node(node_model, target_model)
+        try:
+            move_node(node_model, target_model)
+        except IntegrityError as exc:
+            logger.error(exc, exc_info=True)
+            raise HTTPException(
+                status_code=432,
+                detail=f"Move not possible for '{node_model.title}'"
+                " because node with same title already present on the target"
+            )
 
     return params.source_ids
 

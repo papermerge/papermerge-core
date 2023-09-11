@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { Spinner } from 'react-bootstrap';
 
-import { fetcher_post } from 'utils/fetcher';
+import { fetcher_post, get_default_headers } from 'utils/fetcher';
 
 import type { NodeType } from 'types';
 
@@ -27,13 +27,18 @@ async function move_nodes(
   source_nodes: NodeType[],
   target_node: NodeType | null,
   signal: AbortSignal
-): Promise<string[]> {
-  return fetcher_post<MoveNodeType, string[]>(
-    '/api/nodes/move', {
-      source_ids: source_nodes.map(node => node.id),
-      target_id: target_node?.id
+): Promise<Response> {
+  return fetch(
+    '/api/nodes/move',
+    {
+      'method': 'POST',
+      'headers': get_default_headers(),
+      'body': JSON.stringify({
+        source_ids: source_nodes.map(node => node.id),
+        target_id: target_node?.id
+      }),
+      'signal': signal
     },
-    signal
   );
 }
 
@@ -47,6 +52,8 @@ const DropNodesModal = ({
 }: Args) => {
   const [inProgress, setInProgress] = useState(false);
   const [controller, setController] = useState<AbortController>(new AbortController());
+  const [error, setError] = useState<string>('');
+
   let submit_button: JSX.Element;
 
   if (!controller) {
@@ -55,20 +62,27 @@ const DropNodesModal = ({
 
   const handleSubmit = async () => {
     setInProgress(true);
+    setError('');
 
-    let response_data = await move_nodes(
+    let response = await move_nodes(
       source_nodes,
       target_node,
       controller.signal
     );
+    let response_data = await response.json();
 
-    onSubmit(response_data);
+    if (response.status == 200) {
+      onSubmit(response_data);
+    }
+
+    setError(response_data.detail);
     setInProgress(false);
   }
 
   const handleCancel = () => {
     controller.abort();
     setInProgress(false);
+    setError('');
     onCancel();
     // recreate new controller for next time
     setController(new AbortController());
@@ -102,6 +116,7 @@ const DropNodesModal = ({
       <Modal.Footer>
         <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
         {submit_button}
+        {error && <span className='text-danger'>{error}</span>}
       </Modal.Footer>
     </Modal>
   );

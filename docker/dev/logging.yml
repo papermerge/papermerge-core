@@ -1,9 +1,9 @@
 version: 1
-disable_existing_loggers: false
+disable_existing_loggers: true
 
 formatters:
   verbose:
-    format: '%(levelname)s %(asctime)s %(module)s %(message)s'
+    format: '%(asctime)s %(levelname)s %(name)s.%(funcName)s %(message)s'
 
 handlers:
   console:
@@ -19,3 +19,4 @@ loggers:
     level: DEBUG
     handlers: [console]
     propagate: no
+    format: verbose

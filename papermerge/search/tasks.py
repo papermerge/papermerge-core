@@ -21,7 +21,7 @@ def index_add_node(node_id: str):
     In other words, if folder was already indexed (added before), its record
     in index will be updated otherwise its record will be inserted.
     """
-    logger.warning(f'INDEX ADD NODE {node_id}')
+    logger.debug(f'Adding node {node_id} to index')
     try:
         # may happen when using xapian search backend and multiple
         # workers try to get write access to the index
@@ -40,7 +40,12 @@ def index_add_node(node_id: str):
         models = [from_folder(node)]
 
     for model in models:
-        logger.warning(f'adding {model}')
+        text = model.text or ''
+        shortened_text = f"{text[:40]}..."
+
+        logger.debug(
+            f"Adding {model} to the index. model.text='{shortened_text}'"
+        )
         index.add(model)
 
 
@@ -48,7 +53,7 @@ def index_add_node(node_id: str):
 def index_remove_node(node_ids: List[str]):
     """Removes node from the search index
     """
-    logger.warning(f'INDEX REMOVE NODE {node_ids}')
+    logger.debug(f'Removing node {node_ids} from index')
     try:
         engine = create_engine(settings.SEARCH_URL)
     except Exception as e:

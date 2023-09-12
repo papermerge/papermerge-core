@@ -1,4 +1,5 @@
 import logging.config
+import os
 
 import yaml
 from configula import Configula
@@ -171,10 +172,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGGING_CFG_FILENAME = config.get('main', 'logging_cfg', None)
-if LOGGING_CFG_FILENAME:
-    dict_config = yaml.load(open(LOGGING_CFG_FILENAME), Loader=yaml.FullLoader)
-    logging.config.dictConfig(dict_config)
+LOGGING_CFG_FILENAME = os.environ.get(
+    'PAPERMERGE__MAIN__LOGGING_CFG',
+    '/core_app/logging.yml'
+)
+if os.path.exists(LOGGING_CFG_FILENAME):
+    with open(LOGGING_CFG_FILENAME, 'r') as file:
+        _logging_config = yaml.safe_load(file.read())
+        logging.config.dictConfig(_logging_config)
 else:
     LOGGING = {
         'version': 1,

@@ -1,5 +1,9 @@
+import logging
 import os
+
+import yaml
 from celery import Celery
+from celery.signals import setup_logging
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 
@@ -8,6 +12,19 @@ app = Celery('papermerge')
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
+
+
+@setup_logging.connect
+def config_loggers(*args, **kwags):
+    LOGGING_CFG_FILENAME = os.environ.get(
+        'PAPERMERGE__MAIN__LOGGING_CFG',
+        '/core_app/logging.yml'
+    )
+    if os.path.exists(LOGGING_CFG_FILENAME):
+        with open(LOGGING_CFG_FILENAME, 'r') as file:
+            _logging_config = yaml.safe_load(file.read())
+            logging.config.dictConfig(_logging_config)
+
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()

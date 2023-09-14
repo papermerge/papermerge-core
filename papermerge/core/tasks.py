@@ -1,19 +1,14 @@
 import io
-import os
 import logging
-
-from django.utils.translation import gettext_lazy as _
+import os
 
 from celery import shared_task
+from django.utils.translation import gettext_lazy as _
+
 from papermerge.core.ocr.document import ocr_document
 from papermerge.core.storage import abs_path, get_storage_instance
 
-from .models import (
-    Document,
-    DocumentVersion,
-    Folder,
-    Page
-)
+from .models import Document, DocumentVersion, Folder, Page
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +49,8 @@ def ocr_document_task(
     doc_version = doc.versions.last()
 
     logger.debug(
-        'ocr_document_task: ocr start'
-        f'document_id={document_id} namespace={namespace} '
-        f'lang={lang}'
+        'OCR START'
+        f' doc.title={doc.title} doc.id={document_id} lang={lang}'
     )
 
     ocr_document(
@@ -70,22 +64,21 @@ def ocr_document_task(
     )
 
     logger.debug(
-        'ocr_document_task: ocr end'
-        f'document_id={document_id} namespace={namespace} '
-        f'lang={lang}'
+        'OCR COMPLETE'
+        f' doc.title={doc.title} doc.id={document_id} lang={lang}'
     )
 
+    _post_ocr_document(document_id, namespace)
+
     logger.debug(
-        'ocr_document_task: successfully complete'
-        f'document_id={document_id} namespace={namespace} '
-        f'lang={lang}'
+        'POST OCR COMPLETE'
+        f' doc.title={doc.title} doc.id={document_id} lang={lang}'
     )
 
     return document_id
 
 
-@shared_task
-def post_ocr_document_task(document_id, namespace=None):
+def _post_ocr_document(document_id, namespace=None):
     """
     Task to run immediately after document OCR is complete
 
@@ -109,12 +102,7 @@ def post_ocr_document_task(document_id, namespace=None):
 @shared_task
 def generate_page_previews_task(document_version_id):
     document_version = DocumentVersion.objects.get(id=document_version_id)
-
-    doc = document_version.document
-    logger.debug(f"Generating previews doc_id={doc.id}")
-
     document_version.generate_previews()
-
     return document_version_id
 
 
@@ -141,8 +129,8 @@ def increment_document_version(document_id, namespace=None):
 
     logger.debug(
         'ocr_document_task: creating pages'
-        f'document_id={document_id} namespace={namespace} '
-        f'lang={lang}'
+        f' document_id={document_id} namespace={namespace} '
+        f' lang={lang}'
     )
 
     for page_number in range(1, new_doc_version.page_count + 1):
@@ -169,12 +157,6 @@ def update_document_pages(document_id, namespace=None):
     page as well as document versions's ``text`` fields will be
     updated with empty strings.
     """
-
-    logger.debug(
-        'update_document_pages: '
-        f'document_id={document_id} namespace={namespace}'
-    )
-
     doc = Document.objects.get(pk=document_id)
     doc_version = doc.versions.last()
     streams = []

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from papermerge.core.models import Document
-from papermerge.core.tasks import ocr_document_task, post_ocr_document_task
+from papermerge.core.tasks import ocr_document_task
 
 
 class Command(BaseCommand):
@@ -25,8 +25,5 @@ class Command(BaseCommand):
                 'lang': doc.lang,
                 'namespace': None,
                 'user_id': str(doc.user.id)
-            },
-            link=[
-                post_ocr_document_task.s(None),
-            ]
+            }
         )

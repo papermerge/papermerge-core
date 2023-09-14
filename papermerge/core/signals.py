@@ -15,8 +15,7 @@ from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
 from .tasks import delete_user_data as delete_user_data_task
-from .tasks import (generate_page_previews_task, ocr_document_task,
-                    post_ocr_document_task)
+from .tasks import generate_page_previews_task, ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -234,10 +233,7 @@ def receiver_document_post_upload(
                     'lang': doc.lang,
                     'namespace': namespace,
                     'user_id': str(user.id)
-                },
-                link=[
-                    post_ocr_document_task.s(namespace),
-                ]
+                }
             )
         except OperationalError:
             # If redis service is not available then:

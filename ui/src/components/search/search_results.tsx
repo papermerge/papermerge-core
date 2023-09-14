@@ -143,7 +143,6 @@ function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
 
 
 function SearchResults({items, onSearchResultClick}: ArgsSearchResults) {
-
   if (items && items.length == 0)  {
     return <div>No results found</div>;
   }
@@ -152,7 +151,26 @@ function SearchResults({items, onSearchResultClick}: ArgsSearchResults) {
     return <div>No results found</div>;
   }
 
-  const result_items = items.map((item: SearchResult) => {
+  /**
+  Search results are returned per page. But for this moment we won't use
+  this feature and act as if results are returned per document.
+
+  Remove items which belong to the same document.
+  Search results will be grouped per document, but at this point,
+  as the viewer cannot pe opened at specific page number
+  we will just remove "duplicate results".
+  "Duplicate results" = set of pages items that belong to the same document.
+  */
+  const seen = new Set();
+  const filtered_items = items.filter(
+    item => {
+      const duplicate = seen.has(item.document_id);
+      seen.add(item.document_id);
+      return !duplicate;
+    }
+  )
+
+  const result_items = filtered_items.map((item: SearchResult) => {
     if (item.entity_type == 'folder') {
       return <SearchResultFolder
         key={item.id}

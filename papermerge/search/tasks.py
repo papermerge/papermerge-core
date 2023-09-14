@@ -2,14 +2,28 @@ import logging
 from typing import List
 
 from celery import shared_task
+from celery.signals import task_success
 from django.conf import settings
 from salinic import IndexRW, create_engine
 
 from papermerge.core.constants import INDEX_ADD_NODE, INDEX_REMOVE_NODE
-from papermerge.core.models import BaseTreeNode
+from papermerge.core.models import BaseTreeNode, DocumentVersion
+from papermerge.core.tasks import ocr_document_task
 from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
 
 logger = logging.getLogger(__name__)
+
+
+@task_success.connect(sender=ocr_document_task)
+def task_success_notifier(sender=None, **kwargs):
+    """
+    kwargs['result'] is node UUID i.e. (BaseTreeNode pk)
+    """
+    if kwargs.get('result', None) is None:
+        logger.error("No result key found. Cannot add node to index.")
+        return
+
+    index_add_node(kwargs['result'])
 
 
 @shared_task(name=INDEX_ADD_NODE)
@@ -21,7 +35,6 @@ def index_add_node(node_id: str):
     In other words, if folder was already indexed (added before), its record
     in index will be updated otherwise its record will be inserted.
     """
-    logger.debug(f'Adding node {node_id} to index')
     try:
         # may happen when using xapian search backend and multiple
         # workers try to get write access to the index
@@ -34,18 +47,15 @@ def index_add_node(node_id: str):
     index = IndexRW(engine, schema=Model)
 
     node = BaseTreeNode.objects.get(pk=node_id)
+
+    logger.debug(f'ADD node title={node.title} ID={node.id} to INDEX')
+
     if node.is_document:
         models = from_document(node)
     else:
         models = [from_folder(node)]
 
     for model in models:
-        text = model.text or ''
-        shortened_text = f"{text[:40]}..."
-
-        logger.debug(
-            f"Adding {model} to the index. model.text='{shortened_text}'"
-        )
         index.add(model)
 
 
@@ -98,9 +108,18 @@ def from_folder(node: BaseTreeNode) -> Model:
 def from_document(node: BaseTreeNode) -> List[Model]:
     result = []
     doc = node.document
-    last_ver = doc.versions.last()
+    last_ver: DocumentVersion = doc.versions.last()
 
     for page in last_ver.pages.all():
+        if len(page.text) == 0 and last_ver.number > 1:
+            logger.warning(
+                f"NO OCR TEXT FOUND! version={last_ver.number} "
+                f" title={doc.title}"
+                f" page.number={page.number}"
+                f" doc.ID={doc.id}"
+                f" node.ID={node.id}"
+            )
+
         index_entity = Model(
             id=str(page.id),
             title=node.title,

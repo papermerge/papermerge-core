@@ -2,10 +2,12 @@ import logging
 from typing import List
 from uuid import UUID
 
+from celery import current_app
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
+from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
 from papermerge.core.schemas.documents import \
@@ -16,6 +18,7 @@ from papermerge.core.schemas.folders import Folder as PyFolder
 from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
+from papermerge.core.utils.decorators import skip_in_tests
 
 from .auth import get_current_user as current_user
 from .common import OPEN_API_GENERIC_JSON_DETAIL
@@ -223,6 +226,7 @@ def assign_node_tags(
         )
 
     node.tags.set(tags, tag_kwargs={"user": user})
+    _notify_index(node_id)
 
     return PyNode.model_validate(node)
 
@@ -262,6 +266,7 @@ def update_node_tags(
         )
 
     node.tags.add(*tags, tag_kwargs={"user": user})
+    _notify_index(node_id)
 
     return PyNode.model_validate(node)
 
@@ -288,3 +293,9 @@ def delete_node_tags(
     node.tags.remove(*tags)
 
     return PyNode.model_validate(node)
+
+
+@skip_in_tests
+def _notify_index(node_id: str):
+    id_as_str = str(node_id)  # just in case, make sure it is str
+    current_app.send_task(INDEX_ADD_NODE, (id_as_str,))

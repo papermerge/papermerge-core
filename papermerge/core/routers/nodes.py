@@ -2,10 +2,12 @@ import logging
 from typing import List
 from uuid import UUID
 
+from celery import current_app
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
+from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
 from papermerge.core.schemas.documents import \
@@ -223,6 +225,8 @@ def assign_node_tags(
         )
 
     node.tags.set(tags, tag_kwargs={"user": user})
+    id_as_str = str(node_id)
+    current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     return PyNode.model_validate(node)
 
@@ -262,6 +266,8 @@ def update_node_tags(
         )
 
     node.tags.add(*tags, tag_kwargs={"user": user})
+    id_as_str = str(node_id)
+    current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     return PyNode.model_validate(node)
 

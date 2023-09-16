@@ -60,27 +60,31 @@ def index_add_node(node_id: str):
 
 
 @shared_task(name=INDEX_REMOVE_NODE)
-def index_remove_node(node_ids: List[str]):
-    """Removes node from the search index
+def remove_folder_or_page_from_index(item_ids: List[str]):
+    """Removes folder or page from search index
     """
-    logger.debug(f'Removing node {node_ids} from index')
+    logger.debug(f'Removing folder or page {item_ids} from index')
     try:
+        logger.debug(f'Creating engine {settings.SEARCH_URL}')
         engine = create_engine(settings.SEARCH_URL)
     except Exception as e:
         # may happen when using xapian search backend and multiple
         # workers try to get write access to the index
-        logger.warning(f"Exception '{e}' occured while opening engine")
-        logger.warning(f"Index remove for {node_ids} interruped")
+        logger.warning(f"Exception '{e}' occurred while opening engine")
+        logger.warning(f"Index remove for {item_ids} interrupted")
         return
 
     index = IndexRW(engine, schema=Model)
 
-    for node_id in node_ids:
-        id_term = f"ID{node_id}"
-        index.remove(id_term)
+    for item_id in item_ids:
+        try:
+            logger.debug(f'index remove {item_id}')
+            index.remove(id=item_id)
+        except Exception as exc:
+            logger.error(exc)
+            raise
 
-        document_id_term = f"DOCUMENT_ID{node_id.replace('-', '')}"
-        index.remove(document_id_term)
+    logger.debug('End of remove_folder_or_page_from_index')
 
 
 def from_folder(node: BaseTreeNode) -> Model:

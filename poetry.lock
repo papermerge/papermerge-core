@@ -2417,13 +2417,13 @@ pyasn1 = ">=0.1.3"
 
 [[package]]
 name = "salinic"
-version = "0.3.8"
+version = "0.3.9"
 description = "Search abstraction layer"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "salinic-0.3.8-py3-none-any.whl", hash = "sha256:d9f3146511fca2e2a712f7abbdcdcda8771d960696f6a0e13946a43a929ec111"},
-    {file = "salinic-0.3.8.tar.gz", hash = "sha256:fdb34a400ddb92cad9b3b20230e1bafb2e951b9cf59ce9a2fe5f19596917a10e"},
+    {file = "salinic-0.3.9-py3-none-any.whl", hash = "sha256:94f019e1ba8047402ae9b5fd5ab87d1248b0e23b71be5d4da7e9de347ee0ddb5"},
+    {file = "salinic-0.3.9.tar.gz", hash = "sha256:4139b38d0131ad8e014b0f86fb281eb7e702166f65b0c8e92c9e5c2b5a706204"},
 ]
 
 [package.dependencies]
@@ -2945,4 +2945,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <4.0"
-content-hash = "59ad19dad2c7bdb401fea42849a6dd2e032d348cd62828bcce0d1cfc104bcfe8"
+content-hash = "e09313b5341c88b8617b271d74bae85b1cdfbdb6aaf32c9c2154b2de8991d2d0"

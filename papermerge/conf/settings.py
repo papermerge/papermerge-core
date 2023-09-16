@@ -179,8 +179,11 @@ LOGGING_CFG_FILENAME = os.environ.get(
 if os.path.exists(LOGGING_CFG_FILENAME):
     with open(LOGGING_CFG_FILENAME, 'r') as file:
         _logging_config = yaml.safe_load(file.read())
+        logger.info(f"Loading logging configs from {LOGGING_CFG_FILENAME}")
         logging.config.dictConfig(_logging_config)
 else:
+    logger.info(f"Logging config {LOGGING_CFG_FILENAME} not found.")
+    logger.info("Using default Django config for logging")
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,

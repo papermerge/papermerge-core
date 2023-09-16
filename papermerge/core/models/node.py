@@ -89,24 +89,34 @@ class NodeManager(models.Manager):
 class NodeQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
-        deleted_node_ids = []
+        deleted_item_ids = []
         for node in self:
             descendants = node.get_descendants()
             if len(descendants) > 0:
                 for item in descendants:
-                    deleted_node_ids.append(str(item.pk))
+                    if item.is_folder:
+                        deleted_item_ids.append(str(item.pk))
+                    else:
+                        last_ver = item.document.versions.last()
+                        for page in last_ver.pages.all():
+                            deleted_item_ids.append(str(page.pk))
                     item.delete(*args, **kwargs)
             # At this point all descendants were deleted.
             # Self delete :)
             try:
-                deleted_node_ids.append(str(node.pk))
+                if node.is_folder:
+                    deleted_item_ids.append(str(node.pk))
+                else:
+                    last_ver = node.document.versions.last()
+                    for page in last_ver.pages.all():
+                        deleted_item_ids.append(str(page.pk))
                 node.delete(*args, **kwargs)
             except BaseTreeNode.DoesNotExist:
                 # this node was deleted by earlier recursive call
                 # it is ok, just skip
                 pass
 
-        self.publish_post_delete_task(deleted_node_ids)
+        self.publish_post_delete_task(deleted_item_ids)
 
     @skip_in_tests
     def publish_post_delete_task(self, node_ids: List[str]):
@@ -318,27 +328,38 @@ class BaseTreeNode(models.Model):
         current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
 
     def delete(self, *args, **kwargs):
-        deleted_node_ids = []
+        deleted_item_ids = []
         descendants = self.get_descendants(include_self=False)
 
         if len(descendants) > 0:
-            for node in descendants:
+            for item in descendants:
                 try:
-                    deleted_node_ids.append(str(node.pk))
-                    node.delete(*args, **kwargs)
+                    if item.is_folder:
+                        deleted_item_ids.append(str(item.pk))
+                    else:
+                        last_ver = item.document.versions.last()
+                        for page in last_ver.pages.all():
+                            deleted_item_ids.append(str(page.pk))
+
+                    item.delete(*args, **kwargs)
                 except BaseTreeNode.DoesNotExist:
                     pass
         # At this point all descendants were deleted.
         # Self delete :)
         try:
-            deleted_node_ids.append(str(self.pk))
+            if self.is_folder:
+                deleted_item_ids.append(str(self.pk))
+            else:
+                last_ver = self.document.versions.last()
+                for page in last_ver.pages.all():
+                    deleted_item_ids.append(str(page.pk))
             super().delete(*args, **kwargs)
         except BaseTreeNode.DoesNotExist:
             # this node was deleted by earlier recursive call
             # it is ok, just skip
             pass
 
-        self.publish_post_delete_task(deleted_node_ids)
+        self.publish_post_delete_task(deleted_item_ids)
 
     @skip_in_tests
     def publish_post_delete_task(self, node_ids: List[str]):

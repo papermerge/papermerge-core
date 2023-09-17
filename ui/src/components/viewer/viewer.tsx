@@ -8,7 +8,7 @@ import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { State } from 'types';
+import type { State, PageType } from 'types';
 import ErrorMessage from 'components/error_message';
 
 
@@ -29,6 +29,7 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
   const viewer_content_ref = useRef<HTMLInputElement>(null);
 
@@ -75,6 +76,11 @@ export default function Viewer(
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
   }
 
+  const onPageThumbnailClick = (page: PageType) => {
+    console.log(`thumbnail clicked page.number=${page.number}`);
+    setCurrentPage(page.number);
+  }
+
   if (error) {
     return <div className="viewer">
       {error && <ErrorMessage msg={error} />}
@@ -84,11 +90,16 @@ export default function Viewer(
   return <div className="viewer">
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
-      <ThumbnailsPanel pages={curDocVer?.pages || []} visible={thumbnailsPanelVisible}/>
+      <ThumbnailsPanel
+        pages={curDocVer?.pages || []}
+        visible={thumbnailsPanelVisible}
+        onClick={onPageThumbnailClick} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />
-      <PagesPanel pages={curDocVer?.pages || []} />
+      <PagesPanel
+        pages={curDocVer?.pages || []}
+        current_page_number={currentPage}/>
     </div>
   </div>;
 }

@@ -79,6 +79,10 @@ def get_page_jpg_url(
             detail="Page does not exist"
         )
 
+    logger.debug(
+        f"Generating page preview for page.number={page.number}"
+        f" page.id={page.id}"
+    )
     jpeg_abs_path = rel2abs(
         thumbnail_path(page.id, size=size)
     )
@@ -86,5 +90,7 @@ def get_page_jpg_url(
     if not os.path.exists(jpeg_abs_path):
         # generate preview only for this page
         page.generate_thumbnail(size=size)
+
+    logger.debug(f"jpeg_abs_path={jpeg_abs_path}")
 
     return JPEGFileResponse(jpeg_abs_path)

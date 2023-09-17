@@ -113,6 +113,7 @@ class Page(models.Model):
 
         image_utils.generate_preview(
             pdf_path=Path(abs_path(pdf_path)),
+            page_number=int(self.number),
             output_folder=abs_thumbnail_path.parent,
             size=size
         )

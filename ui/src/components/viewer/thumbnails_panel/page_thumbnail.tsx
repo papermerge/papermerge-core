@@ -6,10 +6,11 @@ import type { PageType } from "types"
 
 
 type Args = {
-  page: PageType
+  page: PageType,
+  onClick: (page: PageType) => void;
 }
 
-export function PageThumbnail({page}: Args) {
+export function PageThumbnail({page, onClick}: Args) {
 
   if (!page.jpg_url) {
     return <ThumbnailPlaceholder />;
@@ -18,14 +19,20 @@ export function PageThumbnail({page}: Args) {
   const {is_loading, data, error} = useProtectedJpg(page.jpg_url);
   let thumbnail_component: JSX.Element | null;
 
+  const localOnClick = () => {
+    onClick(page);
+  }
+
   if (is_loading) {
     thumbnail_component = <ThumbnailPlaceholder />;
   } else if ( error ) {
     thumbnail_component = <div>Error</div>
   } else {
-    thumbnail_component = <div>
-      {data}
-      <div className='p-2 mb-3 page-number text-center'>
+    thumbnail_component = <div onClick={localOnClick}>
+      <div>
+        {data}
+      </div>
+      <div className='p-1 page-number text-center'>
         {page.number}
       </div>
     </div>

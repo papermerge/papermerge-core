@@ -1,10 +1,19 @@
+import { useRef } from 'react';
 import PagePlaceholder from './page_placeholder';
 
 import type { PageType } from "types"
 import { useProtectedSVG } from "hooks/protected_image"
 
 type Args = {
-  page: PageType
+  page: PageType;
+  /*
+    if `scroll_into_view`=True -> page should be scrolled into the view.
+
+    `scroll_into_view` flag is controlled by thumbnails page; when user clicks
+    on specific thumbnail, that page should be scrolled into the visible
+    view.
+  */
+  scroll_into_view: boolean;
 }
 
 function get_page_panel_width(): number {
@@ -21,14 +30,13 @@ function get_page_panel_width(): number {
 
   ret = Math.floor(rect.width);
 
-  console.log(`panel width is ${ret}px`);
-
   return ret;
 }
 
-export function Page({page}: Args) {
+export function Page({page, scroll_into_view}: Args) {
 
   //const base64_jpg = useProtectedJpg(page.jpg_url);
+  const pageRef = useRef<HTMLDivElement | null>(null);
 
   let {data, is_loading, error} = useProtectedSVG(
     page.svg_url,
@@ -45,11 +53,19 @@ export function Page({page}: Args) {
       {data}
       <div className='p-2 mb-3 page-number text-center'>
         {page.number}
-      </div>;
+      </div>
     </div>
   }
 
-  return <div className='d-flex flex-column p-2 m-2 page pb-0'>
+  if(scroll_into_view) {
+    const node: HTMLDivElement | null = pageRef?.current;
+
+    if (node) {
+      node.scrollIntoView();
+    }
+  }
+
+  return <div ref={pageRef} className='d-flex flex-column p-2 m-2 page pb-0'>
     {page_component}
   </div>
 }

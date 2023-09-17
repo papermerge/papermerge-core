@@ -5,9 +5,10 @@ import { PageThumbnail } from "./page_thumbnail";
 type Args = {
   pages: Array<PageType>;
   visible: boolean;
+  onClick: (page: PageType) => void;
 }
 
-export function ThumbnailsPanel({pages, visible}: Args) {
+export function ThumbnailsPanel({pages, visible, onClick}: Args) {
 
   let css_class_nanme = 'thumbnails-panel';
 
@@ -17,7 +18,7 @@ export function ThumbnailsPanel({pages, visible}: Args) {
 
   return (
     <div className={css_class_nanme}>
-      {pages.map(page => <PageThumbnail key={page.id} page={page} />)}
+      {pages.map(page => <PageThumbnail key={page.id} page={page} onClick={onClick} />)}
     </div>
   );
 }

@@ -1,16 +1,17 @@
 import { useProtectedJpg } from "hooks/protected_image"
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
-
+import { PAGE_ID } from "./constants";
 import type { PageType } from "types"
 
 
 type Args = {
   page: PageType,
   onClick: (page: PageType) => void;
+  onDrag: (page: PageType) => void;
 }
 
-export function PageThumbnail({page, onClick}: Args) {
+export function PageThumbnail({page, onClick, onDrag}: Args) {
 
   if (!page.jpg_url) {
     return <ThumbnailPlaceholder />;
@@ -23,12 +24,24 @@ export function PageThumbnail({page, onClick}: Args) {
     onClick(page);
   }
 
+  const onLocalDrag = () => {
+    onDrag(page);
+  }
+
+  const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
+    event.dataTransfer.setData(PAGE_ID, page.id);
+  }
+
   if (is_loading) {
     thumbnail_component = <ThumbnailPlaceholder />;
   } else if ( error ) {
     thumbnail_component = <div>Error</div>
   } else {
-    thumbnail_component = <div onClick={localOnClick}>
+    thumbnail_component = <div
+      draggable
+      onDrag={onLocalDrag}
+      onDragStart={onLocalDragStart}
+      onClick={localOnClick}>
       <div>
         {data}
       </div>

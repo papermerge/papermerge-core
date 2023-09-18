@@ -1,5 +1,6 @@
 import type { PageType } from "types"
 import { PageThumbnail } from "./page_thumbnail";
+import { PAGE_ID } from "./constants";
 
 
 type Args = {
@@ -10,15 +11,36 @@ type Args = {
 
 export function ThumbnailsPanel({pages, visible, onClick}: Args) {
 
-  let css_class_nanme = 'thumbnails-panel';
+  let css_class_name = 'thumbnails-panel';
 
   if (!visible) {
-    css_class_nanme += ' hidden';
+    css_class_name += ' hidden';
+  }
+
+  const onDrag = (page: PageType) => {
+  }
+
+  const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const page_id: string = event.dataTransfer.getData(PAGE_ID);
+
+    console.log(`PAGE DROP; dropped page_id=${page_id}`);
+  }
+
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  }
+
+  const onDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
   }
 
   return (
-    <div className={css_class_nanme}>
-      {pages.map(page => <PageThumbnail key={page.id} page={page} onClick={onClick} />)}
+    <div onDragOver={onDragOver}
+      onDragEnter={onDragEnter}
+      onDrop={onLocalDrop}
+      className={css_class_name}>
+      {pages.map(page => <PageThumbnail onDrag={onDrag} key={page.id} page={page} onClick={onClick} />)}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
+import type { PageOp } from 'types';
 import type { State, PageType } from 'types';
 import ErrorMessage from 'components/error_message';
 
@@ -21,6 +22,7 @@ export default function Viewer(
   {node_id, onNodeClick}:  Args
 ) {
 
+  let [pagesOp, setPagesOp] = useState<Array<PageOp>>([]);
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   const initial_breadcrumb_state: State<DocumentType | undefined> = {
     is_loading: true,
@@ -62,6 +64,10 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
+
+      let pages_op: Array<PageOp> = _setup_pages_op(last_version);
+      setPagesOp(pages_op);
+
     }).catch((error: Error) => {
       setDoc({
         is_loading: false,
@@ -102,4 +108,25 @@ export default function Viewer(
         current_page_number={currentPage}/>
     </div>
   </div>;
+}
+
+
+function _setup_pages_op(doc_ver: DocumentVersion): Array<PageOp> {
+  /**
+   * Setup page operation structure which will keep track of applied
+   * operation on the pages (re-ordering, deletion and rotations).
+   */
+  let pages_op: Array<PageOp> = [];
+
+  doc_ver.pages.forEach((page: PageType) =>{
+    let item: PageOp = {
+      old_page: {id: page.id, number: page.number},
+      new_page: {id: page.id, number: page.number},
+      ccw: 0
+    };
+
+    pages_op.push(item);
+  });
+
+  return pages_op;
 }

@@ -187,3 +187,15 @@ export type LoadableTagList = {
   error: string | null;
   data: ColoredTagList | null;
 }
+
+export type PagePos = {
+  number: number;  // page number: 1, 2, 3, withing the document ...
+  id: string; // page uuid
+
+}
+
+export type PageOp = {
+  old_page: PagePos;
+  new_page: PagePos;
+  ccw: 0; // rotation degree, can be positive or negative
+}

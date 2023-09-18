@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useProtectedJpg } from "hooks/protected_image"
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
@@ -13,6 +14,9 @@ type Args = {
 
 export function PageThumbnail({page, onClick, onDrag}: Args) {
 
+  const [pageIsDragged, setPageIsDragged] = useState<boolean>(false);
+  let thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0';
+
   if (!page.jpg_url) {
     return <ThumbnailPlaceholder />;
   }
@@ -26,10 +30,16 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
 
   const onLocalDrag = () => {
     onDrag(page);
+    setPageIsDragged(true);
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData(PAGE_ID, page.id);
+    setPageIsDragged(true);
+  }
+
+  const onLocalDragEnd = () => {
+    setPageIsDragged(false);
   }
 
   if (is_loading) {
@@ -41,6 +51,7 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
       draggable
       onDrag={onLocalDrag}
       onDragStart={onLocalDragStart}
+      onDragEnd={onLocalDragEnd}
       onClick={localOnClick}>
       <div>
         {data}
@@ -51,7 +62,14 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
     </div>
   }
 
-  return <div className='d-flex flex-column p-2 m-2 page pb-0'>
+  if (pageIsDragged) {
+    thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0 dragged';
+  } else {
+    thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0';
+  }
+
+  return <div
+    className={thumbnail_css_class}>
     {thumbnail_component}
   </div>
 }

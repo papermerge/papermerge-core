@@ -31,6 +31,7 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  let [curPages, setCurPages] = useState<Array<PageType>>([]);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
@@ -65,6 +66,7 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
+      setCurPages(last_version.pages);
 
       let pages_op: Array<PageOp> = _setup_pages_op(last_version);
       setPagesOp(pages_op);
@@ -98,6 +100,7 @@ export default function Viewer(
       source_id = is the id of the page which was dragged and dropped
       target_id = is the id of the page over which source was dropped
       position = should source page be inserted before or after the target?
+      Method is triggered only when source_id != target_id.
     */
     console.log(`source_id=${source_id}`);
     console.log(`target_id=${target_id}`);
@@ -114,7 +117,7 @@ export default function Viewer(
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
-        pages={curDocVer?.pages || []}
+        pages={curPages}
         visible={thumbnailsPanelVisible}
         onClick={onPageThumbnailClick}
         onThumbnailPageDropped={onThumbnailPageDropped} />
@@ -122,7 +125,7 @@ export default function Viewer(
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />
       <PagesPanel
-        pages={curDocVer?.pages || []}
+        pages={curPages}
         current_page_number={currentPage}/>
     </div>
   </div>;

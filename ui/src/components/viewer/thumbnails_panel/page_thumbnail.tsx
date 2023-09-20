@@ -122,16 +122,21 @@ export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
       const half = (rect.bottom - rect.top) / 2;
 
       if (y >= rect.top && y < rect.top + half) {
+        // dropped over upper half of the page
         position = 'before';
       } else if (y >= rect.top + half && y < rect.bottom) {
+        // dropped over lower half of the page
         position = 'after';
       }
-
-      onThumbnailPageDropped({
-        source_id: source_page_id,
-        target_id: page.id,
-        position: position
-      });
+      if (source_page_id != page.id) {
+        onThumbnailPageDropped({
+          source_id: source_page_id,
+          target_id: page.id,
+          position: position
+        });
+      } else {
+        console.log('Page dropped onto itself');
+      }
     } // if (ref?.current)
 
     // remove both borderline_bottom and borderline_top

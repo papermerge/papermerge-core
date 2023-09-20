@@ -9,7 +9,7 @@ import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { PageOp } from 'types';
-import type { State, PageType } from 'types';
+import type { State, PageType, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
 
 
@@ -31,6 +31,7 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
   const viewer_content_ref = useRef<HTMLInputElement>(null);
@@ -83,8 +84,24 @@ export default function Viewer(
   }
 
   const onPageThumbnailClick = (page: PageType) => {
-    console.log(`thumbnail clicked page.number=${page.number}`);
     setCurrentPage(page.number);
+  }
+
+  const onThumbnailPageDropped = ({
+    source_id,
+    target_id,
+    position
+  }: ThumbnailPageDroppedArgs) => {
+    /*
+      Triggered when page thumbnail is dropped
+
+      source_id = is the id of the page which was dragged and dropped
+      target_id = is the id of the page over which source was dropped
+      position = should source page be inserted before or after the target?
+    */
+    console.log(`source_id=${source_id}`);
+    console.log(`target_id=${target_id}`);
+    console.log(`position=${position}`);
   }
 
   if (error) {
@@ -99,7 +116,8 @@ export default function Viewer(
       <ThumbnailsPanel
         pages={curDocVer?.pages || []}
         visible={thumbnailsPanelVisible}
-        onClick={onPageThumbnailClick} />
+        onClick={onPageThumbnailClick}
+        onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />

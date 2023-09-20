@@ -1,21 +1,41 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useProtectedJpg } from "hooks/protected_image"
+import './page_thumbnail.scss';
+
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
 import { PAGE_ID } from "./constants";
-import type { PageType } from "types"
+import type {
+  PageType,
+  ThumbnailPageDroppedArgs,
+  DroppedThumbnailPosition
+} from "types"
 
 
 type Args = {
   page: PageType,
   onClick: (page: PageType) => void;
-  onDrag: (page: PageType) => void;
+  onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
-export function PageThumbnail({page, onClick, onDrag}: Args) {
 
-  const [pageIsDragged, setPageIsDragged] = useState<boolean>(false);
-  let thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0';
+const BORDERLINE_TOP = 'borderline-top';
+const BORDERLINE_BOTTOM = 'borderline-bottom';
+const DRAGGED = 'dragged';
+
+
+export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
+
+  const [cssClassNames, setCssClassNames] = useState<Array<string>>([
+      'd-flex',
+      'flex-column',
+      'p-2',
+      'm-2',
+      'page',
+      'pb-0',
+      'page-thumbnail'
+  ]);
+  const ref = useRef<HTMLDivElement>(null);
 
   if (!page.jpg_url) {
     return <ThumbnailPlaceholder />;
@@ -29,17 +49,100 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
   }
 
   const onLocalDrag = () => {
-    onDrag(page);
-    setPageIsDragged(true);
+    if (cssClassNames.indexOf(DRAGGED) < 0) {
+      setCssClassNames([
+        ...cssClassNames, DRAGGED
+      ]);
+    }
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData(PAGE_ID, page.id);
-    setPageIsDragged(true);
+    if (cssClassNames.indexOf(DRAGGED) < 0) {
+      setCssClassNames([
+        ...cssClassNames, DRAGGED
+      ]);
+    }
   }
 
   const onLocalDragEnd = () => {
-    setPageIsDragged(false);
+    setCssClassNames(
+      cssClassNames.filter(item => item !== DRAGGED)
+    );
+  }
+
+  const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    const y = event.clientY;
+
+    event.preventDefault();
+
+    if (ref?.current) {
+      const rect = ref?.current.getBoundingClientRect();
+      const half = (rect.bottom - rect.top) / 2;
+
+      if (y >= rect.top && y < rect.top + half) {
+        // remove borderline_bottom and add borderline_top
+        const new_array = cssClassNames.filter(i => i != BORDERLINE_BOTTOM);
+
+        if (new_array.indexOf(BORDERLINE_TOP) < 0) {
+          setCssClassNames([
+            ...new_array, BORDERLINE_TOP
+          ]);
+        }
+      } else if (y >= rect.top + half && y < rect.bottom) {
+        // remove borderline_top and add borderline_bottom
+        const new_array = cssClassNames.filter(i => i != BORDERLINE_TOP);
+
+        if (new_array.indexOf(BORDERLINE_BOTTOM) < 0) {
+          setCssClassNames([
+            ...new_array, BORDERLINE_BOTTOM
+          ]);
+        }
+      }
+    } // if (ref?.current)
+  } // end of onLocalDragOver
+
+  const onLocalDragLeave = () => {
+    // remove both borderline_bottom and borderline_top
+    const new_array = cssClassNames.filter(i => i != BORDERLINE_BOTTOM && i != BORDERLINE_TOP);
+    setCssClassNames(
+      new_array
+    );
+  }
+
+  const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    const source_page_id: string = event.dataTransfer.getData(PAGE_ID);
+    const y = event.clientY;
+    let position: DroppedThumbnailPosition = 'before';
+
+    event.preventDefault();
+
+    if (ref?.current) {
+      const rect = ref?.current.getBoundingClientRect();
+      const half = (rect.bottom - rect.top) / 2;
+
+      if (y >= rect.top && y < rect.top + half) {
+        position = 'before';
+      } else if (y >= rect.top + half && y < rect.bottom) {
+        position = 'after';
+      }
+
+      onThumbnailPageDropped({
+        source_id: source_page_id,
+        target_id: page.id,
+        position: position
+      });
+    } // if (ref?.current)
+
+    // remove both borderline_bottom and borderline_top
+    const new_array = cssClassNames.filter(i => i != BORDERLINE_BOTTOM && i != BORDERLINE_TOP);
+    setCssClassNames(
+      new_array
+    );
+  }
+
+  const onLocalDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
   }
 
   if (is_loading) {
@@ -52,6 +155,10 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
       onDrag={onLocalDrag}
       onDragStart={onLocalDragStart}
       onDragEnd={onLocalDragEnd}
+      onDragOver={onLocalDragOver}
+      onDragLeave={onLocalDragLeave}
+      onDragEnter={onLocalDragEnter}
+      onDrop={onLocalDrop}
       onClick={localOnClick}>
       <div>
         {data}
@@ -62,14 +169,9 @@ export function PageThumbnail({page, onClick, onDrag}: Args) {
     </div>
   }
 
-  if (pageIsDragged) {
-    thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0 dragged';
-  } else {
-    thumbnail_css_class = 'd-flex flex-column p-2 m-2 page pb-0';
-  }
-
   return <div
-    className={thumbnail_css_class}>
+    ref={ref}
+    className={cssClassNames.join(' ')}>
     {thumbnail_component}
   </div>
 }

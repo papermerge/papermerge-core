@@ -199,3 +199,11 @@ export type PageOp = {
   new_page: PagePos;
   ccw: 0; // rotation degree, can be positive or negative
 }
+
+
+export type DroppedThumbnailPosition = 'before' | 'after';
+export type ThumbnailPageDroppedArgs = {
+  source_id: string;
+  target_id: string;
+  position: DroppedThumbnailPosition;
+}

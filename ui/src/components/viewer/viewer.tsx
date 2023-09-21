@@ -7,7 +7,7 @@ import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
-import ActionPanel from "components/viewer/action_panel";
+import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { PageAndRotOp } from 'types';
 import type { State, ThumbnailPageDroppedArgs } from 'types';
@@ -112,6 +112,9 @@ export default function Viewer(
     setCurPages(new_pages);
   }
 
+  const onApplyPageOpChanges = () => {
+  }
+
   if (error) {
     return <div className="viewer">
       {error && <ErrorMessage msg={error} />}
@@ -119,7 +122,9 @@ export default function Viewer(
   }
 
   return <div className="viewer">
-    <ActionPanel />
+    <ActionPanel
+      unapplied_page_op_changes={unappliedPagesOpChanges}
+      onApplyPageOpChanges={onApplyPageOpChanges} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel

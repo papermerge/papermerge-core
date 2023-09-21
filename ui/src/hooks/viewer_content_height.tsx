@@ -10,7 +10,7 @@ type ComputedHeightArgs = {
 
 function get_computed_height(
   {element_id, element_class, default_value}: ComputedHeightArgs
-) {
+): number {
   let el, styles, height;
 
   if (element_id) {
@@ -38,18 +38,27 @@ function get_computed_height(
   return height;
 }
 
-function get_navbar_height() {
+function get_navbar_height(): number {
   return get_computed_height({
     element_class: 'nav-top',
     default_value: 56
   });
 }
 
-function get_breadcrumb_height() {
+function get_breadcrumb_height(): number {
   return get_computed_height({
     element_class: 'nav-breadcrumb',
     default_value: 40
   });
+}
+
+function get_action_panel_height(): number {
+  let result = get_computed_height({
+    element_class: 'action-panel',
+    default_value: 100
+  });
+
+  return result;
 }
 
 function get_height() {
@@ -57,6 +66,7 @@ function get_height() {
 
   height -= get_navbar_height();
   height -= get_breadcrumb_height();
+  height -= get_action_panel_height();
 
   return height;
 }

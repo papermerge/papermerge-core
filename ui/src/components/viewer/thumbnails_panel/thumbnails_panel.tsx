@@ -1,11 +1,11 @@
-import type { PageType, ThumbnailPageDroppedArgs } from "types"
+import type { PageAndRotOp, ThumbnailPageDroppedArgs } from "types"
 import { PageThumbnail } from "./page_thumbnail";
 
 
 type Args = {
-  pages: Array<PageType>;
+  pages: Array<PageAndRotOp>;
   visible: boolean;
-  onClick: (page: PageType) => void;
+  onClick: (page: PageAndRotOp) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
@@ -24,10 +24,10 @@ export function ThumbnailsPanel({
 
   return (
     <div className={css_class_name}>
-      {pages.map(page => {
+      {pages.map(item => {
         return <PageThumbnail
-          key={page.id}
-          page={page}
+          key={item.page.id}
+          item={item}
           onClick={onClick}
           onThumbnailPageDropped={onThumbnailPageDropped} />
       })}

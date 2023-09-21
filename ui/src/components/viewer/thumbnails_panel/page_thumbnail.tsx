@@ -6,15 +6,15 @@ import './page_thumbnail.scss';
 import ThumbnailPlaceholder from './thumbnail_placeholder';
 import { PAGE_ID } from "./constants";
 import type {
-  PageType,
   ThumbnailPageDroppedArgs,
-  DroppedThumbnailPosition
+  DroppedThumbnailPosition,
+  PageAndRotOp
 } from "types"
 
 
 type Args = {
-  page: PageType,
-  onClick: (page: PageType) => void;
+  item: PageAndRotOp,
+  onClick: (page: PageAndRotOp) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
@@ -24,7 +24,7 @@ const BORDERLINE_BOTTOM = 'borderline-bottom';
 const DRAGGED = 'dragged';
 
 
-export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
+export function PageThumbnail({item, onClick, onThumbnailPageDropped}: Args) {
 
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([
       'd-flex',
@@ -37,15 +37,15 @@ export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
   ]);
   const ref = useRef<HTMLDivElement>(null);
 
-  if (!page.jpg_url) {
+  if (!item.page.jpg_url) {
     return <ThumbnailPlaceholder />;
   }
 
-  const {is_loading, data, error} = useProtectedJpg(page.jpg_url);
+  const {is_loading, data, error} = useProtectedJpg(item.page.jpg_url);
   let thumbnail_component: JSX.Element | null;
 
   const localOnClick = () => {
-    onClick(page);
+    onClick(item);
   }
 
   const onLocalDrag = () => {
@@ -57,7 +57,7 @@ export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    event.dataTransfer.setData(PAGE_ID, page.id);
+    event.dataTransfer.setData(PAGE_ID, item.page.id);
     if (cssClassNames.indexOf(DRAGGED) < 0) {
       setCssClassNames([
         ...cssClassNames, DRAGGED
@@ -128,10 +128,10 @@ export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
         // dropped over lower half of the page
         position = 'after';
       }
-      if (source_page_id != page.id) {
+      if (source_page_id != item.page.id) {
         onThumbnailPageDropped({
           source_id: source_page_id,
-          target_id: page.id,
+          target_id: item.page.id,
           position: position
         });
       } else {
@@ -169,7 +169,7 @@ export function PageThumbnail({page, onClick, onThumbnailPageDropped}: Args) {
         {data}
       </div>
       <div className='p-1 page-number text-center'>
-        {page.number}
+        {item.page.number}
       </div>
     </div>
   }

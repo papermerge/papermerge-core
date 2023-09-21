@@ -7,10 +7,12 @@ import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
+import ActionPanel from "components/viewer/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { PageOp } from 'types';
-import type { State, PageType, ThumbnailPageDroppedArgs } from 'types';
+import type { PageAndRotOp } from 'types';
+import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
+import { reorder_pages } from 'utils/misc';
 
 
 type Args = {
@@ -22,7 +24,6 @@ export default function Viewer(
   {node_id, onNodeClick}:  Args
 ) {
 
-  let [pagesOp, setPagesOp] = useState<Array<PageOp>>([]);
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   const initial_breadcrumb_state: State<DocumentType | undefined> = {
     is_loading: true,
@@ -31,7 +32,8 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
-  let [curPages, setCurPages] = useState<Array<PageType>>([]);
+  let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
+  let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
@@ -66,11 +68,7 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
-      setCurPages(last_version.pages);
-
-      let pages_op: Array<PageOp> = _setup_pages_op(last_version);
-      setPagesOp(pages_op);
-
+      setCurPages(last_version.pages.map(p => { return {page: p, ccw: 0};}));
     }).catch((error: Error) => {
       setDoc({
         is_loading: false,
@@ -85,8 +83,8 @@ export default function Viewer(
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
   }
 
-  const onPageThumbnailClick = (page: PageType) => {
-    setCurrentPage(page.number);
+  const onPageThumbnailClick = (item: PageAndRotOp) => {
+    setCurrentPage(item.page.number);
   }
 
   const onThumbnailPageDropped = ({
@@ -102,9 +100,16 @@ export default function Viewer(
       position = should source page be inserted before or after the target?
       Method is triggered only when source_id != target_id.
     */
-    console.log(`source_id=${source_id}`);
-    console.log(`target_id=${target_id}`);
-    console.log(`position=${position}`);
+    const new_pages = reorder_pages({
+      arr: curPages,
+      source_id: source_id,
+      target_id: target_id,
+      position: position
+    });
+    if (!new_pages.every((value, index) => value.page.id == curPages[index].page.id)) {
+      setUnappliedPagesOpChanges(true);
+    }
+    setCurPages(new_pages);
   }
 
   if (error) {
@@ -114,6 +119,7 @@ export default function Viewer(
   }
 
   return <div className="viewer">
+    <ActionPanel />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
@@ -125,29 +131,8 @@ export default function Viewer(
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />
       <PagesPanel
-        pages={curPages}
+        items={curPages}
         current_page_number={currentPage}/>
     </div>
   </div>;
-}
-
-
-function _setup_pages_op(doc_ver: DocumentVersion): Array<PageOp> {
-  /**
-   * Setup page operation structure which will keep track of applied
-   * operation on the pages (re-ordering, deletion and rotations).
-   */
-  let pages_op: Array<PageOp> = [];
-
-  doc_ver.pages.forEach((page: PageType) =>{
-    let item: PageOp = {
-      old_page: {id: page.id, number: page.number},
-      new_page: {id: page.id, number: page.number},
-      ccw: 0
-    };
-
-    pages_op.push(item);
-  });
-
-  return pages_op;
 }

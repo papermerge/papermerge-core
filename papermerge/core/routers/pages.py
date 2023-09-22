@@ -1,13 +1,17 @@
 import logging
 import os
 import uuid
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.models import Page, User
+from papermerge.core.page_operations import apply_pages_op
 from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
+from papermerge.core.schemas.pages import PageAndRotOp
 from papermerge.core.storage import abs_path
 
 from .auth import get_current_user as current_user
@@ -94,3 +98,20 @@ def get_page_jpg_url(
     logger.debug(f"jpeg_abs_path={jpeg_abs_path}")
 
     return JPEGFileResponse(jpeg_abs_path)
+
+
+@router.post("/")
+def apply_page_operations(
+    items: List[PageAndRotOp],
+) -> List[PyDocVer]:
+    """Applies reorder, delete and/or rotate operation(s) on a set of pages.
+
+    Creates a new document version which will contain
+    only the pages provided as input in given order and with
+    applied rotation. The deletion operation is implicit:
+    pages not included in input won't be added to the new document version
+    which from user perspective means that pages were deleted.
+    Order in which input pages are provided is very important because
+    new document version will add pages in exact same order.
+    """
+    apply_pages_op(items)

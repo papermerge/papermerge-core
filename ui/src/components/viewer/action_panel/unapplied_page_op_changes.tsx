@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "react-bootstrap"
+import { Button, Spinner } from "react-bootstrap"
 
 
 type Args = {
@@ -10,16 +10,17 @@ export default function UnappliedPageOpChanges({onClick}: Args) {
   const [inProgress, setInProgress] = useState(false);
 
   const onLocalClick = () => {
+    setInProgress(true);
     onClick();
   }
 
   return (
     <span className="unapplied-page-op-changes">
       Unapplied pages operations detected
-      <Button
+      <Button disabled={inProgress}
         className="rounded-0 m-1" variant="success"
         onClick={onLocalClick}>
-        Apply
+        {inProgress && <Spinner />} Apply
       </Button>
     </span>
   );

@@ -14,6 +14,8 @@ import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 
+import { apply_page_op_changes } from 'requests/viewer';
+
 
 type Args = {
   node_id: string;
@@ -112,7 +114,8 @@ export default function Viewer(
     setCurPages(new_pages);
   }
 
-  const onApplyPageOpChanges = () => {
+  const onApplyPageOpChanges = async () => {
+    let response = await apply_page_op_changes(curPages)
   }
 
   if (error) {

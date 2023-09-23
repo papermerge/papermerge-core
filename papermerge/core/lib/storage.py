@@ -4,8 +4,9 @@ import os
 import shutil
 from os import listdir
 from os.path import isdir, join
+from pathlib import Path
 
-from .path import DocumentPath, PagePath, AUX_DIR_SIDECARS, AUX_DIR_DOCS
+from .path import AUX_DIR_DOCS, AUX_DIR_SIDECARS, DocumentPath, PagePath
 from .utils import safe_to_delete
 
 logger = logging.getLogger(__name__)
@@ -160,31 +161,18 @@ class Storage:
             if os.path.exists(abs_dirname_sidecars):
                 os.rmdir(abs_dirname_sidecars)
 
-    def copy_doc(self, src: DocumentPath | io.BytesIO, dst: DocumentPath):
-        """
-        copy given file src file path to destination
-        as absolute doc_path
-        """
-        logger.debug(f"copy_doc {src} to {dst}")
-        dirname = os.path.dirname(
-            self.abspath(dst)
-        )
-        if not os.path.exists(
-            dirname
-        ):
-            os.makedirs(
-                dirname, exist_ok=True
-            )
-        if isinstance(src, DocumentPath):
-            logger.debug(
-                f"copy_doc: {src} to {dst}"
-            )
-            shutil.copyfile(
-                self.abspath(src),
-                self.abspath(dst)
-            )
+    def copy_file(self, src: Path | io.BytesIO, dst: Path):
+        """Copy source file to destination"""
+        logger.debug(f"copying {src} to {dst}")
+
+        if not dst.parent.exists():
+            os.makedirs(dst.parent, exist_ok=True)
+
+        if isinstance(src, Path):
+            logger.debug(f"{src} is a Path instance")
+            shutil.copyfile(src, dst)
         elif isinstance(src, io.BytesIO):
-            with open(self.abspath(dst), 'wb') as f:
+            with open(dst, 'wb') as f:
                 f.write(src.getvalue())
         else:
             raise ValueError(
@@ -475,3 +463,22 @@ class Storage:
 
 class FileSystemStorage(Storage):
     pass
+
+
+def copy_file(src: Path | io.BytesIO, dst: Path):
+    """Copy source file to destination"""
+    logger.debug(f"copying {src} to {dst}")
+
+    if not dst.parent.exists():
+        os.makedirs(dst.parent, exist_ok=True)
+
+    if isinstance(src, Path):
+        logger.debug(f"{src} is a Path instance")
+        shutil.copyfile(src, dst)
+    elif isinstance(src, io.BytesIO):
+        with open(dst, 'wb') as f:
+            f.write(src.getvalue())
+    else:
+        raise ValueError(
+            f"src ({src}) is neither instance of DocumentPath nor io.Bytes"
+        )

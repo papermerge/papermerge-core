@@ -7,7 +7,7 @@ from django.db import models
 
 from papermerge.core import constants as const
 from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.pathlib import abs_thumbnail_path
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 from papermerge.core.utils import image as image_utils
@@ -106,19 +106,18 @@ class Page(models.Model):
         Returns absolute path to the thumbnail image as
         instance of ``pathlib.Path``
         """
-        abs_thumbnail_path = rel2abs(
-            thumbnail_path(self.id, size=size)
-        )
-        pdf_path = self.document_version.document_path.url
+        thb_path = abs_thumbnail_path(str(self.id), size=size)
+
+        pdf_path = self.document_version.file_path  # noqa
 
         image_utils.generate_preview(
-            pdf_path=Path(abs_path(pdf_path)),
+            pdf_path=Path(pdf_path),
             page_number=int(self.number),
-            output_folder=abs_thumbnail_path.parent,
+            output_folder=thb_path.parent,
             size=size
         )
 
-        return abs_thumbnail_path
+        return thb_path
 
     @property
     def page_path(self):

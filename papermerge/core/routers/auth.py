@@ -1,12 +1,15 @@
 
-from fastapi import (Depends, HTTPException, WebSocket, WebSocketException,
-                     status)
+from fastapi import (Depends, Header, HTTPException, WebSocket,
+                     WebSocketException, status)
 from fastapi.security import OAuth2PasswordBearer
 
 from papermerge.core.models import User
 from papermerge.core.utils import base64
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="auth/token/",
+    auto_error=False
+)
 
 
 def get_user_id_from_token(token: str) -> str | None:
@@ -20,8 +23,18 @@ def get_user_id_from_token(token: str) -> str | None:
 # def get_current_user(request: Request) -> User:
 #   e.g.
 #   user_id = request.headers.get('REMOTE_USER')
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    user_id = get_user_id_from_token(token)
+def get_current_user(
+    x_remote_user: str | None = Header(default=None),
+    token: str | None = Depends(oauth2_scheme)
+) -> User:
+
+    user_id = None
+
+    if token:  # token found
+        user_id = get_user_id_from_token(token)
+
+    if x_remote_user:  # remote user UUID
+        user_id = x_remote_user
 
     if user_id is None:
         raise HTTPException(

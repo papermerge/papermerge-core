@@ -187,3 +187,16 @@ export type LoadableTagList = {
   error: string | null;
   data: ColoredTagList | null;
 }
+
+export type PageAndRotOp = { // page and rotation operation
+  page: PageType;
+  ccw: 0; // rotation degree, can be positive or negative
+}
+
+
+export type DroppedThumbnailPosition = 'before' | 'after';
+export type ThumbnailPageDroppedArgs = {
+  source_id: string;
+  target_id: string;
+  position: DroppedThumbnailPosition;
+}

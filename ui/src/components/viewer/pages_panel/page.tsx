@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 import PagePlaceholder from './page_placeholder';
 
-import type { PageType } from "types"
+import type { PageAndRotOp } from "types"
 import { useProtectedSVG } from "hooks/protected_image"
 
 type Args = {
-  page: PageType;
+  item: PageAndRotOp;
   /*
     if `scroll_into_view`=True -> page should be scrolled into the view.
 
@@ -33,14 +33,14 @@ function get_page_panel_width(): number {
   return ret;
 }
 
-export function Page({page, scroll_into_view}: Args) {
+export function Page({item, scroll_into_view}: Args) {
 
   //const base64_jpg = useProtectedJpg(page.jpg_url);
   const pageRef = useRef<HTMLDivElement | null>(null);
 
   let {data, is_loading, error} = useProtectedSVG(
-    page.svg_url,
-    `${page.jpg_url}?size=${get_page_panel_width()}`
+    item.page.svg_url,
+    `${item.page.jpg_url}?size=${get_page_panel_width()}`
   );
   let page_component: JSX.Element | null
 
@@ -52,7 +52,7 @@ export function Page({page, scroll_into_view}: Args) {
     page_component = <div>
       {data}
       <div className='p-2 mb-3 page-number text-center'>
-        {page.number}
+        {item.page.number}
       </div>
     </div>
   }

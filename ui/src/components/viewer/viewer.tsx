@@ -7,9 +7,14 @@ import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 
+import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { State, PageType } from 'types';
+import type { PageAndRotOp } from 'types';
+import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
+import { reorder_pages } from 'utils/misc';
+
+import { apply_page_op_changes } from 'requests/viewer';
 
 
 type Args = {
@@ -29,6 +34,9 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
+  let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
+  // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
   const viewer_content_ref = useRef<HTMLInputElement>(null);
@@ -62,6 +70,7 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
+      setCurPages(last_version.pages.map(p => { return {page: p, ccw: 0};}));
     }).catch((error: Error) => {
       setDoc({
         is_loading: false,
@@ -76,9 +85,37 @@ export default function Viewer(
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
   }
 
-  const onPageThumbnailClick = (page: PageType) => {
-    console.log(`thumbnail clicked page.number=${page.number}`);
-    setCurrentPage(page.number);
+  const onPageThumbnailClick = (item: PageAndRotOp) => {
+    setCurrentPage(item.page.number);
+  }
+
+  const onThumbnailPageDropped = ({
+    source_id,
+    target_id,
+    position
+  }: ThumbnailPageDroppedArgs) => {
+    /*
+      Triggered when page thumbnail is dropped
+
+      source_id = is the id of the page which was dragged and dropped
+      target_id = is the id of the page over which source was dropped
+      position = should source page be inserted before or after the target?
+      Method is triggered only when source_id != target_id.
+    */
+    const new_pages = reorder_pages({
+      arr: curPages,
+      source_id: source_id,
+      target_id: target_id,
+      position: position
+    });
+    if (!new_pages.every((value, index) => value.page.id == curPages[index].page.id)) {
+      setUnappliedPagesOpChanges(true);
+    }
+    setCurPages(new_pages);
+  }
+
+  const onApplyPageOpChanges = async () => {
+    let response = await apply_page_op_changes(curPages)
   }
 
   if (error) {
@@ -88,17 +125,21 @@ export default function Viewer(
   }
 
   return <div className="viewer">
+    <ActionPanel
+      unapplied_page_op_changes={unappliedPagesOpChanges}
+      onApplyPageOpChanges={onApplyPageOpChanges} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
-        pages={curDocVer?.pages || []}
+        pages={curPages}
         visible={thumbnailsPanelVisible}
-        onClick={onPageThumbnailClick} />
+        onClick={onPageThumbnailClick}
+        onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />
       <PagesPanel
-        pages={curDocVer?.pages || []}
+        items={curPages}
         current_page_number={currentPage}/>
     </div>
   </div>;

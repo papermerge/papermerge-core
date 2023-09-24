@@ -375,7 +375,7 @@ class Document(BaseTreeNode):
         abs_thumbnail_path = rel2abs(
             thumbnail_path(first_page.id, size=size)
         )
-        pdf_path = last_version.document_path.url
+        pdf_path = last_version.file_path
 
         image_utils.generate_preview(
             pdf_path=Path(abs_path(pdf_path)),

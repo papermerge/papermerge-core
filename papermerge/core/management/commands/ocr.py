@@ -1,5 +1,4 @@
 import ocrmypdf
-
 from django.core.management.base import BaseCommand
 
 
@@ -67,5 +66,6 @@ class Command(BaseCommand):
             keep_temporary_files=keep,
             sidecar_dir=sidecar_dir,
             sidecar_format=sidecar_format,
-            preview_width=preview_width
+            preview_width=preview_width,
+            force_ocr=True
         )

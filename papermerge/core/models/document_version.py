@@ -5,7 +5,7 @@ from pathlib import Path
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from papermerge.core.pathlib import abs_document_path
+from papermerge.core.pathlib import abs_docver_path
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import image as image_utils
 
@@ -111,7 +111,7 @@ class DocumentVersion(models.Model):
     @property
     def file_path(self) -> Path:
         """Returns absolute path of the file associated with this doc version"""
-        return abs_document_path(
+        return abs_docver_path(
             str(self.id),
             str(self.file_name)
         )

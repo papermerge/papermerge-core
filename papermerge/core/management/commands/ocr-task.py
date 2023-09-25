@@ -1,12 +1,17 @@
+
 from django.core.management.base import BaseCommand
 
 from papermerge.core.models import Document
-from papermerge.core.tasks import ocr_document_task
+from papermerge.core.ocr.document import ocr_document
+from papermerge.core.tasks import _post_ocr_document
 
 
 class Command(BaseCommand):
     help = """
-    Triggers OCR task for given document UUID
+    Calls OCR document same was task is triggering it.
+
+    Handy management command to quickly check if
+    OCRing works
     """
 
     def add_arguments(self, parser):
@@ -18,12 +23,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         uuid = options.get('UUID')
         doc = Document.objects.get(id=uuid)
+        last_version = doc.versions.last()
+        target_docver_uuid = uuid.uuid4()
+        target_page_uuids = [
+            uuid.uuid4() for _ in range(last_version.pages.count())
+        ]
 
-        ocr_document_task.apply_async(
-            kwargs={
-                'document_id': str(doc.id),
-                'lang': doc.lang,
-                'namespace': None,
-                'user_id': str(doc.user.id)
-            }
+        ocr_document(
+            lang=doc.lang,
+            document_version=last_version,
+            target_docver_uuid=target_docver_uuid,
+            target_page_uuids=target_page_uuids
+        )
+        _post_ocr_document(
+            uuid,
+            target_docver_uuid=target_docver_uuid,
+            target_page_uuids=target_page_uuids
         )

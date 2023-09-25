@@ -37,27 +37,27 @@ def abs_thumbnail_path(
     )
 
 
-def document_path(
+def docver_path(
     uuid: UUID | str,
     file_name: str
 ) -> Path:
     uuid_str = str(uuid)
 
     return Path(
-        const.DOCS,
+        const.DOCVERS,
         uuid_str[0:2],
         uuid_str[2:4],
         file_name
     )
 
 
-def abs_document_path(
+def abs_docver_path(
     uuid: UUID | str,
     file_name: str
 ):
     return Path(
         settings.MEDIA_ROOT,
-        document_path(uuid, file_name)
+        docver_path(uuid, file_name)
     )
 
 

@@ -45,9 +45,18 @@ class Command(BaseCommand):
             action='store_true',
             help="Keep temporary files"
         )
+        parser.add_argument(
+            '-u',
+            '--uuids',
+            help="A list of uuids separated by comma. "
+            " Order of UUIDs matters. First UUID corresponds to first page ID, "
+            " second UUID corresponds to second page ID etc "
+            "Number of UUIDs should match number of pages in the document.",
+        )
 
     def handle(self, *args, **options):
         document = options['document']
+        uuids = options['uuids']
         sidecar_dir = options['sidecar_dir']
         sidecar_format = options['sidecar_format']
         lang = options['lang']
@@ -65,6 +74,7 @@ class Command(BaseCommand):
             use_threads=True,
             keep_temporary_files=keep,
             sidecar_dir=sidecar_dir,
+            uuids=uuids,
             sidecar_format=sidecar_format,
             preview_width=preview_width,
             force_ocr=True

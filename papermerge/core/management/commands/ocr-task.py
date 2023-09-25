@@ -8,7 +8,7 @@ from papermerge.core.tasks import _post_ocr_document
 
 class Command(BaseCommand):
     help = """
-    Calls OCR document same was task is triggering it.
+    Calls OCR document same way the `core.task.ocr_document_task`
 
     Handy management command to quickly check if
     OCRing works

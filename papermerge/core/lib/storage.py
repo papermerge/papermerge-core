@@ -131,35 +131,13 @@ class Storage:
     def path(self, _path):
         return self.abspath(_path)
 
-    def delete_doc(self, doc_path: DocumentPath):
-        """
-        Receives a DocumentPath instance
-        """
-        # where original documents and their versions are stored
-        abs_dirname_docs = self.path(
-            doc_path.dirname_docs
-        )
-        # where OCRed information and generated thumbnails
-        # are stored
-        abs_dirname_sidecars = self.path(
-            doc_path.dir_sidecars
-        )
+    def delete_file(self, file_or_folder: Path):
         # Before recursively deleting everything in folder
         # double check that there are only
         # .pdf, .txt, .hocr, .jpg files.
-        if safe_to_delete(
-            abs_dirname_docs
-        ):
-            shutil.rmtree(abs_dirname_docs)
-            if os.path.exists(abs_dirname_docs):
-                os.rmdir(abs_dirname_docs)
-
-        if safe_to_delete(
-            abs_dirname_sidecars
-        ):
-            shutil.rmtree(abs_dirname_sidecars)
-            if os.path.exists(abs_dirname_sidecars):
-                os.rmdir(abs_dirname_sidecars)
+        if file_or_folder.is_dir() and safe_to_delete(file_or_folder):
+            shutil.rmtree(file_or_folder)
+            file_or_folder.rmdir()
 
     def copy_file(self, src: Path | io.BytesIO, dst: Path):
         """Copy source file to destination"""

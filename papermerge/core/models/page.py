@@ -6,8 +6,8 @@ from pathlib import Path
 from django.db import models
 
 from papermerge.core import constants as const
-from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import abs_page_txt_path, abs_thumbnail_path
+from papermerge.core.pathlib import (abs_page_jpg_path, abs_page_svg_path,
+                                     abs_page_txt_path, abs_thumbnail_path)
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 from papermerge.core.utils import image as image_utils
@@ -120,14 +120,6 @@ class Page(models.Model):
         return thb_path
 
     @property
-    def page_path(self):
-
-        return PagePath(
-            document_path=self.document_version.document_path,
-            page_num=self.number,
-        )
-
-    @property
     def has_text(self):
         return len(self.stripped_text) != 0
 
@@ -152,6 +144,14 @@ class Page(models.Model):
     @property
     def txt_path(self) -> Path:
         return abs_page_txt_path(str(self.id))
+
+    @property
+    def svg_path(self) -> Path:
+        return abs_page_svg_path(str(self.id))
+
+    @property
+    def jpg_path(self) -> Path:
+        return abs_page_jpg_path(str(self.id))
 
     @property
     def txt_exists(self):

@@ -1,6 +1,6 @@
-import os
 import logging
-
+import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +31,15 @@ def get_bool(key, default="NO"):
     return False
 
 
-def safe_to_delete(place):
-    if not os.path.exists(place):
+def safe_to_delete(path: Path) -> True:
+    if not path.exists():
         logging.warning(
             f"Trying to delete not exising folder"
-            f" {place}"
+            f" {path}"
         )
         return False
 
-    for root, dirs, files in os.walk(place):
+    for root, dirs, files in os.walk(path):
         for name in files:
             base, ext = os.path.splitext(name)
             if ext.lower() not in SAFE_EXTENSIONS:

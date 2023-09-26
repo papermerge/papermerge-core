@@ -135,10 +135,10 @@ def delete_files(sender, instance: Document, **kwargs):
     associated folder in which original file was saved
     (e.g. all preview images).
     """
-    for document_version in instance.versions.all():
+    for folder_path in instance.files_iter:
         try:
-            get_storage_instance().delete_doc(
-                document_version.document_path
+            get_storage_instance().delete_file(
+                folder_path
             )
         except IOError as error:
             logger.error(

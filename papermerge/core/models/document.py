@@ -12,7 +12,8 @@ from papermerge.core import constants as const
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.lib.storage import copy_file
 from papermerge.core.models import utils
-from papermerge.core.pathlib import abs_docver_path, rel2abs, thumbnail_path
+from papermerge.core.pathlib import (abs_docver_path, abs_thumbnail_path,
+                                     rel2abs, thumbnail_path)
 from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import image as image_utils
@@ -293,6 +294,19 @@ class Document(BaseTreeNode):
 
     def __str__(self):
         return self.title
+
+    @property
+    def files_iter(self):
+        """Yields folders where associated files with this instance are"""
+        for doc_ver in self.versions.all():
+            for page in doc_ver.pages.all():
+                # folder path to ocr related files
+                yield page.svg_path.parent
+                # folder path to preview files
+                yield abs_thumbnail_path(page.id).parent
+
+            # folder path to file associated with this doc ver
+            yield doc_ver.file_path.parent
 
     @property
     def file_ext(self):

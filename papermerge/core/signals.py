@@ -223,16 +223,13 @@ def receiver_document_post_upload(
     )
 
     user_settings = user.preferences
-    namespace = getattr(get_storage_instance(), 'namespace', None)
 
     if user_settings['ocr__trigger'] == 'auto':
         try:
             ocr_document_task.apply_async(
                 kwargs={
                     'document_id': str(doc.id),
-                    'lang': doc.lang,
-                    'namespace': namespace,
-                    'user_id': str(user.id)
+                    'lang': doc.lang
                 }
             )
         except OperationalError:

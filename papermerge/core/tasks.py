@@ -60,7 +60,7 @@ def ocr_document_task(
     ocr_document(
         document_version=doc_version,
         lang=lang,
-        target_document_version_uuid=target_docver_uuid,
+        target_docver_uuid=target_docver_uuid,
         target_page_uuids=target_page_uuids
     )
 

@@ -1,6 +1,5 @@
 import io
 import logging
-import os
 import uuid
 from typing import List
 from uuid import UUID
@@ -9,7 +8,7 @@ from celery import shared_task
 from django.utils.translation import gettext_lazy as _
 
 from papermerge.core.ocr.document import ocr_document
-from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.storage import get_storage_instance
 
 from .models import Document, DocumentVersion, Folder, Page
 
@@ -130,7 +129,6 @@ def increment_document_version(
         'increment_document_version: '
         f'document_id={document_id}'
     )
-
     doc = Document.objects.get(pk=document_id)
     lang = doc.lang
     doc_version = doc.versions.last()
@@ -183,9 +181,8 @@ def update_document_pages(document_id):
     streams = []
 
     for page in doc_version.pages.order_by('number'):
-        url = abs_path(page.txt_url)
-        if os.path.exists(url):
-            streams.append(open(url))
+        if page.txt_path.exists():
+            streams.append(open(page.txt_path))
         else:
             streams.append(io.StringIO(''))
 

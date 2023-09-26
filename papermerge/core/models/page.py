@@ -7,7 +7,7 @@ from django.db import models
 
 from papermerge.core import constants as const
 from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import abs_thumbnail_path
+from papermerge.core.pathlib import abs_page_txt_path, abs_thumbnail_path
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 from papermerge.core.utils import image as image_utils
@@ -150,23 +150,12 @@ class Page(models.Model):
         return self.stripped_text
 
     @property
-    def txt_url(self):
-        result = PagePath(
-            document_path=self.document_version.document_path,
-            page_num=self.number
-        )
-
-        return result.txt_url
+    def txt_path(self) -> Path:
+        return abs_page_txt_path(str(self.id))
 
     @property
     def txt_exists(self):
-
-        result = PagePath(
-            document_path=self.document.document_path,
-            page_num=self.number
-        )
-
-        return result.txt_exists()
+        return self.txt_path.exists()
 
     def norm(self):
         """shortcut normalization method"""

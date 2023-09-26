@@ -1,6 +1,7 @@
 DEFAULT_THUMBNAIL_SIZE = 100  # 100 pixels wide
 JPG = 'jpg'
 PAGES = 'pages'
+THUMBNAILS = 'thumbnails'
 DOCVERS = 'docvers'
 OCR = 'ocr'
 DEFAULT_TAG_BG_COLOR = '#c41fff'

@@ -60,7 +60,7 @@ django = "^4.1"
 django_filter = "^21.1"
 redis = "^4.3.3"
 ocrmypdf = "^14.3.0"
-ocrmypdf-papermerge = "^0.4.8"
+ocrmypdf-papermerge = { path="/home/eugen/GitHub/papermerge/OCRmyPDF_papermerge", develop = true }
 django-dynamic-preferences = "^1.13"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
 django-taggit = "^4.0.0"

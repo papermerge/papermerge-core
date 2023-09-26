@@ -5,7 +5,15 @@ from django.conf import settings
 
 from papermerge.core import constants as const
 
-__all__ = ['thumbnail_path', 'rel2abs']
+__all__ = [
+    'thumbnail_path',
+    'docver_path',
+    'page_txt_path',
+    'abs_thumbnail_path',
+    'abs_docver_path',
+    'abs_page_txt_path',
+    'rel2abs'
+]
 
 
 def thumbnail_path(
@@ -18,7 +26,7 @@ def thumbnail_path(
     uuid_str = str(uuid)
 
     return Path(
-        const.PAGES,
+        const.THUMBNAILS,
         const.JPG,
         uuid_str[0:2],
         uuid_str[2:4],
@@ -47,6 +55,7 @@ def docver_path(
         const.DOCVERS,
         uuid_str[0:2],
         uuid_str[2:4],
+        uuid_str,
         file_name
     )
 
@@ -58,6 +67,30 @@ def abs_docver_path(
     return Path(
         settings.MEDIA_ROOT,
         docver_path(uuid, file_name)
+    )
+
+
+def page_txt_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.OCR,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str,
+        'page.txt'
+    )
+
+
+def abs_page_txt_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(
+        settings.MEDIA_ROOT,
+        page_txt_path(uuid)
     )
 
 

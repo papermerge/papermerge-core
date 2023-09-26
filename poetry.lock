@@ -1495,19 +1495,21 @@ webservice = ["Flask (>=1)"]
 
 [[package]]
 name = "ocrmypdf-papermerge"
-version = "0.4.9"
+version = "0.5.0"
 description = "OCRmyPDF plugin to generate SVG files for Papermerge"
 optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "ocrmypdf_papermerge-0.4.9-py3-none-any.whl", hash = "sha256:4172c29c79abde7ea62271292cb76dafea59bb4c528a9a48cf73d46a5de3b9be"},
-    {file = "ocrmypdf_papermerge-0.4.9.tar.gz", hash = "sha256:8fccb99edd9b6ed3b76421230bb8dc224a32b48df34b5463ae2a17697c39622a"},
-]
+python-versions = ">=3.8, <4.0"
+files = []
+develop = true
 
 [package.dependencies]
-Jinja2 = ">=3.1.2,<4.0.0"
-lxml = ">=4.9.0,<5.0.0"
-ocrmypdf = ">=14.3.0,<15.0.0"
+Jinja2 = "^3.1.2"
+lxml = "^4.9.0"
+ocrmypdf = "^14.3.0"
+
+[package.source]
+type = "directory"
+url = "../OCRmyPDF_papermerge"
 
 [[package]]
 name = "packaging"
@@ -2945,4 +2947,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <4.0"
-content-hash = "e09313b5341c88b8617b271d74bae85b1cdfbdb6aaf32c9c2154b2de8991d2d0"
+content-hash = "6c24c79fa76b74385d9398fbf866f6c506323767ea440b75ff4331852a4ffdcb"

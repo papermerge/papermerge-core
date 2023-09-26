@@ -1,3 +1,4 @@
+import uuid
 
 from django.core.management.base import BaseCommand
 
@@ -21,8 +22,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        uuid = options.get('UUID')
-        doc = Document.objects.get(id=uuid)
+        doc_id = options.get('UUID')
+        doc = Document.objects.get(id=doc_id)
         last_version = doc.versions.last()
         target_docver_uuid = uuid.uuid4()
         target_page_uuids = [
@@ -36,7 +37,7 @@ class Command(BaseCommand):
             target_page_uuids=target_page_uuids
         )
         _post_ocr_document(
-            uuid,
+            doc_id,
             target_docver_uuid=target_docver_uuid,
             target_page_uuids=target_page_uuids
         )

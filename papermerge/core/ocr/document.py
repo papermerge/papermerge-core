@@ -6,7 +6,7 @@ from uuid import UUID
 import ocrmypdf
 from django.conf import settings
 
-from papermerge.core.constants import OCR
+from papermerge.core.constants import OCR, PAGES
 from papermerge.core.lib import mime
 from papermerge.core.models import DocumentVersion
 from papermerge.core.pathlib import abs_docver_path
@@ -39,7 +39,8 @@ def _ocr_document(
 ):
     sidecar_dir = Path(
         settings.MEDIA_ROOT,
-        OCR
+        OCR,
+        PAGES
     )
 
     output_dir = abs_docver_path(
@@ -47,12 +48,8 @@ def _ocr_document(
         document_version.file_name
     )
 
-    if not output_dir.exists():
-        output_dir.mkdir(
-            output_dir,
-            parent=True,
-            exist_ok=True
-        )
+    if not output_dir.parent.exists():
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
 
     ocrmypdf.ocr(
         document_version.file_path,
@@ -66,7 +63,7 @@ def _ocr_document(
         force_ocr=True,
         keep_temporary_files=False,
         sidecar_dir=sidecar_dir,
-        uuids=target_page_uuids,
+        uuids=','.join(str(item) for item in target_page_uuids),
         sidecar_format='svg',
         preview_width=preview_width,
         deskew=True
@@ -108,5 +105,9 @@ def ocr_document(
         #    lang=lang,
         #)
         """
+    else:
+        raise ValueError(
+            f"Unsupported format for document: {document_version.file_path}"
+        )
 
     return True

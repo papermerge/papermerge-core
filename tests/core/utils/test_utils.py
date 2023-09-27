@@ -153,55 +153,70 @@ class TestCollectTextStreams(TestCase):
         assert expected == actual
 
 
-class TestReuseOCRdata(TestCase):
-    """Tests for reuse_ocr_data"""
+@pytest.mark.django_db
+@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.generate_page_previews_task')
+def test_reuse_ocr_data_1(_mock1, _mock2, user):
+    """
+    Tests `reuse_ocr_data`
 
-    @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_reuse_ocr_data_1(self, _, _x):
-        src_document = maker.document(
-            "s3.pdf",  # document has 3 pages
-            user=self.user,
-            include_ocr_data=True
+    Tests scenario when target version has same
+    pages (number of pages and their order coincide) as the
+    source version.
+    """
+    src_document = maker.document(
+        "s3.pdf",  # document has 3 pages
+        user=user,
+        include_ocr_data=True
+    )
+    source = src_document.versions.last()
+    destination = src_document.version_bump(page_count=3)
+
+    page_map = {
+        str(src_page.id): str(dst_page.id)
+        for src_page, dst_page in zip(
+            source.pages.all(),
+            destination.pages.all()
         )
-        source = src_document.versions.last()
-        destination = src_document.version_bump(page_count=3)
+    }
 
-        page_map = {
-            str(src_page.id): str(dst_page.id)
-            for src_page, dst_page in zip(
-                source.pages.all(),
-                destination.pages.all()
-            )
-        }
+    reuse_ocr_data(page_map)
 
-        reuse_ocr_data(page_map)
-
-        for index in range(3):
-            dst = destination.pages.all()[index]
-            src = source.pages.all()[index]
-            _assert_same_ocr_data(src=src, dst=dst)
-
-    @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_reuse_ocr_data_2(self, _, _x):
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user,
-            include_ocr_data=True
-        )
-        source = src_document.versions.last()
-        destination = src_document.version_bump(page_count=1)
-
-        reuse_ocr_data(
-            old_version=source,
-            new_version=destination,
-            page_map=PageRecycleMap(total=3, deleted=[1, 2])
-        )
-
-        dst = destination.pages.all()[0]
-        src = source.pages.all()[2]
+    for index in range(3):
+        dst = destination.pages.all()[index]
+        src = source.pages.all()[index]
         _assert_same_ocr_data(src=src, dst=dst)
+
+
+@pytest.mark.django_db
+@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.generate_page_previews_task')
+def test_reuse_ocr_data_2(_mock1, _mock2, user):
+    """
+    Tests `reuse_ocr_data`
+
+    Tests scenario when first two pages of the source are deleted.
+     src       -> dst
+    p1, p2, p3 -> p3
+    """
+    src_document = maker.document(
+        "s3.pdf",
+        user=user,
+        include_ocr_data=True
+    )
+    source = src_document.versions.last()
+
+    # destination has only one page
+    destination = src_document.version_bump(page_count=1)
+
+    dst = destination.pages.all()[0]
+    src = source.pages.all()[2]
+
+    page_map = dict()
+    page_map[str(src.id)] = str(dst.id)
+    reuse_ocr_data(page_map)
+
+    _assert_same_ocr_data(src=src, dst=dst)
 
 
 class TestReuseOCRDataMulti(TestCase):

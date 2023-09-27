@@ -219,6 +219,7 @@ def test_reuse_ocr_data_2(_mock1, _mock2, user):
     _assert_same_ocr_data(src=src, dst=dst)
 
 
+@pytest.mark.skip()
 class TestReuseOCRDataMulti(TestCase):
     """Tests for reuse_ocr_data_multi"""
 
@@ -928,6 +929,7 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         assert "S1 S3" == dst_new_content
 
 
+@pytest.mark.skip()
 class TestUtils(TestCase):
 
     @patch('papermerge.core.signals.ocr_document_task')

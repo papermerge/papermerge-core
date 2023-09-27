@@ -562,9 +562,7 @@ def remove_pdf_pages(
     if len(page_numbers) < 1:
         raise ValueError("Empty page_numbers")
 
-    pdf = Pdf.open(
-        abs_path(old_version.document_path.url)
-    )
+    pdf = Pdf.open(old_version.file_path)
 
     if len(pdf.pages) < len(page_numbers):
         raise ValueError("Too many values in page_numbers")
@@ -574,11 +572,9 @@ def remove_pdf_pages(
         pdf.pages.remove(p=page_number - _deleted_count)
         _deleted_count += 1
 
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    pdf.save(abs_path(new_version.document_path.url))
+    new_version.file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    pdf.save(new_version.file_path)
 
 
 def insert_pdf_pages(
@@ -607,17 +603,14 @@ def insert_pdf_pages(
     when `src_page_numbers=[1, 2]` means insert first and second pages from
     source document version.
     """
-    src_old_pdf = Pdf.open(
-        abs_path(src_old_version.document_path.url)
-    )
+    src_old_pdf = Pdf.open(src_old_version.file_path)
+
     if dst_old_version is None:
         # case of total merge
         dst_old_pdf = Pdf.new()
         dst_position = 0
     else:
-        dst_old_pdf = Pdf.open(
-            abs_path(dst_old_version.document_path.url)
-        )
+        dst_old_pdf = Pdf.open(dst_old_version.file_path)
 
     _inserted_count = 0
     for page_number in src_page_numbers:
@@ -625,12 +618,10 @@ def insert_pdf_pages(
         dst_old_pdf.pages.insert(dst_position + _inserted_count, pdf_page)
         _inserted_count += 1
 
-    dirname = os.path.dirname(
-        abs_path(dst_new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
+    dst_new_version.file_path.parent.mkdir(parents=True, exist_ok=True)
+
     dst_old_pdf.save(
-        abs_path(dst_new_version.document_path.url)
+        abs_path(dst_new_version.file_path)
     )
 
 

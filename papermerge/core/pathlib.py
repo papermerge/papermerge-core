@@ -11,11 +11,13 @@ __all__ = [
     'page_txt_path',
     'page_svg_path',
     'page_jpg_path',
+    'page_hocr_path',
     'abs_thumbnail_path',
     'abs_docver_path',
     'abs_page_txt_path',
     'abs_page_svg_path',
     'abs_page_jpg_path',
+    'abs_page_hocr_path',
     'rel2abs'
 ]
 
@@ -119,6 +121,21 @@ def page_jpg_path(
     )
 
 
+def page_hocr_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.OCR,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str,
+        'page.hocr'
+    )
+
+
 def abs_page_txt_path(
     uuid: UUID | str
 ) -> Path:
@@ -143,6 +160,15 @@ def abs_page_jpg_path(
     return Path(
         settings.MEDIA_ROOT,
         page_jpg_path(uuid)
+    )
+
+
+def abs_page_hocr_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(
+        settings.MEDIA_ROOT,
+        page_hocr_path(uuid)
     )
 
 

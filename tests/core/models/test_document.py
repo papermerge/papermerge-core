@@ -151,7 +151,7 @@ class TestDocumentModel(TestCase):
             assert last_version.size > 0
 
             assert os.path.exists(
-                abs_path(last_version.document_path)
+                abs_path(last_version.file_path)
             )
 
     @patch('papermerge.core.signals.ocr_document_task')

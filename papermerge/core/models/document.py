@@ -207,7 +207,7 @@ class Document(BaseTreeNode):
             first_page = pages.first()
             page_count = pages.count()
         source_pdf = Pdf.open(
-            abs_path(first_page.document_version.document_path.url)
+            first_page.document_version.file_path
         )
         dst_pdf = Pdf.new()
 
@@ -229,14 +229,14 @@ class Document(BaseTreeNode):
         document_version.save()
 
         dirname = os.path.dirname(
-            abs_path(document_version.document_path.url)
+            document_version.file_path
         )
         os.makedirs(dirname, exist_ok=True)
 
-        dst_pdf.save(abs_path(document_version.document_path.url))
+        dst_pdf.save(document_version.file_path)
 
         document_version.size = getsize(
-            abs_path(document_version.document_path.url)
+            document_version.file_path
         )
         document_version.save()
 

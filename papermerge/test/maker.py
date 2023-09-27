@@ -77,36 +77,23 @@ def document_version(
     return doc_version
 
 
-def _make_sure_path_exists(filepath):
-    dirname = os.path.dirname(filepath)
-    os.makedirs(
-        dirname,
-        exist_ok=True
-    )
-
-
 def _add_ocr_data(document_version: DocumentVersion):
 
     for index, page in enumerate(document_version.pages.all()):
-
         text = page.text or f"page text {index + 1}"
 
-        txt_url = page.txt_path
-        _make_sure_path_exists(txt_url)
-        with open(txt_url, "w") as f:
+        page.txt_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.txt_path, "w") as f:
             f.write(f"{text}_txt - {uuid.uuid4()}")
 
-        jpg_url = page.jpg_path
-        _make_sure_path_exists(jpg_url)
-        with open(jpg_url, "w") as f:
+        page.jpg_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.jpg_path, "w") as f:
             f.write(f"{text}_jpg - {uuid.uuid4()}")
 
-        hocr_url = page.hocr_path
-        _make_sure_path_exists(hocr_url)
-        with open(hocr_url, "w") as f:
+        page.hocr_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.hocr_path, "w") as f:
             f.write(f"{text}_hocr - {uuid.uuid4()}")
 
-        svg_url = page.svg_path
-        _make_sure_path_exists(svg_url)
-        with open(svg_url, "w") as f:
+        page.svg_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.svg_path, "w") as f:
             f.write(f"{text}_svg - {uuid.uuid4()}")

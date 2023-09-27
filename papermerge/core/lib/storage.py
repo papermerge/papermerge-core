@@ -214,42 +214,20 @@ class Storage:
 
         shutil.copy(src_preview, dst_preview)
 
-    def copy_page(self, src: PagePath, dst: PagePath):
+    def copy_page(self, src_folder: Path, dst_folder: Path):
         """
-        Copies page data from source folder/path to page destination folder/path
+        Copies page data from source folder to destination folder
 
         Page data are files with 'txt', 'hocr', 'jpg', 'svg' extentions.
         """
-        for inst in [src, dst]:
-            if not isinstance(inst, PagePath):
-                raise ValueError("copy_page accepts only PagePath instances")
+        if not src_folder.is_dir():
+            raise ValueError(f"Source is not a folder {src_folder}")
 
-        # copy .txt file
-        if self.exists(src.txt_url):
-            self.copy_page_txt(src=src, dst=dst)
-        else:
-            logger.debug(f"txt does not exits {src.txt_url}")
+        dst_folder.mkdir(parents=True, exist_ok=True)
+        if not dst_folder.is_dir():
+            raise ValueError(f"Destination is not a folder {dst_folder}")
 
-        # hocr
-        if self.exists(src.hocr_url):
-            self.copy_page_hocr(src=src, dst=dst)
-        else:
-            logger.debug(f"hocr does not exits {src.hocr_url}")
-
-        if self.exists(src.jpg_url):
-            self.copy_page_jpg(src=src, dst=dst)
-        else:
-            logger.debug(f"jpg does not exits {src.jpg_url}")
-
-        if self.exists(src.svg_url):
-            self.copy_page_svg(src=src, dst=dst)
-        else:
-            logger.debug(f"svg does not exits {src.svg_url}")
-
-        if self.exists(src.preview_url):
-            self.copy_page_preview(src=src, dst=dst)
-        else:
-            logger.debug(f"preview does not exits {src.preview_url}")
+        shutil.copytree(src_folder, dst_folder, dirs_exist_ok=True)
 
     def reorder_pages(self, doc_path, new_order):
         """

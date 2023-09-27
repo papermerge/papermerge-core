@@ -9,12 +9,14 @@ __all__ = [
     'thumbnail_path',
     'docver_path',
     'page_txt_path',
+    'page_path',
     'page_svg_path',
     'page_jpg_path',
     'page_hocr_path',
     'abs_thumbnail_path',
     'abs_docver_path',
     'abs_page_txt_path',
+    'abs_page_path',
     'abs_page_svg_path',
     'abs_page_jpg_path',
     'abs_page_hocr_path',
@@ -76,7 +78,7 @@ def abs_docver_path(
     )
 
 
-def page_txt_path(
+def page_path(
     uuid: UUID | str,
 ) -> Path:
     uuid_str = str(uuid)
@@ -86,92 +88,62 @@ def page_txt_path(
         const.PAGES,
         uuid_str[0:2],
         uuid_str[2:4],
-        uuid_str,
-        'page.txt'
+        uuid_str
     )
+
+
+def abs_page_path(uuid: UUID | str) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_path(uuid)
+
+
+def page_txt_path(
+    uuid: UUID | str,
+) -> Path:
+    return page_path(uuid) / 'page.txt'
 
 
 def page_svg_path(
     uuid: UUID | str,
 ) -> Path:
-    uuid_str = str(uuid)
-
-    return Path(
-        const.OCR,
-        const.PAGES,
-        uuid_str[0:2],
-        uuid_str[2:4],
-        uuid_str,
-        'page.svg'
-    )
+    return page_path(uuid) / 'page.svg'
 
 
 def page_jpg_path(
     uuid: UUID | str,
 ) -> Path:
-    uuid_str = str(uuid)
-
-    return Path(
-        const.OCR,
-        const.PAGES,
-        uuid_str[0:2],
-        uuid_str[2:4],
-        uuid_str,
-        'page.jpg'
-    )
+    return page_path(uuid) / 'page.jpg'
 
 
 def page_hocr_path(
     uuid: UUID | str,
 ) -> Path:
-    uuid_str = str(uuid)
-
-    return Path(
-        const.OCR,
-        const.PAGES,
-        uuid_str[0:2],
-        uuid_str[2:4],
-        uuid_str,
-        'page.hocr'
-    )
+    return page_path(uuid) / 'page.hocr'
 
 
 def abs_page_txt_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(
-        settings.MEDIA_ROOT,
-        page_txt_path(uuid)
-    )
+    return Path(settings.MEDIA_ROOT) / page_txt_path(uuid)
 
 
 def abs_page_svg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(
-        settings.MEDIA_ROOT,
-        page_svg_path(uuid)
-    )
+    return Path(settings.MEDIA_ROOT) / page_svg_path(uuid)
 
 
 def abs_page_jpg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(
-        settings.MEDIA_ROOT,
-        page_jpg_path(uuid)
-    )
+    return Path(settings.MEDIA_ROOT) / page_jpg_path(uuid)
 
 
 def abs_page_hocr_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(
-        settings.MEDIA_ROOT,
-        page_hocr_path(uuid)
-    )
+    return Path(settings.MEDIA_ROOT) / page_hocr_path(uuid)
 
 
 def rel2abs(rel_path: Path) -> Path:
     """Converts relative path to absolute path"""
-    return Path(settings.MEDIA_ROOT, rel_path)
+    return Path(settings.MEDIA_ROOT) / rel_path

@@ -6,7 +6,7 @@ import re
 import time
 from collections import abc, namedtuple
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
 
 from django.conf import settings
 from django.urls import reverse
@@ -14,6 +14,7 @@ from django.utils.html import escape, format_html
 from pikepdf import Pdf
 
 from papermerge.core.lib.path import PagePath
+from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.types import DocumentVersion
 
@@ -453,25 +454,16 @@ def reuse_ocr_data_multi(
             storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
-def reuse_ocr_data(
-    old_version: DocumentVersion,
-    new_version: DocumentVersion,
-    page_map: Union[PageRecycleMap, list]
-) -> None:
+def reuse_ocr_data(uuid_map) -> None:
     storage_instance = get_storage_instance()
 
-    for new_number, old_number in page_map:
-        src_page_path = PagePath(
-            document_path=old_version.document_path,
-            page_num=old_number
-        )
-        dst_page_path = PagePath(
-            document_path=new_version.document_path,
-            page_num=new_number
-        )
+    for src_uuid, dst_uuid in uuid_map.items():
+        src = abs_page_path(src_uuid)
+        dst = abs_page_path(dst_uuid)
+
         storage_instance.copy_page(
-            src=src_page_path,
-            dst=dst_page_path
+            src_folder=src,
+            dst_folder=dst
         )
 
 

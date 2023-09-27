@@ -1,4 +1,5 @@
 import itertools
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -6,7 +7,6 @@ from django.test import override_settings
 from model_bakery import baker
 
 from papermerge.core.models import Document, Page
-from papermerge.core.storage import abs_path
 from papermerge.core.utils import (PageRecycleMap, collect_text_streams,
                                    insert_pdf_pages, namespaced, partial_merge,
                                    remove_pdf_pages, reuse_ocr_data,
@@ -160,18 +160,22 @@ class TestReuseOCRdata(TestCase):
     @patch('papermerge.core.signals.generate_page_previews_task')
     def test_reuse_ocr_data_1(self, _, _x):
         src_document = maker.document(
-            "s3.pdf",
+            "s3.pdf",  # document has 3 pages
             user=self.user,
             include_ocr_data=True
         )
         source = src_document.versions.last()
         destination = src_document.version_bump(page_count=3)
 
-        reuse_ocr_data(
-            old_version=source,
-            new_version=destination,
-            page_map=PageRecycleMap(total=3)
-        )
+        page_map = {
+            str(src_page.id): str(dst_page.id)
+            for src_page, dst_page in zip(
+                source.pages.all(),
+                destination.pages.all()
+            )
+        }
+
+        reuse_ocr_data(page_map)
 
         for index in range(3):
             dst = destination.pages.all()[index]
@@ -1009,13 +1013,12 @@ class TestUtils(TestCase):
         assert "Document A" == pdf_content(src_new_version)
 
 
-def _get_content(relative_url: str) -> str:
+def _get_content(file_path: Path) -> str:
     """retrieves content of the file
 
     :param relative_url: relative path to the file
     """
-    file_abs_path = abs_path(relative_url)
-    with open(file_abs_path, "r") as f:
+    with open(file_path, "r") as f:
         data = f.read()
 
     return data
@@ -1027,14 +1030,14 @@ def _assert_same_ocr_data(
     message: str = None
 ) -> None:
     """Asserts that src and dst pages have same OCR data"""
-    src_txt = _get_content(src.page_path.txt_url)
-    src_hocr = _get_content(src.page_path.hocr_url)
-    src_svg = _get_content(src.page_path.svg_url)
-    src_jpg = _get_content(src.page_path.jpg_url)
-    dst_txt = _get_content(dst.page_path.txt_url)
-    dst_hocr = _get_content(dst.page_path.hocr_url)
-    dst_svg = _get_content(dst.page_path.svg_url)
-    dst_jpg = _get_content(dst.page_path.jpg_url)
+    src_txt = _get_content(src.txt_path)
+    src_hocr = _get_content(src.hocr_path)
+    src_svg = _get_content(src.svg_path)
+    src_jpg = _get_content(src.jpg_path)
+    dst_txt = _get_content(dst.txt_path)
+    dst_hocr = _get_content(dst.hocr_path)
+    dst_svg = _get_content(dst.svg_path)
+    dst_jpg = _get_content(dst.jpg_path)
 
     assert dst_txt == src_txt, message
     assert dst_hocr == src_hocr, message

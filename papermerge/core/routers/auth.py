@@ -1,12 +1,16 @@
+from uuid import UUID
 
-from fastapi import (Depends, HTTPException, WebSocket, WebSocketException,
-                     status)
+from fastapi import (Depends, Header, HTTPException, WebSocket,
+                     WebSocketException, status)
 from fastapi.security import OAuth2PasswordBearer
 
 from papermerge.core.models import User
 from papermerge.core.utils import base64
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token/")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="auth/token/",
+    auto_error=False
+)
 
 
 def get_user_id_from_token(token: str) -> str | None:
@@ -20,21 +24,47 @@ def get_user_id_from_token(token: str) -> str | None:
 # def get_current_user(request: Request) -> User:
 #   e.g.
 #   user_id = request.headers.get('REMOTE_USER')
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    user_id = get_user_id_from_token(token)
+def get_current_user(
+    x_remote_user: str | None = Header(default=None),
+    token: str | None = Depends(oauth2_scheme)
+) -> User:
 
-    if user_id is None:
+    user = None
+
+    if token:  # token found
+        user_id = get_user_id_from_token(token)
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise HTTPException(
+                status_code=401,
+                detail="User ID not found"
+            )
+    elif x_remote_user:  # get user from X_REMOTE_USER header
+        if is_valid_uuid(x_remote_user):
+            # x_remote_user is an UUID, lookup user by ID
+            try:
+                user = User.objects.get(id=x_remote_user)
+            except User.DoesNotExist:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Remote user ID not found"
+                )
+        else:
+            # x_remote_user is NOT UUID
+            # It must be username. Lookup by username.
+            try:
+                user = User.objects.get(username=x_remote_user)
+            except User.DoesNotExist:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Remote username not found"
+                )
+
+    if user is None:
         raise HTTPException(
             status_code=401,
-            detail="REMOTE_USER header is empty"
-        )
-
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        raise HTTPException(
-            status_code=401,
-            detail="Remote user not found"
+            detail="No credentials provided"
         )
 
     return user
@@ -77,3 +107,25 @@ def get_ws_current_user(
         )
 
     return user
+
+
+def is_valid_uuid(uuid_to_test: str) -> bool:
+    """
+    Check if uuid_to_test is a valid UUID.
+
+    Returns `True` if uuid_to_test is a valid UUID, otherwise `False`.
+
+    Examples
+    --------
+    >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
+    True
+    >>> is_valid_uuid('c9bf9e58')
+    False
+    """
+
+    try:
+        uuid_obj = UUID(uuid_to_test, version=4)
+    except ValueError:
+        return False
+
+    return str(uuid_obj) == uuid_to_test

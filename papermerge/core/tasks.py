@@ -1,12 +1,14 @@
 import io
 import logging
-import os
+import uuid
+from typing import List
+from uuid import UUID
 
 from celery import shared_task
 from django.utils.translation import gettext_lazy as _
 
 from papermerge.core.ocr.document import ocr_document
-from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.storage import get_storage_instance
 
 from .models import Document, DocumentVersion, Folder, Page
 
@@ -25,8 +27,6 @@ def delete_user_data(user_id):
 def ocr_document_task(
     document_id,
     lang,
-    user_id,  # UUID of the user who initiated OCR of the document
-    namespace=None
 ):
     """
     OCRs the document.
@@ -45,7 +45,6 @@ def ocr_document_task(
     if the above event happens so you won't lose the task.
     """
     doc = Document.objects.get(pk=document_id)
-    user_id = doc.user.id
     doc_version = doc.versions.last()
 
     logger.debug(
@@ -53,14 +52,16 @@ def ocr_document_task(
         f' doc.title={doc.title} doc.id={document_id} lang={lang}'
     )
 
+    target_docver_uuid = uuid.uuid4()
+    target_page_uuids = [
+        uuid.uuid4() for _ in range(doc_version.pages.count())
+    ]
+
     ocr_document(
-        user_id=user_id,
-        document_id=document_id,
-        file_name=doc_version.file_name,
+        document_version=doc_version,
         lang=lang,
-        namespace=namespace,
-        version=doc_version.number,
-        target_version=doc_version.number + 1
+        target_docver_uuid=target_docver_uuid,
+        target_page_uuids=target_page_uuids
     )
 
     logger.debug(
@@ -68,7 +69,11 @@ def ocr_document_task(
         f' doc.title={doc.title} doc.id={document_id} lang={lang}'
     )
 
-    _post_ocr_document(document_id, namespace)
+    _post_ocr_document(
+        document_id,
+        target_docver_uuid=target_docver_uuid,
+        target_page_uuids=target_page_uuids
+    )
 
     logger.debug(
         'POST OCR COMPLETE'
@@ -78,7 +83,12 @@ def ocr_document_task(
     return document_id
 
 
-def _post_ocr_document(document_id, namespace=None):
+def _post_ocr_document(
+    document_id: str,
+    target_docver_uuid: UUID,
+    target_page_uuids: List[UUID]
+
+):
     """
     Task to run immediately after document OCR is complete
 
@@ -87,8 +97,12 @@ def _post_ocr_document(document_id, namespace=None):
     """
     logger.debug(f'post_ocr_task_task doc_id={document_id}')
 
-    increment_document_version(document_id, namespace)
-    update_document_pages(document_id, namespace)
+    increment_document_version(
+        document_id,
+        target_docver_uuid,
+        target_page_uuids
+    )
+    update_document_pages(document_id)
 
     # generate previews for newly created document version (which has OCR)
     doc = Document.objects.get(pk=document_id)
@@ -106,17 +120,21 @@ def generate_page_previews_task(document_version_id):
     return document_version_id
 
 
-def increment_document_version(document_id, namespace=None):
+def increment_document_version(
+    document_id,
+    target_docver_uuid: UUID,
+    target_page_uuids: List[UUID]
+):
     logger.debug(
         'increment_document_version: '
-        f'document_id={document_id} namespace={namespace}'
+        f'document_id={document_id}'
     )
-
     doc = Document.objects.get(pk=document_id)
     lang = doc.lang
     doc_version = doc.versions.last()
 
     new_doc_version = DocumentVersion(
+        id=target_docver_uuid,   # important!
         document=doc,
         number=doc_version.number + 1,
         file_name=doc_version.file_name,
@@ -129,12 +147,13 @@ def increment_document_version(document_id, namespace=None):
 
     logger.debug(
         'ocr_document_task: creating pages'
-        f' document_id={document_id} namespace={namespace} '
+        f' document_id={document_id} '
         f' lang={lang}'
     )
 
     for page_number in range(1, new_doc_version.page_count + 1):
         Page.objects.create(
+            id=target_page_uuids[page_number - 1],
             document_version=new_doc_version,
             number=page_number,
             page_count=new_doc_version.page_count,
@@ -142,7 +161,7 @@ def increment_document_version(document_id, namespace=None):
         )
 
 
-def update_document_pages(document_id, namespace=None):
+def update_document_pages(document_id):
     """
     Updates document latest versions's ``text`` field
 
@@ -162,9 +181,8 @@ def update_document_pages(document_id, namespace=None):
     streams = []
 
     for page in doc_version.pages.order_by('number'):
-        url = abs_path(page.txt_url)
-        if os.path.exists(url):
-            streams.append(open(url))
+        if page.txt_path.exists():
+            streams.append(open(page.txt_path))
         else:
             streams.append(io.StringIO(''))
 

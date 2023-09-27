@@ -5,7 +5,7 @@ from pathlib import Path
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from papermerge.core.lib.path import DocumentPath
+from papermerge.core.pathlib import abs_docver_path
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import image as image_utils
 
@@ -76,7 +76,7 @@ class DocumentVersion(models.Model):
 
     def abs_file_path(self):
         return abs_path(
-            self.document_path.url
+            self.file_path.url
         )
 
     def generate_previews(self, page_number=None):
@@ -109,12 +109,11 @@ class DocumentVersion(models.Model):
         return self != self.document.versions.last()
 
     @property
-    def document_path(self):
-        return DocumentPath(
-            user_id=self.document.user.pk,
-            document_id=self.document.pk,
-            version=self.number,
-            file_name=self.file_name,
+    def file_path(self) -> Path:
+        """Returns absolute path of the file associated with this doc version"""
+        return abs_docver_path(
+            str(self.id),
+            str(self.file_name)
         )
 
     def create_pages(self, page_count=None):

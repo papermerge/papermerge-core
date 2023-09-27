@@ -4,8 +4,9 @@ import os
 import shutil
 from os import listdir
 from os.path import isdir, join
+from pathlib import Path
 
-from .path import DocumentPath, PagePath, AUX_DIR_SIDECARS, AUX_DIR_DOCS
+from .path import AUX_DIR_DOCS, AUX_DIR_SIDECARS, DocumentPath, PagePath
 from .utils import safe_to_delete
 
 logger = logging.getLogger(__name__)
@@ -130,61 +131,26 @@ class Storage:
     def path(self, _path):
         return self.abspath(_path)
 
-    def delete_doc(self, doc_path: DocumentPath):
-        """
-        Receives a DocumentPath instance
-        """
-        # where original documents and their versions are stored
-        abs_dirname_docs = self.path(
-            doc_path.dirname_docs
-        )
-        # where OCRed information and generated thumbnails
-        # are stored
-        abs_dirname_sidecars = self.path(
-            doc_path.dir_sidecars
-        )
+    def delete_file(self, file_or_folder: Path):
         # Before recursively deleting everything in folder
         # double check that there are only
         # .pdf, .txt, .hocr, .jpg files.
-        if safe_to_delete(
-            abs_dirname_docs
-        ):
-            shutil.rmtree(abs_dirname_docs)
-            if os.path.exists(abs_dirname_docs):
-                os.rmdir(abs_dirname_docs)
+        if file_or_folder.is_dir() and safe_to_delete(file_or_folder):
+            shutil.rmtree(file_or_folder)
+            file_or_folder.rmdir()
 
-        if safe_to_delete(
-            abs_dirname_sidecars
-        ):
-            shutil.rmtree(abs_dirname_sidecars)
-            if os.path.exists(abs_dirname_sidecars):
-                os.rmdir(abs_dirname_sidecars)
+    def copy_file(self, src: Path | io.BytesIO, dst: Path):
+        """Copy source file to destination"""
+        logger.debug(f"copying {src} to {dst}")
 
-    def copy_doc(self, src: DocumentPath | io.BytesIO, dst: DocumentPath):
-        """
-        copy given file src file path to destination
-        as absolute doc_path
-        """
-        logger.debug(f"copy_doc {src} to {dst}")
-        dirname = os.path.dirname(
-            self.abspath(dst)
-        )
-        if not os.path.exists(
-            dirname
-        ):
-            os.makedirs(
-                dirname, exist_ok=True
-            )
-        if isinstance(src, DocumentPath):
-            logger.debug(
-                f"copy_doc: {src} to {dst}"
-            )
-            shutil.copyfile(
-                self.abspath(src),
-                self.abspath(dst)
-            )
+        if not dst.parent.exists():
+            os.makedirs(dst.parent, exist_ok=True)
+
+        if isinstance(src, Path):
+            logger.debug(f"{src} is a Path instance")
+            shutil.copyfile(src, dst)
         elif isinstance(src, io.BytesIO):
-            with open(self.abspath(dst), 'wb') as f:
+            with open(dst, 'wb') as f:
                 f.write(src.getvalue())
         else:
             raise ValueError(
@@ -248,42 +214,20 @@ class Storage:
 
         shutil.copy(src_preview, dst_preview)
 
-    def copy_page(self, src: PagePath, dst: PagePath):
+    def copy_page(self, src_folder: Path, dst_folder: Path):
         """
-        Copies page data from source folder/path to page destination folder/path
+        Copies page data from source folder to destination folder
 
         Page data are files with 'txt', 'hocr', 'jpg', 'svg' extentions.
         """
-        for inst in [src, dst]:
-            if not isinstance(inst, PagePath):
-                raise ValueError("copy_page accepts only PagePath instances")
+        if not src_folder.is_dir():
+            raise ValueError(f"Source is not a folder {src_folder}")
 
-        # copy .txt file
-        if self.exists(src.txt_url):
-            self.copy_page_txt(src=src, dst=dst)
-        else:
-            logger.debug(f"txt does not exits {src.txt_url}")
+        dst_folder.mkdir(parents=True, exist_ok=True)
+        if not dst_folder.is_dir():
+            raise ValueError(f"Destination is not a folder {dst_folder}")
 
-        # hocr
-        if self.exists(src.hocr_url):
-            self.copy_page_hocr(src=src, dst=dst)
-        else:
-            logger.debug(f"hocr does not exits {src.hocr_url}")
-
-        if self.exists(src.jpg_url):
-            self.copy_page_jpg(src=src, dst=dst)
-        else:
-            logger.debug(f"jpg does not exits {src.jpg_url}")
-
-        if self.exists(src.svg_url):
-            self.copy_page_svg(src=src, dst=dst)
-        else:
-            logger.debug(f"svg does not exits {src.svg_url}")
-
-        if self.exists(src.preview_url):
-            self.copy_page_preview(src=src, dst=dst)
-        else:
-            logger.debug(f"preview does not exits {src.preview_url}")
+        shutil.copytree(src_folder, dst_folder, dirs_exist_ok=True)
 
     def reorder_pages(self, doc_path, new_order):
         """
@@ -475,3 +419,22 @@ class Storage:
 
 class FileSystemStorage(Storage):
     pass
+
+
+def copy_file(src: Path | io.BytesIO, dst: Path):
+    """Copy source file to destination"""
+    logger.debug(f"copying {src} to {dst}")
+
+    if not dst.parent.exists():
+        os.makedirs(dst.parent, exist_ok=True)
+
+    if isinstance(src, Path):
+        logger.debug(f"{src} is a Path instance")
+        shutil.copyfile(src, dst)
+    elif isinstance(src, io.BytesIO):
+        with open(dst, 'wb') as f:
+            f.write(src.getvalue())
+    else:
+        raise ValueError(
+            f"src ({src}) is neither instance of DocumentPath nor io.Bytes"
+        )

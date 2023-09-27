@@ -1,6 +1,6 @@
 import logging
-import re
 import os
+import re
 
 SUPPORTED_EXTENTIONS = re.compile(".*(jpeg|jpg|png|tiff|pdf)$", re.IGNORECASE)
 
@@ -37,14 +37,7 @@ def filter_by_extention(
 
 
 class DocumentPath:
-    """
-    Document path:
-    /<aux_dir>/<user_id>/<doc_id>/<version>/<file_name>
-
-    If version = 0, it is not included in DocumentPath.
-    Document's version is incremented everytime pdftk operation runs on it
-    (when pages are deleted, reordered, pasted)
-    """
+    """OBSOLETE. Do not use this class!"""
 
     def __init__(
         self,
@@ -157,9 +150,7 @@ class DocumentPath:
 
 
 class PagePath:
-    """
-    <aux_dir>/<doc_id>/pages/<page_num>/page-<xyz>.jpg
-    """
+    """OBSOLETE. Do not use this class!"""
 
     def __init__(
         self,

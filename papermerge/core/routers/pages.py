@@ -12,7 +12,6 @@ from papermerge.core.page_operations import apply_pages_op
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import PageAndRotOp
-from papermerge.core.storage import abs_path
 
 from .auth import get_current_user as current_user
 
@@ -47,16 +46,16 @@ def get_page_svg_url(
             detail="Page not found"
         )
 
-    svg_abs_path = abs_path(page.page_path.svg_url)
+    svg_abs_path = page.svg_path
     logger.debug(f"page UUID={page_id} svg abs path={svg_abs_path}")
 
-    if not os.path.exists(svg_abs_path):
+    if not page.svg_path.exists():
         raise HTTPException(
             status_code=404,
             detail="File not found"
         )
 
-    return SVGFileResponse(svg_abs_path)
+    return SVGFileResponse(page.svg_path)
 
 
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)

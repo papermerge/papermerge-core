@@ -6,7 +6,7 @@ import re
 import time
 from collections import abc, namedtuple
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
 
 from django.conf import settings
 from django.urls import reverse
@@ -14,6 +14,7 @@ from django.utils.html import escape, format_html
 from pikepdf import Pdf
 
 from papermerge.core.lib.path import PagePath
+from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.types import DocumentVersion
 
@@ -453,25 +454,16 @@ def reuse_ocr_data_multi(
             storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
-def reuse_ocr_data(
-    old_version: DocumentVersion,
-    new_version: DocumentVersion,
-    page_map: Union[PageRecycleMap, list]
-) -> None:
+def reuse_ocr_data(uuid_map) -> None:
     storage_instance = get_storage_instance()
 
-    for new_number, old_number in page_map:
-        src_page_path = PagePath(
-            document_path=old_version.document_path,
-            page_num=old_number
-        )
-        dst_page_path = PagePath(
-            document_path=new_version.document_path,
-            page_num=new_number
-        )
+    for src_uuid, dst_uuid in uuid_map.items():
+        src = abs_page_path(src_uuid)
+        dst = abs_page_path(dst_uuid)
+
         storage_instance.copy_page(
-            src=src_page_path,
-            dst=dst_page_path
+            src_folder=src,
+            dst_folder=dst
         )
 
 
@@ -570,9 +562,7 @@ def remove_pdf_pages(
     if len(page_numbers) < 1:
         raise ValueError("Empty page_numbers")
 
-    pdf = Pdf.open(
-        abs_path(old_version.document_path.url)
-    )
+    pdf = Pdf.open(old_version.file_path)
 
     if len(pdf.pages) < len(page_numbers):
         raise ValueError("Too many values in page_numbers")
@@ -582,11 +572,9 @@ def remove_pdf_pages(
         pdf.pages.remove(p=page_number - _deleted_count)
         _deleted_count += 1
 
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    pdf.save(abs_path(new_version.document_path.url))
+    new_version.file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    pdf.save(new_version.file_path)
 
 
 def insert_pdf_pages(
@@ -615,17 +603,14 @@ def insert_pdf_pages(
     when `src_page_numbers=[1, 2]` means insert first and second pages from
     source document version.
     """
-    src_old_pdf = Pdf.open(
-        abs_path(src_old_version.document_path.url)
-    )
+    src_old_pdf = Pdf.open(src_old_version.file_path)
+
     if dst_old_version is None:
         # case of total merge
         dst_old_pdf = Pdf.new()
         dst_position = 0
     else:
-        dst_old_pdf = Pdf.open(
-            abs_path(dst_old_version.document_path.url)
-        )
+        dst_old_pdf = Pdf.open(dst_old_version.file_path)
 
     _inserted_count = 0
     for page_number in src_page_numbers:
@@ -633,12 +618,10 @@ def insert_pdf_pages(
         dst_old_pdf.pages.insert(dst_position + _inserted_count, pdf_page)
         _inserted_count += 1
 
-    dirname = os.path.dirname(
-        abs_path(dst_new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
+    dst_new_version.file_path.parent.mkdir(parents=True, exist_ok=True)
+
     dst_old_pdf.save(
-        abs_path(dst_new_version.document_path.url)
+        abs_path(dst_new_version.file_path)
     )
 
 

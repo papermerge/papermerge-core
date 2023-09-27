@@ -1,15 +1,16 @@
-import os
 import logging
+from pathlib import Path
+from typing import List
+from uuid import UUID
 
 import ocrmypdf
+from django.conf import settings
 
-from papermerge.core.storage import abs_path
+from papermerge.core.constants import OCR, PAGES
 from papermerge.core.lib import mime
-from papermerge.core.lib.tiff import convert_tiff2pdf
-from papermerge.core.lib.path import (
-    DocumentPath,
-)
-
+from papermerge.core.models import DocumentVersion
+from papermerge.core.pathlib import abs_docver_path
+from papermerge.core.storage import abs_path
 
 logger = logging.getLogger(__name__)
 
@@ -30,34 +31,29 @@ def notify_pre_page_ocr(page_path, **kwargs):
 
 
 def _ocr_document(
-    input_doc_path: DocumentPath,
-    target_doc_path,
-    lang,
-    preview_width,
+    document_version: DocumentVersion,
+    target_docver_uuid: UUID,
+    target_page_uuids: List[UUID],
+    lang: str,
+    preview_width: int,
 ):
+    sidecar_dir = Path(
+        settings.MEDIA_ROOT,
+        OCR,
+        PAGES
+    )
 
-    # file_name = kwargs.pop('file_name', None)
+    output_dir = abs_docver_path(
+        target_docver_uuid,
+        document_version.file_name
+    )
 
-    # if not file_name:
-    #    input_file_name = input_doc_path.file_name
-
-    sidecars_dir = abs_path(target_doc_path.dirname_sidecars())
-
-    input_document = abs_path(input_doc_path.path)
-
-    output_document = abs_path(target_doc_path.path)
-
-    output_dir = os.path.dirname(output_document)
-
-    if not os.path.exists(output_dir):
-        os.makedirs(
-            output_dir,
-            exist_ok=True
-        )
+    if not output_dir.parent.exists():
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
 
     ocrmypdf.ocr(
-        input_document,
-        output_document,
+        document_version.file_path,
+        output_dir,
         lang=lang,
         plugins=["ocrmypdf_papermerge.plugin"],
         progress_bar=False,
@@ -66,7 +62,8 @@ def _ocr_document(
         use_threads=True,
         force_ocr=True,
         keep_temporary_files=False,
-        sidecar_dir=sidecars_dir,
+        sidecar_dir=sidecar_dir,
+        uuids=','.join(str(item) for item in target_page_uuids),
         sidecar_format='svg',
         preview_width=preview_width,
         deskew=True
@@ -74,60 +71,43 @@ def _ocr_document(
 
 
 def ocr_document(
-    user_id,
-    document_id,
-    file_name,
-    lang,
-    version,
-    target_version,
-    namespace='',
+    document_version: DocumentVersion,
+    target_docver_uuid: UUID,
+    target_page_uuids: List[UUID],
+    lang: str
 ):
     lang = lang.lower()
-    doc_path = DocumentPath(
-        user_id=user_id,
-        document_id=document_id,
-        file_name=file_name,
-        version=version
-    )
-    target_doc_path = DocumentPath.copy_from(
-        doc_path,
-        version=target_version
-    )
 
     mime_type = mime.Mime(
-        abs_path(doc_path.url)
+        abs_path(document_version.file_path)
     )
 
     if mime_type.is_pdf() or mime_type.is_image():
         _ocr_document(
-            input_doc_path=doc_path,
-            target_doc_path=target_doc_path,
+            document_version=document_version,
+            target_docver_uuid=target_docver_uuid,
+            target_page_uuids=target_page_uuids,
             lang=lang,
             preview_width=300
         )
     elif mime_type.is_tiff():
-        new_filename = convert_tiff2pdf(
-            doc_url=abs_path(doc_path.url)
-        )
+        """
+        # TODO:
+        #new_filename = convert_tiff2pdf(
+        #    doc_url=abs_path(document_version.file_path)
+        #)
         # now .pdf
-        orig_file_name = doc_path.file_name
-        doc_path.file_name = new_filename
+        #orig_file_name = doc_path.file_name
+        #doc_path.file_name = new_filename
         # and continue as usual
-        _ocr_document(
-            doc_path=doc_path,
-            lang=lang,
-            user_id=user_id,
-            document_id=document_id,
-            # Pass original file_name i.e. tiff file name as well.
-            file_name=orig_file_name,
-            namespace=namespace,
-            version=version
-        )
+        #_ocr_document(
+        #    document_version=document_version,
+        #    lang=lang,
+        #)
+        """
     else:
-        logger.error(
-            f" user_id={user_id}"
-            f" doc_id={document_id}"
+        raise ValueError(
+            f"Unsupported format for document: {document_version.file_path}"
         )
-        return True
 
     return True

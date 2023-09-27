@@ -1,19 +1,13 @@
 import io
+import itertools
 import os
 import uuid
-import itertools
+from pathlib import Path
 
 from django.conf import settings
-from pathlib import Path
-from papermerge.core.models import (
-    Document,
-    DocumentVersion,
-    User
-)
-from papermerge.core.storage import abs_path
-
 from model_bakery import baker
 
+from papermerge.core.models import Document, DocumentVersion, User
 
 BASE_PATH = Path(settings.BASE_DIR)
 RESOURCES = Path(BASE_PATH / "resources")
@@ -83,36 +77,23 @@ def document_version(
     return doc_version
 
 
-def _make_sure_path_exists(filepath):
-    dirname = os.path.dirname(filepath)
-    os.makedirs(
-        dirname,
-        exist_ok=True
-    )
-
-
 def _add_ocr_data(document_version: DocumentVersion):
 
     for index, page in enumerate(document_version.pages.all()):
-
         text = page.text or f"page text {index + 1}"
 
-        txt_url = abs_path(page.page_path.txt_url)
-        _make_sure_path_exists(txt_url)
-        with open(txt_url, "w") as f:
+        page.txt_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.txt_path, "w") as f:
             f.write(f"{text}_txt - {uuid.uuid4()}")
 
-        jpg_url = abs_path(page.page_path.jpg_url)
-        _make_sure_path_exists(jpg_url)
-        with open(jpg_url, "w") as f:
+        page.jpg_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.jpg_path, "w") as f:
             f.write(f"{text}_jpg - {uuid.uuid4()}")
 
-        hocr_url = abs_path(page.page_path.hocr_url)
-        _make_sure_path_exists(hocr_url)
-        with open(hocr_url, "w") as f:
+        page.hocr_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.hocr_path, "w") as f:
             f.write(f"{text}_hocr - {uuid.uuid4()}")
 
-        svg_url = abs_path(page.page_path.svg_url)
-        _make_sure_path_exists(svg_url)
-        with open(svg_url, "w") as f:
+        page.svg_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(page.svg_path, "w") as f:
             f.write(f"{text}_svg - {uuid.uuid4()}")

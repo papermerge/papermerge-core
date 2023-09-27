@@ -39,5 +39,3 @@ SEARCH_URL = config.get(
     'url',
     default=f'xapian:///{os.path.join(PROJ_ROOT, "index_db")}'
 )
-
-PAPERMERGE_CREATE_SPECIAL_FOLDERS = False

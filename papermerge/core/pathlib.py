@@ -5,11 +5,27 @@ from django.conf import settings
 
 from papermerge.core import constants as const
 
-__all__ = ['thumbnail_path', 'rel2abs']
+__all__ = [
+    'thumbnail_path',
+    'docver_path',
+    'page_txt_path',
+    'page_path',
+    'page_svg_path',
+    'page_jpg_path',
+    'page_hocr_path',
+    'abs_thumbnail_path',
+    'abs_docver_path',
+    'abs_page_txt_path',
+    'abs_page_path',
+    'abs_page_svg_path',
+    'abs_page_jpg_path',
+    'abs_page_hocr_path',
+    'rel2abs'
+]
 
 
 def thumbnail_path(
-    uuid: UUID,
+    uuid: UUID | str,
     size: int = const.DEFAULT_THUMBNAIL_SIZE
 ) -> Path:
     """
@@ -18,7 +34,7 @@ def thumbnail_path(
     uuid_str = str(uuid)
 
     return Path(
-        const.PAGES,
+        const.THUMBNAILS,
         const.JPG,
         uuid_str[0:2],
         uuid_str[2:4],
@@ -27,6 +43,107 @@ def thumbnail_path(
     )
 
 
+def abs_thumbnail_path(
+    uuid: UUID | str,
+    size: int = const.DEFAULT_THUMBNAIL_SIZE
+) -> Path:
+    return Path(
+        settings.MEDIA_ROOT,
+        thumbnail_path(uuid, size)
+    )
+
+
+def docver_path(
+    uuid: UUID | str,
+    file_name: str
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.DOCVERS,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str,
+        file_name
+    )
+
+
+def abs_docver_path(
+    uuid: UUID | str,
+    file_name: str
+):
+    return Path(
+        settings.MEDIA_ROOT,
+        docver_path(uuid, file_name)
+    )
+
+
+def page_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.OCR,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str
+    )
+
+
+def abs_page_path(uuid: UUID | str) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_path(uuid)
+
+
+def page_txt_path(
+    uuid: UUID | str,
+) -> Path:
+    return page_path(uuid) / 'page.txt'
+
+
+def page_svg_path(
+    uuid: UUID | str,
+) -> Path:
+    return page_path(uuid) / 'page.svg'
+
+
+def page_jpg_path(
+    uuid: UUID | str,
+) -> Path:
+    return page_path(uuid) / 'page.jpg'
+
+
+def page_hocr_path(
+    uuid: UUID | str,
+) -> Path:
+    return page_path(uuid) / 'page.hocr'
+
+
+def abs_page_txt_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_txt_path(uuid)
+
+
+def abs_page_svg_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_svg_path(uuid)
+
+
+def abs_page_jpg_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_jpg_path(uuid)
+
+
+def abs_page_hocr_path(
+    uuid: UUID | str
+) -> Path:
+    return Path(settings.MEDIA_ROOT) / page_hocr_path(uuid)
+
+
 def rel2abs(rel_path: Path) -> Path:
     """Converts relative path to absolute path"""
-    return Path(settings.MEDIA_ROOT, rel_path)
+    return Path(settings.MEDIA_ROOT) / rel_path

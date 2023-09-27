@@ -6,8 +6,9 @@ from pathlib import Path
 from django.db import models
 
 from papermerge.core import constants as const
-from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.pathlib import (abs_page_hocr_path, abs_page_jpg_path,
+                                     abs_page_svg_path, abs_page_txt_path,
+                                     abs_thumbnail_path)
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import clock
 from papermerge.core.utils import image as image_utils
@@ -106,27 +107,18 @@ class Page(models.Model):
         Returns absolute path to the thumbnail image as
         instance of ``pathlib.Path``
         """
-        abs_thumbnail_path = rel2abs(
-            thumbnail_path(self.id, size=size)
-        )
-        pdf_path = self.document_version.document_path.url
+        thb_path = abs_thumbnail_path(str(self.id), size=size)
+
+        pdf_path = self.document_version.file_path  # noqa
 
         image_utils.generate_preview(
-            pdf_path=Path(abs_path(pdf_path)),
+            pdf_path=Path(pdf_path),
             page_number=int(self.number),
-            output_folder=abs_thumbnail_path.parent,
+            output_folder=thb_path.parent,
             size=size
         )
 
-        return abs_thumbnail_path
-
-    @property
-    def page_path(self):
-
-        return PagePath(
-            document_path=self.document_version.document_path,
-            page_num=self.number,
-        )
+        return thb_path
 
     @property
     def has_text(self):
@@ -151,23 +143,24 @@ class Page(models.Model):
         return self.stripped_text
 
     @property
-    def txt_url(self):
-        result = PagePath(
-            document_path=self.document_version.document_path,
-            page_num=self.number
-        )
+    def txt_path(self) -> Path:
+        return abs_page_txt_path(str(self.id))
 
-        return result.txt_url
+    @property
+    def svg_path(self) -> Path:
+        return abs_page_svg_path(str(self.id))
+
+    @property
+    def jpg_path(self) -> Path:
+        return abs_page_jpg_path(str(self.id))
+
+    @property
+    def hocr_path(self) -> Path:
+        return abs_page_hocr_path(str(self.id))
 
     @property
     def txt_exists(self):
-
-        result = PagePath(
-            document_path=self.document.document_path,
-            page_num=self.number
-        )
-
-        return result.txt_exists()
+        return self.txt_path.exists()
 
     def norm(self):
         """shortcut normalization method"""

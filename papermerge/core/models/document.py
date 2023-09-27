@@ -10,10 +10,12 @@ from pikepdf import Pdf
 
 from papermerge.core import constants as const
 from papermerge.core.lib.path import DocumentPath, PagePath
+from papermerge.core.lib.storage import copy_file
 from papermerge.core.models import utils
-from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.pathlib import (abs_docver_path, abs_thumbnail_path,
+                                     rel2abs, thumbnail_path)
 from papermerge.core.signal_definitions import document_post_upload
-from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.storage import abs_path
 from papermerge.core.utils import image as image_utils
 
 from .document_version import DocumentVersion
@@ -169,9 +171,12 @@ class Document(BaseTreeNode):
         document_version.file_name = file_name
         document_version.size = size
         document_version.page_count = len(pdf.pages)
-        get_storage_instance().copy_doc(
+        copy_file(
             src=content,
-            dst=document_version.document_path
+            dst=abs_docver_path(
+                document_version.id,
+                document_version.file_name
+            )
         )
 
         document_version.save()
@@ -202,7 +207,7 @@ class Document(BaseTreeNode):
             first_page = pages.first()
             page_count = pages.count()
         source_pdf = Pdf.open(
-            abs_path(first_page.document_version.document_path.url)
+            first_page.document_version.file_path
         )
         dst_pdf = Pdf.new()
 
@@ -224,14 +229,14 @@ class Document(BaseTreeNode):
         document_version.save()
 
         dirname = os.path.dirname(
-            abs_path(document_version.document_path.url)
+            document_version.file_path
         )
         os.makedirs(dirname, exist_ok=True)
 
-        dst_pdf.save(abs_path(document_version.document_path.url))
+        dst_pdf.save(document_version.file_path)
 
         document_version.size = getsize(
-            abs_path(document_version.document_path.url)
+            document_version.file_path
         )
         document_version.save()
 
@@ -289,6 +294,19 @@ class Document(BaseTreeNode):
 
     def __str__(self):
         return self.title
+
+    @property
+    def files_iter(self):
+        """Yields folders where associated files with this instance are"""
+        for doc_ver in self.versions.all():
+            for page in doc_ver.pages.all():
+                # folder path to ocr related files
+                yield page.svg_path.parent
+                # folder path to preview files
+                yield abs_thumbnail_path(page.id).parent
+
+            # folder path to file associated with this doc ver
+            yield doc_ver.file_path.parent
 
     @property
     def file_ext(self):
@@ -371,7 +389,7 @@ class Document(BaseTreeNode):
         abs_thumbnail_path = rel2abs(
             thumbnail_path(first_page.id, size=size)
         )
-        pdf_path = last_version.document_path.url
+        pdf_path = last_version.file_path
 
         image_utils.generate_preview(
             pdf_path=Path(abs_path(pdf_path)),

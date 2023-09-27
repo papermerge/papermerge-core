@@ -135,10 +135,10 @@ def delete_files(sender, instance: Document, **kwargs):
     associated folder in which original file was saved
     (e.g. all preview images).
     """
-    for document_version in instance.versions.all():
+    for folder_path in instance.files_iter:
         try:
-            get_storage_instance().delete_doc(
-                document_version.document_path
+            get_storage_instance().delete_file(
+                folder_path
             )
         except IOError as error:
             logger.error(
@@ -223,16 +223,13 @@ def receiver_document_post_upload(
     )
 
     user_settings = user.preferences
-    namespace = getattr(get_storage_instance(), 'namespace', None)
 
     if user_settings['ocr__trigger'] == 'auto':
         try:
             ocr_document_task.apply_async(
                 kwargs={
                     'document_id': str(doc.id),
-                    'lang': doc.lang,
-                    'namespace': namespace,
-                    'user_id': str(user.id)
+                    'lang': doc.lang
                 }
             )
         except OperationalError:

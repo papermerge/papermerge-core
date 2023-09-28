@@ -1,5 +1,4 @@
 import io
-import os
 from pathlib import Path
 from typing import List
 
@@ -8,10 +7,10 @@ from pikepdf import Pdf
 from papermerge.core.models import Page
 from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import PageAndRotOp
-from papermerge.core.storage import abs_path, get_storage_instance
+from papermerge.core.storage import get_storage_instance
 
 
-def apply_pages_op(items: List[PageAndRotOp]):
+def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     pages = Page.objects.filter(
         pk__in=[item.page.id for item in items]
     )
@@ -23,30 +22,29 @@ def apply_pages_op(items: List[PageAndRotOp]):
     )
 
     reorder_pdf_pages(
-        old_version=old_version,
-        new_version=new_version,
+        src=old_version.file_path,
+        dst=new_version.file_path,
         items=items
     )
 
+    return doc.versions.all()
+
 
 def reorder_pdf_pages(
-    old_version: PyDocVer,
-    new_version: PyDocVer,
+    src: Path,
+    dst: Path,
     items: List[PageAndRotOp]
 ):
-    src = Pdf.open(abs_path(old_version.document_path.url))
+    src_pdf = Pdf.open(src)
 
-    dst = Pdf.new()
+    dst_pdf = Pdf.new()
 
     for item in items:
-        page = src.pages.p(item.page.number)
-        dst.pages.append(page)
+        page = src_pdf.pages.p(item.page.number)
+        dst_pdf.pages.append(page)
 
-    dirname = os.path.dirname(
-        abs_path(new_version.document_path.url)
-    )
-    os.makedirs(dirname, exist_ok=True)
-    dst.save(abs_path(new_version.document_path.url))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst_pdf.save(dst)
 
 
 def reuse_ocr_data(uuid_map) -> None:

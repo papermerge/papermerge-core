@@ -5,6 +5,7 @@ import CentralBar from './central_bar';
 import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
 import type { AppContentBlockEnum, State, User } from 'types';
+import { ToastProvider } from 'components/toasts/ToastsProvider';
 
 
 const fetcher = (url:string) => {
@@ -80,13 +81,15 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
 
   return (
     <main className={styles.main}>
-      <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
-      <CentralBar
-        username={data?.username}
-        onToggleSidebar={onToggleSidebar}
-        onSubmitSearch={onSearchSubmit}>
-        {children}
-      </CentralBar>
+      <ToastProvider>
+        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <CentralBar
+          username={data?.username}
+          onToggleSidebar={onToggleSidebar}
+          onSubmitSearch={onSearchSubmit}>
+          {children}
+        </CentralBar>
+      </ToastProvider>
     </main>
   );
 }

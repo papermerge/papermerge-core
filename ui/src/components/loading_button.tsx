@@ -7,14 +7,16 @@ type Args = {
   title?: string;
   onClick: () => void;
   className?: string;
+  variant?: string;
 }
 
 
-function SubmitButton({
+function LoadingButton({
   in_progress,
   title,
   onClick,
-  className
+  className,
+  variant
 }: Args) {
 
   if (!title) {
@@ -22,13 +24,13 @@ function SubmitButton({
   }
 
   if (in_progress) {
-    return <Button onClick={onClick} disabled={true} className={className}>
+    return <Button variant={variant} onClick={onClick} disabled={true} className={className}>
         <Spinner size="sm" />
     </Button>;
   }
 
-  return <Button onClick={onClick} className={className}>{title}</Button>;
+  return <Button variant={variant} onClick={onClick} className={className}>{title}</Button>;
 }
 
 
-export default SubmitButton;
+export default LoadingButton;

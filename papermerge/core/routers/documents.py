@@ -64,4 +64,4 @@ def upload_file(
     )
     doc.generate_thumbnail()
 
-    return PyDocument.from_orm(doc)
+    return PyDocument.model_validate(doc)

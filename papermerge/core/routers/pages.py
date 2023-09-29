@@ -113,4 +113,6 @@ def apply_page_operations(
     Order in which input pages are provided is very important because
     new document version will add pages in exact same order.
     """
-    apply_pages_op(items)
+    new_versions = apply_pages_op(items)
+
+    return [PyDocVer.model_validate(version) for version in new_versions]

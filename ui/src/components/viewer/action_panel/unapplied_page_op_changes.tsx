@@ -1,5 +1,5 @@
+import LoadingButton from "components/loading_button";
 import { useState } from "react";
-import { Button, Spinner } from "react-bootstrap"
 
 
 type Args = {
@@ -9,19 +9,20 @@ type Args = {
 export default function UnappliedPageOpChanges({onClick}: Args) {
   const [inProgress, setInProgress] = useState(false);
 
-  const onLocalClick = () => {
+  const onLocalClick = async () => {
     setInProgress(true);
     onClick();
+    setInProgress(false);
   }
 
   return (
     <span className="unapplied-page-op-changes">
       Unapplied pages operations detected
-      <Button disabled={inProgress}
-        className="rounded-0 m-1" variant="success"
-        onClick={onLocalClick}>
-        {inProgress && <Spinner />} Apply
-      </Button>
+      <LoadingButton in_progress={inProgress}
+          variant={"success"}
+          title={"Apply"}
+          className="rounded-0 m-1"
+          onClick={onLocalClick} />
     </span>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 
 import { PagesPanel }  from "./pages_panel/pages_panel";
@@ -6,10 +6,12 @@ import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
 import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
 import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
+import useToast from 'hooks/useToasts';
+
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { PageAndRotOp } from 'types';
+import type { PageAndRotOp, PageType } from 'types';
 import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
@@ -17,9 +19,28 @@ import { reorder_pages } from 'utils/misc';
 import { apply_page_op_changes } from 'requests/viewer';
 
 
+type ShortPageType = {
+  number: number;
+  id: string;
+}
+
+
+type ApplyPagesType = {
+  ccw: number;
+  page: ShortPageType;
+}
+
+
 type Args = {
   node_id: string;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+}
+
+function apply_page_type(item: PageAndRotOp): ApplyPagesType {
+  return {
+    ccw: item.ccw,
+    page: {id: item.page.id, number: item.page.number}
+  }
 }
 
 export default function Viewer(
@@ -40,6 +61,7 @@ export default function Viewer(
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
   const viewer_content_ref = useRef<HTMLInputElement>(null);
+  const toasts = useToast();
 
 
   useEffect(() => {
@@ -115,7 +137,11 @@ export default function Viewer(
   }
 
   const onApplyPageOpChanges = async () => {
-    let response = await apply_page_op_changes(curPages)
+    let pages = curPages.map(item => apply_page_type(item));
+    let response = await apply_page_op_changes<ApplyPagesType[], PageType[]>(pages);
+    setUnappliedPagesOpChanges(false);
+
+    toasts?.addToast("Page operations successfully applied");
   }
 
   if (error) {

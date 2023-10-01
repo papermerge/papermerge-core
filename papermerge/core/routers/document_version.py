@@ -1,13 +1,12 @@
 import logging
-import os
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
-from papermerge.core.models import User, DocumentVersion
+from papermerge.core.models import DocumentVersion, User
 
 from .auth import get_current_user as current_user
-
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,7 @@ router = APIRouter(
 
 class PDFFileResponse(FileResponse):
     media_type = 'application/pdf'
+    content_disposition = 'attachment'
 
 
 @router.get("/{document_version_id}/download", response_class=PDFFileResponse)
@@ -36,12 +36,14 @@ def download_document_version(
             detail="Document version not found"
         )
 
-    file_abs_path = doc_ver.abs_file_path()
-
-    if not os.path.exists(file_abs_path):
+    if not doc_ver.file_path.exists():
         raise HTTPException(
             status_code=404,
             detail="Document version file not found"
         )
 
-    return PDFFileResponse(file_abs_path)
+    return PDFFileResponse(
+        doc_ver.file_path,
+        filename=doc_ver.file_name,
+        content_disposition_type='attachment'
+    )

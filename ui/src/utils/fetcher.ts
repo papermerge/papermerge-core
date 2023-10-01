@@ -18,6 +18,32 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
 }
 
 
+async function download_file(url: string, file_name: string) {
+  /*
+  Downloads a from given URL.
+
+  Based on:
+    https://stackoverflow.com/questions/32545632/how-can-i-download-a-file-using-window-fetch
+  */
+  fetch(url, {
+    headers: get_default_headers()
+  })
+  .then( res => res.blob() )
+  .then( blob => {
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = file_name;
+    // we need to append the element to the dom -> otherwise it will not work in firefox
+    document.body.appendChild(a);
+    a.click();
+    //afterwards we remove the element again
+    a.remove();
+  });
+
+}
+
+
 async function fetcher(url:string) {
   const headers = get_default_headers();
   return fetch(url, {headers: headers})
@@ -118,6 +144,7 @@ async function fetcher_delete<Input, Output>(
 
 export {
   get_default_headers,
+  download_file,
   fetcher,
   fetcher_upload,
   fetcher_post,

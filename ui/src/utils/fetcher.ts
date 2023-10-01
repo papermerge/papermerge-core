@@ -20,7 +20,7 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
 
 async function download_file(url: string, file_name: string) {
   /*
-  Downloads a from given URL.
+  Downloads file from given URL.
 
   Based on:
     https://stackoverflow.com/questions/32545632/how-can-i-download-a-file-using-window-fetch

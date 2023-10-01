@@ -55,6 +55,8 @@ export default function Viewer(
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  // current doc versions
+  let [docVers, setDocVers] = useState<DocumentVersion[]>([]);
   let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
@@ -82,6 +84,7 @@ export default function Viewer(
       };
 
       setDoc(ready_state);
+      setDocVers(data.versions);
 
       let last_version = data.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
         if (prev && prev.number > cur.number) {
@@ -138,8 +141,9 @@ export default function Viewer(
 
   const onApplyPageOpChanges = async () => {
     let pages = curPages.map(item => apply_page_type(item));
-    let response = await apply_page_op_changes<ApplyPagesType[], PageType[]>(pages);
+    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(pages);
     setUnappliedPagesOpChanges(false);
+    setDocVers(response);
 
     toasts?.addToast("Page operations successfully applied");
   }
@@ -152,6 +156,8 @@ export default function Viewer(
 
   return <div className="viewer">
     <ActionPanel
+      versions={docVers}
+      doc={data}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />

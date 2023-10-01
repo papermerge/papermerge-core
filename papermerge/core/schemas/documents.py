@@ -56,11 +56,6 @@ class DocumentVersion(BaseModel):
                 return []
         return value
 
-    @field_validator("download_url")
-    @classmethod
-    def download_url_value(cls, value, info: FieldValidationInfo):
-        return f"/api/document-versions/{info.data['id']}/download"
-
     # Config
     model_config = ConfigDict(from_attributes=True)
 

@@ -15,3 +15,4 @@ def test_basic_document_version():
     assert pydoc.number == 1
     assert pydoc.size == 0
     assert pydoc.lang == 'fra'
+    assert pydoc.download_url

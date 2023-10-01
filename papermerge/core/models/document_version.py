@@ -96,6 +96,10 @@ class DocumentVersion(models.Model):
         )
 
     @property
+    def download_url(self):
+        return f"/api/document-versions/{self.id}/download"
+
+    @property
     def is_archived(self):
         """
         Returns True if document version is archived.

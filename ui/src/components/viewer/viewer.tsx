@@ -157,6 +157,7 @@ export default function Viewer(
   return <div className="viewer">
     <ActionPanel
       versions={docVers}
+      doc={data}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />

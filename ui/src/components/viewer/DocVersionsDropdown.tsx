@@ -1,10 +1,11 @@
 import Dropdown from 'react-bootstrap/Dropdown';
-import type { DocumentVersion } from "types";
+import type { DocumentVersion, DocumentType } from "types";
 import { download_file } from 'utils/fetcher';
 
 
 type Args = {
   versions: DocumentVersion[];
+  doc: DocumentType | null | undefined;
 }
 
 
@@ -17,10 +18,10 @@ function description(number: number, text: string): string {
 }
 
 
-export default function DocVersionsDropdown({versions}: Args) {
+export default function DocVersionsDropdown({versions, doc}: Args) {
 
   const onClick = (href: string, file_name: string) => {
-    download_file(href, file_name);
+    download_file(href, doc?.title || file_name);
   }
 
   const dropdown_items = versions.map(

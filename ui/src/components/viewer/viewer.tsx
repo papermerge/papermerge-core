@@ -17,6 +17,7 @@ import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 
 import { apply_page_op_changes } from 'requests/viewer';
+import "./viewer.scss";
 
 
 type ShortPageType = {

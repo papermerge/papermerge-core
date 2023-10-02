@@ -10,6 +10,7 @@ import websockets from "../../../services/ws";
 import TagsComponent from './tags';
 import type { CheckboxChangeType, NodeArgsType } from "../types";
 import { DisplayNodesModeEnum, OcrStatusEnum } from "types";
+import "./document.scss";
 
 
 function str_id(node_id: string): string {

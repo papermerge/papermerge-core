@@ -23,11 +23,16 @@ function Menu({
   node_id
 }: Args) {
 
-  const upload = <UploadButton node_id={node_id} onCreateDocumentNode={onCreateDocumentNode} />;
+  const upload = <UploadButton node_id={node_id} onCreateDocumentNode={onCreateDocumentNode} />
 
-  const new_folder = <Button variant='light' onClick={() => onNewFolderClick()}>
-      <i className="bi bi-folder-plus"></i>
-    </Button>;
+
+  const new_folder = <Button
+      className='m-1'
+      variant='light'
+      onClick={() => onNewFolderClick()}>
+    <i className="bi bi-folder-plus"></i>
+  </Button>
+
   const delete_nodes = <Button variant='danger' onClick={() => onDeleteNodesClick()}>
     <i className="bi bi-trash"></i>
   </Button>;

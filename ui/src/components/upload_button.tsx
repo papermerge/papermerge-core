@@ -1,7 +1,10 @@
+import { useRef } from 'react';
 import Button from 'react-bootstrap/Button';
 import { uploader } from 'utils/uploader';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 import type { NodeType } from 'types';
+import { OverlayTrigger } from 'react-bootstrap';
 
 type Args = {
   node_id: string;
@@ -39,11 +42,21 @@ function UploadButton({node_id, onCreateDocumentNode}: Args) {
         hidden={true}
         onChange={onUploadChange} />
 
-        <Button variant="light"
-          type="button"
-          onClick={onClickProxyUpload}>
-            <i className="bi bi-upload"></i>
-        </Button>
+        <OverlayTrigger
+          key={'top'}
+          placement={'top'}
+          overlay={
+            <Tooltip id={'tooltip-top'}>
+              Upload documents
+            </Tooltip>
+          }>
+          <Button variant="light"
+            type="button"
+            onClick={onClickProxyUpload}>
+              <i className="bi bi-upload"></i>
+          </Button>
+        </OverlayTrigger>
+
     </>
   );
 }

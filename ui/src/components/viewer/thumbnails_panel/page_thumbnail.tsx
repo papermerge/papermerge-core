@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useProtectedJpg } from "hooks/protected_image"
+import Form from 'react-bootstrap/Form';
 import './page_thumbnail.scss';
 
 
@@ -10,10 +11,12 @@ import type {
   DroppedThumbnailPosition,
   PageAndRotOp
 } from "types"
+import { CheckboxChangeType } from "components/commander/types";
 
 
 type Args = {
-  item: PageAndRotOp,
+  item: PageAndRotOp;
+  onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
@@ -24,7 +27,12 @@ const BORDERLINE_BOTTOM = 'borderline-bottom';
 const DRAGGED = 'dragged';
 
 
-export function PageThumbnail({item, onClick, onThumbnailPageDropped}: Args) {
+export function PageThumbnail({
+  item,
+  onClick,
+  onThumbnailPageDropped,
+  onSelect
+}: Args) {
 
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([
       'd-flex',
@@ -150,6 +158,10 @@ export function PageThumbnail({item, onClick, onThumbnailPageDropped}: Args) {
     event.preventDefault();
   }
 
+  const onLocalChange = (event: CheckboxChangeType) => {
+    onSelect(item.page.id, event.target.checked);
+  }
+
   if (is_loading) {
     thumbnail_component = <ThumbnailPlaceholder />;
   } else if ( error ) {
@@ -163,13 +175,12 @@ export function PageThumbnail({item, onClick, onThumbnailPageDropped}: Args) {
       onDragOver={onLocalDragOver}
       onDragLeave={onLocalDragLeave}
       onDragEnter={onLocalDragEnter}
-      onDrop={onLocalDrop}
-      onClick={localOnClick}>
-      <div>
-        {data}
+      onDrop={onLocalDrop}>
+      <div className='checkbox'>
+        <Form.Check onChange={onLocalChange} type="checkbox" />
       </div>
-      <div className='p-1 page-number text-center'>
-        {item.page.number}
+      <div onClick={localOnClick}>
+        {data}
       </div>
     </div>
   }

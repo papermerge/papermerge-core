@@ -8,7 +8,7 @@ import SortDropdown from './sort_dropdown';
 import Folder from './node/folder';
 import Document from './node/document';
 import EmptyFolder from './empty_folder';
-import Menu from './menu';
+import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
 
 import { is_empty } from 'utils/misc';

@@ -10,14 +10,15 @@ import useToast from 'hooks/useToasts';
 
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
-import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { PageAndRotOp, PageType } from 'types';
+import { NodeClickArgsType, DocumentType, DocumentVersion, UUIDList } from "types";
+import type { PageAndRotOp } from 'types';
 import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
+import { UUID } from 'crypto';
 
 
 type ShortPageType = {
@@ -45,7 +46,7 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
 }
 
 export default function Viewer(
-  {node_id, onNodeClick}:  Args
+  {node_id, onNodeClick}: Args
 ) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
@@ -59,6 +60,8 @@ export default function Viewer(
   // current doc versions
   let [docVers, setDocVers] = useState<DocumentVersion[]>([]);
   let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
+  let [showSelectedMenu, setShowSelectedMenu] = useState<boolean>(false);
+  let [selectedPages, setSelectedPages] = useState<Array<string>>([]);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
@@ -149,6 +152,40 @@ export default function Viewer(
     toasts?.addToast("Page operations successfully applied");
   }
 
+  const onSelect = (page_id: string, selected: boolean) => {
+    let new_list: Array<string>;
+
+    if (selected) {
+      new_list = [...selectedPages, page_id]
+    } else {
+      new_list = selectedPages.filter(id => id != page_id);
+    }
+
+    if (new_list.length > 0) {
+      setShowSelectedMenu(true);
+    } else {
+      setShowSelectedMenu(false);
+    }
+
+    // here `selected` is false
+    setSelectedPages(new_list);
+  }
+
+  const onDeletePages = () => {
+    let new_cur_pages = curPages.filter(
+      (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
+    );
+    setCurPages(new_cur_pages);
+    setShowSelectedMenu(false);
+    setUnappliedPagesOpChanges(true);
+  }
+
+  const onRotatePagesCcw = () => {
+  }
+
+  const onRotatePagesCw = () => {
+  }
+
   if (error) {
     return <div className="viewer">
       {error && <ErrorMessage msg={error} />}
@@ -159,6 +196,10 @@ export default function Viewer(
     <ActionPanel
       versions={docVers}
       doc={data}
+      show_selected_menu={showSelectedMenu}
+      onDeletePages={onDeletePages}
+      onRotatePagesCw={onRotatePagesCw}
+      onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
@@ -167,6 +208,7 @@ export default function Viewer(
         pages={curPages}
         visible={thumbnailsPanelVisible}
         onClick={onPageThumbnailClick}
+        onSelect={onSelect}
         onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}

@@ -5,6 +5,7 @@ import { PageThumbnail } from "./page_thumbnail";
 type Args = {
   pages: Array<PageAndRotOp>;
   visible: boolean;
+  onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
@@ -13,7 +14,8 @@ export function ThumbnailsPanel({
   pages,
   visible,
   onClick,
-  onThumbnailPageDropped
+  onThumbnailPageDropped,
+  onSelect
 }: Args) {
 
   let css_class_name = 'thumbnails-panel';
@@ -28,6 +30,7 @@ export function ThumbnailsPanel({
         return <PageThumbnail
           key={item.page.id}
           item={item}
+          onSelect={onSelect}
           onClick={onClick}
           onThumbnailPageDropped={onThumbnailPageDropped} />
       })}

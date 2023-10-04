@@ -19,8 +19,8 @@ export default function ActionPanel({
   return (
     <div className="action-panel d-flex">
 
-      <Button className="rounded-0 m-1" variant="success">
-        <i className="bi bi-pencil-square me-1"></i>Rename
+      <Button className="m-1" variant="light">
+        <i className="bi bi-pencil-square me-1"></i>
       </Button>
 
       <DocVersionsDropdown doc={doc} versions={versions}/>

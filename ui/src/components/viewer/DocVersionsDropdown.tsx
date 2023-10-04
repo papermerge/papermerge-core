@@ -33,8 +33,8 @@ export default function DocVersionsDropdown({versions, doc}: Args) {
 
   return (
     <Dropdown>
-      <Dropdown.Toggle className="rounded-0 m-1" variant="success" id="dropdown-basic">
-        <i className="bi bi-cloud-download me-1"></i>Download
+      <Dropdown.Toggle className="m-1" variant="light" id="dropdown-basic">
+        <i className="bi bi-cloud-download me-1"></i>
       </Dropdown.Toggle>
 
       <Dropdown.Menu>

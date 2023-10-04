@@ -1,7 +1,11 @@
-import Button from 'react-bootstrap/Button';
-import UploadButton from '../upload_button';
+import UploadButton from './UploadButton';
+import NewFolder from './NewFolder';
 
 import type { NodeType } from 'types';
+import DeleteNodes from './DeleteNodes';
+import RenameNodes from './RenameNode';
+import EditTags from './EditTags';
+
 
 type Args = {
   onCreateDocumentNode: (node: NodeType[], target_id: string) => void;
@@ -24,19 +28,10 @@ function Menu({
 }: Args) {
 
   const upload = <UploadButton node_id={node_id} onCreateDocumentNode={onCreateDocumentNode} />;
-
-  const new_folder = <Button variant='light' onClick={() => onNewFolderClick()}>
-      <i className="bi bi-folder-plus"></i>
-    </Button>;
-  const delete_nodes = <Button variant='danger' onClick={() => onDeleteNodesClick()}>
-    <i className="bi bi-trash"></i>
-  </Button>;
-  const rename_node = <Button variant='light' onClick={() => onRenameClick()}>
-    <i className="bi bi-pencil"></i>
-  </Button>;
-  const edit_tags = <Button variant='light' onClick={() => onEditTagsClick()}>
-    <i className='bi bi-tag'></i>
-  </Button>
+  const new_folder = <NewFolder onClick={onNewFolderClick} />;
+  const delete_nodes = <DeleteNodes onClick={onDeleteNodesClick} />;
+  const rename_node = <RenameNodes onClick={onRenameClick} />;
+  const edit_tags = <EditTags onClick={onEditTagsClick} />;
 
   if (selected_nodes.length > 1) {
     return <div>

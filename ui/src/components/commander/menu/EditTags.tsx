@@ -15,6 +15,7 @@ function EditTags({onClick}: Args) {
           placement={'top'}
           overlay={<Tooltip>Edit tags</Tooltip>}>
             <Button variant="light"
+              className='m-1'
               type="button"
               onClick={() => onClick()}>
                 <i className="bi bi-tag"></i>

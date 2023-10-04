@@ -51,6 +51,7 @@ function UploadButton({node_id, onCreateDocumentNode}: Args) {
           }>
           <Button variant="light"
             type="button"
+            className='m-1'
             onClick={onClickProxyUpload}>
               <i className="bi bi-upload"></i>
           </Button>

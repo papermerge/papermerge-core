@@ -15,6 +15,7 @@ function RenameNodes({onClick}: Args) {
           placement={'top'}
           overlay={<Tooltip>Edit title</Tooltip>}>
             <Button variant="light"
+              className='m-1'
               type="button"
               onClick={() => onClick()}>
                 <i className="bi bi-pencil"></i>

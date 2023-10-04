@@ -14,7 +14,7 @@ function DeleteNodes({onClick}: Args) {
         <OverlayTrigger
           placement={'top'}
           overlay={<Tooltip>Delete nodes</Tooltip>}>
-            <Button variant="light"
+            <Button variant="danger"
               type="button"
               onClick={() => onClick()}>
                 <i className="bi bi-trash"></i>

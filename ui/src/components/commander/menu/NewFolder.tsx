@@ -16,6 +16,7 @@ function NewFolder({onClick}: Args) {
           overlay={<Tooltip>Creates new folder</Tooltip>}>
             <Button variant="light"
               type="button"
+              className='m-1'
               onClick={() => onClick()}>
                 <i className="bi bi-folder-plus"></i>
             </Button>

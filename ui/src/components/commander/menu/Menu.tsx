@@ -27,7 +27,7 @@ function Menu({
   node_id
 }: Args) {
 
-  const upload = <UploadButton node_id={node_id} onCreateDocumentNode={onCreateDocumentNode} />
+  const upload = <UploadButton node_id={node_id} onCreateDocumentNode={onCreateDocumentNode} />;
   const new_folder = <NewFolder onClick={onNewFolderClick} />;
   const delete_nodes = <DeleteNodes onClick={onDeleteNodesClick} />;
   const rename_node = <RenameNodes onClick={onRenameClick} />;

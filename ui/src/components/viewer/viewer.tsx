@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useContext } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 
 import { PagesPanel }  from "./pages_panel/pages_panel";
@@ -10,7 +10,7 @@ import useToast from 'hooks/useToasts';
 
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
-import { NodeClickArgsType, DocumentType, DocumentVersion, UUIDList } from "types";
+import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { PageAndRotOp } from 'types';
 import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';

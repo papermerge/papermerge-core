@@ -112,6 +112,13 @@ def apply_page_operations(
     which from user perspective means that pages were deleted.
     Order in which input pages are provided is very important because
     new document version will add pages in exact same order.
+
+    Will rotate page `angle` degrees relative to the current angle.
+    * `angle` can have positive or negative value
+    * `angle` must be a multiple of 90
+
+    When `angle` > 0 -> the rotation is clockwise.
+    When `angle` < 0 -> the rotation is counterclockwise.
     """
     new_versions = apply_pages_op(items)
 

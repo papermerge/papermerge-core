@@ -190,7 +190,7 @@ export type LoadableTagList = {
 
 export type PageAndRotOp = { // page and rotation operation
   page: PageType;
-  ccw: 0; // rotation degree, can be positive or negative
+  angle: 0; // rotation degree, can be positive or negative
 }
 
 

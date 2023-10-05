@@ -15,6 +15,7 @@ function DeleteNodes({onClick}: Args) {
           placement={'top'}
           overlay={<Tooltip>Delete nodes</Tooltip>}>
             <Button variant="danger"
+              className='m-1'
               type="button"
               onClick={() => onClick()}>
                 <i className="bi bi-trash"></i>

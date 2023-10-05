@@ -179,7 +179,7 @@ export function PageThumbnail({
       <div className='checkbox'>
         <Form.Check onChange={onLocalChange} type="checkbox" />
       </div>
-      <div onClick={localOnClick}>
+      <div onClick={localOnClick} style={{transform: `rotate(${item.angle}deg)`}}>
         {data}
       </div>
     </div>

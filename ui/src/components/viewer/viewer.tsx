@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useContext } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 
 import { PagesPanel }  from "./pages_panel/pages_panel";
@@ -10,7 +10,7 @@ import useToast from 'hooks/useToasts';
 
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
-import { NodeClickArgsType, DocumentType, DocumentVersion, UUIDList } from "types";
+import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { PageAndRotOp } from 'types';
 import type { State, ThumbnailPageDroppedArgs } from 'types';
 import ErrorMessage from 'components/error_message';
@@ -18,7 +18,6 @@ import { reorder_pages } from 'utils/misc';
 
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
-import { UUID } from 'crypto';
 
 
 type ShortPageType = {
@@ -28,7 +27,7 @@ type ShortPageType = {
 
 
 type ApplyPagesType = {
-  ccw: number;
+  angle: number;
   page: ShortPageType;
 }
 
@@ -40,7 +39,7 @@ type Args = {
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
   return {
-    ccw: item.ccw,
+    angle: item.angle,
     page: {id: item.page.id, number: item.page.number}
   }
 }
@@ -99,7 +98,7 @@ export default function Viewer(
       });
 
       setCurDocVer(last_version);
-      setCurPages(last_version.pages.map(p => { return {page: p, ccw: 0};}));
+      setCurPages(last_version.pages.map(p => { return {page: p, angle: 0};}));
     }).catch((error: Error) => {
       setDoc({
         is_loading: false,
@@ -148,6 +147,7 @@ export default function Viewer(
     let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(pages);
     setUnappliedPagesOpChanges(false);
     setDocVers(response);
+    setSelectedPages([]);
 
     toasts?.addToast("Page operations successfully applied");
   }
@@ -178,12 +178,51 @@ export default function Viewer(
     setCurPages(new_cur_pages);
     setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
+    setSelectedPages([]);
   }
 
   const onRotatePagesCcw = () => {
+    let new_array: Array<PageAndRotOp> = [];
+    let change = false;
+
+    new_array = curPages.map(
+      (item: PageAndRotOp) => {
+        if (selectedPages.indexOf(item.page.id) >= 0) {
+          item.angle -= 90;
+          // @ts-ignore
+          item.angle = item.angle % 360;
+          change = true;
+        }
+        return item;
+      }
+    );
+
+    if (change) {
+      setCurPages(new_array);
+      setUnappliedPagesOpChanges(true);
+    }
   }
 
   const onRotatePagesCw = () => {
+    let new_array: Array<PageAndRotOp> = [];
+    let change = false;
+
+    new_array = curPages.map(
+      (item: PageAndRotOp) => {
+        if (selectedPages.indexOf(item.page.id) >= 0) {
+          item.angle += 90;
+          // @ts-ignore
+          item.angle = item.angle % 360;
+          change = true;
+        }
+
+        return item;
+      }
+    );
+    if (change) {
+      setCurPages(new_array);
+      setUnappliedPagesOpChanges(true);
+    }
   }
 
   if (error) {

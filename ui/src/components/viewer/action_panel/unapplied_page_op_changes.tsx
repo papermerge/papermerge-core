@@ -17,10 +17,9 @@ export default function UnappliedPageOpChanges({onClick}: Args) {
 
   return (
     <span className="unapplied-page-op-changes">
-      Unapplied pages operations detected
       <LoadingButton in_progress={inProgress}
           variant={"success"}
-          title={"Apply"}
+          title={"Apply Page Operations"}
           className="rounded-0 m-1"
           onClick={onLocalClick} />
     </span>

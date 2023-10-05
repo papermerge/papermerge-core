@@ -10,4 +10,9 @@ class Page(BaseModel):
 
 class PageAndRotOp(BaseModel):
     page: Page
-    ccw: int = 0
+    angle: int = 0  # degrees
+    # Rotate page `angle` degrees relative to the current angle.
+    # `angle` can have positive or negative value.
+    # `angle` must be a multiple of 90.
+    # When `angle` > 0 -> the rotation is "clockwise".
+    # When `angle` < 0 -> the rotation is "counterclockwise".

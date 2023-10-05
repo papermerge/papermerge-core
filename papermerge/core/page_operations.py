@@ -21,7 +21,7 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         page_count=len(items)
     )
 
-    reorder_pdf_pages(
+    transform_pdf_pages(
         src=old_version.file_path,
         dst=new_version.file_path,
         items=items
@@ -30,7 +30,7 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     return doc.versions.all()
 
 
-def reorder_pdf_pages(
+def transform_pdf_pages(
     src: Path,
     dst: Path,
     items: List[PageAndRotOp]
@@ -41,6 +41,9 @@ def reorder_pdf_pages(
 
     for item in items:
         page = src_pdf.pages.p(item.page.number)
+        if item.angle:
+            # apply rotation (relative to the current angle)
+            page.rotate(item.angle, relative=True)
         dst_pdf.pages.append(page)
 
     dst.parent.mkdir(parents=True, exist_ok=True)

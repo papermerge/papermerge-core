@@ -50,7 +50,9 @@ export function Page({item, scroll_into_view}: Args) {
     page_component = <div>Error</div>
   } else {
     page_component = <div>
+      <div style={{transform: `rotate(${item.angle}deg)`}}>
       {data}
+      </div>
       <div className='p-2 mb-3 page-number text-center'>
         {item.page.number}
       </div>

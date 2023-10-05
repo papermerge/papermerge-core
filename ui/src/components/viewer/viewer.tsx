@@ -147,6 +147,7 @@ export default function Viewer(
     let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(pages);
     setUnappliedPagesOpChanges(false);
     setDocVers(response);
+    setSelectedPages([]);
 
     toasts?.addToast("Page operations successfully applied");
   }
@@ -199,7 +200,6 @@ export default function Viewer(
     if (change) {
       setCurPages(new_array);
       setUnappliedPagesOpChanges(true);
-      setSelectedPages([]);
     }
   }
 
@@ -222,7 +222,6 @@ export default function Viewer(
     if (change) {
       setCurPages(new_array);
       setUnappliedPagesOpChanges(true);
-      setSelectedPages([]);
     }
   }
 

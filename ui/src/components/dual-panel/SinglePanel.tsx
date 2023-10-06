@@ -1,7 +1,9 @@
+/** Container for either <Commander /> or for <Viewer /> */
+
 import { useState, useEffect } from 'react';
 
-import Commander from './commander/commander';
-import Viewer from './viewer/viewer';
+import Commander from 'components/commander/commander';
+import Viewer from 'components/viewer/viewer';
 
 import { NodeClickArgsType, CType } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
@@ -10,6 +12,8 @@ import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'type
 type Args = {
   special_folder_id: string;
   special_node_type: CType;
+  onOpenSecondary: () => void;
+  onCloseSecondary: () => void;
 }
 
 
@@ -97,7 +101,12 @@ function save_node_list_params({
 }
 
 
-function SpecialFolder({ special_folder_id, special_node_type }: Args) {
+function SinglePanel({
+  special_folder_id,
+  special_node_type,
+  onCloseSecondary,
+  onOpenSecondary
+}: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState(special_node_type);
   const [ page_number, set_page_number ] = useState(1);
@@ -172,9 +181,15 @@ function SpecialFolder({ special_folder_id, special_node_type }: Args) {
         onSortFieldChange={onSortFieldChange}
         onSortOrderChange={onSortOrderChange}
         onNodesDisplayModeList={onNodesDisplayModeList}
-        onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
+        onNodesDisplayModeTiles={onNodesDisplayModeTiles}
+        onOpenSecondary={onOpenSecondary}
+        onCloseSecondary={onCloseSecondary} />
     } else {
-      return <Viewer node_id={node_id} onNodeClick={onNodeClick} />;
+      return <Viewer
+        node_id={node_id}
+        onNodeClick={onNodeClick}
+        onOpenSecondary={onOpenSecondary}
+        onCloseSecondary={onCloseSecondary}/>;
     }
   } catch(e) {
     return <div>Caught exception</div>;
@@ -182,4 +197,4 @@ function SpecialFolder({ special_folder_id, special_node_type }: Args) {
 
 }
 
-export default SpecialFolder;
+export default SinglePanel;

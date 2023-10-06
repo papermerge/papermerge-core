@@ -35,6 +35,8 @@ type ApplyPagesType = {
 type Args = {
   node_id: string;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onOpenSecondary: () => void;
+  onCloseSecondary: () => void;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -231,7 +233,7 @@ export default function Viewer(
     </div>
   }
 
-  return <div className="viewer">
+  return <div className="viewer w-100 m-1">
     <ActionPanel
       versions={docVers}
       doc={data}

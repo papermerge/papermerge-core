@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
+import { Button } from 'react-bootstrap';
 
 import DisplayModeDropown from './display_mode';
 import SortDropdown from './sort_dropdown';
@@ -160,6 +161,8 @@ type Args = {
   onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
+  onOpenSecondary: () => void;
+  onCloseSecondary: () => void;
 }
 
 
@@ -179,7 +182,9 @@ function Commander({
   onSortFieldChange,
   onSortOrderChange,
   onNodesDisplayModeList,
-  onNodesDisplayModeTiles
+  onNodesDisplayModeTiles,
+  onOpenSecondary,
+  onCloseSecondary
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -593,7 +598,7 @@ function Commander({
 
     return (
       <div
-        className={`commander ${cssAcceptFiles}`}
+        className={`commander w-100 m-1 ${cssAcceptFiles}`}
         onDrop={onDrop}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
@@ -608,7 +613,7 @@ function Commander({
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
-            <div className="d-flex">
+            <div className="d-flex align-items-center">
               <SortDropdown
                 sort_order={sort_order}
                 sort_field={sort_field}
@@ -626,6 +631,9 @@ function Commander({
                 <option value="50">50</option>
                 <option value="100">100</option>
               </Form.Select>
+              <Button variant='light' className='m-1' onClick={() => onOpenSecondary()}>
+                <i className="bi-layout-split"></i>
+              </Button>
             </div>
         </div>
         {

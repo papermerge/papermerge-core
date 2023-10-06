@@ -200,3 +200,6 @@ export type ThumbnailPageDroppedArgs = {
   target_id: string;
   position: DroppedThumbnailPosition;
 }
+
+
+export type ShowDualButtonEnum = 'split' | 'close';

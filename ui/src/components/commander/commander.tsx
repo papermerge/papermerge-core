@@ -28,7 +28,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType} from 'types';
+import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -36,6 +36,7 @@ import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
+import { DualButton } from 'components/dual-panel/DualButton';
 
 
 type NodeResultType = {
@@ -163,6 +164,7 @@ type Args = {
   onNodesDisplayModeTiles: () => void;
   onOpenSecondary: () => void;
   onCloseSecondary: () => void;
+  show_dual_button?: ShowDualButtonEnum;
 }
 
 
@@ -184,7 +186,8 @@ function Commander({
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
   onOpenSecondary,
-  onCloseSecondary
+  onCloseSecondary,
+  show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -631,9 +634,10 @@ function Commander({
                 <option value="50">50</option>
                 <option value="100">100</option>
               </Form.Select>
-              <Button variant='light' className='m-1' onClick={() => onOpenSecondary()}>
-                <i className="bi-layout-split"></i>
-              </Button>
+              <DualButton
+                onCloseSecondary={onCloseSecondary}
+                onOpenSecondary={onOpenSecondary}
+                show_dual_button={show_dual_button} />
             </div>
         </div>
         {

@@ -32,7 +32,8 @@ function DualPanel({ special_folder_id, special_node_type }: Args) {
               special_folder_id={special_folder_id}
               special_node_type={special_node_type}
               onOpenSecondary={onOpenSecondary}
-              onCloseSecondary={onCloseSecondary} />
+              onCloseSecondary={onCloseSecondary}
+              show_dual_button={'split'} />
     } else {
       return <div className='d-flex'>
         <SinglePanel
@@ -44,7 +45,8 @@ function DualPanel({ special_folder_id, special_node_type }: Args) {
               special_folder_id={secondary_node_id}
               special_node_type={secondary_node_type}
               onOpenSecondary={onOpenSecondary}
-              onCloseSecondary={onCloseSecondary} />
+              onCloseSecondary={onCloseSecondary}
+              show_dual_button={'close'} />
       </div>
     }
   } catch(e) {

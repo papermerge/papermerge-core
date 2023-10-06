@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Commander from 'components/commander/commander';
 import Viewer from 'components/viewer/viewer';
 
-import { NodeClickArgsType, CType } from 'types';
+import { NodeClickArgsType, CType, ShowDualButtonEnum } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
@@ -14,6 +14,7 @@ type Args = {
   special_node_type: CType;
   onOpenSecondary: () => void;
   onCloseSecondary: () => void;
+  show_dual_button?: ShowDualButtonEnum;
 }
 
 
@@ -105,7 +106,8 @@ function SinglePanel({
   special_folder_id,
   special_node_type,
   onCloseSecondary,
-  onOpenSecondary
+  onOpenSecondary,
+  show_dual_button
 }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
   const [ node_type, set_node_type ] = useState(special_node_type);
@@ -183,13 +185,15 @@ function SinglePanel({
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         onOpenSecondary={onOpenSecondary}
-        onCloseSecondary={onCloseSecondary} />
+        onCloseSecondary={onCloseSecondary}
+        show_dual_button={show_dual_button} />
     } else {
       return <Viewer
         node_id={node_id}
         onNodeClick={onNodeClick}
         onOpenSecondary={onOpenSecondary}
-        onCloseSecondary={onCloseSecondary}/>;
+        onCloseSecondary={onCloseSecondary}
+        show_dual_button={show_dual_button} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

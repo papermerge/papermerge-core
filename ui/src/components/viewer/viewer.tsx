@@ -12,7 +12,7 @@ import useToast from 'hooks/useToasts';
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
 import type { PageAndRotOp } from 'types';
-import type { State, ThumbnailPageDroppedArgs } from 'types';
+import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 
@@ -37,6 +37,7 @@ type Args = {
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onOpenSecondary: () => void;
   onCloseSecondary: () => void;
+  show_dual_button?: ShowDualButtonEnum;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -47,7 +48,7 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
 }
 
 export default function Viewer(
-  {node_id, onNodeClick}: Args
+  {node_id, onNodeClick, show_dual_button}: Args
 ) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);

@@ -15,7 +15,7 @@ import { is_empty } from 'utils/misc';
 import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';
-import NewFolderModal from 'components/modals/new_folder';
+import create_new_folder from './modals/NewFolder';
 import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
@@ -27,7 +27,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { CType, ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
+import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -36,7 +36,6 @@ import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
-
 
 const DATA_TYPE_NODE = 'node/type';
 
@@ -188,7 +187,6 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
@@ -297,14 +295,6 @@ function Commander({
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
     onPageSizeChange(new_value);
-  }
-
-  const onCreateNewFolder = (new_node: NodeType) => {
-    setNodesList([
-      new_node,
-      ...nodesList
-    ]);
-    setNewFolderModalShow(false);
   }
 
   const onRenameNode = (node: NodeType) => {
@@ -563,6 +553,15 @@ function Commander({
     return nodesRef.current;
   }
 
+  const onNewFolderClick = () => {
+    create_new_folder(node_id)
+    .then(
+      (new_node: NodeType) => {
+        setNodesList([new_node, ...nodesList]);
+      }
+    );
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -641,7 +640,7 @@ function Commander({
         <div className='top-bar'>
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}
-            onNewFolderClick={() => setNewFolderModalShow(true)}
+            onNewFolderClick={onNewFolderClick}
             onRenameClick={() => setRenameModalShow(true)}
             onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
             onEditTagsClick={ () => setEditTagsModalShow(true) }
@@ -689,13 +688,6 @@ function Commander({
           active={nodes_list.page_number}
           onPageClick={onPageClick} />
 
-        <div>
-          <NewFolderModal
-            show={newFolderModalShow}
-            parent_id={node_id}
-            onCancel={() => setNewFolderModalShow(false)}
-            onSubmit={onCreateNewFolder} />
-        </div>
         <div>
           <RenameModal
             show={renameModalShow}

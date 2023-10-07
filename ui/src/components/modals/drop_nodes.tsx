@@ -6,7 +6,7 @@ import { Spinner } from 'react-bootstrap';
 
 import { fetcher_post, get_default_headers } from 'utils/fetcher';
 
-import type { NodeType } from 'types';
+import type { FolderType, NodeType } from 'types';
 
 
 type Args = {
@@ -14,7 +14,7 @@ type Args = {
   onSubmit: (uuids_list: string[]) => void;
   show: boolean;
   source_nodes: NodeType[];
-  target_node: NodeType | null;
+  target_node: NodeType | FolderType | null | undefined;
 }
 
 type MoveNodeType = {
@@ -25,7 +25,7 @@ type MoveNodeType = {
 
 async function move_nodes(
   source_nodes: NodeType[],
-  target_node: NodeType | null,
+  target_node: NodeType | FolderType | undefined | null,
   signal: AbortSignal
 ): Promise<Response> {
   return fetch(

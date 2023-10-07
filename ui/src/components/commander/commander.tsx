@@ -38,6 +38,9 @@ import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 
 
+const DATA_TYPE_NODE = 'node/type';
+
+
 type NodeResultType = {
   items: NodeType[];
   num_pages: number;
@@ -195,7 +198,7 @@ function Commander({
   const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
   const [ filesList, setFilesList ] = useState<FileList>()
   // target folder where drop in (using drag 'n drop) files will be uploaded
-  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | null>(null);
+  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | FolderType | null | undefined>(null);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
@@ -384,7 +387,16 @@ function Commander({
           selectedNodes={selectedNodes}
           nodesList={nodesList} />;
     let ghost = document.createElement('div');
-    console.log(`onDragStart for node ${node_id}`);
+    const all_transfered_nodes = [...selectedNodes, node_id] as UUIDList;
+
+
+    event.dataTransfer.setData(
+      DATA_TYPE_NODE,
+      JSON.stringify(
+        get_nodes(all_transfered_nodes)
+      )
+    );
+
     ghost.style.transform = "translate(-10000px, -10000px)";
     ghost.style.position = "absolute";
     document.body.appendChild(ghost);
@@ -468,22 +480,47 @@ function Commander({
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    /*
+      Commander can receive data files from:
+      1. user's desktop (user drops files from desktop into web browser)
+      2. same commander panel
+      3. another commander panel (user drops nodes from another panel)
+    */
+    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+
     event.preventDefault();
     setCssAcceptFiles("");
 
-    setFilesList(event.dataTransfer.files);
+    // case #3 - nodes moved from another panel
+    // uniq set of source NODE IDs
+    let all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
 
-    if (sourceDropNodes.length == 0) {
-      // no "internal nodes" selected for being dropped -> user
-      //dropped documents/files from local filesystem i.e. he/she intends
-      //to upload files
-      if (event.dataTransfer.files.length > 0) {
-        // only show dialog if event.dataTransfer contains at least one file
-        setDropFilesModalShow(true);
-      }
-    } else {
+    if (all_transfered_nodes.length > 0) {
+      setSourceDropNodes(all_transfered_nodes);
+
+      setTargetDropFile(get_node(node_id) || breadcrumb);
+
+      //setTargetDropFile();
+      setDropNodesModalShow(true);
+      return;
+    }
+
+    if (event.dataTransfer.files.length) {
+      setFilesList(event.dataTransfer.files);
+    }
+
+    // case # 1 - files transferred from the desktop
+    if (event.dataTransfer.files.length > 0) {
+      // only show dialog if event.dataTransfer contains at least one file
+      setDropFilesModalShow(true);
+      return;
+    }
+
+    // case #2 - nodes moved around within same panel
+    if (sourceDropNodes.length > 0) {
       setDropNodesModalShow(true);
     }
+
   }
 
   const onCancelDropFiles = () => {

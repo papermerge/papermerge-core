@@ -12,7 +12,7 @@ import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'type
 type Args = {
   special_folder_id: string;
   special_node_type: CType;
-  onOpenSecondary: () => void;
+  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
   onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }

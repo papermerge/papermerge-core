@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
-import { Button } from 'react-bootstrap';
 
 import DisplayModeDropown from './display_mode';
 import SortDropdown from './sort_dropdown';
@@ -28,7 +27,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
+import type { CType, ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -162,7 +161,7 @@ type Args = {
   onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
-  onOpenSecondary: () => void;
+  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
   onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
@@ -637,6 +636,8 @@ function Commander({
               <DualButton
                 onCloseSecondary={onCloseSecondary}
                 onOpenSecondary={onOpenSecondary}
+                node_id={node_id}
+                node_type={"folder"}
                 show_dual_button={show_dual_button} />
             </div>
         </div>

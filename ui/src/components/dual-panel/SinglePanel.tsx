@@ -12,8 +12,6 @@ import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'type
 type Args = {
   special_folder_id: string;
   special_node_type: CType;
-  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
-  onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -105,8 +103,6 @@ function save_node_list_params({
 function SinglePanel({
   special_folder_id,
   special_node_type,
-  onCloseSecondary,
-  onOpenSecondary,
   show_dual_button
 }: Args) {
   const [ node_id, set_node_id ] = useState(special_folder_id);
@@ -184,15 +180,11 @@ function SinglePanel({
         onSortOrderChange={onSortOrderChange}
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
-        onOpenSecondary={onOpenSecondary}
-        onCloseSecondary={onCloseSecondary}
         show_dual_button={show_dual_button} />
     } else {
       return <Viewer
         node_id={node_id}
         onNodeClick={onNodeClick}
-        onOpenSecondary={onOpenSecondary}
-        onCloseSecondary={onCloseSecondary}
         show_dual_button={show_dual_button} />;
     }
   } catch(e) {

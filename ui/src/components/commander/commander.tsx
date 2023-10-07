@@ -161,8 +161,6 @@ type Args = {
   onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
-  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
-  onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -184,8 +182,6 @@ function Commander({
   onSortOrderChange,
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
-  onOpenSecondary,
-  onCloseSecondary,
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
@@ -634,8 +630,6 @@ function Commander({
                 <option value="100">100</option>
               </Form.Select>
               <DualButton
-                onCloseSecondary={onCloseSecondary}
-                onOpenSecondary={onOpenSecondary}
                 node_id={node_id}
                 node_type={"folder"}
                 show_dual_button={show_dual_button} />

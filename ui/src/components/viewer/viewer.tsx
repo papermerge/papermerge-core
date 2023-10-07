@@ -35,8 +35,6 @@ type ApplyPagesType = {
 type Args = {
   node_id: string;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
-  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
-  onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -49,8 +47,6 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
 
 export default function Viewer({node_id,
   onNodeClick,
-  onCloseSecondary,
-  onOpenSecondary,
   show_dual_button
 }: Args) {
 
@@ -247,8 +243,6 @@ export default function Viewer({node_id,
       onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
-      onCloseSecondary={onCloseSecondary}
-      onOpenSecondary={onOpenSecondary}
       show_dual_button={show_dual_button} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>

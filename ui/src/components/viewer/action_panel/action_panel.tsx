@@ -17,8 +17,6 @@ type Args = {
   onRotatePagesCcw: () => void;
   show_selected_menu: boolean;
   onApplyPageOpChanges: () => void;
-  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
-  onCloseSecondary: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -31,8 +29,6 @@ export default function ActionPanel({
   onRotatePagesCw,
   onRotatePagesCcw,
   onApplyPageOpChanges,
-  onOpenSecondary,
-  onCloseSecondary,
   show_dual_button
 }: Args) {
 
@@ -67,8 +63,6 @@ export default function ActionPanel({
         <DualButton
           node_id={doc?.id}
           node_type={"document"}
-          onCloseSecondary={onCloseSecondary}
-          onOpenSecondary={onOpenSecondary}
           show_dual_button={show_dual_button} />
         </div>
 

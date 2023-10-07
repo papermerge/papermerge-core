@@ -27,7 +27,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType} from 'types';
+import type { CType, ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -35,6 +35,7 @@ import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 
 import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
+import { DualButton } from 'components/dual-panel/DualButton';
 
 
 type NodeResultType = {
@@ -160,6 +161,7 @@ type Args = {
   onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
+  show_dual_button?: ShowDualButtonEnum;
 }
 
 
@@ -179,7 +181,8 @@ function Commander({
   onSortFieldChange,
   onSortOrderChange,
   onNodesDisplayModeList,
-  onNodesDisplayModeTiles
+  onNodesDisplayModeTiles,
+  show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
@@ -593,7 +596,7 @@ function Commander({
 
     return (
       <div
-        className={`commander ${cssAcceptFiles}`}
+        className={`commander w-100 m-1 ${cssAcceptFiles}`}
         onDrop={onDrop}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
@@ -608,7 +611,7 @@ function Commander({
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
-            <div className="d-flex">
+            <div className="d-flex align-items-center">
               <SortDropdown
                 sort_order={sort_order}
                 sort_field={sort_field}
@@ -626,6 +629,10 @@ function Commander({
                 <option value="50">50</option>
                 <option value="100">100</option>
               </Form.Select>
+              <DualButton
+                node_id={node_id}
+                node_type={"folder"}
+                show_dual_button={show_dual_button} />
             </div>
         </div>
         {

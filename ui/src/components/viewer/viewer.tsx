@@ -11,8 +11,8 @@ import useToast from 'hooks/useToasts';
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { PageAndRotOp } from 'types';
-import type { State, ThumbnailPageDroppedArgs } from 'types';
+import type { PageAndRotOp, CType } from 'types';
+import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 
@@ -35,6 +35,7 @@ type ApplyPagesType = {
 type Args = {
   node_id: string;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  show_dual_button?: ShowDualButtonEnum;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -44,9 +45,10 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
   }
 }
 
-export default function Viewer(
-  {node_id, onNodeClick}: Args
-) {
+export default function Viewer({node_id,
+  onNodeClick,
+  show_dual_button
+}: Args) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   const initial_breadcrumb_state: State<DocumentType | undefined> = {
@@ -231,7 +233,7 @@ export default function Viewer(
     </div>
   }
 
-  return <div className="viewer">
+  return <div className="viewer w-100 m-1">
     <ActionPanel
       versions={docVers}
       doc={data}
@@ -240,7 +242,8 @@ export default function Viewer(
       onRotatePagesCw={onRotatePagesCw}
       onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
-      onApplyPageOpChanges={onApplyPageOpChanges} />
+      onApplyPageOpChanges={onApplyPageOpChanges}
+      show_dual_button={show_dual_button} />
     <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel

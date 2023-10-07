@@ -3,7 +3,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'styles/globals.scss';
 
 import React, { useState, useEffect } from 'react';
-import SpecialFolder from "components/special_folder";
+import DualPanel from "components/dual-panel/DualPanel";
 import Tags from "components/tags/table"
 import Layout from 'components/layout';
 import { useMe } from 'hooks/me';
@@ -73,11 +73,11 @@ function App() {
   }
 
   if (contentBlockItem == AppContentBlockEnum.home) {
-    content_block = <SpecialFolder
+    content_block = <DualPanel
       special_folder_id={ nodeId || data?.home_folder_id }
       special_node_type={nodeType} />;
   } else if (contentBlockItem == AppContentBlockEnum.inbox) {
-    content_block = <SpecialFolder
+    content_block = <DualPanel
       special_folder_id={ data?.inbox_folder_id }
       special_node_type={nodeType} />;
   } else if (contentBlockItem == AppContentBlockEnum.tags) {

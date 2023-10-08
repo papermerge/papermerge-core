@@ -24,14 +24,18 @@ type Args = {
 }
 
 
-async function api_create_new_folder(title: string, parent_id: string): Promise<FolderType> {
+async function api_create_new_folder(
+  title: string,
+  parent_id: string,
+  signal: AbortSignal
+): Promise<FolderType> {
   let data: CreateFolderType = {
     'title': title,
     'parent_id': parent_id,
     'ctype': 'folder'
   };
 
-  return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data);
+  return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data, signal);
 }
 
 function validate_title(value: string): boolean {
@@ -49,9 +53,14 @@ function validate_title(value: string): boolean {
 const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
   const [show, setShow] = useState<boolean>(true);
   const [title, setTitle] = useState('');
+  const [controller, setController] = useState<AbortController>(new AbortController());
   const [errorMessage, setErrorMessage] = useState('');
   const [inProgress, setInProgress] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+
+  if (!controller) {
+    setController(new AbortController());
+  }
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
@@ -65,7 +74,7 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
     setInProgress(true);
     setIsEnabled(false);
 
-    let response = await api_create_new_folder(title, parent_id);
+    let response = await api_create_new_folder(title, parent_id, controller.signal);
     let new_node: NodeType = response as NodeType;
 
     onOK(new_node);
@@ -73,11 +82,15 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
   }
 
   const handleCancel = () => {
+    controller.abort();
     setTitle('');
     setErrorMessage('');
+
     onCancel();
+
     setShow(false);
     setInProgress(false);
+    setController(new AbortController());
   }
 
   return (

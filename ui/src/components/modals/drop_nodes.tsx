@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { Spinner } from 'react-bootstrap';
 
-import { fetcher_post, get_default_headers } from 'utils/fetcher';
+import { get_default_headers } from 'utils/fetcher';
 
 import type { FolderType, NodeType } from 'types';
 
@@ -15,11 +15,6 @@ type Args = {
   show: boolean;
   source_nodes: NodeType[];
   target_node: NodeType | FolderType | null | undefined;
-}
-
-type MoveNodeType = {
-  source_ids: string[];
-  target_id: string | undefined;
 }
 
 

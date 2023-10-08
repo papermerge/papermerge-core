@@ -234,17 +234,15 @@ export default function Viewer({
     rename_node(node_id, get_doc_title(breadcrumb || []))
     .then(
       (node: NodeType) => {
-        if (breadcrumb) {
-          let new_breadcrumb: BreadcrumbType = breadcrumb.map((item: BreadcrumbItemType) => {
-            if (item[0] == node.id) {
-              return [item[0], node.title];
-            }
+        let new_breadcrumb: BreadcrumbType = breadcrumb?.map((item: BreadcrumbItemType) => {
+          if (item[0] == node.id) {
+            return [item[0], node.title];
+          }
 
-            return item;
-          });
+          return item;
+        }) as BreadcrumbType;
 
-          setBreadcrumb(new_breadcrumb);
-        }
+        setBreadcrumb(new_breadcrumb);
       }
     );
   }

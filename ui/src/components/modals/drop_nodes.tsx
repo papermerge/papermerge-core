@@ -4,9 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { Spinner } from 'react-bootstrap';
 
-import { fetcher_post, get_default_headers } from 'utils/fetcher';
+import { get_default_headers } from 'utils/fetcher';
 
-import type { NodeType } from 'types';
+import type { FolderType, NodeType } from 'types';
 
 
 type Args = {
@@ -14,18 +14,13 @@ type Args = {
   onSubmit: (uuids_list: string[]) => void;
   show: boolean;
   source_nodes: NodeType[];
-  target_node: NodeType | null;
-}
-
-type MoveNodeType = {
-  source_ids: string[];
-  target_id: string | undefined;
+  target_node: NodeType | FolderType | null | undefined;
 }
 
 
 async function move_nodes(
   source_nodes: NodeType[],
-  target_node: NodeType | null,
+  target_node: NodeType | FolderType | undefined | null,
   signal: AbortSignal
 ): Promise<Response> {
   return fetch(

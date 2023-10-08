@@ -15,7 +15,7 @@ import { is_empty } from 'utils/misc';
 import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';
-import NewFolderModal from 'components/modals/new_folder';
+import create_new_folder from './modals/NewFolder';
 import EditTagsModal from 'components/modals/edit_tags';
 import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
@@ -27,7 +27,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { CType, ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
+import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -36,6 +36,8 @@ import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
 import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
+
+const DATA_TYPE_NODE = 'node/type';
 
 
 type NodeResultType = {
@@ -185,7 +187,6 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  const [ newFolderModalShow, setNewFolderModalShow ] = useState(false);
   const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
@@ -195,7 +196,7 @@ function Commander({
   const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
   const [ filesList, setFilesList ] = useState<FileList>()
   // target folder where drop in (using drag 'n drop) files will be uploaded
-  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | null>(null);
+  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | FolderType | null | undefined>(null);
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
@@ -296,14 +297,6 @@ function Commander({
     onPageSizeChange(new_value);
   }
 
-  const onCreateNewFolder = (new_node: NodeType) => {
-    setNodesList([
-      new_node,
-      ...nodesList
-    ]);
-    setNewFolderModalShow(false);
-  }
-
   const onRenameNode = (node: NodeType) => {
     let new_nodes_list = nodesList.map((item: NodeType) => {
       if (item.id === node.id) {
@@ -384,7 +377,16 @@ function Commander({
           selectedNodes={selectedNodes}
           nodesList={nodesList} />;
     let ghost = document.createElement('div');
-    console.log(`onDragStart for node ${node_id}`);
+    const all_transfered_nodes = [...selectedNodes, node_id] as UUIDList;
+
+
+    event.dataTransfer.setData(
+      DATA_TYPE_NODE,
+      JSON.stringify(
+        get_nodes(all_transfered_nodes)
+      )
+    );
+
     ghost.style.transform = "translate(-10000px, -10000px)";
     ghost.style.position = "absolute";
     document.body.appendChild(ghost);
@@ -468,22 +470,47 @@ function Commander({
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    /*
+      Commander can receive data files from:
+      1. user's desktop (user drops files from desktop into web browser)
+      2. same commander panel
+      3. another commander panel (user drops nodes from another panel)
+    */
+    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+
     event.preventDefault();
     setCssAcceptFiles("");
 
-    setFilesList(event.dataTransfer.files);
+    // case #3 - nodes moved from another panel
+    // uniq set of source NODE IDs
+    let all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
 
-    if (sourceDropNodes.length == 0) {
-      // no "internal nodes" selected for being dropped -> user
-      //dropped documents/files from local filesystem i.e. he/she intends
-      //to upload files
-      if (event.dataTransfer.files.length > 0) {
-        // only show dialog if event.dataTransfer contains at least one file
-        setDropFilesModalShow(true);
-      }
-    } else {
+    if (all_transfered_nodes.length > 0) {
+      setSourceDropNodes(all_transfered_nodes);
+
+      setTargetDropFile(get_node(node_id) || breadcrumb);
+
+      //setTargetDropFile();
+      setDropNodesModalShow(true);
+      return;
+    }
+
+    if (event.dataTransfer.files.length) {
+      setFilesList(event.dataTransfer.files);
+    }
+
+    // case # 1 - files transferred from the desktop
+    if (event.dataTransfer.files.length > 0) {
+      // only show dialog if event.dataTransfer contains at least one file
+      setDropFilesModalShow(true);
+      return;
+    }
+
+    // case #2 - nodes moved around within same panel
+    if (sourceDropNodes.length > 0) {
       setDropNodesModalShow(true);
     }
+
   }
 
   const onCancelDropFiles = () => {
@@ -524,6 +551,15 @@ function Commander({
       nodesRef.current = new Map();
     }
     return nodesRef.current;
+  }
+
+  const onNewFolderClick = () => {
+    create_new_folder(node_id)
+    .then(
+      (new_node: NodeType) => {
+        setNodesList([new_node, ...nodesList]);
+      }
+    );
   }
 
   useEffect(() => {
@@ -604,7 +640,7 @@ function Commander({
         <div className='top-bar'>
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}
-            onNewFolderClick={() => setNewFolderModalShow(true)}
+            onNewFolderClick={onNewFolderClick}
             onRenameClick={() => setRenameModalShow(true)}
             onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
             onEditTagsClick={ () => setEditTagsModalShow(true) }
@@ -652,13 +688,6 @@ function Commander({
           active={nodes_list.page_number}
           onPageClick={onPageClick} />
 
-        <div>
-          <NewFolderModal
-            show={newFolderModalShow}
-            parent_id={node_id}
-            onCancel={() => setNewFolderModalShow(false)}
-            onSubmit={onCreateNewFolder} />
-        </div>
         <div>
           <RenameModal
             show={renameModalShow}

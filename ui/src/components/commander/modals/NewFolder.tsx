@@ -1,20 +1,15 @@
+import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
+import { createRoot } from "react-dom/client";
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import React, { ChangeEvent } from 'react';
 
+import SpinnerButton from 'components/SpinnerButton';
 import { fetcher_post } from 'utils/fetcher';
 import type { FolderType, NodeType } from 'types';
 
-
-type Args = {
-  onCancel: () => void;
-  onSubmit: (node: NodeType) => void;
-  show: boolean;
-  parent_id: string;
-}
 
 type CreateFolderType = {
   title: string;
@@ -22,14 +17,25 @@ type CreateFolderType = {
   ctype: 'folder';
 }
 
-async function create_new_folder(title: string, parent_id: string): Promise<FolderType> {
+type Args = {
+  parent_id: string;
+  onOK: (node: NodeType) => void;
+  onCancel: () => void;
+}
+
+
+async function api_create_new_folder(
+  title: string,
+  parent_id: string,
+  signal: AbortSignal
+): Promise<FolderType> {
   let data: CreateFolderType = {
     'title': title,
     'parent_id': parent_id,
     'ctype': 'folder'
   };
 
-  return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data);
+  return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data, signal);
 }
 
 function validate_title(value: string): boolean {
@@ -44,11 +50,17 @@ function validate_title(value: string): boolean {
   return true;
 }
 
-const NewFolderModal = ({show, onCancel, onSubmit, parent_id}: Args) => {
+const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
+  const [show, setShow] = useState<boolean>(true);
   const [title, setTitle] = useState('');
+  const [controller, setController] = useState<AbortController>(new AbortController());
   const [errorMessage, setErrorMessage] = useState('');
   const [inProgress, setInProgress] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+
+  if (!controller) {
+    setController(new AbortController());
+  }
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
@@ -59,15 +71,26 @@ const NewFolderModal = ({show, onCancel, onSubmit, parent_id}: Args) => {
   }
 
   const handleSubmit = async () => {
-    let response = await create_new_folder(title, parent_id);
+    setInProgress(true);
+    setIsEnabled(false);
+
+    let response = await api_create_new_folder(title, parent_id, controller.signal);
     let new_node: NodeType = response as NodeType;
-    onSubmit(new_node);
+
+    onOK(new_node);
+    setShow(false);
   }
 
   const handleCancel = () => {
+    controller.abort();
     setTitle('');
     setErrorMessage('');
+
     onCancel();
+
+    setShow(false);
+    setInProgress(false);
+    setController(new AbortController());
   }
 
   return (
@@ -89,10 +112,33 @@ const NewFolderModal = ({show, onCancel, onSubmit, parent_id}: Args) => {
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={!isEnabled}>Create</Button>
+        <SpinnerButton
+          inProgress={inProgress}
+          title={"Create"}
+          onClick={() => handleSubmit()} />
       </Modal.Footer>
     </Modal>
   );
 }
 
-export default NewFolderModal;
+
+function create_new_folder(parent_id: string) {
+  let modals = document.getElementById('modals');
+
+  let promise = new Promise<NodeType>(function(onOK, onCancel){
+    if (modals) {
+      let dom_root = createRoot(modals);
+
+      dom_root.render(
+        <NewFolderModal
+          parent_id={parent_id}
+          onOK={onOK}
+          onCancel={onCancel} />
+      );
+    }
+  }); // new Promise...
+
+  return promise;
+}
+
+export default create_new_folder;

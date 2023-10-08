@@ -8,10 +8,10 @@ import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 import useToast from 'hooks/useToasts';
 
-
+import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
-import { NodeClickArgsType, DocumentType, DocumentVersion } from "types";
-import type { PageAndRotOp, CType } from 'types';
+import { NodeClickArgsType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
+import type { PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
 import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
@@ -45,7 +45,8 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
   }
 }
 
-export default function Viewer({node_id,
+export default function Viewer({
+  node_id,
   onNodeClick,
   show_dual_button
 }: Args) {
@@ -58,6 +59,7 @@ export default function Viewer({node_id,
   }
   let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
   let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
+  let [breadcrumb, setBreadcrumb] = useState<BreadcrumbType>();
   // current doc versions
   let [docVers, setDocVers] = useState<DocumentVersion[]>([]);
   let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
@@ -89,6 +91,7 @@ export default function Viewer({node_id,
       };
 
       setDoc(ready_state);
+      setBreadcrumb(ready_state.data?.breadcrumb);
       setDocVers(data.versions);
 
       let last_version = data.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
@@ -227,6 +230,25 @@ export default function Viewer({node_id,
     }
   }
 
+  const onRenameClick = () => {
+    rename_node(node_id, get_doc_title(breadcrumb || []))
+    .then(
+      (node: NodeType) => {
+        if (breadcrumb) {
+          let new_breadcrumb: BreadcrumbType = breadcrumb.map((item: BreadcrumbItemType) => {
+            if (item[0] == node.id) {
+              return [item[0], node.title];
+            }
+
+            return item;
+          });
+
+          setBreadcrumb(new_breadcrumb);
+        }
+      }
+    );
+  }
+
   if (error) {
     return <div className="viewer">
       {error && <ErrorMessage msg={error} />}
@@ -238,13 +260,14 @@ export default function Viewer({node_id,
       versions={docVers}
       doc={data}
       show_selected_menu={showSelectedMenu}
+      onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
       onRotatePagesCw={onRotatePagesCw}
       onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
       show_dual_button={show_dual_button} />
-    <Breadcrumb path={data?.breadcrumb || []} onClick={onNodeClick} is_loading={false} />
+    <Breadcrumb path={breadcrumb || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
         pages={curPages}
@@ -260,4 +283,18 @@ export default function Viewer({node_id,
         current_page_number={currentPage}/>
     </div>
   </div>;
+}
+
+
+function get_doc_title(breadcrumb: BreadcrumbType): string {
+  /* breadcrumb is stored as list of tuples:
+
+    [[id, title], [id, title], [id, title], ...]
+  */
+  if (breadcrumb.length >= 1) {
+    const last = breadcrumb[breadcrumb.length - 1];
+    return last[1]; // get the title part i.e. second element in the tuple
+  }
+
+  return '';
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
+import { createRoot } from "react-dom/client";
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -7,21 +7,22 @@ import Form from 'react-bootstrap/Form';
 
 import { fetcher_patch } from 'utils/fetcher';
 import type { NodeType } from 'types';
+import SpinnerButton from 'components/SpinnerButton';
+import { MODALS } from 'cconstants';
 
 
 type Args = {
   onCancel: () => void;
-  onSubmit: (node: NodeType) => void;
-  show: boolean;
+  onOK: (node: NodeType) => void;
   node_id: string;
-  old_title: string | null;
+  old_title: string | null | undefined;
 }
 
 type RenameType = {
   title: string;
 }
 
-async function rename_node(node_id: string, title: string | null): Promise<NodeType> {
+async function api_rename_node(node_id: string, title: string): Promise<NodeType> {
   let data: RenameType = {
     'title': title || ''
   };
@@ -29,7 +30,7 @@ async function rename_node(node_id: string, title: string | null): Promise<NodeT
   return fetcher_patch<RenameType, NodeType>(`/api/nodes/${node_id}`, data);
 }
 
-function validate_title(value: string, old_title: string | null): boolean {
+function validate_title(value: string, old_title: string | null | undefined): boolean {
   if (!value) {
     return false;
   }
@@ -45,11 +46,18 @@ function validate_title(value: string, old_title: string | null): boolean {
   return true;
 }
 
-const RenameModal = ({show, onCancel, onSubmit, node_id, old_title}: Args) => {
-  const [title, setTitle] = useState(old_title);
+
+const RenameModal = ({onCancel, onOK, node_id, old_title}: Args) => {
+  const [show, setShow] = useState<boolean>(true);
+  const [controller, setController] = useState<AbortController>(new AbortController());
+  const [title, setTitle] = useState<string>(old_title || '');
   const [errorMessage, setErrorMessage] = useState('');
   const [inProgress, setInProgress] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+
+  if (!controller) {
+    setController(new AbortController());
+  }
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
@@ -60,15 +68,29 @@ const RenameModal = ({show, onCancel, onSubmit, node_id, old_title}: Args) => {
   }
 
   const handleSubmit = async () => {
-    let response = await rename_node(node_id, title);
+    setInProgress(true);
+    setIsEnabled(false);
+
+    let response = await api_rename_node(node_id, title);
     let new_node: NodeType = response as NodeType;
-    onSubmit(new_node);
+
+    onOK(new_node);
+
+    setInProgress(false);
+    setShow(false);
+    setIsEnabled(true);
   }
 
   const handleCancel = () => {
+    controller.abort();
     setTitle('');
     setErrorMessage('');
+
     onCancel();
+
+    setShow(false);
+    setInProgress(false);
+    setController(new AbortController());
   }
 
   return (
@@ -91,10 +113,44 @@ const RenameModal = ({show, onCancel, onSubmit, node_id, old_title}: Args) => {
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={!isEnabled}>Rename</Button>
+        <SpinnerButton
+          inProgress={inProgress}
+          title={"Rename"}
+          onClick={handleSubmit} />
       </Modal.Footer>
     </Modal>
   );
 }
 
-export default RenameModal;
+
+function rename_node(
+  node_id: string,
+  old_title: string | null | undefined
+): Promise<NodeType> {
+  /* Opens rename modal dialog
+
+  Returns a promise with NodeType.
+  NodeType will be fulfilled when server returns.
+  Fulfilled NodeType has new nodes titles (or whatever server returns).
+  */
+  let modals = document.getElementById(MODALS);
+
+  let promise = new Promise<NodeType>(function(onOK, onCancel){
+    if (modals) {
+      let dom_root = createRoot(modals);
+
+      dom_root.render(
+        <RenameModal
+          node_id={node_id}
+          old_title={old_title}
+          onOK={onOK}  // handler for resolve
+          onCancel={onCancel} // handler for reject
+        />
+      );
+    }
+  }); // END of new Promise...
+
+  return promise;
+}
+
+export default rename_node;

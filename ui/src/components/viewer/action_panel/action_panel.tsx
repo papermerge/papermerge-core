@@ -12,6 +12,7 @@ type Args = {
   versions: DocumentVersion[];
   doc: DocumentType | null | undefined;
   unapplied_page_op_changes: boolean;
+  onRenameClick: () => void;
   onDeletePages: () => void;
   onRotatePagesCw: () => void;
   onRotatePagesCcw: () => void;
@@ -25,6 +26,7 @@ export default function ActionPanel({
   doc,
   unapplied_page_op_changes,
   show_selected_menu,
+  onRenameClick,
   onDeletePages,
   onRotatePagesCw,
   onRotatePagesCcw,
@@ -46,7 +48,7 @@ export default function ActionPanel({
   return (
     <div className="action-panel d-flex justify-content-between">
       <div className="d-flex">
-        <Button className="m-1" variant="light">
+        <Button className="m-1" variant="light" onClick={onRenameClick}>
           <i className="bi bi-pencil-square me-1"></i>
         </Button>
 

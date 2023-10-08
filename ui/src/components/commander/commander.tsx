@@ -16,8 +16,8 @@ import { fetcher } from 'utils/fetcher';
 
 import DeleteNodesModal from 'components/modals/delete_nodes';
 import create_new_folder from './modals/NewFolder';
+import rename_node from 'components/modals/rename';
 import EditTagsModal from 'components/modals/edit_tags';
-import RenameModal from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
 import DropFilesModal from 'components/modals/drop_files';
 import ErrorModal from 'components/modals/error_modal';
@@ -187,7 +187,6 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  const [ renameModalShow, setRenameModalShow ] = useState(false);
   const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
   // for papermerge nodes dropping
@@ -307,7 +306,6 @@ function Commander({
     });
 
     setNodesList(new_nodes_list);
-    setRenameModalShow(false);
     setSelectedNodes([]);
   }
 
@@ -562,6 +560,27 @@ function Commander({
     );
   }
 
+  const onRenameClick = () => {
+    let initial_title = get_node_attr<string>(
+      selectedNodes, 'title', nodesList
+    );
+
+    rename_node(selectedNodes[0], initial_title)
+    .then(
+      (node: NodeType) => {
+        let new_nodes_list = nodesList.map((item: NodeType) => {
+          if (item.id === node.id) {
+            return node;
+          } else {
+            return item;
+          }
+        });
+        setNodesList(new_nodes_list);
+        setSelectedNodes([]);
+      }
+    );
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -641,7 +660,7 @@ function Commander({
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}
             onNewFolderClick={onNewFolderClick}
-            onRenameClick={() => setRenameModalShow(true)}
+            onRenameClick={onRenameClick}
             onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
             onEditTagsClick={ () => setEditTagsModalShow(true) }
             selected_nodes={selectedNodes}
@@ -688,14 +707,6 @@ function Commander({
           active={nodes_list.page_number}
           onPageClick={onPageClick} />
 
-        <div>
-          <RenameModal
-            show={renameModalShow}
-            node_id={selectedNodes[0]}
-            old_title={get_node_attr<string>(selectedNodes, 'title', nodesList)}
-            onCancel={() => setRenameModalShow(false)}
-            onSubmit={onRenameNode} />
-        </div>
         <div>
           <DeleteNodesModal
             show={deleteNodesModalShow}

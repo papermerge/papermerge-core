@@ -9,6 +9,7 @@ import Form from 'react-bootstrap/Form';
 import SpinnerButton from 'components/SpinnerButton';
 import { fetcher_post } from 'utils/fetcher';
 import type { FolderType, NodeType } from 'types';
+import { MODALS } from 'cconstants';
 
 
 type CreateFolderType = {
@@ -123,7 +124,7 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
 
 
 function create_new_folder(parent_id: string) {
-  let modals = document.getElementById('modals');
+  let modals = document.getElementById(MODALS);
 
   let promise = new Promise<NodeType>(function(onOK, onCancel){
     if (modals) {

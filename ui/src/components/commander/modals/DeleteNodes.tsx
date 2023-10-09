@@ -44,6 +44,7 @@ const DeleteNodesModal = ({onOK, onCancel, node_ids}: Args) => {
 
   const handleCancel = () => {
     setErrorMessage('');
+    controller.abort();
 
     onCancel();
 

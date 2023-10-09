@@ -16,8 +16,8 @@ import { fetcher } from 'utils/fetcher';
 
 import create_new_folder from './modals/NewFolder';
 import delete_nodes from './modals/DeleteNodes';
+import edit_tags from './modals/EditTags';
 import rename_node from 'components/modals/rename';
-import EditTagsModal from 'components/modals/edit_tags';
 import DropNodesModal from 'components/modals/drop_nodes';
 import DropFilesModal from 'components/modals/drop_files';
 import ErrorModal from 'components/modals/error_modal';
@@ -187,7 +187,6 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
   // for papermerge nodes dropping
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
   // for local filesystem files dropping
@@ -293,21 +292,6 @@ function Commander({
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
     onPageSizeChange(new_value);
-  }
-
-  const onSubmitTags = (node: NodeType): void => {
-
-    let new_nodes_list = nodesList.map((item: NodeType) => {
-      if (item.id === node.id) {
-        return node;
-      } else {
-        return item;
-      }
-    });
-
-    setNodesList(new_nodes_list);
-    setEditTagsModalShow(false);
-    setSelectedNodes([]);
   }
 
   const onPerformDropNodes = (moved_node_ids: string[]) => {
@@ -571,6 +555,27 @@ function Commander({
     );
   }
 
+  const onEditTagsClick = () => {
+    let initial_tags = get_node_attr<Array<ColoredTagType>>(
+      selectedNodes,'tags', nodesList
+    );
+
+    edit_tags(selectedNodes[0], initial_tags).then(
+      (node: NodeType) => {
+        let new_nodes_list = nodesList.map((item: NodeType) => {
+          if (item.id === node.id) {
+            return node;
+          } else {
+            return item;
+          }
+        });
+
+        setNodesList(new_nodes_list);
+        setSelectedNodes([]);
+      }
+    );
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -652,7 +657,7 @@ function Commander({
             onNewFolderClick={onNewFolderClick}
             onRenameClick={onRenameClick}
             onDeleteNodesClick={onDeleteNodesClick}
-            onEditTagsClick={ () => setEditTagsModalShow(true) }
+            onEditTagsClick={onEditTagsClick}
             selected_nodes={selectedNodes}
             node_id={node_id} />
 
@@ -696,13 +701,6 @@ function Commander({
           num_pages={nodes_list.num_pages}
           active={nodes_list.page_number}
           onPageClick={onPageClick} />
-        <div>
-          {editTagsModalShow && <EditTagsModal
-            node_id={selectedNodes[0]}
-            tags={get_node_attr<Array<ColoredTagType>>(selectedNodes,'tags', nodesList)}
-            onCancel={() => setEditTagsModalShow(false)}
-            onSubmit={onSubmitTags} /> }
-        </div>
         <div>
           <DropNodesModal // for nodes move between folders
             show={dropNodesModalShow}

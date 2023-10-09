@@ -436,13 +436,16 @@ function Commander({
       3. another commander panel (user drops nodes from another panel)
     */
     const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+    let all_transfered_nodes: NodeType[] = [];
 
     event.preventDefault();
     setCssAcceptFiles("");
 
     // case #3 - nodes moved from another panel
     // uniq set of source NODE IDs
-    let all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+    if (data_raw) {
+      all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+    }
 
     if (all_transfered_nodes.length > 0) {
       setSourceDropNodes(all_transfered_nodes);

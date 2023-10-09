@@ -2,11 +2,9 @@ import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { createRoot } from "react-dom/client";
 
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 
-import SpinnerButton from 'components/SpinnerButton';
+import GenericModal from 'components/modals/Generic';
 import { fetcher_post } from 'utils/fetcher';
 import type { FolderType, NodeType } from 'types';
 import { MODALS } from 'cconstants';
@@ -39,86 +37,43 @@ async function api_create_new_folder(
   return fetcher_post<CreateFolderType, FolderType>('/api/nodes/', data, signal);
 }
 
-function validate_title(value: string): boolean {
-  if (!value) {
-    return false;
-  }
-
-  if (!value.trim()) {
-    return false;
-  }
-
-  return true;
-}
 
 const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
-  const [show, setShow] = useState<boolean>(true);
   const [title, setTitle] = useState('');
-  const [controller, setController] = useState<AbortController>(new AbortController());
   const [errorMessage, setErrorMessage] = useState('');
-  const [inProgress, setInProgress] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
-
-  if (!controller) {
-    setController(new AbortController());
-  }
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
 
     setTitle(value);
     setErrorMessage('');
-    setIsEnabled(validate_title(value))
   }
 
-  const handleSubmit = async () => {
-    setInProgress(true);
-    setIsEnabled(false);
-
-    let response = await api_create_new_folder(title, parent_id, controller.signal);
+  const handleSubmit = async (signal: AbortSignal) => {
+    let response = await api_create_new_folder(title, parent_id, signal);
     let new_node: NodeType = response as NodeType;
 
     onOK(new_node);
-    setShow(false);
   }
 
   const handleCancel = () => {
-    controller.abort();
     setTitle('');
     setErrorMessage('');
 
     onCancel();
-
-    setShow(false);
-    setInProgress(false);
-    setController(new AbortController());
   }
 
   return (
-    <Modal
-      show={show}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      animation={false}>
-      <Modal.Header closeButton onClick={onCancel}>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Create Folder
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <GenericModal
+      modal_title='Create Folder'
+      submit_button_title='Create'
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}>
         <Form.Label htmlFor="title">Folder Title</Form.Label>
         <Form.Control
           aria-describedby="new title"
           onChange={handleTitleChanged} />
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant='secondary' onClick={handleCancel}>Cancel</Button>
-        <SpinnerButton
-          inProgress={inProgress}
-          title={"Create"}
-          onClick={() => handleSubmit()} />
-      </Modal.Footer>
-    </Modal>
+    </GenericModal>
   );
 }
 

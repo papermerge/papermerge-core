@@ -101,6 +101,7 @@ export default function Row({
     fetcher_delete<Object, ColoredTag>(
       `/api/tags/${item.id}`,
       {},
+      undefined,
       false
     ).then(() => {
       onRemove(item);

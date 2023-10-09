@@ -14,8 +14,8 @@ import { DraggingIcon } from 'components/dragging_icon';
 import { is_empty } from 'utils/misc';
 import { fetcher } from 'utils/fetcher';
 
-import DeleteNodesModal from 'components/modals/delete_nodes';
 import create_new_folder from './modals/NewFolder';
+import delete_nodes from './modals/DeleteNodes';
 import rename_node from 'components/modals/rename';
 import EditTagsModal from 'components/modals/edit_tags';
 import DropNodesModal from 'components/modals/drop_nodes';
@@ -187,7 +187,6 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  const [ deleteNodesModalShow, setDeleteNodesModalShow ] = useState(false);
   const [ editTagsModalShow, setEditTagsModalShow ] = useState(false);
   // for papermerge nodes dropping
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
@@ -294,28 +293,6 @@ function Commander({
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
     onPageSizeChange(new_value);
-  }
-
-  const onRenameNode = (node: NodeType) => {
-    let new_nodes_list = nodesList.map((item: NodeType) => {
-      if (item.id === node.id) {
-        return node;
-      } else {
-        return item;
-      }
-    });
-
-    setNodesList(new_nodes_list);
-    setSelectedNodes([]);
-  }
-
-  const onDeleteNodes = (node_ids: string[]) => {
-    let new_nodes = nodesList.filter(
-      (node: NodeType) => node_ids.indexOf(node.id) == -1
-    );
-    setNodesList(new_nodes);
-    setDeleteNodesModalShow(false);
-    setSelectedNodes([]);
   }
 
   const onSubmitTags = (node: NodeType): void => {
@@ -581,6 +558,19 @@ function Commander({
     );
   }
 
+  const onDeleteNodesClick = () => {
+    delete_nodes(selectedNodes).then(
+      (node_ids: string[]) => {
+        /* Remove remove nodes from the commander list */
+        let new_nodes = nodesList.filter(
+          (node: NodeType) => node_ids.indexOf(node.id) == -1
+        );
+        setNodesList(new_nodes);
+        setSelectedNodes([]);
+      }
+    );
+  }
+
   useEffect(() => {
     if (nodes_list) {
       setNodesList(nodes_list.items);
@@ -661,7 +651,7 @@ function Commander({
             onCreateDocumentNode={onCreateDocumentModel}
             onNewFolderClick={onNewFolderClick}
             onRenameClick={onRenameClick}
-            onDeleteNodesClick={ () => setDeleteNodesModalShow(true) }
+            onDeleteNodesClick={onDeleteNodesClick}
             onEditTagsClick={ () => setEditTagsModalShow(true) }
             selected_nodes={selectedNodes}
             node_id={node_id} />
@@ -706,14 +696,6 @@ function Commander({
           num_pages={nodes_list.num_pages}
           active={nodes_list.page_number}
           onPageClick={onPageClick} />
-
-        <div>
-          <DeleteNodesModal
-            show={deleteNodesModalShow}
-            node_ids={selectedNodes}
-            onCancel={() => setDeleteNodesModalShow(false)}
-            onSubmit={onDeleteNodes} />
-        </div>
         <div>
           {editTagsModalShow && <EditTagsModal
             node_id={selectedNodes[0]}

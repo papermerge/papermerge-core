@@ -5,12 +5,14 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import LoadingButton from 'components/loading_button';
 
+
 type Args = {
   children: React.ReactNode;
   modal_title: string;
   submit_button_title?: string;
+  submit_button_variant?: string;
   onCancel: () => void;
-  onSubmit: () => void;
+  onSubmit: (signal: AbortSignal) => void;
 }
 
 
@@ -18,42 +20,44 @@ const GenericModal = ({
   children,
   modal_title,
   submit_button_title,
+  submit_button_variant,
   onCancel,
   onSubmit
 }: Args) => {
-  /**
-   Generic modal dialog with 'submit' and 'cancel' buttons.
-
-   It includes "in progress" feature, which means that
-   when user clicks "submit", the button changes to "in progress"
-   rotating spinner.
-
-   Example of usage:
-
-      <GenericModal
-        modal_title='Tags'
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}>
-          <!-- here goes the body of the modal dialog -->
-      </GenericModal>
-   */
-
+  const [show, setShow] = useState<boolean>(true);
   const [inProgress, setInProgress] = useState(false);
+  const [controller, setController] = useState<AbortController>(new AbortController());
+
+  if (!submit_button_variant) {
+    submit_button_variant = 'primary';
+  }
+
+  if (!controller) {
+    setController(new AbortController());
+  }
 
   const handleSubmit = async () => {
     setInProgress(true);
-    await onSubmit();
+
+    await onSubmit(controller.signal);
+
     setInProgress(false);
+    setShow(false);
   }
 
   const handleCancel = () => {
+    controller.abort();
+
     onCancel();
+
     setInProgress(false);
+    setShow(false);
+    setController(new AbortController());
   }
 
   return (
     <Modal
-      show={true}
+      show={show}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       animation={false}>
@@ -70,6 +74,7 @@ const GenericModal = ({
             Cancel
         </Button>
         <LoadingButton
+          variant={submit_button_variant}
           in_progress={inProgress}
           title={submit_button_title}
           onClick={handleSubmit} />

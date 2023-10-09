@@ -10,6 +10,7 @@ type Args = {
   children: React.ReactNode;
   modal_title: string;
   submit_button_title?: string;
+  submit_button_variant?: string;
   onCancel: () => void;
   onSubmit: (signal: AbortSignal) => void;
 }
@@ -19,12 +20,17 @@ const GenericModal = ({
   children,
   modal_title,
   submit_button_title,
+  submit_button_variant,
   onCancel,
   onSubmit
 }: Args) => {
   const [show, setShow] = useState<boolean>(true);
   const [inProgress, setInProgress] = useState(false);
   const [controller, setController] = useState<AbortController>(new AbortController());
+
+  if (!submit_button_variant) {
+    submit_button_variant = 'primary';
+  }
 
   if (!controller) {
     setController(new AbortController());
@@ -68,6 +74,7 @@ const GenericModal = ({
             Cancel
         </Button>
         <LoadingButton
+          variant={submit_button_variant}
           in_progress={inProgress}
           title={submit_button_title}
           onClick={handleSubmit} />

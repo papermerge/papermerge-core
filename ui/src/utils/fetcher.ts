@@ -116,6 +116,7 @@ async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: A
 async function fetcher_delete<Input, Output>(
   url: string,
   data: Input,
+  signal?: AbortSignal,
   serialize_response?: boolean
 ): Promise<Output|Response> {
   const headers = get_default_headers();
@@ -125,7 +126,8 @@ async function fetcher_delete<Input, Output>(
     {
       method: "delete",
       headers: headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal: signal
     }
   );
 

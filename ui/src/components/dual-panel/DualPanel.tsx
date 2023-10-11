@@ -6,17 +6,16 @@
 
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
-import { CType } from 'types';
+import { CType, NType } from 'types';
 
 
 type Args = {
-  special_folder_id: string;
-  special_node_type: CType;
+  node: NType;
 }
 
 
 type DualPanelContextType = {
-  onOpenSecondary: (node_id: string|undefined, node_type: CType) => void;
+  onOpenSecondary: (local_node: NType) => void;
   onCloseSecondary: () => void;
 }
 
@@ -24,42 +23,37 @@ type DualPanelContextType = {
 export const DualPanelContext = createContext<DualPanelContextType|null>(null);
 
 
-function DualPanel({ special_folder_id, special_node_type }: Args) {
+function DualPanel({ node }: Args) {
 
-  const [main_node_id, setMainNodeId] = useState<string>(special_folder_id);
-  const [main_node_type, setMainNodeType] = useState<CType>(special_node_type);
-  const [secondary_node_id, setSecondaryNodeId] = useState<string|null>(null);
-  const [secondary_node_type, setSecondaryNodeType] = useState<CType>("folder");
+  const [main_node, setMainNode] = useState<NType>(node);
+  const [secondary_node, setSecondaryNode] = useState<NType|null>(null);
 
-  const onOpenSecondary = (node_id: string|undefined, node_type: CType) => {
-    if (node_id) {
-      setSecondaryNodeId(node_id);
-      setMainNodeId(node_id);
+  const onOpenSecondary = (local_node: NType) => {
+    if (local_node) {
+      setSecondaryNode(local_node);
+      setMainNode(local_node);
     }
-    setSecondaryNodeType(node_type);
-    setMainNodeType(node_type);
   }
 
   useEffect(() => {
     // when user switches special folders (inbox, home) then
     // main panel should react accordingly i.e. change to
     // the new special folder
-    setMainNodeId(special_folder_id);
-    setMainNodeType(special_node_type);
-  }, [special_folder_id])
+    setMainNode(node);
+  }, [node])
 
 
   const onCloseSecondary = () => {
-    setSecondaryNodeId(null);
+    setSecondaryNode(null);
   }
 
   try {
-    if (secondary_node_id == null) {
+    if (secondary_node == null) {
       return <div>
         <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
           <SinglePanel
-                special_folder_id={main_node_id}
-                special_node_type={main_node_type}
+                special_folder_id={main_node && main_node.id}
+                special_node_type={main_node && main_node.ctype}
                 show_dual_button={'split'} />
         </DualPanelContext.Provider>
       </div>
@@ -67,16 +61,17 @@ function DualPanel({ special_folder_id, special_node_type }: Args) {
       return <div className='d-flex'>
         <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
           <SinglePanel
-                special_folder_id={main_node_id}
-                special_node_type={main_node_type} />
+                special_folder_id={main_node && main_node.id}
+                special_node_type={main_node && main_node.ctype} />
           <SinglePanel
-                special_folder_id={secondary_node_id}
-                special_node_type={secondary_node_type}
+                special_folder_id={secondary_node.id}
+                special_node_type={secondary_node.ctype}
                 show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>
     }
   } catch(e) {
+
     return <div>Caught exception</div>;
   }
 

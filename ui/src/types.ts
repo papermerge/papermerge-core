@@ -55,10 +55,14 @@ export type DocumentNodeType = {
   thumbnail_url: string | null;
 }
 
-
-export type NodeType = {
+export type NType = {
+  /* Short version of the Node Type */
   id: string;
   ctype: CType;
+}
+
+export type NodeType = NType & {
+  /* Full version of Node Type */
   tags: ColoredTagType[];
   accept_dropped_nodes: boolean;
   is_currently_dragged: boolean;
@@ -140,6 +144,12 @@ export type NodeClickArgsType = {
 
 export type State<T> = {
   is_loading: boolean;
+  error: string | null;
+  data: T | null;
+}
+
+export type Vow<T> = {
+  is_pending: boolean;
   error: string | null;
   data: T | null;
 }

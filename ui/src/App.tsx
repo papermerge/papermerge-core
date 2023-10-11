@@ -6,8 +6,8 @@ import React, { useState, useEffect } from 'react';
 import DualPanel from "components/dual-panel/DualPanel";
 import Tags from "components/tags/table"
 import Layout from 'components/layout';
-import { useMe } from 'hooks/me';
-import { AppContentBlockEnum, CType } from 'types';
+import { useResource } from 'hooks/resource';
+import { AppContentBlockEnum, CType, NType, User } from 'types';
 import SearchResults from 'components/search/search_results';
 
 
@@ -15,11 +15,10 @@ import 'App.css';
 
 
 function App() {
-  const { data, error, is_loading } = useMe();
+  const user = useResource<User>('/api/users/me');
   const [contentBlockItem, setContentBlockItem] = useState<AppContentBlockEnum>(AppContentBlockEnum.home);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [nodeId, setNodeId] = useState<string|null>(null);
-  const [nodeType, setNodeType] = useState<CType>('folder');
+  const [node, setNode] = useState<NType|null>(null);
   const [pageNumber, setPageNumber] = useState<number|null>();
   const [contentBlock, setContentBlock] = useState<JSX.Element>();
 
@@ -27,16 +26,20 @@ function App() {
 
   const onContentBlockChange = (item: AppContentBlockEnum) => {
     if (item == AppContentBlockEnum.home) {
-      setNodeType('folder');
-      if (data?.home_folder_id) {
-        setNodeId(data?.home_folder_id);
+      if (user.data?.home_folder_id) {
+        setNode({
+          id: user.data?.home_folder_id,
+          ctype: 'folder'
+        });
       }
     }
 
     if (item == AppContentBlockEnum.inbox) {
-      setNodeType('folder');
-      if (data?.inbox_folder_id) {
-        setNodeId(data?.inbox_folder_id);
+      if (user.data?.inbox_folder_id) {
+        setNode({
+          id: user.data?.inbox_folder_id,
+          ctype: 'folder'
+        });
       }
     }
 
@@ -53,36 +56,44 @@ function App() {
     node_type: CType,
     page_number: number | null
   ) => {
-    console.log(`new node_type ${node_type}`);
-    setNodeId(node_id);
+    setNode({id: node_id, ctype: node_type});
     setContentBlockItem(AppContentBlockEnum.home);
-    setNodeType(node_type);
     setPageNumber(page_number);
   }
 
-  if (is_loading) {
+  if (user.is_pending) {
     return <div>Loading...</div>
   }
 
-  if (error) {
+  if (user.error) {
     return <div>Error</div>
   }
 
-  if (!data?.home_folder_id) {
+  if (!user.data?.home_folder_id) {
     return <div>User does not have home folder</div>;
   }
 
   if (contentBlockItem == AppContentBlockEnum.home) {
-    content_block = <DualPanel
-      special_folder_id={ nodeId || data?.home_folder_id }
-      special_node_type={nodeType} />;
+    // home
+    let home: NType = {
+      id: user.data.home_folder_id,
+      ctype: 'folder'
+    }
+    content_block = <DualPanel node={ node || home }  />;
+
   } else if (contentBlockItem == AppContentBlockEnum.inbox) {
-    content_block = <DualPanel
-      special_folder_id={ data?.inbox_folder_id }
-      special_node_type={nodeType} />;
+    // inbox
+    let inbox: NType = {
+      id: user.data.home_folder_id,
+      ctype: 'folder'
+    }
+    content_block = <DualPanel node={ node || inbox } />;
+
   } else if (contentBlockItem == AppContentBlockEnum.tags) {
+    // tags
     content_block = <Tags />;
   } else {
+    // search results
     content_block = <SearchResults query={searchQuery} onSearchResultClick={onSearchResultClick} />
   }
 

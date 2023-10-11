@@ -51,27 +51,18 @@ function DualPanel({ node }: Args) {
     if (secondary_node == null) {
       return <div>
         <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
-          <SinglePanel
-                special_folder_id={main_node && main_node.id}
-                special_node_type={main_node && main_node.ctype}
-                show_dual_button={'split'} />
+          <SinglePanel parent_node={main_node} show_dual_button={'split'} />
         </DualPanelContext.Provider>
       </div>
     } else {
       return <div className='d-flex'>
         <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
-          <SinglePanel
-                special_folder_id={main_node && main_node.id}
-                special_node_type={main_node && main_node.ctype} />
-          <SinglePanel
-                special_folder_id={secondary_node.id}
-                special_node_type={secondary_node.ctype}
-                show_dual_button={'close'} />
+          <SinglePanel parent_node={main_node} />
+          <SinglePanel parent_node={secondary_node} show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>
     }
   } catch(e) {
-
     return <div>Caught exception</div>;
   }
 

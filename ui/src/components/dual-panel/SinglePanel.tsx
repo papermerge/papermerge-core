@@ -5,16 +5,14 @@ import { useState, useEffect } from 'react';
 import Commander from 'components/commander/commander';
 import Viewer from 'components/viewer/viewer';
 
-import { NodeClickArgsType, CType, ShowDualButtonEnum } from 'types';
+import { NodeClickArgsType, NType, ShowDualButtonEnum } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
-  special_folder_id: string;
-  special_node_type: CType;
+  parent_node: NType;
   show_dual_button?: ShowDualButtonEnum;
 }
-
 
 type NodeListParams = {
   page_size: number;
@@ -101,12 +99,10 @@ function save_node_list_params({
 
 
 function SinglePanel({
-  special_folder_id,
-  special_node_type,
+  parent_node,
   show_dual_button
 }: Args) {
-  const [ node_id, set_node_id ] = useState(special_folder_id);
-  const [ node_type, set_node_type ] = useState(special_node_type);
+  const [ node, setNode ] = useState<NType>(parent_node);
   const [ page_number, set_page_number ] = useState(1);
   const [ page_size, setPageSize ] = useState(
     get_node_list_params().page_size
@@ -122,8 +118,7 @@ function SinglePanel({
   );
 
   const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
-    set_node_id(node_id);
-    set_node_type(node_type);
+    setNode({id: node_id, ctype: node_type});
   }
 
   const onPageClick = (num: number) => {
@@ -156,18 +151,13 @@ function SinglePanel({
   }
 
   useEffect(() => {
-    set_node_id(special_folder_id);
-    set_node_type(special_node_type);
-  }, [special_folder_id])
-
-  if (!node_id ) {
-    return <div>Loading...</div>;
-  }
+    setNode(parent_node);
+  }, [parent_node])
 
   try {
-    if (node_type == 'folder') {
+    if (node.ctype == 'folder') {
       return <Commander
-        node_id={node_id}
+        node_id={node.id}
         page_number={page_number}
         page_size={page_size}
         sort_field={sort_field}
@@ -183,7 +173,7 @@ function SinglePanel({
         show_dual_button={show_dual_button} />
     } else {
       return <Viewer
-        node_id={node_id}
+        node_id={node.id}
         onNodeClick={onNodeClick}
         show_dual_button={show_dual_button} />;
     }

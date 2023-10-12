@@ -111,6 +111,9 @@ function save_node_list_params({
 
 function SinglePanel({
   parent_node,
+  pagination,
+  sort,
+  nodes,
   show_dual_button
 }: Args) {
   const [ node, setNode ] = useState<NType>(parent_node);
@@ -169,10 +172,9 @@ function SinglePanel({
     if (node.ctype == 'folder') {
       return <Commander
         node_id={node.id}
-        page_number={page_number}
-        page_size={page_size}
-        sort_field={sort_field}
-        sort_order={sort_order}
+        pagination={pagination}
+        sort={sort}
+        nodes={nodes}
         display_mode={display_mode}
         onNodeClick={onNodeClick}
         onPageClick={onPageClick}

@@ -12,7 +12,6 @@ import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
 
 import { is_empty } from 'utils/misc';
-import { fetcher } from 'utils/fetcher';
 
 import create_new_folder from './modals/NewFolder';
 import delete_nodes from './modals/DeleteNodes';
@@ -27,115 +26,16 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
+import type { ColoredTagType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
 import type { UUIDList, NodeList } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
-import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+import { Vow, NodeSortFieldEnum, NodeSortOrderEnum, NodesType } from 'types';
 
-import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 
 const DATA_TYPE_NODE = 'node/type';
-
-
-type NodeResultType = {
-  items: NodeType[];
-  num_pages: number;
-  page_number: number;
-  per_page: number;
-}
-
-type NodeListPlusT = [NodeResultType, FolderType] | [];
-
-type State<T> = {
-  is_loading: boolean;
-  loading_id: string | null;
-  error: string | null;
-  data: T;
-}
-
-type NodeListArgs = {
-  node_id: string;
-  page_number: number;
-  page_size: number;
-  sort_field: NodeSortFieldEnum;
-  sort_order: NodeSortOrderEnum;
-}
-
-function useNodeListPlus({
-  node_id,
-  page_number,
-  page_size,
-  sort_field,
-  sort_order
-}: NodeListArgs): State<NodeListPlusT>  {
-  const initial_state: State<NodeListPlusT> = {
-    is_loading: true,
-    loading_id: node_id,
-    error: null,
-    data: []
-  };
-  let [data, setData] = useState<State<NodeListPlusT>>(initial_state);
-  let prom: any;
-  let url_params: string = build_nodes_list_params({
-    page_number, page_size, sort_field, sort_order
-  });
-
-  if (!node_id) {
-    setData(initial_state);
-    return initial_state;
-  }
-
-  useEffect(() => {
-
-    const loading_state: State<NodeListPlusT> = {
-      is_loading: true,
-      loading_id: node_id,
-      error: null,
-      data: data.data
-    };
-    setData(loading_state);
-
-
-    prom = Promise.all([
-      fetcher(`/api/nodes/${node_id}?${url_params}`),
-      fetcher(`/api/folders/${node_id}`)
-    ]);
-
-    if (node_id) {
-      let ignore = false;
-
-      prom.then(
-        (json: NodeListPlusT) => {
-          if (!ignore) {
-            let ready_state: State<NodeListPlusT> = {
-              is_loading: false,
-              loading_id: null,
-              error: null,
-              data: json
-            };
-            setData(ready_state);
-          }
-        }).catch((error: Error) => {
-          setData({
-            is_loading: false,
-            loading_id: null,
-            error: error.toString(),
-            data: []
-          });
-        }
-      );
-
-      return () => {
-        ignore = true;
-      };
-    }
-  }, [node_id, page_number, page_size, sort_order, sort_field]);
-
-  return data;
-}
 
 
 function node_is_selected(node_id: string, arr: Array<string>): boolean {
@@ -151,10 +51,9 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 
 type Args = {
   node_id: string;
-  page_number: number;
-  page_size: number;
-  sort_order: NodeSortOrderEnum;
-  sort_field: NodeSortFieldEnum;
+  pagination: Pagination;
+  sort: Sorting;
+  nodes: Vow<NodesType>;
   display_mode: DisplayNodesModeEnum;
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
@@ -172,10 +71,9 @@ const ACCEPT_DROPPED_NODES_CSS = "accept-dropped-nodes";
 
 function Commander({
   node_id,
-  page_number,
-  page_size,
-  sort_field,
-  sort_order,
+  pagination,
+  sort,
+  nodes,
   display_mode,
   onNodeClick,
   onPageClick,
@@ -204,20 +102,7 @@ function Commander({
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  let {
-    is_loading,
-    error,
-    loading_id,
-    data: [nodes_list, breadcrumb]
-  }: State<NodeListPlusT> = useNodeListPlus({
-    node_id,
-    page_number,
-    page_size,
-    sort_order,
-    sort_field,
-  });
-  let nodes;
+  let nodesElement: JSX.Element[] | JSX.Element;
 
   const get_node = (node_id: string): NodeType | undefined => {
     return nodesList.find((n: NodeType) => n.id == node_id);
@@ -323,12 +208,10 @@ function Commander({
 
   const onOKErrorModal = () => {
     setErrorModalShow(false);
-    error = null;
   }
 
   const onCancelErrorModal = () => {
     setErrorModalShow(false);
-    error = null;
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
@@ -579,25 +462,13 @@ function Commander({
     );
   }
 
-  useEffect(() => {
-    if (nodes_list) {
-      setNodesList(nodes_list.items);
-    }
-  }, [nodes_list, page_number, page_size]);
-
-  useEffect(() => {
-    if (error) {
-      setErrorModalShow(true);
-    }
-  }, [error]);
-
-  if (nodes_list) {
-    let items = nodesList;
+  if (nodes.data) {
+    let items = nodes.data.nodes;
 
     if (is_empty(items)) {
-      nodes = <EmptyFolder />;
+      nodesElement = <EmptyFolder />;
     } else {
-      nodes = items.map((item: NodeType) => {
+      nodesElement = items.map((item: NodeType) => {
         if (item.ctype == 'folder') {
           return <Folder
             key={item.id}
@@ -609,7 +480,7 @@ function Commander({
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
-            is_loading={loading_id == item.id}
+            is_loading={nodes.loading_id == item.id}
             ref={(node) => {
                 const map = getNodesRefMap();
                 if (node) {
@@ -630,7 +501,7 @@ function Commander({
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
-            is_loading={loading_id == item.id}
+            is_loading={nodes.loading_id == item.id}
             ref={(node) => {
               const map = getNodesRefMap();
               if (node) {
@@ -675,7 +546,7 @@ function Commander({
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange} defaultValue={page_size}>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={nodes.data?.per_page}>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -697,7 +568,7 @@ function Commander({
             is_loading={is_loading} />
         }
         <div className={list_nodes_css_class_name()}>
-          {nodes}
+          {nodesElement}
         </div>
 
         <Paginator
@@ -733,7 +604,7 @@ function Commander({
   }
 
   return <div className='p-2 m-2'>
-    {error && <ErrorMessage msg={error} />}
+    {nodes.error}
   </div>;
 }
 

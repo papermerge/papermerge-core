@@ -5,12 +5,23 @@ import { useState, useEffect } from 'react';
 import Commander from 'components/commander/commander';
 import Viewer from 'components/viewer/viewer';
 
-import { NodeClickArgsType, NType, ShowDualButtonEnum } from 'types';
+import {
+  NodeClickArgsType,
+  NodesType,
+  NType,
+  ShowDualButtonEnum,
+  Sorting,
+  Pagination,
+  Vow
+} from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
   parent_node: NType;
+  nodes: Vow<NodesType>;
+  pagination: Pagination;
+  sort: Sorting;
   show_dual_button?: ShowDualButtonEnum;
 }
 

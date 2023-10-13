@@ -58,8 +58,7 @@ type Args = {
   onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
   onPageClick: (page_number: number) => void;
   onPageSizeChange: (page_size: number) => void;
-  onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
-  onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
+  onSortChange: (sort: Sorting) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
   show_dual_button?: ShowDualButtonEnum;
@@ -78,8 +77,7 @@ function Commander({
   onNodeClick,
   onPageClick,
   onPageSizeChange,
-  onSortFieldChange,
-  onSortOrderChange,
+  onSortChange,
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
   show_dual_button
@@ -537,10 +535,8 @@ function Commander({
 
             <div className="d-flex align-items-center">
               <SortDropdown
-                sort_order={sort_order}
-                sort_field={sort_field}
-                onSortFieldChange={onSortFieldChange}
-                onSortOrderChange={onSortOrderChange} />
+                sort={sort}
+                onChange={onSortChange} />
 
               <DisplayModeDropown value={display_mode}
                 onNodesDisplayModeList={onNodesDisplayModeList}

@@ -5,12 +5,25 @@ import { useState, useEffect } from 'react';
 import Commander from 'components/commander/commander';
 import Viewer from 'components/viewer/viewer';
 
-import { NodeClickArgsType, NType, ShowDualButtonEnum } from 'types';
+import {
+  NodeClickArgsType,
+  NodesType,
+  NType,
+  ShowDualButtonEnum,
+  Sorting,
+  Pagination,
+  Vow
+} from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
 
 type Args = {
   parent_node: NType;
+  nodes: Vow<NodesType>;
+  pagination: Pagination;
+  sort: Sorting;
+  onNodeClick: (node: NType) => void;
+  onSortChange: (sort: Sorting) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -35,8 +48,8 @@ const NODE_LIST_PARAMS = 'node-list-params';
 const NODE_LIST_PARAMS_DEFAULT: NodeListParams = {
   'page_size': 10,
   'page_number': 1,
-  'sort_field': NodeSortFieldEnum.title,
-  'sort_order': NodeSortOrderEnum.desc,
+  'sort_field': 'title',
+  'sort_order': 'desc',
   'display_mode': DisplayNodesModeEnum.List
 };
 
@@ -100,45 +113,17 @@ function save_node_list_params({
 
 function SinglePanel({
   parent_node,
+  pagination,
+  sort,
+  nodes,
+  onSortChange,
+  onNodeClick,
   show_dual_button
 }: Args) {
   const [ node, setNode ] = useState<NType>(parent_node);
-  const [ page_number, set_page_number ] = useState(1);
-  const [ page_size, setPageSize ] = useState(
-    get_node_list_params().page_size
-  );
-  const [ sort_order, set_sort_order ] = useState<NodeSortOrderEnum>(
-    get_node_list_params().sort_order
-  );
-  const [ sort_field, set_sort_field ] = useState<NodeSortFieldEnum>(
-    get_node_list_params().sort_field
-  );
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
   );
-
-  const onNodeClick = ({node_id, node_type}: NodeClickArgsType) => {
-    setNode({id: node_id, ctype: node_type});
-  }
-
-  const onPageClick = (num: number) => {
-    set_page_number(num);
-  }
-
-  const onPageSizeChange = (num: number) => {
-    setPageSize(num);
-    save_node_list_params({page_size: num});
-  }
-
-  const onSortFieldChange = (sort_field: NodeSortFieldEnum) => {
-    set_sort_field(sort_field);
-    save_node_list_params({sort_field});
-  }
-
-  const onSortOrderChange = (sort_order: NodeSortOrderEnum) => {
-    set_sort_order(sort_order);
-    save_node_list_params({sort_order});
-  }
 
   const onNodesDisplayModeList = () => {
     set_display_mode(DisplayNodesModeEnum.List);
@@ -150,30 +135,24 @@ function SinglePanel({
     save_node_list_params({display_mode: DisplayNodesModeEnum.Tiles});
   }
 
-  useEffect(() => {
-    setNode(parent_node);
-  }, [parent_node])
-
   try {
     if (node.ctype == 'folder') {
       return <Commander
-        node_id={node.id}
-        page_number={page_number}
-        page_size={page_size}
-        sort_field={sort_field}
-        sort_order={sort_order}
+        node_id={parent_node.id}
+        pagination={pagination}
+        sort={sort}
+        nodes={nodes}
         display_mode={display_mode}
         onNodeClick={onNodeClick}
-        onPageClick={onPageClick}
-        onPageSizeChange={onPageSizeChange}
-        onSortFieldChange={onSortFieldChange}
-        onSortOrderChange={onSortOrderChange}
+        onPageClick={() => {}}
+        onPageSizeChange={() => {}}
+        onSortChange={onSortChange}
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         show_dual_button={show_dual_button} />
     } else {
       return <Viewer
-        node_id={node.id}
+        node_id={parent_node.id}
         onNodeClick={onNodeClick}
         show_dual_button={show_dual_button} />;
     }

@@ -2,11 +2,11 @@ import styles from "./breadcrumb.module.scss";
 import BreadcrumbItem from "./item";
 import Spinner from "components/spinner";
 import SpinnerPlaceholder from "components/spinner_placeholder";
-import { NodeClickArgsType } from "types";
+import { NType } from "types";
 
 type Args = {
   path: Array<[string, string]>;
-  onClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onClick: (node: NType) => void;
   is_loading: boolean;
 }
 

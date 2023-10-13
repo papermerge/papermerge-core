@@ -1,24 +1,17 @@
+import { useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 import BiCheck from 'components/icons/check';
-import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+import { NodeSortFieldEnum, NodeSortOrderEnum, Sorting } from 'types';
 
 
 type Args = {
-  sort_order: NodeSortOrderEnum,
-  sort_field: NodeSortFieldEnum,
-  onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
-  onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
+  sort: Sorting,
+  onChange: (sort: Sorting) => void;
 }
 
 
-export default function SortDropdown({
-  sort_order,
-  sort_field,
-  onSortFieldChange,
-  onSortOrderChange
-}: Args) {
-
+export default function SortDropdown({sort, onChange}: Args) {
 
   const check_if = (
     value:  NodeSortOrderEnum | NodeSortFieldEnum,
@@ -30,6 +23,14 @@ export default function SortDropdown({
     return <></>
   }
 
+  const onSortFieldClick = (new_value: NodeSortFieldEnum) => {
+    onChange({sort_field: new_value, sort_order: sort.sort_order});
+  }
+
+  const onSortOrderClick = (new_value: NodeSortOrderEnum) => {
+    onChange({sort_field: sort.sort_field, sort_order: new_value});
+  }
+
   return (
     <Dropdown className='me-2'>
     <Dropdown.Toggle variant="light">
@@ -37,30 +38,29 @@ export default function SortDropdown({
     </Dropdown.Toggle>
 
     <Dropdown.Menu>
-      <Dropdown.Item
-        onClick={() => onSortFieldChange(NodeSortFieldEnum.title)}>
-          Title {check_if(sort_field, NodeSortFieldEnum.title)}
+      <Dropdown.Item onClick={() => onSortFieldClick('title')}>
+          Title {check_if(sort.sort_field, 'title')}
       </Dropdown.Item>
       <Dropdown.Item
-        onClick={() => onSortFieldChange(NodeSortFieldEnum.type)}>
-          Type {check_if(sort_field, NodeSortFieldEnum.type)}
+        onClick={() => onSortFieldClick('ctype')}>
+          Type {check_if(sort.sort_field, 'ctype')}
       </Dropdown.Item>
       <Dropdown.Item
-        onClick={() => onSortFieldChange(NodeSortFieldEnum.updated_at)}>
-          Modified {check_if(sort_field, NodeSortFieldEnum.updated_at)}
+        onClick={() => onSortFieldClick('updated_at')}>
+          Modified {check_if(sort.sort_field, 'updated_at')}
       </Dropdown.Item>
       <Dropdown.Item
-        onClick={() => onSortFieldChange(NodeSortFieldEnum.created_at)}>
-          Created {check_if(sort_field, NodeSortFieldEnum.created_at)}
+        onClick={() => onSortFieldClick('created_at')}>
+          Created {check_if(sort.sort_field, 'created_at')}
       </Dropdown.Item>
       <Dropdown.Divider />
       <Dropdown.Item
-        onClick={() => onSortOrderChange(NodeSortOrderEnum.asc)}>
-          Ascending {check_if(sort_order, NodeSortOrderEnum.asc)}
+        onClick={() => onSortOrderClick('asc')}>
+          Ascending {check_if(sort.sort_order, 'asc')}
       </Dropdown.Item>
       <Dropdown.Item
-        onClick={() => onSortOrderChange(NodeSortOrderEnum.desc)}>
-          Descending {check_if(sort_order, NodeSortOrderEnum.desc)}
+        onClick={() => onSortOrderClick('desc')}>
+          Descending {check_if(sort.sort_order, 'desc')}
       </Dropdown.Item>
     </Dropdown.Menu>
   </Dropdown>

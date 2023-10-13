@@ -79,8 +79,7 @@ function App() {
       id: user.data.home_folder_id,
       ctype: 'folder'
     }
-    content_block = <DualPanel node={ node || home }  />;
-
+      content_block = <DualPanel node={ node || home } />;
   } else if (contentBlockItem == AppContentBlockEnum.inbox) {
     // inbox
     let inbox: NType = {
@@ -88,7 +87,6 @@ function App() {
       ctype: 'folder'
     }
     content_block = <DualPanel node={ node || inbox } />;
-
   } else if (contentBlockItem == AppContentBlockEnum.tags) {
     // tags
     content_block = <Tags />;

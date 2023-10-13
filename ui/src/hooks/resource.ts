@@ -28,7 +28,7 @@ export function useResource<T>(url: string): Vow<T> {
         data: null
       });
    })
-  }, []);
+  }, [url]);
 
 
   return resource;

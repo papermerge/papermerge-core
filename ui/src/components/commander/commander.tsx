@@ -12,7 +12,6 @@ import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
 
 import { is_empty } from 'utils/misc';
-import { fetcher } from 'utils/fetcher';
 
 import create_new_folder from './modals/NewFolder';
 import delete_nodes from './modals/DeleteNodes';
@@ -27,115 +26,16 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType, ShowDualButtonEnum} from 'types';
-import type { UUIDList, NodeList } from 'types';
+import type { ColoredTagType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
+import type { UUIDList, NodeList, NType } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
-import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+import { Vow, NodeSortFieldEnum, NodeSortOrderEnum, NodesType } from 'types';
 
-import { build_nodes_list_params } from 'utils/misc';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 
 const DATA_TYPE_NODE = 'node/type';
-
-
-type NodeResultType = {
-  items: NodeType[];
-  num_pages: number;
-  page_number: number;
-  per_page: number;
-}
-
-type NodeListPlusT = [NodeResultType, FolderType] | [];
-
-type State<T> = {
-  is_loading: boolean;
-  loading_id: string | null;
-  error: string | null;
-  data: T;
-}
-
-type NodeListArgs = {
-  node_id: string;
-  page_number: number;
-  page_size: number;
-  sort_field: NodeSortFieldEnum;
-  sort_order: NodeSortOrderEnum;
-}
-
-function useNodeListPlus({
-  node_id,
-  page_number,
-  page_size,
-  sort_field,
-  sort_order
-}: NodeListArgs): State<NodeListPlusT>  {
-  const initial_state: State<NodeListPlusT> = {
-    is_loading: true,
-    loading_id: node_id,
-    error: null,
-    data: []
-  };
-  let [data, setData] = useState<State<NodeListPlusT>>(initial_state);
-  let prom: any;
-  let url_params: string = build_nodes_list_params({
-    page_number, page_size, sort_field, sort_order
-  });
-
-  if (!node_id) {
-    setData(initial_state);
-    return initial_state;
-  }
-
-  useEffect(() => {
-
-    const loading_state: State<NodeListPlusT> = {
-      is_loading: true,
-      loading_id: node_id,
-      error: null,
-      data: data.data
-    };
-    setData(loading_state);
-
-
-    prom = Promise.all([
-      fetcher(`/api/nodes/${node_id}?${url_params}`),
-      fetcher(`/api/folders/${node_id}`)
-    ]);
-
-    if (node_id) {
-      let ignore = false;
-
-      prom.then(
-        (json: NodeListPlusT) => {
-          if (!ignore) {
-            let ready_state: State<NodeListPlusT> = {
-              is_loading: false,
-              loading_id: null,
-              error: null,
-              data: json
-            };
-            setData(ready_state);
-          }
-        }).catch((error: Error) => {
-          setData({
-            is_loading: false,
-            loading_id: null,
-            error: error.toString(),
-            data: []
-          });
-        }
-      );
-
-      return () => {
-        ignore = true;
-      };
-    }
-  }, [node_id, page_number, page_size, sort_order, sort_field]);
-
-  return data;
-}
 
 
 function node_is_selected(node_id: string, arr: Array<string>): boolean {
@@ -151,16 +51,14 @@ function node_is_selected(node_id: string, arr: Array<string>): boolean {
 
 type Args = {
   node_id: string;
-  page_number: number;
-  page_size: number;
-  sort_order: NodeSortOrderEnum;
-  sort_field: NodeSortFieldEnum;
+  pagination: Pagination;
+  sort: Sorting;
+  nodes: Vow<NodesType>;
   display_mode: DisplayNodesModeEnum;
-  onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onNodeClick: (node: NType) => void;
   onPageClick: (page_number: number) => void;
   onPageSizeChange: (page_size: number) => void;
-  onSortOrderChange: (sort_order: NodeSortOrderEnum) => void;
-  onSortFieldChange: (sort_field: NodeSortFieldEnum) => void;
+  onSortChange: (sort: Sorting) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
   show_dual_button?: ShowDualButtonEnum;
@@ -172,16 +70,14 @@ const ACCEPT_DROPPED_NODES_CSS = "accept-dropped-nodes";
 
 function Commander({
   node_id,
-  page_number,
-  page_size,
-  sort_field,
-  sort_order,
+  pagination,
+  sort,
+  nodes,
   display_mode,
   onNodeClick,
   onPageClick,
   onPageSizeChange,
-  onSortFieldChange,
-  onSortOrderChange,
+  onSortChange,
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
   show_dual_button
@@ -204,20 +100,7 @@ function Commander({
 
   const nodesRef = useRef(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  let {
-    is_loading,
-    error,
-    loading_id,
-    data: [nodes_list, breadcrumb]
-  }: State<NodeListPlusT> = useNodeListPlus({
-    node_id,
-    page_number,
-    page_size,
-    sort_order,
-    sort_field,
-  });
-  let nodes;
+  let nodesElement: JSX.Element[] | JSX.Element;
 
   const get_node = (node_id: string): NodeType | undefined => {
     return nodesList.find((n: NodeType) => n.id == node_id);
@@ -323,12 +206,10 @@ function Commander({
 
   const onOKErrorModal = () => {
     setErrorModalShow(false);
-    error = null;
   }
 
   const onCancelErrorModal = () => {
     setErrorModalShow(false);
-    error = null;
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
@@ -426,53 +307,6 @@ function Commander({
     }
 
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
-  }
-
-  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    /*
-      Commander can receive data files from:
-      1. user's desktop (user drops files from desktop into web browser)
-      2. same commander panel
-      3. another commander panel (user drops nodes from another panel)
-    */
-    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
-    let all_transfered_nodes: NodeType[] = [];
-
-    event.preventDefault();
-    setCssAcceptFiles("");
-
-    // case #3 - nodes moved from another panel
-    // uniq set of source NODE IDs
-    if (data_raw) {
-      all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
-    }
-
-    if (all_transfered_nodes.length > 0) {
-      setSourceDropNodes(all_transfered_nodes);
-
-      setTargetDropFile(get_node(node_id) || breadcrumb);
-
-      //setTargetDropFile();
-      setDropNodesModalShow(true);
-      return;
-    }
-
-    if (event.dataTransfer.files.length) {
-      setFilesList(event.dataTransfer.files);
-    }
-
-    // case # 1 - files transferred from the desktop
-    if (event.dataTransfer.files.length > 0) {
-      // only show dialog if event.dataTransfer contains at least one file
-      setDropFilesModalShow(true);
-      return;
-    }
-
-    // case #2 - nodes moved around within same panel
-    if (sourceDropNodes.length > 0) {
-      setDropNodesModalShow(true);
-    }
-
   }
 
   const onCancelDropFiles = () => {
@@ -579,25 +413,13 @@ function Commander({
     );
   }
 
-  useEffect(() => {
-    if (nodes_list) {
-      setNodesList(nodes_list.items);
-    }
-  }, [nodes_list, page_number, page_size]);
-
-  useEffect(() => {
-    if (error) {
-      setErrorModalShow(true);
-    }
-  }, [error]);
-
-  if (nodes_list) {
-    let items = nodesList;
+  if (nodes.data) {
+    let items = nodes.data.nodes;
 
     if (is_empty(items)) {
-      nodes = <EmptyFolder />;
+      nodesElement = <EmptyFolder />;
     } else {
-      nodes = items.map((item: NodeType) => {
+      nodesElement = items.map((item: NodeType) => {
         if (item.ctype == 'folder') {
           return <Folder
             key={item.id}
@@ -609,7 +431,7 @@ function Commander({
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
-            is_loading={loading_id == item.id}
+            is_loading={nodes.loading_id == item.id}
             ref={(node) => {
                 const map = getNodesRefMap();
                 if (node) {
@@ -630,7 +452,7 @@ function Commander({
             display_mode={display_mode}
             is_selected={node_is_selected(item.id, selectedNodes)}
             node={item}
-            is_loading={loading_id == item.id}
+            is_loading={nodes.loading_id == item.id}
             ref={(node) => {
               const map = getNodesRefMap();
               if (node) {
@@ -646,11 +468,9 @@ function Commander({
       });
     }
 
-
     return (
       <div
         className={`commander w-100 m-1 ${cssAcceptFiles}`}
-        onDrop={onDrop}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
         onDragOver={onDragOver}>
@@ -666,16 +486,14 @@ function Commander({
 
             <div className="d-flex align-items-center">
               <SortDropdown
-                sort_order={sort_order}
-                sort_field={sort_field}
-                onSortFieldChange={onSortFieldChange}
-                onSortOrderChange={onSortOrderChange} />
+                sort={sort}
+                onChange={onSortChange} />
 
               <DisplayModeDropown value={display_mode}
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange} defaultValue={page_size}>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={nodes.data?.per_page}>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -683,57 +501,33 @@ function Commander({
                 <option value="100">100</option>
               </Form.Select>
               <DualButton
-                node_id={node_id}
-                node_type={"folder"}
+                node={{id: node_id, ctype: 'folder'}}
                 show_dual_button={show_dual_button} />
             </div>
         </div>
         {
-          breadcrumb
-            &&
           <Breadcrumb
-            path={breadcrumb.breadcrumb}
+            path={nodes.data.breadcrumb}
             onClick={onNodeClick}
-            is_loading={is_loading} />
+            is_loading={nodes.is_pending} />
         }
         <div className={list_nodes_css_class_name()}>
-          {nodes}
+          {nodesElement}
         </div>
 
         <Paginator
-          num_pages={nodes_list.num_pages}
-          active={nodes_list.page_number}
+          num_pages={nodes.data.num_pages}
+          active={nodes.data.page_number}
           onPageClick={onPageClick} />
         <div>
-          <DropNodesModal // for nodes move between folders
-            show={dropNodesModalShow}
-            source_nodes={sourceDropNodes}
-            target_node={targetDropFile}
-            onCancel={onCancelDropNodes}
-            onSubmit={onPerformDropNodes} />
-        </div>
-        <div>
-          <DropFilesModal // for files uploads
-            show={dropFilesModalShow}
-            source_files={filesList}
-            target_folder={targetDropFile || breadcrumb}
-            onCreateDocumentNode={onCreateDocumentModel}
-            onCancel={onCancelDropFiles}
-            onSubmit={onPerformDropFiles} />
-        </div>
-        <div>
-          <ErrorModal
-            show={errorModalShow}
-            error={error}
-            onCancel={onCancelErrorModal}
-            onSubmit={onOKErrorModal} />
+
         </div>
       </div>
     )
   }
 
   return <div className='p-2 m-2'>
-    {error && <ErrorMessage msg={error} />}
+    {nodes.error}
   </div>;
 }
 

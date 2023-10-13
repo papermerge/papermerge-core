@@ -121,16 +121,27 @@ export enum DisplayNodesModeEnum {
   Tiles,
 }
 
-export enum NodeSortFieldEnum {
-  title = "title",
-  type = "ctype",
-  created_at = "created_at",
-  updated_at = "updated_at"
+export type NodeSortFieldEnum = "title" | "ctype" | "created_at" | "updated_at";
+
+export type NodeSortOrderEnum = "asc" | "desc";
+
+export type Pagination = {
+  page_number: number;
+  per_page: number;
 }
 
-export enum NodeSortOrderEnum {
-  asc = "asc",
-  desc = "desc"
+export type Sorting = {
+  sort_field: NodeSortFieldEnum;
+  sort_order: NodeSortOrderEnum;
+}
+
+export type NodesType = {
+  parent: FolderType;
+  breadcrumb: BreadcrumbType;
+  nodes: NodeType[];
+  num_pages: number;
+  page_number: number;
+  per_page: number;
 }
 
 export type UUIDList = Array<string>;
@@ -150,6 +161,7 @@ export type State<T> = {
 
 export type Vow<T> = {
   is_pending: boolean;
+  loading_id?: string | number | null;
   error: string | null;
   data: T | null;
 }

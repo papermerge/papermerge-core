@@ -1,27 +1,25 @@
 import { useContext } from 'react';
 import { Button } from "react-bootstrap";
 import { DualPanelContext } from './DualPanel';
-import type { ShowDualButtonEnum, CType } from "types"
+import type { ShowDualButtonEnum, NType } from "types"
 
 
 type Args = {
   show_dual_button?: ShowDualButtonEnum;
-  node_id: string | undefined;
-  node_type: CType;
+  node: NType;
 }
 
 
 export function DualButton({
   show_dual_button,
-  node_id,
-  node_type
+  node,
 }: Args) {
 
   const context = useContext(DualPanelContext);
 
   const onLayoutSplitClicked = () => {
     if (context?.onOpenSecondary) {
-      context.onOpenSecondary(node_id, node_type);
+      context.onOpenSecondary(node);
     } else {
       console.warn("DualButton received null context");
     }

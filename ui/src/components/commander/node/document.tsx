@@ -40,7 +40,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   }, []);
 
   const onclick = () => {
-    props.onClick({node_id: props.node.id, node_type: props.node.ctype});
+    props.onClick({id: props.node.id, ctype: props.node.ctype});
   }
 
   const onselect = (event: CheckboxChangeType) => {

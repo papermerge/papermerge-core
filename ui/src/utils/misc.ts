@@ -65,7 +65,7 @@ export function build_nodes_list_params({
   let result: string = `page_number=${page_number}&page_size=${page_size}`;
   let order_by: string = sort_field;
 
-  if (sort_order == NodeSortOrderEnum.desc) {
+  if (sort_order == 'desc') {
     order_by = `-${sort_field}`;
   }
 

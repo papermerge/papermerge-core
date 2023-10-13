@@ -1,4 +1,4 @@
-import { NodeClickArgsType } from "types";
+import { NType } from "types";
 import IconHouse from 'components/icons/house';
 import IconInbox from "components/icons/inbox";
 
@@ -6,7 +6,7 @@ import IconInbox from "components/icons/inbox";
 type Args = {
   node_id: string;
   node_title: string
-  onClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onClick: (node: NType) => void;
   active: boolean;
 }
 
@@ -15,7 +15,7 @@ export default function BreadcrumbItem({node_id, node_title, onClick, active}: A
   if (node_title === ".home") {
       return (
         <li className="breadcrumb-item active">
-          <a href="#" onClick={() => onClick({node_id: node_id, node_type: "folder"})}>
+          <a href="#" onClick={() => onClick({id: node_id, ctype: "folder"})}>
               <IconHouse /> Home
           </a>
         </li>
@@ -25,7 +25,7 @@ export default function BreadcrumbItem({node_id, node_title, onClick, active}: A
   if (node_title === ".inbox") {
     return (
       <li className="breadcrumb-item active">
-        <a href="#" onClick={() => onClick({node_id: node_id, node_type: "folder"})}>
+        <a href="#" onClick={() => onClick({id: node_id, ctype: "folder"})}>
             <IconInbox /> Inbox
         </a>
       </li>
@@ -40,7 +40,7 @@ export default function BreadcrumbItem({node_id, node_title, onClick, active}: A
 
   return (
     <li className="breadcrumb-item">
-      <a href="#" onClick={() => onClick({node_id: node_id, node_type: "folder"})}>
+      <a href="#" onClick={() => onClick({id: node_id, ctype: "folder"})}>
           {node_title}
       </a>
     </li>

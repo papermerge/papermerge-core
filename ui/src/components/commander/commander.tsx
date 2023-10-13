@@ -27,7 +27,7 @@ import ErrorMessage from 'components/error_message';
 import { Rectangle, Point } from 'utils/geometry';
 
 import type { ColoredTagType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
-import type { UUIDList, NodeList } from 'types';
+import type { UUIDList, NodeList, NType } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { Vow, NodeSortFieldEnum, NodeSortOrderEnum, NodesType } from 'types';
@@ -55,7 +55,7 @@ type Args = {
   sort: Sorting;
   nodes: Vow<NodesType>;
   display_mode: DisplayNodesModeEnum;
-  onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onNodeClick: (node: NType) => void;
   onPageClick: (page_number: number) => void;
   onPageSizeChange: (page_size: number) => void;
   onSortChange: (sort: Sorting) => void;
@@ -309,53 +309,6 @@ function Commander({
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
   }
 
-  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    /*
-      Commander can receive data files from:
-      1. user's desktop (user drops files from desktop into web browser)
-      2. same commander panel
-      3. another commander panel (user drops nodes from another panel)
-    */
-    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
-    let all_transfered_nodes: NodeType[] = [];
-
-    event.preventDefault();
-    setCssAcceptFiles("");
-
-    // case #3 - nodes moved from another panel
-    // uniq set of source NODE IDs
-    if (data_raw) {
-      all_transfered_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
-    }
-
-    if (all_transfered_nodes.length > 0) {
-      setSourceDropNodes(all_transfered_nodes);
-
-      setTargetDropFile(get_node(node_id) || breadcrumb);
-
-      //setTargetDropFile();
-      setDropNodesModalShow(true);
-      return;
-    }
-
-    if (event.dataTransfer.files.length) {
-      setFilesList(event.dataTransfer.files);
-    }
-
-    // case # 1 - files transferred from the desktop
-    if (event.dataTransfer.files.length > 0) {
-      // only show dialog if event.dataTransfer contains at least one file
-      setDropFilesModalShow(true);
-      return;
-    }
-
-    // case #2 - nodes moved around within same panel
-    if (sourceDropNodes.length > 0) {
-      setDropNodesModalShow(true);
-    }
-
-  }
-
   const onCancelDropFiles = () => {
     setDropFilesModalShow(false);
   }
@@ -515,11 +468,9 @@ function Commander({
       });
     }
 
-
     return (
       <div
         className={`commander w-100 m-1 ${cssAcceptFiles}`}
-        onDrop={onDrop}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
         onDragOver={onDragOver}>
@@ -550,50 +501,26 @@ function Commander({
                 <option value="100">100</option>
               </Form.Select>
               <DualButton
-                node_id={node_id}
-                node_type={"folder"}
+                node={{id: node_id, ctype: 'folder'}}
                 show_dual_button={show_dual_button} />
             </div>
         </div>
         {
-          breadcrumb
-            &&
           <Breadcrumb
-            path={breadcrumb.breadcrumb}
+            path={nodes.data.breadcrumb}
             onClick={onNodeClick}
-            is_loading={is_loading} />
+            is_loading={nodes.is_pending} />
         }
         <div className={list_nodes_css_class_name()}>
           {nodesElement}
         </div>
 
         <Paginator
-          num_pages={nodes_list.num_pages}
-          active={nodes_list.page_number}
+          num_pages={nodes.data.num_pages}
+          active={nodes.data.page_number}
           onPageClick={onPageClick} />
         <div>
-          <DropNodesModal // for nodes move between folders
-            show={dropNodesModalShow}
-            source_nodes={sourceDropNodes}
-            target_node={targetDropFile}
-            onCancel={onCancelDropNodes}
-            onSubmit={onPerformDropNodes} />
-        </div>
-        <div>
-          <DropFilesModal // for files uploads
-            show={dropFilesModalShow}
-            source_files={filesList}
-            target_folder={targetDropFile || breadcrumb}
-            onCreateDocumentNode={onCreateDocumentModel}
-            onCancel={onCancelDropFiles}
-            onSubmit={onPerformDropFiles} />
-        </div>
-        <div>
-          <ErrorModal
-            show={errorModalShow}
-            error={error}
-            onCancel={onCancelErrorModal}
-            onSubmit={onOKErrorModal} />
+
         </div>
       </div>
     )

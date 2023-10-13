@@ -41,13 +41,14 @@ function DualPanel({ node }: Args) {
     node: main_node,
     pagination: mpagination,
     sort: msort
-  })
+  });
   const [spagination, setSPagination] = useState<Pagination>({
     page_number: 1, per_page: 15
   });
   const [ssort, setSSort] = useState<Sorting>({
     sort_field: 'title', sort_order: 'desc'
-  })
+  });
+  // snodes = secondary panel nodes (with their breadcrumb and parent)
   const snodes = useNodes({ // secondary panel nodes
     node: secondary_node,
     pagination: spagination,
@@ -61,13 +62,21 @@ function DualPanel({ node }: Args) {
     }
   }
 
-  useEffect(() => {
-    // when user switches special folders (inbox, home) then
-    // main panel should react accordingly i.e. change to
-    // the new special folder
-    setMainNode(node);
-  }, [node])
+  const onMainPanelNodeClick = (local_node: NType) => {
+    setMainNode(local_node);
+  }
 
+  const onSecondaryPanelNodeClick = (local_node: NType) => {
+    setSecondaryNode(local_node);
+  }
+
+  const onMainPanelSortChange = (new_value: Sorting) => {
+    setMSort(new_value);
+  }
+
+  const onSecondaryPanelSortChange = (new_value: Sorting) => {
+    setSSort(new_value);
+  }
 
   const onCloseSecondary = () => {
     setSecondaryNode(null);
@@ -75,30 +84,34 @@ function DualPanel({ node }: Args) {
 
   try {
     if (secondary_node == null) {
-      return <div>
-        <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
-          <SinglePanel
-            parent_node={main_node}
-            nodes={mnodes}
-            pagination={mpagination}
-            sort={msort}
-            show_dual_button={'split'} />
-        </DualPanelContext.Provider>
-      </div>
+      return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
+        <SinglePanel
+          parent_node={main_node}
+          nodes={mnodes}
+          onNodeClick={onMainPanelNodeClick}
+          onSortChange={onMainPanelSortChange}
+          pagination={mpagination}
+          sort={msort}
+          show_dual_button={'split'} />
+      </DualPanelContext.Provider>
     } else {
       return <div className='d-flex'>
         <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
-          <SinglePanel
-            parent_node={main_node}
-            nodes={mnodes}
-            pagination={mpagination}
-            sort={msort} />
-          <SinglePanel
-            parent_node={secondary_node}
-            nodes={snodes}
-            pagination={spagination}
-            sort={ssort}
-            show_dual_button={'close'} />
+        <SinglePanel
+          parent_node={main_node}
+          nodes={mnodes}
+          onNodeClick={onMainPanelNodeClick}
+          onSortChange={onMainPanelSortChange}
+          pagination={mpagination}
+          sort={msort} />
+        <SinglePanel
+          parent_node={secondary_node}
+          nodes={snodes}
+          onNodeClick={onSecondaryPanelNodeClick}
+          onSortChange={onSecondaryPanelSortChange}
+          pagination={spagination}
+          sort={ssort}
+          show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>
     }

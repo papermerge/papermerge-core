@@ -63,8 +63,7 @@ export default function ActionPanel({
         </div>
       <div>
         <DualButton
-          node_id={doc?.id}
-          node_type={"document"}
+          node={{id: doc!.id, ctype: 'document'}}
           show_dual_button={show_dual_button} />
         </div>
 

@@ -10,7 +10,7 @@ import useToast from 'hooks/useToasts';
 
 import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
-import { NodeClickArgsType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
+import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
 import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
@@ -34,7 +34,7 @@ type ApplyPagesType = {
 
 type Args = {
   node_id: string;
-  onNodeClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onNodeClick: (node: NType) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 

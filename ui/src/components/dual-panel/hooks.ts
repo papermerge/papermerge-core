@@ -20,12 +20,6 @@ type Args = {
 }
 
 function useNodes({node, pagination, sort}: Args): Vow<NodesType> {
-  const initial_state: Vow<NodesType> = {
-    is_pending: true,
-    loading_id: node?.id,
-    error: null,
-    data: null
-  };
   let [data, setData] = useState<Vow<NodesType>>({
     is_pending: true,
     loading_id: node?.id,
@@ -35,16 +29,19 @@ function useNodes({node, pagination, sort}: Args): Vow<NodesType> {
 
   let url_params: string = build_params({pagination, sort});
 
-  if (node == null) {
-    setData(initial_state);
-    return initial_state;
-  }
-
   useEffect(() => {
+
+    if (!node) {
+      return;
+    }
+
+    if (node.ctype == 'document') {
+      return;
+    }
 
     const loading_state: Vow<NodesType> = {
       is_pending: true,
-      loading_id: node.id,
+      loading_id: node?.id,
       error: null,
       data: data.data
     };
@@ -95,7 +92,7 @@ function useNodes({node, pagination, sort}: Args): Vow<NodesType> {
       ignore = true;
     };
   }, [
-    node.id,
+    node?.id,
     pagination.page_number,
     pagination.per_page,
     sort.sort_field,

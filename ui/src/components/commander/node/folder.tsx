@@ -4,7 +4,7 @@ import Spinner from "../../spinner";
 import SpinnerPlaceholder from "../../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
 
-import type { NodeType, NodeClickArgsType } from 'types';
+import type { NodeType, NodeClickArgsType, NType } from 'types';
 import type { CheckboxChangeType } from "../types";
 import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
@@ -12,7 +12,7 @@ import TagsComponent from './tags';
 
 type FolderArgsType = {
   node: NodeType;
-  onClick: ({node_id, node_type}: NodeClickArgsType) => void;
+  onClick: (node: NType) => void;
   onSelect: (node_id: string, selected: boolean) => void;
   onDragStart: (node_id: string, event: React.DragEvent) => void;
   onDrag: (node_id: string, event: React.DragEvent) => void;
@@ -30,8 +30,8 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
   (props, ref) => {
     const onclick = () => {
       props.onClick({
-        node_id: props.node.id,
-        node_type: props.node.ctype
+        id: props.node.id,
+        ctype: props.node.ctype
       });
     }
     const [ cssAcceptFilesAndNodes, setCssAcceptFilesAndNodes ] = useState<string>("");

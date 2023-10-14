@@ -137,7 +137,6 @@ function SinglePanel({
   onDocVersionsChange,
   onPagesChange
 }: Args) {
-  const [ node, setNode ] = useState<NType>(parent_node);
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
   );
@@ -153,7 +152,7 @@ function SinglePanel({
   }
 
   try {
-    if (node.ctype == 'folder') {
+    if (parent_node.ctype == 'folder') {
       return <Commander
         node_id={parent_node.id}
         pagination={pagination}

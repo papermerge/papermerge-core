@@ -18,7 +18,6 @@ function useDoc({node}: Args): Vow<DocumentType> {
 
 
   useEffect(() => {
-
     if (!node) {
       return;
     }
@@ -35,15 +34,19 @@ function useDoc({node}: Args): Vow<DocumentType> {
     };
     setData(loading_state);
 
+    let ignore = false;
+
     fetcher(`/api/documents/${node.id}`)
     .then((data: DocumentType) => {
-      let ready_state: Vow<DocumentType> = {
-        is_pending: false,
-        error: null,
-        data: data
-      };
+      if (!ignore) {
+        let ready_state: Vow<DocumentType> = {
+          is_pending: false,
+          error: null,
+          data: data
+        };
 
-      setData(ready_state);
+        setData(ready_state);
+      }
     }) // end of then
     .catch((error: Error) => {
       setData({
@@ -51,10 +54,15 @@ function useDoc({node}: Args): Vow<DocumentType> {
         error:  error.toString(),
         data: null
       });
-    })
+    });
 
-  }, []); // end of useEffect
+    return () => {
+      ignore = true;
+    };
 
+  }, [node?.id]); // end of useEffect
+
+  console.log(`useDoc returning`, data);
   return data;
 }
 

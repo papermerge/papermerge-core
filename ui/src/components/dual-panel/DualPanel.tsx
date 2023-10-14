@@ -71,13 +71,12 @@ function DualPanel({ node }: Args) {
       const pages: PageAndRotOp[] = last_version.pages.map(p => {return {
         page: p, angle: 0
       }})
-
       setMDocVers(ready_vow(main_doc.data.versions));
       setMCurDocVer(ready_vow(last_version))
       setMCurPages(ready_vow(pages));
     }
 
-  }, [main_doc]);
+  }, [main_doc?.data?.id]);
 
   useEffect(() => { // for secondary doc
     if (secondary_doc?.data) {
@@ -85,13 +84,12 @@ function DualPanel({ node }: Args) {
       const pages: PageAndRotOp[] = last_version.pages.map(p => {return {
         page: p, angle: 0
       }})
-
       setSDocVers(ready_vow(secondary_doc.data.versions));
       setSCurDocVer(ready_vow(last_version))
       setSCurPages(ready_vow(pages));
     }
 
-  }, [secondary_doc])
+  }, [secondary_doc?.data?.id])
 
   const onOpenSecondary = (local_node: NType) => {
     if (local_node) {
@@ -105,6 +103,7 @@ function DualPanel({ node }: Args) {
   }
 
   const onSecondaryPanelNodeClick = (local_node: NType) => {
+    console.log(`secondary panel node click`, local_node);
     setSecondaryNode(local_node);
   }
 

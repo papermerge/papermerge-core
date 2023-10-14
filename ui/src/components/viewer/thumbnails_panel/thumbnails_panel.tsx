@@ -25,9 +25,21 @@ export function ThumbnailsPanel({
     css_class_name += ' hidden';
   }
 
+  if (pages.is_pending) {
+    return <div>Pending...</div>
+  }
+
+  if (pages.error) {
+    return <div>Error {pages.error}</div>
+  }
+
+  if (!pages.data) {
+    return <div>Failed to load data</div>
+  }
+
   return (
     <div className={css_class_name}>
-      {pages.map(item => {
+      {pages.data.map(item => {
         return <PageThumbnail
           key={item.page.id}
           item={item}

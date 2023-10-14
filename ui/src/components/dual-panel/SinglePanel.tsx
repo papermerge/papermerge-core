@@ -32,6 +32,9 @@ type Args = {
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
   pages: Vow<PageAndRotOp[]>;
+  onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
+  onDocVerChange: (doc_ver: DocumentVersion) => void;
+  onPagesChange: (pages: PageAndRotOp[]) => void;
 }
 
 type NodeListParams = {
@@ -129,7 +132,10 @@ function SinglePanel({
   doc,
   doc_versions,
   doc_ver,
-  pages
+  pages,
+  onDocVerChange,
+  onDocVersionsChange,
+  onPagesChange
 }: Args) {
   const [ node, setNode ] = useState<NType>(parent_node);
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
@@ -169,7 +175,10 @@ function SinglePanel({
         doc={doc}
         doc_versions={doc_versions}
         doc_ver={doc_ver}
-        pages={pages} />;
+        pages={pages}
+        onDocVersionsChange={onDocVersionsChange}
+        onDocVerChange={onDocVerChange}
+        onPagesChange={onPagesChange} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

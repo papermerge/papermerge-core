@@ -120,6 +120,24 @@ function DualPanel({ node }: Args) {
     setSecondaryNode(null);
   }
 
+  const onMainDocVersionsChange = (doc_versions: DocumentVersion[]) => {
+  }
+
+  const onMainDocVerChange = (doc_ver: DocumentVersion) => {
+  }
+
+  const onMainPagesChange = (pages: PageAndRotOp[]) => {
+  }
+
+  const onSecondaryDocVersionsChange = (doc_versions: DocumentVersion[]) => {
+  }
+
+  const onSecondaryDocVerChange = (doc_ver: DocumentVersion) => {
+  }
+
+  const onSecondaryPagesChange = (pages: PageAndRotOp[]) => {
+  }
+
   try {
     if (secondary_node == null) {
       return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
@@ -134,6 +152,9 @@ function DualPanel({ node }: Args) {
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
           pages={mcurPages}
+          onDocVerChange={onMainDocVerChange}
+          onDocVersionsChange={onMainDocVersionsChange}
+          onPagesChange={onMainPagesChange}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -149,7 +170,10 @@ function DualPanel({ node }: Args) {
           doc={main_doc}
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
-          pages={mcurPages} />
+          pages={mcurPages}
+          onDocVerChange={onMainDocVerChange}
+          onDocVersionsChange={onMainDocVersionsChange}
+          onPagesChange={onMainPagesChange} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -161,6 +185,9 @@ function DualPanel({ node }: Args) {
           doc_versions={sdocVers}
           doc_ver={scurDocVer}
           pages={scurPages}
+          onDocVerChange={onSecondaryDocVerChange}
+          onDocVersionsChange={onSecondaryDocVersionsChange}
+          onPagesChange={onSecondaryPagesChange}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

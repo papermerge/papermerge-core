@@ -38,8 +38,9 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   pages: Vow<PageAndRotOp[]>;
   onNodeClick: (node: NType) => void;
-  onCurPagesChange: (cur_pages: PageAndRotOp[]) => void;
-  onDocVersChange: (doc_vers: DocumentVersion[]) => void;
+  onPagesChange: (cur_pages: PageAndRotOp[]) => void;
+  onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
+  onDocVerChange: (doc_versions: DocumentVersion) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -57,8 +58,9 @@ export default function Viewer({
   doc_ver,
   pages,
   onNodeClick,
-  onCurPagesChange,
-  onDocVersChange,
+  onPagesChange,
+  onDocVersionsChange,
+  onDocVerChange,
   show_dual_button
 }: Args) {
 
@@ -110,17 +112,17 @@ export default function Viewer({
       target_id: target_id,
       position: position
     });
-    if (!new_pages.every((value, index) => value.page.id == cur_pages[index].page.id)) {
+    if (!new_pages.every((value, index) => value.page.id == pages!.data![index].page.id)) {
       setUnappliedPagesOpChanges(true);
     }
-    onCurPagesChange(new_pages);
+    onPagesChange(new_pages);
   }
 
   const onApplyPageOpChanges = async () => {
     let _pages = pages!.data!.map(item => apply_page_type(item));
     let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
     setUnappliedPagesOpChanges(false);
-    onDocVersChange(response)
+    onDocVersionsChange(response)
     setSelectedPages([]);
 
     toasts?.addToast("Page operations successfully applied");
@@ -149,7 +151,7 @@ export default function Viewer({
     let new_cur_pages = pages!.data!.filter(
       (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
     );
-    onCurPagesChange(new_cur_pages);
+    onPagesChange(new_cur_pages);
     setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
     setSelectedPages([]);
@@ -172,7 +174,7 @@ export default function Viewer({
     );
 
     if (change) {
-      onCurPagesChange(new_array);
+      onPagesChange(new_array);
       setUnappliedPagesOpChanges(true);
     }
   }
@@ -194,7 +196,7 @@ export default function Viewer({
       }
     );
     if (change) {
-      onCurPagesChange(new_array);
+      onPagesChange(new_array);
       setUnappliedPagesOpChanges(true);
     }
   }

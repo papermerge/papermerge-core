@@ -6,7 +6,8 @@
 
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
-import { DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting } from 'types';
+import { Vow, DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting } from 'types';
+import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
 import useDoc from './useDoc';
 
@@ -57,35 +58,37 @@ function DualPanel({ node }: Args) {
   });
   const main_doc = useDoc({node: main_node});
   const secondary_doc = useDoc({node: secondary_node});
-  const [mcurDocVer, setMCurDocVer] = useState<DocumentVersion | null>();
-  const [scurDocVer, setSCurDocVer] = useState<DocumentVersion | null>();
-  const [mdocVers, setMDocVers] = useState<DocumentVersion[]>();
-  const [sdocVers, setSDocVers] = useState<DocumentVersion[]>();
-  const [mcurPages, setMCurPages] = useState<PageAndRotOp[]>();
-  const [scurPages, setSCurPages] = useState<PageAndRotOp[]>();
+  const [mcurDocVer, setMCurDocVer] = useState<Vow<DocumentVersion>>(init_vow());
+  const [scurDocVer, setSCurDocVer] = useState<Vow<DocumentVersion>>(init_vow());
+  const [mdocVers, setMDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
+  const [sdocVers, setSDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
+  const [mcurPages, setMCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
+  const [scurPages, setSCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
 
   useEffect(() => { // for main doc
     if (main_doc?.data) {
-      setMDocVers(main_doc.data.versions);
-      let last_version = get_last_doc_version(main_doc.data);
-
-      setMCurDocVer(last_version);
-      setMCurPages(last_version.pages.map(p => {return {
+      const last_version = get_last_doc_version(main_doc.data);
+      const pages: PageAndRotOp[] = last_version.pages.map(p => {return {
         page: p, angle: 0
-      }}));
+      }})
+
+      setMDocVers(ready_vow(main_doc.data.versions));
+      setMCurDocVer(ready_vow(last_version))
+      setMCurPages(ready_vow(pages));
     }
 
   }, [main_doc]);
 
   useEffect(() => { // for secondary doc
     if (secondary_doc?.data) {
-      setSDocVers(secondary_doc.data.versions);
-      let last_version = get_last_doc_version(secondary_doc.data);
-
-      setSCurDocVer(last_version);
-      setSCurPages(last_version.pages.map(p => {return {
+      const last_version = get_last_doc_version(secondary_doc.data);
+      const pages: PageAndRotOp[] = last_version.pages.map(p => {return {
         page: p, angle: 0
-      }}));
+      }})
+
+      setSDocVers(ready_vow(secondary_doc.data.versions));
+      setSCurDocVer(ready_vow(last_version))
+      setSCurPages(ready_vow(pages));
     }
 
   }, [secondary_doc])
@@ -127,6 +130,10 @@ function DualPanel({ node }: Args) {
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
           sort={msort}
+          doc={main_doc}
+          doc_versions={mdocVers}
+          doc_ver={mcurDocVer}
+          pages={mcurPages}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -138,7 +145,11 @@ function DualPanel({ node }: Args) {
           onNodeClick={onMainPanelNodeClick}
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
-          sort={msort} />
+          sort={msort}
+          doc={main_doc}
+          doc_versions={mdocVers}
+          doc_ver={mcurDocVer}
+          pages={mcurPages} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -146,6 +157,10 @@ function DualPanel({ node }: Args) {
           onSortChange={onSecondaryPanelSortChange}
           pagination={spagination}
           sort={ssort}
+          doc={secondary_doc}
+          doc_versions={sdocVers}
+          doc_ver={scurDocVer}
+          pages={scurPages}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

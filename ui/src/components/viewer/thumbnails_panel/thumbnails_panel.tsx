@@ -1,9 +1,10 @@
 import type { PageAndRotOp, ThumbnailPageDroppedArgs } from "types"
 import { PageThumbnail } from "./page_thumbnail";
+import type { Vow } from "types";
 
 
 type Args = {
-  pages: Array<PageAndRotOp>;
+  pages: Vow<Array<PageAndRotOp>>;
   visible: boolean;
   onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;

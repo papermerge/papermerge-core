@@ -12,7 +12,10 @@ import {
   ShowDualButtonEnum,
   Sorting,
   Pagination,
-  Vow
+  Vow,
+  DocumentVersion,
+  DocumentType,
+  PageAndRotOp
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -25,6 +28,10 @@ type Args = {
   onNodeClick: (node: NType) => void;
   onSortChange: (sort: Sorting) => void;
   show_dual_button?: ShowDualButtonEnum;
+  doc: Vow<DocumentType>;
+  doc_versions: Vow<DocumentVersion[]>;
+  doc_ver: Vow<DocumentVersion>;
+  pages: Vow<PageAndRotOp[]>;
 }
 
 type NodeListParams = {
@@ -118,7 +125,11 @@ function SinglePanel({
   nodes,
   onSortChange,
   onNodeClick,
-  show_dual_button
+  show_dual_button,
+  doc,
+  doc_versions,
+  doc_ver,
+  pages
 }: Args) {
   const [ node, setNode ] = useState<NType>(parent_node);
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
@@ -154,7 +165,11 @@ function SinglePanel({
       return <Viewer
         node_id={parent_node.id}
         onNodeClick={onNodeClick}
-        show_dual_button={show_dual_button} />;
+        show_dual_button={show_dual_button}
+        doc={doc}
+        doc_versions={doc_versions}
+        doc_ver={doc_ver}
+        pages={pages} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

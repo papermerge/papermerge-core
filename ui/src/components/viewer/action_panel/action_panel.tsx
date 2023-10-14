@@ -6,11 +6,12 @@ import DeletePages from "./DeletePages";
 import RotateCw from "./RotateCw";
 import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
+import type { Vow } from "types";
 
 
 type Args = {
-  versions: DocumentVersion[];
-  doc: DocumentType | null | undefined;
+  versions: Vow<DocumentVersion[]>;
+  doc: Vow<DocumentType>;
   unapplied_page_op_changes: boolean;
   onRenameClick: () => void;
   onDeletePages: () => void;

@@ -6,8 +6,9 @@
 
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
-import { CType, NType, Pagination, Sorting } from 'types';
-import useNodes from './hooks';
+import { DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting } from 'types';
+import useNodes from './useNodes';
+import useDoc from './useDoc';
 
 type Args = {
   node: NType;
@@ -54,6 +55,40 @@ function DualPanel({ node }: Args) {
     pagination: spagination,
     sort: ssort
   });
+  const main_doc = useDoc({node: main_node});
+  const secondary_doc = useDoc({node: secondary_node});
+  const [mcurDocVer, setMCurDocVer] = useState<DocumentVersion | null>();
+  const [scurDocVer, setSCurDocVer] = useState<DocumentVersion | null>();
+  const [mdocVers, setMDocVers] = useState<DocumentVersion[]>();
+  const [sdocVers, setSDocVers] = useState<DocumentVersion[]>();
+  const [mcurPages, setMCurPages] = useState<PageAndRotOp[]>();
+  const [scurPages, setSCurPages] = useState<PageAndRotOp[]>();
+
+  useEffect(() => { // for main doc
+    if (main_doc?.data) {
+      setMDocVers(main_doc.data.versions);
+      let last_version = get_last_doc_version(main_doc.data);
+
+      setMCurDocVer(last_version);
+      setMCurPages(last_version.pages.map(p => {return {
+        page: p, angle: 0
+      }}));
+    }
+
+  }, [main_doc]);
+
+  useEffect(() => { // for secondary doc
+    if (secondary_doc?.data) {
+      setSDocVers(secondary_doc.data.versions);
+      let last_version = get_last_doc_version(secondary_doc.data);
+
+      setSCurDocVer(last_version);
+      setSCurPages(last_version.pages.map(p => {return {
+        page: p, angle: 0
+      }}));
+    }
+
+  }, [secondary_doc])
 
   const onOpenSecondary = (local_node: NType) => {
     if (local_node) {
@@ -119,6 +154,17 @@ function DualPanel({ node }: Args) {
     return <div>Caught exception</div>;
   }
 
+}
+
+
+function get_last_doc_version(doc: DocumentType): DocumentVersion {
+  return doc.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
+    if (prev && prev.number > cur.number) {
+      return prev;
+    }
+
+    return cur;
+  });
 }
 
 export default DualPanel;

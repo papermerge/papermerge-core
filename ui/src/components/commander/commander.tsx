@@ -95,7 +95,6 @@ function Commander({
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
-  const [ nodesList, setNodesList ] = useState<NodeList>([]);
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
@@ -105,11 +104,11 @@ function Commander({
   let nodesElement: JSX.Element[] | JSX.Element;
 
   const get_node = (node_id: string): NodeType | undefined => {
-    return nodesList.find((n: NodeType) => n.id == node_id);
+    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id);
   }
 
   const get_nodes = (node_ids: UUIDList): NodeType[] => {
-    return nodesList.filter((n: NodeType) => node_ids.includes(n.id));
+    return nodes!.data!.nodes.filter((n: NodeType) => node_ids.includes(n.id));
   }
 
   const updateSourceDropNodes = (node_id: string) => {
@@ -157,9 +156,9 @@ function Commander({
     of the current node (`node_id`) (current folder is "My Documents" and it has
     UUID = `node_id`).
      */
-    if (target_id == node_id) {
-      setNodesList(nodesList.concat(new_nodes));
-    }
+    //if (target_id == node_id) {
+    //  setNodesList(nodesList.concat(new_nodes));
+    //}
   }
 
   const onNodeSelect = (node_id: string, selected: boolean) => {
@@ -180,7 +179,7 @@ function Commander({
   }
 
   const onPerformDropNodes = (moved_node_ids: string[]) => {
-
+    /*
     nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
@@ -194,9 +193,11 @@ function Commander({
     setSelectedNodes([]);
     setDropNodesModalShow(false);
     setSourceDropNodes([]);
+    */
   }
 
   const onCancelDropNodes = () => {
+    /*
     nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
@@ -204,6 +205,7 @@ function Commander({
     setSelectedNodes([]);
     setSourceDropNodes([]);
     setDropNodesModalShow(false);
+    */
   }
 
   const onOKErrorModal = () => {
@@ -215,6 +217,7 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
+    /*
     let image = <DraggingIcon node_id={node_id}
           selectedNodes={selectedNodes}
           nodesList={nodesList} />;
@@ -237,9 +240,11 @@ function Commander({
     let root = createRoot(ghost);
 
     root.render(image);
+    */
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
+    /*
     const map = getNodesRefMap();
     const new_nodes = nodesList.map((item => {
       // @ts-ignore
@@ -272,9 +277,10 @@ function Commander({
       }
 
       return item;
-    }));
 
-    setNodesList(new_nodes);
+    }));
+    */
+    // setNodesList(new_nodes);
     updateSourceDropNodes(node_id);
   }
 
@@ -396,7 +402,7 @@ function Commander({
 
   const onEditTagsClick = () => {
     let initial_tags = get_node_attr<Array<ColoredTagType>>(
-      selectedNodes,'tags', nodesList
+      selectedNodes,'tags', nodes!.data!.nodes
     );
 
     edit_tags(selectedNodes[0], initial_tags).then(

@@ -6,7 +6,7 @@
 
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
-import { Vow, DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting } from 'types';
+import { Vow, DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting, BreadcrumbType } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
 import useDoc from './useDoc';
@@ -64,6 +64,8 @@ function DualPanel({ node }: Args) {
   const [sdocVers, setSDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
   const [mcurPages, setMCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
   const [scurPages, setSCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
+  const [mdoc_breadcrumb, setMDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow())
+  const [sdoc_breadcrumb, setSDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow())
 
   useEffect(() => { // for main doc
     if (main_doc?.data) {
@@ -74,6 +76,7 @@ function DualPanel({ node }: Args) {
       setMDocVers(ready_vow(main_doc.data.versions));
       setMCurDocVer(ready_vow(last_version))
       setMCurPages(ready_vow(pages));
+      setMDocBreadcrumb(ready_vow(main_doc.data.breadcrumb));
     }
 
   }, [main_doc?.data?.id]);
@@ -87,6 +90,7 @@ function DualPanel({ node }: Args) {
       setSDocVers(ready_vow(secondary_doc.data.versions));
       setSCurDocVer(ready_vow(last_version))
       setSCurPages(ready_vow(pages));
+      setSDocBreadcrumb(ready_vow(secondary_doc.data.breadcrumb));
     }
 
   }, [secondary_doc?.data?.id])
@@ -137,6 +141,26 @@ function DualPanel({ node }: Args) {
   const onSecondaryPagesChange = (pages: PageAndRotOp[]) => {
   }
 
+  const onMDocBreadcrumbChange = (new_breadcrumb: BreadcrumbType) => {
+    setMDocBreadcrumb(ready_vow(new_breadcrumb));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      // then update secondary_doc breadcrumb as well
+      setSDocBreadcrumb(ready_vow(new_breadcrumb));
+    }
+  }
+
+  const onSDocBreadcrumbChange = (new_breadcrumb: BreadcrumbType) => {
+    setSDocBreadcrumb(ready_vow(new_breadcrumb));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      // then update secondary_doc breadcrumb as well
+      setMDocBreadcrumb(ready_vow(new_breadcrumb));
+    }
+  }
+
   try {
     if (secondary_node == null) {
       return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
@@ -150,10 +174,12 @@ function DualPanel({ node }: Args) {
           doc={main_doc}
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
+          doc_breadcrumb={mdoc_breadcrumb}
           pages={mcurPages}
           onDocVerChange={onMainDocVerChange}
           onDocVersionsChange={onMainDocVersionsChange}
           onPagesChange={onMainPagesChange}
+          onDocBreadcrumbChange={onMDocBreadcrumbChange}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -169,10 +195,12 @@ function DualPanel({ node }: Args) {
           doc={main_doc}
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
+          doc_breadcrumb={mdoc_breadcrumb}
           pages={mcurPages}
           onDocVerChange={onMainDocVerChange}
           onDocVersionsChange={onMainDocVersionsChange}
-          onPagesChange={onMainPagesChange} />
+          onPagesChange={onMainPagesChange}
+          onDocBreadcrumbChange={onMDocBreadcrumbChange} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -183,10 +211,12 @@ function DualPanel({ node }: Args) {
           doc={secondary_doc}
           doc_versions={sdocVers}
           doc_ver={scurDocVer}
+          doc_breadcrumb={sdoc_breadcrumb}
           pages={scurPages}
           onDocVerChange={onSecondaryDocVerChange}
           onDocVersionsChange={onSecondaryDocVersionsChange}
           onPagesChange={onSecondaryPagesChange}
+          onDocBreadcrumbChange={onSDocBreadcrumbChange}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

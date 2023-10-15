@@ -36,11 +36,13 @@ type Args = {
   doc: Vow<DocumentType>;
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
+  breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
+  onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -56,16 +58,17 @@ export default function Viewer({
   doc,
   doc_versions,
   doc_ver,
+  breadcrumb,
   pages,
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
   onDocVerChange,
+  onBreadcrumbChange,
   show_dual_button
 }: Args) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
-  let [breadcrumb, setBreadcrumb] = useState<BreadcrumbType>();
   // current doc versions
   let [showSelectedMenu, setShowSelectedMenu] = useState<boolean>(false);
   let [selectedPages, setSelectedPages] = useState<Array<string>>([]);
@@ -202,10 +205,10 @@ export default function Viewer({
   }
 
   const onRenameClick = () => {
-    rename_node(doc!.data!.id, get_doc_title(breadcrumb || []))
+    rename_node(doc!.data!.id, get_doc_title(breadcrumb!.data!))
     .then(
       (node: NodeType) => {
-        let new_breadcrumb: BreadcrumbType = breadcrumb?.map((item: BreadcrumbItemType) => {
+        let new_breadcrumb: BreadcrumbType = breadcrumb!.data!.map((item: BreadcrumbItemType) => {
           if (item[0] == node.id) {
             return [item[0], node.title];
           }
@@ -213,7 +216,7 @@ export default function Viewer({
           return item;
         }) as BreadcrumbType;
 
-        setBreadcrumb(new_breadcrumb);
+        onBreadcrumbChange(new_breadcrumb);
       }
     );
   }
@@ -236,7 +239,7 @@ export default function Viewer({
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
       show_dual_button={show_dual_button} />
-    <Breadcrumb path={breadcrumb || []} onClick={onNodeClick} is_loading={false} />
+    <Breadcrumb path={breadcrumb?.data || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
         pages={pages}

@@ -15,7 +15,8 @@ import {
   Vow,
   DocumentVersion,
   DocumentType,
-  PageAndRotOp
+  PageAndRotOp,
+  BreadcrumbType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -31,10 +32,12 @@ type Args = {
   doc: Vow<DocumentType>;
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
+  doc_breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_ver: DocumentVersion) => void;
   onPagesChange: (pages: PageAndRotOp[]) => void;
+  onDocBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
 }
 
 type NodeListParams = {
@@ -132,10 +135,12 @@ function SinglePanel({
   doc,
   doc_versions,
   doc_ver,
+  doc_breadcrumb,
   pages,
   onDocVerChange,
   onDocVersionsChange,
-  onPagesChange
+  onPagesChange,
+  onDocBreadcrumbChange
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -174,10 +179,12 @@ function SinglePanel({
         doc={doc}
         doc_versions={doc_versions}
         doc_ver={doc_ver}
+        breadcrumb={doc_breadcrumb}
         pages={pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}
-        onPagesChange={onPagesChange} />;
+        onPagesChange={onPagesChange}
+        onBreadcrumbChange={onDocBreadcrumbChange} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

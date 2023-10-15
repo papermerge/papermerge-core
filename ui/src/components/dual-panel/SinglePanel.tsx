@@ -12,7 +12,11 @@ import {
   ShowDualButtonEnum,
   Sorting,
   Pagination,
-  Vow
+  Vow,
+  DocumentVersion,
+  DocumentType,
+  PageAndRotOp,
+  BreadcrumbType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -25,6 +29,15 @@ type Args = {
   onNodeClick: (node: NType) => void;
   onSortChange: (sort: Sorting) => void;
   show_dual_button?: ShowDualButtonEnum;
+  doc: Vow<DocumentType>;
+  doc_versions: Vow<DocumentVersion[]>;
+  doc_ver: Vow<DocumentVersion>;
+  doc_breadcrumb: Vow<BreadcrumbType>;
+  pages: Vow<PageAndRotOp[]>;
+  onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
+  onDocVerChange: (doc_ver: DocumentVersion) => void;
+  onPagesChange: (pages: PageAndRotOp[]) => void;
+  onDocBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
 }
 
 type NodeListParams = {
@@ -118,9 +131,17 @@ function SinglePanel({
   nodes,
   onSortChange,
   onNodeClick,
-  show_dual_button
+  show_dual_button,
+  doc,
+  doc_versions,
+  doc_ver,
+  doc_breadcrumb,
+  pages,
+  onDocVerChange,
+  onDocVersionsChange,
+  onPagesChange,
+  onDocBreadcrumbChange
 }: Args) {
-  const [ node, setNode ] = useState<NType>(parent_node);
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
   );
@@ -136,7 +157,7 @@ function SinglePanel({
   }
 
   try {
-    if (node.ctype == 'folder') {
+    if (parent_node.ctype == 'folder') {
       return <Commander
         node_id={parent_node.id}
         pagination={pagination}
@@ -154,7 +175,16 @@ function SinglePanel({
       return <Viewer
         node_id={parent_node.id}
         onNodeClick={onNodeClick}
-        show_dual_button={show_dual_button} />;
+        show_dual_button={show_dual_button}
+        doc={doc}
+        doc_versions={doc_versions}
+        doc_ver={doc_ver}
+        breadcrumb={doc_breadcrumb}
+        pages={pages}
+        onDocVersionsChange={onDocVersionsChange}
+        onDocVerChange={onDocVerChange}
+        onPagesChange={onPagesChange}
+        onBreadcrumbChange={onDocBreadcrumbChange} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

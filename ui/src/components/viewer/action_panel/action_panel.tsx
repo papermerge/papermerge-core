@@ -6,11 +6,12 @@ import DeletePages from "./DeletePages";
 import RotateCw from "./RotateCw";
 import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
+import type { Vow } from "types";
 
 
 type Args = {
-  versions: DocumentVersion[];
-  doc: DocumentType | null | undefined;
+  versions: Vow<DocumentVersion[]>;
+  doc: Vow<DocumentType>;
   unapplied_page_op_changes: boolean;
   onRenameClick: () => void;
   onDeletePages: () => void;
@@ -43,7 +44,17 @@ export default function ActionPanel({
     {rotate_ccw}
   </div>;
 
-  console.log(`Viewer: show dual button = '${show_dual_button}'`);
+  if (doc.is_pending) {
+    return <div>Pending...</div>
+  }
+
+  if (doc.error) {
+    return <div>Error {doc.error}</div>
+  }
+
+  if (!doc.data) {
+    return <div>Received empty data</div>
+  }
 
   return (
     <div className="action-panel d-flex justify-content-between">
@@ -63,7 +74,7 @@ export default function ActionPanel({
         </div>
       <div>
         <DualButton
-          node={{id: doc!.id, ctype: 'document'}}
+          node={{id: doc.data.id, ctype: 'document'}}
           show_dual_button={show_dual_button} />
         </div>
 

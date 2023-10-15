@@ -4,14 +4,13 @@ import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import { PagesPanel }  from "./pages_panel/pages_panel";
 import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
 import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
-import { fetcher } from 'utils/fetcher';
 import { useViewerContentHeight } from 'hooks/viewer_content_height';
 import useToast from 'hooks/useToasts';
 
 import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
 import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
@@ -34,7 +33,16 @@ type ApplyPagesType = {
 
 type Args = {
   node_id: string;
+  doc: Vow<DocumentType>;
+  doc_versions: Vow<DocumentVersion[]>;
+  doc_ver: Vow<DocumentVersion>;
+  breadcrumb: Vow<BreadcrumbType>;
+  pages: Vow<PageAndRotOp[]>;
   onNodeClick: (node: NType) => void;
+  onPagesChange: (cur_pages: PageAndRotOp[]) => void;
+  onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
+  onDocVerChange: (doc_versions: DocumentVersion) => void;
+  onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -47,22 +55,21 @@ function apply_page_type(item: PageAndRotOp): ApplyPagesType {
 
 export default function Viewer({
   node_id,
+  doc,
+  doc_versions,
+  doc_ver,
+  breadcrumb,
+  pages,
   onNodeClick,
+  onPagesChange,
+  onDocVersionsChange,
+  onDocVerChange,
+  onBreadcrumbChange,
   show_dual_button
 }: Args) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
-  const initial_breadcrumb_state: State<DocumentType | undefined> = {
-    is_loading: true,
-    error: null,
-    data: null
-  }
-  let [{is_loading, error, data}, setDoc] = useState<State<DocumentType | undefined>>(initial_breadcrumb_state);
-  let [curDocVer, setCurDocVer] = useState<DocumentVersion | undefined>();
-  let [breadcrumb, setBreadcrumb] = useState<BreadcrumbType>();
   // current doc versions
-  let [docVers, setDocVers] = useState<DocumentVersion[]>([]);
-  let [curPages, setCurPages] = useState<Array<PageAndRotOp>>([]);
   let [showSelectedMenu, setShowSelectedMenu] = useState<boolean>(false);
   let [selectedPages, setSelectedPages] = useState<Array<string>>([]);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
@@ -80,39 +87,6 @@ export default function Viewer({
       viewer_content_ref.current.style.height = `${viewer_content_height}px`;
     }
   }, [viewer_content_height]);
-
-  useEffect(() => {
-    fetcher(`/api/documents/${node_id}`)
-    .then((data: DocumentType) => {
-      let ready_state: State<DocumentType> = {
-        is_loading: false,
-        error: null,
-        data: data
-      };
-
-      setDoc(ready_state);
-      setBreadcrumb(ready_state.data?.breadcrumb);
-      setDocVers(data.versions);
-
-      let last_version = data.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
-        if (prev && prev.number > cur.number) {
-          return prev;
-        }
-
-        return cur;
-      });
-
-      setCurDocVer(last_version);
-      setCurPages(last_version.pages.map(p => { return {page: p, angle: 0};}));
-    }).catch((error: Error) => {
-      setDoc({
-        is_loading: false,
-        error: error.toString(),
-        data: null
-      });
-    });
-
-  }, []);
 
   const onThumbnailsToggle = () => {
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
@@ -136,22 +110,22 @@ export default function Viewer({
       Method is triggered only when source_id != target_id.
     */
     const new_pages = reorder_pages({
-      arr: curPages,
+      arr: pages!.data!,
       source_id: source_id,
       target_id: target_id,
       position: position
     });
-    if (!new_pages.every((value, index) => value.page.id == curPages[index].page.id)) {
+    if (!new_pages.every((value, index) => value.page.id == pages!.data![index].page.id)) {
       setUnappliedPagesOpChanges(true);
     }
-    setCurPages(new_pages);
+    onPagesChange(new_pages);
   }
 
   const onApplyPageOpChanges = async () => {
-    let pages = curPages.map(item => apply_page_type(item));
-    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(pages);
+    let _pages = pages!.data!.map(item => apply_page_type(item));
+    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
     setUnappliedPagesOpChanges(false);
-    setDocVers(response);
+    onDocVersionsChange(response)
     setSelectedPages([]);
 
     toasts?.addToast("Page operations successfully applied");
@@ -177,20 +151,20 @@ export default function Viewer({
   }
 
   const onDeletePages = () => {
-    let new_cur_pages = curPages.filter(
+    let new_cur_pages = pages!.data!.filter(
       (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
     );
-    setCurPages(new_cur_pages);
     setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
     setSelectedPages([]);
+    onPagesChange(new_cur_pages);
   }
 
   const onRotatePagesCcw = () => {
     let new_array: Array<PageAndRotOp> = [];
     let change = false;
 
-    new_array = curPages.map(
+    new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
         if (selectedPages.indexOf(item.page.id) >= 0) {
           item.angle -= 90;
@@ -203,7 +177,7 @@ export default function Viewer({
     );
 
     if (change) {
-      setCurPages(new_array);
+      onPagesChange(new_array);
       setUnappliedPagesOpChanges(true);
     }
   }
@@ -212,7 +186,7 @@ export default function Viewer({
     let new_array: Array<PageAndRotOp> = [];
     let change = false;
 
-    new_array = curPages.map(
+    new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
         if (selectedPages.indexOf(item.page.id) >= 0) {
           item.angle += 90;
@@ -225,16 +199,16 @@ export default function Viewer({
       }
     );
     if (change) {
-      setCurPages(new_array);
+      onPagesChange(new_array);
       setUnappliedPagesOpChanges(true);
     }
   }
 
   const onRenameClick = () => {
-    rename_node(node_id, get_doc_title(breadcrumb || []))
+    rename_node(doc!.data!.id, get_doc_title(breadcrumb!.data!))
     .then(
       (node: NodeType) => {
-        let new_breadcrumb: BreadcrumbType = breadcrumb?.map((item: BreadcrumbItemType) => {
+        let new_breadcrumb: BreadcrumbType = breadcrumb!.data!.map((item: BreadcrumbItemType) => {
           if (item[0] == node.id) {
             return [item[0], node.title];
           }
@@ -242,21 +216,21 @@ export default function Viewer({
           return item;
         }) as BreadcrumbType;
 
-        setBreadcrumb(new_breadcrumb);
+        onBreadcrumbChange(new_breadcrumb);
       }
     );
   }
 
-  if (error) {
+  if (doc.error) {
     return <div className="viewer">
-      {error && <ErrorMessage msg={error} />}
+      {doc.error && <ErrorMessage msg={doc.error} />}
     </div>
   }
 
   return <div className="viewer w-100 m-1">
     <ActionPanel
-      versions={docVers}
-      doc={data}
+      versions={doc_versions}
+      doc={doc}
       show_selected_menu={showSelectedMenu}
       onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
@@ -265,10 +239,10 @@ export default function Viewer({
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
       show_dual_button={show_dual_button} />
-    <Breadcrumb path={breadcrumb || []} onClick={onNodeClick} is_loading={false} />
+    <Breadcrumb path={breadcrumb?.data || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel
-        pages={curPages}
+        pages={pages}
         visible={thumbnailsPanelVisible}
         onClick={onPageThumbnailClick}
         onSelect={onSelect}
@@ -277,7 +251,7 @@ export default function Viewer({
         onclick={onThumbnailsToggle}
         thumbnails_panel_visible={thumbnailsPanelVisible} />
       <PagesPanel
-        items={curPages}
+        items={pages}
         current_page_number={currentPage}/>
     </div>
   </div>;

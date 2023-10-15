@@ -1,11 +1,12 @@
 import Dropdown from 'react-bootstrap/Dropdown';
 import type { DocumentVersion, DocumentType } from "types";
 import { download_file } from 'utils/fetcher';
+import type { Vow } from 'types';
 
 
 type Args = {
-  versions: DocumentVersion[];
-  doc: DocumentType | null | undefined;
+  versions: Vow<DocumentVersion[]>;
+  doc: Vow<DocumentType>;
 }
 
 
@@ -21,10 +22,30 @@ function description(number: number, text: string): string {
 export default function DocVersionsDropdown({versions, doc}: Args) {
 
   const onClick = (href: string, file_name: string) => {
-    download_file(href, doc?.title || file_name);
+    download_file(href, doc!.data!.title || file_name);
   }
 
-  const dropdown_items = versions.map(
+  if (doc.is_pending) {
+    return <div>Doc Pending...</div>
+  }
+
+  if (doc.error) {
+    return <div>Doc Error {doc.error}</div>
+  }
+
+  if (versions.is_pending) {
+    return <div>Versions pending...</div>
+  }
+
+  if (versions.error) {
+    return <div>Versions error {versions.error}</div>
+  }
+
+  if (!versions.data) {
+    return <div>Received empty versions data</div>
+  }
+
+  const dropdown_items = versions.data.map(
     item => <Dropdown.Item key={item.id} onClick={
       () => onClick(item.download_url, item.file_name)}>
         {description(item.number, item.short_description)}

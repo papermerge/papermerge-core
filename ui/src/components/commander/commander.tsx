@@ -61,6 +61,7 @@ type Args = {
   onSortChange: (sort: Sorting) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
+  onNodesListChange: (nodes_list: NodeType[]) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -80,6 +81,7 @@ function Commander({
   onSortChange,
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
+  onNodesListChange,
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
@@ -93,7 +95,6 @@ function Commander({
   const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // sourceDropNodes = selectedNodes + one_being_fragged
   const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
-  const [ nodesList, setNodesList ] = useState<NodeList>([]);
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
@@ -103,11 +104,11 @@ function Commander({
   let nodesElement: JSX.Element[] | JSX.Element;
 
   const get_node = (node_id: string): NodeType | undefined => {
-    return nodesList.find((n: NodeType) => n.id == node_id);
+    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id);
   }
 
   const get_nodes = (node_ids: UUIDList): NodeType[] => {
-    return nodesList.filter((n: NodeType) => node_ids.includes(n.id));
+    return nodes!.data!.nodes.filter((n: NodeType) => node_ids.includes(n.id));
   }
 
   const updateSourceDropNodes = (node_id: string) => {
@@ -155,9 +156,9 @@ function Commander({
     of the current node (`node_id`) (current folder is "My Documents" and it has
     UUID = `node_id`).
      */
-    if (target_id == node_id) {
-      setNodesList(nodesList.concat(new_nodes));
-    }
+    //if (target_id == node_id) {
+    //  setNodesList(nodesList.concat(new_nodes));
+    //}
   }
 
   const onNodeSelect = (node_id: string, selected: boolean) => {
@@ -178,7 +179,7 @@ function Commander({
   }
 
   const onPerformDropNodes = (moved_node_ids: string[]) => {
-
+    /*
     nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
@@ -192,9 +193,11 @@ function Commander({
     setSelectedNodes([]);
     setDropNodesModalShow(false);
     setSourceDropNodes([]);
+    */
   }
 
   const onCancelDropNodes = () => {
+    /*
     nodesList.forEach((node: NodeType) => {
       node.accept_dropped_nodes = false;
       node.is_currently_dragged = false;
@@ -202,6 +205,7 @@ function Commander({
     setSelectedNodes([]);
     setSourceDropNodes([]);
     setDropNodesModalShow(false);
+    */
   }
 
   const onOKErrorModal = () => {
@@ -213,6 +217,7 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
+    /*
     let image = <DraggingIcon node_id={node_id}
           selectedNodes={selectedNodes}
           nodesList={nodesList} />;
@@ -235,9 +240,11 @@ function Commander({
     let root = createRoot(ghost);
 
     root.render(image);
+    */
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
+    /*
     const map = getNodesRefMap();
     const new_nodes = nodesList.map((item => {
       // @ts-ignore
@@ -270,9 +277,10 @@ function Commander({
       }
 
       return item;
-    }));
 
-    setNodesList(new_nodes);
+    }));
+    */
+    // setNodesList(new_nodes);
     updateSourceDropNodes(node_id);
   }
 
@@ -353,27 +361,27 @@ function Commander({
     create_new_folder(node_id)
     .then(
       (new_node: NodeType) => {
-        setNodesList([new_node, ...nodesList]);
+        onNodesListChange([new_node, ...nodes!.data!.nodes]);
       }
     );
   }
 
   const onRenameClick = () => {
     let initial_title = get_node_attr<string>(
-      selectedNodes, 'title', nodesList
+      selectedNodes, 'title', nodes!.data!.nodes
     );
 
     rename_node(selectedNodes[0], initial_title)
     .then(
       (node: NodeType) => {
-        let new_nodes_list = nodesList.map((item: NodeType) => {
+        let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
             return node;
           } else {
             return item;
           }
         });
-        setNodesList(new_nodes_list);
+        onNodesListChange(new_nodes_list);
         setSelectedNodes([]);
       }
     );
@@ -383,10 +391,10 @@ function Commander({
     delete_nodes(selectedNodes).then(
       (node_ids: string[]) => {
         /* Remove remove nodes from the commander list */
-        let new_nodes = nodesList.filter(
+        let new_nodes = nodes!.data!.nodes.filter(
           (node: NodeType) => node_ids.indexOf(node.id) == -1
         );
-        setNodesList(new_nodes);
+        onNodesListChange(new_nodes);
         setSelectedNodes([]);
       }
     );
@@ -394,12 +402,12 @@ function Commander({
 
   const onEditTagsClick = () => {
     let initial_tags = get_node_attr<Array<ColoredTagType>>(
-      selectedNodes,'tags', nodesList
+      selectedNodes,'tags', nodes!.data!.nodes
     );
 
     edit_tags(selectedNodes[0], initial_tags).then(
       (node: NodeType) => {
-        let new_nodes_list = nodesList.map((item: NodeType) => {
+        let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
             return node;
           } else {
@@ -407,7 +415,7 @@ function Commander({
           }
         });
 
-        setNodesList(new_nodes_list);
+        onNodesListChange(new_nodes_list);
         setSelectedNodes([]);
       }
     );

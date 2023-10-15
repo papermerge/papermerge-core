@@ -6,7 +6,16 @@
 
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
-import { Vow, DocumentType, DocumentVersion, NType, PageAndRotOp, Pagination, Sorting, BreadcrumbType } from 'types';
+import { Vow,
+  NodeType,
+  DocumentType,
+  DocumentVersion,
+  NType,
+  PageAndRotOp,
+  Pagination,
+  Sorting,
+  BreadcrumbType
+} from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
 import useDoc from './useDoc';
@@ -39,7 +48,7 @@ function DualPanel({ node }: Args) {
     sort_field: 'title', sort_order: 'desc'
   });
   // mnodes = main panel nodes (with their breadcrumb and parent)
-  const mnodes = useNodes({ // main panel nodes
+  const [mnodes, setMNodes] = useNodes({ // main panel nodes
     node: main_node,
     pagination: mpagination,
     sort: msort
@@ -51,7 +60,7 @@ function DualPanel({ node }: Args) {
     sort_field: 'title', sort_order: 'desc'
   });
   // snodes = secondary panel nodes (with their breadcrumb and parent)
-  const snodes = useNodes({ // secondary panel nodes
+  const [snodes, setSNodes] = useNodes({ // secondary panel nodes
     node: secondary_node,
     pagination: spagination,
     sort: ssort
@@ -185,6 +194,51 @@ function DualPanel({ node }: Args) {
     }
   }
 
+  const onMNodesListChange = (new_nodes: NodeType[]) => {
+
+    setMNodes(ready_vow({
+      nodes: new_nodes,
+      parent: mnodes!.data!.parent,
+      breadcrumb: mnodes!.data!.breadcrumb,
+      num_pages: mnodes!.data!.num_pages,
+      page_number: mnodes!.data!.page_number,
+      per_page: mnodes!.data!.per_page
+    }));
+
+    if (mnodes?.data?.parent?.id == snodes?.data?.parent?.id) {
+      setSNodes(ready_vow({
+        nodes: new_nodes,
+        parent: snodes!.data!.parent,
+        breadcrumb: snodes!.data!.breadcrumb,
+        num_pages: snodes!.data!.num_pages,
+        page_number: snodes!.data!.page_number,
+        per_page: snodes!.data!.per_page
+      }));
+    }
+  }
+
+  const onSNodesListChange = (new_nodes: NodeType[]) => {
+    setSNodes(ready_vow({
+      nodes: new_nodes,
+      parent: snodes!.data!.parent,
+      breadcrumb: snodes!.data!.breadcrumb,
+      num_pages: snodes!.data!.num_pages,
+      page_number: snodes!.data!.page_number,
+      per_page: snodes!.data!.per_page
+    }));
+
+    if (mnodes?.data?.parent?.id == snodes?.data?.parent?.id) {
+      setMNodes(ready_vow({
+        nodes: new_nodes,
+        parent: mnodes!.data!.parent,
+        breadcrumb: mnodes!.data!.breadcrumb,
+        num_pages: mnodes!.data!.num_pages,
+        page_number: mnodes!.data!.page_number,
+        per_page: mnodes!.data!.per_page
+      }));
+    }
+  }
+
   try {
     if (secondary_node == null) {
       return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
@@ -195,6 +249,7 @@ function DualPanel({ node }: Args) {
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
           sort={msort}
+          onNodesListChange={onMNodesListChange}
           doc={main_doc}
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
@@ -216,6 +271,7 @@ function DualPanel({ node }: Args) {
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
           sort={msort}
+          onNodesListChange={onMNodesListChange}
           doc={main_doc}
           doc_versions={mdocVers}
           doc_ver={mcurDocVer}
@@ -232,6 +288,7 @@ function DualPanel({ node }: Args) {
           onSortChange={onSecondaryPanelSortChange}
           pagination={spagination}
           sort={ssort}
+          onNodesListChange={onSNodesListChange}
           doc={secondary_doc}
           doc_versions={sdocVers}
           doc_ver={scurDocVer}

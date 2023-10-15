@@ -19,7 +19,10 @@ type Args = {
   sort: Sorting;
 }
 
-function useNodes({node, pagination, sort}: Args): Vow<NodesType> {
+type Setter<T> = React.Dispatch<Vow<T>>;
+
+
+function useNodes({node, pagination, sort}: Args): [Vow<NodesType>, Setter<NodesType>] {
   let [data, setData] = useState<Vow<NodesType>>({
     is_pending: true,
     loading_id: node?.id,
@@ -100,7 +103,7 @@ function useNodes({node, pagination, sort}: Args): Vow<NodesType> {
   ]);
 
 
-  return data;
+  return [data, setData];
 };
 
 

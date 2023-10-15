@@ -362,20 +362,20 @@ function Commander({
 
   const onRenameClick = () => {
     let initial_title = get_node_attr<string>(
-      selectedNodes, 'title', nodesList
+      selectedNodes, 'title', nodes!.data!.nodes
     );
 
     rename_node(selectedNodes[0], initial_title)
     .then(
       (node: NodeType) => {
-        let new_nodes_list = nodesList.map((item: NodeType) => {
+        let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
             return node;
           } else {
             return item;
           }
         });
-        setNodesList(new_nodes_list);
+        onNodesListChange(new_nodes_list);
         setSelectedNodes([]);
       }
     );
@@ -385,10 +385,10 @@ function Commander({
     delete_nodes(selectedNodes).then(
       (node_ids: string[]) => {
         /* Remove remove nodes from the commander list */
-        let new_nodes = nodesList.filter(
+        let new_nodes = nodes!.data!.nodes.filter(
           (node: NodeType) => node_ids.indexOf(node.id) == -1
         );
-        setNodesList(new_nodes);
+        onNodesListChange(new_nodes);
         setSelectedNodes([]);
       }
     );
@@ -401,7 +401,7 @@ function Commander({
 
     edit_tags(selectedNodes[0], initial_tags).then(
       (node: NodeType) => {
-        let new_nodes_list = nodesList.map((item: NodeType) => {
+        let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
             return node;
           } else {
@@ -409,7 +409,7 @@ function Commander({
           }
         });
 
-        setNodesList(new_nodes_list);
+        onNodesListChange(new_nodes_list);
         setSelectedNodes([]);
       }
     );

@@ -1,11 +1,10 @@
 import { fetcher_post, fetcher_upload } from 'utils/fetcher';
-import type { NodeType } from 'types';
+import type { DropFilesPromType, NodeType } from 'types';
 
 
 type UploaderArgs = {
   files: FileList;
   node_id: string;
-  onCreateDocumentNode: (nodes: NodeType[], target_id: string) => void;
 }
 
 type CreateDocumentType = {
@@ -15,13 +14,7 @@ type CreateDocumentType = {
 }
 
 
-function upload_file(
-  {file, node_id}: {file: File, node_id: string}
-) {
-
-}
-
-function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
+async function uploader({files, node_id}: UploaderArgs): Promise<DropFilesPromType> {
   let bulk_create_docs: any = [];
 
   Array.from(files, (file) => {
@@ -34,18 +27,11 @@ function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
     bulk_create_docs.push(
       fetcher_post<CreateDocumentType, NodeType>('/api/nodes/', data)
     );
-
-    //fetcher_post<CreateDocumentType, NodeType>('/nodes/', data).then(
-    //  (value: NodeType) => {
-    //    onCreateDocumentNode(value);
-    //  }
-    //)
   });
 
   Promise.all(bulk_create_docs).then(
     (values: NodeType[]) => {
       // notify commander to add document nodes
-      onCreateDocumentNode(values, node_id);
       values.forEach(value => {
         let file: File|undefined = Array.from(files).find(item => item.name == value.title)
         if (file) {
@@ -56,6 +42,12 @@ function uploader({files, node_id, onCreateDocumentNode}: UploaderArgs) {
           console.log(`${value.title} NOT FOUND!`);
         }
       });
+    }
+  );
+
+  return Promise.all(bulk_create_docs).then(
+    (values: NodeType[]) => {
+      return {nodes: values, parent_id: node_id};
     }
   );
 }

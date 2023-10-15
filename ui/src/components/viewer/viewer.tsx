@@ -154,10 +154,10 @@ export default function Viewer({
     let new_cur_pages = pages!.data!.filter(
       (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
     );
-    onPagesChange(new_cur_pages);
     setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
     setSelectedPages([]);
+    onPagesChange(new_cur_pages);
   }
 
   const onRotatePagesCcw = () => {

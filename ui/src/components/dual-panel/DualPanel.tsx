@@ -124,21 +124,45 @@ function DualPanel({ node }: Args) {
   }
 
   const onMainDocVersionsChange = (doc_versions: DocumentVersion[]) => {
+    setMDocVers(ready_vow(doc_versions));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      setSDocVers(ready_vow(doc_versions));
+    }
   }
 
   const onMainDocVerChange = (doc_ver: DocumentVersion) => {
   }
 
   const onMainPagesChange = (pages: PageAndRotOp[]) => {
+    setMCurPages(ready_vow(pages));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      setSCurPages(ready_vow(pages));
+    }
   }
 
   const onSecondaryDocVersionsChange = (doc_versions: DocumentVersion[]) => {
+    setSDocVers(ready_vow(doc_versions));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      setMDocVers(ready_vow(doc_versions));
+    }
   }
 
   const onSecondaryDocVerChange = (doc_ver: DocumentVersion) => {
   }
 
   const onSecondaryPagesChange = (pages: PageAndRotOp[]) => {
+    setSCurPages(ready_vow(pages));
+
+    // is it happens that both panels have opened same doc
+    if (secondary_doc?.data?.id === main_doc?.data?.id) {
+      setMCurPages(ready_vow(pages));
+    }
   }
 
   const onMDocBreadcrumbChange = (new_breadcrumb: BreadcrumbType) => {

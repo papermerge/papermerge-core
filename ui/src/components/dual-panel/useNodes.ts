@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { NType, NodeType, NodesType, Pagination, Sorting, Vow, FolderType } from "types";
 import { fetcher } from "utils/fetcher";
+import { Updater, useImmer } from 'use-immer';
 
 
 type NodeResultType = {
@@ -19,11 +20,11 @@ type Args = {
   sort: Sorting;
 }
 
-type Setter<T> = React.Dispatch<Vow<T>>;
+type Setter<T> = Updater<Vow<T>>;
 
 
 function useNodes({node, pagination, sort}: Args): [Vow<NodesType>, Setter<NodesType>] {
-  let [data, setData] = useState<Vow<NodesType>>({
+  let [data, setData] = useImmer<Vow<NodesType>>({
     is_pending: true,
     loading_id: node?.id,
     error: null,

@@ -7,6 +7,7 @@
 import { useState, useEffect, createContext } from 'react';
 import SinglePanel from './SinglePanel';
 import { Vow,
+  NodesType,
   NodeType,
   DocumentType,
   DocumentVersion,
@@ -195,47 +196,26 @@ function DualPanel({ node }: Args) {
   }
 
   const onMNodesListChange = (new_nodes: NodeType[]) => {
-
-    setMNodes(ready_vow({
-      nodes: new_nodes,
-      parent: mnodes!.data!.parent,
-      breadcrumb: mnodes!.data!.breadcrumb,
-      num_pages: mnodes!.data!.num_pages,
-      page_number: mnodes!.data!.page_number,
-      per_page: mnodes!.data!.per_page
-    }));
+    setMNodes((draft: Vow<NodesType>) => {
+      draft!.data!.nodes = new_nodes;
+    });
 
     if (mnodes?.data?.parent?.id == snodes?.data?.parent?.id) {
-      setSNodes(ready_vow({
-        nodes: new_nodes,
-        parent: snodes!.data!.parent,
-        breadcrumb: snodes!.data!.breadcrumb,
-        num_pages: snodes!.data!.num_pages,
-        page_number: snodes!.data!.page_number,
-        per_page: snodes!.data!.per_page
-      }));
+      setSNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = new_nodes;
+      });
     }
   }
 
   const onSNodesListChange = (new_nodes: NodeType[]) => {
-    setSNodes(ready_vow({
-      nodes: new_nodes,
-      parent: snodes!.data!.parent,
-      breadcrumb: snodes!.data!.breadcrumb,
-      num_pages: snodes!.data!.num_pages,
-      page_number: snodes!.data!.page_number,
-      per_page: snodes!.data!.per_page
-    }));
+    setSNodes((draft: Vow<NodesType>) => {
+      draft!.data!.nodes = new_nodes;
+    });
 
     if (mnodes?.data?.parent?.id == snodes?.data?.parent?.id) {
-      setMNodes(ready_vow({
-        nodes: new_nodes,
-        parent: mnodes!.data!.parent,
-        breadcrumb: mnodes!.data!.breadcrumb,
-        num_pages: mnodes!.data!.num_pages,
-        page_number: mnodes!.data!.page_number,
-        per_page: mnodes!.data!.per_page
-      }));
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = new_nodes;
+      });
     }
   }
 

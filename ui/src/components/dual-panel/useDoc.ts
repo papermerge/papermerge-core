@@ -16,7 +16,6 @@ function useDoc({node}: Args): Vow<DocumentType> {
     data: null
   });
 
-
   useEffect(() => {
     if (!node) {
       return;
@@ -62,7 +61,6 @@ function useDoc({node}: Args): Vow<DocumentType> {
 
   }, [node?.id]); // end of useEffect
 
-  console.log(`useDoc returning`, data);
   return data;
 }
 

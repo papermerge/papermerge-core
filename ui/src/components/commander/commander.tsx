@@ -61,6 +61,7 @@ type Args = {
   onSortChange: (sort: Sorting) => void;
   onNodesDisplayModeList: () => void;
   onNodesDisplayModeTiles: () => void;
+  onNodesListChange: (nodes_list: NodeType[]) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -80,6 +81,7 @@ function Commander({
   onSortChange,
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
+  onNodesListChange,
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
@@ -353,7 +355,7 @@ function Commander({
     create_new_folder(node_id)
     .then(
       (new_node: NodeType) => {
-        setNodesList([new_node, ...nodesList]);
+        onNodesListChange([new_node, ...nodes!.data!.nodes]);
       }
     );
   }

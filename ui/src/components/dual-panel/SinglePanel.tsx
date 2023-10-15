@@ -16,7 +16,8 @@ import {
   DocumentVersion,
   DocumentType,
   PageAndRotOp,
-  BreadcrumbType
+  BreadcrumbType,
+  NodeType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -29,6 +30,7 @@ type Args = {
   onNodeClick: (node: NType) => void;
   onSortChange: (sort: Sorting) => void;
   show_dual_button?: ShowDualButtonEnum;
+  onNodesListChange: (new_nodes: NodeType[]) => void;
   doc: Vow<DocumentType>;
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
@@ -132,6 +134,7 @@ function SinglePanel({
   onSortChange,
   onNodeClick,
   show_dual_button,
+  onNodesListChange,
   doc,
   doc_versions,
   doc_ver,
@@ -170,6 +173,7 @@ function SinglePanel({
         onSortChange={onSortChange}
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
+        onNodesListChange={onNodesListChange}
         show_dual_button={show_dual_button} />
     } else {
       return <Viewer

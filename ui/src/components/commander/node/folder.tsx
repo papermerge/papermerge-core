@@ -1,10 +1,10 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, useEffect } from 'react';
 
 import Spinner from "../../spinner";
 import SpinnerPlaceholder from "../../spinner_placeholder";
 import Form from 'react-bootstrap/Form';
 
-import type { NodeType, NodeClickArgsType, NType } from 'types';
+import type { NodeType, NType } from 'types';
 import type { CheckboxChangeType } from "../types";
 import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
@@ -16,10 +16,11 @@ type FolderArgsType = {
   onSelect: (node_id: string, selected: boolean) => void;
   onDragStart: (node_id: string, event: React.DragEvent) => void;
   onDrag: (node_id: string, event: React.DragEvent) => void;
+  onDropNodesToSpecificFolder: (node_id: string, event: React.DragEvent) => void;
   is_loading: boolean;
   is_selected: boolean;
+  is_being_dragged: boolean;
   display_mode: DisplayNodesModeEnum;
-  onSetAsDropTarget: (folder_target: NodeType | null) => void;
 }
 
 
@@ -49,22 +50,25 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
 
     const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
       setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
-      props.onSetAsDropTarget(props.node);
     }
 
     const onDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
       setCssAcceptFilesAndNodes(ACCEPT_DROPPED_NODES);
-      props.onSetAsDropTarget(props.node);
     }
 
     const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
       setCssAcceptFilesAndNodes("");
-      props.onSetAsDropTarget(null);
     }
 
     const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+      // signals that element wants to handle `drop` event
       event.preventDefault();
-      setCssAcceptFilesAndNodes("");
+      // without `event.stopPropagation`, the `drop` event will
+      // be fired twice: once for this folder and once for its parent
+      event.stopPropagation();  // ! Important
+
+      setCssAcceptFilesAndNodes(""); // remove selection
+      props.onDropNodesToSpecificFolder(props.node.id, event);
     }
 
     const css_class_node = (): string => {
@@ -76,12 +80,16 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
         css_class = 'node folder list';
       }
 
-      if (props.node.is_currently_dragged) {
+      if (props.is_being_dragged) {
         css_class += ' dragged ';
       }
 
       return css_class;
     }
+
+    useEffect(() => {
+      css_class_node();
+    }, [props.is_being_dragged]);
 
     if (props.display_mode == DisplayNodesModeEnum.Tiles) {
       return (

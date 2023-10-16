@@ -8,6 +8,7 @@ type NodeArgsType = {
   onDrag: (node_id: string, event: React.DragEvent) => void;
   is_loading: boolean;
   is_selected: boolean;
+  is_being_dragged: boolean;
   display_mode: DisplayNodesModeEnum;
 }
 

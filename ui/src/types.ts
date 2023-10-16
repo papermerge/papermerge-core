@@ -231,3 +231,5 @@ export type CreatedNodesType = {
   nodes: NodeType[];
   parent_id: string;
 }
+
+export type MovedNodesType = CreatedNodesType;  // alias

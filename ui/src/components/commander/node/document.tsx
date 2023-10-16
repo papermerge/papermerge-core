@@ -39,6 +39,26 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
     }
   }, []);
 
+  useEffect(() => {
+    css_class_node();
+  }, [props.is_being_dragged]);
+
+  const css_class_node = (): string => {
+    let css_class: string = '';
+
+    if (props.display_mode == DisplayNodesModeEnum.Tiles) {
+      css_class = 'node document tile';
+    } else {
+      css_class = 'node document list';
+    }
+
+    if (props.is_being_dragged) {
+      css_class += ' dragged ';
+    }
+
+    return css_class;
+  }
+
   const onclick = () => {
     props.onClick({id: props.node.id, ctype: props.node.ctype});
   }
@@ -68,7 +88,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   if (props.display_mode == DisplayNodesModeEnum.Tiles) {
     return (
       <div
-        className="node document tile"
+        className={css_class_node()}
         draggable
         ref={ref}
         key={props.node.id}
@@ -91,7 +111,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   } else {
     return (
       <div
-        className="node document list"
+        className={css_class_node()}
         draggable
         ref={ref}
         key={props.node.id}

@@ -225,3 +225,9 @@ export type ThumbnailPageDroppedArgs = {
 
 
 export type ShowDualButtonEnum = 'split' | 'close';
+
+
+export type DropFilesPromType = {
+  nodes: NodeType[];
+  parent_id: string;
+}

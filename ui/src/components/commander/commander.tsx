@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
 
@@ -16,9 +15,9 @@ import { is_empty } from 'utils/misc';
 import create_new_folder from './modals/NewFolder';
 import delete_nodes from './modals/DeleteNodes';
 import edit_tags from './modals/EditTags';
+import drop_files from './modals/DropFiles';
 import rename_node from 'components/modals/rename';
 import DropNodesModal from 'components/modals/drop_nodes';
-import DropFilesModal from 'components/modals/drop_files';
 import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
@@ -26,7 +25,7 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
+import type { ColoredTagType, DropFilesPromType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
 import type { UUIDList, NodeList, NType } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -87,8 +86,6 @@ function Commander({
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   // for papermerge nodes dropping
   const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
-  // for local filesystem files dropping
-  const [ dropFilesModalShow, setDropFilesModalShow ] = useState(false);
   const [ filesList, setFilesList ] = useState<FileList>()
   // target folder where drop in (using drag 'n drop) files will be uploaded
   const [ targetDropFile, setTargetDropFile ] = useState<NodeType | FolderType | null | undefined>(null);
@@ -318,7 +315,7 @@ function Commander({
   }
 
   const onCancelDropFiles = () => {
-    setDropFilesModalShow(false);
+    //setDropFilesModalShow(false);
   }
 
   const onPerformDropFiles = () => {
@@ -334,7 +331,7 @@ function Commander({
       get uploaded.
     */
 
-    setDropFilesModalShow(false);
+    //setDropFilesModalShow(false);
   }
 
   const onSetAsDropTarget = (target_folder: NodeType | null) => {
@@ -421,6 +418,25 @@ function Commander({
     );
   }
 
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    if (event.dataTransfer.files.length > 0) {
+      // only show dialog if event.dataTransfer contains at least one file
+      drop_files({
+        source_files: event.dataTransfer.files,
+        target: nodes!.data!.parent
+      })
+      .then(
+        (created_nodes: DropFilesPromType) => {
+          onNodesListChange(
+            [...nodes!.data!.nodes, ...created_nodes.nodes]
+          );
+          setCssAcceptFiles("");
+      });
+    }
+  }
+
   if (nodes.data) {
     let items = nodes.data.nodes;
 
@@ -481,7 +497,8 @@ function Commander({
         className={`commander w-100 m-1 ${cssAcceptFiles}`}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
-        onDragOver={onDragOver}>
+        onDragOver={onDragOver}
+        onDrop={onDrop}>
         <div className='top-bar'>
           <Menu
             onCreateDocumentNode={onCreateDocumentModel}

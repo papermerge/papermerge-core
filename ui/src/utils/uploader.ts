@@ -1,5 +1,5 @@
 import { fetcher_post, fetcher_upload } from 'utils/fetcher';
-import type { DropFilesPromType, NodeType } from 'types';
+import type { CreatedNodesType, NodeType } from 'types';
 
 
 type UploaderArgs = {
@@ -14,7 +14,7 @@ type CreateDocumentType = {
 }
 
 
-async function uploader({files, node_id}: UploaderArgs): Promise<DropFilesPromType> {
+async function uploader({files, node_id}: UploaderArgs): Promise<CreatedNodesType> {
   let bulk_create_docs: any = [];
 
   Array.from(files, (file) => {

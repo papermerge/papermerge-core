@@ -25,7 +25,16 @@ import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, DropFilesPromType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
+import type {
+  ColoredTagType,
+  CreatedNodesType,
+  FolderType,
+  NodeType,
+  Pagination,
+  ShowDualButtonEnum,
+  Sorting
+} from 'types';
+
 import type { UUIDList, NodeList, NType } from 'types';
 import { NodeClickArgsType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
@@ -428,13 +437,19 @@ function Commander({
         target: nodes!.data!.parent
       })
       .then(
-        (created_nodes: DropFilesPromType) => {
+        (created_nodes: CreatedNodesType) => {
           onNodesListChange(
             [...nodes!.data!.nodes, ...created_nodes.nodes]
           );
           setCssAcceptFiles("");
       });
     }
+  }
+
+  const onCreatedNodesByUpload = (created_nodes: CreatedNodesType) => {
+    onNodesListChange(
+      [...nodes!.data!.nodes, ...created_nodes.nodes]
+    );
   }
 
   if (nodes.data) {
@@ -501,11 +516,11 @@ function Commander({
         onDrop={onDrop}>
         <div className='top-bar'>
           <Menu
-            onCreateDocumentNode={onCreateDocumentModel}
             onNewFolderClick={onNewFolderClick}
             onRenameClick={onRenameClick}
             onDeleteNodesClick={onDeleteNodesClick}
             onEditTagsClick={onEditTagsClick}
+            onCreatedNodesByUpload={onCreatedNodesByUpload}
             selected_nodes={selectedNodes}
             node_id={node_id} />
 

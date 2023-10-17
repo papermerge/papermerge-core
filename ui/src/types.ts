@@ -236,5 +236,4 @@ export type MovedNodesType = CreatedNodesType;  // alias
 export type onMovedNodesType = {
   target_id: string;
   source: NodeType[];
-  source_parent_id: string;
 }

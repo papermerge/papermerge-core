@@ -359,8 +359,10 @@ function Commander({
     const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
     let all_transferred_nodes: NodeType[] = [];
 
-    // #2 drop Nodes (from main or secondary panel)
+    // #2 move/drop Nodes (from main or secondary panel)
     if (data_raw) {
+      // nodes are moved from one panel root folder to
+      // another's panel root folder
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
       move_nodes({
         source_nodes: all_transferred_nodes,
@@ -368,29 +370,34 @@ function Commander({
       }).then((moved_nodes: MovedNodesType) => {
         onMovedNodes({
           target_id: moved_nodes.parent_id,
-          source: moved_nodes.nodes,
-          source_parent_id: nodes.data!.parent.id
-        })
+          source: moved_nodes.nodes
+        });
+        setCssAcceptFiles("");
       });
     }
   }
 
   const onDropNodesToSpecificFolder = (node_id: string, event: React.DragEvent) => {
+    /**
+     * Triggered when user moves one or multiple nodes from
+     * one panel into another's panel specific folder i.e. nodes
+     * are moved/dropped over some folder in the list.
+     */
     const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
     let all_transferred_nodes: NodeType[] = [];
 
     if (data_raw) {
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
-      // show DropNodesModal here
+
       move_nodes({
         source_nodes: all_transferred_nodes,
         target_node: get_node(node_id)
       }).then((moved_nodes: MovedNodesType) => {
+        setCssAcceptFiles("");
         onMovedNodes({
           target_id: moved_nodes.parent_id,
-          source: moved_nodes.nodes,
-          source_parent_id: nodes.data!.parent.id
-        })
+          source: moved_nodes.nodes
+        });
       })
     } else {
       console.warn(`Empty dataTransfer while dropping to ${node_id} folder`);

@@ -399,7 +399,7 @@ function Commander({
             onDropNodesToSpecificFolder={onDropNodesToSpecificFolder}
             display_mode={display_mode}
             is_selected={in_list(item.id, selected_nodes)}
-            is_being_dragged={in_list(item.id, selected_nodes)}
+            is_being_dragged={in_list(item.id, dragged_nodes)}
             node={item}
             is_loading={nodes.loading_id == item.id}
             ref={(node) => {

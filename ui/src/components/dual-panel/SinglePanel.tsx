@@ -18,7 +18,8 @@ import {
   PageAndRotOp,
   BreadcrumbType,
   onMovedNodesType,
-  NodeType
+  NodeType,
+  UUIDList
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -27,6 +28,8 @@ type Args = {
   parent_node: NType;
   nodes: Vow<NodesType>;
   onMovedNodes: (args: onMovedNodesType) => void;
+  onSelectNodes: (value: UUIDList) => void;
+  onDragNodes: (value: UUIDList) => void;
   pagination: Pagination;
   sort: Sorting;
   onNodeClick: (node: NType) => void;
@@ -42,6 +45,8 @@ type Args = {
   onDocVerChange: (doc_ver: DocumentVersion) => void;
   onPagesChange: (pages: PageAndRotOp[]) => void;
   onDocBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
+  selected_nodes: UUIDList;
+  dragged_nodes: UUIDList;
 }
 
 type NodeListParams = {
@@ -133,6 +138,10 @@ function SinglePanel({
   pagination,
   sort,
   nodes,
+  onSelectNodes,
+  onDragNodes,
+  selected_nodes,
+  dragged_nodes,
   onMovedNodes,
   onSortChange,
   onNodeClick,
@@ -169,6 +178,10 @@ function SinglePanel({
         pagination={pagination}
         sort={sort}
         nodes={nodes}
+        selected_nodes={selected_nodes}
+        dragged_nodes={dragged_nodes}
+        onSelectNodes={onSelectNodes}
+        onDragNodes={onDragNodes}
         display_mode={display_mode}
         onNodeClick={onNodeClick}
         onPageClick={() => {}}

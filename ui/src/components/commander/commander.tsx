@@ -62,6 +62,8 @@ type Args = {
   sort: Sorting;
   nodes: Vow<NodesType>;
   onMovedNodes: (args: onMovedNodesType) => void;
+  onSelectNodes: (value: UUIDList) => void;
+  onDragNodes: (value: UUIDList) => void;
   display_mode: DisplayNodesModeEnum;
   onNodeClick: (node: NType) => void;
   onPageClick: (page_number: number) => void;
@@ -71,6 +73,8 @@ type Args = {
   onNodesDisplayModeTiles: () => void;
   onNodesListChange: (nodes_list: NodeType[]) => void;
   show_dual_button?: ShowDualButtonEnum;
+  selected_nodes: UUIDList;
+  dragged_nodes: UUIDList;
 }
 
 
@@ -83,6 +87,10 @@ function Commander({
   sort,
   nodes,
   onMovedNodes,
+  selected_nodes,
+  dragged_nodes,
+  onSelectNodes,
+  onDragNodes,
   display_mode,
   onNodeClick,
   onPageClick,
@@ -94,17 +102,11 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  // for papermerge nodes dropping
-  const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
-  const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
-  // list of node IDs which currently are being dragged
-  const [ draggedNodes, setDraggedNodes ] = useState<UUIDList>([]);
 
   const nodesRef = useRef(null);
-  let canvasRef = useRef<HTMLCanvasElement | null>(null);
   let nodesElement: JSX.Element[] | JSX.Element;
 
   const get_node = (node_id: string): NodeType => {
@@ -117,12 +119,12 @@ function Commander({
 
   const onNodeSelect = (node_id: string, selected: boolean) => {
     if (selected) {
-      setSelectedNodes(
-        [...selectedNodes, node_id]
+      onSelectNodes(
+        [...selected_nodes, node_id]
       );
     } else {
-      setSelectedNodes(
-        selectedNodes.filter((uuid: string) => uuid !== node_id)
+      onSelectNodes(
+        selected_nodes.filter((uuid: string) => uuid !== node_id)
       );
     }
   }
@@ -130,36 +132,6 @@ function Commander({
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
     onPageSizeChange(new_value);
-  }
-
-  const onPerformDropNodes = (moved_node_ids: string[]) => {
-    /*
-    nodesList.forEach((node: NodeType) => {
-      node.accept_dropped_nodes = false;
-      node.is_currently_dragged = false;
-    });
-
-    let new_nodes = nodesList.filter(
-      (node: NodeType) => !moved_node_ids.includes(node.id)
-    );
-
-    setNodesList(new_nodes);
-    setSelectedNodes([]);
-    setDropNodesModalShow(false);
-    setSourceDropNodes([]);
-    */
-  }
-
-  const onCancelDropNodes = () => {
-    /*
-    nodesList.forEach((node: NodeType) => {
-      node.accept_dropped_nodes = false;
-      node.is_currently_dragged = false;
-    });
-    setSelectedNodes([]);
-    setSourceDropNodes([]);
-    setDropNodesModalShow(false);
-    */
   }
 
   const onOKErrorModal = () => {
@@ -173,10 +145,10 @@ function Commander({
   const onDragStart = (node_id: string, event: React.DragEvent) => {
 
     let image = <DraggingIcon node_id={node_id}
-          selectedNodes={selectedNodes}
+          selectedNodes={selected_nodes}
           nodesList={nodes!.data! .nodes} />;
     let ghost = document.createElement('div');
-    const all_transfered_nodes = [...selectedNodes, node_id] as UUIDList;
+    const all_transfered_nodes = [...selected_nodes, node_id] as UUIDList;
     const transf_nodes = get_nodes(all_transfered_nodes);
 
     event.dataTransfer.setData(
@@ -216,12 +188,12 @@ function Commander({
 
       // mark all nodes being dragged (in UI they will be faded out)
       // nodes being dragged are node_id + selected ones
-      if (item.id === node_id || selectedNodes.find((id: string) => id == item.id)) {
+      if (item.id === node_id || selected_nodes.find((id: string) => id == item.id)) {
         dragged_nodes_list.push(item.id);
       }
     }));
 
-    setDraggedNodes(dragged_nodes_list);
+    onDragNodes(dragged_nodes_list);
   }
 
   const onDragEnter = () => {
@@ -284,10 +256,10 @@ function Commander({
 
   const onRenameClick = () => {
     let initial_title = get_node_attr<string>(
-      selectedNodes, 'title', nodes!.data!.nodes
+      selected_nodes, 'title', nodes!.data!.nodes
     );
 
-    rename_node(selectedNodes[0], initial_title)
+    rename_node(selected_nodes[0], initial_title)
     .then(
       (node: NodeType) => {
         let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
@@ -298,30 +270,30 @@ function Commander({
           }
         });
         onNodesListChange(new_nodes_list);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
 
   const onDeleteNodesClick = () => {
-    delete_nodes(selectedNodes).then(
+    delete_nodes(selected_nodes).then(
       (node_ids: string[]) => {
         /* Remove remove nodes from the commander list */
         let new_nodes = nodes!.data!.nodes.filter(
           (node: NodeType) => node_ids.indexOf(node.id) == -1
         );
         onNodesListChange(new_nodes);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
 
   const onEditTagsClick = () => {
     let initial_tags = get_node_attr<Array<ColoredTagType>>(
-      selectedNodes,'tags', nodes!.data!.nodes
+      selected_nodes,'tags', nodes!.data!.nodes
     );
 
-    edit_tags(selectedNodes[0], initial_tags).then(
+    edit_tags(selected_nodes[0], initial_tags).then(
       (node: NodeType) => {
         let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
@@ -332,7 +304,7 @@ function Commander({
         });
 
         onNodesListChange(new_nodes_list);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
@@ -426,8 +398,8 @@ function Commander({
             onDrag={onDrag}
             onDropNodesToSpecificFolder={onDropNodesToSpecificFolder}
             display_mode={display_mode}
-            is_selected={in_list(item.id, selectedNodes)}
-            is_being_dragged={in_list(item.id, draggedNodes)}
+            is_selected={in_list(item.id, selected_nodes)}
+            is_being_dragged={in_list(item.id, selected_nodes)}
             node={item}
             is_loading={nodes.loading_id == item.id}
             ref={(node) => {
@@ -448,8 +420,8 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             display_mode={display_mode}
-            is_selected={in_list(item.id, selectedNodes)}
-            is_being_dragged={in_list(item.id, draggedNodes)}
+            is_selected={in_list(item.id, selected_nodes)}
+            is_being_dragged={in_list(item.id, dragged_nodes)}
             node={item}
             is_loading={nodes.loading_id == item.id}
             ref={(node) => {
@@ -481,7 +453,7 @@ function Commander({
             onDeleteNodesClick={onDeleteNodesClick}
             onEditTagsClick={onEditTagsClick}
             onCreatedNodesByUpload={onCreatedNodesByUpload}
-            selected_nodes={selectedNodes}
+            selected_nodes={selected_nodes}
             node_id={node_id} />
 
             <div className="d-flex align-items-center">

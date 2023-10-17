@@ -16,7 +16,8 @@ import { Vow,
   Pagination,
   Sorting,
   BreadcrumbType,
-  onMovedNodesType
+  onMovedNodesType,
+  UUIDList
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
@@ -75,8 +76,12 @@ function DualPanel({ node }: Args) {
   const [sdocVers, setSDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
   const [mcurPages, setMCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
   const [scurPages, setSCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
-  const [mdoc_breadcrumb, setMDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow())
-  const [sdoc_breadcrumb, setSDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow())
+  const [mdoc_breadcrumb, setMDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow());
+  const [sdoc_breadcrumb, setSDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow());
+  const [selected_mnodes, setSelectedMNodes] = useState<UUIDList>([]);
+  const [selected_snodes, setSelectedSNodes] = useState<UUIDList>([]);
+  const [dragged_mnodes, setDraggedMNodes] = useState<UUIDList>([]);
+  const [dragged_snodes, setDraggedSNodes] = useState<UUIDList>([]);
 
   useEffect(() => { // for main doc
     if (main_doc?.data) {
@@ -239,7 +244,6 @@ function DualPanel({ node }: Args) {
       setMNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
-
     } else if (source_parent_id == secondary_node?.id) {
       const new_nodes = snodes.data?.nodes.filter(n => {
         const source_ids = args.source.map(i => i.id);
@@ -261,6 +265,27 @@ function DualPanel({ node }: Args) {
         draft!.data!.nodes = [...snodes!.data!.nodes, ...args.source];
       });
     }
+
+    setDraggedMNodes([]);
+    setDraggedSNodes([]);
+    setSelectedMNodes([]);
+    setSelectedSNodes([]);
+  }
+
+  const onSelectSNodes = (value: UUIDList) => {
+    setSelectedSNodes(value);
+  }
+
+  const onSelectMNodes = (value: UUIDList) => {
+    setSelectedMNodes(value);
+  }
+
+  const onDragMNodes = (value: UUIDList) => {
+    setDraggedMNodes(value);
+  }
+
+  const onDragSNodes = (value: UUIDList) => {
+    setDraggedSNodes(value);
   }
 
   try {
@@ -269,7 +294,11 @@ function DualPanel({ node }: Args) {
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
+          selected_nodes={selected_mnodes}
+          dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
+          onSelectNodes={onSelectMNodes}
+          onDragNodes={onDragMNodes}
           onNodeClick={onMainPanelNodeClick}
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
@@ -292,7 +321,11 @@ function DualPanel({ node }: Args) {
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
+          selected_nodes={selected_mnodes}
+          dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
+          onSelectNodes={onSelectMNodes}
+          onDragNodes={onDragMNodes}
           onNodeClick={onMainPanelNodeClick}
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
@@ -311,6 +344,10 @@ function DualPanel({ node }: Args) {
           parent_node={secondary_node}
           nodes={snodes}
           onMovedNodes={onMovedNodes}
+          onSelectNodes={onSelectSNodes}
+          selected_nodes={selected_snodes}
+          dragged_nodes={dragged_snodes}
+          onDragNodes={onDragSNodes}
           onNodeClick={onSecondaryPanelNodeClick}
           onSortChange={onSecondaryPanelSortChange}
           pagination={spagination}

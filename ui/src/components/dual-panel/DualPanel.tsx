@@ -15,7 +15,8 @@ import { Vow,
   PageAndRotOp,
   Pagination,
   Sorting,
-  BreadcrumbType
+  BreadcrumbType,
+  onMovedNodesType
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
@@ -219,12 +220,56 @@ function DualPanel({ node }: Args) {
     }
   }
 
+  const onMovedNodes = (args: onMovedNodesType) => {
+
+    if (args.source.length == 0) {
+      console.warn("onMoveNodes received empty source list");
+      return;
+    }
+
+    const source_parent_id = args.source[0].parent_id;
+
+    // substract nodes from the source
+    if (source_parent_id == main_node.id) {
+      const new_nodes = mnodes.data?.nodes.filter(n => {
+        const source_ids = args.source.map(i => i.id);
+        return source_ids.indexOf(n.id) < 0;
+      });
+
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = new_nodes || [];
+      });
+
+    } else if (source_parent_id == secondary_node?.id) {
+      const new_nodes = snodes.data?.nodes.filter(n => {
+        const source_ids = args.source.map(i => i.id);
+        return source_ids.indexOf(n.id) < 0;
+      });
+
+      setSNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = new_nodes || [];
+      });
+    }
+
+    // add nodes to the target
+    if (args.target_id == main_node.id) {
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = [...mnodes!.data!.nodes, ...args.source];
+      });
+    } else if (args.target_id == secondary_node?.id) {
+      setSNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = [...snodes!.data!.nodes, ...args.source];
+      });
+    }
+  }
+
   try {
     if (secondary_node == null) {
       return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
+          onMovedNodes={onMovedNodes}
           onNodeClick={onMainPanelNodeClick}
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
@@ -247,6 +292,7 @@ function DualPanel({ node }: Args) {
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
+          onMovedNodes={onMovedNodes}
           onNodeClick={onMainPanelNodeClick}
           onSortChange={onMainPanelSortChange}
           pagination={mpagination}
@@ -264,6 +310,7 @@ function DualPanel({ node }: Args) {
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
+          onMovedNodes={onMovedNodes}
           onNodeClick={onSecondaryPanelNodeClick}
           onSortChange={onSecondaryPanelSortChange}
           pagination={spagination}

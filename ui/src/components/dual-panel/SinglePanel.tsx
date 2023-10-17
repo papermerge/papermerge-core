@@ -17,6 +17,7 @@ import {
   DocumentType,
   PageAndRotOp,
   BreadcrumbType,
+  onMovedNodesType,
   NodeType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
@@ -25,6 +26,7 @@ import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'type
 type Args = {
   parent_node: NType;
   nodes: Vow<NodesType>;
+  onMovedNodes: (args: onMovedNodesType) => void;
   pagination: Pagination;
   sort: Sorting;
   onNodeClick: (node: NType) => void;
@@ -131,6 +133,7 @@ function SinglePanel({
   pagination,
   sort,
   nodes,
+  onMovedNodes,
   onSortChange,
   onNodeClick,
   show_dual_button,
@@ -171,6 +174,7 @@ function SinglePanel({
         onPageClick={() => {}}
         onPageSizeChange={() => {}}
         onSortChange={onSortChange}
+        onMovedNodes={onMovedNodes}
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         onNodesListChange={onNodesListChange}

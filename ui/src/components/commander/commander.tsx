@@ -18,30 +18,29 @@ import delete_nodes from './modals/DeleteNodes';
 import edit_tags from './modals/EditTags';
 import drop_files from './modals/DropFiles';
 import rename_node from 'components/modals/rename';
-import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
-import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
 import type {
   ColoredTagType,
   CreatedNodesType,
-  FolderType,
+  MovedNodesType,
+  onMovedNodesType,
   NodeType,
   Pagination,
   ShowDualButtonEnum,
   Sorting
 } from 'types';
 
-import type { UUIDList, NodeList, NType } from 'types';
-import { NodeClickArgsType } from 'types';
+import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
-import { Vow, NodeSortFieldEnum, NodeSortOrderEnum, NodesType } from 'types';
+import { Vow, NodesType } from 'types';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
+import move_nodes from './modals/MoveNodes';
 
 const DATA_TYPE_NODE = 'node/type';
 
@@ -62,6 +61,7 @@ type Args = {
   pagination: Pagination;
   sort: Sorting;
   nodes: Vow<NodesType>;
+  onMovedNodes: (args: onMovedNodesType) => void;
   display_mode: DisplayNodesModeEnum;
   onNodeClick: (node: NType) => void;
   onPageClick: (page_number: number) => void;
@@ -82,6 +82,7 @@ function Commander({
   pagination,
   sort,
   nodes,
+  onMovedNodes,
   display_mode,
   onNodeClick,
   onPageClick,
@@ -106,8 +107,8 @@ function Commander({
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
   let nodesElement: JSX.Element[] | JSX.Element;
 
-  const get_node = (node_id: string): NodeType | undefined => {
-    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id);
+  const get_node = (node_id: string): NodeType => {
+    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id)!;
   }
 
   const get_nodes = (node_ids: UUIDList): NodeType[] => {
@@ -361,9 +362,16 @@ function Commander({
     // #2 drop Nodes (from main or secondary panel)
     if (data_raw) {
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
-      console.log(`Transferring nodes: `, all_transferred_nodes);
-      console.log(`to Parent `, nodes!.data!.parent);
-      // show DropNodesModal here
+      move_nodes({
+        source_nodes: all_transferred_nodes,
+        target_node: nodes!.data!.parent
+      }).then((moved_nodes: MovedNodesType) => {
+        onMovedNodes({
+          target_id: moved_nodes.parent_id,
+          source: moved_nodes.nodes,
+          source_parent_id: nodes.data!.parent.id
+        })
+      });
     }
   }
 
@@ -373,9 +381,17 @@ function Commander({
 
     if (data_raw) {
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
-      console.log(`Transferring nodes: `, all_transferred_nodes);
-      console.log(`to Parent `, get_node(node_id));
       // show DropNodesModal here
+      move_nodes({
+        source_nodes: all_transferred_nodes,
+        target_node: get_node(node_id)
+      }).then((moved_nodes: MovedNodesType) => {
+        onMovedNodes({
+          target_id: moved_nodes.parent_id,
+          source: moved_nodes.nodes,
+          source_parent_id: nodes.data!.parent.id
+        })
+      })
     } else {
       console.warn(`Empty dataTransfer while dropping to ${node_id} folder`);
     }

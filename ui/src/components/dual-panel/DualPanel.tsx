@@ -31,6 +31,8 @@ type Args = {
 type DualPanelContextType = {
   onOpenSecondary: (local_node: NType) => void;
   onCloseSecondary: () => void;
+  onResetSelectedNodes: () => void;
+  onResetDraggedNodes: () => void;
 }
 
 
@@ -288,9 +290,26 @@ function DualPanel({ node }: Args) {
     setDraggedSNodes(value);
   }
 
+  const onResetSelectedNodes = () => {
+    setSelectedMNodes([]);
+    setSelectedSNodes([]);
+  }
+
+  const onResetDraggedNodes = () => {
+    setDraggedMNodes([]);
+    setDraggedSNodes([]);
+  }
+
+  const dual_context = {
+    onOpenSecondary,
+    onCloseSecondary,
+    onResetSelectedNodes,
+    onResetDraggedNodes
+  }
+
   try {
     if (secondary_node == null) {
-      return <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
+      return <DualPanelContext.Provider value={dual_context}>
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
@@ -317,7 +336,7 @@ function DualPanel({ node }: Args) {
       </DualPanelContext.Provider>
     } else {
       return <div className='d-flex'>
-        <DualPanelContext.Provider value={{onOpenSecondary, onCloseSecondary}}>
+        <DualPanelContext.Provider value={dual_context}>
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}

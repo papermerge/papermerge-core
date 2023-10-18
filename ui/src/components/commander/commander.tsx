@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
@@ -10,6 +10,7 @@ import Document from './node/document';
 import EmptyFolder from './empty_folder';
 import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
+import { DualPanelContext } from 'components/dual-panel/DualPanel';
 
 import { is_empty } from 'utils/misc';
 
@@ -105,6 +106,7 @@ function Commander({
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
+  const dual_context = useContext(DualPanelContext);
 
   const nodesRef = useRef(null);
   let nodesElement: JSX.Element[] | JSX.Element;
@@ -143,7 +145,6 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
-
     let image = <DraggingIcon node_id={node_id}
           selectedNodes={selected_nodes}
           nodesList={nodes!.data! .nodes} />;
@@ -314,6 +315,7 @@ function Commander({
 
     // #1 drop files from local FS into the commander
     if (event.dataTransfer.files.length > 0) {
+      debugger;
       // only show dialog if event.dataTransfer contains at least one file
       drop_files({
         source_files: event.dataTransfer.files,
@@ -345,6 +347,14 @@ function Commander({
           source: moved_nodes.nodes
         });
         setCssAcceptFiles("");
+      }).catch(() => { // catch => dialog was canceled
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
       });
     }
   }
@@ -370,7 +380,16 @@ function Commander({
           target_id: moved_nodes.parent_id,
           source: moved_nodes.nodes
         });
-      })
+      }).catch(() => { // catch => dialog was canceled
+        // reset selection
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
+      });
     } else {
       console.warn(`Empty dataTransfer while dropping to ${node_id} folder`);
     }

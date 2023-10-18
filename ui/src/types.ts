@@ -227,7 +227,13 @@ export type ThumbnailPageDroppedArgs = {
 export type ShowDualButtonEnum = 'split' | 'close';
 
 
-export type DropFilesPromType = {
+export type CreatedNodesType = {
   nodes: NodeType[];
   parent_id: string;
+}
+
+export type MovedNodesType = CreatedNodesType;  // alias
+export type onMovedNodesType = {
+  target_id: string;
+  source: NodeType[];
 }

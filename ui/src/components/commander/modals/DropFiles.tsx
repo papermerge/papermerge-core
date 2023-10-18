@@ -5,12 +5,12 @@ import { createRoot } from "react-dom/client";
 
 
 
-import type { DropFilesPromType, FolderType, NodeType } from 'types';
+import type { CreatedNodesType, FolderType, NodeType } from 'types';
 
 
 type Args = {
   onCancel: () => void;
-  onOK: (drop_files: DropFilesPromType) => void;
+  onOK: (drop_files: CreatedNodesType) => void;
   source_files: FileList;
   target: FolderType;
 }
@@ -38,7 +38,7 @@ const DropFilesModal = ({
       node_id: target.id
     })
     .then(
-      (drop_files: DropFilesPromType) => onOK(drop_files)
+      (drop_files: CreatedNodesType) => onOK(drop_files)
     );
   }
 
@@ -71,7 +71,7 @@ type DropFileArgs = {
 function drop_files({source_files, target}: DropFileArgs) {
   let modals = document.getElementById(MODALS);
 
-  let promise = new Promise<DropFilesPromType>(function(onOK, onCancel){
+  let promise = new Promise<CreatedNodesType>(function(onOK, onCancel){
     if (modals) {
       let dom_root = createRoot(modals);
 

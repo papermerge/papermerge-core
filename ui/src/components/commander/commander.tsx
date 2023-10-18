@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useContext } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
 
@@ -9,6 +10,7 @@ import Document from './node/document';
 import EmptyFolder from './empty_folder';
 import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
+import { DualPanelContext } from 'components/dual-panel/DualPanel';
 
 import { is_empty } from 'utils/misc';
 
@@ -17,27 +19,34 @@ import delete_nodes from './modals/DeleteNodes';
 import edit_tags from './modals/EditTags';
 import drop_files from './modals/DropFiles';
 import rename_node from 'components/modals/rename';
-import DropNodesModal from 'components/modals/drop_nodes';
-import ErrorModal from 'components/modals/error_modal';
 import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
-import ErrorMessage from 'components/error_message';
 
 import { Rectangle, Point } from 'utils/geometry';
 
-import type { ColoredTagType, DropFilesPromType, FolderType, NodeType, Pagination, ShowDualButtonEnum, Sorting} from 'types';
-import type { UUIDList, NodeList, NType } from 'types';
-import { NodeClickArgsType } from 'types';
+import type {
+  ColoredTagType,
+  CreatedNodesType,
+  MovedNodesType,
+  onMovedNodesType,
+  NodeType,
+  Pagination,
+  ShowDualButtonEnum,
+  Sorting
+} from 'types';
+
+import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
-import { Vow, NodeSortFieldEnum, NodeSortOrderEnum, NodesType } from 'types';
+import { Vow, NodesType } from 'types';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
+import move_nodes from './modals/MoveNodes';
 
 const DATA_TYPE_NODE = 'node/type';
 
 
-function node_is_selected(node_id: string, arr: Array<string>): boolean {
+function in_list(node_id: string, arr: Array<string>): boolean {
   if (arr && arr.length > 0) {
     const found_item = arr.find((uuid: string) => uuid === node_id);
 
@@ -53,6 +62,9 @@ type Args = {
   pagination: Pagination;
   sort: Sorting;
   nodes: Vow<NodesType>;
+  onMovedNodes: (args: onMovedNodesType) => void;
+  onSelectNodes: (value: UUIDList) => void;
+  onDragNodes: (value: UUIDList) => void;
   display_mode: DisplayNodesModeEnum;
   onNodeClick: (node: NType) => void;
   onPageClick: (page_number: number) => void;
@@ -62,6 +74,8 @@ type Args = {
   onNodesDisplayModeTiles: () => void;
   onNodesListChange: (nodes_list: NodeType[]) => void;
   show_dual_button?: ShowDualButtonEnum;
+  selected_nodes: UUIDList;
+  dragged_nodes: UUIDList;
 }
 
 
@@ -73,6 +87,11 @@ function Commander({
   pagination,
   sort,
   nodes,
+  onMovedNodes,
+  selected_nodes,
+  dragged_nodes,
+  onSelectNodes,
+  onDragNodes,
   display_mode,
   onNodeClick,
   onPageClick,
@@ -84,88 +103,30 @@ function Commander({
   show_dual_button
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
-  // for papermerge nodes dropping
-  const [ dropNodesModalShow, setDropNodesModalShow ] = useState(false);
-  const [ filesList, setFilesList ] = useState<FileList>()
-  // target folder where drop in (using drag 'n drop) files will be uploaded
-  const [ targetDropFile, setTargetDropFile ] = useState<NodeType | FolderType | null | undefined>(null);
-  const [ selectedNodes, setSelectedNodes ] = useState<UUIDList>([]);
-  // sourceDropNodes = selectedNodes + one_being_fragged
-  const [ sourceDropNodes, setSourceDropNodes] = useState<NodeType[]>([]);
   // css class name will be set to "accept-files" when user drags
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
+  const dual_context = useContext(DualPanelContext);
 
   const nodesRef = useRef(null);
-  let canvasRef = useRef<HTMLCanvasElement | null>(null);
   let nodesElement: JSX.Element[] | JSX.Element;
 
-  const get_node = (node_id: string): NodeType | undefined => {
-    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id);
+  const get_node = (node_id: string): NodeType => {
+    return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id)!;
   }
 
   const get_nodes = (node_ids: UUIDList): NodeType[] => {
     return nodes!.data!.nodes.filter((n: NodeType) => node_ids.includes(n.id));
   }
 
-  const updateSourceDropNodes = (node_id: string) => {
-    /*
-      node_id: ID of the node currently being dragged
-      sourceDropNodes = dragged node + current selection of nodes
-    */
-
-    // Is the node being dragged also one of the selected nodes?
-    if (selectedNodes.find((id: string) => id == node_id)) {
-      // then just set sourceDropNodes to the current selection of nodes
-      setSourceDropNodes(get_nodes(selectedNodes));
-    } else {
-      let nodes = get_nodes(selectedNodes), node = get_node(node_id);
-      let new_array = nodes;
-
-      if (node) {
-        new_array.push(node);
-      }
-      // selected nodes + dragged node
-      setSourceDropNodes(new_array);
-    }
-  }
-
-  const onCreateDocumentModel = (new_nodes: NodeType[], target_id: string) => {
-    /* Invoked when new document node(s) was/were added.
-    Will add new documents to the current list of nodes ONLY if target_id is
-    same as node id.
-
-    Say user currently has opened commander on ".home / My Documents" in other
-    words he/she sees the content of My Documents folder. We will call "My
-    Documents" folder "current folder". Current folder's id is `node_id`. Inside
-    current folder, say we have folder "Bills" and folder "Payments".
-
-    If user drags couple of documents from his/her local filesystem into the "My
-    Documents", then `target_id` will be set to UUID of "My Documents" i.e.
-    `target_id` == `node_id`. In this case we want to refresh node's list
-    because there are new entries (document which user dropped in).
-
-    if user drag'n drops file/document over folder "Bills", then there is
-    nothing to refresh, because newly dropped documents will be added inside
-    another folder, content of which is not visible to the user anyway; this
-    fact is signaled by the fact that `target_id` != `node_id`, in other words
-    `target_id` will be set to the UUID of "Bills" which is different than UUID
-    of the current node (`node_id`) (current folder is "My Documents" and it has
-    UUID = `node_id`).
-     */
-    //if (target_id == node_id) {
-    //  setNodesList(nodesList.concat(new_nodes));
-    //}
-  }
-
   const onNodeSelect = (node_id: string, selected: boolean) => {
     if (selected) {
-      setSelectedNodes(
-        [...selectedNodes, node_id]
+      onSelectNodes(
+        [...selected_nodes, node_id]
       );
     } else {
-      setSelectedNodes(
-        selectedNodes.filter((uuid: string) => uuid !== node_id)
+      onSelectNodes(
+        selected_nodes.filter((uuid: string) => uuid !== node_id)
       );
     }
   }
@@ -173,36 +134,6 @@ function Commander({
   const onPerPageValueChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let new_value: number = parseInt(event.target.value);
     onPageSizeChange(new_value);
-  }
-
-  const onPerformDropNodes = (moved_node_ids: string[]) => {
-    /*
-    nodesList.forEach((node: NodeType) => {
-      node.accept_dropped_nodes = false;
-      node.is_currently_dragged = false;
-    });
-
-    let new_nodes = nodesList.filter(
-      (node: NodeType) => !moved_node_ids.includes(node.id)
-    );
-
-    setNodesList(new_nodes);
-    setSelectedNodes([]);
-    setDropNodesModalShow(false);
-    setSourceDropNodes([]);
-    */
-  }
-
-  const onCancelDropNodes = () => {
-    /*
-    nodesList.forEach((node: NodeType) => {
-      node.accept_dropped_nodes = false;
-      node.is_currently_dragged = false;
-    });
-    setSelectedNodes([]);
-    setSourceDropNodes([]);
-    setDropNodesModalShow(false);
-    */
   }
 
   const onOKErrorModal = () => {
@@ -214,19 +145,16 @@ function Commander({
   }
 
   const onDragStart = (node_id: string, event: React.DragEvent) => {
-    /*
     let image = <DraggingIcon node_id={node_id}
-          selectedNodes={selectedNodes}
-          nodesList={nodesList} />;
+          selectedNodes={selected_nodes}
+          nodesList={nodes!.data! .nodes} />;
     let ghost = document.createElement('div');
-    const all_transfered_nodes = [...selectedNodes, node_id] as UUIDList;
-
+    const all_transfered_nodes = [...selected_nodes, node_id] as UUIDList;
+    const transf_nodes = get_nodes(all_transfered_nodes);
 
     event.dataTransfer.setData(
       DATA_TYPE_NODE,
-      JSON.stringify(
-        get_nodes(all_transfered_nodes)
-      )
+      JSON.stringify(transf_nodes)
     );
 
     ghost.style.transform = "translate(-10000px, -10000px)";
@@ -237,13 +165,13 @@ function Commander({
     let root = createRoot(ghost);
 
     root.render(image);
-    */
   }
 
   const onDrag = (node_id: string, event: React.DragEvent) => {
-    /*
     const map = getNodesRefMap();
-    const new_nodes = nodesList.map((item => {
+    let dragged_nodes_list: UUIDList = [];
+
+    nodes!.data!.nodes.forEach((item => {
       // @ts-ignore
       const node = map.get(item.id) as HTMLDivElement;
       const item_rect = new Rectangle();
@@ -259,26 +187,14 @@ function Commander({
 
       point.from_drag_event(event);
 
-      if (node_id != item.id && item_rect.contains(point)) {
-        console.log(`Dragging over ${item.title}`);
-        item.accept_dropped_nodes = true;
-      }
-      else {
-        item.accept_dropped_nodes = false;
-      }
-
       // mark all nodes being dragged (in UI they will be faded out)
       // nodes being dragged are node_id + selected ones
-      if (item.id === node_id || selectedNodes.find((id: string) => id == item.id)) {
-        item.is_currently_dragged = true;
+      if (item.id === node_id || selected_nodes.find((id: string) => id == item.id)) {
+        dragged_nodes_list.push(item.id);
       }
-
-      return item;
-
     }));
-    */
-    // setNodesList(new_nodes);
-    updateSourceDropNodes(node_id);
+
+    onDragNodes(dragged_nodes_list);
   }
 
   const onDragEnter = () => {
@@ -314,30 +230,6 @@ function Commander({
     setCssAcceptFiles(ACCEPT_DROPPED_NODES_CSS);
   }
 
-  const onCancelDropFiles = () => {
-    //setDropFilesModalShow(false);
-  }
-
-  const onPerformDropFiles = () => {
-    /* triggered when user clicked "Upload" button in
-     "upload dialog for drop in files"
-     The files upload is performed async and notification
-     (user feedback) is accomplished via "toasts" (notification messages
-      in right lower corder of the screen). In other words
-      "Upload files" screen closes immediately - it does not wait
-      until all files are uploaded. User can go fancy and Upload
-      200 files from some folder - it does not make any sense
-      for the upload dialog to be open for until all those 200 files
-      get uploaded.
-    */
-
-    //setDropFilesModalShow(false);
-  }
-
-  const onSetAsDropTarget = (target_folder: NodeType | null) => {
-    setTargetDropFile(target_folder)
-  }
-
   const list_nodes_css_class_name = () => {
     if (display_mode === DisplayNodesModeEnum.List) {
       return 'd-flex flex-column mb-3';
@@ -365,10 +257,10 @@ function Commander({
 
   const onRenameClick = () => {
     let initial_title = get_node_attr<string>(
-      selectedNodes, 'title', nodes!.data!.nodes
+      selected_nodes, 'title', nodes!.data!.nodes
     );
 
-    rename_node(selectedNodes[0], initial_title)
+    rename_node(selected_nodes[0], initial_title)
     .then(
       (node: NodeType) => {
         let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
@@ -379,30 +271,30 @@ function Commander({
           }
         });
         onNodesListChange(new_nodes_list);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
 
   const onDeleteNodesClick = () => {
-    delete_nodes(selectedNodes).then(
+    delete_nodes(selected_nodes).then(
       (node_ids: string[]) => {
         /* Remove remove nodes from the commander list */
         let new_nodes = nodes!.data!.nodes.filter(
           (node: NodeType) => node_ids.indexOf(node.id) == -1
         );
         onNodesListChange(new_nodes);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
 
   const onEditTagsClick = () => {
     let initial_tags = get_node_attr<Array<ColoredTagType>>(
-      selectedNodes,'tags', nodes!.data!.nodes
+      selected_nodes,'tags', nodes!.data!.nodes
     );
 
-    edit_tags(selectedNodes[0], initial_tags).then(
+    edit_tags(selected_nodes[0], initial_tags).then(
       (node: NodeType) => {
         let new_nodes_list = nodes!.data!.nodes.map((item: NodeType) => {
           if (item.id === node.id) {
@@ -413,7 +305,7 @@ function Commander({
         });
 
         onNodesListChange(new_nodes_list);
-        setSelectedNodes([]);
+        onSelectNodes([]);
       }
     );
   }
@@ -421,20 +313,92 @@ function Commander({
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
 
+    // #1 drop files from local FS into the commander
     if (event.dataTransfer.files.length > 0) {
+      debugger;
       // only show dialog if event.dataTransfer contains at least one file
       drop_files({
         source_files: event.dataTransfer.files,
         target: nodes!.data!.parent
       })
       .then(
-        (created_nodes: DropFilesPromType) => {
+        (created_nodes: CreatedNodesType) => {
           onNodesListChange(
             [...nodes!.data!.nodes, ...created_nodes.nodes]
           );
           setCssAcceptFiles("");
       });
     }
+
+    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+    let all_transferred_nodes: NodeType[] = [];
+
+    // #2 move/drop Nodes (from main or secondary panel)
+    if (data_raw) {
+      // nodes are moved from one panel root folder to
+      // another's panel root folder
+      all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+      move_nodes({
+        source_nodes: all_transferred_nodes,
+        target_node: nodes!.data!.parent
+      }).then((moved_nodes: MovedNodesType) => {
+        onMovedNodes({
+          target_id: moved_nodes.parent_id,
+          source: moved_nodes.nodes
+        });
+        setCssAcceptFiles("");
+      }).catch(() => { // catch => dialog was canceled
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
+      });
+    }
+  }
+
+  const onDropNodesToSpecificFolder = (node_id: string, event: React.DragEvent) => {
+    /**
+     * Triggered when user moves one or multiple nodes from
+     * one panel into another's panel specific folder i.e. nodes
+     * are moved/dropped over some folder in the list.
+     */
+    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+    let all_transferred_nodes: NodeType[] = [];
+
+    if (data_raw) {
+      all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+
+      move_nodes({
+        source_nodes: all_transferred_nodes,
+        target_node: get_node(node_id)
+      }).then((moved_nodes: MovedNodesType) => {
+        setCssAcceptFiles("");
+        onMovedNodes({
+          target_id: moved_nodes.parent_id,
+          source: moved_nodes.nodes
+        });
+      }).catch(() => { // catch => dialog was canceled
+        // reset selection
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
+      });
+    } else {
+      console.warn(`Empty dataTransfer while dropping to ${node_id} folder`);
+    }
+  }
+
+  const onCreatedNodesByUpload = (created_nodes: CreatedNodesType) => {
+    onNodesListChange(
+      [...nodes!.data!.nodes, ...created_nodes.nodes]
+    );
   }
 
   if (nodes.data) {
@@ -451,9 +415,10 @@ function Commander({
             onSelect={onNodeSelect}
             onDragStart={onDragStart}
             onDrag={onDrag}
-            onSetAsDropTarget={onSetAsDropTarget}
+            onDropNodesToSpecificFolder={onDropNodesToSpecificFolder}
             display_mode={display_mode}
-            is_selected={node_is_selected(item.id, selectedNodes)}
+            is_selected={in_list(item.id, selected_nodes)}
+            is_being_dragged={in_list(item.id, dragged_nodes)}
             node={item}
             is_loading={nodes.loading_id == item.id}
             ref={(node) => {
@@ -474,7 +439,8 @@ function Commander({
             onDragStart={onDragStart}
             onDrag={onDrag}
             display_mode={display_mode}
-            is_selected={node_is_selected(item.id, selectedNodes)}
+            is_selected={in_list(item.id, selected_nodes)}
+            is_being_dragged={in_list(item.id, dragged_nodes)}
             node={item}
             is_loading={nodes.loading_id == item.id}
             ref={(node) => {
@@ -501,12 +467,12 @@ function Commander({
         onDrop={onDrop}>
         <div className='top-bar'>
           <Menu
-            onCreateDocumentNode={onCreateDocumentModel}
             onNewFolderClick={onNewFolderClick}
             onRenameClick={onRenameClick}
             onDeleteNodesClick={onDeleteNodesClick}
             onEditTagsClick={onEditTagsClick}
-            selected_nodes={selectedNodes}
+            onCreatedNodesByUpload={onCreatedNodesByUpload}
+            selected_nodes={selected_nodes}
             node_id={node_id} />
 
             <div className="d-flex align-items-center">

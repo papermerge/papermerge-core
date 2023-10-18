@@ -315,19 +315,34 @@ function Commander({
 
     // #1 drop files from local FS into the commander
     if (event.dataTransfer.files.length > 0) {
-      debugger;
-      // only show dialog if event.dataTransfer contains at least one file
-      drop_files({
-        source_files: event.dataTransfer.files,
-        target: nodes!.data!.parent
-      })
-      .then(
-        (created_nodes: CreatedNodesType) => {
-          onNodesListChange(
-            [...nodes!.data!.nodes, ...created_nodes.nodes]
-          );
-          setCssAcceptFiles("");
-      });
+      // workaround for weird bug BEGIN
+      if (event.dataTransfer.files.length === 1
+          && event.dataTransfer.files[0].name === 'download.jpg'
+         && [1148, 1755].includes(event.dataTransfer.files[0].size)) {
+          // bug bug
+          // really weird one - for some unknown to me reason, event.dataTransfer.files
+          // has one entry with (seems to me) completely unrelated file
+          // named 'download.jpg' with specific value (1148 or 1755).
+          // I was able to reproduce this behavior
+          // only in Google Chrome 117.0. For time being let just console
+          // message log that it.
+          // For this weird "file" we of course skip "drop_files" operation
+          console.log('Where is this weird download.jpg is coming from ?')
+        // workaround for weird bug END
+      } else {
+        // only show dialog if event.dataTransfer contains at least one file
+        drop_files({
+          source_files: event.dataTransfer.files,
+          target: nodes!.data!.parent
+        })
+        .then(
+          (created_nodes: CreatedNodesType) => {
+            onNodesListChange(
+              [...nodes!.data!.nodes, ...created_nodes.nodes]
+            );
+            setCssAcceptFiles("");
+        });
+      }
     }
 
     const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);

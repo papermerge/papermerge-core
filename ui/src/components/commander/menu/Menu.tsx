@@ -48,7 +48,6 @@ function Menu({
   }
 
   return <div>
-    {upload}
     {new_folder}
   </div>
 }

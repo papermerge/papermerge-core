@@ -315,7 +315,6 @@ function Commander({
 
     // #1 drop files from local FS into the commander
     if (event.dataTransfer.files.length > 0) {
-      debugger;
       // only show dialog if event.dataTransfer contains at least one file
       drop_files({
         source_files: event.dataTransfer.files,

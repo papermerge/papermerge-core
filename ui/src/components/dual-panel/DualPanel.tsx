@@ -238,20 +238,19 @@ function DualPanel({ node }: Args) {
 
     // substract nodes from the source
     if (source_parent_id == main_node.id) {
-      const new_nodes = mnodes.data?.nodes.filter(n => {
-        const source_ids = args.source.map(i => i.id);
-        return source_ids.indexOf(n.id) < 0;
-      });
-
+      const new_nodes = subtract<NodeType>(
+        mnodes.data?.nodes!,
+        args.source
+      );
       setMNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
-    } else if (source_parent_id == secondary_node?.id) {
-      const new_nodes = snodes.data?.nodes.filter(n => {
-        const source_ids = args.source.map(i => i.id);
-        return source_ids.indexOf(n.id) < 0;
-      });
 
+    } else if (source_parent_id == secondary_node?.id) {
+      const new_nodes = subtract<NodeType>(
+        snodes.data?.nodes!,
+        args.source
+      );
       setSNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
@@ -260,11 +259,16 @@ function DualPanel({ node }: Args) {
     // add nodes to the target
     if (args.target_id == main_node.id) {
       setMNodes((draft: Vow<NodesType>) => {
-        draft!.data!.nodes = [...mnodes!.data!.nodes, ...args.source];
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, args.source
+        );
       });
     } else if (args.target_id == secondary_node?.id) {
       setSNodes((draft: Vow<NodesType>) => {
-        draft!.data!.nodes = [...snodes!.data!.nodes, ...args.source];
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          snodes!.data!.nodes,
+          args.source
+        );
       });
     }
 
@@ -400,6 +404,51 @@ function get_last_doc_version(doc: DocumentType): DocumentVersion {
 
     return cur;
   });
+}
+
+
+function subtract<T extends {id: string}>(
+  arr1: T[],
+  arr2: T[]
+): T[] {
+  /*
+    Subtracts arr2 from arr1
+
+    result = arr1 - arr2
+
+    Example:
+
+    arr1 = [a1, a2, a3, a4]
+    arr2 = [a1, a2]
+    result = [ a3, a4 ]
+
+    Elements in array are identified by their ID.
+  */
+  const source_ids = arr2.map(i => i.id);
+  let result = arr1.filter(n => source_ids.indexOf(n.id) < 0);
+
+  return result;
+}
+
+function uniq_concat<T extends {id: string}>(
+  arr1: T[],
+  arr2: T[]
+): T[] {
+  /**
+   * Concatinates two arrays - duplicate elements are discarded.
+   *
+   * result = arr1 + arr2
+   *
+   * Example:
+   *
+   * arr1 = [a1, a2, a3]
+   * arr2 = [a3, a4]
+   * result = [a1, a2, a3, a4]
+   */
+  const source_ids = arr2.map(i => i.id);
+  const no_dupl_arr1 = arr1.filter(n => source_ids.indexOf(n.id) < 0);
+
+  return no_dupl_arr1.concat(arr2);
 }
 
 export default DualPanel;

@@ -25,6 +25,7 @@ function App() {
   let content_block: JSX.Element;
 
   const onContentBlockChange = (item: AppContentBlockEnum) => {
+
     if (item == AppContentBlockEnum.home) {
       if (user.data?.home_folder_id) {
         setNode({
@@ -33,7 +34,6 @@ function App() {
         });
       }
     }
-
     if (item == AppContentBlockEnum.inbox) {
       if (user.data?.inbox_folder_id) {
         setNode({
@@ -83,7 +83,7 @@ function App() {
   } else if (contentBlockItem == AppContentBlockEnum.inbox) {
     // inbox
     let inbox: NType = {
-      id: user.data.home_folder_id,
+      id: user.data.inbox_folder_id,
       ctype: 'folder'
     }
     content_block = <DualPanel node={ node || inbox } />;

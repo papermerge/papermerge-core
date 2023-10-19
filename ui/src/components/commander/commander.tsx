@@ -23,6 +23,7 @@ import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
 
 import { Rectangle, Point } from 'utils/geometry';
+import { overlap } from 'utils/array';
 
 import type {
   ColoredTagType,
@@ -38,6 +39,7 @@ import type {
 import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { Vow, NodesType } from 'types';
+import useToast from 'hooks/useToasts';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
@@ -107,6 +109,7 @@ function Commander({
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
   const dual_context = useContext(DualPanelContext);
+  const toasts = useToast();
 
   const nodesRef = useRef(null);
   let nodesElement: JSX.Element[] | JSX.Element;
@@ -317,12 +320,11 @@ function Commander({
     if (event.dataTransfer.files.length > 0) {
       // workaround for weird bug BEGIN
       if (event.dataTransfer.files.length === 1
-          && event.dataTransfer.files[0].name === 'download.jpg'
-         && [1148, 1755].includes(event.dataTransfer.files[0].size)) {
+          && event.dataTransfer.files[0].name === 'download.jpg') {
           // bug bug
           // really weird one - for some unknown to me reason, event.dataTransfer.files
           // has one entry with (seems to me) completely unrelated file
-          // named 'download.jpg' with specific value (1148 or 1755).
+          // named 'download.jpg'.
           // I was able to reproduce this behavior
           // only in Google Chrome 117.0. For time being let just console
           // message log that it.
@@ -353,6 +355,7 @@ function Commander({
       // nodes are moved from one panel root folder to
       // another's panel root folder
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+
       move_nodes({
         source_nodes: all_transferred_nodes,
         target_node: nodes!.data!.parent
@@ -385,6 +388,19 @@ function Commander({
 
     if (data_raw) {
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+
+      if (overlap<NodeType>(all_transferred_nodes, [get_node(node_id)])) {
+        // show error message and return
+        toasts?.addToast("error", "One of the source nodes is same as the target. Operation aborted.");
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
+        return;
+      }
 
       move_nodes({
         source_nodes: all_transferred_nodes,

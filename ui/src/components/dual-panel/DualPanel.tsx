@@ -22,6 +22,8 @@ import { Vow,
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
 import useDoc from './useDoc';
+import { uniq_concat, subtract } from 'utils/array';
+
 
 type Args = {
   node: NType;
@@ -84,6 +86,10 @@ function DualPanel({ node }: Args) {
   const [selected_snodes, setSelectedSNodes] = useState<UUIDList>([]);
   const [dragged_mnodes, setDraggedMNodes] = useState<UUIDList>([]);
   const [dragged_snodes, setDraggedSNodes] = useState<UUIDList>([]);
+
+  useEffect(() => {
+    setMainNode(node);
+  }, [node.id]);
 
   useEffect(() => { // for main doc
     if (main_doc?.data) {
@@ -238,20 +244,19 @@ function DualPanel({ node }: Args) {
 
     // substract nodes from the source
     if (source_parent_id == main_node.id) {
-      const new_nodes = mnodes.data?.nodes.filter(n => {
-        const source_ids = args.source.map(i => i.id);
-        return source_ids.indexOf(n.id) < 0;
-      });
-
+      const new_nodes = subtract<NodeType>(
+        mnodes.data?.nodes!,
+        args.source
+      );
       setMNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
-    } else if (source_parent_id == secondary_node?.id) {
-      const new_nodes = snodes.data?.nodes.filter(n => {
-        const source_ids = args.source.map(i => i.id);
-        return source_ids.indexOf(n.id) < 0;
-      });
 
+    } else if (source_parent_id == secondary_node?.id) {
+      const new_nodes = subtract<NodeType>(
+        snodes.data?.nodes!,
+        args.source
+      );
       setSNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
@@ -260,11 +265,16 @@ function DualPanel({ node }: Args) {
     // add nodes to the target
     if (args.target_id == main_node.id) {
       setMNodes((draft: Vow<NodesType>) => {
-        draft!.data!.nodes = [...mnodes!.data!.nodes, ...args.source];
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, args.source
+        );
       });
     } else if (args.target_id == secondary_node?.id) {
       setSNodes((draft: Vow<NodesType>) => {
-        draft!.data!.nodes = [...snodes!.data!.nodes, ...args.source];
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          snodes!.data!.nodes,
+          args.source
+        );
       });
     }
 
@@ -390,7 +400,6 @@ function DualPanel({ node }: Args) {
   }
 
 }
-
 
 function get_last_doc_version(doc: DocumentType): DocumentVersion {
   return doc.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {

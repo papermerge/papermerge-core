@@ -317,12 +317,11 @@ function Commander({
     if (event.dataTransfer.files.length > 0) {
       // workaround for weird bug BEGIN
       if (event.dataTransfer.files.length === 1
-          && event.dataTransfer.files[0].name === 'download.jpg'
-         && [1148, 1755].includes(event.dataTransfer.files[0].size)) {
+          && event.dataTransfer.files[0].name === 'download.jpg') {
           // bug bug
           // really weird one - for some unknown to me reason, event.dataTransfer.files
           // has one entry with (seems to me) completely unrelated file
-          // named 'download.jpg' with specific value (1148 or 1755).
+          // named 'download.jpg'.
           // I was able to reproduce this behavior
           // only in Google Chrome 117.0. For time being let just console
           // message log that it.

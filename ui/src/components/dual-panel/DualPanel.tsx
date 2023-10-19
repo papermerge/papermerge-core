@@ -85,6 +85,10 @@ function DualPanel({ node }: Args) {
   const [dragged_mnodes, setDraggedMNodes] = useState<UUIDList>([]);
   const [dragged_snodes, setDraggedSNodes] = useState<UUIDList>([]);
 
+  useEffect(() => {
+    setMainNode(node);
+  }, [node.id]);
+
   useEffect(() => { // for main doc
     if (main_doc?.data) {
       const last_version = get_last_doc_version(main_doc.data);

@@ -22,6 +22,8 @@ import { Vow,
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
 import useDoc from './useDoc';
+import { uniq_concat, subtract } from 'utils/array';
+
 
 type Args = {
   node: NType;
@@ -399,7 +401,6 @@ function DualPanel({ node }: Args) {
 
 }
 
-
 function get_last_doc_version(doc: DocumentType): DocumentVersion {
   return doc.versions.reduce((prev: DocumentVersion, cur: DocumentVersion) => {
     if (prev && prev.number > cur.number) {
@@ -408,51 +409,6 @@ function get_last_doc_version(doc: DocumentType): DocumentVersion {
 
     return cur;
   });
-}
-
-
-function subtract<T extends {id: string}>(
-  arr1: T[],
-  arr2: T[]
-): T[] {
-  /*
-    Subtracts arr2 from arr1
-
-    result = arr1 - arr2
-
-    Example:
-
-    arr1 = [a1, a2, a3, a4]
-    arr2 = [a1, a2]
-    result = [ a3, a4 ]
-
-    Elements in array are identified by their ID.
-  */
-  const source_ids = arr2.map(i => i.id);
-  let result = arr1.filter(n => source_ids.indexOf(n.id) < 0);
-
-  return result;
-}
-
-function uniq_concat<T extends {id: string}>(
-  arr1: T[],
-  arr2: T[]
-): T[] {
-  /**
-   * Concatinates two arrays - duplicate elements are discarded.
-   *
-   * result = arr1 + arr2
-   *
-   * Example:
-   *
-   * arr1 = [a1, a2, a3]
-   * arr2 = [a3, a4]
-   * result = [a1, a2, a3, a4]
-   */
-  const source_ids = arr2.map(i => i.id);
-  const no_dupl_arr1 = arr1.filter(n => source_ids.indexOf(n.id) < 0);
-
-  return no_dupl_arr1.concat(arr2);
 }
 
 export default DualPanel;

@@ -13,7 +13,7 @@ type Args = {
 function CustomToastContainer({toasts, onClose}: Args) {
 
   let new_toasts = toasts.map(item => (
-    <Toast onClick={onClose} key={item.id} id={item.id}>{item.text}</Toast>
+    <Toast onClick={onClose} key={item.id} level={item.level} id={item.id}>{item.text}</Toast>
   ));
 
   return createPortal(

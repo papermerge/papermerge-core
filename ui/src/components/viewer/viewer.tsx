@@ -128,7 +128,7 @@ export default function Viewer({
     onDocVersionsChange(response)
     setSelectedPages([]);
 
-    toasts?.addToast("Page operations successfully applied");
+    toasts?.addToast("info", "Page operations successfully applied");
   }
 
   const onSelect = (page_id: string, selected: boolean) => {

@@ -2,20 +2,36 @@ import { ReactNode, useEffect } from 'react';
 import useToast from "hooks/useToasts";
 import Toast from 'react-bootstrap/Toast';
 import "./toast.scss";
+import { ToastLevel, ToastBgColor } from './types';
 
 
 type Args = {
   id: number;
+  level: ToastLevel,
   children: ReactNode;
   onClick: (id: number) => void;
   timeout?: number;
 }
 
 
-const DEFAULT_TIMEOUT = 4000; // ms (milliseconds)
+function  level2bg(level: ToastLevel): ToastBgColor {
+  if (level == "info") {
+    return "dark";
+  }
+
+  if (level == "error") {
+    return "danger";
+  }
+
+  return "dark";
+}
 
 
-function CustomToast({id, children, onClick, timeout}: Args) {
+
+const DEFAULT_TIMEOUT = 10000; // ms (milliseconds)
+
+
+function CustomToast({id, level, children, onClick, timeout}: Args) {
   /* Toast component (user notification).
 
   Will auto-remove itself after `timeout` milliseconds.
@@ -39,7 +55,7 @@ function CustomToast({id, children, onClick, timeout}: Args) {
 
 
   return (
-      <Toast bg={"dark"}>
+      <Toast bg={level2bg(level)}>
         <div className='d-flex'>
           <div className='toast-body'>
             {children}

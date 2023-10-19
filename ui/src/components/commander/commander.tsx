@@ -23,6 +23,7 @@ import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import Paginator from "components/paginator";
 
 import { Rectangle, Point } from 'utils/geometry';
+import { overlap } from 'utils/array';
 
 import type {
   ColoredTagType,
@@ -38,6 +39,7 @@ import type {
 import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { Vow, NodesType } from 'types';
+import useToast from 'hooks/useToasts';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
@@ -107,6 +109,7 @@ function Commander({
   // over commander with files from local fs
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
   const dual_context = useContext(DualPanelContext);
+  const toasts = useToast();
 
   const nodesRef = useRef(null);
   let nodesElement: JSX.Element[] | JSX.Element;
@@ -352,6 +355,7 @@ function Commander({
       // nodes are moved from one panel root folder to
       // another's panel root folder
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+
       move_nodes({
         source_nodes: all_transferred_nodes,
         target_node: nodes!.data!.parent
@@ -384,6 +388,19 @@ function Commander({
 
     if (data_raw) {
       all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+
+      if (overlap<NodeType>(all_transferred_nodes, [get_node(node_id)])) {
+        // show error message and return
+        toasts?.addToast("error", "One of the source nodes is same as the target. Operation aborted.");
+        if (dual_context?.onResetSelectedNodes) {
+          dual_context.onResetSelectedNodes();
+        }
+        if (dual_context?.onResetDraggedNodes) {
+          dual_context.onResetDraggedNodes();
+        }
+        setCssAcceptFiles("");
+        return;
+      }
 
       move_nodes({
         source_nodes: all_transferred_nodes,

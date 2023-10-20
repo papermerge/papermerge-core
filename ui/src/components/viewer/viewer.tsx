@@ -111,7 +111,7 @@ export default function Viewer({
       position = should source page be inserted before or after the target?
       Method is triggered only when source_id != target_id.
     */
-   if (contains_every<string>({
+   if (contains_every({
         container: pages!.data!.map(
           i => i.page.id
         ),  // all pages IDs of target doc ver

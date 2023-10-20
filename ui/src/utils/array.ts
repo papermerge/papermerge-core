@@ -65,7 +65,9 @@ interface Args<T> {
   items: T[];
 }
 
-function contains_every<T>({container, items}: Args<T>): boolean {
+function contains_every<T = string>({container, items}: Args<T>): boolean {
+  // Returns true if every item is included in the container
+  // Returns false if some items are not included in the container
   return items.every((i) => container.includes(i));
 }
 

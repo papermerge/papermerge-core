@@ -112,10 +112,15 @@ export default function Viewer({
       Method is triggered only when source_id != target_id.
     */
    if (contains_every<string>({
-        container: pages!.data!.map(i => i.page.id),
-        items: [source_id]
+        container: pages!.data!.map(
+          i => i.page.id
+        ),  // all pages IDs of target doc ver
+        items: [source_id] // all source pages (their IDs)
     })) {
-      // page transfer is within same document i.e we just reordering
+      /* Here we deal with page transfer is within the same document
+        i.e we just reordering. It is so because all source pages (their IDs)
+        were found in the target document version.
+      */
       const new_pages = reorder_pages({
         arr: pages!.data!,
         source_id: source_id,
@@ -131,7 +136,8 @@ export default function Viewer({
       // documents
       move_pages({
         source_page_ids: [source_id],
-        target_page_id: target_id
+        target_page_id: target_id,
+        target_doc_title: doc!.data!.title
       }).then((value) => {
         console.log(`transfer complete! returned value: ${value}`);
       });

@@ -1,10 +1,7 @@
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
 import { createRoot } from "react-dom/client";
-
-
-
-import type { CreatedNodesType, FolderType, NodeType } from 'types';
+import MoveOptions from './MoveOptions';
 
 
 type Args = {
@@ -12,6 +9,7 @@ type Args = {
   onOK: (arg: string) => void;
   source_page_ids: Array<string>;
   target_page_id: string;
+  target_doc_title: string;
 }
 
 
@@ -19,7 +17,8 @@ const MovePagesModal = ({
   onCancel,
   onOK,
   source_page_ids,
-  target_page_id
+  target_page_id,
+  target_doc_title
 }: Args) => {
   /*
     Used when user drag and drops files from local files system into the Commander.
@@ -37,11 +36,12 @@ const MovePagesModal = ({
 
   return (
     <GenericModal
-      modal_title="Move Pages"
-      submit_button_title="Move"
+      modal_title="Move Selected Pages"
+      submit_button_title="Move Pages"
       onSubmit={handleSubmit}
       onCancel={onCancel}>
-        Are you sure you want to move?
+        Do you want to move selected pages to document '{target_doc_title}'?
+        <MoveOptions />
     </GenericModal>
   );
 }
@@ -49,9 +49,14 @@ const MovePagesModal = ({
 type MovePageArgs = {
   source_page_ids: Array<string>;
   target_page_id: string;
+  target_doc_title: string;
 }
 
-function move_pages({source_page_ids, target_page_id}: MovePageArgs) {
+function move_pages({
+  source_page_ids,
+  target_page_id,
+  target_doc_title
+}: MovePageArgs) {
   let modals = document.getElementById(MODALS);
 
   let promise = new Promise<string>(function(onOK, onCancel){
@@ -62,6 +67,7 @@ function move_pages({source_page_ids, target_page_id}: MovePageArgs) {
         <MovePagesModal
           source_page_ids={source_page_ids}
           target_page_id={target_page_id}
+          target_doc_title={target_doc_title}
           onOK={onOK}
           onCancel={onCancel} />
       );

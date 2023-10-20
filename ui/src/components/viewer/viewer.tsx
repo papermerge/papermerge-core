@@ -14,9 +14,11 @@ import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
 import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
+import { contains_every } from 'utils/array';
 
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
+import move_pages from './modals/MovePages';
 
 
 type ShortPageType = {
@@ -109,17 +111,32 @@ export default function Viewer({
       position = should source page be inserted before or after the target?
       Method is triggered only when source_id != target_id.
     */
-    const new_pages = reorder_pages({
-      arr: pages!.data!,
-      source_id: source_id,
-      target_id: target_id,
-      position: position
-    });
-    if (!new_pages.every((value, index) => value.page.id == pages!.data![index].page.id)) {
-      setUnappliedPagesOpChanges(true);
+   if (contains_every<string>({
+        container: pages!.data!.map(i => i.page.id),
+        items: [source_id]
+    })) {
+      // page transfer is within same document i.e we just reordering
+      const new_pages = reorder_pages({
+        arr: pages!.data!,
+        source_id: source_id,
+        target_id: target_id,
+        position: position
+      });
+      if (!new_pages.every((value, index) => value.page.id == pages!.data![index].page.id)) {
+        setUnappliedPagesOpChanges(true);
+      }
+      onPagesChange(new_pages);
+    } else {
+      // here we deal with pages being moved between different
+      // documents
+      move_pages({
+        source_page_ids: [source_id],
+        target_page_id: target_id
+      }).then((value) => {
+        console.log(`transfer complete! returned value: ${value}`);
+      });
     }
-    onPagesChange(new_pages);
-  }
+}
 
   const onApplyPageOpChanges = async () => {
     let _pages = pages!.data!.map(item => apply_page_type(item));
@@ -130,6 +147,7 @@ export default function Viewer({
 
     toasts?.addToast("info", "Page operations successfully applied");
   }
+
 
   const onSelect = (page_id: string, selected: boolean) => {
     let new_list: Array<string>;

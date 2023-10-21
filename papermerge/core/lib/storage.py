@@ -214,20 +214,20 @@ class Storage:
 
         shutil.copy(src_preview, dst_preview)
 
-    def copy_page(self, src_folder: Path, dst_folder: Path):
+    def copy_page(self, src: Path, dst: Path):
         """
         Copies page data from source folder to destination folder
 
         Page data are files with 'txt', 'hocr', 'jpg', 'svg' extentions.
         """
-        if not src_folder.is_dir():
-            raise ValueError(f"Source is not a folder {src_folder}")
+        if not src.is_dir():
+            raise ValueError(f"Source is not a folder {src}")
 
-        dst_folder.mkdir(parents=True, exist_ok=True)
-        if not dst_folder.is_dir():
-            raise ValueError(f"Destination is not a folder {dst_folder}")
+        dst.mkdir(parents=True, exist_ok=True)
+        if not dst.is_dir():
+            raise ValueError(f"Destination is not a folder {dst}")
 
-        shutil.copytree(src_folder, dst_folder, dirs_exist_ok=True)
+        shutil.copytree(src, dst, dirs_exist_ok=True)
 
     def reorder_pages(self, doc_path, new_order):
         """

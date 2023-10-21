@@ -30,7 +30,7 @@ class MoveStrategy(Enum):
     REPLACE = 'replace'
 
 
-class MovePages(BaseModel):
+class MovePagesIn(BaseModel):
     source_page_ids: List[UUID]
     target_page_id: UUID
     insert_at: InsertAt

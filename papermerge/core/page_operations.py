@@ -130,8 +130,8 @@ def reuse_ocr_data(uuid_map) -> None:
 
     for src_uuid, dst_uuid in uuid_map.items():
         storage_instance.copy_page(
-            src=Path("pages", src_uuid),
-            dst=Path("pages", dst_uuid)
+            src=Path("pages", str(src_uuid)),
+            dst=Path("pages", str(dst_uuid))
         )
 
 

@@ -101,6 +101,6 @@ class Thumbnail(BaseModel):
     size: int
 
 
-class MovePages(BaseModel):
+class MovePagesOut(BaseModel):
     source: Document
     target: Document

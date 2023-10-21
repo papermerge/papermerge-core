@@ -12,8 +12,8 @@ from papermerge.core.page_operations import apply_pages_op
 from papermerge.core.page_operations import move_pages as api_move_pages
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
-from papermerge.core.schemas.documents import MovePages as PyMovePages
-from papermerge.core.schemas.pages import MovePages, PageAndRotOp
+from papermerge.core.schemas.documents import MovePagesOut
+from papermerge.core.schemas.pages import MovePagesIn, PageAndRotOp
 
 from .auth import get_current_user as current_user
 
@@ -128,7 +128,7 @@ def apply_page_operations(
 
 
 @router.post("/move")
-def move_pages(arg: MovePages) -> PyMovePages:
+def move_pages(arg: MovePagesIn) -> MovePagesOut:
     """Moves pages between documents.
 
     Source IDs are IDs of the pages to move.
@@ -140,6 +140,6 @@ def move_pages(arg: MovePages) -> PyMovePages:
         insert_at=arg.insert_at,
         move_strategy=arg.move_strategy
     )
-    model = PyMovePages(source=source, target=target)
+    model = MovePagesOut(source=source, target=target)
 
-    return PyMovePages.model_validate(model)
+    return MovePagesOut.model_validate(model)

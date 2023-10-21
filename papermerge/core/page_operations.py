@@ -6,6 +6,7 @@ from typing import List
 from pikepdf import Pdf
 
 from papermerge.core.models import Page
+from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import InsertAt, MoveStrategy, PageAndRotOp
 from papermerge.core.storage import get_storage_instance
@@ -49,6 +50,79 @@ def transform_pdf_pages(
 
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst_pdf.save(dst)
+
+
+def remove_pdf_pages(
+    src: Path,
+    dst: Path,
+    page_numbers: list[int]
+):
+    """
+    Removes pages from given PDF file
+
+    Notice that page numbering starts with 1 i.e. page_numbers=[1, 2] -
+    will remove first and second pages.
+    """
+    if len(page_numbers) < 1:
+        raise ValueError("Empty page_numbers")
+
+    pdf = Pdf.open(src)
+
+    if len(pdf.pages) < len(page_numbers):
+        raise ValueError("Too many values in page_numbers")
+
+    _deleted_count = 0
+    for page_number in page_numbers:
+        pdf.pages.remove(p=page_number - _deleted_count)
+        _deleted_count += 1
+
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    pdf.save(dst)
+
+
+def insert_pdf_pages(
+    src_old: Path,
+    dst_old: Path | None,
+    dst_new: Path,
+    src_page_numbers: list[int],
+    dst_position: int = 0
+) -> None:
+    """Inserts pages from source to destination at given position
+
+    In case both `dst_old` and `dst_new` parameters
+    are non-empty - `insert_pdf_pages` will take
+    `src_page_numbers` from `src_old` and
+    insert them at `dst_position` of `dst_old` and will
+    save result in `dst_new`.
+
+    In case `dst_old` is None - `insert_pdf_pages` will
+    take `src_page_numbers` from `src_old` and insert
+    at position 0 of the newly created pdf. Newly created pdf will be saved
+    at `dst_new`.
+
+    Remarks:
+    `dst_position` starts with 0.
+    In `src_page_numbers` page numbering starts with 1 i.e.
+    when `src_page_numbers=[1, 2]` means insert first and second pages from
+    source.
+    """
+    src_old_pdf = Pdf.open(src_old)
+
+    if dst_old is None:
+        # case of total merge
+        dst_old_pdf = Pdf.new()
+        dst_position = 0
+    else:
+        dst_old_pdf = Pdf.open(dst_old)
+
+    _inserted_count = 0
+    for page_number in src_page_numbers:
+        pdf_page = src_old_pdf.pages.p(page_number)
+        dst_old_pdf.pages.insert(dst_position + _inserted_count, pdf_page)
+        _inserted_count += 1
+
+    dst_new.parent.mkdir(parents=True, exist_ok=True)
+    dst_old_pdf.save(dst_new)
 
 
 def reuse_ocr_data(uuid_map) -> None:
@@ -100,5 +174,41 @@ def move_pages(
     target_page_id: uuid.UUID,
     insert_at: InsertAt,
     move_strategy: MoveStrategy
-):
-    pass
+) -> [PyDocument, PyDocument]:
+    src_pages = Page.objects.filter(pk__in=source_pages_ids)
+    src_first_page = src_pages.first()
+    dst_page = Page.objects.get(pk=target_page_id)
+    src_old_version = src_first_page.document_version
+    src_old_doc = src_old_version.document
+    dst_old_version = dst_page.document_version
+    dst_old_doc = dst_old_version.document
+    pages_count = src_pages.count()
+
+    position = 0
+    if insert_at == InsertAt.END:
+        position = dst_old_version.pages.count()
+
+    src_new_version = src_old_doc.version_bump(
+        page_count=src_old_version.pages.count() - pages_count,
+        short_description=f'{pages_count} page(s) moved out'
+    )
+    dst_new_version = dst_old_doc.version_bump(
+        page_count=dst_old_version.pages.count() + pages_count,
+        short_description=f'{pages_count} page(s) moved in'
+    )
+
+    remove_pdf_pages(
+        src=src_old_version.path,
+        dst=src_new_version.path,
+        page_numbers=[page.number for page in src_pages]
+    )
+
+    insert_pdf_pages(
+        src_old=src_old_version.path,
+        dst_old=dst_old_version.path,
+        dst_new=dst_new_version.path,
+        src_page_numbers=[p.number for p in src_pages.order_by('number')],
+        dst_position=position
+    )
+
+    return [src_new_version.document, dst_new_version.document]

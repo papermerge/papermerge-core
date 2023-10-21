@@ -1,7 +1,45 @@
+import { useState } from 'react';
+
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
 import { createRoot } from "react-dom/client";
+import { get_default_headers } from 'utils/fetcher';
+
 import MoveOptions from './MoveOptions';
+import type { MoveStrategyType, InsertAtType } from './types';
+
+
+type ApiMovePagesArgs = {
+  source_page_ids: Array<string>;
+  target_page_id: string;
+  move_strategy: MoveStrategyType;
+  insert_at: InsertAtType;
+  signal: AbortSignal;
+}
+
+
+async function api_move_pages({
+  source_page_ids,
+  target_page_id,
+  move_strategy,
+  insert_at,
+  signal,
+}: ApiMovePagesArgs): Promise<Response> {
+  return fetch(
+    '/api/pages/move',
+    {
+      'method': 'POST',
+      'headers': get_default_headers(),
+      'body': JSON.stringify({
+        source_page_ids,
+        target_page_id,
+        move_strategy,
+        insert_at
+      }),
+      'signal': signal
+    },
+  );
+}
 
 
 type Args = {
@@ -20,18 +58,34 @@ const MovePagesModal = ({
   target_page_id,
   target_doc_title
 }: Args) => {
-  /*
-    Used when user drag and drops files from local files system into the Commander.
 
-    The files upload is performed async and notification (user feedback) is
-    accomplished via "toasts" (notification messages in right lower corder of
-    the screen). In other words "Upload files" screen closes immediately - it
-    does not wait until all files are uploaded. User can go fancy and Upload 200
-    files from some folder - it does not make any sense for the upload dialog to
-    be open for until all those 200 files get uploaded.
-  */
-  const handleSubmit = async () => {
-    onOK("code 7");
+  const [move_strategy, setMoveStrategy] = useState<MoveStrategyType>('append');
+  const [insert_at, setInsertAt] = useState<InsertAtType>('beginning');
+
+  const handleSubmit = async (signal: AbortSignal) => {
+    let response = await api_move_pages({
+      source_page_ids,
+      target_page_id,
+      move_strategy,
+      insert_at,
+      signal
+    });
+
+    await response.json();
+
+    if (response.status == 200) {
+      onOK("some thing here");
+    }
+  }
+
+  const onStrategyChange = (value: MoveStrategyType) => {
+    setMoveStrategy(value);
+    console.log(`New strategy value ${value}`);
+  }
+
+  const onInsertAtChange = (value: InsertAtType) => {
+    setInsertAt(value);
+    console.log(`New insert at value ${value}`);
   }
 
   return (
@@ -41,7 +95,10 @@ const MovePagesModal = ({
       onSubmit={handleSubmit}
       onCancel={onCancel}>
         Do you want to move selected pages to document '{target_doc_title}'?
-        <MoveOptions />
+        <MoveOptions
+          move_strategy={move_strategy}
+          onStrategyChange={onStrategyChange}
+          onInsertAtChange={onInsertAtChange} />
     </GenericModal>
   );
 }

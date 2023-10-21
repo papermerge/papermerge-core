@@ -135,7 +135,7 @@ def move_pages(arg: MovePages) -> PyMovePages:
     Target is the ID of the page before/after which to insert source pages.
     """
     [source, target] = api_move_pages(
-        source_pages_ids=arg.source_pages_ids,
+        source_page_ids=arg.source_page_ids,
         target_page_id=arg.target_page_id,
         insert_at=arg.insert_at,
         move_strategy=arg.move_strategy

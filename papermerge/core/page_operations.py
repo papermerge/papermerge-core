@@ -170,23 +170,20 @@ def collect_text_streams(
 
 
 def move_pages(
-    source_pages_ids: List[uuid.UUID],
+    source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     insert_at: InsertAt,
     move_strategy: MoveStrategy
 ) -> [PyDocument, PyDocument]:
-    src_pages = Page.objects.filter(pk__in=source_pages_ids)
-    src_first_page = src_pages.first()
+    moved_pages = Page.objects.filter(pk__in=source_page_ids)
+    moved_page_ids = [page.id for page in moved_pages]
+    src_first_page = moved_pages.first()
     dst_page = Page.objects.get(pk=target_page_id)
     src_old_version = src_first_page.document_version
     src_old_doc = src_old_version.document
     dst_old_version = dst_page.document_version
     dst_old_doc = dst_old_version.document
-    pages_count = src_pages.count()
-
-    position = 0
-    if insert_at == InsertAt.END:
-        position = dst_old_version.pages.count()
+    pages_count = moved_pages.count()
 
     src_new_version = src_old_doc.version_bump(
         page_count=src_old_version.pages.count() - pages_count,
@@ -198,17 +195,49 @@ def move_pages(
     )
 
     remove_pdf_pages(
-        src=src_old_version.path,
-        dst=src_new_version.path,
-        page_numbers=[page.number for page in src_pages]
+        src=src_old_version.file_path,
+        dst=src_new_version.file_path,
+        page_numbers=[page.number for page in moved_pages]
     )
+    src_keys = [  # IDs of the pages which were not removed
+        page.id
+        for page in src_old_version.pages.order_by('number')
+        if not (page.id in moved_page_ids)
+    ]
+
+    dst_values = [
+        page.id  # IDs of the pages in new version of the source
+        for page in src_new_version.pages.order_by('number')
+    ]
+    reuse_map = dict(zip(src_keys, dst_values))
+    reuse_ocr_data(reuse_map)
 
     insert_pdf_pages(
-        src_old=src_old_version.path,
-        dst_old=dst_old_version.path,
-        dst_new=dst_new_version.path,
-        src_page_numbers=[p.number for p in src_pages.order_by('number')],
-        dst_position=position
+        src_old=src_old_version.file_path,
+        dst_old=dst_old_version.file_path,
+        dst_new=dst_new_version.file_path,
+        src_page_numbers=[p.number for p in moved_pages.order_by('number')],
+        dst_position=0
     )
+
+    src_keys_1 = moved_page_ids
+    dst_values_1 = [
+        page.id  # IDs of the pages in new version of the source
+        for page in dst_new_version.pages.order_by('number')
+        if page.number <= len(moved_page_ids)
+    ]
+    src_keys_2 = [
+        page.id
+        for page in dst_old_version.order_by('number')
+    ]
+    dst_values_2 = [
+        page.id  # IDs of the pages in new version of the source
+        for page in dst_new_version.pages.order_by('number')
+        if page.number > len(moved_page_ids)
+    ]
+    reuse_map = dict(
+        zip([src_keys_1, src_keys_2], [dst_values_1, dst_values_2])
+    )
+    reuse_ocr_data(reuse_map)
 
     return [src_new_version.document, dst_new_version.document]

@@ -31,7 +31,7 @@ class MoveStrategy(Enum):
 
 
 class MovePages(BaseModel):
-    source_pages_ids: List[UUID]
+    source_page_ids: List[UUID]
     target_page_id: UUID
     insert_at: InsertAt
     move_strategy: MoveStrategy

@@ -1,4 +1,5 @@
 import io
+import uuid
 from pathlib import Path
 from typing import List
 
@@ -6,7 +7,7 @@ from pikepdf import Pdf
 
 from papermerge.core.models import Page
 from papermerge.core.schemas import DocumentVersion as PyDocVer
-from papermerge.core.schemas.pages import PageAndRotOp
+from papermerge.core.schemas.pages import InsertAt, MoveStrategy, PageAndRotOp
 from papermerge.core.storage import get_storage_instance
 
 
@@ -92,3 +93,12 @@ def collect_text_streams(
     ]
 
     return result
+
+
+def move_pages(
+    source_pages_ids: List[uuid.UUID],
+    target_page_id: uuid.UUID,
+    insert_at: InsertAt,
+    move_strategy: MoveStrategy
+):
+    pass

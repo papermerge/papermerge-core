@@ -9,9 +9,11 @@ from fastapi.responses import FileResponse
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.models import Page, User
 from papermerge.core.page_operations import apply_pages_op
+from papermerge.core.page_operations import move_pages as api_move_pages
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
-from papermerge.core.schemas.pages import PageAndRotOp
+from papermerge.core.schemas.documents import MovePages as PyMovePages
+from papermerge.core.schemas.pages import MovePages, PageAndRotOp
 
 from .auth import get_current_user as current_user
 
@@ -123,3 +125,21 @@ def apply_page_operations(
     new_versions = apply_pages_op(items)
 
     return [PyDocVer.model_validate(version) for version in new_versions]
+
+
+@router.post("/move")
+def move_pages(arg: MovePages) -> PyMovePages:
+    """Moves pages between documents.
+
+    Source IDs are IDs of the pages to move.
+    Target is the ID of the page before/after which to insert source pages.
+    """
+    [source, target] = api_move_pages(
+        source_pages_ids=arg.source_pages_ids,
+        target_page_id=arg.target_page_id,
+        insert_at=arg.insert_at,
+        move_strategy=arg.move_strategy
+    )
+    model = PyMovePages(source=source, target=target)
+
+    return PyMovePages.model_validate(model)

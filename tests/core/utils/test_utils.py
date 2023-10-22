@@ -6,12 +6,11 @@ import pytest
 from django.test import override_settings
 from model_bakery import baker
 
-from papermerge.core.models import Document, Page
+from papermerge.core.models import Page
 from papermerge.core.utils import (PageRecycleMap, collect_text_streams,
-                                   insert_pdf_pages, namespaced, partial_merge,
-                                   remove_pdf_pages, reuse_ocr_data,
-                                   reuse_ocr_data_multi, reuse_text_field,
-                                   reuse_text_field_multi, total_merge)
+                                   insert_pdf_pages, namespaced,
+                                   remove_pdf_pages, reuse_ocr_data_multi,
+                                   reuse_text_field, reuse_text_field_multi)
 from papermerge.test import TestCase, maker
 from papermerge.test.utils import pdf_content
 
@@ -151,72 +150,6 @@ class TestCollectTextStreams(TestCase):
         expected = ["Page 1", "Page 2"]
 
         assert expected == actual
-
-
-@pytest.mark.django_db
-@patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_reuse_ocr_data_1(_mock1, _mock2, user):
-    """
-    Tests `reuse_ocr_data`
-
-    Tests scenario when target version has same
-    pages (number of pages and their order coincide) as the
-    source version.
-    """
-    src_document = maker.document(
-        "s3.pdf",  # document has 3 pages
-        user=user,
-        include_ocr_data=True
-    )
-    source = src_document.versions.last()
-    destination = src_document.version_bump(page_count=3)
-
-    page_map = {
-        str(src_page.id): str(dst_page.id)
-        for src_page, dst_page in zip(
-            source.pages.all(),
-            destination.pages.all()
-        )
-    }
-
-    reuse_ocr_data(page_map)
-
-    for index in range(3):
-        dst = destination.pages.all()[index]
-        src = source.pages.all()[index]
-        _assert_same_ocr_data(src=src, dst=dst)
-
-
-@pytest.mark.django_db
-@patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_reuse_ocr_data_2(_mock1, _mock2, user):
-    """
-    Tests `reuse_ocr_data`
-
-    Tests scenario when first two pages of the source are deleted.
-     src       -> dst
-    p1, p2, p3 -> p3
-    """
-    src_document = maker.document(
-        "s3.pdf",
-        user=user,
-        include_ocr_data=True
-    )
-    source = src_document.versions.last()
-
-    # destination has only one page
-    destination = src_document.version_bump(page_count=1)
-
-    dst = destination.pages.all()[0]
-    src = source.pages.all()[2]
-
-    page_map = dict()
-    page_map[str(src.id)] = str(dst.id)
-    reuse_ocr_data(page_map)
-
-    _assert_same_ocr_data(src=src, dst=dst)
 
 
 @pytest.mark.skip()
@@ -927,107 +860,6 @@ class TestInserPdfPagesUtilityFunction(TestCase):
 
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "S1 S3" == dst_new_content
-
-
-@pytest.mark.skip()
-class TestUtils(TestCase):
-
-    @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_total_merge_of_one_page_documents(self, _, _x):
-        # source document was not OCRed yet
-        # source document has one page with text "Scan v2"
-        src_document = maker.document(
-            "one-page-scan-v2.pdf",
-            user=self.user
-        )
-        # destination document was not OCRed yet
-        # destination document has one page with text "Scan v1"
-        dst_document = maker.document(
-            "one-page-scan-v1.pdf",
-            user=self.user,
-        )
-        # Version increment is performed outside total_merge
-        dst_new_version = dst_document.version_bump()
-
-        # this is what we test
-        total_merge(
-            src_old_version=src_document.versions.last(),
-            dst_new_version=dst_new_version
-        )
-
-        # 1. src_document must be deleted by now
-        with pytest.raises(Document.DoesNotExist):
-            Document.objects.get(pk=src_document.pk)
-
-        # 2. dst document's first version must contain one page
-        # with "Scan v1" text
-        first_version = dst_document.versions.first()
-        assert first_version.pages.count() == 1
-        assert "Scan v1" == pdf_content(first_version)
-
-        second_version = dst_document.versions.last()
-        # 3. dst document's last version must contain one page
-        # with "Scan v2" text
-        assert second_version.pages.count() == 1
-        assert "Scan v2" == pdf_content(second_version)
-
-    @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_partial_merge_scenario_1(self, _, _x):
-        """
-        In this scenario initially there are two documents:
-        source:
-            page 1 with text "Document A"
-            page 2 with text "Scan v2"
-        destination:
-            page 1 with text "Scan v1"
-
-        Then, second page of the source is (partially) merged into
-        destination. The result is expected to be as follows:
-        (newly created version of) source:
-            page 1 with text "Document A"
-        (newly created version of) destination:
-            page 1 with text "Scan v2"
-        """
-        # source document was not OCRed yet
-        # source document has two pages with text:
-        # page 1 - "Document A"
-        # page 2 - "Scan v2"
-        src_document = maker.document(
-            "partial_merge_scenario_1_src.pdf",
-            user=self.user
-        )
-        src_new_version = src_document.version_bump(page_count=1)
-        # destination document was not OCRed yet
-        # destination document has one page with text "Scan v1"
-        dst_document = maker.document(
-            "partial_merge_scenario_1_dst.pdf",
-            user=self.user,
-        )
-        # Version increment is performed outside total_merge
-        dst_new_version = dst_document.version_bump(page_count=1)
-
-        # this is what we test
-        partial_merge(
-            src_old_version=src_document.versions.first(),
-            src_new_version=src_new_version,
-            dst_new_version=dst_new_version,
-            page_numbers=[2]  # page numbering starts with "1"
-        )
-
-        # 1. dst document's first version must contain one page
-        # with "Scan v1" text
-        first_version = dst_document.versions.first()
-        assert "Scan v1" == pdf_content(first_version)
-
-        second_version = dst_document.versions.last()
-        # 2. dst document's last version must contain one page
-        # with "Scan v2" text
-        assert "Scan v2" == pdf_content(second_version)
-
-        # 3. newly created source version must contain only "Document A"
-        assert "Document A" == pdf_content(src_new_version)
 
 
 def _get_content(file_path: Path) -> str:

@@ -1,3 +1,5 @@
+from enum import Enum
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -16,3 +18,14 @@ class PageAndRotOp(BaseModel):
     # `angle` must be a multiple of 90.
     # When `angle` > 0 -> the rotation is "clockwise".
     # When `angle` < 0 -> the rotation is "counterclockwise".
+
+
+class MoveStrategy(Enum):
+    MIX = 'mix'
+    REPLACE = 'replace'
+
+
+class MovePagesIn(BaseModel):
+    source_page_ids: List[UUID]
+    target_page_id: UUID
+    move_strategy: MoveStrategy

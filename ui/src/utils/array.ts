@@ -60,4 +60,15 @@ function overlap<T extends {id: string}>(
   return intersection.length  > 0;
 }
 
-export {uniq_concat, subtract, overlap}
+interface Args<T> {
+  container: T[];
+  items: T[];
+}
+
+function contains_every<T = string>({container, items}: Args<T>): boolean {
+  // Returns true if every item is included in the container
+  // Returns false if some items are not included in the container
+  return items.every((i) => container.includes(i));
+}
+
+export {uniq_concat, subtract, overlap, contains_every}

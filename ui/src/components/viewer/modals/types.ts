@@ -1,2 +1,1 @@
-export type MoveStrategyType = 'append' | 'replace';
-export type InsertAtType = 'beginning' | 'end';
+export type MoveStrategyType = 'mix' | 'replace';

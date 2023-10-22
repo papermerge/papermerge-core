@@ -6,14 +6,13 @@ import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
 import MoveOptions from './MoveOptions';
-import type { MoveStrategyType, InsertAtType } from './types';
+import type { MoveStrategyType } from './types';
 
 
 type ApiMovePagesArgs = {
   source_page_ids: Array<string>;
   target_page_id: string;
   move_strategy: MoveStrategyType;
-  insert_at: InsertAtType;
   signal: AbortSignal;
 }
 
@@ -22,7 +21,6 @@ async function api_move_pages({
   source_page_ids,
   target_page_id,
   move_strategy,
-  insert_at,
   signal,
 }: ApiMovePagesArgs): Promise<Response> {
   return fetch(
@@ -33,8 +31,7 @@ async function api_move_pages({
       'body': JSON.stringify({
         source_page_ids,
         target_page_id,
-        move_strategy,
-        insert_at
+        move_strategy
       }),
       'signal': signal
     },
@@ -59,15 +56,13 @@ const MovePagesModal = ({
   target_doc_title
 }: Args) => {
 
-  const [move_strategy, setMoveStrategy] = useState<MoveStrategyType>('append');
-  const [insert_at, setInsertAt] = useState<InsertAtType>('beginning');
+  const [move_strategy, setMoveStrategy] = useState<MoveStrategyType>('mix');
 
   const handleSubmit = async (signal: AbortSignal) => {
     let response = await api_move_pages({
       source_page_ids,
       target_page_id,
       move_strategy,
-      insert_at,
       signal
     });
 
@@ -83,10 +78,6 @@ const MovePagesModal = ({
     console.log(`New strategy value ${value}`);
   }
 
-  const onInsertAtChange = (value: InsertAtType) => {
-    setInsertAt(value);
-    console.log(`New insert at value ${value}`);
-  }
 
   return (
     <GenericModal
@@ -96,9 +87,7 @@ const MovePagesModal = ({
       onCancel={onCancel}>
         Do you want to move selected pages to document '{target_doc_title}'?
         <MoveOptions
-          move_strategy={move_strategy}
-          onStrategyChange={onStrategyChange}
-          onInsertAtChange={onInsertAtChange} />
+          onStrategyChange={onStrategyChange} />
     </GenericModal>
   );
 }

@@ -137,7 +137,6 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
     [source, target] = api_move_pages(
         source_page_ids=arg.source_page_ids,
         target_page_id=arg.target_page_id,
-        insert_at=arg.insert_at,
         move_strategy=arg.move_strategy
     )
     model = MovePagesOut(source=source, target=target)

@@ -16,8 +16,8 @@ function MoveStrategy({onChange}: Args) {
 
   return <div>
     <Form.Label htmlFor="strategy">Move Strategy:</Form.Label>
-    <Form.Select defaultValue={"append"} onChange={onLocalChange}>
-      <option value="append">Append</option>
+    <Form.Select defaultValue={"mix"} onChange={onLocalChange}>
+      <option value="mix">Mix</option>
       <option value="replace">Replace</option>
     </Form.Select>
   </div>;

@@ -20,11 +20,6 @@ class PageAndRotOp(BaseModel):
     # When `angle` < 0 -> the rotation is "counterclockwise".
 
 
-class InsertAt(Enum):
-    BEGINNING = 'beginning'
-    END = 'end'
-
-
 class MoveStrategy(Enum):
     MIX = 'mix'
     REPLACE = 'replace'
@@ -33,5 +28,4 @@ class MoveStrategy(Enum):
 class MovePagesIn(BaseModel):
     source_page_ids: List[UUID]
     target_page_id: UUID
-    insert_at: InsertAt
     move_strategy: MoveStrategy

@@ -14,7 +14,6 @@ from django.utils.html import escape, format_html
 from pikepdf import Pdf
 
 from papermerge.core.lib.path import PagePath
-from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.types import DocumentVersion
 
@@ -454,19 +453,6 @@ def reuse_ocr_data_multi(
             storage.copy_page(src=src_page_path, dst=dst_page_path)
 
 
-def reuse_ocr_data(uuid_map) -> None:
-    storage_instance = get_storage_instance()
-
-    for src_uuid, dst_uuid in uuid_map.items():
-        src = abs_page_path(src_uuid)
-        dst = abs_page_path(dst_uuid)
-
-        storage_instance.copy_page(
-            src_folder=src,
-            dst_folder=dst
-        )
-
-
 def reuse_text_field(
     old_version: DocumentVersion,
     new_version: DocumentVersion,
@@ -664,74 +650,6 @@ def total_merge(
     # last version remains "without pages". A document version without pages
     # does not make sense to stay around - thus we delete it!
     src_old_version.document.delete()
-
-
-def partial_merge(
-    src_old_version: 'DocumentVersion',
-    src_new_version: 'DocumentVersion',
-    dst_new_version: 'DocumentVersion',
-    page_numbers: list[int]
-) -> None:
-    """Merge only some pages of the source document version with destination
-
-    No all pages of the source are used, which means
-    source document version IS NOT DELETED.
-
-    'Partial' means 'not all pages'.
-    """
-
-    if len(page_numbers) >= src_old_version.pages.count():
-        raise ValueError("Number of pages to remove exceeds source page count")
-
-    # remove pages from the source document version
-    remove_pdf_pages(
-        old_version=src_old_version,
-        new_version=src_new_version,
-        page_numbers=page_numbers
-    )
-
-    page_map = list(
-        PageRecycleMap(
-            total=src_old_version.page_count,
-            deleted=page_numbers
-        )
-    )
-
-    reuse_ocr_data(
-        old_version=src_old_version,
-        new_version=src_new_version,
-        page_map=page_map
-    )
-
-    reuse_text_field(
-        old_version=src_old_version,
-        new_version=src_new_version,
-        page_map=page_map
-    )
-
-    # insert pages to the destination
-    insert_pdf_pages(
-        src_old_version=src_old_version,
-        dst_old_version=None,
-        dst_new_version=dst_new_version,
-        src_page_numbers=page_numbers
-    )
-
-    reuse_ocr_data_multi(
-        src_old_version=src_old_version,
-        dst_old_version=None,
-        dst_new_version=dst_new_version,
-        position=0,
-        page_numbers=page_numbers
-    )
-
-    reuse_text_field_multi(
-        src_old_version=src_old_version,
-        dst_old_version=None,
-        dst_new_version=dst_new_version,
-        position=0,
-        page_numbers=page_numbers
-    )
 
 
 def reorder_pdf_pages(

@@ -6,6 +6,7 @@ from typing import List
 from pikepdf import Pdf
 
 from papermerge.core.models import Page
+from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import InsertAt, MoveStrategy, PageAndRotOp
@@ -130,8 +131,8 @@ def reuse_ocr_data(uuid_map) -> None:
 
     for src_uuid, dst_uuid in uuid_map.items():
         storage_instance.copy_page(
-            src=Path("pages", str(src_uuid)),
-            dst=Path("pages", str(dst_uuid))
+            src=abs_page_path(src_uuid),
+            dst=abs_page_path(dst_uuid)
         )
 
 
@@ -228,7 +229,7 @@ def move_pages(
     ]
     src_keys_2 = [
         page.id
-        for page in dst_old_version.order_by('number')
+        for page in dst_old_version.pages.order_by('number')
     ]
     dst_values_2 = [
         page.id  # IDs of the pages in new version of the source
@@ -236,7 +237,7 @@ def move_pages(
         if page.number > len(moved_page_ids)
     ]
     reuse_map = dict(
-        zip([src_keys_1, src_keys_2], [dst_values_1, dst_values_2])
+        zip(src_keys_1 + src_keys_2, dst_values_1 + dst_values_2)
     )
     reuse_ocr_data(reuse_map)
 

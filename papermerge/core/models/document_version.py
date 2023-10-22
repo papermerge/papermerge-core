@@ -74,11 +74,6 @@ class DocumentVersion(models.Model):
     def __repr__(self):
         return f"DocumentVersion(id={self.pk}, number={self.number})"
 
-    def abs_file_path(self):
-        return abs_path(
-            self.file_path.url
-        )
-
     def generate_previews(self, page_number=None):
         logger.debug('generate_previews BEGIN')
         abs_dirname = abs_path(self.document_path.dirname_sidecars())

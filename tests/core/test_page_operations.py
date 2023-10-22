@@ -73,11 +73,11 @@ def test_move_pages(_, __):
     dst_new_pages = dst.versions.last().pages.all()
     """
          src            dst
-    old -> new      old -> new
-     S1    S1        D1    S2
-     S2              D2    D1
-                     D3    D2
-                           D3
+    old -> new      old -> new    index
+     S1    S1        D1    S2       0
+     S2              D2    D1       1
+                     D3    D2       2
+                           D3       3
     """
     assert PageDir(
         dst_new_pages[0].id, number=1, name="dst new"
@@ -103,7 +103,7 @@ def test_move_pages(_, __):
 
 
 class PageDir:
-    """Helper class to test if content of two dirs have same content.
+    """Helper class to test if content of two dirs is same
 
     In order for two dirs to have same content they need to
     have same files and each corresponding file must have same content.

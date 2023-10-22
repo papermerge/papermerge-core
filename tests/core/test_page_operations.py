@@ -5,7 +5,7 @@ import pytest
 
 from papermerge.core.page_operations import move_pages
 from papermerge.core.pathlib import abs_page_path
-from papermerge.core.schemas.pages import InsertAt, MoveStrategy
+from papermerge.core.schemas.pages import MoveStrategy
 from papermerge.test import maker
 from papermerge.test.baker_recipes import user_recipe
 
@@ -13,16 +13,16 @@ from papermerge.test.baker_recipes import user_recipe
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 @patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_pages(_, __):
+def test_move_pages_one_single_page_strategy_mix(_, __):
     """Scenario tests moving of one page from
-    src to dst. Scenario is illustrated
+    src to dst (strategy: mix). Scenario is illustrated
     in following table:
 
-         src            dst
-    old -> new      old -> new
-     S1    S1        D1    S2
-     S2              D2    D1
-                     D3    D2
+         src   -[S2]->   dst
+    old -> new       old -> new
+     S1    S1         D1    S2
+     S2               D2    D1
+                      D3    D2
                            D3
     """
     user = user_recipe.make()
@@ -53,8 +53,7 @@ def test_move_pages(_, __):
         # we are moving out second page of the source document version
         source_page_ids=[str(src_page.id)],
         target_page_id=str(dst_page.id),
-        insert_at=InsertAt.BEGINNING,
-        move_strategy=MoveStrategy.APPEND
+        move_strategy=MoveStrategy.MIX
     )
 
     src.refresh_from_db()
@@ -72,12 +71,12 @@ def test_move_pages(_, __):
     dst_old_pages = dst.versions.first().pages.all()
     dst_new_pages = dst.versions.last().pages.all()
     """
-         src            dst
-    old -> new      old -> new    index
-     S1    S1        D1    S2       0
-     S2              D2    D1       1
-                     D3    D2       2
-                           D3       3
+         src     -[S2]->  dst
+    old -> new         old -> new    index
+     S1    S1           D1    S2       0
+     S2                 D2    D1       1
+                        D3    D2       2
+                              D3       3
     """
     assert PageDir(
         dst_new_pages[0].id, number=1, name="dst new"
@@ -100,6 +99,101 @@ def test_move_pages(_, __):
     ) == PageDir(
         dst_old_pages[2].id, number=3, name="dst old"
     )
+
+
+@pytest.mark.django_db
+@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.generate_page_previews_task')
+def test_move_pages_two_pages_strategy_mix(_, __):
+    """Scenario tests moving of two pages from
+    src to dst (strategy: mix). Scenario is illustrated
+    in following table:
+
+                Strategy: MIX
+         src   --[S1, S3]-->  dst
+    old -> new          old -> new
+     S1    S2            D1    S1
+     S2                  D2    S3
+     S3                  D3    D1
+                               D2
+                               D3
+    """
+    user = user_recipe.make()
+    src = maker.document(
+        resource='s3.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    dst = maker.document(
+        resource='d3.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    # Initial visual checks:
+    # count of document versions and number of pages in the doc
+    assert src.versions.count() == 1   # (1)
+    assert src.versions.last().pages.count() == 3
+    assert dst.versions.count() == 1   # (2)
+    assert dst.versions.last().pages.count() == 3
+
+    src_ver = src.versions.last()
+    src_page_1 = src_ver.pages.all()[0]
+    src_page_3 = src_ver.pages.all()[2]
+
+    dst_ver = dst.versions.last()
+    dst_page = dst_ver.pages.all()[0]
+
+    move_pages(
+        source_page_ids=[str(src_page_1.id), str(src_page_3.id)],
+        target_page_id=str(dst_page.id),
+        move_strategy=MoveStrategy.MIX
+    )
+
+    src.refresh_from_db()
+    dst.refresh_from_db()
+    # src, dst now have one more version
+    # versions were incremented +1 from (1) and (2)
+    assert src.versions.count() == 2
+    assert src.versions.last().pages.count() == 1  # previously was 3
+    assert dst.versions.count() == 2
+    assert dst.versions.last().pages.count() == 5  # previously was 3
+
+    src_old_pages = src.versions.first().pages.all()
+    dst_old_pages = dst.versions.first().pages.all()
+    dst_new_pages = dst.versions.last().pages.all()
+    """
+                Strategy: MIX
+         src   --[S1, S3]-->  dst
+    old -> new          old -> new
+     S1    S2            D1    S1
+     S2                  D2    S3
+     S3                  D3    D1
+                               D2
+                               D3
+    """
+    assert PageDir(
+        dst_new_pages[0].id, number=1, name="dst new"
+    ) == PageDir(
+        src_old_pages[0].id, number=1, name="src old"
+    )
+
+    assert PageDir(
+        dst_new_pages[1].id, number=2, name="dst new"
+    ) == PageDir(
+        src_old_pages[2].id, number=3, name="src old"
+    )
+
+    assert PageDir(
+        dst_new_pages[2].id, number=3, name="dst new"
+    ) == PageDir(dst_old_pages[0].id, number=1, name="dst old")
+
+    assert PageDir(
+        dst_new_pages[3].id, number=4, name="dst new"
+    ) == PageDir(dst_old_pages[1].id, number=2, name="dst old")
+
+    assert PageDir(
+        dst_new_pages[4].id, number=5, name="dst new"
+    ) == PageDir(dst_old_pages[2].id, number=3, name="dst old")
 
 
 class PageDir:

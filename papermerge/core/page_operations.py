@@ -173,8 +173,8 @@ def collect_text_streams(
 def move_pages(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
-    insert_at: InsertAt,
-    move_strategy: MoveStrategy
+    move_strategy: MoveStrategy,
+    insert_at: InsertAt = InsertAt.BEGINNING
 ) -> [PyDocument, PyDocument]:
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]

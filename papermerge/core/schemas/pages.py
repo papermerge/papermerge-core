@@ -26,7 +26,7 @@ class InsertAt(Enum):
 
 
 class MoveStrategy(Enum):
-    APPEND = 'append'
+    MIX = 'mix'
     REPLACE = 'replace'
 
 

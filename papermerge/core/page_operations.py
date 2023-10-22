@@ -9,7 +9,7 @@ from papermerge.core.models import Page
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
-from papermerge.core.schemas.pages import InsertAt, MoveStrategy, PageAndRotOp
+from papermerge.core.schemas.pages import MoveStrategy, PageAndRotOp
 from papermerge.core.storage import get_storage_instance
 
 
@@ -110,7 +110,7 @@ def insert_pdf_pages(
     src_old_pdf = Pdf.open(src_old)
 
     if dst_old is None:
-        # case of total merge
+        # "replace" strategy
         dst_old_pdf = Pdf.new()
         dst_position = 0
     else:
@@ -173,9 +173,34 @@ def collect_text_streams(
 def move_pages(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
-    move_strategy: MoveStrategy,
-    insert_at: InsertAt = InsertAt.BEGINNING
+    move_strategy: MoveStrategy
 ) -> [PyDocument, PyDocument]:
+    if move_strategy == MoveStrategy.REPLACE:
+        return move_pages_replace(
+            source_page_ids=source_page_ids,
+            target_page_id=target_page_id
+        )
+
+    return move_pages_mix(
+        source_page_ids=source_page_ids,
+        target_page_id=target_page_id
+    )
+
+
+def move_pages_mix(
+    source_page_ids: List[uuid.UUID],
+    target_page_id: uuid.UUID
+) -> [PyDocument, PyDocument]:
+    """Move pages from src to dst using mix strategy
+
+    MIX strategy means that source pages on the target will be "mixed"
+    with destination pages (placed one next to another).
+    Newly inserted pages are inserted at the beginning of the
+    document version.
+
+    In case all pages from the source are moved, the source
+    document is deleted.
+    """
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
     src_first_page = moved_pages.first()
@@ -239,6 +264,74 @@ def move_pages(
     reuse_map = dict(
         zip(src_keys_1 + src_keys_2, dst_values_1 + dst_values_2)
     )
+    reuse_ocr_data(reuse_map)
+
+    return [src_new_version.document, dst_new_version.document]
+
+
+def move_pages_replace(
+    source_page_ids: List[uuid.UUID],
+    target_page_id: uuid.UUID
+) -> [PyDocument, PyDocument]:
+    """Move pages from src to dst using replace strategy
+
+    REPLACE strategy means that source pages on the target will replace
+    previous pages on the destination.
+
+    In case all pages from the source are moved, the source
+    document is deleted.
+    """
+    moved_pages = Page.objects.filter(pk__in=source_page_ids)
+    moved_page_ids = [page.id for page in moved_pages]
+    src_first_page = moved_pages.first()
+    dst_page = Page.objects.get(pk=target_page_id)
+    src_old_version = src_first_page.document_version
+    src_old_doc = src_old_version.document
+    dst_old_version = dst_page.document_version
+    dst_old_doc = dst_old_version.document
+    pages_count = moved_pages.count()
+
+    src_new_version = src_old_doc.version_bump(
+        page_count=src_old_version.pages.count() - pages_count,
+        short_description=f'{pages_count} page(s) moved out'
+    )
+    dst_new_version = dst_old_doc.version_bump(
+        page_count=pages_count,  # !!! Important
+        short_description=f'{pages_count} page(s) replaced'
+    )
+
+    remove_pdf_pages(
+        src=src_old_version.file_path,
+        dst=src_new_version.file_path,
+        page_numbers=[page.number for page in moved_pages]
+    )
+    src_keys = [  # IDs of the pages which were not removed
+        page.id
+        for page in src_old_version.pages.order_by('number')
+        if not (page.id in moved_page_ids)
+    ]
+
+    dst_values = [
+        page.id  # IDs of the pages in new version of the source
+        for page in src_new_version.pages.order_by('number')
+    ]
+    reuse_map = dict(zip(src_keys, dst_values))
+    reuse_ocr_data(reuse_map)
+
+    insert_pdf_pages(
+        src_old=src_old_version.file_path,
+        dst_old=None,  # !!! Important
+        dst_new=dst_new_version.file_path,
+        src_page_numbers=[p.number for p in moved_pages.order_by('number')],
+        dst_position=0
+    )
+
+    src_keys = moved_page_ids
+    dst_values = [
+        page.id
+        for page in dst_new_version.pages.order_by('number')
+    ]
+    reuse_map = dict(zip(src_keys, dst_values))
     reuse_ocr_data(reuse_map)
 
     return [src_new_version.document, dst_new_version.document]

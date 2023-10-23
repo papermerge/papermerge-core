@@ -17,7 +17,7 @@ type Args = {
   onDeletePages: () => void;
   onRotatePagesCw: () => void;
   onRotatePagesCcw: () => void;
-  show_selected_menu: boolean;
+  selected_pages: Array<string>;
   onApplyPageOpChanges: () => void;
   show_dual_button?: ShowDualButtonEnum;
 }
@@ -26,7 +26,7 @@ export default function ActionPanel({
   versions,
   doc,
   unapplied_page_op_changes,
-  show_selected_menu,
+  selected_pages,
   onRenameClick,
   onDeletePages,
   onRotatePagesCw,
@@ -65,7 +65,7 @@ export default function ActionPanel({
 
         <DocVersionsDropdown doc={doc} versions={versions}/>
 
-        {show_selected_menu && extra_menu}
+        {selected_pages.length > 0 ? extra_menu : ''}
 
         {
           unapplied_page_op_changes &&

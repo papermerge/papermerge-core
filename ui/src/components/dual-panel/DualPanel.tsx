@@ -81,6 +81,8 @@ function DualPanel({ node }: Args) {
   const [sdocVers, setSDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
   const [mcurPages, setMCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
   const [scurPages, setSCurPages] = useState<Vow<PageAndRotOp[]>>(init_vow());
+  const [selectedMPages, setSelectedMPages] = useState<Array<string>>([]);
+  const [selectedSPages, setSelectedSPages] = useState<Array<string>>([]);
   const [mdoc_breadcrumb, setMDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow());
   const [sdoc_breadcrumb, setSDocBreadcrumb] = useState<Vow<BreadcrumbType>>(init_vow());
   const [selected_mnodes, setSelectedMNodes] = useState<UUIDList>([]);
@@ -330,6 +332,17 @@ function DualPanel({ node }: Args) {
       setMCurPages(ready_vow(target_pages));
       setSCurPages(ready_vow(source_pages));
     }
+
+    setSelectedMPages([]);
+    setSelectedSPages([]);
+  }
+
+  const onSelectedMPages = (sel_pages: Array<string>) => {
+    setSelectedMPages(sel_pages);
+  }
+
+  const onSelectedSPages = (sel_pages: Array<string>) => {
+    setSelectedSPages(sel_pages);
   }
 
   const dual_context = {
@@ -360,11 +373,13 @@ function DualPanel({ node }: Args) {
           doc_ver={mcurDocVer}
           doc_breadcrumb={mdoc_breadcrumb}
           pages={mcurPages}
+          selected_pages={selectedMPages}
           onDocVerChange={onMainDocVerChange}
           onDocVersionsChange={onMainDocVersionsChange}
           onPagesChange={onMainPagesChange}
           onDocBreadcrumbChange={onMDocBreadcrumbChange}
           onMovePagesBetweenDocs={onMovePagesBetweenDocs}
+          onSelectedPages={onSelectedMPages}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -388,11 +403,13 @@ function DualPanel({ node }: Args) {
           doc_ver={mcurDocVer}
           doc_breadcrumb={mdoc_breadcrumb}
           pages={mcurPages}
+          selected_pages={selectedMPages}
           onDocVerChange={onMainDocVerChange}
           onDocVersionsChange={onMainDocVersionsChange}
           onPagesChange={onMainPagesChange}
           onDocBreadcrumbChange={onMDocBreadcrumbChange}
-          onMovePagesBetweenDocs={onMovePagesBetweenDocs} />
+          onMovePagesBetweenDocs={onMovePagesBetweenDocs}
+          onSelectedPages={onSelectedMPages} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -411,11 +428,13 @@ function DualPanel({ node }: Args) {
           doc_ver={scurDocVer}
           doc_breadcrumb={sdoc_breadcrumb}
           pages={scurPages}
+          selected_pages={selectedSPages}
           onDocVerChange={onSecondaryDocVerChange}
           onDocVersionsChange={onSecondaryDocVersionsChange}
           onPagesChange={onSecondaryPagesChange}
           onDocBreadcrumbChange={onSDocBreadcrumbChange}
           onMovePagesBetweenDocs={onMovePagesBetweenDocs}
+          onSelectedPages={onSelectedSPages}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

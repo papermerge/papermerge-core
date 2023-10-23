@@ -42,11 +42,13 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
+  selected_pages: Array<string>;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_ver: DocumentVersion) => void;
   onPagesChange: (pages: PageAndRotOp[]) => void;
   onDocBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
+  onSelectedPages: (arg: Array<string>) => void;
   selected_nodes: UUIDList;
   dragged_nodes: UUIDList;
 }
@@ -154,11 +156,13 @@ function SinglePanel({
   doc_ver,
   doc_breadcrumb,
   pages,
+  selected_pages,
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
   onDocBreadcrumbChange,
-  onMovePagesBetweenDocs
+  onMovePagesBetweenDocs,
+  onSelectedPages
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -205,11 +209,13 @@ function SinglePanel({
         doc_ver={doc_ver}
         breadcrumb={doc_breadcrumb}
         pages={pages}
+        selected_pages={selected_pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}
         onPagesChange={onPagesChange}
         onBreadcrumbChange={onDocBreadcrumbChange}
-        onMovePagesBetweenDocs={onMovePagesBetweenDocs} />;
+        onMovePagesBetweenDocs={onMovePagesBetweenDocs}
+        onSelectedPages={onSelectedPages} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

@@ -40,12 +40,14 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
+  selected_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
+  onSelectedPages: (arg: Array<string>) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -63,19 +65,18 @@ export default function Viewer({
   doc_ver,
   breadcrumb,
   pages,
+  selected_pages,
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
   onDocVerChange,
   onBreadcrumbChange,
   onMovePagesBetweenDocs,
+  onSelectedPages,
   show_dual_button
 }: Args) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
-  // current doc versions
-  let [showSelectedMenu, setShowSelectedMenu] = useState<boolean>(false);
-  let [selectedPages, setSelectedPages] = useState<Array<string>>([]);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
@@ -142,7 +143,7 @@ export default function Viewer({
         target_doc_title: doc!.data!.title
       }).then(({source, target}: MovePagesBetweenDocsType) => {
         onMovePagesBetweenDocs({source, target});
-        setSelectedPages([]);
+        onSelectedPages([]);
       });
     }
 }
@@ -152,7 +153,7 @@ export default function Viewer({
     let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
     setUnappliedPagesOpChanges(false);
     onDocVersionsChange(response)
-    setSelectedPages([]);
+    onSelectedPages([]);
 
     toasts?.addToast("info", "Page operations successfully applied");
   }
@@ -162,28 +163,21 @@ export default function Viewer({
     let new_list: Array<string>;
 
     if (selected) {
-      new_list = [...selectedPages, page_id]
+      new_list = [...selected_pages, page_id]
     } else {
-      new_list = selectedPages.filter(id => id != page_id);
-    }
-
-    if (new_list.length > 0) {
-      setShowSelectedMenu(true);
-    } else {
-      setShowSelectedMenu(false);
+      new_list = selected_pages.filter(id => id != page_id);
     }
 
     // here `selected` is false
-    setSelectedPages(new_list);
+    onSelectedPages(new_list);
   }
 
   const onDeletePages = () => {
     let new_cur_pages = pages!.data!.filter(
-      (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
+      (item: PageAndRotOp) => selected_pages.indexOf(item.page.id) < 0
     );
-    setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
-    setSelectedPages([]);
+    onSelectedPages([]);
     onPagesChange(new_cur_pages);
   }
 
@@ -193,7 +187,7 @@ export default function Viewer({
 
     new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
-        if (selectedPages.indexOf(item.page.id) >= 0) {
+        if (selected_pages.indexOf(item.page.id) >= 0) {
           item.angle -= 90;
           // @ts-ignore
           item.angle = item.angle % 360;
@@ -215,7 +209,7 @@ export default function Viewer({
 
     new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
-        if (selectedPages.indexOf(item.page.id) >= 0) {
+        if (selected_pages.indexOf(item.page.id) >= 0) {
           item.angle += 90;
           // @ts-ignore
           item.angle = item.angle % 360;
@@ -258,7 +252,7 @@ export default function Viewer({
     <ActionPanel
       versions={doc_versions}
       doc={doc}
-      show_selected_menu={showSelectedMenu}
+      selected_pages={selected_pages}
       onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
       onRotatePagesCw={onRotatePagesCw}

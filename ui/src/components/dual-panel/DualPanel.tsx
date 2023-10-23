@@ -17,7 +17,8 @@ import { Vow,
   Sorting,
   BreadcrumbType,
   onMovedNodesType,
-  UUIDList
+  UUIDList,
+  MovePagesBetweenDocsType
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
@@ -310,6 +311,27 @@ function DualPanel({ node }: Args) {
     setDraggedSNodes([]);
   }
 
+  const onMovePagesBetweenDocs = ({source, target}: MovePagesBetweenDocsType) => {
+    const source_doc_ver: DocumentVersion = get_last_doc_version(source);
+    const source_pages: PageAndRotOp[] = source_doc_ver.pages.map(p => {return {
+      page: p, angle: 0
+    }});
+    const target_doc_ver: DocumentVersion = get_last_doc_version(target);
+    const target_pages: PageAndRotOp[] = target_doc_ver.pages.map(p => {return {
+      page: p, angle: 0
+    }});
+
+    if (source.id == main_doc.data?.id) {
+      // source is on main panel
+      setMCurPages(ready_vow(source_pages));
+      setSCurPages(ready_vow(target_pages));
+    } else {
+      // source is on secondary panel
+      setMCurPages(ready_vow(target_pages));
+      setSCurPages(ready_vow(source_pages));
+    }
+  }
+
   const dual_context = {
     onOpenSecondary,
     onCloseSecondary,
@@ -342,6 +364,7 @@ function DualPanel({ node }: Args) {
           onDocVersionsChange={onMainDocVersionsChange}
           onPagesChange={onMainPagesChange}
           onDocBreadcrumbChange={onMDocBreadcrumbChange}
+          onMovePagesBetweenDocs={onMovePagesBetweenDocs}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -368,7 +391,8 @@ function DualPanel({ node }: Args) {
           onDocVerChange={onMainDocVerChange}
           onDocVersionsChange={onMainDocVersionsChange}
           onPagesChange={onMainPagesChange}
-          onDocBreadcrumbChange={onMDocBreadcrumbChange} />
+          onDocBreadcrumbChange={onMDocBreadcrumbChange}
+          onMovePagesBetweenDocs={onMovePagesBetweenDocs} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -391,6 +415,7 @@ function DualPanel({ node }: Args) {
           onDocVersionsChange={onSecondaryDocVersionsChange}
           onPagesChange={onSecondaryPagesChange}
           onDocBreadcrumbChange={onSDocBreadcrumbChange}
+          onMovePagesBetweenDocs={onMovePagesBetweenDocs}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

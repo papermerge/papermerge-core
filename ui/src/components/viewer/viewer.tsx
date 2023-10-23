@@ -10,7 +10,7 @@ import useToast from 'hooks/useToasts';
 import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
 import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
@@ -45,6 +45,7 @@ type Args = {
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
+  onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -67,6 +68,7 @@ export default function Viewer({
   onDocVersionsChange,
   onDocVerChange,
   onBreadcrumbChange,
+  onMovePagesBetweenDocs,
   show_dual_button
 }: Args) {
 
@@ -138,8 +140,9 @@ export default function Viewer({
         source_page_ids: [source_id],
         target_page_id: target_id,
         target_doc_title: doc!.data!.title
-      }).then((value) => {
-        console.log(`transfer complete! returned value: ${value}`);
+      }).then(({source, target}: MovePagesBetweenDocsType) => {
+        onMovePagesBetweenDocs({source, target});
+        setSelectedPages([]);
       });
     }
 }

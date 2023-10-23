@@ -116,6 +116,11 @@ export type DocumentType = {
   updated_at: string;
 }
 
+export type MovePagesBetweenDocsType = {
+  source: DocumentType;
+  target: DocumentType;
+}
+
 export enum DisplayNodesModeEnum {
   List = 1,
   Tiles,

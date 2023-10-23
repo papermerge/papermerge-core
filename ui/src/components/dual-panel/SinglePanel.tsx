@@ -19,7 +19,8 @@ import {
   BreadcrumbType,
   onMovedNodesType,
   NodeType,
-  UUIDList
+  UUIDList,
+  MovePagesBetweenDocsType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -45,6 +46,7 @@ type Args = {
   onDocVerChange: (doc_ver: DocumentVersion) => void;
   onPagesChange: (pages: PageAndRotOp[]) => void;
   onDocBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
+  onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
   selected_nodes: UUIDList;
   dragged_nodes: UUIDList;
 }
@@ -155,7 +157,8 @@ function SinglePanel({
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
-  onDocBreadcrumbChange
+  onDocBreadcrumbChange,
+  onMovePagesBetweenDocs
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -205,7 +208,8 @@ function SinglePanel({
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}
         onPagesChange={onPagesChange}
-        onBreadcrumbChange={onDocBreadcrumbChange} />;
+        onBreadcrumbChange={onDocBreadcrumbChange}
+        onMovePagesBetweenDocs={onMovePagesBetweenDocs} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

@@ -42,6 +42,7 @@ type Args = {
   breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
+  dragged_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
@@ -49,6 +50,7 @@ type Args = {
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
   onSelectedPages: (arg: Array<string>) => void;
+  onDraggedPages: (arg: Array<string>) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -67,6 +69,7 @@ export default function Viewer({
   breadcrumb,
   pages,
   selected_pages,
+  dragged_pages,
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
@@ -74,6 +77,7 @@ export default function Viewer({
   onBreadcrumbChange,
   onMovePagesBetweenDocs,
   onSelectedPages,
+  onDraggedPages,
   show_dual_button
 }: Args) {
 

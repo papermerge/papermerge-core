@@ -315,24 +315,28 @@ function DualPanel({ node }: Args) {
 
   const onMovePagesBetweenDocs = ({source, target}: MovePagesBetweenDocsType) => {
     const source_doc_ver: DocumentVersion = get_last_doc_version(source);
-    const source_pages: PageAndRotOp[] = source_doc_ver.pages.map(p => {return {
-      page: p, angle: 0
-    }});
+    const source_pages: PageAndRotOp[] = source_doc_ver.pages.map(
+      p => ({page: p, angle: 0})
+    );
     const target_doc_ver: DocumentVersion = get_last_doc_version(target);
-    const target_pages: PageAndRotOp[] = target_doc_ver.pages.map(p => {return {
-      page: p, angle: 0
-    }});
+    const target_pages: PageAndRotOp[] = target_doc_ver.pages.map(
+      p => ({page: p, angle: 0})
+    );
 
     if (source.id == main_doc.data?.id) {
       // source is on main panel
-      setMCurPages(ready_vow(source_pages));
-      setSCurPages(ready_vow(target_pages));
+      setMCurPages(ready_vow(source_pages)); // thumbnails & pages
+      setMDocVers(ready_vow(source.versions)); // content of vers. dropdown
+      setSCurPages(ready_vow(target_pages)); // thumbnails & pages
+      setSDocVers(ready_vow(target.versions)); // content of vers. dropdown
     } else {
       // source is on secondary panel
-      setMCurPages(ready_vow(target_pages));
-      setSCurPages(ready_vow(source_pages));
+      setMCurPages(ready_vow(target_pages)); // thumbnails & pages
+      setMDocVers(ready_vow(target.versions)); // content of vers. dropdown
+      setSCurPages(ready_vow(source_pages)); // thumbnails & pages
+      setSDocVers(ready_vow(source.versions)); // content of vers. dropdown
     }
-
+    // reset selections on both sides
     setSelectedMPages([]);
     setSelectedSPages([]);
   }

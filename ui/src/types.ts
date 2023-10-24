@@ -116,6 +116,11 @@ export type DocumentType = {
   updated_at: string;
 }
 
+export type MovePagesBetweenDocsType = {
+  source: DocumentType;
+  target: DocumentType;
+}
+
 export enum DisplayNodesModeEnum {
   List = 1,
   Tiles,
@@ -218,7 +223,7 @@ export type PageAndRotOp = { // page and rotation operation
 
 export type DroppedThumbnailPosition = 'before' | 'after';
 export type ThumbnailPageDroppedArgs = {
-  source_id: string;
+  source_ids: Array<string>;
   target_id: string;
   position: DroppedThumbnailPosition;
 }

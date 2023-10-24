@@ -1,4 +1,5 @@
 import io
+import logging
 import uuid
 from pathlib import Path
 from typing import List
@@ -11,6 +12,8 @@ from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import MoveStrategy, PageAndRotOp
 from papermerge.core.storage import get_storage_instance
+
+logger = logging.getLogger(__name__)
 
 
 def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
@@ -126,14 +129,28 @@ def insert_pdf_pages(
     dst_old_pdf.save(dst_new)
 
 
-def reuse_ocr_data(uuid_map) -> None:
-    storage_instance = get_storage_instance()
+def reuse_ocr_data(
+    source_ids: list[uuid.UUID],
+    target_ids: list[uuid.UUID]
+) -> list[uuid.UUID]:
+    """Copies OCR data from source locations to target locations
 
-    for src_uuid, dst_uuid in uuid_map.items():
-        storage_instance.copy_page(
-            src=abs_page_path(src_uuid),
-            dst=abs_page_path(dst_uuid)
-        )
+    Location is path of the OCR data (abs_page_page(id)) for given page ID.
+    Returns
+    """
+    storage_instance = get_storage_instance()
+    not_copied_ids = []
+
+    for src_uuid, dst_uuid in zip(source_ids, target_ids):
+        if abs_page_path(src_uuid).is_dir():
+            storage_instance.copy_page(
+                src=abs_page_path(src_uuid),
+                dst=abs_page_path(dst_uuid)
+            )
+        else:
+            not_copied_ids.append(src_uuid)
+
+    return not_copied_ids
 
 
 def reuse_text_field(
@@ -235,8 +252,10 @@ def move_pages_mix(
         page.id  # IDs of the pages in new version of the source
         for page in src_new_version.pages.order_by('number')
     ]
-    reuse_map = dict(zip(src_keys, dst_values))
-    reuse_ocr_data(reuse_map)
+    if not_copied_ids := reuse_ocr_data(src_keys, dst_values):
+        logger.info(
+            f"Pages with IDs {not_copied_ids} do not have OCR data"
+        )
 
     insert_pdf_pages(
         src_old=src_old_version.file_path,
@@ -261,10 +280,13 @@ def move_pages_mix(
         for page in dst_new_version.pages.order_by('number')
         if page.number > len(moved_page_ids)
     ]
-    reuse_map = dict(
-        zip(src_keys_1 + src_keys_2, dst_values_1 + dst_values_2)
-    )
-    reuse_ocr_data(reuse_map)
+    if not_copied_ids := reuse_ocr_data(
+        source_ids=src_keys_1 + src_keys_2,
+        target_ids=dst_values_1 + dst_values_2
+    ):
+        logger.info(
+            f"Pages with IDs {not_copied_ids} do not have OCR data"
+        )
 
     return [src_new_version.document, dst_new_version.document]
 
@@ -315,8 +337,8 @@ def move_pages_replace(
         page.id  # IDs of the pages in new version of the source
         for page in src_new_version.pages.order_by('number')
     ]
-    reuse_map = dict(zip(src_keys, dst_values))
-    reuse_ocr_data(reuse_map)
+
+    reuse_ocr_data(src_keys, dst_values)
 
     insert_pdf_pages(
         src_old=src_old_version.file_path,
@@ -331,7 +353,7 @@ def move_pages_replace(
         page.id
         for page in dst_new_version.pages.order_by('number')
     ]
-    reuse_map = dict(zip(src_keys, dst_values))
-    reuse_ocr_data(reuse_map)
+
+    reuse_ocr_data(src_keys, dst_values)
 
     return [src_new_version.document, dst_new_version.document]

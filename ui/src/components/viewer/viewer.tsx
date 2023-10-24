@@ -10,12 +10,13 @@ import useToast from 'hooks/useToasts';
 import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType } from 'types';
-import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
+import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 import { contains_every } from 'utils/array';
 
+import { DATA_TYPE_PAGES } from './thumbnails_panel/constants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
@@ -40,11 +41,14 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
+  selected_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
+  onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
+  onSelectedPages: (arg: Array<string>) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -62,18 +66,18 @@ export default function Viewer({
   doc_ver,
   breadcrumb,
   pages,
+  selected_pages,
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
   onDocVerChange,
   onBreadcrumbChange,
+  onMovePagesBetweenDocs,
+  onSelectedPages,
   show_dual_button
 }: Args) {
 
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
-  // current doc versions
-  let [showSelectedMenu, setShowSelectedMenu] = useState<boolean>(false);
-  let [selectedPages, setSelectedPages] = useState<Array<string>>([]);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
@@ -99,7 +103,7 @@ export default function Viewer({
   }
 
   const onThumbnailPageDropped = ({
-    source_id,
+    source_ids,
     target_id,
     position
   }: ThumbnailPageDroppedArgs) => {
@@ -115,7 +119,7 @@ export default function Viewer({
         container: pages!.data!.map(
           i => i.page.id
         ),  // all pages IDs of target doc ver
-        items: [source_id] // all source pages (their IDs)
+        items: source_ids // all source pages (their IDs)
     })) {
       /* Here we deal with page transfer is within the same document
         i.e we just reordering. It is so because all source pages (their IDs)
@@ -123,7 +127,7 @@ export default function Viewer({
       */
       const new_pages = reorder_pages({
         arr: pages!.data!,
-        source_id: source_id,
+        source_ids: source_ids,
         target_id: target_id,
         position: position
       });
@@ -135,11 +139,12 @@ export default function Viewer({
       // here we deal with pages being moved between different
       // documents
       move_pages({
-        source_page_ids: [source_id],
+        source_page_ids: source_ids,
         target_page_id: target_id,
         target_doc_title: doc!.data!.title
-      }).then((value) => {
-        console.log(`transfer complete! returned value: ${value}`);
+      }).then(({source, target}: MovePagesBetweenDocsType) => {
+        onMovePagesBetweenDocs({source, target});
+        onSelectedPages([]);
       });
     }
 }
@@ -149,7 +154,7 @@ export default function Viewer({
     let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
     setUnappliedPagesOpChanges(false);
     onDocVersionsChange(response)
-    setSelectedPages([]);
+    onSelectedPages([]);
 
     toasts?.addToast("info", "Page operations successfully applied");
   }
@@ -159,28 +164,21 @@ export default function Viewer({
     let new_list: Array<string>;
 
     if (selected) {
-      new_list = [...selectedPages, page_id]
+      new_list = [...selected_pages, page_id]
     } else {
-      new_list = selectedPages.filter(id => id != page_id);
-    }
-
-    if (new_list.length > 0) {
-      setShowSelectedMenu(true);
-    } else {
-      setShowSelectedMenu(false);
+      new_list = selected_pages.filter(id => id != page_id);
     }
 
     // here `selected` is false
-    setSelectedPages(new_list);
+    onSelectedPages(new_list);
   }
 
   const onDeletePages = () => {
     let new_cur_pages = pages!.data!.filter(
-      (item: PageAndRotOp) => selectedPages.indexOf(item.page.id) < 0
+      (item: PageAndRotOp) => selected_pages.indexOf(item.page.id) < 0
     );
-    setShowSelectedMenu(false);
     setUnappliedPagesOpChanges(true);
-    setSelectedPages([]);
+    onSelectedPages([]);
     onPagesChange(new_cur_pages);
   }
 
@@ -190,7 +188,7 @@ export default function Viewer({
 
     new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
-        if (selectedPages.indexOf(item.page.id) >= 0) {
+        if (selected_pages.indexOf(item.page.id) >= 0) {
           item.angle -= 90;
           // @ts-ignore
           item.angle = item.angle % 360;
@@ -212,7 +210,7 @@ export default function Viewer({
 
     new_array = pages!.data!.map(
       (item: PageAndRotOp) => {
-        if (selectedPages.indexOf(item.page.id) >= 0) {
+        if (selected_pages.indexOf(item.page.id) >= 0) {
           item.angle += 90;
           // @ts-ignore
           item.angle = item.angle % 360;
@@ -245,6 +243,15 @@ export default function Viewer({
     );
   }
 
+  const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
+    const all_sel_pages = [...selected_pages, item.page.id];
+
+    event.dataTransfer.setData(
+      DATA_TYPE_PAGES,
+      JSON.stringify(all_sel_pages)
+    )
+  }
+
   if (doc.error) {
     return <div className="viewer">
       {doc.error && <ErrorMessage msg={doc.error} />}
@@ -255,7 +262,7 @@ export default function Viewer({
     <ActionPanel
       versions={doc_versions}
       doc={doc}
-      show_selected_menu={showSelectedMenu}
+      selected_pages={selected_pages}
       onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
       onRotatePagesCw={onRotatePagesCw}
@@ -270,6 +277,7 @@ export default function Viewer({
         visible={thumbnailsPanelVisible}
         onClick={onPageThumbnailClick}
         onSelect={onSelect}
+        onDragStart={onDragStart}
         onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}

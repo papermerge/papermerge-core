@@ -76,27 +76,27 @@ export function build_nodes_list_params({
 
 type ReorderPagesArgs = {
   arr: PageAndRotOp[];
-  source_id: string;
+  source_ids: Array<string>;
   target_id: string;
   position: DroppedThumbnailPosition;
 }
 
 export function reorder_pages({
   arr,
-  source_id,
+  source_ids,
   target_id,
   position
 }: ReorderPagesArgs): PageAndRotOp[] {
   /*
     Returns an array with reordered pages.
 
-    Items are reordered as follows: source_id wil be positioned
+    Items are reordered as follows: source_ids will be positioned
     before or after target_id (depending on positioned arg).
     Couple of examples.
     Example 1:
 
       arr = [ 1, 2, 3, 4 ]
-      source_id = 2
+      source_ids = [2]
       target_id = 4
       position = 'after'
 
@@ -108,7 +108,7 @@ export function reorder_pages({
     Example 2:
 
       arr = [ 1, 2, 3, 4 ]
-      source_id = 2
+      source_ids = [2]
       target_id = 4
       position = 'before'
 
@@ -118,7 +118,7 @@ export function reorder_pages({
 
     Example 3:
       arr = [1, 2]
-      source_id = 2
+      source_ids = [2]
       target_id = 1
       position = 'before'
 
@@ -129,7 +129,7 @@ export function reorder_pages({
     Example 4:
 
       arr = [1, 2]
-      source_id = 2
+      source_ids = [2]
       target_id = 1
       position = 'after'
 
@@ -138,27 +138,34 @@ export function reorder_pages({
       result = [1, 2]
 
     i.e. same as input because source was already after target
+
+    Example 5:
+
+     arr = [1, 2, 3, 4, 5, 6]
+     source_ids = [1, 3]
+     target = 5
+
+     result: [2, 4, 5, 1, 3, 6]
   */
   let result: PageAndRotOp[] = [];
   let insert_now = false;
-  const source: PageAndRotOp | undefined = arr.find(i => i.page.id == source_id);
+  const source: PageAndRotOp[] = arr.filter(i => source_ids.includes(i.page.id));
 
-  if (!source) {
-    throw new Error("Source page not found in arr");
+  if (source.length == 0) {
+    throw new Error("Source list is empty. Cannot reorder.");
   }
 
   arr.forEach((item: PageAndRotOp) => {
-
     if (insert_now) {
-      result.push(source);
+      result.push(...source);
       insert_now = false;
     }
 
-    if (item.page.id !== source_id && item.page.id !== target_id) {
+    if (!source_ids.includes(item.page.id) && item.page.id !== target_id) {
       result.push(item);
     } else if (item.page.id === target_id) {
       if (position == 'before') {
-        result.push(source);
+        result.push(...source);
         result.push(item);
       } else {
         insert_now = true; // will insert source on next iteration

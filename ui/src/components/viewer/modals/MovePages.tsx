@@ -7,6 +7,7 @@ import { get_default_headers } from 'utils/fetcher';
 
 import MoveOptions from './MoveOptions';
 import type { MoveStrategyType } from './types';
+import type { MovePagesBetweenDocsType } from 'types';
 
 
 type ApiMovePagesArgs = {
@@ -41,7 +42,7 @@ async function api_move_pages({
 
 type Args = {
   onCancel: () => void;
-  onOK: (arg: string) => void;
+  onOK: (args: MovePagesBetweenDocsType) => void;
   source_page_ids: Array<string>;
   target_page_id: string;
   target_doc_title: string;
@@ -66,10 +67,10 @@ const MovePagesModal = ({
       signal
     });
 
-    await response.json();
+    let {source, target} = await response.json();
 
     if (response.status == 200) {
-      onOK("some thing here");
+      onOK({source, target});
     }
   }
 
@@ -105,7 +106,7 @@ function move_pages({
 }: MovePageArgs) {
   let modals = document.getElementById(MODALS);
 
-  let promise = new Promise<string>(function(onOK, onCancel){
+  let promise = new Promise<MovePagesBetweenDocsType>(function(onOK, onCancel){
     if (modals) {
       let dom_root = createRoot(modals);
 

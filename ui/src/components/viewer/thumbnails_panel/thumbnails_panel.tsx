@@ -8,6 +8,7 @@ type Args = {
   visible: boolean;
   onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;
+  onDragStart: (page: PageAndRotOp, event: React.DragEvent) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
@@ -16,6 +17,7 @@ export function ThumbnailsPanel({
   visible,
   onClick,
   onThumbnailPageDropped,
+  onDragStart,
   onSelect
 }: Args) {
 
@@ -44,6 +46,7 @@ export function ThumbnailsPanel({
           key={item.page.id}
           item={item}
           onSelect={onSelect}
+          onDragStart={onDragStart}
           onClick={onClick}
           onThumbnailPageDropped={onThumbnailPageDropped} />
       })}

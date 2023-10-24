@@ -244,10 +244,7 @@ export default function Viewer({
   }
 
   const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
-    const _sel_pages = pages!.data!.filter(
-      i => selected_pages.includes(i.page.id)
-    );
-    const all_sel_pages = [..._sel_pages, item];
+    const all_sel_pages = [...selected_pages, item.page.id];
 
     event.dataTransfer.setData(
       DATA_TYPE_PAGES,

@@ -223,7 +223,7 @@ export type PageAndRotOp = { // page and rotation operation
 
 export type DroppedThumbnailPosition = 'before' | 'after';
 export type ThumbnailPageDroppedArgs = {
-  source_id: string;
+  source_ids: Array<string>;
   target_id: string;
   position: DroppedThumbnailPosition;
 }

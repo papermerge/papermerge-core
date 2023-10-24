@@ -11,11 +11,12 @@ import rename_node from 'components/modals/rename';
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
-import type { State, ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
+import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 import { contains_every } from 'utils/array';
 
+import { DATA_TYPE_PAGES } from './thumbnails_panel/constants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
@@ -102,7 +103,7 @@ export default function Viewer({
   }
 
   const onThumbnailPageDropped = ({
-    source_id,
+    source_ids,
     target_id,
     position
   }: ThumbnailPageDroppedArgs) => {
@@ -118,7 +119,7 @@ export default function Viewer({
         container: pages!.data!.map(
           i => i.page.id
         ),  // all pages IDs of target doc ver
-        items: [source_id] // all source pages (their IDs)
+        items: source_ids // all source pages (their IDs)
     })) {
       /* Here we deal with page transfer is within the same document
         i.e we just reordering. It is so because all source pages (their IDs)
@@ -126,7 +127,7 @@ export default function Viewer({
       */
       const new_pages = reorder_pages({
         arr: pages!.data!,
-        source_id: source_id,
+        source_ids: source_ids,
         target_id: target_id,
         position: position
       });
@@ -138,7 +139,7 @@ export default function Viewer({
       // here we deal with pages being moved between different
       // documents
       move_pages({
-        source_page_ids: [source_id],
+        source_page_ids: source_ids,
         target_page_id: target_id,
         target_doc_title: doc!.data!.title
       }).then(({source, target}: MovePagesBetweenDocsType) => {
@@ -242,6 +243,18 @@ export default function Viewer({
     );
   }
 
+  const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
+    const _sel_pages = pages!.data!.filter(
+      i => selected_pages.includes(i.page.id)
+    );
+    const all_sel_pages = [..._sel_pages, item];
+
+    event.dataTransfer.setData(
+      DATA_TYPE_PAGES,
+      JSON.stringify(all_sel_pages)
+    )
+  }
+
   if (doc.error) {
     return <div className="viewer">
       {doc.error && <ErrorMessage msg={doc.error} />}
@@ -267,6 +280,7 @@ export default function Viewer({
         visible={thumbnailsPanelVisible}
         onClick={onPageThumbnailClick}
         onSelect={onSelect}
+        onDragStart={onDragStart}
         onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}

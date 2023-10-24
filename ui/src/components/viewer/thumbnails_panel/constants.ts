@@ -1,1 +1,1 @@
-export const PAGE_ID = "page_id";
+export const DATA_TYPE_PAGES = 'type/pages';

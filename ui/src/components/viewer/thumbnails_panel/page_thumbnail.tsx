@@ -5,7 +5,7 @@ import './page_thumbnail.scss';
 
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
-import { PAGE_ID } from "./constants";
+import { DATA_TYPE_PAGES } from "./constants";
 import type {
   ThumbnailPageDroppedArgs,
   DroppedThumbnailPosition,
@@ -18,6 +18,7 @@ type Args = {
   item: PageAndRotOp;
   onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;
+  onDragStart: (page: PageAndRotOp, event: React.DragEvent) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
@@ -31,6 +32,7 @@ export function PageThumbnail({
   item,
   onClick,
   onThumbnailPageDropped,
+  onDragStart,
   onSelect
 }: Args) {
 
@@ -65,12 +67,13 @@ export function PageThumbnail({
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    event.dataTransfer.setData(PAGE_ID, item.page.id);
+    //event.dataTransfer.setData(PAGE_ID, item.page.id);
     if (cssClassNames.indexOf(DRAGGED) < 0) {
       setCssClassNames([
         ...cssClassNames, DRAGGED
       ]);
     }
+    onDragStart(item, event);
   }
 
   const onLocalDragEnd = () => {
@@ -119,11 +122,18 @@ export function PageThumbnail({
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    const source_page_id: string = event.dataTransfer.getData(PAGE_ID);
+    const data = event.dataTransfer.getData(DATA_TYPE_PAGES);
+    let source_page_ids: Array<string>;
     const y = event.clientY;
     let position: DroppedThumbnailPosition = 'before';
 
+    if (!data) {
+      console.warn("No data found when processing dropped thumbnail page");
+      return;
+    }
+
     event.preventDefault();
+    source_page_ids = JSON.parse(data);
 
     if (ref?.current) {
       const rect = ref?.current.getBoundingClientRect();
@@ -136,15 +146,12 @@ export function PageThumbnail({
         // dropped over lower half of the page
         position = 'after';
       }
-      if (source_page_id != item.page.id) {
-        onThumbnailPageDropped({
-          source_id: source_page_id,
-          target_id: item.page.id,
-          position: position
-        });
-      } else {
-        console.log('Page dropped onto itself');
-      }
+
+      onThumbnailPageDropped({
+        source_ids: source_page_ids,
+        target_id: item.page.id,
+        position: position
+      });
     } // if (ref?.current)
 
     // remove both borderline_bottom and borderline_top

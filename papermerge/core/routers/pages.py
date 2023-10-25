@@ -133,6 +133,11 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
 
     Source IDs are IDs of the pages to move.
     Target is the ID of the page before/after which to insert source pages.
+
+    Returns updated, with newly added versions, source and target documents.
+    In case source document is deleted, which may happen when user
+    moves all it's pages into the target, the returned source will
+    be None i.e returned value will be {'source': null, target: {...}}.
     """
     [source, target] = api_move_pages(
         source_page_ids=arg.source_page_ids,

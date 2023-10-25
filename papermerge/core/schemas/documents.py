@@ -102,5 +102,5 @@ class Thumbnail(BaseModel):
 
 
 class MovePagesOut(BaseModel):
-    source: Document
+    source: Document | None
     target: Document

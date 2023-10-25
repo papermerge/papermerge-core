@@ -79,31 +79,15 @@ export function PageThumbnail({
   }, [is_dragged]);
 
   const onLocalDrag = (event: React.DragEvent<HTMLDivElement>) => {
-    /*
-
-    */
     onDrag(item, event);
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    //event.dataTransfer.setData(PAGE_ID, item.page.id);
-    /*
-    if (cssClassNames.indexOf(DRAGGED) < 0) {
-      setCssClassNames([
-        ...cssClassNames, DRAGGED
-      ]);
-    }
-    */
     onDragStart(item, event);
   }
 
   const onLocalDragEnd = (event: React.DragEvent<HTMLDivElement>) => {
-    /*
-    setCssClassNames(
-      cssClassNames.filter(item => item !== DRAGGED)
-    );
-    */
-   onDragEnd(item, event);
+    onDragEnd(item, event);
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useProtectedJpg } from "hooks/protected_image"
 import Form from 'react-bootstrap/Form';
 import './page_thumbnail.scss';
@@ -19,7 +19,10 @@ type Args = {
   onSelect: (page_id: string, selected: boolean) => void;
   onClick: (page: PageAndRotOp) => void;
   onDragStart: (page: PageAndRotOp, event: React.DragEvent) => void;
+  onDrag: (page: PageAndRotOp, event: React.DragEvent) => void;
+  onDragEnd: (page: PageAndRotOp, event: React.DragEvent) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
+  is_dragged: boolean;
 }
 
 
@@ -33,7 +36,10 @@ export function PageThumbnail({
   onClick,
   onThumbnailPageDropped,
   onDragStart,
-  onSelect
+  onDrag,
+  onDragEnd,
+  onSelect,
+  is_dragged
 }: Args) {
 
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([
@@ -58,28 +64,30 @@ export function PageThumbnail({
     onClick(item);
   }
 
-  const onLocalDrag = () => {
-    if (cssClassNames.indexOf(DRAGGED) < 0) {
-      setCssClassNames([
-        ...cssClassNames, DRAGGED
-      ]);
+  useEffect(() => {
+    if (is_dragged) {
+      if (cssClassNames.indexOf(DRAGGED) < 0) {
+        setCssClassNames([
+          ...cssClassNames, DRAGGED
+        ]);
+      }
+    } else { // i.e. is not dragged
+      setCssClassNames( // remove css class
+        cssClassNames.filter(item => item !== DRAGGED)
+      );
     }
+  }, [is_dragged]);
+
+  const onLocalDrag = (event: React.DragEvent<HTMLDivElement>) => {
+    onDrag(item, event);
   }
 
   const onLocalDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    //event.dataTransfer.setData(PAGE_ID, item.page.id);
-    if (cssClassNames.indexOf(DRAGGED) < 0) {
-      setCssClassNames([
-        ...cssClassNames, DRAGGED
-      ]);
-    }
     onDragStart(item, event);
   }
 
-  const onLocalDragEnd = () => {
-    setCssClassNames(
-      cssClassNames.filter(item => item !== DRAGGED)
-    );
+  const onLocalDragEnd = (event: React.DragEvent<HTMLDivElement>) => {
+    onDragEnd(item, event);
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {

@@ -166,10 +166,14 @@ export function reorder_pages({
     } else if (item.page.id === target_id) {
       if (position == 'before') {
         result.push(...source);
-        result.push(item);
+        if (!source_ids.includes(item.page.id)) {
+          result.push(item);
+        }
       } else {
         insert_now = true; // will insert source on next iteration
-        result.push(item);
+        if (!source_ids.includes(item.page.id)) {
+          result.push(item);
+        }
       }
     }
   });

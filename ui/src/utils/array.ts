@@ -71,4 +71,10 @@ function contains_every<T = string>({container, items}: Args<T>): boolean {
   return items.every((i) => container.includes(i));
 }
 
-export {uniq_concat, subtract, overlap, contains_every}
+
+function uniq<T = string>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+
+export {uniq, uniq_concat, subtract, overlap, contains_every}

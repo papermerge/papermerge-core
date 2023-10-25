@@ -14,7 +14,7 @@ import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenD
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
-import { contains_every } from 'utils/array';
+import { contains_every, uniq } from 'utils/array';
 
 import { DATA_TYPE_PAGES } from './thumbnails_panel/constants';
 import { apply_page_op_changes } from 'requests/viewer';
@@ -42,6 +42,7 @@ type Args = {
   breadcrumb: Vow<BreadcrumbType>;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
+  dragged_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
@@ -49,6 +50,7 @@ type Args = {
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
   onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
   onSelectedPages: (arg: Array<string>) => void;
+  onDraggedPages: (arg: Array<string>) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -67,6 +69,7 @@ export default function Viewer({
   breadcrumb,
   pages,
   selected_pages,
+  dragged_pages,
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
@@ -74,6 +77,7 @@ export default function Viewer({
   onBreadcrumbChange,
   onMovePagesBetweenDocs,
   onSelectedPages,
+  onDraggedPages,
   show_dual_button
 }: Args) {
 
@@ -258,6 +262,21 @@ export default function Viewer({
     </div>
   }
 
+  const onLocalDrag = (item: PageAndRotOp, event: React.DragEvent) => {
+    const _dragged_pages_ids = uniq([...selected_pages, item.page.id]);
+    onDraggedPages(_dragged_pages_ids);
+  }
+
+  const onLocalDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
+    const _dragged_pages_ids = uniq([...selected_pages, item.page.id]);
+    onDraggedPages(_dragged_pages_ids);
+  }
+
+  const onLocalDragEnd = (item: PageAndRotOp, event: React.DragEvent) => {
+    onDraggedPages([]);
+  }
+
+
   return <div className="viewer w-100 m-1">
     <ActionPanel
       versions={doc_versions}
@@ -278,6 +297,9 @@ export default function Viewer({
         onClick={onPageThumbnailClick}
         onSelect={onSelect}
         onDragStart={onDragStart}
+        onDrag={onLocalDrag}
+        onDragEnd={onLocalDragEnd}
+        dragged_pages={dragged_pages}
         onThumbnailPageDropped={onThumbnailPageDropped} />
       <ThumbnailsToggle
         onclick={onThumbnailsToggle}

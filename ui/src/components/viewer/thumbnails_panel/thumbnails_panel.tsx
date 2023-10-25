@@ -7,8 +7,11 @@ type Args = {
   pages: Vow<Array<PageAndRotOp>>;
   visible: boolean;
   onSelect: (page_id: string, selected: boolean) => void;
+  dragged_pages: Array<string>;
   onClick: (page: PageAndRotOp) => void;
   onDragStart: (page: PageAndRotOp, event: React.DragEvent) => void;
+  onDrag: (page: PageAndRotOp, event: React.DragEvent) => void;
+  onDragEnd: (page: PageAndRotOp, event: React.DragEvent) => void;
   onThumbnailPageDropped: (args: ThumbnailPageDroppedArgs) => void;
 }
 
@@ -16,8 +19,11 @@ export function ThumbnailsPanel({
   pages,
   visible,
   onClick,
+  dragged_pages,
   onThumbnailPageDropped,
   onDragStart,
+  onDrag,
+  onDragEnd,
   onSelect
 }: Args) {
 
@@ -45,8 +51,11 @@ export function ThumbnailsPanel({
         return <PageThumbnail
           key={item.page.id}
           item={item}
+          is_dragged={dragged_pages.includes(item.page.id)}
           onSelect={onSelect}
           onDragStart={onDragStart}
+          onDrag={onDrag}
+          onDragEnd={onDragEnd}
           onClick={onClick}
           onThumbnailPageDropped={onThumbnailPageDropped} />
       })}

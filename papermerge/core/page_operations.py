@@ -191,7 +191,13 @@ def move_pages(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     move_strategy: MoveStrategy
-) -> [PyDocument, PyDocument]:
+) -> [PyDocument | None, PyDocument]:
+    """
+    Returns source and destination document.
+
+    Returned source may be None - this is the case when all
+    pages of the source document are moved out.
+    """
     if move_strategy == MoveStrategy.REPLACE:
         return move_pages_replace(
             source_page_ids=source_page_ids,
@@ -207,7 +213,7 @@ def move_pages(
 def move_pages_mix(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID
-) -> [PyDocument, PyDocument]:
+) -> [PyDocument | None, PyDocument]:
     """Move pages from src to dst using mix strategy
 
     MIX strategy means that source pages on the target will be "mixed"
@@ -216,7 +222,8 @@ def move_pages_mix(
     document version.
 
     In case all pages from the source are moved, the source
-    document is deleted.
+    document is deleted and None is yielded as first
+    value of the returned tuple.
     """
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -226,15 +233,15 @@ def move_pages_mix(
     src_old_doc = src_old_version.document
     dst_old_version = dst_page.document_version
     dst_old_doc = dst_old_version.document
-    pages_count = moved_pages.count()
+    moved_pages_count = moved_pages.count()
 
     src_new_version = src_old_doc.version_bump(
-        page_count=src_old_version.pages.count() - pages_count,
-        short_description=f'{pages_count} page(s) moved out'
+        page_count=src_old_version.pages.count() - moved_pages_count,
+        short_description=f'{moved_pages_count} page(s) moved out'
     )
     dst_new_version = dst_old_doc.version_bump(
-        page_count=dst_old_version.pages.count() + pages_count,
-        short_description=f'{pages_count} page(s) moved in'
+        page_count=dst_old_version.pages.count() + moved_pages_count,
+        short_description=f'{moved_pages_count} page(s) moved in'
     )
 
     remove_pdf_pages(
@@ -288,13 +295,19 @@ def move_pages_mix(
             f"Pages with IDs {not_copied_ids} do not have OCR data"
         )
 
+    if src_old_version.pages.count() == moved_pages_count:
+        # !!!this means new source (src_new_version) has zero pages!!!
+        # Delete entire source and return None as first tuple element
+        src_old_doc.delete()
+        return [None, dst_new_version.document]
+
     return [src_new_version.document, dst_new_version.document]
 
 
 def move_pages_replace(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID
-) -> [PyDocument, PyDocument]:
+) -> [PyDocument | None, PyDocument]:
     """Move pages from src to dst using replace strategy
 
     REPLACE strategy means that source pages on the target will replace
@@ -311,15 +324,15 @@ def move_pages_replace(
     src_old_doc = src_old_version.document
     dst_old_version = dst_page.document_version
     dst_old_doc = dst_old_version.document
-    pages_count = moved_pages.count()
+    moved_pages_count = moved_pages.count()
 
     src_new_version = src_old_doc.version_bump(
-        page_count=src_old_version.pages.count() - pages_count,
-        short_description=f'{pages_count} page(s) moved out'
+        page_count=src_old_version.pages.count() - moved_pages_count,
+        short_description=f'{moved_pages_count} page(s) moved out'
     )
     dst_new_version = dst_old_doc.version_bump(
-        page_count=pages_count,  # !!! Important
-        short_description=f'{pages_count} page(s) replaced'
+        page_count=moved_pages_count,  # !!! Important
+        short_description=f'{moved_pages_count} page(s) replaced'
     )
 
     remove_pdf_pages(
@@ -355,5 +368,11 @@ def move_pages_replace(
     ]
 
     reuse_ocr_data(src_keys, dst_values)
+
+    if src_old_version.pages.count() == moved_pages_count:
+        # !!!this means new source (src_new_version) has zero pages!!!
+        # Delete entire source and return None as first tuple element
+        src_old_doc.delete()
+        return [None, dst_new_version.document]
 
     return [src_new_version.document, dst_new_version.document]

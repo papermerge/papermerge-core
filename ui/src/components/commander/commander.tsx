@@ -33,19 +33,20 @@ import type {
   NodeType,
   Pagination,
   ShowDualButtonEnum,
-  Sorting
+  Sorting,
+  ExtractedPagesType
 } from 'types';
 
 import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { Vow, NodesType } from 'types';
 import useToast from 'hooks/useToasts';
+import { DATA_TYPE_NODES, DATA_TYPE_PAGES } from 'cconstants';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 import move_nodes from './modals/MoveNodes';
-
-const DATA_TYPE_NODE = 'node/type';
+import extract_pages from './modals/ExtractPages';
 
 
 function in_list(node_id: string, arr: Array<string>): boolean {
@@ -156,7 +157,7 @@ function Commander({
     const transf_nodes = get_nodes(all_transfered_nodes);
 
     event.dataTransfer.setData(
-      DATA_TYPE_NODE,
+      DATA_TYPE_NODES,
       JSON.stringify(transf_nodes)
     );
 
@@ -347,14 +348,14 @@ function Commander({
       }
     }
 
-    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+    const data_type_nodes = event.dataTransfer.getData(DATA_TYPE_NODES);
     let all_transferred_nodes: NodeType[] = [];
 
     // #2 move/drop Nodes (from main or secondary panel)
-    if (data_raw) {
+    if (data_type_nodes) {
       // nodes are moved from one panel root folder to
       // another's panel root folder
-      all_transferred_nodes = [...new Set(JSON.parse(data_raw))] as NodeType[];
+      all_transferred_nodes = [...new Set(JSON.parse(data_type_nodes))] as NodeType[];
 
       move_nodes({
         source_nodes: all_transferred_nodes,
@@ -374,6 +375,24 @@ function Commander({
         }
         setCssAcceptFiles("");
       });
+
+      return
+    }
+
+    const data_type_pages = event.dataTransfer.getData(DATA_TYPE_PAGES);
+    let source_page_ids: Array<string> = [];
+    if (data_type_pages && data_type_pages.length > 0) {
+      // means commander is about to receive extracted pages
+      source_page_ids = [...new Set(JSON.parse(data_type_pages))] as Array<string>;
+
+      extract_pages({
+        source_page_ids: source_page_ids,
+        target_folder: nodes!.data!.parent
+      }).then((arg: ExtractedPagesType) => {
+        //...
+      }).catch(() => {
+        //...
+      });
     }
   }
 
@@ -383,7 +402,7 @@ function Commander({
      * one panel into another's panel specific folder i.e. nodes
      * are moved/dropped over some folder in the list.
      */
-    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODE);
+    const data_raw = event.dataTransfer.getData(DATA_TYPE_NODES);
     let all_transferred_nodes: NodeType[] = [];
 
     if (data_raw) {

@@ -5,7 +5,7 @@ import './page_thumbnail.scss';
 
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
-import { DATA_TYPE_PAGES } from "./constants";
+import { DATA_TYPE_PAGES } from "cconstants";
 import type {
   ThumbnailPageDroppedArgs,
   DroppedThumbnailPosition,

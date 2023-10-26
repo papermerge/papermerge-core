@@ -16,7 +16,7 @@ import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 import { contains_every, uniq } from 'utils/array';
 
-import { DATA_TYPE_PAGES } from './thumbnails_panel/constants';
+import { DATA_TYPE_PAGES } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';

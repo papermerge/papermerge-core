@@ -117,7 +117,7 @@ export type DocumentType = {
 }
 
 export type MovePagesBetweenDocsType = {
-  source: DocumentType;
+  source: DocumentType | null;
   target: DocumentType;
 }
 

@@ -21,8 +21,17 @@ class PageAndRotOp(BaseModel):
 
 
 class MoveStrategy(Enum):
-    MIX = 'mix'
-    REPLACE = 'replace'
+    """Pages Move Strategy
+
+    MIX - means that source pages will blend in (mix in, append to) with target
+    pages in other words the newly created target version will feature
+    both source and target pages.
+    REPLACE - means that source pages will overwrite target, in other
+    words newly created target version will feature
+    only source pages.
+    """
+    MIX = 'mix'  # append
+    REPLACE = 'replace'  # overwrite
 
 
 class MovePagesIn(BaseModel):

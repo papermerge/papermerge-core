@@ -323,7 +323,7 @@ function DualPanel({ node }: Args) {
 
     if (!source) {
       /* means that source was deleted - which may happen
-        when all pages of a document were move */
+        when all pages of the document were moved */
       setSecondaryNode(null);
       setSCurPages(ready_vow([]));
       setSDocVers(ready_vow([]));

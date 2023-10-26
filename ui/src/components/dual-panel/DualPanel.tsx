@@ -316,12 +316,30 @@ function DualPanel({ node }: Args) {
   }
 
   const onMovePagesBetweenDocs = ({source, target}: MovePagesBetweenDocsType) => {
-    const source_doc_ver: DocumentVersion = get_last_doc_version(source);
-    const source_pages: PageAndRotOp[] = source_doc_ver.pages.map(
-      p => ({page: p, angle: 0})
-    );
     const target_doc_ver: DocumentVersion = get_last_doc_version(target);
     const target_pages: PageAndRotOp[] = target_doc_ver.pages.map(
+      p => ({page: p, angle: 0})
+    );
+
+    if (!source) {
+      /* means that source was deleted - which may happen
+        when all pages of a document were move */
+      setSecondaryNode(null);
+      setSCurPages(ready_vow([]));
+      setSDocVers(ready_vow([]));
+
+      setMainNode({id: target.id, ctype: 'document'});
+      setMCurPages(ready_vow(target_pages));
+      setMDocVers(ready_vow(target.versions));
+
+      setSelectedMPages([]);
+      setSelectedSPages([]);
+
+      return
+    }
+
+    const source_doc_ver: DocumentVersion = get_last_doc_version(source);
+    const source_pages: PageAndRotOp[] = source_doc_ver.pages.map(
       p => ({page: p, angle: 0})
     );
 
@@ -341,7 +359,7 @@ function DualPanel({ node }: Args) {
     // reset selections on both sides
     setSelectedMPages([]);
     setSelectedSPages([]);
-  }
+  } // end of onMovePagesBetweenDocs
 
   const onSelectedMPages = (sel_pages: Array<string>) => {
     setSelectedMPages(sel_pages);

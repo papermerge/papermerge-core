@@ -249,3 +249,5 @@ export type ExtractedPagesType = {
   target: NodeType[];  // newly created document nodes
   target_parent: NType;
 }
+
+export type ExtractStrategy = 'single-doc' | 'multi-docs';

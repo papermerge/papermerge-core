@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
-import type { FolderType, MovedNodesType, ExtractedPagesType } from 'types';
+import type { FolderType, ExtractedPagesType, ExtractStrategy } from 'types';
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
+
+
+function ExtractPagesOptions() {
+  return <></>;
+}
 
 
 type ApiArgs = {
@@ -47,6 +53,8 @@ const ExtractPagesModal = ({
   source_page_ids,
   target_folder
 }: ModalArgs) => {
+  const [title_format, setTitleFormat] = useState<string>('');
+  const [strategy, setStrategy] = useState<ExtractStrategy>('single-doc');
 
   const handleSubmit = async (signal: AbortSignal) => {
     let response = await api_extract_pages({
@@ -74,6 +82,8 @@ const ExtractPagesModal = ({
       onCancel={handleCancel}>
         Do you want to extract selected pages to
         folder <span className='text-primary'>{target_folder.title}</span>?
+
+        <ExtractPagesOptions />
     </GenericModal>
   );
 }

@@ -10,7 +10,8 @@ from papermerge.core.models import Page
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
-from papermerge.core.schemas.pages import MoveStrategy, PageAndRotOp
+from papermerge.core.schemas.pages import (ExtractStrategy, MoveStrategy,
+                                           PageAndRotOp)
 from papermerge.core.storage import get_storage_instance
 
 logger = logging.getLogger(__name__)
@@ -376,3 +377,12 @@ def move_pages_replace(
         return [None, dst_new_version.document]
 
     return [src_new_version.document, dst_new_version.document]
+
+
+def extract_pages(
+    source_page_ids: List[uuid.UUID],
+    target_folder_id: uuid.UUID,
+    strategy: ExtractStrategy,
+    title_format: str
+):
+    pass

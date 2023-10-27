@@ -38,3 +38,15 @@ class MovePagesIn(BaseModel):
     source_page_ids: List[UUID]
     target_page_id: UUID
     move_strategy: MoveStrategy
+
+
+class ExtractStrategy(Enum):
+    ONE_PAGE_PER_DOC = 'one-page-per-doc'
+    ALL_PAGES_IN_ONE_DOC = 'all-pages-in-one-doc'
+
+
+class ExtractPagesIn(BaseModel):
+    source_page_ids: List[UUID]
+    target_folder_id: UUID
+    strategy: ExtractStrategy
+    title_format: str

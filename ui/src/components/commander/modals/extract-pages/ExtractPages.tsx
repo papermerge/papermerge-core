@@ -26,7 +26,7 @@ async function api_extract_pages({
   signal
 }: ApiArgs): Promise<Response> {
   return fetch(
-    '/api/nodes/extract',
+    '/api/pages/extract',
     {
       'method': 'POST',
       'headers': get_default_headers(),

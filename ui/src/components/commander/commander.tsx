@@ -34,14 +34,15 @@ import type {
   Pagination,
   ShowDualButtonEnum,
   Sorting,
-  ExtractedPagesType
+  ExtractedPagesType,
+  DataTransferExtractedPages
 } from 'types';
 
 import type { UUIDList, NType } from 'types';
 import { DisplayNodesModeEnum } from 'types';
 import { Vow, NodesType } from 'types';
 import useToast from 'hooks/useToasts';
-import { DATA_TYPE_NODES, DATA_TYPE_PAGES } from 'cconstants';
+import { DATA_TYPE_NODES, DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
@@ -379,15 +380,17 @@ function Commander({
       return
     }
 
-    const data_type_pages = event.dataTransfer.getData(DATA_TYPE_PAGES);
-    let source_page_ids: Array<string> = [];
+    const data_type_pages = event.dataTransfer.getData(DATA_TRANSFER_EXTRACTED_PAGES);
+
     if (data_type_pages && data_type_pages.length > 0) {
       // means commander is about to receive extracted pages
-      source_page_ids = [...new Set(JSON.parse(data_type_pages))] as Array<string>;
+      const _data = JSON.parse(data_type_pages) as DataTransferExtractedPages;
+      const source_page_ids = [...new Set(_data.pages)] as Array<string>;
 
       extract_pages({
         source_page_ids: source_page_ids,
-        target_folder: nodes!.data!.parent
+        target_folder: nodes!.data!.parent,
+        document_title: _data.document_title
       }).then((arg: ExtractedPagesType) => {
         //...
       }).catch(() => {

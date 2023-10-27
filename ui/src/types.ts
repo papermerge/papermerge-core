@@ -250,4 +250,9 @@ export type ExtractedPagesType = {
   target_parent: NType;
 }
 
-export type ExtractStrategy = 'single-doc' | 'multi-docs';
+export type ExtractStrategy = 'one-page-per-doc' | 'all-pages-in-one-doc';
+
+export type DataTransferExtractedPages = {
+  pages: string[];
+  document_title: string;
+}

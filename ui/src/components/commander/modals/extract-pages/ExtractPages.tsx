@@ -40,6 +40,7 @@ type ModalArgs = {
   onOK: (arg: ExtractedPagesType) => void;
   source_page_ids: string[];
   target_folder: FolderType;
+  document_title: string;
 }
 
 
@@ -47,10 +48,11 @@ const ExtractPagesModal = ({
   onCancel,
   onOK,
   source_page_ids,
-  target_folder
+  target_folder,
+  document_title
 }: ModalArgs) => {
-  const [title_format, setTitleFormat] = useState<string>('');
-  const [strategy, setStrategy] = useState<ExtractStrategy>('single-doc');
+  const [title_format, setTitleFormat] = useState<string>(document_title);
+  const [strategy, setStrategy] = useState<ExtractStrategy>('all-pages-in-one-doc');
 
   const handleSubmit = async (signal: AbortSignal) => {
     let response = await api_extract_pages({
@@ -70,6 +72,14 @@ const ExtractPagesModal = ({
     onCancel();
   }
 
+  const onStrategyChange = (value: ExtractStrategy) => {
+    setStrategy(value);
+  };
+
+  const onTitleFormatChange =  (value: string) => {
+    setTitleFormat(value);
+  };
+
   return (
     <GenericModal
       modal_title='Extract Page(s)'
@@ -79,7 +89,11 @@ const ExtractPagesModal = ({
         Do you want to extract selected pages to
         folder <span className='text-primary'>{target_folder.title}</span>?
 
-        <ExtractPagesOptions />
+        <ExtractPagesOptions
+          strategy={strategy}
+          title_format={title_format}
+          onStrategyChange={onStrategyChange}
+          onTitleFormatChange={onTitleFormatChange} />
     </GenericModal>
   );
 }
@@ -87,10 +101,11 @@ const ExtractPagesModal = ({
 type ExtractPagesArgs = {
   source_page_ids: Array<string>;
   target_folder: FolderType;
+  document_title: string;
 }
 
 
-function extract_pages({source_page_ids, target_folder}: ExtractPagesArgs) {
+function extract_pages({source_page_ids, target_folder, document_title}: ExtractPagesArgs) {
   let modals = document.getElementById(MODALS);
 
   let promise = new Promise<ExtractedPagesType>(function(onOK, onCancel){
@@ -101,6 +116,7 @@ function extract_pages({source_page_ids, target_folder}: ExtractPagesArgs) {
         <ExtractPagesModal
           source_page_ids={source_page_ids}
           target_folder={target_folder}
+          document_title={document_title}
           onOK={onOK}
           onCancel={onCancel} />
       );

@@ -46,7 +46,7 @@ import { DATA_TYPE_NODES, DATA_TYPE_PAGES } from 'cconstants';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 import move_nodes from './modals/MoveNodes';
-import extract_pages from './modals/ExtractPages';
+import extract_pages from './modals/extract-pages/ExtractPages';
 
 
 function in_list(node_id: string, arr: Array<string>): boolean {

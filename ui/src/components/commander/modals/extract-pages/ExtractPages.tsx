@@ -5,11 +5,7 @@ import { get_default_headers } from 'utils/fetcher';
 import type { FolderType, ExtractedPagesType, ExtractStrategy } from 'types';
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
-
-
-function ExtractPagesOptions() {
-  return <></>;
-}
+import ExtractPagesOptions from "./ExtractOptions";
 
 
 type ApiArgs = {

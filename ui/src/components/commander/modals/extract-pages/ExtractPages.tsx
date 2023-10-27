@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
+import { drop_extension } from 'utils/string';
 import type { FolderType, ExtractedPagesType, ExtractStrategy } from 'types';
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
@@ -11,13 +12,17 @@ import ExtractPagesOptions from "./ExtractOptions";
 type ApiArgs = {
   source_page_ids: string[];
   target_folder: FolderType;
-  signal: AbortSignal
+  strategy: ExtractStrategy;
+  title_format: string;
+  signal: AbortSignal;
 }
 
 
 async function api_extract_pages({
   source_page_ids,
   target_folder,
+  strategy,
+  title_format,
   signal
 }: ApiArgs): Promise<Response> {
   return fetch(
@@ -27,13 +32,14 @@ async function api_extract_pages({
       'headers': get_default_headers(),
       'body': JSON.stringify({
         source_page_ids,
-        target_folder_id: target_folder.id
+        target_folder_id: target_folder.id,
+        strategy,
+        title_format
       }),
       'signal': signal
     },
   );
 }
-
 
 type ModalArgs = {
   onCancel: () => void;
@@ -51,13 +57,17 @@ const ExtractPagesModal = ({
   target_folder,
   document_title
 }: ModalArgs) => {
-  const [title_format, setTitleFormat] = useState<string>(document_title);
+  const [title_format, setTitleFormat] = useState<string>(
+    drop_extension(document_title)
+  );
   const [strategy, setStrategy] = useState<ExtractStrategy>('all-pages-in-one-doc');
 
   const handleSubmit = async (signal: AbortSignal) => {
     let response = await api_extract_pages({
       source_page_ids,
       target_folder,
+      strategy,
+      title_format,
       signal
     });
 

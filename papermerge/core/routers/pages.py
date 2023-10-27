@@ -153,7 +153,7 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
 
 @router.post("/extract")
 def extract_pages(arg: ExtractPagesIn) -> ExtractPagesOut:
-    """Extract pages between one document into a folder.
+    """Extract pages from one document into a folder.
 
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.

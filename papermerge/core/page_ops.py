@@ -228,10 +228,14 @@ def move_pages_mix(
     document is deleted and None is yielded as first
     value of the returned tuple.
     """
-    src_old_version, src_new_version = copy_pages(source_page_ids)
+    [
+        src_old_version,
+        src_new_version,
+        moved_pages_count
+    ] = copy_pages(source_page_ids)
+
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
-    moved_pages_count = moved_pages.count()
 
     dst_page = Page.objects.get(pk=target_page_id)
     dst_old_version = dst_page.document_version
@@ -294,10 +298,14 @@ def move_pages_replace(
     In case all pages from the source are moved, the source
     document is deleted.
     """
-    src_old_version, src_new_version = copy_pages(source_page_ids)
+    [
+        src_old_version,
+        src_new_version,
+        moved_pages_count
+    ] = copy_pages(source_page_ids)
+
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
-    moved_pages_count = moved_pages.count()
 
     dst_page = Page.objects.get(pk=target_page_id)
     dst_old_version = dst_page.document_version
@@ -338,14 +346,18 @@ def extract_pages(
     target_folder_id: uuid.UUID,
     strategy: ExtractStrategy,
     title_format: str
-) -> [Document, List[Document]]:
+) -> [Document | None, List[Document]]:
     """
 
     Returns a tuple where first element
     is source document and second element is the list
     of newly created documents
     """
-    _, new_doc_ver = copy_pages(source_page_ids)
+    [
+        old_doc_ver,
+        new_doc_ver,
+        moved_pages_count
+    ] = copy_pages(source_page_ids)
 
     if strategy == ExtractStrategy.ONE_PAGE_PER_DOC:
         new_docs = extract_to_single_paged_docs(
@@ -366,6 +378,13 @@ def extract_pages(
         target_docs = [new_docs]
     else:
         target_docs = new_docs
+
+    if old_doc_ver.pages.count() == moved_pages_count:
+        # all source pages were extracted, document should
+        # be deleted as its last version does not contain
+        # any page
+        old_doc_ver.document.delete()
+        return [None, target_docs]
 
     return [source_doc, target_docs]
 
@@ -433,7 +452,7 @@ def extract_to_multi_paged_doc(
 
 def copy_pages(
     page_ids: List[uuid.UUID]
-) -> [PyDocVer, PyDocVer]:
+) -> [PyDocVer, PyDocVer, int]:
     """Copy pages from src doc version to dst doc version
 
     All pages are assumed to be from same source document version.
@@ -478,4 +497,8 @@ def copy_pages(
             f"Pages with IDs {not_copied_ids} do not have OCR data"
         )
 
-    return [src_old_version, src_new_version]
+    return [
+        src_old_version,  # orig. ver where pages were copied from
+        src_new_version,  # ver where pages were copied to
+        moved_pages_count  # how many pages moved
+    ]

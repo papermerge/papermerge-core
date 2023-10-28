@@ -1,12 +1,11 @@
 /** Container for either <Commander /> or for <Viewer /> */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import Commander from 'components/commander/commander';
 import Viewer from 'components/viewer/viewer';
 
 import {
-  NodeClickArgsType,
   NodesType,
   NType,
   ShowDualButtonEnum,
@@ -20,7 +19,8 @@ import {
   onMovedNodesType,
   NodeType,
   UUIDList,
-  MovePagesBetweenDocsType
+  MovePagesBetweenDocsType,
+  ExtractedPagesType
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -30,6 +30,7 @@ type Args = {
   nodes: Vow<NodesType>;
   onMovedNodes: (args: onMovedNodesType) => void;
   onSelectNodes: (value: UUIDList) => void;
+  onExtractPages: (args: ExtractedPagesType) => void;
   onDragNodes: (value: UUIDList) => void;
   pagination: Pagination;
   sort: Sorting;
@@ -149,6 +150,7 @@ function SinglePanel({
   selected_nodes,
   dragged_nodes,
   onMovedNodes,
+  onExtractPages,
   onSortChange,
   onNodeClick,
   show_dual_button,
@@ -199,6 +201,7 @@ function SinglePanel({
         onPageSizeChange={() => {}}
         onSortChange={onSortChange}
         onMovedNodes={onMovedNodes}
+        onExtractPages={onExtractPages}
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         onNodesListChange={onNodesListChange}

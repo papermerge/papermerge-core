@@ -238,7 +238,21 @@ export type CreatedNodesType = {
 }
 
 export type MovedNodesType = CreatedNodesType;  // alias
+
 export type onMovedNodesType = {
   target_id: string;
   source: NodeType[];
+}
+
+export type ExtractedPagesType = {
+  source: DocumentType | null;
+  target: NodeType[];  // newly created document nodes
+  target_parent: FolderType;
+}
+
+export type ExtractStrategy = 'one-page-per-doc' | 'all-pages-in-one-doc';
+
+export type DataTransferExtractedPages = {
+  pages: string[];
+  document_title: string;
 }

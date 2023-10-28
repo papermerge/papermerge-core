@@ -12,11 +12,12 @@ import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
+import type { DataTransferExtractedPages} from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder_pages } from 'utils/misc';
 import { contains_every, uniq } from 'utils/array';
 
-import { DATA_TYPE_PAGES } from './thumbnails_panel/constants';
+import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
@@ -249,10 +250,14 @@ export default function Viewer({
 
   const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
     const all_sel_pages = [...selected_pages, item.page.id];
+    const data_transfer: DataTransferExtractedPages = {
+      pages: all_sel_pages,
+      document_title: doc!.data!.title
+    }
 
     event.dataTransfer.setData(
-      DATA_TYPE_PAGES,
-      JSON.stringify(all_sel_pages)
+      DATA_TRANSFER_EXTRACTED_PAGES,
+      JSON.stringify(data_transfer)
     )
   }
 

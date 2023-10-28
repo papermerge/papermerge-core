@@ -7,13 +7,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
-from papermerge.core.models import Page, User
-from papermerge.core.page_operations import apply_pages_op
-from papermerge.core.page_operations import move_pages as api_move_pages
+from papermerge.core.models import BaseTreeNode, Page, User
+from papermerge.core.page_ops import apply_pages_op
+from papermerge.core.page_ops import extract_pages as api_extract_pages
+from papermerge.core.page_ops import move_pages as api_move_pages
 from papermerge.core.pathlib import rel2abs, thumbnail_path
+from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
-from papermerge.core.schemas.documents import MovePagesOut
-from papermerge.core.schemas.pages import MovePagesIn, PageAndRotOp
+from papermerge.core.schemas.pages import (ExtractPagesIn, MovePagesIn,
+                                           PageAndRotOp)
 
 from .auth import get_current_user as current_user
 
@@ -147,3 +149,24 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
     model = MovePagesOut(source=source, target=target)
 
     return MovePagesOut.model_validate(model)
+
+
+@router.post("/extract")
+def extract_pages(arg: ExtractPagesIn) -> ExtractPagesOut:
+    """Extract pages from one document into a folder.
+
+    Source IDs are IDs of the pages to move.
+    Target is the ID of the folder where to extract pages into.
+    """
+    [source, target_docs] = api_extract_pages(
+        source_page_ids=arg.source_page_ids,
+        target_folder_id=arg.target_folder_id,
+        strategy=arg.strategy,
+        title_format=arg.title_format
+    )
+    target_nodes = BaseTreeNode.objects.filter(
+        pk__in=[doc.id for doc in target_docs]
+    )
+    model = ExtractPagesOut(source=source, target=target_nodes)
+
+    return ExtractPagesOut.model_validate(model)

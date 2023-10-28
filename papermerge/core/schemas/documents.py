@@ -99,8 +99,3 @@ class CreateDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
-
-
-class MovePagesOut(BaseModel):
-    source: Document | None
-    target: Document

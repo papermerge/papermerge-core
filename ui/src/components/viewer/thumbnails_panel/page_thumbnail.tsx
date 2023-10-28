@@ -5,11 +5,12 @@ import './page_thumbnail.scss';
 
 
 import ThumbnailPlaceholder from './thumbnail_placeholder';
-import { DATA_TYPE_PAGES } from "./constants";
+import { DATA_TRANSFER_EXTRACTED_PAGES } from "cconstants";
 import type {
   ThumbnailPageDroppedArgs,
   DroppedThumbnailPosition,
-  PageAndRotOp
+  PageAndRotOp,
+  DataTransferExtractedPages
 } from "types"
 import { CheckboxChangeType } from "components/commander/types";
 
@@ -130,8 +131,7 @@ export function PageThumbnail({
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    const data = event.dataTransfer.getData(DATA_TYPE_PAGES);
-    let source_page_ids: Array<string>;
+    const data = event.dataTransfer.getData(DATA_TRANSFER_EXTRACTED_PAGES);
     const y = event.clientY;
     let position: DroppedThumbnailPosition = 'before';
 
@@ -141,7 +141,7 @@ export function PageThumbnail({
     }
 
     event.preventDefault();
-    source_page_ids = JSON.parse(data);
+    const _data = JSON.parse(data) as DataTransferExtractedPages;
 
     if (ref?.current) {
       const rect = ref?.current.getBoundingClientRect();
@@ -156,7 +156,7 @@ export function PageThumbnail({
       }
 
       onThumbnailPageDropped({
-        source_ids: source_page_ids,
+        source_ids: _data.pages,
         target_id: item.page.id,
         position: position
       });

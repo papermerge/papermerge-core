@@ -3,7 +3,13 @@ import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
 import { drop_extension } from 'utils/string';
-import type { FolderType, ExtractedPagesType, ExtractStrategy } from 'types';
+import type {
+    DocumentType,
+    FolderType,
+    NodeType,
+    ExtractedPagesType,
+    ExtractStrategy
+  } from 'types';
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
 import ExtractPagesOptions from "./ExtractOptions";
@@ -71,10 +77,17 @@ const ExtractPagesModal = ({
       signal
     });
 
-    await response.json();
+    const data = await response.json();
 
     if (response.status == 200) {
-      //...
+      const source = data.source as DocumentType | null;
+      const target = data.target as NodeType[];
+      const arg = {
+        source: source,
+        target: target,
+        target_parent: target_folder
+      }
+      onOK(arg);
     }
   }
 

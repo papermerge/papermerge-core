@@ -18,7 +18,8 @@ import { Vow,
   BreadcrumbType,
   onMovedNodesType,
   UUIDList,
-  MovePagesBetweenDocsType
+  MovePagesBetweenDocsType,
+  ExtractedPagesType
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
@@ -377,6 +378,40 @@ function DualPanel({ node }: Args) {
     setDraggedMPages(dragged_pages);
   }
 
+  const onExtractPages = (args: ExtractedPagesType) => {
+    if (!args.source) {
+      // will add code later
+      return;
+    }
+
+    const _doc_ver: DocumentVersion = get_last_doc_version(args.source);
+    const _pages: PageAndRotOp[] = _doc_ver.pages.map(
+      p => ({page: p, angle: 0})
+    );
+
+    if (args.target_parent.id == main_node.id) {
+
+      // add nodes to the main panel
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, args.target
+        );
+      });
+      // refresh doc on secondary panel
+      setSCurPages(ready_vow(_pages));
+      setSDocVers(ready_vow(args.source.versions));
+
+    } else if (args.target_parent.id == secondary_node?.id) {
+
+      // add nodes to the secondary panel
+      setSNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, args.target
+        );
+      });
+    }
+  }
+
   const dual_context = {
     onOpenSecondary,
     onCloseSecondary,
@@ -393,6 +428,7 @@ function DualPanel({ node }: Args) {
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
+          onExtractPages={onExtractPages}
           onSelectNodes={onSelectMNodes}
           onDragNodes={onDragMNodes}
           onNodeClick={onMainPanelNodeClick}
@@ -425,6 +461,7 @@ function DualPanel({ node }: Args) {
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
+          onExtractPages={onExtractPages}
           onSelectNodes={onSelectMNodes}
           onDragNodes={onDragMNodes}
           onNodeClick={onMainPanelNodeClick}
@@ -453,6 +490,7 @@ function DualPanel({ node }: Args) {
           onSelectNodes={onSelectSNodes}
           selected_nodes={selected_snodes}
           dragged_nodes={dragged_snodes}
+          onExtractPages={onExtractPages}
           onDragNodes={onDragSNodes}
           onNodeClick={onSecondaryPanelNodeClick}
           onSortChange={onSecondaryPanelSortChange}

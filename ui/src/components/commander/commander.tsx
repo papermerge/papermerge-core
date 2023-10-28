@@ -67,6 +67,7 @@ type Args = {
   sort: Sorting;
   nodes: Vow<NodesType>;
   onMovedNodes: (args: onMovedNodesType) => void;
+  onExtractPages: (args: ExtractedPagesType) => void;
   onSelectNodes: (value: UUIDList) => void;
   onDragNodes: (value: UUIDList) => void;
   display_mode: DisplayNodesModeEnum;
@@ -92,6 +93,7 @@ function Commander({
   sort,
   nodes,
   onMovedNodes,
+  onExtractPages,
   selected_nodes,
   dragged_nodes,
   onSelectNodes,
@@ -392,7 +394,8 @@ function Commander({
         target_folder: nodes!.data!.parent,
         document_title: _data.document_title
       }).then((arg: ExtractedPagesType) => {
-        //...
+        onExtractPages(arg);
+        setCssAcceptFiles("");
       }).catch(() => {
         //...
       });

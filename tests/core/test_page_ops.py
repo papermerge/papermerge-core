@@ -456,7 +456,7 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(_, __):
 @patch('papermerge.core.signals.ocr_document_task')
 @patch('papermerge.core.signals.generate_page_previews_task')
 def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
-    """Scenario tests extraction of one page of source document
+    """Scenario tests extraction of two pages of source document
     into destination folder. Both pages are extracted into
     one single destination document.
 
@@ -480,13 +480,18 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
     assert src.versions.last().pages.count() == 3
 
     src_ver = src.versions.last()
-    saved_src_pages_ids = list(
-        [page.id for page in src_ver.pages.order_by('number')]
-    )
+    saved_src_pages_ids = list([
+        page.id
+        for page in src_ver.pages.order_by('number')
+        if page.number <= 2
+    ])
 
     [result_old_doc, result_new_docs] = extract_pages(
         # we are moving out all pages of the source doc version
-        source_page_ids=[page.id for page in src_ver.pages.all()],
+        source_page_ids=[
+            page.id for page in src_ver.pages.all()
+            if page.number <= 2
+        ],
         target_folder_id=dst_folder.id,
         strategy=ExtractStrategy.ALL_PAGES_IN_ONE_DOC,
         title_format="my-new-doc"
@@ -506,6 +511,72 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
     )
     assert PageDir(
         dst_pages[1].id, number=2, name="dst newly create doc"
+    ) == PageDir(
+        saved_src_pages_ids[1], number=2, name="src old"
+    )
+
+
+@pytest.mark.django_db
+@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.generate_page_previews_task')
+def test_extract_two_pages_to_folder_each_page_in_separate_doc(_, __):
+    """Scenario tests extraction of two pages of source document
+    into destination folder. Each page is extracted into
+    a separate document.
+
+        All pages in one doc
+         src   -[S1, S2]->   dst1  ,   dst2
+    old -> new       old -> new   old -> new
+     S1    S3         x     S1     x     S2
+     S2
+     S3
+    """
+    user = user_recipe.make()
+    src = maker.document(
+        resource='s3.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    dst_folder = folder_recipe.make(user=user, parent=user.home_folder)
+    # Initial visual checks:
+    # count of document versions and number of pages in the doc
+    assert src.versions.count() == 1   # (1)
+    assert src.versions.last().pages.count() == 3
+
+    src_ver = src.versions.last()
+    saved_src_pages_ids = list([
+        page.id
+        for page in src_ver.pages.order_by('number')
+        if page.number <= 2
+    ])
+
+    [result_old_doc, result_new_docs] = extract_pages(
+        # we are moving out all pages of the source doc version
+        source_page_ids=[
+            page.id for page in src_ver.pages.all() if page.number <= 2
+        ],
+        target_folder_id=dst_folder.id,
+        strategy=ExtractStrategy.ONE_PAGE_PER_DOC,
+        title_format="my-new-doc"
+    )
+
+    assert result_old_doc
+    assert result_old_doc.versions.count() == 2
+    assert len(result_new_docs) == 2  # two document were created
+    # newly created docs are in dst_folder
+    assert result_new_docs[0].parent == dst_folder
+    assert result_new_docs[1].parent == dst_folder
+
+    dst_pages1 = result_new_docs[0].versions.last().pages.all()
+    dst_pages2 = result_new_docs[1].versions.last().pages.all()
+
+    assert PageDir(
+        dst_pages1[0].id, number=1, name="dst1 newly created doc"
+    ) == PageDir(
+        saved_src_pages_ids[0], number=1, name="src old"
+    )
+    assert PageDir(
+        dst_pages2[0].id, number=1, name="dst2 newly create doc"
     ) == PageDir(
         saved_src_pages_ids[1], number=2, name="src old"
     )

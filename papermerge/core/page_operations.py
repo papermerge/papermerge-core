@@ -6,7 +6,8 @@ from typing import List
 
 from pikepdf import Pdf
 
-from papermerge.core.models import Page
+from papermerge.core.models import Document, Folder, Page
+from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas import Document as PyDocument
 from papermerge.core.schemas import DocumentVersion as PyDocVer
@@ -337,12 +338,100 @@ def extract_pages(
     strategy: ExtractStrategy,
     title_format: str
 ):
-    src_old_version, src_new_version = copy_pages(source_page_ids)
+    copy_pages(source_page_ids)
+
+    if strategy.ONE_PAGE_PER_DOC:
+        extract_to_single_paged_docs(
+            source_page_ids=source_page_ids,
+            target_folder_id=target_folder_id,
+            title_format=title_format
+        )
+    else:
+        # all pages in a single doc
+        extract_to_multi_paged_doc(
+            source_page_ids=source_page_ids,
+            target_folder_id=target_folder_id,
+            title_format=title_format
+        )
+
+
+def extract_to_single_paged_docs(
+    source_page_ids: List[uuid.UUID],
+    target_folder_id: uuid.UUID,
+    title_format: str
+):
+    pages = Page.objects.filter(pk__in=source_page_ids)
+    dst_folder = Folder.objects.get(pk=target_folder_id)
+    pages_count = pages.count()
+
+    for page in pages:
+        if title_format is None:
+            title = f'page-{str(uuid.uuid4())}.pdf'
+        else:
+            if pages_count > 1:
+                title = f'{title_format}-{str(uuid.uuid4())}.pdf'
+            else:
+                title = f'{title_format}.pdf'
+
+        doc = Document.objects.create_document(
+            title=title,
+            lang=page.lang,
+            user_id=dst_folder.user_id,
+            parent=dst_folder,
+            ocr_status=OCR_STATUS_SUCCEEDED
+        )
+        # create new document version with one page
+        doc_version = doc.version_bump_from_pages(pages=[page])
+
+        reuse_ocr_data(
+            source_ids=[page.id],
+            target_ids=[doc_version.pages.first().id]
+        )
+
+
+def extract_to_multi_paged_doc(
+    source_page_ids: List[uuid.UUID],
+    target_folder_id: uuid.UUID,
+    title_format: str
+):
+    if title_format is None:
+        title = f'document-{str(uuid.uuid4())}.pdf'
+    else:
+        title = f'{title_format}.pdf'
+
+    pages = Page.objects.filter(pk__in=source_page_ids)
+    first_page = pages[0]
+    dst_folder = Folder.objects.get(pk=target_folder_id)
+
+    new_doc = Document.objects.create_document(
+        title=title,
+        lang=first_page.lang,
+        user_id=dst_folder.user_id,
+        parent=dst_folder,
+        ocr_status=OCR_STATUS_SUCCEEDED
+    )
+
+    dst_version = new_doc.version_bump_from_pages(pages=pages)
+
+    reuse_ocr_data(
+        source_ids=[page.id for page in pages.order_by('number')],
+        target_ids=[page.id for page in dst_version.pages.order_by('number')]
+    )
 
 
 def copy_pages(
     page_ids: List[uuid.UUID]
 ) -> [PyDocVer, PyDocVer]:
+    """Copy pages from src doc version to dst doc version
+
+    All pages are assumed to be from same source document version.
+    Source document version is the doc ver of the first page
+    (again, all pages are assumed to be part of same doc ver).
+    The destination doc ver is created. All pages referenced
+    by IDs are copied into newly created destination doc version.
+
+    The OCR data/page folder is copied along (reused).
+    """
     moved_pages = Page.objects.filter(pk__in=page_ids)
     moved_page_ids = [page.id for page in moved_pages]
     src_first_page = moved_pages.first()

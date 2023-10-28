@@ -456,9 +456,9 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(_, __):
 @patch('papermerge.core.signals.ocr_document_task')
 @patch('papermerge.core.signals.generate_page_previews_task')
 def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
-    """Scenario tests extraction of two pages of source document
-    into destination folder. Both pages are extracted into
-    one single destination document.
+    """Scenario tests extraction of first two pages from
+    source document into destination folder.
+    Both pages are extracted into one single destination document.
 
         All pages in one doc
          src   -[S1, S2]->   dst
@@ -520,11 +520,11 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
 @patch('papermerge.core.signals.ocr_document_task')
 @patch('papermerge.core.signals.generate_page_previews_task')
 def test_extract_two_pages_to_folder_each_page_in_separate_doc(_, __):
-    """Scenario tests extraction of two pages of source document
+    """Scenario tests extraction of first two pages of source document
     into destination folder. Each page is extracted into
-    a separate document.
+    a separate document, as result to new documents are created.
 
-        All pages in one doc
+        Each page into one separate doc
          src   -[S1, S2]->   dst1  ,   dst2
     old -> new       old -> new   old -> new
      S1    S3         x     S1     x     S2

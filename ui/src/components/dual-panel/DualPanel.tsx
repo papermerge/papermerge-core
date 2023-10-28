@@ -380,7 +380,18 @@ function DualPanel({ node }: Args) {
 
   const onExtractPages = (args: ExtractedPagesType) => {
     if (!args.source) {
-      // will add code later
+      // leave just main panel open and add new nodes there
+      setSecondaryNode(null);
+      setSCurPages(ready_vow([]));
+      setSDocVers(ready_vow([]));
+
+      setMainNode({id: args.target_parent.id, ctype: 'folder'});
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, args.target
+        );
+      });
+
       return;
     }
 

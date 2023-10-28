@@ -48,6 +48,7 @@ async def websocket_endpoint(
 
     try:
         while True:
+            logger.debug("Websockets Loop")
             async for message in notification:
                 logger.debug(
                     f"Message received {message} "

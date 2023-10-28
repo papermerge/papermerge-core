@@ -66,17 +66,25 @@ def channel_group_notify(
     """
     Send group notification to the channel
     """
+    logger.debug("channel_group_notify")
     if full_name in MONITORED_TASKS:
         logger.debug(
-            f"channel_group_notify full_name={full_name} state={state}"
+            f"full_name={full_name} state={state}"
             f" kwargs={kwargs}"
         )
+        logger.debug("Before creation of the Event")
+        # Validation failures WON'T BE REPORTED in
+        # ``papermerge.core`` logger !!!
+        # Validation failures are reported only in ``root``
+        # logger
         event = Event(
             name=full_name.split('.')[-1],
             state=state,
             kwargs=kwargs['kwargs']
         )
+        logger.debug(f"Before pushing the event: {event}")
         notification.push(event)
+        logger.debug(f"After  pushing the event: {event}")
 
         return event
 
@@ -112,8 +120,10 @@ def channel_group_notify_task_postrun(sender=None, **kwargs):
 @task_received.connect
 def channel_group_notify_task_received(sender=None, **kwargs):
     # why here is ``requests`` instead of ``sender``?
+    logger.debug(f"Task notification received kwargs={kwargs}")
     request = kwargs.get('request')
     if not request:
+        logger.debug("Empty request. Bye Bye.")
         return
 
     event = channel_group_notify(
@@ -229,7 +239,8 @@ def receiver_document_post_upload(
             ocr_document_task.apply_async(
                 kwargs={
                     'document_id': str(doc.id),
-                    'lang': doc.lang
+                    'lang': doc.lang,
+                    'user_id': str(user.id)
                 }
             )
         except OperationalError:

@@ -37,6 +37,7 @@ class WebSocketService {
     this._socket = new WebSocket(this._url);
     this._handlers = new Map<string, Handler>();
 
+
     this._socket.onerror = (event: Event) => {
       console.info(`Error while connecting to WebSocket event=${event}`);
     }
@@ -58,8 +59,6 @@ class WebSocketService {
   }
 
   addHandler(key: string, handler: Handler) {
-    console.log(`adding ${key}`);
-
     if (!this._socket) {
       return;
     }

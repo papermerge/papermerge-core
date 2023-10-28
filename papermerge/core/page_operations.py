@@ -362,16 +362,9 @@ def extract_to_single_paged_docs(
 ):
     pages = Page.objects.filter(pk__in=source_page_ids)
     dst_folder = Folder.objects.get(pk=target_folder_id)
-    pages_count = pages.count()
 
     for page in pages:
-        if title_format is None:
-            title = f'page-{str(uuid.uuid4())}.pdf'
-        else:
-            if pages_count > 1:
-                title = f'{title_format}-{str(uuid.uuid4())}.pdf'
-            else:
-                title = f'{title_format}.pdf'
+        title = f'{title_format}-{uuid.uuid4()}.pdf'
 
         doc = Document.objects.create_document(
             title=title,
@@ -394,10 +387,7 @@ def extract_to_multi_paged_doc(
     target_folder_id: uuid.UUID,
     title_format: str
 ):
-    if title_format is None:
-        title = f'document-{str(uuid.uuid4())}.pdf'
-    else:
-        title = f'{title_format}.pdf'
+    title = f'{title_format}-{uuid.uuid4()}.pdf'
 
     pages = Page.objects.filter(pk__in=source_page_ids)
     first_page = pages[0]

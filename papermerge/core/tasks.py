@@ -27,9 +27,24 @@ def delete_user_data(user_id):
 def ocr_document_task(
     document_id,
     lang,
+    user_id  # !!! Important, DO NOT REMOVE
 ):
     """
     OCRs the document.
+
+    ** Achtung! Achtung! **
+    Arguments of this method correspond to the:
+
+    ``papermerge.core.notif.events.OCREvent``
+
+    Which means, even if ``user_id`` is not used here, it MUST be part
+    of arg list, otherwise ``papermerge.core.signals.channel_group_notify``
+    will "interrupt without a trace" because ``Event`` model
+    validation will fail (as ``OCREvent`` won't have ``user_id``).
+
+    Anyway, DO NOT REMOVE ``user_id`` argument!
+
+    ** End of Achtung! Achtung! **
 
     On success returns ``document_id``
     If something went wrong returns ``None``.

@@ -40,9 +40,11 @@ class Notification:
         parsed_url = urlparse(url)
 
         if parsed_url.scheme in ("redis", "rediss"):
+            logger.debug(f"Loading Redis {url} notification backend")
             from papermerge.core.notif.backends.redis import RedisBackend
             self._backend = RedisBackend(url, channel=channel, timeout=timeout)
         elif parsed_url.scheme == "memory":
+            logger.debug(f"Loading Memory {url} notification backend")
             from papermerge.core.notif.backends.memory import MemoryBackend
             self._backend = MemoryBackend(url, channel=channel, timeout=timeout)
 

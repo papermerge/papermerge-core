@@ -57,13 +57,13 @@ def transform_pdf_pages(
     dst_pdf.save(dst)
 
 
-def remove_pdf_pages(
+def copy_pdf(
     src: Path,
     dst: Path,
     page_numbers: list[int]
 ):
     """
-    Removes pages from given PDF file
+    Copy pages from src to dst file
 
     Notice that page numbering starts with 1 i.e. page_numbers=[1, 2] -
     will remove first and second pages.
@@ -226,44 +226,19 @@ def move_pages_mix(
     document is deleted and None is yielded as first
     value of the returned tuple.
     """
+    src_old_version, src_new_version = copy_pages(source_page_ids)
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
-    src_first_page = moved_pages.first()
-    dst_page = Page.objects.get(pk=target_page_id)
-    src_old_version = src_first_page.document_version
-    src_old_doc = src_old_version.document
-    dst_old_version = dst_page.document_version
-    dst_old_doc = dst_old_version.document
     moved_pages_count = moved_pages.count()
 
-    src_new_version = src_old_doc.version_bump(
-        page_count=src_old_version.pages.count() - moved_pages_count,
-        short_description=f'{moved_pages_count} page(s) moved out'
-    )
+    dst_page = Page.objects.get(pk=target_page_id)
+    dst_old_version = dst_page.document_version
+    dst_old_doc = dst_old_version.document
+
     dst_new_version = dst_old_doc.version_bump(
         page_count=dst_old_version.pages.count() + moved_pages_count,
         short_description=f'{moved_pages_count} page(s) moved in'
     )
-
-    remove_pdf_pages(
-        src=src_old_version.file_path,
-        dst=src_new_version.file_path,
-        page_numbers=[page.number for page in moved_pages]
-    )
-    src_keys = [  # IDs of the pages which were not removed
-        page.id
-        for page in src_old_version.pages.order_by('number')
-        if not (page.id in moved_page_ids)
-    ]
-
-    dst_values = [
-        page.id  # IDs of the pages in new version of the source
-        for page in src_new_version.pages.order_by('number')
-    ]
-    if not_copied_ids := reuse_ocr_data(src_keys, dst_values):
-        logger.info(
-            f"Pages with IDs {not_copied_ids} do not have OCR data"
-        )
 
     insert_pdf_pages(
         src_old=src_old_version.file_path,
@@ -299,7 +274,7 @@ def move_pages_mix(
     if src_old_version.pages.count() == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        src_old_doc.delete()
+        src_old_version.document.delete()
         return [None, dst_new_version.document]
 
     return [src_new_version.document, dst_new_version.document]
@@ -317,42 +292,19 @@ def move_pages_replace(
     In case all pages from the source are moved, the source
     document is deleted.
     """
+    src_old_version, src_new_version = copy_pages(source_page_ids)
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
-    src_first_page = moved_pages.first()
-    dst_page = Page.objects.get(pk=target_page_id)
-    src_old_version = src_first_page.document_version
-    src_old_doc = src_old_version.document
-    dst_old_version = dst_page.document_version
-    dst_old_doc = dst_old_version.document
     moved_pages_count = moved_pages.count()
 
-    src_new_version = src_old_doc.version_bump(
-        page_count=src_old_version.pages.count() - moved_pages_count,
-        short_description=f'{moved_pages_count} page(s) moved out'
-    )
+    dst_page = Page.objects.get(pk=target_page_id)
+    dst_old_version = dst_page.document_version
+    dst_old_doc = dst_old_version.document
+
     dst_new_version = dst_old_doc.version_bump(
         page_count=moved_pages_count,  # !!! Important
         short_description=f'{moved_pages_count} page(s) replaced'
     )
-
-    remove_pdf_pages(
-        src=src_old_version.file_path,
-        dst=src_new_version.file_path,
-        page_numbers=[page.number for page in moved_pages]
-    )
-    src_keys = [  # IDs of the pages which were not removed
-        page.id
-        for page in src_old_version.pages.order_by('number')
-        if not (page.id in moved_page_ids)
-    ]
-
-    dst_values = [
-        page.id  # IDs of the pages in new version of the source
-        for page in src_new_version.pages.order_by('number')
-    ]
-
-    reuse_ocr_data(src_keys, dst_values)
 
     insert_pdf_pages(
         src_old=src_old_version.file_path,
@@ -373,7 +325,7 @@ def move_pages_replace(
     if src_old_version.pages.count() == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        src_old_doc.delete()
+        src_old_version.document.delete()
         return [None, dst_new_version.document]
 
     return [src_new_version.document, dst_new_version.document]
@@ -385,4 +337,44 @@ def extract_pages(
     strategy: ExtractStrategy,
     title_format: str
 ):
-    pass
+    src_old_version, src_new_version = copy_pages(source_page_ids)
+
+
+def copy_pages(
+    page_ids: List[uuid.UUID]
+) -> [PyDocVer, PyDocVer]:
+    moved_pages = Page.objects.filter(pk__in=page_ids)
+    moved_page_ids = [page.id for page in moved_pages]
+    src_first_page = moved_pages.first()
+    src_old_version = src_first_page.document_version
+    src_old_doc = src_old_version.document
+    moved_pages_count = moved_pages.count()
+
+    src_new_version = src_old_doc.version_bump(
+        page_count=src_old_version.pages.count() - moved_pages_count,
+        short_description=f'{moved_pages_count} page(s) moved out'
+    )
+
+    copy_pdf(
+        src=src_old_version.file_path,
+        dst=src_new_version.file_path,
+        page_numbers=[page.number for page in moved_pages]
+    )
+
+    src_keys = [  # IDs of the pages which were not removed
+        page.id
+        for page in src_old_version.pages.order_by('number')
+        if not (page.id in moved_page_ids)
+    ]
+
+    dst_values = [
+        page.id  # IDs of the pages in new version of the source
+        for page in src_new_version.pages.order_by('number')
+    ]
+
+    if not_copied_ids := reuse_ocr_data(src_keys, dst_values):
+        logger.info(
+            f"Pages with IDs {not_copied_ids} do not have OCR data"
+        )
+
+    return [src_old_version, src_new_version]

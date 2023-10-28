@@ -8,9 +8,9 @@ from fastapi.responses import FileResponse
 
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.models import Page, User
-from papermerge.core.page_operations import apply_pages_op
-from papermerge.core.page_operations import extract_pages as api_extract_pages
-from papermerge.core.page_operations import move_pages as api_move_pages
+from papermerge.core.page_ops import apply_pages_op
+from papermerge.core.page_ops import extract_pages as api_extract_pages
+from papermerge.core.page_ops import move_pages as api_move_pages
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
 from papermerge.core.schemas.documents import ExtractPagesOut, MovePagesOut

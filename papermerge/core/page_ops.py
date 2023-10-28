@@ -1,3 +1,4 @@
+"""Page Operations"""
 import io
 import logging
 import uuid
@@ -337,31 +338,47 @@ def extract_pages(
     target_folder_id: uuid.UUID,
     strategy: ExtractStrategy,
     title_format: str
-):
-    copy_pages(source_page_ids)
+) -> [Document, List[Document]]:
+    """
 
-    if strategy.ONE_PAGE_PER_DOC:
-        extract_to_single_paged_docs(
+    Returns a tuple where first element
+    is source document and second element is the list
+    of newly created documents
+    """
+    _, new_doc_ver = copy_pages(source_page_ids)
+
+    if strategy == ExtractStrategy.ONE_PAGE_PER_DOC:
+        new_docs = extract_to_single_paged_docs(
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
             title_format=title_format
         )
     else:
         # all pages in a single doc
-        extract_to_multi_paged_doc(
+        new_docs = extract_to_multi_paged_doc(
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
             title_format=title_format
         )
+
+    source_doc = new_doc_ver.document
+    if not isinstance(new_docs, list):
+        target_docs = [new_docs]
+    else:
+        target_docs = new_docs
+
+    return [source_doc, target_docs]
 
 
 def extract_to_single_paged_docs(
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str
-):
+) -> List[Document]:
+
     pages = Page.objects.filter(pk__in=source_page_ids)
     dst_folder = Folder.objects.get(pk=target_folder_id)
+    result = []
 
     for page in pages:
         title = f'{title_format}-{uuid.uuid4()}.pdf'
@@ -373,6 +390,7 @@ def extract_to_single_paged_docs(
             parent=dst_folder,
             ocr_status=OCR_STATUS_SUCCEEDED
         )
+        result.append(doc)
         # create new document version with one page
         doc_version = doc.version_bump_from_pages(pages=[page])
 
@@ -381,12 +399,14 @@ def extract_to_single_paged_docs(
             target_ids=[doc_version.pages.first().id]
         )
 
+    return result
+
 
 def extract_to_multi_paged_doc(
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str
-):
+) -> Document:
     title = f'{title_format}-{uuid.uuid4()}.pdf'
 
     pages = Page.objects.filter(pk__in=source_page_ids)
@@ -407,6 +427,8 @@ def extract_to_multi_paged_doc(
         source_ids=[page.id for page in pages.order_by('number')],
         target_ids=[page.id for page in dst_version.pages.order_by('number')]
     )
+
+    return new_doc
 
 
 def copy_pages(

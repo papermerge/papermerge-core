@@ -400,6 +400,7 @@ function DualPanel({ node }: Args) {
       // refresh doc on secondary panel
       setSCurPages(ready_vow(_pages));
       setSDocVers(ready_vow(args.source.versions));
+      setSelectedSPages([]);
 
     } else if (args.target_parent.id == secondary_node?.id) {
 
@@ -409,6 +410,11 @@ function DualPanel({ node }: Args) {
           mnodes!.data!.nodes, args.target
         );
       });
+
+      // refresh doc on main panel
+      setMCurPages(ready_vow(_pages));
+      setMDocVers(ready_vow(args.source.versions));
+      setSelectedMPages([]);
     }
   }
 

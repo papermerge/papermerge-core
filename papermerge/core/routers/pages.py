@@ -164,7 +164,9 @@ def extract_pages(arg: ExtractPagesIn) -> ExtractPagesOut:
         strategy=arg.strategy,
         title_format=arg.title_format
     )
-    target_nodes = BaseTreeNode.objects.filter(pk__in=target_docs)
+    target_nodes = BaseTreeNode.objects.filter(
+        pk__in=[doc.id for doc in target_docs]
+    )
     model = ExtractPagesOut(source=source, target=target_nodes)
 
     return ExtractPagesOut.model_validate(model)

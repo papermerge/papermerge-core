@@ -250,19 +250,21 @@ function DualPanel({ node }: Args) {
 
     // substract nodes from the source
     if (source_parent_id == main_node.id) {
-      const new_nodes = subtract<NodeType>(
-        mnodes.data?.nodes!,
-        args.source
-      );
+      const new_nodes = subtract<NodeType>({
+        arr1: mnodes.data?.nodes!,
+        arr2: args.source,
+        idf: (item: NodeType) => item.id
+      });
       setMNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });
 
     } else if (source_parent_id == secondary_node?.id) {
-      const new_nodes = subtract<NodeType>(
-        snodes.data?.nodes!,
-        args.source
-      );
+      const new_nodes = subtract<NodeType>({
+        arr1: snodes.data?.nodes!,
+        arr2: args.source,
+        idf: (item: NodeType) => item.id
+      });
       setSNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = new_nodes || [];
       });

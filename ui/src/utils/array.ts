@@ -1,23 +1,29 @@
+/**
+  Returns = arr1 - arr2
 
-function subtract<T extends {id: string}>(
-  arr1: T[],
-  arr2: T[]
-): T[] {
-  /*
-    Subtracts arr2 from arr1
-
-    result = arr1 - arr2
-
-    Example:
+  Example:
 
     arr1 = [a1, a2, a3, a4]
     arr2 = [a1, a2]
-    result = [ a3, a4 ]
+    result = [a3, a4]
 
-    Elements in array are identified by their ID.
-  */
-  const source_ids = arr2.map(i => i.id);
-  let result = arr1.filter(n => source_ids.indexOf(n.id) < 0);
+    Elements in array are identified by return value
+    of identity function.
+*/
+function subtract<T>(
+  arr1: T[],
+  arr2: T[],
+  idf?: (val: T) => any
+): T[] {
+
+  if (!idf) {
+    idf = (x: T): T => x;
+  }
+
+  const source_ids = arr2.map(i => idf!(i));
+  let result = arr1.filter(
+    n => source_ids.indexOf(idf!(n)) < 0
+  );
 
   return result;
 }

@@ -1,22 +1,3 @@
-/* Identity function.
-Given an object, it returns the "identity" of that object -
-which can be 'id' field of the object, or the 'name' or
-even the object.
-Here are some examples of identity functions:
-
-  1. (x) => x.id
-  2. (n) => n.title
-  3. (val) => val
-*/
-type IDFunc = (val: any) => any;
-
-
-type SubtractArgs<T> = {
-  arr1: T[];
-  arr2: T[];
-  idf?: IDFunc;
-}
-
 /**
   Returns = arr1 - arr2
 
@@ -29,18 +10,20 @@ type SubtractArgs<T> = {
     Elements in array are identified by return value
     of identity function.
 */
-function subtract<T>({
-  arr1,
-  arr2,
-  idf
-}: SubtractArgs<T>): T[] {
+function subtract<T>(
+  arr1: T[],
+  arr2: T[],
+  idf?: (val: T) => any
+): T[] {
 
   if (!idf) {
-    idf = (x) => x;
+    idf = (x: T): T => x;
   }
 
   const source_ids = arr2.map(i => idf!(i));
-  let result = arr1.filter(n => source_ids.indexOf(idf!(n)) < 0);
+  let result = arr1.filter(
+    n => source_ids.indexOf(idf!(n)) < 0
+  );
 
   return result;
 }

@@ -1,5 +1,6 @@
 import { subtract } from 'utils/array'
 
+
 type Node = {
   id: string;
 }
@@ -19,7 +20,7 @@ test('substract with node objects', () => {
   ]
 
   expect(
-    subtract<Node>({arr1, arr2, idf: (x) => x.id})
+    subtract<Node>(arr1, arr2, (x) => x.id)
   ).toStrictEqual(expected_arr);
 });
 
@@ -29,7 +30,7 @@ test('substract with primitive types', () => {
   const arr2 = [1, 2];
 
   expect(
-    subtract({arr1, arr2})
+    subtract(arr1, arr2)
   ).toStrictEqual([3, 4]);
 });
 

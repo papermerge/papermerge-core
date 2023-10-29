@@ -33,7 +33,7 @@ jobs:
           pip install poetry
           poetry install && poetry run task lint
 
-  tests_core:
+  backend_core_tests:
     needs: check-pep8-compliance
     runs-on: ubuntu-20.04
     steps:
@@ -55,13 +55,13 @@ jobs:
         env:
           PYTHONPATH: .
 
-  test_frontend:
+  frontend_tests:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./ui
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install modules
         run: |
           npm i

@@ -6,33 +6,46 @@ type Node = {
 }
 
 
-test('substract with node objects', () => {
+describe('utils/array/subtract', () => {
 
-  const arr1 = [
-    {id: '1'} , {id: '2'}, {id: '3'}, {id: '4'}
-  ];
-  const arr2 = [
-    {id: '1'}, {id: '2'}
-  ]
+  test('subtract with node objects', () => {
 
-  const expected_arr = [
-    {id: '3'}, {id: '4'}
-  ]
+    const arr1 = [
+      {id: '1'} , {id: '2'}, {id: '3'}, {id: '4'}
+    ];
+    const arr2 = [
+      {id: '1'}, {id: '2'}
+    ]
 
-  expect(
-    subtract<Node>(arr1, arr2, (x) => x.id)
-  ).toStrictEqual(expected_arr);
+    const expected_arr = [
+      {id: '3'}, {id: '4'}
+    ]
+
+    expect(
+      subtract<Node>(arr1, arr2, (x) => x.id)
+    ).toStrictEqual(expected_arr);
+  });
+
+  test('subtract with primitive types', () => {
+
+    const arr1 = [1 ,2, 3, 4];
+    const arr2 = [1, 2];
+
+    expect(
+      subtract(arr1, arr2)
+    ).toStrictEqual([3, 4]);
+  });
+
+  test('empty inputs', () => {
+    expect(
+      subtract([], [])
+    ).toEqual([]);
+
+    expect(
+      subtract([1, 2, 3], [])
+    ).toEqual([1, 2, 3]);
+  });
+
 });
-
-test('substract with primitive types', () => {
-
-  const arr1 = [1 ,2, 3, 4];
-  const arr2 = [1, 2];
-
-  expect(
-    subtract(arr1, arr2)
-  ).toStrictEqual([3, 4]);
-});
-
 
 export {}

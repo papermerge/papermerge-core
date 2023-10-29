@@ -54,3 +54,12 @@ jobs:
           poetry install && poetry run task test
         env:
           PYTHONPATH: .
+
+  test_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install modules
+        run: npm i
+      - name: Run tests
+        run: npm test

@@ -46,6 +46,18 @@ describe('utils/array/subtract', () => {
     ).toEqual([1, 2, 3]);
   });
 
+  test('subtract more from less', () => {
+    expect(
+      subtract([1, 2], [3, 4, 5, 6])
+    ).toEqual([1, 2]);
+  });
+
+  test('subtract something from nothing', () => {
+    expect(
+      subtract([], [3, 4, 5, 6])
+    ).toEqual([]);
+  });
+
 });
 
 export {}

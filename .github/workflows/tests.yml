@@ -57,9 +57,14 @@ jobs:
 
   test_frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ui
     steps:
       - uses: actions/checkout@v2
       - name: Install modules
-        run: npm i
+        run: |
+          npm i
       - name: Run tests
-        run: npm test
+        run: |
+          npm test

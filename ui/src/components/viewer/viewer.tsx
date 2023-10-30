@@ -14,7 +14,7 @@ import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenD
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import type { DataTransferExtractedPages} from 'types';
 import ErrorMessage from 'components/error_message';
-import { reorder_pages } from 'utils/misc';
+import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
 
 import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
@@ -130,11 +130,12 @@ export default function Viewer({
         i.e we just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
       */
-      const new_pages = reorder_pages({
+      const new_pages = reorder_pages<PageAndRotOp, string>({
         arr: pages!.data!,
         source_ids: source_ids,
         target_id: target_id,
-        position: position
+        position: position,
+        idf: (val: PageAndRotOp) => val.page.id
       });
       if (!new_pages.every((value, index) => value.page.id == pages!.data![index].page.id)) {
         setUnappliedPagesOpChanges(true);

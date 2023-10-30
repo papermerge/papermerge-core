@@ -163,6 +163,13 @@ function reorder<T=number, K=string>({
     idf = (x: T): T => x;
   }
 
+  const arr_ids = arr.map(i => idf!(i))
+
+  if (!arr_ids.includes(target_id)) {
+    console.warn(`Target ID ${target_id} was not found in arr: `, arr);
+    return arr;
+  }
+
   let result: T[] = [];
   let insert_now = false;
   const source: T[] = arr.filter(
@@ -196,9 +203,14 @@ function reorder<T=number, K=string>({
     }
   });
 
+  // is the case when target is last element of the array
+  // and we want to insert "after"
+  if (result.length < arr.length) {
+    result.push(...source);
+  }
+
   return result;
 }
-
 
 
 export {

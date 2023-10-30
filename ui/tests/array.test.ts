@@ -117,6 +117,39 @@ describe('utils/array/reorder', () => {
 
     expect(actual_result).toEqual([2, 4, 5, 1, 3, 6]);
   });
+
+  test('basic data 6', () => {
+    const actual_result = reorder<number, number>({
+      arr: [1, 2],
+      source_ids: [1],
+      target_id: 2,
+      position: 'after'
+    });
+
+    expect(actual_result).toEqual([2, 1]);
+  });
+
+  test('basic data 7', () => {
+    const actual_result = reorder<number, number>({
+      arr: [1, 2],
+      source_ids: [1],
+      target_id: 2,
+      position: 'before'
+    });
+
+    expect(actual_result).toEqual([1, 2]);
+  });
+
+  test('not existing target', () => {
+    const actual_result = reorder<number, number>({
+      arr: [1, 2, 3],
+      source_ids: [1],
+      target_id: 10,
+      position: 'before'
+    });
+
+    expect(actual_result).toEqual([1, 2, 3]);
+  });
 })
 
 export {}

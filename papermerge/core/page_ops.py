@@ -5,8 +5,10 @@ import uuid
 from pathlib import Path
 from typing import List
 
+from celery import current_app
 from pikepdf import Pdf
 
+from papermerge.core.constants import INDEX_UPDATE
 from papermerge.core.models import Document, Folder, Page
 from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
@@ -15,6 +17,7 @@ from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import (ExtractStrategy, MoveStrategy,
                                            PageAndRotOp)
 from papermerge.core.storage import get_storage_instance
+from papermerge.core.utils.decorators import skip_in_tests
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,11 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         src=old_version.file_path,
         dst=new_version.file_path,
         items=items
+    )
+
+    notify_index_update(
+        remove_page_ids=[str(p.id) for p in old_version.pages.all()],
+        add_page_ids=[str(p.id) for p in new_version.pages.all()]
     )
 
     return doc.versions.all()
@@ -502,3 +510,11 @@ def copy_pages(
         src_new_version,  # ver where pages were copied to
         moved_pages_count  # how many pages moved
     ]
+
+
+@skip_in_tests
+def notify_index_update(
+    add_page_ids: List[str],
+    remove_page_ids: List[str]
+):
+    current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))

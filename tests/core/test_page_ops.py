@@ -4,11 +4,33 @@ from unittest.mock import patch
 import pytest
 
 from papermerge.core.models import Document
-from papermerge.core.page_ops import extract_pages, move_pages
+from papermerge.core.page_ops import apply_pages_op, extract_pages, move_pages
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
+from papermerge.core.schemas.pages import Page as PyPage
+from papermerge.core.schemas.pages import PageAndRotOp
 from papermerge.test import maker
 from papermerge.test.baker_recipes import folder_recipe, user_recipe
+
+
+@pytest.mark.django_db
+@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.generate_page_previews_task')
+def test_apply_pages_op(_, __):
+    user = user_recipe.make()
+    src = maker.document(
+        resource='living-things.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    assert src.versions.last().pages.count() == 2
+    page = src.versions.last().pages.first()
+    pypage = PyPage(id=page.pk, number=page.number)
+    items = [PageAndRotOp(page=pypage, angle=0)]
+    versions = apply_pages_op(items)
+    newly_created_version = versions.last()
+
+    assert newly_created_version.pages.count() == 1
 
 
 @pytest.mark.django_db

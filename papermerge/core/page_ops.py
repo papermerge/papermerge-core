@@ -33,10 +33,16 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         page_count=len(items)
     )
 
-    transform_pdf_pages(
+    copy_pdf_pages(
         src=old_version.file_path,
         dst=new_version.file_path,
         items=items
+    )
+
+    reuse_text_field(
+        old_version=old_version,
+        new_version=new_version,
+        page_numbers=[p.number for p in pages]
     )
 
     notify_index_update(
@@ -47,7 +53,7 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     return doc.versions.all()
 
 
-def transform_pdf_pages(
+def copy_pdf_pages(
     src: Path,
     dst: Path,
     items: List[PageAndRotOp]
@@ -167,12 +173,17 @@ def reuse_ocr_data(
 def reuse_text_field(
     old_version: PyDocVer,
     new_version: PyDocVer,
-    page_map: list
+    page_numbers: list[int]
 ) -> None:
+    logger.debug(
+        f"Reuse text field for page numbers={page_numbers}"
+        f" old_version={old_version}"
+        f" new_version={new_version}"
+    )
     streams = collect_text_streams(
         version=old_version,
         # list of old_version page numbers
-        page_numbers=[item[1] for item in page_map]
+        page_numbers=page_numbers
     )
 
     # updates page.text fields and document_version.text field
@@ -517,4 +528,5 @@ def notify_index_update(
     add_page_ids: List[str],
     remove_page_ids: List[str]
 ):
+    """Sends tasks to the index to remove/add pages"""
     current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))

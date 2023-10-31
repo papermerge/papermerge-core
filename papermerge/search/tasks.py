@@ -113,6 +113,9 @@ def update_index(add_page_ids: List[str], remove_page_ids: List[str]):
     Removes `remove_page_ids` and adds `add_page_ids` from index in
     one "transaction".
     """
+    logger.debug(
+        f"Index Update: add={add_page_ids}, remove={remove_page_ids}"
+    )
     remove_folder_or_page_from_index(remove_page_ids)
     add_pages_to_index(add_page_ids)
 

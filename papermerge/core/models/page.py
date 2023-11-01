@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import uuid
@@ -128,7 +129,7 @@ class Page(models.Model):
     def stripped_text(self):
         return self.text.strip()
 
-    def update_text_field(self, stream):
+    def update_text_field(self, stream: io.StringIO):
         """Update text field from given IO stream.
 
         Returns text read from IO stream

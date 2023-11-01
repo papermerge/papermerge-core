@@ -5,8 +5,10 @@ import uuid
 from pathlib import Path
 from typing import List
 
+from celery import current_app
 from pikepdf import Pdf
 
+from papermerge.core.constants import INDEX_UPDATE
 from papermerge.core.models import Document, Folder, Page
 from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
@@ -15,6 +17,7 @@ from papermerge.core.schemas import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import (ExtractStrategy, MoveStrategy,
                                            PageAndRotOp)
 from papermerge.core.storage import get_storage_instance
+from papermerge.core.utils.decorators import skip_in_tests
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +33,27 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         page_count=len(items)
     )
 
-    transform_pdf_pages(
+    copy_pdf_pages(
         src=old_version.file_path,
         dst=new_version.file_path,
         items=items
     )
 
+    copy_text_field(
+        src=old_version,
+        dst=new_version,
+        page_numbers=[p.number for p in pages]
+    )
+
+    notify_index_update(
+        remove_page_ids=[str(p.id) for p in old_version.pages.all()],
+        add_page_ids=[str(p.id) for p in new_version.pages.all()]
+    )
+
     return doc.versions.all()
 
 
-def transform_pdf_pages(
+def copy_pdf_pages(
     src: Path,
     dst: Path,
     items: List[PageAndRotOp]
@@ -156,19 +170,24 @@ def reuse_ocr_data(
     return not_copied_ids
 
 
-def reuse_text_field(
-    old_version: PyDocVer,
-    new_version: PyDocVer,
-    page_map: list
+def copy_text_field(
+    src: PyDocVer,
+    dst: PyDocVer,
+    page_numbers: list[int]
 ) -> None:
+    logger.debug(
+        f"Reuse text field for page numbers={page_numbers}"
+        f" src={src}"
+        f" dst={dst}"
+    )
     streams = collect_text_streams(
-        version=old_version,
+        version=src,
         # list of old_version page numbers
-        page_numbers=[item[1] for item in page_map]
+        page_numbers=page_numbers
     )
 
     # updates page.text fields and document_version.text field
-    new_version.update_text_field(streams)
+    dst.update_text_field(streams)
 
 
 def collect_text_streams(
@@ -502,3 +521,12 @@ def copy_pages(
         src_new_version,  # ver where pages were copied to
         moved_pages_count  # how many pages moved
     ]
+
+
+@skip_in_tests
+def notify_index_update(
+    add_page_ids: List[str],
+    remove_page_ids: List[str]
+):
+    """Sends tasks to the index to remove/add pages"""
+    current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))

@@ -108,13 +108,6 @@ class Document(BaseTreeNode):
     # If True this document will be OCRed
     # If False, OCR operation will be skipped for this document
     ocr = models.BooleanField(default=True)
-
-    # This field is updated by
-    # `papermerge.avenues.consumers.document.DocumentConsumer`.
-    #
-    # Can be one of: 'unknown', 'received', 'started',
-    # 'failed', 'succeeded' - these values correspond to
-    # celery's task statuses
     ocr_status = models.CharField(
         choices=utils.OCR_STATUS_CHOICES,
         default=utils.OCR_STATUS_UNKNOWN,

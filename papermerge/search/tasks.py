@@ -123,7 +123,7 @@ def update_index(add_page_ids: List[str], remove_page_ids: List[str]):
 def from_page(page_id: str) -> Model:
     """Given page_id returns index entity"""
     page = Page.objects.get(pk=page_id)
-    last_doc_ver = page.document_versions.last()
+    last_doc_ver = page.document_version
     doc = last_doc_ver.document
 
     if len(page.text) == 0 and last_doc_ver.number > 1:

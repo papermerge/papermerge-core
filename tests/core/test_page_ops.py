@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 
 from papermerge.core.models import Document
-from papermerge.core.page_ops import apply_pages_op, extract_pages, move_pages
+from papermerge.core.page_ops import (apply_pages_op, copy_text_field,
+                                      extract_pages, move_pages)
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
 from papermerge.core.schemas.pages import Page as PyPage
@@ -14,23 +15,67 @@ from papermerge.test.baker_recipes import folder_recipe, user_recipe
 
 
 @pytest.mark.django_db
+def test_copy_text_field():
+    doc_ver_x = maker.document_version(
+        page_count=2,
+        pages_text=["some", "body"]
+    )
+
+    doc_ver_y = maker.document_version(
+        page_count=1
+    )
+
+    # copy text field of doc ver X to doc ver Y
+    copy_text_field(
+        src=doc_ver_x,
+        dst=doc_ver_y,
+        page_numbers=[2]
+    )
+
+    assert doc_ver_y.pages.all()[0].text == "body"
+
+
+@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 @patch('papermerge.core.signals.generate_page_previews_task')
 def test_apply_pages_op(_, __):
+    """This test checks if `apply_pages_op` correctly copies
+    page text data"""
     user = user_recipe.make()
+    # 1. create a doc with two pages
+    # first page has word "cat"
+    # second page has word "dog"
     src = maker.document(
         resource='living-things.pdf',
         user=user,
         include_ocr_data=True
     )
+    orig_first_page = src.versions.last().pages.all()[0]
+    orig_second_page = src.versions.last().pages.all()[1]
+    orig_first_page.text = "cat"
+    orig_second_page.text = "dog"
+    orig_first_page.save()
+    orig_second_page.save()
+
     assert src.versions.last().pages.count() == 2
+
     page = src.versions.last().pages.first()
     pypage = PyPage(id=page.pk, number=page.number)
     items = [PageAndRotOp(page=pypage, angle=0)]
+
+    # It should copy only first page which contains word "cat"
     versions = apply_pages_op(items)
+
+    # now there one more version (originally was only one doc ver)
+    assert versions.count() == 2
     newly_created_version = versions.last()
 
+    # newly create version should have only one page
     assert newly_created_version.pages.count() == 1
+    first_page = newly_created_version.pages.first()
+    # and that page should have word "cat"
+    assert first_page.text == "cat"
+    assert first_page.id != orig_first_page.id
 
 
 @pytest.mark.django_db

@@ -39,9 +39,9 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         items=items
     )
 
-    reuse_text_field(
-        old_version=old_version,
-        new_version=new_version,
+    copy_text_field(
+        src=old_version,
+        dst=new_version,
         page_numbers=[p.number for p in pages]
     )
 
@@ -170,24 +170,24 @@ def reuse_ocr_data(
     return not_copied_ids
 
 
-def reuse_text_field(
-    old_version: PyDocVer,
-    new_version: PyDocVer,
+def copy_text_field(
+    src: PyDocVer,
+    dst: PyDocVer,
     page_numbers: list[int]
 ) -> None:
     logger.debug(
         f"Reuse text field for page numbers={page_numbers}"
-        f" old_version={old_version}"
-        f" new_version={new_version}"
+        f" src={src}"
+        f" dst={dst}"
     )
     streams = collect_text_streams(
-        version=old_version,
+        version=src,
         # list of old_version page numbers
         page_numbers=page_numbers
     )
 
     # updates page.text fields and document_version.text field
-    new_version.update_text_field(streams)
+    dst.update_text_field(streams)
 
 
 def collect_text_streams(

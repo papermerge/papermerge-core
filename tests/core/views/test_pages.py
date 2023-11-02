@@ -93,8 +93,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 404
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_page_view_in_jpg_format(self, _, _x):
+    def test_page_view_in_jpg_format(self, _):
         """
         GET /pages/{id}/
         Accept: image/jpeg
@@ -117,8 +116,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 200
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_page_view_in_text_format(self, _, _x):
+    def test_page_view_in_text_format(self, _):
         """
         GET /pages/{id}/
         Accept: text/plain
@@ -136,8 +134,7 @@ class PageViewTestCase(TestCase):
         assert response.content.decode('utf-8') == 'Hello Page!'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_page_delete(self, _x, _y):
+    def test_page_delete(self, _x):
         """
         DELETE /pages/{id}/
         """
@@ -172,8 +169,7 @@ class PageViewTestCase(TestCase):
         pdf_file.close()
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_page_delete_preserves_text_fields(self, _, _x):
+    def test_page_delete_preserves_text_fields(self, _):
         """
         After deleting a page a new document will be created.
         The pages of new version will reuse text field from document's
@@ -206,8 +202,7 @@ class PageViewTestCase(TestCase):
         assert last_version.text == 'cat'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_page_delete_archived_page(self, _, _x):
+    def test_page_delete_archived_page(self, _):
         """
         Assert that deleting an archived page is not allowed.
         """
@@ -228,8 +223,7 @@ class PageViewTestCase(TestCase):
         assert err_msg == 'Deleting archived page is not allowed'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_delete(self, _, _x):
+    def test_pages_delete(self, _):
         """
         DELETE /pages/
         Content-Type: application/json
@@ -269,8 +263,7 @@ class PageViewTestCase(TestCase):
         pdf_file.close()
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_delete_preserves_text_fields(self, _, _x):
+    def test_pages_delete_preserves_text_fields(self, _):
         """
         After deleting two pages new document will be created.
         The pages of new version will reuse text field from document's
@@ -310,11 +303,9 @@ class PageViewTestCase(TestCase):
         assert last_version.text == 'page 3'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
     def test_document_ver_must_have_at_least_one_page_delete_one_by_one(
         self,
-        _x,
-        _y
+        _x
     ):
         """
         Document version must have at least one page.
@@ -377,8 +368,7 @@ class PageViewTestCase(TestCase):
         pdf_file.close()
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_document_ver_must_have_at_least_one_page_delete_bulk(self, _x, _y):
+    def test_document_ver_must_have_at_least_one_page_delete_bulk(self, _):
         """
         Document version must have at least one page.
 
@@ -406,8 +396,7 @@ class PageViewTestCase(TestCase):
         pdf_file.close()
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_delete_pages_from_archived_version(self, _x, _y):
+    def test_delete_pages_from_archived_version(self, _x):
         """
         Archived document version is any document version which is not last.
         Only last document version is editable - in the context of
@@ -446,8 +435,7 @@ class PageViewTestCase(TestCase):
         assert err_msg == 'Deleting archived page is not allowed'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_reorder(self, _x, _y):
+    def test_pages_reorder(self, _):
         self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         pages_data = [
@@ -477,8 +465,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 204
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_reorder_preserves_text_fields(self, _x, _y):
+    def test_pages_reorder_preserves_text_fields(self, _):
         """
         Test that after changing order of page in the document,
         """
@@ -524,8 +511,7 @@ class PageViewTestCase(TestCase):
         assert pages[1].number == 2
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_reorder_reuses_ocr_data(self, _x, _y):
+    def test_pages_reorder_reuses_ocr_data(self, _):
         """
         Asserts that page reorder reuses correctly OCR data.
 
@@ -586,8 +572,7 @@ class PageViewTestCase(TestCase):
                 assert text == f'I am page {index + 1}'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_rotate(self, _x, _y):
+    def test_pages_rotate(self, _):
         self._upload(self.doc, 'three-pages.pdf')
         pages = self.doc_version.pages.all()
         pages_data = [
@@ -608,8 +593,7 @@ class PageViewTestCase(TestCase):
         assert response.status_code == 204
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_pages_rotate_preserves_text_field(self, _, _x):
+    def test_pages_rotate_preserves_text_field(self, _):
         self._upload(self.doc, 'living-things.pdf')
         pages = self.doc_version.pages.all()
 
@@ -651,8 +635,7 @@ class PageViewTestCase(TestCase):
         assert last_version.text == 'fish cat'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_document_1(self, _x, _y):
+    def test_move_to_document_1(self, _):
         """
         Move two pages from source document to destination document.
 
@@ -712,8 +695,7 @@ class PageViewTestCase(TestCase):
         assert len(pdf_file.pages) == 5
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_document_preserves_text_field(self, _x, _y):
+    def test_move_to_document_preserves_text_field(self, _):
         source = Document.objects.create_document(
             title="source.pdf",
             lang="deu",
@@ -764,8 +746,7 @@ class PageViewTestCase(TestCase):
         assert destination_pages[4].text == 'plant'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_document_reuses_ocr_data_copy_to_position_1(self, _x, _y):
+    def test_move_to_document_reuses_ocr_data_copy_to_position_1(self, _):
         """
         Given two documents doc_a and doc_b, when moving
         page two pages from doc_a to doc_b, OCR data is moved correctly.
@@ -807,8 +788,7 @@ class PageViewTestCase(TestCase):
                 assert text == new_pages_text[index]
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_document_reuses_ocr_data_copy_to_position_0(self, _, _x):
+    def test_move_to_document_reuses_ocr_data_copy_to_position_0(self, _):
         """
         Given two documents doc_a and doc_b, when moving
         page two pages from doc_a to doc_b, OCR data is moved correctly.
@@ -851,8 +831,7 @@ class PageViewTestCase(TestCase):
                 assert text == new_pages_text[index]
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_folder_with_single_page_flag_on(self, _, _x):
+    def test_move_to_folder_with_single_page_flag_on(self, _):
         """
         Move two pages from source document to destination folder
         with single page flag 'on'.
@@ -911,8 +890,7 @@ class PageViewTestCase(TestCase):
             assert len(pdf_file.pages) == 1
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_folder_single_paged_preserves_text_field(self, _, _x):
+    def test_move_to_folder_single_paged_preserves_text_field(self, _):
         source = Document.objects.create_document(
             title="living-things.pdf",
             lang="deu",
@@ -950,8 +928,7 @@ class PageViewTestCase(TestCase):
         assert destination_pages[0].text == 'cat'
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_folder_with_multi_page(self, _, _x):
+    def test_move_to_folder_with_multi_page(self, _):
         """
         Move two pages from source document to destination folder
         with single page flag 'off'.
@@ -1009,8 +986,7 @@ class PageViewTestCase(TestCase):
         assert len(pdf_file.pages) == 2
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_move_to_folder_multi_paged_preserves_text_field(self, _, _x):
+    def test_move_to_folder_multi_paged_preserves_text_field(self, _):
         source = Document.objects.create_document(
             title="three-pages.pdf",
             lang="deu",

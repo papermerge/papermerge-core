@@ -37,8 +37,7 @@ def test_copy_text_field():
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_apply_pages_op(_, __):
+def test_apply_pages_op(_):
     """This test checks if `apply_pages_op` correctly copies
     page text data"""
     user = user_recipe.make()
@@ -80,8 +79,7 @@ def test_apply_pages_op(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_pages_one_single_page_strategy_mix(_, __):
+def test_move_pages_one_single_page_strategy_mix(_):
     """Scenario tests moving of one page from
     src to dst (strategy: mix). Scenario is illustrated
     in following table:
@@ -171,8 +169,7 @@ def test_move_pages_one_single_page_strategy_mix(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_pages_two_pages_strategy_mix(_, __):
+def test_move_pages_two_pages_strategy_mix(_):
     """Scenario tests moving of two pages from
     src to dst (strategy: mix). Scenario is illustrated
     in following table:
@@ -266,8 +263,7 @@ def test_move_pages_two_pages_strategy_mix(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_pages_one_single_page_strategy_replace(_, __):
+def test_move_pages_one_single_page_strategy_replace(_):
     """Scenario tests moving of one page from
     src to dst (strategy: replace). Scenario is illustrated
     in following table:
@@ -338,8 +334,7 @@ def test_move_pages_one_single_page_strategy_replace(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_all_pages_of_the_doc_out_mix(_, __):
+def test_move_all_pages_of_the_doc_out_mix(_):
     """Scenario tests moving of ALL page of source document.
     In this case source document will be entirely deleted:
 
@@ -440,8 +435,7 @@ def test_move_all_pages_of_the_doc_out_mix(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_move_all_pages_of_the_doc_out_replace_strategy(_, __):
+def test_move_all_pages_of_the_doc_out_replace_strategy(_):
     """Scenario tests moving of ALL page of source document.
     In this case source document will be entirely deleted:
 
@@ -521,8 +515,7 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
+def test_extract_two_pages_to_folder_all_pages_in_one_doc(_):
     """Scenario tests extraction of first two pages from
     source document into destination folder.
     Both pages are extracted into one single destination document.
@@ -585,8 +578,7 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_, __):
 
 @pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
-@patch('papermerge.core.signals.generate_page_previews_task')
-def test_extract_two_pages_to_folder_each_page_in_separate_doc(_, __):
+def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     """Scenario tests extraction of first two pages of source document
     into destination folder. Each page is extracted into
     a separate document, as result to new documents are created.

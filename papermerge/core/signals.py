@@ -15,7 +15,7 @@ from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
 from .tasks import delete_user_data as delete_user_data_task
-from .tasks import generate_page_previews_task, ocr_document_task
+from .tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -195,16 +195,6 @@ def worker_shutdown(**_):
     for file in (HEARTBEAT_FILE, READINESS_FILE):
         if file.is_file():
             file.unlink()
-
-
-@receiver(document_post_upload, sender=Document)
-def generate_page_previews(
-    sender,
-    document_version: DocumentVersion,
-    **_
-):
-    """Generates page previews"""
-    generate_page_previews_task.delay(str(document_version.id))
 
 
 @receiver(document_post_upload, sender=Document)

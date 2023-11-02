@@ -38,11 +38,6 @@ PAPERMERGE_NAMESPACE = config.get('main', 'namespace', None)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# Custom signal processor handles connections errors (to elasticsearch)
-# and reports them as warnings. This way, even when no connection to ES
-# is available, documents, folders, pages etc can still be used
-ELASTICSEARCH_DSL_SIGNAL_PROCESSOR = 'papermerge.search.signals.CustomSignalProcessor'  # noqa
-
 MEDIA_URL = config.get(
     'media',
     'url',
@@ -226,27 +221,4 @@ else:
         },
     }
 
-SEARCH_ENGINES_MAP = {
-    'elastic': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'elastic7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'elasticsearch7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'elasticsearch': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'es7': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'es': 'haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine',
-    'solr': 'haystack.backends.solr_backend.SolrEngine',
-    'whoosh': 'haystack.backends.whoosh_backend.WhooshEngine',
-    'xapian': 'xapian_backend.XapianEngine',
-}
-
-HAYSTACK_DOCUMENT_FIELD = 'indexed_content'
-
 search_engine = config.get('search', 'engine', default='xapian')
-
-
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': SEARCH_ENGINES_MAP[search_engine],
-    },
-}
-
-HAYSTACK_SIGNAL_PROCESSOR = 'papermerge.search.signals.SignalProcessor'

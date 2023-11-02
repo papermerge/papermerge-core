@@ -45,8 +45,7 @@ class DownloadDocumentVersionOnlyOwner(TestCase):
         self.client_john.force_authenticate(user=self.john)
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_only_owner_can_download_document_version(self, _1, _2):
+    def test_only_owner_can_download_document_version(self, _1):
         """
         Assert that if user is not the owner of the document he/she won't
         be able to download document versions
@@ -67,8 +66,7 @@ class DownloadDocumentVersionOnlyOwner(TestCase):
         assert response.status_code == 403
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_download_document_version(self, _1, _2):
+    def test_download_document_version(self, _1):
         """Asserts that document version download works"""
         doc = maker.document(
             "s3.pdf",

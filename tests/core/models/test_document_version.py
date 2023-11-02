@@ -1,8 +1,7 @@
 import io
 
-from papermerge.test import TestCase
-from papermerge.core.models import (User, Document)
-from papermerge.test import maker
+from papermerge.core.models import Document, User
+from papermerge.test import TestCase, maker
 
 
 class TestDocumentVersionModel(TestCase):

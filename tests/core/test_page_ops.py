@@ -13,8 +13,9 @@ from papermerge.core.schemas.pages import PageAndRotOp
 from papermerge.test import maker
 from papermerge.test.baker_recipes import folder_recipe, user_recipe
 
+pytestmark = pytest.mark.django_db
 
-@pytest.mark.django_db
+
 def test_copy_text_field():
     doc_ver_x = maker.document_version(
         page_count=2,
@@ -35,7 +36,6 @@ def test_copy_text_field():
     assert doc_ver_y.pages.all()[0].text == "body"
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_apply_pages_op(_):
     """This test checks if `apply_pages_op` correctly copies
@@ -77,7 +77,6 @@ def test_apply_pages_op(_):
     assert first_page.id != orig_first_page.id
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_move_pages_one_single_page_strategy_mix(_):
     """Scenario tests moving of one page from
@@ -167,7 +166,6 @@ def test_move_pages_one_single_page_strategy_mix(_):
     )
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_move_pages_two_pages_strategy_mix(_):
     """Scenario tests moving of two pages from
@@ -261,7 +259,6 @@ def test_move_pages_two_pages_strategy_mix(_):
     ) == PageDir(dst_old_pages[2].id, number=3, name="dst old")
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_move_pages_one_single_page_strategy_replace(_):
     """Scenario tests moving of one page from
@@ -332,7 +329,6 @@ def test_move_pages_one_single_page_strategy_replace(_):
     )
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_move_all_pages_of_the_doc_out_mix(_):
     """Scenario tests moving of ALL page of source document.
@@ -433,7 +429,6 @@ def test_move_all_pages_of_the_doc_out_mix(_):
     )
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_move_all_pages_of_the_doc_out_replace_strategy(_):
     """Scenario tests moving of ALL page of source document.
@@ -513,7 +508,6 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(_):
     )
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_extract_two_pages_to_folder_all_pages_in_one_doc(_):
     """Scenario tests extraction of first two pages from
@@ -576,7 +570,6 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_):
     )
 
 
-@pytest.mark.django_db
 @patch('papermerge.core.signals.ocr_document_task')
 def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     """Scenario tests extraction of first two pages of source document

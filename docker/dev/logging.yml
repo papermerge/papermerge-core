@@ -12,11 +12,13 @@ handlers:
     formatter: verbose
 
 loggers:
-  auth_server:
-    level: DEBUG
-    handlers: [console]
-  papermerge.search.tasks:
-    level: DEBUG
+  celery:
+    level: INFO
+    handlers: [ console ]
+    propagate: no
+    format: verbose
+  papermerge.core:
+    level: INFO
     handlers: [console]
     propagate: no
     format: verbose

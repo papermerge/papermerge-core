@@ -202,7 +202,6 @@ class SearchAfterMoveToFolder(TestCase):
     """
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
     def setUp(self, _, _x):
         super().setUp()
         self.user = User.objects.create_user(username="user")

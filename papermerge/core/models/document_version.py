@@ -6,8 +6,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from papermerge.core.pathlib import abs_docver_path
-from papermerge.core.storage import abs_path
-from papermerge.core.utils import image as image_utils
 
 logger = logging.getLogger(__name__)
 
@@ -73,22 +71,6 @@ class DocumentVersion(models.Model):
 
     def __repr__(self):
         return f"DocumentVersion(id={self.pk}, number={self.number})"
-
-    def generate_previews(self, page_number=None):
-        logger.debug('generate_previews BEGIN')
-        abs_dirname = abs_path(self.document_path.dirname_sidecars())
-
-        if page_number is None:
-            number = 1
-        else:
-            number = page_number
-
-        image_utils.generate_preview(
-            pdf_path=Path(abs_path(self.document_path.url)),
-            output_folder=Path(abs_dirname),
-            size=900,
-            page_number=number
-        )
 
     @property
     def download_url(self):

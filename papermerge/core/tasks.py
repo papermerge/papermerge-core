@@ -119,20 +119,7 @@ def _post_ocr_document(
     )
     update_document_pages(document_id)
 
-    # generate previews for newly created document version (which has OCR)
-    doc = Document.objects.get(pk=document_id)
-    doc_version = doc.versions.last()
-
-    generate_page_previews_task.delay(str(doc_version.id))
-
     return document_id
-
-
-@shared_task
-def generate_page_previews_task(document_version_id):
-    document_version = DocumentVersion.objects.get(id=document_version_id)
-    document_version.generate_previews()
-    return document_version_id
 
 
 def increment_document_version(

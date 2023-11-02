@@ -115,8 +115,7 @@ class TestDocumentModel(TestCase):
         )
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_upload_payload_to_zero_sized_document(self, _x, _y):
+    def test_upload_payload_to_zero_sized_document(self, _x):
         """
         Upon creation document model has associated zero sized document_version
         i.e. document_version.size == 0.
@@ -155,8 +154,7 @@ class TestDocumentModel(TestCase):
             )
 
     @patch('papermerge.core.signals.ocr_document_task')
-    @patch('papermerge.core.signals.generate_page_previews_task')
-    def test_version_bump_from_pages(self, _1, _2):
+    def test_version_bump_from_pages(self, _):
         """
         Move two pages from source document to destination document
         """

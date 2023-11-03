@@ -8,7 +8,8 @@ from salinic import IndexRW, create_engine
 
 from papermerge.core.constants import (INDEX_ADD_NODE, INDEX_ADD_PAGES,
                                        INDEX_REMOVE_NODE, INDEX_UPDATE)
-from papermerge.core.models import BaseTreeNode, DocumentVersion, Page
+from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
+                                    Page)
 from papermerge.core.tasks import ocr_document_task
 from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
 
@@ -60,6 +61,27 @@ def index_add_node(node_id: str):
         index.add(model)
 
 
+@shared_task(name=INDEX_ADD_NODE)
+def index_add_docs(doc_ids: List[str]):
+    """Add list of documents to index"""
+    try:
+        # may happen when using xapian search backend and multiple
+        # workers try to get write access to the index
+        engine = create_engine(settings.SEARCH_URL)
+    except Exception as e:
+        logger.warning(f"Exception '{e}' occurred while opening engine")
+        logger.warning(f"Index add for {doc_ids} interrupted")
+        return
+
+    index = IndexRW(engine, schema=Model)
+
+    docs = Document.objects.filter(pk__in=doc_ids)
+
+    for doc in docs:
+        model = from_document(doc)
+        index.add(model)
+
+
 @shared_task(name=INDEX_REMOVE_NODE)
 def remove_folder_or_page_from_index(item_ids: List[str]):
     """Removes folder or page from search index
@@ -107,17 +129,43 @@ def add_pages_to_index(page_ids: List[str]):
 
 
 @shared_task(name=INDEX_UPDATE)
-def update_index(add_page_ids: List[str], remove_page_ids: List[str]):
+def update_index(add_ver_id: str, remove_ver_id: str):
     """Updates index
 
-    Removes `remove_page_ids` and adds `add_page_ids` from index in
-    one "transaction".
+    Removes pages of `remove_ver_id` document version and adds
+    pages of `add_ver_id` from/to index in one "transaction".
     """
     logger.debug(
-        f"Index Update: add={add_page_ids}, remove={remove_page_ids}"
+        f"Index Update: add={add_ver_id}, remove={remove_ver_id}"
     )
-    remove_folder_or_page_from_index(remove_page_ids)
-    add_pages_to_index(add_page_ids)
+    add_ver = None
+    remove_ver = None
+    try:
+        add_ver = DocumentVersion.objects.get(pk=add_ver_id)
+    except DocumentVersion.DoesNotExist:
+        logger.debug(
+            f"Index add doc version {add_ver_id} not found."
+        )
+    try:
+        remove_ver = DocumentVersion.objects.get(pk=remove_ver_id)
+    except DocumentVersion.DoesNotExist:
+        logger.warning(f"Index remove doc version {remove_ver_id} not found")
+
+    if add_ver:  # doc ver is there, but does it have pages?
+        add_page_ids = [str(page.id) for page in add_ver.pages.all()]
+        if len(add_page_ids) > 0:
+            # doc ver is there and it has pages
+            add_pages_to_index(add_page_ids)
+        else:
+            logger.debug("Empty page ids. Nothing to add to index")
+
+    if remove_ver:  # doc ver is there, but does it have pages?
+        remove_page_ids = [str(page.id) for page in remove_ver.pages.all()]
+        if len(remove_page_ids) > 0:
+            # doc ver is there and it has pages
+            remove_folder_or_page_from_index(remove_page_ids)
+        else:
+            logger.debug("Empty page ids. Nothing to remove from index")
 
 
 def from_page(page_id: str) -> Model:
@@ -182,9 +230,13 @@ def from_folder(node: BaseTreeNode) -> Model:
     return index_entity
 
 
-def from_document(node: BaseTreeNode) -> List[Model]:
+def from_document(node: BaseTreeNode | Document) -> List[Model]:
     result = []
-    doc = node.document
+    if isinstance(node, BaseTreeNode):
+        doc = node.document
+    else:
+        doc = node  # i.e. node is instance of Document
+
     last_ver: DocumentVersion = doc.versions.last()
 
     for page in last_ver.pages.all():

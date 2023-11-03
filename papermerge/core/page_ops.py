@@ -8,7 +8,7 @@ from typing import List
 from celery import current_app
 from pikepdf import Pdf
 
-from papermerge.core.constants import INDEX_UPDATE
+from papermerge.core.constants import INDEX_ADD_DOCS, INDEX_UPDATE
 from papermerge.core.models import Document, Folder, Page
 from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
@@ -46,8 +46,8 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     )
 
     notify_index_update(
-        remove_page_ids=[str(p.id) for p in old_version.pages.all()],
-        add_page_ids=[str(p.id) for p in new_version.pages.all()]
+        remove_ver_id=str(old_version.id),
+        add_ver_id=str(new_version.id)
     )
 
     return doc.versions.all()
@@ -302,6 +302,10 @@ def move_pages_mix(
         src_old_version.document.delete()
         return [None, dst_new_version.document]
 
+    notify_index_update(
+        add_ver_id=str(dst_new_version.id),
+        remove_ver_id=str(dst_old_version.id)
+    )
     return [src_new_version.document, dst_new_version.document]
 
 
@@ -357,6 +361,10 @@ def move_pages_replace(
         src_old_version.document.delete()
         return [None, dst_new_version.document]
 
+    notify_index_update(
+        add_ver_id=str(dst_new_version.id),
+        remove_ver_id=str(dst_old_version.id)
+    )
     return [src_new_version.document, dst_new_version.document]
 
 
@@ -397,6 +405,8 @@ def extract_pages(
         target_docs = [new_docs]
     else:
         target_docs = new_docs
+
+    notify_index_add_docs([str(doc.id) for doc in target_docs])
 
     if old_doc_ver.pages.count() == moved_pages_count:
         # all source pages were extracted, document should
@@ -481,6 +491,8 @@ def copy_pages(
     by IDs are copied into newly created destination doc version.
 
     The OCR data/page folder is copied along (reused).
+
+    Also sends INDEX UPDATE notification
     """
     moved_pages = Page.objects.filter(pk__in=page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -516,6 +528,11 @@ def copy_pages(
             f"Pages with IDs {not_copied_ids} do not have OCR data"
         )
 
+    notify_index_update(
+        remove_ver_id=str(src_old_version.id),
+        add_ver_id=str(src_new_version.id)
+    )
+
     return [
         src_old_version,  # orig. ver where pages were copied from
         src_new_version,  # ver where pages were copied to
@@ -530,3 +547,8 @@ def notify_index_update(
 ):
     """Sends tasks to the index to remove/add pages"""
     current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))
+
+
+@skip_in_tests
+def notify_index_add_docs(add_doc_ids: List[str]):
+    current_app.send_task(INDEX_ADD_DOCS, add_doc_ids)

@@ -6,8 +6,7 @@ from celery.signals import task_success
 from django.conf import settings
 from salinic import IndexRW, create_engine
 
-from papermerge.core.constants import (INDEX_ADD_NODE, INDEX_ADD_PAGES,
-                                       INDEX_REMOVE_NODE, INDEX_UPDATE)
+from papermerge.core import constants
 from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
                                     Page)
 from papermerge.core.tasks import ocr_document_task
@@ -28,7 +27,7 @@ def task_success_notifier(sender=None, **kwargs):
     index_add_node(kwargs['result'])
 
 
-@shared_task(name=INDEX_ADD_NODE)
+@shared_task(name=constants.INDEX_ADD_NODE)
 def index_add_node(node_id: str):
     """Add node to the search index
 
@@ -61,7 +60,7 @@ def index_add_node(node_id: str):
         index.add(model)
 
 
-@shared_task(name=INDEX_ADD_NODE)
+@shared_task(name=constants.INDEX_ADD_DOCS)
 def index_add_docs(doc_ids: List[str]):
     """Add list of documents to index"""
     try:
@@ -82,7 +81,7 @@ def index_add_docs(doc_ids: List[str]):
         index.add(model)
 
 
-@shared_task(name=INDEX_REMOVE_NODE)
+@shared_task(name=constants.INDEX_REMOVE_NODE)
 def remove_folder_or_page_from_index(item_ids: List[str]):
     """Removes folder or page from search index
     """
@@ -110,7 +109,7 @@ def remove_folder_or_page_from_index(item_ids: List[str]):
     logger.debug('End of remove_folder_or_page_from_index')
 
 
-@shared_task(name=INDEX_ADD_PAGES)
+@shared_task(name=constants.INDEX_ADD_PAGES)
 def add_pages_to_index(page_ids: List[str]):
     try:
         # may happen when using xapian search backend and multiple
@@ -125,10 +124,12 @@ def add_pages_to_index(page_ids: List[str]):
     index_entities = [from_page(page_id) for page_id in page_ids]
 
     for model in index_entities:
+        logger.debug(f"Adding model={model}")
+        logger.debug(f"Model.text = {model.text}")
         index.add(model)
 
 
-@shared_task(name=INDEX_UPDATE)
+@shared_task(name=constants.INDEX_UPDATE)
 def update_index(add_ver_id: str, remove_ver_id: str):
     """Updates index
 

@@ -4,8 +4,9 @@ from unittest.mock import patch
 import pytest
 
 from papermerge.core.models import Document
-from papermerge.core.page_ops import (apply_pages_op, copy_text_field,
-                                      extract_pages, move_pages)
+from papermerge.core.page_ops import (apply_pages_op, copy_pages,
+                                      copy_text_field, extract_pages,
+                                      move_pages)
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
 from papermerge.core.schemas.pages import Page as PyPage
@@ -632,6 +633,40 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     ) == PageDir(
         saved_src_pages_ids[1], number=2, name="src old"
     )
+
+
+@patch('papermerge.core.signals.ocr_document_task')
+def test_copy_pages(_):
+    """Scenario
+
+         copy page 1
+    ver X  ->  ver X + 1
+     S1         S1
+     S2
+    """
+    user = user_recipe.make()
+    # 1. create a doc with two pages
+    # first page has word "cat"
+    # second page has word "dog"
+    src = maker.document(
+        resource='living-things.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    doc_ver = src.versions.last()
+    orig_first_page = src.versions.last().pages.all()[0]
+    orig_second_page = src.versions.last().pages.all()[1]
+    orig_first_page.text = "cat"
+    orig_second_page.text = "dog"
+    orig_first_page.save()
+    orig_second_page.save()
+    pages_to_copy = [doc_ver.pages.first().id]
+
+    [old_ver, new_ver, page_count] = copy_pages(pages_to_copy)
+
+    assert new_ver.pages.count() == 1
+    assert ['cat'] == [p.text for p in new_ver.pages.all()]
+    assert new_ver.text == 'cat'
 
 
 class PageDir:

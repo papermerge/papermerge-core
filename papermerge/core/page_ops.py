@@ -528,6 +528,12 @@ def copy_pages(
             f"Pages with IDs {not_copied_ids} do not have OCR data"
         )
 
+    copy_text_field(
+        src=src_old_version,
+        dst=src_new_version,
+        page_numbers=[p.number for p in moved_pages]
+    )
+
     notify_index_update(
         remove_ver_id=str(src_old_version.id),
         add_ver_id=str(src_new_version.id)
@@ -542,13 +548,14 @@ def copy_pages(
 
 @skip_in_tests
 def notify_index_update(
-    add_page_ids: List[str],
-    remove_page_ids: List[str]
+    add_ver_id: str,
+    remove_ver_id: str
 ):
     """Sends tasks to the index to remove/add pages"""
-    current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))
+    current_app.send_task(INDEX_UPDATE, (add_ver_id, remove_ver_id))
 
 
 @skip_in_tests
 def notify_index_add_docs(add_doc_ids: List[str]):
-    current_app.send_task(INDEX_ADD_DOCS, add_doc_ids)
+    logger.debug(f"Sending task {INDEX_ADD_DOCS} with {add_doc_ids}")
+    current_app.send_task(INDEX_ADD_DOCS, (add_doc_ids, ))

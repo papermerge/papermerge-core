@@ -77,8 +77,9 @@ def index_add_docs(doc_ids: List[str]):
     docs = Document.objects.filter(pk__in=doc_ids)
 
     for doc in docs:
-        model = from_document(doc)
-        index.add(model)
+        models = from_document(doc)
+        for model in models:
+            index.add(model)
 
 
 @shared_task(name=constants.INDEX_REMOVE_NODE)
@@ -97,7 +98,9 @@ def remove_folder_or_page_from_index(item_ids: List[str]):
         return
 
     index = IndexRW(engine, schema=Model)
-
+    logger.debug(
+        f"Remove pages or folder from index len(item_ids)= {len(item_ids)}"
+    )
     for item_id in item_ids:
         try:
             logger.debug(f'index remove {item_id}')
@@ -122,7 +125,9 @@ def add_pages_to_index(page_ids: List[str]):
 
     index = IndexRW(engine, schema=Model)
     index_entities = [from_page(page_id) for page_id in page_ids]
-
+    logger.debug(
+        f"Add pages to index len(index_entities)= {len(index_entities)}"
+    )
     for model in index_entities:
         logger.debug(f"Adding model={model}")
         logger.debug(f"Model.text = {model.text}")

@@ -6,13 +6,30 @@ from celery.signals import task_success
 from django.conf import settings
 from salinic import IndexRW, create_engine
 
-from papermerge.core.constants import (INDEX_ADD_NODE, INDEX_ADD_PAGES,
-                                       INDEX_REMOVE_NODE, INDEX_UPDATE)
-from papermerge.core.models import BaseTreeNode, DocumentVersion, Page
+from papermerge.core import constants
+from papermerge.core.models import (BaseTreeNode, Document, DocumentVersion,
+                                    Page)
 from papermerge.core.tasks import ocr_document_task
 from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
 
 logger = logging.getLogger(__name__)
+
+
+RETRY_KWARGS = {
+    'max_retries': 7,  # number of times to retry the task
+    'countdown': 5  # Time in seconds to delay the retry for.
+}
+
+
+def get_index():
+    try:
+        # may happen when using xapian search backend and multiple
+        # workers try to get write access to the index
+        engine = create_engine(settings.SEARCH_URL)
+    except Exception as e:
+        logger.warning(f"Exception '{e}' occurred while opening engine")
+
+    return IndexRW(engine, schema=Model)
 
 
 @task_success.connect(sender=ocr_document_task)
@@ -27,7 +44,11 @@ def task_success_notifier(sender=None, **kwargs):
     index_add_node(kwargs['result'])
 
 
-@shared_task(name=INDEX_ADD_NODE)
+@shared_task(
+    name=constants.INDEX_ADD_NODE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def index_add_node(node_id: str):
     """Add node to the search index
 
@@ -36,47 +57,54 @@ def index_add_node(node_id: str):
     In other words, if folder was already indexed (added before), its record
     in index will be updated otherwise its record will be inserted.
     """
-    try:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index add for {node_id} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
-
     node = BaseTreeNode.objects.get(pk=node_id)
 
     logger.debug(f'ADD node title={node.title} ID={node.id} to INDEX')
+    index = get_index()
 
     if node.is_document:
         models = from_document(node)
     else:
         models = [from_folder(node)]
 
+    logger.debug(f"Adding to index {models}")
     for model in models:
         index.add(model)
 
 
-@shared_task(name=INDEX_REMOVE_NODE)
+@shared_task(
+    name=constants.INDEX_ADD_DOCS,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
+def index_add_docs(doc_ids: List[str]):
+    """Add list of documents to index"""
+    logger.debug(f"Add docs with {doc_ids} BEGIN")
+    docs = Document.objects.filter(pk__in=doc_ids)
+    index = get_index()
+
+    for doc in docs:
+        models = from_document(doc)
+        for model in models:
+            logger.debug(f"Adding {model} to index")
+            index.add(model)
+
+    logger.debug(f"Add docs with {doc_ids} END")
+
+
+@shared_task(
+    name=constants.INDEX_REMOVE_NODE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def remove_folder_or_page_from_index(item_ids: List[str]):
     """Removes folder or page from search index
     """
     logger.debug(f'Removing folder or page {item_ids} from index')
-    try:
-        logger.debug(f'Creating engine {settings.SEARCH_URL}')
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index remove for {item_ids} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
-
+    logger.debug(
+        f"Remove pages or folder from index len(item_ids)= {len(item_ids)}"
+    )
+    index = get_index()
     for item_id in item_ids:
         try:
             logger.debug(f'index remove {item_id}')
@@ -88,36 +116,63 @@ def remove_folder_or_page_from_index(item_ids: List[str]):
     logger.debug('End of remove_folder_or_page_from_index')
 
 
-@shared_task(name=INDEX_ADD_PAGES)
+@shared_task(
+    name=constants.INDEX_ADD_PAGES,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def add_pages_to_index(page_ids: List[str]):
-    try:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index add for {page_ids} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
     index_entities = [from_page(page_id) for page_id in page_ids]
-
+    logger.debug(
+        f"Add pages to index: {index_entities}"
+    )
+    index = get_index()
     for model in index_entities:
         index.add(model)
 
 
-@shared_task(name=INDEX_UPDATE)
-def update_index(add_page_ids: List[str], remove_page_ids: List[str]):
+@shared_task(
+    name=constants.INDEX_UPDATE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
+def update_index(add_ver_id: str, remove_ver_id: str):
     """Updates index
 
-    Removes `remove_page_ids` and adds `add_page_ids` from index in
-    one "transaction".
+    Removes pages of `remove_ver_id` document version and adds
+    pages of `add_ver_id` from/to index in one "transaction".
     """
     logger.debug(
-        f"Index Update: add={add_page_ids}, remove={remove_page_ids}"
+        f"Index Update: add={add_ver_id}, remove={remove_ver_id}"
     )
-    remove_folder_or_page_from_index(remove_page_ids)
-    add_pages_to_index(add_page_ids)
+    add_ver = None
+    remove_ver = None
+    try:
+        add_ver = DocumentVersion.objects.get(pk=add_ver_id)
+    except DocumentVersion.DoesNotExist:
+        logger.debug(
+            f"Index add doc version {add_ver_id} not found."
+        )
+    try:
+        remove_ver = DocumentVersion.objects.get(pk=remove_ver_id)
+    except DocumentVersion.DoesNotExist:
+        logger.warning(f"Index remove doc version {remove_ver_id} not found")
+
+    if add_ver:  # doc ver is there, but does it have pages?
+        add_page_ids = [str(page.id) for page in add_ver.pages.all()]
+        if len(add_page_ids) > 0:
+            # doc ver is there and it has pages
+            add_pages_to_index(add_page_ids)
+        else:
+            logger.debug("Empty page ids. Nothing to add to index")
+
+    if remove_ver:  # doc ver is there, but does it have pages?
+        remove_page_ids = [str(page.id) for page in remove_ver.pages.all()]
+        if len(remove_page_ids) > 0:
+            # doc ver is there and it has pages
+            remove_folder_or_page_from_index(remove_page_ids)
+        else:
+            logger.debug("Empty page ids. Nothing to remove from index")
 
 
 def from_page(page_id: str) -> Model:
@@ -182,9 +237,13 @@ def from_folder(node: BaseTreeNode) -> Model:
     return index_entity
 
 
-def from_document(node: BaseTreeNode) -> List[Model]:
+def from_document(node: BaseTreeNode | Document) -> List[Model]:
     result = []
-    doc = node.document
+    if isinstance(node, BaseTreeNode):
+        doc = node.document
+    else:
+        doc = node  # i.e. node is instance of Document
+
     last_ver: DocumentVersion = doc.versions.last()
 
     for page in last_ver.pages.all():

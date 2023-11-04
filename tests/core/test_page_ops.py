@@ -5,7 +5,8 @@ import pytest
 
 from papermerge.core.models import Document
 from papermerge.core.page_ops import (apply_pages_op, copy_text_field,
-                                      extract_pages, move_pages)
+                                      copy_without_pages, extract_pages,
+                                      move_pages)
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
 from papermerge.core.schemas.pages import Page as PyPage
@@ -602,8 +603,14 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
         if page.number <= 2
     ])
 
-    [result_old_doc, result_new_docs] = extract_pages(
-        # we are moving out all pages of the source doc version
+    # add some text to the source version pages
+    for p in src_ver.pages.all():
+        p.text = f"I am page number {p.number}!"
+        p.save()
+
+    # page extraction / function under test (FUD)
+    [result_old_doc, result_new_docs] = extract_pages(  # FUD
+        # we are moving out first two pages of the source doc version
         source_page_ids=[
             page.id for page in src_ver.pages.all() if page.number <= 2
         ],
@@ -627,11 +634,52 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     ) == PageDir(
         saved_src_pages_ids[0], number=1, name="src old"
     )
+    # destination page must be same as first source page
+    assert dst_pages1[0].text == src_ver.pages.all()[0].text
+
     assert PageDir(
         dst_pages2[0].id, number=1, name="dst2 newly create doc"
     ) == PageDir(
         saved_src_pages_ids[1], number=2, name="src old"
     )
+    # destination page must be same as second source page
+    assert dst_pages2[0].text == src_ver.pages.all()[1].text
+
+
+@patch('papermerge.core.signals.ocr_document_task')
+def test_copy_without_pages(_):
+    """Scenario
+
+         copy without page 1
+    ver X  ->  ver X + 1
+     S1         S2
+     S2
+    """
+    user = user_recipe.make()
+    # 1. create a doc with two pages
+    # first page has word "cat"
+    # second page has word "dog"
+    src = maker.document(
+        resource='living-things.pdf',
+        user=user,
+        include_ocr_data=True
+    )
+    orig_doc_ver = src.versions.last()
+    orig_first_page = orig_doc_ver.pages.all()[0]
+    orig_second_page = orig_doc_ver.pages.all()[1]
+    orig_first_page.text = "cat"
+    orig_second_page.text = "dog"
+    orig_first_page.save()
+    orig_second_page.save()
+    # page containing "cat" / first page is left behind
+    pages_to_leave_behind = [orig_doc_ver.pages.first().id]
+
+    [_, new_ver, _] = copy_without_pages(pages_to_leave_behind)
+
+    assert new_ver.pages.count() == 1
+    # new version contains only 'dog'
+    assert ['dog'] == [p.text for p in new_ver.pages.all()]
+    assert new_ver.text == 'dog'
 
 
 class PageDir:

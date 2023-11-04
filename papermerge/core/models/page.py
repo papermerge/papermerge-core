@@ -134,10 +134,6 @@ class Page(models.Model):
 
         Returns text read from IO stream
         """
-        logger.debug(
-            'update_text_field:'
-            f'len(page.stripped_text)=={len(self.stripped_text)}'
-        )
         self.text = stream.read()
         self.save()
 

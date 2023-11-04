@@ -8,7 +8,7 @@ from typing import List
 from celery import current_app
 from pikepdf import Pdf
 
-from papermerge.core.constants import INDEX_UPDATE
+from papermerge.core.constants import INDEX_ADD_DOCS, INDEX_UPDATE
 from papermerge.core.models import Document, Folder, Page
 from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
@@ -46,8 +46,8 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     )
 
     notify_index_update(
-        remove_page_ids=[str(p.id) for p in old_version.pages.all()],
-        add_page_ids=[str(p.id) for p in new_version.pages.all()]
+        remove_ver_id=str(old_version.id),
+        add_ver_id=str(new_version.id)
     )
 
     return doc.versions.all()
@@ -185,7 +185,6 @@ def copy_text_field(
         # list of old_version page numbers
         page_numbers=page_numbers
     )
-
     # updates page.text fields and document_version.text field
     dst.update_text_field(streams)
 
@@ -251,7 +250,7 @@ def move_pages_mix(
         src_old_version,
         src_new_version,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -302,6 +301,10 @@ def move_pages_mix(
         src_old_version.document.delete()
         return [None, dst_new_version.document]
 
+    notify_index_update(
+        add_ver_id=str(dst_new_version.id),
+        remove_ver_id=str(dst_old_version.id)
+    )
     return [src_new_version.document, dst_new_version.document]
 
 
@@ -321,7 +324,7 @@ def move_pages_replace(
         src_old_version,
         src_new_version,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -357,6 +360,10 @@ def move_pages_replace(
         src_old_version.document.delete()
         return [None, dst_new_version.document]
 
+    notify_index_update(
+        add_ver_id=str(dst_new_version.id),
+        remove_ver_id=str(dst_old_version.id)
+    )
     return [src_new_version.document, dst_new_version.document]
 
 
@@ -376,7 +383,7 @@ def extract_pages(
         old_doc_ver,
         new_doc_ver,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     if strategy == ExtractStrategy.ONE_PAGE_PER_DOC:
         new_docs = extract_to_single_paged_docs(
@@ -398,6 +405,13 @@ def extract_pages(
     else:
         target_docs = new_docs
 
+    for doc in target_docs:
+        logger.debug(
+            f"Notifying index to add doc.title={doc.title} doc.id={doc.id}"
+        )
+        logger.debug(f"Doc last version={doc.versions.last()}")
+    notify_index_add_docs([str(doc.id) for doc in target_docs])
+
     if old_doc_ver.pages.count() == moved_pages_count:
         # all source pages were extracted, document should
         # be deleted as its last version does not contain
@@ -413,7 +427,11 @@ def extract_to_single_paged_docs(
     target_folder_id: uuid.UUID,
     title_format: str
 ) -> List[Document]:
+    """Extracts given pages into separate documents
 
+    Each source page will end up in a separate document
+    located in target folder.
+    """
     pages = Page.objects.filter(pk__in=source_page_ids)
     dst_folder = Folder.objects.get(pk=target_folder_id)
     result = []
@@ -437,6 +455,12 @@ def extract_to_single_paged_docs(
             target_ids=[doc_version.pages.first().id]
         )
 
+        copy_text_field(
+            src=pages.first().document_version,
+            dst=doc_version,
+            page_numbers=[page.number]
+        )
+
     return result
 
 
@@ -445,6 +469,11 @@ def extract_to_multi_paged_doc(
     target_folder_id: uuid.UUID,
     title_format: str
 ) -> Document:
+    """Extracts given pages into separate documents
+
+    All source pages will end up in a single document
+    located in target folder.
+    """
     title = f'{title_format}-{uuid.uuid4()}.pdf'
 
     pages = Page.objects.filter(pk__in=source_page_ids)
@@ -466,21 +495,27 @@ def extract_to_multi_paged_doc(
         target_ids=[page.id for page in dst_version.pages.order_by('number')]
     )
 
+    copy_text_field(
+        src=pages.first().document_version,
+        dst=dst_version,
+        page_numbers=[p.number for p in pages]
+    )
+
     return new_doc
 
 
-def copy_pages(
+def copy_without_pages(
     page_ids: List[uuid.UUID]
 ) -> [PyDocVer, PyDocVer, int]:
-    """Copy pages from src doc version to dst doc version
+    """Copy all pages  WHICH ARE NOT in `page_ids` list from src to dst
 
     All pages are assumed to be from same source document version.
-    Source document version is the doc ver of the first page
-    (again, all pages are assumed to be part of same doc ver).
-    The destination doc ver is created. All pages referenced
-    by IDs are copied into newly created destination doc version.
+    Source is the document version of the first page.
+    Destination will be created as new document version.
+    Destination will have all source pages WHICH ARE NOT in the `page_ids` list.
 
-    The OCR data/page folder is copied along (reused).
+    The OCR data/page folder reused.
+    Also sends INDEX UPDATE notification.
     """
     moved_pages = Page.objects.filter(pk__in=page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -503,7 +538,7 @@ def copy_pages(
     src_keys = [  # IDs of the pages which were not removed
         page.id
         for page in src_old_version.pages.order_by('number')
-        if not (page.id in moved_page_ids)
+        if not (page.id in moved_page_ids)  # Notice the negation
     ]
 
     dst_values = [
@@ -516,6 +551,21 @@ def copy_pages(
             f"Pages with IDs {not_copied_ids} do not have OCR data"
         )
 
+    copy_text_field(
+        src=src_old_version,
+        dst=src_new_version,
+        page_numbers=[
+            p.number
+            for p in src_old_version.pages.all()
+            if not (p.id in moved_page_ids)  # Notice the negation
+        ]
+    )
+
+    notify_index_update(
+        remove_ver_id=str(src_old_version.id),
+        add_ver_id=str(src_new_version.id)
+    )
+
     return [
         src_old_version,  # orig. ver where pages were copied from
         src_new_version,  # ver where pages were copied to
@@ -525,8 +575,14 @@ def copy_pages(
 
 @skip_in_tests
 def notify_index_update(
-    add_page_ids: List[str],
-    remove_page_ids: List[str]
+    add_ver_id: str,
+    remove_ver_id: str
 ):
     """Sends tasks to the index to remove/add pages"""
-    current_app.send_task(INDEX_UPDATE, (add_page_ids, remove_page_ids))
+    current_app.send_task(INDEX_UPDATE, (add_ver_id, remove_ver_id))
+
+
+@skip_in_tests
+def notify_index_add_docs(add_doc_ids: List[str]):
+    logger.debug(f"Sending task {INDEX_ADD_DOCS} with {add_doc_ids}")
+    current_app.send_task(INDEX_ADD_DOCS, (add_doc_ids, ))

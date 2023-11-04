@@ -185,7 +185,6 @@ def copy_text_field(
         # list of old_version page numbers
         page_numbers=page_numbers
     )
-
     # updates page.text fields and document_version.text field
     dst.update_text_field(streams)
 
@@ -251,7 +250,7 @@ def move_pages_mix(
         src_old_version,
         src_new_version,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -325,7 +324,7 @@ def move_pages_replace(
         src_old_version,
         src_new_version,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -384,7 +383,7 @@ def extract_pages(
         old_doc_ver,
         new_doc_ver,
         moved_pages_count
-    ] = copy_pages(source_page_ids)
+    ] = copy_without_pages(source_page_ids)
 
     if strategy == ExtractStrategy.ONE_PAGE_PER_DOC:
         new_docs = extract_to_single_paged_docs(
@@ -496,20 +495,18 @@ def extract_to_multi_paged_doc(
     return new_doc
 
 
-def copy_pages(
+def copy_without_pages(
     page_ids: List[uuid.UUID]
 ) -> [PyDocVer, PyDocVer, int]:
-    """Copy pages from src doc version to dst doc version
+    """Copy all pages  WHICH ARE NOT in `page_ids` list from src to dst
 
     All pages are assumed to be from same source document version.
-    Source document version is the doc ver of the first page
-    (again, all pages are assumed to be part of same doc ver).
-    The destination doc ver is created. All pages referenced
-    by IDs are copied into newly created destination doc version.
+    Source is the document version of the first page.
+    Destination will be created as new document version.
+    Destination will have all source pages WHICH ARE NOT in the `page_ids` list.
 
-    The OCR data/page folder is copied along (reused).
-
-    Also sends INDEX UPDATE notification
+    The OCR data/page folder reused.
+    Also sends INDEX UPDATE notification.
     """
     moved_pages = Page.objects.filter(pk__in=page_ids)
     moved_page_ids = [page.id for page in moved_pages]
@@ -532,7 +529,7 @@ def copy_pages(
     src_keys = [  # IDs of the pages which were not removed
         page.id
         for page in src_old_version.pages.order_by('number')
-        if not (page.id in moved_page_ids)
+        if not (page.id in moved_page_ids)  # Notice the negation
     ]
 
     dst_values = [
@@ -548,7 +545,11 @@ def copy_pages(
     copy_text_field(
         src=src_old_version,
         dst=src_new_version,
-        page_numbers=[p.number for p in moved_pages]
+        page_numbers=[
+            p.number
+            for p in src_old_version.pages.all()
+            if not (p.id in moved_page_ids)  # Notice the negation
+        ]
     )
 
     notify_index_update(

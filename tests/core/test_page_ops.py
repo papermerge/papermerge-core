@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 
 from papermerge.core.models import Document
-from papermerge.core.page_ops import (apply_pages_op, copy_pages,
-                                      copy_text_field, extract_pages,
+from papermerge.core.page_ops import (apply_pages_op, copy_text_field,
+                                      copy_without_pages, extract_pages,
                                       move_pages)
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
@@ -636,12 +636,12 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
 
 
 @patch('papermerge.core.signals.ocr_document_task')
-def test_copy_pages(_):
+def test_copy_without_pages(_):
     """Scenario
 
-         copy page 1
+         copy without page 1
     ver X  ->  ver X + 1
-     S1         S1
+     S1         S2
      S2
     """
     user = user_recipe.make()
@@ -653,20 +653,22 @@ def test_copy_pages(_):
         user=user,
         include_ocr_data=True
     )
-    doc_ver = src.versions.last()
-    orig_first_page = src.versions.last().pages.all()[0]
-    orig_second_page = src.versions.last().pages.all()[1]
+    orig_doc_ver = src.versions.last()
+    orig_first_page = orig_doc_ver.pages.all()[0]
+    orig_second_page = orig_doc_ver.pages.all()[1]
     orig_first_page.text = "cat"
     orig_second_page.text = "dog"
     orig_first_page.save()
     orig_second_page.save()
-    pages_to_copy = [doc_ver.pages.first().id]
+    # page containing "cat" / first page is left behind
+    pages_to_leave_behind = [orig_doc_ver.pages.first().id]
 
-    [old_ver, new_ver, page_count] = copy_pages(pages_to_copy)
+    [_, new_ver, _] = copy_without_pages(pages_to_leave_behind)
 
     assert new_ver.pages.count() == 1
-    assert ['cat'] == [p.text for p in new_ver.pages.all()]
-    assert new_ver.text == 'cat'
+    # new version contains only 'dog'
+    assert ['dog'] == [p.text for p in new_ver.pages.all()]
+    assert new_ver.text == 'dog'
 
 
 class PageDir:

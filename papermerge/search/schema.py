@@ -98,6 +98,8 @@ class Model(Schema):
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\
             f'document_id={self.document_id},' \
+            f'number={self.page_number},' \
+            f'text=|{self.text}|,' \
             f'type={self.entity_type})'
 
     def get_idx_value__tags(self):

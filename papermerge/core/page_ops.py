@@ -406,6 +406,11 @@ def extract_pages(
     else:
         target_docs = new_docs
 
+    for doc in target_docs:
+        logger.debug(
+            f"Notifying index to add doc.title={doc.title} doc.id={doc.id}"
+        )
+        logger.debug(f"Doc last version={doc.versions.last()}")
     notify_index_add_docs([str(doc.id) for doc in target_docs])
 
     if old_doc_ver.pages.count() == moved_pages_count:
@@ -447,6 +452,12 @@ def extract_to_single_paged_docs(
             target_ids=[doc_version.pages.first().id]
         )
 
+        copy_text_field(
+            src=pages.first().document_version,
+            dst=doc_version,
+            page_numbers=[p.number for p in pages]
+        )
+
     return result
 
 
@@ -474,6 +485,12 @@ def extract_to_multi_paged_doc(
     reuse_ocr_data(
         source_ids=[page.id for page in pages.order_by('number')],
         target_ids=[page.id for page in dst_version.pages.order_by('number')]
+    )
+
+    copy_text_field(
+        src=pages.first().document_version,
+        dst=dst_version,
+        page_numbers=[p.number for p in pages]
     )
 
     return new_doc

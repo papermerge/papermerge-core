@@ -15,6 +15,23 @@ from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
 logger = logging.getLogger(__name__)
 
 
+RETRY_KWARGS = {
+    'max_retries': 7,  # number of times to retry the task
+    'countdown': 5  # Time in seconds to delay the retry for.
+}
+
+
+def get_index():
+    try:
+        # may happen when using xapian search backend and multiple
+        # workers try to get write access to the index
+        engine = create_engine(settings.SEARCH_URL)
+    except Exception as e:
+        logger.warning(f"Exception '{e}' occurred while opening engine")
+
+    return IndexRW(engine, schema=Model)
+
+
 @task_success.connect(sender=ocr_document_task)
 def task_success_notifier(sender=None, **kwargs):
     """
@@ -27,7 +44,11 @@ def task_success_notifier(sender=None, **kwargs):
     index_add_node(kwargs['result'])
 
 
-@shared_task(name=constants.INDEX_ADD_NODE)
+@shared_task(
+    name=constants.INDEX_ADD_NODE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def index_add_node(node_id: str):
     """Add node to the search index
 
@@ -36,71 +57,54 @@ def index_add_node(node_id: str):
     In other words, if folder was already indexed (added before), its record
     in index will be updated otherwise its record will be inserted.
     """
-    try:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index add for {node_id} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
-
     node = BaseTreeNode.objects.get(pk=node_id)
 
     logger.debug(f'ADD node title={node.title} ID={node.id} to INDEX')
+    index = get_index()
 
     if node.is_document:
         models = from_document(node)
     else:
         models = [from_folder(node)]
 
+    logger.debug(f"Adding to index {models}")
     for model in models:
         index.add(model)
 
 
-@shared_task(name=constants.INDEX_ADD_DOCS)
+@shared_task(
+    name=constants.INDEX_ADD_DOCS,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def index_add_docs(doc_ids: List[str]):
     """Add list of documents to index"""
-    try:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index add for {doc_ids} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
-
+    logger.debug(f"Add docs with {doc_ids} BEGIN")
     docs = Document.objects.filter(pk__in=doc_ids)
+    index = get_index()
 
     for doc in docs:
         models = from_document(doc)
         for model in models:
+            logger.debug(f"Adding {model} to index")
             index.add(model)
 
+    logger.debug(f"Add docs with {doc_ids} END")
 
-@shared_task(name=constants.INDEX_REMOVE_NODE)
+
+@shared_task(
+    name=constants.INDEX_REMOVE_NODE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def remove_folder_or_page_from_index(item_ids: List[str]):
     """Removes folder or page from search index
     """
     logger.debug(f'Removing folder or page {item_ids} from index')
-    try:
-        logger.debug(f'Creating engine {settings.SEARCH_URL}')
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index remove for {item_ids} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
     logger.debug(
         f"Remove pages or folder from index len(item_ids)= {len(item_ids)}"
     )
+    index = get_index()
     for item_id in item_ids:
         try:
             logger.debug(f'index remove {item_id}')
@@ -112,29 +116,26 @@ def remove_folder_or_page_from_index(item_ids: List[str]):
     logger.debug('End of remove_folder_or_page_from_index')
 
 
-@shared_task(name=constants.INDEX_ADD_PAGES)
+@shared_task(
+    name=constants.INDEX_ADD_PAGES,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def add_pages_to_index(page_ids: List[str]):
-    try:
-        # may happen when using xapian search backend and multiple
-        # workers try to get write access to the index
-        engine = create_engine(settings.SEARCH_URL)
-    except Exception as e:
-        logger.warning(f"Exception '{e}' occurred while opening engine")
-        logger.warning(f"Index add for {page_ids} interrupted")
-        return
-
-    index = IndexRW(engine, schema=Model)
     index_entities = [from_page(page_id) for page_id in page_ids]
     logger.debug(
-        f"Add pages to index len(index_entities)= {len(index_entities)}"
+        f"Add pages to index: {index_entities}"
     )
+    index = get_index()
     for model in index_entities:
-        logger.debug(f"Adding model={model}")
-        logger.debug(f"Model.text = {model.text}")
         index.add(model)
 
 
-@shared_task(name=constants.INDEX_UPDATE)
+@shared_task(
+    name=constants.INDEX_UPDATE,
+    autoretry_for=(Exception,),
+    retry_kwargs=RETRY_KWARGS
+)
 def update_index(add_ver_id: str, remove_ver_id: str):
     """Updates index
 

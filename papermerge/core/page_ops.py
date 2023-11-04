@@ -427,7 +427,11 @@ def extract_to_single_paged_docs(
     target_folder_id: uuid.UUID,
     title_format: str
 ) -> List[Document]:
+    """Extracts given pages into separate documents
 
+    Each source page will end up in a separate document
+    located in target folder.
+    """
     pages = Page.objects.filter(pk__in=source_page_ids)
     dst_folder = Folder.objects.get(pk=target_folder_id)
     result = []
@@ -454,7 +458,7 @@ def extract_to_single_paged_docs(
         copy_text_field(
             src=pages.first().document_version,
             dst=doc_version,
-            page_numbers=[p.number for p in pages]
+            page_numbers=[page.number]
         )
 
     return result
@@ -465,6 +469,11 @@ def extract_to_multi_paged_doc(
     target_folder_id: uuid.UUID,
     title_format: str
 ) -> Document:
+    """Extracts given pages into separate documents
+
+    All source pages will end up in a single document
+    located in target folder.
+    """
     title = f'{title_format}-{uuid.uuid4()}.pdf'
 
     pages = Page.objects.filter(pk__in=source_page_ids)

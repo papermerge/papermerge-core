@@ -603,8 +603,14 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
         if page.number <= 2
     ])
 
-    [result_old_doc, result_new_docs] = extract_pages(
-        # we are moving out all pages of the source doc version
+    # add some text to the source version pages
+    for p in src_ver.pages.all():
+        p.text = f"I am page number {p.number}!"
+        p.save()
+
+    # page extraction / function under test (FUD)
+    [result_old_doc, result_new_docs] = extract_pages(  # FUD
+        # we are moving out first two pages of the source doc version
         source_page_ids=[
             page.id for page in src_ver.pages.all() if page.number <= 2
         ],
@@ -628,11 +634,16 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     ) == PageDir(
         saved_src_pages_ids[0], number=1, name="src old"
     )
+    # destination page must be same as first source page
+    assert dst_pages1[0].text == src_ver.pages.all()[0].text
+
     assert PageDir(
         dst_pages2[0].id, number=1, name="dst2 newly create doc"
     ) == PageDir(
         saved_src_pages_ids[1], number=2, name="src old"
     )
+    # destination page must be same as second source page
+    assert dst_pages2[0].text == src_ver.pages.all()[1].text
 
 
 @patch('papermerge.core.signals.ocr_document_task')

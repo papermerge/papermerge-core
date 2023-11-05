@@ -11,8 +11,9 @@ from papermerge.core.backup_restore.utils import CType, breadcrumb_to_path
 from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
                                            user_recipe)
 
+pytestmark = pytest.mark.django_db
 
-@pytest.mark.django_db
+
 def test_get_backup():
     """
     Basic assert that get_backup data contains all
@@ -71,18 +72,9 @@ def test_get_backup():
 
 
 def test_backup_nodes_sequence():
-    backup_dict = {
-        'users': [
-            {
-                'username': 'user1',
-                'nodes': [
-                    {'breadcrumb': '.home', 'ctype': CType.FOLDER},
-                    {'breadcrumb': '.inbox', 'ctype': CType.FOLDER},
-                ]
-            }
-        ]
-    }
-    result = list(BackupNodes(backup_dict))
+    user_recipe.make(username='user1')
+    backup = get_backup()
+    result = list(BackupNodes(backup))
     expected_tar_info_names = ('user1/.home', 'user1/.inbox')
 
     assert len(result) == 2

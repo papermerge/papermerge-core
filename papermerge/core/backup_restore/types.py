@@ -97,3 +97,9 @@ class User(BaseUser):
 
             return ret
         return v
+
+
+class Backup(BaseModel):
+    created: str
+    version: str
+    users: list[User] = []

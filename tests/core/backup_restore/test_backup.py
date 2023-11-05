@@ -5,29 +5,27 @@ from unittest.mock import patch
 import pytest
 
 from papermerge.core.backup_restore.backup import (BackupNodes, BackupPages,
-                                                   BackupVersions,
-                                                   dump_data_as_dict,
+                                                   BackupVersions, get_backup,
                                                    relative_link_target)
-from papermerge.core.backup_restore.utils import CType
+from papermerge.core.backup_restore.utils import CType, breadcrumb_to_path
 from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
                                            user_recipe)
 
 
-@pytest.mark.skip()
 @pytest.mark.django_db
-def test_dump_data_as_dict():
+def test_get_backup():
     """
-    Basic assert that dict data dump contains all
+    Basic assert that get_backup data contains all
     user's nodes
 
-    User username=test1 has following nodes:
+    User username=test1 has the following nodes:
         - .home/
             - My Documents/
                 - My Invoice.pdf
         - .inbox/
 
     This test asserts that
-        dump_dict['users'][<index of user test1>]['nodes']
+        backup.users[<index of user test1>]['nodes']
 
     contains
     1. titles of all user's nodes i.e. '.home', '.inbox',
@@ -48,16 +46,17 @@ def test_dump_data_as_dict():
         user=user_test1
     )
 
-    data_dict = dump_data_as_dict()
+    backup = get_backup()
 
     user_test_1 = [
         user
-        for user in data_dict['users']
-        if user['username'] == 'test1'
+        for user in backup.users
+        if user.username == 'test1'
     ][0]
-    expected_titles = [node['title'] for node in user_test_1['nodes']]
+    expected_titles = [node.title for node in user_test_1.nodes]
     expected_breadcrumbs = [
-        node['breadcrumb'] for node in user_test_1['nodes']
+        str(breadcrumb_to_path(node.breadcrumb))
+        for node in user_test_1.nodes
     ]
 
     assert '.inbox' in expected_titles
@@ -65,13 +64,12 @@ def test_dump_data_as_dict():
     assert 'My Documents' in expected_titles
     assert 'My Invoice.pdf' in expected_titles
 
-    assert '.inbox/' in expected_breadcrumbs
-    assert '.home/' in expected_breadcrumbs
-    assert '.home/My Documents/' in expected_breadcrumbs
+    assert '.inbox' in expected_breadcrumbs
+    assert '.home' in expected_breadcrumbs
+    assert '.home/My Documents' in expected_breadcrumbs
     assert '.home/My Documents/My Invoice.pdf' in expected_breadcrumbs
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence():
     backup_dict = {
         'users': [
@@ -97,7 +95,6 @@ def test_backup_nodes_sequence():
     assert tar_info_entry2.name in expected_tar_info_names
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence_empty_input():
     """Assert that empty input for BackupNodes yields empty results
 
@@ -115,7 +112,6 @@ def test_backup_nodes_sequence_empty_input():
     assert list(BackupNodes(empty_input)) == []
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence_with_one_document_entry():
     input_dict = {
         'users': [
@@ -136,7 +132,6 @@ def test_backup_nodes_sequence_with_one_document_entry():
         assert tar_info.name == 'john/.home/anmeldung.pdf'
 
 
-@pytest.mark.skip()
 def test_backup_versions_sequence_empty_input():
     node_dict_1 = {
         'breadcrumb': '.home/',
@@ -157,7 +152,6 @@ def test_backup_versions_sequence_empty_input():
     ) == []
 
 
-@pytest.mark.skip()
 @patch(
     'papermerge.core.backup_restore.backup.get_content',
     return_value="some content"
@@ -197,7 +191,6 @@ def test_backup_versions(*_):
     assert set(actual_result) == set(expected_result)
 
 
-@pytest.mark.skip()
 def test_relative_link_target():
     assert "../../../../media/user/v1/doc.pdf" == relative_link_target(
         "home/X/Y/doc.pdf",
@@ -220,7 +213,6 @@ def test_relative_link_target():
     )
 
 
-@pytest.mark.skip()
 def test_backup_pages_empty_input():
     version_dict = {
         'pages': []
@@ -229,7 +221,6 @@ def test_backup_pages_empty_input():
     assert list(BackupPages({})) == []
 
 
-@pytest.mark.skip()
 @patch(
     'papermerge.core.backup_restore.backup.exists',
     return_value=True

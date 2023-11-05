@@ -7,8 +7,6 @@ import tarfile
 import time
 from os.path import exists, getmtime, getsize
 from pathlib import PurePath
-from typing import Tuple
-from uuid import UUID
 
 import yaml
 
@@ -17,11 +15,12 @@ from papermerge.core.pathlib import (abs_docver_path, abs_page_txt_path,
                                      docver_path, page_txt_path)
 from papermerge.core.version import __version__ as VERSION
 
+from .types import Backup
 from .types import Document as DocumentSerializer
 from .types import DocumentVersion as DocumentVersionSerializer
 from .types import Folder as FolderSerializer
 from .types import User as UserSerializer
-from .utils import CType
+from .utils import CType, breadcrumb_to_path
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +177,7 @@ class BackupNodes:
         2. instance of `BackupVersions` sequence of respective node
     """
 
-    def __init__(self, backup_dict: dict):
+    def __init__(self, backup: Backup):
         """Receives as input a dictionary with 'users' key.
 
         Examples:
@@ -201,10 +200,10 @@ class BackupNodes:
                 ]
             }
         """
-        self._backup_dict = backup_dict or {}
+        self._backup = backup
 
     def __iter__(self):
-        for user in self._backup_dict.get('users', []):
+        for user in self._backup.users:
             username = user.username
             for node in user.nodes:
                 node_path = breadcrumb_to_path(node.breadcrumb)
@@ -218,19 +217,21 @@ class BackupNodes:
                 yield entry, BackupVersions(node, prefix=username)
 
 
-def dump_data_as_dict() -> dict:
-    result_dict = dict()
-    result_dict['created'] = datetime.datetime.now().strftime(
+def get_backup() -> Backup:
+    created = datetime.datetime.now().strftime(
         "%d.%m.%Y-%H:%M:%S"
     )
-    result_dict['version'] = VERSION
 
-    result_dict['users'] = [
+    users = [
         UserSerializer.model_validate(user)
         for user in User.objects.all()
     ]
 
-    return result_dict
+    return Backup(
+        created=created,
+        users=users,
+        version=VERSION
+    )
 
 
 def backup_data(file_path: str):
@@ -244,9 +245,9 @@ def backup_data(file_path: str):
     Point 3. is there only for ease of human readability of
     backup archive.
     """
-    dict_data = dump_data_as_dict()
+    backup = get_backup()
     with tarfile.open(file_path, mode="w:gz") as file:
-        for node_tar_info, versions in BackupNodes(dict_data):
+        for node_tar_info, versions in BackupNodes(backup):
             if node_tar_info.isdir():
                 file.addfile(node_tar_info)
                 continue
@@ -262,7 +263,7 @@ def backup_data(file_path: str):
                     file.addfile(*page_tar_info)
 
         json_bytes = json.dumps(
-            dict_data,
+            backup.model_dump(),
             indent=4,
             default=str
         ).encode('utf-8')
@@ -273,14 +274,9 @@ def backup_data(file_path: str):
 
         file.addfile(tarinfo, io.BytesIO(json_bytes))
 
-        yaml_bytes = yaml.dump(dict_data).encode('utf-8')
+        yaml_bytes = yaml.dump(backup.model_dump()).encode('utf-8')
         tarinfo = tarfile.TarInfo('backup.yml')
         tarinfo.size = len(yaml_bytes)
         tarinfo.mtime = time.time()
 
         file.addfile(tarinfo, io.BytesIO(yaml_bytes))
-
-
-def breadcrumb_to_path(breadcrumb: list[Tuple[UUID, str]]) -> PurePath:
-    items: list[str] = [item[1] for item in breadcrumb]
-    return PurePath(*items)

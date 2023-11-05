@@ -8,6 +8,7 @@ from pydantic import (BaseModel, ConfigDict, FieldValidationInfo,
 
 from papermerge.core.schemas.users import User as BaseUser
 from papermerge.core.types import OCRStatusEnum
+from papermerge.core.version import __version__ as VERSION
 
 
 class Page(BaseModel):
@@ -100,6 +101,14 @@ class User(BaseUser):
 
 
 class Backup(BaseModel):
-    created: str
-    version: str
+    created: str = datetime.now().strftime("%d.%m.%Y-%H:%M:%S")
+    version: str = VERSION
     users: list[User] = []
+
+    def __str__(self):
+        return f"Backup(version={self.version}, created={self.created},"\
+                f" users=...)"
+
+    def __repr__(self):
+        return f"Backup(version={self.version}, created={self.created},"\
+                f" users=...)"

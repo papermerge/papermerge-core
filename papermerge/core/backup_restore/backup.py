@@ -1,4 +1,3 @@
-import datetime
 import io
 import json
 import logging
@@ -13,7 +12,6 @@ import yaml
 from papermerge.core.models import User
 from papermerge.core.pathlib import (abs_docver_path, abs_page_txt_path,
                                      docver_path, page_txt_path)
-from papermerge.core.version import __version__ as VERSION
 
 from .types import Backup
 from .types import Document as DocumentSerializer
@@ -136,10 +134,10 @@ class BackupVersions:
         self._prefix = prefix
 
     def __iter__(self):
-
         breadcrumb = breadcrumb_to_path(self._node.breadcrumb)
-        versions = self._node.versions
+        versions = getattr(self._node, 'versions', [])
         versions_count = len(versions)
+
         for version in versions:
             src_file_path = docver_path(
                 str(version.id),
@@ -216,22 +214,17 @@ class BackupNodes:
 
                 yield entry, BackupVersions(node, prefix=username)
 
+    def __repr__(self):
+        return f"BackupNodes(backup={self._backup})"
+
 
 def get_backup() -> Backup:
-    created = datetime.datetime.now().strftime(
-        "%d.%m.%Y-%H:%M:%S"
-    )
-
     users = [
         UserSerializer.model_validate(user)
         for user in User.objects.all()
     ]
 
-    return Backup(
-        created=created,
-        users=users,
-        version=VERSION
-    )
+    return Backup(users=users)
 
 
 def backup_data(file_path: str):

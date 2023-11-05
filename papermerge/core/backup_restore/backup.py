@@ -1,19 +1,23 @@
-import os
 import datetime
-import logging
-import time
 import io
-import tarfile
 import json
+import logging
+import os
+import tarfile
+import time
+from os.path import exists, getmtime, getsize
 from pathlib import PurePath
-from os.path import getsize, getmtime, exists
+from typing import Tuple
+from uuid import UUID
 
-from papermerge.core.storage import abs_path
-from .serializers import UserSerializer
-from .utils import CType
-
+from papermerge.core.backup_restore.types import User as UserSerializer
 from papermerge.core.models import User
+from papermerge.core.schemas import Document as DocumentSerializer
+from papermerge.core.schemas import Folder as FolderSerializer
+from papermerge.core.storage import abs_path
 from papermerge.core.version import __version__ as VERSION
+
+from .utils import CType
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +103,11 @@ class BackupVersions:
         # content is None and pages_req is None
         ...
     """
-    def __init__(self, node_dict: dict, prefix: str):
+    def __init__(
+        self,
+        node: FolderSerializer | DocumentSerializer,
+        prefix: str
+    ):
         """
         Example of node_dict:
 
@@ -121,12 +129,13 @@ class BackupVersions:
         prefix will be prepended to the breadcrumb of the
         node and yielded as symbolic link (tarinfo of type symbolic link)
         """
-        self._node_dict = node_dict
+        self._node = node
         self._prefix = prefix
 
     def __iter__(self):
-        breadcrumb = self._node_dict['breadcrumb']
-        versions = self._node_dict.get('versions', [])
+
+        breadcrumb = breadcrumb_to_path(self._node.breadcrumb)
+        versions = self._node.versions
         versions_count = len(versions)
 
         for version in versions:
@@ -140,13 +149,12 @@ class BackupVersions:
 
             if version['number'] == versions_count:
                 # last version
-                entry_sym = tarfile.TarInfo(
-                    os.path.join(self._prefix, breadcrumb)
-                )
+                path = PurePath(self._prefix, breadcrumb)
+                entry_sym = tarfile.TarInfo(str(path))
                 entry_sym.type = tarfile.SYMTYPE
                 entry_sym.mtime = getmtime(abs_file_path)
                 entry_sym.linkname = relative_link_target(
-                    breadcrumb,
+                    str(breadcrumb),
                     target=src_file_path
                 )
                 yield entry_sym, None, None
@@ -188,15 +196,14 @@ class BackupNodes:
 
     def __iter__(self):
         for user in self._backup_dict.get('users', []):
-            username = user['username']
-            nodes = user['nodes']
-            for node in nodes:
-                entry = tarfile.TarInfo(
-                    os.path.join(username, node['breadcrumb'])
-                )
+            username = user.username
+            for node in user.nodes:
+                node_path = breadcrumb_to_path(node.breadcrumb)
+                file_path = PurePath(username, node_path)
+                entry = tarfile.TarInfo(str(file_path))
                 entry.mtime = time.time()
                 entry.mode = 16893
-                if node['ctype'] == CType.FOLDER.value:
+                if node.ctype == CType.FOLDER.value:
                     entry.type = tarfile.DIRTYPE
 
                 yield entry, BackupVersions(node, prefix=username)
@@ -208,7 +215,11 @@ def dump_data_as_dict() -> dict:
         "%d.%m.%Y-%H:%M:%S"
     )
     result_dict['version'] = VERSION
-    result_dict['users'] = UserSerializer(User.objects, many=True).data
+
+    result_dict['users'] = [
+        UserSerializer.model_validate(user)
+        for user in User.objects.all()
+    ]
 
     return result_dict
 
@@ -252,3 +263,8 @@ def backup_data(file_path: str):
         tarinfo.mtime = time.time()
 
         file.addfile(tarinfo, io.BytesIO(json_bytes))
+
+
+def breadcrumb_to_path(breadcrumb: list[Tuple[UUID, str]]) -> PurePath:
+    items: list[str] = [item[1] for item in breadcrumb]
+    return PurePath(*items)

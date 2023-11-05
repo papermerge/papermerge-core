@@ -10,13 +10,17 @@ from pathlib import PurePath
 from typing import Tuple
 from uuid import UUID
 
-from papermerge.core.backup_restore.types import User as UserSerializer
+import yaml
+
 from papermerge.core.models import User
-from papermerge.core.schemas import Document as DocumentSerializer
-from papermerge.core.schemas import Folder as FolderSerializer
-from papermerge.core.storage import abs_path
+from papermerge.core.pathlib import (abs_docver_path, abs_page_txt_path,
+                                     docver_path, page_txt_path)
 from papermerge.core.version import __version__ as VERSION
 
+from .types import Document as DocumentSerializer
+from .types import DocumentVersion as DocumentVersionSerializer
+from .types import Folder as FolderSerializer
+from .types import User as UserSerializer
 from .utils import CType
 
 logger = logging.getLogger(__name__)
@@ -59,16 +63,16 @@ def get_content(path: str) -> io.BytesIO:
 
 class BackupPages:
     """Iterable over document version pages"""
-    def __init__(self, version_dict: dict) -> None:
-        self._version_dict = version_dict
+    def __init__(self, version: DocumentVersionSerializer) -> None:
+        self._version = version
 
     def __iter__(self):
-        for page in self._version_dict.get('pages', []):
-            file_path = page['file_path']
-            abs_file_path = abs_path(file_path)
+        for page in self._version.pages:
+            file_path = page_txt_path(page.id)
+            abs_file_path = abs_page_txt_path(page.id)
             if exists(abs_file_path):
-                content = get_content(abs_file_path)
-                entry = tarfile.TarInfo(file_path)
+                content = get_content(str(abs_file_path))
+                entry = tarfile.TarInfo(str(file_path))
                 entry.size = getsize(abs_file_path)
                 entry.mtime = getmtime(abs_file_path)
                 yield entry, content
@@ -137,17 +141,22 @@ class BackupVersions:
         breadcrumb = breadcrumb_to_path(self._node.breadcrumb)
         versions = self._node.versions
         versions_count = len(versions)
-
         for version in versions:
-            src_file_path = version['file_path']
-            abs_file_path = abs_path(src_file_path)
+            src_file_path = docver_path(
+                str(version.id),
+                str(version.file_name)
+            )
+            abs_file_path = abs_docver_path(
+                str(version.id),
+                str(version.file_name)
+            )
             content = get_content(abs_file_path)
-            entry = tarfile.TarInfo(src_file_path)
+            entry = tarfile.TarInfo(str(src_file_path))
             entry.size = getsize(abs_file_path)
             entry.mtime = getmtime(abs_file_path)
             yield entry, content, BackupPages(version)
 
-            if version['number'] == versions_count:
+            if version.number == versions_count:
                 # last version
                 path = PurePath(self._prefix, breadcrumb)
                 entry_sym = tarfile.TarInfo(str(path))
@@ -155,7 +164,7 @@ class BackupVersions:
                 entry_sym.mtime = getmtime(abs_file_path)
                 entry_sym.linkname = relative_link_target(
                     str(breadcrumb),
-                    target=src_file_path
+                    target=str(src_file_path)
                 )
                 yield entry_sym, None, None
 
@@ -263,6 +272,13 @@ def backup_data(file_path: str):
         tarinfo.mtime = time.time()
 
         file.addfile(tarinfo, io.BytesIO(json_bytes))
+
+        yaml_bytes = yaml.dump(dict_data).encode('utf-8')
+        tarinfo = tarfile.TarInfo('backup.yml')
+        tarinfo.size = len(yaml_bytes)
+        tarinfo.mtime = time.time()
+
+        file.addfile(tarinfo, io.BytesIO(yaml_bytes))
 
 
 def breadcrumb_to_path(breadcrumb: list[Tuple[UUID, str]]) -> PurePath:

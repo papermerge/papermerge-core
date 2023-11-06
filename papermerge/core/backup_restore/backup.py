@@ -116,23 +116,6 @@ class BackupVersions:
         prefix: str
     ):
         """
-        Example of node_dict:
-
-            node_dict = {
-                'breadcrumb': '.home/My Documents/doc.pdf',
-                'ctype': CType.DOCUMENT.value,
-                'versions': [
-                    {
-                        'file_path': 'media/docs/v1/doc.pdf',
-                        'number': 1
-                    },
-                    {
-                        'file_path': 'media/docs/v2/doc.pdf',
-                        'number': 2
-                    }
-                ]
-            }
-
         prefix will be prepended to the breadcrumb of the
         node and yielded as symbolic link (tarinfo of type symbolic link)
         """

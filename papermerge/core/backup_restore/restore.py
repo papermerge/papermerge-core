@@ -1,13 +1,11 @@
+import json
 import logging
 import tarfile
-import json
 
 from django.conf import settings
 
-from papermerge.core.lib.path import AUX_DIR_SIDECARS, AUX_DIR_DOCS
-
-from papermerge.core.backup_restore.serializers import UserSerializer
-
+from papermerge.core.backup_restore.types import User as UserSerializer
+from papermerge.core.lib.path import AUX_DIR_DOCS, AUX_DIR_SIDECARS
 
 logger = logging.getLogger(__name__)
 

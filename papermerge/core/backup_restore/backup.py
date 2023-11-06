@@ -8,8 +8,8 @@ from os.path import exists, getmtime, getsize
 from pathlib import PurePath
 
 from papermerge.core.models import User
-from papermerge.core.pathlib import (abs_docver_path, abs_page_txt_path,
-                                     docver_path, page_txt_path)
+from papermerge.core.pathlib import (abs_docver_path, docver_path,
+                                     page_file_type_path)
 
 from .types import Backup
 from .types import Document as DocumentSerializer
@@ -63,14 +63,22 @@ class BackupPages:
 
     def __iter__(self):
         for page in self._version.pages:
-            file_path = page_txt_path(page.id)
-            abs_file_path = abs_page_txt_path(page.id)
-            if exists(abs_file_path):
-                content = get_content(str(abs_file_path))
-                entry = tarfile.TarInfo(str(file_path))
-                entry.size = getsize(abs_file_path)
-                entry.mtime = getmtime(abs_file_path)
-                yield entry, content
+            for page_path, abs_page_path in page_file_type_path():
+                file_path = str(page_path(page.id))
+                abs_file_path = str(abs_page_path(page.id))
+                if exists(abs_file_path):
+                    entry, content = self.get_entry_content(
+                        abs_file_path, file_path
+                    )
+                    yield entry, content
+
+    def get_entry_content(self, abs_file_path: str, file_path: str):
+        content = get_content(abs_file_path)
+        entry = tarfile.TarInfo(file_path)
+        entry.size = getsize(abs_file_path)
+        entry.mtime = getmtime(abs_file_path)
+
+        return entry, content
 
 
 class BackupVersions:

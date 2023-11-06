@@ -7,8 +7,6 @@ import time
 from os.path import exists, getmtime, getsize
 from pathlib import PurePath
 
-import yaml
-
 from papermerge.core.models import User
 from papermerge.core.pathlib import (abs_docver_path, abs_page_txt_path,
                                      docver_path, page_txt_path)
@@ -266,10 +264,3 @@ def backup_data(file_path: str):
         tarinfo.mtime = time.time()
 
         file.addfile(tarinfo, io.BytesIO(json_bytes))
-
-        yaml_bytes = yaml.dump(backup.model_dump()).encode('utf-8')
-        tarinfo = tarfile.TarInfo('backup.yml')
-        tarinfo.size = len(yaml_bytes)
-        tarinfo.mtime = time.time()
-
-        file.addfile(tarinfo, io.BytesIO(yaml_bytes))

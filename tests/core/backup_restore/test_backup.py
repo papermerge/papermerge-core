@@ -13,7 +13,9 @@ from papermerge.core.backup_restore.backup import (Backup, BackupNodes,
 from papermerge.core.backup_restore.types import (Document, DocumentVersion,
                                                   Folder)
 from papermerge.core.backup_restore.utils import breadcrumb_to_path
-from papermerge.core.pathlib import docver_path, page_txt_path
+from papermerge.core.pathlib import (docver_path, page_hocr_path,
+                                     page_jpg_path, page_svg_path,
+                                     page_txt_path)
 from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
                                            user_recipe)
 
@@ -252,8 +254,15 @@ def test_backup_pages(*_):
     ]
     expected_result = [
         (str(page_txt_path(u1)), 'XYZ'),
-        (str(page_txt_path(u2)), 'XYZ')
+        (str(page_txt_path(u2)), 'XYZ'),
+        (str(page_svg_path(u1)), 'XYZ'),
+        (str(page_svg_path(u2)), 'XYZ'),
+        (str(page_hocr_path(u1)), 'XYZ'),
+        (str(page_hocr_path(u2)), 'XYZ'),
+        (str(page_jpg_path(u1)), 'XYZ'),
+        (str(page_jpg_path(u2)), 'XYZ'),
     ]
+
     assert set(actual_result) == set(expected_result)
 
 

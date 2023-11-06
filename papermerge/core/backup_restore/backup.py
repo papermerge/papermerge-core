@@ -182,28 +182,6 @@ class BackupNodes:
     """
 
     def __init__(self, backup: Backup):
-        """Receives as input a dictionary with 'users' key.
-
-        Examples:
-        ```
-            backup_dict = {
-                'users': [
-                    {
-                        'username': 'user1',
-                        'nodes': [
-                            {
-                                'breadcrumb': '.home',
-                                'ctype': CType.FOLDER.value
-                            },
-                            {
-                                'breadcrumb': '.inbox',
-                                'ctype': CType.FOLDER.value
-                            },
-                        ]
-                    }
-                ]
-            }
-        """
         self._backup = backup
 
     def __iter__(self):

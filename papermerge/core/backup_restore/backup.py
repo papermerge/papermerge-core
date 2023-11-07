@@ -1,19 +1,22 @@
-import os
-import datetime
-import logging
-import time
 import io
-import tarfile
 import json
+import logging
+import os
+import tarfile
+import time
+from os.path import exists, getmtime, getsize
 from pathlib import PurePath
-from os.path import getsize, getmtime, exists
-
-from papermerge.core.storage import abs_path
-from .serializers import UserSerializer
-from .utils import CType
 
 from papermerge.core.models import User
-from papermerge.core.version import __version__ as VERSION
+from papermerge.core.pathlib import (abs_docver_path, docver_path,
+                                     page_file_type_path)
+
+from .types import Backup
+from .types import Document as DocumentSerializer
+from .types import DocumentVersion as DocumentVersionSerializer
+from .types import Folder as FolderSerializer
+from .types import User as UserSerializer
+from .utils import CType, breadcrumb_to_path
 
 logger = logging.getLogger(__name__)
 
@@ -55,19 +58,27 @@ def get_content(path: str) -> io.BytesIO:
 
 class BackupPages:
     """Iterable over document version pages"""
-    def __init__(self, version_dict: dict) -> None:
-        self._version_dict = version_dict
+    def __init__(self, version: DocumentVersionSerializer) -> None:
+        self._version = version
 
     def __iter__(self):
-        for page in self._version_dict.get('pages', []):
-            file_path = page['file_path']
-            abs_file_path = abs_path(file_path)
-            if exists(abs_file_path):
-                content = get_content(abs_file_path)
-                entry = tarfile.TarInfo(file_path)
-                entry.size = getsize(abs_file_path)
-                entry.mtime = getmtime(abs_file_path)
-                yield entry, content
+        for page in self._version.pages:
+            for page_path, abs_page_path in page_file_type_path():
+                file_path = str(page_path(page.id))
+                abs_file_path = str(abs_page_path(page.id))
+                if exists(abs_file_path):
+                    entry, content = self.get_entry_content(
+                        abs_file_path, file_path
+                    )
+                    yield entry, content
+
+    def get_entry_content(self, abs_file_path: str, file_path: str):
+        content = get_content(abs_file_path)
+        entry = tarfile.TarInfo(file_path)
+        entry.size = getsize(abs_file_path)
+        entry.mtime = getmtime(abs_file_path)
+
+        return entry, content
 
 
 class BackupVersions:
@@ -99,55 +110,47 @@ class BackupVersions:
         # content is None and pages_req is None
         ...
     """
-    def __init__(self, node_dict: dict, prefix: str):
+    def __init__(
+        self,
+        node: FolderSerializer | DocumentSerializer,
+        prefix: str
+    ):
         """
-        Example of node_dict:
-
-            node_dict = {
-                'breadcrumb': '.home/My Documents/doc.pdf',
-                'ctype': CType.DOCUMENT.value,
-                'versions': [
-                    {
-                        'file_path': 'media/docs/v1/doc.pdf',
-                        'number': 1
-                    },
-                    {
-                        'file_path': 'media/docs/v2/doc.pdf',
-                        'number': 2
-                    }
-                ]
-            }
-
         prefix will be prepended to the breadcrumb of the
         node and yielded as symbolic link (tarinfo of type symbolic link)
         """
-        self._node_dict = node_dict
+        self._node = node
         self._prefix = prefix
 
     def __iter__(self):
-        breadcrumb = self._node_dict['breadcrumb']
-        versions = self._node_dict.get('versions', [])
+        breadcrumb = breadcrumb_to_path(self._node.breadcrumb)
+        versions = getattr(self._node, 'versions', [])
         versions_count = len(versions)
 
         for version in versions:
-            src_file_path = version['file_path']
-            abs_file_path = abs_path(src_file_path)
+            src_file_path = docver_path(
+                str(version.id),
+                str(version.file_name)
+            )
+            abs_file_path = abs_docver_path(
+                str(version.id),
+                str(version.file_name)
+            )
             content = get_content(abs_file_path)
-            entry = tarfile.TarInfo(src_file_path)
+            entry = tarfile.TarInfo(str(src_file_path))
             entry.size = getsize(abs_file_path)
             entry.mtime = getmtime(abs_file_path)
             yield entry, content, BackupPages(version)
 
-            if version['number'] == versions_count:
+            if version.number == versions_count:
                 # last version
-                entry_sym = tarfile.TarInfo(
-                    os.path.join(self._prefix, breadcrumb)
-                )
+                path = PurePath(self._prefix, breadcrumb)
+                entry_sym = tarfile.TarInfo(str(path))
                 entry_sym.type = tarfile.SYMTYPE
                 entry_sym.mtime = getmtime(abs_file_path)
                 entry_sym.linkname = relative_link_target(
-                    breadcrumb,
-                    target=src_file_path
+                    str(breadcrumb),
+                    target=str(src_file_path)
                 )
                 yield entry_sym, None, None
 
@@ -161,56 +164,34 @@ class BackupNodes:
         2. instance of `BackupVersions` sequence of respective node
     """
 
-    def __init__(self, backup_dict: dict):
-        """Receives as input a dictionary with 'users' key.
-
-        Examples:
-        ```
-            backup_dict = {
-                'users': [
-                    {
-                        'username': 'user1',
-                        'nodes': [
-                            {
-                                'breadcrumb': '.home',
-                                'ctype': CType.FOLDER.value
-                            },
-                            {
-                                'breadcrumb': '.inbox',
-                                'ctype': CType.FOLDER.value
-                            },
-                        ]
-                    }
-                ]
-            }
-        """
-        self._backup_dict = backup_dict or {}
+    def __init__(self, backup: Backup):
+        self._backup = backup
 
     def __iter__(self):
-        for user in self._backup_dict.get('users', []):
-            username = user['username']
-            nodes = user['nodes']
-            for node in nodes:
-                entry = tarfile.TarInfo(
-                    os.path.join(username, node['breadcrumb'])
-                )
+        for user in self._backup.users:
+            username = user.username
+            for node in user.nodes:
+                node_path = breadcrumb_to_path(node.breadcrumb)
+                file_path = PurePath(username, node_path)
+                entry = tarfile.TarInfo(str(file_path))
                 entry.mtime = time.time()
                 entry.mode = 16893
-                if node['ctype'] == CType.FOLDER.value:
+                if node.ctype == CType.FOLDER.value:
                     entry.type = tarfile.DIRTYPE
 
                 yield entry, BackupVersions(node, prefix=username)
 
+    def __repr__(self):
+        return f"BackupNodes(backup={self._backup})"
 
-def dump_data_as_dict() -> dict:
-    result_dict = dict()
-    result_dict['created'] = datetime.datetime.now().strftime(
-        "%d.%m.%Y-%H:%M:%S"
-    )
-    result_dict['version'] = VERSION
-    result_dict['users'] = UserSerializer(User.objects, many=True).data
 
-    return result_dict
+def get_backup() -> Backup:
+    users = [
+        UserSerializer.model_validate(user)
+        for user in User.objects.all()
+    ]
+
+    return Backup(users=users)
 
 
 def backup_data(file_path: str):
@@ -224,9 +205,9 @@ def backup_data(file_path: str):
     Point 3. is there only for ease of human readability of
     backup archive.
     """
-    dict_data = dump_data_as_dict()
+    backup = get_backup()
     with tarfile.open(file_path, mode="w:gz") as file:
-        for node_tar_info, versions in BackupNodes(dict_data):
+        for node_tar_info, versions in BackupNodes(backup):
             if node_tar_info.isdir():
                 file.addfile(node_tar_info)
                 continue
@@ -242,7 +223,7 @@ def backup_data(file_path: str):
                     file.addfile(*page_tar_info)
 
         json_bytes = json.dumps(
-            dict_data,
+            backup.model_dump(),
             indent=4,
             default=str
         ).encode('utf-8')

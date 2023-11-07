@@ -1,13 +1,12 @@
+import json
 import logging
 import tarfile
-import json
+from typing import Tuple
 
 from django.conf import settings
 
-from papermerge.core.lib.path import AUX_DIR_SIDECARS, AUX_DIR_DOCS
-
-from papermerge.core.backup_restore.serializers import UserSerializer
-
+from papermerge.core import constants, models
+from papermerge.core.backup_restore import types
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +19,30 @@ def restore_db_data(file_path: str) -> None:
         if 'users' not in backup_info:
             raise ValueError("'users' key is missing")
 
-        for user_data in backup_info['users']:
-            user_ser = UserSerializer(data=user_data)
-            user_ser.is_valid(raise_exception=True)
-            user_ser.save(nodes=user_data['nodes'])
+        restore_users(backup_info['users'])
+
+
+def restore_users(users_data: list[dict]):
+    for user_data in users_data:
+        pyuser = types.User(**user_data)
+
+        user, created = restore_user(pyuser)
+        if not created:
+            logger.info(f"User: {user} already exists")
+
+        for node in pyuser.nodes:
+            if getattr(node, 'versions', None):
+                restore_document(node, user)
+            else:
+                # node is a Folder
+                restore_folder(node, user)
 
 
 def restore_files(file_path: str) -> None:
     with tarfile.open(file_path, mode="r:gz") as file:
         for tar_info in file:
-            docs_or_sidecars_prefix = (AUX_DIR_SIDECARS, AUX_DIR_DOCS,)
-            if tar_info.name.startswith(docs_or_sidecars_prefix):
+            extracted_dir_prefixes = (constants.DOCVERS, constants.OCR,)
+            if tar_info.name.startswith(extracted_dir_prefixes):
                 file.extract(tar_info, path=settings.MEDIA_ROOT)
 
 
@@ -38,3 +50,72 @@ def restore_data(file_path: str):
     """Restores data from backup archive"""
     restore_db_data(file_path)
     restore_files(file_path)
+
+
+def restore_user(pyuser: types.User) -> Tuple[models.User, bool]:
+    found_user, created_user = None, None
+    try:
+        found_user = models.User.objects.get(pk=pyuser.id)
+    except models.User.DoesNotExist:
+        created_user = models.User(pyuser.model_dump())
+        created_user.save()
+
+    if found_user:
+        return found_user, False
+
+    return created_user, True
+
+
+def restore_folder(
+    pyfolder: types.Folder,
+    user: models.User
+) -> Tuple[models.Folder, bool]:
+    found_folder, created_folder = None, None
+    try:
+        found_folder = models.Folder.objects.get(pk=pyfolder.id, user=user)
+    except models.Folder.DoesNotExist:
+        if pyfolder.title == models.Folder.HOME_TITLE:
+            return user.home_folder, False
+
+        if pyfolder.title == models.Folder.INBOX_TITLE:
+            return user.inbox_folder, False
+
+        created_folder = models.Folder(
+            **pyfolder.model_dump(exclude={"breadcrumb"}),
+            user=user
+        )
+        created_folder.save()
+
+    if found_folder:
+        return found_folder, False
+
+    return created_folder, True
+
+
+def restore_document(
+    pydoc: types.Document,
+    user: models.User
+) -> Tuple[models.Document, bool]:
+    found_doc, created_doc = None, None
+    try:
+        found_doc = models.Document.objects.get(pk=pydoc.id)
+    except models.Document.DoesNotExist:
+        created_doc = models.Document(
+            **pydoc.model_dump(exclude={"breadcrumb", "versions"}),
+            user=user
+        )
+        created_doc.save()
+        for pyversion in pydoc.versions:
+            ver = models.DocumentVersion(
+                **pyversion.model_dump(exclude={"pages"}),
+                document=created_doc
+            )
+            ver.save()
+            for pypage in pyversion.pages:
+                page = models.Page(**pypage.model_dump(), document_version=ver)
+                page.save()
+
+    if found_doc:
+        return found_doc, False
+
+    return created_doc, True

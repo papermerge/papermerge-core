@@ -144,6 +144,14 @@ def abs_page_hocr_path(
     return Path(settings.MEDIA_ROOT) / page_hocr_path(uuid)
 
 
+def page_file_type_path():
+    """Yields four pages type path functions as tuples"""
+    yield page_txt_path, abs_page_txt_path
+    yield page_svg_path, abs_page_svg_path
+    yield page_hocr_path, abs_page_hocr_path
+    yield page_jpg_path, abs_page_jpg_path
+
+
 def rel2abs(rel_path: Path) -> Path:
     """Converts relative path to absolute path"""
     return Path(settings.MEDIA_ROOT) / rel_path

@@ -1,33 +1,40 @@
 import tarfile
 import time
 from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
+from model_bakery import baker
 
-from papermerge.core.backup_restore.backup import (BackupNodes, BackupPages,
-                                                   BackupVersions,
-                                                   dump_data_as_dict,
+from papermerge.core.backup_restore.backup import (Backup, BackupNodes,
+                                                   BackupPages, BackupVersions,
+                                                   get_backup,
                                                    relative_link_target)
-from papermerge.core.backup_restore.utils import CType
+from papermerge.core.backup_restore.types import (Document, DocumentVersion,
+                                                  Folder)
+from papermerge.core.backup_restore.utils import breadcrumb_to_path
+from papermerge.core.pathlib import (docver_path, page_hocr_path,
+                                     page_jpg_path, page_svg_path,
+                                     page_txt_path)
 from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
                                            user_recipe)
 
+pytestmark = pytest.mark.django_db
 
-@pytest.mark.skip()
-@pytest.mark.django_db
-def test_dump_data_as_dict():
+
+def test_get_backup():
     """
-    Basic assert that dict data dump contains all
+    Basic assert that get_backup data contains all
     user's nodes
 
-    User username=test1 has following nodes:
+    User username=test1 has the following nodes:
         - .home/
             - My Documents/
                 - My Invoice.pdf
         - .inbox/
 
     This test asserts that
-        dump_dict['users'][<index of user test1>]['nodes']
+        backup.users[<index of user test1>]['nodes']
 
     contains
     1. titles of all user's nodes i.e. '.home', '.inbox',
@@ -48,16 +55,17 @@ def test_dump_data_as_dict():
         user=user_test1
     )
 
-    data_dict = dump_data_as_dict()
+    backup = get_backup()
 
     user_test_1 = [
         user
-        for user in data_dict['users']
-        if user['username'] == 'test1'
+        for user in backup.users
+        if user.username == 'test1'
     ][0]
-    expected_titles = [node['title'] for node in user_test_1['nodes']]
+    expected_titles = [node.title for node in user_test_1.nodes]
     expected_breadcrumbs = [
-        node['breadcrumb'] for node in user_test_1['nodes']
+        str(breadcrumb_to_path(node.breadcrumb))
+        for node in user_test_1.nodes
     ]
 
     assert '.inbox' in expected_titles
@@ -65,26 +73,16 @@ def test_dump_data_as_dict():
     assert 'My Documents' in expected_titles
     assert 'My Invoice.pdf' in expected_titles
 
-    assert '.inbox/' in expected_breadcrumbs
-    assert '.home/' in expected_breadcrumbs
-    assert '.home/My Documents/' in expected_breadcrumbs
+    assert '.inbox' in expected_breadcrumbs
+    assert '.home' in expected_breadcrumbs
+    assert '.home/My Documents' in expected_breadcrumbs
     assert '.home/My Documents/My Invoice.pdf' in expected_breadcrumbs
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence():
-    backup_dict = {
-        'users': [
-            {
-                'username': 'user1',
-                'nodes': [
-                    {'breadcrumb': '.home', 'ctype': CType.FOLDER},
-                    {'breadcrumb': '.inbox', 'ctype': CType.FOLDER},
-                ]
-            }
-        ]
-    }
-    result = list(BackupNodes(backup_dict))
+    user_recipe.make(username='user1')
+    backup = get_backup()
+    result = list(BackupNodes(backup))
     expected_tar_info_names = ('user1/.home', 'user1/.inbox')
 
     assert len(result) == 2
@@ -97,67 +95,56 @@ def test_backup_nodes_sequence():
     assert tar_info_entry2.name in expected_tar_info_names
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence_empty_input():
     """Assert that empty input for BackupNodes yields empty results
 
     i.e. no exceptions are raised (or errors)
     """
-    assert list(BackupNodes({})) == []
-    assert list(BackupNodes({'users': []})) == []
-
-    # empty -  in sens that nodes list is empty
-    empty_input = {
-        'users': [
-            {'nodes': [], 'username': 'john'},
-        ]
-    }
-    assert list(BackupNodes(empty_input)) == []
+    backup = Backup(users=[])
+    assert list(BackupNodes(backup)) == []
 
 
-@pytest.mark.skip()
 def test_backup_nodes_sequence_with_one_document_entry():
-    input_dict = {
-        'users': [
-            {'nodes': [
-                {
-                    'breadcrumb': '.home/anmeldung.pdf',
-                    'ctype': CType.DOCUMENT,
-                    'versions': []
-                }
-            ], 'username': 'john'},
-        ]
-    }
+    user = baker.make('core.user', username='john')
+    baker.make(
+        'core.Document',
+        user=user,
+        title="anmeldung.pdf",
+        versions=[]
+    )
 
-    for tar_info, _ in BackupNodes(input_dict):
-        assert tar_info.isreg()
-        # name of the tarfile.TarInfo is prefixed
-        # with user.username i.e. 'john' in this scenario
-        assert tar_info.name == 'john/.home/anmeldung.pdf'
+    backup = Backup(users=[user])
+
+    actual = [tar_info.name for tar_info, _ in BackupNodes(backup)]
+    assert "john/anmeldung.pdf" in actual
 
 
-@pytest.mark.skip()
 def test_backup_versions_sequence_empty_input():
-    node_dict_1 = {
-        'breadcrumb': '.home/',
-        'ctype': CType.FOLDER
-    }
-
-    node_dict_2 = {
-        'breadcrumb': '.home/document.pdf',
-        'ctype': CType.DOCUMENT,
-        'versions': []  # empty versions
-    }
+    user = baker.make('core.user', username='john')
+    node1 = Document.model_validate(
+        baker.make(
+            'core.Document',
+            user=user,
+            title="document.pdf",
+            versions=[]
+        )
+    )
+    node2 = Folder.model_validate(
+        baker.make(
+            'core.Folder',
+            user=user,
+            title="My Documents"
+        )
+    )
 
     assert list(
-        BackupVersions(node_dict_1, prefix='username7')
+        BackupVersions(node1, prefix='username7')
     ) == []
     assert list(
-        BackupVersions(node_dict_2, prefix='username7')
+        BackupVersions(node2, prefix='username7')
     ) == []
 
 
-@pytest.mark.skip()
 @patch(
     'papermerge.core.backup_restore.backup.get_content',
     return_value="some content"
@@ -171,33 +158,44 @@ def test_backup_versions_sequence_empty_input():
     return_value=time.time()
 )
 def test_backup_versions(*_):
-    node_dict = {
-        'breadcrumb': '.home/My Documents/doc.pdf',
-        'ctype': CType.DOCUMENT,
-        'versions': [
-            {
-                'file_path': 'media/docs/v1/doc.pdf',
-                'number': 1
-            },
-            {
-                'file_path': 'media/docs/v2/doc.pdf',
-                'number': 2
-            }
-        ]
-    }
+    u1 = uuid4()
+    u2 = uuid4()
+    user = baker.make('core.user', username='john')
+    node = Document.model_validate(
+        baker.make(
+            'core.Document',
+            user=user,
+            title="anmeldung.pdf",
+            parent_id=user.home_folder_id,
+            versions=[
+                baker.make(
+                    'core.DocumentVersion',
+                    id=u1,
+                    number=1,
+                    file_name="anmeldung.pdf"
+                ),
+                baker.make(
+                    'core.DocumentVersion',
+                    id=u2,
+                    number=2,
+                    file_name="anmeldung.pdf"
+                )
+            ]
+        )
+    )
 
-    versions_seq = BackupVersions(node_dict, prefix='john')
+    versions_seq = BackupVersions(node, prefix='john')
     actual_result = [(item[0].name, item[0].type) for item in versions_seq]
+
     expected_result = [
-        ('media/docs/v1/doc.pdf', tarfile.REGTYPE),
-        ('media/docs/v2/doc.pdf', tarfile.REGTYPE),
-        ('john/.home/My Documents/doc.pdf', tarfile.SYMTYPE)
+        (str(docver_path(u1, "anmeldung.pdf")), tarfile.REGTYPE),
+        (str(docver_path(u2, "anmeldung.pdf")), tarfile.REGTYPE),
+        ('john/.home/anmeldung.pdf', tarfile.SYMTYPE)
     ]
 
     assert set(actual_result) == set(expected_result)
 
 
-@pytest.mark.skip()
 def test_relative_link_target():
     assert "../../../../media/user/v1/doc.pdf" == relative_link_target(
         "home/X/Y/doc.pdf",
@@ -220,16 +218,11 @@ def test_relative_link_target():
     )
 
 
-@pytest.mark.skip()
 def test_backup_pages_empty_input():
-    version_dict = {
-        'pages': []
-    }
-    assert list(BackupPages(version_dict)) == []
-    assert list(BackupPages({})) == []
+    version = build_doc_ver(pages=[])
+    assert list(BackupPages(version)) == []
 
 
-@pytest.mark.skip()
 @patch(
     'papermerge.core.backup_restore.backup.exists',
     return_value=True
@@ -247,18 +240,33 @@ def test_backup_pages_empty_input():
     return_value="XYZ"
 )
 def test_backup_pages(*_):
-    version_dict = {
-        'pages': [
-            {'file_path': 'some/path/to/file_1.pdf'},
-            {'file_path': 'some/path/to/file_2.pdf'}
-        ]
-    }
+    u1 = uuid4()
+    page1 = baker.make('core.Page', id=u1)
+
+    u2 = uuid4()
+    page2 = baker.make('core.Page', id=u2)
+    version = build_doc_ver(
+        pages=[page1, page2]
+    )
+
     actual_result = [
-        (item[0].name, item[1]) for item in BackupPages(version_dict)
+        (item[0].name, item[1]) for item in BackupPages(version)
     ]
     expected_result = [
-        ('some/path/to/file_1.pdf', 'XYZ'),
-        ('some/path/to/file_2.pdf', 'XYZ')
+        (str(page_txt_path(u1)), 'XYZ'),
+        (str(page_txt_path(u2)), 'XYZ'),
+        (str(page_svg_path(u1)), 'XYZ'),
+        (str(page_svg_path(u2)), 'XYZ'),
+        (str(page_hocr_path(u1)), 'XYZ'),
+        (str(page_hocr_path(u2)), 'XYZ'),
+        (str(page_jpg_path(u1)), 'XYZ'),
+        (str(page_jpg_path(u2)), 'XYZ'),
     ]
 
     assert set(actual_result) == set(expected_result)
+
+
+def build_doc_ver(**kwargs):
+    return DocumentVersion.model_validate(
+        baker.make('core.DocumentVersion', **kwargs)
+    )

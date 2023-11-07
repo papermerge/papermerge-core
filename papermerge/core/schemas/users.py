@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class User(BaseModel):
-    id: UUID
+    id: UUID | str
     username: str
     email: str
     created_at: datetime

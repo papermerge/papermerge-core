@@ -19,19 +19,23 @@ def restore_db_data(file_path: str) -> None:
         if 'users' not in backup_info:
             raise ValueError("'users' key is missing")
 
-        for user_data in backup_info['users']:
-            pyuser = types.User(**user_data)
+        restore_users(backup_info['users'])
 
-            user, created = restore_user(pyuser)
-            if not created:
-                logger.info(f"User: {user} already exists")
 
-            for node in pyuser.nodes:
-                if getattr(node, 'versions', None):
-                    # node is a Folder
-                    restore_folder(node, user)
-                else:
-                    restore_document(node, user)
+def restore_users(users_data: list[dict]):
+    for user_data in users_data:
+        pyuser = types.User(**user_data)
+
+        user, created = restore_user(pyuser)
+        if not created:
+            logger.info(f"User: {user} already exists")
+
+        for node in pyuser.nodes:
+            if getattr(node, 'versions', None):
+                restore_document(node, user)
+            else:
+                # node is a Folder
+                restore_folder(node, user)
 
 
 def restore_files(file_path: str) -> None:
@@ -52,7 +56,7 @@ def restore_user(pyuser: types.User) -> Tuple[models.User, bool]:
     found_user, created_user = None, None
     try:
         found_user = models.User.objects.get(pk=pyuser.id)
-    except models.User.ObjectDoesNotExist:
+    except models.User.DoesNotExist:
         created_user = models.User(pyuser.model_dump())
         created_user.save()
 
@@ -68,9 +72,18 @@ def restore_folder(
 ) -> Tuple[models.Folder, bool]:
     found_folder, created_folder = None, None
     try:
-        found_folder = models.Folder.objects.get(pk=pyfolder.id)
-    except models.Folder.ObjectDoesNotExist:
-        created_folder = models.Folder(pyfolder.model_dump(), user=user)
+        found_folder = models.Folder.objects.get(pk=pyfolder.id, user=user)
+    except models.Folder.DoesNotExist:
+        if pyfolder.title == models.Folder.HOME_TITLE:
+            return user.home_folder, False
+
+        if pyfolder.title == models.Folder.INBOX_TITLE:
+            return user.inbox_folder, False
+
+        created_folder = models.Folder(
+            **pyfolder.model_dump(exclude={"breadcrumb"}),
+            user=user
+        )
         created_folder.save()
 
     if found_folder:
@@ -86,9 +99,21 @@ def restore_document(
     found_doc, created_doc = None, None
     try:
         found_doc = models.Document.objects.get(pk=pydoc.id)
-    except models.Document.ObjectDoesNotExist:
-        created_doc = models.Document(pydoc.model_dump(), user=user)
+    except models.Document.DoesNotExist:
+        created_doc = models.Document(
+            **pydoc.model_dump(exclude={"breadcrumb", "versions"}),
+            user=user
+        )
         created_doc.save()
+        for pyversion in pydoc.versions:
+            ver = models.DocumentVersion(
+                **pyversion.model_dump(exclude={"pages"}),
+                document=created_doc
+            )
+            ver.save()
+            for pypage in pyversion.pages:
+                page = models.Page(**pypage.model_dump(), document_version=ver)
+                page.save()
 
     if found_doc:
         return found_doc, False

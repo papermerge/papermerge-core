@@ -12,7 +12,7 @@ from papermerge.core.version import __version__ as VERSION
 
 
 class Page(BaseModel):
-    id: UUID
+    id: UUID | str
     number: int
     text: str = ''
     lang: str
@@ -22,7 +22,7 @@ class Page(BaseModel):
 
 
 class DocumentVersion(BaseModel):
-    id: UUID
+    id: UUID | str
     number: int
     lang: str
     file_name: str | None = None
@@ -46,19 +46,19 @@ class DocumentVersion(BaseModel):
 
 
 class Folder(BaseModel):
-    id: UUID
+    id: UUID | str
     title: str
     ctype: Literal["folder"]
     created_at: datetime
     updated_at: datetime
-    breadcrumb: List[Tuple[UUID, str]]
+    breadcrumb: List[Tuple[UUID | str, str]]
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
 
 
 class Document(BaseModel):
-    id: UUID
+    id: UUID | str
     title: str
     ctype: Literal["document"]
     created_at: datetime

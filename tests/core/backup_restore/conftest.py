@@ -74,6 +74,7 @@ VERSIONS = [
         "file_name": "4-page-doc.pdf",
         "size": 32793,
         "page_count": 4,
+        "text": "",
         "short_description": "Original",
         "pages": [
             {
@@ -109,6 +110,8 @@ VERSIONS = [
         "file_name": "4-page-doc.pdf",
         "size": 0,
         "page_count": 4,
+        "text": "Meine Katze ist blau\n "
+        "Fische sprechen nicht\n Oma kocht jeden Tag\n",
         "short_description": "with OCRed text layer",
         "pages": [
             {

@@ -29,6 +29,7 @@ class DocumentVersion(BaseModel):
     size: int = 0
     page_count: int = 0
     short_description: str
+    text: str
     pages: Optional[List[Page]] = []
 
     @field_validator("pages", mode='before')

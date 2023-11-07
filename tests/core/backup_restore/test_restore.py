@@ -16,3 +16,8 @@ def test_restore(list_with_one_user):
     assert models.User.objects.count() == 1
     assert models.Document.objects.count() == 1
     assert models.Folder.objects.count() == 2
+
+    doc = models.Document.objects.get(title="4-page-doc.pdf")
+    assert doc.versions.count() == 2
+    last_ver = doc.versions.last()
+    assert "Meine Katze" in last_ver.text

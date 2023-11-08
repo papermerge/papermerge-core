@@ -1,6 +1,11 @@
+
+ARG VERSION
+FROM papermerge/papermerge:${VERSION}-ui as papermerge_ui
+
 FROM papermerge/tivoli:0.3.2 as token_validator
 FROM papermerge/auth-server:0.4.9 as auth_server
 FROM python:3.10 as papermerge_core
+
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
@@ -37,16 +42,16 @@ COPY docker/dev/run.bash /run.bash
 COPY docker/dev/supervisord.conf /etc/
 COPY docker/dev/nginx.conf /etc/nginx/nginx.conf
 COPY docker/dev/logging.yml ${CORE_APP}/logging.yml
-### COPY ./papermerge ${CORE_APP}/papermerge/
+COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/dev/config ${CORE_APP}/config
 COPY ./docker/dev/manage.py ${CORE_APP}/manage.py
-### COPY ui/ /core_ui/
 
 RUN chmod +x /run.bash
 
 COPY --from=token_validator /tivoli_app/ /tivoli_app
 COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
+COPY --from=papermerge_ui /core_ui /core_ui/
 
 EXPOSE 80
 

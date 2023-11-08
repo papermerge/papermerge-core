@@ -1,9 +1,9 @@
-name: Build Dev Image
+name: Build Dev UI Image
 
 on:
   push:
     tags:
-      - '*'
+      - '*\-ui'
 
 jobs:
   build:
@@ -26,6 +26,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: papermerge/papermerge:${{ github.ref_name }}
-          file: docker/dev/Dockerfile
+          tags: papermerge/papermerge:${{ github.ref_name }}-ui
+          file: docker/dev/Dockerfile.ui
           platforms: linux/amd64

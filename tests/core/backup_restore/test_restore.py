@@ -1,7 +1,7 @@
 import pytest
 
 from papermerge.core import models
-from papermerge.core.backup_restore.restore import restore_users
+from papermerge.core.backup_restore.restore import restore_user, restore_users
 
 
 @pytest.mark.django_db
@@ -21,3 +21,12 @@ def test_restore(list_with_one_user):
     assert doc.versions.count() == 2
     last_ver = doc.versions.last()
     assert "Meine Katze" in last_ver.text
+
+
+@pytest.mark.django_db
+def test_restore_user(pyjohn):
+    created_user, was_created = restore_user(pyjohn)
+
+    assert was_created is True
+    assert created_user.username == 'john'
+    assert models.User.objects.get(username='john')

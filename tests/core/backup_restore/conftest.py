@@ -1,4 +1,9 @@
+import datetime
+from uuid import UUID
+
 import pytest
+
+from papermerge.core.backup_restore import types
 
 
 @pytest.fixture
@@ -64,6 +69,38 @@ def list_with_one_user() -> list[dict]:
             ]
         }
     ]
+
+
+@pytest.fixture
+def pyjohn() -> types.User:
+    user = {
+        'id': '3564411e-fddf-44b9-866d-0ffe81a02dba',
+        'username': 'john',
+        'email': 'admin@example.com',
+        'created_at': datetime.datetime(
+            2023,
+            11,
+            9,
+            6,
+            43,
+            52,
+            8599
+        ),
+        'updated_at': datetime.datetime(
+            2023,
+            11,
+            9,
+            6,
+            43,
+            52,
+            8600
+         ),
+        'home_folder_id': UUID('48310d04-29d8-42d5-b5c6-65bc34d8ebea'),
+        'inbox_folder_id': UUID('26957c80-1853-4b4b-bffa-12771df969bc'),
+        'password': 'hash-thingy'
+    }
+
+    return types.User(**user)
 
 
 VERSIONS = [

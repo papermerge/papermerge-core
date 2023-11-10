@@ -57,7 +57,7 @@ def restore_user(pyuser: types.User) -> Tuple[models.User, bool]:
     try:
         found_user = models.User.objects.get(pk=pyuser.id)
     except models.User.DoesNotExist:
-        created_user = models.User(pyuser.model_dump())
+        created_user = models.User(**pyuser.model_dump(exclude={'nodes'}))
         created_user.save()
 
     if found_user:

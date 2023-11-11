@@ -187,7 +187,14 @@ class BackupNodes:
 
 def get_backup() -> Backup:
     users = [
-        UserSerializer.model_validate(user)
+        UserSerializer(
+            username=user.username,
+            email=user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            password=user.password,
+            nodes=user.nodes
+        )
         for user in User.objects.all()
     ]
 

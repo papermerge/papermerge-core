@@ -29,4 +29,7 @@ def test_restore_user(pyjohn):
 
     assert was_created is True
     assert created_user.username == 'john'
-    assert models.User.objects.get(username='john')
+    user = models.User.objects.get(username='john')
+    assert user
+    assert user.home_folder.title == '.home'
+    assert user.inbox_folder.title == '.inbox'

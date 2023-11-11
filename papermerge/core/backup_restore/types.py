@@ -1,12 +1,11 @@
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
 from pydantic import (BaseModel, ConfigDict, FieldValidationInfo,
                       field_validator)
 
-from papermerge.core.schemas.users import User as BaseUser
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.version import __version__ as VERSION
 
@@ -47,24 +46,28 @@ class DocumentVersion(BaseModel):
 
 
 class Folder(BaseModel):
-    id: UUID | str
     title: str
     ctype: Literal["folder"]
     created_at: datetime
     updated_at: datetime
-    breadcrumb: List[Tuple[UUID | str, str]]
+    breadcrumb: list[str]   # list of ancestor titles
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
 
+    @field_validator("breadcrumb", mode='before')
+    def get_breadcrumb(cls, v: object) -> object:
+        """Discards UUID part from the breadcrumb tuple"""
+        result = list([i[1] for i in v])
+        return result
+
 
 class Document(BaseModel):
-    id: UUID | str
     title: str
     ctype: Literal["document"]
     created_at: datetime
     updated_at: datetime
-    breadcrumb: list[Tuple[UUID, str]]
+    breadcrumb: list[str]  # list of ancestor titles
     versions: Optional[List[DocumentVersion]] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
@@ -75,11 +78,23 @@ class Document(BaseModel):
             return list(v.all())
         return v
 
+    @field_validator("breadcrumb", mode='before')
+    def get_breadcrumb(cls, v: object) -> object:
+        """Discards UUID part from the breadcrumb tuple"""
+        result = list([i[1] for i in v])
+        return result
+
     # Config
     model_config = ConfigDict(from_attributes=True)
 
 
-class User(BaseUser):
+class User(BaseModel):
+    username: str
+    email: str
+    created_at: datetime
+    updated_at: datetime
+    # Config
+    model_config = ConfigDict(from_attributes=True)
     password: str
     nodes: list[Document | Folder] = []
 

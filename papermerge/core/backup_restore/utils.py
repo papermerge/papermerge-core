@@ -1,7 +1,5 @@
 from enum import Enum
 from pathlib import PurePath
-from typing import Tuple
-from uuid import UUID
 
 
 class CType(Enum):
@@ -82,6 +80,8 @@ class RestoreSequence:
             yield node
 
 
-def breadcrumb_to_path(breadcrumb: list[Tuple[UUID, str]]) -> PurePath:
-    items: list[str] = [item[1] for item in breadcrumb]
-    return PurePath(*items)
+def breadcrumb_to_path(breadcrumb: list[str], prefix: str = None) -> PurePath:
+    if prefix:
+        return PurePath(prefix, *breadcrumb)
+
+    return PurePath(*breadcrumb)

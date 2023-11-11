@@ -1,9 +1,13 @@
 import datetime
+import json
+import pathlib
 from uuid import UUID
 
 import pytest
 
 from papermerge.core.backup_restore import types
+
+RESOURCES_DIR = pathlib.Path(__file__).parents[2].absolute() / 'resources'
 
 
 @pytest.fixture
@@ -178,3 +182,11 @@ VERSIONS = [
         ]
     }
 ]
+
+
+@pytest.fixture
+def backup_1():
+    with open(RESOURCES_DIR / 'backup-1.json') as file:
+        backup_dict = json.load(file)
+
+    return types.Backup(**backup_dict)

@@ -53,6 +53,8 @@ COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
 COPY --from=papermerge_ui /core_ui /core_ui/
 
+RUN cd /core_ui/ && npm i
+
 EXPOSE 80
 
 ENTRYPOINT ["/run.bash"]

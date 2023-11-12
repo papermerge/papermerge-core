@@ -8,7 +8,7 @@ from django.conf import settings
 from papermerge.core import constants, models
 from papermerge.core.backup_restore import types
 
-from .utils import breadcrumb_to_path
+from .utils import breadcrumb_to_path, mkdirs
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +87,11 @@ def restore_folder(
         if pyfolder.title == models.Folder.INBOX_TITLE:
             return user.inbox_folder, False
 
+        parent = mkdirs(breadcrumb, user)
         created_folder = models.Folder(
             **pyfolder.model_dump(exclude={"breadcrumb"}),
-            user=user
+            user=user,
+            parent=parent
         )
         created_folder.save()
 
@@ -111,9 +113,11 @@ def restore_document(
             user=user
         )
     except models.Document.DoesNotExist:
+        parent = mkdirs(breadcrumb.parent, user)
         created_doc = models.Document(
             **pydoc.model_dump(exclude={"breadcrumb", "versions"}),
-            user=user
+            user=user,
+            parent=parent
         )
         created_doc.save()
         for pyversion in pydoc.versions:

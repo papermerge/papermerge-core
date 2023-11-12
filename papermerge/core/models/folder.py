@@ -39,7 +39,11 @@ class FolderQuerySet(models.QuerySet):
     def publish_post_delete_task(self, node_ids: List[str]):
         current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
 
-    def get_by_breadcrumb(self, breadcrumb: str, user) -> 'Folder':
+    def get_by_breadcrumb(
+        self,
+        breadcrumb: str,  # should this be pathlib.PurePath ?
+        user
+    ) -> 'Folder':
         """
         Returns ``Folder`` instance of the node defined by given
         breadcrumb path of specific ``User``.

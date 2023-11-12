@@ -92,7 +92,6 @@ def breadcrumb_to_path(breadcrumb: list[str], prefix: str = None) -> PurePath:
 def mkdirs(breadcrumb: PurePath, user: models.User) -> models.Folder | None:
     """no error if existing, make parent directories as needed"""
     parent = None
-
     parents_and_self = list(reversed(breadcrumb.parents))
     parents_and_self.append(breadcrumb)
 

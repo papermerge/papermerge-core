@@ -60,3 +60,17 @@ def test_that_doc_and_folder_hierarchy_is_preserved(backup_1):
         ".home/My Documents/Contracts/important-thing.pdf",
         created_user
     )
+
+    with pytest.raises(models.Folder.DoesNotExist):
+        models.Folder.objects.get_by_breadcrumb(
+            ".home/I/Dont/Exist",
+            created_user
+        )
+
+    # this was added because of real bug which resulted
+    # in duplicate folder creations
+    with pytest.raises(models.Folder.DoesNotExist):
+        models.Folder.objects.get_by_breadcrumb(
+            ".home/My Documents/My Documents",
+            created_user
+        )

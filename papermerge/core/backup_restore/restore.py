@@ -90,7 +90,7 @@ def restore_folder(
         if pyfolder.title == models.Folder.INBOX_TITLE:
             return user.inbox_folder, False
 
-        parent = mkdirs(breadcrumb, user)
+        parent = mkdirs(breadcrumb.parent, user)
         created_folder = models.Folder(
             **pyfolder.model_dump(exclude={"breadcrumb"}),
             user=user,

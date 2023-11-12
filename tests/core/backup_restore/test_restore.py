@@ -37,17 +37,26 @@ def test_restore_user(pyjohn):
     assert user.inbox_folder.title == '.inbox'
 
 
-def test_that_folder_hierarchy_is_preserved(backup_1):
+def test_that_doc_and_folder_hierarchy_is_preserved(backup_1):
     """
     Restore DB from backup and check if docs/folders hierarchy was preserved
     """
     pyuser = backup_1.users[0]
     # restore DB from backup
-    created_user, was_created = restore_user(pyuser)
+    restore_users([pyuser])
+    created_user = models.User.objects.get(username='admin')
 
-    found_doc = models.Document.objects.get_by_breadcrumb(
-        ".home/My Documents/Contracts/important-thing.pdf",
+    assert models.Folder.objects.get_by_breadcrumb(
+        ".home/My Documents/Contracts",
         created_user
     )
 
-    assert found_doc
+    assert models.Folder.objects.get_by_breadcrumb(
+        ".home/Empty",
+        created_user
+    )
+
+    assert models.Document.objects.get_by_breadcrumb(
+        ".home/My Documents/Contracts/important-thing.pdf",
+        created_user
+    )

@@ -58,7 +58,13 @@ class Folder(BaseModel):
     @field_validator("breadcrumb", mode='before')
     def get_breadcrumb(cls, v: object) -> object:
         """Discards UUID part from the breadcrumb tuple"""
-        result = list([i[1] for i in v])
+        result = []
+        for item in v:
+            if isinstance(item, (list, tuple)):
+                result.append(item[1])
+            else:
+                result.append(item)
+
         return result
 
 
@@ -81,7 +87,13 @@ class Document(BaseModel):
     @field_validator("breadcrumb", mode='before')
     def get_breadcrumb(cls, v: object) -> object:
         """Discards UUID part from the breadcrumb tuple"""
-        result = list([i[1] for i in v])
+        result = []
+        for item in v:
+            if isinstance(item, (list, tuple)):
+                result.append(item[1])
+            else:
+                result.append(item)
+
         return result
 
     # Config

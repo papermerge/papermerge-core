@@ -95,6 +95,7 @@ def mkdirs(breadcrumb: PurePath, user: models.User) -> models.Folder | None:
 
     parents_and_self = list(reversed(breadcrumb.parents))
     parents_and_self.append(breadcrumb)
+
     for pure_path in parents_and_self:
         parent = mkdir(pure_path, user=user, parent=parent)
 

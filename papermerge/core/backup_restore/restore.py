@@ -24,9 +24,12 @@ def restore_db_data(file_path: str) -> None:
         restore_users(backup_info['users'])
 
 
-def restore_users(users_data: list[dict]):
+def restore_users(users_data: list[dict] | list[types.User]):
     for user_data in users_data:
-        pyuser = types.User(**user_data)
+        if isinstance(user_data, types.User):
+            pyuser = user_data
+        else:
+            pyuser = types.User(**user_data)
 
         user, created = restore_user(pyuser)
         if not created:

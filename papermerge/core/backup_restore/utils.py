@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import PurePath
-from typing import Tuple
-from uuid import UUID
+
+from papermerge.core import models
 
 
 class CType(Enum):
@@ -82,6 +82,52 @@ class RestoreSequence:
             yield node
 
 
-def breadcrumb_to_path(breadcrumb: list[Tuple[UUID, str]]) -> PurePath:
-    items: list[str] = [item[1] for item in breadcrumb]
-    return PurePath(*items)
+def breadcrumb_to_path(breadcrumb: list[str], prefix: str = None) -> PurePath:
+    if prefix:
+        return PurePath(prefix, *breadcrumb)
+
+    return PurePath(*breadcrumb)
+
+
+def mkdirs(breadcrumb: PurePath, user: models.User) -> models.Folder | None:
+    """no error if existing, make parent directories as needed"""
+    parent = None
+    parents_and_self = list(reversed(breadcrumb.parents))
+    parents_and_self.append(breadcrumb)
+
+    for pure_path in parents_and_self:
+        parent = mkdir(pure_path, user=user, parent=parent)
+
+    return parent
+
+
+def mkdir(
+    breadcrumb: PurePath,
+    *,
+    parent: models.Folder | None,
+    user: models.User
+) -> models.Folder | None:
+    """no error if existing, make Folder as needed
+
+    Returns folder which was matched or created
+    """
+
+    if breadcrumb == PurePath('.') and parent is None:
+        # ".home".parents => returns ["."]
+        return parent
+
+    try:
+        found = models.Folder.objects.get_by_breadcrumb(
+            str(breadcrumb),
+            user
+        )
+    except models.Folder.DoesNotExist:
+        created = models.Folder.objects.create(
+            title=breadcrumb.name,
+            parent=parent,
+            user=user
+        )
+
+        return created
+
+    return found

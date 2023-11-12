@@ -8,6 +8,8 @@ from django.conf import settings
 from papermerge.core import constants, models
 from papermerge.core.backup_restore import types
 
+from .utils import breadcrumb_to_path, mkdirs
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,9 +24,12 @@ def restore_db_data(file_path: str) -> None:
         restore_users(backup_info['users'])
 
 
-def restore_users(users_data: list[dict]):
+def restore_users(users_data: list[dict] | list[types.User]):
     for user_data in users_data:
-        pyuser = types.User(**user_data)
+        if isinstance(user_data, types.User):
+            pyuser = user_data
+        else:
+            pyuser = types.User(**user_data)
 
         user, created = restore_user(pyuser)
         if not created:
@@ -55,9 +60,9 @@ def restore_data(file_path: str):
 def restore_user(pyuser: types.User) -> Tuple[models.User, bool]:
     found_user, created_user = None, None
     try:
-        found_user = models.User.objects.get(pk=pyuser.id)
+        found_user = models.User.objects.get(username=pyuser.username)
     except models.User.DoesNotExist:
-        created_user = models.User(pyuser.model_dump())
+        created_user = models.User(**pyuser.model_dump(exclude={'nodes'}))
         created_user.save()
 
     if found_user:
@@ -71,8 +76,13 @@ def restore_folder(
     user: models.User
 ) -> Tuple[models.Folder, bool]:
     found_folder, created_folder = None, None
+    breadcrumb = breadcrumb_to_path(pyfolder.breadcrumb)
+
     try:
-        found_folder = models.Folder.objects.get(pk=pyfolder.id, user=user)
+        found_folder = models.Folder.objects.get_by_breadcrumb(
+            str(breadcrumb),
+            user=user
+        )
     except models.Folder.DoesNotExist:
         if pyfolder.title == models.Folder.HOME_TITLE:
             return user.home_folder, False
@@ -80,9 +90,11 @@ def restore_folder(
         if pyfolder.title == models.Folder.INBOX_TITLE:
             return user.inbox_folder, False
 
+        parent = mkdirs(breadcrumb.parent, user)
         created_folder = models.Folder(
             **pyfolder.model_dump(exclude={"breadcrumb"}),
-            user=user
+            user=user,
+            parent=parent
         )
         created_folder.save()
 
@@ -97,12 +109,18 @@ def restore_document(
     user: models.User
 ) -> Tuple[models.Document, bool]:
     found_doc, created_doc = None, None
+    breadcrumb = breadcrumb_to_path(pydoc.breadcrumb)
     try:
-        found_doc = models.Document.objects.get(pk=pydoc.id)
+        found_doc = models.Document.objects.get_by_breadcrumb(
+            breadcrumb=str(breadcrumb),
+            user=user
+        )
     except models.Document.DoesNotExist:
+        parent = mkdirs(breadcrumb.parent, user)
         created_doc = models.Document(
             **pydoc.model_dump(exclude={"breadcrumb", "versions"}),
-            user=user
+            user=user,
+            parent=parent
         )
         created_doc.save()
         for pyversion in pydoc.versions:

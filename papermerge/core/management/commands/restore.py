@@ -1,6 +1,8 @@
 import logging
 
 from django.core.management import BaseCommand
+from django.db.utils import IntegrityError
+
 from papermerge.core.backup_restore import restore_data
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,13 @@ class Command(BaseCommand):
         parser.add_argument('location', nargs='?', type=str)
 
     def handle(self, *args, **options):
-        if location := options.get('location'):
-            restore_data(file_path=location)
-        else:
-            logger.error("Please add the path to your backup.tar")
+        try:
+            if location := options.get('location'):
+                restore_data(file_path=location)
+            else:
+                logger.error("Please add the path to your backup.tar")
+        except IntegrityError as exc:
+            logger.error(exc)
+            raise Exception(
+                "There was a problem while restoring data"
+            ) from exc

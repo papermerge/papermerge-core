@@ -160,6 +160,7 @@ def test_backup_versions_sequence_empty_input():
 def test_backup_versions(*_):
     u1 = uuid4()
     u2 = uuid4()
+
     user = baker.make('core.user', username='john')
     node = Document.model_validate(
         baker.make(

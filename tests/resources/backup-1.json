@@ -1,0 +1,216 @@
+{
+    "created": "11.11.2023-12:37:30",
+    "version": "3.0a1",
+    "users": [
+        {
+            "username": "admin",
+            "email": "admin@example.com",
+            "created_at": "2023-11-11 06:22:08.978201+00:00",
+            "updated_at": "2023-11-11 06:22:08.978201+00:00",
+            "password": "some-pass",
+            "nodes": [
+                {
+                    "title": ".home",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:22:08.978855+00:00",
+                    "updated_at": "2023-11-11 06:22:08.978856+00:00",
+                    "breadcrumb": [
+                        ".home"
+                    ]
+                },
+                {
+                    "title": ".inbox",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:22:08.978857+00:00",
+                    "updated_at": "2023-11-11 06:22:08.978857+00:00",
+                    "breadcrumb": [
+                        ".inbox"
+                    ]
+                },
+                {
+                    "title": "My Documents",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:33:34.249443+00:00",
+                    "updated_at": "2023-11-11 06:33:34.249508+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "My Documents"
+                    ]
+                },
+                {
+                    "title": "Empty",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:33:38.736242+00:00",
+                    "updated_at": "2023-11-11 06:33:38.736295+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Empty"
+                    ]
+                },
+                {
+                    "title": "important-thing.pdf",
+                    "ctype": "document",
+                    "created_at": "2023-11-11 06:34:02.109827+00:00",
+                    "updated_at": "2023-11-11 11:33:54.575862+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "My Documents",
+                        "Contracts",
+                        "important-thing.pdf"
+                    ],
+                    "versions": [
+                        {
+                            "id": "b73330d5-8b7b-4c25-a74c-3f4d5ba55c71",
+                            "number": 1,
+                            "lang": "deu",
+                            "file_name": "brother_008263.pdf",
+                            "size": 75167,
+                            "page_count": 1,
+                            "short_description": "Original",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "95d0beea-3b44-498c-bb2c-e058cf2ea7af",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "f5d1423e-22e8-48d8-943d-c7894286c608",
+                            "number": 2,
+                            "lang": "deu",
+                            "file_name": "brother_008263.pdf",
+                            "size": 0,
+                            "page_count": 1,
+                            "short_description": "with OCRed text layer",
+                            "text": "\u00ae\n\nVor/Fahrtantritt bitte entwerten\nwm Please validate before USE.\n\nEinzelfah rausweis\nRegeltarif\n\nBerlin AB\n**3 00 EUR\n\nB89353 63\n210628 12:41",
+                            "pages": [
+                                {
+                                    "id": "cd33b592-214a-48a4-b9ed-e3c78815e11c",
+                                    "number": 1,
+                                    "text": "\u00ae\n\nVor/Fahrtantritt bitte entwerten\nwm Please validate before USE.\n\nEinzelfah rausweis\nRegeltarif\n\nBerlin AB\n**3 00 EUR\n\nB89353 63\n210628 12:41\n\n",
+                                    "lang": "deu"
+                                }
+                            ]
+                        }
+                    ],
+                    "ocr": true,
+                    "ocr_status": "SUCCESS"
+                },
+                {
+                    "title": "are-warm.pdf",
+                    "ctype": "document",
+                    "created_at": "2023-11-11 06:34:02.116656+00:00",
+                    "updated_at": "2023-11-11 11:35:37.452897+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Colors",
+                        "Of",
+                        "The",
+                        "Cloud",
+                        "are-warm.pdf"
+                    ],
+                    "versions": [
+                        {
+                            "id": "49d04a4c-3f03-433e-899e-1ebfa85d966d",
+                            "number": 1,
+                            "lang": "deu",
+                            "file_name": "brother_008262.pdf",
+                            "size": 149220,
+                            "page_count": 1,
+                            "short_description": "Original",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "ca07de18-69bd-4cd8-a23c-b76054437e13",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "11d85e32-ee06-4696-810c-bd2b7c008043",
+                            "number": 2,
+                            "lang": "deu",
+                            "file_name": "brother_008262.pdf",
+                            "size": 0,
+                            "page_count": 1,
+                            "short_description": "with OCRed text layer",
+                            "text": "uopisAyd fo dwozs puo aumoud\u0131s\nsalz\u0131y sap\njpdwals pun yuyas\u0131ayun\n\n(suorDuron / 230p) zuswzuroddo Ixan\n\n7 Va?) *T :(usdunydwj / wngeg) unwuoydu soIsyJeNn\n\norrLO04 SUD\nOALYNAINOO\n\naup90A fo \u2018ou y2J0q puD saunpofnunyy\n\n193U29 UORDUIIDA Jawwnuusadue; SUID60 voRDunaDA\nwn4uazydu u3333 unydwi\n\n&36/ LIT :we u810939\n\nTeer uyaalyasag\n\nM",
+                            "pages": [
+                                {
+                                    "id": "7a817236-ba34-4d4c-88ec-880a5ca8a82e",
+                                    "number": 1,
+                                    "text": "uopisAyd fo dwozs puo aumoud\u0131s\nsalz\u0131y sap\njpdwals pun yuyas\u0131ayun\n\n(suorDuron / 230p) zuswzuroddo Ixan\n\n7 Va?) *T :(usdunydwj / wngeg) unwuoydu soIsyJeNn\n\norrLO04 SUD\nOALYNAINOO\n\naup90A fo \u2018ou y2J0q puD saunpofnunyy\n\n193U29 UORDUIIDA Jawwnuusadue; SUID60 voRDunaDA\nwn4uazydu u3333 unydwi\n\n&36/ LIT :we u810939\n\nTeer uyaalyasag\n\nM\n\n",
+                                    "lang": "deu"
+                                }
+                            ]
+                        }
+                    ],
+                    "ocr": true,
+                    "ocr_status": "SUCCESS"
+                },
+                {
+                    "title": "Contracts",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 11:33:33.718678+00:00",
+                    "updated_at": "2023-11-11 11:33:33.718751+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "My Documents",
+                        "Contracts"
+                    ]
+                },
+                {
+                    "title": "Colors",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 11:34:15.398966+00:00",
+                    "updated_at": "2023-11-11 11:34:15.399000+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Colors"
+                    ]
+                },
+                {
+                    "title": "Of",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 11:34:30.775053+00:00",
+                    "updated_at": "2023-11-11 11:34:30.775111+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Colors",
+                        "Of"
+                    ]
+                },
+                {
+                    "title": "The",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 11:34:36.110546+00:00",
+                    "updated_at": "2023-11-11 11:34:36.110602+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Colors",
+                        "Of",
+                        "The"
+                    ]
+                },
+                {
+                    "title": "Cloud",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 11:34:43.055484+00:00",
+                    "updated_at": "2023-11-11 11:34:43.055538+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Colors",
+                        "Of",
+                        "The",
+                        "Cloud"
+                    ]
+                }
+            ]
+        }
+    ]
+}

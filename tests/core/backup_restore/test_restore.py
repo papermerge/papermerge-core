@@ -74,3 +74,32 @@ def test_that_doc_and_folder_hierarchy_is_preserved(backup_1):
             ".home/My Documents/My Documents",
             created_user
         )
+
+
+def test_restore_with_tags(backup_with_tags):
+    pyuser = backup_with_tags.users[0]
+    # restore DB from backup
+    restore_users([pyuser])
+
+    user = models.User.objects.get(username='admin')
+    user_tags = {tag.name for tag in user.tags.all()}
+    assert {"green", "red", "blue"} == user_tags
+
+    clients_folder = models.Folder.objects.get_by_breadcrumb(
+        ".home/Clients",
+        user
+    )
+    clients_folder_tags = {tag.name for tag in clients_folder.tags.all()}
+    assert {"green"} == clients_folder_tags
+
+    doc1 = models.Document.objects.get_by_breadcrumb(
+        ".home/Clients/brother_008261.pdf",
+        user
+    )
+    assert {"blue", "green"} == {tag.name for tag in doc1.tags.all()}
+
+    doc2 = models.Document.objects.get_by_breadcrumb(
+        ".home/brother_008263.pdf",
+        user
+    )
+    assert {"red"} == {tag.name for tag in doc2.tags.all()}

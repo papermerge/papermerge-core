@@ -1,0 +1,203 @@
+{
+    "created": "13.11.2023-06:44:16",
+    "version": "3.0a1",
+    "users": [
+        {
+            "username": "admin",
+            "email": "admin@example.com",
+            "created_at": "2023-11-11 06:22:08.978201+00:00",
+            "updated_at": "2023-11-11 06:22:08.978201+00:00",
+            "password": "hash-thingy",
+            "nodes": [
+                {
+                    "title": ".home",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:22:08.978855+00:00",
+                    "updated_at": "2023-11-11 06:22:08.978856+00:00",
+                    "breadcrumb": [
+                        ".home"
+                    ],
+                    "tags": []
+                },
+                {
+                    "title": ".inbox",
+                    "ctype": "folder",
+                    "created_at": "2023-11-11 06:22:08.978857+00:00",
+                    "updated_at": "2023-11-11 06:22:08.978857+00:00",
+                    "breadcrumb": [
+                        ".inbox"
+                    ],
+                    "tags": []
+                },
+                {
+                    "title": "Clients",
+                    "ctype": "folder",
+                    "created_at": "2023-11-13 05:25:52.799570+00:00",
+                    "updated_at": "2023-11-13 05:25:52.799624+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Clients"
+                    ],
+                    "tags": [
+                        {
+                            "name": "green",
+                            "bg_color": "#00a347",
+                            "fg_color": "#ffffff",
+                            "description": "",
+                            "pinned": false
+                        }
+                    ]
+                },
+                {
+                    "title": "brother_008263.pdf",
+                    "ctype": "document",
+                    "created_at": "2023-11-13 05:26:40.759105+00:00",
+                    "updated_at": "2023-11-13 05:26:42.744362+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "brother_008263.pdf"
+                    ],
+                    "versions": [
+                        {
+                            "id": "2ea318e3-f744-44fe-a2ef-816341576254",
+                            "number": 1,
+                            "lang": "deu",
+                            "file_name": "brother_008263.pdf",
+                            "size": 75167,
+                            "page_count": 1,
+                            "short_description": "Original",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "2d474513-1ad7-4b48-b085-35b35573f752",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "65ec09e7-70be-424b-aca2-dd67a534b222",
+                            "number": 2,
+                            "lang": "deu",
+                            "file_name": "brother_008263.pdf",
+                            "size": 0,
+                            "page_count": 1,
+                            "short_description": "with OCRed text layer",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "cd7cfe78-e4e8-44f5-a451-0e60d913fe3e",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        }
+                    ],
+                    "ocr": true,
+                    "ocr_status": "SUCCESS",
+                    "tags": [
+                        {
+                            "name": "red",
+                            "bg_color": "#ff1f1f",
+                            "fg_color": "#ffffff",
+                            "description": "",
+                            "pinned": false
+                        }
+                    ]
+                },
+                {
+                    "title": "brother_008261.pdf",
+                    "ctype": "document",
+                    "created_at": "2023-11-13 05:27:00.014205+00:00",
+                    "updated_at": "2023-11-13 05:27:03.799409+00:00",
+                    "breadcrumb": [
+                        ".home",
+                        "Clients",
+                        "brother_008261.pdf"
+                    ],
+                    "versions": [
+                        {
+                            "id": "bf0237f9-929b-4e8b-b612-79c9b81615cb",
+                            "number": 1,
+                            "lang": "deu",
+                            "file_name": "brother_008261.pdf",
+                            "size": 173483,
+                            "page_count": 1,
+                            "short_description": "Original",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "e65a99d8-a3bc-4ad4-968d-29690c258b46",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "4ad335c5-a87b-4c29-8a99-9d71c9e941dc",
+                            "number": 2,
+                            "lang": "deu",
+                            "file_name": "brother_008261.pdf",
+                            "size": 0,
+                            "page_count": 1,
+                            "short_description": "with OCRed text layer",
+                            "text": "",
+                            "pages": [
+                                {
+                                    "id": "37f818c2-87a8-460b-b7c5-d2de69e2c220",
+                                    "number": 1,
+                                    "text": "",
+                                    "lang": "deu"
+                                }
+                            ]
+                        }
+                    ],
+                    "ocr": true,
+                    "ocr_status": "SUCCESS",
+                    "tags": [
+                        {
+                            "name": "blue",
+                            "bg_color": "#1f2eff",
+                            "fg_color": "#ffffff",
+                            "description": "",
+                            "pinned": false
+                        },
+                        {
+                            "name": "green",
+                            "bg_color": "#00a347",
+                            "fg_color": "#ffffff",
+                            "description": "",
+                            "pinned": false
+                        }
+                    ]
+                }
+            ],
+            "tags": [
+                {
+                    "name": "blue",
+                    "bg_color": "#1f2eff",
+                    "fg_color": "#ffffff",
+                    "description": "",
+                    "pinned": false
+                },
+                {
+                    "name": "green",
+                    "bg_color": "#00a347",
+                    "fg_color": "#ffffff",
+                    "description": "",
+                    "pinned": false
+                },
+                {
+                    "name": "red",
+                    "bg_color": "#ff1f1f",
+                    "fg_color": "#ffffff",
+                    "description": "",
+                    "pinned": false
+                }
+            ]
+        }
+    ]
+}

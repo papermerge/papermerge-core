@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 from model_bakery import baker
 
+from papermerge.core.backup_restore import types
 from papermerge.core.backup_restore.backup import (Backup, BackupNodes,
                                                    BackupPages, BackupVersions,
                                                    get_backup,
@@ -265,6 +266,22 @@ def test_backup_pages(*_):
     ]
 
     assert set(actual_result) == set(expected_result)
+
+
+def test_pyuser_with_tags():
+    """
+    Create a user with some tags and check that types.User instance
+    has those tag names
+    """
+    user = baker.make('core.user', username='john')
+    baker.make('core.tag', user=user, name="red")
+    baker.make('core.tag', user=user, name="green")
+
+    pyuser = types.User.model_validate(user)
+
+    user_all_tag_names = [tag.name for tag in pyuser.tags]
+    assert 'red' in user_all_tag_names
+    assert 'green' in user_all_tag_names
 
 
 def build_doc_ver(**kwargs):

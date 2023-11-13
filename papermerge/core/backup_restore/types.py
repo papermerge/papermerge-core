@@ -6,6 +6,8 @@ from django.db.models.manager import BaseManager
 from pydantic import (BaseModel, ConfigDict, FieldValidationInfo,
                       field_validator)
 
+from papermerge.core.constants import (DEFAULT_TAG_BG_COLOR,
+                                       DEFAULT_TAG_FG_COLOR)
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.version import __version__ as VERSION
 
@@ -100,6 +102,17 @@ class Document(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class Tag(BaseModel):
+    name: str
+    bg_color: str = DEFAULT_TAG_BG_COLOR
+    fg_color: str = DEFAULT_TAG_FG_COLOR
+    description: str | None = None
+    pinned: bool = False
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class User(BaseModel):
     username: str
     email: str
@@ -109,6 +122,7 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     password: str
     nodes: list[Document | Folder] = []
+    tags: list[Tag] = []
 
     @field_validator("nodes", mode='before')
     def get_all_from_manager(cls, v: object) -> object:
@@ -125,6 +139,12 @@ class User(BaseModel):
                     )
 
             return ret
+        return v
+
+    @field_validator("tags", mode='before')
+    def get_all_from_manager2(cls, v: object) -> object:
+        if isinstance(v, BaseManager):
+            return list(v.all())
         return v
 
 

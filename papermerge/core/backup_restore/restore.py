@@ -42,6 +42,9 @@ def restore_users(users_data: list[dict] | list[types.User]):
                 # node is a Folder
                 restore_folder(node, user)
 
+        for tag in pyuser.tags:
+            restore_tag(tag, user)
+
 
 def restore_files(file_path: str) -> None:
     with tarfile.open(file_path, mode="r:gz") as file:
@@ -62,7 +65,9 @@ def restore_user(pyuser: types.User) -> Tuple[models.User, bool]:
     try:
         found_user = models.User.objects.get(username=pyuser.username)
     except models.User.DoesNotExist:
-        created_user = models.User(**pyuser.model_dump(exclude={'nodes'}))
+        created_user = models.User(
+            **pyuser.model_dump(exclude={'nodes', 'tags'})
+        )
         created_user.save()
 
     if found_user:
@@ -97,6 +102,11 @@ def restore_folder(
             parent=parent
         )
         created_folder.save()
+
+        created_folder.basetreenode_ptr.tags.set(
+            [tag.name for tag in pyfolder.tags],
+            tag_kwargs={"user": user}
+        )
 
     if found_folder:
         return found_folder, False
@@ -133,7 +143,30 @@ def restore_document(
                 page = models.Page(**pypage.model_dump(), document_version=ver)
                 page.save()
 
+        created_doc.basetreenode_ptr.tags.set(
+            [tag.name for tag in pydoc.tags],
+            tag_kwargs={"user": user}
+        )
+
     if found_doc:
         return found_doc, False
 
     return created_doc, True
+
+
+def restore_tag(
+    pytag: types.Tag,
+    user: models.User
+) -> Tuple[models.Tag, bool]:
+    found_tag, created_tag = None, None
+
+    try:
+        found_tag = models.Tag.objects.get(name=pytag.name, user=user)
+    except models.Tag.DoesNotExist:
+        created_tag = models.Tag(**pytag.model_dump(), user=user)
+        created_tag.save()
+
+    if found_tag:
+        return found_tag, False
+
+    return created_tag, True

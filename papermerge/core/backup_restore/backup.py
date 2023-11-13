@@ -193,7 +193,8 @@ def get_backup() -> Backup:
             created_at=user.created_at,
             updated_at=user.updated_at,
             password=user.password,
-            nodes=user.nodes
+            nodes=user.nodes,
+            tags=user.tags
         )
         for user in User.objects.all()
     ]

@@ -190,3 +190,11 @@ def backup_1():
         backup_dict = json.load(file)
 
     return types.Backup(**backup_dict)
+
+
+@pytest.fixture
+def backup_with_tags():
+    with open(RESOURCES_DIR / 'backup-with-tags.json') as file:
+        backup_dict = json.load(file)
+
+    return types.Backup(**backup_dict)

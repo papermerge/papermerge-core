@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Literal
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
@@ -10,6 +10,17 @@ from papermerge.core.constants import (DEFAULT_TAG_BG_COLOR,
                                        DEFAULT_TAG_FG_COLOR)
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.version import __version__ as VERSION
+
+
+class Tag(BaseModel):
+    name: str
+    bg_color: str = DEFAULT_TAG_BG_COLOR
+    fg_color: str = DEFAULT_TAG_FG_COLOR
+    description: str | None = None
+    pinned: bool = False
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Page(BaseModel):
@@ -31,7 +42,7 @@ class DocumentVersion(BaseModel):
     page_count: int = 0
     short_description: str
     text: str
-    pages: Optional[List[Page]] = []
+    pages: list[Page] = []
 
     @field_validator("pages", mode='before')
     @classmethod
@@ -53,6 +64,7 @@ class Folder(BaseModel):
     created_at: datetime
     updated_at: datetime
     breadcrumb: list[str]   # list of ancestor titles
+    tags: list[Tag] = []
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
@@ -69,6 +81,12 @@ class Folder(BaseModel):
 
         return result
 
+    @field_validator("tags", mode='before')
+    def get_all_from_manager2(cls, v: object) -> object:
+        if isinstance(v, BaseManager):
+            return list(v.all())
+        return v
+
 
 class Document(BaseModel):
     title: str
@@ -76,12 +94,19 @@ class Document(BaseModel):
     created_at: datetime
     updated_at: datetime
     breadcrumb: list[str]  # list of ancestor titles
-    versions: Optional[List[DocumentVersion]] = []
+    versions: list[DocumentVersion] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
+    tags: list[Tag] = []
 
     @field_validator("versions", mode='before')
     def get_all_from_manager(cls, v: object) -> object:
+        if isinstance(v, BaseManager):
+            return list(v.all())
+        return v
+
+    @field_validator("tags", mode='before')
+    def get_all_from_manager2(cls, v: object) -> object:
         if isinstance(v, BaseManager):
             return list(v.all())
         return v
@@ -97,17 +122,6 @@ class Document(BaseModel):
                 result.append(item)
 
         return result
-
-    # Config
-    model_config = ConfigDict(from_attributes=True)
-
-
-class Tag(BaseModel):
-    name: str
-    bg_color: str = DEFAULT_TAG_BG_COLOR
-    fg_color: str = DEFAULT_TAG_FG_COLOR
-    description: str | None = None
-    pinned: bool = False
 
     # Config
     model_config = ConfigDict(from_attributes=True)

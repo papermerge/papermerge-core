@@ -16,7 +16,8 @@
                     "updated_at": "2023-11-11 06:22:08.978856+00:00",
                     "breadcrumb": [
                         ".home"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": ".inbox",
@@ -25,7 +26,8 @@
                     "updated_at": "2023-11-11 06:22:08.978857+00:00",
                     "breadcrumb": [
                         ".inbox"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "My Documents",
@@ -35,7 +37,8 @@
                     "breadcrumb": [
                         ".home",
                         "My Documents"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "Empty",
@@ -45,7 +48,8 @@
                     "breadcrumb": [
                         ".home",
                         "Empty"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "important-thing.pdf",
@@ -97,7 +101,8 @@
                         }
                     ],
                     "ocr": true,
-                    "ocr_status": "SUCCESS"
+                    "ocr_status": "SUCCESS",
+                    "tags": []
                 },
                 {
                     "title": "are-warm.pdf",
@@ -151,7 +156,8 @@
                         }
                     ],
                     "ocr": true,
-                    "ocr_status": "SUCCESS"
+                    "ocr_status": "SUCCESS",
+                    "tags": []
                 },
                 {
                     "title": "Contracts",
@@ -162,7 +168,8 @@
                         ".home",
                         "My Documents",
                         "Contracts"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "Colors",
@@ -172,7 +179,8 @@
                     "breadcrumb": [
                         ".home",
                         "Colors"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "Of",
@@ -183,7 +191,8 @@
                         ".home",
                         "Colors",
                         "Of"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "The",
@@ -195,7 +204,8 @@
                         "Colors",
                         "Of",
                         "The"
-                    ]
+                    ],
+                    "tags": []
                 },
                 {
                     "title": "Cloud",
@@ -208,9 +218,11 @@
                         "Of",
                         "The",
                         "Cloud"
-                    ]
+                    ],
+                    "tags": []
                 }
-            ]
+            ],
+            "tags": []
         }
     ]
 }

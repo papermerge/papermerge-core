@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 
@@ -11,26 +12,21 @@ type Args = {
 }
 
 
-function LoadingButton({
-  in_progress,
-  title,
-  onClick,
-  className,
-  variant
-}: Args) {
+const LoadingButton = forwardRef<HTMLButtonElement, Args>((props, ref) =>  {
 
-  if (!title) {
-    title = "Submit";
-  }
-
-  if (in_progress) {
-    return <Button variant={variant} onClick={onClick} disabled={true} className={className}>
+  if (props.in_progress) {
+    return <Button ref={ref} variant={props.variant} onClick={props.onClick} disabled={true} className={props.className}>
         <Spinner size="sm" />
     </Button>;
   }
 
-  return <Button variant={variant} onClick={onClick} className={className}>{title}</Button>;
-}
+  return <Button
+    ref={ref}
+    variant={props.variant}
+    onClick={props.onClick}
+    className={props.className}>{props.title || "Submit"}
+  </Button>;
+});
 
 
 export default LoadingButton;

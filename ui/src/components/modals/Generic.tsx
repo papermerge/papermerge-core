@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import React from 'react';
 
 import Button from 'react-bootstrap/Button';
@@ -27,6 +27,8 @@ const GenericModal = ({
   const [show, setShow] = useState<boolean>(true);
   const [inProgress, setInProgress] = useState(false);
   const [controller, setController] = useState<AbortController>(new AbortController());
+  const ref_ok = useRef<HTMLButtonElement>(null);
+  const ref_cancel = useRef<HTMLButtonElement>(null);
 
   if (!submit_button_variant) {
     submit_button_variant = 'primary';
@@ -55,6 +57,32 @@ const GenericModal = ({
     setController(new AbortController());
   }
 
+  const handleKeydown = (e: KeyboardEvent) => {
+    /* handle enter/esc keyboard press by simulating
+    clicks on actual OK/Cancel buttons */
+    switch(e.code) {
+      case "Enter":
+        if (ref_ok.current) {
+          ref_ok.current.click();
+        }
+        break;
+      case "Escape":
+        if (ref_cancel.current) {
+          ref_cancel.current.click();
+        }
+        break;
+    }
+  }
+
+  useEffect(() => {
+    // handle enter/esc keyboard press
+    document.addEventListener("keydown", handleKeydown, false);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeydown, false)
+    }
+  }, []);
+
   return (
     <Modal
       show={show}
@@ -70,10 +98,10 @@ const GenericModal = ({
         {children}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant='secondary' onClick={handleCancel}>
+        <Button ref={ref_cancel} variant='secondary' onClick={handleCancel}>
             Cancel
         </Button>
-        <LoadingButton
+        <LoadingButton ref={ref_ok}
           variant={submit_button_variant}
           in_progress={inProgress}
           title={submit_button_title}

@@ -21,6 +21,7 @@ import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
+import run_ocr from './modals/RunOCR';
 
 
 type ShortPageType = {
@@ -282,6 +283,12 @@ export default function Viewer({
     onDraggedPages([]);
   }
 
+  const onRunOCR = (item: DocumentVersion) => {
+    console.log(`RunOCR on`, item);
+    run_ocr(item)
+    .then(() => {})
+    .catch(() => {});
+  }
 
   return <div className="viewer w-100 m-1">
     <ActionPanel
@@ -294,6 +301,7 @@ export default function Viewer({
       onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
+      onRunOCR={onRunOCR}
       show_dual_button={show_dual_button} />
     <Breadcrumb path={breadcrumb?.data || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>

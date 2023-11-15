@@ -7,6 +7,7 @@ import RotateCw from "./RotateCw";
 import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
 import type { Vow } from "types";
+import OcrStatus from "components/ocr_status";
 
 
 type Args = {
@@ -19,6 +20,7 @@ type Args = {
   onRotatePagesCcw: () => void;
   selected_pages: Array<string>;
   onApplyPageOpChanges: () => void;
+  onRunOCR: (doc_ver: DocumentVersion) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -32,6 +34,7 @@ export default function ActionPanel({
   onRotatePagesCw,
   onRotatePagesCcw,
   onApplyPageOpChanges,
+  onRunOCR,
   show_dual_button
 }: Args) {
 
@@ -65,6 +68,13 @@ export default function ActionPanel({
 
         <DocVersionsDropdown doc={doc} versions={versions}/>
 
+        <Button
+          className="m-1"
+          variant="light"
+          onClick={() => onRunOCR(last_version(versions.data!))}>
+          <OcrStatus status="SUCCESS" /> Run OCR
+        </Button>
+
         {selected_pages.length > 0 ? extra_menu : ''}
 
         {
@@ -80,4 +90,21 @@ export default function ActionPanel({
 
     </div>
   )
+}
+
+
+function last_version(versions: Array<DocumentVersion>): DocumentVersion {
+  /**
+   * Returns last version of the document i.e. DocumentVersion
+   * with biggest doc_ver.number
+   * */
+  const ver = versions.reduce((prevValue, curValue) => {
+    if (prevValue.number > curValue.number) {
+      return prevValue;
+    }
+
+    return curValue;
+  }, versions[0])
+
+  return ver;
 }

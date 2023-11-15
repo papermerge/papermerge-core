@@ -445,6 +445,20 @@ function DualPanel({ node }: Args) {
     })
   }
 
+  const onMPageClick = (page: number) => {
+    setMPagination({
+      per_page: mpagination.per_page,
+      page_number: page
+    })
+  }
+
+  const onSPageClick = (page: number) => {
+    setSPagination({
+      per_page: spagination.per_page,
+      page_number: page
+    })
+  }
+
   const dual_context = {
     onOpenSecondary,
     onCloseSecondary,
@@ -484,6 +498,7 @@ function DualPanel({ node }: Args) {
           onSelectedPages={onSelectedMPages}
           onDraggedPages={onDraggedMPages}
           onPageSizeChange={onMPageSizeChange}
+          onPageClick={onMPageClick}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -517,6 +532,7 @@ function DualPanel({ node }: Args) {
           onMovePagesBetweenDocs={onMovePagesBetweenDocs}
           onSelectedPages={onSelectedMPages}
           onDraggedPages={onDraggedMPages}
+          onPageClick={onMPageClick}
           onPageSizeChange={onMPageSizeChange} />
         <SinglePanel
           parent_node={secondary_node}
@@ -547,6 +563,7 @@ function DualPanel({ node }: Args) {
           onSelectedPages={onSelectedSPages}
           onDraggedPages={onDraggedSPages}
           onPageSizeChange={onSPageSizeChange}
+          onPageClick={onSPageClick}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

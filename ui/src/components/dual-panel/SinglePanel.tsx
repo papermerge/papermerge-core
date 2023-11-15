@@ -55,6 +55,7 @@ type Args = {
   selected_nodes: UUIDList;
   dragged_nodes: UUIDList;
   onPageSizeChange: (page_size: number) => void;
+  onPageClick: (page: number) => void;
 }
 
 type NodeListParams = {
@@ -154,6 +155,7 @@ function SinglePanel({
   onExtractPages,
   onSortChange,
   onNodeClick,
+  onPageClick,
   onPageSizeChange,
   show_dual_button,
   onNodesListChange,
@@ -199,7 +201,7 @@ function SinglePanel({
         onDragNodes={onDragNodes}
         display_mode={display_mode}
         onNodeClick={onNodeClick}
-        onPageClick={() => {}}
+        onPageClick={onPageClick}
         onPageSizeChange={onPageSizeChange}
         onSortChange={onSortChange}
         onMovedNodes={onMovedNodes}

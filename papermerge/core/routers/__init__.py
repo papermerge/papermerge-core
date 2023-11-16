@@ -7,6 +7,7 @@ from .nodes import router as nodes_router
 from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
 from .tags import router as tags_router
+from .tasks import router as tasks_router
 from .thumbnails import router as thumbnails_router
 from .users import router as users_router
 from .ws import router as ws_router
@@ -24,4 +25,5 @@ def register_routers(app: FastAPI):
     app.include_router(thumbnails_router)
     app.include_router(ws_router)
     app.include_router(tags_router)
+    app.include_router(tasks_router)
     app.include_router(ocr_langs_router)

@@ -283,9 +283,8 @@ export default function Viewer({
     onDraggedPages([]);
   }
 
-  const onRunOCR = (item: DocumentVersion) => {
-    console.log(`RunOCR on`, item);
-    run_ocr(item)
+  const onRunOCR = (_doc: DocumentType, _doc_ver: DocumentVersion) => {
+    run_ocr(_doc, _doc_ver)
     .then(() => {})
     .catch(() => {});
   }

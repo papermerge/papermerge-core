@@ -20,7 +20,7 @@ type Args = {
   onRotatePagesCcw: () => void;
   selected_pages: Array<string>;
   onApplyPageOpChanges: () => void;
-  onRunOCR: (doc_ver: DocumentVersion) => void;
+  onRunOCR: (doc: DocumentType, doc_ver: DocumentVersion) => void;
   show_dual_button?: ShowDualButtonEnum;
 }
 
@@ -47,6 +47,10 @@ export default function ActionPanel({
     {rotate_ccw}
   </div>;
 
+  const localRunOCR = () => {
+    onRunOCR(doc.data!, last_version(versions.data!))
+  }
+
   if (doc.is_pending) {
     return <div>Pending...</div>
   }
@@ -71,7 +75,7 @@ export default function ActionPanel({
         <Button
           className="m-1"
           variant="light"
-          onClick={() => onRunOCR(last_version(versions.data!))}>
+          onClick={localRunOCR}>
           <OcrStatus status="SUCCESS" /> Run OCR
         </Button>
 

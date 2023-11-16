@@ -6,20 +6,20 @@ import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
 import OCRLang from './OCRLang';
-import type { DocumentVersion, OCRCode } from 'types';
+import type { DocumentType, DocumentVersion, OCRCode } from 'types';
 
 
 type ApiRunOCRArgs = {
-  doc_ver: DocumentVersion;
+  doc: DocumentType;
   lang: string;
   signal: AbortSignal;
 }
 
 
 async function api_run_ocr({
-  doc_ver,
+  doc,
   lang,
-  signal,
+  signal
 }: ApiRunOCRArgs): Promise<Response> {
   return fetch(
     '/api/tasks/ocr',
@@ -27,7 +27,7 @@ async function api_run_ocr({
       'method': 'POST',
       'headers': get_default_headers(),
       'body': JSON.stringify({
-        id: doc_ver.id,
+        id: doc.id,
         lang,
       }),
       'signal': signal
@@ -39,6 +39,7 @@ async function api_run_ocr({
 type Args = {
   onCancel: () => void;
   onOK: (task_id: string) => void;
+  doc: DocumentType;
   doc_ver: DocumentVersion;
 }
 
@@ -46,6 +47,7 @@ type Args = {
 const RunOCRModal = ({
   onCancel,
   onOK,
+  doc,
   doc_ver
 }: Args) => {
 
@@ -54,7 +56,7 @@ const RunOCRModal = ({
 
   const handleSubmit = async (signal: AbortSignal) => {
     let response = await api_run_ocr({
-      doc_ver,
+      doc,
       lang,
       signal
     });
@@ -84,7 +86,7 @@ const RunOCRModal = ({
 }
 
 
-function run_ocr(doc_ver: DocumentVersion) {
+function run_ocr(doc: DocumentType, doc_ver: DocumentVersion) {
   let modals = document.getElementById(MODALS);
 
   let promise = new Promise<string>(function(onOK, onCancel){
@@ -93,6 +95,7 @@ function run_ocr(doc_ver: DocumentVersion) {
 
       dom_root.render(
         <RunOCRModal
+          doc={doc}
           doc_ver={doc_ver}
           onOK={onOK}
           onCancel={onCancel} />

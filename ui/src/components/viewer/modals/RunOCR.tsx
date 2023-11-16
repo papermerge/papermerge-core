@@ -22,7 +22,7 @@ async function api_run_ocr({
   signal,
 }: ApiRunOCRArgs): Promise<Response> {
   return fetch(
-    '/api/pages/move',
+    '/api/tasks/ocr',
     {
       'method': 'POST',
       'headers': get_default_headers(),

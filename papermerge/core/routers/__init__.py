@@ -4,6 +4,7 @@ from .document_version import router as document_versions_router
 from .documents import router as documents_router
 from .folders import router as folders_router
 from .nodes import router as nodes_router
+from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
 from .tags import router as tags_router
 from .thumbnails import router as thumbnails_router
@@ -23,3 +24,4 @@ def register_routers(app: FastAPI):
     app.include_router(thumbnails_router)
     app.include_router(ws_router)
     app.include_router(tags_router)
+    app.include_router(ocr_langs_router)

@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { get_default_headers } from 'utils/fetcher';
 
 import OCRLang from './OCRLang';
-import type { DocumentVersion } from 'types';
+import type { DocumentVersion, OCRCode } from 'types';
 
 
 type ApiRunOCRArgs = {
@@ -49,7 +49,7 @@ const RunOCRModal = ({
   doc_ver
 }: Args) => {
 
-  const [lang, setLang] = useState<string>(doc_ver.lang);
+  const [lang, setLang] = useState<OCRCode>(doc_ver.lang);
   const [langs, setLangs] = useState<string[]>();
 
   const handleSubmit = async (signal: AbortSignal) => {
@@ -66,7 +66,7 @@ const RunOCRModal = ({
     }
   }
 
-  const onLangChange = (value: string) => {
+  const onLangChange = (value: OCRCode) => {
     setLang(value);
     console.log(`New lang value ${value}`);
   }

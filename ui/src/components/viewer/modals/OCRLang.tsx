@@ -1,20 +1,21 @@
 import Form from 'react-bootstrap/Form';
-import { OCRLangType } from './types';
+import { OCRCode } from 'types';
+import { OCR_LANG } from 'cconstants';
 import { ChangeEvent } from 'react';
 import { useResource } from 'hooks/resource';
-import { OCR_LANGS } from 'ocr_langs';
+
 
 
 type Args = {
-  onChange: (arg: OCRLangType) => void;
+  onChange: (arg: OCRCode) => void;
 }
 
 function OCRLang({onChange}: Args) {
 
-  const langs = useResource<Array<string>>("/api/ocr-languages/")
+  const langs = useResource<Array<OCRCode>>("/api/ocr-languages/")
 
   const onLocalChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value as OCRLangType;
+    const value = event.target.value as OCRCode;
     onChange(value);
   }
 
@@ -25,7 +26,7 @@ function OCRLang({onChange}: Args) {
   const filtered_langs = langs.data!.filter((l) => l != 'osd');
 
   const lang_options = filtered_langs.map(
-    code => <option key={code} value={code}>{OCR_LANGS[code]}</option>
+    code => <option key={code} value={code}>{get_human_lang(code)}</option>
   )
 
   return <div>
@@ -35,5 +36,27 @@ function OCRLang({onChange}: Args) {
     </Form.Select>
   </div>;
 }
+
+
+function get_human_lang(value: OCRCode): string {
+  /** returns human text for language code.
+   *
+   * Examples:
+   *
+   *  deu -> Deutsch
+   *  fra -> Français
+   *
+   * If language code mapping is not found in OCR_LANG - will
+   * return the OCR code as string.
+  */
+  const result = OCR_LANG[value];
+
+  if (!result) {
+    return `${value}`;
+  }
+
+  return result;
+}
+
 
 export default OCRLang;

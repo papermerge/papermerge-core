@@ -94,7 +94,7 @@ export type DocumentVersion = {
   document_id: string;
   download_url: string;
   file_name: string;
-  lang: string;
+  lang: OCRCode;
   number: number;
   page_count: number;
   pages: Array<PageType>;
@@ -255,4 +255,10 @@ export type ExtractStrategy = 'one-page-per-doc' | 'all-pages-in-one-doc';
 export type DataTransferExtractedPages = {
   pages: string[];
   document_title: string;
+}
+
+export type OCRCode = 'eng' | 'deu' | 'fra' | 'spa' | 'ita' | 'osd';
+
+export type OCRLangType = {
+  [key: string]: string
 }

@@ -6,13 +6,14 @@ import DeletePages from "./DeletePages";
 import RotateCw from "./RotateCw";
 import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
-import type { Vow } from "types";
+import type { OcrStatusEnum, Vow } from "types";
 import OcrStatus from "components/ocr_status";
 
 
 type Args = {
   versions: Vow<DocumentVersion[]>;
   doc: Vow<DocumentType>;
+  ocr_status: OcrStatusEnum;
   unapplied_page_op_changes: boolean;
   onRenameClick: () => void;
   onDeletePages: () => void;
@@ -27,6 +28,7 @@ type Args = {
 export default function ActionPanel({
   versions,
   doc,
+  ocr_status,
   unapplied_page_op_changes,
   selected_pages,
   onRenameClick,
@@ -76,7 +78,7 @@ export default function ActionPanel({
           className="m-1"
           variant="light"
           onClick={localRunOCR}>
-          <OcrStatus status="SUCCESS" /> Run OCR
+          <OcrStatus status={ocr_status} /> Run OCR
         </Button>
 
         {selected_pages.length > 0 ? extra_menu : ''}

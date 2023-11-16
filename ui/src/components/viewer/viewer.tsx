@@ -8,11 +8,13 @@ import { useViewerContentHeight } from 'hooks/viewer_content_height';
 import useToast from 'hooks/useToasts';
 
 import rename_node from 'components/modals/rename';
+import websockets from 'services/ws';
+
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
-import type { DataTransferExtractedPages} from 'types';
+import type { DataTransferExtractedPages, OcrStatusEnum} from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
@@ -22,6 +24,7 @@ import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import run_ocr from './modals/RunOCR';
+
 
 
 type ShortPageType = {
@@ -82,7 +85,9 @@ export default function Viewer({
   onDraggedPages,
   show_dual_button
 }: Args) {
-
+  const [ocr_status, setOCRStatus] = useState<OcrStatusEnum|null>(
+    doc.data?.ocr_status || "UNKNOWN"
+  )
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
@@ -99,6 +104,34 @@ export default function Viewer({
       viewer_content_ref.current.style.height = `${viewer_content_height}px`;
     }
   }, [viewer_content_height]);
+
+  useEffect(() => {
+    if (!doc.data) {
+      return;
+    }
+
+    websockets.addHandler(str_id(doc.data!.id), {callback: networkMessageHandler});
+
+    return () => {
+      websockets.removeHandler(str_id(doc.data!.id));
+    }
+  }, [doc.data]);
+
+  useEffect(() => {
+    if (!doc.data) {
+      return;
+    }
+
+    setOCRStatus(doc.data.ocr_status);
+
+  }, [doc.data]);
+
+
+  const networkMessageHandler = (data: any, ev: MessageEvent) => {
+    if (data.kwargs.document_id == doc.data?.id) {
+      setOCRStatus(data.state);
+    }
+  }
 
   const onThumbnailsToggle = () => {
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
@@ -269,6 +302,7 @@ export default function Viewer({
     </div>
   }
 
+
   const onLocalDrag = (item: PageAndRotOp, event: React.DragEvent) => {
     const _dragged_pages_ids = uniq([...selected_pages, item.page.id]);
     onDraggedPages(_dragged_pages_ids);
@@ -293,6 +327,7 @@ export default function Viewer({
     <ActionPanel
       versions={doc_versions}
       doc={doc}
+      ocr_status={ocr_status || "UNKNOWN"}
       selected_pages={selected_pages}
       onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
@@ -336,4 +371,9 @@ function get_doc_title(breadcrumb: BreadcrumbType): string {
   }
 
   return '';
+}
+
+
+function str_id(node_id: string): string {
+  return `document-ocr-status-${node_id}`;
 }

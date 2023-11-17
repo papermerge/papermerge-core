@@ -106,6 +106,7 @@ def get_page_jpg_url(
 @router.post("/")
 def apply_page_operations(
     items: List[PageAndRotOp],
+    user: User = Depends(current_user)
 ) -> List[PyDocVer]:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
 

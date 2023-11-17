@@ -8,11 +8,13 @@ import { useViewerContentHeight } from 'hooks/viewer_content_height';
 import useToast from 'hooks/useToasts';
 
 import rename_node from 'components/modals/rename';
+import websockets from 'services/ws';
+
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
-import type { DataTransferExtractedPages} from 'types';
+import type { DataTransferExtractedPages, OcrStatusEnum} from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
@@ -21,6 +23,9 @@ import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
+import run_ocr from './modals/RunOCR';
+import { fetcher } from 'utils/fetcher';
+import { last_version } from 'utils/misc';
 
 
 type ShortPageType = {
@@ -81,7 +86,9 @@ export default function Viewer({
   onDraggedPages,
   show_dual_button
 }: Args) {
-
+  const [ocr_status, setOCRStatus] = useState<OcrStatusEnum|null>(
+    doc.data?.ocr_status || "UNKNOWN"
+  )
   let [thumbnailsPanelVisible, setThumbnailsPanelVisible] = useState(true);
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
@@ -98,6 +105,30 @@ export default function Viewer({
       viewer_content_ref.current.style.height = `${viewer_content_height}px`;
     }
   }, [viewer_content_height]);
+
+  useEffect(() => {
+    if (!doc.data) {
+      return;
+    }
+
+    websockets.addHandler(str_id(doc.data!.id), {callback: networkMessageHandler});
+
+    setOCRStatus(doc.data.ocr_status);
+
+    return () => {
+      websockets.removeHandler(str_id(doc.data!.id));
+    }
+  }, [doc.data]);
+
+  const networkMessageHandler = (data: any, ev: MessageEvent) => {
+    if (data.kwargs.document_id == doc.data?.id) {
+      setOCRStatus(data.state);
+      if (data.state == 'SUCCESS') {
+        // OCR completed with success => reload the document i.e. reload versions and pages
+        reloadAfterOCRSuccess();
+      }
+    }
+  }
 
   const onThumbnailsToggle = () => {
     setThumbnailsPanelVisible(!thumbnailsPanelVisible);
@@ -262,6 +293,22 @@ export default function Viewer({
     )
   }
 
+  const reloadAfterOCRSuccess = () => {
+    fetcher(`/api/documents/${doc.data!.id}`)
+    .then(
+      data => {
+        const _doc = data as DocumentType;
+        const _last_ver = last_version(_doc.versions);
+
+        onDocVersionsChange(_doc.versions);
+        onPagesChange(
+          _last_ver.pages.map(p => { return {angle: 0, page: p}})
+        );
+
+      }
+    );
+  }
+
   if (doc.error) {
     return <div className="viewer">
       {doc.error && <ErrorMessage msg={doc.error} />}
@@ -282,11 +329,17 @@ export default function Viewer({
     onDraggedPages([]);
   }
 
+  const onRunOCR = (_doc: DocumentType, _doc_ver: DocumentVersion) => {
+    run_ocr(_doc, _doc_ver)
+    .then(() => {})
+    .catch(() => {});
+  }
 
   return <div className="viewer w-100 m-1">
     <ActionPanel
       versions={doc_versions}
       doc={doc}
+      ocr_status={ocr_status || "UNKNOWN"}
       selected_pages={selected_pages}
       onRenameClick={onRenameClick}
       onDeletePages={onDeletePages}
@@ -294,6 +347,7 @@ export default function Viewer({
       onRotatePagesCcw={onRotatePagesCcw}
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
+      onRunOCR={onRunOCR}
       show_dual_button={show_dual_button} />
     <Breadcrumb path={breadcrumb?.data || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
@@ -329,4 +383,9 @@ function get_doc_title(breadcrumb: BreadcrumbType): string {
   }
 
   return '';
+}
+
+
+function str_id(node_id: string): string {
+  return `document-ocr-status-${node_id}`;
 }

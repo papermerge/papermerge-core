@@ -1,4 +1,4 @@
-import type { NodeType, NodeList, PageAndRotOp, PageType, DroppedThumbnailPosition } from 'types';
+import type { NodeType, NodeList, DocumentVersion } from 'types';
 import { Rectangle } from 'utils/geometry';
 import { Point } from 'utils/geometry';
 import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
@@ -72,4 +72,22 @@ export function build_nodes_list_params({
   result = `${result}&order_by=${order_by}`
 
   return result;
+}
+
+
+
+export function last_version(versions: Array<DocumentVersion>): DocumentVersion {
+  /**
+   * Returns last version of the document i.e. DocumentVersion
+   * with biggest doc_ver.number
+   * */
+  const ver = versions.reduce((prevValue, curValue) => {
+    if (prevValue.number > curValue.number) {
+      return prevValue;
+    }
+
+    return curValue;
+  }, versions[0])
+
+  return ver;
 }

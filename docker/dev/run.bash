@@ -10,6 +10,10 @@ if [ -z $CMD ]; then
   exit 1
 fi
 
+exec_manage() {
+  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py "$@"
+}
+
 exec_server() {
   exec /usr/bin/supervisord
 }
@@ -59,6 +63,6 @@ case $CMD in
     exec_worker
     ;;
   *)
-    $MANAGE $@
+    echo "run.bash: Unknown command"
     ;;
 esac

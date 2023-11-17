@@ -24,7 +24,8 @@ import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import run_ocr from './modals/RunOCR';
-
+import { fetcher } from 'utils/fetcher';
+import { last_version } from 'utils/misc';
 
 
 type ShortPageType = {
@@ -112,24 +113,20 @@ export default function Viewer({
 
     websockets.addHandler(str_id(doc.data!.id), {callback: networkMessageHandler});
 
+    setOCRStatus(doc.data.ocr_status);
+
     return () => {
       websockets.removeHandler(str_id(doc.data!.id));
     }
   }, [doc.data]);
 
-  useEffect(() => {
-    if (!doc.data) {
-      return;
-    }
-
-    setOCRStatus(doc.data.ocr_status);
-
-  }, [doc.data]);
-
-
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
     if (data.kwargs.document_id == doc.data?.id) {
       setOCRStatus(data.state);
+      if (data.state == 'SUCCESS') {
+        // OCR completed with success => reload the document i.e. reload versions and pages
+        reloadAfterOCRSuccess();
+      }
     }
   }
 
@@ -296,12 +293,27 @@ export default function Viewer({
     )
   }
 
+  const reloadAfterOCRSuccess = () => {
+    fetcher(`/api/documents/${doc.data!.id}`)
+    .then(
+      data => {
+        const _doc = data as DocumentType;
+        const _last_ver = last_version(_doc.versions);
+
+        onDocVersionsChange(_doc.versions);
+        onPagesChange(
+          _last_ver.pages.map(p => { return {angle: 0, page: p}})
+        );
+
+      }
+    );
+  }
+
   if (doc.error) {
     return <div className="viewer">
       {doc.error && <ErrorMessage msg={doc.error} />}
     </div>
   }
-
 
   const onLocalDrag = (item: PageAndRotOp, event: React.DragEvent) => {
     const _dragged_pages_ids = uniq([...selected_pages, item.page.id]);

@@ -8,6 +8,7 @@ import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
 import type { OcrStatusEnum, Vow } from "types";
 import OcrStatus from "components/ocr_status";
+import { last_version } from "utils/misc";
 
 
 type Args = {
@@ -96,21 +97,4 @@ export default function ActionPanel({
 
     </div>
   )
-}
-
-
-function last_version(versions: Array<DocumentVersion>): DocumentVersion {
-  /**
-   * Returns last version of the document i.e. DocumentVersion
-   * with biggest doc_ver.number
-   * */
-  const ver = versions.reduce((prevValue, curValue) => {
-    if (prevValue.number > curValue.number) {
-      return prevValue;
-    }
-
-    return curValue;
-  }, versions[0])
-
-  return ver;
 }

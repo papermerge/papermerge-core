@@ -1,3 +1,4 @@
+from django.conf import settings
 from fastapi import FastAPI
 
 from .document_version import router as document_versions_router
@@ -23,7 +24,13 @@ def register_routers(app: FastAPI):
     app.include_router(document_versions_router)
     app.include_router(pages_router)
     app.include_router(thumbnails_router)
-    app.include_router(ws_router)
     app.include_router(tags_router)
     app.include_router(tasks_router)
     app.include_router(ocr_langs_router)
+
+    # if redis is not provided (i.e. memory backed for notif is used)
+    # then ws_router will block all other http handlers and
+    # application will look like "unresponsive" for REST API endpoints
+    if 'memory' not in settings.NOTIFICATION_URL:
+        # Add ws endpoint only if REDIS (non memory backend) is there
+        app.include_router(ws_router)

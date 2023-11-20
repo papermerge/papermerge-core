@@ -63,10 +63,10 @@ case $CMD in
     exec_worker
     ;;
   backup.sh)
-    exec "@$"
+    exec backup.sh "$2"
     ;;
   restore.sh)
-    exec "@$"
+    exec restore.sh "$2"
     ;;
   *)
     echo "run.bash: Unknown command"

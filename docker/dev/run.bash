@@ -62,6 +62,12 @@ case $CMD in
     exec_init
     exec_worker
     ;;
+  backup.sh)
+    exec "@$"
+    ;;
+  restore.sh)
+    exec "@$"
+    ;;
   *)
     echo "run.bash: Unknown command"
     ;;

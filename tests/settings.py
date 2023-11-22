@@ -41,6 +41,11 @@ DATABASES = {
     }
 }
 
+OCR__DEFAULT_LANGUAGE = os.environ.get(
+    'PAPERMERGE__OCR__DEFAULT_LANGUAGE',
+    'deu'
+)
+
 SEARCH_URL = 'xapian://index_db_test/index_db'
 
 AUTH_USER_MODEL = "core.User"

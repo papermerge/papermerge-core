@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 
 from celery import current_app
+from django.conf import settings
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
@@ -81,7 +82,7 @@ def create_node(
             # if user does not specify document's language, get that
             # value from user preferences
             if pynode.lang is None:
-                pynode.lang = user.preferences['ocr__language']
+                pynode.lang = settings.OCR__DEFAULT_LANGUAGE
 
             node = Document.objects.create_document(
                 title=pynode.title,

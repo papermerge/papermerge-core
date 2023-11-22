@@ -87,7 +87,8 @@ def ocr_document_task(
     _post_ocr_document(
         document_id,
         target_docver_uuid=target_docver_uuid,
-        target_page_uuids=target_page_uuids
+        target_page_uuids=target_page_uuids,
+        lang=lang
     )
 
     logger.debug(
@@ -101,8 +102,8 @@ def ocr_document_task(
 def _post_ocr_document(
     document_id: str,
     target_docver_uuid: UUID,
-    target_page_uuids: List[UUID]
-
+    target_page_uuids: List[UUID],
+    lang: str
 ):
     """
     Task to run immediately after document OCR is complete
@@ -115,7 +116,8 @@ def _post_ocr_document(
     increment_document_version(
         document_id,
         target_docver_uuid,
-        target_page_uuids
+        target_page_uuids,
+        lang
     )
     update_document_pages(document_id)
 
@@ -125,14 +127,14 @@ def _post_ocr_document(
 def increment_document_version(
     document_id,
     target_docver_uuid: UUID,
-    target_page_uuids: List[UUID]
+    target_page_uuids: List[UUID],
+    lang: str
 ):
     logger.debug(
         'increment_document_version: '
         f'document_id={document_id}'
     )
     doc = Document.objects.get(pk=document_id)
-    lang = doc.lang
     doc_version = doc.versions.last()
 
     new_doc_version = DocumentVersion(

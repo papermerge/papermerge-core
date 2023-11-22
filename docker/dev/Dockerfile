@@ -12,6 +12,7 @@ ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
 ENV DJANGO_SETTINGS_MODULE=config.settings
 ENV PAPERMERGE__AUTH__USERNAME=admin
 ENV PAPERMERGE__AUTH__EMAIL=admin@example.com
+ENV PAPERMERGE__OCR__DEFAULT_LANGUAGE=deu
 
 ENV VIRTUAL_ENV=${CORE_APP}/.venv
 
@@ -20,6 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     tesseract-ocr \
     tesseract-ocr-deu \
+    tesseract-ocr-fra \
+    tesseract-ocr-spa \
+    tesseract-ocr-por \
+    tesseract-ocr-ron \
+    tesseract-ocr-ita \
     imagemagick \
     gcc \
     nginx \

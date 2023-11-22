@@ -131,20 +131,11 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-LANGUAGES = [
-    ('de', 'Deutsch'),
-    ('en', 'English'),
-    ('fr', 'Français'),
-]
 TIME_ZONE = config.get('main', 'timezone', default='Europe/Berlin')
+
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-LANGUAGE_CODE = config.get(
-    'main',
-    'language_code',
-    default='en'
-)
 
 DATE_FORMAT = '%d/%m/%Y'
 DATE_INPUT_FORMATS = ['%d/%m/%Y']
@@ -166,6 +157,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+OCR__DEFAULT_LANGUAGE = os.environ.get(
+    'PAPERMERGE__OCR__DEFAULT_LANGUAGE',
+    'deu'
+)
 
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',

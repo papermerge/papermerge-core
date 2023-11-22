@@ -20,9 +20,14 @@ class Command(BaseCommand):
             'UUID',
             help="Document UUID to trigger OCR task on"
         )
+        parser.add_argument(
+            'lang',
+            help="OCR language"
+        )
 
     def handle(self, *args, **options):
         doc_id = options.get('UUID')
+        lang = options.get('lang')
         doc = Document.objects.get(id=doc_id)
         last_version = doc.versions.last()
         target_docver_uuid = uuid.uuid4()
@@ -31,7 +36,7 @@ class Command(BaseCommand):
         ]
 
         ocr_document(
-            lang=doc.lang,
+            lang=lang,
             document_version=last_version,
             target_docver_uuid=target_docver_uuid,
             target_page_uuids=target_page_uuids
@@ -39,5 +44,6 @@ class Command(BaseCommand):
         _post_ocr_document(
             doc_id,
             target_docver_uuid=target_docver_uuid,
-            target_page_uuids=target_page_uuids
+            target_page_uuids=target_page_uuids,
+            lang=lang
         )

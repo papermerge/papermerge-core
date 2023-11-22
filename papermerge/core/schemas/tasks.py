@@ -10,6 +10,8 @@ class LangCodeEnum(str, Enum):
     eng = "eng"
     ita = "ita"
     spa = "spa"
+    por = "por"
+    ron = "ron"
 
 
 class OCRTaskIn(BaseModel):

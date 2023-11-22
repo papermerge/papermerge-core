@@ -13,5 +13,7 @@ export const OCR_LANG: OCRLangType = {
   'fra': 'Français',
   'spa': 'Español',
   'ita': 'Italiano',
+  'ron': 'Română',
+  'por': 'Português',
   'osd': 'osd'
 }

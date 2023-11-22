@@ -69,6 +69,6 @@ case $CMD in
     exec restore.sh "$2"
     ;;
   *)
-    echo "run.bash: Unknown command"
+    exec "$@"
     ;;
 esac

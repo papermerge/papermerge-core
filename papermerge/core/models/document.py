@@ -64,6 +64,7 @@ class DocumentManager(models.Manager):
             file_name=file_name,
             size=0,
             page_count=0,
+            lang=lang,
             short_description="Original"
         )
         document_version.save()

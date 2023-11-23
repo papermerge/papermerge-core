@@ -12,13 +12,13 @@ export default function ContextMenu() {
   const [isVisible, setVisible] = useState(false);
 
   const clickOutsideCallback = () => {
-    console.log('clickOutside');
+    setVisible(false);
   }
 
   const onRightClick = (ev: MouseEvent) => {
     const new_visibility = !isVisible;
     ev.preventDefault(); // prevents default context menu
-    console.log(`callback isVisible=${new_visibility}`);
+
     setVisible(new_visibility);
 
     if (new_visibility) {

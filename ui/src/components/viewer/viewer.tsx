@@ -26,6 +26,7 @@ import move_pages from './modals/MovePages';
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
+import ContextMenu from './ContextMenu';
 
 
 type ShortPageType = {
@@ -368,6 +369,7 @@ export default function Viewer({
         items={pages}
         current_page_number={currentPage}/>
     </div>
+    <ContextMenu />
   </div>;
 }
 

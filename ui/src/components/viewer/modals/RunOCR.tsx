@@ -80,7 +80,7 @@ const RunOCRModal = ({
       submit_button_title="Start"
       onSubmit={handleSubmit}
       onCancel={onCancel}>
-        <OCRLang onChange={onLangChange} />
+        <OCRLang defaultValue={doc_ver.lang} onChange={onLangChange} />
     </GenericModal>
   );
 }

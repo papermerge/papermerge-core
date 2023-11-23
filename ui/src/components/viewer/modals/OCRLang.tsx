@@ -8,9 +8,10 @@ import { useResource } from 'hooks/resource';
 
 type Args = {
   onChange: (arg: OCRCode) => void;
+  defaultValue: OCRCode;
 }
 
-function OCRLang({onChange}: Args) {
+function OCRLang({onChange, defaultValue}: Args) {
 
   const langs = useResource<Array<OCRCode>>("/api/ocr-languages/")
 
@@ -31,7 +32,7 @@ function OCRLang({onChange}: Args) {
 
   return <div>
     <Form.Label htmlFor="strategy">OCR Language:</Form.Label>
-    <Form.Select defaultValue={"deu"} onChange={onLocalChange}>
+    <Form.Select defaultValue={defaultValue} onChange={onLocalChange}>
       {lang_options}
     </Form.Select>
   </div>;

@@ -46,8 +46,17 @@ export default function ContextMenu() {
       ref={ref}
       show={isVisible}
       style={{top: `${position.y}px`, left: `${position.x}px`}}>
-    <Dropdown.Header>Dropdown header</Dropdown.Header>
-    <Dropdown.Item eventKey="2">Move To Other Panel</Dropdown.Item>
-    <Dropdown.Item eventKey="3">Delete Document</Dropdown.Item>
+    <Dropdown.Item>
+      <i className="bi bi-pencil-square me-1"></i>Rename
+    </Dropdown.Item>
+    <Dropdown.Item>
+      <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
+    <Dropdown.Item>
+      <i className="bi bi-arrow-right me-1"></i>Move
+    </Dropdown.Item>
+    <Dropdown.Divider />
+    <Dropdown.Item>
+      <i className="bi bi-x-lg me-1 text-danger"></i>Delete
+    </Dropdown.Item>
   </Dropdown.Menu>
 }

@@ -21,7 +21,8 @@ import { Vow,
   MovePagesBetweenDocsType,
   ExtractedPagesType,
   TargetFolder,
-  MovedDocumentType
+  MovedDocumentType,
+  TargetDirection
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';

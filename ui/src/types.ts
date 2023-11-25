@@ -48,6 +48,11 @@ export type CType = "folder" | "document";
 
 export type BreadcrumbItemType = [string, string];
 
+export type TargetFolder = {
+  id: string;
+  title: string;
+}
+
 export type BreadcrumbType = Array<BreadcrumbItemType>;
 
 export type DocumentNodeType = {
@@ -238,6 +243,10 @@ export type CreatedNodesType = {
 }
 
 export type MovedNodesType = CreatedNodesType;  // alias
+export type MovedDocumentType = {
+  doc: DocumentType;
+  target_folder: TargetFolder;
+}
 
 export type onMovedNodesType = {
   target_id: string;

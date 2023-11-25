@@ -1,62 +1,94 @@
 import { useEffect, useRef, useState } from "react";
 import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownMenu from 'react-bootstrap/DropdownMenu';
+
+
+import { TargetFolder } from "types";
 
 type Coord = {
   x: number;
   y: number;
 }
 
+const HIDDEN = {
+  x: -100000,
+  y: -100000
+}
 
-export default function ContextMenu() {
-  const [position, setPosition] = useState<Coord>({x: 0, y: 0})
-  const [isVisible, setVisible] = useState(false);
+type Args = {
+  target_folder?: TargetFolder;
+  OnDocumentMoveTo: (arg: TargetFolder) => void;
+}
+
+
+export default function ContextMenu({target_folder, OnDocumentMoveTo}: Args) {
+  const [position, setPosition] = useState<Coord>(HIDDEN)
   const ref = useRef<HTMLDivElement>(null)
 
 
-  const clickOutsideCallback = () => {
-    setVisible(false);
-  }
 
   const onRightClick = (ev: MouseEvent) => {
-    const new_visibility = !isVisible;
     ev.preventDefault(); // prevents default context menu
 
     let new_y = ev.clientY;
     let new_x = ev.clientX;
 
-    if (new_visibility) {
-      setPosition({y: new_y, x: new_x})
-    }
 
-    setVisible(new_visibility);
+    setPosition({y: new_y, x: new_x})
   }
 
   useEffect(() => {
-    document.addEventListener('mousedown', clickOutsideCallback);
     // detect right click outside
     document.addEventListener('contextmenu', onRightClick);
 
     return () => {
-      document.removeEventListener('mousedown', clickOutsideCallback);
       document.removeEventListener('contextmenu', onRightClick);
     }
   }, []);
 
-  return <Dropdown.Menu
+  const onLocalDocumentMoveTo = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    if (target_folder) {
+      OnDocumentMoveTo(target_folder);
+    }
+  }
+
+  const move_item = () => {
+    if (target_folder) {
+      return <Dropdown.Item as='button' onClick={onLocalDocumentMoveTo}>
+        <i className="bi bi-arrow-right me-1"></i>Move
+      </Dropdown.Item>
+    }
+  }
+
+  const onLocalRename = () => {
+    console.log('rename')
+    onHide()
+  }
+
+  const onHide = () => {
+    /**
+     * Dropdown is always visible; "hide it" actually
+     * moves it far away on the screen so that user does not see it.
+     * This is because, if show/hide state is employed, then my guess
+     * is that when hidden, react removed the dropdown element with its
+     * events from the DOM, which result in "events not being fired"*/
+    setPosition(HIDDEN)
+  }
+
+  return <DropdownMenu
       ref={ref}
-      show={isVisible}
+      show={true} // set is always visible so that React keeps element in the DOM
       style={{top: `${position.y}px`, left: `${position.x}px`}}>
-    <Dropdown.Item>
+    <Dropdown.Item as='button' onClick={onLocalRename}>
       <i className="bi bi-pencil-square me-1"></i>Rename
     </Dropdown.Item>
-    <Dropdown.Item>
+    <Dropdown.Item as='button'>
       <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
-    <Dropdown.Item>
-      <i className="bi bi-arrow-right me-1"></i>Move
-    </Dropdown.Item>
+    {move_item()}
     <Dropdown.Divider />
-    <Dropdown.Item>
+    <Dropdown.Item as='button'>
       <i className="bi bi-x-lg me-1 text-danger"></i>Delete
     </Dropdown.Item>
-  </Dropdown.Menu>
+  </DropdownMenu>
 }

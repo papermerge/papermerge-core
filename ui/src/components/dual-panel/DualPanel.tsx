@@ -19,7 +19,9 @@ import { Vow,
   onMovedNodesType,
   UUIDList,
   MovePagesBetweenDocsType,
-  ExtractedPagesType
+  ExtractedPagesType,
+  TargetFolder,
+  MovedDocumentType
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow';
 import useNodes from './useNodes';
@@ -92,6 +94,10 @@ function DualPanel({ node }: Args) {
   const [selected_snodes, setSelectedSNodes] = useState<UUIDList>([]);
   const [dragged_mnodes, setDraggedMNodes] = useState<UUIDList>([]);
   const [dragged_snodes, setDraggedSNodes] = useState<UUIDList>([]);
+  // target folder for main panel
+  const [mtarget_folder, setMTargetFolder] = useState<TargetFolder>()
+  // target folder for secondary panel
+  const [starget_folder, setSTargetFolder] = useState<TargetFolder>()
 
   useEffect(() => {
     setMainNode(node);
@@ -124,6 +130,30 @@ function DualPanel({ node }: Args) {
     }
 
   }, [secondary_doc?.data?.id])
+
+  useEffect(() => {
+    if (snodes?.data) {
+      const len = snodes.data.breadcrumb.length;
+      const last_item = snodes.data.breadcrumb[len - 1]
+      const new_target = {
+        id: last_item[0],
+        title: last_item[1]
+      }
+      setMTargetFolder(new_target)
+    }
+  }, [snodes?.data])
+
+  useEffect(() => {
+    if (mnodes?.data) {
+      const len = mnodes.data.breadcrumb.length;
+      const last_item = mnodes.data.breadcrumb[len - 1]
+      const new_target = {
+        id: last_item[0],
+        title: last_item[1]
+      }
+      setSTargetFolder(new_target)
+    }
+  }, [mnodes?.data])
 
   const onOpenSecondary = (local_node: NType) => {
     if (local_node) {
@@ -459,6 +489,10 @@ function DualPanel({ node }: Args) {
     })
   }
 
+  const onDocumentMoved = (arg: MovedDocumentType) => {
+
+  }
+
   const dual_context = {
     onOpenSecondary,
     onCloseSecondary,
@@ -499,6 +533,7 @@ function DualPanel({ node }: Args) {
           onDraggedPages={onDraggedMPages}
           onPageSizeChange={onMPageSizeChange}
           onPageClick={onMPageClick}
+          onDocumentMoved={onDocumentMoved}
           show_dual_button={'split'} />
       </DualPanelContext.Provider>
     } else {
@@ -507,6 +542,7 @@ function DualPanel({ node }: Args) {
         <SinglePanel
           parent_node={main_node}
           nodes={mnodes}
+          target_folder={mtarget_folder}
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
@@ -533,10 +569,12 @@ function DualPanel({ node }: Args) {
           onSelectedPages={onSelectedMPages}
           onDraggedPages={onDraggedMPages}
           onPageClick={onMPageClick}
-          onPageSizeChange={onMPageSizeChange} />
+          onPageSizeChange={onMPageSizeChange}
+          onDocumentMoved={onDocumentMoved} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
+          target_folder={starget_folder}
           onMovedNodes={onMovedNodes}
           onSelectNodes={onSelectSNodes}
           selected_nodes={selected_snodes}
@@ -564,6 +602,7 @@ function DualPanel({ node }: Args) {
           onDraggedPages={onDraggedSPages}
           onPageSizeChange={onSPageSizeChange}
           onPageClick={onSPageClick}
+          onDocumentMoved={onDocumentMoved}
           show_dual_button={'close'} />
         </DualPanelContext.Provider>
       </div>

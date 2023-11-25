@@ -12,7 +12,7 @@ import websockets from 'services/ws';
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import type { DataTransferExtractedPages, OcrStatusEnum} from 'types';
 import ErrorMessage from 'components/error_message';
@@ -23,6 +23,7 @@ import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
+import move_document from './modals/MoveDocument';
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
@@ -58,7 +59,9 @@ type Args = {
   onMovePagesBetweenDocs: ({source, target}: MovePagesBetweenDocsType) => void;
   onSelectedPages: (arg: Array<string>) => void;
   onDraggedPages: (arg: Array<string>) => void;
+  onDocumentMoved: (arg: MovedDocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
+  target_folder?: TargetFolder;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -85,7 +88,9 @@ export default function Viewer({
   onMovePagesBetweenDocs,
   onSelectedPages,
   onDraggedPages,
-  show_dual_button
+  onDocumentMoved,
+  show_dual_button,
+  target_folder
 }: Args) {
   const [ocr_status, setOCRStatus] = useState<OcrStatusEnum|null>(
     doc.data?.ocr_status || "UNKNOWN"
@@ -305,7 +310,6 @@ export default function Viewer({
         onPagesChange(
           _last_ver.pages.map(p => { return {angle: 0, page: p}})
         );
-
       }
     );
   }
@@ -334,6 +338,14 @@ export default function Viewer({
     run_ocr(_doc, _doc_ver)
     .then(() => {})
     .catch(() => {});
+  }
+
+  const onDocumentMoveTo = (target_folder: TargetFolder) => {
+    move_document({doc: doc.data!, target_folder}).then(
+      (arg: MovedDocumentType) => {
+        onDocumentMoved(arg)
+      }
+    )
   }
 
   return <div className="viewer w-100 m-1">
@@ -369,7 +381,9 @@ export default function Viewer({
         items={pages}
         current_page_number={currentPage}/>
     </div>
-    <ContextMenu />
+    <ContextMenu
+      OnDocumentMoveTo={onDocumentMoveTo}
+      target_folder={target_folder} />
   </div>;
 }
 

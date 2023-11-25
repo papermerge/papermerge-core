@@ -543,6 +543,7 @@ function DualPanel({ node }: Args) {
           parent_node={main_node}
           nodes={mnodes}
           target_folder={mtarget_folder}
+          target_direction={"right"}
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
@@ -575,6 +576,7 @@ function DualPanel({ node }: Args) {
           parent_node={secondary_node}
           nodes={snodes}
           target_folder={starget_folder}
+          target_direction={"left"}
           onMovedNodes={onMovedNodes}
           onSelectNodes={onSelectSNodes}
           selected_nodes={selected_snodes}

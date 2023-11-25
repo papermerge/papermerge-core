@@ -12,7 +12,7 @@ import websockets from 'services/ws';
 
 import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
-import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType } from 'types';
+import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType, TargetDirection } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import type { DataTransferExtractedPages, OcrStatusEnum} from 'types';
 import ErrorMessage from 'components/error_message';
@@ -62,6 +62,7 @@ type Args = {
   onDocumentMoved: (arg: MovedDocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
   target_folder?: TargetFolder;
+  target_direction?: TargetDirection
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -90,7 +91,8 @@ export default function Viewer({
   onDraggedPages,
   onDocumentMoved,
   show_dual_button,
-  target_folder
+  target_folder,
+  target_direction
 }: Args) {
   const [ocr_status, setOCRStatus] = useState<OcrStatusEnum|null>(
     doc.data?.ocr_status || "UNKNOWN"
@@ -383,7 +385,8 @@ export default function Viewer({
     </div>
     <ContextMenu
       OnDocumentMoveTo={onDocumentMoveTo}
-      target_folder={target_folder} />
+      target_folder={target_folder}
+      target_direction={target_direction} />
   </div>;
 }
 

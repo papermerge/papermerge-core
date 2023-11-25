@@ -22,7 +22,8 @@ import {
   MovePagesBetweenDocsType,
   ExtractedPagesType,
   TargetFolder,
-  MovedDocumentType
+  MovedDocumentType,
+  TargetDirection
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -45,6 +46,7 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
   target_folder?: TargetFolder;
+  target_direction?: TargetDirection;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
   dragged_pages: Array<string>;
@@ -171,6 +173,7 @@ function SinglePanel({
   selected_pages,
   dragged_pages,
   target_folder,
+  target_direction,
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
@@ -228,6 +231,7 @@ function SinglePanel({
         pages={pages}
         selected_pages={selected_pages}
         target_folder={target_folder}
+        target_direction={target_direction}
         dragged_pages={dragged_pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}

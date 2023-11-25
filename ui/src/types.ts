@@ -248,6 +248,8 @@ export type MovedDocumentType = {
   target_folder: TargetFolder;
 }
 
+export type TargetDirection = 'left' | 'right';
+
 export type onMovedNodesType = {
   target_id: string;
   source: NodeType[];

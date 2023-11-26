@@ -96,9 +96,9 @@ function DualPanel({ node }: Args) {
   const [dragged_mnodes, setDraggedMNodes] = useState<UUIDList>([]);
   const [dragged_snodes, setDraggedSNodes] = useState<UUIDList>([]);
   // target folder for main panel
-  const [mtarget_folder, setMTargetFolder] = useState<TargetFolder>()
+  const [mtarget_folder, setMTargetFolder] = useState<TargetFolder|null>(null)
   // target folder for secondary panel
-  const [starget_folder, setSTargetFolder] = useState<TargetFolder>()
+  const [starget_folder, setSTargetFolder] = useState<TargetFolder|null>(null)
 
   useEffect(() => {
     setMainNode(node);
@@ -114,6 +114,7 @@ function DualPanel({ node }: Args) {
       setMCurDocVer(ready_vow(last_version))
       setMCurPages(ready_vow(pages));
       setMDocBreadcrumb(ready_vow(main_doc.data.breadcrumb));
+      setSTargetFolder(null)
     }
 
   }, [main_doc?.data?.id]);
@@ -128,6 +129,7 @@ function DualPanel({ node }: Args) {
       setSCurDocVer(ready_vow(last_version))
       setSCurPages(ready_vow(pages));
       setSDocBreadcrumb(ready_vow(secondary_doc.data.breadcrumb));
+      setMTargetFolder(null)
     }
 
   }, [secondary_doc?.data?.id])

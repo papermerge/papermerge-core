@@ -10,7 +10,7 @@ import { TargetDirection, TargetFolder, Coord } from "types";
 not see it */
 
 type Args = {
-  target_folder?: TargetFolder;
+  target_folder?: TargetFolder | null;
   target_direction?: TargetDirection;
   position: Coord;
   OnDocumentMoveTo: (arg: TargetFolder) => void;

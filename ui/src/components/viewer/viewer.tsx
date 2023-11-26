@@ -35,7 +35,6 @@ type ShortPageType = {
   id: string;
 }
 
-
 type ApplyPagesType = {
   angle: number;
   page: ShortPageType;
@@ -61,7 +60,7 @@ type Args = {
   onDraggedPages: (arg: Array<string>) => void;
   onDocumentMoved: (arg: MovedDocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
-  target_folder?: TargetFolder;
+  target_folder?: TargetFolder | null;
   target_direction?: TargetDirection
 }
 

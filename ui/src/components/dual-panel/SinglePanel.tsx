@@ -45,7 +45,7 @@ type Args = {
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
-  target_folder?: TargetFolder;
+  target_folder?: TargetFolder | null;
   target_direction?: TargetDirection;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;

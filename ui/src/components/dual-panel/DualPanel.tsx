@@ -490,8 +490,36 @@ function DualPanel({ node }: Args) {
     })
   }
 
-  const onDocumentMoved = (arg: MovedDocumentType) => {
+  const onDocumentMoved = ({doc, target_folder}: MovedDocumentType) => {
+    /* Triggered when user moves document from inside viewer
+    to another panel */
+    const new_node = newNodeFrom(doc)
 
+    // update target folder nodes
+    if (target_folder.id == main_node.id) {
+      setMNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, [new_node]
+        );
+      });
+    } else {
+      setSNodes((draft: Vow<NodesType>) => {
+        draft!.data!.nodes = uniq_concat<NodeType>(
+          mnodes!.data!.nodes, [new_node]
+        );
+      });
+    }
+
+    // update source doc breadcrumb
+    if (doc.id == secondary_doc?.data?.id) {
+      setSDocBreadcrumb(ready_vow([
+        ...mnodes.data?.breadcrumb!, [doc.id, doc.title]
+      ]));
+    } else if (doc.id == main_doc?.data?.id) {
+      setMDocBreadcrumb(ready_vow([
+        ...snodes.data?.breadcrumb!, [doc.id, doc.title]
+      ]));
+    }
   }
 
   const dual_context = {
@@ -624,6 +652,27 @@ function get_last_doc_version(doc: DocumentType): DocumentVersion {
 
     return cur;
   });
+}
+
+function newNodeFrom(doc: DocumentType): NodeType {
+  let new_node: NodeType = {
+    id: doc.id,
+    ctype: 'document',
+    title: doc.title,
+    tags: [],
+    parent_id: doc.parent_id,
+    accept_dropped_nodes: false,
+    is_currently_dragged: false,
+    update_at: doc.updated_at,
+    document: {
+      ocr_status: doc.ocr_status,
+      thumbnail_url: ''
+    },
+    thumbnail_url: '',
+    user_id: doc.user_id
+  }
+
+  return new_node;
 }
 
 export default DualPanel;

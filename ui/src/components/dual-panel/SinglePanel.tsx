@@ -20,7 +20,10 @@ import {
   NodeType,
   UUIDList,
   MovePagesBetweenDocsType,
-  ExtractedPagesType
+  ExtractedPagesType,
+  TargetFolder,
+  MovedDocumentType,
+  TargetDirection
 } from 'types';
 import { NodeSortFieldEnum, NodeSortOrderEnum, DisplayNodesModeEnum } from 'types';
 
@@ -42,6 +45,8 @@ type Args = {
   doc_versions: Vow<DocumentVersion[]>;
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
+  target_folder?: TargetFolder | null;
+  target_direction?: TargetDirection;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
   dragged_pages: Array<string>;
@@ -56,6 +61,7 @@ type Args = {
   dragged_nodes: UUIDList;
   onPageSizeChange: (page_size: number) => void;
   onPageClick: (page: number) => void;
+  onDocumentMoved: (arg: MovedDocumentType) => void;
 }
 
 type NodeListParams = {
@@ -166,13 +172,16 @@ function SinglePanel({
   pages,
   selected_pages,
   dragged_pages,
+  target_folder,
+  target_direction,
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
   onDocBreadcrumbChange,
   onMovePagesBetweenDocs,
   onSelectedPages,
-  onDraggedPages
+  onDraggedPages,
+  onDocumentMoved
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -221,6 +230,8 @@ function SinglePanel({
         breadcrumb={doc_breadcrumb}
         pages={pages}
         selected_pages={selected_pages}
+        target_folder={target_folder}
+        target_direction={target_direction}
         dragged_pages={dragged_pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}
@@ -228,7 +239,8 @@ function SinglePanel({
         onBreadcrumbChange={onDocBreadcrumbChange}
         onMovePagesBetweenDocs={onMovePagesBetweenDocs}
         onSelectedPages={onSelectedPages}
-        onDraggedPages={onDraggedPages} />;
+        onDraggedPages={onDraggedPages}
+        onDocumentMoved={onDocumentMoved}/>;
     }
   } catch(e) {
     return <div>Caught exception</div>;

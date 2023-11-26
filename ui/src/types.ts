@@ -273,3 +273,8 @@ export type OCRCode = 'eng' | 'deu' | 'fra' | 'spa' | 'ita' | 'osd';
 export type OCRLangType = {
   [key: string]: string
 }
+
+export type Coord = {
+  x: number;
+  y: number;
+}

@@ -1,40 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownMenu from 'react-bootstrap/DropdownMenu';
 
 
-import { TargetDirection, TargetFolder } from "types";
+import { TargetDirection, TargetFolder, Coord } from "types";
 
-type Coord = {
-  x: number;
-  y: number;
-}
 
 /* hiding - means move away element so that user does
 not see it */
-const HIDDEN = { // far away coordinates
-  x: -100000,
-  y: -100000
-}
 
 type Args = {
   target_folder?: TargetFolder;
   target_direction?: TargetDirection;
+  position: Coord;
   OnDocumentMoveTo: (arg: TargetFolder) => void;
+  hideMenu: () => void;
 }
 
-export default function ContextMenu({target_folder, target_direction, OnDocumentMoveTo}: Args) {
-  const [position, setPosition] = useState<Coord>(HIDDEN)
+export default function ContextMenu({
+  target_folder,
+  target_direction,
+  position,
+  hideMenu,
+  OnDocumentMoveTo
+}: Args) {
+
   const ref = useRef<HTMLDivElement>(null)
-
-  const onRightClick = (ev: MouseEvent) => {
-    ev.preventDefault(); // prevents default context menu
-
-    let new_y = ev.clientY;
-    let new_x = ev.clientX;
-
-    setPosition({y: new_y, x: new_x})
-  }
 
   const clickOutsideCallback = (e: MouseEvent) => {
     if(ref.current) {
@@ -51,11 +42,9 @@ export default function ContextMenu({target_folder, target_direction, OnDocument
 
   useEffect(() => {
     // detect right click outside
-    document.addEventListener('contextmenu', onRightClick);
     document.addEventListener('mousedown', clickOutsideCallback);
 
     return () => {
-      document.removeEventListener('contextmenu', onRightClick);
       document.removeEventListener('mousedown', clickOutsideCallback);
     }
   }, []);
@@ -64,6 +53,7 @@ export default function ContextMenu({target_folder, target_direction, OnDocument
     e.preventDefault();
     if (target_folder) {
       OnDocumentMoveTo(target_folder);
+      hideMenu()
     }
   }
 
@@ -90,16 +80,6 @@ export default function ContextMenu({target_folder, target_direction, OnDocument
     hideMenu()
   }
 
-  const hideMenu = () => {
-    /**
-     * Dropdown is always visible; "hide it" actually
-     * moves it far away on the screen so that user does not see it.
-     * This is because, if show/hide state is employed, then my guess
-     * is that when hidden, react remove the dropdown element with its
-     * events from the DOM, which result in "events not being fired"
-     * */
-    setPosition(HIDDEN)
-  }
 
   return <DropdownMenu
       ref={ref}

@@ -14,12 +14,12 @@ import ActionPanel from "components/viewer/action_panel/action_panel";
 import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType, TargetDirection } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
-import type { DataTransferExtractedPages, OcrStatusEnum} from 'types';
+import type { DataTransferExtractedPages, OcrStatusEnum, Coord} from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
 
-import { DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
+import { DATA_TRANSFER_EXTRACTED_PAGES, HIDDEN } from 'cconstants';
 import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
@@ -102,8 +102,10 @@ export default function Viewer({
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
   let viewer_content_height = useViewerContentHeight();
+  const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const viewer_content_ref = useRef<HTMLInputElement>(null);
   const toasts = useToast();
+  const ref = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
@@ -128,6 +130,19 @@ export default function Viewer({
     }
   }, [doc.data]);
 
+  useEffect(() => {
+    // detect right click outside
+    if (ref.current) {
+      ref.current.addEventListener('contextmenu', onContextMenu);
+    }
+
+    return () => {
+      if (ref.current) {
+        ref.current.removeEventListener('contextmenu', onContextMenu);
+      }
+    }
+  }, []);
+
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
     if (data.kwargs.document_id == doc.data?.id) {
       setOCRStatus(data.state);
@@ -136,6 +151,26 @@ export default function Viewer({
         reloadAfterOCRSuccess();
       }
     }
+  }
+
+  const onContextMenu = (ev: MouseEvent) => {
+    ev.preventDefault(); // prevents default context menu
+
+    let new_y = ev.clientY;
+    let new_x = ev.clientX;
+
+    setContextMenuPosition({y: new_y, x: new_x})
+  }
+
+  const hideContextMenu = () => {
+    /**
+     * Dropdown is always visible; "hide it" actually
+     * moves it far away on the screen so that user does not see it.
+     * This is because, if show/hide state is employed, then my guess
+     * is that when hidden, react remove the dropdown element with its
+     * events from the DOM, which result in "events not being fired"
+     * */
+    setContextMenuPosition(HIDDEN)
   }
 
   const onThumbnailsToggle = () => {
@@ -350,7 +385,7 @@ export default function Viewer({
     )
   }
 
-  return <div className="viewer w-100 m-1">
+  return <div ref={ref} className="viewer w-100 m-1">
     <ActionPanel
       versions={doc_versions}
       doc={doc}
@@ -384,12 +419,13 @@ export default function Viewer({
         current_page_number={currentPage}/>
     </div>
     <ContextMenu
+      position={contextMenuPosition}
+      hideMenu={hideContextMenu}
       OnDocumentMoveTo={onDocumentMoveTo}
       target_folder={target_folder}
       target_direction={target_direction} />
   </div>;
 }
-
 
 function get_doc_title(breadcrumb: BreadcrumbType): string {
   /* breadcrumb is stored as list of tuples:

@@ -17,3 +17,8 @@ export const OCR_LANG: OCRLangType = {
   'por': 'Português',
   'osd': 'osd'
 }
+
+export const HIDDEN = { // far away coordinates
+  x: -100000,
+  y: -100000
+}

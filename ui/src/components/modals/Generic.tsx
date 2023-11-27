@@ -88,7 +88,8 @@ const GenericModal = ({
       show={show}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
-      animation={false}>
+      animation={false}
+      scrollable={true}>
       <Modal.Header closeButton onClick={handleCancel}>
         <Modal.Title id="contained-modal-title-vcenter">
           {modal_title}

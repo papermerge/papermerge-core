@@ -431,6 +431,7 @@ export default function Viewer({
       hideMenu={hideContextMenu}
       OnDocumentMoveTo={onDocumentMoveTo}
       OnDocumentDelete={onLocalDocumentDelete}
+      OnRename={onRenameClick}
       target_folder={target_folder}
       target_direction={target_direction} />
   </div>;

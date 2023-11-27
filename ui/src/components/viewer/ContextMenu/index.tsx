@@ -15,6 +15,7 @@ type Args = {
   position: Coord;
   OnDocumentMoveTo: (arg: TargetFolder) => void;
   OnDocumentDelete: () => void;
+  OnRename: () => void;
   hideMenu: () => void;
 }
 
@@ -24,7 +25,8 @@ export default function ContextMenu({
   position,
   hideMenu,
   OnDocumentMoveTo,
-  OnDocumentDelete
+  OnDocumentDelete,
+  OnRename
 }: Args) {
 
   const ref = useRef<HTMLDivElement>(null)
@@ -78,7 +80,7 @@ export default function ContextMenu({
   }
 
   const onLocalRename = () => {
-    console.log('rename')
+    OnRename()
     hideMenu()
   }
 

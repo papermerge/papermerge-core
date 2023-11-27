@@ -16,6 +16,7 @@ type Args = {
   OnDocumentMoveTo: (arg: TargetFolder) => void;
   OnDocumentDelete: () => void;
   OnRename: () => void;
+  OnViewOCRText: () => void;
   hideMenu: () => void;
 }
 
@@ -26,7 +27,8 @@ export default function ContextMenu({
   hideMenu,
   OnDocumentMoveTo,
   OnDocumentDelete,
-  OnRename
+  OnRename,
+  OnViewOCRText
 }: Args) {
 
   const ref = useRef<HTMLDivElement>(null)
@@ -84,6 +86,11 @@ export default function ContextMenu({
     hideMenu()
   }
 
+  const onLocalViewOCRText = () => {
+    OnViewOCRText()
+    hideMenu()
+  }
+
 
   return <DropdownMenu
       ref={ref}
@@ -93,12 +100,12 @@ export default function ContextMenu({
     <Dropdown.Item as='button' onClick={onLocalRename}>
       <i className="bi bi-pencil-square me-1"></i>Rename
     </Dropdown.Item>
-    <Dropdown.Item as='button'>
+    <Dropdown.Item as='button' onClick={onLocalViewOCRText}>
       <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
     {move_item()}
     <Dropdown.Divider />
     <Dropdown.Item as='button' onClick={OnDocumentDelete}>
-      <i className="bi bi-x-lg me-1 text-danger"></i>Delete
+      <i className="bi bi-x-lg me-1 text-danger"></i>Delete Document
     </Dropdown.Item>
   </DropdownMenu>
 }

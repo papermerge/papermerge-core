@@ -24,7 +24,8 @@ import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import move_document from './modals/MoveDocument';
-import delete_document from './modals/DeleteDocument'
+import delete_document from './modals/DeleteDocument';
+import view_ocr_text from './modals/ViewOCRText';
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
@@ -393,6 +394,12 @@ export default function Viewer({
     )
   }
 
+  const onViewOCRText = () => {
+    view_ocr_text({doc_ver: doc_ver.data!, selected_pages}).then(
+      () => {}
+    );
+  }
+
   return <div ref={ref} className="viewer w-100 m-1">
     <ActionPanel
       versions={doc_versions}
@@ -432,6 +439,7 @@ export default function Viewer({
       OnDocumentMoveTo={onDocumentMoveTo}
       OnDocumentDelete={onLocalDocumentDelete}
       OnRename={onRenameClick}
+      OnViewOCRText={onViewOCRText}
       target_folder={target_folder}
       target_direction={target_direction} />
   </div>;

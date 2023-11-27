@@ -14,6 +14,7 @@ type Args = {
   target_direction?: TargetDirection;
   position: Coord;
   OnDocumentMoveTo: (arg: TargetFolder) => void;
+  OnDocumentDelete: () => void;
   hideMenu: () => void;
 }
 
@@ -22,7 +23,8 @@ export default function ContextMenu({
   target_direction,
   position,
   hideMenu,
-  OnDocumentMoveTo
+  OnDocumentMoveTo,
+  OnDocumentDelete
 }: Args) {
 
   const ref = useRef<HTMLDivElement>(null)
@@ -93,7 +95,7 @@ export default function ContextMenu({
       <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
     {move_item()}
     <Dropdown.Divider />
-    <Dropdown.Item as='button'>
+    <Dropdown.Item as='button' onClick={OnDocumentDelete}>
       <i className="bi bi-x-lg me-1 text-danger"></i>Delete
     </Dropdown.Item>
   </DropdownMenu>

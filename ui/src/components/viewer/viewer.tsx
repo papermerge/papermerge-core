@@ -24,6 +24,7 @@ import { apply_page_op_changes } from 'requests/viewer';
 import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import move_document from './modals/MoveDocument';
+import delete_document from './modals/DeleteDocument'
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
@@ -59,6 +60,7 @@ type Args = {
   onSelectedPages: (arg: Array<string>) => void;
   onDraggedPages: (arg: Array<string>) => void;
   onDocumentMoved: (arg: MovedDocumentType) => void;
+  onDocumentDelete: (arg: DocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
   target_folder?: TargetFolder | null;
   target_direction?: TargetDirection
@@ -89,6 +91,7 @@ export default function Viewer({
   onSelectedPages,
   onDraggedPages,
   onDocumentMoved,
+  onDocumentDelete,
   show_dual_button,
   target_folder,
   target_direction
@@ -384,6 +387,12 @@ export default function Viewer({
     )
   }
 
+  const onLocalDocumentDelete = () => {
+    delete_document(doc.data!).then(
+      () => onDocumentDelete(doc.data!)
+    )
+  }
+
   return <div ref={ref} className="viewer w-100 m-1">
     <ActionPanel
       versions={doc_versions}
@@ -421,6 +430,7 @@ export default function Viewer({
       position={contextMenuPosition}
       hideMenu={hideContextMenu}
       OnDocumentMoveTo={onDocumentMoveTo}
+      OnDocumentDelete={onLocalDocumentDelete}
       target_folder={target_folder}
       target_direction={target_direction} />
   </div>;

@@ -16,19 +16,29 @@ type Args = {
 
 const ViewOCRTextModal = ({onOK, onCancel, doc_ver, selected_pages}: Args) => {
 
-  let text = '';
+  let text: Array<string> = [];
 
   if (selected_pages.length == 0) {
-    text = doc_ver.pages.map((p: PageType) => p.text).join('')
+    text = doc_ver.pages.map((p: PageType) => p.text);
+  } else {
+    text = doc_ver.pages.map(
+      (p: PageType) => {
+        if (selected_pages.indexOf(p.id) < 0) {
+          return '';
+        }
+
+        return p.text;
+      }
+    );
   }
 
   return (
     <GenericModal
-      modal_title='OCR Text'
+      modal_title={`OCR Text / ${doc_ver.lang}`}
       submit_button_title='OK'
       onSubmit={() => onOK(null)}
       onCancel={() => onCancel()}>
-        {text}
+        {text.join('')}
     </GenericModal>
   );
 }

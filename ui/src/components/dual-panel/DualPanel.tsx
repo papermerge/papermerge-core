@@ -23,10 +23,10 @@ import { Vow,
   TargetFolder,
   MovedDocumentType
 } from 'types';
-import { init_vow, ready_vow } from 'utils/vow';
-import useNodes from './useNodes';
-import useDoc from './useDoc';
-import { uniq_concat, subtract } from 'utils/array';
+import { init_vow, ready_vow } from 'utils/vow'
+import useNodes from './useNodes'
+import useDoc from './useDoc'
+import { uniq_concat, subtract } from 'utils/array'
 
 
 type Args = {

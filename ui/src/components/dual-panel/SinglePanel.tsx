@@ -62,6 +62,7 @@ type Args = {
   onPageSizeChange: (page_size: number) => void;
   onPageClick: (page: number) => void;
   onDocumentMoved: (arg: MovedDocumentType) => void;
+  onDocumentDelete: (arg: DocumentType) => void;
 }
 
 type NodeListParams = {
@@ -181,7 +182,8 @@ function SinglePanel({
   onMovePagesBetweenDocs,
   onSelectedPages,
   onDraggedPages,
-  onDocumentMoved
+  onDocumentMoved,
+  onDocumentDelete
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -240,7 +242,8 @@ function SinglePanel({
         onMovePagesBetweenDocs={onMovePagesBetweenDocs}
         onSelectedPages={onSelectedPages}
         onDraggedPages={onDraggedPages}
-        onDocumentMoved={onDocumentMoved}/>;
+        onDocumentMoved={onDocumentMoved}
+        onDocumentDelete={onDocumentDelete} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Page }  from "./page";
+import Zoom from "components/viewer/Zoom";
 import type { PageAndRotOp, Vow } from "types"
+
 
 
 type Args = {
@@ -7,8 +10,31 @@ type Args = {
   current_page_number: number;
 }
 
+const MAX_ZOOM = 300;
+const MIN_ZOOM = 20;
+const ZOOM_STEP = 10;
+const ZOOM_FIT = 100;
+
+
 
 export function PagesPanel({items, current_page_number}: Args) {
+  let [zoom, setZoom] = useState<number>(ZOOM_FIT);
+
+  const onZoomIn = () => {
+    if (zoom < MAX_ZOOM) {
+      setZoom(zoom + ZOOM_STEP)
+    }
+  }
+
+  const onZoomOut = () => {
+    if (zoom > MIN_ZOOM) {
+      setZoom(zoom - ZOOM_STEP)
+    }
+  }
+
+  const onZoomFit = () => {
+    setZoom(ZOOM_FIT);
+  }
 
   if (items.is_pending) {
     return <div className='pages-panel flex-grow-1'>
@@ -25,11 +51,18 @@ export function PagesPanel({items, current_page_number}: Args) {
   }
 
   return (
-    <div className='pages-panel flex-grow-1'>
-      {items.data.map(item => <Page
-            key={item.page.id}
-            item={item}
-            scroll_into_view={item.page.number == current_page_number}/>)}
+    <div className="flex-grow-1">
+      <div className='pages-panel'>
+        {items.data.map(item => <Page
+              key={item.page.id}
+              zoom={zoom}
+              item={item}
+              scroll_into_view={item.page.number == current_page_number}/>)}
+      </div>
+      <Zoom
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        onZoomFit={onZoomFit} />
     </div>
   );
 }

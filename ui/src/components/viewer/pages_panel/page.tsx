@@ -14,6 +14,7 @@ type Args = {
     view.
   */
   scroll_into_view: boolean;
+  zoom: number;
 }
 
 function get_page_panel_width(): number {
@@ -33,7 +34,7 @@ function get_page_panel_width(): number {
   return ret;
 }
 
-export function Page({item, scroll_into_view}: Args) {
+export function Page({item, scroll_into_view, zoom}: Args) {
 
   //const base64_jpg = useProtectedJpg(page.jpg_url);
   const pageRef = useRef<HTMLDivElement | null>(null);
@@ -49,7 +50,7 @@ export function Page({item, scroll_into_view}: Args) {
   } else if ( error ) {
     page_component = <div>Error</div>
   } else {
-    page_component = <div>
+    page_component = <div style={{width: `${zoom}%`}}>
       <div style={{transform: `rotate(${item.angle}deg)`}}>
       {data}
       </div>

@@ -46,7 +46,10 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
   target_folder?: TargetFolder | null;
+  /* Direction of arrow for moving document to the target folder */
   target_direction?: TargetDirection;
+  /* Direction of arrow for marking target panel equal to source panel */
+  target_equal_source_direction?: TargetDirection;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
   dragged_pages: Array<string>;
@@ -63,6 +66,7 @@ type Args = {
   onPageClick: (page: number) => void;
   onDocumentMoved: (arg: MovedDocumentType) => void;
   onDocumentDelete: (arg: DocumentType) => void;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 type NodeListParams = {
@@ -175,6 +179,7 @@ function SinglePanel({
   dragged_pages,
   target_folder,
   target_direction,
+  target_equal_source_direction,
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
@@ -183,7 +188,8 @@ function SinglePanel({
   onSelectedPages,
   onDraggedPages,
   onDocumentMoved,
-  onDocumentDelete
+  onDocumentDelete,
+  onTargetEqualSourceClick
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -206,6 +212,7 @@ function SinglePanel({
         pagination={pagination}
         sort={sort}
         nodes={nodes}
+        target_equal_source_direction={target_equal_source_direction}
         selected_nodes={selected_nodes}
         dragged_nodes={dragged_nodes}
         onSelectNodes={onSelectNodes}
@@ -220,7 +227,8 @@ function SinglePanel({
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         onNodesListChange={onNodesListChange}
-        show_dual_button={show_dual_button} />
+        show_dual_button={show_dual_button}
+        onTargetEqualSourceClick={onTargetEqualSourceClick} />
     } else {
       return <Viewer
         node_id={parent_node.id}
@@ -234,6 +242,7 @@ function SinglePanel({
         selected_pages={selected_pages}
         target_folder={target_folder}
         target_direction={target_direction}
+        target_equal_source_direction={target_equal_source_direction}
         dragged_pages={dragged_pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}
@@ -243,7 +252,8 @@ function SinglePanel({
         onSelectedPages={onSelectedPages}
         onDraggedPages={onDraggedPages}
         onDocumentMoved={onDocumentMoved}
-        onDocumentDelete={onDocumentDelete} />;
+        onDocumentDelete={onDocumentDelete}
+        onTargetEqualSourceClick={onTargetEqualSourceClick} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

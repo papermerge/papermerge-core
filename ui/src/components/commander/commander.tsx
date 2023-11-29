@@ -11,6 +11,7 @@ import EmptyFolder from './empty_folder';
 import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
 import { DualPanelContext } from 'components/dual-panel/DualPanel';
+import { TargetEqualSource } from 'components/dual-panel/TargetEqualSource';
 
 import { is_empty } from 'utils/misc';
 
@@ -35,7 +36,8 @@ import type {
   ShowDualButtonEnum,
   Sorting,
   ExtractedPagesType,
-  DataTransferExtractedPages
+  DataTransferExtractedPages,
+  TargetDirection
 } from 'types';
 
 import type { UUIDList, NType } from 'types';
@@ -81,6 +83,8 @@ type Args = {
   show_dual_button?: ShowDualButtonEnum;
   selected_nodes: UUIDList;
   dragged_nodes: UUIDList;
+  target_equal_source_direction?: TargetDirection;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 
@@ -106,7 +110,9 @@ function Commander({
   onNodesDisplayModeList,
   onNodesDisplayModeTiles,
   onNodesListChange,
-  show_dual_button
+  show_dual_button,
+  target_equal_source_direction,
+  onTargetEqualSourceClick
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   // css class name will be set to "accept-files" when user drags
@@ -547,6 +553,11 @@ function Commander({
                 <option value="50">50</option>
                 <option value="100">100</option>
               </Form.Select>
+
+              <TargetEqualSource
+                direction={target_equal_source_direction}
+                onTargetEqualSourceClick={onTargetEqualSourceClick} />
+
               <DualButton
                 node={{id: node_id, ctype: 'folder'}}
                 show_dual_button={show_dual_button} />

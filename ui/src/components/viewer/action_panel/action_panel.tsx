@@ -6,9 +6,10 @@ import DeletePages from "./DeletePages";
 import RotateCw from "./RotateCw";
 import RotateCcw from "./RotateCcw";
 import { DualButton } from "components/dual-panel/DualButton";
-import type { OcrStatusEnum, Vow } from "types";
+import type { OcrStatusEnum, TargetDirection, Vow } from "types";
 import OcrStatus from "components/ocr_status";
 import { last_version } from "utils/misc";
+import { TargetEqualSource } from 'components/dual-panel/TargetEqualSource';
 
 
 type Args = {
@@ -24,6 +25,8 @@ type Args = {
   onApplyPageOpChanges: () => void;
   onRunOCR: (doc: DocumentType, doc_ver: DocumentVersion) => void;
   show_dual_button?: ShowDualButtonEnum;
+  target_equal_source_direction?: TargetDirection;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 export default function ActionPanel({
@@ -38,7 +41,9 @@ export default function ActionPanel({
   onRotatePagesCcw,
   onApplyPageOpChanges,
   onRunOCR,
-  show_dual_button
+  show_dual_button,
+  target_equal_source_direction,
+  onTargetEqualSourceClick
 }: Args) {
 
   const delete_pages = <DeletePages onClick={onDeletePages} />;
@@ -90,6 +95,11 @@ export default function ActionPanel({
               onClick={onApplyPageOpChanges}/>}
         </div>
       <div>
+
+        <TargetEqualSource
+          direction={target_equal_source_direction}
+          onTargetEqualSourceClick={onTargetEqualSourceClick} />
+
         <DualButton
           node={{id: doc.data.id, ctype: 'document'}}
           show_dual_button={show_dual_button} />

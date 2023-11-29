@@ -64,7 +64,9 @@ type Args = {
   onDocumentDelete: (arg: DocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
   target_folder?: TargetFolder | null;
-  target_direction?: TargetDirection
+  target_direction?: TargetDirection;
+  target_equal_source_direction?: TargetDirection;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {
@@ -95,7 +97,9 @@ export default function Viewer({
   onDocumentDelete,
   show_dual_button,
   target_folder,
-  target_direction
+  target_direction,
+  target_equal_source_direction,
+  onTargetEqualSourceClick
 }: Args) {
   const [ocr_status, setOCRStatus] = useState<OcrStatusEnum|null>(
     doc.data?.ocr_status || "UNKNOWN"
@@ -413,7 +417,9 @@ export default function Viewer({
       unapplied_page_op_changes={unappliedPagesOpChanges}
       onApplyPageOpChanges={onApplyPageOpChanges}
       onRunOCR={onRunOCR}
-      show_dual_button={show_dual_button} />
+      show_dual_button={show_dual_button}
+      target_equal_source_direction={target_equal_source_direction}
+      onTargetEqualSourceClick={onTargetEqualSourceClick} />
     <Breadcrumb path={breadcrumb?.data || []} onClick={onNodeClick} is_loading={false} />
     <div className="d-flex flex-row content" ref={viewer_content_ref}>
       <ThumbnailsPanel

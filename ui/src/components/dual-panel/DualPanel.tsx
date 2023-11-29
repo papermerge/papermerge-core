@@ -648,7 +648,7 @@ function DualPanel({ node }: Args) {
           nodes={mnodes}
           target_folder={mtarget_folder}
           target_direction={"right"}
-          target_equal_source_direction={"right"}
+          target_equal_source_direction={main_node.id != secondary_node.id ? "right": undefined}
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
@@ -684,7 +684,7 @@ function DualPanel({ node }: Args) {
           nodes={snodes}
           target_folder={starget_folder}
           target_direction={"left"}
-          target_equal_source_direction={"left"}
+          target_equal_source_direction={main_node.id != secondary_node.id ? "left": undefined}
           onMovedNodes={onMovedNodes}
           onSelectNodes={onSelectSNodes}
           selected_nodes={selected_snodes}
@@ -755,5 +755,6 @@ function newNodeFrom(doc: DocumentType): NodeType {
 
   return new_node;
 }
+
 
 export default DualPanel;

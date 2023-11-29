@@ -46,7 +46,10 @@ type Args = {
   doc_ver: Vow<DocumentVersion>;
   doc_breadcrumb: Vow<BreadcrumbType>;
   target_folder?: TargetFolder | null;
+  /* Direction of arrow for moving document to the target folder */
   target_direction?: TargetDirection;
+  /* Direction of arrow for marking target panel equal to source panel */
+  target_equal_source_direction?: TargetDirection;
   pages: Vow<PageAndRotOp[]>;
   selected_pages: Array<string>;
   dragged_pages: Array<string>;
@@ -175,6 +178,7 @@ function SinglePanel({
   dragged_pages,
   target_folder,
   target_direction,
+  target_equal_source_direction,
   onDocVerChange,
   onDocVersionsChange,
   onPagesChange,
@@ -206,6 +210,7 @@ function SinglePanel({
         pagination={pagination}
         sort={sort}
         nodes={nodes}
+        target_equal_source_direction={target_equal_source_direction}
         selected_nodes={selected_nodes}
         dragged_nodes={dragged_nodes}
         onSelectNodes={onSelectNodes}
@@ -234,6 +239,7 @@ function SinglePanel({
         selected_pages={selected_pages}
         target_folder={target_folder}
         target_direction={target_direction}
+        target_equal_source_direction={target_equal_source_direction}
         dragged_pages={dragged_pages}
         onDocVersionsChange={onDocVersionsChange}
         onDocVerChange={onDocVerChange}

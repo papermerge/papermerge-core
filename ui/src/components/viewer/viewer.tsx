@@ -64,7 +64,8 @@ type Args = {
   onDocumentDelete: (arg: DocumentType) => void;
   show_dual_button?: ShowDualButtonEnum;
   target_folder?: TargetFolder | null;
-  target_direction?: TargetDirection
+  target_direction?: TargetDirection;
+  target_equal_source_direction?: TargetDirection;
 }
 
 function apply_page_type(item: PageAndRotOp): ApplyPagesType {

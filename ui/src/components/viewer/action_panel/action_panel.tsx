@@ -9,6 +9,7 @@ import { DualButton } from "components/dual-panel/DualButton";
 import type { OcrStatusEnum, Vow } from "types";
 import OcrStatus from "components/ocr_status";
 import { last_version } from "utils/misc";
+import { TargetEqualSource } from 'components/dual-panel/TargetEqualSource';
 
 
 type Args = {
@@ -90,6 +91,8 @@ export default function ActionPanel({
               onClick={onApplyPageOpChanges}/>}
         </div>
       <div>
+        <TargetEqualSource />
+
         <DualButton
           node={{id: doc.data.id, ctype: 'document'}}
           show_dual_button={show_dual_button} />

@@ -600,7 +600,7 @@ function DualPanel({ node }: Args) {
           onPageClick={onMPageClick}
           onDocumentMoved={onDocumentMoved}
           onDocumentDelete={onDocumentDelete}
-          show_dual_button={'split'} />
+          show_dual_button={"split"} />
       </DualPanelContext.Provider>
     } else {
       return <div className='d-flex'>
@@ -610,6 +610,7 @@ function DualPanel({ node }: Args) {
           nodes={mnodes}
           target_folder={mtarget_folder}
           target_direction={"right"}
+          target_equal_source_direction={"right"}
           selected_nodes={selected_mnodes}
           dragged_nodes={dragged_mnodes}
           onMovedNodes={onMovedNodes}
@@ -644,6 +645,7 @@ function DualPanel({ node }: Args) {
           nodes={snodes}
           target_folder={starget_folder}
           target_direction={"left"}
+          target_equal_source_direction={"left"}
           onMovedNodes={onMovedNodes}
           onSelectNodes={onSelectSNodes}
           selected_nodes={selected_snodes}

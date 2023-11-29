@@ -21,7 +21,8 @@ import { Vow,
   MovePagesBetweenDocsType,
   ExtractedPagesType,
   TargetFolder,
-  MovedDocumentType
+  MovedDocumentType,
+  TargetDirection
 } from 'types';
 import { init_vow, ready_vow } from 'utils/vow'
 import useNodes from './useNodes'
@@ -76,8 +77,8 @@ function DualPanel({ node }: Args) {
     pagination: spagination,
     sort: ssort
   });
-  const main_doc = useDoc({node: main_node});
-  const secondary_doc = useDoc({node: secondary_node});
+  const [main_doc, setMainDoc] = useDoc({node: main_node});
+  const [secondary_doc, setSecondaryDoc] = useDoc({node: secondary_node});
   const [mcurDocVer, setMCurDocVer] = useState<Vow<DocumentVersion>>(init_vow());
   const [scurDocVer, setSCurDocVer] = useState<Vow<DocumentVersion>>(init_vow());
   const [mdocVers, setMDocVers] = useState<Vow<DocumentVersion[]>>(init_vow());
@@ -558,6 +559,43 @@ function DualPanel({ node }: Args) {
     }
   }
 
+  const onTargetEqualSourceClick = (direction?: TargetDirection) => {
+    if (direction == 'left') {
+      /*
+        Main panel will become like secondary panel.
+        Set all 'M' values to 'S' values
+      */
+      if (secondary_node?.ctype == 'folder') {
+        // secondary node is a folder
+        setMainNode(secondary_node)
+        setMSort(ssort)
+        setMPagination(spagination)
+      } else if (secondary_node?.ctype == 'document') {
+        setMainNode(secondary_node)
+        setMainDoc(secondary_doc)
+        setMCurDocVer(scurDocVer)
+        setMCurPages(scurPages)
+      }
+    }
+
+    if (direction == 'right') {
+      /* secondary panel will become like main panel
+        Set all 'S' values to 'M' values
+      */
+      if (main_node.ctype == 'folder') {
+        // secondary node is a folder
+        setSecondaryNode(main_node)
+        setSSort(msort)
+        setSPagination(mpagination)
+      } else if (main_node.ctype == 'document') {
+        setSecondaryNode(main_node)
+        setSecondaryDoc(main_doc)
+        setSCurDocVer(mcurDocVer)
+        setSCurPages(mcurPages)
+      }
+    }
+  }
+
   const dual_context = {
     onOpenSecondary,
     onCloseSecondary,
@@ -639,7 +677,8 @@ function DualPanel({ node }: Args) {
           onPageClick={onMPageClick}
           onPageSizeChange={onMPageSizeChange}
           onDocumentMoved={onDocumentMoved}
-          onDocumentDelete={onDocumentDelete} />
+          onDocumentDelete={onDocumentDelete}
+          onTargetEqualSourceClick={onTargetEqualSourceClick} />
         <SinglePanel
           parent_node={secondary_node}
           nodes={snodes}
@@ -675,7 +714,8 @@ function DualPanel({ node }: Args) {
           onPageClick={onSPageClick}
           onDocumentMoved={onDocumentMoved}
           onDocumentDelete={onDocumentDelete}
-          show_dual_button={'close'} />
+          show_dual_button={'close'}
+          onTargetEqualSourceClick={onTargetEqualSourceClick} />
         </DualPanelContext.Provider>
       </div>
     }

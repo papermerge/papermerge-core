@@ -66,6 +66,7 @@ type Args = {
   onPageClick: (page: number) => void;
   onDocumentMoved: (arg: MovedDocumentType) => void;
   onDocumentDelete: (arg: DocumentType) => void;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 type NodeListParams = {
@@ -187,7 +188,8 @@ function SinglePanel({
   onSelectedPages,
   onDraggedPages,
   onDocumentMoved,
-  onDocumentDelete
+  onDocumentDelete,
+  onTargetEqualSourceClick
 }: Args) {
   const [ display_mode, set_display_mode ] = useState<DisplayNodesModeEnum>(
     get_node_list_params().display_mode
@@ -225,7 +227,8 @@ function SinglePanel({
         onNodesDisplayModeList={onNodesDisplayModeList}
         onNodesDisplayModeTiles={onNodesDisplayModeTiles}
         onNodesListChange={onNodesListChange}
-        show_dual_button={show_dual_button} />
+        show_dual_button={show_dual_button}
+        onTargetEqualSourceClick={onTargetEqualSourceClick} />
     } else {
       return <Viewer
         node_id={parent_node.id}
@@ -249,7 +252,8 @@ function SinglePanel({
         onSelectedPages={onSelectedPages}
         onDraggedPages={onDraggedPages}
         onDocumentMoved={onDocumentMoved}
-        onDocumentDelete={onDocumentDelete} />;
+        onDocumentDelete={onDocumentDelete}
+        onTargetEqualSourceClick={onTargetEqualSourceClick} />;
     }
   } catch(e) {
     return <div>Caught exception</div>;

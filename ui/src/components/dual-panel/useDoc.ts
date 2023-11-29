@@ -8,7 +8,7 @@ type Args = {
 }
 
 
-function useDoc({node}: Args): Vow<DocumentType> {
+function useDoc({node}: Args): [Vow<DocumentType>, React.Dispatch<Vow<DocumentType>>] {
   let [data, setData] = useState<Vow<DocumentType>>({
     is_pending: true,
     loading_id: node?.id,
@@ -61,7 +61,7 @@ function useDoc({node}: Args): Vow<DocumentType> {
 
   }, [node?.id]); // end of useEffect
 
-  return data;
+  return [data, setData];
 }
 
 

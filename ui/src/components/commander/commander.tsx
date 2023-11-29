@@ -84,6 +84,7 @@ type Args = {
   selected_nodes: UUIDList;
   dragged_nodes: UUIDList;
   target_equal_source_direction?: TargetDirection;
+  onTargetEqualSourceClick?: (arg?: TargetDirection) => void;
 }
 
 
@@ -110,7 +111,8 @@ function Commander({
   onNodesDisplayModeTiles,
   onNodesListChange,
   show_dual_button,
-  target_equal_source_direction
+  target_equal_source_direction,
+  onTargetEqualSourceClick
 }: Args) {
   const [ errorModalShow, setErrorModalShow ] = useState(false);
   // css class name will be set to "accept-files" when user drags
@@ -552,7 +554,9 @@ function Commander({
                 <option value="100">100</option>
               </Form.Select>
 
-              <TargetEqualSource direction={target_equal_source_direction} />
+              <TargetEqualSource
+                direction={target_equal_source_direction}
+                onTargetEqualSourceClick={onTargetEqualSourceClick} />
 
               <DualButton
                 node={{id: node_id, ctype: 'folder'}}

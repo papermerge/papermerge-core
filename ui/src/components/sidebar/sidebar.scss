@@ -18,3 +18,12 @@
     border-radius: 0;
   }
 }
+
+
+.sidebar.opened {
+  width: 180px;
+}
+
+.sidebar.folded {
+  width: 60px;
+}

@@ -5,6 +5,8 @@ import IconInbox from 'components/icons/inbox';
 import TagIcon from 'components/icons/tag';
 import { AppContentBlockEnum } from 'types';
 
+import "./sidebar.scss";
+
 import Nav from './nav';
 import NavItem from './nav_item';
 
@@ -30,10 +32,10 @@ function class_name(item: AppContentBlockEnum, current: AppContentBlockEnum): st
 
 function SidebarOpened({onClick, current}: SidebarArgs) {
   return (
-    <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
-      <a className='navbar-brand m-2 p-2' href="#">
-        <img src="/images/logo.png" width="80" />
-        Papermerge DMS
+    <div className="sidebar opened d-flex flex-column flex-shrink-0 text-white bg-dark">
+      <a className='navbar-brand m-2' href="#">
+        <img src="/images/papermerge1.svg" width="80" />
+        <p className='mt-2 text-center'>Papermerge DMS</p>
       </a>
       <hr />
       <Nav>
@@ -60,9 +62,9 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
 
 function SidebarFolded({onClick, current}: SidebarArgs) {
   return (
-    <div className="sidebar d-flex flex-column flex-shrink-0 text-white bg-dark">
+    <div className="sidebar folded d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
-        <img src="/images/logo.png" width="50" />
+        <img width="60px" src="/images/papermerge2.svg"/>
       </a>
       <hr />
       <Nav>

@@ -35,7 +35,7 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
     <div className="sidebar opened d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
         <img src="/images/papermerge1.svg" width="80" />
-        <div className='mt-2'>Papermerge DMS</div>
+        <p className='mt-2 text-center'>Papermerge DMS</p>
       </a>
       <hr />
       <Nav>

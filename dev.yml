@@ -10,6 +10,8 @@ x-backend: &common  # yaml anchor definition
   build:
     context: .
     dockerfile: docker/dev/Dockerfile
+    args:
+      VERSION: 3.0dev14
   volumes:
       - ./papermerge:/core_app/papermerge/
       - ./ui:/core_ui/

@@ -5,6 +5,7 @@ from .folders import CreateFolder, Folder
 from .nodes import Node
 from .tags import CreateTag, Tag, UpdateTag
 from .users import User
+from .version import Version
 
 __all__ = [
     'Tag',
@@ -17,7 +18,8 @@ __all__ = [
     'Page',
     'Document',
     'DocumentVersion',
-    'CreateDocument'
+    'CreateDocument',
+    'Version'
 ]
 
 

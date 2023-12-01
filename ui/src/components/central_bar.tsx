@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import styles from './layout.module.css';
 import Search from 'components/search/search';
+import about from 'components/modals/About';
 
 
 type Args = {
@@ -13,15 +14,19 @@ type Args = {
 }
 
 
-export default function CentralBar(
-  {username, children, onToggleSidebar, onSubmitSearch}: Args
-) {
+export default function CentralBar({
+  username, children, onToggleSidebar, onSubmitSearch
+}: Args) {
 
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    console.log("Sign out");
     Cookies.remove('access_token');
     window.location.href = window.location.origin;
+  }
+
+  const onAbout = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    about()
   }
 
   return (
@@ -44,7 +49,7 @@ export default function CentralBar(
               <Dropdown.Item href="/api/docs">
                 <i className='bi-book me-2'></i>REST API
               </Dropdown.Item>
-              <Dropdown.Item href="#">
+              <Dropdown.Item onClick={onAbout}>
                 <i className='bi-question-circle me-2'></i>About
               </Dropdown.Item>
               <Dropdown.Divider />

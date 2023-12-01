@@ -1,18 +1,8 @@
 [![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
-# Papermerge REST API Server
+# Papermerge DMS
 
-This python package is the heart of Papermerge project. It consists of a set
-of reusable Django apps which are consumed across different bundles of
-Papermerge Document Management System (DMS).
-
-Technically speaking, it contains following Django apps:
-
-* ``papermerge.core`` - the epicenter of Papermerge DMS project
-* ``papermerge.search`` - RESTful search. Supports different backends: [Xapian]
-  (https://getting-started-with-xapian.readthedocs.io/en/latest/), [Elasticsearch](https://github.com/elastic/elasticsearch),
-  [Solr](https://solr.apache.org/).
-
+This repository is the heart of Papermerge DMS project, it contains the source code of core backend and frontend UI. 
 
 ## What is Papermerge?
 

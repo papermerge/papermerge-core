@@ -2,9 +2,6 @@ import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
 import { uploader } from 'utils/uploader';
 import { createRoot } from "react-dom/client";
-
-
-
 import type { CreatedNodesType, FolderType, NodeType } from 'types';
 
 

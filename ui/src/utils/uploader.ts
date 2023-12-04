@@ -37,7 +37,11 @@ async function uploader({files, node_id}: UploaderArgs): Promise<CreatedNodesTyp
         if (file) {
           fetcher_upload(
             `/api/documents/${value.id}/upload`, file
-          );
+          ).then(response => {
+            if (response.status >= 400) {
+              alert(`Upload error: ${response.status} - ${response.statusText}`);
+            }
+          })
         } else {
           console.log(`${value.title} NOT FOUND!`);
         }

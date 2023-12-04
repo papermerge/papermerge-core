@@ -11,7 +11,7 @@ export type ColoredTagType = {
   fg_color: string;
 }
 
-export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCESS" | "FAILED";
+export type OcrStatusEnum = "UNKNOWN" | "RECEIVED" | "STARTED" | "SUCCESS" | "FAILURE";
 
 
 export type SearchResult = {

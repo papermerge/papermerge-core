@@ -9,4 +9,4 @@ class OCRStatusEnum(str, Enum):
     received = 'RECEIVED'
     started = 'STARTED'
     success = 'SUCCESS'
-    failed = 'FAILED'
+    failure = 'FAILURE'

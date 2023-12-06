@@ -10,6 +10,10 @@
       width: 5rem;
     }
   }
+
+  .content {
+    overflow-y: auto;
+  }
 }
 
 .accept-dropped-nodes {
@@ -18,7 +22,7 @@
 
 
 .yellow-folder {
-  background-image: url("../../public/images/folder.svg");
+  background-image: url("../../../public/images/folder.svg");
   background-size: 100% 100%;
   width: 32px;
   height: 32px;

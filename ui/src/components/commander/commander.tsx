@@ -27,6 +27,8 @@ import Paginator from "components/paginator";
 import { Rectangle, Point } from 'utils/geometry';
 import { overlap } from 'utils/array';
 
+import "./commander.scss";
+
 import type {
   ColoredTagType,
   CreatedNodesType,
@@ -134,7 +136,7 @@ function Commander({
     if (commander_content_ref?.current) {
       commander_content_ref.current.style.height = `${commander_content_height}px`;
     }
-  }, [commander_content_height]);
+  }, [commander_content_ref?.current, commander_content_height]);
 
 
   const get_node = (node_id: string): NodeType => {
@@ -582,7 +584,7 @@ function Commander({
             onClick={onNodeClick}
             is_loading={nodes.is_pending} />
         }
-        <div ref={commander_content_ref}>
+        <div ref={commander_content_ref} className='content'>
           <div className={list_nodes_css_class_name()}>
             {nodesElement}
           </div>

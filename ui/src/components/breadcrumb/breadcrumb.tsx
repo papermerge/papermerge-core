@@ -22,7 +22,7 @@ export default function Breadcrumb({path, onClick, is_loading}: Args) {
   });
 
   return (
-    <nav aria-label="breadcrumb">
+    <nav aria-label="breadcrumb" className="breadcrumb">
       <ol className={styles.breadcrumb + " nav-breadcrumb breadcrumb"}>
         {is_loading ? <Spinner />: <SpinnerPlaceholder />}
         {breadcrumb_items}

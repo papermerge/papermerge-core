@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent, useContext } from 'react';
+import { useState, useRef, ChangeEvent, useContext, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import Form from 'react-bootstrap/Form';
@@ -12,6 +12,7 @@ import Menu from './menu/Menu';
 import { DraggingIcon } from 'components/dragging_icon';
 import { DualPanelContext } from 'components/dual-panel/DualPanel';
 import { TargetEqualSource } from 'components/dual-panel/TargetEqualSource';
+import { useContentHeight } from 'hooks/content_height';
 
 import { is_empty } from 'utils/misc';
 
@@ -120,9 +121,21 @@ function Commander({
   const [ cssAcceptFiles, setCssAcceptFiles ] = useState<string>("");
   const dual_context = useContext(DualPanelContext);
   const toasts = useToast();
+  let commander_content_height = useContentHeight();
+  const commander_content_ref = useRef<HTMLInputElement>(null);
 
   const nodesRef = useRef(null);
   let nodesElement: JSX.Element[] | JSX.Element;
+
+
+  useEffect(() => {
+    // set height of the commander content area to remaining
+    // visible space (window_height - breadcrumb_height - top_nav_menu_height)
+    if (commander_content_ref?.current) {
+      commander_content_ref.current.style.height = `${commander_content_height}px`;
+    }
+  }, [commander_content_height]);
+
 
   const get_node = (node_id: string): NodeType => {
     return nodes!.data!.nodes.find((n: NodeType) => n.id == node_id)!;
@@ -527,7 +540,7 @@ function Commander({
         onDragLeave={onDragLeave}
         onDragOver={onDragOver}
         onDrop={onDrop}>
-        <div className='top-bar'>
+        <div className='top-bar action-panel'>
           <Menu
             onNewFolderClick={onNewFolderClick}
             onRenameClick={onRenameClick}
@@ -569,15 +582,17 @@ function Commander({
             onClick={onNodeClick}
             is_loading={nodes.is_pending} />
         }
-        <div className={list_nodes_css_class_name()}>
-          {nodesElement}
-        </div>
+        <div ref={commander_content_ref}>
+          <div className={list_nodes_css_class_name()}>
+            {nodesElement}
+          </div>
 
-        <Paginator
-          num_pages={nodes.data.num_pages}
-          active={nodes.data.page_number}
-          onPageClick={onPageClick} />
-        <div>
+          <Paginator
+            num_pages={nodes.data.num_pages}
+            active={nodes.data.page_number}
+            onPageClick={onPageClick} />
+          <div>
+          </div>
 
         </div>
       </div>

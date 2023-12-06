@@ -47,7 +47,7 @@ function get_navbar_height(): number {
 
 function get_breadcrumb_height(): number {
   return get_computed_height({
-    element_class: 'nav-breadcrumb',
+    element_class: 'breadcrumb',
     default_value: 40
   });
 }
@@ -71,9 +71,9 @@ function get_height() {
   return height;
 }
 
-export const useViewerContentHeight = () => {
+export const useContentHeight = () => {
   /**
-   * Calculate the height of the viewer content visible area as
+   * Calculate the height of the viewer/commander content visible area as
    *
    * window_height - breadcrumb_height - nav_top_height
    */

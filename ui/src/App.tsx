@@ -2,12 +2,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'styles/globals.scss';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DualPanel from "components/dual-panel/DualPanel";
 import Tags from "components/tags/table"
 import Layout from 'components/layout';
 import { useResource } from 'hooks/resource';
-import { AppContentBlockEnum, CType, NType, User } from 'types';
+import { AppContentBlockEnum, CType, NType, User, Pagination } from 'types';
 import SearchResults from 'components/search/search_results';
 
 
@@ -19,8 +19,6 @@ function App() {
   const [contentBlockItem, setContentBlockItem] = useState<AppContentBlockEnum>(AppContentBlockEnum.home);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [node, setNode] = useState<NType|null>(null);
-  const [pageNumber, setPageNumber] = useState<number|null>();
-  const [contentBlock, setContentBlock] = useState<JSX.Element>();
 
   let content_block: JSX.Element;
 
@@ -58,7 +56,6 @@ function App() {
   ) => {
     setNode({id: node_id, ctype: node_type});
     setContentBlockItem(AppContentBlockEnum.home);
-    setPageNumber(page_number);
   }
 
   if (user.is_pending) {

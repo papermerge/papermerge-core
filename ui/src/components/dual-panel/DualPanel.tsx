@@ -28,6 +28,11 @@ import { init_vow, ready_vow } from 'utils/vow'
 import useNodes from './useNodes'
 import useDoc from './useDoc'
 import { uniq_concat, subtract } from 'utils/array'
+import {
+  PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+  STORAGE_KEY_PAGINATION_MITEMS_PER_PAGE,
+  STORAGE_KEY_PAGINATION_SITEMS_PER_PAGE
+} from 'cconstants';
 
 
 type Args = {
@@ -53,7 +58,7 @@ function DualPanel({ node }: Args) {
 
   // mpagination = main panel pagination
   const [mpagination, setMPagination] = useState<Pagination>({
-    page_number: 1, per_page: 15
+    page_number: 1, per_page: get_mitems_per_page()
   });
   // msort = main panel sort
   const [msort, setMSort] = useState<Sorting>({
@@ -66,7 +71,7 @@ function DualPanel({ node }: Args) {
     sort: msort
   });
   const [spagination, setSPagination] = useState<Pagination>({
-    page_number: 1, per_page: 15
+    page_number: 1, per_page: get_sitems_per_page()
   });
   const [ssort, setSSort] = useState<Sorting>({
     sort_field: 'title', sort_order: 'desc'
@@ -467,28 +472,32 @@ function DualPanel({ node }: Args) {
     setMPagination({
       per_page: page_size,
       page_number: mpagination.page_number
-    })
+    });
+    // save in local storage
+    set_mitems_per_page(page_size);
   }
 
   const onSPageSizeChange = (page_size: number) => {
     setSPagination({
       per_page: page_size,
       page_number: spagination.page_number
-    })
+    });
+    // save in local storage
+    set_sitems_per_page(page_size);
   }
 
   const onMPageClick = (page: number) => {
     setMPagination({
       per_page: mpagination.per_page,
       page_number: page
-    })
+    });
   }
 
   const onSPageClick = (page: number) => {
     setSPagination({
       per_page: spagination.per_page,
       page_number: page
-    })
+    });
   }
 
   const onDocumentMoved = ({doc, target_folder}: MovedDocumentType) => {
@@ -756,5 +765,52 @@ function newNodeFrom(doc: DocumentType): NodeType {
   return new_node;
 }
 
+function get_mitems_per_page(): number {
+  let default_value = PAGINATION_DEFAULT_ITEMS_PER_PAGES;
+  let value_str = window.localStorage.getItem(
+    STORAGE_KEY_PAGINATION_MITEMS_PER_PAGE
+  )
+  let value: number;
+
+  if (value_str) {
+    value = parseInt(value_str);
+    if (value && value > 0) {
+      return value;
+    }
+  }
+
+  return default_value;
+}
+
+
+function set_mitems_per_page(value: number): void {
+  window.localStorage.setItem(
+    STORAGE_KEY_PAGINATION_MITEMS_PER_PAGE, value.toString()
+  );
+}
+
+function set_sitems_per_page(value: number): void {
+  window.localStorage.setItem(
+    STORAGE_KEY_PAGINATION_SITEMS_PER_PAGE, value.toString()
+  );
+}
+
+
+function get_sitems_per_page(): number {
+  let default_value = PAGINATION_DEFAULT_ITEMS_PER_PAGES;
+  let value_str = window.localStorage.getItem(
+    STORAGE_KEY_PAGINATION_SITEMS_PER_PAGE
+  )
+  let value: number;
+
+  if (value_str) {
+    value = parseInt(value_str);
+    if (value && value > 0) {
+      return value;
+    }
+  }
+
+  return default_value;
+}
 
 export default DualPanel;

@@ -546,7 +546,7 @@ function Commander({
                 onNodesDisplayModeList={onNodesDisplayModeList}
                 onNodesDisplayModeTiles={onNodesDisplayModeTiles} />
 
-              <Form.Select onChange={onPerPageValueChange} defaultValue={nodes.data?.per_page}>
+              <Form.Select onChange={onPerPageValueChange} defaultValue={pagination.per_page}>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>

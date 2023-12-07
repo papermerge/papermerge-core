@@ -4,7 +4,7 @@ import Breadcrumb from 'components/breadcrumb/breadcrumb';
 import { PagesPanel }  from "./pages_panel/pages_panel";
 import { ThumbnailsPanel }  from "./thumbnails_panel/thumbnails_panel";
 import { ThumbnailsToggle }  from "./thumbnails_panel/thumbnails_toggle";
-import { useViewerContentHeight } from 'hooks/viewer_content_height';
+import { useContentHeight } from 'hooks/content_height';
 import useToast from 'hooks/useToasts';
 
 import rename_node from 'components/modals/rename';
@@ -108,7 +108,7 @@ export default function Viewer({
   let [unappliedPagesOpChanges, setUnappliedPagesOpChanges] = useState<boolean>(false);
   // currentPage = where to scroll into
   let [currentPage, setCurrentPage] = useState<number>(1);
-  let viewer_content_height = useViewerContentHeight();
+  let viewer_content_height = useContentHeight();
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const viewer_content_ref = useRef<HTMLInputElement>(null);
   const toasts = useToast();
@@ -119,7 +119,7 @@ export default function Viewer({
     // set height of the viewer content area to remaining
     // visible space (window_height - breadcrumb_height - top_nav_menu_height)
     if (viewer_content_ref?.current) {
-      viewer_content_ref.current.style.height = `${viewer_content_height}px`;
+      viewer_content_ref.current.style.height = `${viewer_content_height - /*just a guess*/ 50}px`;
     }
   }, [viewer_content_height]);
 

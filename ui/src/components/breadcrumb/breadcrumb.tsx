@@ -1,8 +1,9 @@
-import styles from "./breadcrumb.module.scss";
 import BreadcrumbItem from "./item";
 import Spinner from "components/spinner";
 import SpinnerPlaceholder from "components/spinner_placeholder";
 import { NType } from "types";
+
+import "./breadcrumb.scss";
 
 type Args = {
   path: Array<[string, string]>;
@@ -22,8 +23,8 @@ export default function Breadcrumb({path, onClick, is_loading}: Args) {
   });
 
   return (
-    <nav aria-label="breadcrumb">
-      <ol className={styles.breadcrumb + " nav-breadcrumb breadcrumb"}>
+    <nav aria-label="breadcrumb" className="breadcrumb mb-1 mt-1">
+      <ol className="nav-breadcrumb breadcrumb">
         {is_loading ? <Spinner />: <SpinnerPlaceholder />}
         {breadcrumb_items}
       </ol>

@@ -13,6 +13,8 @@
 .main {
   display: flex;
   flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: stretch;
   height: 100vh;
   max-height: 100vh;
   overflow-x: auto;

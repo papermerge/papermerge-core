@@ -10,6 +10,17 @@
       width: 5rem;
     }
   }
+
+  .content {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .nodes {
+      flex-grow: 1;
+    }
+  }
 }
 
 .accept-dropped-nodes {
@@ -18,7 +29,7 @@
 
 
 .yellow-folder {
-  background-image: url("../../public/images/folder.svg");
+  background-image: url("../../../public/images/folder.svg");
   background-size: 100% 100%;
   width: 32px;
   height: 32px;

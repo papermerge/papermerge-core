@@ -24,7 +24,7 @@ const About = ({version}: AboutArgs) => {
     <div className='container'>
     <div className='row'>
       <div className='col-3'>
-          <img src='images/papermerge1.svg' width="100" />
+          <img src='images/papermerge512-centered.png'/>
       </div>
       <div className="col-9">
         <h4>Papermerge DMS {version}</h4>

@@ -134,7 +134,7 @@ function Commander({
     // set height of the commander content area to remaining
     // visible space (window_height - breadcrumb_height - top_nav_menu_height)
     if (commander_content_ref?.current) {
-      commander_content_ref.current.style.height = `${commander_content_height}px`;
+      commander_content_ref.current.style.height = `${commander_content_height - /* just a guess */ 50}px`;
     }
   }, [commander_content_ref?.current, commander_content_height]);
 
@@ -260,7 +260,7 @@ function Commander({
 
   const list_nodes_css_class_name = () => {
     if (display_mode === DisplayNodesModeEnum.List) {
-      return 'd-flex flex-column mb-3';
+      return 'd-flex flex-column mb-3 nodes';
     }
 
     return 'd-flex flex-row flex-wrap mb-3';

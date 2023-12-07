@@ -39,17 +39,25 @@ function get_computed_height(
 }
 
 function get_navbar_height(): number {
-  return get_computed_height({
+  let result =  get_computed_height({
     element_class: 'nav-top',
     default_value: 56
   });
+
+  console.log(`get_navbar_height = ${result}`);
+
+  return result;
 }
 
 function get_breadcrumb_height(): number {
-  return get_computed_height({
+  let result = get_computed_height({
     element_class: 'breadcrumb',
     default_value: 40
   });
+
+  console.log(`get_breadcrumb_height = ${result}`);
+
+  return result;
 }
 
 function get_action_panel_height(): number {
@@ -57,6 +65,8 @@ function get_action_panel_height(): number {
     element_class: 'action-panel',
     default_value: 100
   });
+
+  console.log(`get_action_panel_height = ${result}`);
 
   return result;
 }

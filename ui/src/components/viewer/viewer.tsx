@@ -119,7 +119,7 @@ export default function Viewer({
     // set height of the viewer content area to remaining
     // visible space (window_height - breadcrumb_height - top_nav_menu_height)
     if (viewer_content_ref?.current) {
-      viewer_content_ref.current.style.height = `${viewer_content_height}px`;
+      viewer_content_ref.current.style.height = `${viewer_content_height - /*just a guess*/ 50}px`;
     }
   }, [viewer_content_height]);
 

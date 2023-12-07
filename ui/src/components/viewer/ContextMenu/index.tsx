@@ -66,7 +66,7 @@ export default function ContextMenu({
   const move_item = () => {
     if (target_folder) {
       return <Dropdown.Item as='button' onClick={onLocalDocumentMoveTo}>
-        {direction_icon()} Move
+        {direction_icon()} Move Document
       </Dropdown.Item>
     }
   }

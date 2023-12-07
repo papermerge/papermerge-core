@@ -457,7 +457,7 @@ function DualPanel({ node }: Args) {
       // add nodes to the secondary panel
       setSNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = uniq_concat<NodeType>(
-          mnodes!.data!.nodes, args.target
+          snodes!.data!.nodes, args.target
         );
       });
 
@@ -515,7 +515,7 @@ function DualPanel({ node }: Args) {
     } else {
       setSNodes((draft: Vow<NodesType>) => {
         draft!.data!.nodes = uniq_concat<NodeType>(
-          mnodes!.data!.nodes, [new_node]
+          snodes!.data!.nodes, [new_node]
         );
       });
     }

@@ -2,7 +2,7 @@
 const DEFAULT_TRUNCATECHARS_COUNT = 32;
 
 /** Truncates a string if it is longer than the specified number
- * of characters. Truncated strings will end with a translatable
+ * of characters. Truncated strings will end with a
  * ellipsis character (”…”). */
 function truncatechars(
   value: string,

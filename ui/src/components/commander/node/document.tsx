@@ -112,6 +112,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
           <div className="title" onClick={onclick}>
             <OverlayTrigger
               placement={'right'}
+              delay={2000}
               overlay={<Tooltip>{props.node.title}</Tooltip>}>
                 <div>{truncatechars(props.node.title)}</div>
             </OverlayTrigger>

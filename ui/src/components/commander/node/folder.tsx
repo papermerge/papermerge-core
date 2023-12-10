@@ -8,6 +8,9 @@ import type { NodeType, NType } from 'types';
 import type { CheckboxChangeType } from "../types";
 import { DisplayNodesModeEnum } from "types";
 import TagsComponent from './tags';
+import { truncatechars} from './utils';
+import { OverlayTrigger } from "react-bootstrap";
+import Tooltip from 'react-bootstrap/Tooltip';
 
 
 type FolderArgsType = {
@@ -116,7 +119,13 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
               <div className="icon folder"></div>
             </div>
             <div className="footer">
-              <div className="title" onClick={onclick}>{props.node.title}</div>
+              <div className="title" onClick={onclick}>
+              <OverlayTrigger
+                placement={'right'}
+                overlay={<Tooltip>{props.node.title}</Tooltip>}>
+                  <div>{truncatechars(props.node.title)}</div>
+            </OverlayTrigger>
+              </div>
             </div>
           </div>
         </>
@@ -142,7 +151,9 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
               <div className="body" onClick={onclick}>
                 <div className="icon folder"></div>
               </div>
-              <div className="title" onClick={onclick}>{props.node.title}</div>
+              <div className="title" onClick={onclick}>
+                {props.node.title}
+              </div>
               <TagsComponent tags={props.node.tags} max_items={4}/>
           </div>
         </>

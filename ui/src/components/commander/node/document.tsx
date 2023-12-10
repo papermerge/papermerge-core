@@ -10,7 +10,10 @@ import websockets from "../../../services/ws";
 import TagsComponent from './tags';
 import type { CheckboxChangeType, NodeArgsType } from "../types";
 import { DisplayNodesModeEnum, OcrStatusEnum } from "types";
+import { truncatechars} from './utils';
 import "./document.scss";
+import { OverlayTrigger } from "react-bootstrap";
+import Tooltip from 'react-bootstrap/Tooltip';
 
 
 function str_id(node_id: string): string {
@@ -103,8 +106,16 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
           {thumbnail_component}
         </div>
         <div className="footer d-flex">
-          <OcrStatus status={status} />
-          <div className="title" onClick={onclick}>{props.node.title}</div>
+          <div>
+            <OcrStatus status={status} />
+          </div>
+          <div className="title" onClick={onclick}>
+            <OverlayTrigger
+              placement={'right'}
+              overlay={<Tooltip>{props.node.title}</Tooltip>}>
+              <div>{truncatechars(props.node.title)}</div>
+            </OverlayTrigger>
+          </div>
         </div>
       </div>
     );
@@ -124,7 +135,9 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         <div className="body" onClick={onclick}>
           {thumbnail_component}
         </div>
-        <div className="title" onClick={onclick}>{props.node.title}</div>
+        <div className="title" onClick={onclick}>
+          {props.node.title}
+        </div>
         <div className="ocr">
           <OcrStatus status={status} />
         </div>

@@ -120,11 +120,11 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
             </div>
             <div className="footer">
               <div className="title" onClick={onclick}>
-              <OverlayTrigger
-                placement={'right'}
-                overlay={<Tooltip>{props.node.title}</Tooltip>}>
-                  <div>{truncatechars(props.node.title)}</div>
-            </OverlayTrigger>
+                <OverlayTrigger
+                  placement={'right'}
+                  overlay={<Tooltip>{props.node.title}</Tooltip>}>
+                    <div>{truncatechars(props.node.title)}</div>
+                </OverlayTrigger>
               </div>
             </div>
           </div>

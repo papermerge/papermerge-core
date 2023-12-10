@@ -113,7 +113,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
             <OverlayTrigger
               placement={'right'}
               overlay={<Tooltip>{props.node.title}</Tooltip>}>
-              <div>{truncatechars(props.node.title)}</div>
+                <div>{truncatechars(props.node.title)}</div>
             </OverlayTrigger>
           </div>
         </div>

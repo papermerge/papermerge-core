@@ -151,9 +151,7 @@ const Folder = forwardRef<HTMLDivElement, FolderArgsType>(
               <div className="body" onClick={onclick}>
                 <div className="icon folder"></div>
               </div>
-              <div className="title" onClick={onclick}>
-                {props.node.title}
-              </div>
+              <div className="title" onClick={onclick}>{props.node.title}</div>
               <TagsComponent tags={props.node.tags} max_items={4}/>
           </div>
         </>

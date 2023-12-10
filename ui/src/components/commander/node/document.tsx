@@ -135,9 +135,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
         <div className="body" onClick={onclick}>
           {thumbnail_component}
         </div>
-        <div className="title" onClick={onclick}>
-          {props.node.title}
-        </div>
+        <div className="title" onClick={onclick}>{props.node.title}</div>
         <div className="ocr">
           <OcrStatus status={status} />
         </div>

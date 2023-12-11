@@ -13,6 +13,8 @@ type Args = {
   target_folder?: TargetFolder | null;
   target_direction?: TargetDirection;
   position: Coord;
+  selected_pages: Array<string>;
+  onDeletePages: () => void;
   OnDocumentMoveTo: (arg: TargetFolder) => void;
   OnDocumentDelete: () => void;
   OnRename: () => void;
@@ -24,7 +26,9 @@ export default function ContextMenu({
   target_folder,
   target_direction,
   position,
+  selected_pages,
   hideMenu,
+  onDeletePages,
   OnDocumentMoveTo,
   OnDocumentDelete,
   OnRename,
@@ -71,6 +75,16 @@ export default function ContextMenu({
     }
   }
 
+  const delete_pages = () => {
+    if (selected_pages.length == 0) {
+      return <></>;
+    }
+
+    return <Dropdown.Item as='button' onClick={onDeletePages}>
+        <i className="bi bi-trash me-1 text-danger"></i>Delete Pages
+      </Dropdown.Item>
+  }
+
   const direction_icon = () => {
     if (target_direction == 'right') {
       return <i className="bi bi-arrow-right me-1"></i>
@@ -91,7 +105,6 @@ export default function ContextMenu({
     hideMenu()
   }
 
-
   return <DropdownMenu
       ref={ref}
       rootCloseEvent={'click'}
@@ -103,6 +116,7 @@ export default function ContextMenu({
     <Dropdown.Item as='button' onClick={onLocalViewOCRText}>
       <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
     {move_item()}
+    {delete_pages()}
     <Dropdown.Divider />
     <Dropdown.Item as='button' onClick={OnDocumentDelete}>
       <i className="bi bi-x-lg me-1 text-danger"></i>Delete Document

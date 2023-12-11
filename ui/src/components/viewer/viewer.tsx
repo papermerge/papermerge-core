@@ -143,6 +143,10 @@ export default function Viewer({
       ref.current.addEventListener('contextmenu', onContextMenu);
     }
 
+    // When opening viewer reset list of selected pages,
+    // overwise selected pages array carry across different document
+    onSelectedPages([]);
+
     return () => {
       if (ref.current) {
         ref.current.removeEventListener('contextmenu', onContextMenu);
@@ -442,6 +446,8 @@ export default function Viewer({
     <ContextMenu
       position={contextMenuPosition}
       hideMenu={hideContextMenu}
+      selected_pages={selected_pages}
+      onDeletePages={onDeletePages}
       OnDocumentMoveTo={onDocumentMoveTo}
       OnDocumentDelete={onLocalDocumentDelete}
       OnRename={onRenameClick}

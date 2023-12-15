@@ -5,6 +5,7 @@ from os.path import getsize
 from pathlib import Path
 from typing import Optional
 
+import img2pdf
 from django.db import models, transaction
 from pikepdf import Pdf
 
@@ -35,6 +36,42 @@ class UploadStrategy:
     # MERGE - Uploaded file is merged with last file version
     #   and inserted into the newly created document version
     MERGE = 2
+
+
+class UploadContentType:
+    PDF = "application/pdf"
+    JPEG = "image/jpeg"
+    PNG = "image/png"
+    TIFF = "image/tiff"
+
+
+def get_pdf_page_count(content: io.BytesIO) -> int:
+    pdf = Pdf.open(content)
+    page_count = len(pdf.pages)
+    pdf.close()
+
+    return page_count
+
+
+def create_next_version(doc, file_name, file_size, short_description=None):
+    document_version = doc.versions.filter(size=0).last()
+
+    if not document_version:
+        document_version = DocumentVersion(
+            document=doc,
+            number=doc.versions.count(),
+            lang=doc.lang
+        )
+
+    document_version.file_name = file_name
+    document_version.size = file_size
+    document_version.page_count = 0
+    if short_description:
+        document_version.short_description = short_description
+
+    document_version.save()
+
+    return document_version
 
 
 class DocumentManager(models.Manager):
@@ -141,6 +178,7 @@ class Document(BaseTreeNode):
             content: io.BytesIO,
             size: int,
             file_name: str,
+            content_type: UploadContentType,
             strategy=UploadStrategy.INCREMENT
     ):
         """
@@ -151,38 +189,66 @@ class Document(BaseTreeNode):
         new document version and associate it the payload.
         """
         logger.info(f"Uploading document {file_name}...")
-        pdf = Pdf.open(content)
+        if content_type != UploadContentType.PDF:
+            with open(f"{file_name}.pdf", "wb") as f:
+                pdf_content = img2pdf.convert(content)
+                f.write(pdf_content)
 
-        document_version = self.versions.filter(size=0).last()
-
-        if not document_version:
-            document_version = DocumentVersion(
-                document=self,
-                number=self.versions.count(),
-                lang=self.lang
+            orig_ver = create_next_version(
+                doc=self,
+                file_name=file_name,
+                file_size=size
             )
 
-        document_version.file_name = file_name
-        document_version.size = size
-        document_version.page_count = len(pdf.pages)
-        copy_file(
-            src=content,
-            dst=abs_docver_path(
-                document_version.id,
-                document_version.file_name
+            pdf_ver = create_next_version(
+                doc=self,
+                file_name=f'{file_name}.pdf',
+                file_size=len(pdf_content),
+                short_description=f"{content_type} -> {UploadContentType.PDF}"
             )
-        )
 
-        document_version.save()
-        document_version.create_pages()
-        pdf.close()
+            copy_file(
+                src=content,
+                dst=abs_docver_path(orig_ver.id, orig_ver.file_name)
+            )
+
+            copy_file(
+                src=pdf_content,
+                dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name)
+            )
+
+            page_count = get_pdf_page_count(pdf_content)
+            orig_ver.page_count = page_count
+            orig_ver.save()
+            pdf_ver.page_count = page_count
+            pdf_ver.save()
+
+            orig_ver.create_pages()
+            pdf_ver.create_pages()
+        else:
+            # pdf_ver == orig_ver
+            pdf_ver = create_next_version(
+                doc=self,
+                file_name=file_name,
+                file_size=size
+            )
+            copy_file(
+                src=content,
+                dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name)
+            )
+
+            page_count = get_pdf_page_count(content)
+            pdf_ver.page_count = page_count
+            pdf_ver.save()
+
+            pdf_ver.create_pages()
 
         document_post_upload.send(
             sender=self.__class__,
-            document_version=document_version
+            document_version=pdf_ver
         )
 
-        return document_version
+        return pdf_ver
 
     def version_bump_from_pages(self, pages):
         """

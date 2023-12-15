@@ -60,7 +60,8 @@ def upload_file(
     doc.upload(
         size=file.size,
         content=io.BytesIO(content),
-        file_name=file.filename
+        file_name=file.filename,
+        content_type=file.headers.get('content-type')
     )
     doc.generate_thumbnail()
 

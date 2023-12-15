@@ -421,7 +421,7 @@ class FileSystemStorage(Storage):
     pass
 
 
-def copy_file(src: Path | io.BytesIO, dst: Path):
+def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
     """Copy source file to destination"""
     logger.debug(f"copying {src} to {dst}")
 
@@ -434,7 +434,10 @@ def copy_file(src: Path | io.BytesIO, dst: Path):
     elif isinstance(src, io.BytesIO):
         with open(dst, 'wb') as f:
             f.write(src.getvalue())
+    elif isinstance(src, bytes):
+        with open(dst, 'wb') as f:
+            f.write(src)
     else:
         raise ValueError(
-            f"src ({src}) is neither instance of DocumentPath nor io.Bytes"
+            f"src ({src}) is neither instance of DocumentPath, io.Bytes, bytes"
         )

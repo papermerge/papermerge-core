@@ -45,8 +45,18 @@ class UploadContentType:
     TIFF = "image/tiff"
 
 
-def get_pdf_page_count(content: io.BytesIO) -> int:
-    pdf = Pdf.open(content)
+class FileType:
+    PDF = "pdf"
+    JPEG = "jpeg"
+    PNG = "png"
+    TIFF = "tiff"
+
+
+def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
+    if isinstance(content, bytes):
+        pdf = Pdf.open(io.BytesIO(content))
+    else:
+        pdf = Pdf.open(content)
     page_count = len(pdf.pages)
     pdf.close()
 
@@ -59,7 +69,7 @@ def create_next_version(doc, file_name, file_size, short_description=None):
     if not document_version:
         document_version = DocumentVersion(
             document=doc,
-            number=doc.versions.count(),
+            number=doc.versions.count() + 1,
             lang=doc.lang
         )
 
@@ -72,6 +82,14 @@ def create_next_version(doc, file_name, file_size, short_description=None):
     document_version.save()
 
     return document_version
+
+
+def file_type(content_type: UploadContentType) -> FileType:
+    parts = content_type.split('/')
+    if len(parts) == 2:
+        return parts[1]
+
+    raise ValueError(f"Invalid content type {content_type}")
 
 
 class DocumentManager(models.Manager):
@@ -204,7 +222,7 @@ class Document(BaseTreeNode):
                 doc=self,
                 file_name=f'{file_name}.pdf',
                 file_size=len(pdf_content),
-                short_description=f"{content_type} -> {UploadContentType.PDF}"
+                short_description=f"{file_type(content_type)} -> pdf"
             )
 
             copy_file(

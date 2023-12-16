@@ -5,6 +5,7 @@ import { fetcher } from "utils/fetcher";
 
 import UserRow from "./row";
 import NewUser from "./new_user";
+import "./users.scss";
 
 import type { User, UserList, UserView } from './types';
 
@@ -58,11 +59,13 @@ export default function UsersTable() {
   );
 
   if (view == "new") {
-    return <NewUser onSubmit={addNewUser} onCancel={showUserTable} />;
+    return <NewUser
+            onSubmit={addNewUser}
+            onCancel={showUserTable} />;
   }
 
   return (
-    <div>
+    <div className="users">
       <Button onClick={onNew} variant="success" className="flat my-1">
         <i className="bi bi-plus-lg mx-1" />
         New

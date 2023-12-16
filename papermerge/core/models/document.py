@@ -196,7 +196,7 @@ class Document(BaseTreeNode):
             content: io.BytesIO,
             size: int,
             file_name: str,
-            content_type: UploadContentType,
+            content_type: UploadContentType = UploadContentType.PDF,
             strategy=UploadStrategy.INCREMENT
     ):
         """

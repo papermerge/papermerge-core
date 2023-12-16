@@ -1,5 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import type { User } from "./types";
+import delete_user from './DeleteUser';
+
 
 type Args = {
   item: User;
@@ -11,6 +13,9 @@ export default function Row({item, onDelete, onEdit}: Args
 ) {
 
   const onLocalDelete = () => {
+    delete_user(item).then(
+      user_id => onDelete(user_id)
+    )
   }
 
   return (

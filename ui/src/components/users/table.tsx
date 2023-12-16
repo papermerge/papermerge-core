@@ -45,6 +45,8 @@ export default function UsersTable() {
   }
 
   const onDelete = (user_id: string) => {
+    const new_user_list = user_list.filter(user => user.id != user_id);
+    setUserList(new_user_list);
   }
 
   if (is_userlist_loading) {

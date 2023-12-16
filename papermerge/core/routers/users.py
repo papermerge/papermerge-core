@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -50,3 +52,18 @@ def create_user(
         )
 
     return schemas.User.model_validate(created_user)
+
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(
+    user_id: UUID,
+    user: User = Depends(current_user),
+) -> None:
+    """Deletes user with given UUID"""
+    try:
+        User.objects.get(id=user_id).delete()
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
+        )

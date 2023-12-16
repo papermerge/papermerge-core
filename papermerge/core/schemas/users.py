@@ -15,3 +15,12 @@ class User(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class CreateUser(BaseModel):
+    username: str
+    email: str
+    password: str
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)

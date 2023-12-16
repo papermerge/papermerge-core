@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends
+from django.db.utils import IntegrityError
+from fastapi import APIRouter, Depends, HTTPException
 
+from papermerge.core import schemas
 from papermerge.core.models import User
 from papermerge.core.routers.auth import get_current_user as current_user
 from papermerge.core.schemas.users import User as PyUser
@@ -30,3 +32,21 @@ def get_users(params: CommonQueryParams = Depends()):
         ]
 
     return User.objects.order_by(*order_by)
+
+
+@router.post("/", status_code=201)
+def create_user(
+    pyuser: schemas.CreateUser,
+    user: User = Depends(current_user),
+) -> schemas.User:
+    """Creates user tag"""
+    try:
+        created_user = User.objects.create(**pyuser.model_dump())
+        created_user.set_password(pyuser.password)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=400,
+            detail="User already exists"
+        )
+
+    return schemas.User.model_validate(created_user)

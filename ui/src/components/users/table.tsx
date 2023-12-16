@@ -32,11 +32,19 @@ export default function UsersTable() {
     setView("new");
   }
 
-  const addNewUser = () => {
+  const onSave = (user: User) => {
+    setView("list");
+    setUserList([...user_list, user]);
   }
 
   const showUserTable = () => {
     setView("list");
+  }
+
+  const onEdit = (user_id: string) => {
+  }
+
+  const onDelete = (user_id: string) => {
   }
 
   if (is_userlist_loading) {
@@ -54,13 +62,15 @@ export default function UsersTable() {
   const users = user_list.map(
     i => (
       <UserRow
+        onEdit={onEdit}
+        onDelete={onDelete}
         key={i.id}
         item={i} />)
   );
 
   if (view == "new") {
     return <NewUser
-            onSave={addNewUser}
+            onSave={onSave}
             onCancel={showUserTable} />;
   }
 
@@ -73,7 +83,6 @@ export default function UsersTable() {
       <Table bordered hover className="align-middle">
       <thead>
         <tr className="text-uppercase text-center">
-          <th>ID</th>
           <th>Username</th>
           <th>Email</th>
           <th>Created At</th>

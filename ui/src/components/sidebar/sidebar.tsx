@@ -54,6 +54,11 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
            <TagIcon /><span className='ms-2'>Tags</span>
           </a>
         </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.users)} className={class_name(AppContentBlockEnum.users, current)}>
+            <i className='bi-people'></i><span className='ms-2'>Users</span>
+          </a>
+        </NavItem>
       </Nav>
     </div>
   );
@@ -81,6 +86,11 @@ function SidebarFolded({onClick, current}: SidebarArgs) {
         <NavItem>
           <a href="#" onClick={() => onClick(AppContentBlockEnum.tags)} className={class_name(AppContentBlockEnum.tags, current)}>
            <TagIcon />
+          </a>
+        </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.users)} className={class_name(AppContentBlockEnum.users, current)}>
+            <i className='bi-people'></i>
           </a>
         </NavItem>
       </Nav>

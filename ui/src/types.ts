@@ -184,6 +184,7 @@ export enum AppContentBlockEnum {
    inbox = "inbox",
    home = "home",
    tags = "tags",
+   users = "users",
    search_results = "search_results"
 }
 

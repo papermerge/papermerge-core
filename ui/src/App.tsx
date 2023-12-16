@@ -4,7 +4,8 @@ import 'styles/globals.scss';
 
 import React, { useState } from 'react';
 import DualPanel from "components/dual-panel/DualPanel";
-import Tags from "components/tags/table"
+import Tags from "components/tags/table";
+import Users from "components/users/table";
 import Layout from 'components/layout';
 import { useResource } from 'hooks/resource';
 import { AppContentBlockEnum, CType, NType, User, Pagination } from 'types';
@@ -87,6 +88,8 @@ function App() {
   } else if (contentBlockItem == AppContentBlockEnum.tags) {
     // tags
     content_block = <Tags />;
+  } else if (contentBlockItem == AppContentBlockEnum.users) {
+    content_block = <Users />;
   } else {
     // search results
     content_block = <SearchResults query={searchQuery} onSearchResultClick={onSearchResultClick} />

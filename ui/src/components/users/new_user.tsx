@@ -1,8 +1,10 @@
-import { ChangeEventHandler, useState } from 'react';
+import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
+import { fetcher_post } from 'utils/fetcher';
+import type {User, NewUser, CreatedUser} from "./types";
 
 
 type ErrorArgs = {
@@ -21,13 +23,14 @@ function Error({message}: ErrorArgs) {
 
 
 type Args = {
-  onSubmit: () => void;
+  onSave: (user: User) => void;
   onCancel: () => void;
 }
 
 
-export default function NewUser({onSubmit, onCancel}: Args) {
-
+export default function NewUser({onSave, onCancel}: Args) {
+  const [controller, setController] = useState<AbortController>(new AbortController());
+  const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
   const [ username, setUsername ] = useState<string|null>();
   const [ email, setEmail ] = useState<string|null>();
@@ -51,25 +54,50 @@ export default function NewUser({onSubmit, onCancel}: Args) {
   }
 
   const onLocalSubmit = () => {
+
+    if (!validate()) {
+      return;
+    }
+
+    const item: NewUser = {
+      username: username!,
+      email: email!,
+      password: password1!
+    };
+
+    fetcher_post<NewUser, CreatedUser>(
+      `/api/users/`, item,
+      controller.signal
+    ).then((new_item: User) => {
+      setSaveInProgress(false);
+      setController(new AbortController());
+      onSave(new_item);
+    });
+
+  }
+
+  const validate = () => {
     if (!username) {
       setError(`username field is empty`);
-      return;
+      return false;
     }
 
     if (!email) {
       setError(`email field is empty`);
-      return;
+      return false;
     }
 
     if (!password1 || !password2) {
       setError(`Password field is empty`);
-      return;
+      return false;
     }
 
     if (password1 != password2) {
       setError(`Password and password confirmation are different`);
-      return;
+      return false;
     }
+
+    return true;
   }
 
   return (

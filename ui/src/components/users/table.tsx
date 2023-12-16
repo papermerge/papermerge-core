@@ -60,7 +60,7 @@ export default function UsersTable() {
 
   if (view == "new") {
     return <NewUser
-            onSubmit={addNewUser}
+            onSave={addNewUser}
             onCancel={showUserTable} />;
   }
 

@@ -72,11 +72,9 @@ export default function AddRow({onSave, onCancel}: Args) {
   }
 
   const onLocalSaveHandler = () => {
-    console.log('onLocalSaveHandler triggered');
     if (!save_in_progress) {
       setSaveInProgress(true);
 
-      console.log('fetcher_post triggered')
       fetcher_post<ColoredTag, ColoredTagWithID>(
         `/api/tags/`,
         item,

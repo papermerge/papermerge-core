@@ -22,7 +22,7 @@ function description(number: number, text: string): string {
 export default function DocVersionsDropdown({versions, doc}: Args) {
 
   const onClick = (href: string, file_name: string) => {
-    download_file(href, doc!.data!.title || file_name);
+    download_file(href, file_name);
   }
 
   if (doc.is_pending) {

@@ -1,3 +1,4 @@
+import os
 from uuid import UUID
 
 from fastapi import (Depends, Header, HTTPException, WebSocket,
@@ -14,11 +15,14 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 def get_user_id_from_token(token: str) -> str | None:
-    _, payload, _ = token.split('.')
-    data = base64.decode(payload)
-    user_id = data.get("user_id")
+    if '.' in token:
+        _, payload, _ = token.split('.')
+        data = base64.decode(payload)
+        user_id = data.get("user_id")
 
-    return user_id
+        return user_id
+
+    return None
 
 
 # def get_current_user(request: Request) -> User:
@@ -33,33 +37,21 @@ def get_current_user(
 
     if token:  # token found
         user_id = get_user_id_from_token(token)
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            raise HTTPException(
-                status_code=401,
-                detail="User ID not found"
-            )
+        if user_id is not None:
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                raise HTTPException(
+                    status_code=401,
+                    detail="User ID not found"
+                )
     elif x_remote_user:  # get user from X_REMOTE_USER header
-        if is_valid_uuid(x_remote_user):
-            # x_remote_user is an UUID, lookup user by ID
-            try:
-                user = User.objects.get(id=x_remote_user)
-            except User.DoesNotExist:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Remote user ID not found"
-                )
-        else:
-            # x_remote_user is NOT UUID
-            # It must be username. Lookup by username.
-            try:
-                user = User.objects.get(username=x_remote_user)
-            except User.DoesNotExist:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Remote username not found"
-                )
+        user = _get_user_from_str(x_remote_user)
+
+    remote_user_env_var = os.environ.get("REMOTE_USER")
+
+    if user is None and remote_user_env_var:
+        user = _get_user_from_str(remote_user_env_var)
 
     if user is None:
         raise HTTPException(
@@ -129,3 +121,27 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
         return False
 
     return str(uuid_obj) == uuid_to_test
+
+
+def _get_user_from_str(remote_user: str) -> User:
+    if is_valid_uuid(remote_user):
+        # x_remote_user is an UUID, lookup user by ID
+        try:
+            user = User.objects.get(id=remote_user)
+        except User.DoesNotExist:
+            raise HTTPException(
+                status_code=401,
+                detail="Remote user ID not found"
+            )
+    else:
+        # x_remote_user is NOT UUID
+        # It must be username. Lookup by username.
+        try:
+            user = User.objects.get(username=remote_user)
+        except User.DoesNotExist:
+            raise HTTPException(
+                status_code=401,
+                detail="Remote username not found"
+            )
+
+    return user

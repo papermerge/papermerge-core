@@ -45,6 +45,9 @@ def create_user(
     try:
         created_user = User.objects.create(**pyuser.model_dump())
         created_user.set_password(pyuser.password)
+        created_user.is_superuser = True
+        created_user.is_active = True
+        created_user.save()
     except IntegrityError:
         raise HTTPException(
             status_code=400,
@@ -67,3 +70,31 @@ def delete_user(
             status_code=404,
             detail="Does not exists"
         )
+
+
+@router.patch("/{user_id}", status_code=200)
+def update_user(
+    user_id: UUID,
+    update_user: schemas.UpdateUser,
+    user: User = Depends(current_user),
+) -> schemas.User:
+    """Updates user"""
+
+    try:
+        qs = User.objects.filter(id=user_id)
+        user_record = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
+        )
+
+    qs.update(
+        **update_user.model_dump(exclude_unset=True)
+    )
+
+    if update_user.password:
+        user_record.set_password(update_user.password)
+        user_record.save()
+
+    return schemas.User.model_validate(qs.first())

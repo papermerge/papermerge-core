@@ -24,3 +24,9 @@ class CreateUser(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateUser(BaseModel):
+    username: str
+    email: str
+    password: str | None = None

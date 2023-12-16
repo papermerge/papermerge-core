@@ -4,7 +4,8 @@ import Paginator from "components/paginator";
 import { fetcher } from "utils/fetcher";
 
 import UserRow from "./row";
-import NewUser from "./new_user";
+import NewUser from "./NewUser";
+import EditUser from "./EditUser";
 import "./users.scss";
 
 import type { User, UserList, UserView } from './types';
@@ -12,6 +13,8 @@ import type { User, UserList, UserView } from './types';
 
 export default function UsersTable() {
   const [view, setView] = useState<UserView>("list");
+  // ID of the tag which is currently in edit mode
+  const [current_edit_id, setCurrentEditId] = useState<string|null>(null);
   const [user_list, setUserList] = useState<Array<User>>([]);
   const [is_userlist_loading, setIsUserlistLoading] = useState<boolean>(true);
   const [userlist_load_error, setUserlistLoadingError] = useState<string | null>(null);
@@ -37,11 +40,20 @@ export default function UsersTable() {
     setUserList([...user_list, user]);
   }
 
-  const showUserTable = () => {
+  const onEditSave = (user: User) => {
+    const new_user_list = user_list.filter(i => i.id != user.id);
+
+    setView("list");
+    setUserList([...new_user_list, user]);
+  }
+
+  const onCancel = () => {
     setView("list");
   }
 
   const onEdit = (user_id: string) => {
+    setView("edit");
+    setCurrentEditId(user_id);
   }
 
   const onDelete = (user_id: string) => {
@@ -73,7 +85,18 @@ export default function UsersTable() {
   if (view == "new") {
     return <NewUser
             onSave={onSave}
-            onCancel={showUserTable} />;
+            onCancel={onCancel} />;
+  }
+
+  if (view == "edit" && current_edit_id) {
+    const found_user = user_list.find(user => user.id == current_edit_id);
+
+    if (found_user) {
+      return <EditUser
+              user={found_user}
+              onSave={onEditSave}
+              onCancel={onCancel} />
+    }
   }
 
   return (

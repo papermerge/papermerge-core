@@ -21,7 +21,6 @@ export default function TagsTable() {
   const [page_number, setPageNumber] = useState(1)
 
   const onAdd = () => {
-    console.log(`new item ${show_add_item}`);
     setShowAddItem(!show_add_item);
   }
 

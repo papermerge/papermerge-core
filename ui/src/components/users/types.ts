@@ -12,3 +12,6 @@ export type UserList = {
   num_pages: number;
   items: Array<User>;
 }
+
+
+export type UserView = "list" | "edit" | "new";

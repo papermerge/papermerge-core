@@ -8,6 +8,7 @@ from papermerge.core.models import User
 from papermerge.core.routers.auth import get_current_user as current_user
 from papermerge.core.schemas.users import User as PyUser
 
+from .common import OPEN_API_GENERIC_JSON_DETAIL
 from .paginator import PaginatorGeneric, paginate
 from .params import CommonQueryParams
 
@@ -57,12 +58,32 @@ def create_user(
     return schemas.User.model_validate(created_user)
 
 
-@router.delete("/{user_id}", status_code=204)
+@router.delete(
+    "/{user_id}",
+    status_code=204,
+    responses={
+        432: {
+            "description": """Deletion is not possible because there is only
+             one user left""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL
+        },
+        404: {
+            "description": """No user with specified UUID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL
+        }
+    }
+)
 def delete_user(
     user_id: UUID,
     user: User = Depends(current_user),
 ) -> None:
     """Deletes user with given UUID"""
+    if User.objects.count() == 1:
+        raise HTTPException(
+            status_code=432,
+            detail="Deletion not possible. Only one user left."
+        )
+
     try:
         User.objects.get(id=user_id).delete()
     except User.DoesNotExist:

@@ -25,6 +25,7 @@ This repository is the heart of Papermerge DMS project, it contains the source c
 * OpenAPI compliant REST API
 * Works with PDF, JPEG, PNG and TIFF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
+* OCRed text overlay (you can download document with OCRed text overlay)
 * Full Text Search of the scanned documents (supports [Solr](https://solr.apache.org/) backend, uses [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/) by default)
 * Document Versioning
 * Tags - assign colored tags to documents or folders
@@ -55,11 +56,13 @@ If you want initial superuser to have another username (e.g. john), use
         -e PAPERMERGE__AUTH__USERNAME=john \
         papermerge/papermerge:3.0dev20
 
-For full list of supported environment variables check [online documentation](https://docs.papermerge.io/Settings/index.html).
+Note that above docker command start only web UI. In order to run OCR on the documents you need at least one
+worker instance.
 
 ## Docker Compose
 
-By default, Papermerge REST API server uses sqlite3 database. In order to use PostgreSQL use following docker compose file:
+Here is an example of complete setup with web ui, one worker (which performs OCR), and PostgreSQL database
+storing data:
 
       version: "3.9"
 
@@ -100,8 +103,64 @@ By default, Papermerge REST API server uses sqlite3 database. In order to use Po
         index_db:
         media:
 
-Above-mentioned docker compose file can be used to start Papermerge REST API
-server which will use PostgreSQL database to store data.
+Following docker compose file starts Papermerge (web UI and one worker) with
+MariaDB as database and Solr as search engine backend:
+
+    version: "3.9"
+    
+    x-backend: &common
+      image: papermerge/papermerge:3.0dev20
+      environment:
+          PAPERMERGE__SECURITY__SECRET_KEY: 1234  # top secret
+          PAPERMERGE__AUTH__USERNAME: eugen
+          PAPERMERGE__AUTH__PASSWORD: 1234
+          PAPERMERGE__DATABASE__URL: mysql://myuser:mypass@db:3306/paperdb
+          PAPERMERGE__REDIS__URL: redis://redis:6379/0
+          PAPERMERGE__SEARCH__URL: solr://solr:8983/pmg-index
+      volumes:
+        - media_root:/core_app/media
+      depends_on:
+        - redis
+        - solr
+        - db
+    
+    services:
+      web:
+        <<: *common
+        ports:
+         - "11000:80"
+      worker:
+        <<: *common
+        command: worker
+      redis:
+        image: redis:6
+      solr:
+        image: solr:9.3
+        ports:
+         - "8983:8983"
+        volumes:
+          - solr_data:/var/solr
+        command:
+          - solr-precreate
+          - pmg-index
+      db:
+        image: mariadb:11.2
+        volumes:
+          - maria:/var/lib/mysql
+        environment:
+          MYSQL_ROOT_PASSWORD: mypass
+          MYSQL_DATABASE: paperdb
+          MYSQL_USER: myuser
+          MYSQL_PASSWORD: mypass
+    volumes:
+      maria:
+      solr_data:
+      media_root:
+
+## Ansible Playbook
+
+In order to deploy Papermerge on remote production machine (homelab VM, or cloud VPS instance) 
+use following [Ansible Playbook](https://github.com/papermerge/ansible).
 
 
 ## Tests

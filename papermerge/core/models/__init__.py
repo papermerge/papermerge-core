@@ -5,9 +5,23 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from papermerge.core.models.document import Document
+from papermerge.core.models.document_version import DocumentVersion
 from papermerge.core.models.folder import Folder
+from papermerge.core.models.node import BaseTreeNode
+from papermerge.core.models.page import Page
+from papermerge.core.models.tags import Tag
 
 logger = logging.getLogger(__name__)
+
+
+__all__ = [
+    Document,
+    DocumentVersion,
+    Page,
+    BaseTreeNode,
+    Tag,
+    Folder
+]
 
 
 class User(AbstractUser):

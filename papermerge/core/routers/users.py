@@ -8,6 +8,7 @@ from papermerge.core import schemas
 from papermerge.core.models import User
 from papermerge.core.routers.auth import get_current_user as current_user
 from papermerge.core.schemas.users import User as PyUser
+from papermerge.core.tasks import delete_user_data
 
 from .common import OPEN_API_GENERIC_JSON_DETAIL
 from .paginator import PaginatorGeneric, paginate
@@ -84,7 +85,11 @@ def delete_user(
         )
 
     try:
-        User.objects.get(id=user_id).delete()
+        delete_user_data.apply_async(
+            kwargs={
+                'user_id': str(user_id)
+            }
+        )
     except User.DoesNotExist:
         raise HTTPException(
             status_code=404,

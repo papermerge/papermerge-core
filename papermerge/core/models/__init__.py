@@ -1,18 +1,27 @@
+import logging
 import uuid
 
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from papermerge.core.models.document import Document
+from papermerge.core.models.document_version import DocumentVersion
 from papermerge.core.models.folder import Folder
 from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.models.page import Page
-from papermerge.core.models.tags import (
-    ColoredTag,
-    Tag
-)
+from papermerge.core.models.tags import Tag
 
-from papermerge.core.models.document_version import DocumentVersion
+logger = logging.getLogger(__name__)
+
+
+__all__ = [
+    Document,
+    DocumentVersion,
+    Page,
+    BaseTreeNode,
+    Tag,
+    Folder
+]
 
 
 class User(AbstractUser):
@@ -64,44 +73,24 @@ class User(AbstractUser):
         self.home_folder = _home
         self.save()
 
-    @property
-    def perm_codenames(self):
-        """
-        Returns aggregated list of permissions codenames of the user.
-
-        Permissions are aggregated from self.user_permissions +
-        permissions from all self.groups.
-        In Django permissions can be assigned directly to user object
-        or via groups. This attribute returns list of string codenames
-        of all permissions - from user object and from each associated
-        group. It is meant to be passed (and used by) the frontend
-        in order to toggle on/off different parts depending on what
-        user is allowed/not allowed to view/perform.
-
-        Note that codename DOES NOT include app label.
-        """
-
-        # 1. gather all perms via associated groups
-        user_groups_field = self._meta.get_field('groups')
-        user_groups_query = 'group__%s' % user_groups_field.related_query_name()
-        result1 = Permission.objects.filter(
-            **{user_groups_query: self}
-        ).values_list(
-            'codename',
-            flat=True
-        )
-        # 2. gather all perms via user obj
-        result2 = self.user_permissions.values_list(
-            'codename',
-            flat=True
-        )
-
-        # combine 1. and 2.
-        result = list(result1) + list(result2)
-
-        # remove all duplicates
-        return list(set(result))
-
     def delete(self, using=None, keep_parents=False):
         Document.objects.filter(user=self).delete()
         super().delete(using=using, keep_parents=keep_parents)
+
+    def delete_user_data(self):
+        user_docs = Document.objects.filter(user=self)
+
+        for doc in user_docs:
+            for doc_ver in doc.versions.all():
+                doc_ver.file_path.unlink(missing_ok=True)
+                for page in doc_ver.pages.all():
+                    page.txt_path.unlink(missing_ok=True)
+                    page.jpg_path.unlink(missing_ok=True)
+                    page.svg_path.unlink(missing_ok=True)
+                    page.hocr_path.unlink(missing_ok=True)
+                    try:
+                        page.txt_path.parent.rmdir()
+                    except FileNotFoundError:
+                        logger.info(
+                            f"Directory {page.txt_path.parent} does not exist"
+                        )

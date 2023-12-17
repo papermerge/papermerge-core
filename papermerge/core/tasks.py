@@ -7,8 +7,8 @@ from uuid import UUID
 from celery import shared_task
 from django.utils.translation import gettext_lazy as _
 
+from papermerge.core.models import User
 from papermerge.core.ocr.document import ocr_document
-from papermerge.core.storage import get_storage_instance
 
 from .models import Document, DocumentVersion, Folder, Page
 
@@ -17,10 +17,14 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def delete_user_data(user_id):
-    """Delete ALL associated user data (invoked when user is deleted)"""
-    logger.debug(f'Deleting user {user_id} storage data')
-    storage = get_storage_instance()
-    storage.delete_user_data(user_id=user_id)
+    try:
+        user = User.objects.get(id=user_id)
+        # first delete all files associated with the user
+        user.delete_user_data()
+        # then delete the user DB entry
+        user.delete()
+    except User.DoesNotExist:
+        logger.info(f"User: {user_id} already deleted")
 
 
 @shared_task(acks_late=True, reject_on_worker_lost=True)

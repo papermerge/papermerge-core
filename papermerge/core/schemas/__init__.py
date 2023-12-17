@@ -4,7 +4,7 @@ from .documents import CreateDocument, Document, DocumentVersion, Page
 from .folders import CreateFolder, Folder
 from .nodes import Node
 from .tags import CreateTag, Tag, UpdateTag
-from .users import User
+from .users import CreateUser, UpdateUser, User
 from .version import Version
 
 __all__ = [
@@ -12,6 +12,8 @@ __all__ = [
     'CreateTag',
     'UpdateTag',
     'User',
+    'CreateUser',
+    'UpdateUser',
     'Folder',
     'Node',
     'CreateFolder',

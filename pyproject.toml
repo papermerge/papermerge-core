@@ -89,6 +89,7 @@ configula = "^0.5.4"
 salinic = "^0.3.9"
 mysqlclient = "^2.2.0"
 img2pdf = "^0.5.1"
+passlib = "^1.7.4"
 
 
 [tool.taskipy.tasks]

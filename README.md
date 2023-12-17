@@ -12,7 +12,7 @@ Instead of having piles of paper documents all over your desk,
 office or drawers - you can quickly scan them and configure your scanner to directly upload to
 Papermerge DMS. Papermerge DMS in its turn will extract text data from the
 scanned documents using Optical Character Recognition (OCR) technology, and then
-index documents using full text search engine to making them searchable.
+index documents using full text search engine. 
 
 Papermerge is perfect tool for long term storage of PDF, JPEG, TIFF and PNG
 documents.
@@ -26,7 +26,7 @@ This repository is the heart of Papermerge DMS project, it contains the source c
 * Works with PDF, JPEG, PNG and TIFF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
 * Full Text Search of the scanned documents (supports [Solr](https://solr.apache.org/) backend, uses [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/) by default)
-* Document Versions
+* Document Versioning
 * Tags - assign colored tags to documents or folders
 * Documents and Folders - users can organize documents in folders
 * Multi-User

@@ -61,7 +61,7 @@ worker instance.
 
 ## Docker Compose
 
-Here is an example of complete setup with web ui, one worker (which performs OCR), and PostgreSQL database
+Here is an example of complete setup with web ui, one worker (which performs OCR), and PostgreSQL database for 
 storing data:
 
       version: "3.9"

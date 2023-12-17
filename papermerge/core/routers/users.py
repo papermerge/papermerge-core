@@ -2,6 +2,7 @@ from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
+from passlib.hash import pbkdf2_sha256
 
 from papermerge.core import schemas
 from papermerge.core.models import User
@@ -45,9 +46,7 @@ def create_user(
     """Creates user tag"""
     try:
         created_user = User.objects.create(**pyuser.model_dump())
-        created_user.set_password(pyuser.password)
-        created_user.is_superuser = True
-        created_user.is_active = True
+        created_user.password = pbkdf2_sha256.hash(pyuser.password)
         created_user.save()
     except IntegrityError:
         raise HTTPException(
@@ -115,7 +114,7 @@ def update_user(
     )
 
     if update_user.password:
-        user_record.set_password(update_user.password)
+        user_record.password = pbkdf2_sha256.hash(update_user.password)
         user_record.save()
 
     return schemas.User.model_validate(qs.first())

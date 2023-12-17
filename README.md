@@ -47,7 +47,7 @@ In order to start Papermerge REST API server as docker image use following comma
 
 
 If you want initial superuser to have another username (e.g. john), use
-`DJANGO_SUPERUSER_USERNAME` environment variable:
+`PAPERMERGE__AUTH__USERNAME` environment variable:
 
     docker run -p 8000:80 \
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \

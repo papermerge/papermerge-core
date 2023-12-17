@@ -103,9 +103,6 @@ By default, Papermerge REST API server uses sqlite3 database. In order to use Po
 Above-mentioned docker compose file can be used to start Papermerge REST API
 server which will use PostgreSQL database to store data.
 
-For detailed description on how to start Papermerge DMS using docker compose read
-[Docker Compose/Detailed Explanation](https://docs.papermerge.io/Installation/docker-compose.html#detailed-explanation)
-section in online docs.
 
 ## Tests
 

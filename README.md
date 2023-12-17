@@ -1,27 +1,27 @@
 [![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
-![Papermerge](./artwork/logo.png)
+<h1 align="center">Papermerge DMS</h1>
 
-# Papermerge DMS
-
-This repository is the heart of Papermerge DMS project, it contains the source code of core backend and frontend UI.
-
-## What is Papermerge?
+<p align="center">
+<img src="./artwork/logo.png" />
+</p>
 
 Papermerge is an open source document management system (DMS) designed for
 digital archives (think PDF files).
 Instead of having piles of paper documents all over your desk,
 office or drawers - you can quickly scan them and configure your scanner to directly upload to
-Papermerge DMS. Papermerge DMS on its turn will extract text data from the
-scanned documents using Optical Character Recognition (OCR) technology the
-index it and make it searchable. You will be able to quickly find any
-(scanned!) document using full text search capabilities.
+Papermerge DMS. Papermerge DMS in its turn will extract text data from the
+scanned documents using Optical Character Recognition (OCR) technology, and then
+index documents using full text search engine to making them searchable.
 
 Papermerge is perfect tool for long term storage of PDF, JPEG, TIFF and PNG
 documents.
 
+This repository is the heart of Papermerge DMS project, it contains the source code of core REST API backend and frontend UI.
+
 ## Features Highlights
 
+* Web UI with desktop like experience
 * OpenAPI compliant REST API
 * Works with PDF, JPEG, PNG and TIFF documents
 * OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))

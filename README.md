@@ -17,6 +17,9 @@ you can efficiently store and organize your documents.
 It supports PDF, TIFF, JPEG and PNG document file formats.
 Papermerge is perfect tool for long term storage of your documents.
 
+<p align="center">
+<img src="./artwork/papermerge3.png" />
+</p>
 
 ## Features Highlights
 
@@ -60,7 +63,7 @@ worker instance.
 
 ## Docker Compose
 
-Here is an example of complete setup with web ui, one worker (which performs OCR), and PostgreSQL database for 
+Here is an example of complete setup with web ui, one worker (which performs OCR), and PostgreSQL database for
 storing data:
 
       version: "3.9"
@@ -102,11 +105,13 @@ storing data:
         index_db:
         media:
 
+Open your web browser and point it to http://localhost:12000.
+
 Following docker compose file starts Papermerge (web UI and one worker) with
 MariaDB as database and Solr as search engine backend:
 
     version: "3.9"
-    
+
     x-backend: &common
       image: papermerge/papermerge:3.0dev20
       environment:
@@ -122,12 +127,12 @@ MariaDB as database and Solr as search engine backend:
         - redis
         - solr
         - db
-    
+
     services:
       web:
         <<: *common
         ports:
-         - "11000:80"
+         - "12000:80"
       worker:
         <<: *common
         command: worker
@@ -156,9 +161,11 @@ MariaDB as database and Solr as search engine backend:
       solr_data:
       media_root:
 
+Open your web browser and point it to http://localhost:12000.
+
 ## Ansible Playbook
 
-In order to deploy Papermerge on remote production machine (homelab VM, or cloud VPS instance) 
+In order to deploy Papermerge on remote production machine (homelab VM, or cloud VPS instance)
 use following [Ansible Playbook](https://github.com/papermerge/ansible).
 
 

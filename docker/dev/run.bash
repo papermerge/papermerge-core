@@ -68,6 +68,12 @@ case $CMD in
   restore.sh)
     exec restore.sh "$2"
     ;;
+  create_token.sh)
+    exec create_token.sh "$2"
+    ;;
+  list_users.sh)
+    exec list_users.sh
+    ;;
   *)
     exec "$@"
     ;;

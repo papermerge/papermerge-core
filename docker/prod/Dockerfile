@@ -15,6 +15,7 @@ ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
 ENV DJANGO_SETTINGS_MODULE=config.settings
 ENV PAPERMERGE__AUTH__USERNAME=admin
 ENV PAPERMERGE__AUTH__EMAIL=admin@example.com
+ENV PAPERMERGE__OCR__DEFAULT_LANGUAGE=deu
 
 ENV VIRTUAL_ENV=${CORE_APP}/.venv
 
@@ -49,6 +50,7 @@ COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/prod/config ${CORE_APP}/config
 COPY ./docker/prod/manage.py ${CORE_APP}/manage.py
 
+COPY ./docker/dev/scripts/ /usr/bin/
 RUN chmod +x /run.bash
 
 COPY --from=token_validator /tivoli_app/ /tivoli_app

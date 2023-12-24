@@ -1,12 +1,10 @@
 name: Build Prod Image
 
 on:
-  workflow_dispatch:
-    inputs:
-      VERSION:
-        required: true
-        description: Docker tag e.g. 3.0a1, 3.0a2
-        type: string
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+      - '[0-9]+.[0-9]+rc[0-9]+'
 
 jobs:
   build:
@@ -25,11 +23,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build ${{ inputs.VERSION }} Prod Image
+      - name: Build ${{ github.ref_name }} Prod Image
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:${{ inputs.VERSION }}
+          tags: papermerge/papermerge:${{ github.ref_name }}
           file: docker/prod/Dockerfile
           platforms: linux/amd64
       - name: Docker Hub Description

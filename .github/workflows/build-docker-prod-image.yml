@@ -1,12 +1,9 @@
 name: Build Prod Image
 
 on:
-  workflow_dispatch:
-    inputs:
-      VERSION:
-        required: true
-        description: Docker tag e.g. 3.0a1, 3.0a2
-        type: string
+  push:
+    tags:
+      - '^([0-9]+)\.([0-9]+)\.([0-9]+)[a|b|post]([0-9]+)'
 
 jobs:
   build:

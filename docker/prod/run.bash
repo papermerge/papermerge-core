@@ -58,7 +58,19 @@ case $CMD in
     exec_init
     exec_worker
     ;;
+  backup.sh)
+    exec backup.sh "$2"
+    ;;
+  restore.sh)
+    exec restore.sh "$2"
+    ;;
+  create_token.sh)
+    exec create_token.sh "$2"
+    ;;
+  list_users.sh)
+    exec list_users.sh
+    ;;
   *)
-    $MANAGE $@
+    exec "$@"
     ;;
 esac

@@ -6,7 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/tivoli:0.4.0 as token_validator
+FROM papermerge/tivoli:0.4.1 as token_validator
 FROM papermerge/auth-server:0.6.1 as auth_server
 FROM python:3.10 as papermerge_core
 

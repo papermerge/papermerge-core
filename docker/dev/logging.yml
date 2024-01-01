@@ -18,7 +18,7 @@ loggers:
     propagate: no
     format: verbose
   papermerge.core:
-    level: INFO
+    level: DEBUG
     handlers: [console]
     propagate: no
     format: verbose

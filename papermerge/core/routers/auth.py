@@ -5,6 +5,7 @@ from fastapi import (Depends, Header, HTTPException, WebSocket,
                      WebSocketException, status)
 from fastapi.security import OAuth2PasswordBearer
 
+from papermerge.core import db
 from papermerge.core.models import User
 from papermerge.core.utils import base64
 
@@ -38,13 +39,7 @@ def get_current_user(
     if token:  # token found
         user_id = get_user_id_from_token(token)
         if user_id is not None:
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
-                raise HTTPException(
-                    status_code=401,
-                    detail="User ID not found"
-                )
+            user = db.get_user_by_id(user_id, detail="User ID not found")
     elif x_remote_user:  # get user from X_REMOTE_USER header
         user = _get_user_from_str(x_remote_user)
 
@@ -90,13 +85,7 @@ def get_ws_current_user(
             reason="user_id is missing"
         )
 
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        raise HTTPException(
-            status_code=401,
-            detail="Remote user not found"
-        )
+    user = db.get_user_by_id(user_id, detail="Remote user not found")
 
     return user
 
@@ -126,22 +115,16 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
 def _get_user_from_str(remote_user: str) -> User:
     if is_valid_uuid(remote_user):
         # x_remote_user is an UUID, lookup user by ID
-        try:
-            user = User.objects.get(id=remote_user)
-        except User.DoesNotExist:
-            raise HTTPException(
-                status_code=401,
-                detail="Remote user ID not found"
-            )
+        user = db.get_user_by_id(
+            user_id=remote_user,
+            detail="Remote user ID not found"
+        )
     else:
         # x_remote_user is NOT UUID
         # It must be username. Lookup by username.
-        try:
-            user = User.objects.get(username=remote_user)
-        except User.DoesNotExist:
-            raise HTTPException(
-                status_code=401,
-                detail="Remote username not found"
-            )
+        user = db.get_user_by_username(
+            username=remote_user,
+            detail="Remote username not found"
+        )
 
     return user

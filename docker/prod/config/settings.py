@@ -41,3 +41,11 @@ SEARCH_URL = config.get(
 )
 
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = False
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }

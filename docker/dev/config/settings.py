@@ -39,3 +39,11 @@ SEARCH_URL = config.get(
     'url',
     default=f'xapian:///{os.path.join(PROJ_ROOT, "index_db")}'
 )
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }

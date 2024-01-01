@@ -4,6 +4,7 @@ from uuid import UUID
 
 from celery import current_app
 from django.conf import settings
+from django.core.cache import cache
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
@@ -123,10 +124,15 @@ def update_node(
             detail="Does not exist"
         )
 
+    updated = False
     for key, value in node.model_dump().items():
         if value is not None:
+            updated = True
             setattr(old_node, key, value)
+
     old_node.save()
+    if updated:
+        cache.delete(f"node_id_{node.id}")
 
     return PyNode.model_validate(old_node)
 

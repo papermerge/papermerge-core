@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_folder_by_id(folder_id: str, user_id: str) -> Folder:
-    folder = cache.get(f"folder_id_{folder_id}")
+    folder = cache.get(f"node_id_{folder_id}")
 
     if folder:
         logger.debug(f"Folder {folder}/{folder_id} fetched from CACHE")
@@ -17,7 +17,7 @@ def get_folder_by_id(folder_id: str, user_id: str) -> Folder:
 
     logger.debug(f"Folder {folder}/{folder_id} getting from DB")
     folder = Folder.objects.get(id=folder_id, user_id=user_id)
-    cache.set(f"folder_id_{folder_id}", folder)
+    cache.set(f"node_id_{folder_id}", folder)
 
     return folder
 

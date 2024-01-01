@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import pytz
 from celery import current_app
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -188,10 +189,17 @@ class BaseTreeNode(models.Model):
 
     @property
     def breadcrumb(self) -> List[Tuple[uuid.UUID, str]]:
-        return [
+        cached_ancestors = cache.get(f"ancestors_{self.id}")
+        if cached_ancestors:
+            return cached_ancestors
+
+        ancestors = [
             (item.id, item.title)
             for item in self.get_ancestors()
         ]
+        cache.set(f"ancestors_{self.id}", ancestors)
+
+        return ancestors
 
     @property
     def idified_title(self):

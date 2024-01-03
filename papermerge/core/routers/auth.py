@@ -1,12 +1,13 @@
 import os
-from uuid import UUID
 
 from fastapi import (Depends, Header, HTTPException, WebSocket,
                      WebSocketException, status)
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import Engine
 
+from papermerge.core import auth, db
 from papermerge.core.models import User
-from papermerge.core.utils import base64
+from papermerge.core.utils import misc as misc_utils
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="auth/token/",
@@ -14,32 +15,22 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
-def get_user_id_from_token(token: str) -> str | None:
-    if '.' in token:
-        _, payload, _ = token.split('.')
-        data = base64.decode(payload)
-        user_id = data.get("user_id")
-
-        return user_id
-
-    return None
-
-
 # def get_current_user(request: Request) -> User:
 #   e.g.
 #   user_id = request.headers.get('REMOTE_USER')
 def get_current_user(
     x_remote_user: str | None = Header(default=None),
-    token: str | None = Depends(oauth2_scheme)
+    token: str | None = Depends(oauth2_scheme),
+    engine: Engine = Depends(db.get_engine)
 ) -> User:
 
     user = None
 
     if token:  # token found
-        user_id = get_user_id_from_token(token)
+        user_id = auth.get_user_id_from_token(token)
         if user_id is not None:
             try:
-                user = User.objects.get(id=user_id)
+                user = db.get_user(user_id)
             except User.DoesNotExist:
                 raise HTTPException(
                     status_code=401,
@@ -82,7 +73,7 @@ def get_ws_current_user(
             reason="token is missing"
         )
 
-    user_id = get_user_id_from_token(token)
+    user_id = auth.get_user_id_from_token(token)
 
     if user_id is None:
         raise WebSocketException(
@@ -101,30 +92,8 @@ def get_ws_current_user(
     return user
 
 
-def is_valid_uuid(uuid_to_test: str) -> bool:
-    """
-    Check if uuid_to_test is a valid UUID.
-
-    Returns `True` if uuid_to_test is a valid UUID, otherwise `False`.
-
-    Examples
-    --------
-    >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
-    True
-    >>> is_valid_uuid('c9bf9e58')
-    False
-    """
-
-    try:
-        uuid_obj = UUID(uuid_to_test, version=4)
-    except ValueError:
-        return False
-
-    return str(uuid_obj) == uuid_to_test
-
-
 def _get_user_from_str(remote_user: str) -> User:
-    if is_valid_uuid(remote_user):
+    if misc_utils(remote_user):
         # x_remote_user is an UUID, lookup user by ID
         try:
             user = User.objects.get(id=remote_user)

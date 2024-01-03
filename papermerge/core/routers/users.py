@@ -4,9 +4,9 @@ from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
 
-from papermerge.core import schemas
+from papermerge.core import auth, schemas
+from papermerge.core.auth import get_current_user as current_user
 from papermerge.core.models import User
-from papermerge.core.routers.auth import get_current_user as current_user
 from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.tasks import delete_user_data
 
@@ -21,7 +21,9 @@ router = APIRouter(
 
 
 @router.get("/me")
-def get_current_user(user: User = Depends(current_user)) -> PyUser:
+def get_current_user(
+    user: schemas.User = Depends(auth.get_current_user)
+) -> schemas.User:
     """Returns current user"""
     return PyUser.model_validate(user)
 

@@ -1,3 +1,6 @@
+from datetime import datetime
+from uuid import UUID
+
 from sqlalchemy import Engine, text
 
 from papermerge.core import schemas
@@ -22,22 +25,22 @@ def _get_user_by_id(
     with engine.connect() as connection:
         result = connection.execute(
             text(
-                "SELECT id, username, email, created_at, updated_at "
+                "SELECT id, username, email, created_at, updated_at, "
                 "home_folder_id, inbox_folder_id FROM core_users "
-                "WHERE id = :id",
-                {"id": user_id}
-            )
+                "WHERE id = :id"
+            ),
+            {"id": user_id}
         )
 
         user = list(result)[0]
         found_user = schemas.User(
-            id=user["id"],
-            username=user["username"],
-            email=user["email"],
-            created_at=user["created_at"],
-            updated_at=user["updated_at"],
-            home_folder_id=user["home_folder_id"],
-            inbox_folder_id=user["inbox_folder_id"],
+            id=UUID(user[0]),
+            username=user[1],
+            email=user[2],
+            created_at=datetime.strptime(user[3], '%Y-%m/%d %H:%M:%S'),
+            updated_at=datetime.strptime(user[4], '%Y-%m/%d %H:%M:%S'),
+            home_folder_id=UUID(user[5]),
+            inbox_folder_id=UUID(user[6]),
         )
 
     return found_user
@@ -50,22 +53,22 @@ def _get_user_by_username(
     with engine.connect() as connection:
         result = connection.execute(
             text(
-                "SELECT id, username, email, created_at, updated_at "
-                "home_folder_id, inbox_folder_id FROM core_users "
-                "WHERE username = :username",
-                {"username": username}
-            )
+                "SELECT id, username, email, created_at, updated_at, "
+                "home_folder_id, inbox_folder_id FROM core_user "
+                "WHERE username = :username"
+            ),
+            {"username": username}
         )
 
         user = list(result)[0]
         found_user = schemas.User(
-            id=user["id"],
-            username=user["username"],
-            email=user["email"],
-            created_at=user["created_at"],
-            updated_at=user["updated_at"],
-            home_folder_id=user["home_folder_id"],
-            inbox_folder_id=user["inbox_folder_id"],
+            id=UUID(user[0]),
+            username=user[1],
+            email=user[2],
+            created_at=datetime.strptime(user[3], '%Y-%m/%d %H:%M:%S'),
+            updated_at=datetime.strptime(user[4], '%Y-%m/%d %H:%M:%S'),
+            home_folder_id=UUID(user[5]),
+            inbox_folder_id=UUID(user[6]),
         )
 
     return found_user

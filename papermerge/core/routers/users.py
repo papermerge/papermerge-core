@@ -25,6 +25,7 @@ def get_current_user(
     user: schemas.User = Depends(auth.get_current_user)
 ) -> schemas.User:
     """Returns current user"""
+
     return PyUser.model_validate(user)
 
 

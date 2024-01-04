@@ -6,11 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
-from papermerge.core.models import Document, User
+from papermerge.core.models import Document
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 
-from .auth import get_current_user as current_user
 from .common import OPEN_API_GENERIC_JSON_DETAIL
 
 router = APIRouter(
@@ -49,11 +50,11 @@ class JPEGFileResponse(FileResponse):
 def retrieve_document_thumbnail(
     document_id: uuid.UUID,
     size: int = DEFAULT_THUMBNAIL_SIZE,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     """Retrieves thumbnail of the document last version's first page"""
     try:
-        doc = Document.objects.get(id=document_id, user=user)
+        doc = Document.objects.get(id=document_id, user_id=user.id)
     except Document.DoesNotExist:
         raise HTTPException(
             status_code=404,

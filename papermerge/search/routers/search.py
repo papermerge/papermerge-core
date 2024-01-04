@@ -4,8 +4,8 @@ from django.conf import settings
 from fastapi import APIRouter, Depends
 from salinic import IndexRO, Search, create_engine
 
-from papermerge.core.models import User
-from papermerge.core.routers.auth import get_current_user as current_user
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
 from papermerge.search.schema import Model
 
 router = APIRouter(
@@ -17,7 +17,7 @@ router = APIRouter(
 @router.get("/")
 def search(
     q: str,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> List[Model]:
     engine = create_engine(settings.SEARCH_URL)
     index = IndexRO(engine, schema=Model)

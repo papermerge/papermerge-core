@@ -2,10 +2,9 @@ import logging
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
-from papermerge.core.models import User
+from papermerge.core import schemas
+from papermerge.core.auth import get_ws_current_user
 from papermerge.core.notif import notification
-
-from .auth import get_ws_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ manager = ConnectionManager()
 @router.websocket("/ocr")
 async def websocket_endpoint(
     websocket: WebSocket,
-    user: User = Depends(get_ws_current_user)
+    user: schemas.User = Depends(get_ws_current_user)
 ):
     """
     Sends notifications to websockets clients about the status of OCR tasks.

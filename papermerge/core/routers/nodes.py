@@ -8,6 +8,8 @@ from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
@@ -21,7 +23,6 @@ from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.utils.decorators import skip_in_tests
 
-from .auth import get_current_user as current_user
 from .common import OPEN_API_GENERIC_JSON_DETAIL
 from .paginator import PaginatorGeneric, paginate
 from .params import CommonQueryParams
@@ -35,9 +36,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-def get_nodes(user: User = Depends(current_user)) -> RedirectResponse:
+def get_nodes(
+    user: schemas.User = Depends(get_current_user)
+) -> RedirectResponse:
     """Redirects to current user home folder"""
-    parent_id = str(user.home_folder.id)
+    parent_id = str(user.home_folder_id)
     return RedirectResponse(
         f"/nodes/{parent_id}"
     )
@@ -48,7 +51,7 @@ def get_nodes(user: User = Depends(current_user)) -> RedirectResponse:
 def get_node(
     parent_id,
     params: CommonQueryParams = Depends(),
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     """Returns a list nodes with given parent_id of the current user"""
     order_by = ['ctype', 'title', 'created_at', 'updated_at']
@@ -67,7 +70,7 @@ def get_node(
 @router.post("/", status_code=201)
 def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> PyFolder | PyDocument:
 
     try:
@@ -107,7 +110,7 @@ def create_node(
 def update_node(
     node_id: UUID,
     node: PyUpdateNode,
-    user: User = Depends(current_user)
+    user: User = Depends(get_current_user)
 ) -> PyNode:
     """Updates node
 
@@ -134,7 +137,7 @@ def update_node(
 @router.delete("/")
 def delete_nodes(
     list_of_uuids: List[UUID],
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> List[UUID]:
     """Deletes nodes with specified UUIDs
 
@@ -168,7 +171,7 @@ def delete_nodes(
 )
 def move_nodes(
     params: PyMoveNode,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> List[UUID]:
     """Move source nodes into the target node.
 
@@ -206,7 +209,7 @@ def move_nodes(
 def assign_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> PyNode:
     """
     Assigns given list of tag names to the node.
@@ -236,7 +239,7 @@ def assign_node_tags(
 def update_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> PyNode:
     """
     Appends given list of tag names to the node.
@@ -276,7 +279,7 @@ def update_node_tags(
 def delete_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> PyNode:
     """
     Dissociate given tags the node.

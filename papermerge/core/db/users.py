@@ -49,13 +49,27 @@ def get_user(
         logger.debug(f"User {user} fetched")
 
         found_user = schemas.User(
-            id=UUID(str(user[0])),
+            id=_get_uuid(user[0]),
             username=user[1],
             email=user[2],
-            created_at=datetime.strptime(user[3], DATETIME_FMT),
-            updated_at=datetime.strptime(user[4], DATETIME_FMT),
-            home_folder_id=UUID(str(user[5])),
-            inbox_folder_id=UUID(str(user[6])),
+            created_at=_get_datetime(user[3]),
+            updated_at=_get_datetime(user[4]),
+            home_folder_id=_get_uuid(user[5]),
+            inbox_folder_id=_get_uuid(user[6]),
         )
 
     return found_user
+
+
+def _get_uuid(value: UUID | str) -> UUID:
+    if isinstance(value, UUID):
+        return value
+
+    return UUID(value)
+
+
+def _get_datetime(value: datetime | str) -> datetime:
+    if isinstance(value, datetime):
+        return value
+
+    return datetime.strptime(value, DATETIME_FMT)

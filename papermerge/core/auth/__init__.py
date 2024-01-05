@@ -35,6 +35,7 @@ def get_current_user(
     token: str | None = Depends(oauth2_scheme),
     engine: Engine = Depends(db.get_engine)
 ) -> schemas.User:
+
     if token:  # token found
         user_id = get_user_id_from_token(token)
         if user_id is not None:

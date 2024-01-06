@@ -37,7 +37,7 @@ class Node(Base):
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8))
-    user: Mapped[User] = mapped_column(
+    user_id: Mapped[UUID] = mapped_column(
         ForeignKey(User.id),
         back_populates="nodes"
     )

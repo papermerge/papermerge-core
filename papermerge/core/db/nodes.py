@@ -17,7 +17,13 @@ def get_paginated_nodes(
     page_number: int,
     order_by: int
 ):
-    query = Query(Node).offset(
+    query = Query(Node).with_entities(
+        Node.id,
+        Node.title,
+    ).filter_by(
+        user_id=user_id,
+        parent_id=parent_id
+    ).offset(
         (page_number - 1) * page_size
     ).limit(page_size)
 

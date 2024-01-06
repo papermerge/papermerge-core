@@ -59,3 +59,33 @@ def paginate(func: Callable) -> Callable:
         )
 
     return view_with_pagination
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    page_size: int
+    page_number: int
+    num_pages: int
+    items: Sequence[T]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+def paginate2(
+    params: CommonQueryParams,
+    query,
+    ResponseSchema: BaseModel
+) -> PaginatedResponse[T]:
+
+    paginated_query = query.offset(
+        (params.page_number - 1) * params.page_size
+    ).limit(params.page_size)
+
+    return PaginatedResponse(
+        num_pages=paginated_query.count(),
+        page_number=params.page_number,
+        page_size=params.page_size,
+        items=[
+            ResponseSchema.model_validate(item)
+            for item in paginated_query.all()
+        ],
+    )

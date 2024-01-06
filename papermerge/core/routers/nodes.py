@@ -8,7 +8,7 @@ from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
-from papermerge.core import schemas
+from papermerge.core import db, schemas
 from papermerge.core.auth import get_current_user
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
@@ -24,7 +24,7 @@ from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.utils.decorators import skip_in_tests
 
 from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatorGeneric, paginate
+from .paginator import PaginatedResponse, PaginatorGeneric, paginate
 from .params import CommonQueryParams
 
 router = APIRouter(
@@ -65,6 +65,33 @@ def get_node(
         parent_id=parent_id,
         user_id=user.id
     ).order_by(*order_by)
+
+
+@router.get("/v2/{parent_id}", response_model=PaginatedResponse[PyNode])
+def get_node2(
+    parent_id,
+    params: CommonQueryParams = Depends(),
+    user: schemas.User = Depends(get_current_user),
+    engine: db.Engine = Depends(db.get_engine)
+):
+    """Returns a list nodes with given parent_id of the current user"""
+    order_by = ['ctype', 'title', 'created_at', 'updated_at']
+
+    if params.order_by:
+        order_by = [
+            item.strip() for item in params.order_by.split(',')
+        ]
+
+    response = db.get_paginated_nodes(
+        engine=engine,
+        parent_id=parent_id,
+        user_id=user.id,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=order_by
+    )
+
+    return response
 
 
 @router.post("/", status_code=201)

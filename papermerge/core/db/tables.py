@@ -1,14 +1,12 @@
-from sqlalchemy import (Boolean, Column, DateTime, Integer, MetaData, String,
-                        Table, func)
-
-from papermerge.core.db.types import GUID
+from sqlalchemy import (Boolean, Column, DateTime, MetaData, String, Table,
+                        Uuid, func)
 
 metadata_obj = MetaData()
 
 users_table = Table(
     "core_user",
     metadata_obj,
-    Column("id", Integer, primary_key=True),
+    Column("id", Uuid, primary_key=True),
     Column("username", String(150), nullable=False),
     Column("email", String(254), nullable=False),
     Column("first_name", String(150), nullable=False),
@@ -32,12 +30,12 @@ users_table = Table(
     ),
     Column(
         "home_folder_id",
-        GUID,
+        Uuid,
         nullable=True
     ),
     Column(
         "inbox_folder_id",
-        GUID,
+        Uuid,
         nullable=True
     )
  )

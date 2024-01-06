@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -13,7 +13,7 @@ class Folder(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
-    breadcrumb: List[Tuple[UUID, str]]
+    # breadcrumb: List[Tuple[UUID, str]]
 
     # Configs
     model_config = ConfigDict(from_attributes=True)

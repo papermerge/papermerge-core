@@ -69,7 +69,7 @@ def get_node(
 
 @router.get(
     "/v2/{parent_id}",
-    response_model=PaginatedResponse[Union[schemas.Folder, schemas.Document]]
+    response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
 )
 def get_node2(
     parent_id,

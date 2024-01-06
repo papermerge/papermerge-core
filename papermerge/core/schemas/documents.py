@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
@@ -68,11 +68,15 @@ class Document(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
-    breadcrumb: list[Tuple[UUID, str]]
-    versions: Optional[List[DocumentVersion]] = []
+    # breadcrumb: list[Tuple[UUID, str]]
+    # versions: Optional[List[DocumentVersion]] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: str | None = None
+
+    @field_validator('thumbnail_url', mode='before')
+    def thumbnail_url_validator(cls, value, info):
+        return f"/api/thumbnails/{info.data['id']}"
 
     # Config
     model_config = ConfigDict(from_attributes=True)

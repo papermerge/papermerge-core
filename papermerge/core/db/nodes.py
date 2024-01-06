@@ -2,12 +2,12 @@ from typing import TypeVar, Union
 from uuid import UUID
 
 from sqlalchemy import Engine, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectin_polymorphic
 
 from papermerge.core import schemas
 from papermerge.core.types import PaginatedResponse
 
-from .models import Node
+from .models import Document, Folder, Node
 
 T = TypeVar('T')
 
@@ -19,14 +19,17 @@ def get_paginated_nodes(
     page_size: int,
     page_number: int,
     order_by: int
-) -> PaginatedResponse[Union[schemas.Folder, schemas.Document]]:
+) -> PaginatedResponse[Union[schemas.Document, schemas.Folder]]:
+    loader_opt = selectin_polymorphic(Node, [Folder, Document])
 
     stmt = select(Node).filter_by(
         user_id=user_id,
         parent_id=parent_id
     ).offset(
         (page_number - 1) * page_size
-    ).limit(page_size)
+    ).limit(
+        page_size
+    ).options(loader_opt)
 
     count_stmt = select(func.count()).select_from(Node)
 
@@ -47,7 +50,7 @@ def get_paginated_nodes(
                     schemas.Document.model_validate(node)
                 )
 
-    return PaginatedResponse[Union[schemas.Folder, schemas.Document]](
+    return PaginatedResponse[Union[schemas.Document, schemas.Folder]](
         page_size=page_size,
         page_number=page_number,
         num_pages=num_pages,

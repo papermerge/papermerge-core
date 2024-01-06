@@ -74,16 +74,6 @@ class Document(BaseModel):
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: str | None = None
 
-    @field_validator("versions", mode='before')
-    def get_all_from_manager(cls, v: object) -> object:
-        if isinstance(v, BaseManager):
-            return list(v.all())
-        return v
-
-    @field_validator('thumbnail_url')
-    def thumbnail_url_validator(cls, value, values):
-        return f"/api/thumbnails/{values['id']}"
-
     # Config
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Union
 from uuid import UUID
 
 from celery import current_app
@@ -67,7 +67,10 @@ def get_node(
     ).order_by(*order_by)
 
 
-@router.get("/v2/{parent_id}", response_model=PaginatedResponse[PyNode])
+@router.get(
+    "/v2/{parent_id}",
+    response_model=PaginatedResponse[Union[schemas.Folder, schemas.Document]]
+)
 def get_node2(
     parent_id,
     params: CommonQueryParams = Depends(),
@@ -82,7 +85,7 @@ def get_node2(
             item.strip() for item in params.order_by.split(',')
         ]
 
-    response = db.get_paginated_nodes(
+    return db.get_paginated_nodes(
         engine=engine,
         parent_id=parent_id,
         user_id=user.id,
@@ -90,8 +93,6 @@ def get_node2(
         page_number=params.page_number,
         order_by=order_by
     )
-
-    return response
 
 
 @router.post("/", status_code=201)

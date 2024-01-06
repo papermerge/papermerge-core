@@ -7,7 +7,13 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
-    pass
+    created_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now(),
+        onupdate=func.now()
+    )
 
 
 class User(Base):
@@ -18,13 +24,6 @@ class User(Base):
     email: Mapped[str]
     first_name: Mapped[str]
     last_name: Mapped[str]
-    created_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(),
-        onupdate=func.now()
-    )
 
 
 CType = Literal["document", "folder"]
@@ -42,10 +41,40 @@ class Node(Base):
         back_populates="nodes"
     )
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("node.id"))
-    created_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
+
+    __mapper_args__ = {
+        "polymorphic_identity": "node",
+        "polymorphic_on": "ctype",
+    }
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.title!r})"
+
+
+class Folder(Node):
+    __tablename__ = "core_folder"
+
+    id: Mapped[UUID] = mapped_column(
+        'basetreenode_ptr_id',
+        ForeignKey("core_basetreenode.id"), primary_key=True
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(),
-        onupdate=func.now()
+
+    __mapper_args__ = {
+        "polymorphic_identity": "folder",
+    }
+
+
+class Document(Node):
+    __tablename__ = "core_document"
+
+    id: Mapped[UUID] = mapped_column(
+        'basetreenode_ptr_id',
+        ForeignKey("core_basetreenode.id"), primary_key=True
     )
+
+    ocr: Mapped[bool]
+    ocr_status: Mapped[str]
+
+    __mapper_args__ = {
+        "polymorphic_identity": "document",
+    }

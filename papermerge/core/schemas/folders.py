@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class Tag(BaseModel):
@@ -24,6 +24,13 @@ class Folder(BaseModel):
     parent_id: UUID | None
     user_id: UUID
     # breadcrumb: List[Tuple[UUID, str]]
+
+    @field_validator('tags', mode='before')
+    def tags_validator(cls, value):
+        if not isinstance(value, list):
+            return list(value.all())
+
+        return value
 
     # Configs
     model_config = ConfigDict(from_attributes=True)

@@ -1,11 +1,27 @@
 from uuid import UUID
 
-from sqlalchemy import Engine
+from sqlalchemy import Engine, select
+from sqlalchemy.orm import Session
+
+from papermerge.core import schemas
+from papermerge.core.db.models import DocumentVersion
 
 
-def get_last_doc_ver_id(
+def get_last_doc_ver(
     engine: Engine,
+    user_id: UUID,
     doc_id: UUID  # noqa
-) -> UUID:
-    with engine.connect() as connection:  # noqa
-        pass
+) -> schemas.DocumentVersion:
+    """
+    Returns last version of the document
+    identified by doc_id
+    """
+    with Session(engine) as session:  # noqa
+        stmt = select(DocumentVersion).where(
+            document_id=doc_id,
+            user_id=user_id
+        )
+        db_doc_ver = session.scalars(stmt).one()
+        model_doc_ver = schemas.DocumentVersion.model_validate(db_doc_ver)
+
+    return model_doc_ver

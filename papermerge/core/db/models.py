@@ -86,3 +86,23 @@ class Document(Node):
     __mapper_args__ = {
         "polymorphic_identity": "document",
     }
+
+
+class DocumentVersion(Base):
+    __tablename__ = "core_documentversion"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    number: Mapped[int]
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_document.basetreenode_ptr_id")
+    )
+
+
+class Page(Base):
+    __tablename__ = "core_page"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    number: Mapped[int]
+    document_version_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_documentversion.id")
+    )

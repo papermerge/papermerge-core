@@ -98,6 +98,13 @@ class Document(BaseModel):
     def thumbnail_url_validator(cls, value, info):
         return f"/api/thumbnails/{info.data['id']}"
 
+    @field_validator('tags', mode='before')
+    def tags_validator(cls, value):
+        if not isinstance(value, list):
+            return list(value.all())
+
+        return value
+
     # Config
     model_config = ConfigDict(from_attributes=True)
 

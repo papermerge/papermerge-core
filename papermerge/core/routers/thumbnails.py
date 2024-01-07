@@ -34,7 +34,7 @@ class JPEGFileResponse(FileResponse):
 
 
 @router.get(
-    "/{document_id}",
+    "/old/{document_id}",
     response_class=JPEGFileResponse,
     responses={
         309: {
@@ -50,7 +50,7 @@ class JPEGFileResponse(FileResponse):
         }
     }
 )
-def retrieve_document_thumbnail(
+def retrieve_document_thumbnail_old(
     document_id: uuid.UUID,
     size: int = DEFAULT_THUMBNAIL_SIZE,
     user: schemas.User = Depends(get_current_user)
@@ -86,7 +86,7 @@ def retrieve_document_thumbnail(
 
 
 @router.get(
-    "/v2/{document_id}",
+    "/{document_id}",
     response_class=JPEGFileResponse,
     responses={
         309: {
@@ -102,7 +102,7 @@ def retrieve_document_thumbnail(
         }
     }
 )
-def retrieve_document_thumbnail2(
+def retrieve_document_thumbnail(
     document_id: uuid.UUID,
     size: int = DEFAULT_THUMBNAIL_SIZE,
     user: schemas.User = Depends(get_current_user),

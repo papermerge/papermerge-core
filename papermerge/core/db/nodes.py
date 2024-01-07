@@ -1,3 +1,4 @@
+import logging
 from typing import List, TypeVar, Union
 from uuid import UUID
 
@@ -12,20 +13,24 @@ from .models import Document, Folder, Node
 T = TypeVar('T')
 
 
+logger = logging.getLogger(__name__)
+
+
 def str2colexpr(keys: List[str]):
     result = []
     ORDER_BY_MAP = {
         'ctype': Node.ctype,
-        '-ctype': Node.ctype.desc(),
+        '-ctype': Node.ctype,
         'title': Node.title,
-        '-title': Node.title.desc(),
+        '-title': Node.title,
         'created_at': Node.created_at,
         '-created_at': Node.created_at.desc(),
         'updated_at': Node.updated_at,
         '-updated_at': Node.updated_at.desc(),
     }
+    logger.debug(f"str2colexpr keys = {keys}")
     for key in keys:
-        if item := ORDER_BY_MAP.get(key):
+        if item := ORDER_BY_MAP.get(key, 'title'):
             result.append(item)
 
     return result
@@ -58,7 +63,7 @@ def get_paginated_nodes(
 
     with Session(engine) as session:
         total_nodes = session.scalar(count_stmt)
-        num_pages = total_nodes / page_size
+        num_pages = int(total_nodes / page_size)
         nodes = session.scalars(stmt).all()
 
         for node in nodes:

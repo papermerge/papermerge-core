@@ -46,9 +46,9 @@ def get_nodes(
     )
 
 
-@router.get("/{parent_id}", response_model=PaginatorGeneric[PyNode])
+@router.get("/old/{parent_id}", response_model=PaginatorGeneric[PyNode])
 @paginate
-def get_node(
+def get_node_old(
     parent_id,
     params: CommonQueryParams = Depends(),
     user: schemas.User = Depends(get_current_user)
@@ -68,10 +68,10 @@ def get_node(
 
 
 @router.get(
-    "/v2/{parent_id}",
+    "/{parent_id}",
     response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
 )
-def get_node2(
+def get_node(
     parent_id,
     params: CommonQueryParams = Depends(),
     user: schemas.User = Depends(get_current_user),

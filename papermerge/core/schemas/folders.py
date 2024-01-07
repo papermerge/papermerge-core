@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Literal
+from typing import List, Literal, Tuple
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -23,7 +23,7 @@ class Folder(BaseModel):
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
-    # breadcrumb: List[Tuple[UUID, str]]
+    breadcrumb: List[Tuple[UUID, str]] = []
 
     @field_validator('tags', mode='before')
     def tags_validator(cls, value):

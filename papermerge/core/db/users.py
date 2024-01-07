@@ -3,9 +3,10 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import Engine, select
+from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.tables import users_table
+from papermerge.core.db.models import User
 from papermerge.core.utils.misc import is_valid_uuid
 
 from .exceptions import UserNotFound
@@ -22,46 +23,25 @@ def get_user(
 
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
-    stmt = select(
-        users_table.c.id,
-        users_table.c.username,
-        users_table.c.email,
-        users_table.c.created_at,
-        users_table.c.updated_at,
-        users_table.c.home_folder_id,
-        users_table.c.inbox_folder_id,
-    )
-
     if is_valid_uuid(user_id_or_username):
-        stmt = stmt.where(users_table.c.id == UUID(user_id_or_username))
+        stmt = select(User).where(User.id == UUID(user_id_or_username))
         params = {"id": user_id_or_username}
     else:
-        stmt = stmt.where(users_table.c.username == user_id_or_username)
+        stmt = select(User).where(User.username == user_id_or_username)
         params = {"username": user_id_or_username}
 
-    with engine.connect() as connection:
-        result = connection.execute(stmt, params)
+    with Session(engine) as session:
+        db_user = session.scalars(stmt, params).one()
 
-        result_list = list(result)
-        if len(result_list) == 0:
+        if db_user is None:
             raise UserNotFound(
                 f"User with id/username='{user_id_or_username}' not found"
             )
 
-        user = result_list[0]
-        logger.debug(f"User {user} fetched")
+        logger.debug(f"User {db_user} fetched")
+        model_user = schemas.User.model_validate(db_user)
 
-        found_user = schemas.User(
-            id=_get_uuid(user[0]),
-            username=user[1],
-            email=user[2],
-            created_at=_get_datetime(user[3]),
-            updated_at=_get_datetime(user[4]),
-            home_folder_id=_get_uuid(user[5]),
-            inbox_folder_id=_get_uuid(user[6]),
-        )
-
-    return found_user
+    return model_user
 
 
 def _get_uuid(value: UUID | str) -> UUID:

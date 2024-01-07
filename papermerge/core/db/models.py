@@ -28,6 +28,8 @@ class User(Base):
         back_populates="user",
         primaryjoin="User.id == Node.user_id"
     )
+    home_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
+    inbox_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
 
 
 CType = Literal["document", "folder"]

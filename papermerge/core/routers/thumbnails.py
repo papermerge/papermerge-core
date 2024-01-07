@@ -115,11 +115,7 @@ def retrieve_document_thumbnail2(
             user_id=user.id,
             doc_id=document_id
         )
-        page = db.get_first_page(
-            engine,
-            user_id=user.id,
-            doc_ver_id=doc_ver.id
-        )
+        page = db.get_first_page(engine, doc_ver_id=doc_ver.id)
     except Document.DoesNotExist:
         raise HTTPException(
             status_code=404,

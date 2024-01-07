@@ -4,7 +4,7 @@ from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.models import DocumentVersion
+from papermerge.core.db.models import Document, DocumentVersion
 
 
 def get_last_doc_ver(
@@ -17,8 +17,9 @@ def get_last_doc_ver(
     identified by doc_id
     """
     with Session(engine) as session:  # noqa
-        stmt = select(DocumentVersion).where(
-            DocumentVersion.document_id == doc_id
+        stmt = select(DocumentVersion).join(Document).where(
+            DocumentVersion.document_id == doc_id,
+            Document.user_id == user_id
         ).order_by(
             DocumentVersion.number.desc()
         ).limit(1)

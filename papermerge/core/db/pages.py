@@ -9,7 +9,6 @@ from papermerge.core.db.models import Page
 
 def get_first_page(
     engine: Engine,
-    user_id: UUID,
     doc_ver_id: UUID,
 ) -> schemas.Page:
     """
@@ -18,7 +17,7 @@ def get_first_page(
     """
     with Session(engine) as session:  # noqa
         stmt = select(Page).where(
-            Page.document_version_id == doc_ver_id
+            Page.document_version_id == doc_ver_id,
         ).order_by(
             Page.number.asc()
         ).limit(1)

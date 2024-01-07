@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -24,6 +24,10 @@ class User(Base):
     email: Mapped[str]
     first_name: Mapped[str]
     last_name: Mapped[str]
+    nodes: Mapped[List["Node"]] = relationship(
+        back_populates="user",
+        primaryjoin="User.id == Node.user_id"
+    )
 
 
 CType = Literal["document", "folder"]
@@ -36,10 +40,12 @@ class Node(Base):
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8))
-    user_id: Mapped[UUID] = mapped_column(
-        ForeignKey(User.id),
-        back_populates="nodes"
+    tags: List[str] = []
+    user: Mapped["User"] = relationship(
+        back_populates="nodes",
+        primaryjoin="User.id == Node.user_id"
     )
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("node.id"))
 
     __mapper_args__ = {

@@ -11,6 +11,15 @@ from typing_extensions import Annotated
 from papermerge.core.types import OCRStatusEnum
 
 
+class Tag(BaseModel):
+    name: str
+    bg_color: str = '#c41fff'
+    fg_color: str = '#FFFFF'
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Page(BaseModel):
     id: UUID
     number: int
@@ -60,10 +69,21 @@ class DocumentVersion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+def thumbnail_url(value, info):
+    return f"/api/thumbnails/{info.data['id']}"
+
+
+ThumbnailUrl = Annotated[
+    str | None,
+    Field(validate_default=True)
+]
+
+
 class Document(BaseModel):
     id: UUID
     title: str
     ctype: Literal["document"]
+    tags: List[Tag] = []
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
@@ -72,7 +92,7 @@ class Document(BaseModel):
     # versions: Optional[List[DocumentVersion]] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
-    thumbnail_url: str | None = None
+    thumbnail_url: ThumbnailUrl = None
 
     @field_validator('thumbnail_url', mode='before')
     def thumbnail_url_validator(cls, value, info):

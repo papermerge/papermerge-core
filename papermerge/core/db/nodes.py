@@ -1,4 +1,4 @@
-from typing import TypeVar, Union
+from typing import List, TypeVar, Union
 from uuid import UUID
 
 from sqlalchemy import Engine, func, select
@@ -12,24 +12,45 @@ from .models import Document, Folder, Node
 T = TypeVar('T')
 
 
+def str2colexpr(keys: List[str]):
+    result = []
+    ORDER_BY_MAP = {
+        'ctype': Node.ctype,
+        '-ctype': Node.ctype.desc(),
+        'title': Node.title,
+        '-title': Node.title.desc(),
+        'created_at': Node.created_at,
+        '-created_at': Node.created_at.desc(),
+        'updated_at': Node.updated_at,
+        '-updated_at': Node.updated_at.desc(),
+    }
+    for key in keys:
+        if item := ORDER_BY_MAP.get(key):
+            result.append(item)
+
+    return result
+
+
 def get_paginated_nodes(
     engine: Engine,
     parent_id: UUID,
     user_id: UUID,
     page_size: int,
     page_number: int,
-    order_by: int
+    order_by: List[str]
 ) -> PaginatedResponse[Union[schemas.Document, schemas.Folder]]:
     loader_opt = selectin_polymorphic(Node, [Folder, Document])
 
-    stmt = select(Node).filter_by(
+    stmt = (select(Node).filter_by(
         user_id=user_id,
         parent_id=parent_id
     ).offset(
         (page_number - 1) * page_size
+    ).order_by(
+     *str2colexpr(order_by)
     ).limit(
         page_size
-    ).options(loader_opt)
+    ).options(loader_opt))
 
     count_stmt = select(func.count()).select_from(Node)
 

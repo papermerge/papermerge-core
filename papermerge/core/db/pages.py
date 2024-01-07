@@ -18,9 +18,10 @@ def get_first_page(
     """
     with Session(engine) as session:  # noqa
         stmt = select(Page).where(
-            document_version_id=doc_ver_id,
-            user_id=user_id
-        )
+            Page.document_version_id == doc_ver_id
+        ).order_by(
+            Page.number.asc()
+        ).limit(1)
         db_page = session.scalars(stmt).one()
         db_model = schemas.Page.model_validate(db_page)
 

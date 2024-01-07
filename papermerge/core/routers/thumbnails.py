@@ -65,6 +65,7 @@ def retrieve_document_thumbnail(
         )
 
     last_version = doc.versions.last()
+
     first_page = last_version.pages.first()
 
     if first_page is None:
@@ -105,7 +106,7 @@ def retrieve_document_thumbnail2(
     document_id: uuid.UUID,
     size: int = DEFAULT_THUMBNAIL_SIZE,
     user: schemas.User = Depends(get_current_user),
-    engine: db.Engine = db.get_engine()
+    engine: db.Engine = Depends(db.get_engine)
 ):
     """Retrieves thumbnail of the document last version's first page"""
     try:

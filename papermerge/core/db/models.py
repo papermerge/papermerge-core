@@ -7,13 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    created_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(),
-        onupdate=func.now()
-    )
+    pass
 
 
 class User(Base):
@@ -30,6 +24,13 @@ class User(Base):
     )
     home_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
     inbox_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now(),
+        onupdate=func.now()
+    )
 
 
 CType = Literal["document", "folder"]
@@ -49,6 +50,13 @@ class Node(Base):
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("node.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        insert_default=func.now(),
+        onupdate=func.now()
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "node",
@@ -97,12 +105,16 @@ class DocumentVersion(Base):
         ForeignKey("core_document.basetreenode_ptr_id")
     )
 
+    lang: Mapped[str]
+    short_description: Mapped[str]
+
 
 class Page(Base):
     __tablename__ = "core_page"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     number: Mapped[int]
+    lang: Mapped[str]
     document_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_documentversion.id")
     )

@@ -18,9 +18,10 @@ def get_last_doc_ver(
     """
     with Session(engine) as session:  # noqa
         stmt = select(DocumentVersion).where(
-            document_id=doc_id,
-            user_id=user_id
-        )
+            DocumentVersion.document_id == doc_id
+        ).order_by(
+            DocumentVersion.number.desc()
+        ).limit(1)
         db_doc_ver = session.scalars(stmt).one()
         model_doc_ver = schemas.DocumentVersion.model_validate(db_doc_ver)
 

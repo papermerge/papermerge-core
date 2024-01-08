@@ -24,7 +24,7 @@ function str_id(node_id: string): string {
 const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
 
-  const [ status, setStatus ] = useState<OcrStatusEnum>(props.node?.document?.ocr_status || "UNKNOWN");
+  const [ status, setStatus ] = useState<OcrStatusEnum>(props.node?.ocr_status || "UNKNOWN");
   const protected_thumbnail = useProtectedJpg(`/api/thumbnails/${props.node.id}`);
   let thumbnail_component: JSX.Element | null;
 

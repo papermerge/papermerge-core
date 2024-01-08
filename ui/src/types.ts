@@ -55,10 +55,6 @@ export type TargetFolder = {
 
 export type BreadcrumbType = Array<BreadcrumbItemType>;
 
-export type DocumentNodeType = {
-  ocr_status: OcrStatusEnum;
-  thumbnail_url: string | null;
-}
 
 export type NType = {
   /* Short version of the Node Type */
@@ -75,7 +71,8 @@ export type NodeType = NType & {
   title: string;
   user_id: string;
   update_at: string;
-  document: DocumentNodeType | null;
+  ocr_status: OcrStatusEnum;
+  ocr: boolean;
   thumbnail_url: string | null;
 }
 
@@ -83,6 +80,7 @@ export type NodeType = NType & {
 export type FolderType = NodeType & {
   breadcrumb: BreadcrumbType;
 }
+
 
 export type PageType = {
   id: string;

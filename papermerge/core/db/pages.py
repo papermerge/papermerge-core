@@ -22,6 +22,6 @@ def get_first_page(
             Page.number.asc()
         ).limit(1)
         db_page = session.scalars(stmt).one()
-        db_model = schemas.Page.model_validate(db_page)
+        model = schemas.Page.model_validate(db_page)
 
-    return db_model
+    return model

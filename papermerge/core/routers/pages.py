@@ -1,23 +1,25 @@
 import logging
-import os
 import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
+from papermerge.core import db
+from papermerge.core import pathlib as core_pathlib
 from papermerge.core import schemas
 from papermerge.core.auth import get_current_user
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
-from papermerge.core.models import BaseTreeNode, Page
+from papermerge.core.db import exceptions as db_exc
+from papermerge.core.models import BaseTreeNode
 from papermerge.core.page_ops import apply_pages_op
 from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
-from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import (ExtractPagesIn, MovePagesIn,
                                            PageAndRotOp)
+from papermerge.core.utils import image
 
 logger = logging.getLogger(__name__)
 
@@ -38,28 +40,27 @@ class JPEGFileResponse(FileResponse):
 @router.get("/{page_id}/svg", response_class=SVGFileResponse)
 def get_page_svg_url(
     page_id: uuid.UUID,
-    user: schemas.User = Depends(get_current_user)
+    user: schemas.User = Depends(get_current_user),
+    engine: db.Engine = Depends(db.get_engine)
 ):
     try:
-        page = Page.objects.get(
-            id=page_id, document_version__document__user_id=user.id
-        )
-    except Page.DoesNotExist:
+        page = db.get_page(engine, id=page_id, user_id=user.id)
+    except db_exc.PageNotFound:
         raise HTTPException(
             status_code=404,
             detail="Page not found"
         )
 
-    svg_abs_path = page.svg_path
+    svg_abs_path = core_pathlib.abs_page_svg_path(str(page.id))
     logger.debug(f"page UUID={page_id} svg abs path={svg_abs_path}")
 
-    if not page.svg_path.exists():
+    if not svg_abs_path.exists():
         raise HTTPException(
             status_code=404,
             detail="File not found"
         )
 
-    return SVGFileResponse(page.svg_path)
+    return SVGFileResponse(svg_abs_path)
 
 
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
@@ -69,18 +70,17 @@ def get_page_jpg_url(
         DEFAULT_THUMBNAIL_SIZE,
         description="jpg image width in pixels"
     ),
-    user: schemas.User = Depends(get_current_user)
+    user: schemas.User = Depends(get_current_user),
+    engine: db.Engine = Depends(db.get_engine)
 ):
     """Returns jpg preview image of the page.
 
     Returned jpg image's width is `size` pixels.
     """
     try:
-        page = Page.objects.get(
-            id=page_id,
-            document_version__document__user_id=user.id
-        )
-    except Page.DoesNotExist:
+        page = db.get_page(engine, id=page_id, user_id=user.id)
+        doc_ver = db.get_doc_ver(engine, id=page.document_version_id)
+    except db_exc.PageNotFound:
         raise HTTPException(
             status_code=404,
             detail="Page does not exist"
@@ -90,13 +90,18 @@ def get_page_jpg_url(
         f"Generating page preview for page.number={page.number}"
         f" page.id={page.id}"
     )
-    jpeg_abs_path = rel2abs(
-        thumbnail_path(page.id, size=size)
+    jpeg_abs_path = core_pathlib.rel2abs(
+        core_pathlib.thumbnail_path(page.id, size=size)
     )
 
-    if not os.path.exists(jpeg_abs_path):
+    if not jpeg_abs_path.exists():
         # generate preview only for this page
-        page.generate_thumbnail(size=size)
+        image.generate_thumbnail(
+            page_id=page.id,
+            doc_ver_id=doc_ver.id,
+            file_name=doc_ver.file_name,
+            size=size
+        )
 
     logger.debug(f"jpeg_abs_path={jpeg_abs_path}")
 

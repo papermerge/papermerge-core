@@ -5,9 +5,9 @@ from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException
 
 from papermerge.core import schemas
-from papermerge.core.models import Tag, User
+from papermerge.core.auth import get_current_user
+from papermerge.core.models import Tag
 
-from .auth import get_current_user as current_user
 from .paginator import PaginatorGeneric, paginate
 from .params import CommonQueryParams
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @paginate
 def retrieve_tags(
     params: CommonQueryParams = Depends(),
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     """Retrieves current user tags"""
     order_by = ['name', ]
@@ -41,11 +41,11 @@ def retrieve_tags(
 @router.post("/", status_code=201)
 def create_tag(
     pytag: schemas.CreateTag,
-    user: User = Depends(current_user),
+    user: schemas.User = Depends(get_current_user),
 ) -> schemas.Tag:
     """Creates user tag"""
     try:
-        tag = Tag.objects.create(user=user, **pytag.model_dump())
+        tag = Tag.objects.create(user_id=user.id, **pytag.model_dump())
     except IntegrityError:
         raise HTTPException(
             status_code=400,
@@ -58,11 +58,11 @@ def create_tag(
 @router.delete("/{tag_id}", status_code=204)
 def delete_tag(
     tag_id: UUID,
-    user: User = Depends(current_user),
+    user: schemas.User = Depends(get_current_user),
 ) -> None:
     """Deletes user tag"""
     try:
-        Tag.objects.get(user=user, id=tag_id).delete()
+        Tag.objects.get(user_id=user.id, id=tag_id).delete()
     except Tag.DoesNotExist:
         raise HTTPException(
             status_code=404,
@@ -74,11 +74,11 @@ def delete_tag(
 def update_tag(
     tag_id: UUID,
     tag: schemas.UpdateTag,
-    user: User = Depends(current_user),
+    user: schemas.User = Depends(get_current_user),
 ) -> schemas.Tag:
     """Updates user tag"""
 
-    qs = Tag.objects.filter(user=user, id=tag_id)
+    qs = Tag.objects.filter(user_id=user.id, id=tag_id)
 
     if qs.count() != 1:
         raise HTTPException(

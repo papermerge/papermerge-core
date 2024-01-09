@@ -6,8 +6,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
-from papermerge.core.models import BaseTreeNode, Page, User
+from papermerge.core.models import BaseTreeNode, Page
 from papermerge.core.page_ops import apply_pages_op
 from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
@@ -16,8 +18,6 @@ from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
 from papermerge.core.schemas.pages import (ExtractPagesIn, MovePagesIn,
                                            PageAndRotOp)
-
-from .auth import get_current_user as current_user
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,11 @@ class JPEGFileResponse(FileResponse):
 @router.get("/{page_id}/svg", response_class=SVGFileResponse)
 def get_page_svg_url(
     page_id: uuid.UUID,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     try:
         page = Page.objects.get(
-            id=page_id, document_version__document__user=user
+            id=page_id, document_version__document__user_id=user.id
         )
     except Page.DoesNotExist:
         raise HTTPException(
@@ -69,7 +69,7 @@ def get_page_jpg_url(
         DEFAULT_THUMBNAIL_SIZE,
         description="jpg image width in pixels"
     ),
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     """Returns jpg preview image of the page.
 
@@ -78,7 +78,7 @@ def get_page_jpg_url(
     try:
         page = Page.objects.get(
             id=page_id,
-            document_version__document__user=user
+            document_version__document__user_id=user.id
         )
     except Page.DoesNotExist:
         raise HTTPException(
@@ -106,7 +106,7 @@ def get_page_jpg_url(
 @router.post("/")
 def apply_page_operations(
     items: List[PageAndRotOp],
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> List[PyDocVer]:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
 

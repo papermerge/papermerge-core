@@ -1,4 +1,4 @@
-from papermerge.core.routers.auth import get_user_id_from_token
+from papermerge.core.auth import get_user_id_from_token
 
 
 def test_get_current_user(token):

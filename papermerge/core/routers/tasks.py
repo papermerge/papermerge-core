@@ -1,8 +1,9 @@
 from celery.result import AsyncResult
 from fastapi import APIRouter, Depends
 
-from papermerge.core.models import Document, User
-from papermerge.core.routers.auth import get_current_user as current_user
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
+from papermerge.core.models import Document
 from papermerge.core.schemas.tasks import OCRTaskIn, OCRTaskOut
 from papermerge.core.tasks import ocr_document_task
 
@@ -15,7 +16,7 @@ router = APIRouter(
 @router.post("/ocr")
 def start_ocr(
     ocr_task: OCRTaskIn,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ) -> OCRTaskOut:
     """Triggers OCR for specific document
     """

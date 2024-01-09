@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from papermerge.core.models import Folder, User
-from papermerge.core.schemas.folders import Folder as PyFolder
-
-from .auth import get_current_user as current_user
+from papermerge.core import db, schemas
+from papermerge.core.auth import get_current_user
 
 router = APIRouter(
     prefix="/folders",
@@ -14,8 +12,14 @@ router = APIRouter(
 @router.get("/{folder_id}")
 def get_node(
     folder_id,
-    user: User = Depends(current_user)
-) -> PyFolder:
+    user: schemas.User = Depends(get_current_user),
+    engine: db.Engine = Depends(db.get_engine)
+) -> schemas.Folder:
 
-    folder = Folder.objects.get(id=folder_id, user_id=user.id)
-    return PyFolder.model_validate(folder)
+    folder = db.get_folder(
+        engine,
+        folder_id=folder_id,
+        user_id=user.id
+    )
+
+    return folder

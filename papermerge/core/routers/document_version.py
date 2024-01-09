@@ -4,9 +4,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
-from papermerge.core.models import DocumentVersion, User
-
-from .auth import get_current_user as current_user
+from papermerge.core import schemas
+from papermerge.core.auth import get_current_user
+from papermerge.core.models import DocumentVersion
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class PDFFileResponse(FileResponse):
 @router.get("/{document_version_id}/download", response_class=PDFFileResponse)
 def download_document_version(
     document_version_id: uuid.UUID,
-    user: User = Depends(current_user)
+    user: schemas.User = Depends(get_current_user)
 ):
     try:
         doc_ver = DocumentVersion.objects.get(

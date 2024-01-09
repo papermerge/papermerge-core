@@ -754,11 +754,9 @@ function newNodeFrom(doc: DocumentType): NodeType {
     accept_dropped_nodes: false,
     is_currently_dragged: false,
     update_at: doc.updated_at,
-    document: {
-      ocr_status: doc.ocr_status,
-      thumbnail_url: ''
-    },
+    ocr_status: doc.ocr_status,
     thumbnail_url: '',
+    ocr: false,
     user_id: doc.user_id
   }
 

@@ -2,6 +2,17 @@
 
 <!-- towncrier release notes start -->
 
+## [3.0.1] - 2024-01-xx
+
+### DB Connection Optimizations
+
+### Bug fixes
+
+## [3.0] - 2023-12-28
+
+Brand new Papermerge, version 3.0 breaks compatibility with previous
+versions
+
 ## [2.1.9] - 2023-04-01
 
 ### Fixed

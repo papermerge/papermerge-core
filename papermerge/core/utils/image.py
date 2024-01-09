@@ -1,12 +1,34 @@
 from pathlib import Path
+from uuid import UUID
 
 from pdf2image import convert_from_path
 
 from papermerge.core import constants as const
+from papermerge.core import pathlib as core_pathlib
 
 
 def file_name_generator(size):
     yield str(size)
+
+
+def generate_thumbnail(
+    page_id: UUID,
+    doc_ver_id: UUID,
+    file_name: str,
+    size: int = const.DEFAULT_THUMBNAIL_SIZE
+):
+    thb_path = core_pathlib.abs_thumbnail_path(str(page_id), size=size)
+    pdf_path = core_pathlib.abs_docver_path(
+        str(doc_ver_id),
+        file_name
+    )
+
+    generate_preview(
+        pdf_path=pdf_path,
+        output_folder=thb_path.parent,
+        page_number=1,
+        size=size
+    )
 
 
 def generate_preview(

@@ -4,7 +4,7 @@ from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.models import Page
+from papermerge.core.db.models import Document, DocumentVersion, Page
 
 from .exceptions import PageNotFound
 
@@ -30,6 +30,28 @@ def get_first_page(
             raise PageNotFound(
                 f"DocVerID={doc_ver_id} does not have pages."
                 " Maybe it does not have associated file yet?"
+            )
+        model = schemas.Page.model_validate(db_page)
+
+    return model
+
+
+def get_page(
+    engine: Engine,
+    id: UUID,
+    user_id: UUID
+) -> schemas.Page:
+    with Session(engine) as session:  # noqa
+        stmt = select(Page).join(DocumentVersion).join(Document).where(
+            Page.id == id,
+            Document.user_id == user_id
+        )
+        try:
+            db_page = session.scalars(stmt).one()
+        except exc.NoResultFound:
+            session.close()
+            raise PageNotFound(
+                f"PageID={id} not found"
             )
         model = schemas.Page.model_validate(db_page)
 

@@ -11,6 +11,7 @@ from papermerge.core import pathlib as core_pathlib
 from papermerge.core import schemas
 from papermerge.core.auth import get_current_user
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
+from papermerge.core.db import exceptions as db_exc
 from papermerge.core.models import Document
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.utils import image
@@ -116,10 +117,10 @@ def retrieve_document_thumbnail(
             doc_id=document_id
         )
         page = db.get_first_page(engine, doc_ver_id=doc_ver.id)
-    except Document.DoesNotExist:
+    except db_exc.PageNotFound as e:
         raise HTTPException(
             status_code=404,
-            detail="Page does not exist"
+            detail=f"DocID={document_id}: {e}"
         )
 
     if page is None:

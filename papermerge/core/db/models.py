@@ -101,10 +101,10 @@ class DocumentVersion(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     number: Mapped[int]
+    file_name: Mapped[str]
     document_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_document.basetreenode_ptr_id")
     )
-
     lang: Mapped[str]
     short_description: Mapped[str]
 

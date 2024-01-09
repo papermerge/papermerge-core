@@ -1,10 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
 from papermerge.core.db.models import Page
+
+from .exceptions import PageNotFound
 
 
 def get_first_page(
@@ -21,7 +23,14 @@ def get_first_page(
         ).order_by(
             Page.number.asc()
         ).limit(1)
-        db_page = session.scalars(stmt).one()
+        try:
+            db_page = session.scalars(stmt).one()
+        except exc.NoResultFound:
+            session.close()
+            raise PageNotFound(
+                f"DocVerID={doc_ver_id} does not have pages."
+                " Maybe it does not have associated file yet?"
+            )
         model = schemas.Page.model_validate(db_page)
 
     return model

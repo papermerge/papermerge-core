@@ -89,10 +89,16 @@ class Document(BaseModel):
     parent_id: UUID | None
     user_id: UUID
     breadcrumb: list[Tuple[UUID, str]] = []
-    # versions: Optional[List[DocumentVersion]] = []
+    versions: Optional[List[DocumentVersion]] = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
+
+    @field_validator("versions", mode='before')
+    def get_all_from_manager(cls, v: object) -> object:
+        if isinstance(v, BaseManager):
+            return list(v.all())
+        return v
 
     @field_validator('thumbnail_url', mode='before')
     def thumbnail_url_validator(cls, value, info):

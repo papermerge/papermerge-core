@@ -43,6 +43,12 @@ class Page(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+DownloadUrl = Annotated[
+    str | None,
+    Field(validate_default=True)
+]
+
+
 class DocumentVersion(BaseModel):
     id: UUID
     number: int
@@ -52,7 +58,7 @@ class DocumentVersion(BaseModel):
     page_count: int = 0
     short_description: str
     document_id: UUID
-    download_url: str | None = None
+    download_url: DownloadUrl = None
     pages: Optional[List[Page]] = []
 
     @field_validator("pages", mode='before')
@@ -64,6 +70,10 @@ class DocumentVersion(BaseModel):
             except ValueError:
                 return []
         return value
+
+    @field_validator('download_url', mode='before')
+    def thumbnail_url_validator(cls, _, info):
+        return f"/api/document-versions/{info.data['id']}"
 
     # Config
     model_config = ConfigDict(from_attributes=True)

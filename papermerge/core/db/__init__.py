@@ -1,5 +1,6 @@
 from sqlalchemy import Engine
 
+from .doc import get_doc
 from .doc_ver import get_doc_ver, get_last_doc_ver
 from .engine import get_engine
 from .folders import get_folder
@@ -15,6 +16,7 @@ __all__ = [
     'get_page',
     'get_last_doc_ver',
     'get_doc_ver',
+    'get_doc',
     'get_paginated_nodes',
     'Engine'
 ]

@@ -30,7 +30,7 @@ DATABASES = {
     'default': dj_database_url.config(
         env='PAPERMERGE__DATABASE__URL',
         default='sqlite:////db/db.sqlite3',
-        conn_max_age=600
+        conn_max_age=0
     ),
 }
 

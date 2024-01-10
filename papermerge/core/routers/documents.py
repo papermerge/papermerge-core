@@ -3,7 +3,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, UploadFile
 
-from papermerge.core import schemas
+from papermerge.core import db, schemas
 from papermerge.core.auth import get_current_user
 from papermerge.core.models import Document
 
@@ -16,10 +16,13 @@ router = APIRouter(
 @router.get("/{document_id}")
 def get_document_details(
     document_id: uuid.UUID,
-    user: schemas.User = Depends(get_current_user)
+    user: schemas.User = Depends(get_current_user),
+    engine: db.Engine = Depends(db.get_engine)
 ) -> schemas.Document:
-    doc = Document.objects.get(id=document_id, user_id=user.id)
-    return schemas.Document.model_validate(doc)
+
+    doc = db.get_doc(engine, id=document_id, user_id=user.id)
+
+    return doc
 
 
 @router.post("/{document_id}/upload")

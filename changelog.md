@@ -4,7 +4,9 @@
 
 ## [3.0.1] - 2024-01-xx
 
-### DB Connection Optimizations
+### Fixed
+
+- Django ORM leaves DB connections open [Issue#575](https://github.com/ciur/papermerge/issues/575)
 
 ### Bug fixes
 

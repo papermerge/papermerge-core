@@ -115,6 +115,7 @@ class Page(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     number: Mapped[int]
     lang: Mapped[str]
+    text: Mapped[str]
     document_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_documentversion.id")
     )

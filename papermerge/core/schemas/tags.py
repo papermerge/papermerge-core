@@ -39,3 +39,9 @@ class UpdateTag(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class ColoredTag(BaseModel):
+    id: UUID
+    object_id: UUID
+    tag: Tag

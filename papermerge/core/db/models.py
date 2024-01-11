@@ -119,3 +119,25 @@ class Page(Base):
     document_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_documentversion.id")
     )
+
+
+class Tag(Base):
+    __tablename__ = "core_tag"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    bg_color: Mapped[str]
+    fg_color: Mapped[str]
+    description: Mapped[str]
+    pinned: Mapped[bool]
+
+
+class ColoredTag(Base):
+    __tablename__ = "core_coloredtag"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    object_id: Mapped[UUID]
+    tag_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_tag.id")
+    )
+    tag: Mapped["Tag"] = relationship(
+        primaryjoin="Tag.id == ColoredTag.tag_id"
+    )

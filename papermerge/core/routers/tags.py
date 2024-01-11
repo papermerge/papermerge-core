@@ -34,7 +34,7 @@ def retrieve_tags(
         ]
 
     return Tag.objects.filter(
-        user=user
+        user_id=user.id
     ).order_by(*order_by)
 
 

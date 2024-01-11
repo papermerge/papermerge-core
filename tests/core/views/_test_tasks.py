@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 from papermerge.core.models import Document, User
 
@@ -13,7 +12,6 @@ from papermerge.core.models import Document, User
 class TasksViewTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="user1")
-        self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     @patch('papermerge.core.views.tasks.ocr_document_task')

@@ -1,11 +1,9 @@
 import uuid
 from typing import List, Tuple
 
-import pytz
 from celery import current_app
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
 from taggit.managers import TaggableManager, _TaggableManager
 
 from papermerge.core import validators
@@ -204,40 +202,6 @@ class BaseTreeNode(models.Model):
         """
 
         return f'{self.title}-{self.id}'
-
-    def human_datetime(self, _datetime) -> str:
-        """
-        Localize and format datetime instance considering user preferences.
-        """
-        tz = pytz.timezone(
-            self.user.preferences['localization__timezone']
-        )
-        fmt = self.user.preferences['localization__date_format']
-        fmt += " " + self.user.preferences['localization__time_format']
-
-        ret_datetime = timezone.localtime(_datetime, timezone=tz)
-
-        ret = ret_datetime.strftime(fmt)
-        return ret
-
-    @property
-    def human_updated_at(self) -> str:
-        """
-        updated_at displayed considering user's timezone, date and time prefs.
-
-        returns string with user friendly formated datetime.
-        """
-
-        ret = self.human_datetime(self.updated_at)
-        return ret
-
-    @property
-    def human_created_at(self) -> str:
-        """
-        created_at displayed considering user's timezone, date and time prefs.
-        """
-        ret = self.human_datetime(self.created_at)
-        return ret
 
     @property
     def _type(self) -> str:

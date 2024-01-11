@@ -222,24 +222,21 @@ def receiver_document_post_upload(
         f" [user.id={user.id}]"
     )
 
-    user_settings = user.preferences
-
-    if user_settings['ocr__trigger'] == 'auto':
-        try:
-            ocr_document_task.apply_async(
-                kwargs={
-                    'document_id': str(doc.id),
-                    'lang': doc.lang,
-                    'user_id': str(user.id)
-                }
-            )
-        except OperationalError:
-            # If redis service is not available then:
-            # - request is accepted
-            # - document is uploaded
-            # - warning is logged
-            # - response includes exception message text
-            logger.warning(
-                "Operation Error while creating the task",
-                exc_info=True
-            )
+    try:
+        ocr_document_task.apply_async(
+            kwargs={
+                'document_id': str(doc.id),
+                'lang': doc.lang,
+                'user_id': str(user.id)
+            }
+        )
+    except OperationalError:
+        # If redis service is not available then:
+        # - request is accepted
+        # - document is uploaded
+        # - warning is logged
+        # - response includes exception message text
+        logger.warning(
+            "Operation Error while creating the task",
+            exc_info=True
+        )

@@ -4,7 +4,6 @@ import pytest
 from django.test import TestCase
 from django.urls import reverse
 from model_bakery import baker
-from rest_framework.test import APIClient
 
 from papermerge.core.storage import abs_path
 from papermerge.test import maker
@@ -12,10 +11,6 @@ from papermerge.test import maker
 
 @pytest.mark.skip()
 class DownloadDocumentVersionAnonymousAccess(TestCase):
-
-    def setUp(self):
-        self.client = APIClient()
-
     def test_anonymouse_user_cannot_access_download_document_version(self):
         """
         Assert that anonymous user does not have access
@@ -39,9 +34,7 @@ class DownloadDocumentVersionOnlyOwner(TestCase):
     def setUp(self):
         self.owner = baker.make('core.User')
         self.john = baker.make('core.User')
-        self.client_owner = APIClient()
         self.client_owner.force_authenticate(user=self.owner)
-        self.client_john = APIClient()
         self.client_john.force_authenticate(user=self.john)
 
     @patch('papermerge.core.signals.ocr_document_task')

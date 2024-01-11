@@ -14,9 +14,19 @@ def file_name_generator(size):
 def generate_thumbnail(
     page_id: UUID,
     doc_ver_id: UUID,
+    page_number: int,
     file_name: str,
     size: int = const.DEFAULT_THUMBNAIL_SIZE
 ):
+    """
+    Extracts jpg image of page `page_number` from PDF file associated with
+    given `doc_ver_id`.
+
+    `doc_ver_id` and `file_name` are required for getting the PDF
+    file location.
+    `page_id` and `size` are required for knowing where to save
+    jpg file.
+    """
     thb_path = core_pathlib.abs_thumbnail_path(str(page_id), size=size)
     pdf_path = core_pathlib.abs_docver_path(
         str(doc_ver_id),
@@ -26,7 +36,7 @@ def generate_thumbnail(
     generate_preview(
         pdf_path=pdf_path,
         output_folder=thb_path.parent,
-        page_number=1,
+        page_number=page_number,
         size=size
     )
 

@@ -99,6 +99,7 @@ def get_page_jpg_url(
         image.generate_thumbnail(
             page_id=page.id,
             doc_ver_id=doc_ver.id,
+            page_number=page.number,
             file_name=doc_ver.file_name,
             size=size
         )

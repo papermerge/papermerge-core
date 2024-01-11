@@ -54,14 +54,6 @@ STATIC_URL = config.get(
     default='/static/'
 )
 
-PAPERMERGE_MIMETYPES = [
-    'application/octet-stream',
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/tiff'
-]
 
 # For each user create special folders
 # i.e. create ".inbox" and ".home" folders
@@ -72,26 +64,16 @@ PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.sites',
-    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'papermerge.core.apps.CoreConfig',
     'papermerge.search.apps.SearchConfig',
     'django.contrib.contenttypes',
-    'dynamic_preferences',
-    'dynamic_preferences.users.apps.UserPreferencesConfig',
 ]
-
-# include elasticsearch apps only if PAPERMERGE_ELASTICSEARCH_HOSTS
-# and PAPERMERGE_ELASTICSEARCH_PORT are defined
-# and have non-empty value
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

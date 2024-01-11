@@ -1,14 +1,15 @@
 import logging
-from typing import List, TypeVar, Union
+from typing import List, Sequence, TypeVar, Union
 from uuid import UUID
 
 from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session, selectin_polymorphic
 
 from papermerge.core import schemas
+from papermerge.core.schemas.documents import Tag as NodeTag
 from papermerge.core.types import PaginatedResponse
 
-from .models import Document, Folder, Node
+from .models import ColoredTag, Document, Folder, Node
 
 T = TypeVar('T')
 
@@ -65,8 +66,13 @@ def get_paginated_nodes(
         total_nodes = session.scalar(count_stmt)
         num_pages = int(total_nodes / page_size)
         nodes = session.scalars(stmt).all()
-
+        colored_tags_stmt = select(ColoredTag).where(
+            ColoredTag.object_id.in_([n.id for n in nodes])
+        )
+        colored_tags = session.scalars(colored_tags_stmt).all()
         for node in nodes:
+            tags = _get_tags_for(colored_tags, node.id)
+            node.tags = tags
             if node.ctype == 'folder':
                 items.append(
                     schemas.Folder.model_validate(node)
@@ -82,3 +88,18 @@ def get_paginated_nodes(
         num_pages=num_pages,
         items=items
     )
+
+
+def _get_tags_for(
+    colored_tags: Sequence[ColoredTag],
+    node_id: UUID
+) -> List[NodeTag]:
+    node_tags = []
+
+    for color_tag in colored_tags:
+        if color_tag.object_id == node_id:
+            node_tags.append(
+                NodeTag.model_validate(color_tag.tag)
+            )
+
+    return node_tags

@@ -257,7 +257,7 @@ def assign_node_tags(
             detail="Does not exist"
         )
 
-    node.tags.set(tags, tag_kwargs={"user": user})
+    node.tags.set(tags, tag_kwargs={"user_id": user.id})
     _notify_index(node_id)
 
     return PyNode.model_validate(node)

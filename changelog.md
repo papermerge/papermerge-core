@@ -7,6 +7,7 @@
 ### Fixed
 
 - Django ORM leaves DB connections open [Issue#575](https://github.com/ciur/papermerge/issues/575)
+- Add extra language codes [Issue#571](https://github.com/ciur/papermerge/issues/571)
 
 ### Bug fixes
 

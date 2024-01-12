@@ -22,8 +22,14 @@ class User(Base):
         back_populates="user",
         primaryjoin="User.id == Node.user_id"
     )
-    home_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
-    inbox_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node.id"))
+    home_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node"))
+    home_folder: Mapped['Folder'] = relationship(
+        primaryjoin="User.home_folder_id == Node.id"
+    )
+    inbox_folder_id: Mapped[UUID] = mapped_column(ForeignKey("Node"))
+    inbox_folder: Mapped['Folder'] = relationship(
+        primaryjoin="User.inbox_folder_id == Node.id"
+    )
     created_at: Mapped[datetime] = mapped_column(
         insert_default=func.now()
     )

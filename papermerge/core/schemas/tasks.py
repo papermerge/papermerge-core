@@ -1,22 +1,34 @@
-from enum import Enum
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel
 
-
-class LangCodeEnum(str, Enum):
-    deu = "deu"
-    fra = "fra"
-    eng = "eng"
-    ita = "ita"
-    spa = "spa"
-    por = "por"
-    ron = "ron"
+LangCode = Literal[
+    'ces',
+    'dan',
+    'deu',
+    'ell',
+    'eng',
+    'fin',
+    'fra',
+    'heb',
+    'ita',
+    'jpn',
+    'kor',
+    'lit',
+    'nld',
+    'nor',
+    'osd',
+    'pol',
+    'por',
+    'ron',
+    'spa'
+]
 
 
 class OCRTaskIn(BaseModel):
     id: UUID  # document model ID
-    lang: LangCodeEnum
+    lang: LangCode
 
 
 class OCRTaskOut(BaseModel):

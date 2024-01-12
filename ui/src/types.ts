@@ -267,7 +267,26 @@ export type DataTransferExtractedPages = {
   document_title: string;
 }
 
-export type OCRCode = 'eng' | 'deu' | 'fra' | 'spa' | 'ita' | 'osd';
+export type OCRCode =
+  | 'ces'
+  | 'dan'
+  | 'deu'
+  | 'ell'
+  | 'eng'
+  | 'fin'
+  | 'fra'
+  | 'heb'
+  | 'ita'
+  | 'jpn'
+  | 'kor'
+  | 'lit'
+  | 'nld'
+  | 'nor'
+  | 'osd'
+  | 'pol'
+  | 'por'
+  | 'ron'
+  | 'spa'
 
 export type OCRLangType = {
   [key: string]: string

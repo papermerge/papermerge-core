@@ -8,14 +8,25 @@ export const DATA_TYPE_NODES = 'type/nodes';
 export const DATA_TRANSFER_EXTRACTED_PAGES = 'type/extracted-pages';
 
 export const OCR_LANG: OCRLangType = {
-  'eng': 'English',
+  'ces': 'Čeština',
+  'dan': 'Dansk',
   'deu': 'Deutsch',
+  'ell': 'Ελληνικά',
+  'eng': 'English',
+  'fin': 'Suomi',
   'fra': 'Français',
-  'spa': 'Español',
+  'heb': 'עברית',
   'ita': 'Italiano',
-  'ron': 'Română',
+  'jpn': '日本語',
+  'kor': '한국어',
+  'lit': 'Lietuvių',
+  'nld': 'Nederlands',
+  'nor': 'Norsk',
+  'osd': 'Osd',
+  'pol': 'Polski',
   'por': 'Português',
-  'osd': 'osd'
+  'ron': 'Română',
+  'spa': 'Español',
 }
 
 export const HIDDEN = { // far away coordinates

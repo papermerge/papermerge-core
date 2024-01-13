@@ -1,4 +1,5 @@
 import logging
+import uuid
 from uuid import UUID
 
 from passlib.hash import pbkdf2_sha256
@@ -52,24 +53,35 @@ def create_user(
 ) -> schemas.User:
 
     with Session(engine) as session:
+        user_id = uuid.uuid4()
+        home_folder_id = uuid.uuid4()
+        inbox_folder_id = uuid.uuid4()
 
         db_user = User(
+            id=user_id,
             username=username,
             email=email,
-            password=pbkdf2_sha256.hash(password)
+            password=pbkdf2_sha256.hash(password),
+            home_folder_id=home_folder_id,
+            inbox_folder_id=inbox_folder_id
         )
         db_inbox = Folder(
+            id=inbox_folder_id,
             title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user_id,
+            lang='xxx'  # not used
         )
         db_home = Folder(
+            id=home_folder_id,
             title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user_id,
+            lang='xxx'  # not used
         )
-        session.add([db_user, db_home, db_inbox])
-        db_user.inbox_folder_id = db_inbox.id
-        db_user.home_folder_id = db_home.id
-
+        session.add(db_user)
+        session.add(db_home)
+        session.add(db_inbox)
         session.commit()
 
         user = schemas.User.model_validate(db_user)

@@ -8,6 +8,7 @@
 
 - Django ORM leaves DB connections open [Issue#575](https://github.com/ciur/papermerge/issues/575)
 - Add extra language codes [Issue#571](https://github.com/ciur/papermerge/issues/571)
+- Create user/home/folder in one DB transaction [Issue#572](https://github.com/ciur/papermerge/issues/572)
 
 ### Bug fixes
 

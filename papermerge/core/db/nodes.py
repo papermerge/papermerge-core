@@ -58,7 +58,9 @@ def get_paginated_nodes(
         page_size
     ).options(loader_opt))
 
-    count_stmt = select(func.count()).select_from(Node)
+    count_stmt = select(func.count()).select_from(Node).where(
+        Node.user_id == user_id
+    )
 
     items = []
 

@@ -2,7 +2,7 @@
 
 <!-- towncrier release notes start -->
 
-## [3.0.1] - 2024-01-xx
+## [3.0.1] - 2024-01-13
 
 ### Fixed
 

@@ -50,7 +50,8 @@ COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/prod/config ${CORE_APP}/config
 COPY ./docker/prod/manage.py ${CORE_APP}/manage.py
 
-COPY ./docker/dev/scripts/ /usr/bin/
+COPY ./docker/prod/scripts/ /usr/bin/
+RUN chmod +x /usr/bin/*.sh
 RUN chmod +x /run.bash
 
 COPY --from=token_validator /tivoli_app/ /tivoli_app

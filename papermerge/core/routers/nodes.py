@@ -24,7 +24,7 @@ from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.utils.decorators import skip_in_tests
 
 from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatedResponse, PaginatorGeneric, paginate
+from .paginator import PaginatedResponse
 from .params import CommonQueryParams
 
 router = APIRouter(
@@ -44,27 +44,6 @@ def get_nodes(
     return RedirectResponse(
         f"/nodes/{parent_id}"
     )
-
-
-@router.get("/old/{parent_id}", response_model=PaginatorGeneric[PyNode])
-@paginate
-def get_node_old(
-    parent_id,
-    params: CommonQueryParams = Depends(),
-    user: schemas.User = Depends(get_current_user)
-):
-    """Returns a list nodes with given parent_id of the current user"""
-    order_by = ['ctype', 'title', 'created_at', 'updated_at']
-
-    if params.order_by:
-        order_by = [
-            item.strip() for item in params.order_by.split(',')
-        ]
-
-    return BaseTreeNode.objects.filter(
-        parent_id=parent_id,
-        user_id=user.id
-    ).order_by(*order_by)
 
 
 @router.get(

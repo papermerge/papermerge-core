@@ -1,12 +1,13 @@
 import logging
-from datetime import datetime
+import uuid
 from uuid import UUID
 
+from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
-from papermerge.core import schemas
-from papermerge.core.db.models import User
+from papermerge.core import constants, schemas
+from papermerge.core.db.models import Folder, User
 from papermerge.core.utils.misc import is_valid_uuid
 
 from .exceptions import UserNotFound
@@ -44,15 +45,45 @@ def get_user(
     return model_user
 
 
-def _get_uuid(value: UUID | str) -> UUID:
-    if isinstance(value, UUID):
-        return value
+def create_user(
+    engine: Engine,
+    username: str,
+    email: str,
+    password: str
+) -> schemas.User:
 
-    return UUID(value)
+    with Session(engine) as session:
+        user_id = uuid.uuid4()
+        home_folder_id = uuid.uuid4()
+        inbox_folder_id = uuid.uuid4()
 
+        db_user = User(
+            id=user_id,
+            username=username,
+            email=email,
+            password=pbkdf2_sha256.hash(password),
+            home_folder_id=home_folder_id,
+            inbox_folder_id=inbox_folder_id
+        )
+        db_inbox = Folder(
+            id=inbox_folder_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user_id,
+            lang='xxx'  # not used
+        )
+        db_home = Folder(
+            id=home_folder_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user_id,
+            lang='xxx'  # not used
+        )
+        session.add(db_user)
+        session.add(db_home)
+        session.add(db_inbox)
+        session.commit()
 
-def _get_datetime(value: datetime | str) -> datetime:
-    if isinstance(value, datetime):
-        return value
+        user = schemas.User.model_validate(db_user)
 
-    return datetime.strptime(value, DATETIME_FMT)
+    return user

@@ -1,3 +1,7 @@
+INBOX_TITLE = '.inbox'
+HOME_TITLE = '.home'
+CTYPE_FOLDER = 'folder'
+CTYPE_DOCUMENT = 'document'
 DEFAULT_THUMBNAIL_SIZE = 100  # 100 pixels wide
 JPG = 'jpg'
 PAGES = 'pages'

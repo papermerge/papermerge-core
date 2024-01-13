@@ -59,7 +59,8 @@ def get_paginated_nodes(
     ).options(loader_opt))
 
     count_stmt = select(func.count()).select_from(Node).where(
-        Node.user_id == user_id
+        Node.user_id == user_id,
+        Node.parent_id == parent_id
     )
 
     items = []

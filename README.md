@@ -46,7 +46,7 @@ In order to start Papermerge REST API server as docker image use following comma
     docker run -p 8000:80 \
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
-        papermerge/papermerge:3.0dev20
+        papermerge/papermerge:3.0.1
 
 
 If you want initial superuser to have another username (e.g. john), use
@@ -56,7 +56,7 @@ If you want initial superuser to have another username (e.g. john), use
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
         -e PAPERMERGE__AUTH__USERNAME=john \
-        papermerge/papermerge:3.0dev20
+        papermerge/papermerge:3.0.1
 
 Note that above docker command start only web UI. In order to run OCR on the documents you need at least one
 worker instance.
@@ -69,7 +69,7 @@ storing data:
       version: "3.9"
 
       x-backend: &common
-        image: papermerge/papermerge:3.0dev20
+        image: papermerge/papermerge:3.0.1
         environment:
             PAPERMERGE__SECURITY__SECRET_KEY: 12345
             PAPERMERGE__AUTH__USERNAME: john
@@ -93,13 +93,14 @@ storing data:
         redis:
           image: redis:6
         db:
-          image: bitnami/postgresql:14.4.0
+          image: bitnami/postgresql:16.1.0
           volumes:
             - postgres_data:/var/lib/postgresql/data/
           environment:
-            POSTGRES_USER: scott
-            POSTGRES_PASSWORD: tiger
-            POSTGRES_DB: mydatabase
+            POSTGRESQL_USER: scott
+            POSTGRESQL_PASSWORD: tiger
+            POSTGRESQL_POSTGRES_PASSWORD: tiger
+            POSTGRESQL_DATABASE: mydatabase
       volumes:
         postgres_data:
         index_db:

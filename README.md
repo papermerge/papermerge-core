@@ -114,7 +114,7 @@ MariaDB as database and Solr as search engine backend:
     version: "3.9"
 
     x-backend: &common
-      image: papermerge/papermerge:3.0dev20
+      image: papermerge/papermerge:3.0.1
       environment:
           PAPERMERGE__SECURITY__SECRET_KEY: 1234  # top secret
           PAPERMERGE__AUTH__USERNAME: eugen

@@ -73,7 +73,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator('download_url', mode='before')
     def thumbnail_url_validator(cls, _, info):
-        return f"/api/document-versions/{info.data['id']}"
+        return f"/api/document-versions/{info.data['id']}/download"
 
     # Config
     model_config = ConfigDict(from_attributes=True)

@@ -28,7 +28,7 @@ def download_document_version(
 ):
     try:
         doc_ver = DocumentVersion.objects.get(
-            id=document_version_id, document__user=user
+            id=document_version_id, document__user=user.id
         )
     except DocumentVersion.DoesNotExist:
         raise HTTPException(

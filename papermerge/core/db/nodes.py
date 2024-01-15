@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import List, Sequence, TypeVar, Union
 from uuid import UUID
 
@@ -67,7 +68,7 @@ def get_paginated_nodes(
 
     with Session(engine) as session:
         total_nodes = session.scalar(count_stmt)
-        num_pages = int(total_nodes / page_size)
+        num_pages = math.ceil(total_nodes / page_size)
         nodes = session.scalars(stmt).all()
         colored_tags_stmt = select(ColoredTag).where(
             ColoredTag.object_id.in_([n.id for n in nodes])

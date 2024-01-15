@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## [3.0.2] - 2024-01-xx
+
+### Fixes
+
+- Fix wrong download URL for document version in viewer
+- Fix nodes pagination (num_pages int rounded up instead of down)
+
 ## [3.0.1] - 2024-01-13
 
 ### Fixed

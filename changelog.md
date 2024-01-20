@@ -6,6 +6,7 @@
 
 ### Fixes
 
+- Fix create_user to work with MySql/MariaDB/sqlite3 [Issue#579](https://github.com/ciur/papermerge/issues/579)
 - Fix wrong download URL for document version in viewer
 - Fix nodes pagination (num_pages int rounded up instead of down)
 

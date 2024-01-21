@@ -64,6 +64,7 @@ function App() {
   }
 
   if (user.error) {
+    window.location.href = window.location.origin;
     return <div>Error</div>
   }
 

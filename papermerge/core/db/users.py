@@ -62,8 +62,6 @@ def create_user(
             username=username,
             email=email,
             password=pbkdf2_sha256.hash(password),
-            home_folder_id=home_folder_id,
-            inbox_folder_id=inbox_folder_id
         )
         db_inbox = Folder(
             id=inbox_folder_id,
@@ -82,6 +80,10 @@ def create_user(
         session.add(db_user)
         session.add(db_home)
         session.add(db_inbox)
+        session.commit()
+
+        db_user.home_folder_id = db_home.id
+        db_user.inbox_folder_id = db_inbox.id
         session.commit()
 
         user = schemas.User.model_validate(db_user)

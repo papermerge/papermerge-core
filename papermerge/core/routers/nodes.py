@@ -66,7 +66,7 @@ def get_node(
 
     return db.get_paginated_nodes(
         engine=engine,
-        parent_id=parent_id,
+        parent_id=UUID(parent_id),
         user_id=user.id,
         page_size=params.page_size,
         page_number=params.page_number,

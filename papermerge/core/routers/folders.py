@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 
 from papermerge.core import db, schemas
@@ -18,7 +20,7 @@ def get_node(
 
     folder = db.get_folder(
         engine,
-        folder_id=folder_id,
+        folder_id=UUID(folder_id),
         user_id=user.id
     )
 

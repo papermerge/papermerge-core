@@ -2,8 +2,8 @@
 ARG VERSION
 FROM papermerge/papermerge:${VERSION}-ui as papermerge_ui
 
-FROM papermerge/tivoli:0.4.2 as token_validator
-FROM papermerge/auth-server:0.6.2 as auth_server
+FROM papermerge/tivoli:0.4.3 as token_validator
+FROM papermerge/auth-server:0.6.3 as auth_server
 FROM python:3.10 as papermerge_core
 
 

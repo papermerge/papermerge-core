@@ -162,7 +162,7 @@ class Tag(Base):
 
 class ColoredTag(Base):
     __tablename__ = "core_coloredtag"
-    id: Mapped[UUID] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     object_id: Mapped[UUID]
     tag_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_tag.id")

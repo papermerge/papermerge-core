@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap"
 
 const SessionEnd= () => {
   const onClickGoToLogin = () => {
-    window.location.href = window.location.origin;
+    window.location.reload()
   }
 
   return <div>

@@ -21,7 +21,7 @@ export default function CentralBar({
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     Cookies.remove('access_token');
-    window.location.href = window.location.origin;
+    window.location.reload();
   }
 
   const onAbout = (e: React.MouseEvent<HTMLElement>) => {

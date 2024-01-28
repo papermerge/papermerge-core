@@ -6,6 +6,7 @@ import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
 import type { AppContentBlockEnum, State, User } from 'types';
 import { ToastProvider } from 'components/toasts/ToastsProvider';
+import SessionEnd from './SessionEnded';
 
 
 const fetcher = (url:string) => {
@@ -76,7 +77,7 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   }
 
   if (error) {
-    return <div>Error</div>;
+    return <SessionEnd />
   }
 
   return (

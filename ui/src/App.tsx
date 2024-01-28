@@ -13,6 +13,7 @@ import SearchResults from 'components/search/search_results';
 
 
 import 'App.css';
+import SessionEnd from 'components/SessionEnded';
 
 
 function App() {
@@ -64,7 +65,7 @@ function App() {
   }
 
   if (user.error) {
-    return <div>Error</div>
+    return <SessionEnd />
   }
 
   if (!user.data?.home_folder_id) {

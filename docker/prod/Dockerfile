@@ -24,6 +24,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     tesseract-ocr \
     tesseract-ocr-deu \
+    tesseract-ocr-fra \
+    tesseract-ocr-spa \
+    tesseract-ocr-ita \
+    tesseract-ocr-ron \
+    tesseract-ocr-por \
     imagemagick \
     gcc \
     nginx \

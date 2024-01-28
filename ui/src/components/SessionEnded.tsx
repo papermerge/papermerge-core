@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap"
 
 const SessionEnd= () => {
   const onClickGoToLogin = () => {
-    window.location.reload()
+    window.location.reload();
   }
 
   return <div>

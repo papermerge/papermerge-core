@@ -15,6 +15,7 @@ import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType, TargetDirection } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import type { DataTransferExtractedPages, OcrStatusEnum, Coord} from 'types';
+import type { ExtractedPagesType } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
@@ -25,11 +26,13 @@ import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import move_document from './modals/MoveDocument';
 import delete_document from './modals/DeleteDocument';
+import extract_pages from 'components/modals/extract-pages/ExtractPages';
 import view_ocr_text from './modals/ViewOCRText';
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
 import ContextMenu from './ContextMenu';
+
 
 
 type ShortPageType = {
@@ -54,6 +57,7 @@ type Args = {
   dragged_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
+  onExtractPages: (args: ExtractedPagesType) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
@@ -88,6 +92,7 @@ export default function Viewer({
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
+  onExtractPages,
   onDocVerChange,
   onBreadcrumbChange,
   onMovePagesBetweenDocs,
@@ -396,6 +401,18 @@ export default function Viewer({
     )
   }
 
+  const onExtractPagesTo = (target_folder: TargetFolder) =>  {
+    extract_pages({
+      source_page_ids: selected_pages,
+      target_folder: target_folder,
+      document_title: doc.data!.title
+    }).then((arg: ExtractedPagesType) => {
+      onExtractPages(arg);
+    }).catch(() => {
+      //...
+    });
+  }
+
   const onLocalDocumentDelete = () => {
     delete_document(doc.data!).then(
       () => onDocumentDelete(doc.data!)
@@ -448,6 +465,7 @@ export default function Viewer({
       hideMenu={hideContextMenu}
       selected_pages={selected_pages}
       onDeletePages={onDeletePages}
+      onExtractPagesTo={onExtractPagesTo}
       OnDocumentMoveTo={onDocumentMoveTo}
       OnDocumentDelete={onLocalDocumentDelete}
       OnRename={onRenameClick}

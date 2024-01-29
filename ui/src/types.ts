@@ -257,7 +257,7 @@ export type onMovedNodesType = {
 export type ExtractedPagesType = {
   source: DocumentType | null;
   target: NodeType[];  // newly created document nodes
-  target_parent: FolderType;
+  target_parent: TargetFolder;
 }
 
 export type ExtractStrategy = 'one-page-per-doc' | 'all-pages-in-one-doc';

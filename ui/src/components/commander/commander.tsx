@@ -52,7 +52,7 @@ import { DATA_TYPE_NODES, DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 import move_nodes from './modals/MoveNodes';
-import extract_pages from './modals/extract-pages/ExtractPages';
+import extract_pages from 'components/modals/extract-pages/ExtractPages';
 import SessionEnd from 'components/SessionEnded';
 
 

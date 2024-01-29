@@ -15,6 +15,7 @@ type Args = {
   position: Coord;
   selected_pages: Array<string>;
   onDeletePages: () => void;
+  onExtractPagesTo: (arg: TargetFolder) => void;
   OnDocumentMoveTo: (arg: TargetFolder) => void;
   OnDocumentDelete: () => void;
   OnRename: () => void;
@@ -29,6 +30,7 @@ export default function ContextMenu({
   selected_pages,
   hideMenu,
   onDeletePages,
+  onExtractPagesTo,
   OnDocumentMoveTo,
   OnDocumentDelete,
   OnRename,
@@ -67,12 +69,34 @@ export default function ContextMenu({
     }
   }
 
-  const move_item = () => {
+  const onLocalExtractPagesTo = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    if (target_folder) {
+      onExtractPagesTo(target_folder);
+      hideMenu()
+    }
+  }
+
+  const move_document_item = () => {
     if (target_folder) {
       return <Dropdown.Item as='button' onClick={onLocalDocumentMoveTo}>
         {direction_icon()} Move Document
       </Dropdown.Item>
     }
+  }
+
+  const extract_pages_item = () => {
+    if (selected_pages.length == 0) {
+      return <></>;
+    }
+
+    if (!target_folder) {
+      return <></>;
+    }
+
+    return <Dropdown.Item as='button' onClick={onLocalExtractPagesTo}>
+        {direction_icon()} Extract Pages
+      </Dropdown.Item>
   }
 
   const delete_pages = () => {
@@ -115,7 +139,8 @@ export default function ContextMenu({
     </Dropdown.Item>
     <Dropdown.Item as='button' onClick={onLocalViewOCRText}>
       <i className="bi bi-eye me-1"></i>OCR Text</Dropdown.Item>
-    {move_item()}
+    {extract_pages_item()}
+    {move_document_item()}
     {delete_pages()}
     <Dropdown.Divider />
     <Dropdown.Item as='button' onClick={OnDocumentDelete}>

@@ -249,6 +249,7 @@ function SinglePanel({
         onPagesChange={onPagesChange}
         onBreadcrumbChange={onDocBreadcrumbChange}
         onMovePagesBetweenDocs={onMovePagesBetweenDocs}
+        onExtractPages={onExtractPages}
         onSelectedPages={onSelectedPages}
         onDraggedPages={onDraggedPages}
         onDocumentMoved={onDocumentMoved}

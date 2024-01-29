@@ -8,7 +8,8 @@ import type {
     FolderType,
     NodeType,
     ExtractedPagesType,
-    ExtractStrategy
+    ExtractStrategy,
+    TargetFolder
   } from 'types';
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
@@ -17,7 +18,7 @@ import ExtractPagesOptions from "./ExtractOptions";
 
 type ApiArgs = {
   source_page_ids: string[];
-  target_folder: FolderType;
+  target_folder: TargetFolder;
   strategy: ExtractStrategy;
   title_format: string;
   signal: AbortSignal;
@@ -51,7 +52,7 @@ type ModalArgs = {
   onCancel: () => void;
   onOK: (arg: ExtractedPagesType) => void;
   source_page_ids: string[];
-  target_folder: FolderType;
+  target_folder: TargetFolder;
   document_title: string;
 }
 
@@ -123,7 +124,7 @@ const ExtractPagesModal = ({
 
 type ExtractPagesArgs = {
   source_page_ids: Array<string>;
-  target_folder: FolderType;
+  target_folder: TargetFolder;
   document_title: string;
 }
 

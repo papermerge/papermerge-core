@@ -3,9 +3,8 @@ ARG VERSION
 FROM papermerge/papermerge:${VERSION}-ui as papermerge_ui
 
 FROM papermerge/tivoli:0.4.4 as token_validator
-FROM papermerge/auth-server:0.6.3 as auth_server
+FROM papermerge/auth-server:0.6.4 as auth_server
 FROM python:3.10 as papermerge_core
-
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3

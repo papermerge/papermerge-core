@@ -8,6 +8,7 @@
 
 - Logging out doesn't bring up log in dialogue [Issue#574](https://github.com/ciur/papermerge/issues/574)
 - Ship spa, ita, fra, ron and por OCR languages data in docker image [Issue#586](https://github.com/ciur/papermerge/issues/586)
+- Fix create_token.sh throws an error [Issue#314](https://github.com/papermerge/papermerge-core/issues/314)
 
 ## [3.0.2] - 2024-01-21
 

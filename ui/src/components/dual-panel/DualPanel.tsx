@@ -172,10 +172,20 @@ function DualPanel({ node }: Args) {
 
   const onMainPanelNodeClick = (local_node: NType) => {
     setMainNode(local_node);
+    // Switching folders resets page number to 1
+    setMPagination({
+      per_page: mpagination.per_page,
+      page_number: 1
+    });
   }
 
   const onSecondaryPanelNodeClick = (local_node: NType) => {
     setSecondaryNode(local_node);
+    // Switching folders resets page number to 1
+    setSPagination({
+      per_page: spagination.per_page,
+      page_number: 1
+    });
   }
 
   const onMainPanelSortChange = (new_value: Sorting) => {

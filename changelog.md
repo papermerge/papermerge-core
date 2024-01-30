@@ -10,6 +10,7 @@
 - Ship spa, ita, fra, ron and por OCR languages data in docker image [Issue#586](https://github.com/ciur/papermerge/issues/586)
 - Fix create_token.sh throws an error [Issue#314](https://github.com/papermerge/papermerge-core/issues/314)
 - Empty Folder on Second Page [Issue#584](https://github.com/ciur/papermerge/issues/584)
+- Include Dutch language OCR data in default docker image
 
 ### Adds
 

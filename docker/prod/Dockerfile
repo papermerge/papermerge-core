@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr-ita \
     tesseract-ocr-ron \
     tesseract-ocr-por \
+    tesseract-ocr-nld \
     imagemagick \
     gcc \
     nginx \

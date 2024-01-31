@@ -11,6 +11,7 @@
 - Fix create_token.sh throws an error [Issue#314](https://github.com/papermerge/papermerge-core/issues/314)
 - Empty Folder on Second Page [Issue#584](https://github.com/ciur/papermerge/issues/584)
 - Include Dutch language OCR data in default docker image
+- Add Gujrati, Hindi and Sanskrit language codes [Issue#583](https://github.com/ciur/papermerge/issues/583)
 
 ### Adds
 

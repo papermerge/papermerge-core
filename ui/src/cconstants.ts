@@ -15,7 +15,9 @@ export const OCR_LANG: OCRLangType = {
   'eng': 'English',
   'fin': 'Suomi',
   'fra': 'Français',
+  'guj': 'ગુજરાતી',
   'heb': 'עברית',
+  'hin': 'हिंदी',
   'ita': 'Italiano',
   'jpn': '日本語',
   'kor': '한국어',
@@ -26,6 +28,7 @@ export const OCR_LANG: OCRLangType = {
   'pol': 'Polski',
   'por': 'Português',
   'ron': 'Română',
+  'san': 'संस्कृत',
   'spa': 'Español',
 }
 

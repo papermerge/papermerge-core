@@ -275,7 +275,9 @@ export type OCRCode =
   | 'eng'
   | 'fin'
   | 'fra'
+  | 'guj'
   | 'heb'
+  | 'hin'
   | 'ita'
   | 'jpn'
   | 'kor'
@@ -286,6 +288,7 @@ export type OCRCode =
   | 'pol'
   | 'por'
   | 'ron'
+  | 'san'
   | 'spa'
 
 export type OCRLangType = {

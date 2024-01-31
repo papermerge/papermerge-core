@@ -9,19 +9,22 @@ LangCode = Literal[
     'deu',
     'ell',
     'eng',
+    'fas',
     'fin',
     'fra',
+    'guj',
     'heb',
+    'hin',
     'ita',
     'jpn',
     'kor',
     'lit',
     'nld',
     'nor',
-    'osd',
     'pol',
     'por',
     'ron',
+    'san',
     'spa'
 ]
 

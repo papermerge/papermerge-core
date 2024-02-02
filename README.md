@@ -56,7 +56,7 @@ If you want initial superuser to have another username (e.g. john), use
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
         -e PAPERMERGE__AUTH__USERNAME=john \
-        papermerge/papermerge:3.0.1
+        papermerge/papermerge:3.0.3
 
 Note that above docker command start only web UI. In order to run OCR on the documents you need at least one
 worker instance.
@@ -69,7 +69,7 @@ storing data:
       version: "3.9"
 
       x-backend: &common
-        image: papermerge/papermerge:3.0.1
+        image: papermerge/papermerge:3.0.3
         environment:
             PAPERMERGE__SECURITY__SECRET_KEY: 12345
             PAPERMERGE__AUTH__USERNAME: john
@@ -114,7 +114,7 @@ MariaDB as database and Solr as search engine backend:
     version: "3.9"
 
     x-backend: &common
-      image: papermerge/papermerge:3.0.1
+      image: papermerge/papermerge:3.0.3
       environment:
           PAPERMERGE__SECURITY__SECRET_KEY: 1234  # top secret
           PAPERMERGE__AUTH__USERNAME: eugen

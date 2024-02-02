@@ -46,7 +46,7 @@ In order to start Papermerge REST API server as docker image use following comma
     docker run -p 8000:80 \
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
-        papermerge/papermerge:3.0.1
+        papermerge/papermerge:3.0.3
 
 
 If you want initial superuser to have another username (e.g. john), use

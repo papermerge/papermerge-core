@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm
 
-RUN pip install --upgrade poetry roco==0.1.1
+RUN pip install --upgrade poetry roco==0.2.0
 
 RUN python -m venv ${VIRTUAL_ENV}
 

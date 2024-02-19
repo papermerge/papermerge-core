@@ -3,8 +3,7 @@ from typing import Literal
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
-from pydantic import (BaseModel, ConfigDict, FieldValidationInfo,
-                      field_validator)
+from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
 
 from papermerge.core.constants import (DEFAULT_TAG_BG_COLOR,
                                        DEFAULT_TAG_FG_COLOR)
@@ -46,7 +45,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator("pages", mode='before')
     @classmethod
-    def get_all_from_manager(cls, value, info: FieldValidationInfo) -> object:
+    def get_all_from_manager(cls, value, info: ValidationInfo) -> object:
         if isinstance(value, BaseManager):
             try:
                 return list(value.all())

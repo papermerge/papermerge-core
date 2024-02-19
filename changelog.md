@@ -2,6 +2,17 @@
 
 <!-- towncrier release notes start -->
 
+## [3.1.0] - 2024-02-xxx
+
+### Adds
+
+- Support for OpenLDAP (RFC 4510) authentication
+
+### Fixes
+
+- Getting '500 - Internal Server Error' when patching node tags [Issue#326](https://github.com/papermerge/papermerge-core/issues/326)
+
+
 ## [3.0.3] - 2024-02-01
 
 ### Fixes

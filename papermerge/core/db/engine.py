@@ -1,5 +1,6 @@
 import os
 
+from django.conf import settings
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.pool import NullPool
 
@@ -8,6 +9,19 @@ SQLALCHEMY_DATABASE_URL = os.environ.get(
     'sqlite:////db/db.sqlite3'
 )
 connect_args = {}
+
+if getattr(settings, 'TESTING', False):
+    # If we are in testing runtime
+    # then use same db as django tests, i.e. use same as:
+    # DATABASES = { # Django's DATABASES config
+    #    'default': {
+    #        'ENGINE': 'django.db.backends.sqlite3',
+    #        'TEST': {
+    #            'NAME': TEST_ROOT / 'test.db'
+    #        }
+    #    }
+    # }
+    SQLALCHEMY_DATABASE_URL = f'sqlite:///{settings.TEST_ROOT}/test.db'
 
 if SQLALCHEMY_DATABASE_URL.startswith('sqlite'):
     # sqlite specific connection args

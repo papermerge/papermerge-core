@@ -4,7 +4,7 @@ from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
 from django.db.models.manager import BaseManager
-from pydantic import (BaseModel, ConfigDict, Field, FieldValidationInfo,
+from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
                       field_validator)
 from typing_extensions import Annotated
 
@@ -31,12 +31,12 @@ class Page(BaseModel):
 
     @field_validator("svg_url", mode='before')
     @classmethod
-    def svg_url_value(cls, value, info: FieldValidationInfo) -> str:
+    def svg_url_value(cls, value, info: ValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/svg"
 
     @field_validator("jpg_url", mode='before')
     @classmethod
-    def jpg_url_value(cls, value, info: FieldValidationInfo) -> str:
+    def jpg_url_value(cls, value, info: ValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/jpg"
 
     # Config
@@ -63,7 +63,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator("pages", mode='before')
     @classmethod
-    def get_all_from_manager(cls, value, info: FieldValidationInfo) -> object:
+    def get_all_from_manager(cls, value, info: ValidationInfo) -> object:
         if isinstance(value, BaseManager):
             try:
                 return list(value.all())

@@ -11,8 +11,8 @@ SQLALCHEMY_DATABASE_URL = os.environ.get(
 connect_args = {}
 
 if getattr(settings, 'TESTING', False):
-    #  i.e. we are in running tests mode
-    # then use same DATABASE as django tests:
+    # If we are in testing runtime
+    # then use same db as django tests, i.e. use same as:
     # DATABASES = { # Django's DATABASES config
     #    'default': {
     #        'ENGINE': 'django.db.backends.sqlite3',

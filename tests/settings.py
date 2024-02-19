@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from configula import Configula
 
@@ -13,6 +14,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 PAPERMERGE_CREATE_SPECIAL_FOLDERS = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+TEST_ROOT = Path(__file__).parent
 
 REDIS_URL = config.get('redis', 'url', default='redis://localhost:6379/0')
 NOTIFICATION_URL = 'memory://localhost/'
@@ -36,6 +38,9 @@ ROOT_URLCONF = 'tests.urls'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
+        'TEST': {
+            'NAME': TEST_ROOT / 'test.db'
+        }
     }
 }
 

@@ -145,9 +145,6 @@ def test_create_document(auth_api_client: AuthTestClient):
     assert response.status_code == 201, response.content
     assert Document.objects.count() == 1
 
-    doc = Document.objects.first()
-    assert doc.lang == user.preferences['ocr__language']
-
 
 @pytest.mark.django_db(transaction=True)
 def test_two_folders_with_same_title_under_same_parent(

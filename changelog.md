@@ -11,6 +11,7 @@
 ### Fixes
 
 - Getting '500 - Internal Server Error' when patching node tags [Issue#326](https://github.com/papermerge/papermerge-core/issues/326)
+- papermerge-cli import option --delete without any function [Issue#592](https://github.com/ciur/papermerge/issues/592)
 
 
 ## [3.0.3] - 2024-02-01

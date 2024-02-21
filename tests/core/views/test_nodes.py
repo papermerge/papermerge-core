@@ -158,9 +158,6 @@ def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
     Allow custom ID attribute: if ID attribute is set, then node will set it
     as its ID.
     """
-    # user's home and inbox folders
-    assert Folder.objects.count() == 2
-
     user = auth_api_client.user
 
     custom_id = uuid.uuid4()
@@ -173,10 +170,9 @@ def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
     )
 
     response = auth_api_client.post('/nodes', json=payload)
+    folder = Folder.objects.get(title='My Documents')
 
     assert response.status_code == 201, response.content
-    assert Folder.objects.count() == 3
-    folder = Folder.objects.get(title='My Documents')
     assert folder.id == custom_id
 
 

@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import pytest
 from django.urls import reverse
@@ -121,6 +122,58 @@ class NodesViewTestCase(TestCase):
         )
 
         assert response.status_code == 200, response.data
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_document_with_custom_id(auth_api_client: AuthTestClient):
+    """
+    Allow custom ID attribute: if ID attribute is set, then node will set it
+    as its ID.
+    """
+    assert Document.objects.count() == 0
+
+    user = auth_api_client.user
+
+    custom_id = uuid.uuid4()
+
+    payload = dict(
+        id=str(custom_id),
+        ctype='document',
+        # "lang" attribute is not set
+        title='doc1.pdf',
+        parent_id=str(user.home_folder.pk)
+    )
+
+    response = auth_api_client.post('/nodes', json=payload)
+
+    assert response.status_code == 201, response.content
+    assert Document.objects.count() == 1
+    doc = Document.objects.first()
+    assert doc.id == custom_id
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
+    """
+    Allow custom ID attribute: if ID attribute is set, then node will set it
+    as its ID.
+    """
+    user = auth_api_client.user
+
+    custom_id = uuid.uuid4()
+
+    payload = dict(
+        id=str(custom_id),
+        ctype='folder',
+        title='My Documents',
+        parent_id=str(user.home_folder.pk)
+    )
+
+    response = auth_api_client.post('/nodes', json=payload)
+    folder = Folder.objects.get(title='My Documents')
+
+    assert response.status_code == 201, response.content
+    assert folder.id == custom_id
 
 
 @pytest.mark.django_db(transaction=True)

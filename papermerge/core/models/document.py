@@ -103,14 +103,19 @@ class DocumentManager(models.Manager):
         page_count=0,
         file_name=None,
         parent=None,
+        id=None,
         **kwargs
     ):
-        doc = Document(
+        attrs = dict(
             title=title,
             lang=lang,
             parent=parent,
             **kwargs
         )
+        if id is not None:
+            attrs['id'] = id
+
+        doc = Document(**attrs)
         doc.save()
 
         document_version = DocumentVersion(

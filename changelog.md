@@ -7,6 +7,7 @@
 ### Adds
 
 - Support for OpenLDAP (RFC 4510) authentication
+- Support for node's custom IDs [Issue#325](https://github.com/papermerge/papermerge-core/issues/325)
 
 ### Fixes
 

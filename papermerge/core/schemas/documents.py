@@ -126,6 +126,9 @@ class Document(BaseModel):
 
 
 class CreateDocument(BaseModel):
+    # UUID may be present to allow custom IDs
+    # See https://github.com/papermerge/papermerge-core/issues/325
+    id: UUID | None = None
     title: str
     ctype: Literal["document"]
     parent_id: UUID | None

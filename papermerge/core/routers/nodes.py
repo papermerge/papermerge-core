@@ -82,11 +82,15 @@ def create_node(
 
     try:
         if pynode.ctype == "folder":
-            node = Folder.objects.create(
+            attrs = dict(
                 title=pynode.title,
                 user_id=user.id,
                 parent_id=pynode.parent_id
             )
+            if pynode.id:
+                attrs['id'] = pynode.id
+
+            node = Folder.objects.create(**attrs)
             klass = PyFolder
         else:
             # if user does not specify document's language, get that
@@ -94,7 +98,7 @@ def create_node(
             if pynode.lang is None:
                 pynode.lang = settings.OCR__DEFAULT_LANGUAGE
 
-            node = Document.objects.create_document(
+            attrs = dict(
                 title=pynode.title,
                 lang=pynode.lang,
                 user_id=user.id,
@@ -103,6 +107,10 @@ def create_node(
                 page_count=0,
                 file_name=pynode.title
             )
+            if pynode.id:
+                attrs['id'] = pynode.id
+
+            node = Document.objects.create_document(**attrs)
             klass = PyDocument
     except IntegrityError:
         raise HTTPException(

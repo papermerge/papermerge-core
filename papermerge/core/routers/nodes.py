@@ -79,7 +79,16 @@ def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
     user: schemas.User = Depends(get_current_user)
 ) -> PyFolder | PyDocument:
+    """Creates a node
 
+    Node's `ctype` may be either `folder` or `document`.
+    Optionally you may pass ID attribute. If ID is present and has
+    non-emtpy UUID value, then newly create node will be assigned this
+    custom ID.
+    If node has `parent_id` empty then node will not be accessible to user.
+    The only nodes with `parent_id` set to empty value are "user custom folders"
+    like Home and Inbox.
+    """
     try:
         if pynode.ctype == "folder":
             attrs = dict(

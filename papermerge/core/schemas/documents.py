@@ -135,6 +135,18 @@ class CreateDocument(BaseModel):
     lang: str | None = None
     file_name: str | None = None
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "title": "invoice.pdf",
+                    "ctype": "document",
+                    "parent_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                }
+            ]
+        }
+    }
+
 
 class Thumbnail(BaseModel):
     url: str

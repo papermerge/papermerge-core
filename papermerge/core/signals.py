@@ -212,6 +212,11 @@ def receiver_document_post_upload(
     """
     doc_ver = document_version
     doc = document_version.document
+
+    if not doc.ocr:
+        logger.info(f"Skipping OCR for doc={doc} as doc.ocr=False")
+        return
+
     user = doc.user
 
     logger.debug(

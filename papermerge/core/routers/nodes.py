@@ -114,6 +114,7 @@ def create_node(
                 parent_id=pynode.parent_id,
                 size=0,
                 page_count=0,
+                ocr=pynode.ocr,
                 file_name=pynode.title
             )
             if pynode.id:

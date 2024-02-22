@@ -5,23 +5,26 @@ import type { CreatedNodesType, NodeType } from 'types';
 type UploaderArgs = {
   files: FileList;
   node_id: string;
+  skip_ocr: boolean;
 }
 
 type CreateDocumentType = {
   title: string;
   parent_id: string;
   ctype: 'document';
+  ocr: boolean;
 }
 
 
-async function uploader({files, node_id}: UploaderArgs): Promise<CreatedNodesType> {
+async function uploader({files, node_id, skip_ocr}: UploaderArgs): Promise<CreatedNodesType> {
   let bulk_create_docs: any = [];
 
   Array.from(files, (file) => {
     let data: CreateDocumentType = {
       title: file.name,
       parent_id: node_id,
-      ctype: 'document'
+      ctype: 'document',
+      ocr: !skip_ocr
     }
 
     bulk_create_docs.push(

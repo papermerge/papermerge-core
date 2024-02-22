@@ -557,7 +557,7 @@ function Commander({
             onEditTagsClick={onEditTagsClick}
             onCreatedNodesByUpload={onCreatedNodesByUpload}
             selected_nodes={selected_nodes}
-            node_id={node_id} />
+            target={nodes!.data!.parent} />
 
             <div className="d-flex align-items-center">
               <SortDropdown

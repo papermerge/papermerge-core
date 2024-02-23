@@ -6,6 +6,7 @@
 
 ### Adds
 
+- Support of OAuth2 authentication with Google and GitHub providers
 - Support for OpenLDAP (RFC 4510) authentication
 - Support for node's custom IDs [Issue#325](https://github.com/papermerge/papermerge-core/issues/325)
 - Exclude document from OCR [Issue#598](https://github.com/ciur/papermerge/issues/598)

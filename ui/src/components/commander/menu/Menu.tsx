@@ -1,7 +1,7 @@
 import UploadButton from './UploadButton';
 import NewFolder from './NewFolder';
 
-import type { CreatedNodesType, NodeType } from 'types';
+import type { CreatedNodesType, FolderType, NodeType } from 'types';
 import DeleteNodes from './DeleteNodes';
 import RenameNodes from './RenameNode';
 import EditTags from './EditTags';
@@ -14,7 +14,7 @@ type Args = {
   onEditTagsClick: () => void;
   onCreatedNodesByUpload: (created_nodes: CreatedNodesType) => void;
   selected_nodes: Array<string>;
-  node_id: string; // current node id
+  target: FolderType; // current node id
 }
 
 function Menu({
@@ -24,10 +24,10 @@ function Menu({
   onEditTagsClick,
   onCreatedNodesByUpload,
   selected_nodes,
-  node_id
+  target
 }: Args) {
 
-  const upload = <UploadButton node_id={node_id} onCreatedNodesByUpload={onCreatedNodesByUpload} />;
+  const upload = <UploadButton target={target} onCreatedNodesByUpload={onCreatedNodesByUpload} />;
   const new_folder = <NewFolder onClick={onNewFolderClick} />;
   const delete_nodes = <DeleteNodes onClick={onDeleteNodesClick} />;
   const rename_node = <RenameNodes onClick={onRenameClick} />;

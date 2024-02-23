@@ -134,6 +134,10 @@ class CreateDocument(BaseModel):
     parent_id: UUID | None
     lang: str | None = None
     file_name: str | None = None
+    # Will OCR be triggered immediately?
+    # True: means, yes, trigger OCR after upload
+    # False: means, skip OCR
+    ocr: bool = True
 
     model_config = {
         "json_schema_extra": {

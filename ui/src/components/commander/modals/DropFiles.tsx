@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import Form from 'react-bootstrap/Form';
+
 import { MODALS } from 'cconstants';
 import GenericModal from 'components/modals/Generic';
 import { uploader } from 'utils/uploader';
@@ -29,10 +32,19 @@ const DropFilesModal = ({
     files from some folder - it does not make any sense for the upload dialog to
     be open for until all those 200 files get uploaded.
   */
+  const [skipOCR, setSkipOCR] = useState<boolean>(false);
+
+  const onLocalCheck = () => {
+    let new_checked_value = !skipOCR;
+
+    setSkipOCR(new_checked_value);
+  }
+
   const handleSubmit = async () => {
     uploader({
       files: source_files,
-      node_id: target.id
+      node_id: target.id,
+      skip_ocr: skipOCR
     })
     .then(
       (drop_files: CreatedNodesType) => onOK(drop_files)
@@ -56,6 +68,12 @@ const DropFilesModal = ({
         Are you sure you want to upload <span className='text-primary'>
           {source_titles.join(', ')}
         </span> to <span className='text-success'>{target_title}</span>?
+        <p className='pt-3'>
+          <Form.Check
+            onChange={onLocalCheck}
+            type="checkbox"
+            label={`Skip OCR`} />
+        </p>
     </GenericModal>
   );
 }

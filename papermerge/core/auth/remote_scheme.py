@@ -25,9 +25,9 @@ class RemoteUserScheme:
             'Remote-Email'
         )
         username = request.headers.get(user_header_name)
-        groups = request.headers.get(groups_header_name)
-        name = request.headers.get(name_header_name)
-        email = request.headers.get(email_header_name)
+        groups = request.headers.get(groups_header_name, '')
+        name = request.headers.get(name_header_name, '')
+        email = request.headers.get(email_header_name, '')
 
         if not username:
             return None

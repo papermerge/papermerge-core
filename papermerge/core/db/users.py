@@ -4,6 +4,7 @@ from uuid import UUID
 
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Engine, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
@@ -32,7 +33,10 @@ def get_user(
         params = {"username": user_id_or_username}
 
     with Session(engine) as session:
-        db_user = session.scalars(stmt, params).one()
+        try:
+            db_user = session.scalars(stmt, params).one()
+        except NoResultFound:
+            raise UserNotFound()
 
         if db_user is None:
             raise UserNotFound(

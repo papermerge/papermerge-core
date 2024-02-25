@@ -9,7 +9,7 @@ class RemoteUser(BaseModel):
     username: str
     email: str = ''
     name: str = ''
-    groups: list[str] = ''
+    groups: list[str] = []
 
 
 class User(BaseModel):

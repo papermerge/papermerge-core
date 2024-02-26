@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+
+## [3.2] - 2024-xx-xx
+
+### Adds
+
+- Support for remote user authentication
+
 ## [3.1] - 2024-02-23
 
 ### Adds

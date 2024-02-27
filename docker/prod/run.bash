@@ -61,6 +61,7 @@ case $CMD in
     exec_init
     VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py index_schema apply
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
+    roco > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
     ;;
   worker)

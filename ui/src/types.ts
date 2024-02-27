@@ -1,9 +1,6 @@
 import React from 'react';
 
-export type DefaultHeaderType = {
-  'Authorization': string,
-  'Content-Type': string;
-}
+export type DefaultHeaderType = Record<string, string>
 
 export type ColoredTagType = {
   name: string;

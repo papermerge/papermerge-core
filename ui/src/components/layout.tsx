@@ -7,14 +7,11 @@ import Sidebar from './sidebar/sidebar';
 import type { AppContentBlockEnum, State, User } from 'types';
 import { ToastProvider } from 'components/toasts/ToastsProvider';
 import SessionEnd from './SessionEnded';
+import { get_default_headers, fetcher_post } from 'utils/fetcher';
 
 
 const fetcher = (url:string) => {
-  const token = Cookies.get('access_token');
-  const headers = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
+  const headers = get_default_headers();
 
   return fetch(url, {headers: headers}).then(res => res.json());
 }

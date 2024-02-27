@@ -24,6 +24,7 @@ function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderTy
       'Remote-Groups': remote_groups || '',
       'Remote-Email': remote_email || '',
       'Remote-Name': remote_name || '',
+      'Content-Type': 'application/json'
     }
   } else {
     headers = {

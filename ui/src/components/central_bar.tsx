@@ -4,6 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import styles from './layout.module.css';
 import Search from 'components/search/search';
 import about from 'components/modals/About';
+import { is_remote_user_enabled, get_runtime_config } from 'runtime_config';
 
 
 type Args = {
@@ -20,8 +21,18 @@ export default function CentralBar({
 
   const onSignOut = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    Cookies.remove('access_token');
-    window.location.reload();
+    if (is_remote_user_enabled()) {
+      const runtime_config = get_runtime_config();
+      const logout_endpoint = runtime_config?.remote_user.logout_endpoint;
+      if (logout_endpoint) {
+        window.location.href = logout_endpoint;
+      } else {
+        console.warn("Remote user: logout endpoint is empty")
+      }
+    } else {
+      Cookies.remove('access_token');
+      window.location.reload();
+    }
   }
 
   const onAbout = (e: React.MouseEvent<HTMLElement>) => {

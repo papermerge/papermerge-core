@@ -1,9 +1,6 @@
 import React from 'react';
 
-export type DefaultHeaderType = {
-  'Authorization': string,
-  'Content-Type': string;
-}
+export type DefaultHeaderType = Record<string, string>
 
 export type ColoredTagType = {
   name: string;
@@ -298,4 +295,26 @@ export type OCRLangType = {
 export type Coord = {
   x: number;
   y: number;
+}
+
+export type RemoteUserHeaderName = {
+  remote_user: string;
+  remote_groups: string;
+  remote_email: string;
+  remote_name: string;
+}
+
+
+export type RuntimeConfig = {
+  remote_user: {
+    headers_name: RemoteUserHeaderName;
+    logout_endpoint: string;
+  }
+}
+
+
+declare global {
+  interface Window {
+    __PAPERMERGE_RUNTIME_CONFIG__: RuntimeConfig;
+  }
 }

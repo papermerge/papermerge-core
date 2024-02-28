@@ -4,6 +4,14 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
+class RemoteUser(BaseModel):
+    """User model extracted from PAPERMERGE__AUTH__REMOTE_xyz headers"""
+    username: str
+    email: str = ''
+    name: str = ''
+    groups: list[str] = []
+
+
 class User(BaseModel):
     id: UUID | str
     username: str

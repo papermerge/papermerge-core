@@ -4,15 +4,34 @@ import type { DefaultHeaderType } from 'types';
 
 
 const COOKIE_NAME = 'access_token';
+const COOKIE_REMOTE_USER = 'remote_user';
+const COOKIE_REMOTE_GROUPS = 'remote_groups';
+const COOKIE_REMOTE_EMAIL = 'remote_email';
+const COOKIE_REMOTE_NAME = 'remote_name';
 
 function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderType {
   const token = Cookies.get(cookie_name);
+  const remote_user = Cookies.get(COOKIE_REMOTE_USER);
+  const remote_groups = Cookies.get(COOKIE_REMOTE_GROUPS);
+  const remote_email = Cookies.get(COOKIE_REMOTE_EMAIL);
+  const remote_name = Cookies.get(COOKIE_REMOTE_NAME);
+
   let headers;
 
-  headers = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
+  if (remote_user) {
+    headers = {
+      'Remote-User': remote_user,
+      'Remote-Groups': remote_groups || '',
+      'Remote-Email': remote_email || '',
+      'Remote-Name': remote_name || '',
+      'Content-Type': 'application/json'
+    }
+  } else {
+    headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
 
   return headers;
 }

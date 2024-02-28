@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm
 
-RUN pip install --upgrade poetry roco==0.2.0
+RUN pip install --upgrade poetry roco==0.3.0
 
 RUN python -m venv ${VIRTUAL_ENV}
 
@@ -49,8 +49,8 @@ WORKDIR ${CORE_APP}
 RUN poetry install --no-root -vvv
 
 COPY docker/prod/run.bash /run.bash
-COPY docker/prod/supervisord.conf /etc/
-COPY docker/prod/nginx.conf /etc/nginx/nginx.conf
+COPY docker/prod/bundles/supervisor/* /etc/papermerge/
+COPY docker/prod/bundles/nginx/* /etc/nginx/
 COPY docker/prod/logging.yml ${CORE_APP}/logging.yml
 COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/prod/config ${CORE_APP}/config

@@ -7,7 +7,7 @@ RUN npm install
 RUN npm run build
 
 FROM papermerge/tivoli:0.4.4 as token_validator
-FROM papermerge/auth-server:0.7.0 as auth_server
+FROM papermerge/auth-server:0.8.0 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app
@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm
 
-RUN pip install --upgrade poetry roco==0.3.0
+RUN pip install --upgrade poetry roco==0.4.1
 
 RUN python -m venv ${VIRTUAL_ENV}
 

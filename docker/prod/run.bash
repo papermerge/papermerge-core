@@ -30,8 +30,7 @@ exec_index_schema_apply() {
 exec_init() {
   VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry install
   exec_migrate
-  if [[ -z "${PAPERMERGE__AUTH__REMOTE}" ]]; then
-    # authenticate using internal auth server
+  if [[ ! -z "${PAPERMERGE__AUTH__USERNAME}" && ! -z "${PAPERMERGE__AUTH__PASSWORD}" ]]; then
     exec_createsuperuser
   fi
 }

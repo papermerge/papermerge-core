@@ -1,11 +1,12 @@
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 
 from papermerge.core import schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Tag
 
 from .paginator import PaginatorGeneric, paginate
@@ -22,8 +23,11 @@ logger = logging.getLogger(__name__)
 @router.get("/", response_model=PaginatorGeneric[schemas.Tag])
 @paginate
 def retrieve_tags(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_VIEW])
+    ],
     params: CommonQueryParams = Depends(),
-    user: schemas.User = Depends(get_current_user)
 ):
     """Retrieves current user tags"""
     order_by = ['name', ]
@@ -41,7 +45,10 @@ def retrieve_tags(
 @router.post("/", status_code=201)
 def create_tag(
     pytag: schemas.CreateTag,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_CREATE])
+    ],
 ) -> schemas.Tag:
     """Creates user tag"""
     try:
@@ -58,7 +65,10 @@ def create_tag(
 @router.delete("/{tag_id}", status_code=204)
 def delete_tag(
     tag_id: UUID,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_DELETE])
+    ],
 ) -> None:
     """Deletes user tag"""
     try:
@@ -74,7 +84,10 @@ def delete_tag(
 def update_tag(
     tag_id: UUID,
     tag: schemas.UpdateTag,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_UPDATE])
+    ],
 ) -> schemas.Tag:
     """Updates user tag"""
 

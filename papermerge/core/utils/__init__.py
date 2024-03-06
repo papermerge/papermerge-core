@@ -2,15 +2,11 @@ import functools
 import io
 import logging
 import os
-import re
 import time
 from collections import abc, namedtuple
-from datetime import datetime
 from typing import Optional
 
 from django.conf import settings
-from django.urls import reverse
-from django.utils.html import escape, format_html
 from pikepdf import Pdf
 
 from papermerge.core.lib.path import PagePath
@@ -20,78 +16,7 @@ from papermerge.core.types import DocumentVersion
 logger = logging.getLogger(__name__)
 
 
-def date_2int(kv_format, str_value):
-    # maps PAPERMERGE_METADATA_DATE_FORMATS to
-    # https://docs.python.org/3.8/library/datetime.html#strftime-and-strptime-format-codes
-
-    if not str_value:
-        return 0
-
-    format_map = {
-        'dd.mm.yy': '%d.%m.%y',
-        'dd.mm.yyyy': '%d.%m.%Y',
-        'dd.M.yyyy': '%d.%B.%Y',
-        'month': '%B'
-    }
-    try:
-        _date_instance = datetime.strptime(
-            str_value, format_map[kv_format]
-        )
-    except Exception as e:
-        # this is expected because of automated
-        # extraction of metadata may fail.
-        logger.debug(
-            f"While converting date user format {e}"
-        )
-        return 0
-
-    return _date_instance.timestamp()
-
-
-def money_2int(kv_format, str_value):
-    return number_2int(kv_format, str_value)
-
-
-def number_2int(kv_format, str_value):
-    """
-    kv_format for number is usually something like this:
-
-        dddd
-        d,ddd
-        d.ddd
-
-    So converting to an integer means just remove from string
-    non-numeric characters and cast remaining str to integer.
-    """
-    if str_value:
-        line = re.sub(r'[\,\.]', '', str_value)
-        return line
-
-    return 0
-
-
-def node_tag(node):
-
-    node_url = reverse("core:node", args=(node.id,))
-    tag = format_html(
-        "<a href='{}'>{}</a>",
-        node_url,
-        node.title
-    )
-
-    return tag
-
-
-def document_tag(node):
-
-    node_url = reverse("core:document", args=(node.id,))
-    tag = format_html(
-        "<a href='{}'>{}</a>",
-        node_url,
-        node.title
-    )
-
-    return tag
+__all__ = ('docstring_parameter')
 
 
 class Timer:
@@ -217,52 +142,6 @@ def clock(func):
         return result
 
     return inner
-
-
-def sanitize_kvstore(kvstore_dict):
-    """
-    Creates a sanitized dictionary.
-
-    Sanitizied dictionary contains only allowed keys and escaped values.
-    """
-    allowed_keys = [
-        'id',
-        'key',
-        'value',
-        'kv_type',
-        'kv_format',
-        'kv_inherited',
-    ]
-
-    sanitized_kvstore_dict = {}
-
-    for allowed_key in allowed_keys:
-        if allowed_key in kvstore_dict.keys():
-            value = kvstore_dict.get(allowed_key, None)
-            if isinstance(value, bool):
-                allowed_value = value
-            else:
-                allowed_value = escape(kvstore_dict.get(allowed_key, None))
-
-            sanitized_kvstore_dict[allowed_key] = allowed_value
-
-    return sanitized_kvstore_dict
-
-
-def sanitize_kvstore_list(kvstore_list):
-    """
-    Creates a new list of sanitized dictionaries.
-
-    Sanitizied dictionary contains only allowed keys and escaped values.
-    """
-    if not isinstance(kvstore_list, list):
-        raise ValueError("Expects list type as input")
-
-    new_kvstore_list = [
-        sanitize_kvstore(item) for item in kvstore_list
-    ]
-
-    return new_kvstore_list
 
 
 PageRecycleMapItem = namedtuple(

@@ -49,6 +49,19 @@ def get_user(
     return model_user
 
 
+def get_users(
+    engine: Engine
+) -> list[schemas.User]:
+    with Session(engine) as session:
+        db_users = session.scalars(select(User))
+        model_users = [
+            schemas.User.model_validate(db_user)
+            for db_user in db_users
+        ]
+
+    return model_users
+
+
 def create_user(
     engine: Engine,
     username: str,

@@ -13,12 +13,13 @@ from papermerge.core.lib.path import PagePath
 from papermerge.core.storage import abs_path, get_storage_instance
 from papermerge.core.types import DocumentVersion
 
+from .base64 import decode, encode
 from .decorators import docstring_parameter
 
 logger = logging.getLogger(__name__)
 
 
-__all__ = ('docstring_parameter',)
+__all__ = ('docstring_parameter', 'decode', 'encode')
 
 
 class Timer:

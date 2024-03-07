@@ -1,5 +1,7 @@
+import logging
 import os
 
+import django
 from django.conf import settings
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.pool import NullPool
@@ -9,6 +11,10 @@ SQLALCHEMY_DATABASE_URL = os.environ.get(
     'sqlite:////db/db.sqlite3'
 )
 connect_args = {}
+logger = logging.getLogger(__name__)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings'
+django.setup()
 
 if getattr(settings, 'TESTING', False):
     # If we are in testing runtime
@@ -22,6 +28,7 @@ if getattr(settings, 'TESTING', False):
     #    }
     # }
     SQLALCHEMY_DATABASE_URL = f'sqlite:///{settings.TEST_ROOT}/test.db'
+
 
 if SQLALCHEMY_DATABASE_URL.startswith('sqlite'):
     # sqlite specific connection args

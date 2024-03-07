@@ -170,3 +170,11 @@ class ColoredTag(Base):
     tag: Mapped["Tag"] = relationship(
         primaryjoin="Tag.id == ColoredTag.tag_id"
     )
+
+
+class Permission(Base):
+    __tablename__ = "auth_permission"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    codename: Mapped[str]

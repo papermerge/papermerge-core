@@ -99,7 +99,8 @@ server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --r
 
 [tool.poetry.scripts]
 token = 'papermerge.core.cli.token:app'
-ls = 'papermerge.core.cli.ls:app'
+users = 'papermerge.core.cli.users:app'
+perms = 'papermerge.core.cli.perms:app'
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]

@@ -1,3 +1,9 @@
+NODE_CREATE = 'node.create'
+NODE_VIEW = 'node.view'
+NODE_UPDATE = 'node.update'
+NODE_DELETE = 'node.delete'
+NODE_MOVE = 'node.move'
+DOCUMENT_UPLOAD = 'document.upload'
 TAG_CREATE = 'tag.create'
 TAG_VIEW = 'tag.view'
 TAG_UPDATE = 'tag.update'
@@ -6,21 +12,26 @@ USER_CREATE = 'user.create'
 USER_VIEW = 'user.view'
 USER_UPDATE = 'user.update'
 USER_DELETE = 'user.delete'
+USER_ME = 'user.me'
 GROUP_CREATE = 'group.create'
 GROUP_VIEW = 'group.view'
 GROUP_UPDATE = 'group.update'
 GROUP_DELETE = 'group.delete'
+TASK_OCR = 'task.ocr'
 
 SCOPES = {
-    "me": "Read information about the current user",
-    "node.view": "View nodes",
-    "node.delete": "Delete nodes",
-    "node.update": "Update nodes",
-    "doc.ocr": "Perform OCR operation of the documents",
+    NODE_CREATE: "Create folders",
+    NODE_VIEW: "View nodes",
+    NODE_UPDATE: "Update nodes",
+    NODE_DELETE: "Delete nodes",
+    NODE_MOVE: "Move nodes",
+    DOCUMENT_UPLOAD: "Upload documents",
+    TASK_OCR: "Perform OCR operation of the documents",
     TAG_CREATE: "Create tags",
     TAG_VIEW: "View tags",
     TAG_UPDATE: "Update tags",
     TAG_DELETE: "Delete tags",
+    USER_ME: "Read information about the current user",
     USER_CREATE: "Create users",
     USER_VIEW: "View users",
     USER_UPDATE: "Update users",

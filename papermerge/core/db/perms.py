@@ -14,7 +14,9 @@ def get_perms(
     db_session: Session
 ) -> list[schemas.Permission]:
     with db_session as session:
-        db_perms = session.scalars(select(models.Permission))
+        db_perms = session.scalars(
+            select(models.Permission).order_by('codename')
+        )
         model_perms = [
             schemas.Permission.model_validate(db_perm)
             for db_perm in db_perms

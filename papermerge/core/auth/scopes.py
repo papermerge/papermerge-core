@@ -19,6 +19,11 @@ GROUP_VIEW = 'group.view'
 GROUP_UPDATE = 'group.update'
 GROUP_DELETE = 'group.delete'
 TASK_OCR = 'task.ocr'
+OCRLANG_VIEW = 'ocrlang.view'
+PAGE_VIEW = 'page.view'
+PAGE_UPDATE = 'page.update'
+PAGE_MOVE = 'page.move'
+PAGE_EXTRACT = 'page.extract'
 
 SCOPES = {
     NODE_CREATE: "Create folders",
@@ -42,4 +47,9 @@ SCOPES = {
     GROUP_VIEW: "View groups",
     GROUP_UPDATE: "Update groups",
     GROUP_DELETE: "Delete groups",
+    OCRLANG_VIEW: "View OCR languages",
+    PAGE_VIEW: "View document page",
+    PAGE_UPDATE: "Update pages e.g. rotate, reorder within the document",
+    PAGE_MOVE: "Move pages from one document to another",
+    PAGE_EXTRACT: "Extract pages",
 }

@@ -180,6 +180,7 @@ export enum AppContentBlockEnum {
    home = "home",
    tags = "tags",
    users = "users",
+   groups = "groups",
    search_results = "search_results"
 }
 

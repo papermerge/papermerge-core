@@ -59,6 +59,11 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
             <i className='bi-people'></i><span className='ms-2'>Users</span>
           </a>
         </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.groups)} className={class_name(AppContentBlockEnum.groups, current)}>
+            <i className='bi-grid'></i><span className='ms-2'>Groups</span>
+          </a>
+        </NavItem>
       </Nav>
     </div>
   );
@@ -91,6 +96,11 @@ function SidebarFolded({onClick, current}: SidebarArgs) {
         <NavItem>
           <a href="#" onClick={() => onClick(AppContentBlockEnum.users)} className={class_name(AppContentBlockEnum.users, current)}>
             <i className='bi-people'></i>
+          </a>
+        </NavItem>
+        <NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.groups)} className={class_name(AppContentBlockEnum.groups, current)}>
+            <i className='bi-grid'></i>
           </a>
         </NavItem>
       </Nav>

@@ -63,6 +63,7 @@ def get_current_user(
         if token_data is not None:
             try:
                 user = db.get_user(engine, token_data.user_id)
+                user.scopes = token_data.scopes
             except db_exc.UserNotFound:
                 raise HTTPException(
                     status_code=401,
@@ -82,6 +83,7 @@ def get_current_user(
                 email=remote_user.email,
                 password='-',
             )
+        # TODO: set `user.scopes` based on `remote_user.groups`
 
     if user is None:
         raise HTTPException(

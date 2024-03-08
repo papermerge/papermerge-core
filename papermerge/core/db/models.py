@@ -178,3 +178,15 @@ class Permission(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     codename: Mapped[str]
+    content_type_id: Mapped[int] = mapped_column(
+        ForeignKey("django_content_type.id")
+    )
+    content_type: Mapped["ContentType"] = relationship()
+
+
+class ContentType(Base):
+    __tablename__ = "django_content_type"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    app_label: Mapped[str]
+    model: Mapped[str]

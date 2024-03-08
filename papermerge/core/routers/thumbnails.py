@@ -1,15 +1,16 @@
 import logging
 import os
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from papermerge.core import db
 from papermerge.core import pathlib as core_pathlib
-from papermerge.core import schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core import schemas, utils
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.pathlib import rel2abs, thumbnail_path
@@ -50,13 +51,20 @@ class JPEGFileResponse(FileResponse):
         }
     }
 )
+@utils.docstring_parameter(scope=scopes.PAGE_VIEW)
 def retrieve_document_thumbnail(
     document_id: uuid.UUID,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+    ],
     size: int = DEFAULT_THUMBNAIL_SIZE,
-    user: schemas.User = Depends(get_current_user),
     engine: db.Engine = Depends(db.get_engine)
 ):
-    """Retrieves thumbnail of the document last version's first page"""
+    """Retrieves thumbnail of the document last version's first page
+
+    Required scope: `{scope}`
+    """
     try:
         doc_ver = db.get_last_doc_ver(
             engine,

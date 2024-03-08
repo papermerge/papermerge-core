@@ -1,11 +1,12 @@
 import logging
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import FileResponse
 
-from papermerge.core import schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core import schemas, utils
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import DocumentVersion
 
 logger = logging.getLogger(__name__)
@@ -22,10 +23,18 @@ class PDFFileResponse(FileResponse):
 
 
 @router.get("/{document_version_id}/download", response_class=PDFFileResponse)
+@utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
 def download_document_version(
     document_version_id: uuid.UUID,
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
+    ]
 ):
+    """Downloads given document version
+
+    Required scope: `{scope}`
+    """
     try:
         doc_ver = DocumentVersion.objects.get(
             id=document_version_id, document__user=user.id

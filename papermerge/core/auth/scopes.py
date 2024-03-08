@@ -4,6 +4,7 @@ NODE_UPDATE = 'node.update'
 NODE_DELETE = 'node.delete'
 NODE_MOVE = 'node.move'
 DOCUMENT_UPLOAD = 'document.upload'
+DOCUMENT_DOWNLOAD = 'document.download'
 TAG_CREATE = 'tag.create'
 TAG_VIEW = 'tag.view'
 TAG_UPDATE = 'tag.update'
@@ -26,6 +27,7 @@ SCOPES = {
     NODE_DELETE: "Delete nodes",
     NODE_MOVE: "Move nodes",
     DOCUMENT_UPLOAD: "Upload documents",
+    DOCUMENT_DOWNLOAD: "Download documents",
     TASK_OCR: "Perform OCR operation of the documents",
     TAG_CREATE: "Create tags",
     TAG_VIEW: "View tags",

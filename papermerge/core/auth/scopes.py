@@ -26,7 +26,7 @@ PAGE_MOVE = 'page.move'
 PAGE_EXTRACT = 'page.extract'
 
 SCOPES = {
-    NODE_CREATE: "Create folders",
+    NODE_CREATE: "Create nodes",
     NODE_VIEW: "View nodes",
     NODE_UPDATE: "Update nodes",
     NODE_DELETE: "Delete nodes",

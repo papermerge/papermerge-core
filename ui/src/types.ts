@@ -293,6 +293,10 @@ export type OCRLangType = {
   [key: string]: string
 }
 
+export type ScopeType = {
+  [key: string]: string
+}
+
 export type Coord = {
   x: number;
   y: number;

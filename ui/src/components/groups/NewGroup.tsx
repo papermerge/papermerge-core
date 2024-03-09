@@ -6,6 +6,7 @@ import Row from 'react-bootstrap/Row';
 import { fetcher_post } from 'utils/fetcher';
 import type {Group, NewGroup, CreatedGroup} from "./types";
 
+import DualSelect from 'components/DualSelect';
 
 type ErrorArgs = {
   message?: string;
@@ -29,13 +30,11 @@ type Args = {
 
 
 export default function NewGroup({onSave, onCancel}: Args) {
+
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
   const [ name, setName ] = useState<string|null>();
-  const [ email, setEmail ] = useState<string|null>();
-  const [ password1, setPassword1 ] = useState<string|null>();
-  const [ password2, setPassword2 ] = useState<string|null>();
 
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.currentTarget.value);
@@ -74,11 +73,14 @@ export default function NewGroup({onSave, onCancel}: Args) {
   return (
     <Form className='users'>
       <Row className="mb-3">
-        <Form.Group as={Col} controlId="formGridUsername">
-          <Form.Label>Username</Form.Label>
-          <Form.Control onChange={onChangeName} placeholder="Username" />
+        <Form.Group as={Col} controlId="formGridName">
+          <Form.Label>Name</Form.Label>
+          <Form.Control onChange={onChangeName} placeholder="Group name" />
         </Form.Group>
+      </Row>
 
+      <Row className='mb-3'>
+        <DualSelect />
       </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">

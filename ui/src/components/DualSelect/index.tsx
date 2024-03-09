@@ -6,6 +6,7 @@ import Stack from 'react-bootstrap/Stack';
 import { useResource } from 'hooks/resource';
 import { ScopeType } from 'types';
 import { Button } from 'react-bootstrap';
+import InputGroup from 'react-bootstrap/InputGroup';
 import "./dual-select.scss";
 
 
@@ -20,7 +21,16 @@ function DualSelect() {
     <Container>
       <Row>
         <Col>
-          <Form.Select className='dual-select' multiple aria-label="Default select example">
+          <Filter />
+        </Col>
+        <Col xs={1}></Col>
+        <Col>
+          <Filter />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Form.Select className='dual-select mt-2' multiple aria-label="Default select example">
             <option value="1">One</option>
             <option value="2">Two</option>
             <option value="3">Three</option>
@@ -35,13 +45,23 @@ function DualSelect() {
            <MoveButtons />
         </Col>
         <Col>
-          <Form.Select className='dual-select' multiple aria-label="Default select example">
+          <Form.Select className='dual-select mt-2' multiple aria-label="Default select example">
             <option value="4">Four</option>
           </Form.Select>
         </Col>
       </Row>
     </Container>
   );
+}
+
+
+function Filter() {
+  return <InputGroup>
+    <InputGroup.Text>
+      <span className='bi bi-search'></span>
+    </InputGroup.Text>
+    <Form.Control />
+  </InputGroup>
 }
 
 

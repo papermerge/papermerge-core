@@ -8,8 +8,8 @@ import { useResource } from 'hooks/resource';
 import { ScopeType } from 'types';
 import { Button } from 'react-bootstrap';
 import InputGroup from 'react-bootstrap/InputGroup';
-import "./dual-select.scss";
 import { useEffect, useState } from 'react';
+import "./dual-select.scss";
 
 
 function DualSelect() {

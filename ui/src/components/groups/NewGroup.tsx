@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_post } from 'utils/fetcher';
 import type {Group, NewGroup, CreatedGroup} from "./types";
+import type { SelectItem } from 'types';
 
 import DualSelect from 'components/DualSelect';
 
@@ -35,9 +36,14 @@ export default function NewGroup({onSave, onCancel}: Args) {
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
   const [ name, setName ] = useState<string|null>();
+  const [scopes, setScopes] = useState<Array<string>>([]);
 
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.currentTarget.value);
+  }
+
+  const onScopesChange = (scopes: Array<SelectItem>) => {
+    setScopes(scopes.map(item => item.key));
   }
 
   const onLocalSubmit = () => {
@@ -48,10 +54,11 @@ export default function NewGroup({onSave, onCancel}: Args) {
 
     const item: NewGroup = {
       name: name!,
+      scopes: scopes
     };
 
     fetcher_post<NewGroup, CreatedGroup>(
-      `/api/users/`, item,
+      `/api/groups/`, item,
       controller.signal
     ).then((new_item: Group) => {
       setSaveInProgress(false);
@@ -80,7 +87,7 @@ export default function NewGroup({onSave, onCancel}: Args) {
       </Row>
 
       <Row className='mb-3'>
-        <DualSelect />
+        <DualSelect onChange={onScopesChange} />
       </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">

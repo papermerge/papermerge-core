@@ -309,7 +309,6 @@ export type RemoteUserHeaderName = {
   remote_name: string;
 }
 
-
 export type RuntimeConfig = {
   remote_user: {
     headers_name: RemoteUserHeaderName;
@@ -317,6 +316,10 @@ export type RuntimeConfig = {
   }
 }
 
+export type SelectItem = {
+  key: string;
+  value: string;
+}
 
 declare global {
   interface Window {

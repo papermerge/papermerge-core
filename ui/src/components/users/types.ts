@@ -29,5 +29,4 @@ export type UserList = {
   items: Array<User>;
 }
 
-
 export type UserView = "list" | "edit" | "new";

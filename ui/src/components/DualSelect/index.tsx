@@ -5,20 +5,27 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import { useResource } from 'hooks/resource';
-import { ScopeType } from 'types';
+import { ScopeType, SelectItem } from 'types';
 import { Button } from 'react-bootstrap';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { useEffect, useState } from 'react';
 import "./dual-select.scss";
 
 
-function DualSelect() {
+type Args = {
+  onChange: (scopes: Array<SelectItem>) => void;
+}
+
+
+function DualSelect({onChange}: Args) {
   const vow = useResource<ScopeType>("/api/scopes/");
   const [allItems, setAllItems] = useState<Array<SelectItem>>([]);
   const [leftPanelItems, setLeftPanelItems] = useState<Array<SelectItem>>([]);
   const [leftPanelSelectedItems, setLeftPanelSelectedItems] = useState<Array<SelectItem>>([]);
   const [rightPanelItems, setRightPanelItems] = useState<Array<SelectItem>>([]);
   const [rightPanelSelectedItems, setRightPanelSelectedItems] = useState<Array<SelectItem>>([]);
+  const [leftFilter, setLeftFilter] = useState<string|null>();
+  const [rightFilter, setRightFilter] = useState<string|null>();
 
   useEffect(() => {
     if (vow.data == null) {
@@ -86,14 +93,14 @@ function DualSelect() {
       }
     }
 
+    const newRightPanelItems = [...rightPanelItems, ...leftPanelSelectedItems].sort(sortItemsFn);
     setLeftPanelItems(
       newLeftItems.sort(sortItemsFn)
     ); // only unselected items
-    setRightPanelItems(
-      [...rightPanelItems, ...leftPanelSelectedItems].sort(sortItemsFn)
-    );
+    setRightPanelItems(newRightPanelItems);
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
+    onChange(newRightPanelItems);
   }
 
   const onMoveAllToRight = () => {
@@ -101,6 +108,7 @@ function DualSelect() {
     setLeftPanelItems([]);
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
+    onChange(allItems);
   }
 
   const onMoveToLeft = () => {
@@ -121,14 +129,16 @@ function DualSelect() {
       }
     }
 
+    const _newRight = newRightItems.sort(sortItemsFn);
     setRightPanelItems(
-      newRightItems.sort(sortItemsFn)
+      _newRight
     ); // only unselected items
     setLeftPanelItems(
       [...leftPanelItems, ...rightPanelSelectedItems].sort(sortItemsFn)
     );
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
+    onChange(_newRight);
   }
 
   const onMoveAllToLeft = () => {
@@ -136,6 +146,23 @@ function DualSelect() {
     setLeftPanelItems(allItems);
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
+    onChange([]);
+  }
+
+  const onLeftFilterChange = (value: string) => {
+    if (!value) {
+      setLeftFilter(null);
+      return;
+    }
+    setLeftFilter(value);
+  }
+
+  const onRightFilterChange = (value: string) => {
+    if (!value) {
+      setRightFilter(null);
+      return;
+    }
+    setRightFilter(value);
   }
 
   if (vow.is_pending) {
@@ -146,17 +173,18 @@ function DualSelect() {
     <Container>
       <Row>
         <Col>
-          <Filter />
+          <Filter onChange={onLeftFilterChange} />
         </Col>
         <Col xs={1}></Col>
         <Col>
-          <Filter />
+          <Filter onChange={onRightFilterChange} />
         </Col>
       </Row>
       <Row>
         <Col>
           <Select
             items={leftPanelItems}
+            filter={leftFilter}
             onChange={onChangeLeft}/>
         </Col>
         <Col xs={1}>
@@ -169,6 +197,7 @@ function DualSelect() {
         <Col>
           <Select
             items={rightPanelItems}
+            filter={rightFilter}
             onChange={onChangeRight} />
         </Col>
       </Row>
@@ -177,12 +206,21 @@ function DualSelect() {
 }
 
 
-function Filter() {
+type FilterArgs = {
+  onChange: (value: string) => void;
+}
+
+function Filter({onChange}: FilterArgs) {
+
+  const onLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+  }
+
   return <InputGroup>
     <InputGroup.Text>
       <span className='bi bi-search'></span>
     </InputGroup.Text>
-    <Form.Control />
+    <Form.Control onChange={onLocalChange} />
   </InputGroup>
 }
 
@@ -216,21 +254,30 @@ function MoveButtons({
   </Stack>
 }
 
-type SelectItem = {
-  key: string;
-  value: string;
-}
-
 type SelectArgs = {
   items: Array<SelectItem>;
+  filter: string | undefined | null;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }
 
 
-function Select({items, onChange}: SelectArgs) {
-  const listItems = items.map(
+function Select({items, filter, onChange}: SelectArgs) {
+  const filteredItems = items.filter(item => {
+    if (!filter) {
+      return true;
+    }
+
+    if (item.value) {
+      return item.value.includes(filter);
+    }
+
+    return true;
+  });
+
+  const listItems = filteredItems.map(
     item => <option key={item.key} value={item.key}>{item.value}</option>
   );
+
 
   return <Form.Select
       className='dual-select mt-2' multiple

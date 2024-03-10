@@ -33,14 +33,7 @@ function DualSelect() {
       });
     }
 
-    selectItems.sort((a: SelectItem, b: SelectItem) => {
-      if (a.key < b.key) {
-        return -1;
-      } else if (a.key > b.key) {
-        return 1;
-      }
-      return 0;
-    });
+    selectItems.sort(sortItemsFn);
     setAllItems(selectItems);
     setLeftPanelItems(selectItems);
   }, [vow.data]);
@@ -61,6 +54,18 @@ function DualSelect() {
   }
 
   const onChangeRight = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const select = e.target;
+    let selectedItems: Array<SelectItem> = [];
+
+    for (const option of select.options) {
+      if (option.selected) {
+        selectedItems.push({
+          key: option.value,
+          value: option.label
+        })
+      }
+    }
+    setRightPanelSelectedItems(selectedItems);
   }
 
   const onMoveToRight = () => {
@@ -81,8 +86,12 @@ function DualSelect() {
       }
     }
 
-    setLeftPanelItems(newLeftItems); // only unselected items
-    setRightPanelItems([...rightPanelItems, ...leftPanelSelectedItems]);
+    setLeftPanelItems(
+      newLeftItems.sort(sortItemsFn)
+    ); // only unselected items
+    setRightPanelItems(
+      [...rightPanelItems, ...leftPanelSelectedItems].sort(sortItemsFn)
+    );
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
   }
@@ -112,8 +121,12 @@ function DualSelect() {
       }
     }
 
-    setRightPanelItems(newRightItems); // only unselected items
-    setLeftPanelItems([...leftPanelItems, ...rightPanelSelectedItems]);
+    setRightPanelItems(
+      newRightItems.sort(sortItemsFn)
+    ); // only unselected items
+    setLeftPanelItems(
+      [...leftPanelItems, ...rightPanelSelectedItems].sort(sortItemsFn)
+    );
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
   }
@@ -224,6 +237,15 @@ function Select({items, onChange}: SelectArgs) {
       onChange={onChange}>
     {listItems}
   </Form.Select>
+}
+
+function sortItemsFn(a: SelectItem, b: SelectItem) {
+  if (a.key < b.key) {
+    return -1;
+  } else if (a.key > b.key) {
+    return 1;
+  }
+  return 0;
 }
 
 export default DualSelect;

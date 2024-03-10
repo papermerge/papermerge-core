@@ -95,6 +95,7 @@ export default function EditGroup({group, onSave, onCancel}: Args) {
 
     const item: NewGroup = {
       name: name,
+      scopes: []
     };
 
     fetcher_patch<NewGroup, CreatedGroup>(

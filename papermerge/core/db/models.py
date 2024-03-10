@@ -184,6 +184,13 @@ class Permission(Base):
     content_type: Mapped["ContentType"] = relationship()
 
 
+class Group(Base):
+    __tablename__ = "auth_group"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+
+
 class ContentType(Base):
     __tablename__ = "django_content_type"
 

@@ -13,7 +13,8 @@ import { useEffect, useState } from 'react';
 
 
 function DualSelect() {
-  const vow = useResource<ScopeType>("/api/scopes/")
+  const vow = useResource<ScopeType>("/api/scopes/");
+  const [allItems, setAllItems] = useState<Array<SelectItem>>([]);
   const [leftPanelItems, setLeftPanelItems] = useState<Array<SelectItem>>([]);
   const [leftPanelSelectedItems, setLeftPanelSelectedItems] = useState<Array<SelectItem>>([]);
   const [rightPanelItems, setRightPanelItems] = useState<Array<SelectItem>>([]);
@@ -40,11 +41,11 @@ function DualSelect() {
       }
       return 0;
     });
-
+    setAllItems(selectItems);
     setLeftPanelItems(selectItems);
   }, [vow.data]);
 
-  const onChangeRight = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const onChangeLeft = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const select = e.target;
     let selectedItems: Array<SelectItem> = [];
 
@@ -56,25 +57,77 @@ function DualSelect() {
         })
       }
     }
-    setRightPanelSelectedItems(selectedItems);
+    setLeftPanelSelectedItems(selectedItems);
+  }
+
+  const onChangeRight = (e: React.ChangeEvent<HTMLSelectElement>) => {
   }
 
   const onMoveToRight = () => {
-  }
+    let newLeftItems: Array<SelectItem> = [];
 
-  const onMoveToLeft = () => {
+    if (leftPanelSelectedItems.length == 0) {
+      return;
+    }
+
+    for (let i = 0; i < leftPanelItems.length; i++) {
+      let selected = leftPanelSelectedItems.find(
+        item => leftPanelItems[i].key == item.key
+      );
+
+      if (!selected) {
+        // panel will contain only items which are not selected
+        newLeftItems.push(leftPanelItems[i]);
+      }
+    }
+
+    setLeftPanelItems(newLeftItems); // only unselected items
+    setRightPanelItems([...rightPanelItems, ...leftPanelSelectedItems]);
+    setLeftPanelSelectedItems([]);
+    setRightPanelSelectedItems([]);
   }
 
   const onMoveAllToRight = () => {
+    setRightPanelItems(allItems);
+    setLeftPanelItems([]);
+    setLeftPanelSelectedItems([]);
+    setRightPanelSelectedItems([]);
+  }
+
+  const onMoveToLeft = () => {
+    let newRightItems: Array<SelectItem> = [];
+
+    if (rightPanelSelectedItems.length == 0) {
+      return;
+    }
+
+    for (let i = 0; i < rightPanelItems.length; i++) {
+      let selected = rightPanelSelectedItems.find(
+        item => rightPanelItems[i].key == item.key
+      );
+
+      if (!selected) {
+        // panel will contain only items which are not selected
+        newRightItems.push(leftPanelItems[i]);
+      }
+    }
+
+    setRightPanelItems(newRightItems); // only unselected items
+    setLeftPanelItems([...leftPanelItems, ...rightPanelSelectedItems]);
+    setLeftPanelSelectedItems([]);
+    setRightPanelSelectedItems([]);
   }
 
   const onMoveAllToLeft = () => {
+    setRightPanelItems([]);
+    setLeftPanelItems(allItems);
+    setLeftPanelSelectedItems([]);
+    setRightPanelSelectedItems([]);
   }
 
   if (vow.is_pending) {
     return <div>Loading...</div> // or some sort of placeholder here
   }
-
 
   return(
     <Container>
@@ -91,7 +144,7 @@ function DualSelect() {
         <Col>
           <Select
             items={leftPanelItems}
-            onChange={onChangeRight}/>
+            onChange={onChangeLeft}/>
         </Col>
         <Col xs={1}>
            <MoveButtons
@@ -101,9 +154,9 @@ function DualSelect() {
             onMoveAllToLeft={onMoveAllToLeft} />
         </Col>
         <Col>
-          <Form.Select className='dual-select mt-2' multiple aria-label="Default select example">
-            <option value="4">Four</option>
-          </Form.Select>
+          <Select
+            items={rightPanelItems}
+            onChange={onChangeRight} />
         </Col>
       </Row>
     </Container>

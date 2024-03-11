@@ -39,6 +39,24 @@ def get_groups(
     return db.get_groups(engine)
 
 
+@router.get("/{group_id}", response_model=schemas.GroupDetails)
+@utils.docstring_parameter(scope=scopes.GROUP_VIEW)
+def get_group(
+    group_id: int,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+    ],
+    engine: db.Engine = Depends(db.get_engine)
+):
+    """Get group details
+
+    Required scope: `{scope}`
+    """
+
+    return db.get_group(engine, group_id=group_id)
+
+
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.GROUP_CREATE)
 def create_group(
@@ -72,27 +90,22 @@ def create_group(
     "/{group_id}",
     status_code=204,
     responses={
-        432: {
-            "description": """Deletion is not possible because there is only
-             one user left""",
-            "content": OPEN_API_GENERIC_JSON_DETAIL
-        },
         404: {
-            "description": """No user with specified UUID found""",
+            "description": """No group with specified ID found""",
             "content": OPEN_API_GENERIC_JSON_DETAIL
         }
     }
 )
 @utils.docstring_parameter(scope=scopes.GROUP_DELETE)
 def delete_group(
-    group_id: UUID,
+    group_id: int,
     user: Annotated[
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
     engine: db.Engine = Depends(db.get_engine)
 ) -> None:
-    """Deletes user
+    """Deletes group
 
     Required scope: `{scope}`
     """

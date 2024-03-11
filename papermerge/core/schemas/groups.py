@@ -9,6 +9,15 @@ class Group(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class GroupDetails(BaseModel):
+    id: int
+    name: str
+    scopes: list[str]
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CreateGroup(BaseModel):
     name: str
     scopes: list[str]

@@ -5,7 +5,8 @@ from .doc_ver import get_doc_ver, get_last_doc_ver
 from .engine import get_engine
 from .exceptions import UserNotFound
 from .folders import get_folder
-from .groups import delete_group, get_group, get_groups, update_group
+from .groups import (create_group, delete_group, get_group, get_groups,
+                     update_group)
 from .nodes import get_paginated_nodes
 from .pages import get_first_page, get_page
 from .perms import get_perms, sync_perms
@@ -31,6 +32,7 @@ __all__ = [
     'UserNotFound',
     'get_group',
     'get_groups',
+    'create_group',
     'update_group',
     'delete_group'
 ]

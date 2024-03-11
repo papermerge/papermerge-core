@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 from .documents import CreateDocument, Document, DocumentVersion, Page
 from .folders import CreateFolder, Folder
-from .groups import CreateGroup, Group, UpdateGroup
+from .groups import CreateGroup, Group, GroupDetails, UpdateGroup
 from .nodes import Node
 from .perms import Permission
 from .scopes import Scopes
@@ -29,8 +29,9 @@ __all__ = [
     'Version',
     'Scopes',
     'Group',
+    'GroupDetails',
     'CreateGroup',
-    'UpdateGroup'
+    'UpdateGroup',
 ]
 
 

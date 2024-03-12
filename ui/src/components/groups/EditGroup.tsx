@@ -5,7 +5,8 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_patch } from 'utils/fetcher';
 import type {Group, NewGroup, CreatedGroup} from "./types";
-
+import { useResource } from 'hooks/resource';
+import { ScopeType, SelectItem } from 'types';
 
 type ErrorArgs = {
   message?: string;
@@ -71,17 +72,19 @@ function Password({
 
 
 type Args = {
-  group: Group;
+  group_id: number;
   onSave: (group: Group) => void;
   onCancel: () => void;
 }
 
 
-export default function EditGroup({group, onSave, onCancel}: Args) {
+export default function EditGroup({group_id, onSave, onCancel}: Args) {
+  const vow = useResource<ScopeType>(`/api/groups/${group_id}`);
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
-  const [ name, setName ] = useState<string>(group.name);
+  const [ name, setName ] = useState<string|null>();
+  const [ scopes, setScopes ] = useState<Array<string>>([]);
 
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.currentTarget.value);
@@ -94,12 +97,12 @@ export default function EditGroup({group, onSave, onCancel}: Args) {
     }
 
     const item: NewGroup = {
-      name: name,
+      name: name!,
       scopes: []
     };
 
     fetcher_patch<NewGroup, CreatedGroup>(
-      `/api/groups/${group.id}`, item,
+      `/api/groups/${group_id}`, item,
       controller.signal
     ).then((new_item: Group) => {
       setSaveInProgress(false);

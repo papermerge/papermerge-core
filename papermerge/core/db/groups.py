@@ -1,7 +1,7 @@
 import logging
 
 from sqlalchemy import Engine, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from papermerge.core import schemas
 from papermerge.core.db import models
@@ -14,10 +14,12 @@ def get_group(
     group_id: int
 ) -> schemas.GroupDetails:
     with Session(engine) as session:
-        stmt = select(models.Group).where(
+        stmt = select(models.Group).options(
+            joinedload(models.Group.permissions)
+        ).where(
             models.Group.id == group_id
         )
-        db_item = session.scalars(stmt).one()
+        db_item = session.scalars(stmt).unique().one()
         db_item.scopes = [p.codename for p in db_item.permissions]
         result = schemas.GroupDetails.model_validate(
             db_item
@@ -77,9 +79,9 @@ def update_group(
             models.Group.id == group_id
         )
         group = session.execute(stmt, params={'id': group_id}).scalars().one()
-        group.name = attrs.name
-        group.permissions = perms
         session.add(group)
+        group.name = attrs.name
+        group.permissions.extend(perms)
         session.commit()
 
 

@@ -27,7 +27,7 @@ const DeleteGroupModal = ({onOK, onCancel, group}: Args) => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_delete_group(`/api/group/${group.id}`, signal);
+    let response = await api_delete_group(`/api/groups/${group.id}`, signal);
     onOK(group.id);
   }
 

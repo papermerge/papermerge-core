@@ -74,7 +74,7 @@ export default function GroupsTable() {
     setPageNumber(page_number);
   }
 
-  const users = group_list.map(
+  const groups = group_list.map(
     i => (
       <GroupRow
         onEdit={onEdit}
@@ -94,14 +94,14 @@ export default function GroupsTable() {
 
     if (found_group) {
       return <EditGroup
-              group={found_group}
+              group_id={found_group.id}
               onSave={onEditSave}
               onCancel={onCancel} />
     }
   }
 
   return (
-    <div className="users">
+    <div className="groups">
       <Button onClick={onNew} variant="success" className="flat my-1">
         <i className="bi bi-plus-lg mx-1" />
         New
@@ -114,7 +114,7 @@ export default function GroupsTable() {
         </tr>
       </thead>
         <tbody>
-          {users}
+          {groups}
         </tbody>
       </Table>
       <Paginator

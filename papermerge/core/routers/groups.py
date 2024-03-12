@@ -1,9 +1,9 @@
 import logging
 from typing import Annotated
-from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
@@ -53,8 +53,14 @@ def get_group(
 
     Required scope: `{scope}`
     """
-
-    return db.get_group(engine, group_id=group_id)
+    try:
+        result = db.get_group(engine, group_id=group_id)
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found"
+        )
+    return result
 
 
 @router.post("/", status_code=201)
@@ -109,27 +115,38 @@ def delete_group(
 
     Required scope: `{scope}`
     """
-    db.delete_group(engine, group_id)
+    try:
+        db.delete_group(engine, group_id)
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found"
+        )
 
 
-@router.patch("/{groups_id}", status_code=200)
+@router.patch("/{group_id}", status_code=200)
 @utils.docstring_parameter(scope=scopes.GROUP_UPDATE)
 def update_group(
-    group_id: UUID,
-    update_group: schemas.UpdateGroup,
+    group_id: int,
+    attrs: schemas.UpdateGroup,
     cur_user: Annotated[
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
     engine: db.Engine = Depends(db.get_engine)
-) -> schemas.Group:
-    """Updates user
+):
+    """Updates group
 
     Required scope: `{scope}`
     """
-
-    db.update_group(
-        engine,
-        id=group_id,
-        group=update_group
-    )
+    try:
+        db.update_group(
+            engine,
+            group_id=group_id,
+            attrs=attrs
+        )
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found"
+        )

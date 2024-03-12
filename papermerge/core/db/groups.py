@@ -1,5 +1,4 @@
 import logging
-from uuid import UUID
 
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
@@ -65,10 +64,23 @@ def create_group(
 
 def update_group(
     engine: Engine,
-    id: UUID,
-    group: schemas.UpdateGroup
+    group_id: int,
+    attrs: schemas.UpdateGroup
 ):
-    pass
+    with Session(engine) as session:
+        stmt = select(models.Permission).where(
+            models.Permission.codename.in_(attrs.scopes)
+        )
+        perms = session.execute(stmt).scalars().all()
+
+        stmt = select(models.Group).where(
+            models.Group.id == group_id
+        )
+        group = session.execute(stmt, params={'id': group_id}).scalars().one()
+        group.name = attrs.name
+        group.permissions = perms
+        session.add(group)
+        session.commit()
 
 
 def delete_group(

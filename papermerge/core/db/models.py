@@ -199,6 +199,7 @@ class Permission(Base):
     groups = relationship(
         "Group",
         secondary=group_permissions_association,
+        back_populates="permissions"
     )
 
 
@@ -209,7 +210,8 @@ class Group(Base):
     name: Mapped[str]
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=group_permissions_association,
-        cascade="all, delete"
+        cascade="all, delete",
+        back_populates="groups"
     )
 
 

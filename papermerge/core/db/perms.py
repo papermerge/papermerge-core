@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import delete, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
@@ -53,10 +54,13 @@ def sync_perms(
         # content type is not used by the application anymore. It is
         # a leftover from Django auth system
         # Here we just add one fake... just to satisfy DB relation integrity
-        content_type = session.scalars(select(models.ContentType).where(
-            models.ContentType.app_label == "core",
-            models.ContentType.model == "scope"
-        )).one()
+        try:
+            content_type = session.scalars(select(models.ContentType).where(
+                models.ContentType.app_label == "core",
+                models.ContentType.model == "scope"
+            )).one()
+        except NoResultFound:
+            content_type = None
 
         if content_type is None:
             content_type = models.ContentType(app_label="core", model="scope")

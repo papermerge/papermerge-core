@@ -20,7 +20,7 @@ export default function GroupsTable() {
   const [num_pages, setNumPages] = useState(0);
   const [page_number, setPageNumber] = useState(1);
 
-  /*
+
   useEffect(() => {
     fetcher(`/api/groups/?page_number=${page_number}&page_size=10`).then((data: GroupList) => {
       setUserList(data.items);
@@ -30,7 +30,7 @@ export default function GroupsTable() {
         setGrouplistLoadingError(error.toString());
     });
   }, [page_number]);
-  */
+
 
   const onNew = () => {
     setView("new");

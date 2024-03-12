@@ -39,13 +39,13 @@ const DeleteGroupModal = ({onOK, onCancel, group}: Args) => {
 
   return (
     <GenericModal
-      modal_title='Delete User'
-      submit_button_title='Yes, delete user and all its documents'
+      modal_title='Delete Group'
+      submit_button_title='Delete Group'
       submit_button_variant='danger'
       onSubmit={handleSubmit}
       onCancel={handleCancel}>
         <p>
-          Are you sure you want to delete user <b>{group.name}</b> and ALL his/her documents?
+          Are you sure you want to delete group <b>{group.name}</b>?
         </p>
     </GenericModal>
   );

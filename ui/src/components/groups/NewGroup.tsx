@@ -87,7 +87,7 @@ export default function NewGroup({onSave, onCancel}: Args) {
       </Row>
 
       <Row className='mb-3'>
-        <DualSelect onChange={onScopesChange} />
+        <DualSelect initialSelect={[]} onChange={onScopesChange} />
       </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">

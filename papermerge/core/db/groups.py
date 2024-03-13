@@ -68,7 +68,7 @@ def update_group(
     engine: Engine,
     group_id: int,
     attrs: schemas.UpdateGroup
-):
+) -> schemas.Group:
     with Session(engine) as session:
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(attrs.scopes)
@@ -81,8 +81,14 @@ def update_group(
         group = session.execute(stmt, params={'id': group_id}).scalars().one()
         session.add(group)
         group.name = attrs.name
-        group.permissions.extend(perms)
+        group.permissions = perms
         session.commit()
+        result = schemas.Group(
+            id=group.id,
+            name=group.name
+        )
+
+    return result
 
 
 def delete_group(

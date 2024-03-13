@@ -124,7 +124,7 @@ def delete_group(
         )
 
 
-@router.patch("/{group_id}", status_code=200)
+@router.patch("/{group_id}", status_code=200, response_model=schemas.Group)
 @utils.docstring_parameter(scope=scopes.GROUP_UPDATE)
 def update_group(
     group_id: int,
@@ -134,13 +134,13 @@ def update_group(
         Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
     engine: db.Engine = Depends(db.get_engine)
-):
+) -> schemas.Group:
     """Updates group
 
     Required scope: `{scope}`
     """
     try:
-        db.update_group(
+        group: schemas.Group = db.update_group(
             engine,
             group_id=group_id,
             attrs=attrs
@@ -150,3 +150,5 @@ def update_group(
             status_code=404,
             detail="Group not found"
         )
+
+    return group

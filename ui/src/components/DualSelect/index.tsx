@@ -13,16 +13,17 @@ import "./dual-select.scss";
 
 
 type Args = {
+  initialSelect: Array<SelectItem>;
   onChange: (scopes: Array<SelectItem>) => void;
 }
 
 
-function DualSelect({onChange}: Args) {
+function DualSelect({onChange, initialSelect}: Args) {
   const vow = useResource<ScopeType>("/api/scopes/");
   const [allItems, setAllItems] = useState<Array<SelectItem>>([]);
   const [leftPanelItems, setLeftPanelItems] = useState<Array<SelectItem>>([]);
   const [leftPanelSelectedItems, setLeftPanelSelectedItems] = useState<Array<SelectItem>>([]);
-  const [rightPanelItems, setRightPanelItems] = useState<Array<SelectItem>>([]);
+  const [rightPanelItems, setRightPanelItems] = useState<Array<SelectItem>>(initialSelect);
   const [rightPanelSelectedItems, setRightPanelSelectedItems] = useState<Array<SelectItem>>([]);
   const [leftFilter, setLeftFilter] = useState<string|null>();
   const [rightFilter, setRightFilter] = useState<string|null>();
@@ -44,6 +45,16 @@ function DualSelect({onChange}: Args) {
     setAllItems(selectItems);
     setLeftPanelItems(selectItems);
   }, [vow.data]);
+
+
+  useEffect(() => {
+    let scopes = initialSelect.map(i => i.key);
+    let new_left = leftPanelItems.filter(i => !scopes.includes(i.key));
+    setRightPanelItems(initialSelect);
+    setLeftPanelItems(new_left);
+    setLeftPanelSelectedItems([]);
+    setRightPanelSelectedItems([]);
+  }, [initialSelect.length, leftPanelItems.length])
 
   const onChangeLeft = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const select = e.target;
@@ -125,7 +136,7 @@ function DualSelect({onChange}: Args) {
 
       if (!selected) {
         // panel will contain only items which are not selected
-        newRightItems.push(leftPanelItems[i]);
+        newRightItems.push(rightPanelItems[i]);
       }
     }
 
@@ -262,7 +273,9 @@ type SelectArgs = {
 
 
 function Select({items, filter, onChange}: SelectArgs) {
-  const filteredItems = items.filter(item => {
+
+  const filteredItems = items.filter(i => i).filter(item => {
+
     if (!filter) {
       return true;
     }
@@ -277,7 +290,6 @@ function Select({items, filter, onChange}: SelectArgs) {
   const listItems = filteredItems.map(
     item => <option key={item.key} value={item.key}>{item.value}</option>
   );
-
 
   return <Form.Select
       className='dual-select mt-2' multiple

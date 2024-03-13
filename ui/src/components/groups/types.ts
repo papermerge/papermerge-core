@@ -2,6 +2,7 @@
 export type Group = {
   id: number;
   name: string;
+  scopes: Array<string>;
 }
 
 export type NewGroup = {

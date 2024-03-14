@@ -166,6 +166,15 @@ function DualSelect({onChange, allItems, initialSelect}: Args) {
   return(
     <Container>
       <Row>
+        <Col className='text-center'>
+          <small className='text-secondary m-0 p-0'>All Items</small>
+        </Col>
+        <Col xs={1}></Col>
+        <Col className='text-center'>
+          <small className='text-secondary m-0 p-0'>Selected Items</small>
+        </Col>
+      </Row>
+      <Row>
         <Col>
           <Filter onChange={onLeftFilterChange} />
         </Col>

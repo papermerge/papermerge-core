@@ -48,13 +48,14 @@ function DualSelect({onChange, initialSelect}: Args) {
 
 
   useEffect(() => {
+    /** set initial value for left panel */
     let scopes = initialSelect.map(i => i.key);
     let new_left = leftPanelItems.filter(i => !scopes.includes(i.key));
     setRightPanelItems(initialSelect);
     setLeftPanelItems(new_left);
     setLeftPanelSelectedItems([]);
     setRightPanelSelectedItems([]);
-  }, [initialSelect.length, leftPanelItems.length])
+  }, [initialSelect.length])
 
   const onChangeLeft = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const select = e.target;
@@ -105,6 +106,7 @@ function DualSelect({onChange, initialSelect}: Args) {
     }
 
     const newRightPanelItems = [...rightPanelItems, ...leftPanelSelectedItems].sort(sortItemsFn);
+
     setLeftPanelItems(
       newLeftItems.sort(sortItemsFn)
     ); // only unselected items
@@ -275,7 +277,6 @@ type SelectArgs = {
 function Select({items, filter, onChange}: SelectArgs) {
 
   const filteredItems = items.filter(i => i).filter(item => {
-
     if (!filter) {
       return true;
     }

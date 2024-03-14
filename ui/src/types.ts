@@ -180,6 +180,7 @@ export enum AppContentBlockEnum {
    home = "home",
    tags = "tags",
    users = "users",
+   groups = "groups",
    search_results = "search_results"
 }
 
@@ -292,6 +293,10 @@ export type OCRLangType = {
   [key: string]: string
 }
 
+export type ScopeType = {
+  [key: string]: string
+}
+
 export type Coord = {
   x: number;
   y: number;
@@ -304,7 +309,6 @@ export type RemoteUserHeaderName = {
   remote_name: string;
 }
 
-
 export type RuntimeConfig = {
   remote_user: {
     headers_name: RemoteUserHeaderName;
@@ -312,6 +316,10 @@ export type RuntimeConfig = {
   }
 }
 
+export type SelectItem = {
+  key: string;
+  value: string;
+}
 
 declare global {
   interface Window {

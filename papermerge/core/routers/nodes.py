@@ -1,15 +1,15 @@
 import logging
-from typing import List, Union
+from typing import Annotated, List, Union
 from uuid import UUID
 
 from celery import current_app
 from django.conf import settings
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import RedirectResponse
 
-from papermerge.core import db, schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core import db, schemas, utils
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
@@ -50,13 +50,20 @@ def get_nodes(
     "/{parent_id}",
     response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
 )
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
     params: CommonQueryParams = Depends(),
-    user: schemas.User = Depends(get_current_user),
     engine: db.Engine = Depends(db.get_engine)
 ):
-    """Returns a list nodes with given parent_id of the current user"""
+    """Returns a list nodes of parent_id
+
+    Required scope: `{scope}`
+    """
     order_by = ['ctype', 'title', 'created_at', 'updated_at']
 
     if params.order_by:
@@ -75,11 +82,20 @@ def get_node(
 
 
 @router.post("/", status_code=201)
+@utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.NODE_CREATE]
+        )
+    ]
 ) -> PyFolder | PyDocument:
     """Creates a node
+
+    Required scope: `{scope}`
 
     Node's `ctype` may be either `folder` or `document`.
     Optionally you may pass ID attribute. If ID is present and has
@@ -132,12 +148,18 @@ def create_node(
 
 
 @router.patch("/{node_id}")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
     node: PyUpdateNode,
-    user: User = Depends(get_current_user)
+    user: Annotated[
+        User,
+        Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ]
 ) -> PyNode:
     """Updates node
+
+    Required scope: `{scope}`
 
     parent_id is optional field. However, when present, parent_id
     should be non empty string (UUID).
@@ -160,11 +182,17 @@ def update_node(
 
 
 @router.delete("/")
+@utils.docstring_parameter(scope=scopes.NODE_DELETE)
 def delete_nodes(
     list_of_uuids: List[UUID],
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=scopes.NODE_DELETE)
+    ]
 ) -> List[UUID]:
     """Deletes nodes with specified UUIDs
+
+    Required scope: `{scope}`
 
     Returns a list of UUIDs of actually deleted nodes.
     In case nothing was deleted (e.g. no nodes with specified UUIDs
@@ -194,11 +222,20 @@ def delete_nodes(
         }
     }
 )
+@utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
     params: PyMoveNode,
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.NODE_MOVE]
+        )
+    ]
 ) -> List[UUID]:
     """Move source nodes into the target node.
+
+    Required scope: `{scope}`
 
     In other words, after successful completion of this action
     all source nodes will have target node as their parent.
@@ -231,13 +268,22 @@ def move_nodes(
 
 
 @router.post("/{node_id}/tags")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def assign_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.NODE_UPDATE]
+        )
+    ]
 ) -> PyNode:
     """
     Assigns given list of tag names to the node.
+
+    Required scope: `{scope}`
 
     All tags not present in given list of tags names
     will be disassociated from the node; in other words upon
@@ -261,13 +307,22 @@ def assign_node_tags(
 
 
 @router.patch("/{node_id}/tags")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.NODE_UPDATE]
+        )
+    ]
 ) -> PyNode:
     """
     Appends given list of tag names to the node.
+
+    Required scope: `{scope}`
 
     Retains all previously associated node tags.
     Yet another way of thinking about http PATCH method is as it
@@ -279,8 +334,9 @@ def update_node_tags(
 
         After following request:
 
-            POST /api/nodes/{N1}/tags/
-            {tags: ['paid']}
+            POST /api/nodes/<N1>/tags/
+
+            tags: ['paid']
 
         Node N1 will have 'invoice', 'important', 'paid' tags.
         Notice that previously associated 'invoice' and 'important' tags
@@ -301,13 +357,22 @@ def update_node_tags(
 
 
 @router.delete("/{node_id}/tags")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def delete_node_tags(
     node_id: UUID,
     tags: List[str],
-    user: schemas.User = Depends(get_current_user)
+        user: Annotated[
+            schemas.User,
+            Security(
+                get_current_user,
+                scopes=[scopes.NODE_UPDATE]
+            )
+        ]
 ) -> PyNode:
     """
     Dissociate given tags the node.
+
+    Required scope: `{scope}`
 
     Tags models are not deleted - just dissociated from the node.
     """

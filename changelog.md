@@ -7,8 +7,9 @@
 
 ### Adds
 
-- Support for remote user authentication
-- OIDC authentication support
+- Authorization (permissions, groups)
+- Remote user authentication
+- OIDC authentication
 
 ## [3.1] - 2024-02-23
 

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from salinic import IndexRW, create_engine
 
+from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.utils import base64
@@ -32,7 +33,8 @@ def auth_api_client(user: User):
     reg_search_routers(app)
 
     middle_part = base64.encode({
-        'user_id': str(user.id)
+        'user_id': str(user.id),
+        'scopes': list(SCOPES.keys())
     })
     token = f"abc.{middle_part}.xyz"
 

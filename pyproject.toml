@@ -86,6 +86,8 @@ mysqlclient = "^2.2.0"
 img2pdf = "^0.5.1"
 passlib = "^1.7.4"
 sqlalchemy = "^2.0.24"
+typer = "^0.9.0"
+rich = "^13.7.1"
 
 
 [tool.taskipy.tasks]
@@ -95,44 +97,11 @@ lint = "pycodestyle papermerge/ tests/"
 worker = "celery -A config worker -c 5"
 server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --reload --app-dir docker/dev/ --reload-dir papermerge --reload-dir tests"
 
-[tool.towncrier]
-directory = "changelog.d"
-filename = "changelog.md"
-start_string = "<!-- towncrier release notes start -->\n"
-underlines = ["", "", ""]
-template = "changelog.d/changelog_template.jinja"
-title_format = "## [{version}] - {project_date}"
-issue_format = "[issue#{issue}](https://github.com/ciur/papermerge/issues/{issue})"
-
-[[tool.towncrier.type]]
-directory = "security"
-name = "Security"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "removed"
-name = "Removed"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "deprecated"
-name = "Deprecated"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "added"
-name = "Added"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "changed"
-name = "Changed"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "fixed"
-name = "Fixed"
-showcontent = true
+[tool.poetry.scripts]
+token = 'papermerge.core.cli.token:app'
+users = 'papermerge.core.cli.users:app'
+perms = 'papermerge.core.cli.perms:app'
+scopes = 'papermerge.core.cli.scopes:app'
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]

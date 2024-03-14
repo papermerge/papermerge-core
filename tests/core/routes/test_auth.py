@@ -1,12 +1,13 @@
 from fastapi.testclient import TestClient
 
-from papermerge.core.auth import get_user_id_from_token
+from papermerge.core import types
+from papermerge.core.auth import extract_token_data
 
 
 def test_get_current_user(token):
-    user_id = get_user_id_from_token(token)
+    token_data: types.TokenData = extract_token_data(token)
 
-    assert user_id is not None
+    assert token_data is not None
 
 
 def test_remote_based_authentication(api_client: TestClient):

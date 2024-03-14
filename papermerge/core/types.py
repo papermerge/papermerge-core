@@ -23,3 +23,8 @@ class PaginatedResponse(BaseModel, Generic[T]):
     items: Sequence[T]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TokenData(BaseModel):
+    user_id: str
+    scopes: list[str] = []

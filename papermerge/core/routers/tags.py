@@ -1,11 +1,12 @@
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 
-from papermerge.core import schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core import schemas, utils
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Tag
 
 from .paginator import PaginatorGeneric, paginate
@@ -21,11 +22,18 @@ logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=PaginatorGeneric[schemas.Tag])
 @paginate
+@utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_VIEW])
+    ],
     params: CommonQueryParams = Depends(),
-    user: schemas.User = Depends(get_current_user)
 ):
-    """Retrieves current user tags"""
+    """Retrieves current user tags
+
+    Required scope: `{scope}`
+    """
     order_by = ['name', ]
 
     if params.order_by:
@@ -39,11 +47,19 @@ def retrieve_tags(
 
 
 @router.post("/", status_code=201)
+@utils.docstring_parameter(scope=scopes.TAG_CREATE)
 def create_tag(
     pytag: schemas.CreateTag,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_CREATE])
+    ],
 ) -> schemas.Tag:
-    """Creates user tag"""
+    """Creates user tag
+
+    Required scope: `{scope}`
+    """
+
     try:
         tag = Tag.objects.create(user_id=user.id, **pytag.model_dump())
     except IntegrityError:
@@ -56,11 +72,18 @@ def create_tag(
 
 
 @router.delete("/{tag_id}", status_code=204)
+@utils.docstring_parameter(scope=scopes.TAG_DELETE)
 def delete_tag(
     tag_id: UUID,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_DELETE])
+    ],
 ) -> None:
-    """Deletes user tag"""
+    """Deletes user tag
+
+    Required scope: `{scope}`
+    """
     try:
         Tag.objects.get(user_id=user.id, id=tag_id).delete()
     except Tag.DoesNotExist:
@@ -71,12 +94,19 @@ def delete_tag(
 
 
 @router.patch("/{tag_id}", status_code=200)
+@utils.docstring_parameter(scope=scopes.TAG_UPDATE)
 def update_tag(
     tag_id: UUID,
     tag: schemas.UpdateTag,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_UPDATE])
+    ],
 ) -> schemas.Tag:
-    """Updates user tag"""
+    """Updates user tag
+
+    Required scope: `{scope}`
+    """
 
     qs = Tag.objects.filter(user_id=user.id, id=tag_id)
 

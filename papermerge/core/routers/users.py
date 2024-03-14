@@ -1,12 +1,13 @@
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from passlib.hash import pbkdf2_sha256
 
-from papermerge.core import auth, db, schemas
-from papermerge.core.auth import get_current_user as current_user
+from papermerge.core import auth, db, schemas, utils
+from papermerge.core.auth import scopes
 from papermerge.core.models import User
 from papermerge.core.schemas.users import User as PyUser
 from papermerge.core.tasks import delete_user_data
@@ -24,17 +25,35 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/me")
+@utils.docstring_parameter(scope=scopes.USER_ME)
 def get_current_user(
-    user: schemas.User = Depends(auth.get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(auth.get_current_user, scopes=[scopes.USER_ME])
+    ],
 ) -> schemas.User:
-    """Returns current user"""
+    """Returns current user
+
+    Required scope: `{scope}`
+    """
     logger.debug(f"User {user} found")
     return PyUser.model_validate(user)
 
 
 @router.get("/", response_model=PaginatorGeneric[PyUser])
 @paginate
-def get_users(params: CommonQueryParams = Depends()):
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_users(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_VIEW])
+    ],
+    params: CommonQueryParams = Depends()
+):
+    """Get all users
+
+    Required scope: `{scope}`
+    """
     order_by = ['username']
 
     if params.order_by:
@@ -46,12 +65,19 @@ def get_users(params: CommonQueryParams = Depends()):
 
 
 @router.post("/", status_code=201)
+@utils.docstring_parameter(scope=scopes.USER_CREATE)
 def create_user(
     pyuser: schemas.CreateUser,
-    cur_user: schemas.User = Depends(get_current_user),
+    cur_user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_CREATE])
+    ],
     engine: db.Engine = Depends(db.get_engine)
 ) -> schemas.User:
-    """Creates user"""
+    """Creates user
+
+    Required scope: `{scope}`
+    """
     try:
         user = db.create_user(
             engine,
@@ -83,11 +109,18 @@ def create_user(
         }
     }
 )
+@utils.docstring_parameter(scope=scopes.USER_DELETE)
 def delete_user(
     user_id: UUID,
-    user: User = Depends(current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_DELETE])
+    ],
 ) -> None:
-    """Deletes user with given UUID"""
+    """Deletes user
+
+    Required scope: `{scope}`
+    """
     if User.objects.count() == 1:
         raise HTTPException(
             status_code=432,
@@ -108,12 +141,19 @@ def delete_user(
 
 
 @router.patch("/{user_id}", status_code=200)
+@utils.docstring_parameter(scope=scopes.USER_UPDATE)
 def update_user(
     user_id: UUID,
     update_user: schemas.UpdateUser,
-    user: User = Depends(current_user),
+    cur_user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_UPDATE])
+    ],
 ) -> schemas.User:
-    """Updates user"""
+    """Updates user
+
+    Required scope: `{scope}`
+    """
 
     try:
         qs = User.objects.filter(id=user_id)

@@ -1,10 +1,11 @@
 import io
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, Security, UploadFile
 
-from papermerge.core import db, schemas
-from papermerge.core.auth import get_current_user
+from papermerge.core import db, schemas, utils
+from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Document
 
 router = APIRouter(
@@ -14,25 +15,39 @@ router = APIRouter(
 
 
 @router.get("/{document_id}")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_details(
     document_id: uuid.UUID,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
     engine: db.Engine = Depends(db.get_engine)
 ) -> schemas.Document:
+    """
+    Get document details
 
+    Required scope: `{scope}`
+    """
     doc = db.get_doc(engine, id=document_id, user_id=user.id)
 
     return doc
 
 
 @router.post("/{document_id}/upload")
+@utils.docstring_parameter(scope=scopes.DOCUMENT_UPLOAD)
 def upload_file(
     document_id: uuid.UUID,
     file: UploadFile,
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_UPLOAD])
+    ]
 ) -> schemas.Document:
     """
-    Uploads file for given document.
+    Uploads document's file.
+
+    Required scope: `{scope}`
 
     Document model must be created beforehand via `POST /nodes` endpoint
     provided with `ctype` = `document`.

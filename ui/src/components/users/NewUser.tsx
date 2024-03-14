@@ -35,9 +35,12 @@ type Args = {
 export default function NewUser({onSave, onCancel}: Args) {
   const vowScopes = useResource<ScopeType>("/api/scopes/");
   const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
+  const [scopes, setScopes] = useState<Array<string>>([]);
 
   const vowGroups = useResource<Paginated<Group>>("/api/groups/?page_size=999");
   const [allGroups, setAllGroups] = useState<Array<SelectItem>>([]);
+  const [groups, setGroups] = useState<Array<string>>([]);
+
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
@@ -99,6 +102,11 @@ export default function NewUser({onSave, onCancel}: Args) {
   }
 
   const onScopesChange = (scopes: Array<SelectItem>) => {
+    setGroups(scopes.map(item => item.key));
+  }
+
+  const onGroupsChange = (groups: Array<SelectItem>) => {
+    setGroups(groups.map(item => item.key));
   }
 
   const onLocalSubmit = () => {
@@ -110,7 +118,9 @@ export default function NewUser({onSave, onCancel}: Args) {
     const item: NewUser = {
       username: username!,
       email: email!,
-      password: password1!
+      password: password1!,
+      scopes: scopes,
+      groups: groups
     };
 
     fetcher_post<NewUser, CreatedUser>(

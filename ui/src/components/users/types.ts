@@ -9,6 +9,8 @@ export type NewUser = {
   username: string;
   email: string;
   password: string;
+  scopes: Array<string>;
+  groups: Array<string>;
 }
 
 

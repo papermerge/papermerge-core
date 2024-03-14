@@ -5,6 +5,9 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_post } from 'utils/fetcher';
 import type {User, NewUser, CreatedUser} from "./types";
+import type { SelectItem } from 'types';
+import DualSelect from 'components/DualSelect';
+import { Container } from 'react-bootstrap';
 
 
 type ErrorArgs = {
@@ -51,6 +54,9 @@ export default function NewUser({onSave, onCancel}: Args) {
 
   const onChangePassword2 = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword2(e.currentTarget.value);
+  }
+
+  const onScopesChange = (scopes: Array<SelectItem>) => {
   }
 
   const onLocalSubmit = () => {
@@ -124,6 +130,16 @@ export default function NewUser({onSave, onCancel}: Args) {
           <Form.Label>Confirm Password</Form.Label>
           <Form.Control onChange={onChangePassword2} type="password" placeholder="Password" />
         </Form.Group>
+      </Row>
+
+      <Row className='mb-3'>
+          <Form.Label>Groups</Form.Label>
+          <DualSelect initialSelect={[]} onChange={onScopesChange} />
+      </Row>
+
+      <Row className='mb-3'>
+          <Form.Label>Permissions</Form.Label>
+          <DualSelect initialSelect={[]} onChange={onScopesChange} />
       </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">

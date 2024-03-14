@@ -321,6 +321,18 @@ export type SelectItem = {
   value: string;
 }
 
+export type Group = {
+  id: string;
+  name: string;
+}
+
+export type Paginated<T> = {
+  page_size: number;
+  page_number: number;
+  num_pages: number;
+  items: Array<T>;
+}
+
 declare global {
   interface Window {
     __PAPERMERGE_RUNTIME_CONFIG__: RuntimeConfig;

@@ -6,6 +6,9 @@ import Row from 'react-bootstrap/Row';
 import { fetcher_patch } from 'utils/fetcher';
 import { useResource } from 'hooks/resource';
 import type {User, NewUser, CreatedUser, UserDetail} from "./types";
+import type { Paginated, ScopeType,  SelectItem, Group } from 'types';
+import DualSelect from 'components/DualSelect';
+import { sortItemsFn } from 'utils/misc';
 
 
 type ErrorArgs = {
@@ -80,6 +83,16 @@ type Args = {
 
 export default function EditUser({user_id, onSave, onCancel}: Args) {
   const vow = useResource<UserDetail>(`/api/users/${user_id}`);
+
+  const vowScopes = useResource<ScopeType>("/api/scopes/");
+  const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
+  const [scopes, setScopes] = useState<Array<string>>([]);
+
+
+  const vowGroups = useResource<Paginated<Group>>("/api/groups/?page_size=999");
+  const [allGroups, setAllGroups] = useState<Array<SelectItem>>([]);
+  const [groups, setGroups] = useState<Array<string>>([]);
+
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
@@ -99,6 +112,43 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
 
   }, [vow.data]);
 
+  useEffect(() => {
+    if (vowScopes.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowScopes.data)) {
+      selectItems.push({
+        key: i[0],
+        value: i[1]
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllScopes(selectItems);
+
+  }, [vowScopes.data]);
+
+  useEffect(() => {
+    if (vowGroups.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowGroups.data.items)) {
+      selectItems.push({
+        key: i[1].id,
+        value: i[1].name
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllGroups(selectItems);
+
+  }, [vowGroups.data]);
+
+
   const onChangeUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.currentTarget.value);
   }
@@ -117,6 +167,16 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
 
   const onChangePassword = (flag: boolean) => {
     setChangePassword(flag);
+  }
+
+  const onScopesChange = (scopes: Array<SelectItem>) => {
+    setScopes(scopes.map(item => item.key));
+  }
+
+  const onGroupsChange = (groups: Array<SelectItem>) => {
+    setGroups(
+      groups.map(item => item.key)
+     );
   }
 
 
@@ -199,6 +259,22 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
         onChangePassword={onChangePassword}
         onChangePassword1={onChangePassword1}
         onChangePassword2={onChangePassword2} />
+
+      <Row className='mb-3'>
+          <Form.Label>Groups</Form.Label>
+          <DualSelect
+            allItems={allGroups}
+            initialSelect={[]}
+            onChange={onGroupsChange} />
+      </Row>
+
+      <Row className='mb-3'>
+          <Form.Label>Permissions</Form.Label>
+          <DualSelect
+            allItems={allScopes}
+            initialSelect={[]}
+            onChange={onScopesChange} />
+      </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">
         Cancel

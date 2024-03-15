@@ -86,12 +86,11 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
 
   const vowScopes = useResource<ScopeType>("/api/scopes/");
   const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
-  const [scopes, setScopes] = useState<Array<string>>([]);
-
+  const [scopes, setScopes] = useState<Array<SelectItem>>([]);
 
   const vowGroups = useResource<Paginated<Group>>("/api/groups/?page_size=999");
   const [allGroups, setAllGroups] = useState<Array<SelectItem>>([]);
-  const [groups, setGroups] = useState<Array<string>>([]);
+  const [groups, setGroups] = useState<Array<SelectItem>>([]);
 
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
@@ -109,6 +108,12 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
 
     setUsername(vow.data.username);
     setEmail(vow.data.email);
+    setScopes(
+      vow.data.scopes.map(i => {return {key: i, value: i}})
+     );
+    setGroups(
+      vow.data.groups.map(i => {return {key: `${i.id}`, value: i.name}})
+    );
 
   }, [vow.data]);
 
@@ -170,15 +175,12 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
   }
 
   const onScopesChange = (scopes: Array<SelectItem>) => {
-    setScopes(scopes.map(item => item.key));
+    setScopes(scopes);
   }
 
   const onGroupsChange = (groups: Array<SelectItem>) => {
-    setGroups(
-      groups.map(item => item.key)
-     );
+    setGroups(groups);
   }
-
 
   const onLocalSubmit = () => {
 
@@ -264,7 +266,7 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
           <Form.Label>Groups</Form.Label>
           <DualSelect
             allItems={allGroups}
-            initialSelect={[]}
+            initialSelect={groups}
             onChange={onGroupsChange} />
       </Row>
 
@@ -272,7 +274,7 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
           <Form.Label>Permissions</Form.Label>
           <DualSelect
             allItems={allScopes}
-            initialSelect={[]}
+            initialSelect={scopes}
             onChange={onScopesChange} />
       </Row>
 

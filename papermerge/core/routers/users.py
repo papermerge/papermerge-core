@@ -109,7 +109,7 @@ def create_user(
     response_model=schemas.UserDetails
 )
 @utils.docstring_parameter(scope=scopes.USER_VIEW)
-def get_user(
+def get_user_details(
     user_id: UUID,
     user: Annotated[
         schemas.User,

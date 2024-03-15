@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from uuid import UUID
 
@@ -43,7 +44,31 @@ class UserDetails(BaseModel):
     groups: list[Group] = []
 
     # Config
-    model_config = ConfigDict(from_attributes=True)
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": uuid.uuid4(),
+                    "username": "socrates",
+                    "email": "socrates@truth.dom",
+                    "home_folder_id": uuid.uuid4(),
+                    "inbox_folder_id": uuid.uuid4(),
+                    "scopes": [
+                        "node.create",
+                        "node.view",
+                        "node.delete",
+                        "node.move"
+                    ],
+                    "groups": [
+                        {"id": 1, "name": "Admins"},
+                        {"id": 2, "name": "Archivers"}
+                    ],
+                    "created_at": "2024-03-15T06:38:58.197883Z",
+                    "updated_at": "2024-03-15T06:38:58.210525Z",
+                }
+            ]
+        }
+    }
 
 
 class CreateUser(BaseModel):

@@ -60,8 +60,8 @@ class UserDetails(BaseModel):
                         "node.move"
                     ],
                     "groups": [
-                        {"id": 1, "name": "Admins"},
-                        {"id": 2, "name": "Archivers"}
+                        {"id": 1, "name": "Admin"},
+                        {"id": 2, "name": "Archiver"}
                     ],
                     "created_at": "2024-03-15T06:38:58.197883Z",
                     "updated_at": "2024-03-15T06:38:58.210525Z",

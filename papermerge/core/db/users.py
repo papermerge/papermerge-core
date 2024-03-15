@@ -59,7 +59,24 @@ def get_user_details(
 
     with Session(engine) as session:
         db_user = session.scalars(stmt, params).one()
-        model_user = schemas.UserDetails.model_validate(db_user)
+
+        result = schemas.UserDetails(
+            id=db_user.id,
+            username=db_user.username,
+            email=db_user.username,
+            created_at=db_user.created_at,
+            updated_at=db_user.updated_at,
+            home_folder_id=db_user.home_folder_id,
+            inbox_folder_id=db_user.inbox_folder_id,
+            scopes=list([
+                p.codename for p in db_user.permissions
+            ]),
+            groups=list([
+                {'id': g.id, 'name': g.name} for g in db_user.groups
+            ]),
+        )
+
+        model_user = schemas.UserDetails.model_validate(result)
 
     return model_user
 

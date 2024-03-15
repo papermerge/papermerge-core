@@ -2,7 +2,10 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from model_bakery import baker
+from sqlalchemy import Engine
+from sqlalchemy.orm import sessionmaker
 
+from papermerge.core import db, schemas
 from papermerge.core.models import User
 from papermerge.test import TestCase
 
@@ -37,3 +40,43 @@ class TestUserModel(TestCase):
         user = baker.make('core.user')
         baker.make('core.Document', user=user)
         user.delete()
+
+
+def test_get_user_details(db_engine: Engine):
+    Session = sessionmaker(db_engine)
+    with Session() as session:
+        db.sync_perms(session)
+
+    g1 = db.create_group(
+        db_engine,
+        "G1",
+        scopes=[]
+    )
+    g2 = db.create_group(
+        db_engine,
+        "G2",
+        scopes=[]
+    )
+
+    scopes = ['tag.update', 'tag.create']
+
+    user: schemas.User = db.create_user(
+        db_engine,
+        username='socrates',
+        email='socrates@mail.com',
+        password='wisdom71',
+        scopes=['tag.update', 'tag.create'],
+        group_ids=[g1.id, g2.id]
+    )
+
+    # fetch user details; here we are interested in
+    # user's groups and user's scopes
+    user_details: schemas.UserDetails = db.get_user_details(
+        db_engine, user_id=user.id
+    )
+
+    group_ids = [g.id for g in user_details.groups]
+
+    # user detail contains correct scopes and groups
+    assert set(user_details.scopes) == set(scopes)
+    assert set(group_ids) == {g1.id, g2.id}

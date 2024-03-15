@@ -24,6 +24,19 @@ user_permissions_association = Table(
     ),
 )
 
+user_groups_association = Table(
+    "core_user_groups",
+    Base.metadata,
+    Column(
+        "user_id",
+        ForeignKey("core_user.id"),
+    ),
+    Column(
+        "group_id",
+        ForeignKey("auth_group.id"),
+    ),
+)
+
 
 class User(Base):
     __tablename__ = "core_user"
@@ -72,6 +85,10 @@ class User(Base):
     )
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=user_permissions_association,
+        back_populates="users"
+    )
+    groups: Mapped[list["Group"]] = relationship(
+        secondary=user_groups_association,
         back_populates="users"
     )
 
@@ -233,6 +250,10 @@ class Group(Base):
     name: Mapped[str]
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=group_permissions_association,
+        back_populates="groups"
+    )
+    users: Mapped[list["User"]] = relationship(
+        secondary=user_groups_association,
         back_populates="groups"
     )
 

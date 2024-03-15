@@ -4,7 +4,6 @@ from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
-from passlib.hash import pbkdf2_sha256
 from sqlalchemy import exc
 
 from papermerge.core import auth, db, schemas, utils
@@ -181,36 +180,35 @@ def delete_user(
         )
 
 
-@router.patch("/{user_id}", status_code=200)
+@router.patch(
+    "/{user_id}",
+    status_code=200,
+    response_model=schemas.UserDetails
+)
 @utils.docstring_parameter(scope=scopes.USER_UPDATE)
 def update_user(
     user_id: UUID,
-    update_user: schemas.UpdateUser,
+    attrs: schemas.UpdateUser,
     cur_user: Annotated[
         schemas.User,
         Security(get_current_user, scopes=[scopes.USER_UPDATE])
     ],
-) -> schemas.User:
+    engine: db.Engine = Depends(db.get_engine)
+):
     """Updates user
 
     Required scope: `{scope}`
     """
-
     try:
-        qs = User.objects.filter(id=user_id)
-        user_record = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user: schemas.UpdateUser = db.update_user(
+            engine,
+            user_id=user_id,
+            attrs=attrs
+        )
+    except exc.NoResultFound:
         raise HTTPException(
             status_code=404,
             detail="Does not exists"
         )
 
-    qs.update(
-        **update_user.model_dump(exclude_unset=True)
-    )
-
-    if update_user.password:
-        user_record.password = pbkdf2_sha256.hash(update_user.password)
-        user_record.save()
-
-    return schemas.User.model_validate(qs.first())
+    return user

@@ -86,3 +86,5 @@ class UpdateUser(BaseModel):
     username: str
     email: str
     password: str | None = None
+    scopes: list[str] = []
+    groups: list[Group] = []

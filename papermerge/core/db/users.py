@@ -152,3 +152,49 @@ def create_user(
         user = schemas.User.model_validate(db_user)
 
     return user
+
+
+def update_user(
+    engine: Engine,
+    user_id: UUID,
+    attrs: schemas.UpdateUser
+) -> schemas.UserDetails:
+    with Session(engine) as session:
+        stmt = select(Permission).where(
+            Permission.codename.in_(attrs.scopes)
+        )
+        perms = session.execute(stmt).scalars().all()
+
+        stmt = select(Group).where(
+            Group.id.in_(attrs.groups)
+        )
+        groups = session.execute(stmt).scalars().all()
+        user = session.get(User, user_id)
+
+        user.username = attrs.username
+        user.email = attrs.email
+        user.permissions = perms
+        user.groups = groups
+        if attrs.password:
+            user.password = pbkdf2_sha256.hash(attrs.password)
+
+        session.commit()
+        result = schemas.UserDetails(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            home_folder_id=user.home_folder_id,
+            inbox_folder_id=user.inbox_folder_id,
+            scopes=list([
+                p.codename for p in user.permissions
+            ]),
+            groups=list([
+                {'id': g.id, 'name': g.name} for g in user.groups
+            ]),
+        )
+
+        model_user = schemas.UserDetails.model_validate(result)
+
+    return model_user

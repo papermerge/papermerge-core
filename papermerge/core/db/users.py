@@ -191,7 +191,7 @@ def update_user(
                 p.codename for p in user.permissions
             ]),
             groups=list([
-                {'id': g.id, 'name': g.name} for g in user.groups
+                {'id': g.id, 'name': g.name} for g in groups
             ]),
         )
 

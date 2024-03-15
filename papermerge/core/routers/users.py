@@ -200,7 +200,7 @@ def update_user(
     Required scope: `{scope}`
     """
     try:
-        user: schemas.UpdateUser = db.update_user(
+        user: schemas.UserDetails = db.update_user(
             engine,
             user_id=user_id,
             attrs=attrs

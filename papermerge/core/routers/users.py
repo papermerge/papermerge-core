@@ -5,6 +5,7 @@ from uuid import UUID
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
 from passlib.hash import pbkdf2_sha256
+from sqlalchemy import exc
 
 from papermerge.core import auth, db, schemas, utils
 from papermerge.core.auth import scopes
@@ -83,12 +84,52 @@ def create_user(
             engine,
             username=pyuser.username,
             email=pyuser.email,
-            password=pyuser.password
+            password=pyuser.password,
+            scopes=pyuser.scopes,
+            group_ids=pyuser.group_ids
         )
     except IntegrityError:
         raise HTTPException(
             status_code=400,
             detail="User already exists"
+        )
+
+    return user
+
+
+@router.get(
+    "/{user_id}",
+    status_code=201,
+    responses={
+        404: {
+            "description": """No user with specified UUID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL
+        }
+    },
+    response_model=schemas.UserDetails
+)
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_user(
+    user_id: UUID,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_VIEW])
+    ],
+    engine: db.Engine = Depends(db.get_engine)
+):
+    """Get user details
+
+    Required scope: `{scope}`
+    """
+    try:
+        user = db.get_user_details(
+            engine,
+            user_id=user_id,
+        )
+    except exc.NoResultFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
         )
 
     return user

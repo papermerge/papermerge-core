@@ -1,3 +1,10 @@
+
+type Group = {
+  id: number;
+  name: string;
+}
+
+
 export type User = {
   id: string;
   username: string;
@@ -5,12 +12,21 @@ export type User = {
   created_at: string;
 }
 
+export type UserDetail = {
+  id: string;
+  username: string;
+  email: string;
+  created_at: string;
+  groups: Array<Group>;
+  scopes: Array<string>;
+}
+
 export type NewUser = {
   username: string;
   email: string;
   password: string;
   scopes: Array<string>;
-  groups: Array<string>;
+  group_ids: Array<number>;
 }
 
 

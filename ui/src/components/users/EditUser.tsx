@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_patch } from 'utils/fetcher';
-import type {User, NewUser, CreatedUser} from "./types";
+import { useResource } from 'hooks/resource';
+import type {User, NewUser, CreatedUser, UserDetail} from "./types";
 
 
 type ErrorArgs = {
@@ -71,21 +72,32 @@ function Password({
 
 
 type Args = {
-  user: User;
+  user_id: string;
   onSave: (user: User) => void;
   onCancel: () => void;
 }
 
 
-export default function EditUser({user, onSave, onCancel}: Args) {
+export default function EditUser({user_id, onSave, onCancel}: Args) {
+  const vow = useResource<UserDetail>(`/api/users/${user_id}`);
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
-  const [ username, setUsername ] = useState<string>(user.username);
-  const [ email, setEmail ] = useState<string>(user.email);
+  const [ username, setUsername ] = useState<string>('');
+  const [ email, setEmail ] = useState<string>('');
   const [ password1, setPassword1 ] = useState<string|null>();
   const [ password2, setPassword2 ] = useState<string|null>();
   const [ change_password, setChangePassword] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (vow.data == null) {
+      return;
+    }
+
+    setUsername(vow.data.username);
+    setEmail(vow.data.email);
+
+  }, [vow.data]);
 
   const onChangeUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.currentTarget.value);
@@ -117,11 +129,13 @@ export default function EditUser({user, onSave, onCancel}: Args) {
     const item: NewUser = {
       username: username,
       email: email,
-      password: password1!
+      password: password1!,
+      scopes: [],
+      group_ids: []
     };
 
     fetcher_patch<NewUser, CreatedUser>(
-      `/api/users/${user.id}`, item,
+      `/api/users/${user_id}`, item,
       controller.signal
     ).then((new_item: User) => {
       setSaveInProgress(false);

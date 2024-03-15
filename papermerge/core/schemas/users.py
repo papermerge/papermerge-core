@@ -4,6 +4,11 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
+class Group(BaseModel):
+    id: int
+    name: str
+
+
 class RemoteUser(BaseModel):
     """User model extracted from PAPERMERGE__AUTH__REMOTE_xyz headers"""
     username: str
@@ -26,10 +31,27 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserDetails(BaseModel):
+    id: UUID | str
+    username: str
+    email: str
+    created_at: datetime
+    updated_at: datetime
+    home_folder_id: UUID | None
+    inbox_folder_id: UUID | None
+    scopes: list[str] = []
+    groups: list[Group] = []
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CreateUser(BaseModel):
     username: str
     email: str
     password: str
+    scopes: list[str]  # list of scope names e.g. "user.create", "user.delete"
+    group_ids: list[int]  # list of group IDs e.g. 65, 72
 
     # Config
     model_config = ConfigDict(from_attributes=True)

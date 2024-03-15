@@ -93,7 +93,7 @@ export default function UsersTable() {
 
     if (found_user) {
       return <EditUser
-              user={found_user}
+              user_id={found_user.id}
               onSave={onEditSave}
               onCancel={onCancel} />
     }

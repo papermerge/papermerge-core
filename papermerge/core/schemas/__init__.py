@@ -7,7 +7,7 @@ from .nodes import Node
 from .perms import Permission
 from .scopes import Scopes
 from .tags import CreateTag, Tag, UpdateTag
-from .users import CreateUser, RemoteUser, UpdateUser, User
+from .users import CreateUser, RemoteUser, UpdateUser, User, UserDetails
 from .version import Version
 
 __all__ = [
@@ -18,6 +18,7 @@ __all__ = [
     'CreateUser',
     'UpdateUser',
     'RemoteUser',
+    'UserDetails',
     'Folder',
     'Node',
     'CreateFolder',

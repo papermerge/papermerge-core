@@ -102,11 +102,13 @@ export default function NewUser({onSave, onCancel}: Args) {
   }
 
   const onScopesChange = (scopes: Array<SelectItem>) => {
-    setGroups(scopes.map(item => item.key));
+    setScopes(scopes.map(item => item.key));
   }
 
   const onGroupsChange = (groups: Array<SelectItem>) => {
-    setGroups(groups.map(item => item.key));
+    setGroups(
+      groups.map(item => item.key)
+     );
   }
 
   const onLocalSubmit = () => {
@@ -120,7 +122,7 @@ export default function NewUser({onSave, onCancel}: Args) {
       email: email!,
       password: password1!,
       scopes: scopes,
-      groups: groups
+      group_ids: groups.map(i => parseInt(i))
     };
 
     fetcher_post<NewUser, CreatedUser>(
@@ -189,7 +191,7 @@ export default function NewUser({onSave, onCancel}: Args) {
           <DualSelect
             allItems={allGroups}
             initialSelect={[]}
-            onChange={onScopesChange} />
+            onChange={onGroupsChange} />
       </Row>
 
       <Row className='mb-3'>

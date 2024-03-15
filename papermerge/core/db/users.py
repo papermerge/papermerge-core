@@ -8,7 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
-from papermerge.core.db.models import Folder, User
+from papermerge.core.db.models import Folder, Group, Permission, User
 from papermerge.core.utils.misc import is_valid_uuid
 
 from .exceptions import UserNotFound
@@ -49,6 +49,21 @@ def get_user(
     return model_user
 
 
+def get_user_details(
+    engine: Engine,
+    user_id: UUID
+) -> schemas.UserDetails:
+
+    stmt = select(User).where(User.id == user_id)
+    params = {"id": user_id}
+
+    with Session(engine) as session:
+        db_user = session.scalars(stmt, params).one()
+        model_user = schemas.UserDetails.model_validate(db_user)
+
+    return model_user
+
+
 def get_users(
     engine: Engine
 ) -> list[schemas.User]:
@@ -66,7 +81,9 @@ def create_user(
     engine: Engine,
     username: str,
     email: str,
-    password: str
+    password: str,
+    scopes: list[str],
+    group_ids: list[int]
 ) -> schemas.User:
 
     with Session(engine) as session:
@@ -101,6 +118,18 @@ def create_user(
 
         db_user.home_folder_id = db_home.id
         db_user.inbox_folder_id = db_inbox.id
+        # fetch permissions from the DB
+        stmt = select(Permission).where(
+            Permission.codename.in_(scopes)
+        )
+        db_perms = session.execute(stmt).scalars().all()
+        # fetch groups from the DB
+        stmt = select(Group).where(
+            Group.id.in_(group_ids)
+        )
+        db_groups = session.execute(stmt).scalars().all()
+        db_user.permissions = db_perms
+        db_user.groups = db_groups
         session.commit()
 
         user = schemas.User.model_validate(db_user)

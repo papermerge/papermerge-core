@@ -11,6 +11,33 @@ class Base(DeclarativeBase):
     pass
 
 
+user_permissions_association = Table(
+    "core_user_user_permissions",
+    Base.metadata,
+    Column(
+        "user_id",
+        ForeignKey("core_user.id"),
+    ),
+    Column(
+        "permission_id",
+        ForeignKey("auth_permission.id"),
+    ),
+)
+
+user_groups_association = Table(
+    "core_user_groups",
+    Base.metadata,
+    Column(
+        "user_id",
+        ForeignKey("core_user.id"),
+    ),
+    Column(
+        "group_id",
+        ForeignKey("auth_group.id"),
+    ),
+)
+
+
 class User(Base):
     __tablename__ = "core_user"
 
@@ -55,6 +82,14 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(),
         onupdate=func.now()
+    )
+    permissions: Mapped[list["Permission"]] = relationship(
+        secondary=user_permissions_association,
+        back_populates="users"
+    )
+    groups: Mapped[list["Group"]] = relationship(
+        secondary=user_groups_association,
+        back_populates="users"
     )
 
 
@@ -201,6 +236,11 @@ class Permission(Base):
         secondary=group_permissions_association,
         back_populates="permissions"
     )
+    users = relationship(
+        "User",
+        secondary=user_permissions_association,
+        back_populates="permissions"
+    )
 
 
 class Group(Base):
@@ -210,6 +250,10 @@ class Group(Base):
     name: Mapped[str]
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=group_permissions_association,
+        back_populates="groups"
+    )
+    users: Mapped[list["User"]] = relationship(
+        secondary=user_groups_association,
         back_populates="groups"
     )
 

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_post } from 'utils/fetcher';
 import type {Group, NewGroup, CreatedGroup} from "./types";
-import type { SelectItem } from 'types';
+import type { SelectItem, ScopeType } from 'types';
+import { useResource } from 'hooks/resource';
+import { sortItemsFn } from 'utils/misc';
 
 import DualSelect from 'components/DualSelect';
 
@@ -31,12 +33,33 @@ type Args = {
 
 
 export default function NewGroup({onSave, onCancel}: Args) {
+  const vowScopes = useResource<ScopeType>("/api/scopes/");
+  const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
 
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
   const [ name, setName ] = useState<string|null>();
   const [scopes, setScopes] = useState<Array<string>>([]);
+
+  useEffect(() => {
+    if (vowScopes.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowScopes.data)) {
+      selectItems.push({
+        key: i[0],
+        value: i[1]
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllScopes(selectItems);
+
+  }, [vowScopes.data]);
+
 
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.currentTarget.value);
@@ -87,7 +110,10 @@ export default function NewGroup({onSave, onCancel}: Args) {
       </Row>
 
       <Row className='mb-3'>
-        <DualSelect initialSelect={[]} onChange={onScopesChange} />
+        <DualSelect
+          allItems={allScopes}
+          initialSelect={[]}
+          onChange={onScopesChange} />
       </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">

@@ -8,7 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
-from papermerge.core.db.models import Folder, User
+from papermerge.core.db.models import Folder, Group, Permission, User
 from papermerge.core.utils.misc import is_valid_uuid
 
 from .exceptions import UserNotFound
@@ -49,6 +49,38 @@ def get_user(
     return model_user
 
 
+def get_user_details(
+    engine: Engine,
+    user_id: UUID
+) -> schemas.UserDetails:
+
+    stmt = select(User).where(User.id == user_id)
+    params = {"id": user_id}
+
+    with Session(engine) as session:
+        db_user = session.scalars(stmt, params).one()
+
+        result = schemas.UserDetails(
+            id=db_user.id,
+            username=db_user.username,
+            email=db_user.username,
+            created_at=db_user.created_at,
+            updated_at=db_user.updated_at,
+            home_folder_id=db_user.home_folder_id,
+            inbox_folder_id=db_user.inbox_folder_id,
+            scopes=list([
+                p.codename for p in db_user.permissions
+            ]),
+            groups=list([
+                {'id': g.id, 'name': g.name} for g in db_user.groups
+            ]),
+        )
+
+        model_user = schemas.UserDetails.model_validate(result)
+
+    return model_user
+
+
 def get_users(
     engine: Engine
 ) -> list[schemas.User]:
@@ -66,7 +98,9 @@ def create_user(
     engine: Engine,
     username: str,
     email: str,
-    password: str
+    password: str,
+    scopes: list[str],
+    group_ids: list[int]
 ) -> schemas.User:
 
     with Session(engine) as session:
@@ -101,8 +135,67 @@ def create_user(
 
         db_user.home_folder_id = db_home.id
         db_user.inbox_folder_id = db_inbox.id
+        # fetch permissions from the DB
+        stmt = select(Permission).where(
+            Permission.codename.in_(scopes)
+        )
+        db_perms = session.execute(stmt).scalars().all()
+        # fetch groups from the DB
+        stmt = select(Group).where(
+            Group.id.in_(group_ids)
+        )
+        db_groups = session.execute(stmt).scalars().all()
+        db_user.permissions = db_perms
+        db_user.groups = db_groups
         session.commit()
 
         user = schemas.User.model_validate(db_user)
 
     return user
+
+
+def update_user(
+    engine: Engine,
+    user_id: UUID,
+    attrs: schemas.UpdateUser
+) -> schemas.UserDetails:
+    with Session(engine) as session:
+        stmt = select(Permission).where(
+            Permission.codename.in_(attrs.scopes)
+        )
+        perms = session.execute(stmt).scalars().all()
+
+        stmt = select(Group).where(
+            Group.id.in_(attrs.group_ids)
+        )
+        groups = session.execute(stmt).scalars().all()
+        user = session.get(User, user_id)
+
+        user.username = attrs.username
+        user.email = attrs.email
+        user.permissions = perms
+
+        user.groups = groups
+        if attrs.password:
+            user.password = pbkdf2_sha256.hash(attrs.password)
+
+        session.commit()
+        result = schemas.UserDetails(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            home_folder_id=user.home_folder_id,
+            inbox_folder_id=user.inbox_folder_id,
+            scopes=list([
+                p.codename for p in user.permissions
+            ]),
+            groups=list([
+                {'id': g.id, 'name': g.name} for g in groups
+            ]),
+        )
+
+        model_user = schemas.UserDetails.model_validate(result)
+
+    return model_user

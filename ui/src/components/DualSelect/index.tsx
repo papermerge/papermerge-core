@@ -4,8 +4,9 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
-import { useResource } from 'hooks/resource';
-import { ScopeType, SelectItem } from 'types';
+import type { SelectItem } from 'types';
+import { sortItemsFn } from 'utils/misc';
+
 import { Button } from 'react-bootstrap';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { useEffect, useState } from 'react';
@@ -13,14 +14,13 @@ import "./dual-select.scss";
 
 
 type Args = {
+  allItems: Array<SelectItem>;
   initialSelect: Array<SelectItem>;
   onChange: (scopes: Array<SelectItem>) => void;
 }
 
 
-function DualSelect({onChange, initialSelect}: Args) {
-  const vow = useResource<ScopeType>("/api/scopes/");
-  const [allItems, setAllItems] = useState<Array<SelectItem>>([]);
+function DualSelect({onChange, allItems, initialSelect}: Args) {
   const [leftPanelItems, setLeftPanelItems] = useState<Array<SelectItem>>([]);
   const [leftPanelSelectedItems, setLeftPanelSelectedItems] = useState<Array<SelectItem>>([]);
   const [rightPanelItems, setRightPanelItems] = useState<Array<SelectItem>>(initialSelect);
@@ -29,23 +29,8 @@ function DualSelect({onChange, initialSelect}: Args) {
   const [rightFilter, setRightFilter] = useState<string|null>();
 
   useEffect(() => {
-    if (vow.data == null) {
-      return;
-    }
-    let selectItems: Array<SelectItem> = [];
-
-    for (const i of Object.entries(vow.data)) {
-      selectItems.push({
-        key: i[0],
-        value: i[1]
-      });
-    }
-
-    selectItems.sort(sortItemsFn);
-    setAllItems(selectItems);
-    setLeftPanelItems(selectItems);
-  }, [vow.data]);
-
+    setLeftPanelItems(allItems);
+  }, [allItems.length]);
 
   useEffect(() => {
     /** set initial value for left panel */
@@ -178,12 +163,17 @@ function DualSelect({onChange, initialSelect}: Args) {
     setRightFilter(value);
   }
 
-  if (vow.is_pending) {
-    return <div>Loading...</div> // or some sort of placeholder here
-  }
-
   return(
     <Container>
+      <Row>
+        <Col className='text-center'>
+          <small className='text-secondary m-0 p-0'>All Items</small>
+        </Col>
+        <Col xs={1}></Col>
+        <Col className='text-center'>
+          <small className='text-secondary m-0 p-0'>Selected Items</small>
+        </Col>
+      </Row>
       <Row>
         <Col>
           <Filter onChange={onLeftFilterChange} />
@@ -299,13 +289,5 @@ function Select({items, filter, onChange}: SelectArgs) {
   </Form.Select>
 }
 
-function sortItemsFn(a: SelectItem, b: SelectItem) {
-  if (a.key < b.key) {
-    return -1;
-  } else if (a.key > b.key) {
-    return 1;
-  }
-  return 0;
-}
 
 export default DualSelect;

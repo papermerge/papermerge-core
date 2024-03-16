@@ -6,8 +6,9 @@ import Row from 'react-bootstrap/Row';
 import { fetcher_patch } from 'utils/fetcher';
 import type {Group, NewGroup, CreatedGroup} from "./types";
 import { useResource } from 'hooks/resource';
-import { SelectItem } from 'types';
+import { SelectItem, ScopeType } from 'types';
 import DualSelect from 'components/DualSelect';
+import { sortItemsFn } from 'utils/misc';
 
 
 type ErrorArgs = {
@@ -24,21 +25,39 @@ function Error({message}: ErrorArgs) {
   return <div />;
 }
 
-
 type Args = {
   group_id: number;
   onSave: (group: Group) => void;
   onCancel: () => void;
 }
 
-
 export default function EditGroup({group_id, onSave, onCancel}: Args) {
+  const vowScopes = useResource<ScopeType>("/api/scopes/");
+  const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
   const vow = useResource<Group>(`/api/groups/${group_id}`);
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
   const [ name, setName ] = useState<string|null>();
   const [ scopes, setScopes ] = useState<Array<SelectItem>>([]);
+
+  useEffect(() => {
+    if (vowScopes.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowScopes.data)) {
+      selectItems.push({
+        key: i[0],
+        value: i[1]
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllScopes(selectItems);
+
+  }, [vowScopes.data]);
 
   useEffect(() => {
     if (vow.data) {
@@ -100,6 +119,7 @@ export default function EditGroup({group_id, onSave, onCancel}: Args) {
 
       <Row className='mb-3'>
         <DualSelect
+          allItems={allScopes}
           initialSelect={scopes}
           onChange={onScopesChange} />
       </Row>
@@ -114,55 +134,5 @@ export default function EditGroup({group_id, onSave, onCancel}: Args) {
 
       <Error message={error}/>
     </Form>
-  );
-}
-
-
-
-type ArgsPassword = {
-  change_password: boolean;
-  onChangePassword: (flag: boolean) => void;
-  onChangePassword1: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangePassword2: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-function Password({
-  change_password,
-  onChangePassword,
-  onChangePassword1,
-  onChangePassword2
-}: ArgsPassword) {
-
-
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChangePassword(e.target.checked);
-  }
-
-
-  return (
-    <div>
-      <Row className="mb-3">
-        <Form.Group as={Col}>
-            <Form.Check
-                checked={change_password}
-                onChange={onChange}
-                type="checkbox"
-                id="change-password-checkbox"
-                label="Change Password" />
-        </Form.Group>
-      </Row>
-
-      {change_password && <Row className="mb-3">
-        <Form.Group as={Col} controlId="formGridPassword1">
-          <Form.Label>Password</Form.Label>
-          <Form.Control onChange={onChangePassword1} type="password" placeholder="Password" />
-        </Form.Group>
-
-        <Form.Group as={Col} controlId="formGridPassword2">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control onChange={onChangePassword2} type="password" placeholder="Password" />
-        </Form.Group>
-      </Row>}
-  </div>
   );
 }

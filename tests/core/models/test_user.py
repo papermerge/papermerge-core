@@ -118,6 +118,8 @@ def test_update_user(db_engine: Engine):
             email="plato@mail.com",
             group_ids=[g1.id],
             scopes=['tag.update'],
+            is_superuser=False,
+            is_active=False,
         )
     )
 

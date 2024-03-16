@@ -100,6 +100,8 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
   const [ password1, setPassword1 ] = useState<string|null>();
   const [ password2, setPassword2 ] = useState<string|null>();
   const [ change_password, setChangePassword] = useState<boolean>(false);
+  const [ is_superuser, setIsSuperuer] = useState<boolean>(false);
+  const [ is_active, setIsActive] = useState<boolean>(false);
 
   useEffect(() => {
     if (vow.data == null) {
@@ -114,6 +116,8 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
     setGroups(
       vow.data.groups.map(i => {return {key: `${i.id}`, value: i.name}})
     );
+    setIsSuperuer(vow.data.is_superuser);
+    setIsActive(vow.data.is_active);
 
   }, [vow.data]);
 
@@ -193,6 +197,8 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
       email: email,
       password: password1!,
       scopes: scopes.map(i => i.key),
+      is_superuser: false,
+      is_active: false,
       group_ids: groups.map(i => parseInt(i.key))
     };
 

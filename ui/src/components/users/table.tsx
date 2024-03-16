@@ -110,6 +110,8 @@ export default function UsersTable() {
         <tr className="text-uppercase text-center">
           <th>Username</th>
           <th>Email</th>
+          <th>Superuser</th>
+          <th>Active</th>
           <th>Created At</th>
           <th>Action</th>
         </tr>

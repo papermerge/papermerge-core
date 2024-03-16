@@ -50,9 +50,9 @@ class User(Base):
     password: Mapped[str]
     first_name: Mapped[str] = mapped_column(default=' ')
     last_name: Mapped[str] = mapped_column(default=' ')
-    is_superuser: Mapped[bool] = mapped_column(default=True)
-    is_staff: Mapped[bool] = mapped_column(default=True)
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
+    is_staff: Mapped[bool] = mapped_column(default=False)
+    is_active: Mapped[bool] = mapped_column(default=False)
     nodes: Mapped[List["Node"]] = relationship(
         back_populates="user",
         primaryjoin="User.id == Node.user_id"

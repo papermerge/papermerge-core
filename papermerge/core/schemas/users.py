@@ -26,6 +26,8 @@ class User(BaseModel):
     updated_at: datetime
     home_folder_id: UUID | None
     inbox_folder_id: UUID | None
+    is_superuser: bool
+    is_active: bool
     scopes: list[str] = []
 
     # Config
@@ -40,6 +42,8 @@ class UserDetails(BaseModel):
     updated_at: datetime
     home_folder_id: UUID | None
     inbox_folder_id: UUID | None
+    is_superuser: bool
+    is_active: bool
     scopes: list[str] = []
     groups: list[Group] = []
 
@@ -75,6 +79,8 @@ class CreateUser(BaseModel):
     username: str
     email: str
     password: str
+    is_superuser: bool
+    is_active: bool
     scopes: list[str]  # list of scope names e.g. "user.create", "user.delete"
     group_ids: list[int]  # list of group IDs e.g. 65, 72
 
@@ -86,5 +92,7 @@ class UpdateUser(BaseModel):
     username: str
     email: str
     password: str | None = None
+    is_superuser: bool
+    is_active: bool
     scopes: list[str] = []
     group_ids: list[int] = []

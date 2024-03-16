@@ -121,6 +121,8 @@ export default function NewUser({onSave, onCancel}: Args) {
       username: username!,
       email: email!,
       password: password1!,
+      is_superuser: false,
+      is_active: false,
       scopes: scopes,
       group_ids: groups.map(i => parseInt(i))
     };

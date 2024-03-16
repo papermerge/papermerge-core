@@ -63,11 +63,13 @@ def get_user_details(
         result = schemas.UserDetails(
             id=db_user.id,
             username=db_user.username,
-            email=db_user.username,
+            email=db_user.email,
             created_at=db_user.created_at,
             updated_at=db_user.updated_at,
             home_folder_id=db_user.home_folder_id,
             inbox_folder_id=db_user.inbox_folder_id,
+            is_superuser=db_user.is_superuser,
+            is_active=db_user.is_active,
             scopes=list([
                 p.codename for p in db_user.permissions
             ]),
@@ -100,7 +102,9 @@ def create_user(
     email: str,
     password: str,
     scopes: list[str],
-    group_ids: list[int]
+    group_ids: list[int],
+    is_superuser: bool = False,
+    is_active: bool = False
 ) -> schemas.User:
 
     with Session(engine) as session:
@@ -112,6 +116,8 @@ def create_user(
             id=user_id,
             username=username,
             email=email,
+            is_superuser=is_superuser,
+            is_active=is_active,
             password=pbkdf2_sha256.hash(password),
         )
         db_inbox = Folder(
@@ -174,6 +180,8 @@ def update_user(
         user.username = attrs.username
         user.email = attrs.email
         user.permissions = perms
+        user.is_superuser = attrs.is_superuser
+        user.is_active = attrs.is_active
 
         user.groups = groups
         if attrs.password:
@@ -188,6 +196,8 @@ def update_user(
             updated_at=user.updated_at,
             home_folder_id=user.home_folder_id,
             inbox_folder_id=user.inbox_folder_id,
+            is_superuser=user.is_superuser,
+            is_active=user.is_active,
             scopes=list([
                 p.codename for p in user.permissions
             ]),

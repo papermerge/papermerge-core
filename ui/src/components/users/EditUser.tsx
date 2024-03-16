@@ -9,6 +9,7 @@ import type {User, NewUser, CreatedUser, UserDetail} from "./types";
 import type { Paginated, ScopeType,  SelectItem, Group } from 'types';
 import DualSelect from 'components/DualSelect';
 import { sortItemsFn } from 'utils/misc';
+import { Container } from 'react-bootstrap';
 
 
 type ErrorArgs = {
@@ -100,7 +101,7 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
   const [ password1, setPassword1 ] = useState<string|null>();
   const [ password2, setPassword2 ] = useState<string|null>();
   const [ change_password, setChangePassword] = useState<boolean>(false);
-  const [ is_superuser, setIsSuperuer] = useState<boolean>(false);
+  const [ is_superuser, setIsSuperuser] = useState<boolean>(false);
   const [ is_active, setIsActive] = useState<boolean>(false);
 
   useEffect(() => {
@@ -116,7 +117,7 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
     setGroups(
       vow.data.groups.map(i => {return {key: `${i.id}`, value: i.name}})
     );
-    setIsSuperuer(vow.data.is_superuser);
+    setIsSuperuser(vow.data.is_superuser);
     setIsActive(vow.data.is_active);
 
   }, [vow.data]);
@@ -186,6 +187,14 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
     setGroups(groups);
   }
 
+  const onChangeIsSuperuser = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSuperuser(e.target.checked);
+  }
+
+  const onChangeIsActive = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsActive(e.target.checked);
+  }
+
   const onLocalSubmit = () => {
 
     if (!validate()) {
@@ -197,8 +206,8 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
       email: email,
       password: password1!,
       scopes: scopes.map(i => i.key),
-      is_superuser: false,
-      is_active: false,
+      is_superuser: is_superuser,
+      is_active: is_active,
       group_ids: groups.map(i => parseInt(i.key))
     };
 
@@ -267,6 +276,25 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
         onChangePassword={onChangePassword}
         onChangePassword1={onChangePassword1}
         onChangePassword2={onChangePassword2} />
+
+      <Row className="mb-3">
+          <Form.Group as={Col} controlId="formGridIsSuperuser">
+            <Form.Check
+                checked={is_superuser}
+                onChange={onChangeIsSuperuser}
+                type="checkbox"
+                id="is-superuser-flag"
+                label="Is Superuser?" />
+          </Form.Group>
+          <Form.Group as={Col} controlId="formGridIsActive">
+            <Form.Check
+                checked={is_active}
+                onChange={onChangeIsActive}
+                type="checkbox"
+                id="is-active-flag"
+                label="Is Active?" />
+          </Form.Group>
+      </Row>
 
       <Row className='mb-3'>
           <Form.Label>Groups</Form.Label>

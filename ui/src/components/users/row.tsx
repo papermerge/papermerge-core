@@ -3,11 +3,30 @@ import type { User } from "./types";
 import delete_user from './DeleteUser';
 
 
+type BooleanIconArgs = {
+  value: boolean;
+}
+
+
+function BooleanIcon({value}: BooleanIconArgs) {
+  if (value) {
+    return <div className='text-success'>
+      <i className='bi bi-check-lg'></i>
+    </div>
+  }
+
+  return <div className='text-danger'>
+    <i className='bi bi-x-lg'></i>
+  </div>
+}
+
+
 type Args = {
   item: User;
   onDelete: (user_id: string) => void;
   onEdit: (user_id: string) => void;
 }
+
 
 export default function Row({item, onDelete, onEdit}: Args
 ) {
@@ -25,6 +44,12 @@ export default function Row({item, onDelete, onEdit}: Args
       </td>
       <td className="text-center">
         {item.email}
+      </td>
+      <td className="text-center">
+        <BooleanIcon value={item.is_superuser} />
+      </td>
+      <td className="text-center">
+        <BooleanIcon value={item.is_active} />
       </td>
       <td className="text-center">
         {item.created_at}

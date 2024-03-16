@@ -48,6 +48,8 @@ export default function NewUser({onSave, onCancel}: Args) {
   const [ email, setEmail ] = useState<string|null>();
   const [ password1, setPassword1 ] = useState<string|null>();
   const [ password2, setPassword2 ] = useState<string|null>();
+  const [ is_superuser, setIsSuperuser] = useState<boolean>(false);
+  const [ is_active, setIsActive] = useState<boolean>(false);
 
   useEffect(() => {
     if (vowScopes.data == null) {
@@ -111,6 +113,14 @@ export default function NewUser({onSave, onCancel}: Args) {
      );
   }
 
+  const onChangeIsSuperuser = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSuperuser(e.target.checked);
+  }
+
+  const onChangeIsActive = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsActive(e.target.checked);
+  }
+
   const onLocalSubmit = () => {
 
     if (!validate()) {
@@ -121,6 +131,8 @@ export default function NewUser({onSave, onCancel}: Args) {
       username: username!,
       email: email!,
       password: password1!,
+      is_superuser: is_superuser,
+      is_active: is_active,
       scopes: scopes,
       group_ids: groups.map(i => parseInt(i))
     };
@@ -184,6 +196,25 @@ export default function NewUser({onSave, onCancel}: Args) {
           <Form.Label>Confirm Password</Form.Label>
           <Form.Control onChange={onChangePassword2} type="password" placeholder="Password" />
         </Form.Group>
+      </Row>
+
+      <Row className="mb-3">
+          <Form.Group as={Col} controlId="formGridIsSuperuser">
+            <Form.Check
+                checked={is_superuser}
+                onChange={onChangeIsSuperuser}
+                type="checkbox"
+                id="is-superuser-flag"
+                label="Is Superuser?" />
+          </Form.Group>
+          <Form.Group as={Col} controlId="formGridIsActive">
+            <Form.Check
+                checked={is_active}
+                onChange={onChangeIsActive}
+                type="checkbox"
+                id="is-active-flag"
+                label="Is Active?" />
+          </Form.Group>
       </Row>
 
       <Row className='mb-3'>

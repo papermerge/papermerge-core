@@ -192,8 +192,8 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
       username: username,
       email: email,
       password: password1!,
-      scopes: [],
-      group_ids: []
+      scopes: scopes.map(i => i.key),
+      group_ids: groups.map(i => parseInt(i.key))
     };
 
     fetcher_patch<NewUser, CreatedUser>(

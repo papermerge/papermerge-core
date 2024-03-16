@@ -166,7 +166,7 @@ def update_user(
         perms = session.execute(stmt).scalars().all()
 
         stmt = select(Group).where(
-            Group.id.in_(attrs.groups)
+            Group.id.in_(attrs.group_ids)
         )
         groups = session.execute(stmt).scalars().all()
         user = session.get(User, user_id)
@@ -174,6 +174,7 @@ def update_user(
         user.username = attrs.username
         user.email = attrs.email
         user.permissions = perms
+
         user.groups = groups
         if attrs.password:
             user.password = pbkdf2_sha256.hash(attrs.password)

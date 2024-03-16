@@ -87,4 +87,4 @@ class UpdateUser(BaseModel):
     email: str
     password: str | None = None
     scopes: list[str] = []
-    groups: list[Group] = []
+    group_ids: list[int] = []

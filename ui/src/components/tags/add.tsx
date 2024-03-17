@@ -5,6 +5,7 @@ import { Form, Button } from "react-bootstrap";
 import LoadingButton from 'components/loading_button';
 import { DEFAULT_TAG_FG_COLOR, DEFAULT_TAG_BG_COLOR } from 'cconstants';
 import { fetcher_post } from 'utils/fetcher';
+import useToast from 'hooks/useToasts';
 
 
 import TagComponent from "./tag";
@@ -43,6 +44,7 @@ export default function AddRow({onSave, onCancel}: Args) {
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [item, setItem] = useState<IColoredTag>(new ColoredTag());
   const [save_in_progress, setSaveInProgress] = useState(false);
+  const toasts = useToast();
 
   const onChangeName = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
@@ -83,6 +85,9 @@ export default function AddRow({onSave, onCancel}: Args) {
         setSaveInProgress(false);
         setController(new AbortController());
         onSave(new_item);
+      }).catch((error: Error) => {
+        setSaveInProgress(false);
+        toasts?.addToast("error", `Error while creating tag: ${error.toString()}`);
       });
     }
   }

@@ -90,8 +90,12 @@ async function fetcher_post<Input, Output>(
       signal: signal
     }
   )
-  .then(res => res.json())
-  .catch((err) => console.log(`fetch post error=${err}`));
+  .then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_upload(url: string, file: File) {

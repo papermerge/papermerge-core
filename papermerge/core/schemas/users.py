@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import (BaseModel, ConfigDict, ValidationInfo, field_serializer,
+                      field_validator)
 
 
 class Group(BaseModel):
@@ -26,9 +27,18 @@ class User(BaseModel):
     updated_at: datetime
     home_folder_id: UUID | None
     inbox_folder_id: UUID | None
-    is_superuser: bool
-    is_active: bool
+    is_superuser: bool = False
+    is_active: bool = False
     scopes: list[str] = []
+
+    @field_validator('scopes')
+    @classmethod
+    def sorted_scopes(cls, v: list[str], info: ValidationInfo):
+        return sorted(v)
+
+    @field_serializer('scopes', when_used='json')
+    def serialize_sorted_scopes(v: list[str]):
+        return sorted(v)
 
     # Config
     model_config = ConfigDict(from_attributes=True)

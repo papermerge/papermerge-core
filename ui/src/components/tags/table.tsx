@@ -71,6 +71,7 @@ export default function TagsTable() {
       setNumPages(data.num_pages);
       setIsTaglistLoading(false);
     }).catch((error: Error) => {
+      setIsTaglistLoading(false);
       setTaglistLoadingError(error.toString());
     });
   }, [page_number]);

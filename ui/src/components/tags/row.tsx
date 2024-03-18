@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap';
 import type { ColoredTag } from "types";
 import LoadingButton from 'components/loading_button';
 import { fetcher_delete, fetcher_patch } from "utils/fetcher";
+import useToast from 'hooks/useToasts';
 
 import Tag from "./tag";
 
@@ -38,6 +39,7 @@ export default function Row({
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [updated_item, updateItem] = useState<ColoredTag>(item);
   const [save_in_progress, setSaveInProgress] = useState(false);
+  const toasts = useToast();
 
   const onChangeName = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value;
@@ -94,6 +96,9 @@ export default function Row({
       setSaveInProgress(false);
       setController(new AbortController());
       onUpdate(updated_item);
+    }).catch((error: Error) => {
+      setSaveInProgress(false);
+      toasts?.addToast("error", `Error while updating tag: ${error.toString()}`);
     });
   }
 

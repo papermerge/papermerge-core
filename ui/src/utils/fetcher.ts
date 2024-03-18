@@ -133,7 +133,12 @@ async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: A
       body: JSON.stringify(data),
       signal: signal
     }
-  ).then(res => res.json());
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_delete<Input, Output>(

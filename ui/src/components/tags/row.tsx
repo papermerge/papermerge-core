@@ -103,13 +103,21 @@ export default function Row({
   }
 
   const onLocalRemoveHandler = () => {
-    fetcher_delete<Object, ColoredTag>(
+    fetcher_delete<Object, Response>(
       `/api/tags/${item.id}`,
       {},
       undefined,
       false
-    ).then(() => {
-      onRemove(item);
+    ).then((res) => {
+      if (res.status == 401) {
+        setSaveInProgress(false);
+        toasts?.addToast("error", `Error while deleting tag: 401 Unauthorized`);
+      } else {
+        onRemove(item);
+      }
+    }).catch((error: Error) => {
+      setSaveInProgress(false);
+      toasts?.addToast("error", `Error while deleting tag: ${error.toString()}`);
     });
   }
 

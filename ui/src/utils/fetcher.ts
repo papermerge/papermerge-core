@@ -165,7 +165,12 @@ async function fetcher_delete<Input, Output>(
   }
 
   if (serialize_response === true) {
-    return result.then(res => res.json());
+    return result.then(res => {
+      if (res.status === 401) {
+        throw Error(`${res.status} ${res.statusText}`)
+      }
+      return res.json()
+    });
   }
 
   return result;

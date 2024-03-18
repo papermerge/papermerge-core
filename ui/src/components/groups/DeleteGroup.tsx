@@ -7,7 +7,7 @@ import { get_default_headers } from 'utils/fetcher';
 import { Group } from './types';
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (group_id: number) => void;
   group: Group;
 }
@@ -20,15 +20,24 @@ async function api_delete_group(url: string, signal: AbortSignal): Promise<strin
       headers: get_default_headers(),
       signal: signal
     }
-  );
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });;
 }
 
 const DeleteGroupModal = ({onOK, onCancel, group}: Args) => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_delete_group(`/api/groups/${group.id}`, signal);
-    onOK(group.id);
+    try {
+      let response = await api_delete_group(`/api/groups/${group.id}`, signal);
+      onOK(group.id);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = () => {

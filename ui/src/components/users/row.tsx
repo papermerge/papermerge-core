@@ -38,7 +38,7 @@ export default function Row({item, onDelete, onEdit}: Args
     delete_user(item).then(
       user_id => onDelete(user_id)
     ).catch((error: Error) => {
-      toasts?.addToast("error", `Error while deleting use: ${error.toString()}`);
+      toasts?.addToast("error", `Error while deleting user: ${error.toString()}`);
     })
   }
 

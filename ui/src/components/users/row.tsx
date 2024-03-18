@@ -1,6 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import type { User } from "./types";
 import delete_user from './DeleteUser';
+import useToast from 'hooks/useToasts';
 
 
 type BooleanIconArgs = {
@@ -31,10 +32,14 @@ type Args = {
 export default function Row({item, onDelete, onEdit}: Args
 ) {
 
+  const toasts = useToast();
+
   const onLocalDelete = () => {
     delete_user(item).then(
       user_id => onDelete(user_id)
-    )
+    ).catch((error: Error) => {
+      toasts?.addToast("error", `Error while deleting use: ${error.toString()}`);
+    })
   }
 
   return (

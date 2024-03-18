@@ -481,7 +481,7 @@ function Commander({
 
   if (nodes.error) {
     if (nodes.error.includes("401")) {
-      return <SessionEnd />
+      return <div className='text-danger'>Error: 401 Unauthorized</div>
     }
   }
 

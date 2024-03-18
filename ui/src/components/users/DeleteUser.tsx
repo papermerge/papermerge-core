@@ -5,9 +5,10 @@ import { createRoot } from "react-dom/client";
 import GenericModal from 'components/modals/Generic';
 import { get_default_headers } from 'utils/fetcher';
 import { User } from './types';
+import useToast from 'hooks/useToasts';
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (user_id: string) => void;
   user: User;
 }
@@ -20,20 +21,30 @@ async function api_delete_user(url: string, signal: AbortSignal): Promise<string
       headers: get_default_headers(),
       signal: signal
     }
-  );
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 const DeleteUserModal = ({onOK, onCancel, user}: Args) => {
   const [errorMessage, setErrorMessage] = useState('');
+  const toasts = useToast();
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_delete_user(`/api/users/${user.id}`, signal);
-    onOK(user.id);
+
+    try {
+      let response = await api_delete_user(`/api/users/${user.id}`, signal);
+      onOK(user.id);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = () => {
     setErrorMessage('');
-
     onCancel();
   }
 

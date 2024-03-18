@@ -9,7 +9,7 @@ import type {User, NewUser, CreatedUser, UserDetail} from "./types";
 import type { Paginated, ScopeType,  SelectItem, Group } from 'types';
 import DualSelect from 'components/DualSelect';
 import { sortItemsFn } from 'utils/misc';
-import { Container } from 'react-bootstrap';
+import useToast from 'hooks/useToasts';
 
 
 type ErrorArgs = {
@@ -103,6 +103,7 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
   const [ change_password, setChangePassword] = useState<boolean>(false);
   const [ is_superuser, setIsSuperuser] = useState<boolean>(false);
   const [ is_active, setIsActive] = useState<boolean>(false);
+  const toasts = useToast();
 
   useEffect(() => {
     if (vow.data == null) {
@@ -218,6 +219,9 @@ export default function EditUser({user_id, onSave, onCancel}: Args) {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
+    }).catch((error: Error) => {
+      setSaveInProgress(false);
+      toasts?.addToast("error", `Error while updating user: ${error.toString()}`);
     });
   }
 

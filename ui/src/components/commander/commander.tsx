@@ -281,8 +281,10 @@ function Commander({
       (new_node: NodeType) => {
         onNodesListChange([new_node, ...nodes!.data!.nodes]);
       }
-    ).catch((error: Error) => {
-      toasts?.addToast("error", `Error while creating folder: ${error}`);
+    ).catch((error: Error | undefined) => {
+      if (error) {
+        toasts?.addToast("error", `Error while creating folder: ${error}`);
+      }
     });
   }
 
@@ -304,8 +306,10 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    ).catch((error: Error) => {
-      toasts?.addToast('error', `Error while renaming ${error}`);
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast('error', `Error while renaming ${error}`);
+      }
     });
   }
 
@@ -340,8 +344,10 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    ).catch((error: Error) => {
-      toasts?.addToast(`error`, `Error while saving: ${error}`);
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while saving: ${error}`);
+      }
     });
   }
 
@@ -397,7 +403,7 @@ function Commander({
           source: moved_nodes.nodes
         });
         setCssAcceptFiles("");
-      }).catch(() => { // catch => dialog was canceled
+      }).catch((error: Error | undefined) => { // catch => dialog was canceled
         if (dual_context?.onResetSelectedNodes) {
           dual_context.onResetSelectedNodes();
         }
@@ -405,6 +411,9 @@ function Commander({
           dual_context.onResetDraggedNodes();
         }
         setCssAcceptFiles("");
+        if (error) {
+          toasts?.addToast("error", `Error while moving node(s) ${error}`);
+        }
       });
 
       return

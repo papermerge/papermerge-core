@@ -89,9 +89,11 @@ export default function NewGroup({onSave, onCancel}: Args) {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
-    }).catch((error: Error) => {
+    }).catch((error?: Error) => {
       setSaveInProgress(false);
-      toasts?.addToast("error", `Error while creating group: ${error.toString()}`);
+      if (error) {
+        toasts?.addToast("error", `Error while creating group: ${error.toString()}`);
+      }
     });
 
   }

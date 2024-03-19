@@ -17,8 +17,10 @@ export default function Row({item, onDelete, onEdit}: Args
   const onLocalDelete = () => {
     delete_group(item).then(
       group_id => onDelete(group_id)
-    ).catch((error: Error) => {
-      toasts?.addToast("error", `Error while deleting group: ${error.toString()}`);
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error while deleting group: ${error.toString()}`);
+      }
     })
   }
 

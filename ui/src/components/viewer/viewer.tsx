@@ -336,8 +336,10 @@ export default function Viewer({
 
         onBreadcrumbChange(new_breadcrumb);
       }
-    ).catch((error: Error) => {
-      toasts?.addToast("error", `Error while renaming: ${error}`);
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error while renaming: ${error}`);
+      }
     });
   }
 

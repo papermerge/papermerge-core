@@ -7,7 +7,7 @@ import GenericModal from 'components/modals/Generic';
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (moved_nodes: MovedNodesType) => void;
   source_nodes: NodeType[];
   target_node: NodeType;
@@ -30,7 +30,12 @@ async function api_move_nodes(
       }),
       'signal': signal
     },
-  );
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 
@@ -42,19 +47,23 @@ const MoveNodesModal = ({
 }: Args) => {
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_move_nodes(
-      source_nodes,
-      target_node,
-      signal
-    );
+    try{
+      let response = await api_move_nodes(
+        source_nodes,
+        target_node,
+        signal
+      );
 
-    await response.json();
+      await response.json();
 
-    if (response.status == 200) {
-      onOK({
-        nodes: source_nodes,
-        parent_id: target_node.id
-      });
+      if (response.status == 200) {
+        onOK({
+          nodes: source_nodes,
+          parent_id: target_node.id
+        });
+      }
+    } catch (error: any) {
+      onCancel(error.toString());
     }
   }
 

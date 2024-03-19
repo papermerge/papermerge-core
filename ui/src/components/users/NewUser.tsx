@@ -146,8 +146,10 @@ export default function NewUser({onSave, onCancel}: Args) {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
-    }).catch((error: Error) => {
-      toasts?.addToast("error", `Error creating user: ${error.toString()}`);
+    }).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error creating user: ${error.toString()}`);
+      }
     }) ;
 
   }

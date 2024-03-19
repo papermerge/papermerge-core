@@ -281,7 +281,9 @@ function Commander({
       (new_node: NodeType) => {
         onNodesListChange([new_node, ...nodes!.data!.nodes]);
       }
-    );
+    ).catch((error: Error) => {
+      toasts?.addToast("error", `Error while creating folder: ${error}`);
+    });
   }
 
   const onRenameClick = () => {

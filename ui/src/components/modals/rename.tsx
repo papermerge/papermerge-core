@@ -9,7 +9,7 @@ import { MODALS } from 'cconstants';
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (node: NodeType) => void;
   node_id: string;
   old_title: string | null | undefined;
@@ -49,10 +49,14 @@ const RenameModal = ({onCancel, onOK, node_id, old_title}: Args) => {
   }
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_rename_node(node_id, title, signal);
-    let new_node: NodeType = response as NodeType;
+    try {
+      let response = await api_rename_node(node_id, title, signal);
+      let new_node: NodeType = response as NodeType;
 
-    onOK(new_node);
+      onOK(new_node);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = () => {

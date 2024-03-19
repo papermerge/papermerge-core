@@ -304,7 +304,9 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    );
+    ).catch((error: Error) => {
+      toasts?.addToast('error', `Error while renaming ${error}`);
+    });
   }
 
   const onDeleteNodesClick = () => {
@@ -338,7 +340,9 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    );
+    ).catch((error: Error) => {
+      toasts?.addToast(`error`, `Error while saving: ${error}`);
+    });
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {

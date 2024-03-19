@@ -336,7 +336,9 @@ export default function Viewer({
 
         onBreadcrumbChange(new_breadcrumb);
       }
-    );
+    ).catch((error: Error) => {
+      toasts?.addToast("error", `Error while renaming: ${error}`);
+    });
   }
 
   const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {

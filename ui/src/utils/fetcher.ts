@@ -44,10 +44,15 @@ async function download_file(url: string, file_name: string) {
   Based on:
     https://stackoverflow.com/questions/32545632/how-can-i-download-a-file-using-window-fetch
   */
-  fetch(url, {
+  return fetch(url, {
     headers: get_default_headers()
   })
-  .then( res => res.blob() )
+  .then( res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res.blob();
+  })
   .then( blob => {
     let url = window.URL.createObjectURL(blob);
     let a = document.createElement('a');
@@ -59,7 +64,6 @@ async function download_file(url: string, file_name: string) {
     //afterwards we remove the element again
     a.remove();
   });
-
 }
 
 

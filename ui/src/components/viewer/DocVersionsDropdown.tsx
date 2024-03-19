@@ -2,6 +2,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import type { DocumentVersion, DocumentType } from "types";
 import { download_file } from 'utils/fetcher';
 import type { Vow } from 'types';
+import useToast from 'hooks/useToasts';
 
 
 type Args = {
@@ -20,9 +21,14 @@ function description(number: number, text: string): string {
 
 
 export default function DocVersionsDropdown({versions, doc}: Args) {
+  const toasts = useToast();
 
   const onClick = (href: string, file_name: string) => {
-    download_file(href, file_name);
+    download_file(href, file_name).catch(
+      (error: Error) => {
+         toasts?.addToast(`error`, `Error while downloading ${error}`);
+      }
+    );
   }
 
   if (doc.is_pending) {

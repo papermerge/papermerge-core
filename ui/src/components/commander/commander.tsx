@@ -323,7 +323,11 @@ function Commander({
         onNodesListChange(new_nodes);
         onSelectNodes([]);
       }
-    );
+    ).catch ((error?: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while deleting node(s): ${error}`);
+      }
+    });
   }
 
   const onEditTagsClick = () => {

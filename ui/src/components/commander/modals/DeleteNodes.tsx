@@ -7,7 +7,7 @@ import { fetcher_delete } from 'utils/fetcher';
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (node_ids: string[]) => void;
   node_ids: string[];
 }
@@ -24,8 +24,12 @@ const DeleteNodesModal = ({onOK, onCancel, node_ids}: Args) => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_delete_nodes(node_ids, signal);
-    onOK(node_ids);
+    try {
+      let response = await api_delete_nodes(node_ids, signal);
+      onOK(node_ids);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = () => {

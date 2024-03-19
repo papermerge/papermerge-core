@@ -187,7 +187,7 @@ def delete_nodes(
     list_of_uuids: List[UUID],
     user: Annotated[
         schemas.User,
-        Security(get_current_user, scopes=scopes.NODE_DELETE)
+        Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ]
 ) -> List[UUID]:
     """Deletes nodes with specified UUIDs

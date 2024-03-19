@@ -32,25 +32,29 @@ async function uploader({files, node_id, skip_ocr}: UploaderArgs): Promise<Creat
     );
   });
 
-  Promise.all(bulk_create_docs).then(
-    (values: NodeType[]) => {
-      // notify commander to add document nodes
-      values.forEach(value => {
-        let file: File|undefined = Array.from(files).find(item => item.name == value.title)
-        if (file) {
-          fetcher_upload(
-            `/api/documents/${value.id}/upload`, file
-          ).then(response => {
-            if (response.status >= 400) {
-              alert(`Upload error: ${response.status} - ${response.statusText}`);
-            }
-          })
-        } else {
-          console.log(`${value.title} NOT FOUND!`);
-        }
-      });
-    }
-  );
+  try{
+    Promise.all(bulk_create_docs).then(
+      (values: NodeType[]) => {
+        // notify commander to add document nodes
+        values.forEach(value => {
+          let file: File|undefined = Array.from(files).find(item => item.name == value.title)
+          if (file) {
+            fetcher_upload(
+              `/api/documents/${value.id}/upload`, file
+            ).catch((error?: Error) => {
+                alert(error);
+            });
+          } else {
+            console.log(`${value.title} NOT FOUND!`);
+          }
+        });
+      }
+    ).catch((error: Error) => {
+      alert(error);
+    });
+  } catch(error: any) {
+    return Promise.reject(error);
+  }
 
   return Promise.all(bulk_create_docs).then(
     (values: NodeType[]) => {

@@ -385,6 +385,10 @@ function Commander({
               [...nodes!.data!.nodes, ...created_nodes.nodes]
             );
             setCssAcceptFiles("");
+        }).catch((error?: Error) => {
+          if (error) {
+            toasts?.addToast("error", `Error while uploading files ${error}`);
+          }
         });
       }
     }

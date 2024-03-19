@@ -119,7 +119,12 @@ async function fetcher_upload(url: string, file: File) {
       headers: headers,
       body: form_data
     }
-  );
+  ).then(res => {
+    if (res.status == 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: AbortSignal): Promise<Output> {

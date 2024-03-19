@@ -9,7 +9,7 @@ import type { CreatedNodesType, FolderType, NodeType } from 'types';
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (drop_files: CreatedNodesType) => void;
   source_files: FileList;
   target: FolderType;
@@ -48,7 +48,9 @@ const DropFilesModal = ({
     })
     .then(
       (drop_files: CreatedNodesType) => onOK(drop_files)
-    );
+    ).catch((error: Error) => {
+       console.log(error);
+    });
   }
 
   let source_titles: Array<string> = [];

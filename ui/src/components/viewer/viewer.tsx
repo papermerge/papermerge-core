@@ -416,8 +416,10 @@ export default function Viewer({
       document_title: doc.data!.title
     }).then((arg: ExtractedPagesType) => {
       onExtractPages(arg);
-    }).catch(() => {
-      //...
+    }).catch((error: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while extracting page(s) ${error}`);
+      }
     });
   }
 

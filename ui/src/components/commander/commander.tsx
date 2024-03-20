@@ -441,8 +441,10 @@ function Commander({
       }).then((arg: ExtractedPagesType) => {
         onExtractPages(arg);
         setCssAcceptFiles("");
-      }).catch(() => {
-        //...
+      }).catch((error: Error) => {
+        if (error) {
+          toasts?.addToast(`error`, `Error while extracting page(s): ${error}`)
+        }
       });
     }
   }

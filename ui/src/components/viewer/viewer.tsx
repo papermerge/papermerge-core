@@ -251,12 +251,16 @@ export default function Viewer({
 
   const onApplyPageOpChanges = async () => {
     let _pages = pages!.data!.map(item => apply_page_type(item));
-    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
-    setUnappliedPagesOpChanges(false);
-    onDocVersionsChange(response)
-    onSelectedPages([]);
+    try {
+      let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
+      setUnappliedPagesOpChanges(false);
+      onDocVersionsChange(response)
+      onSelectedPages([]);
 
-    toasts?.addToast("info", "Page operations successfully applied");
+      toasts?.addToast("info", "Page operations successfully applied");
+    } catch (error: any) {
+      toasts?.addToast("error", `Error while reordering page(s) ${error}`);
+    }
   }
 
 

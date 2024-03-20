@@ -11,7 +11,7 @@ import { MODALS } from 'cconstants';
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (node: NodeType) => void;
   node_id: string;
   tags: Array<ColoredTagType> | null;
@@ -28,12 +28,16 @@ const EditTagsModal = ({onCancel, onOK, node_id, tags}: Args) => {
   const handleSubmit = async (signal: AbortSignal) => {
     let tag_names = current_tags.map(tag => tag.name);
 
-    let response_node: NodeType = await fetcher_post<string[], NodeType>(
-      `/api/nodes/${node_id}/tags`,
-      tag_names,
-      signal
-    );
-    onOK(response_node);
+    try {
+      let response_node: NodeType = await fetcher_post<string[], NodeType>(
+        `/api/nodes/${node_id}/tags`,
+        tag_names,
+        signal
+      );
+      onOK(response_node);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = async () => {

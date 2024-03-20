@@ -45,11 +45,16 @@ async function api_extract_pages({
       }),
       'signal': signal
     },
-  );
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 type ModalArgs = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (arg: ExtractedPagesType) => void;
   source_page_ids: string[];
   target_folder: TargetFolder;
@@ -70,25 +75,29 @@ const ExtractPagesModal = ({
   const [strategy, setStrategy] = useState<ExtractStrategy>('all-pages-in-one-doc');
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_extract_pages({
-      source_page_ids,
-      target_folder,
-      strategy,
-      title_format,
-      signal
-    });
+    try {
+      let response = await api_extract_pages({
+        source_page_ids,
+        target_folder,
+        strategy,
+        title_format,
+        signal
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.status == 200) {
-      const source = data.source as DocumentType | null;
-      const target = data.target as NodeType[];
-      const arg = {
-        source: source,
-        target: target,
-        target_parent: target_folder
+      if (response.status == 200) {
+        const source = data.source as DocumentType | null;
+        const target = data.target as NodeType[];
+        const arg = {
+          source: source,
+          target: target,
+          target_parent: target_folder
+        }
+        onOK(arg);
       }
-      onOK(arg);
+    } catch (error: any) {
+      onCancel(error.toString());
     }
   }
 

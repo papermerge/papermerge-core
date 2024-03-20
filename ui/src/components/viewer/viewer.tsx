@@ -241,18 +241,26 @@ export default function Viewer({
       }).then(({source, target}: MovePagesBetweenDocsType) => {
         onMovePagesBetweenDocs({source, target});
         onSelectedPages([]);
+      }).catch((error: Error) => {
+        if (error) {
+          toasts?.addToast(`error`, `Error while moving page(s): ${error}`)
+        }
       });
     }
 }
 
   const onApplyPageOpChanges = async () => {
     let _pages = pages!.data!.map(item => apply_page_type(item));
-    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
-    setUnappliedPagesOpChanges(false);
-    onDocVersionsChange(response)
-    onSelectedPages([]);
+    try {
+      let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
+      setUnappliedPagesOpChanges(false);
+      onDocVersionsChange(response)
+      onSelectedPages([]);
 
-    toasts?.addToast("info", "Page operations successfully applied");
+      toasts?.addToast("info", "Page operations successfully applied");
+    } catch (error: any) {
+      toasts?.addToast("error", `Error while reordering page(s) ${error}`);
+    }
   }
 
 
@@ -336,7 +344,11 @@ export default function Viewer({
 
         onBreadcrumbChange(new_breadcrumb);
       }
-    );
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error while renaming: ${error}`);
+      }
+    });
   }
 
   const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
@@ -390,7 +402,9 @@ export default function Viewer({
   const onRunOCR = (_doc: DocumentType, _doc_ver: DocumentVersion) => {
     run_ocr(_doc, _doc_ver)
     .then(() => {})
-    .catch(() => {});
+    .catch((error: Error) => {
+      toasts?.addToast('error', `Error while running OCR ${error}`);
+    });
   }
 
   const onDocumentMoveTo = (target_folder: TargetFolder) => {
@@ -408,8 +422,10 @@ export default function Viewer({
       document_title: doc.data!.title
     }).then((arg: ExtractedPagesType) => {
       onExtractPages(arg);
-    }).catch(() => {
-      //...
+    }).catch((error: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while extracting page(s) ${error}`);
+      }
     });
   }
 

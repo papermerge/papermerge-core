@@ -9,6 +9,7 @@ import { useResource } from 'hooks/resource';
 import { SelectItem, ScopeType } from 'types';
 import DualSelect from 'components/DualSelect';
 import { sortItemsFn } from 'utils/misc';
+import useToast from 'hooks/useToasts';
 
 
 type ErrorArgs = {
@@ -40,6 +41,7 @@ export default function EditGroup({group_id, onSave, onCancel}: Args) {
   const [ error, setError ] = useState<string|undefined>();
   const [ name, setName ] = useState<string|null>();
   const [ scopes, setScopes ] = useState<Array<SelectItem>>([]);
+  const toasts = useToast();
 
   useEffect(() => {
     if (vowScopes.data == null) {
@@ -93,6 +95,11 @@ export default function EditGroup({group_id, onSave, onCancel}: Args) {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
+    }).catch((error?: Error) => {
+      setSaveInProgress(false);
+      if (error) {
+        toasts?.addToast("error", `Error while updating group: ${error.toString()}`);
+      }
     });
   }
 

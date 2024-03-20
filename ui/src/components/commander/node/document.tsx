@@ -81,7 +81,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   if (protected_thumbnail.is_loading) {
     thumbnail_component = <div className="icon document"></div>;
   } else if ( protected_thumbnail.error ) {
-    thumbnail_component = <div>{protected_thumbnail.error}</div>
+    thumbnail_component = <div>{`Error fetching thumbnails: ${protected_thumbnail.error}`}</div>
   } else {
     thumbnail_component = <div className="image">
       {protected_thumbnail.data}

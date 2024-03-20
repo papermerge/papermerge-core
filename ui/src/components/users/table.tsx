@@ -27,6 +27,7 @@ export default function UsersTable() {
       setNumPages(data.num_pages);
       setIsUserlistLoading(false);
     }).catch((error: Error) => {
+        setIsUserlistLoading(false);
         setUserlistLoadingError(error.toString());
     });
   }, [page_number]);

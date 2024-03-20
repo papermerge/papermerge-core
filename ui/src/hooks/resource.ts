@@ -24,7 +24,7 @@ export function useResource<T>(url: string): Vow<T> {
    ).catch((error: string) => {
       setResource({
         is_pending: false,
-        error: error,
+        error: error.toString(),
         data: null
       });
    })

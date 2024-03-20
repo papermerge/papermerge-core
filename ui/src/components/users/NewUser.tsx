@@ -9,6 +9,7 @@ import type { Group, Paginated, ScopeType, SelectItem } from 'types';
 import DualSelect from 'components/DualSelect';
 import { useResource } from 'hooks/resource';
 import { sortItemsFn } from 'utils/misc';
+import useToast from 'hooks/useToasts';
 
 
 type ErrorArgs = {
@@ -50,6 +51,7 @@ export default function NewUser({onSave, onCancel}: Args) {
   const [ password2, setPassword2 ] = useState<string|null>();
   const [ is_superuser, setIsSuperuser] = useState<boolean>(false);
   const [ is_active, setIsActive] = useState<boolean>(false);
+  const toasts = useToast();
 
   useEffect(() => {
     if (vowScopes.data == null) {
@@ -144,7 +146,11 @@ export default function NewUser({onSave, onCancel}: Args) {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
-    });
+    }).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error creating user: ${error.toString()}`);
+      }
+    }) ;
 
   }
 

@@ -32,12 +32,17 @@ async function api_run_ocr({
       }),
       'signal': signal
     },
-  );
+  ).then(res => {
+    if (res.status == 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res
+  });
 }
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (task_id: string) => void;
   doc: DocumentType;
   doc_ver: DocumentVersion;
@@ -55,16 +60,20 @@ const RunOCRModal = ({
   const [langs, setLangs] = useState<string[]>();
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_run_ocr({
-      doc,
-      lang,
-      signal
-    });
+    try {
+      let response = await api_run_ocr({
+        doc,
+        lang,
+        signal
+      });
 
-    let {task_id} = await response.json();
+      let {task_id} = await response.json();
 
-    if (response.status == 200) {
-      onOK(task_id);
+      if (response.status == 200) {
+        onOK(task_id);
+      }
+    } catch(error: any) {
+      onCancel(error)
     }
   }
 
@@ -72,7 +81,6 @@ const RunOCRModal = ({
     setLang(value);
     console.log(`New lang value ${value}`);
   }
-
 
   return (
     <GenericModal

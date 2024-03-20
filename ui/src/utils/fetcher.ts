@@ -44,10 +44,15 @@ async function download_file(url: string, file_name: string) {
   Based on:
     https://stackoverflow.com/questions/32545632/how-can-i-download-a-file-using-window-fetch
   */
-  fetch(url, {
+  return fetch(url, {
     headers: get_default_headers()
   })
-  .then( res => res.blob() )
+  .then( res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res.blob();
+  })
   .then( blob => {
     let url = window.URL.createObjectURL(blob);
     let a = document.createElement('a');
@@ -59,7 +64,6 @@ async function download_file(url: string, file_name: string) {
     //afterwards we remove the element again
     a.remove();
   });
-
 }
 
 
@@ -90,8 +94,12 @@ async function fetcher_post<Input, Output>(
       signal: signal
     }
   )
-  .then(res => res.json())
-  .catch((err) => console.log(`fetch post error=${err}`));
+  .then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_upload(url: string, file: File) {
@@ -115,7 +123,12 @@ async function fetcher_upload(url: string, file: File) {
       headers: headers,
       body: form_data
     }
-  );
+  ).then(res => {
+    if (res.status == 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: AbortSignal): Promise<Output> {
@@ -129,7 +142,12 @@ async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: A
       body: JSON.stringify(data),
       signal: signal
     }
-  ).then(res => res.json());
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_delete<Input, Output>(
@@ -156,7 +174,12 @@ async function fetcher_delete<Input, Output>(
   }
 
   if (serialize_response === true) {
-    return result.then(res => res.json());
+    return result.then(res => {
+      if (res.status === 401) {
+        throw Error(`${res.status} ${res.statusText}`)
+      }
+      return res.json()
+    });
   }
 
   return result;

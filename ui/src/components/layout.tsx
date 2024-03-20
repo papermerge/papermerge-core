@@ -65,7 +65,10 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <Sidebar
+          folded={sidebarFolded}
+          onSidebarItemChange={onContentBlockChange}
+          scopes={data?.scopes || []} />
         <CentralBar onSubmitSearch={onSearchSubmit}>
           Loading ...
         </CentralBar>
@@ -80,7 +83,7 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   return (
     <main className={styles.main}>
       <ToastProvider>
-        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <Sidebar scopes={data?.scopes || []} folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
         <CentralBar
           username={data?.username}
           onToggleSidebar={onToggleSidebar}

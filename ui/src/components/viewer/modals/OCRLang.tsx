@@ -24,6 +24,10 @@ function OCRLang({onChange, defaultValue}: Args) {
     return <div>Loading...</div>
   }
 
+  if (langs.error) {
+    return <div>{langs.error}</div>
+  }
+
   const filtered_langs = langs.data!.filter((l) => l != 'osd');
 
   const lang_options = filtered_langs.map(

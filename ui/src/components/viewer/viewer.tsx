@@ -402,7 +402,9 @@ export default function Viewer({
   const onRunOCR = (_doc: DocumentType, _doc_ver: DocumentVersion) => {
     run_ocr(_doc, _doc_ver)
     .then(() => {})
-    .catch(() => {});
+    .catch((error: Error) => {
+      toasts?.addToast('error', `Error while running OCR ${error}`);
+    });
   }
 
   const onDocumentMoveTo = (target_folder: TargetFolder) => {

@@ -36,12 +36,17 @@ async function api_move_pages({
       }),
       'signal': signal
     },
-  );
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 
 type Args = {
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
   onOK: (args: MovePagesBetweenDocsType) => void;
   source_page_ids: Array<string>;
   target_page_id: string;
@@ -60,17 +65,21 @@ const MovePagesModal = ({
   const [move_strategy, setMoveStrategy] = useState<MoveStrategyType>('mix');
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_move_pages({
-      source_page_ids,
-      target_page_id,
-      move_strategy,
-      signal
-    });
+    try {
+      let response = await api_move_pages({
+        source_page_ids,
+        target_page_id,
+        move_strategy,
+        signal
+      });
 
-    let {source, target} = await response.json();
+      let {source, target} = await response.json();
 
-    if (response.status == 200) {
-      onOK({source, target});
+      if (response.status == 200) {
+        onOK({source, target});
+      }
+    } catch(error: any) {
+      onCancel(error)
     }
   }
 

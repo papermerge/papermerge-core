@@ -241,6 +241,10 @@ export default function Viewer({
       }).then(({source, target}: MovePagesBetweenDocsType) => {
         onMovePagesBetweenDocs({source, target});
         onSelectedPages([]);
+      }).catch((error: Error) => {
+        if (error) {
+          toasts?.addToast(`error`, `Error while moving page(s): ${error}`)
+        }
       });
     }
 }

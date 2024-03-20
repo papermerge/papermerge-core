@@ -29,6 +29,7 @@ export type User = {
   email: string;
   home_folder_id: string;
   inbox_folder_id: string;
+  scopes: Array<string>;
 }
 
 export type UserContextType = {

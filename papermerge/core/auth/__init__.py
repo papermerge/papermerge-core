@@ -26,15 +26,20 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
     if '.' in token:
         _, payload, _ = token.split('.')
         data = base64.decode(payload)
-        user_id: str = data.get("user_id")
+        user_id: str = data.get("sub")
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token is missing user_id field",
             )
         token_scopes = data.get("scopes", [])
+        groups = data.get("groups", [])
 
-        return types.TokenData(scopes=token_scopes, user_id=user_id)
+        return types.TokenData(
+            scopes=token_scopes,
+            user_id=user_id,
+            groups=groups
+        )
 
 
 def get_current_user(
@@ -53,8 +58,16 @@ def get_current_user(
 
     if token:  # token found
         token_data = extract_token_data(token)
+
+        total_scopes = token_data.scopes
+        total_scopes.append(
+            db.get_user_scopes_from_groups(
+                user_id=token_data.user_id,
+                groups=token_data.groups
+            )
+        )
         for scope in security_scopes.scopes:
-            if scope not in token_data.scopes:
+            if scope not in total_scopes:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Not enough permissions",
@@ -63,7 +76,7 @@ def get_current_user(
         if token_data is not None:
             try:
                 user = db.get_user(engine, token_data.user_id)
-                user.scopes = token_data.scopes
+                user.scopes = total_scopes  # is this required?
             except db_exc.UserNotFound:
                 raise HTTPException(
                     status_code=401,

@@ -28,3 +28,4 @@ class PaginatedResponse(BaseModel, Generic[T]):
 class TokenData(BaseModel):
     user_id: str
     scopes: list[str] = []
+    groups: list[str] = []

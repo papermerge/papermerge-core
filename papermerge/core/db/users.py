@@ -8,6 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
+from papermerge.core.auth import scopes
 from papermerge.core.db.models import Folder, Group, Permission, User
 from papermerge.core.utils.misc import is_valid_uuid
 
@@ -209,3 +210,30 @@ def update_user(
         model_user = schemas.UserDetails.model_validate(result)
 
     return model_user
+
+
+def get_user_scopes_from_groups(
+    engine: Engine,
+    user_id: UUID,
+    groups: list[str]
+) -> list[str]:
+    with Session(engine) as session:
+        db_user = session.scalars(
+            select(User).where(User.id == user_id)
+        ).one()
+        db_groups = session.scalars(
+            select(Group).where(Group.name.in_(groups))
+        ).all()
+
+        if db_user.is_superuser:
+            # superuser has all permissions (permission = scope)
+            result = scopes.SCOPES.keys()
+        else:
+            # user inherits his/her group associated permissions
+            result = set()
+            for group in db_groups:
+                result.update(
+                    [p.codename for p in group.permissions]
+                )
+
+    return list(result)

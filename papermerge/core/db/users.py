@@ -105,16 +105,17 @@ def create_user(
     scopes: list[str],
     group_ids: list[int],
     is_superuser: bool = False,
-    is_active: bool = False
+    is_active: bool = False,
+    user_id: UUID | None = None
 ) -> schemas.User:
 
     with Session(engine) as session:
-        user_id = uuid.uuid4()
+        _user_id = user_id or uuid.uuid4()
         home_folder_id = uuid.uuid4()
         inbox_folder_id = uuid.uuid4()
 
         db_user = User(
-            id=user_id,
+            id=_user_id,
             username=username,
             email=email,
             is_superuser=is_superuser,

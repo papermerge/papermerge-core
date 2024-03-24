@@ -214,12 +214,12 @@ def update_user(
 
 def get_user_scopes_from_groups(
     engine: Engine,
-    user_id: UUID,
+    user_id: str,
     groups: list[str]
 ) -> list[str]:
     with Session(engine) as session:
         db_user = session.scalars(
-            select(User).where(User.id == user_id)
+            select(User).where(User.id == UUID(user_id))
         ).one()
         db_groups = session.scalars(
             select(Group).where(Group.name.in_(groups))

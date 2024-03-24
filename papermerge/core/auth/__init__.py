@@ -57,15 +57,17 @@ def get_current_user(
         authenticate_value = "Bearer"
 
     if token:  # token found
-        token_data = extract_token_data(token)
+        token_data: types.TokenData = extract_token_data(token)
 
         total_scopes = token_data.scopes
-        total_scopes.append(
-            db.get_user_scopes_from_groups(
-                user_id=token_data.user_id,
-                groups=token_data.groups
+        if len(token_data.groups) > 0:
+            total_scopes.extend(
+                db.get_user_scopes_from_groups(
+                    engine=engine,
+                    user_id=token_data.user_id,
+                    groups=token_data.groups
+                )
             )
-        )
         for scope in security_scopes.scopes:
             if scope not in total_scopes:
                 raise HTTPException(

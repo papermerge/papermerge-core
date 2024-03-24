@@ -11,8 +11,8 @@ from .nodes import get_paginated_nodes
 from .pages import get_first_page, get_page
 from .perms import get_perms, sync_perms
 from .session import get_session
-from .users import (create_user, get_user, get_user_details, get_users,
-                    update_user)
+from .users import (create_user, get_user, get_user_details,
+                    get_user_scopes_from_groups, get_users, update_user)
 
 __all__ = [
     'get_engine',
@@ -20,6 +20,7 @@ __all__ = [
     'get_user',
     'get_users',
     'get_user_details',
+    'get_user_scopes_from_groups',
     'update_user',
     'create_user',
     'get_folder',

@@ -102,12 +102,18 @@ def create_user(
     username: str,
     email: str,
     password: str,
-    scopes: list[str],
-    group_ids: list[int],
+    scopes: list[str] | None = None,
+    group_ids: list[int] | None = None,
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: UUID | None = None
 ) -> schemas.User:
+
+    if scopes is None:
+        scopes = []
+
+    if group_ids is None:
+        group_ids = []
 
     with Session(engine) as session:
         _user_id = user_id or uuid.uuid4()
@@ -126,14 +132,14 @@ def create_user(
             id=inbox_folder_id,
             title=constants.INBOX_TITLE,
             ctype=constants.CTYPE_FOLDER,
-            user_id=user_id,
+            user_id=_user_id,
             lang='xxx'  # not used
         )
         db_home = Folder(
             id=home_folder_id,
             title=constants.HOME_TITLE,
             ctype=constants.CTYPE_FOLDER,
-            user_id=user_id,
+            user_id=_user_id,
             lang='xxx'  # not used
         )
         session.add(db_user)
@@ -220,7 +226,7 @@ def get_user_scopes_from_groups(
 ) -> list[str]:
     with Session(engine) as session:
         db_user = session.scalars(
-            select(User).where(User.id == UUID(user_id))
+            select(User).where(User.id == user_id)
         ).one()
         db_groups = session.scalars(
             select(Group).where(Group.name.in_(groups))

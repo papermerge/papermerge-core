@@ -2,8 +2,7 @@
 ARG VERSION
 FROM papermerge/papermerge:${VERSION}-ui as papermerge_ui
 
-FROM papermerge/tivoli:0.4.4 as token_validator
-FROM papermerge/auth-server:0.9.0build6 as auth_server
+FROM papermerge/auth-server:0.9.0build7 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app
@@ -53,7 +52,6 @@ COPY ./docker/dev/manage.py ${CORE_APP}/manage.py
 
 RUN chmod +x /run.bash
 
-COPY --from=token_validator /tivoli_app/ /tivoli_app
 COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
 COPY --from=papermerge_ui /core_ui /core_ui/

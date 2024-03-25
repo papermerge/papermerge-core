@@ -6,7 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/auth-server:0.9.0build6 as auth_server
+FROM papermerge/auth-server:0.9.0build7 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app

@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from fastapi import (Depends, HTTPException, WebSocket, WebSocketException,
                      status)
@@ -30,7 +31,7 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token is missing user_id field",
+                detail="Token is missing `sub` field",
             )
         token_scopes = data.get("scopes", [])
         groups = data.get("groups", [])
@@ -72,7 +73,7 @@ def get_current_user(
                     engine,
                     username=token_data.username,
                     email=token_data.email,
-                    user_id=token_data.user_id,
+                    user_id=UUID(token_data.user_id),
                     password='-',
                 )
 

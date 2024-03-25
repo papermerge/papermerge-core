@@ -69,6 +69,7 @@ def get_current_user(
             try:
                 user = db.get_user(engine, token_data.username)
             except db_exc.UserNotFound:
+                # create normal user
                 user = db.create_user(
                     engine,
                     username=token_data.username,
@@ -78,6 +79,9 @@ def get_current_user(
                 )
 
         total_scopes = token_data.scopes
+        # superusers have all privileges
+        if user.is_superuser:
+            total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(token_data.groups) > 0:
             total_scopes.extend(
@@ -87,6 +91,7 @@ def get_current_user(
                     groups=token_data.groups
                 )
             )
+
     elif remote_user:  # get user from headers
         # Using here external identity provider i.e.
         # user management is done in external application
@@ -95,12 +100,16 @@ def get_current_user(
         try:
             user = db.get_user(engine, remote_user.username)
         except db_exc.UserNotFound:
+            # create normal user
             user = db.create_user(
                 engine,
                 username=remote_user.username,
                 email=remote_user.email,
                 password='-',
             )
+        # superusers have all privileges
+        if user.is_superuser:
+            total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(remote_user.groups) > 0:
             total_scopes.extend(

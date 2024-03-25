@@ -67,7 +67,7 @@ def get_current_user(
 
         if token_data is not None:
             try:
-                user = db.get_user(engine, token_data.user_id)
+                user = db.get_user(engine, token_data.username)
             except db_exc.UserNotFound:
                 user = db.create_user(
                     engine,

@@ -87,7 +87,7 @@ def get_current_user(
             total_scopes.extend(
                 db.get_user_scopes_from_groups(
                     engine=engine,
-                    user_id=token_data.user_id,
+                    user_id=UUID(token_data.user_id),
                     groups=token_data.groups
                 )
             )

@@ -316,7 +316,7 @@ export type RuntimeConfig = {
     logout_endpoint: string;
   }
   oidc: {
-    logout_endpoint: string;
+    logout_url: string;
   }
 }
 

@@ -35,9 +35,9 @@ export default function CentralBar({
       }
     } else if(is_oidc_enabled()) {
       const runtime_config = get_runtime_config();
-      const logout_endpoint = runtime_config?.oidc.logout_endpoint;
-      if (logout_endpoint) {
-        window.location.href = logout_endpoint;
+      const logout_url = runtime_config?.oidc.logout_url;
+      if (logout_url) {
+        window.location.href = logout_url;
       } else {
         console.warn("OIDC: logout endpoint is empty")
       }

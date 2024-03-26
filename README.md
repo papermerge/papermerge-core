@@ -169,7 +169,6 @@ Open your web browser and point it to http://localhost:12000.
 In order to deploy Papermerge on remote production machine (homelab VM, or cloud VPS instance)
 use following [Ansible Playbook](https://github.com/papermerge/ansible).
 
-
 ## Tests
 
     poetry install

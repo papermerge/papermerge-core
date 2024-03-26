@@ -36,7 +36,7 @@ def ocr_document_task(
     """
     OCRs the document.
 
-    ** Achtung! Achtung! **
+    ** Attention! Attention! **
     Arguments of this method correspond to the:
 
     ``papermerge.core.notif.events.OCREvent``
@@ -48,7 +48,7 @@ def ocr_document_task(
 
     Anyway, DO NOT REMOVE ``user_id`` argument!
 
-    ** End of Achtung! Achtung! **
+    ** End of Attention! Attention! **
 
     On success returns ``document_id``
     If something went wrong returns ``None``.
@@ -110,7 +110,7 @@ def _post_ocr_document(
     lang: str
 ):
     """
-    Task to run immediately after document OCR is complete
+    Task to run immediately after document OCR is complete.
 
     This task guarantees that `increment_document_version` will run
     before `update_document_pages`.
@@ -216,8 +216,8 @@ def norm_pages_from_folder(folder):
 @shared_task
 def normalize_pages(origin):
     """
-    Normalize Pages. The normalization was triggered model origin.
-    origin can be either a Folder or a Document
+    Normalize pages. The normalization was triggered model origin.
+    Origin can be either a Folder or a Document
     """
     if isinstance(origin, Document):
         norm_pages_from_doc(origin)

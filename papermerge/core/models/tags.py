@@ -15,7 +15,7 @@ class UserTaggableManager(TaggableManager):
     Model with user attribute means following: that model (say MO) is per user.
     Because tags are per User as well - they (tags) will need to get
     (inherit) user instance from respective model (MO). For this reason,
-    save_from_data method is overriden - it passes user attribut to the newly
+    save_from_data method is overridden - it passes the user attribute to the newly
     saved tag model.
 
     Example: automate model is per user:

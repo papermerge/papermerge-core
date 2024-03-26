@@ -2,7 +2,7 @@ from django.dispatch import Signal
 
 
 """
-Sent after node was moved from one parent to another
+Sent after node was moved from one parent to another.
 Arguments:
     new_parent - model instance of new parent of the node
 """

@@ -11,6 +11,6 @@ class CommonQueryParams(BaseModel):
     page_number: int = Query(
         1,
         ge=1,
-        description="Page number. It is first, second etc page?"
+        description="Page number. It is first, second etc. page?"
     )
     order_by: str | None = None

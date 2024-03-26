@@ -44,8 +44,8 @@ def get_by_breadcrumb(klass, breadcrumb: str, user):
     This method uses SQL which is not portable: '||' is concatenates
     strings ONLY in SQLite and PostgreSQL.
 
-    user is instance of `papermerge.core.models.User`
-    klass can be either Folder or Document.
+    user is instance of the `papermerge.core.models.User`
+    class can be either Folder or Document.
 
     Returns instance of either Folder or Document.
     """

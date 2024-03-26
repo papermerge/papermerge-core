@@ -38,7 +38,7 @@ async def websocket_endpoint(
     user: schemas.User = Depends(get_ws_current_user)
 ):
     """
-    Sends notifications to websockets clients about the status of OCR tasks.
+    Sends notifications to websocket-clients about the status of OCR tasks.
 
     The OCR tasks status is asynchronously received via redis and pushed
     to the websocket clients (to the current/session user).

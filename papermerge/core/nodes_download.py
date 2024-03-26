@@ -1,11 +1,10 @@
 import os
-import zipfile
 import tarfile
+import zipfile
 
 from django.core.files.temp import NamedTemporaryFile
 
-from papermerge.core.models import Document, BaseTreeNode
-
+from papermerge.core.models import BaseTreeNode, Document
 
 ONLY_ORIGINAL = 'only_original'
 ONLY_LAST = 'only_last'
@@ -87,7 +86,8 @@ class NodesDownload:
 
 class NodesDownloadZip(NodesDownload):
     """
-    Creates a zip-archive from a list of nodes. It preserves the folder structure.
+    Creates a zip-archive from a list of nodes. It preserves the folder
+    structure.
 
     Usage:
 
@@ -131,7 +131,8 @@ class NodesDownloadZip(NodesDownload):
 
 class NodesDownloadTarGz(NodesDownload):
     """
-    Creates a targz archive from a list of nodes. It preserves the folder structure.
+    Creates a targz archive from a list of nodes. It preserves the folder
+    structure.
 
     Usage:
 

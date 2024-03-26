@@ -315,6 +315,9 @@ export type RuntimeConfig = {
     headers_name: RemoteUserHeaderName;
     logout_endpoint: string;
   }
+  oidc: {
+    logout_endpoint: string;
+  }
 }
 
 export type SelectItem = {

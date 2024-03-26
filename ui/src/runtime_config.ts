@@ -23,3 +23,18 @@ export function is_remote_user_enabled(): boolean {
 
   return false;
 }
+
+
+export function is_oidc_enabled(): boolean {
+  let config: RuntimeConfig | undefined = get_runtime_config();
+
+  if (!config) {
+    return false;
+  }
+
+  if (config.hasOwnProperty('oidc')) {
+    return true;
+  }
+
+  return false;
+}

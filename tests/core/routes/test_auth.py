@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from papermerge.core import types
@@ -10,11 +11,12 @@ def test_get_current_user(token):
     assert token_data is not None
 
 
-def test_remote_based_authentication(api_client: TestClient):
+@pytest.mark.django_db(transaction=True)
+def test_remote_based_authentication(montaigne, api_client: TestClient):
     response = api_client.get(
         '/users/me/',
         headers={
-            'Remote-User': 'socrates'
+            'Remote-User': 'montaigne'
         }
     )
     assert response.status_code == 200

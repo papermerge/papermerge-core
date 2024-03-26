@@ -14,6 +14,11 @@ exec_migrate() {
   VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py migrate --no-input
 }
 
+exec_perms_sync() {
+  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run perms sync
+}
+
+
 exec_createsuperuser() {
   VIRTUAL_ENV=/auth_server_app/.venv && cd /auth_server_app/ && poetry install && poetry run create_user || true
 }
@@ -30,6 +35,7 @@ exec_index_schema_apply() {
 exec_init() {
   VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry install
   exec_migrate
+  exec_perms_sync
   if [[ ! -z "${PAPERMERGE__AUTH__USERNAME}" && ! -z "${PAPERMERGE__AUTH__PASSWORD}" ]]; then
     exec_createsuperuser
   fi

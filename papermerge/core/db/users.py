@@ -8,6 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
+from papermerge.core.auth import scopes
 from papermerge.core.db.models import Folder, Group, Permission, User
 from papermerge.core.utils.misc import is_valid_uuid
 
@@ -101,19 +102,26 @@ def create_user(
     username: str,
     email: str,
     password: str,
-    scopes: list[str],
-    group_ids: list[int],
+    scopes: list[str] | None = None,
+    group_ids: list[int] | None = None,
     is_superuser: bool = False,
-    is_active: bool = False
+    is_active: bool = False,
+    user_id: UUID | None = None
 ) -> schemas.User:
 
+    if scopes is None:
+        scopes = []
+
+    if group_ids is None:
+        group_ids = []
+
     with Session(engine) as session:
-        user_id = uuid.uuid4()
+        _user_id = user_id or uuid.uuid4()
         home_folder_id = uuid.uuid4()
         inbox_folder_id = uuid.uuid4()
 
         db_user = User(
-            id=user_id,
+            id=_user_id,
             username=username,
             email=email,
             is_superuser=is_superuser,
@@ -124,14 +132,14 @@ def create_user(
             id=inbox_folder_id,
             title=constants.INBOX_TITLE,
             ctype=constants.CTYPE_FOLDER,
-            user_id=user_id,
+            user_id=_user_id,
             lang='xxx'  # not used
         )
         db_home = Folder(
             id=home_folder_id,
             title=constants.HOME_TITLE,
             ctype=constants.CTYPE_FOLDER,
-            user_id=user_id,
+            user_id=_user_id,
             lang='xxx'  # not used
         )
         session.add(db_user)
@@ -209,3 +217,32 @@ def update_user(
         model_user = schemas.UserDetails.model_validate(result)
 
     return model_user
+
+
+def get_user_scopes_from_groups(
+    engine: Engine,
+    user_id: UUID,
+    groups: list[str]
+) -> list[str]:
+    with Session(engine) as session:
+        db_user = session.get(User, user_id)
+
+        if db_user is None:
+            return []
+
+        db_groups = session.scalars(
+            select(Group).where(Group.name.in_(groups))
+        ).all()
+
+        if db_user.is_superuser:
+            # superuser has all permissions (permission = scope)
+            result = scopes.SCOPES.keys()
+        else:
+            # user inherits his/her group associated permissions
+            result = set()
+            for group in db_groups:
+                result.update(
+                    [p.codename for p in group.permissions]
+                )
+
+    return list(result)

@@ -8,7 +8,7 @@ class TimezoneMiddleware:
     User preferences override l10n configuration from settings file.
     Per project (django project level) configurations are set in
     settings file (config.settings.*). Localization preferences
-    i.e. for date & time format, timezone can be overridden by user.
+    i. e. for date & time format, timezone can be overridden by user.
     This middleware activates timezone considering user preferences.
     User preferences are set via:
         Admin -> Preferences -> Localization -> Timezone

@@ -35,7 +35,7 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
             )
         token_scopes = data.get("scopes", [])
         groups = data.get("groups", [])
-        username = data.get("username", None)
+        username = data.get("preferred_username", None)
         email = data.get("email", None)
 
         return types.TokenData(

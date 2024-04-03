@@ -12,7 +12,7 @@ def b64e(s):
 def token():
     data = {
         'sub': '100',
-        'username': 'montaigne',
+        'preferred_username': 'montaigne',
         'email': 'montaingne@mail.com'
     }
     json_str = json.dumps(data)

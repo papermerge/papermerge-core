@@ -47,7 +47,7 @@ def auth_api_client(user: User):
 
     middle_part = base64.encode({
         'sub': str(user.id),
-        'username': user.username,
+        'preferred_username': user.username,
         'email': user.email,
         'scopes': list(SCOPES.keys())
     })

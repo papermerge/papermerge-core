@@ -3,13 +3,13 @@
 <!-- towncrier release notes start -->
 
 
-## [3.2] - 2024-xx-xx
+## [3.2] - 2024-04-07
 
 ### Adds
 
 - Authorization (permissions, groups)
 - Remote user authentication
-- OIDC authentication
+- OIDC authentication with support for any provider (tested with Keycloak, Authentik)
 
 ## [3.1] - 2024-02-23
 

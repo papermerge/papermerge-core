@@ -147,7 +147,7 @@ OCR__DEFAULT_LANGUAGE = os.environ.get(
 
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',
-    '/core_app/logging.yml'
+    '/etc/papermerge/logging.yaml'
 )
 if os.path.exists(LOGGING_CFG_FILENAME):
     with open(LOGGING_CFG_FILENAME, 'r') as file:

@@ -2,6 +2,12 @@
 
 <!-- towncrier release notes start -->
 
+## [3.3] - 2024-xx-yy
+
+### Changes
+
+- logging.yaml location changed from /core_app/logging.yaml to /etc/papermerge/logging.yaml
+
 
 ## [3.2] - 2024-04-07
 

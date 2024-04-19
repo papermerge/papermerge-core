@@ -45,7 +45,7 @@ RUN poetry install --no-root -vvv
 COPY docker/dev/run.bash /run.bash
 COPY docker/dev/supervisord.conf /etc/
 COPY docker/dev/nginx.conf /etc/nginx/nginx.conf
-COPY docker/dev/logging.yml ${CORE_APP}/logging.yml
+COPY docker/dev/logging.yaml /etc/papermerge/
 COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/dev/config ${CORE_APP}/config
 COPY ./docker/dev/manage.py ${CORE_APP}/manage.py

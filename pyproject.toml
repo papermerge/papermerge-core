@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "papermerge-core"
-version = "3.2"
+version = "3.3"
 description = "Open source document management system for digital archives"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 maintainers = ["Eugen Ciur <eugen@papermerge.com>"]

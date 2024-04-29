@@ -10,8 +10,8 @@ FROM papermerge/oidc:0.1.0 as oidc_app
 FROM python:3.11-slim-bookworm
 
 ENV CORE_APP=/core_app \
-    VIRTUAL_ENV=${CORE_APP}/venv \
     DJANGO_SETTINGS_MODULE=config.settings
+ENV VIRTUAL_ENV=${CORE_APP}/venv
 
 WORKDIR ${CORE_APP}
 
@@ -36,7 +36,6 @@ COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/cloud/config ${CORE_APP}/config
 COPY ./docker/cloud/manage.py ${CORE_APP}/manage.py
 
-COPY ./docker/prod/scripts/ /usr/bin/
 RUN chmod +x /usr/bin/*.sh
 RUN chmod +x /run.bash
 

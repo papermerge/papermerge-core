@@ -28,7 +28,7 @@ RUN pip install --upgrade poetry roco==0.4.2 && \
     python -m venv ${VIRTUAL_ENV}
 
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
-RUN poetry install --no-root -vv
+RUN poetry install --no-root --with pg -vv
 
 COPY docker/cloud/etc/ /etc/papermerge/
 COPY docker/cloud/run.bash /run.bash

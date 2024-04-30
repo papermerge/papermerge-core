@@ -9,10 +9,6 @@ TESTING = False
 
 PROJ_ROOT = Path(__file__).resolve().parent.parent
 
-INSTALLED_APPS.extend(
-    ['django_extensions', ]
-)
-
 MEDIA_ROOT = config.get(
     'main',
     'media_root',

@@ -10,22 +10,36 @@ if [ -z $CMD ]; then
 fi
 
 exec_migrate() {
-  # run migrations
-  VIRTUAL_ENV=/core_app/venv && cd /core_app && poetry run ./manage.py migrate --no-input
+  echo "Applying migrations..."
+  export VIRTUAL_ENV=/core_app/venv
+  cd /core_app && poetry run python manage.py migrate --no-input
+  echo "Done!"
 }
 
 exec_perms_sync() {
-  VIRTUAL_ENV=/core_app/venv && cd /core_app && poetry run perms sync
+  echo "Syncing permissions..."
+  export VIRTUAL_ENV=/core_app/venv
+  cd /core_app && poetry install && poetry run perms sync
+  echo "Done!"
 }
 
 exec_index_schema_apply() {
-  VIRTUAL_ENV=/core_app/venv && cd /core_app && poetry run ./manage.py index_schema apply
+  echo "Applying index schema..."
+  export VIRTUAL_ENV=/core_app/venv
+  cd /core_app && poetry run python manage.py index_schema apply
+  echo "Done!"
+}
+
+exec_runtime_config_js() {
+  echo "roco: generating runtime config..."
+  roco > /usr/share/html/ui/papermerge-runtime-config.js
+  echo "Done!"
 }
 
 exec_init() {
-  VIRTUAL_ENV=/core_app/venv && cd /core_app && poetry install
   exec_migrate
   exec_perms_sync
+  exec_runtime_config_js
 }
 
 rm -f /etc/papermerge/supervisord.conf
@@ -34,13 +48,10 @@ case $CMD in
   init)
     exec_init
     ;;
-  migrate)
-    exec_migrate
+  index_schema_apply)
+    exec_index_schema_apply
     ;;
   server)
-    exec_init
-    VIRTUAL_ENV=/core_app/venv && cd /core_app && poetry run ./manage.py index_schema apply
-    roco > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
     ;;
   *)

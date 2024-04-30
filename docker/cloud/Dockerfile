@@ -7,6 +7,7 @@ RUN npm install
 RUN npm run build
 
 FROM papermerge/oidc:0.1.0 as oidc_app
+FROM caddy:2.7 AS caddy
 FROM python:3.11-slim-bookworm
 
 ENV CORE_APP=/core_app
@@ -30,18 +31,19 @@ RUN pip install --upgrade poetry roco==0.4.2 && \
     python -m venv ${VIRTUAL_ENV}
 
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
-RUN poetry install --no-root --with pg -vv
-
-COPY docker/cloud/etc/ /etc/papermerge/
-COPY docker/cloud/run.bash /run.bash
 COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/cloud/config ${CORE_APP}/config
 COPY ./docker/cloud/manage.py ${CORE_APP}/manage.py
 
+RUN poetry install --with pg -vv
+
+COPY docker/cloud/etc/ /etc/papermerge/
+COPY docker/cloud/run.bash /run.bash
 RUN chmod +x /run.bash
 
 COPY --from=oidc_app /app/ /oidc_app
 COPY --from=build /build_ui_app/build/ /usr/share/html/ui
+COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 EXPOSE 80
 

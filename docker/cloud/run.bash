@@ -19,7 +19,7 @@ exec_migrate() {
 exec_perms_sync() {
   echo "Syncing permissions..."
   export VIRTUAL_ENV=/core_app/venv
-  cd /core_app && poetry install && poetry run perms sync
+  cd /core_app && poetry run perms sync
   echo "Done!"
 }
 

@@ -42,8 +42,6 @@ exec_init() {
   exec_runtime_config_js
 }
 
-rm -f /etc/papermerge/supervisord.conf
-
 case $CMD in
   init)
     exec_init

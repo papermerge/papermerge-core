@@ -1,4 +1,5 @@
 from sqlalchemy import Engine
+from sqlalchemy.orm import Session
 
 from .doc import get_doc
 from .doc_ver import get_doc_ver, get_last_doc_ver
@@ -33,6 +34,7 @@ __all__ = [
     'get_perms',
     'sync_perms',
     'Engine',
+    'Session',
     'UserNotFound',
     'get_group',
     'get_groups',

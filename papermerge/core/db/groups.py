@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from papermerge.core import schemas
@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int
 ) -> schemas.GroupDetails:
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group).options(
             joinedload(models.Group.permissions)
         ).where(

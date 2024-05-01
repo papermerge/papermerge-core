@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from papermerge.core import schemas
@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int
 ) -> schemas.GroupDetails:
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group).options(
             joinedload(models.Group.permissions)
         ).where(
@@ -29,10 +29,10 @@ def get_group(
 
 
 def get_groups(
-    engine: Engine
+    db_session: Session
 ) -> list[schemas.Group]:
 
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group)
         db_items = session.scalars(stmt).all()
         result = [
@@ -44,11 +44,21 @@ def get_groups(
 
 
 def create_group(
-    engine: Engine,
+    db_session: Session,
     name: str,
     scopes: list[str],
+    exists_ok: bool = False
 ) -> schemas.Group:
-    with Session(engine) as session:
+    with db_session as session:
+        if exists_ok:
+            stmt = select(models.Group).where(
+                models.Group.name == name
+            )
+            result = session.execute(stmt).scalars().all()
+            if len(result) >= 1:
+                logger.info(f"Group {name} already exists")
+                return schemas.Group.model_validate(result[0])
+
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(scopes)
         )
@@ -65,11 +75,11 @@ def create_group(
 
 
 def update_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int,
     attrs: schemas.UpdateGroup
 ) -> schemas.Group:
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(attrs.scopes)
         )
@@ -92,10 +102,10 @@ def update_group(
 
 
 def delete_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int,
 ):
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group).where(
             models.Group.id == group_id
         )

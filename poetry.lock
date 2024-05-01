@@ -2782,16 +2782,6 @@ typing-extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
 standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
 
 [[package]]
-name = "uwsgi"
-version = "2.0.25.1"
-description = "The uWSGI server"
-optional = false
-python-versions = "*"
-files = [
-    {file = "uwsgi-2.0.25.1.tar.gz", hash = "sha256:d653d2d804c194c8cbe2585fa56efa2650313ae75c686a9d7931374d4dfbfc6e"},
-]
-
-[[package]]
 name = "vine"
 version = "5.1.0"
 description = "Python promises."
@@ -3124,4 +3114,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <4.0"
-content-hash = "903b745cecab7de1b12b5bcd49d4c4258ec1a08914124c98b4f3325465002a44"
+content-hash = "ce1c28c99f1a56dba0fdd409d5324f9f67d3178078cd99148219e5ad27c08999"

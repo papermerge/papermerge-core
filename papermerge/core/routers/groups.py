@@ -29,14 +29,14 @@ def get_groups(
         Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
     params: CommonQueryParams = Depends(),
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ):
     """Get all groups
 
     Required scope: `{scope}`
     """
 
-    return db.get_groups(engine)
+    return db.get_groups(db_session)
 
 
 @router.get("/{group_id}", response_model=schemas.GroupDetails)
@@ -47,14 +47,14 @@ def get_group(
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ):
     """Get group details
 
     Required scope: `{scope}`
     """
     try:
-        result = db.get_group(engine, group_id=group_id)
+        result = db.get_group(db_session, group_id=group_id)
     except NoResultFound:
         raise HTTPException(
             status_code=404,
@@ -71,7 +71,7 @@ def create_group(
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_CREATE])
     ],
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ) -> schemas.Group:
     """Creates group
 
@@ -79,7 +79,7 @@ def create_group(
     """
     try:
         group = db.create_group(
-            engine,
+            db_session,
             name=pygroup.name,
             scopes=pygroup.scopes,
         )

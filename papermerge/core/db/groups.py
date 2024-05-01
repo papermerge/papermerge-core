@@ -47,8 +47,18 @@ def create_group(
     db_session: Session,
     name: str,
     scopes: list[str],
+    exists_ok: bool = False
 ) -> schemas.Group:
     with db_session as session:
+        if exists_ok:
+            stmt = select(models.Group).where(
+                models.Group.name == name
+            )
+            result = session.execute(stmt).scalars().all()
+            if len(result) >= 1:
+                logger.info(f"Group {name} already exists")
+                return schemas.Group.model_validate(result[0])
+
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(scopes)
         )

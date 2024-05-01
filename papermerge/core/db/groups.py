@@ -29,10 +29,10 @@ def get_group(
 
 
 def get_groups(
-    engine: Engine
+    db_session: Session
 ) -> list[schemas.Group]:
 
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group)
         db_items = session.scalars(stmt).all()
         result = [
@@ -44,11 +44,11 @@ def get_groups(
 
 
 def create_group(
-    engine: Engine,
+    db_session: Session,
     name: str,
     scopes: list[str],
 ) -> schemas.Group:
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(scopes)
         )
@@ -65,11 +65,11 @@ def create_group(
 
 
 def update_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int,
     attrs: schemas.UpdateGroup
 ) -> schemas.Group:
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Permission).where(
             models.Permission.codename.in_(attrs.scopes)
         )
@@ -92,10 +92,10 @@ def update_group(
 
 
 def delete_group(
-    engine: Engine,
+    db_session: Session,
     group_id: int,
 ):
-    with Session(engine) as session:
+    with db_session as session:
         stmt = select(models.Group).where(
             models.Group.id == group_id
         )

@@ -120,6 +120,7 @@ server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --r
 token = 'papermerge.core.cli.token:app'
 users = 'papermerge.core.cli.users:app'
 perms = 'papermerge.core.cli.perms:app'
+groups = 'papermerge.core.cli.groups:app'
 scopes = 'papermerge.core.cli.scopes:app'
 
 [build-system]

@@ -23,6 +23,13 @@ exec_perms_sync() {
   echo "Done!"
 }
 
+exec_create_admin_group() {
+  echo "Creating 'admin' group..."
+  export VIRTUAL_ENV=/core_app/venv
+  cd /core_app && poetry run groups create-admin
+  echo "Done!"
+}
+
 exec_index_schema_apply() {
   echo "Applying index schema..."
   export VIRTUAL_ENV=/core_app/venv
@@ -39,6 +46,7 @@ exec_runtime_config_js() {
 exec_init() {
   exec_migrate
   exec_perms_sync
+  exec_create_admin_group
   exec_runtime_config_js
 }
 

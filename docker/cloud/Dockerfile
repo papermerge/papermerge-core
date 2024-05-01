@@ -1,12 +1,12 @@
 FROM node:19 as  build
 
 WORKDIR build_ui_app
-COPY ui/package.json ui/package-lock.json ui/tsconfig.json .
+COPY ui/package.json ui/package-lock.json ui/tsconfig.json ./
 COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/oidc:0.1.2 as oidc_app
+FROM papermerge/oidc:0.1.4 as oidc_app
 FROM caddy:2.7 AS caddy
 FROM python:3.11-slim-bookworm
 

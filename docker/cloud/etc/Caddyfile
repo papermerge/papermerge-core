@@ -1,10 +1,19 @@
+{
+debug
+}
+
 :80
 
 @except not path /oidc/callback
 forward_auth @except :8010 {
   uri /verify
 }
+
 reverse_proxy /oidc/callback :8010
-reverse_proxy /api/* :8000
+
+handle_path /api/* {
+    reverse_proxy localhost:8000
+}
+
 root * /usr/share/html/ui
 file_server browse

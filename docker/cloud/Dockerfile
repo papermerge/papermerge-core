@@ -6,7 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/oidc:0.1.0 as oidc_app
+FROM papermerge/oidc:0.1.2 as oidc_app
 FROM caddy:2.7 AS caddy
 FROM python:3.11-slim-bookworm
 
@@ -41,7 +41,7 @@ COPY docker/cloud/etc/ /etc/papermerge/
 COPY docker/cloud/run.bash /run.bash
 RUN chmod +x /run.bash
 
-COPY --from=oidc_app /app/ /oidc_app
+COPY --from=oidc_app /oidc_app/ /oidc_app
 COPY --from=build /build_ui_app/build/ /usr/share/html/ui
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 

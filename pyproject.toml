@@ -37,29 +37,6 @@ packages = [
 Tracker = "https://github.com/ciur/papermerge/issues"
 Source = "https://github.com/papermerge/papermerge-core"
 
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-towncrier = "^22.8.0"
-pycodestyle = "^2.8"
-django-extensions = "^3.1"
-ipython = "^8.0.1"
-taskipy = "^1.10.2"
-"pdfminer.six" = "^20220524"
-pre-commit = "^2.20.0"
-watchfiles = "^0.19.0"
-
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.1.2"
-pytest-django = "^4.4"
-model-bakery = "^1.5.0"
-pytest-asyncio = "^0.21.0"
-
 [tool.poetry.dependencies]
 python = ">=3.8, <4.0"
 django = "^4.1"
@@ -89,25 +66,38 @@ passlib = "^1.7.4"
 sqlalchemy = "^2.0.24"
 typer = "^0.9.0"
 rich = "^13.7.1"
+mysqlclient = {version = "^2.2.0", optional = true}
+xapianpy = { version = "^1.4.22.post2305071405", optional = true}
+psycopg2 = { version = "^2.9.2", optional = true}
+psycopg2-binary = { version = "^2.9.2", optional = true}
 
-[tool.poetry.group.mysql]
+[tool.poetry.extras]
+mysql = ["mysqlclient"]
+pgsql = ["psycopg2", "psycopg2-binary"]
+databases = ["mysqlclient", "psycopg2"]
+xapian = ["xapianpy"]
+
+[tool.poetry.group.dev]
 optional = true
 
-[tool.poetry.group.mysql.dependencies]
-mysqlclient = "^2.2.0"
+[tool.poetry.group.dev.dependencies]
+pycodestyle = "^2.8"
+django-extensions = "^3.1"
+ipython = "^8.0.1"
+taskipy = "^1.10.2"
+"pdfminer.six" = "^20220524"
+pre-commit = "^2.20.0"
+watchfiles = "^0.19.0"
 
-[tool.poetry.group.xapian]
+[tool.poetry.group.test]
 optional = true
 
-[tool.poetry.group.xapian.dependencies]
-xapianpy = "^1.4.22.post2305071405"
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.2"
+pytest-django = "^4.4"
+model-bakery = "^1.5.0"
+pytest-asyncio = "^0.21.0"
 
-[tool.poetry.group.pg]
-optional = true
-
-[tool.poetry.group.pg.dependencies]
-psycopg2 = "^2.9.2"
-psycopg2-binary = "^2.9.2"
 
 [tool.taskipy.tasks]
 test = "pytest tests/ --disable-warnings"

@@ -35,7 +35,7 @@ COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/cloud/config ${CORE_APP}/config
 COPY ./docker/cloud/manage.py ${CORE_APP}/manage.py
 
-RUN poetry install --with pg -vv
+RUN poetry install -E pgsql -vv
 
 COPY docker/cloud/etc/ /etc/papermerge/
 COPY docker/cloud/run.bash /run.bash

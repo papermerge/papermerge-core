@@ -6,7 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/oidc:0.1.4 as oidc_app
+FROM papermerge/oidc:0.1.5 as oidc_app
 FROM caddy:2.7 AS caddy
 FROM python:3.11-slim-bookworm
 
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ghostscript &&\
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade poetry roco==0.4.2 && \
+RUN pip install --upgrade poetry roco==0.4.4 && \
     python -m venv ${VIRTUAL_ENV}
 
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/

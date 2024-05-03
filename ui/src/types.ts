@@ -317,6 +317,8 @@ export type RuntimeConfig = {
   }
   oidc: {
     logout_url: string;
+    authorize_url: string;
+    client_id: string;
   }
 }
 

@@ -8,6 +8,8 @@ on:
       - 'papermerge/**'
       - 'tests/**'
       - 'ui/**'
+      - 'pyproject.toml'
+      - '.github/workflows/tests.yml'
 
 jobs:
   check-pep8-compliance:

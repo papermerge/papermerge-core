@@ -18,6 +18,11 @@ type Args = {
   onSubmitSearch: (query: string) => void;
 }
 
+type LogoutParams = {
+  client_id: string,
+  post_logout_redirect_uri?: string
+}
+
 
 export default function CentralBar({
   username, children, onToggleSidebar, onSubmitSearch
@@ -34,12 +39,30 @@ export default function CentralBar({
         console.warn("Remote user: logout endpoint is empty")
       }
     } else if(is_oidc_enabled()) {
+      console.log("OIDC is enabled");
+
       const runtime_config = get_runtime_config();
       const logout_url = runtime_config?.oidc.logout_url;
-      if (logout_url) {
-        window.location.href = logout_url;
+      let logout_params: LogoutParams | null;
+
+      if (runtime_config?.oidc.client_id) {
+        const client_id = runtime_config?.oidc.client_id;
+        logout_params = {
+          client_id: client_id
+        }
+        if (runtime_config?.oidc.authorize_url) {
+          logout_params.post_logout_redirect_uri = `${runtime_config.oidc.authorize_url}?client_id=${client_id}&response_type=code`
+        }
+        const url_params = new URLSearchParams(logout_params)
+
+        if (logout_url) {
+          Cookies.remove('access_token');
+          window.location.href = `${logout_url}?${url_params.toString()}`;
+        } else {
+          console.error("OIDC is enabled but logout_url runtime key is missing")
+        }
       } else {
-        console.warn("OIDC: logout endpoint is empty")
+        console.error("OIDC is enabled but client_id runtime key is missing")
       }
     } else {
       Cookies.remove('access_token');

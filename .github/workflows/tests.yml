@@ -53,8 +53,8 @@ jobs:
       - name: Install python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
-          poetry install && poetry run task test
+          pip install poetry==1.8
+          poetry install --with dev,test && poetry run task test
         env:
           PYTHONPATH: .
 

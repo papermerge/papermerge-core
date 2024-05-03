@@ -44,16 +44,18 @@ class TestUserModel(TestCase):
 
 def test_get_user_details(db_engine: Engine):
     Session = sessionmaker(db_engine)
-    with Session() as session:
+    db_session = Session()
+
+    with db_session as session:
         db.sync_perms(session)
 
     g1 = db.create_group(
-        db_engine,
+        db_session,
         "G1",
         scopes=[]
     )
     g2 = db.create_group(
-        db_engine,
+        db_session,
         "G2",
         scopes=[]
     )
@@ -81,22 +83,24 @@ def test_get_user_details(db_engine: Engine):
     assert set(user_details.scopes) == set(scopes)
     assert set(group_ids) == {g1.id, g2.id}
 
-    db.delete_group(db_engine, group_id=g1.id)
-    db.delete_group(db_engine, group_id=g2.id)
+    db.delete_group(db_session, group_id=g1.id)
+    db.delete_group(db_session, group_id=g2.id)
 
 
 def test_update_user(db_engine: Engine):
     Session = sessionmaker(db_engine)
+    db_session = Session()
+
     with Session() as session:
         db.sync_perms(session)
 
     g1 = db.create_group(
-        db_engine,
+        db_session,
         "G1",
         scopes=[]
     )
     g2 = db.create_group(
-        db_engine,
+        db_session,
         "G2",
         scopes=[]
     )
@@ -135,5 +139,5 @@ def test_update_user(db_engine: Engine):
     assert user_details.scopes == ['tag.update']
     assert group_ids == [g1.id]
 
-    db.delete_group(db_engine, group_id=g1.id)
-    db.delete_group(db_engine, group_id=g2.id)
+    db.delete_group(db_session, group_id=g1.id)
+    db.delete_group(db_session, group_id=g2.id)

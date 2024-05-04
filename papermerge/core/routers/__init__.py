@@ -8,6 +8,7 @@ from .groups import router as groups_router
 from .nodes import router as nodes_router
 from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
+from .probe import route as probe_router
 from .scopes import router as scopes_router
 from .tags import router as tags_router
 from .tasks import router as tasks_router
@@ -33,6 +34,7 @@ def register_routers(app: FastAPI):
     app.include_router(version_router)
     app.include_router(scopes_router)
     app.include_router(groups_router)
+    app.include_router(probe_router)
 
     # if redis is not provided (i.e. memory backed for notif is used)
     # then ws_router will block all other http handlers and

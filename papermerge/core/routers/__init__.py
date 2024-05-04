@@ -8,7 +8,7 @@ from .groups import router as groups_router
 from .nodes import router as nodes_router
 from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
-from .probe import route as probe_router
+from .probe import router as probe_router
 from .scopes import router as scopes_router
 from .tags import router as tags_router
 from .tasks import router as tasks_router

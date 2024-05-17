@@ -23,3 +23,7 @@ app.conf.broker_transport_options = {
     'interval_step': 0.2,
     'interval_max': 0.2,
 }
+
+app.conf.task_routes = {
+    's3': {'queue': 's3'}
+}

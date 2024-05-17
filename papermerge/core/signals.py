@@ -205,6 +205,9 @@ def s3_upload(
     document_version: DocumentVersion,
     **_
 ):
+    if settings.TESTING:
+        return
+
     doc_ver = document_version
     target = abs_docver_path(
         str(doc_ver.id),

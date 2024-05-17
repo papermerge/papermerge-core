@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from celery.app import default_app as celery_app
 from celery.signals import (heartbeat_sent, task_postrun, task_prerun,
                             task_received, worker_ready, worker_shutdown)
 from django.conf import settings
@@ -11,6 +12,7 @@ from kombu.exceptions import OperationalError
 from papermerge.core.models import Document, DocumentVersion, User
 from papermerge.core.notif import (Event, EventName, OCREvent, State,
                                    notification)
+from papermerge.core.pathlib import abs_docver_path, docver_path
 from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
@@ -195,6 +197,33 @@ def worker_shutdown(**_):
     for file in (HEARTBEAT_FILE, READINESS_FILE):
         if file.is_file():
             file.unlink()
+
+
+@receiver(document_post_upload, sender=Document)
+def s3_upload(
+    sender,
+    document_version: DocumentVersion,
+    **_
+):
+    if settings.TESTING:
+        return
+
+    doc_ver = document_version
+    target = abs_docver_path(
+        str(doc_ver.id),
+        str(doc_ver.file_name)
+    )
+    keyname = docver_path(
+        str(doc_ver.id),
+        str(doc_ver.file_name)
+    )
+    logger.debug(
+        f"Sending S3_upload task target={target} keyname={keyname}"
+    )
+    celery_app.send_task(
+        's3_worker_upload',
+        kwargs={'target': str(target), 'keyname': str(keyname)}
+    )
 
 
 @receiver(document_post_upload, sender=Document)

@@ -9,10 +9,10 @@ from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 from kombu.exceptions import OperationalError
 
+from papermerge.core import constants as const
 from papermerge.core.models import Document, DocumentVersion, User
 from papermerge.core.notif import (Event, EventName, OCREvent, State,
                                    notification)
-from papermerge.core.pathlib import abs_docver_path, docver_path
 from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
@@ -159,6 +159,23 @@ def delete_files(sender, instance: Document, **kwargs):
             )
 
 
+@receiver(pre_delete, sender=Document)
+def s3_delete(sender, instance: Document, **kwargs):
+    if settings.TESTING:
+        return
+
+    ids = [str(v.id) for v in instance.versions.all()]
+
+    logger.debug(
+        f"Sending {const.S3_WORKER_REMOVE_DOC_VER} task doc_ver_ids={ids}"
+    )
+    celery_app.send_task(
+        const.S3_WORKER_REMOVE_DOC_VER,
+        kwargs={'doc_ver_ids': ids},
+        route_name='s3',
+    )
+
+
 @receiver(post_delete, sender=User)
 def delete_user_data(sender, instance, **kwargs):
     """Deletes associated user folder(s) under media root"""
@@ -209,20 +226,13 @@ def s3_upload(
         return
 
     doc_ver = document_version
-    target = abs_docver_path(
-        str(doc_ver.id),
-        str(doc_ver.file_name)
-    )
-    keyname = docver_path(
-        str(doc_ver.id),
-        str(doc_ver.file_name)
-    )
     logger.debug(
-        f"Sending S3_upload task target={target} keyname={keyname}"
+        f"Sending {const.S3_WORKER_ADD_DOC_VER} doc_ver_id={doc_ver.id}"
     )
     celery_app.send_task(
-        's3_worker_upload',
-        kwargs={'target': str(target), 'keyname': str(keyname)}
+        const.S3_WORKER_ADD_DOC_VER,
+        kwargs={'doc_ver_ids': [str(doc_ver.id)]},
+        route_name='s3',
     )
 
 

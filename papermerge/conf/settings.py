@@ -145,6 +145,14 @@ OCR__DEFAULT_LANGUAGE = os.environ.get(
     'deu'
 )
 
+# Where are image previews, i.e. pages, document thumbnails, serverd from ?
+# - from local storage (convenient for simple setups)
+# - from S3 storage (convenient for cloud setups)
+PREVIEWS_MODE = os.environ.get(
+    'PAPERMERGE__MAIN__IMAGE_PREVIEW_SOURCE',
+    'local'
+)
+
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',
     '/etc/papermerge/logging.yaml'

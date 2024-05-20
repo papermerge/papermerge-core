@@ -153,6 +153,24 @@ PREVIEW_MODE = os.environ.get(
     'local'
 )
 
+# absolute path to private key used to sign
+# cloudfront URLs for accessing private S3 content
+CF_SIGN_URL_PRIVATE_KEY = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_PRIVATE_KEY',
+    None
+)
+
+# Cloudfront public key ID
+# CF -> public keys -> ID
+# example of key id value: "K2FRE1IUML0Y0N"
+# This value should be provided only if:
+# - S3 as content storage is used
+# - there is a cloudfront private key used for signing urls
+CF_SIGN_URL_KEY_ID = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_KEY_ID',
+    None
+)
+
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',
     '/etc/papermerge/logging.yaml'

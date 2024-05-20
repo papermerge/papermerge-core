@@ -3,17 +3,19 @@ disable_existing_loggers: false
 
 formatters:
   verbose:
-    format: '%(levelname)s %(asctime)s %(module)s %(message)s'
+    format: '%(levelname)s:%(pathname)s:%(lineno)d:%(funcName)s: %(message)s'
 
 handlers:
   console:
-    level: INFO
     class: logging.StreamHandler
     formatter: verbose
 
 loggers:
   oidc_app:
     level: INFO
+    handlers: [console]
+  s3worker:
+    level: DEBUG
     handlers: [console]
   papermerge.search.tasks:
     level: INFO

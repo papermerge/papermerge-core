@@ -3,11 +3,13 @@ from datetime import datetime
 from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
+from django.conf import settings
 from django.db.models.manager import BaseManager
 from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
                       field_validator)
 from typing_extensions import Annotated
 
+from papermerge.core.pathlib import plib
 from papermerge.core.types import OCRStatusEnum
 
 
@@ -112,7 +114,11 @@ class Document(BaseModel):
 
     @field_validator('thumbnail_url', mode='before')
     def thumbnail_url_validator(cls, value, info):
-        return f"/api/thumbnails/{info.data['id']}"
+        if settings.PREVIEW_MODE == 'local':
+            return f"/api/thumbnails/{info.data['id']}"
+
+        # if it is not local, then it is s3 + cloudfront
+        return _s3_doc_thumbnail_url(info.data['id'])
 
     @field_validator('tags', mode='before')
     def tags_validator(cls, value):
@@ -155,3 +161,15 @@ class CreateDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
+
+
+def _s3_doc_thumbnail_url(uid: str) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.thumbnail_path(UUID(uid))
+    url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )

@@ -13,7 +13,7 @@ ValidFor = Annotated[
 
 
 @app.command()
-def cf_sign_url(url: str, valid_for: ValidFor):
+def cf_sign_url(url: str, valid_for: ValidFor = 600):
     """Sign URL using AWS CloudFront signer"""
     result = cloudfront.sign_url(url, valid_for)
     print(f"Signed URL: {result}")

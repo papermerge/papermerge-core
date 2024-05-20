@@ -170,6 +170,12 @@ CF_SIGN_URL_KEY_ID = os.environ.get(
     'PAPERMERGE__MAIN__CF_SIGN_URL_KEY_ID',
     None
 )
+# cloudfront domain used to access S3 content
+# e.g. 'd3j1f4sy1s01dy.cloudfront.net'
+CF_DOMAIN = os.environ.get(
+    'PAPERMERGE__MAIN__CF_DOMAIN',
+    None
+)
 
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',

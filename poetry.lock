@@ -3135,7 +3135,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [extras]
-cloud = ["boto3", "botocore"]
+cloud = ["boto3", "botocore", "cryptography"]
 databases = ["mysqlclient", "psycopg2"]
 mysql = ["mysqlclient"]
 pgsql = ["psycopg2", "psycopg2-binary"]
@@ -3144,4 +3144,4 @@ xapian = ["xapianpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <4.0"
-content-hash = "394203e45897ef89d5303222b70abaf4dd096272688b03f26c0468de6e8d22b4"
+content-hash = "1f2679dd543a71cacab4a3300af178ba87e9c3865411ef5860514193946047d4"

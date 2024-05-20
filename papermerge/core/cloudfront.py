@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import rsa
 from botocore.signers import CloudFrontSigner
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 from django.conf import settings
 
 
@@ -19,14 +21,13 @@ def rsa_signer(message):
             f"{key_path} does not exist"
         )
 
-    private_key = open(key_path, 'r').read()
-    ret = rsa.sign(
-        message,
-        rsa.PrivateKey.load_pkcs1(private_key.encode('utf8')),
-        'SHA-1'
-    )  # CloudFront requires SHA-1 hash
-
-    return ret
+    with open(key_path, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(),
+            password=None,
+            backend=default_backend()
+        )
+    return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
 
 def sign_url(url: str, valid_for: int = 600):
@@ -43,11 +44,8 @@ def sign_url(url: str, valid_for: int = 600):
         raise ValueError(
             "CF_SIGN_URL_KEY_ID is empty"
         )
-    cf_signer = CloudFrontSigner(
-        key_id,
-        rsa_signer
-    )
-    date_less_than = datetime.now() + timedelta(minutes=valid_for)
+    cf_signer = CloudFrontSigner(key_id, rsa_signer)
+    date_less_than = datetime.now() + timedelta(seconds=valid_for)
     signed_url = cf_signer.generate_presigned_url(
         url,
         date_less_than=date_less_than

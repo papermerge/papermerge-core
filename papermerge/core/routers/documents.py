@@ -83,6 +83,7 @@ def upload_file(
         file_name=file.filename,
         content_type=file.headers.get('content-type')
     )
+
     if settings.PREVIEW_MODE == 'local':
         # generate preview and store it in local storage
         doc.generate_thumbnail()
@@ -92,7 +93,7 @@ def upload_file(
         celery_app.send_task(
             const.S3_WORKER_GENERATE_PREVIEW,
             kwargs={'doc_id': str(doc.id)},
-            route_name='s3preview',
+            route_name='preview',
         )
 
     return schemas.Document.model_validate(doc)

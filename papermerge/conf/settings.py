@@ -177,6 +177,11 @@ CF_DOMAIN = os.environ.get(
     None
 )
 
+OBJECT_PREFIX = os.environ.get(
+    'PAPERMERGE__MAIN__OBJECT_PREFIX',
+    None
+)
+
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',
     '/etc/papermerge/logging.yaml'

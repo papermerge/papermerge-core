@@ -9,7 +9,7 @@ from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
                       field_validator)
 from typing_extensions import Annotated
 
-from papermerge.core.pathlib import plib
+from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 
 
@@ -163,11 +163,15 @@ class Thumbnail(BaseModel):
     size: int
 
 
-def _s3_doc_thumbnail_url(uid: str) -> str:
+def _s3_doc_thumbnail_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
-    resource_path = plib.thumbnail_path(UUID(uid))
-    url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+    resource_path = plib.thumbnail_path(uid)
+    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
 
     return sign_url(
         url,

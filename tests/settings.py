@@ -19,8 +19,26 @@ TEST_ROOT = Path(__file__).parent
 REDIS_URL = config.get('redis', 'url', default='redis://localhost:6379/0')
 NOTIFICATION_URL = 'memory://localhost/'
 
-# this settings still makes sense?
-PAPERMERGE_NAMESPACE = config.get('main', 'namespace', default=None)
+PREVIEW_MODE = os.environ.get(
+    'PAPERMERGE__MAIN__IMAGE_PREVIEW_SOURCE',
+    'local'
+)
+CF_SIGN_URL_PRIVATE_KEY = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_PRIVATE_KEY',
+    None
+)
+CF_SIGN_URL_KEY_ID = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_KEY_ID',
+    None
+)
+CF_DOMAIN = os.environ.get(
+    'PAPERMERGE__MAIN__CF_DOMAIN',
+    None
+)
+OBJECT_PREFIX = os.environ.get(
+    'PAPERMERGE__MAIN__OBJECT_PREFIX',
+    None
+)
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -50,7 +68,4 @@ OCR__DEFAULT_LANGUAGE = os.environ.get(
 )
 
 SEARCH_URL = 'xapian://index_db_test/index_db'
-
-AUTH_USER_MODEL = "core.User"
-
 USE_TZ = False

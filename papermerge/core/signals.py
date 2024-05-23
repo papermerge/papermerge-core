@@ -174,6 +174,11 @@ def s3_delete(sender, instance: Document, **kwargs):
         kwargs={'doc_ver_ids': ids},
         route_name='s3',
     )
+    celery_app.send_task(
+        const.S3_WORKER_REMOVE_DOC_THUMBNAIL,
+        kwargs={'doc_id': str(instance.id)},
+        route_name='s3',
+    )
 
 
 @receiver(post_delete, sender=User)

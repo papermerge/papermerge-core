@@ -2,8 +2,11 @@ import io
 import uuid
 from typing import Annotated
 
+from celery.app import default_app as celery_app
 from fastapi import APIRouter, Depends, Security, UploadFile
 
+from papermerge.conf import settings
+from papermerge.core import constants as const
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Document
@@ -80,6 +83,17 @@ def upload_file(
         file_name=file.filename,
         content_type=file.headers.get('content-type')
     )
-    doc.generate_thumbnail()
+
+    if settings.PREVIEW_MODE == 'local':
+        # generate preview and store it in local storage
+        doc.generate_thumbnail()
+    else:
+        # generate preview using `s3_worker`
+        # it will, as well, upload previews to s3 storage
+        celery_app.send_task(
+            const.S3_WORKER_GENERATE_PREVIEW,
+            kwargs={'doc_id': str(doc.id)},
+            route_name='preview',
+        )
 
     return schemas.Document.model_validate(doc)

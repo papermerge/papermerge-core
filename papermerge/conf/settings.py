@@ -145,6 +145,43 @@ OCR__DEFAULT_LANGUAGE = os.environ.get(
     'deu'
 )
 
+# Where are image previews, i.e. pages, document thumbnails, serverd from ?
+# - from local storage (convenient for simple setups)
+# - from S3 storage (convenient for cloud setups)
+PREVIEW_MODE = os.environ.get(
+    'PAPERMERGE__MAIN__IMAGE_PREVIEW_SOURCE',
+    'local'
+)
+
+# absolute path to private key used to sign
+# cloudfront URLs for accessing private S3 content
+CF_SIGN_URL_PRIVATE_KEY = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_PRIVATE_KEY',
+    None
+)
+
+# Cloudfront public key ID
+# CF -> public keys -> ID
+# example of key id value: "K2FRE1IUML0Y0N"
+# This value should be provided only if:
+# - S3 as content storage is used
+# - there is a cloudfront private key used for signing urls
+CF_SIGN_URL_KEY_ID = os.environ.get(
+    'PAPERMERGE__MAIN__CF_SIGN_URL_KEY_ID',
+    None
+)
+# cloudfront domain used to access S3 content
+# e.g. 'd3j1f4sy1s01dy.cloudfront.net'
+CF_DOMAIN = os.environ.get(
+    'PAPERMERGE__MAIN__CF_DOMAIN',
+    None
+)
+
+OBJECT_PREFIX = os.environ.get(
+    'PAPERMERGE__MAIN__OBJECT_PREFIX',
+    None
+)
+
 LOGGING_CFG_FILENAME = os.environ.get(
     'PAPERMERGE__MAIN__LOGGING_CFG',
     '/etc/papermerge/logging.yaml'

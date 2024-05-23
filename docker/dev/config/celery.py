@@ -42,3 +42,12 @@ app.conf.broker_transport_options = {
     'interval_step': 0.2,
     'interval_max': 0.2,
 }
+
+app.conf.task_routes = {
+    # `s3_worker`: uploads/downloads of document version files
+    # via s3 queue
+    's3': {'queue': 's3'},
+    # `s3_worker`: generates previews and uploads them to s3 storage
+    # via s3preview queue
+    'preview': {'queue': 's3preview'}
+}

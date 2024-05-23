@@ -9,6 +9,7 @@ from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
                       field_validator)
 from typing_extensions import Annotated
 
+from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 
@@ -39,7 +40,15 @@ class Page(BaseModel):
     @field_validator("jpg_url", mode='before')
     @classmethod
     def jpg_url_value(cls, value, info: ValidationInfo) -> str:
-        return f"/api/pages/{info.data['id']}/jpg"
+        if settings.PREVIEW_MODE == 'local':
+            return f"/api/pages/{info.data['id']}/jpg"
+
+        s3_url = _s3_page_thumbnail_url(
+            info.data['id'],  # UUID of the page here
+            size=const.DEFAULT_PAGE_SIZE
+        )
+
+        return s3_url
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -167,6 +176,22 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid)
+    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )
+
+
+def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.thumbnail_path(uid, size=size)
     prefix = getattr(settings, 'OBJECT_PREFIX', None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"

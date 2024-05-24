@@ -428,7 +428,11 @@ def extract_pages(
             f"Notifying index to add doc.title={doc.title} doc.id={doc.id}"
         )
         logger.debug(f"Doc last version={doc.versions.last()}")
+
     notify_add_docs([str(doc.id) for doc in target_docs])
+    notify_generate_previews(
+        list([str(doc.id) for doc in target_docs])
+    )
 
     if old_doc_ver.pages.count() == moved_pages_count:
         # all source pages were extracted, document should
@@ -437,6 +441,7 @@ def extract_pages(
         old_doc_ver.document.delete()
         return [None, target_docs]
 
+    notify_generate_previews(str(source_doc.id))
     return [source_doc, target_docs]
 
 

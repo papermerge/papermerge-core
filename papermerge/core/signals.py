@@ -10,7 +10,7 @@ from django.dispatch import receiver
 from kombu.exceptions import OperationalError
 
 from papermerge.core import constants as const
-from papermerge.core.models import Document, DocumentVersion, User
+from papermerge.core.models import Document, DocumentVersion, Page, User
 from papermerge.core.notif import (Event, EventName, OCREvent, State,
                                    notification)
 from papermerge.core.storage import get_storage_instance
@@ -165,6 +165,9 @@ def s3_delete(sender, instance: Document, **kwargs):
         return
 
     ids = [str(v.id) for v in instance.versions.all()]
+    page_ids = [
+        str(p.id) for p in Page.objects.filter(document_version_id__in=ids)
+    ]
 
     logger.debug(
         f"Sending {const.S3_WORKER_REMOVE_DOC_VER} task doc_ver_ids={ids}"
@@ -177,6 +180,11 @@ def s3_delete(sender, instance: Document, **kwargs):
     celery_app.send_task(
         const.S3_WORKER_REMOVE_DOC_THUMBNAIL,
         kwargs={'doc_id': str(instance.id)},
+        route_name='s3',
+    )
+    celery_app.send_task(
+        const.S3_WORKER_REMOVE_PAGE_THUMBNAIL,
+        kwargs={'page_ids': page_ids},
         route_name='s3',
     )
 

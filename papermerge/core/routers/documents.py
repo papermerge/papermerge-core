@@ -93,7 +93,7 @@ def upload_file(
         celery_app.send_task(
             const.S3_WORKER_GENERATE_PREVIEW,
             kwargs={'doc_id': str(doc.id)},
-            route_name='preview',
+            route_name='s3preview',
         )
 
     return schemas.Document.model_validate(doc)

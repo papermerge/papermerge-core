@@ -113,7 +113,7 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-TIME_ZONE = config.get('main', 'timezone', default='Europe/Berlin')
+TIMEZONE = config.get('main', 'timezone', default='Europe/Berlin')
 
 USE_I18N = True
 USE_L10N = True

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytz
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -40,12 +41,15 @@ def sign_url(url: str, valid_for: int = 600):
         to 600 (i.e. 10 minutes)
     """
     key_id = getattr(settings, 'CF_SIGN_URL_KEY_ID', None)
+    tz = pytz.timezone(
+        getattr(settings, 'TIMEZONE', 'Europe/Berlin')
+    )
     if key_id is None:
         raise ValueError(
             "CF_SIGN_URL_KEY_ID is empty"
         )
     cf_signer = CloudFrontSigner(key_id, rsa_signer)
-    date_less_than = datetime.now() + timedelta(seconds=valid_for)
+    date_less_than = datetime.now(tz) + timedelta(seconds=valid_for)
     signed_url = cf_signer.generate_presigned_url(
         url,
         date_less_than=date_less_than

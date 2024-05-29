@@ -113,7 +113,7 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-TIME_ZONE = config.get('main', 'timezone', default='Europe/Berlin')
+TIMEZONE = config.get('main', 'timezone', default='Europe/Berlin')
 
 USE_I18N = True
 USE_L10N = True
@@ -178,7 +178,7 @@ CF_DOMAIN = os.environ.get(
 )
 
 OBJECT_PREFIX = os.environ.get(
-    'PAPERMERGE__MAIN__OBJECT_PREFIX',
+    'PAPERMERGE__S3__OBJECT_PREFIX',
     None
 )
 

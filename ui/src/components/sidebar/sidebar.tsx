@@ -36,7 +36,7 @@ function SidebarOpened({onClick, current, scopes}: SidebarArgs) {
   return (
     <div className="sidebar opened d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
-        <img src="/images/wela-logo-landscape-2-conv.svg" width="80" />
+        <img src="/images/wela-logo-landscape-2-conv.svg" width="150" />
       </a>
       <hr />
       <Nav>

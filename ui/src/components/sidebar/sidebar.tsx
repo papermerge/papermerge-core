@@ -75,7 +75,7 @@ function SidebarFolded({onClick, current, scopes}: SidebarArgs) {
   return (
     <div className="sidebar folded d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
-        <img width="60px" src="/images/papermerge2.svg"/>
+        <img width="60px" src="/images/WELA-NEW-LOGO-01.png"/>
       </a>
       <hr />
       <Nav>

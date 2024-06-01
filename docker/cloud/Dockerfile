@@ -6,7 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/oidc:0.2.1 as oidc_app
+FROM papermerge/oidc:0.2.3 as oidc_app
 FROM caddy:2.7 AS caddy
 FROM python:3.11-slim-bookworm
 

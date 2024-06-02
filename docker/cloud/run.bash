@@ -39,7 +39,7 @@ exec_index_schema_apply() {
 
 exec_runtime_config_js() {
   echo "roco: generating runtime config..."
-  roco > /usr/share/html/ui/papermerge-runtime-config.js
+  roco > /usr/share/html/ui/runtime/config.js
   echo "Done!"
 }
 

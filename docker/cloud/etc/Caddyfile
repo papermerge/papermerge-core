@@ -20,4 +20,3 @@ handle_path /api/* {
 }
 
 root * /usr/share/html/ui
-file_server browse

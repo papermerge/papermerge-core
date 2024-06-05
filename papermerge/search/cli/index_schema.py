@@ -5,7 +5,7 @@ from salinic import SchemaManager, create_engine
 
 from papermerge.search.schema import Model
 
-app = typer.Typer(help="Index Schema Utilities")
+app = typer.Typer(help="Index Schema Management")
 engine = create_engine(settings.SEARCH_URL)
 schema_manager = SchemaManager(engine, model=Model)
 

@@ -33,7 +33,7 @@ exec_create_admin_group() {
 exec_index_schema_apply() {
   echo "Applying index schema..."
   export VIRTUAL_ENV=/core_app/venv
-  cd /core_app && poetry run python manage.py index_schema apply
+  cd /core_app && poetry run index_schema apply
   echo "Done!"
 }
 

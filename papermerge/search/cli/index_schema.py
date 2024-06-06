@@ -1,12 +1,18 @@
+import os
+
 import typer
-from django.conf import settings
 from rich import print_json
 from salinic import SchemaManager, create_engine
 
 from papermerge.search.schema import Model
 
 app = typer.Typer(help="Index Schema Management")
-engine = create_engine(settings.SEARCH_URL)
+
+SEARCH_URL = os.environ.get('PAPERMERGE__SEARCH__URL')
+if not SEARCH_URL:
+    raise ValueError("missing PAPERMERGE__SEARCH__URL")
+
+engine = create_engine(SEARCH_URL)
 schema_manager = SchemaManager(engine, model=Model)
 
 

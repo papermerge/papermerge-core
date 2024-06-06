@@ -1,9 +1,11 @@
 import os
 import uuid
+from typing import Optional
 
 import typer
 from rich import print_json
 from salinic import IndexRW, create_engine
+from typing_extensions import Annotated
 
 from papermerge.core import db, schemas
 from papermerge.search.schema import FOLDER, PAGE, Model
@@ -18,10 +20,15 @@ engine = create_engine(SEARCH_URL)
 index = IndexRW(engine, schema=Model)
 db_session = db.get_session()
 
+NodeIDsType = Annotated[
+    Optional[list[uuid.UUID]],
+    typer.Argument()
+]
+
 
 @app.command()
 def index_cmd(
-    node_ids: list[uuid.UUID] = [], # noqa
+    node_ids: NodeIDsType = None,
     dry_run: bool = False
 ):
     nodes = db.get_nodes(db_session, node_ids)

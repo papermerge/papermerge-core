@@ -51,7 +51,7 @@ def index_cmd(
                     page_number=page.number,
                     text=page.text,
                     entity_type=PAGE,
-                    tags=node.tags,
+                    tags=[tag.name for tag in node.tags],
                 )
                 items.append(item)
         else:
@@ -60,7 +60,7 @@ def index_cmd(
                 title=node.title,
                 user_id=str(node.user_id),
                 entity_type=FOLDER,
-                tags=node.tags,
+                tags=[tag.name for tag in node.tags],
             )
             items.append(item)
 

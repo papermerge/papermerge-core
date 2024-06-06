@@ -1,6 +1,6 @@
-from typing import List, Optional, Tuple
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 from salinic import types
 from salinic.field import KeywordField, TextField, UUIDField
 from salinic.schema import Schema
@@ -8,20 +8,6 @@ from typing_extensions import Annotated
 
 FOLDER = 'folder'
 PAGE = 'page'
-
-
-class Tag(BaseModel):
-    name: str
-
-
-Tags = Annotated[
-    Optional[list[Tag]],
-    KeywordField()  # will be indexed as a keyword
-]
-Breadcrumb = Annotated[
-    List[Tuple[str, str]],
-    KeywordField()  # will be indexed as a keyword
-]
 
 
 class Model(Schema):
@@ -77,7 +63,7 @@ class Model(Schema):
     ]  # folder | page
 
     tags: Annotated[
-        Optional[list[Tag]],
+        Optional[list[str]],
         KeywordField(multi_value=True)
     ] = []
 
@@ -87,9 +73,3 @@ class Model(Schema):
             f'number={self.page_number},' \
             f'text=|{self.text}|,' \
             f'type={self.entity_type})'
-
-    def get_idx_value__tags(self):
-        return list([tag.name for tag in self.tags])
-
-    def get_idx_value__breadcrumb(self):
-        return list([item[1] for item in self.breadcrumb])

@@ -59,7 +59,7 @@ def retrieve_document_thumbnail(
         Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
     size: int = DEFAULT_THUMBNAIL_SIZE,
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ):
     """Retrieves thumbnail of the document last version's first page
 
@@ -67,11 +67,11 @@ def retrieve_document_thumbnail(
     """
     try:
         doc_ver = db.get_last_doc_ver(
-            engine,
+            db_session,
             user_id=user.id,
             doc_id=document_id
         )
-        page = db.get_first_page(engine, doc_ver_id=doc_ver.id)
+        page = db.get_first_page(db_session, doc_ver_id=doc_ver.id)
     except db_exc.PageNotFound as e:
         raise HTTPException(
             status_code=404,

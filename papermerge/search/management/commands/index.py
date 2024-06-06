@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from salinic import IndexRO, create_engine
 
 from papermerge.core.models import BaseTreeNode
-from papermerge.search.schema import FOLDER, PAGE, ColoredTag, Model
+from papermerge.search.schema import FOLDER, PAGE, Model, Tag
 
 
 class Command(BaseCommand):
@@ -27,7 +27,6 @@ class Command(BaseCommand):
 
         for node in nodes:
             self.stdout.write(f"Indexing {node}")
-            index_entity = None
             if not node.parent_id:
                 continue
 
@@ -48,15 +47,8 @@ class Command(BaseCommand):
                         parent_id=str(node.parent_id),
                         entity_type=PAGE,
                         tags=[
-                            ColoredTag(
-                                name=tag.name,
-                                fg_color=tag.fg_color,
-                                bg_color=tag.bg_color
-                            ) for tag in node.tags.all()
+                            Tag(name=tag.name) for tag in node.tags.all()
                         ],
-                        breadcrumb=[
-                            (str(item[0]), item[1]) for item in node.breadcrumb
-                        ]
                     )
             else:
                 model = Model(
@@ -64,19 +56,7 @@ class Command(BaseCommand):
                     title=node.title,
                     user_id=str(node.user_id),
                     entity_type=FOLDER,
-                    parent_id=str(node.parent_id),
-                    tags=[
-                        ColoredTag(
-                            name=tag.name,
-                            fg_color=tag.fg_color,
-                            bg_color=tag.bg_color
-                        ) for tag in node.tags.all()
-                    ],
-                    breadcrumb=[
-                        (str(item[0]), item[1]) for item in node.breadcrumb
-                    ]
-
+                    tags=[Tag(name=tag.name) for tag in node.tags.all()],
                 )
 
-            if index_entity:
-                index.add(model)
+            index.add(model)

@@ -10,14 +10,12 @@ FOLDER = 'folder'
 PAGE = 'page'
 
 
-class ColoredTag(BaseModel):
+class Tag(BaseModel):
     name: str
-    fg_color: str
-    bg_color: str
 
 
 Tags = Annotated[
-    Optional[list[ColoredTag]],
+    Optional[list[Tag]],
     KeywordField()  # will be indexed as a keyword
 ]
 Breadcrumb = Annotated[
@@ -59,11 +57,6 @@ class Model(Schema):
         UUIDField(index=False)
     ]
 
-    parent_id: Annotated[
-        str,
-        UUIDField(index=False)
-    ]
-
     title: Annotated[
         str,
         TextField(general_search=True, multi_lang=True)
@@ -75,25 +68,18 @@ class Model(Schema):
         TextField(general_search=True, multi_lang=True)
     ] = None
 
+    # None in case of folder entity
+    page_number: types.OptionalNumeric = None
+
     entity_type: Annotated[
         str,
         KeywordField()
     ]  # folder | page
 
-    breadcrumb: Annotated[
-        List[Tuple[str, str]],
-        KeywordField(multi_value=True)
-    ]
-
     tags: Annotated[
-        Optional[list[ColoredTag]],
+        Optional[list[Tag]],
         KeywordField(multi_value=True)
     ] = []
-
-    # None in case of folder entity
-    page_number: types.OptionalNumeric = None
-    # None in case of folder entity
-    page_count: types.OptionalNumeric = None
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\

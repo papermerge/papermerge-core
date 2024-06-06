@@ -10,14 +10,14 @@ from .exceptions import PageNotFound
 
 
 def get_first_page(
-    engine: Engine,
+    db_session: Session,
     doc_ver_id: UUID,
 ) -> schemas.Page:
     """
     Returns first page of the document version
     identified by doc_ver_id
     """
-    with Session(engine) as session:  # noqa
+    with db_session as session:  # noqa
         stmt = select(Page).where(
             Page.document_version_id == doc_ver_id,
         ).order_by(
@@ -56,3 +56,26 @@ def get_page(
         model = schemas.Page.model_validate(db_page)
 
     return model
+
+
+def get_doc_ver_pages(
+    db_session: Session,
+    doc_ver_id: UUID
+) -> list[schemas.Page]:
+    with db_session as session:
+        stmt = select(Page).where(
+            Page.document_version_id == doc_ver_id
+        ).order_by('number')
+        try:
+            db_pages = session.scalars(stmt).all()
+        except exc.NoResultFound:
+            session.close()
+            raise PageNotFound(
+                f"No pages not found for doc_ver_id={doc_ver_id}"
+            )
+        models = [
+            schemas.Page.model_validate(db_page)
+            for db_page in db_pages
+        ]
+
+    return models

@@ -8,7 +8,7 @@ from papermerge.core.db.models import Document, DocumentVersion
 
 
 def get_last_doc_ver(
-    engine: Engine,
+    db_session: Session,
     user_id: UUID,
     doc_id: UUID  # noqa
 ) -> schemas.DocumentVersion:
@@ -16,7 +16,7 @@ def get_last_doc_ver(
     Returns last version of the document
     identified by doc_id
     """
-    with Session(engine) as session:  # noqa
+    with db_session as session:  # noqa
         stmt = select(DocumentVersion).join(Document).where(
             DocumentVersion.document_id == doc_id,
             Document.user_id == user_id

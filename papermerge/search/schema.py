@@ -1,6 +1,6 @@
-from typing import List, Optional, Tuple
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 from salinic import types
 from salinic.field import KeywordField, TextField, UUIDField
 from salinic.schema import Schema
@@ -8,22 +8,6 @@ from typing_extensions import Annotated
 
 FOLDER = 'folder'
 PAGE = 'page'
-
-
-class ColoredTag(BaseModel):
-    name: str
-    fg_color: str
-    bg_color: str
-
-
-Tags = Annotated[
-    Optional[list[ColoredTag]],
-    KeywordField()  # will be indexed as a keyword
-]
-Breadcrumb = Annotated[
-    List[Tuple[str, str]],
-    KeywordField()  # will be indexed as a keyword
-]
 
 
 class Model(Schema):
@@ -59,11 +43,6 @@ class Model(Schema):
         UUIDField(index=False)
     ]
 
-    parent_id: Annotated[
-        str,
-        UUIDField(index=False)
-    ]
-
     title: Annotated[
         str,
         TextField(general_search=True, multi_lang=True)
@@ -75,25 +54,18 @@ class Model(Schema):
         TextField(general_search=True, multi_lang=True)
     ] = None
 
+    # None in case of folder entity
+    page_number: types.OptionalNumeric = None
+
     entity_type: Annotated[
         str,
         KeywordField()
     ]  # folder | page
 
-    breadcrumb: Annotated[
-        List[Tuple[str, str]],
-        KeywordField(multi_value=True)
-    ]
-
     tags: Annotated[
-        Optional[list[ColoredTag]],
+        Optional[list[str]],
         KeywordField(multi_value=True)
     ] = []
-
-    # None in case of folder entity
-    page_number: types.OptionalNumeric = None
-    # None in case of folder entity
-    page_count: types.OptionalNumeric = None
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\
@@ -101,9 +73,3 @@ class Model(Schema):
             f'number={self.page_number},' \
             f'text=|{self.text}|,' \
             f'type={self.entity_type})'
-
-    def get_idx_value__tags(self):
-        return list([tag.name for tag in self.tags])
-
-    def get_idx_value__breadcrumb(self):
-        return list([item[1] for item in self.breadcrumb])

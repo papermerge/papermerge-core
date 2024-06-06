@@ -112,7 +112,6 @@ function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
 
   return (
     <div className="sr-node ps-2">
-      <Breadcrumb items={item.breadcrumb} />
       <div className="node document">
         {thumbnail_component}
         <div onClick={localOnClick} className="title">{item.title}</div>
@@ -131,7 +130,6 @@ function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
 
   return (
     <div className="sr-node ps-2">
-      <Breadcrumb items={item.breadcrumb} />
       <div className="node folder">
         <div className="icon folder"></div>
         <div onClick={localOnClick} className="title">{item.title}</div>

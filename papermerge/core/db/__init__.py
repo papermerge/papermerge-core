@@ -8,8 +8,8 @@ from .exceptions import UserNotFound
 from .folders import get_folder
 from .groups import (create_group, delete_group, get_group, get_groups,
                      update_group)
-from .nodes import get_paginated_nodes
-from .pages import get_first_page, get_page
+from .nodes import get_nodes, get_paginated_nodes
+from .pages import get_doc_ver_pages, get_first_page, get_page
 from .perms import get_perms, sync_perms
 from .session import get_session
 from .users import (create_user, get_user, get_user_details,
@@ -27,6 +27,7 @@ __all__ = [
     'get_folder',
     'get_first_page',
     'get_page',
+    'get_doc_ver_pages',
     'get_last_doc_ver',
     'get_doc_ver',
     'get_doc',
@@ -40,5 +41,6 @@ __all__ = [
     'get_groups',
     'create_group',
     'update_group',
-    'delete_group'
+    'delete_group',
+    'get_nodes'
 ]

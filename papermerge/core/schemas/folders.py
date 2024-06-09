@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict, field_validator
 
 class Tag(BaseModel):
     name: str
+    bg_color: str = '#c41fff'
+    fg_color: str = '#FFFFF'
 
     # Config
     model_config = ConfigDict(from_attributes=True)

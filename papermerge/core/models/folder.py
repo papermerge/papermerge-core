@@ -3,7 +3,7 @@ from typing import List
 from celery import current_app
 from django.db import models
 
-from papermerge.core.constants import INDEX_ADD_NODE, INDEX_REMOVE_NODE
+from papermerge.core import constants as const
 from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.utils.decorators import skip_in_tests
@@ -37,7 +37,11 @@ class FolderQuerySet(models.QuerySet):
 
     @skip_in_tests
     def publish_post_delete_task(self, node_ids: List[str]):
-        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
+        current_app.send_task(
+            const.INDEX_REMOVE_NODE,
+            kwargs={'item_ids': node_ids},
+            route_name='i3'
+        )
 
     def get_by_breadcrumb(
         self,
@@ -94,7 +98,11 @@ class Folder(BaseTreeNode):
         This method WILL NOT be invoked during tests
         """
         id_as_str = str(self.pk)
-        current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
+        current_app.send_task(
+            const.INDEX_ADD_NODE,
+            kwargs={'node_id': id_as_str},
+            route_name='i3'
+        )
 
     class Meta:
         verbose_name = "Folder"

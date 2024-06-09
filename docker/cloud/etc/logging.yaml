@@ -10,11 +10,19 @@ handlers:
     class: logging.StreamHandler
     formatter: verbose
 
+
+root:
+  level: DEBUG
+  handlers: [console]
+
 loggers:
   oidc_app:
     level: INFO
     handlers: [console]
   s3worker:
+    level: INFO
+    handlers: [console]
+  i3worker:
     level: DEBUG
     handlers: [console]
   papermerge.search.tasks:

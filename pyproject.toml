@@ -108,7 +108,7 @@ test = "pytest tests/ --disable-warnings"
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
-server = "DJANGO_SETTINGS_MODULE=config.settings uvicorn config.asgi:fastapp --app-dir docker/dev/ --reload --reload-dir papermerge/core/"
+server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --reload --reload-dir papermerge/core/"
 
 [tool.poetry.scripts]
 token = 'papermerge.core.cli.token:app'

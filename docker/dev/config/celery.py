@@ -6,6 +6,7 @@ from celery import Celery
 from celery.signals import setup_logging
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+PREFIX = os.environ.get('PAPERMERGE__MAIN__PREFIX', None)
 
 app = Celery('papermerge')
 
@@ -43,11 +44,21 @@ app.conf.broker_transport_options = {
     'interval_max': 0.2,
 }
 
+
+def prefixed(name: str) -> str:
+    if PREFIX:
+        return f'{PREFIX}_{name}'
+
+    return name
+
+
 app.conf.task_routes = {
     # `s3_worker`: uploads/downloads of document version files
     # via s3 queue
     's3': {'queue': 's3'},
     # `s3_worker`: generates previews and uploads them to s3 storage
-    # via s3preview queue
-    'preview': {'queue': 's3preview'}
+    # via preview queue
+    'preview': {'queue': 's3preview'},
+    # index worker - sends index add/remove/updates
+    'i3': {'queue': prefixed('i3')}
 }

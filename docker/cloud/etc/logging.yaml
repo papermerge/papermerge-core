@@ -22,6 +22,9 @@ loggers:
   s3worker:
     level: INFO
     handlers: [console]
+  salinic:
+    level: DEBUG
+    handlers: [console]
   i3worker:
     level: DEBUG
     handlers: [console]

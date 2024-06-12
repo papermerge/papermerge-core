@@ -392,4 +392,8 @@ def delete_node_tags(
 @skip_in_tests
 def _notify_index(node_id: str):
     id_as_str = str(node_id)  # just in case, make sure it is str
-    current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
+    current_app.send_task(
+        INDEX_ADD_NODE,
+        kwargs={'node_id': id_as_str},
+        route_name='i3'
+    )

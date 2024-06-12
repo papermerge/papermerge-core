@@ -131,17 +131,17 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.34.123"
+version = "1.34.124"
 description = "The AWS SDK for Python"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.123-py3-none-any.whl", hash = "sha256:56bec52d485d5670ce96d53ae7b2cd4ae4e8a705fb2298a21093cdd77d642331"},
-    {file = "boto3-1.34.123.tar.gz", hash = "sha256:42b140fc850cf261ee4b1e8ef527fa071b1f1592a6d6a68d34b29f37cc46b4dd"},
+    {file = "boto3-1.34.124-py3-none-any.whl", hash = "sha256:549d9735bbb7cf8e1a2f4b3b676be32946717c59f33c47234586835dc904d04e"},
+    {file = "boto3-1.34.124.tar.gz", hash = "sha256:a91ee58fa54b170f17b2e144f038e155f92cf515f1c073ac2595e9ee45f125a8"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.123,<1.35.0"
+botocore = ">=1.34.124,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -150,13 +150,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.123"
+version = "1.34.124"
 description = "Low-level, data-driven core of boto 3."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.123-py3-none-any.whl", hash = "sha256:8c34ada2a708c82e7174bff700611643db7ce2cb18f1130c35045c24310d299d"},
-    {file = "botocore-1.34.123.tar.gz", hash = "sha256:a8577f6574600c4d159b5cd103ee05744a443d77f7778304e17307940b369c4f"},
+    {file = "botocore-1.34.124-py3-none-any.whl", hash = "sha256:fede092c7f8f414f78f3e7991e47cb0cf2279d90c027606ad7cba79fa370b827"},
+    {file = "botocore-1.34.124.tar.gz", hash = "sha256:3f0bf79c17d656acdfdb53581224f6a38867ff2829f7428c586198f67a90ea26"},
 ]
 
 [package.dependencies]
@@ -2463,21 +2463,19 @@ name = "salinic"
 version = "0.5.0"
 description = "Search abstraction layer"
 optional = false
-python-versions = ">=3.11, <4.0"
-files = []
-develop = true
+python-versions = "<4.0,>=3.11"
+files = [
+    {file = "salinic-0.5.0-py3-none-any.whl", hash = "sha256:ea6a5d06b5c97831983b9e83d3abf7f09b46c164ca767f2ccbc6aecf5582c21c"},
+    {file = "salinic-0.5.0.tar.gz", hash = "sha256:f5cb475f6d79f715a2a434f25560f5d2fc5c626184edd62bb88a5dd98f31919b"},
+]
 
 [package.dependencies]
-glom = "^23.5.0"
-pydantic = "^2.7"
-requests = "^2.31.0"
+glom = ">=23.5.0,<24.0.0"
+pydantic = ">=2.7,<3.0"
+requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
 xapian = ["xapianpy (==1.4.22.post2406040406)"]
-
-[package.source]
-type = "directory"
-url = "../SalinicProj"
 
 [[package]]
 name = "setuptools"
@@ -3122,4 +3120,4 @@ xapian = ["xapianpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <4.0"
-content-hash = "cf2f9831b8f724d49327c0883e6e947d60f25d31bfddbfbd17f3a9f138c22eaa"
+content-hash = "dc69e95d1c18547e271ad1c643817d1b70fc80e3a37bdf05d169d5f21431d0c9"

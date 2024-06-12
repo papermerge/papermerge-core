@@ -640,7 +640,7 @@ def notify_generate_previews(doc_id: list[str] | str):
         current_app.send_task(
             const.S3_WORKER_GENERATE_PREVIEW,
             kwargs={'doc_id': doc_id},
-            route_name='preview',
+            route_name='s3preview',
         )
         return
     elif isinstance(doc_id, list):
@@ -648,7 +648,7 @@ def notify_generate_previews(doc_id: list[str] | str):
             current_app.send_task(
                 const.S3_WORKER_GENERATE_PREVIEW,
                 kwargs={'doc_id': item},
-                route_name='preview',
+                route_name='s3preview',
             )
     else:
         raise ValueError(

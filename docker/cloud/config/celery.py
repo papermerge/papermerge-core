@@ -39,7 +39,7 @@ app.conf.task_routes = {
     's3': {'queue': prefixed('s3')},
     # `s3_worker`: generates previews and uploads them to s3 storage
     # via s3preview queue
-    'preview': {'queue': prefixed('s3preview')},
+    's3preview': {'queue': prefixed('s3preview')},
     # index worker - sends index add/remove/updates
     'i3': {'queue': prefixed('i3')}
 }

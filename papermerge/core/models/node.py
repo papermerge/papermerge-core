@@ -118,7 +118,11 @@ class NodeQuerySet(models.QuerySet):
 
     @skip_in_tests
     def publish_post_delete_task(self, node_ids: List[str]):
-        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
+        current_app.send_task(
+            INDEX_REMOVE_NODE,
+            kwargs={'item_ids': node_ids},
+            route_name='i3'
+        )
 
 
 CustomNodeManager = NodeManager.from_queryset(NodeQuerySet)
@@ -289,7 +293,11 @@ class BaseTreeNode(models.Model):
     @skip_in_tests
     def publish_post_save_task(self):
         id_as_str = str(self.pk)
-        current_app.send_task(INDEX_ADD_NODE, (id_as_str,))
+        current_app.send_task(
+            INDEX_ADD_NODE,
+            kwargs={'node_id': id_as_str},
+            route_name='i3'
+        )
 
     def delete(self, *args, **kwargs):
         deleted_item_ids = []
@@ -327,7 +335,11 @@ class BaseTreeNode(models.Model):
 
     @skip_in_tests
     def publish_post_delete_task(self, node_ids: List[str]):
-        current_app.send_task(INDEX_REMOVE_NODE, (node_ids,))
+        current_app.send_task(
+            INDEX_REMOVE_NODE,
+            kwargs={'item_ids': node_ids},
+            route_name='i3'
+        )
 
     class Meta:
         # please do not confuse this "Documents" verbose name

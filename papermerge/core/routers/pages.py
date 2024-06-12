@@ -9,7 +9,7 @@ from papermerge.core import db
 from papermerge.core import pathlib as core_pathlib
 from papermerge.core import schemas, utils
 from papermerge.core.auth import get_current_user, scopes
-from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
+from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.models import BaseTreeNode
 from papermerge.core.page_ops import apply_pages_op
@@ -81,7 +81,7 @@ def get_page_jpg_url(
         Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
     size: int = Query(
-        DEFAULT_THUMBNAIL_SIZE,
+        DEFAULT_PAGE_SIZE,
         description="jpg image width in pixels"
     ),
     engine: db.Engine = Depends(db.get_engine)

@@ -250,6 +250,26 @@ def s3_upload(
 
 
 @receiver(document_post_upload, sender=Document)
+def update_index(
+    sender,
+    document_version: DocumentVersion,
+    **_
+):
+    if settings.TESTING:
+        return
+
+    doc = document_version.document
+    logger.debug(
+        f"Sending {const.INDEX_ADD_DOCS} doc_id={doc.id}"
+    )
+    celery_app.send_task(
+        const.INDEX_ADD_DOCS,
+        kwargs={'doc_ids': [str(doc.id)]},
+        route_name='i3',
+    )
+
+
+@receiver(document_post_upload, sender=Document)
 def receiver_document_post_upload(
     sender,
     document_version: DocumentVersion,

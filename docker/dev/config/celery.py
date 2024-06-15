@@ -60,5 +60,6 @@ app.conf.task_routes = {
     # via preview queue
     'preview': {'queue': 's3preview'},
     # index worker - sends index add/remove/updates
-    'i3': {'queue': prefixed('i3')}
+    'i3': {'queue': prefixed('i3')},
+    'ocr': {'queue': prefixed('ocr')}
 }

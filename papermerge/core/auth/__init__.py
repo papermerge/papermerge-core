@@ -77,7 +77,6 @@ def get_current_user(
                     user_id=UUID(token_data.user_id),
                     password='-',
                 )
-
         total_scopes = token_data.scopes
         # superusers have all privileges
         if user.is_superuser:

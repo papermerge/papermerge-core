@@ -22,11 +22,14 @@ loggers:
   s3worker:
     level: INFO
     handlers: [console]
-  salinic:
+  ocrworker:
     level: DEBUG
     handlers: [console]
+  salinic:
+    level: INFO
+    handlers: [console]
   i3worker:
-    level: DEBUG
+    level: INFO
     handlers: [console]
   papermerge.search.tasks:
     level: INFO

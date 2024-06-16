@@ -12,7 +12,7 @@ handlers:
 
 
 root:
-  level: DEBUG
+  level: INFO
   handlers: [console]
 
 loggers:
@@ -22,7 +22,7 @@ loggers:
   s3worker:
     level: INFO
     handlers: [console]
-  ocrworker:
+  ocrworker.tasks:
     level: DEBUG
     handlers: [console]
   salinic:

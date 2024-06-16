@@ -176,7 +176,7 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid)
-    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    prefix = getattr(settings, 'PREFIX', None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -192,7 +192,7 @@ def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid, size=size)
-    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    prefix = getattr(settings, 'PREFIX', None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:

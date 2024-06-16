@@ -177,8 +177,8 @@ CF_DOMAIN = os.environ.get(
     None
 )
 
-OBJECT_PREFIX = os.environ.get(
-    'PAPERMERGE__S3__OBJECT_PREFIX',
+PREFIX = os.environ.get(
+    'PAPERMERGE__MAIN__PREFIX',
     None
 )
 

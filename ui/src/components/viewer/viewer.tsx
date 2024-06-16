@@ -15,6 +15,7 @@ import { NType, DocumentType, DocumentVersion, BreadcrumbType } from "types";
 import type { Vow, PageAndRotOp, NodeType, BreadcrumbItemType, MovePagesBetweenDocsType, OcrStatusType, TargetFolder, MovedDocumentType, TargetDirection } from 'types';
 import type { ThumbnailPageDroppedArgs, ShowDualButtonEnum } from 'types';
 import type { DataTransferExtractedPages, OcrStatusEnum, Coord} from 'types';
+import type { ExtractedPagesType } from 'types';
 import ErrorMessage from 'components/error_message';
 import { reorder as reorder_pages } from 'utils/array';
 import { contains_every, uniq } from 'utils/array';
@@ -25,11 +26,13 @@ import "./viewer.scss";
 import move_pages from './modals/MovePages';
 import move_document from './modals/MoveDocument';
 import delete_document from './modals/DeleteDocument';
+import extract_pages from 'components/modals/extract-pages/ExtractPages';
 import view_ocr_text from './modals/ViewOCRText';
 import run_ocr from './modals/RunOCR';
 import { fetcher } from 'utils/fetcher';
 import { last_version } from 'utils/misc';
 import ContextMenu from './ContextMenu';
+
 
 
 type ShortPageType = {
@@ -54,6 +57,7 @@ type Args = {
   dragged_pages: Array<string>;
   onNodeClick: (node: NType) => void;
   onPagesChange: (cur_pages: PageAndRotOp[]) => void;
+  onExtractPages: (args: ExtractedPagesType) => void;
   onDocVersionsChange: (doc_versions: DocumentVersion[]) => void;
   onDocVerChange: (doc_versions: DocumentVersion) => void;
   onBreadcrumbChange: (new_breadcrumb: BreadcrumbType) => void;
@@ -88,6 +92,7 @@ export default function Viewer({
   onNodeClick,
   onPagesChange,
   onDocVersionsChange,
+  onExtractPages,
   onDocVerChange,
   onBreadcrumbChange,
   onMovePagesBetweenDocs,
@@ -236,18 +241,26 @@ export default function Viewer({
       }).then(({source, target}: MovePagesBetweenDocsType) => {
         onMovePagesBetweenDocs({source, target});
         onSelectedPages([]);
+      }).catch((error: Error) => {
+        if (error) {
+          toasts?.addToast(`error`, `Error while moving page(s): ${error}`)
+        }
       });
     }
 }
 
   const onApplyPageOpChanges = async () => {
     let _pages = pages!.data!.map(item => apply_page_type(item));
-    let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
-    setUnappliedPagesOpChanges(false);
-    onDocVersionsChange(response)
-    onSelectedPages([]);
+    try {
+      let response = await apply_page_op_changes<ApplyPagesType[], DocumentVersion[]>(_pages);
+      setUnappliedPagesOpChanges(false);
+      onDocVersionsChange(response)
+      onSelectedPages([]);
 
-    toasts?.addToast("info", "Page operations successfully applied");
+      toasts?.addToast("info", "Page operations successfully applied");
+    } catch (error: any) {
+      toasts?.addToast("error", `Error while reordering page(s) ${error}`);
+    }
   }
 
 
@@ -331,7 +344,11 @@ export default function Viewer({
 
         onBreadcrumbChange(new_breadcrumb);
       }
-    );
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast("error", `Error while renaming: ${error}`);
+      }
+    });
   }
 
   const onDragStart = (item: PageAndRotOp, event: React.DragEvent) => {
@@ -385,7 +402,9 @@ export default function Viewer({
   const onRunOCR = (_doc: DocumentType, _doc_ver: DocumentVersion) => {
     run_ocr(_doc, _doc_ver)
     .then(() => {})
-    .catch(() => {});
+    .catch((error: Error) => {
+      toasts?.addToast('error', `Error while running OCR ${error}`);
+    });
   }
 
   const onDocumentMoveTo = (target_folder: TargetFolder) => {
@@ -394,6 +413,20 @@ export default function Viewer({
         onDocumentMoved(arg)
       }
     )
+  }
+
+  const onExtractPagesTo = (target_folder: TargetFolder) =>  {
+    extract_pages({
+      source_page_ids: selected_pages,
+      target_folder: target_folder,
+      document_title: doc.data!.title
+    }).then((arg: ExtractedPagesType) => {
+      onExtractPages(arg);
+    }).catch((error: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while extracting page(s) ${error}`);
+      }
+    });
   }
 
   const onLocalDocumentDelete = () => {
@@ -448,6 +481,7 @@ export default function Viewer({
       hideMenu={hideContextMenu}
       selected_pages={selected_pages}
       onDeletePages={onDeletePages}
+      onExtractPagesTo={onExtractPagesTo}
       OnDocumentMoveTo={onDocumentMoveTo}
       OnDocumentDelete={onLocalDocumentDelete}
       OnRename={onRenameClick}

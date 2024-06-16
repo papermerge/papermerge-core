@@ -1,15 +1,15 @@
 import logging
 import uuid
-from typing import List
+from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.responses import FileResponse
 
 from papermerge.core import db
 from papermerge.core import pathlib as core_pathlib
-from papermerge.core import schemas
-from papermerge.core.auth import get_current_user
-from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
+from papermerge.core import schemas, utils
+from papermerge.core.auth import get_current_user, scopes
+from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.models import BaseTreeNode
 from papermerge.core.page_ops import apply_pages_op
@@ -38,11 +38,20 @@ class JPEGFileResponse(FileResponse):
 
 
 @router.get("/{page_id}/svg", response_class=SVGFileResponse)
+@utils.docstring_parameter(scope=scopes.PAGE_VIEW)
 def get_page_svg_url(
     page_id: uuid.UUID,
-    user: schemas.User = Depends(get_current_user),
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+    ],
     engine: db.Engine = Depends(db.get_engine)
 ):
+    """View page as SVG
+
+    Required scope: `{scope}`
+    """
+
     try:
         page = db.get_page(engine, id=page_id, user_id=user.id)
     except db_exc.PageNotFound:
@@ -64,16 +73,22 @@ def get_page_svg_url(
 
 
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
+@utils.docstring_parameter(scope=scopes.PAGE_VIEW)
 def get_page_jpg_url(
     page_id: uuid.UUID,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+    ],
     size: int = Query(
-        DEFAULT_THUMBNAIL_SIZE,
+        DEFAULT_PAGE_SIZE,
         description="jpg image width in pixels"
     ),
-    user: schemas.User = Depends(get_current_user),
     engine: db.Engine = Depends(db.get_engine)
 ):
     """Returns jpg preview image of the page.
+
+    Required scope: `{scope}`
 
     Returned jpg image's width is `size` pixels.
     """
@@ -110,11 +125,17 @@ def get_page_jpg_url(
 
 
 @router.post("/")
+@utils.docstring_parameter(scope=scopes.PAGE_UPDATE)
 def apply_page_operations(
     items: List[PageAndRotOp],
-    user: schemas.User = Depends(get_current_user)
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
+    ],
 ) -> List[PyDocVer]:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
+
+    Required scope: `{scope}`
 
     Creates a new document version which will contain
     only the pages provided as input in given order and with
@@ -137,8 +158,17 @@ def apply_page_operations(
 
 
 @router.post("/move")
-def move_pages(arg: MovePagesIn) -> MovePagesOut:
+@utils.docstring_parameter(scope=scopes.PAGE_MOVE)
+def move_pages(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_MOVE])
+    ],
+    arg: MovePagesIn
+) -> MovePagesOut:
     """Moves pages between documents.
+
+    Required scope: `{scope}`
 
     Source IDs are IDs of the pages to move.
     Target is the ID of the page before/after which to insert source pages.
@@ -146,7 +176,7 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
     Returns updated, with newly added versions, source and target documents.
     In case source document is deleted, which may happen when user
     moves all it's pages into the target, the returned source will
-    be None i.e returned value will be {'source': null, target: {...}}.
+    be None.
     """
     [source, target] = api_move_pages(
         source_page_ids=arg.source_page_ids,
@@ -159,8 +189,17 @@ def move_pages(arg: MovePagesIn) -> MovePagesOut:
 
 
 @router.post("/extract")
-def extract_pages(arg: ExtractPagesIn) -> ExtractPagesOut:
+@utils.docstring_parameter(scope=scopes.PAGE_EXTRACT)
+def extract_pages(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
+    ],
+    arg: ExtractPagesIn
+) -> ExtractPagesOut:
     """Extract pages from one document into a folder.
+
+    Required scope: `{scope}`
 
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.

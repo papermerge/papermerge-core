@@ -6,8 +6,7 @@ COPY ui/ .
 RUN npm install
 RUN npm run build
 
-FROM papermerge/tivoli:0.4.2 as token_validator
-FROM papermerge/auth-server:0.6.2 as auth_server
+FROM papermerge/auth-server:0.9.0 as auth_server
 FROM python:3.10 as papermerge_core
 
 ENV CORE_APP=/core_app
@@ -24,6 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     tesseract-ocr \
     tesseract-ocr-deu \
+    tesseract-ocr-fra \
+    tesseract-ocr-spa \
+    tesseract-ocr-ita \
+    tesseract-ocr-ron \
+    tesseract-ocr-por \
+    tesseract-ocr-nld \
     imagemagick \
     gcc \
     nginx \
@@ -33,7 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm
 
-RUN pip install --upgrade poetry roco==0.1.1
+RUN pip install --upgrade poetry roco==0.4.2
 
 RUN python -m venv ${VIRTUAL_ENV}
 
@@ -43,9 +48,9 @@ WORKDIR ${CORE_APP}
 RUN poetry install --no-root -vvv
 
 COPY docker/prod/run.bash /run.bash
-COPY docker/prod/supervisord.conf /etc/
-COPY docker/prod/nginx.conf /etc/nginx/nginx.conf
-COPY docker/prod/logging.yml ${CORE_APP}/logging.yml
+COPY docker/prod/bundles/supervisor/* /etc/papermerge/
+COPY docker/prod/bundles/nginx/* /etc/nginx/
+COPY docker/prod/logging.yaml /etc/papermerge/
 COPY ./papermerge ${CORE_APP}/papermerge/
 COPY ./docker/prod/config ${CORE_APP}/config
 COPY ./docker/prod/manage.py ${CORE_APP}/manage.py
@@ -54,7 +59,6 @@ COPY ./docker/prod/scripts/ /usr/bin/
 RUN chmod +x /usr/bin/*.sh
 RUN chmod +x /run.bash
 
-COPY --from=token_validator /tivoli_app/ /tivoli_app
 COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
 COPY --from=build /build_ui_app/build/ /usr/share/nginx/html/ui

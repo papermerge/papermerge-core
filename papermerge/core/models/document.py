@@ -103,14 +103,19 @@ class DocumentManager(models.Manager):
         page_count=0,
         file_name=None,
         parent=None,
+        id=None,
         **kwargs
     ):
-        doc = Document(
+        attrs = dict(
             title=title,
             lang=lang,
             parent=parent,
             **kwargs
         )
+        if id is not None:
+            attrs['id'] = id
+
+        doc = Document(**attrs)
         doc.save()
 
         document_version = DocumentVersion(
@@ -175,7 +180,7 @@ class Document(BaseTreeNode):
     @property
     def idified_title(self):
         """
-        Returns a title with ID part inserted before extention
+        Returns a title with ID part inserted before extension
 
         Example:
             input: title="invoice.pdf", id="233453"
@@ -202,7 +207,7 @@ class Document(BaseTreeNode):
         """
         Associates payload with specific document version.
 
-        If document has zero sized document version, it will associate
+        If the document has zero sized document version, it will associate
         payload with that (existing) version, otherwise it will create
         new document version and associate it the payload.
         """
@@ -456,7 +461,7 @@ class Document(BaseTreeNode):
         The local path to the generated thumbnail will be
         /<MEDIA_ROOT>/thumbnails/<splitted document version uuid>/<size>.jpg
 
-        splited DOCUMENT VERSION UUID - is UUID of the last document version
+        splitted DOCUMENT VERSION UUID - is UUID of the last document version
         written as ... /uuid[0:2]/uuid[2:4]/uuid/ ...
 
         Returns absolute path to the thumbnail image as
@@ -484,7 +489,7 @@ class Document(BaseTreeNode):
 
     def add_tags(self, tags):
         """
-        tags is an iteratable of papermerge.core.models.Tag instances
+        tags is an iterable of papermerge.core.models.Tag instances
         """
         for tag in tags:
             self.tags.add(

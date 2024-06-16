@@ -1,16 +1,16 @@
 import Button from 'react-bootstrap/Button';
-import { uploader } from 'utils/uploader';
 import Tooltip from 'react-bootstrap/Tooltip';
+import drop_files from '../modals/DropFiles';
 
 import { OverlayTrigger } from 'react-bootstrap';
-import { CreatedNodesType } from 'types';
+import { CreatedNodesType, FolderType } from 'types';
 
 type Args = {
-  node_id: string;
+  target: FolderType;
   onCreatedNodesByUpload: (created_nodes: CreatedNodesType) => void;
 }
 
-function UploadButton({node_id, onCreatedNodesByUpload}: Args) {
+function UploadButton({target, onCreatedNodesByUpload}: Args) {
 
   const onClickProxyUpload = () => {
     let element: HTMLInputElement | null = document.querySelector('input[type=file]');
@@ -30,7 +30,10 @@ function UploadButton({node_id, onCreatedNodesByUpload}: Args) {
       return;
     }
 
-    uploader({files, node_id}).then(
+    drop_files({
+      source_files: files,
+      target: target
+    }).then(
       (created_nodes: CreatedNodesType) => {
         onCreatedNodesByUpload(created_nodes);
       }

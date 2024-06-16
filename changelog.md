@@ -2,6 +2,63 @@
 
 <!-- towncrier release notes start -->
 
+
+## [3.3] - 2024-xx-yy
+
+### Changes
+
+- logging.yaml location changed from /core_app/logging.yaml to /etc/papermerge/logging.yaml
+
+
+## [3.2] - 2024-04-07
+
+### Adds
+
+- Authorization (permissions, groups)
+- Remote user authentication
+- OIDC authentication with support for any provider (tested with Keycloak, Authentik)
+
+## [3.1] - 2024-02-23
+
+### Adds
+
+- Support of OAuth2 authentication with Google and GitHub providers
+- Support for OpenLDAP (RFC 4510) authentication
+- Support for node's custom IDs [Issue#325](https://github.com/papermerge/papermerge-core/issues/325)
+- Exclude document from OCR [Issue#598](https://github.com/ciur/papermerge/issues/598)
+
+### Fixes
+
+- Getting '500 - Internal Server Error' when patching node tags [Issue#326](https://github.com/papermerge/papermerge-core/issues/326)
+- papermerge-cli import option --delete without any function [Issue#592](https://github.com/ciur/papermerge/issues/592)
+
+
+## [3.0.3] - 2024-02-01
+
+### Fixes
+
+- Logging out doesn't bring up log in dialogue [Issue#574](https://github.com/ciur/papermerge/issues/574)
+- Ship spa, ita, fra, ron and por OCR languages data in docker image [Issue#586](https://github.com/ciur/papermerge/issues/586)
+- Fix create_token.sh throws an error [Issue#314](https://github.com/papermerge/papermerge-core/issues/314)
+- Empty Folder on Second Page [Issue#584](https://github.com/ciur/papermerge/issues/584)
+- Include Dutch language OCR data in default docker image
+- Add Gujrati, Hindi and Sanskrit language codes [Issue#583](https://github.com/ciur/papermerge/issues/583)
+
+### Adds
+
+- [UI] Context Missing "Extract Pages" entry [Issue#564](https://github.com/ciur/papermerge/issues/564)
+
+
+## [3.0.2] - 2024-01-21
+
+### Fixes
+
+- Fix create_user to work with MySql/MariaDB/sqlite3 [Issue#579](https://github.com/ciur/papermerge/issues/579)
+- Fix Error / Internal Server Error [Issue#581](https://github.com/ciur/papermerge/issues/581)
+- Fix Error thrown after successful login [Issue#307](https://github.com/papermerge/papermerge-core/issues/307)
+- Fix wrong download URL for document version in viewer
+- Fix nodes pagination (num_pages int rounded up instead of down)
+
 ## [3.0.1] - 2024-01-13
 
 ### Fixed

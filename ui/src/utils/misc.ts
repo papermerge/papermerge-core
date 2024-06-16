@@ -2,6 +2,7 @@ import type { NodeType, NodeList, DocumentVersion } from 'types';
 import { Rectangle } from 'utils/geometry';
 import { Point } from 'utils/geometry';
 import { NodeSortFieldEnum, NodeSortOrderEnum } from 'types';
+import type { SelectItem } from 'types';
 
 export function is_empty<T>(value: T[]): boolean {
   if (!value) {
@@ -90,4 +91,13 @@ export function last_version(versions: Array<DocumentVersion>): DocumentVersion 
   }, versions[0])
 
   return ver;
+}
+
+export function sortItemsFn(a: SelectItem, b: SelectItem) {
+  if (a.key < b.key) {
+    return -1;
+  } else if (a.key > b.key) {
+    return 1;
+  }
+  return 0;
 }

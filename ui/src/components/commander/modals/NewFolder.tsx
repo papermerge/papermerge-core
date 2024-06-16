@@ -19,7 +19,7 @@ type CreateFolderType = {
 type Args = {
   parent_id: string;
   onOK: (node: NodeType) => void;
-  onCancel: () => void;
+  onCancel: (msg?: string) => void;
 }
 
 
@@ -50,10 +50,13 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
   }
 
   const handleSubmit = async (signal: AbortSignal) => {
-    let response = await api_create_new_folder(title, parent_id, signal);
-    let new_node: NodeType = response as NodeType;
-
-    onOK(new_node);
+    try {
+      let response = await api_create_new_folder(title, parent_id, signal);
+      let new_node: NodeType = response as NodeType;
+      onOK(new_node);
+    } catch (error: any) {
+      onCancel(error.toString());
+    }
   }
 
   const handleCancel = () => {

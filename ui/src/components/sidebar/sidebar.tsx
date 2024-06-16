@@ -12,11 +12,13 @@ import NavItem from './nav_item';
 
 
 type Args = {
+  scopes: Array<string>;
   folded: boolean;
   onSidebarItemChange: (item: AppContentBlockEnum) => void;
 }
 
 type SidebarArgs = {
+  scopes: Array<string>;
   onClick: (item: AppContentBlockEnum) => void;
   current: AppContentBlockEnum;
 }
@@ -30,7 +32,7 @@ function class_name(item: AppContentBlockEnum, current: AppContentBlockEnum): st
 }
 
 
-function SidebarOpened({onClick, current}: SidebarArgs) {
+function SidebarOpened({onClick, current, scopes}: SidebarArgs) {
   return (
     <div className="sidebar opened d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
@@ -54,18 +56,23 @@ function SidebarOpened({onClick, current}: SidebarArgs) {
            <TagIcon /><span className='ms-2'>Tags</span>
           </a>
         </NavItem>
-        <NavItem>
+        {scopes.includes('user.view') && (<NavItem>
           <a href="#" onClick={() => onClick(AppContentBlockEnum.users)} className={class_name(AppContentBlockEnum.users, current)}>
             <i className='bi-people'></i><span className='ms-2'>Users</span>
           </a>
-        </NavItem>
+        </NavItem>)}
+        {scopes.includes('group.view') && (<NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.groups)} className={class_name(AppContentBlockEnum.groups, current)}>
+            <i className='bi-grid'></i><span className='ms-2'>Groups</span>
+          </a>
+        </NavItem>)}
       </Nav>
     </div>
   );
 }
 
 
-function SidebarFolded({onClick, current}: SidebarArgs) {
+function SidebarFolded({onClick, current, scopes}: SidebarArgs) {
   return (
     <div className="sidebar folded d-flex flex-column flex-shrink-0 text-white bg-dark">
       <a className='navbar-brand m-2' href="#">
@@ -88,18 +95,23 @@ function SidebarFolded({onClick, current}: SidebarArgs) {
            <TagIcon />
           </a>
         </NavItem>
-        <NavItem>
+        {scopes.includes('user.view') && (<NavItem>
           <a href="#" onClick={() => onClick(AppContentBlockEnum.users)} className={class_name(AppContentBlockEnum.users, current)}>
             <i className='bi-people'></i>
           </a>
-        </NavItem>
+        </NavItem>)}
+        {scopes.includes('group.view') && (<NavItem>
+          <a href="#" onClick={() => onClick(AppContentBlockEnum.groups)} className={class_name(AppContentBlockEnum.groups, current)}>
+            <i className='bi-grid'></i>
+          </a>
+        </NavItem>)}
       </Nav>
     </div>
   );
 }
 
 
-export default function Sidebar({folded, onSidebarItemChange}: Args) {
+export default function Sidebar({folded, onSidebarItemChange, scopes}: Args) {
   /*
   Sidebar can be folded or opened.
   */
@@ -112,12 +124,14 @@ export default function Sidebar({folded, onSidebarItemChange}: Args) {
 
   if (folded) {
     return <SidebarFolded
+      scopes={scopes}
       current={current}
       onClick={onClickHandler} />;
   }
 
   return (
     <SidebarOpened
+      scopes={scopes}
       current={current}
       onClick={onClickHandler} />
   );

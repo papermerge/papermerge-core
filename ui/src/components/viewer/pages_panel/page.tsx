@@ -41,7 +41,7 @@ export function Page({item, scroll_into_view, zoom}: Args) {
 
   let {data, is_loading, error} = useProtectedSVG(
     item.page.svg_url,
-    `${item.page.jpg_url}?size=${get_page_panel_width()}`
+    item.page.jpg_url
   );
   let page_component: JSX.Element | null
 

@@ -1,0 +1,23 @@
+
+:80
+
+@ExceptPaths {
+  not {
+    path /oidc/callback
+    path /probe/
+  }
+}
+
+forward_auth @ExceptPaths :8010 {
+  uri /verify
+}
+
+reverse_proxy /oidc/callback :8010
+
+reverse_proxy /probe/ :8000
+handle_path /api/* {
+    reverse_proxy :8000
+}
+
+root * /usr/share/html/ui
+file_server browse

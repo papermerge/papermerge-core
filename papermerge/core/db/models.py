@@ -3,12 +3,39 @@ from datetime import datetime
 from typing import List, Literal
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, func
+from sqlalchemy import Column, ForeignKey, String, Table, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     pass
+
+
+user_permissions_association = Table(
+    "core_user_user_permissions",
+    Base.metadata,
+    Column(
+        "user_id",
+        ForeignKey("core_user.id"),
+    ),
+    Column(
+        "permission_id",
+        ForeignKey("auth_permission.id"),
+    ),
+)
+
+user_groups_association = Table(
+    "core_user_groups",
+    Base.metadata,
+    Column(
+        "user_id",
+        ForeignKey("core_user.id"),
+    ),
+    Column(
+        "group_id",
+        ForeignKey("auth_group.id"),
+    ),
+)
 
 
 class User(Base):
@@ -23,9 +50,9 @@ class User(Base):
     password: Mapped[str]
     first_name: Mapped[str] = mapped_column(default=' ')
     last_name: Mapped[str] = mapped_column(default=' ')
-    is_superuser: Mapped[bool] = mapped_column(default=True)
-    is_staff: Mapped[bool] = mapped_column(default=True)
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
+    is_staff: Mapped[bool] = mapped_column(default=False)
+    is_active: Mapped[bool] = mapped_column(default=False)
     nodes: Mapped[List["Node"]] = relationship(
         back_populates="user",
         primaryjoin="User.id == Node.user_id"
@@ -55,6 +82,14 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(),
         onupdate=func.now()
+    )
+    permissions: Mapped[list["Permission"]] = relationship(
+        secondary=user_permissions_association,
+        back_populates="users"
+    )
+    groups: Mapped[list["Group"]] = relationship(
+        secondary=user_groups_association,
+        back_populates="users"
     )
 
 
@@ -162,7 +197,7 @@ class Tag(Base):
 
 class ColoredTag(Base):
     __tablename__ = "core_coloredtag"
-    id: Mapped[UUID] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     object_id: Mapped[UUID]
     tag_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_tag.id")
@@ -170,3 +205,62 @@ class ColoredTag(Base):
     tag: Mapped["Tag"] = relationship(
         primaryjoin="Tag.id == ColoredTag.tag_id"
     )
+
+
+group_permissions_association = Table(
+    "auth_group_permissions",
+    Base.metadata,
+    Column(
+        "group_id",
+        ForeignKey("auth_group.id"),
+    ),
+    Column(
+        "permission_id",
+        ForeignKey("auth_permission.id"),
+    ),
+)
+
+
+class Permission(Base):
+    __tablename__ = "auth_permission"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    codename: Mapped[str]
+    content_type_id: Mapped[int] = mapped_column(
+        ForeignKey("django_content_type.id")
+    )
+    content_type: Mapped["ContentType"] = relationship()
+    groups = relationship(
+        "Group",
+        secondary=group_permissions_association,
+        back_populates="permissions"
+    )
+    users = relationship(
+        "User",
+        secondary=user_permissions_association,
+        back_populates="permissions"
+    )
+
+
+class Group(Base):
+    __tablename__ = "auth_group"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    permissions: Mapped[list["Permission"]] = relationship(
+        secondary=group_permissions_association,
+        back_populates="groups"
+    )
+    users: Mapped[list["User"]] = relationship(
+        secondary=user_groups_association,
+        back_populates="groups"
+    )
+
+
+class ContentType(Base):
+    __tablename__ = "django_content_type"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    app_label: Mapped[str]
+    model: Mapped[str]

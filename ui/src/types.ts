@@ -1,9 +1,6 @@
 import React from 'react';
 
-export type DefaultHeaderType = {
-  'Authorization': string,
-  'Content-Type': string;
-}
+export type DefaultHeaderType = Record<string, string>
 
 export type ColoredTagType = {
   name: string;
@@ -32,6 +29,7 @@ export type User = {
   email: string;
   home_folder_id: string;
   inbox_folder_id: string;
+  scopes: Array<string>;
 }
 
 export type UserContextType = {
@@ -183,6 +181,7 @@ export enum AppContentBlockEnum {
    home = "home",
    tags = "tags",
    users = "users",
+   groups = "groups",
    search_results = "search_results"
 }
 
@@ -257,7 +256,7 @@ export type onMovedNodesType = {
 export type ExtractedPagesType = {
   source: DocumentType | null;
   target: NodeType[];  // newly created document nodes
-  target_parent: FolderType;
+  target_parent: TargetFolder;
 }
 
 export type ExtractStrategy = 'one-page-per-doc' | 'all-pages-in-one-doc';
@@ -275,7 +274,9 @@ export type OCRCode =
   | 'eng'
   | 'fin'
   | 'fra'
+  | 'guj'
   | 'heb'
+  | 'hin'
   | 'ita'
   | 'jpn'
   | 'kor'
@@ -286,13 +287,60 @@ export type OCRCode =
   | 'pol'
   | 'por'
   | 'ron'
+  | 'san'
   | 'spa'
 
 export type OCRLangType = {
   [key: string]: string
 }
 
+export type ScopeType = {
+  [key: string]: string
+}
+
 export type Coord = {
   x: number;
   y: number;
+}
+
+export type RemoteUserHeaderName = {
+  remote_user: string;
+  remote_groups: string;
+  remote_email: string;
+  remote_name: string;
+}
+
+export type RuntimeConfig = {
+  remote_user: {
+    headers_name: RemoteUserHeaderName;
+    logout_endpoint: string;
+  }
+  oidc: {
+    logout_url: string;
+    authorize_url: string;
+    client_id: string;
+  }
+}
+
+export type SelectItem = {
+  key: string;
+  value: string;
+}
+
+export type Group = {
+  id: string;
+  name: string;
+}
+
+export type Paginated<T> = {
+  page_size: number;
+  page_number: number;
+  num_pages: number;
+  items: Array<T>;
+}
+
+declare global {
+  interface Window {
+    __PAPERMERGE_RUNTIME_CONFIG__: RuntimeConfig;
+  }
 }

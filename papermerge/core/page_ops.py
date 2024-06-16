@@ -8,7 +8,7 @@ from typing import List
 from celery import current_app
 from pikepdf import Pdf
 
-from papermerge.core.constants import INDEX_ADD_DOCS, INDEX_UPDATE
+from papermerge.core import constants as const
 from papermerge.core.models import Document, Folder, Page
 from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
@@ -45,10 +45,11 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
         page_numbers=[p.number for p in pages]
     )
 
-    notify_index_update(
+    notify_version_update(
         remove_ver_id=str(old_version.id),
         add_ver_id=str(new_version.id)
     )
+    notify_generate_previews(str(doc.id))
 
     return doc.versions.all()
 
@@ -299,13 +300,22 @@ def move_pages_mix(
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
         src_old_version.document.delete()
-        return [None, dst_new_version.document]
+        _dst_doc = dst_new_version.document
+        notify_generate_previews(str(_dst_doc.id))
+        return [None, _dst_doc]
 
-    notify_index_update(
+    notify_version_update(
         add_ver_id=str(dst_new_version.id),
-        remove_ver_id=str(dst_old_version.id)
+        remove_ver_id=str(dst_old_version.id),
     )
-    return [src_new_version.document, dst_new_version.document]
+    _src_doc = src_new_version.document
+    _dst_doc = dst_new_version.document
+    notify_generate_previews([
+        str(_src_doc.id),
+        str(_dst_doc.id)
+    ])
+
+    return [_src_doc, _dst_doc]
 
 
 def move_pages_replace(
@@ -358,13 +368,21 @@ def move_pages_replace(
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
         src_old_version.document.delete()
-        return [None, dst_new_version.document]
+        _dst_doc = dst_new_version.document
+        notify_generate_previews(str(_dst_doc.id))
+        return [None, _dst_doc]
 
-    notify_index_update(
+    notify_version_update(
         add_ver_id=str(dst_new_version.id),
         remove_ver_id=str(dst_old_version.id)
     )
-    return [src_new_version.document, dst_new_version.document]
+    _src_doc = src_new_version.document
+    _dst_doc = dst_new_version.document
+    notify_generate_previews([
+        str(_src_doc.id),
+        str(_dst_doc.id)
+    ])
+    return [_src_doc, _dst_doc]
 
 
 def extract_pages(
@@ -410,7 +428,11 @@ def extract_pages(
             f"Notifying index to add doc.title={doc.title} doc.id={doc.id}"
         )
         logger.debug(f"Doc last version={doc.versions.last()}")
-    notify_index_add_docs([str(doc.id) for doc in target_docs])
+
+    notify_add_docs([str(doc.id) for doc in target_docs])
+    notify_generate_previews(
+        list([str(doc.id) for doc in target_docs])
+    )
 
     if old_doc_ver.pages.count() == moved_pages_count:
         # all source pages were extracted, document should
@@ -419,6 +441,7 @@ def extract_pages(
         old_doc_ver.document.delete()
         return [None, target_docs]
 
+    notify_generate_previews(str(source_doc.id))
     return [source_doc, target_docs]
 
 
@@ -561,7 +584,7 @@ def copy_without_pages(
         ]
     )
 
-    notify_index_update(
+    notify_version_update(
         remove_ver_id=str(src_old_version.id),
         add_ver_id=str(src_new_version.id)
     )
@@ -574,15 +597,60 @@ def copy_without_pages(
 
 
 @skip_in_tests
-def notify_index_update(
+def notify_version_update(
     add_ver_id: str,
     remove_ver_id: str
 ):
-    """Sends tasks to the index to remove/add pages"""
-    current_app.send_task(INDEX_UPDATE, (add_ver_id, remove_ver_id))
+    # Send tasks to the index to remove/add pages
+    current_app.send_task(const.INDEX_UPDATE, (add_ver_id, remove_ver_id))
+
+    current_app.send_task(
+        const.S3_WORKER_ADD_DOC_VER,
+        kwargs={'doc_ver_ids': [add_ver_id]},
+        route_name='s3',
+    )
+    current_app.send_task(
+        const.S3_WORKER_REMOVE_DOC_VER,
+        kwargs={'doc_ver_ids': [remove_ver_id]},
+        route_name='s3',
+    )
 
 
 @skip_in_tests
-def notify_index_add_docs(add_doc_ids: List[str]):
-    logger.debug(f"Sending task {INDEX_ADD_DOCS} with {add_doc_ids}")
-    current_app.send_task(INDEX_ADD_DOCS, (add_doc_ids, ))
+def notify_add_docs(add_doc_ids: List[str]):
+    # send task to index
+    logger.debug(f"Sending task {const.INDEX_ADD_DOCS} with {add_doc_ids}")
+    current_app.send_task(const.INDEX_ADD_DOCS, (add_doc_ids, ))
+
+    ids = []
+    for doc in Document.objects.filter(id__in=add_doc_ids):
+        for doc_ver in doc.versions.all():
+            ids.append(str(doc_ver.id))
+
+    current_app.send_task(
+        const.S3_WORKER_ADD_DOC_VER,
+        kwargs={'doc_ver_ids': ids},
+        route_name='s3',
+    )
+
+
+@skip_in_tests
+def notify_generate_previews(doc_id: list[str] | str):
+    if isinstance(doc_id, str):
+        current_app.send_task(
+            const.S3_WORKER_GENERATE_PREVIEW,
+            kwargs={'doc_id': doc_id},
+            route_name='s3preview',
+        )
+        return
+    elif isinstance(doc_id, list):
+        for item in doc_id:
+            current_app.send_task(
+                const.S3_WORKER_GENERATE_PREVIEW,
+                kwargs={'doc_id': item},
+                route_name='s3preview',
+            )
+    else:
+        raise ValueError(
+            f"Unexpected type of doc_id: {type(doc_id)}"
+        )

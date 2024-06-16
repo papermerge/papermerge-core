@@ -1,11 +1,10 @@
 import os
-import zipfile
 import tarfile
+import zipfile
 
 from django.core.files.temp import NamedTemporaryFile
 
-from papermerge.core.models import Document, BaseTreeNode
-
+from papermerge.core.models import BaseTreeNode, Document
 
 ONLY_ORIGINAL = 'only_original'
 ONLY_LAST = 'only_last'
@@ -70,15 +69,15 @@ class NodesDownload:
                 )
 
     def archive_add(self, abs_file_path, arcname):
-        raise Exception("Not Implemented")
+        raise Exception("Not implemented")
 
     @property
     def file_name(self):
-        raise Exception("Not Implemented")
+        raise Exception("Not implemented")
 
     @property
     def content_type(self):
-        raise Exception("Not Implemented")
+        raise Exception("Not implemented")
 
     @property
     def content_disposition(self):
@@ -87,7 +86,8 @@ class NodesDownload:
 
 class NodesDownloadZip(NodesDownload):
     """
-    Creates zip archive from a list of nodes. It preserves folder structure.
+    Creates a zip-archive from a list of nodes. It preserves the folder
+    structure.
 
     Usage:
 
@@ -131,7 +131,8 @@ class NodesDownloadZip(NodesDownload):
 
 class NodesDownloadTarGz(NodesDownload):
     """
-    Creates targz archive from a list of nodes. It preserves folder structure.
+    Creates a targz archive from a list of nodes. It preserves the folder
+    structure.
 
     Usage:
 
@@ -175,7 +176,7 @@ class NodesDownloadTarGz(NodesDownload):
 
 class NodesDownloadDocument(NodesDownload):
     """
-    Returns document file data of the document in node_ids[0].
+    Returns the document file data of the document in node_ids[0].
 
     Note that node_ids must have only one item in the list.
 

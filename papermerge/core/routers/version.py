@@ -12,7 +12,7 @@ router = APIRouter(
 
 
 @router.get("/")
-def get_version(
+async def get_version(
     user: schemas.User = Depends(get_current_user)
 ) -> schemas.Version:
     """Papermerge REST API version"""

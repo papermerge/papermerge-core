@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from salinic import IndexRW, create_engine
 
+from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.utils import base64
@@ -11,8 +12,21 @@ from papermerge.test.types import AuthTestClient
 
 
 @pytest.fixture
+def montaigne():
+    return User.objects.create_user(
+        username="montaigne",
+        email='montaigne@mail.com',
+        is_superuser=True
+    )
+
+
+@pytest.fixture
 def user():
-    return User.objects.create_user(username="user1")
+    return User.objects.create_user(
+        username="user1",
+        email='user1@mail.com',
+        is_superuser=True
+    )
 
 
 @pytest.fixture()
@@ -32,7 +46,10 @@ def auth_api_client(user: User):
     reg_search_routers(app)
 
     middle_part = base64.encode({
-        'user_id': str(user.id)
+        'sub': str(user.id),
+        'preferred_username': user.username,
+        'email': user.email,
+        'scopes': list(SCOPES.keys())
     })
     token = f"abc.{middle_part}.xyz"
 

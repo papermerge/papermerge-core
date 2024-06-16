@@ -6,14 +6,12 @@ import styles from './layout.module.css';
 import Sidebar from './sidebar/sidebar';
 import type { AppContentBlockEnum, State, User } from 'types';
 import { ToastProvider } from 'components/toasts/ToastsProvider';
+import SessionEnd from './SessionEnded';
+import { get_default_headers, fetcher_post } from 'utils/fetcher';
 
 
 const fetcher = (url:string) => {
-  const token = Cookies.get('access_token');
-  const headers = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
+  const headers = get_default_headers();
 
   return fetch(url, {headers: headers}).then(res => res.json());
 }
@@ -67,7 +65,10 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   if (is_loading) {
     return (
       <main className={styles.main}>
-        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <Sidebar
+          folded={sidebarFolded}
+          onSidebarItemChange={onContentBlockChange}
+          scopes={data?.scopes || []} />
         <CentralBar onSubmitSearch={onSearchSubmit}>
           Loading ...
         </CentralBar>
@@ -76,13 +77,13 @@ function Layout({ children, onContentBlockChange, onSearchSubmit }: Args) {
   }
 
   if (error) {
-    return <div>Error</div>;
+    return <SessionEnd />
   }
 
   return (
     <main className={styles.main}>
       <ToastProvider>
-        <Sidebar folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
+        <Sidebar scopes={data?.scopes || []} folded={sidebarFolded} onSidebarItemChange={onContentBlockChange} />
         <CentralBar
           username={data?.username}
           onToggleSidebar={onToggleSidebar}

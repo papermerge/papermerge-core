@@ -1,0 +1,37 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  verbose:
+    format: '%(levelname)s:%(name)s:%(funcName)s:%(lineno)d: %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: verbose
+
+
+root:
+  level: DEBUG
+  handlers: [console]
+
+loggers:
+  oidc_app:
+    level: INFO
+    handlers: [console]
+  s3worker:
+    level: INFO
+    handlers: [console]
+  ocrworker:
+    level: DEBUG
+    handlers: [console]
+  salinic:
+    level: INFO
+    handlers: [console]
+  i3worker:
+    level: INFO
+    handlers: [console]
+  papermerge.search.tasks:
+    level: INFO
+    handlers: [console]
+    propagate: no

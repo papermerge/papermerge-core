@@ -4,15 +4,34 @@ import type { DefaultHeaderType } from 'types';
 
 
 const COOKIE_NAME = 'access_token';
+const COOKIE_REMOTE_USER = 'remote_user';
+const COOKIE_REMOTE_GROUPS = 'remote_groups';
+const COOKIE_REMOTE_EMAIL = 'remote_email';
+const COOKIE_REMOTE_NAME = 'remote_name';
 
 function get_default_headers(cookie_name: string = COOKIE_NAME): DefaultHeaderType {
   const token = Cookies.get(cookie_name);
+  const remote_user = Cookies.get(COOKIE_REMOTE_USER);
+  const remote_groups = Cookies.get(COOKIE_REMOTE_GROUPS);
+  const remote_email = Cookies.get(COOKIE_REMOTE_EMAIL);
+  const remote_name = Cookies.get(COOKIE_REMOTE_NAME);
+
   let headers;
 
-  headers = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
+  if (remote_user) {
+    headers = {
+      'Remote-User': remote_user,
+      'Remote-Groups': remote_groups || '',
+      'Remote-Email': remote_email || '',
+      'Remote-Name': remote_name || '',
+      'Content-Type': 'application/json'
+    }
+  } else {
+    headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
 
   return headers;
 }
@@ -25,10 +44,15 @@ async function download_file(url: string, file_name: string) {
   Based on:
     https://stackoverflow.com/questions/32545632/how-can-i-download-a-file-using-window-fetch
   */
-  fetch(url, {
+  return fetch(url, {
     headers: get_default_headers()
   })
-  .then( res => res.blob() )
+  .then( res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res.blob();
+  })
   .then( blob => {
     let url = window.URL.createObjectURL(blob);
     let a = document.createElement('a');
@@ -40,7 +64,6 @@ async function download_file(url: string, file_name: string) {
     //afterwards we remove the element again
     a.remove();
   });
-
 }
 
 
@@ -71,8 +94,12 @@ async function fetcher_post<Input, Output>(
       signal: signal
     }
   )
-  .then(res => res.json())
-  .catch((err) => console.log(`fetch post error=${err}`));
+  .then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_upload(url: string, file: File) {
@@ -96,7 +123,12 @@ async function fetcher_upload(url: string, file: File) {
       headers: headers,
       body: form_data
     }
-  );
+  ).then(res => {
+    if (res.status == 401) {
+      throw Error(`${res.status} ${res.statusText}`);
+    }
+    return res;
+  });
 }
 
 async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: AbortSignal): Promise<Output> {
@@ -110,7 +142,12 @@ async function fetcher_patch<Input, Output>(url: string, data: Input, signal?: A
       body: JSON.stringify(data),
       signal: signal
     }
-  ).then(res => res.json());
+  ).then(res => {
+    if (res.status === 401) {
+      throw Error(`${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  });
 }
 
 async function fetcher_delete<Input, Output>(
@@ -137,7 +174,12 @@ async function fetcher_delete<Input, Output>(
   }
 
   if (serialize_response === true) {
-    return result.then(res => res.json());
+    return result.then(res => {
+      if (res.status === 401) {
+        throw Error(`${res.status} ${res.statusText}`)
+      }
+      return res.json()
+    });
   }
 
   return result;

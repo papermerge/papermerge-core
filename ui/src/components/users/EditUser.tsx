@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { fetcher_patch } from 'utils/fetcher';
-import type {User, NewUser, CreatedUser} from "./types";
+import { useResource } from 'hooks/resource';
+import type {User, NewUser, CreatedUser, UserDetail} from "./types";
+import type { Paginated, ScopeType,  SelectItem, Group } from 'types';
+import DualSelect from 'components/DualSelect';
+import { sortItemsFn } from 'utils/misc';
+import useToast from 'hooks/useToasts';
 
 
 type ErrorArgs = {
@@ -71,21 +76,89 @@ function Password({
 
 
 type Args = {
-  user: User;
+  user_id: string;
   onSave: (user: User) => void;
   onCancel: () => void;
 }
 
 
-export default function EditUser({user, onSave, onCancel}: Args) {
+export default function EditUser({user_id, onSave, onCancel}: Args) {
+  const vow = useResource<UserDetail>(`/api/users/${user_id}`);
+
+  const vowScopes = useResource<ScopeType>("/api/scopes/");
+  const [allScopes, setAllScopes] = useState<Array<SelectItem>>([]);
+  const [scopes, setScopes] = useState<Array<SelectItem>>([]);
+
+  const vowGroups = useResource<Paginated<Group>>("/api/groups/?page_size=999");
+  const [allGroups, setAllGroups] = useState<Array<SelectItem>>([]);
+  const [groups, setGroups] = useState<Array<SelectItem>>([]);
+
   const [controller, setController] = useState<AbortController>(new AbortController());
   const [save_in_progress, setSaveInProgress] = useState(false);
   const [ error, setError ] = useState<string|undefined>();
-  const [ username, setUsername ] = useState<string>(user.username);
-  const [ email, setEmail ] = useState<string>(user.email);
+  const [ username, setUsername ] = useState<string>('');
+  const [ email, setEmail ] = useState<string>('');
   const [ password1, setPassword1 ] = useState<string|null>();
   const [ password2, setPassword2 ] = useState<string|null>();
   const [ change_password, setChangePassword] = useState<boolean>(false);
+  const [ is_superuser, setIsSuperuser] = useState<boolean>(false);
+  const [ is_active, setIsActive] = useState<boolean>(false);
+  const toasts = useToast();
+
+  useEffect(() => {
+    if (vow.data == null) {
+      return;
+    }
+
+    setUsername(vow.data.username);
+    setEmail(vow.data.email);
+    setScopes(
+      vow.data.scopes.map(i => {return {key: i, value: i}})
+     );
+    setGroups(
+      vow.data.groups.map(i => {return {key: `${i.id}`, value: i.name}})
+    );
+    setIsSuperuser(vow.data.is_superuser);
+    setIsActive(vow.data.is_active);
+
+  }, [vow.data]);
+
+  useEffect(() => {
+    if (vowScopes.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowScopes.data)) {
+      selectItems.push({
+        key: i[0],
+        value: i[1]
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllScopes(selectItems);
+
+  }, [vowScopes.data]);
+
+  useEffect(() => {
+    if (vowGroups.data == null) {
+      return;
+    }
+    let selectItems: Array<SelectItem> = [];
+
+    for (const i of Object.entries(vowGroups.data.items)) {
+      selectItems.push({
+        key: i[1].id,
+        value: i[1].name
+      });
+    }
+
+    selectItems.sort(sortItemsFn);
+    setAllGroups(selectItems);
+
+  }, [vowGroups.data]);
+
 
   const onChangeUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.currentTarget.value);
@@ -107,6 +180,21 @@ export default function EditUser({user, onSave, onCancel}: Args) {
     setChangePassword(flag);
   }
 
+  const onScopesChange = (scopes: Array<SelectItem>) => {
+    setScopes(scopes);
+  }
+
+  const onGroupsChange = (groups: Array<SelectItem>) => {
+    setGroups(groups);
+  }
+
+  const onChangeIsSuperuser = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSuperuser(e.target.checked);
+  }
+
+  const onChangeIsActive = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsActive(e.target.checked);
+  }
 
   const onLocalSubmit = () => {
 
@@ -117,16 +205,23 @@ export default function EditUser({user, onSave, onCancel}: Args) {
     const item: NewUser = {
       username: username,
       email: email,
-      password: password1!
+      password: password1!,
+      scopes: scopes.map(i => i.key),
+      is_superuser: is_superuser,
+      is_active: is_active,
+      group_ids: groups.map(i => parseInt(i.key))
     };
 
     fetcher_patch<NewUser, CreatedUser>(
-      `/api/users/${user.id}`, item,
+      `/api/users/${user_id}`, item,
       controller.signal
     ).then((new_item: User) => {
       setSaveInProgress(false);
       setController(new AbortController());
       onSave(new_item);
+    }).catch((error: Error) => {
+      setSaveInProgress(false);
+      toasts?.addToast("error", `Error while updating user: ${error.toString()}`);
     });
   }
 
@@ -185,6 +280,41 @@ export default function EditUser({user, onSave, onCancel}: Args) {
         onChangePassword={onChangePassword}
         onChangePassword1={onChangePassword1}
         onChangePassword2={onChangePassword2} />
+
+      <Row className="mb-3">
+          <Form.Group as={Col} controlId="formGridIsSuperuser">
+            <Form.Check
+                checked={is_superuser}
+                onChange={onChangeIsSuperuser}
+                type="checkbox"
+                id="is-superuser-flag"
+                label="Is Superuser?" />
+          </Form.Group>
+          <Form.Group as={Col} controlId="formGridIsActive">
+            <Form.Check
+                checked={is_active}
+                onChange={onChangeIsActive}
+                type="checkbox"
+                id="is-active-flag"
+                label="Is Active?" />
+          </Form.Group>
+      </Row>
+
+      <Row className='mb-3'>
+          <Form.Label>Groups</Form.Label>
+          <DualSelect
+            allItems={allGroups}
+            initialSelect={groups}
+            onChange={onGroupsChange} />
+      </Row>
+
+      <Row className='mb-3'>
+          <Form.Label>Permissions</Form.Label>
+          <DualSelect
+            allItems={allScopes}
+            initialSelect={scopes}
+            onChange={onScopesChange} />
+      </Row>
 
       <Button onClick={onCancel} variant="secondary" type="submit">
         Cancel

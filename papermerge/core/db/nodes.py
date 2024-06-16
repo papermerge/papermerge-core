@@ -1,4 +1,6 @@
 import logging
+import math
+import uuid
 from typing import List, Sequence, TypeVar, Union
 from uuid import UUID
 
@@ -67,7 +69,7 @@ def get_paginated_nodes(
 
     with Session(engine) as session:
         total_nodes = session.scalar(count_stmt)
-        num_pages = int(total_nodes / page_size)
+        num_pages = math.ceil(total_nodes / page_size)
         nodes = session.scalars(stmt).all()
         colored_tags_stmt = select(ColoredTag).where(
             ColoredTag.object_id.in_([n.id for n in nodes])
@@ -91,6 +93,40 @@ def get_paginated_nodes(
         num_pages=num_pages,
         items=items
     )
+
+
+def get_nodes(
+    db_session: Session,
+    node_ids: list[uuid.UUID]
+) -> list[schemas.Document | schemas.Folder]:
+    items = []
+    with db_session as session:
+        if len(node_ids) > 0:
+            stmt = select(Node).filter(
+                Node.id.in_(node_ids)
+            )
+        else:
+            stmt = select(Node)
+
+        nodes = session.scalars(stmt).all()
+        colored_tags_stmt = select(ColoredTag).where(
+            ColoredTag.object_id.in_([n.id for n in nodes])
+        )
+        colored_tags = session.scalars(colored_tags_stmt).all()
+
+        for node in nodes:
+            tags = _get_tags_for(colored_tags, node.id)
+            node.tags = tags
+            if node.ctype == 'folder':
+                items.append(
+                    schemas.Folder.model_validate(node)
+                )
+            else:
+                items.append(
+                    schemas.Document.model_validate(node)
+                )
+
+    return items
 
 
 def _get_tags_for(

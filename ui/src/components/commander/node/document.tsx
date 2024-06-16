@@ -25,7 +25,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   (props, ref) => {
 
   const [ status, setStatus ] = useState<OcrStatusEnum>(props.node?.ocr_status || "UNKNOWN");
-  const protected_thumbnail = useProtectedJpg(`/api/thumbnails/${props.node.id}`);
+  const protected_thumbnail = useProtectedJpg(props.node.thumbnail_url || '');
   let thumbnail_component: JSX.Element | null;
 
   const networkMessageHandler = (data: any, ev: MessageEvent) => {
@@ -81,7 +81,7 @@ const Document = forwardRef<HTMLDivElement, NodeArgsType>(
   if (protected_thumbnail.is_loading) {
     thumbnail_component = <div className="icon document"></div>;
   } else if ( protected_thumbnail.error ) {
-    thumbnail_component = <div>{protected_thumbnail.error}</div>
+    thumbnail_component = <div>{`Error fetching thumbnails: ${protected_thumbnail.error}`}</div>
   } else {
     thumbnail_component = <div className="image">
       {protected_thumbnail.data}

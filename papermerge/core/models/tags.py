@@ -1,11 +1,11 @@
 import uuid
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from taggit.managers import TaggableManager
+from taggit.models import GenericUUIDTaggedItemBase, TagBase
 
 from papermerge.core import validators
-
-from taggit.models import TagBase, GenericUUIDTaggedItemBase
-from taggit.managers import TaggableManager
 
 
 class UserTaggableManager(TaggableManager):
@@ -15,8 +15,8 @@ class UserTaggableManager(TaggableManager):
     Model with user attribute means following: that model (say MO) is per user.
     Because tags are per User as well - they (tags) will need to get
     (inherit) user instance from respective model (MO). For this reason,
-    save_from_data method is overriden - it passes user attribut to the newly
-    saved tag model.
+    save_from_data method is overridden - it passes the user attribute to the
+    newly saved tag model.
 
     Example: automate model is per user:
 

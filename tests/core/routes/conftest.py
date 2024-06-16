@@ -1,5 +1,6 @@
 import base64
 import json
+
 import pytest
 
 
@@ -10,7 +11,9 @@ def b64e(s):
 @pytest.fixture
 def token():
     data = {
-        'user_id': '100'
+        'sub': '100',
+        'preferred_username': 'montaigne',
+        'email': 'montaingne@mail.com'
     }
     json_str = json.dumps(data)
 

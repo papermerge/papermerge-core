@@ -112,7 +112,6 @@ function SearchResultDocument({item, onClick}: ArgsSearchResultItem) {
 
   return (
     <div className="sr-node ps-2">
-      <Breadcrumb items={item.breadcrumb} />
       <div className="node document">
         {thumbnail_component}
         <div onClick={localOnClick} className="title">{item.title}</div>
@@ -131,7 +130,6 @@ function SearchResultFolder({item, onClick}: ArgsSearchResultItem) {
 
   return (
     <div className="sr-node ps-2">
-      <Breadcrumb items={item.breadcrumb} />
       <div className="node folder">
         <div className="icon folder"></div>
         <div onClick={localOnClick} className="title">{item.title}</div>
@@ -161,16 +159,8 @@ function SearchResults({items, onSearchResultClick}: ArgsSearchResults) {
   we will just remove "duplicate results".
   "Duplicate results" = set of pages items that belong to the same document.
   */
-  const seen = new Set();
-  const filtered_items = items.filter(
-    item => {
-      const duplicate = seen.has(item.document_id);
-      seen.add(item.document_id);
-      return !duplicate;
-    }
-  )
 
-  const result_items = filtered_items.map((item: SearchResult) => {
+  const result_items = items.map((item: SearchResult) => {
     if (item.entity_type == 'folder') {
       return <SearchResultFolder
         key={item.id}

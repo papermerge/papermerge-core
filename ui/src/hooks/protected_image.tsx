@@ -16,7 +16,11 @@ function fetch_jpeg(
     setBase: setBaseType,
     setResult: setResultType
 ) {
-    fetch(url, {headers: headers}).then(res => {
+    return fetch(url, {headers: headers}).then(res => {
+        if (res.status == 401) {
+          throw Error(`${res.status} ${res.statusText}`);
+        }
+
         if (res.status === 200) {
             res.arrayBuffer().then(data => {
                 setBase(
@@ -118,7 +122,15 @@ export const useProtectedJpg = (url:string) => {
     }
 
     useEffect(() => {
-        fetch_jpeg(url, headers, setBase64, setResult);
+        fetch_jpeg(url, headers, setBase64, setResult).catch(
+          (error: Error) => {
+            setResult({
+              is_loading: false,
+              data: null,
+              error: error.toString()
+            })
+          }
+        );
     }, [url]);
 
     return result;

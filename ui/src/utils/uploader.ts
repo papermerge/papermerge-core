@@ -5,23 +5,26 @@ import type { CreatedNodesType, NodeType } from 'types';
 type UploaderArgs = {
   files: FileList;
   node_id: string;
+  skip_ocr: boolean;
 }
 
 type CreateDocumentType = {
   title: string;
   parent_id: string;
   ctype: 'document';
+  ocr: boolean;
 }
 
 
-async function uploader({files, node_id}: UploaderArgs): Promise<CreatedNodesType> {
+async function uploader({files, node_id, skip_ocr}: UploaderArgs): Promise<CreatedNodesType> {
   let bulk_create_docs: any = [];
 
   Array.from(files, (file) => {
     let data: CreateDocumentType = {
       title: file.name,
       parent_id: node_id,
-      ctype: 'document'
+      ctype: 'document',
+      ocr: !skip_ocr
     }
 
     bulk_create_docs.push(
@@ -29,25 +32,29 @@ async function uploader({files, node_id}: UploaderArgs): Promise<CreatedNodesTyp
     );
   });
 
-  Promise.all(bulk_create_docs).then(
-    (values: NodeType[]) => {
-      // notify commander to add document nodes
-      values.forEach(value => {
-        let file: File|undefined = Array.from(files).find(item => item.name == value.title)
-        if (file) {
-          fetcher_upload(
-            `/api/documents/${value.id}/upload`, file
-          ).then(response => {
-            if (response.status >= 400) {
-              alert(`Upload error: ${response.status} - ${response.statusText}`);
-            }
-          })
-        } else {
-          console.log(`${value.title} NOT FOUND!`);
-        }
-      });
-    }
-  );
+  try{
+    Promise.all(bulk_create_docs).then(
+      (values: NodeType[]) => {
+        // notify commander to add document nodes
+        values.forEach(value => {
+          let file: File|undefined = Array.from(files).find(item => item.name == value.title)
+          if (file) {
+            fetcher_upload(
+              `/api/documents/${value.id}/upload`, file
+            ).catch((error?: Error) => {
+                alert(error);
+            });
+          } else {
+            console.log(`${value.title} NOT FOUND!`);
+          }
+        });
+      }
+    ).catch((error: Error) => {
+      alert(error);
+    });
+  } catch(error: any) {
+    return Promise.reject(error);
+  }
 
   return Promise.all(bulk_create_docs).then(
     (values: NodeType[]) => {

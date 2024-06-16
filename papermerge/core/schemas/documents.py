@@ -3,11 +3,14 @@ from datetime import datetime
 from typing import List, Literal, Optional, Tuple
 from uuid import UUID
 
+from django.conf import settings
 from django.db.models.manager import BaseManager
-from pydantic import (BaseModel, ConfigDict, Field, FieldValidationInfo,
+from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
                       field_validator)
 from typing_extensions import Annotated
 
+from papermerge.core import constants as const
+from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 
 
@@ -31,13 +34,21 @@ class Page(BaseModel):
 
     @field_validator("svg_url", mode='before')
     @classmethod
-    def svg_url_value(cls, value, info: FieldValidationInfo) -> str:
+    def svg_url_value(cls, value, info: ValidationInfo) -> str:
         return f"/api/pages/{info.data['id']}/svg"
 
     @field_validator("jpg_url", mode='before')
     @classmethod
-    def jpg_url_value(cls, value, info: FieldValidationInfo) -> str:
-        return f"/api/pages/{info.data['id']}/jpg"
+    def jpg_url_value(cls, value, info: ValidationInfo) -> str:
+        if settings.PREVIEW_MODE == 'local':
+            return f"/api/pages/{info.data['id']}/jpg"
+
+        s3_url = _s3_page_thumbnail_url(
+            info.data['id'],  # UUID of the page here
+            size=const.DEFAULT_PAGE_SIZE
+        )
+
+        return s3_url
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -63,7 +74,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator("pages", mode='before')
     @classmethod
-    def get_all_from_manager(cls, value, info: FieldValidationInfo) -> object:
+    def get_all_from_manager(cls, value, info: ValidationInfo) -> object:
         if isinstance(value, BaseManager):
             try:
                 return list(value.all())
@@ -73,7 +84,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator('download_url', mode='before')
     def thumbnail_url_validator(cls, _, info):
-        return f"/api/document-versions/{info.data['id']}"
+        return f"/api/document-versions/{info.data['id']}/download"
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -112,7 +123,11 @@ class Document(BaseModel):
 
     @field_validator('thumbnail_url', mode='before')
     def thumbnail_url_validator(cls, value, info):
-        return f"/api/thumbnails/{info.data['id']}"
+        if settings.PREVIEW_MODE == 'local':
+            return f"/api/thumbnails/{info.data['id']}"
+
+        # if it is not local, then it is s3 + cloudfront
+        return _s3_doc_thumbnail_url(info.data['id'])
 
     @field_validator('tags', mode='before')
     def tags_validator(cls, value):
@@ -126,13 +141,64 @@ class Document(BaseModel):
 
 
 class CreateDocument(BaseModel):
+    # UUID may be present to allow custom IDs
+    # See https://github.com/papermerge/papermerge-core/issues/325
+    id: UUID | None = None
     title: str
     ctype: Literal["document"]
     parent_id: UUID | None
     lang: str | None = None
     file_name: str | None = None
+    # Will OCR be triggered immediately?
+    # True: means, yes, trigger OCR after upload
+    # False: means, skip OCR
+    ocr: bool = True
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "title": "invoice.pdf",
+                    "ctype": "document",
+                    "parent_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                }
+            ]
+        }
+    }
 
 
 class Thumbnail(BaseModel):
     url: str
     size: int
+
+
+def _s3_doc_thumbnail_url(uid: UUID) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.thumbnail_path(uid)
+    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )
+
+
+def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.thumbnail_path(uid, size=size)
+    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )

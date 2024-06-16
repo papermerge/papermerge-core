@@ -1,8 +1,9 @@
-from typing import List, Optional, Tuple
+from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 from salinic import types
-from salinic.field import KeywordField, TextField, UUIDField
+from salinic.field import KeywordField, StringField, TextField, UUIDField
 from salinic.schema import Schema
 from typing_extensions import Annotated
 
@@ -10,29 +11,8 @@ FOLDER = 'folder'
 PAGE = 'page'
 
 
-class ColoredTag(BaseModel):
-    name: str
-    fg_color: str
-    bg_color: str
-
-
-Tags = Annotated[
-    Optional[list[ColoredTag]],
-    KeywordField()  # will be indexed as a keyword
-]
-Breadcrumb = Annotated[
-    List[Tuple[str, str]],
-    KeywordField()  # will be indexed as a keyword
-]
-
-
-class Model(Schema):
-    """Index entity
-
-    Documents are indexed by page. Note that we place in same index
-    both folders and documents, and because the main index entity is page -
-    we end up having in index two types of entities: folders and pages.
-    """
+class SearchIndex(Schema):
+    """Search Index Schema"""
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         lang_field_name='lang'
@@ -46,7 +26,7 @@ class Model(Schema):
     # document ID to whom this page belongs
     document_id: Annotated[
         Optional[str],
-        UUIDField(index=False, general_search=True)
+        TextField(index=False, general_search=True, group=True)
     ] = None
 
     lang: Annotated[
@@ -56,12 +36,7 @@ class Model(Schema):
 
     user_id: Annotated[
         str,
-        UUIDField(index=False)
-    ]
-
-    parent_id: Annotated[
-        str,
-        UUIDField(index=False)
+        StringField(index=True)
     ]
 
     title: Annotated[
@@ -75,25 +50,13 @@ class Model(Schema):
         TextField(general_search=True, multi_lang=True)
     ] = None
 
-    entity_type: Annotated[
-        str,
-        KeywordField()
-    ]  # folder | page
-
-    breadcrumb: Annotated[
-        List[Tuple[str, str]],
-        KeywordField(multi_value=True)
-    ]
-
-    tags: Annotated[
-        Optional[list[ColoredTag]],
-        KeywordField(multi_value=True)
-    ] = []
-
     # None in case of folder entity
     page_number: types.OptionalNumeric = None
-    # None in case of folder entity
-    page_count: types.OptionalNumeric = None
+
+    tags: Annotated[
+        Optional[list[str]],
+        KeywordField(multi_value=True)
+    ] = []
 
     def __str__(self):
         return f'IndexEntity(id={self.id}, title={self.title}, '\
@@ -102,8 +65,24 @@ class Model(Schema):
             f'text=|{self.text}|,' \
             f'type={self.entity_type})'
 
-    def get_idx_value__tags(self):
-        return list([tag.name for tag in self.tags])
 
-    def get_idx_value__breadcrumb(self):
-        return list([item[1] for item in self.breadcrumb])
+class Page(BaseModel):
+    id: UUID
+    page_number: int
+    text: str | None = None
+
+
+class Document(BaseModel):
+    id: UUID
+    title: str
+    lang: str
+    tags: list[str] = []
+    pages: list[Page]
+    entity_type: str = 'document'
+
+
+class Folder(BaseModel):
+    id: UUID
+    title: str
+    tags: list[str] = []
+    entity_type: str = 'folder'

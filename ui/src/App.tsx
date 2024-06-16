@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import DualPanel from "components/dual-panel/DualPanel";
 import Tags from "components/tags/table";
 import Users from "components/users/table";
+import Groups from "components/groups/table";
 import Layout from 'components/layout';
 import { useResource } from 'hooks/resource';
 import { AppContentBlockEnum, CType, NType, User, Pagination } from 'types';
@@ -13,6 +14,7 @@ import SearchResults from 'components/search/search_results';
 
 
 import 'App.css';
+import SessionEnd from 'components/SessionEnded';
 
 
 function App() {
@@ -64,7 +66,7 @@ function App() {
   }
 
   if (user.error) {
-    return <div>Error</div>
+    return <SessionEnd />
   }
 
   if (!user.data?.home_folder_id) {
@@ -90,6 +92,8 @@ function App() {
     content_block = <Tags />;
   } else if (contentBlockItem == AppContentBlockEnum.users) {
     content_block = <Users />;
+  } else if (contentBlockItem == AppContentBlockEnum.groups) {
+    content_block = <Groups />;
   } else {
     // search results
     content_block = <SearchResults query={searchQuery} onSearchResultClick={onSearchResultClick} />

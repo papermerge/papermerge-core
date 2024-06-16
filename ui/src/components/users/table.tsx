@@ -27,6 +27,7 @@ export default function UsersTable() {
       setNumPages(data.num_pages);
       setIsUserlistLoading(false);
     }).catch((error: Error) => {
+        setIsUserlistLoading(false);
         setUserlistLoadingError(error.toString());
     });
   }, [page_number]);
@@ -93,7 +94,7 @@ export default function UsersTable() {
 
     if (found_user) {
       return <EditUser
-              user={found_user}
+              user_id={found_user.id}
               onSave={onEditSave}
               onCancel={onCancel} />
     }
@@ -110,6 +111,8 @@ export default function UsersTable() {
         <tr className="text-uppercase text-center">
           <th>Username</th>
           <th>Email</th>
+          <th>Superuser</th>
+          <th>Active</th>
           <th>Created At</th>
           <th>Action</th>
         </tr>

@@ -52,7 +52,8 @@ import { DATA_TYPE_NODES, DATA_TRANSFER_EXTRACTED_PAGES } from 'cconstants';
 import { get_node_attr } from 'utils/nodes';
 import { DualButton } from 'components/dual-panel/DualButton';
 import move_nodes from './modals/MoveNodes';
-import extract_pages from './modals/extract-pages/ExtractPages';
+import extract_pages from 'components/modals/extract-pages/ExtractPages';
+import SessionEnd from 'components/SessionEnded';
 
 
 function in_list(node_id: string, arr: Array<string>): boolean {
@@ -280,7 +281,11 @@ function Commander({
       (new_node: NodeType) => {
         onNodesListChange([new_node, ...nodes!.data!.nodes]);
       }
-    );
+    ).catch((error: Error | undefined) => {
+      if (error) {
+        toasts?.addToast("error", `Error while creating folder: ${error}`);
+      }
+    });
   }
 
   const onRenameClick = () => {
@@ -301,7 +306,11 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    );
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast('error', `Error while renaming ${error}`);
+      }
+    });
   }
 
   const onDeleteNodesClick = () => {
@@ -314,7 +323,11 @@ function Commander({
         onNodesListChange(new_nodes);
         onSelectNodes([]);
       }
-    );
+    ).catch ((error?: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while deleting node(s): ${error}`);
+      }
+    });
   }
 
   const onEditTagsClick = () => {
@@ -335,7 +348,11 @@ function Commander({
         onNodesListChange(new_nodes_list);
         onSelectNodes([]);
       }
-    );
+    ).catch((error?: Error) => {
+      if (error) {
+        toasts?.addToast(`error`, `Error while saving: ${error}`);
+      }
+    });
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -368,6 +385,10 @@ function Commander({
               [...nodes!.data!.nodes, ...created_nodes.nodes]
             );
             setCssAcceptFiles("");
+        }).catch((error?: Error) => {
+          if (error) {
+            toasts?.addToast("error", `Error while uploading files ${error}`);
+          }
         });
       }
     }
@@ -390,7 +411,7 @@ function Commander({
           source: moved_nodes.nodes
         });
         setCssAcceptFiles("");
-      }).catch(() => { // catch => dialog was canceled
+      }).catch((error: Error | undefined) => { // catch => dialog was canceled
         if (dual_context?.onResetSelectedNodes) {
           dual_context.onResetSelectedNodes();
         }
@@ -398,6 +419,9 @@ function Commander({
           dual_context.onResetDraggedNodes();
         }
         setCssAcceptFiles("");
+        if (error) {
+          toasts?.addToast("error", `Error while moving node(s) ${error}`);
+        }
       });
 
       return
@@ -417,8 +441,10 @@ function Commander({
       }).then((arg: ExtractedPagesType) => {
         onExtractPages(arg);
         setCssAcceptFiles("");
-      }).catch(() => {
-        //...
+      }).catch((error: Error) => {
+        if (error) {
+          toasts?.addToast(`error`, `Error while extracting page(s): ${error}`)
+        }
       });
     }
   }
@@ -476,6 +502,12 @@ function Commander({
     onNodesListChange(
       [...nodes!.data!.nodes, ...created_nodes.nodes]
     );
+  }
+
+  if (nodes.error) {
+    if (nodes.error.includes("401")) {
+      return <div className='text-danger'>Error: 401 Unauthorized</div>
+    }
   }
 
   if (nodes.data) {
@@ -550,7 +582,7 @@ function Commander({
             onEditTagsClick={onEditTagsClick}
             onCreatedNodesByUpload={onCreatedNodesByUpload}
             selected_nodes={selected_nodes}
-            node_id={node_id} />
+            target={nodes!.data!.parent} />
 
             <div className="d-flex align-items-center">
               <SortDropdown

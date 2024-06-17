@@ -84,7 +84,7 @@ def upload_file(
         content_type=file.headers.get('content-type')
     )
 
-    if settings.PREVIEW_MODE == 'local':
+    if settings.FILE_SERVER == 'local':
         # generate preview and store it in local storage
         doc.generate_thumbnail()
     else:

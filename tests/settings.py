@@ -20,7 +20,7 @@ REDIS_URL = config.get('redis', 'url', default='redis://localhost:6379/0')
 NOTIFICATION_URL = 'memory://localhost/'
 PAPERMERGE_NAMESPACE = config.get('main', 'namespace', default=None)
 
-PREVIEW_MODE = 'local'
+FILE_SERVER = 'local'
 
 CF_SIGN_URL_PRIVATE_KEY = os.environ.get(
     'PAPERMERGE__MAIN__CF_SIGN_URL_PRIVATE_KEY',

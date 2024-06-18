@@ -145,11 +145,16 @@ OCR__DEFAULT_LANGUAGE = os.environ.get(
     'deu'
 )
 
-# Where are image previews, i.e. pages, document thumbnails, serverd from ?
-# - from local storage (convenient for simple setups)
-# - from S3 storage (convenient for cloud setups)
-PREVIEW_MODE = os.environ.get(
-    'PAPERMERGE__MAIN__IMAGE_PREVIEW_SOURCE',
+# Who serves files ?
+# Has two values:
+# 1. "local"
+# 2. "s3"
+#
+# 1. local - default - i.e. this app will serve files
+# (convenient for simple setups)
+# 2. s3 - i.e. s3/cloud front (convenient for cloud setups)
+FILE_SERVER = os.environ.get(
+    'PAPERMERGE__MAIN__FILE_SERVER',
     'local'
 )
 
@@ -177,8 +182,8 @@ CF_DOMAIN = os.environ.get(
     None
 )
 
-OBJECT_PREFIX = os.environ.get(
-    'PAPERMERGE__S3__OBJECT_PREFIX',
+PREFIX = os.environ.get(
+    'PAPERMERGE__MAIN__PREFIX',
     None
 )
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useProtectedJpg } from "hooks/protected_image"
+import { useProtectedSVG } from "hooks/protected_image"
 import Form from 'react-bootstrap/Form';
 import './page_thumbnail.scss';
 
@@ -58,7 +58,10 @@ export function PageThumbnail({
     return <ThumbnailPlaceholder />;
   }
 
-  const {is_loading, data, error} = useProtectedJpg(item.page.jpg_url);
+  const {is_loading, data, error} = useProtectedSVG(
+    item.page.svg_url,
+    item.page.jpg_url,
+  );
   let thumbnail_component: JSX.Element | null;
 
   const localOnClick = () => {

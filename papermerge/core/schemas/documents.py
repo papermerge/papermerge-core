@@ -35,12 +35,18 @@ class Page(BaseModel):
     @field_validator("svg_url", mode='before')
     @classmethod
     def svg_url_value(cls, value, info: ValidationInfo) -> str:
-        return f"/api/pages/{info.data['id']}/svg"
+        if settings.FILE_SERVER == 'local':
+            return f"/api/pages/{info.data['id']}/svg"
+
+        s3_url = _s3_page_svg_url(
+            info.data['id']  # UUID of the page here
+        )
+        return s3_url
 
     @field_validator("jpg_url", mode='before')
     @classmethod
     def jpg_url_value(cls, value, info: ValidationInfo) -> str:
-        if settings.PREVIEW_MODE == 'local':
+        if settings.FILE_SERVER == 'local':
             return f"/api/pages/{info.data['id']}/jpg"
 
         s3_url = _s3_page_thumbnail_url(
@@ -83,8 +89,11 @@ class DocumentVersion(BaseModel):
         return value
 
     @field_validator('download_url', mode='before')
-    def thumbnail_url_validator(cls, _, info):
-        return f"/api/document-versions/{info.data['id']}/download"
+    def download_url_validator(cls, _, info):
+        if settings.FILE_SERVER == 'local':
+            return f"/api/document-versions/{info.data['id']}/download"
+
+        return _s3_docver_download_url(info.data['id'], info.data['file_name'])
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -123,7 +132,7 @@ class Document(BaseModel):
 
     @field_validator('thumbnail_url', mode='before')
     def thumbnail_url_validator(cls, value, info):
-        if settings.PREVIEW_MODE == 'local':
+        if settings.FILE_SERVER == 'local':
             return f"/api/thumbnails/{info.data['id']}"
 
         # if it is not local, then it is s3 + cloudfront
@@ -176,7 +185,7 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid)
-    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    prefix = getattr(settings, 'PREFIX', None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -192,7 +201,39 @@ def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid, size=size)
-    prefix = getattr(settings, 'OBJECT_PREFIX', None)
+    prefix = getattr(settings, 'PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )
+
+
+def _s3_page_svg_url(uid: UUID) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.page_svg_path(uid)
+    prefix = getattr(settings, 'PREFIX', None)
+    if prefix:
+        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+    else:
+        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+
+    return sign_url(
+        url,
+        valid_for=600  # valid for 600 seconds
+    )
+
+
+def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
+    from papermerge.core.cloudfront import sign_url
+
+    resource_path = plib.docver_path(uid, file_name)
+    prefix = getattr(settings, 'PREFIX', None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:

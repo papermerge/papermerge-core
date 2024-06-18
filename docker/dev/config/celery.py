@@ -55,10 +55,10 @@ def prefixed(name: str) -> str:
 app.conf.task_routes = {
     # `s3_worker`: uploads/downloads of document version files
     # via s3 queue
-    's3': {'queue': 's3'},
+    's3': {'queue': prefixed('s3')},
     # `s3_worker`: generates previews and uploads them to s3 storage
     # via preview queue
-    'preview': {'queue': 's3preview'},
+    's3preview': {'queue': prefixed('s3preview')},
     # index worker - sends index add/remove/updates
     'i3': {'queue': prefixed('i3')},
     'ocr': {'queue': prefixed('ocr')}

@@ -7,7 +7,6 @@ from celery.signals import (heartbeat_sent, task_postrun, task_prerun,
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
-from kombu.exceptions import OperationalError
 
 from papermerge.core import constants as const
 from papermerge.core.models import Document, DocumentVersion, Page, User
@@ -17,7 +16,6 @@ from papermerge.core.storage import get_storage_instance
 
 from .signal_definitions import document_post_upload
 from .tasks import delete_user_data as delete_user_data_task
-from .tasks import ocr_document_task
 
 logger = logging.getLogger(__name__)
 
@@ -282,38 +280,21 @@ def receiver_document_post_upload(
         document - instance of associated document model
         document_version - instance of newly created document version
     """
-    doc_ver = document_version
     doc = document_version.document
 
     if not doc.ocr:
         logger.info(f"Skipping OCR for doc={doc} as doc.ocr=False")
         return
 
-    user = doc.user
+    send_ocr_task(doc)
 
-    logger.debug(
-        "document_post_upload"
-        f" [doc.id={doc.id}]"
-        f" [doc_version.number={doc_ver.number}]"
-        f" [doc_version_id={doc_ver.id}]"
-        f" [user.id={user.id}]"
+
+def send_ocr_task(doc: Document):
+    celery_app.send_task(
+        const.WORKER_OCR_DOCUMENT,
+        kwargs={
+            'document_id': str(doc.id),
+            'lang': doc.lang,
+        },
+        route_name='ocr'
     )
-
-    try:
-        ocr_document_task.apply_async(
-            kwargs={
-                'document_id': str(doc.id),
-                'lang': doc.lang,
-                'user_id': str(user.id)
-            }
-        )
-    except OperationalError:
-        # If redis service is not available then:
-        # - request is accepted
-        # - document is uploaded
-        # - warning is logged
-        # - response includes exception message text
-        logger.warning(
-            "Operation Error while creating the task",
-            exc_info=True
-        )

@@ -37,7 +37,7 @@ def test_copy_text_field():
     assert doc_ver_y.pages.all()[0].text == "body"
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_apply_pages_op(_):
     """This test checks if `apply_pages_op` correctly copies
     page text data"""
@@ -78,7 +78,7 @@ def test_apply_pages_op(_):
     assert first_page.id != orig_first_page.id
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_move_pages_one_single_page_strategy_mix(_):
     """Scenario tests moving of one page from
     src to dst (strategy: mix). Scenario is illustrated
@@ -167,7 +167,7 @@ def test_move_pages_one_single_page_strategy_mix(_):
     )
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_move_pages_two_pages_strategy_mix(_):
     """Scenario tests moving of two pages from
     src to dst (strategy: mix). Scenario is illustrated
@@ -260,7 +260,7 @@ def test_move_pages_two_pages_strategy_mix(_):
     ) == PageDir(dst_old_pages[2].id, number=3, name="dst old")
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_move_pages_one_single_page_strategy_replace(_):
     """Scenario tests moving of one page from
     src to dst (strategy: replace). Scenario is illustrated
@@ -330,7 +330,7 @@ def test_move_pages_one_single_page_strategy_replace(_):
     )
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_move_all_pages_of_the_doc_out_mix(_):
     """Scenario tests moving of ALL page of source document.
     In this case source document will be entirely deleted:
@@ -430,7 +430,7 @@ def test_move_all_pages_of_the_doc_out_mix(_):
     )
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_move_all_pages_of_the_doc_out_replace_strategy(_):
     """Scenario tests moving of ALL page of source document.
     In this case source document will be entirely deleted:
@@ -509,7 +509,7 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(_):
     )
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_extract_two_pages_to_folder_all_pages_in_one_doc(_):
     """Scenario tests extraction of first two pages from
     source document into destination folder.
@@ -571,7 +571,7 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(_):
     )
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     """Scenario tests extraction of first two pages of source document
     into destination folder. Each page is extracted into
@@ -646,7 +646,7 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     assert dst_pages2[0].text == src_ver.pages.all()[1].text
 
 
-@patch('papermerge.core.signals.ocr_document_task')
+@patch('papermerge.core.signals.send_ocr_task')
 def test_copy_without_pages(_):
     """Scenario
 

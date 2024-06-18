@@ -681,7 +681,7 @@ class TestReuseTextField(TestCase):
 class TestRemovePdfPages(TestCase):
     """Tests for remove_pdf_pages"""
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_remove_pdf_pages_basic_1(self, _):
         """Remove one page from the document version"""
         src_document = maker.document(
@@ -700,7 +700,7 @@ class TestRemovePdfPages(TestCase):
         content = pdf_content(src_new_version, clean=True)
         assert content == "S2 S3"
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_remove_pdf_pages_basic_2(self, _):
         """Remove last two pages from the document version"""
         src_document = maker.document(
@@ -719,7 +719,7 @@ class TestRemovePdfPages(TestCase):
         content = pdf_content(src_new_version, clean=True)
         assert content == "S1"
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_remove_pdf_pages_invalid_input(self, _):
         """Junk page_numbers input"""
         src_document = maker.document(
@@ -747,7 +747,7 @@ class TestRemovePdfPages(TestCase):
 class TestInserPdfPagesUtilityFunction(TestCase):
     """Tests for insert_pdf_pages"""
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_insert_pdf_pages_basic_1(self, _):
         """
         We test moving of one page from source document version to
@@ -783,7 +783,7 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "S1 D1 D2 D3" == dst_new_content
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_insert_pdf_pages_basic_2(self, _):
         """
         We test moving of two pages from source document version to
@@ -819,7 +819,7 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "D1 S1 S3 D2 D3" == dst_new_content
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_insert_pdf_pages_when_dst_old_is_None(self, _):
         """
         We test moving of two pages from source document version to

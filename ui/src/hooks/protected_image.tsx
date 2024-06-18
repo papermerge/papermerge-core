@@ -77,7 +77,7 @@ export const useProtectedSVG = (url: string | null, fallback_url: string | null)
                         data: result_svg_component
                     });
                 });
-            } else if (res.status == 404) {
+            } else if (res.status == 404 || res.status == 403) {
                 if (!fallback_url) {
                     setResult({
                         is_loading: false,

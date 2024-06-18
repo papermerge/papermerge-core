@@ -286,6 +286,10 @@ def receiver_document_post_upload(
         logger.info(f"Skipping OCR for doc={doc} as doc.ocr=False")
         return
 
+    send_ocr_task(doc)
+
+
+def send_ocr_task(doc: Document):
     celery_app.send_task(
         const.WORKER_OCR_DOCUMENT,
         kwargs={

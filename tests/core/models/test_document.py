@@ -114,7 +114,7 @@ class TestDocumentModel(TestCase):
             doc.idified_title
         )
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_upload_payload_to_zero_sized_document(self, _x):
         """
         Upon creation document model has associated zero sized document_version
@@ -153,7 +153,7 @@ class TestDocumentModel(TestCase):
                 abs_path(last_version.file_path)
             )
 
-    @patch('papermerge.core.signals.ocr_document_task')
+    @patch('papermerge.core.signals.send_ocr_task')
     def test_version_bump_from_pages(self, _):
         """
         Move two pages from source document to destination document

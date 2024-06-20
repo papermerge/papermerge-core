@@ -91,7 +91,6 @@ django-extensions = "^3.1"
 ipython = "^8.0.1"
 taskipy = "^1.10.2"
 "pdfminer.six" = "^20220524"
-pre-commit = "^2.20.0"
 watchfiles = "^0.19.0"
 
 [tool.poetry.group.test]

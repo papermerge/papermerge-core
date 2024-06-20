@@ -1,0 +1,10 @@
+a.active {
+  color: white;
+  background-color: blue;
+}
+
+
+ul.sidebar {
+  border: 1px solid #333;
+  padding: 1rem;
+}

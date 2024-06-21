@@ -7,3 +7,10 @@ export type User = {
   inbox_folder_id: string;
   scopes: Array<string>;
 }
+
+
+export type SliceState<T> = {
+  data: null | T,
+  status: 'idle' | 'loading' | 'succeeded' | 'failed',
+  error: undefined | string | null
+}

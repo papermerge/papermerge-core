@@ -6,7 +6,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import App from './App.tsx'
+import App from './app/App.tsx'
 import Tags from './pages/Tags.tsx';
 import Inbox from './pages/Inbox.tsx';
 import Home from './pages/Home.tsx';
@@ -14,7 +14,8 @@ import Users from './pages/Users.tsx';
 import Groups from './pages/Groups.tsx';
 import ErrorPage from "./pages/Error.tsx";
 import './index.css'
-import { store } from './store.ts'
+import { store } from './app/store.ts'
+import { fetchCurrentUser } from './slices/currentUser.ts'
 
 
 const router = createBrowserRouter([
@@ -47,10 +48,17 @@ const router = createBrowserRouter([
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <RouterProvider router={router} />
-    </Provider>
-  </React.StrictMode>,
-)
+
+function start_app() {
+  store.dispatch(fetchCurrentUser())
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <RouterProvider router={router} />
+      </Provider>
+    </React.StrictMode>,
+  )
+}
+
+start_app()

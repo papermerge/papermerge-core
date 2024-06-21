@@ -57,6 +57,7 @@ jobs:
           poetry install --with dev,test && poetry run task test
         env:
           PYTHONPATH: .
+          PAPERMERGE__MAIN__API_PREFIX: ''
 
   frontend_tests:
     runs-on: ubuntu-latest

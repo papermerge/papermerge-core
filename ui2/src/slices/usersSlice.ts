@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios';
-import type { User } from "../types"
+import type { User } from "@/types"
 
 const initialState: any = []
 

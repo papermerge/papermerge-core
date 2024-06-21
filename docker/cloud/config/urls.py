@@ -1,6 +1,6 @@
 from django.urls import include, path
 
 urlpatterns = [
-    path('api/', include('papermerge.core.urls')),
-    path('api/search/', include('papermerge.search.urls')),
+    path('', include('papermerge.core.urls')),
+    path('search/', include('papermerge.search.urls')),
 ]

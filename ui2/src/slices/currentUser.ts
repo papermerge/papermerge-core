@@ -31,8 +31,8 @@ const currentUserSlice = createSlice({
     }).addCase(fetchCurrentUser.rejected, (state, action) => {
       state.status = 'failed'
       const message = `PM-0001: Client failed to retrieve current user from '/api/users/me' endpoint.` +
-      ` msg: ${action.error.message} ` +
-      ` code: ${action.error.code}`
+      ` Ax message: ${action.error.message}.` +
+      ` Ax code: ${action.error.code}.`
       state.error = message
     })
   }
@@ -40,5 +40,7 @@ const currentUserSlice = createSlice({
 
 export default currentUserSlice.reducer
 
-export const selectCurrentUser = (state: any) => state.currentUser
+export const selectCurrentUser = (state: any) => state.currentUser.data
+export const selectCurrentUserStatus = (state: any) => state.currentUser.status
+export const selectCurrentUserError = (state: any) => state.currentUser.error
 

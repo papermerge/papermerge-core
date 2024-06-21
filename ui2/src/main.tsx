@@ -1,17 +1,21 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import Tags from './Tags.tsx';
-import Inbox from './Inbox.tsx';
-import Home from './Home.tsx';
-import Users from './Users.tsx';
-import Groups from './Groups.tsx';
-import ErrorPage from "./error-page";
-import './index.css'
+import { Provider } from 'react-redux'
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+
+import App from './app/App.tsx'
+import Tags from './pages/Tags.tsx';
+import Inbox from './pages/Inbox.tsx';
+import Home from './pages/Home.tsx';
+import Users from './pages/Users.tsx';
+import Groups from './pages/Groups.tsx';
+import ErrorPage from "./pages/Error.tsx";
+import './index.css'
+import { store } from './app/store.ts'
+import { fetchCurrentUser } from './slices/currentUser.ts'
 
 
 const router = createBrowserRouter([
@@ -44,8 +48,17 @@ const router = createBrowserRouter([
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>,
-)
+
+function start_app() {
+  store.dispatch(fetchCurrentUser())
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <RouterProvider router={router} />
+      </Provider>
+    </React.StrictMode>,
+  )
+}
+
+start_app()

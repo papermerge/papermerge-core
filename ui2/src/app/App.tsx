@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar/Sidebar.tsx"
 import Topbar from "../components/Topbar/Topbar.tsx"
 import "./App.css";
-import {selectCurrentUserError, selectCurrentUserStatus } from '../slices/currentUser.ts'
+import {selectCurrentUserError, selectCurrentUserStatus } from '@/slices/currentUser.ts'
 
 
 function App() {

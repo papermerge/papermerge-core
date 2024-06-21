@@ -1,7 +1,7 @@
 
 import { useSelector } from "react-redux";
-import {selectCurrentUser, selectCurrentUserStatus, selectCurrentUserError} from '../../slices/currentUser.ts'
-import type { User } from "../../types.ts";
+import {selectCurrentUser, selectCurrentUserStatus, selectCurrentUserError} from '@/slices/currentUser.ts'
+import type { User } from "@/types.ts";
 
 
 function Topbar() {

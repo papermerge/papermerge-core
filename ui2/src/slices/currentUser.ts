@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios';
-import { getRestAPIURL, getDefaultHeaders } from '../utils';
-import type { SliceState, User } from '../types';
+import { getRestAPIURL, getDefaultHeaders } from '@/utils';
+import type { SliceState, User } from '@/types';
 
 const initialState: SliceState<User> = {
   data: null,

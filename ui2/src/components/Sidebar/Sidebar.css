@@ -4,9 +4,6 @@ a.active {
   color: var(--mantine-color-white);
 }
 
-ul.sidebar {
-}
-
 li {
   list-style-type: none;
   display: block;
@@ -18,7 +15,4 @@ li {
   font-weight: 500;
   height: rem(44px);
   line-height: rem(44px);
-}
-
-li a {
 }

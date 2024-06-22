@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-
+import { MantineProvider} from '@mantine/core';
 import App from '@/app/App.tsx'
 import Tags from '@/pages/Tags.tsx';
 import Inbox from '@/pages/Inbox.tsx';
@@ -16,6 +16,7 @@ import ErrorPage from "@/pages/Error.tsx";
 import '@/index.css'
 import { store } from '@/app/store.ts'
 import { fetchCurrentUser } from '@/slices/currentUser.ts'
+import { theme } from '@/app/theme';
 
 
 const router = createBrowserRouter([
@@ -54,10 +55,12 @@ function start_app() {
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      <Provider store={store}>
-        <RouterProvider router={router} />
-      </Provider>
-    </React.StrictMode>,
+      <MantineProvider theme={theme}>
+        <Provider store={store}>
+          <RouterProvider router={router} />
+        </Provider>
+      </MantineProvider>
+    </React.StrictMode>
   )
 }
 

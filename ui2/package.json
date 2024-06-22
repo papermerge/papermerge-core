@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prettier": "prettier --check \"**/*.{ts,tsx}\"",
+    "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -25,6 +27,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.3.1",
+    "prettier": "^3.3.2",
     "typescript": "^5.4.5",
     "vite": "^5.3.1"
   }

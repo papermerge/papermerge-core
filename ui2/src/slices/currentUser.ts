@@ -1,46 +1,53 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios';
-import { getRestAPIURL, getDefaultHeaders } from '@/utils';
-import type { SliceState, User } from '@/types';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { getRestAPIURL, getDefaultHeaders } from "@/utils";
+import type { SliceState, User } from "@/types";
 
 const initialState: SliceState<User> = {
   data: null,
-  status: 'idle',
-  error: null
-}
+  status: "idle",
+  error: null,
+};
 
-export const fetchCurrentUser = createAsyncThunk('user/fetchCurrentUser', async () => {
-  const rest_api_url = getRestAPIURL()
-  const defaultHeaders = getDefaultHeaders()
-  const response = await axios.get(`${rest_api_url}/api/users/me`, {headers: defaultHeaders})
+export const fetchCurrentUser = createAsyncThunk(
+  "user/fetchCurrentUser",
+  async () => {
+    const rest_api_url = getRestAPIURL();
+    const defaultHeaders = getDefaultHeaders();
+    const response = await axios.get(`${rest_api_url}/api/users/me`, {
+      headers: defaultHeaders,
+    });
 
-  return response.data
-})
-
+    return response.data;
+  },
+);
 
 const currentUserSlice = createSlice({
-  name: 'users',
+  name: "users",
   initialState,
   reducers: {},
   extraReducers(builder) {
-    builder.addCase(fetchCurrentUser.pending, (state, action) => {
-      state.status = 'loading'
-    }).addCase(fetchCurrentUser.fulfilled, (state, action) => {
-      state.status = 'succeeded'
-      state.data = action.payload
-    }).addCase(fetchCurrentUser.rejected, (state, action) => {
-      state.status = 'failed'
-      const message = `PM-0001: Client failed to retrieve current user from '/api/users/me' endpoint.` +
-      ` Ax message: ${action.error.message}.` +
-      ` Ax code: ${action.error.code}.`
-      state.error = message
-    })
-  }
-})
+    builder
+      .addCase(fetchCurrentUser.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = action.payload;
+      })
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
+        state.status = "failed";
+        const message =
+          `PM-0001: Client failed to retrieve current user from '/api/users/me' endpoint.` +
+          ` Ax message: ${action.error.message}.` +
+          ` Ax code: ${action.error.code}.`;
+        state.error = message;
+      });
+  },
+});
 
-export default currentUserSlice.reducer
+export default currentUserSlice.reducer;
 
-export const selectCurrentUser = (state: any) => state.currentUser.data
-export const selectCurrentUserStatus = (state: any) => state.currentUser.status
-export const selectCurrentUserError = (state: any) => state.currentUser.error
-
+export const selectCurrentUser = (state: any) => state.currentUser.data;
+export const selectCurrentUserStatus = (state: any) => state.currentUser.status;
+export const selectCurrentUserError = (state: any) => state.currentUser.error;

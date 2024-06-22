@@ -1,8 +1,7 @@
 .logo {
-  width: 10rem;
+  width: 5rem;
 }
 .header {
-  height: rem(56px);
   margin-bottom: rem(120px);
   background-color: var(--mantine-color-body);
   border-bottom: rem(1px) solid
@@ -16,7 +15,6 @@
 }
 
 .inner {
-  height: rem(56px);
   display: flex;
   justify-content: space-between;
   align-items: center;

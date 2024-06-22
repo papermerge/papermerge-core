@@ -1,10 +1,24 @@
 a.active {
-  color: white;
-  background-color: blue;
+  border-left-color: var(--mantine-color-blue-filled);
+  background-color: var(--mantine-color-blue-filled);
+  color: var(--mantine-color-white);
 }
 
-
 ul.sidebar {
-  border: 1px solid #333;
-  padding: 1rem;
+}
+
+li {
+  list-style-type: none;
+  display: block;
+  text-decoration: none;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  padding: 0 var(--mantine-spacing-md);
+  font-size: var(--mantine-font-size-sm);
+  margin-right: var(--mantine-spacing-md);
+  font-weight: 500;
+  height: rem(44px);
+  line-height: rem(44px);
+}
+
+li a {
 }

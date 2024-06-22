@@ -1,4 +1,5 @@
 {
+  "semi": false,
   "arrowParens": "avoid",
   "bracketSpacing": false,
   "endOfLine": "auto",

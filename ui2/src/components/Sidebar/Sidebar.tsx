@@ -1,11 +1,10 @@
-import { NavLink } from "react-router-dom";
-import "./Sidebar.css";
+import {NavLink} from "react-router-dom"
+import "./Sidebar.css"
 
 function Sidebar() {
   return (
     <>
       <ul className="sidebar">
-        Sidebar
         <li>
           <NavLink to="/">Home</NavLink>
         </li>
@@ -23,7 +22,7 @@ function Sidebar() {
         </li>
       </ul>
     </>
-  );
+  )
 }
 
-export default Sidebar;
+export default Sidebar

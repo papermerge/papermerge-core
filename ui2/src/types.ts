@@ -85,3 +85,7 @@ export type NodeLoaderResponseType = {
   num_pages: number
   page_number: number
 }
+
+export type OCRLangType = {
+  [key: string]: string
+}

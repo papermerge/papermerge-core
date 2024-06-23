@@ -1,3 +1,5 @@
+import {Group, Button} from "@mantine/core"
+import {IconPlus} from "@tabler/icons-react"
 import {LoaderFunctionArgs, useLoaderData} from "react-router"
 import {useNavigation} from "react-router-dom"
 import {getCurrentUser} from "@/utils"
@@ -5,6 +7,7 @@ import {fetchPaginatedNodes} from "@/slices/paginatedNodes"
 import Node from "@/components/Node/Node"
 import {store} from "@/app/store"
 import type {User, NodeType, NodeLoaderResponseType} from "@/types"
+import create_new_folder from "@/components/modals/NewFolder"
 
 export default function Folder() {
   const data: NodeLoaderResponseType = useLoaderData() as NodeLoaderResponseType
@@ -15,12 +18,37 @@ export default function Folder() {
   }
 
   const nodes = data.nodes.map((n: NodeType) => <Node key={n.id} node={n} />)
-
-  if (nodes.length > 0) {
-    return <div>{nodes}</div>
+  const onNewFolder = () => {
+    create_new_folder(data.parent.id)
   }
 
-  return <div>Empty</div>
+  if (nodes.length > 0) {
+    return (
+      <div>
+        <Group justify="center">
+          <Button
+            leftSection={<IconPlus size={14} />}
+            onClick={onNewFolder}
+            variant="default"
+          >
+            New Folder
+          </Button>
+        </Group>
+        <Group>{nodes}</Group>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Group justify="center">
+        <Button leftSection={<IconPlus size={14} />} variant="default">
+          New Folder
+        </Button>
+      </Group>
+      <Group>Empty</Group>
+    </div>
+  )
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {

@@ -13,7 +13,7 @@ import type {
   NodeLoaderResponseType
 } from "@/types"
 
-export default function Inbox() {
+export default function Folder() {
   const data: NodeLoaderResponseType = useLoaderData() as NodeLoaderResponseType
   const navigation = useNavigation()
 
@@ -21,7 +21,7 @@ export default function Inbox() {
     return <div>Loading...</div>
   }
 
-  const nodes = data.nodes.map((n: NodeType) => <Node node={n} />)
+  const nodes = data.nodes.map((n: NodeType) => <Node key={n.id} node={n} />)
 
   if (nodes.length > 0) {
     return <div>{nodes}</div>
@@ -31,21 +31,26 @@ export default function Inbox() {
 }
 
 export async function loader({
+  params,
   request
 }: LoaderFunctionArgs): Promise<NodeLoaderResponseType> {
   const url = new URL(request.url)
   const rest_api_url = getRestAPIURL()
   const defaultHeaders = getDefaultHeaders()
   const user: User = await getCurrentUser()
+  let folderId
+
+  if (params.folderId) {
+    folderId = params.folderId
+  } else {
+    folderId = user.home_folder_id
+  }
 
   const prom = axios.all([
-    axios.get(
-      `${rest_api_url}/api/nodes/${user.inbox_folder_id}?${url.searchParams}`,
-      {
-        headers: defaultHeaders
-      }
-    ),
-    axios.get(`${rest_api_url}/api/folders/${user.inbox_folder_id}`, {
+    axios.get(`${rest_api_url}/api/nodes/${folderId}?${url.searchParams}`, {
+      headers: defaultHeaders
+    }),
+    axios.get(`${rest_api_url}/api/folders/${folderId}`, {
       headers: defaultHeaders
     })
   ])

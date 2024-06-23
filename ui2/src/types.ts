@@ -1,14 +1,87 @@
+export type OcrStatusEnum =
+  | "UNKNOWN"
+  | "RECEIVED"
+  | "STARTED"
+  | "SUCCESS"
+  | "FAILURE"
+
+export type CType = "folder" | "document"
+
 export type User = {
-  id: string;
-  username: string;
-  email: string;
-  home_folder_id: string;
-  inbox_folder_id: string;
-  scopes: Array<string>;
-};
+  id: string
+  username: string
+  email: string
+  home_folder_id: string
+  inbox_folder_id: string
+  scopes: Array<string>
+}
 
 export type SliceState<T> = {
-  data: null | T;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: undefined | string | null;
-};
+  data: null | T
+  status: "idle" | "loading" | "succeeded" | "failed"
+  error: undefined | string | null
+}
+
+export type ColoredTagType = {
+  name: string
+  bg_color: string
+  fg_color: string
+}
+
+export type NType = {
+  /* Short version of the Node Type */
+  id: string
+  ctype: CType
+}
+
+export type NodeType = NType & {
+  /* Full version of Node Type */
+  tags: ColoredTagType[]
+  accept_dropped_nodes: boolean
+  is_currently_dragged: boolean
+  parent_id: string | null
+  title: string
+  user_id: string
+  update_at: string
+  ocr_status: OcrStatusEnum
+  ocr: boolean
+  thumbnail_url: string | null
+}
+
+export type BreadcrumbItemType = [string, string]
+
+export type BreadcrumbType = Array<BreadcrumbItemType>
+
+export type FolderType = NodeType & {
+  breadcrumb: BreadcrumbType
+}
+
+export type NodeSortFieldEnum = "title" | "ctype" | "created_at" | "updated_at"
+
+export type NodeSortOrderEnum = "asc" | "desc"
+
+export type Pagination = {
+  page_number: number
+  per_page: number
+}
+
+export type Sorting = {
+  sort_field: NodeSortFieldEnum
+  sort_order: NodeSortOrderEnum
+}
+
+export type Paginated<T> = {
+  page_size: number
+  page_number: number
+  num_pages: number
+  items: Array<T>
+}
+
+export type NodeLoaderResponseType = {
+  nodes: Array<NodeType>
+  parent: FolderType
+  breadcrumb: BreadcrumbType
+  per_page: number
+  num_pages: number
+  page_number: number
+}

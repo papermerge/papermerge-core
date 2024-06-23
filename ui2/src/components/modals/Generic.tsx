@@ -82,7 +82,7 @@ const GenericModal = ({
   }, [])
 
   return (
-    <Modal title={modal_title} opened={show} onClose={() => {}}>
+    <Modal title={modal_title} opened={show} onClose={handleCancel}>
       <Container>
         {children}
         <Space h="md" />

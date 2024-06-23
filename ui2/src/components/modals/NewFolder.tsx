@@ -79,6 +79,7 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
     >
       <TextInput
         data-autofocus
+        onChange={handleTitleChanged}
         label="Folder title"
         placeholder="title"
         mt="md"

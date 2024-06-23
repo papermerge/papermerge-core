@@ -1,6 +1,6 @@
 import {LoaderFunctionArgs, useLoaderData} from "react-router"
 import {useNavigation} from "react-router-dom"
-import {getRestAPIURL, getDefaultHeaders, getCurrentUser} from "@/utils"
+import {getCurrentUser} from "@/utils"
 import {fetchPaginatedNodes} from "@/slices/paginatedNodes"
 import Node from "@/components/Node/Node"
 import {store} from "@/app/store"

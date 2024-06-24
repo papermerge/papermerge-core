@@ -1,4 +1,5 @@
 import {Checkbox} from "@mantine/core"
+import {NavLink} from "react-router-dom"
 import type {NodeType} from "@/types"
 import classes from "./Folder.module.css"
 
@@ -8,10 +9,12 @@ type Args = {
 
 export default function Folder({node}: Args) {
   return (
-    <div>
+    <div className={classes.folder}>
       <Checkbox />
-      <div className={classes.folder}></div>
-      <div>{node.title}</div>
+      <NavLink to={`/folder/${node.id}`}>
+        <div className={classes.folderIcon}></div>
+        <div>{node.title}</div>
+      </NavLink>
     </div>
   )
 }

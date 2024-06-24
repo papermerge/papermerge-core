@@ -1,5 +1,5 @@
 import type {NodeType} from "@/types"
-import Document from "./Document"
+import Document from "./Document/Document"
 import Folder from "./Folder/Folder"
 
 type Args = {

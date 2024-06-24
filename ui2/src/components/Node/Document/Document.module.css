@@ -1,4 +1,4 @@
-.folder {
+.document {
   padding: 0.3rem;
 
   &:hover {
@@ -7,9 +7,7 @@
   }
 }
 
-.folderIcon {
-  background-image: url("/public/folder.svg");
-  background-size: 100% 100%;
+.documentIcon {
   width: 64px;
   height: 64px;
 }

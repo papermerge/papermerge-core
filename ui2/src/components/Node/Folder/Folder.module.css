@@ -1,6 +1,15 @@
 .folder {
+  padding: 0.3rem;
+
+  &:hover {
+    background-color: #8ed2fe66;
+    outline: 1px solid #6fc5ff;
+  }
+}
+
+.folderIcon {
   background-image: url("/public/folder.svg");
   background-size: 100% 100%;
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
 }

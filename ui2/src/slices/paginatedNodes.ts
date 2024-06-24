@@ -1,6 +1,5 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
+import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import {getRestAPIURL, getDefaultHeaders} from "@/utils"
-import {store} from "@/app/store"
 import axios from "axios"
 import type {
   Paginated,
@@ -22,16 +21,6 @@ export const fetchPaginatedNodes = createAsyncThunk<
 >("paginatedNodes/fetchNodes", async ({folderId, urlParams}: ThunkArgs) => {
   const rest_api_url = getRestAPIURL()
   const defaultHeaders = getDefaultHeaders()
-
-  const found = store
-    .getState()
-    .paginatedNodes.find(
-      (pn: NodeLoaderResponseType) => pn.parent.id == folderId
-    )
-
-  if (found) {
-    return found
-  }
 
   const prom = axios.all([
     axios.get(`${rest_api_url}/api/nodes/${folderId}?${urlParams}`, {
@@ -68,7 +57,17 @@ export const fetchPaginatedNodes = createAsyncThunk<
 const paginatedNodesSlice = createSlice({
   name: "paginatedNodes",
   initialState,
-  reducers: {},
+  reducers: {
+    folderAdded(state, action: PayloadAction<NodeType>) {
+      const found: NodeLoaderResponseType = state.find(
+        (pn: NodeLoaderResponseType) =>
+          pn.parent.id === action.payload.parent_id
+      )
+      if (found) {
+        found.nodes.push(action.payload)
+      }
+    }
+  },
   extraReducers(builder) {
     builder.addCase(fetchPaginatedNodes.fulfilled, (state, action) => {
       const found = state.find(
@@ -82,7 +81,12 @@ const paginatedNodesSlice = createSlice({
   }
 })
 
+export const {folderAdded} = paginatedNodesSlice.actions
+
 export default paginatedNodesSlice.reducer
 
-export const selectPaginatedNodeById = (state: any, nodeId: string) =>
-  state.nodes.find((node: NodeType) => node.id === nodeId)
+export const selectPaginatedNodeById = (state: any, folderId: string) => {
+  return state.paginatedNodes.find(
+    (pn: NodeLoaderResponseType) => pn.parent.id === folderId
+  )
+}

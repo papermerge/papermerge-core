@@ -1,0 +1,12 @@
+.document {
+  padding: 0.3rem;
+
+  &:hover {
+    background-color: #8ed2fe66;
+    outline: 1px solid #6fc5ff;
+  }
+
+  img {
+    height: 64px;
+  }
+}

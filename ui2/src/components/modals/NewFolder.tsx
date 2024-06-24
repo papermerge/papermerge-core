@@ -1,13 +1,13 @@
-import React, {ChangeEvent} from "react"
+import {ChangeEvent} from "react"
 import {useState} from "react"
 import {createRoot} from "react-dom/client"
 import {MantineProvider, TextInput} from "@mantine/core"
 import {theme} from "@/app/theme"
 import GenericModal from "@/components/modals/Generic"
 
-import type {FolderType, NodeType} from "@/types"
+import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
-import axios from "axios"
+import axios, {AxiosResponse} from "axios"
 import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 
 type CreateFolderType = {
@@ -26,7 +26,7 @@ async function api_create_new_folder(
   title: string,
   parent_id: string,
   signal: AbortSignal
-): Promise<FolderType> {
+): Promise<AxiosResponse> {
   let data: CreateFolderType = {
     title: title,
     parent_id: parent_id,
@@ -35,11 +35,10 @@ async function api_create_new_folder(
   const rest_api_url = getRestAPIURL()
   const defaultHeaders = getDefaultHeaders()
 
-  return axios.post<CreateFolderType, FolderType>(
-    `${rest_api_url}/api/nodes/`,
-    data,
-    {signal, headers: defaultHeaders}
-  )
+  return axios.post(`${rest_api_url}/api/nodes/`, data, {
+    signal,
+    headers: defaultHeaders
+  })
 }
 
 const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
@@ -56,7 +55,7 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
   const handleSubmit = async (signal: AbortSignal) => {
     try {
       let response = await api_create_new_folder(title, parent_id, signal)
-      let new_node: NodeType = response as NodeType
+      let new_node: NodeType = response.data as NodeType
       onOK(new_node)
     } catch (error: any) {
       onCancel(error.toString())

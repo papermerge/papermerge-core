@@ -1,5 +1,4 @@
-import {Group, Button} from "@mantine/core"
-import {IconPlus} from "@tabler/icons-react"
+import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import {LoaderFunctionArgs} from "react-router"
 import {useNavigation, useLoaderData} from "react-router-dom"

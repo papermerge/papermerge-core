@@ -5,9 +5,8 @@
     background-color: #8ed2fe66;
     outline: 1px solid #6fc5ff;
   }
-}
 
-.documentIcon {
-  width: 64px;
-  height: 64px;
+  img {
+    height: 64px;
+  }
 }

@@ -14,7 +14,7 @@ export default function Document({node}: Args) {
       <Checkbox />
       <NavLink to={`/document/${node.id}`}>
         <img className={classes.documentIcon} src={node.thumbnail_url!}></img>
-        <div>{node.title}</div>
+        <div className="title">{node.title}</div>
       </NavLink>
     </div>
   )

@@ -1,16 +1,29 @@
 import {Group, Button} from "@mantine/core"
 import {IconPlus} from "@tabler/icons-react"
-import {LoaderFunctionArgs, useLoaderData} from "react-router"
-import {useNavigation} from "react-router-dom"
-import {getCurrentUser} from "@/utils"
+import {useSelector} from "react-redux"
+import {LoaderFunctionArgs} from "react-router"
+import {useNavigation, useLoaderData} from "react-router-dom"
+
 import {fetchPaginatedNodes} from "@/slices/paginatedNodes"
+import {selectPaginatedNodeById} from "@/slices/paginatedNodes"
+import {setCurrentNode} from "@/slices/currentNode"
+
 import Node from "@/components/Node/Node"
+import FolderNodeActions from "@/components/FolderNodeActions/FolderNodeActions"
+import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
 import type {User, NodeType, NodeLoaderResponseType} from "@/types"
-import create_new_folder from "@/components/modals/NewFolder"
+
+type loaderDataType = {
+  folderId: string
+  urlParams: URLSearchParams
+}
 
 export default function Folder() {
-  const data: NodeLoaderResponseType = useLoaderData() as NodeLoaderResponseType
+  const {folderId, urlParams} = useLoaderData() as loaderDataType
+  const data = useSelector(state =>
+    selectPaginatedNodeById(state, folderId)
+  ) as NodeLoaderResponseType
   const navigation = useNavigation()
 
   if (navigation.state == "loading") {
@@ -18,22 +31,11 @@ export default function Folder() {
   }
 
   const nodes = data.nodes.map((n: NodeType) => <Node key={n.id} node={n} />)
-  const onNewFolder = () => {
-    create_new_folder(data.parent.id)
-  }
 
   if (nodes.length > 0) {
     return (
       <div>
-        <Group justify="center">
-          <Button
-            leftSection={<IconPlus size={14} />}
-            onClick={onNewFolder}
-            variant="default"
-          >
-            New Folder
-          </Button>
-        </Group>
+        <FolderNodeActions />
         <Group>{nodes}</Group>
       </div>
     )
@@ -41,11 +43,7 @@ export default function Folder() {
 
   return (
     <div>
-      <Group justify="center">
-        <Button leftSection={<IconPlus size={14} />} variant="default">
-          New Folder
-        </Button>
-      </Group>
+      <FolderNodeActions />
       <Group>Empty</Group>
     </div>
   )
@@ -62,9 +60,11 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     folderId = user.home_folder_id
   }
 
-  const result = await store.dispatch(
+  store.dispatch(setCurrentNode(folderId))
+
+  await store.dispatch(
     fetchPaginatedNodes({folderId, urlParams: url.searchParams})
   )
 
-  return result.payload
+  return {folderId, urlParams: url.searchParams}
 }

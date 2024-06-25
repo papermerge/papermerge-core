@@ -5,12 +5,14 @@ import type {
   Paginated,
   NodeType,
   FolderType,
-  NodeLoaderResponseType
+  NodeLoaderResponseType,
+  PanelMode
 } from "@/types"
 
 const initialState: any = []
 
 type ThunkArgs = {
+  panel: PanelMode
   folderId: string
   urlParams: URLSearchParams
 }

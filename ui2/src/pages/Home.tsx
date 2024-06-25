@@ -1,35 +1,29 @@
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import {LoaderFunctionArgs} from "react-router"
-import {useNavigation, useLoaderData} from "react-router-dom"
+import {useNavigation} from "react-router-dom"
 
-import {fetchPaginatedNodes} from "@/slices/paginatedNodes"
-import {selectPaginatedNodeById} from "@/slices/paginatedNodes"
+import {fetchPaginatedNodes, selectPanelNodes} from "@/slices/dualPanel"
 import {setCurrentNode} from "@/slices/currentNode"
 
 import Node from "@/components/Node/Node"
 import FolderNodeActions from "@/components/FolderNodeActions/FolderNodeActions"
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
-import type {User, NodeType, NodeLoaderResponseType} from "@/types"
+import type {RootState} from "@/app/types"
+import type {User, NodeType} from "@/types"
 
-type loaderDataType = {
-  folderId: string
-  urlParams: URLSearchParams
-}
-
-export default function Folder() {
-  const {folderId, urlParams} = useLoaderData() as loaderDataType
-  const data = useSelector(state =>
-    selectPaginatedNodeById(state, folderId)
-  ) as NodeLoaderResponseType
+export default function Home() {
+  const nodes_data = useSelector((state: RootState) =>
+    selectPanelNodes(state, "main")
+  ) as Array<NodeType>
   const navigation = useNavigation()
 
   if (navigation.state == "loading") {
     return <div>Loading...</div>
   }
 
-  const nodes = data.nodes.map((n: NodeType) => <Node key={n.id} node={n} />)
+  const nodes = nodes_data.map((n: NodeType) => <Node key={n.id} node={n} />)
 
   if (nodes.length > 0) {
     return (
@@ -59,10 +53,15 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     folderId = user.home_folder_id
   }
 
-  store.dispatch(setCurrentNode(folderId))
+  store.dispatch(
+    setCurrentNode({
+      node: {id: folderId, ctype: "folder"},
+      panel: "main"
+    })
+  )
 
   await store.dispatch(
-    fetchPaginatedNodes({folderId, urlParams: url.searchParams})
+    fetchPaginatedNodes({folderId, panel: "main", urlParams: url.searchParams})
   )
 
   return {folderId, urlParams: url.searchParams}

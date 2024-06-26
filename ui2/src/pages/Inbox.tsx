@@ -20,7 +20,7 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   if (params.folderId) {
     folderId = params.folderId
   } else {
-    folderId = user.home_folder_id
+    folderId = user.inbox_folder_id
   }
 
   store.dispatch(

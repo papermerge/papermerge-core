@@ -96,3 +96,5 @@ export type NodeLoaderResponseType = {
 export type OCRLangType = {
   [key: string]: string
 }
+
+export type PanelMode = "main" | "secondary"

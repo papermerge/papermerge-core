@@ -26,10 +26,10 @@ function Sidebar() {
     <>
       <ul className="sidebar">
         <li>
-          <NavLink to={`/folder/${user.home_folder_id}`}>Home</NavLink>
+          <NavLink to={`/home/${user.home_folder_id}`}>Home</NavLink>
         </li>
         <li>
-          <NavLink to={`/folder/${user.inbox_folder_id}`}>Inbox</NavLink>
+          <NavLink to={`/inbox/${user.inbox_folder_id}`}>Inbox</NavLink>
         </li>
         <li>
           <NavLink to="/tags">Tags</NavLink>

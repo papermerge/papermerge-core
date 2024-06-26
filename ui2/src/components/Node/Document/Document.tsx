@@ -6,16 +6,17 @@ import classes from "./Document.module.css"
 
 type Args = {
   node: NodeType
+  onClick: (node: NodeType) => void
 }
 
-export default function Document({node}: Args) {
+export default function Document({node, onClick}: Args) {
   return (
     <div className={classes.document}>
       <Checkbox />
-      <NavLink to={`/document/${node.id}`}>
+      <a onClick={() => onClick(node)}>
         <img className={classes.documentIcon} src={node.thumbnail_url!}></img>
         <div className="title">{node.title}</div>
-      </NavLink>
+      </a>
     </div>
   )
 }

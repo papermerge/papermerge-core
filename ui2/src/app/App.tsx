@@ -9,7 +9,7 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import "./App.css"
+import classes from "./App.module.css"
 
 function App() {
   const status = useSelector(selectCurrentUserStatus)
@@ -33,7 +33,7 @@ function App() {
           <Header />
         </AppShell.Header>
 
-        <AppShell.Navbar p="md">
+        <AppShell.Navbar className={classes.navbar}>
           <Sidebar />
         </AppShell.Navbar>
 

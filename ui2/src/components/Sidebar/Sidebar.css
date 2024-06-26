@@ -4,15 +4,13 @@ a.active {
   color: var(--mantine-color-white);
 }
 
-li {
-  list-style-type: none;
-  display: block;
-  text-decoration: none;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  padding: 0 var(--mantine-spacing-md);
-  font-size: var(--mantine-font-size-sm);
-  margin-right: var(--mantine-spacing-md);
-  font-weight: 500;
-  height: rem(44px);
-  line-height: rem(44px);
+a {
+  padding: 0.5rem;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }

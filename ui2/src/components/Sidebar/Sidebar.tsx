@@ -1,6 +1,14 @@
 import {useSelector} from "react-redux"
 import {NavLink} from "react-router-dom"
 import {
+  IconHome,
+  IconInbox,
+  IconTag,
+  IconUsers,
+  IconUsersGroup
+} from "@tabler/icons-react"
+import {Group} from "@mantine/core"
+import {
   selectCurrentUser,
   selectCurrentUserStatus,
   selectCurrentUserError
@@ -24,23 +32,36 @@ function Sidebar() {
 
   return (
     <>
-      <ul className="sidebar">
-        <li>
-          <NavLink to={`/home/${user.home_folder_id}`}>Home</NavLink>
-        </li>
-        <li>
-          <NavLink to={`/inbox/${user.inbox_folder_id}`}>Inbox</NavLink>
-        </li>
-        <li>
-          <NavLink to="/tags">Tags</NavLink>
-        </li>
-        <li>
-          <NavLink to="/groups">Groups</NavLink>
-        </li>
-        <li>
-          <NavLink to="/users">Users</NavLink>
-        </li>
-      </ul>
+      <div className="sidebar">
+        <NavLink to={`/home/${user.home_folder_id}`}>
+          <Group>
+            <IconHome /> Home
+          </Group>
+        </NavLink>
+        <NavLink to={`/inbox/${user.inbox_folder_id}`}>
+          <Group>
+            <IconInbox /> Inbox
+          </Group>
+        </NavLink>
+        <NavLink to="/tags">
+          <Group>
+            <IconTag />
+            Tags
+          </Group>
+        </NavLink>
+        <NavLink to="/users">
+          <Group>
+            <IconUsers />
+            Users
+          </Group>
+        </NavLink>
+        <NavLink to="/groups">
+          <Group>
+            <IconUsersGroup />
+            Groups
+          </Group>
+        </NavLink>
+      </div>
     </>
   )
 }

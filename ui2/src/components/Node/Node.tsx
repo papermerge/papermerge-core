@@ -4,12 +4,13 @@ import Folder from "./Folder/Folder"
 
 type Args = {
   node: NodeType
+  onClick: (node: NodeType) => void
 }
 
-export default function Node({node}: Args) {
+export default function Node({node, onClick}: Args) {
   if (node.ctype == "folder") {
-    return <Folder node={node} />
+    return <Folder onClick={onClick} node={node} />
   }
 
-  return <Document node={node} />
+  return <Document onClick={onClick} node={node} />
 }

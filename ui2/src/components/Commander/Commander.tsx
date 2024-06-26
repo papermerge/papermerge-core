@@ -1,21 +1,28 @@
 import {Group} from "@mantine/core"
-import {PanelMode} from "@/types"
-import {useSelector} from "react-redux"
+
+import {useSelector, useDispatch} from "react-redux"
+import {useNavigate} from "react-router-dom"
 
 import FolderNodeActions from "@/components/FolderNodeActions"
 import Node from "@/components/Node"
-import {selectPanelNodes} from "@/slices/dualPanel"
+import {
+  selectPanelNodes,
+  setCurrentNode,
+  fetchPaginatedNodes
+} from "@/slices/dualPanel"
 
 import type {RootState} from "@/app/types"
-import type {NodeType} from "@/types"
+import type {NodeType, PanelMode} from "@/types"
 
 type Args = {
   mode: PanelMode
 }
 
 export default function Commander({mode}: Args) {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const {data, status, error} = useSelector((state: RootState) =>
-    selectPanelNodes(state, "main")
+    selectPanelNodes(state, mode)
   )
 
   if (status === "loading") {
@@ -35,7 +42,29 @@ export default function Commander({mode}: Args) {
     )
   }
 
-  const nodes = data.map((n: NodeType) => <Node key={n.id} node={n} />)
+  const onClick = (node: NodeType) => {
+    if (mode == "secondary" && node.ctype == "folder") {
+      dispatch(
+        fetchPaginatedNodes({
+          folderId: node.id,
+          panel: "secondary",
+          urlParams: new URLSearchParams("")
+        })
+      )
+      dispatch(
+        setCurrentNode({
+          node: {id: node.id, ctype: "folder"},
+          panel: "secondary"
+        })
+      )
+    } else if (mode == "main" && node.ctype == "folder") {
+      navigate(`/folder/${node.id}`)
+    }
+  }
+
+  const nodes = data.map((n: NodeType) => (
+    <Node onClick={onClick} key={n.id} node={n} />
+  ))
 
   if (nodes.length > 0) {
     return (

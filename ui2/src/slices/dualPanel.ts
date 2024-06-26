@@ -22,6 +22,10 @@ type NodeWithSpinner = {
   status: "idle" | "loading"
 }
 
+type OpenSecondaryPanelArgs = {
+  folderId: string
+}
+
 type SetCurrentNodeArgs = {
   node: NType
   panel: PanelMode
@@ -160,7 +164,7 @@ const dualPanelSlice = createSlice({
         })
       }
     },
-    openSecondaryPanel(state) {
+    openSecondaryPanel(state, action: PayloadAction<OpenSecondaryPanelArgs>) {
       state.secondaryPanel = {
         commander: commanderInitialState(null),
         viewer: null

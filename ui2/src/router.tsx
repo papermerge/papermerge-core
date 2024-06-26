@@ -6,6 +6,9 @@ import Home from "@/pages/Home"
 import {loader as homeLoader} from "@/pages/Home"
 import Inbox from "@/pages/Inbox"
 import {loader as inboxLoader} from "@/pages/Inbox"
+import Folder from "@/pages/Folder"
+import {loader as folderLoader} from "@/pages/Folder"
+
 import Document from "@/pages/Document"
 import Users from "@/pages/Users.tsx"
 import Groups from "@/pages/Groups.tsx"
@@ -27,6 +30,11 @@ const router = createBrowserRouter([
         path: "/inbox/:folderId",
         element: <Inbox />,
         loader: inboxLoader
+      },
+      {
+        path: "/folder/:folderId",
+        element: <Folder />,
+        loader: folderLoader
       },
       {
         path: "/document/:documentId",

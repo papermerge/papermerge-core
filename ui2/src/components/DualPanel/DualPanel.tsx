@@ -3,7 +3,7 @@ import {selectPanels} from "@/slices/dualPanel"
 import SinglePanel from "@/components/SinglePanel"
 
 export default function DualPanel() {
-  const [mainPanel, secondaryPanel] = useSelector(selectPanels)
+  const [_, secondaryPanel] = useSelector(selectPanels)
 
   if (secondaryPanel) {
     return (

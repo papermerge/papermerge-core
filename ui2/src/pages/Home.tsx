@@ -1,45 +1,15 @@
-import {Group} from "@mantine/core"
-import {useSelector} from "react-redux"
 import {LoaderFunctionArgs} from "react-router"
-import {useNavigation} from "react-router-dom"
 
-import {fetchPaginatedNodes, selectPanelNodes} from "@/slices/dualPanel"
-import {setCurrentNode} from "@/slices/currentNode"
+import DualPanel from "@/components/DualPanel"
+import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel"
 
-import Node from "@/components/Node/Node"
-import FolderNodeActions from "@/components/FolderNodeActions/FolderNodeActions"
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
-import type {RootState} from "@/app/types"
-import type {User, NodeType} from "@/types"
+
+import type {User} from "@/types"
 
 export default function Home() {
-  const nodes_data = useSelector((state: RootState) =>
-    selectPanelNodes(state, "main")
-  ) as Array<NodeType>
-  const navigation = useNavigation()
-
-  if (navigation.state == "loading") {
-    return <div>Loading...</div>
-  }
-
-  const nodes = nodes_data.map((n: NodeType) => <Node key={n.id} node={n} />)
-
-  if (nodes.length > 0) {
-    return (
-      <div>
-        <FolderNodeActions />
-        <Group>{nodes}</Group>
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      <FolderNodeActions />
-      <Group>Empty</Group>
-    </div>
-  )
+  return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {

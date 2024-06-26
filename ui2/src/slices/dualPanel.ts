@@ -22,9 +22,14 @@ type NodeWithSpinner = {
   status: "idle" | "loading"
 }
 
-type PanelCurrentNode = {
+type SetCurrentNodeArgs = {
   node: NType
   panel: PanelMode
+}
+
+type FolderAddedArgs = {
+  node: NodeType
+  mode: PanelMode
 }
 
 interface Commander {
@@ -121,7 +126,7 @@ const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
-    setCurrentNode(state, action: PayloadAction<PanelCurrentNode>) {
+    setCurrentNode(state, action: PayloadAction<SetCurrentNodeArgs>) {
       if (action.payload.panel == "main") {
         // main panel
         if (action.payload.node.ctype == "folder") {
@@ -141,6 +146,28 @@ const dualPanelSlice = createSlice({
       } else {
         // secondary panel
       }
+    },
+    folderAdded(state, action: PayloadAction<FolderAddedArgs>) {
+      if (action.payload.mode == "main") {
+        state.mainPanel.commander?.nodes.data!.push({
+          id: action.payload.node.id,
+          status: "idle"
+        })
+      } else {
+        state.secondaryPanel!.commander?.nodes.data!.push({
+          id: action.payload.node.id,
+          status: "idle"
+        })
+      }
+    },
+    openSecondaryPanel(state) {
+      state.secondaryPanel = {
+        commander: commanderInitialState(null),
+        viewer: null
+      }
+    },
+    closeSecondaryPanel(state) {
+      state.secondaryPanel = null
     }
   },
   extraReducers(builder) {
@@ -163,18 +190,30 @@ const dualPanelSlice = createSlice({
       )
       if (action.meta.arg.panel == "main") {
         if (state.mainPanel.commander) {
-          state.mainPanel.commander.nodes.data = newNodes
-          state.mainPanel.commander.pageNumber = 1
+          state.mainPanel.commander.nodes = {
+            status: "succeeded",
+            error: null,
+            data: newNodes
+          }
         }
       } else if (state.secondaryPanel && state.secondaryPanel.commander) {
-        state.secondaryPanel.commander.nodes.data = newNodes
-        state.secondaryPanel.commander.pageNumber = 1
+        state.secondaryPanel.commander.nodes = {
+          status: "succeeded",
+          error: null,
+          data: newNodes
+        }
       }
     })
   }
 })
 
-export const {setCurrentNode} = dualPanelSlice.actions
+export const {
+  setCurrentNode,
+  folderAdded,
+  openSecondaryPanel,
+  closeSecondaryPanel
+} = dualPanelSlice.actions
+
 export default dualPanelSlice.reducer
 
 export const selectMainCurrentFolderId = (state: RootState) =>
@@ -198,18 +237,84 @@ export const selectPanelComponents = (state: RootState, mode: PanelMode) => {
   ]
 }
 
-export const selectPanelNodes = (state: RootState, mode: PanelMode) => {
+export const selectPanelNodes = (
+  state: RootState,
+  mode: PanelMode
+): SliceState<Array<NodeType>> => {
   if (mode === "main") {
-    if (
-      state.dualPanel.mainPanel.commander &&
-      state.dualPanel.mainPanel.commander.nodes.data
-    ) {
-      const nodeIds = state.dualPanel.mainPanel.commander.nodes.data.map(
-        (n: NodeWithSpinner) => n.id
+    if (state.dualPanel.mainPanel.commander) {
+      return selectMainPanelNodes(state)
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander) {
+    return selectSecondaryPanelNodes(state)
+  }
+
+  return {
+    data: null,
+    error: null,
+    status: "idle"
+  }
+}
+
+const selectMainPanelNodes = (
+  state: RootState
+): SliceState<Array<NodeType>> => {
+  if (state.dualPanel.mainPanel.commander!.nodes.status == "succeeded") {
+    const nodeIds = state.dualPanel.mainPanel.commander!.nodes.data!.map(
+      (n: NodeWithSpinner) => n.id
+    )
+    const output = {
+      status: "succeeded",
+      error: null,
+      data: state.dualPanel.nodes.filter((n: NodeType) =>
+        nodeIds.includes(n.id)
       )
-      return state.dualPanel.nodes.filter((n: NodeType) =>
+    } as SliceState<Array<NodeType>>
+    return output
+  } else {
+    // main panel commander nodes are either loading or there was an error
+    return {
+      status: state.dualPanel.mainPanel.commander!.nodes.status,
+      error: state.dualPanel.mainPanel.commander!.nodes.error,
+      data: null
+    }
+  }
+}
+
+const selectSecondaryPanelNodes = (
+  state: RootState
+): SliceState<Array<NodeType>> => {
+  if (state.dualPanel.secondaryPanel!.commander!.nodes.status == "succeeded") {
+    const nodeIds = state.dualPanel.secondaryPanel!.commander!.nodes.data!.map(
+      (n: NodeWithSpinner) => n.id
+    )
+    return {
+      status: "succeeded",
+      error: null,
+      data: state.dualPanel.nodes.filter((n: NodeType) =>
         nodeIds.includes(n.id)
       )
     }
+  } else {
+    // secondary panel commander nodes are either loading or there was an error
+    return {
+      status: state.dualPanel.secondaryPanel!.commander!.nodes.status,
+      error: state.dualPanel.secondaryPanel!.commander!.nodes.error,
+      data: null
+    }
   }
+}
+
+export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.currentNode
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander) {
+    return state.dualPanel.secondaryPanel.commander.currentNode
+  }
+
+  return null
 }

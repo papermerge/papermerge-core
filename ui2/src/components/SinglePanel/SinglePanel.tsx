@@ -15,9 +15,11 @@ export default function SinglePanel({mode}: Args) {
   )
   if (commander) {
     return <Commander mode={mode} />
-  } else if (viewer) {
+  }
+
+  if (viewer) {
     return <Viewer mode={mode} />
   }
 
-  return <></>
+  return <>Error: neither viewer nor commander</>
 }

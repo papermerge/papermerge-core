@@ -1,51 +1,15 @@
-import {Group} from "@mantine/core"
-import {useSelector} from "react-redux"
 import {LoaderFunctionArgs} from "react-router"
-import {useNavigation, useLoaderData} from "react-router-dom"
 
-import {fetchPaginatedNodes} from "@/slices/paginatedNodes"
-import {selectPaginatedNodeById} from "@/slices/paginatedNodes"
-import {setCurrentNode} from "@/slices/currentNode"
+import DualPanel from "@/components/DualPanel"
+import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel"
 
-import Node from "@/components/Node/Node"
-import FolderNodeActions from "@/components/FolderNodeActions/FolderNodeActions"
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
-import type {User, NodeType, NodeLoaderResponseType} from "@/types"
 
-type loaderDataType = {
-  folderId: string
-  urlParams: URLSearchParams
-}
+import type {User} from "@/types"
 
-export default function Inbox() {
-  const {folderId, urlParams} = useLoaderData() as loaderDataType
-  const data = useSelector(state =>
-    selectPaginatedNodeById(state, folderId)
-  ) as NodeLoaderResponseType
-  const navigation = useNavigation()
-
-  if (navigation.state == "loading") {
-    return <div>Loading...</div>
-  }
-
-  const nodes = data.nodes.map((n: NodeType) => <Node key={n.id} node={n} />)
-
-  if (nodes.length > 0) {
-    return (
-      <div>
-        <FolderNodeActions />
-        <Group>{nodes}</Group>
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      <FolderNodeActions />
-      <Group>Empty</Group>
-    </div>
-  )
+export default function Home() {
+  return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {
@@ -56,13 +20,18 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   if (params.folderId) {
     folderId = params.folderId
   } else {
-    folderId = user.home_folder_id
+    folderId = user.inbox_folder_id
   }
 
-  store.dispatch(setCurrentNode(folderId))
+  store.dispatch(
+    setCurrentNode({
+      node: {id: folderId, ctype: "folder"},
+      panel: "main"
+    })
+  )
 
   await store.dispatch(
-    fetchPaginatedNodes({folderId, urlParams: url.searchParams})
+    fetchPaginatedNodes({folderId, panel: "main", urlParams: url.searchParams})
   )
 
   return {folderId, urlParams: url.searchParams}

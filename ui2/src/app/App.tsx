@@ -1,19 +1,22 @@
 import "@mantine/core/styles.css"
-import {AppShell, Burger} from "@mantine/core"
+import {AppShell} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {Outlet} from "react-router-dom"
 import {useSelector} from "react-redux"
 
-import Sidebar from "@/components/Sidebar/Sidebar.tsx"
+import NavBar from "@/components/NavBar"
 import Header from "@/components/Header/Header"
 import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
 import classes from "./App.module.css"
+import {selectNavBarWidth} from "@/slices/navBar"
 
 function App() {
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+  const navBarWidth = useSelector(selectNavBarWidth)
 
   if (status == "failed") {
     return <>{error}</>
@@ -24,7 +27,7 @@ function App() {
       <AppShell
         header={{height: 60}}
         navbar={{
-          width: 200,
+          width: navBarWidth,
           breakpoint: "sm"
         }}
         padding="md"
@@ -34,7 +37,7 @@ function App() {
         </AppShell.Header>
 
         <AppShell.Navbar className={classes.navbar}>
-          <Sidebar />
+          <NavBar />
         </AppShell.Navbar>
 
         <AppShell.Main>

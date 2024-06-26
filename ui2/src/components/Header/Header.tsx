@@ -11,10 +11,9 @@ import {ColorSchemeToggle} from "@/components/ColorSchemeToggle/ColorSchemeToggl
 import classes from "./Header.module.css"
 
 import type {User} from "@/types.ts"
+import SidebarToggle from "./SidebarToggle"
 
 function Topbar() {
-  const [opened, {toggle}] = useDisclosure(false)
-
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
@@ -31,7 +30,7 @@ function Topbar() {
     <header className={classes.header}>
       <div className={classes.inner}>
         <Group>
-          <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
+          <SidebarToggle />
           Papermerge DMS
         </Group>
         <Group grow className={classes.search}>

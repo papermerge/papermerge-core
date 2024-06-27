@@ -1,3 +1,4 @@
+import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import {selectPanels} from "@/slices/dualPanel"
 import SinglePanel from "@/components/SinglePanel"
@@ -7,10 +8,10 @@ export default function DualPanel() {
 
   if (secondaryPanel) {
     return (
-      <>
+      <Group grow justify="space-between">
         <SinglePanel mode="main" />
         <SinglePanel mode="secondary" />
-      </>
+      </Group>
     )
   }
 

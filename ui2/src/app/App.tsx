@@ -32,7 +32,7 @@ function App() {
         }}
         padding="md"
       >
-        <AppShell.Header style={{padding: "0.75rem"}}>
+        <AppShell.Header className={classes.header}>
           <Header />
         </AppShell.Header>
 

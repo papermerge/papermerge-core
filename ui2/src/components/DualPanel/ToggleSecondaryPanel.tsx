@@ -1,5 +1,6 @@
-import {Button} from "@mantine/core"
+import {ActionIcon} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
+import {IconColumns2, IconX} from "@tabler/icons-react"
 import {
   openSecondaryPanel,
   closeSecondaryPanel,
@@ -40,9 +41,9 @@ export default function ToggleSecondaryPanel({mode}: Args) {
   if (mode == "main") {
     if (!secondaryPanel) {
       return (
-        <Button onClick={onClick} variant="default">
-          Open
-        </Button>
+        <ActionIcon size="lg" onClick={onClick} variant="default">
+          <IconColumns2 size={18} />
+        </ActionIcon>
       )
     }
 
@@ -50,8 +51,12 @@ export default function ToggleSecondaryPanel({mode}: Args) {
   }
 
   return (
-    <Button onClick={() => dispatch(closeSecondaryPanel())} variant="default">
-      Close
-    </Button>
+    <ActionIcon
+      onClick={() => dispatch(closeSecondaryPanel())}
+      size="lg"
+      variant="default"
+    >
+      <IconX size={18} />
+    </ActionIcon>
   )
 }

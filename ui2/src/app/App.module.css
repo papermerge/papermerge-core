@@ -8,3 +8,8 @@
 .navbar {
   padding-top: 1rem;
 }
+
+.header {
+  background-color: #1c47a7;
+  padding: 0.75rem;
+}

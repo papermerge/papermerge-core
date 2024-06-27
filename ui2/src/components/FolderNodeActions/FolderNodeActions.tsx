@@ -1,5 +1,5 @@
-import {Group, Button} from "@mantine/core"
-import {IconPlus} from "@tabler/icons-react"
+import {Group, ActionIcon, FileButton} from "@mantine/core"
+import {IconFolderPlus, IconUpload} from "@tabler/icons-react"
 import {useSelector, useDispatch} from "react-redux"
 import {selectCurrentFolderID, folderAdded} from "@/slices/dualPanel"
 import create_new_folder from "@/components/modals/NewFolder"
@@ -28,16 +28,26 @@ export default function FolderNodeActions({mode}: Args) {
     })
   }
 
+  const onUpload = () => {}
+
   return (
-    <Group justify="center">
-      <Button
-        leftSection={<IconPlus size={14} />}
-        onClick={onNewFolder}
-        variant="default"
-      >
-        New Folder
-      </Button>
-      <ToggleSecondaryPanel mode={mode} />
+    <Group justify="space-between">
+      <Group>
+        <FileButton onChange={onUpload} multiple>
+          {props => (
+            <ActionIcon {...props} size="lg" variant="default">
+              <IconUpload size={18} />
+            </ActionIcon>
+          )}
+        </FileButton>
+
+        <ActionIcon onClick={onNewFolder} size="lg" variant="default">
+          <IconFolderPlus size={18} />
+        </ActionIcon>
+      </Group>
+      <Group>
+        <ToggleSecondaryPanel mode={mode} />
+      </Group>
     </Group>
   )
 }

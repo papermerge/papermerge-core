@@ -98,3 +98,9 @@ export type OCRLangType = {
 }
 
 export type PanelMode = "main" | "secondary"
+
+export type Group = {
+  id: number
+  name: string
+  scopes: Array<string>
+}

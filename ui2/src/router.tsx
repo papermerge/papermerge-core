@@ -12,6 +12,7 @@ import {loader as folderLoader} from "@/pages/Folder"
 import Document from "@/pages/Document"
 import Users from "@/pages/Users.tsx"
 import Groups from "@/pages/Groups.tsx"
+import {loader as groupsLoader} from "@/pages/Groups"
 import ErrorPage from "@/pages/Error.tsx"
 
 const router = createBrowserRouter([
@@ -46,7 +47,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/groups",
-        element: <Groups />
+        element: <Groups />,
+        loader: groupsLoader
       },
       {
         path: "/users",

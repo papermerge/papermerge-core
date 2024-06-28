@@ -19,7 +19,8 @@ type Args = {
 
 export default function GroupModal({opened, onClose}: Args) {
   const [scopes, setScopes] = useState<Record<string, boolean>>({
-    USER_ME: true
+    "user.me": true,
+    "page.view": true
   })
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,7 +230,21 @@ export default function GroupModal({opened, onClose}: Args) {
             </Table.Tr>
             <Table.Tr key="group">
               <Table.Td>
-                <Checkbox defaultChecked label="Groups" />
+                <Checkbox
+                  checked={hasPerms(scopes, [
+                    GROUP_VIEW,
+                    GROUP_CREATE,
+                    GROUP_UPDATE,
+                    GROUP_DELETE
+                  ])}
+                  onChange={e =>
+                    onChangePerms(
+                      [GROUP_VIEW, GROUP_CREATE, GROUP_UPDATE, GROUP_DELETE],
+                      e.target.checked
+                    )
+                  }
+                  label="Groups"
+                />
               </Table.Td>
               <Tooltip
                 label="Grants access to groups tab on left side navigation panel"
@@ -239,17 +254,33 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="View" />
+                  <Checkbox
+                    checked={hasPerm(scopes, GROUP_VIEW)}
+                    onChange={e => onChangePerm(GROUP_VIEW, e.target.checked)}
+                    label="View"
+                  />
                 </Table.Td>
               </Tooltip>
               <Table.Td>
-                <Checkbox defaultChecked label="Create" />
+                <Checkbox
+                  checked={hasPerm(scopes, GROUP_CREATE)}
+                  onChange={e => onChangePerm(GROUP_CREATE, e.target.checked)}
+                  label="Create"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Update" />
+                <Checkbox
+                  checked={hasPerm(scopes, GROUP_UPDATE)}
+                  onChange={e => onChangePerm(GROUP_UPDATE, e.target.checked)}
+                  label="Update"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Delete" />
+                <Checkbox
+                  checked={hasPerm(scopes, GROUP_DELETE)}
+                  onChange={e => onChangePerm(GROUP_DELETE, e.target.checked)}
+                  label="Delete"
+                />
               </Table.Td>
             </Table.Tr>
             <Table.Tr key="tags">
@@ -415,6 +446,10 @@ const USER_CREATE = "user.create"
 const USER_UPDATE = "user.update"
 const USER_DELETE = "user.delete"
 const USER_ME = "user.me"
+const GROUP_VIEW = "group.view"
+const GROUP_CREATE = "group.create"
+const GROUP_UPDATE = "group.update"
+const GROUP_DELETE = "group.delete"
 
 const ALL_PERMS = [
   DOCUMENT_DOWNLOAD,
@@ -428,5 +463,9 @@ const ALL_PERMS = [
   USER_CREATE,
   USER_UPDATE,
   USER_DELETE,
-  USER_ME
+  USER_ME,
+  GROUP_VIEW,
+  GROUP_CREATE,
+  GROUP_UPDATE,
+  GROUP_DELETE
 ]

@@ -18,7 +18,9 @@ type Args = {
 }
 
 export default function GroupModal({opened, onClose}: Args) {
-  const [scopes, setScopes] = useState<Record<string, boolean>>({})
+  const [scopes, setScopes] = useState<Record<string, boolean>>({
+    USER_ME: true
+  })
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -36,7 +38,6 @@ export default function GroupModal({opened, onClose}: Args) {
         newScopes[p] = true
       })
       newScopes[perm] = true
-      console.log(newScopes)
       setScopes(newScopes)
     } else {
       let newScopes: Record<string, boolean> = {}
@@ -45,7 +46,6 @@ export default function GroupModal({opened, onClose}: Args) {
           newScopes[p] = true
         }
       })
-      console.log(newScopes)
       setScopes(newScopes)
     }
   }
@@ -127,24 +127,68 @@ export default function GroupModal({opened, onClose}: Args) {
             </Table.Tr>
             <Table.Tr key="pages">
               <Table.Td>
-                <Checkbox defaultChecked label="Pages" />
+                <Checkbox
+                  checked={hasPerms(scopes, [
+                    PAGE_UPDATE,
+                    PAGE_MOVE,
+                    PAGE_DELETE,
+                    PAGE_EXTRACT
+                  ])}
+                  onChange={e =>
+                    onChangePerms(
+                      [PAGE_UPDATE, PAGE_MOVE, PAGE_DELETE, PAGE_EXTRACT],
+                      e.target.checked
+                    )
+                  }
+                  label="Pages"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Move" />
+                <Checkbox
+                  checked={hasPerm(scopes, PAGE_MOVE)}
+                  onChange={e => onChangePerm(PAGE_MOVE, e.target.checked)}
+                  label="Move"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Update" />
+                <Checkbox
+                  checked={hasPerm(scopes, PAGE_UPDATE)}
+                  onChange={e => onChangePerm(PAGE_UPDATE, e.target.checked)}
+                  label="Update"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Extract" />
+                <Checkbox
+                  checked={hasPerm(scopes, PAGE_EXTRACT)}
+                  onChange={e => onChangePerm(PAGE_EXTRACT, e.target.checked)}
+                  label="Extract"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Delete" />
+                <Checkbox
+                  checked={hasPerm(scopes, PAGE_DELETE)}
+                  onChange={e => onChangePerm(PAGE_DELETE, e.target.checked)}
+                  label="Delete"
+                />
               </Table.Td>
             </Table.Tr>
             <Table.Tr key="users">
               <Table.Td>
-                <Checkbox defaultChecked label="Users" />
+                <Checkbox
+                  checked={hasPerms(scopes, [
+                    USER_VIEW,
+                    USER_CREATE,
+                    USER_UPDATE,
+                    USER_DELETE
+                  ])}
+                  onChange={e =>
+                    onChangePerms(
+                      [USER_VIEW, USER_CREATE, USER_UPDATE, USER_DELETE],
+                      e.target.checked
+                    )
+                  }
+                  label="Users"
+                />
               </Table.Td>
               <Tooltip
                 label="Grants access to users tab on left side navigation panel"
@@ -154,17 +198,33 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="View" />
+                  <Checkbox
+                    checked={hasPerm(scopes, USER_VIEW)}
+                    onChange={e => onChangePerm(USER_VIEW, e.target.checked)}
+                    label="View"
+                  />
                 </Table.Td>
               </Tooltip>
               <Table.Td>
-                <Checkbox defaultChecked label="Create" />
+                <Checkbox
+                  checked={hasPerm(scopes, USER_CREATE)}
+                  onChange={e => onChangePerm(USER_CREATE, e.target.checked)}
+                  label="Create"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Update" />
+                <Checkbox
+                  checked={hasPerm(scopes, USER_UPDATE)}
+                  onChange={e => onChangePerm(USER_UPDATE, e.target.checked)}
+                  label="Update"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Delete" />
+                <Checkbox
+                  checked={hasPerm(scopes, USER_DELETE)}
+                  onChange={e => onChangePerm(USER_DELETE, e.target.checked)}
+                  label="Delete"
+                />
               </Table.Td>
             </Table.Tr>
             <Table.Tr key="group">
@@ -345,4 +405,28 @@ function equalSets(x: Set<string>, y: Set<string>): boolean {
 
 const DOCUMENT_DOWNLOAD = "document.download"
 const DOCUMENT_UPLOAD = "document.upload"
-const ALL_PERMS = [DOCUMENT_DOWNLOAD, DOCUMENT_UPLOAD]
+const PAGE_VIEW = "page.view"
+const PAGE_MOVE = "page.move"
+const PAGE_UPDATE = "page.update"
+const PAGE_DELETE = "page.delete"
+const PAGE_EXTRACT = "page.extract"
+const USER_VIEW = "user.view"
+const USER_CREATE = "user.create"
+const USER_UPDATE = "user.update"
+const USER_DELETE = "user.delete"
+const USER_ME = "user.me"
+
+const ALL_PERMS = [
+  DOCUMENT_DOWNLOAD,
+  DOCUMENT_UPLOAD,
+  PAGE_VIEW,
+  PAGE_MOVE,
+  PAGE_UPDATE,
+  PAGE_DELETE,
+  PAGE_EXTRACT,
+  USER_VIEW,
+  USER_CREATE,
+  USER_UPDATE,
+  USER_DELETE,
+  USER_ME
+]

@@ -45,12 +45,16 @@ const groupsSlice = createSlice({
     selectionRemove: (state, action: PayloadAction<number>) => {
       const newSelectedIds = state.selectedIds.filter(i => i != action.payload)
       state.selectedIds = newSelectedIds
+    },
+    selectionRemoveAll: state => {
+      state.selectedIds = []
     }
   },
   extraReducers(builder) {
     builder.addCase(fetchGroups.fulfilled, groupsAdapter.setAll)
     builder.addCase(fetchGroup.fulfilled, groupsAdapter.addOne)
     builder.addCase(addGroup.fulfilled, groupsAdapter.addOne)
+    builder.addCase(removeGroups.fulfilled, groupsAdapter.removeMany)
   }
 })
 
@@ -93,7 +97,24 @@ export const addGroup = createAsyncThunk<Group, NewGroup>(
   }
 )
 
-export const {selectionAdd, selectionRemove} = groupsSlice.actions
+export const removeGroups = createAsyncThunk<number[], number[]>(
+  "groups/removeGroup",
+  async (groupIds: number[]) => {
+    const rest_api_url = getRestAPIURL()
+    const defaultHeaders = getDefaultHeaders()
+
+    groupIds.forEach(gid => {
+      axios.delete(`${rest_api_url}/api/groups/${gid}`, {
+        headers: defaultHeaders
+      })
+    })
+
+    return groupIds
+  }
+)
+
+export const {selectionAdd, selectionRemove, selectionRemoveAll} =
+  groupsSlice.actions
 export default groupsSlice.reducer
 
 export const {selectAll: selectAllGroups} =
@@ -106,4 +127,9 @@ export const selectGroupById = (state: RootState, groupId?: number) => {
   }
 
   return null
+}
+export const selectGroupsByIds = (state: RootState, groupIds: number[]) => {
+  return Object.values(state.groups.entities).filter((g: Group) =>
+    groupIds.includes(g.id)
+  )
 }

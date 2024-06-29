@@ -7,6 +7,8 @@ import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 import {
   selectSelectedIds,
   selectGroupById,
+  selectGroupsByIds,
+  selectionRemoveAll,
   fetchGroup,
   addGroup
 } from "@/slices/groups"
@@ -16,6 +18,7 @@ import {store} from "@/app/store"
 import type {Group as GroupType} from "@/types"
 
 import GroupForm from "./GroupForm"
+import RemoveGroupModal from "./RemoveModal"
 import {RootState} from "@/app/types"
 
 type ModalPropsType = {
@@ -65,8 +68,32 @@ function EditButton({groupId}: {groupId: number}) {
   return <Button onClick={onClick}>Edit</Button>
 }
 
+type RemoveModalPropsType = {
+  groups: Array<GroupType>
+}
+
 function DeleteButton() {
-  return <Button color="red">Delete</Button>
+  const dispatch = useDispatch()
+  const selectedIds = useSelector(selectSelectedIds)
+  const groups = useSelector<RootState>(state =>
+    selectGroupsByIds(state, selectedIds)
+  ) as Array<GroupType>
+
+  const onClick = () => {
+    openModal<GroupType[], RemoveModalPropsType>(RemoveGroupModal, {
+      groups: groups
+    })
+      .then((g: GroupType[]) => {})
+      .catch(() => {})
+      .finally(() => {
+        dispatch(selectionRemoveAll())
+      })
+  }
+  return (
+    <Button onClick={onClick} color="red">
+      Delete
+    </Button>
+  )
 }
 
 type GenericModalArgs = {

@@ -2,6 +2,7 @@ import {useState} from "react"
 
 import {
   Modal,
+  Loader,
   Container,
   Space,
   Group,
@@ -15,13 +16,24 @@ import {
 type Args = {
   opened: boolean
   onClose: () => void
+  onSubmit: (name: string, scopes: string[]) => void
 }
 
-export default function GroupModal({opened, onClose}: Args) {
+export default function GroupModal({opened, onClose, onSubmit}: Args) {
+  const [inProgress, setInProgress] = useState<boolean>(false)
+  const [name, setName] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>({
     "user.me": true,
-    "page.view": true
+    "page.view": true,
+    "node.view": true,
+    "ocrlang.view": true
   })
+
+  const onSubmitHandler = async () => {
+    setInProgress(true)
+    await onSubmit(name, Object.keys(scopes))
+    setInProgress(false)
+  }
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -72,7 +84,12 @@ export default function GroupModal({opened, onClose}: Args) {
   return (
     <Modal opened={opened} size={"xl"} onClose={onClose} title="New Group">
       <Container>
-        <TextInput label="Name" placeholder="Group name" />
+        <TextInput
+          value={name}
+          onChange={event => setName(event.currentTarget.value)}
+          label="Name"
+          placeholder="Group name"
+        />
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -285,7 +302,21 @@ export default function GroupModal({opened, onClose}: Args) {
             </Table.Tr>
             <Table.Tr key="tags">
               <Table.Td>
-                <Checkbox defaultChecked label="Tags" />
+                <Checkbox
+                  checked={hasPerms(scopes, [
+                    TAG_VIEW,
+                    TAG_CREATE,
+                    TAG_UPDATE,
+                    TAG_DELETE
+                  ])}
+                  onChange={e =>
+                    onChangePerms(
+                      [TAG_VIEW, TAG_CREATE, TAG_UPDATE, TAG_DELETE],
+                      e.target.checked
+                    )
+                  }
+                  label="Tags"
+                />
               </Table.Td>
               <Tooltip
                 label="Grants access to tags tab on left side navigation panel"
@@ -295,7 +326,11 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="View" />
+                  <Checkbox
+                    checked={hasPerm(scopes, TAG_VIEW)}
+                    onChange={e => onChangePerm(TAG_VIEW, e.target.checked)}
+                    label="View"
+                  />
                 </Table.Td>
               </Tooltip>
               <Tooltip
@@ -306,7 +341,11 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="Create" />
+                  <Checkbox
+                    checked={hasPerm(scopes, TAG_CREATE)}
+                    onChange={e => onChangePerm(TAG_CREATE, e.target.checked)}
+                    label="Create"
+                  />
                 </Table.Td>
               </Tooltip>
               <Tooltip
@@ -317,7 +356,11 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="Update" />
+                  <Checkbox
+                    checked={hasPerm(scopes, TAG_UPDATE)}
+                    onChange={e => onChangePerm(TAG_UPDATE, e.target.checked)}
+                    label="Update"
+                  />
                 </Table.Td>
               </Tooltip>
               <Tooltip
@@ -331,7 +374,11 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="Delete" />
+                  <Checkbox
+                    checked={hasPerm(scopes, TAG_DELETE)}
+                    onChange={e => onChangePerm(TAG_DELETE, e.target.checked)}
+                    label="Delete"
+                  />
                 </Table.Td>
               </Tooltip>
             </Table.Tr>
@@ -344,7 +391,21 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="Nodes" />
+                  <Checkbox
+                    checked={hasPerms(scopes, [
+                      NODE_CREATE,
+                      NODE_DELETE,
+                      NODE_MOVE,
+                      NODE_UPDATE
+                    ])}
+                    onChange={e =>
+                      onChangePerms(
+                        [NODE_CREATE, NODE_DELETE, NODE_MOVE, NODE_UPDATE],
+                        e.target.checked
+                      )
+                    }
+                    label="Nodes"
+                  />
                 </Table.Td>
               </Tooltip>
               <Tooltip
@@ -355,23 +416,42 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="Create" />
+                  <Checkbox
+                    checked={hasPerm(scopes, NODE_CREATE)}
+                    onChange={e => onChangePerm(NODE_CREATE, e.target.checked)}
+                    label="Create"
+                  />
                 </Table.Td>
               </Tooltip>
               <Table.Td>
-                <Checkbox defaultChecked label="Update" />
+                <Checkbox
+                  checked={hasPerm(scopes, NODE_UPDATE)}
+                  onChange={e => onChangePerm(NODE_UPDATE, e.target.checked)}
+                  label="Update"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Delete" />
+                <Checkbox
+                  checked={hasPerm(scopes, NODE_DELETE)}
+                  onChange={e => onChangePerm(NODE_DELETE, e.target.checked)}
+                  label="Delete"
+                />
               </Table.Td>
               <Table.Td>
-                <Checkbox defaultChecked label="Move" />
+                <Checkbox
+                  checked={hasPerm(scopes, NODE_MOVE)}
+                  onChange={e => onChangePerm(NODE_MOVE, e.target.checked)}
+                  label="Move"
+                />
               </Table.Td>
             </Table.Tr>
-
             <Table.Tr key="tasks">
               <Table.Td>
-                <Checkbox defaultChecked label="Tasks" />
+                <Checkbox
+                  checked={hasPerms(scopes, [TASK_OCR])}
+                  onChange={e => onChangePerms([TASK_OCR], e.target.checked)}
+                  label="Tasks"
+                />
               </Table.Td>
               <Tooltip
                 label={"Grants permission to manually trigger OCR"}
@@ -381,7 +461,11 @@ export default function GroupModal({opened, onClose}: Args) {
                 withArrow
               >
                 <Table.Td>
-                  <Checkbox defaultChecked label="OCR" />
+                  <Checkbox
+                    checked={hasPerm(scopes, TASK_OCR)}
+                    onChange={e => onChangePerm(TASK_OCR, e.target.checked)}
+                    label="OCR"
+                  />
                 </Table.Td>
               </Tooltip>
             </Table.Tr>
@@ -392,11 +476,31 @@ export default function GroupModal({opened, onClose}: Args) {
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={() => {}}>Submit</Button>
+          <SubmitButton onClick={onSubmitHandler} inProgress={inProgress} />
         </Group>
       </Container>
     </Modal>
   )
+}
+
+type SubmitButtonArgs = {
+  inProgress: boolean
+  onClick: () => void
+}
+
+function SubmitButton({inProgress, onClick}: SubmitButtonArgs) {
+  if (inProgress) {
+    return (
+      <Button
+        leftSection={<Loader size="sm" color="white" />}
+        onClick={onClick}
+      >
+        Submit
+      </Button>
+    )
+  }
+
+  return <Button onClick={onClick}>Submit</Button>
 }
 
 function hasPerm(scopes: Record<string, boolean>, perm: string): boolean {
@@ -450,6 +554,17 @@ const GROUP_VIEW = "group.view"
 const GROUP_CREATE = "group.create"
 const GROUP_UPDATE = "group.update"
 const GROUP_DELETE = "group.delete"
+const TAG_VIEW = "tag.view"
+const TAG_CREATE = "tag.create"
+const TAG_UPDATE = "tag.update"
+const TAG_DELETE = "tag.delete"
+const NODE_VIEW = "node.view"
+const NODE_CREATE = "node.create"
+const NODE_UPDATE = "node.update"
+const NODE_DELETE = "node.delete"
+const NODE_MOVE = "node.move"
+const TASK_OCR = "task.ocr"
+const OCRLANG_VIEW = "ocrlang.view"
 
 const ALL_PERMS = [
   DOCUMENT_DOWNLOAD,
@@ -467,5 +582,16 @@ const ALL_PERMS = [
   GROUP_VIEW,
   GROUP_CREATE,
   GROUP_UPDATE,
-  GROUP_DELETE
+  GROUP_DELETE,
+  TAG_VIEW,
+  TAG_CREATE,
+  TAG_UPDATE,
+  TAG_DELETE,
+  NODE_VIEW,
+  NODE_MOVE,
+  NODE_CREATE,
+  NODE_UPDATE,
+  NODE_DELETE,
+  TASK_OCR,
+  OCRLANG_VIEW
 ]

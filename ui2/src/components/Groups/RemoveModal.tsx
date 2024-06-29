@@ -16,6 +16,7 @@ export default function RemoveGroupModal({
   onCancel
 }: GenericModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
+  const groupNames = groups.map(g => g.name).join(",")
 
   const handleSubmit = async (signal: AbortSignal) => {
     store.dispatch(removeGroups(groups.map(g => g.id)))
@@ -29,11 +30,11 @@ export default function RemoveGroupModal({
 
   return (
     <GenericModal
-      modal_title={"Remove group"}
+      modal_title={"Delete Groups"}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
     >
-      <p>Are you sure you want to delete groups?</p>
+      <p>Are you sure you want to delete following groups: {groupNames}?</p>
       {errorMessage}
     </GenericModal>
   )

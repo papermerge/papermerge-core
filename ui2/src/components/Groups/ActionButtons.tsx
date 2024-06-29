@@ -83,11 +83,10 @@ function DeleteButton() {
     openModal<GroupType[], RemoveModalPropsType>(RemoveGroupModal, {
       groups: groups
     })
-      .then((g: GroupType[]) => {})
-      .catch(() => {})
-      .finally(() => {
+      .then((g: GroupType[]) => {
         dispatch(selectionRemoveAll())
       })
+      .catch(() => {})
   }
   return (
     <Button onClick={onClick} color="red">

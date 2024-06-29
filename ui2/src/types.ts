@@ -23,10 +23,13 @@ export type User = {
   scopes: Array<string>
 }
 
+export type SliceStateStatus = "idle" | "loading" | "succeeded" | "failed"
+export type SliceStateError = undefined | string | null
+
 export type SliceState<T> = {
   data: null | T
-  status: "idle" | "loading" | "succeeded" | "failed"
-  error: undefined | string | null
+  status: SliceStateStatus
+  error: SliceStateError
 }
 
 export type ColoredTagType = {

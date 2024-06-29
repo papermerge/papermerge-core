@@ -1,6 +1,5 @@
 import "@mantine/core/styles.css"
 import {AppShell} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
 import {Outlet} from "react-router-dom"
 import {useSelector} from "react-redux"
 

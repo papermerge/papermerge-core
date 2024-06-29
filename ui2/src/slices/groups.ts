@@ -8,7 +8,13 @@ import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
-import type {Group, Paginated, SliceStateStatus, SliceStateError} from "@/types"
+import type {
+  NewGroup,
+  Group,
+  Paginated,
+  SliceStateStatus,
+  SliceStateError
+} from "@/types"
 
 const groupsAdapter = createEntityAdapter({
   selectId: (group: Group) => group.id,
@@ -43,6 +49,8 @@ const groupsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(fetchGroups.fulfilled, groupsAdapter.setAll)
+    builder.addCase(fetchGroup.fulfilled, groupsAdapter.addOne)
+    builder.addCase(addGroup.fulfilled, groupsAdapter.addOne)
   }
 })
 
@@ -57,10 +65,45 @@ export const fetchGroups = createAsyncThunk("groups/fetchGroups", async () => {
   return data.items
 })
 
+export const fetchGroup = createAsyncThunk<Group, number>(
+  "groups/fetchGroup",
+  async (groupId: number) => {
+    const rest_api_url = getRestAPIURL()
+    const defaultHeaders = getDefaultHeaders()
+
+    const response = await axios.get(`${rest_api_url}/api/groups/${groupId}`, {
+      headers: defaultHeaders
+    })
+    const data = response.data as Group
+    return data
+  }
+)
+
+export const addGroup = createAsyncThunk<Group, NewGroup>(
+  "groups/addGroup",
+  async (newGroup: NewGroup) => {
+    const rest_api_url = getRestAPIURL()
+    const defaultHeaders = getDefaultHeaders()
+
+    const response = await axios.post(`${rest_api_url}/api/groups/`, newGroup, {
+      headers: defaultHeaders
+    })
+    const data = response.data as Group
+    return data
+  }
+)
+
 export const {selectionAdd, selectionRemove} = groupsSlice.actions
 export default groupsSlice.reducer
 
-export const {selectAll: selectAllGroups, selectById: selectGroupById} =
+export const {selectAll: selectAllGroups} =
   groupsAdapter.getSelectors<RootState>(state => state.groups)
 
 export const selectSelectedIds = (state: RootState) => state.groups.selectedIds
+export const selectGroupById = (state: RootState, groupId?: number) => {
+  if (groupId) {
+    return state.groups.entities[groupId]
+  }
+
+  return null
+}

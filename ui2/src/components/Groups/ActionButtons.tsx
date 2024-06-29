@@ -1,15 +1,22 @@
 import {useState} from "react"
 
-import {useSelector} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import {Button, Group} from "@mantine/core"
 import axios from "axios"
 import {getRestAPIURL, getDefaultHeaders} from "@/utils"
-import {selectSelectedIds} from "@/slices/groups"
+import {
+  selectSelectedIds,
+  selectGroupById,
+  fetchGroup,
+  addGroup
+} from "@/slices/groups"
 import GenericModal, {openModal} from "@/components/modals/Generic"
+import {store} from "@/app/store"
 
 import type {Group as GroupType} from "@/types"
 
 import GroupForm from "./GroupForm"
+import {RootState} from "@/app/types"
 
 type ModalPropsType = {
   modalTitle: string
@@ -23,7 +30,7 @@ export default function ActionButtons() {
     <Group>
       <NewButton />
       {selectedIds.length == 1 ? <EditButton groupId={selectedIds[0]} /> : ""}
-      {selectedIds.length > 1 ? <DeleteButton /> : ""}
+      {selectedIds.length >= 1 ? <DeleteButton /> : ""}
     </Group>
   )
 }
@@ -38,7 +45,10 @@ function NewButton() {
 }
 
 function EditButton({groupId}: {groupId: number}) {
+  const dispatch = useDispatch()
+
   const onClick = () => {
+    dispatch(fetchGroup(groupId))
     openModal<GroupType, ModalPropsType>(GroupModal, {
       modalTitle: "Edit Group",
       groupId: groupId
@@ -67,6 +77,9 @@ type GenericModalArgs = {
 }
 
 function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
+  const groupDetails = useSelector<RootState>(state =>
+    selectGroupById(state, groupId)
+  )
   const [scopes, setScopes] = useState<string[]>([])
   const [name, setName] = useState<string>("")
   const [errorMessage, setErrorMessage] = useState("")
@@ -83,13 +96,7 @@ function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
         }
       )
     } else {
-      await axios.post(
-        `${rest_api_url}/api/groups/`,
-        {name, scopes},
-        {
-          headers: defaultHeaders
-        }
-      )
+      store.dispatch(addGroup({name, scopes}))
     }
   }
   const handleCancel = () => {
@@ -105,6 +112,7 @@ function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
       modal_title={modalTitle}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
+      size={"xl"}
     >
       <GroupForm onNameChange={onNameChange} onPermsChange={onPermsChange} />
       {errorMessage}

@@ -73,11 +73,16 @@ export default function GroupModal({onNameChange, onPermsChange}: Args) {
     onPermsChange(Object.keys(scopes))
   }
 
+  const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.currentTarget.value)
+    onNameChange(e.currentTarget.value)
+  }
+
   return (
     <Container>
       <TextInput
         value={name}
-        onChange={event => setName(event.currentTarget.value)}
+        onChange={onNameChangeHandler}
         label="Name"
         placeholder="Group name"
       />

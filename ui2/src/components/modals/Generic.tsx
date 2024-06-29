@@ -1,8 +1,10 @@
 import {createRoot} from "react-dom/client"
 import {useEffect, useState, useRef} from "react"
+import {Provider} from "react-redux"
 import React from "react"
 import {theme} from "@/app/theme"
 import {MODALS} from "@/cconstants"
+import {store} from "@/app/store.ts"
 
 import {
   Button,
@@ -20,6 +22,7 @@ type Args = {
   submit_button_variant?: string
   onCancel: () => void
   onSubmit: (signal: AbortSignal) => void
+  size?: string
 }
 
 const GenericModal = ({
@@ -28,7 +31,8 @@ const GenericModal = ({
   submit_button_title,
   submit_button_variant,
   onCancel,
-  onSubmit
+  onSubmit,
+  size
 }: Args) => {
   const [show, setShow] = useState<boolean>(true)
   const [inProgress, setInProgress] = useState(false)
@@ -92,7 +96,7 @@ const GenericModal = ({
   }, [])
 
   return (
-    <Modal title={modal_title} opened={show} onClose={handleCancel}>
+    <Modal title={modal_title} opened={show} onClose={handleCancel} size={size}>
       <Container>
         {children}
         <Space h="md" />
@@ -116,10 +120,11 @@ export function openModal<YieldT, PropsT>(Component: any, props?: PropsT) {
   const promise = new Promise<YieldT>(function (onOK, onCancel) {
     if (modals) {
       const domRoot = createRoot(modals)
-      console.log(props)
       domRoot.render(
         <MantineProvider theme={theme}>
-          <Component onOK={onOK} onCancel={onCancel} {...props} />
+          <Provider store={store}>
+            <Component onOK={onOK} onCancel={onCancel} {...props} />
+          </Provider>
         </MantineProvider>
       )
     }

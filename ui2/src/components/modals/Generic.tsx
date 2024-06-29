@@ -1,7 +1,17 @@
+import {createRoot} from "react-dom/client"
 import {useEffect, useState, useRef} from "react"
 import React from "react"
+import {theme} from "@/app/theme"
+import {MODALS} from "@/cconstants"
 
-import {Button, Modal, Container, Group, Space} from "@mantine/core"
+import {
+  Button,
+  Modal,
+  Container,
+  Group,
+  Space,
+  MantineProvider
+} from "@mantine/core"
 
 type Args = {
   children: React.ReactNode
@@ -90,7 +100,9 @@ const GenericModal = ({
           <Button variant="default" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>{submit_button_title}</Button>
+          <Button onClick={handleSubmit}>
+            {submit_button_title || "Submit"}
+          </Button>
         </Group>
       </Container>
     </Modal>
@@ -98,3 +110,20 @@ const GenericModal = ({
 }
 
 export default GenericModal
+
+export function openModal<YieldT, PropsT>(Component: any, props?: PropsT) {
+  const modals = document.getElementById(MODALS)
+  const promise = new Promise<YieldT>(function (onOK, onCancel) {
+    if (modals) {
+      const domRoot = createRoot(modals)
+      console.log(props)
+      domRoot.render(
+        <MantineProvider theme={theme}>
+          <Component onOK={onOK} onCancel={onCancel} {...props} />
+        </MantineProvider>
+      )
+    }
+  })
+
+  return promise
+}

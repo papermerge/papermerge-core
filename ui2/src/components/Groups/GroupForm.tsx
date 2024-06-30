@@ -1,14 +1,6 @@
 import {useState} from "react"
 
-import {
-  Loader,
-  Container,
-  Button,
-  TextInput,
-  Table,
-  Checkbox,
-  Tooltip
-} from "@mantine/core"
+import {Container, TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {

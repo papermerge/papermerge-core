@@ -109,14 +109,14 @@ def delete_group(
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ) -> None:
     """Deletes group
 
     Required scope: `{scope}`
     """
     try:
-        db.delete_group(engine, group_id)
+        db.delete_group(db_session, group_id)
     except NoResultFound:
         raise HTTPException(
             status_code=404,
@@ -133,7 +133,7 @@ def update_group(
         schemas.User,
         Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
-    engine: db.Engine = Depends(db.get_engine)
+    db_session: db.Session = Depends(db.get_session)
 ) -> schemas.Group:
     """Updates group
 
@@ -141,7 +141,7 @@ def update_group(
     """
     try:
         group: schemas.Group = db.update_group(
-            engine,
+            db_session,
             group_id=group_id,
             attrs=attrs
         )

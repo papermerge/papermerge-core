@@ -1,7 +1,19 @@
+import {createRoot} from "react-dom/client"
 import {useEffect, useState, useRef} from "react"
+import {Provider} from "react-redux"
 import React from "react"
+import {theme} from "@/app/theme"
+import {MODALS} from "@/cconstants"
+import {store} from "@/app/store.ts"
 
-import {Button, Modal, Container, Group, Space} from "@mantine/core"
+import {
+  Button,
+  Modal,
+  Container,
+  Group,
+  Space,
+  MantineProvider
+} from "@mantine/core"
 
 type Args = {
   children: React.ReactNode
@@ -10,6 +22,8 @@ type Args = {
   submit_button_variant?: string
   onCancel: () => void
   onSubmit: (signal: AbortSignal) => void
+  size?: string
+  submit_button_color?: string
 }
 
 const GenericModal = ({
@@ -17,8 +31,10 @@ const GenericModal = ({
   modal_title,
   submit_button_title,
   submit_button_variant,
+  submit_button_color,
   onCancel,
-  onSubmit
+  onSubmit,
+  size
 }: Args) => {
   const [show, setShow] = useState<boolean>(true)
   const [inProgress, setInProgress] = useState(false)
@@ -82,7 +98,7 @@ const GenericModal = ({
   }, [])
 
   return (
-    <Modal title={modal_title} opened={show} onClose={handleCancel}>
+    <Modal title={modal_title} opened={show} onClose={handleCancel} size={size}>
       <Container>
         {children}
         <Space h="md" />
@@ -90,7 +106,9 @@ const GenericModal = ({
           <Button variant="default" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>{submit_button_title}</Button>
+          <Button onClick={handleSubmit} color={submit_button_color || "blue"}>
+            {submit_button_title || "Submit"}
+          </Button>
         </Group>
       </Container>
     </Modal>
@@ -98,3 +116,21 @@ const GenericModal = ({
 }
 
 export default GenericModal
+
+export function openModal<YieldT, PropsT>(Component: any, props?: PropsT) {
+  const modals = document.getElementById(MODALS)
+  const promise = new Promise<YieldT>(function (onOK, onCancel) {
+    if (modals) {
+      const domRoot = createRoot(modals)
+      domRoot.render(
+        <MantineProvider theme={theme}>
+          <Provider store={store}>
+            <Component onOK={onOK} onCancel={onCancel} {...props} />
+          </Provider>
+        </MantineProvider>
+      )
+    }
+  })
+
+  return promise
+}

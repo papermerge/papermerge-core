@@ -8,7 +8,12 @@ export default function Groups() {
   const groups = useSelector(selectAllGroups)
 
   if (groups.length == 0) {
-    return <Empty />
+    return (
+      <div>
+        <ActionButtons />
+        <Empty />
+      </div>
+    )
   }
 
   const groupRows = groups.map(g => <GroupRow key={g.id} group={g} />)
@@ -35,7 +40,7 @@ function Empty() {
   return (
     <Center>
       <Stack align="center">
-        <div>Current there are no groups</div>
+        <div>Currently there are no groups</div>
       </Stack>
     </Center>
   )

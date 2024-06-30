@@ -10,40 +10,58 @@ import {
   Tooltip
 } from "@mantine/core"
 
-type Args = {
-  onNameChange: (name: string) => void
-  onPermsChange: (scopes: string[]) => void
-}
-
-export default function GroupModal({onNameChange, onPermsChange}: Args) {
-  const [name, setName] = useState<string>("")
-  const [scopes, setScopes] = useState<Record<string, boolean>>({
+function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
+  let scopes: Record<string, boolean> = {
     "user.me": true,
     "page.view": true,
     "node.view": true,
     "ocrlang.view": true
-  })
+  }
+  initialScopes.map(i => (scopes[i] = true))
+
+  return scopes
+}
+
+type Args = {
+  initialName: string
+  initialScopes: string[]
+  onNameChange: (name: string) => void
+  onPermsChange: (scopes: string[]) => void
+}
+
+export default function GroupModal({
+  initialName,
+  initialScopes,
+  onNameChange,
+  onPermsChange
+}: Args) {
+  const [name, setName] = useState<string>(initialName)
+  const [scopes, setScopes] = useState<Record<string, boolean>>(
+    initialScopesDict(initialScopes)
+  )
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let newScopes: Record<string, boolean> = {}
+
     if (event.target.checked) {
-      let newScopes: Record<string, boolean> = {}
       ALL_PERMS.forEach(p => (newScopes[p] = true))
       setScopes(newScopes)
     } else {
-      setScopes({})
+      newScopes = {}
+      setScopes(newScopes)
     }
-    onPermsChange(Object.keys(scopes))
+    onPermsChange(Object.keys(newScopes))
   }
   const onChangePerm = (perm: string, checked: boolean) => {
+    let newScopes: Record<string, boolean> = {}
+
     if (checked) {
-      let newScopes: Record<string, boolean> = {}
       Object.keys(scopes).forEach(p => {
         newScopes[p] = true
       })
       newScopes[perm] = true
       setScopes(newScopes)
     } else {
-      let newScopes: Record<string, boolean> = {}
       Object.keys(scopes).forEach(p => {
         if (p != perm) {
           newScopes[p] = true
@@ -51,18 +69,18 @@ export default function GroupModal({onNameChange, onPermsChange}: Args) {
       })
       setScopes(newScopes)
     }
-    onPermsChange(Object.keys(scopes))
+    onPermsChange(Object.keys(newScopes))
   }
   const onChangePerms = (perms: string[], checked: boolean) => {
+    let newScopes: Record<string, boolean> = {}
+
     if (checked) {
-      let newScopes: Record<string, boolean> = {}
       Object.keys(scopes).forEach(p => {
         newScopes[p] = true
       })
       perms.forEach(p => (newScopes[p] = true))
       setScopes(newScopes)
     } else {
-      let newScopes: Record<string, boolean> = {}
       Object.keys(scopes).forEach(p => {
         if (!perms.find(i => i == p)) {
           newScopes[p] = true

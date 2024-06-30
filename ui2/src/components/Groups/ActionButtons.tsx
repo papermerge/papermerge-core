@@ -1,21 +1,20 @@
 import {useState} from "react"
 
 import {useDispatch, useSelector} from "react-redux"
-import {Button, Group} from "@mantine/core"
-import axios from "axios"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
+import {Button, Group, Box, LoadingOverlay} from "@mantine/core"
 import {
   selectSelectedIds,
-  selectGroupById,
   selectGroupsByIds,
-  selectionRemoveAll,
-  fetchGroup,
-  addGroup
+  clearSelection,
+  addGroup,
+  updateGroup
 } from "@/slices/groups"
+import {clearGroupDetails, selectGroupDetails} from "@/slices/groupDetails"
+import {fetchGroupDetails} from "@/slices/groupDetails"
 import GenericModal, {openModal} from "@/components/modals/Generic"
 import {store} from "@/app/store"
 
-import type {Group as GroupType} from "@/types"
+import type {Group as GroupType, SliceState} from "@/types"
 
 import GroupForm from "./GroupForm"
 import RemoveGroupModal from "./RemoveModal"
@@ -51,7 +50,8 @@ function EditButton({groupId}: {groupId: number}) {
   const dispatch = useDispatch()
 
   const onClick = () => {
-    dispatch(fetchGroup(groupId))
+    dispatch(fetchGroupDetails(groupId))
+
     openModal<GroupType, ModalPropsType>(GroupModal, {
       modalTitle: "Edit Group",
       groupId: groupId
@@ -60,6 +60,8 @@ function EditButton({groupId}: {groupId: number}) {
         // 1. user clicked "submit"
         // 2. group was created on server side as well in redux store
         // 3. value contains newly created group object
+        dispatch(clearSelection())
+        dispatch(clearGroupDetails())
       })
       .catch(() => {
         // 1. user clicked cancel
@@ -84,7 +86,7 @@ function DeleteButton() {
       groups: groups
     })
       .then((g: GroupType[]) => {
-        dispatch(selectionRemoveAll())
+        dispatch(clearSelection())
       })
       .catch(() => {})
   }
@@ -103,45 +105,90 @@ type GenericModalArgs = {
 }
 
 function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
-  const groupDetails = useSelector<RootState>(state =>
-    selectGroupById(state, groupId)
-  )
+  const {status, error, data} = useSelector<RootState>(
+    selectGroupDetails
+  ) as SliceState<GroupType>
   const [scopes, setScopes] = useState<string[]>([])
   const [name, setName] = useState<string>("")
   const [errorMessage, setErrorMessage] = useState("")
 
   const handleSubmit = async (signal: AbortSignal) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
     if (groupId) {
-      await axios.patch(
-        `${rest_api_url}/api/groups/${groupId}/`,
-        {name, scopes},
-        {
-          headers: defaultHeaders
-        }
+      const result = await store.dispatch(
+        updateGroup({id: groupId, name, scopes})
       )
+      onOK(result.payload as GroupType)
     } else {
-      store.dispatch(addGroup({name, scopes}))
+      const result = await store.dispatch(addGroup({name, scopes}))
+      onOK(result.payload as GroupType)
     }
   }
   const handleCancel = () => {
     setErrorMessage("")
-
     onCancel()
   }
   const onNameChange = (name: string) => setName(name)
   const onPermsChange = (perms: string[]) => setScopes(perms)
 
+  if (!groupId) {
+    // new form i.e. all forms are empty
+    return (
+      <GenericModal
+        modal_title={modalTitle}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        size={"xl"}
+      >
+        <GroupForm
+          initialName={""}
+          initialScopes={[]}
+          onNameChange={onNameChange}
+          onPermsChange={onPermsChange}
+        />
+        {errorMessage}
+      </GenericModal>
+    )
+  }
+
+  if (status == "loading")
+    return (
+      <Box pos="relative">
+        <GenericModal
+          modal_title={modalTitle}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          size={"xl"}
+        >
+          <LoadingOverlay
+            visible={true}
+            zIndex={1000}
+            overlayProps={{radius: "sm", blur: 2}}
+          />
+          <GroupForm
+            initialName={""}
+            initialScopes={[]}
+            onNameChange={onNameChange}
+            onPermsChange={onPermsChange}
+          />
+        </GenericModal>
+      </Box>
+    )
+
   return (
-    <GenericModal
-      modal_title={modalTitle}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      size={"xl"}
-    >
-      <GroupForm onNameChange={onNameChange} onPermsChange={onPermsChange} />
-      {errorMessage}
-    </GenericModal>
+    <Box pos="relative">
+      <GenericModal
+        modal_title={modalTitle}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        size={"xl"}
+      >
+        <GroupForm
+          initialName={data?.name || ""}
+          initialScopes={data?.scopes || []}
+          onNameChange={onNameChange}
+          onPermsChange={onPermsChange}
+        />
+      </GenericModal>
+    </Box>
   )
 }

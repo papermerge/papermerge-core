@@ -42,6 +42,9 @@ const groupsSlice = createSlice({
     selectionAdd: (state, action: PayloadAction<number>) => {
       state.selectedIds.push(action.payload)
     },
+    selectionAddMany: (state, action: PayloadAction<Array<number>>) => {
+      state.selectedIds = action.payload
+    },
     selectionRemove: (state, action: PayloadAction<number>) => {
       const newSelectedIds = state.selectedIds.filter(i => i != action.payload)
       state.selectedIds = newSelectedIds
@@ -139,7 +142,7 @@ export const removeGroups = createAsyncThunk<number[], number[]>(
   }
 )
 
-export const {selectionAdd, selectionRemove, clearSelection} =
+export const {selectionAdd, selectionAddMany, selectionRemove, clearSelection} =
   groupsSlice.actions
 export default groupsSlice.reducer
 

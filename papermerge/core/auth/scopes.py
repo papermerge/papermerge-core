@@ -24,6 +24,7 @@ PAGE_VIEW = 'page.view'
 PAGE_UPDATE = 'page.update'
 PAGE_MOVE = 'page.move'
 PAGE_EXTRACT = 'page.extract'
+PAGE_DELETE = 'page.delete'
 
 SCOPES = {
     NODE_CREATE: NODE_CREATE,
@@ -52,4 +53,5 @@ SCOPES = {
     PAGE_UPDATE: PAGE_UPDATE,
     PAGE_MOVE: PAGE_MOVE,
     PAGE_EXTRACT: PAGE_EXTRACT,
+    PAGE_DELETE: PAGE_DELETE
 }

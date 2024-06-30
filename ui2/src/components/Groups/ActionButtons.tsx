@@ -69,7 +69,8 @@ function EditButton({groupId}: {groupId: number}) {
         dispatch(clearGroupDetails())
       })
       .catch(() => {
-        // 1. user clicked cancel
+        dispatch(clearSelection())
+        dispatch(clearGroupDetails())
       })
   }
   return (
@@ -97,7 +98,7 @@ function DeleteButton() {
       .then((g: GroupType[]) => {
         dispatch(clearSelection())
       })
-      .catch(() => {})
+      .catch(() => dispatch(clearSelection()))
   }
   return (
     <Button onClick={onClick} leftSection={<IconX />} color="red">

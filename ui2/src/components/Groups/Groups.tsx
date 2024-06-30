@@ -1,11 +1,28 @@
 import {Center, Stack, Table, Checkbox} from "@mantine/core"
-import {useSelector} from "react-redux"
-import {selectAllGroups} from "@/slices/groups"
+import {useDispatch, useSelector} from "react-redux"
+import {
+  selectAllGroups,
+  selectionAddMany,
+  selectSelectedIds,
+  clearSelection
+} from "@/slices/groups"
 import GroupRow from "./GroupRow"
 import ActionButtons from "./ActionButtons"
 
 export default function Groups() {
+  const selectedIds = useSelector(selectSelectedIds)
   const groups = useSelector(selectAllGroups)
+  const dispatch = useDispatch()
+
+  const onCheckAll = (checked: boolean) => {
+    if (checked) {
+      // check all/select all group items
+      dispatch(selectionAddMany(groups.map(i => i.id)))
+    } else {
+      // uncheck all/unselect all group items
+      dispatch(clearSelection())
+    }
+  }
 
   if (groups.length == 0) {
     return (
@@ -25,7 +42,10 @@ export default function Groups() {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>
-              <Checkbox />
+              <Checkbox
+                checked={groups.length == selectedIds.length}
+                onClick={e => onCheckAll(e.currentTarget.checked)}
+              />
             </Table.Th>
             <Table.Th>Name</Table.Th>
           </Table.Tr>

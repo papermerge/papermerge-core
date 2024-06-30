@@ -88,7 +88,7 @@ export default function GroupModal({
       })
       setScopes(newScopes)
     }
-    onPermsChange(Object.keys(scopes))
+    onPermsChange(Object.keys(newScopes))
   }
 
   const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -482,26 +482,6 @@ export default function GroupModal({
       </Table>
     </Container>
   )
-}
-
-type SubmitButtonArgs = {
-  inProgress: boolean
-  onClick: () => void
-}
-
-function SubmitButton({inProgress, onClick}: SubmitButtonArgs) {
-  if (inProgress) {
-    return (
-      <Button
-        leftSection={<Loader size="sm" color="white" />}
-        onClick={onClick}
-      >
-        Submit
-      </Button>
-    )
-  }
-
-  return <Button onClick={onClick}>Submit</Button>
 }
 
 function hasPerm(scopes: Record<string, boolean>, perm: string): boolean {

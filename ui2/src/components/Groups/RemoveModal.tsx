@@ -33,6 +33,8 @@ export default function RemoveGroupModal({
       modal_title={"Delete Groups"}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
+      submit_button_title="Remove"
+      submit_button_color="red"
     >
       <p>Are you sure you want to delete following groups: {groupNames}?</p>
       {errorMessage}

@@ -1,6 +1,7 @@
-import {useState} from "react"
+import {useEffect, useState} from "react"
 
 import {useDispatch, useSelector} from "react-redux"
+import {IconPlus, IconEdit, IconX} from "@tabler/icons-react"
 import {Button, Group, Box, LoadingOverlay} from "@mantine/core"
 import {
   selectSelectedIds,
@@ -43,7 +44,11 @@ function NewButton() {
       modalTitle: "New Group"
     }).then((value: GroupType) => {})
   }
-  return <Button onClick={onClick}>New</Button>
+  return (
+    <Button leftSection={<IconPlus />} onClick={onClick}>
+      New
+    </Button>
+  )
 }
 
 function EditButton({groupId}: {groupId: number}) {
@@ -67,7 +72,11 @@ function EditButton({groupId}: {groupId: number}) {
         // 1. user clicked cancel
       })
   }
-  return <Button onClick={onClick}>Edit</Button>
+  return (
+    <Button leftSection={<IconEdit />} onClick={onClick} variant={"default"}>
+      Edit
+    </Button>
+  )
 }
 
 type RemoveModalPropsType = {
@@ -91,7 +100,7 @@ function DeleteButton() {
       .catch(() => {})
   }
   return (
-    <Button onClick={onClick} color="red">
+    <Button onClick={onClick} leftSection={<IconX />} color="red">
       Delete
     </Button>
   )
@@ -111,6 +120,13 @@ function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
   const [scopes, setScopes] = useState<string[]>([])
   const [name, setName] = useState<string>("")
   const [errorMessage, setErrorMessage] = useState("")
+
+  useEffect(() => {
+    if (data) {
+      setScopes(data.scopes)
+      setName(data.name)
+    }
+  }, [data])
 
   const handleSubmit = async (signal: AbortSignal) => {
     if (groupId) {

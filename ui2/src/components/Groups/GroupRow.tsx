@@ -1,6 +1,6 @@
-import {useDispatch} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import {Table, Checkbox} from "@mantine/core"
-import {selectionAdd, selectionRemove} from "@/slices/groups"
+import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/groups"
 import type {Group} from "@/types"
 
 type Args = {
@@ -8,6 +8,7 @@ type Args = {
 }
 
 export default function GroupRow({group}: Args) {
+  const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +22,10 @@ export default function GroupRow({group}: Args) {
   return (
     <Table.Tr>
       <Table.Td>
-        <Checkbox onChange={onChange} />
+        <Checkbox
+          checked={selectedIds.includes(group.id)}
+          onChange={onChange}
+        />
       </Table.Td>
       <Table.Td>{group.name}</Table.Td>
     </Table.Tr>

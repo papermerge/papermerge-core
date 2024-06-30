@@ -23,6 +23,7 @@ type Args = {
   onCancel: () => void
   onSubmit: (signal: AbortSignal) => void
   size?: string
+  submit_button_color?: string
 }
 
 const GenericModal = ({
@@ -30,6 +31,7 @@ const GenericModal = ({
   modal_title,
   submit_button_title,
   submit_button_variant,
+  submit_button_color,
   onCancel,
   onSubmit,
   size
@@ -104,7 +106,7 @@ const GenericModal = ({
           <Button variant="default" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button onClick={handleSubmit} color={submit_button_color || "blue"}>
             {submit_button_title || "Submit"}
           </Button>
         </Group>

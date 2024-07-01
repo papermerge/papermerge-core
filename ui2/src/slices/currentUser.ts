@@ -1,6 +1,5 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
-import axios from "axios"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
+import axios from "@/httpClient"
 import type {SliceState, User} from "@/types"
 
 const initialState: SliceState<User> = {
@@ -12,11 +11,7 @@ const initialState: SliceState<User> = {
 export const fetchCurrentUser = createAsyncThunk(
   "user/fetchCurrentUser",
   async () => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-    const response = await axios.get(`${rest_api_url}/api/users/me`, {
-      headers: defaultHeaders
-    })
+    const response = await axios.get("/api/users/me")
 
     return response.data
   }

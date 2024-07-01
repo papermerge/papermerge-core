@@ -41,3 +41,5 @@ export const HIDDEN = {
 export const PAGINATION_DEFAULT_ITEMS_PER_PAGES = 10
 export const STORAGE_KEY_PAGINATION_MITEMS_PER_PAGE = "mitems_per_page"
 export const STORAGE_KEY_PAGINATION_SITEMS_PER_PAGE = "sitems_per_page"
+
+export const PAGINATION_PAGE_SIZES = ["5", "10", "15", "25", "50"]

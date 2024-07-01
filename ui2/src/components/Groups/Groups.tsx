@@ -8,6 +8,7 @@ import {
 } from "@/slices/groups"
 import GroupRow from "./GroupRow"
 import ActionButtons from "./ActionButtons"
+import Pagination from "./Pagination"
 
 export default function Groups() {
   const selectedIds = useSelector(selectSelectedIds)
@@ -36,7 +37,7 @@ export default function Groups() {
   const groupRows = groups.map(g => <GroupRow key={g.id} group={g} />)
 
   return (
-    <div>
+    <Stack>
       <ActionButtons />
       <Table>
         <Table.Thead>
@@ -52,7 +53,8 @@ export default function Groups() {
         </Table.Thead>
         <Table.Tbody>{groupRows}</Table.Tbody>
       </Table>
-    </div>
+      <Pagination />
+    </Stack>
   )
 }
 

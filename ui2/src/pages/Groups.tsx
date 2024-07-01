@@ -7,7 +7,7 @@ export default function GroupsPage() {
 }
 
 export async function loader() {
-  await store.dispatch(fetchGroups())
+  await store.dispatch(fetchGroups({pageNumber: 1}))
 
   return null
 }

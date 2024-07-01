@@ -4,6 +4,7 @@ import dualPanelReducer from "@/slices/dualPanel"
 import navBarReducer from "@/slices/navBar"
 import groupsReducer from "@/slices/groups"
 import groupDetailsReducer from "@/slices/groupDetails"
+import usersReducer from "@/slices/users"
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     dualPanel: dualPanelReducer,
     navBar: navBarReducer,
     groups: groupsReducer,
-    groupDetails: groupDetailsReducer
+    groupDetails: groupDetailsReducer,
+    users: usersReducer
   }
 })

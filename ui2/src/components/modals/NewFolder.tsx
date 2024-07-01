@@ -8,7 +8,6 @@ import GenericModal from "@/components/modals/Generic"
 import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
 import axios, {AxiosResponse} from "axios"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 
 type CreateFolderType = {
   title: string
@@ -32,12 +31,9 @@ async function api_create_new_folder(
     parent_id: parent_id,
     ctype: "folder"
   }
-  const rest_api_url = getRestAPIURL()
-  const defaultHeaders = getDefaultHeaders()
 
-  return axios.post(`${rest_api_url}/api/nodes/`, data, {
-    signal,
-    headers: defaultHeaders
+  return axios.post("/api/nodes/", data, {
+    signal
   })
 }
 

@@ -1,8 +1,12 @@
 import {createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
+
 import axios from "axios"
 
+axios.defaults.baseURL = getBaseURL()
+axios.defaults.headers.common = getDefaultHeaders()
+
 import {RootState} from "@/app/types"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 
 import type {
   SliceState,
@@ -91,16 +95,9 @@ export const fetchPaginatedNodes = createAsyncThunk<
   NodeLoaderResponseType,
   ThunkArgs
 >("paginatedNodes/fetchNodes", async ({folderId, urlParams}: ThunkArgs) => {
-  const rest_api_url = getRestAPIURL()
-  const defaultHeaders = getDefaultHeaders()
-
   const prom = axios.all([
-    axios.get(`${rest_api_url}/api/nodes/${folderId}?${urlParams}`, {
-      headers: defaultHeaders
-    }),
-    axios.get(`${rest_api_url}/api/folders/${folderId}`, {
-      headers: defaultHeaders
-    })
+    axios.get(`/api/nodes/${folderId}?${urlParams}`),
+    axios.get(`/api/folders/${folderId}`)
   ])
   const [nodesResp, folderResp] = await prom
 

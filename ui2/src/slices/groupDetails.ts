@@ -1,16 +1,8 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
-import type {
-  NewGroup,
-  Group,
-  Paginated,
-  SliceStateStatus,
-  SliceStateError,
-  SliceState
-} from "@/types"
+import type {Group, SliceState} from "@/types"
 
 const initialState: SliceState<Group> = {
   data: null,
@@ -50,12 +42,7 @@ const groupsSlice = createSlice({
 export const fetchGroupDetails = createAsyncThunk<Group, number>(
   "group/fetchGroupDetails",
   async (groupId: number) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-
-    const response = await axios.get(`${rest_api_url}/api/groups/${groupId}`, {
-      headers: defaultHeaders
-    })
+    const response = await axios.get(`/api/groups/${groupId}`)
     const data = response.data as Group
     return data
   }

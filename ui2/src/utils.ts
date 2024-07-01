@@ -3,10 +3,10 @@ import {store} from "@/app/store"
 
 import type {User} from "@/types"
 
-export function getRestAPIURL(): string {
-  const rest_api_url = import.meta.env.VITE_REST_API_URL
-  if (rest_api_url) {
-    return rest_api_url
+export function getBaseURL(): string {
+  const base_url = import.meta.env.VITE_BASE_URL
+  if (base_url) {
+    return base_url
   }
 
   return ""

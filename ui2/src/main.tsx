@@ -7,6 +7,7 @@ import {MantineProvider} from "@mantine/core"
 import "@/index.css"
 import {store} from "@/app/store.ts"
 import {fetchCurrentUser} from "@/slices/currentUser.ts"
+
 import {theme} from "@/app/theme"
 import router from "./router"
 

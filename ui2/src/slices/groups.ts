@@ -4,8 +4,7 @@ import {
   createEntityAdapter,
   PayloadAction
 } from "@reduxjs/toolkit"
-import {getRestAPIURL, getDefaultHeaders} from "@/utils"
-import axios from "axios"
+import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
 import type {
@@ -94,17 +93,14 @@ type fetchGroupsArgs = {
 export const fetchGroups = createAsyncThunk<Paginated<Group>, fetchGroupsArgs>(
   "groups/fetchGroups",
   async (args: fetchGroupsArgs) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
     const pageNumber = args.pageNumber || 1
     const pageSize = args.pageSize || INITIAL_PAGE_SIZE
 
-    const response = await axios.get(`${rest_api_url}/api/groups/`, {
+    const response = await axios.get("/api/groups/", {
       params: {
         page_size: pageSize,
         page_number: pageNumber
-      },
-      headers: defaultHeaders
+      }
     })
     const data = response.data as Paginated<Group>
     return data
@@ -114,12 +110,7 @@ export const fetchGroups = createAsyncThunk<Paginated<Group>, fetchGroupsArgs>(
 export const fetchGroup = createAsyncThunk<Group, number>(
   "groups/fetchGroup",
   async (groupId: number) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-
-    const response = await axios.get(`${rest_api_url}/api/groups/${groupId}`, {
-      headers: defaultHeaders
-    })
+    const response = await axios.get(`/api/groups/${groupId}`)
     const data = response.data as Group
     return data
   }
@@ -128,12 +119,7 @@ export const fetchGroup = createAsyncThunk<Group, number>(
 export const addGroup = createAsyncThunk<Group, NewGroup>(
   "groups/addGroup",
   async (newGroup: NewGroup) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-
-    const response = await axios.post(`${rest_api_url}/api/groups/`, newGroup, {
-      headers: defaultHeaders
-    })
+    const response = await axios.post("/api/groups/", newGroup)
     const data = response.data as Group
     return data
   }
@@ -142,16 +128,7 @@ export const addGroup = createAsyncThunk<Group, NewGroup>(
 export const updateGroup = createAsyncThunk<Group, Group>(
   "groups/updateGroup",
   async (group: Group) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-
-    const response = await axios.patch(
-      `${rest_api_url}/api/groups/${group.id}`,
-      group,
-      {
-        headers: defaultHeaders
-      }
-    )
+    const response = await axios.patch(`/api/groups/${group.id}`, group)
     const data = response.data as Group
     return data
   }
@@ -160,13 +137,8 @@ export const updateGroup = createAsyncThunk<Group, Group>(
 export const removeGroups = createAsyncThunk<number[], number[]>(
   "groups/removeGroup",
   async (groupIds: number[]) => {
-    const rest_api_url = getRestAPIURL()
-    const defaultHeaders = getDefaultHeaders()
-
     groupIds.forEach(gid => {
-      axios.delete(`${rest_api_url}/api/groups/${gid}`, {
-        headers: defaultHeaders
-      })
+      axios.delete(`/api/groups/${gid}`)
     })
 
     return groupIds

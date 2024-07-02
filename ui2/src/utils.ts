@@ -24,6 +24,7 @@ export function getRemoteUser(): string | null {
 
 export function getDefaultHeaders(): Record<string, string> {
   const remote_user = getRemoteUser()
+
   let headers = {}
 
   if (remote_user) {

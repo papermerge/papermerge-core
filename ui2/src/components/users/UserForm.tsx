@@ -4,7 +4,7 @@ import CopyButton from "@/components/CopyButton"
 import {UserDetails} from "@/types"
 
 type Args = {
-  user: UserDetails
+  user: UserDetails | null
 }
 
 export default function UserForm({user}: Args) {
@@ -12,33 +12,33 @@ export default function UserForm({user}: Args) {
     <Stack>
       <TextInput
         label="ID"
-        value={user.id}
+        value={user?.id}
         onChange={() => {}}
-        rightSection={<CopyButton value={user.id} />}
+        rightSection={<CopyButton value={user?.id || ""} />}
       />
       <TextInput
         label="Username"
-        value={user.username}
+        value={user?.username || ""}
         onChange={() => {}}
-        rightSection={<CopyButton value={user.username} />}
+        rightSection={<CopyButton value={user?.username || ""} />}
       />
       <TextInput
         label="Email"
-        value={user.email}
+        value={user?.email || ""}
         onChange={() => {}}
-        rightSection={<CopyButton value={user.email} />}
+        rightSection={<CopyButton value={user?.email || ""} />}
       />
       <Checkbox
         label="Is Superuser"
-        checked={user.is_superuser}
+        checked={user?.is_superuser}
         onChange={() => {}}
       />
       <Checkbox
         label="Is Active"
-        checked={user.is_active}
+        checked={user?.is_active}
         onChange={() => {}}
       />
-      <Select label="Groups" data={user.groups} />
+      <Select label="Groups" data={user?.groups} />
     </Stack>
   )
 }

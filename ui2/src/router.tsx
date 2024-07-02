@@ -10,8 +10,10 @@ import Folder from "@/pages/Folder"
 import {loader as folderLoader} from "@/pages/Folder"
 
 import Document from "@/pages/Document"
-import Users from "@/pages/Users.tsx"
-import {loader as usersLoader} from "@/pages/Users"
+import UsersList from "@/pages/users/List.tsx"
+import {loader as usersListLoader} from "@/pages/users/List"
+import UserDetails from "@/pages/users/Details.tsx"
+import {loader as userDetailsLoader} from "@/pages/users/Details"
 import Groups from "@/pages/Groups.tsx"
 import {loader as groupsLoader} from "@/pages/Groups"
 import ErrorPage from "@/pages/Error.tsx"
@@ -53,8 +55,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: <Users />,
-        loader: usersLoader
+        element: <UsersList />,
+        loader: usersListLoader
+      },
+      {
+        path: "/users/:userId",
+        element: <UserDetails />,
+        loader: userDetailsLoader
       }
     ]
   }

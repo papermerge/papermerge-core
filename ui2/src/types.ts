@@ -26,6 +26,13 @@ export type User = NewUser & {
   id: string
 }
 
+export type UserDetails = User & {
+  groups: string[]
+  scopes: string[]
+  is_superuser: boolean
+  is_active: boolean
+}
+
 export type SliceStateStatus = "idle" | "loading" | "succeeded" | "failed"
 export type SliceStateError = undefined | string | null
 

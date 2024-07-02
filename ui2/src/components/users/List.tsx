@@ -10,7 +10,7 @@ import UserRow from "./UserRow"
 import ActionButtons from "./ActionButtons"
 import Pagination from "./Pagination"
 
-export default function Users() {
+export default function UsersList() {
   const selectedIds = useSelector(selectSelectedIds)
   const users = useSelector(selectAllUsers)
   const dispatch = useDispatch()
@@ -45,7 +45,7 @@ export default function Users() {
             <Table.Th>
               <Checkbox
                 checked={users.length == selectedIds.length}
-                onClick={e => onCheckAll(e.currentTarget.checked)}
+                onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
             <Table.Th>Username</Table.Th>

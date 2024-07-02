@@ -1,9 +1,9 @@
-import Users from "@/components/Users"
+import UsersList from "@/components/users/List"
 import {fetchUsers} from "@/slices/users"
 import {store} from "@/app/store"
 
-export default function UsersPage() {
-  return <Users />
+export default function UsersListPage() {
+  return <UsersList />
 }
 
 export async function loader() {

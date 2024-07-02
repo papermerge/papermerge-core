@@ -7,40 +7,36 @@ import {
 import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {
-  NewGroup,
-  Group,
-  Paginated,
-  SliceStateStatus,
-  SliceStateError
-} from "@/types"
+import type {NewGroup, Group, Paginated} from "@/types"
 
-const INITIAL_PAGE_SIZE = 5
+import type {SliceStateStatus, SliceStateError} from "@/types"
 
-const groupsAdapter = createEntityAdapter({
-  selectId: (group: Group) => group.id,
-  sortComparer: (g1, g2) => g1.name.localeCompare(g2.name)
-})
-
-type Pagination = {
+export type Pagination = {
   numPages: number
   pageNumber: number
   pageSize: number
 }
 
-type ExtraStateType = {
+export type ExtraStateType = {
   status: SliceStateStatus
   error: SliceStateError
   selectedIds: Array<number>
   pagination: Pagination | null
 }
 
-const extraState: ExtraStateType = {
+export const extraState: ExtraStateType = {
   status: "idle",
   error: null,
   selectedIds: [],
   pagination: null
 }
+
+export const INITIAL_PAGE_SIZE = 5
+
+const groupsAdapter = createEntityAdapter({
+  selectId: (group: Group) => group.id,
+  sortComparer: (g1, g2) => g1.name.localeCompare(g2.name)
+})
 
 const initialState = groupsAdapter.getInitialState(extraState)
 

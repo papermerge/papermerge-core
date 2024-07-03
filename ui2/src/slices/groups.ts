@@ -148,6 +148,9 @@ export default groupsSlice.reducer
 export const {selectAll: selectAllGroups} =
   groupsAdapter.getSelectors<RootState>(state => state.groups)
 
+export const selectAllGroupsStatus = (state: RootState): SliceStateStatus =>
+  state.groups.status
+
 export const selectSelectedIds = (state: RootState) => state.groups.selectedIds
 export const selectGroupById = (state: RootState, groupId?: number) => {
   if (groupId) {

@@ -1,4 +1,4 @@
-import {TextInput, Checkbox, Stack, Select} from "@mantine/core"
+import {TextInput, Checkbox, Stack, MultiSelect} from "@mantine/core"
 import CopyButton from "@/components/CopyButton"
 
 import {UserDetails} from "@/types"
@@ -29,16 +29,16 @@ export default function UserForm({user}: Args) {
         rightSection={<CopyButton value={user?.email || ""} />}
       />
       <Checkbox
-        label="Is Superuser"
+        label="Superuser"
         checked={user?.is_superuser}
         onChange={() => {}}
       />
-      <Checkbox
-        label="Is Active"
-        checked={user?.is_active}
-        onChange={() => {}}
+      <Checkbox label="Active" checked={user?.is_active} onChange={() => {}} />
+      <MultiSelect
+        label="Groups"
+        readOnly={true}
+        value={user?.groups.map(g => g.name)}
       />
-      <Select label="Groups" data={user?.groups} />
     </Stack>
   )
 }

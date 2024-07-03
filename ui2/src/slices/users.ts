@@ -121,9 +121,18 @@ export const addUser = createAsyncThunk<User, NewUser>(
   }
 )
 
-export const updateUser = createAsyncThunk<UserDetails, UserFields>(
+type UserUpdateFields = {
+  id: string
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  group_ids: number[]
+}
+
+export const updateUser = createAsyncThunk<UserDetails, UserUpdateFields>(
   "users/updateUser",
-  async (user: UserFields) => {
+  async (user: UserUpdateFields) => {
     const response = await axios.patch(`/api/users/${user.id}`, user)
     const data = response.data as UserDetails
     return data

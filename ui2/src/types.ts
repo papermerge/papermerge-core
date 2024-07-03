@@ -27,7 +27,7 @@ export type User = NewUser & {
 }
 
 export type UserDetails = User & {
-  groups: string[]
+  groups: Group[]
   scopes: string[]
   is_superuser: boolean
   is_active: boolean

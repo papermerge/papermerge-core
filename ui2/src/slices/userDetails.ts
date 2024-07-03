@@ -1,10 +1,10 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
+import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
 import type {User, SliceState, UserDetails} from "@/types"
 
-const initialState: SliceState<User> = {
+const initialState: SliceState<UserDetails> = {
   data: null,
   status: "idle",
   error: null
@@ -18,14 +18,22 @@ const userSlice = createSlice({
       state.data = null
       state.status = "idle"
       state.error = null
-    }
-  },
-  extraReducers(builder) {
-    builder.addCase(fetchUserDetails.fulfilled, (state, action) => {
+    },
+    updateUserDetails: (state, action: PayloadAction<UserDetails>) => {
       state.data = action.payload
       state.error = null
       state.status = "succeeded"
-    })
+    }
+  },
+  extraReducers(builder) {
+    builder.addCase(
+      fetchUserDetails.fulfilled,
+      (state, action: PayloadAction<UserDetails>) => {
+        state.data = action.payload
+        state.error = null
+        state.status = "succeeded"
+      }
+    )
     builder.addCase(fetchUserDetails.pending, state => {
       state.data = null
       state.error = null
@@ -39,11 +47,11 @@ const userSlice = createSlice({
   }
 })
 
-export const fetchUserDetails = createAsyncThunk<User, string>(
+export const fetchUserDetails = createAsyncThunk<UserDetails, string>(
   "user/fetchUserDetails",
   async (modelId: string) => {
     const response = await axios.get(`/api/users/${modelId}`)
-    const data = response.data as User
+    const data = response.data as UserDetails
     return data
   }
 )
@@ -65,9 +73,11 @@ export const changePassword = createAsyncThunk<UserDetails, ChangePasswordArgs>(
   }
 )
 
-export const {clearUserDetails} = userSlice.actions
+export const {clearUserDetails, updateUserDetails} = userSlice.actions
 export default userSlice.reducer
 
-export const selectUserDetails = (state: RootState): SliceState<User> => {
+export const selectUserDetails = (
+  state: RootState
+): SliceState<UserDetails> => {
   return state.userDetails
 }

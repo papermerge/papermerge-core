@@ -11,12 +11,12 @@ import EditButton from "./EditButton"
 import DeleteButton from "./DeleteButton"
 import ChangePasswordButton from "./ChangePasswordButton"
 
-export default function ModelDetailsComponent() {
+export default function UserDetailsComponent() {
   const {status, data} = useSelector<RootState>(
     selectUserDetails
   ) as SliceState<UserDetails>
 
-  if (status == "loading") {
+  if (data == null) {
     return (
       <Box pos="relative">
         <LoadingOverlay
@@ -54,7 +54,7 @@ function ActionButtons({modelId}: {modelId?: string}) {
   return (
     <Group>
       <ChangePasswordButton userId={modelId} />
-      <EditButton />
+      <EditButton userId={modelId} />
       <DeleteButton />
     </Group>
   )

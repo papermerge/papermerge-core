@@ -118,18 +118,21 @@ const GenericModal = ({
 export default GenericModal
 
 export function openModal<YieldT, PropsT>(Component: any, props?: PropsT) {
-  const modals = document.getElementById(MODALS)
+  const elemDiv = document.createElement("div")
+
+  if (!elemDiv) {
+    throw Error("There was an error creating div element for openModal")
+  }
+
   const promise = new Promise<YieldT>(function (onOK, onCancel) {
-    if (modals) {
-      const domRoot = createRoot(modals)
-      domRoot.render(
-        <MantineProvider theme={theme}>
-          <Provider store={store}>
-            <Component onOK={onOK} onCancel={onCancel} {...props} />
-          </Provider>
-        </MantineProvider>
-      )
-    }
+    const domRoot = createRoot(elemDiv)
+    domRoot.render(
+      <MantineProvider theme={theme}>
+        <Provider store={store}>
+          <Component onOK={onOK} onCancel={onCancel} {...props} />
+        </Provider>
+      </MantineProvider>
+    )
   })
 
   return promise

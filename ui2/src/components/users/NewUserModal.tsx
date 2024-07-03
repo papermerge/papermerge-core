@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react"
+import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
 
 import {useForm} from "@mantine/form"
@@ -32,34 +32,17 @@ export default function EditUserModal({
   onCancel
 }: GenericModalArgs) {
   const dispatch = useDispatch()
-  const {status, data} = useSelector<RootState>(
-    selectUserDetails
-  ) as SliceState<UserDetails>
   const allGroups = useSelector<RootState>(selectAllGroups) as Array<GroupType>
   const allGroupsStatus = useSelector<RootState>(
     selectAllGroupsStatus
   ) as SliceStateStatus
 
   const [show, setShow] = useState<boolean>(true)
-  const [groups, setGroups] = useState<string[]>(
-    data?.groups.map(g => g.name) || []
-  )
+  const [groups, setGroups] = useState<string[]>([])
 
   const form = useForm<UserEditableFields>({
     mode: "uncontrolled"
   })
-
-  useEffect(() => {
-    if (data) {
-      form.setValues({
-        username: data.username,
-        email: data.email,
-        is_active: data.is_active,
-        is_superuser: data.is_superuser,
-        groups: data.groups.map(g => g.name)
-      })
-    }
-  }, [status])
 
   const onSubmit = async (userFields: UserEditableFields) => {
     const group_ids = allGroups
@@ -86,9 +69,9 @@ export default function EditUserModal({
   }
 
   return (
-    <Modal title={"Edit User"} opened={show} onClose={onClose}>
+    <Modal title={"New User"} opened={show} onClose={onClose}>
       <LoadingOverlay
-        visible={data == null || allGroupsStatus == "loading"}
+        visible={allGroupsStatus == "loading"}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />

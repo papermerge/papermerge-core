@@ -36,7 +36,7 @@ export default function ActionButtons() {
       ) : (
         ""
       )}
-      {selectedIds.length == 1 ? <EditButton /> : ""}
+      {selectedIds.length == 1 ? <EditButton userId={selectedIds[0]} /> : ""}
       {selectedIds.length >= 1 ? <DeleteButton /> : ""}
     </Group>
   )

@@ -7,7 +7,7 @@ import {
 import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {NewUser, User, Paginated} from "@/types"
+import type {NewUser, User, UserDetails, Paginated, UserFields} from "@/types"
 
 import type {SliceStateStatus, SliceStateError} from "@/types"
 
@@ -121,11 +121,11 @@ export const addUser = createAsyncThunk<User, NewUser>(
   }
 )
 
-export const updateUser = createAsyncThunk<User, User>(
+export const updateUser = createAsyncThunk<UserDetails, UserFields>(
   "users/updateUser",
-  async (user: User) => {
+  async (user: UserFields) => {
     const response = await axios.patch(`/api/users/${user.id}`, user)
-    const data = response.data as User
+    const data = response.data as UserDetails
     return data
   }
 )

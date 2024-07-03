@@ -33,6 +33,18 @@ export type UserDetails = User & {
   is_active: boolean
 }
 
+export type UserEditableFields = {
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  groups: string[]
+}
+
+export type UserFields = UserEditableFields & {
+  id: string
+}
+
 export type SliceStateStatus = "idle" | "loading" | "succeeded" | "failed"
 export type SliceStateError = undefined | string | null
 

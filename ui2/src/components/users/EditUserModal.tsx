@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
 
 import {useForm} from "@mantine/form"
@@ -51,6 +51,18 @@ export default function EditUserModal({
     mode: "uncontrolled"
   })
 
+  useEffect(() => {
+    if (data) {
+      form.setValues({
+        username: data.username,
+        email: data.email,
+        is_active: data.is_active,
+        is_superuser: data.is_superuser,
+        groups: data.groups.map(g => g.name)
+      })
+    }
+  }, [status])
+
   const onSubmit = async (userFields: UserEditableFields) => {
     const group_ids = allGroups
       .filter(g => groups.includes(g.name))
@@ -86,27 +98,27 @@ export default function EditUserModal({
         <TextInput
           label="Username"
           placeholder="username"
-          defaultValue={data?.username}
           key={form.key("username")}
+          {...form.getInputProps("username")}
         />
         <TextInput
           mt="sm"
           label="Email"
           placeholder="email"
           key={form.key("email")}
-          defaultValue={data?.email}
+          {...form.getInputProps("email")}
         />
         <Checkbox
           mt="sm"
           label="Superuser"
           key={form.key("is_superuser")}
-          defaultChecked={data?.is_superuser}
+          {...form.getInputProps("is_superuser", {type: "checkbox"})}
         />
         <Checkbox
           mt="sm"
           label="Active"
           key={form.key("is_active")}
-          defaultChecked={data?.is_active}
+          {...form.getInputProps("is_active", {type: "checkbox"})}
         />
         <MultiSelect
           label="Groups"

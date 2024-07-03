@@ -11,12 +11,8 @@ import EditButton from "./EditButton"
 import DeleteButton from "./DeleteButton"
 import ChangePasswordButton from "./ChangePasswordButton"
 
-type Arg = {
-  modelId: string
-}
-
-export default function UserDetailsComponent({modelId}: Arg) {
-  const {status, error, data} = useSelector<RootState>(
+export default function ModelDetailsComponent() {
+  const {status, data} = useSelector<RootState>(
     selectUserDetails
   ) as SliceState<UserDetails>
 
@@ -38,7 +34,7 @@ export default function UserDetailsComponent({modelId}: Arg) {
     <>
       <Group justify="space-between">
         <Path user={data} />
-        <ActionButtons />
+        <ActionButtons modelId={data?.id} />
       </Group>
       <UserForm user={data} />
     </>
@@ -54,10 +50,10 @@ function Path({user}: {user: UserDetails | null}) {
   )
 }
 
-function ActionButtons() {
+function ActionButtons({modelId}: {modelId?: string}) {
   return (
     <Group>
-      <ChangePasswordButton />
+      <ChangePasswordButton userId={modelId} />
       <EditButton />
       <DeleteButton />
     </Group>

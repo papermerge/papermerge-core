@@ -25,17 +25,17 @@ import ChangePasswordButton from "./ChangePasswordButton"
 import DeleteButton from "./DeleteButton"
 import EditButton from "./EditButton"
 
-type ModalPropsType = {
-  modalTitle: string
-  groupId?: number
-}
 export default function ActionButtons() {
   const selectedIds = useSelector(selectSelectedIds)
 
   return (
     <Group>
       <NewButton />
-      {selectedIds.length == 1 ? <ChangePasswordButton /> : ""}
+      {selectedIds.length == 1 ? (
+        <ChangePasswordButton userId={selectedIds[0]} />
+      ) : (
+        ""
+      )}
       {selectedIds.length == 1 ? <EditButton /> : ""}
       {selectedIds.length >= 1 ? <DeleteButton /> : ""}
     </Group>

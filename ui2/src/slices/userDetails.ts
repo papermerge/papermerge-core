@@ -2,7 +2,7 @@ import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
-import type {User, SliceState} from "@/types"
+import type {User, SliceState, UserDetails} from "@/types"
 
 const initialState: SliceState<User> = {
   data: null,
@@ -44,6 +44,23 @@ export const fetchUserDetails = createAsyncThunk<User, string>(
   async (modelId: string) => {
     const response = await axios.get(`/api/users/${modelId}`)
     const data = response.data as User
+    return data
+  }
+)
+
+type ChangePasswordArgs = {
+  userId: string
+  password: string
+}
+
+export const changePassword = createAsyncThunk<UserDetails, ChangePasswordArgs>(
+  "user/changePassword",
+  async (args: ChangePasswordArgs) => {
+    const response = await axios.post(
+      `/api/users/${args.userId}/change-password/`,
+      {password: args.password}
+    )
+    const data = response.data as UserDetails
     return data
   }
 )

@@ -1,4 +1,4 @@
-import {Pagination, Skeleton, Group, Select, rem} from "@mantine/core"
+import {Pagination, Skeleton, Group, Select} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {selectPagination, fetchGroups} from "@/slices/groups"
 import classes from "./Pagination.module.css"

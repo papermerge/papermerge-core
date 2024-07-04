@@ -18,7 +18,7 @@ export default function RemoveGroupModal({
   const [errorMessage, setErrorMessage] = useState("")
   const groupNames = groups.map(g => g.name).join(",")
 
-  const handleSubmit = async (signal: AbortSignal) => {
+  const handleSubmit = async () => {
     store.dispatch(removeGroups(groups.map(g => g.id)))
     onOK(groups)
   }

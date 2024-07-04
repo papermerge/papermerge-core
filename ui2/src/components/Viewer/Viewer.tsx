@@ -5,5 +5,5 @@ type Args = {
 }
 
 export default function Viewer({mode}: Args) {
-  return <div>Viewer</div>
+  return <div>Viewer {mode}</div>
 }

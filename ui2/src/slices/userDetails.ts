@@ -2,7 +2,7 @@ import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
-import type {User, SliceState, UserDetails} from "@/types"
+import type {SliceState, UserDetails} from "@/types"
 
 const initialState: SliceState<UserDetails> = {
   data: null,

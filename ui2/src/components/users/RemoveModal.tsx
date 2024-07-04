@@ -18,7 +18,7 @@ export default function RemoveUsersModal({
   const [errorMessage, setErrorMessage] = useState("")
   const usernames = users.map(u => u.username).join(",")
 
-  const handleSubmit = async (signal: AbortSignal) => {
+  const handleSubmit = async () => {
     store.dispatch(removeUsers(users.map(u => u.id)))
     onOK(users)
   }

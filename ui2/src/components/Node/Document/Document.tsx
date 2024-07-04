@@ -1,5 +1,4 @@
 import {Checkbox} from "@mantine/core"
-import {NavLink} from "react-router-dom"
 
 import type {NodeType} from "@/types"
 import classes from "./Document.module.css"

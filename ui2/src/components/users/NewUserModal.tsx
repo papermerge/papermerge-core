@@ -27,11 +27,7 @@ type GenericModalArgs = {
   onCancel: (reason?: any) => void
 }
 
-export default function EditUserModal({
-  userId,
-  onOK,
-  onCancel
-}: GenericModalArgs) {
+export default function EditUserModal({onOK, onCancel}: GenericModalArgs) {
   const dispatch = useDispatch()
   const allGroups = useSelector<RootState>(selectAllGroups) as Array<GroupType>
   const allGroupsStatus = useSelector<RootState>(

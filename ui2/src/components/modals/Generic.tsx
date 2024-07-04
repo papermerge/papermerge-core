@@ -3,7 +3,6 @@ import {useEffect, useState, useRef} from "react"
 import {Provider} from "react-redux"
 import React from "react"
 import {theme} from "@/app/theme"
-import {MODALS} from "@/cconstants"
 import {store} from "@/app/store.ts"
 
 import {
@@ -37,7 +36,6 @@ const GenericModal = ({
   size
 }: Args) => {
   const [show, setShow] = useState<boolean>(true)
-  const [inProgress, setInProgress] = useState(false)
   const [controller, setController] = useState<AbortController>(
     new AbortController()
   )
@@ -53,11 +51,8 @@ const GenericModal = ({
   }
 
   const handleSubmit = async () => {
-    setInProgress(true)
-
     await onSubmit(controller.signal)
 
-    setInProgress(false)
     setShow(false)
   }
 
@@ -66,7 +61,6 @@ const GenericModal = ({
 
     onCancel()
 
-    setInProgress(false)
     setShow(false)
     setController(new AbortController())
   }

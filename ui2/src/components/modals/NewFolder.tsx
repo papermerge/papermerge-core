@@ -39,13 +39,11 @@ async function api_create_new_folder(
 
 const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
   const [title, setTitle] = useState("")
-  const [errorMessage, setErrorMessage] = useState("")
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value
 
     setTitle(value)
-    setErrorMessage("")
   }
 
   const handleSubmit = async (signal: AbortSignal) => {
@@ -60,7 +58,6 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
 
   const handleCancel = () => {
     setTitle("")
-    setErrorMessage("")
 
     onCancel()
   }

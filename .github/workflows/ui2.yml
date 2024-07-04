@@ -1,0 +1,32 @@
+name: UI2 Build
+
+on:
+  workflow_dispatch:
+
+  push:
+    paths:
+      - 'ui2/**'
+      - '.github/workflows/ui2.yml'
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'yarn'
+          cache-dependency-path: ui2/yarn.lock
+      - name: Install latest Yarn
+        run: corepack prepare yarn@stable --activate
+      - name: Activate latest Yarn
+        run: yarn set version stable
+      - name: Install Node.js dependencies
+        run: yarn install
+      - name: Run yarn build
+        run: yarn build

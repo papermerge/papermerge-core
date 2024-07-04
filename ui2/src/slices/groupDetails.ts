@@ -26,12 +26,12 @@ const groupsSlice = createSlice({
       state.error = null
       state.status = "succeeded"
     })
-    builder.addCase(fetchGroupDetails.pending, (state, action) => {
+    builder.addCase(fetchGroupDetails.pending, state => {
       state.data = null
       state.error = null
       state.status = "loading"
     })
-    builder.addCase(fetchGroupDetails.rejected, (state, action) => {
+    builder.addCase(fetchGroupDetails.rejected, state => {
       state.data = null
       state.error = "Error"
       state.status = "failed"

@@ -42,7 +42,7 @@ function NewButton() {
   const onClick = () => {
     openModal<GroupType, ModalPropsType>(GroupModal, {
       modalTitle: "New Group"
-    }).then((value: GroupType) => {})
+    }).then(() => {})
   }
   return (
     <Button leftSection={<IconPlus />} onClick={onClick}>
@@ -61,7 +61,7 @@ function EditButton({groupId}: {groupId: number}) {
       modalTitle: "Edit Group",
       groupId: groupId
     })
-      .then((value: GroupType) => {
+      .then(() => {
         // 1. user clicked "submit"
         // 2. group was created on server side as well in redux store
         // 3. value contains newly created group object
@@ -95,7 +95,7 @@ function DeleteButton() {
     openModal<GroupType[], RemoveModalPropsType>(RemoveGroupModal, {
       groups: groups
     })
-      .then((g: GroupType[]) => {
+      .then(() => {
         dispatch(clearSelection())
       })
       .catch(() => dispatch(clearSelection()))
@@ -115,7 +115,7 @@ type GenericModalArgs = {
 }
 
 function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
-  const {status, error, data} = useSelector<RootState>(
+  const {status, data} = useSelector<RootState>(
     selectGroupDetails
   ) as SliceState<GroupType>
   const [scopes, setScopes] = useState<string[]>([])
@@ -129,7 +129,7 @@ function GroupModal({groupId, modalTitle, onOK, onCancel}: GenericModalArgs) {
     }
   }, [data])
 
-  const handleSubmit = async (signal: AbortSignal) => {
+  const handleSubmit = async () => {
     if (groupId) {
       const result = await store.dispatch(
         updateGroup({id: groupId, name, scopes})

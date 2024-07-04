@@ -20,9 +20,13 @@ export default function ToggleSecondaryPanel({mode}: Args) {
   const user: User = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
 
+  if (mainPanel) {
+    // mainPanel is always there
+  }
+
   const onClick = () => {
     const folderId = user.home_folder_id
-    dispatch(openSecondaryPanel({folderId}))
+    dispatch(openSecondaryPanel())
     dispatch(
       fetchPaginatedNodes({
         folderId,

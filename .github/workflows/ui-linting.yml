@@ -1,0 +1,24 @@
+name: UI Linting
+
+on:
+  workflow_dispatch:
+
+  push:
+    paths:
+      - 'ui2/**'
+      - '.github/workflows/ui-linting.yml'
+
+jobs:
+  ui-linting:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ui2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install modules
+        run: |
+          yarn i
+      - name: Run linting
+        run: |
+          yarn exec tsc

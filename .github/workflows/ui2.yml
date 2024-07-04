@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./ui2
+        working-directory: ui2
     steps:
       - uses: actions/checkout@v4
       - name: Set Node.js 20.x
@@ -23,9 +23,14 @@ jobs:
           cache: 'yarn'
       - name: Install latest Yarn
         run: corepack prepare yarn@stable --activate
+        working-directory: ui2
       - name: Activate latest Yarn
         run: yarn set version stable
+        working-directory: ui2
       - name: Install Node.js dependencies
         run: yarn install
+        working-directory: ui2
       - name: Run yarn build
         run: yarn build
+        working-directory: ui2
+

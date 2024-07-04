@@ -14,13 +14,43 @@ export type OcrStatusEnum =
 
 export type CType = "folder" | "document"
 
-export type User = {
-  id: string
+export type CreateUser = {
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  group_ids: number[]
+}
+
+export type NewUser = {
   username: string
   email: string
   home_folder_id: string
   inbox_folder_id: string
   scopes: Array<string>
+}
+
+export type User = NewUser & {
+  id: string
+}
+
+export type UserDetails = User & {
+  groups: Group[]
+  scopes: string[]
+  is_superuser: boolean
+  is_active: boolean
+}
+
+export type UserEditableFields = {
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  groups: string[]
+}
+
+export type UserFields = UserEditableFields & {
+  id: string
 }
 
 export type SliceStateStatus = "idle" | "loading" | "succeeded" | "failed"

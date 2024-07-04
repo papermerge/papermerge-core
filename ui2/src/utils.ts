@@ -24,6 +24,7 @@ export function getRemoteUser(): string | null {
 
 export function getDefaultHeaders(): Record<string, string> {
   const remote_user = getRemoteUser()
+
   let headers = {}
 
   if (remote_user) {
@@ -61,3 +62,16 @@ async function getCurrentUser(): Promise<User> {
 }
 
 export {getCurrentUser}
+
+export function makeRandomString(length: number): string {
+  let result = ""
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  const charactersLength = characters.length
+  let counter = 0
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    counter += 1
+  }
+  return result
+}

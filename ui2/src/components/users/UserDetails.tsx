@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
 import {Link} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group, Button} from "@mantine/core"
+import {Breadcrumbs, Box, LoadingOverlay, Group} from "@mantine/core"
 
 import {selectUserDetails} from "@/slices/userDetails"
 
@@ -12,7 +12,7 @@ import DeleteButton from "./DeleteButton"
 import ChangePasswordButton from "./ChangePasswordButton"
 
 export default function UserDetailsComponent() {
-  const {status, data} = useSelector<RootState>(
+  const {data} = useSelector<RootState>(
     selectUserDetails
   ) as SliceState<UserDetails>
 

@@ -25,7 +25,7 @@ export default function DeleteButton() {
     openModal<User[], {users: Array<User>}>(RemoveUserModal, {
       users: users
     })
-      .then((g: User[]) => {
+      .then(() => {
         dispatch(clearSelection())
       })
       .catch(() => dispatch(clearSelection()))

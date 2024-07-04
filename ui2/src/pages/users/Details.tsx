@@ -7,7 +7,7 @@ export default function UserDetailsPage() {
   const userId = useLoaderData() as string
 
   if (userId) {
-    return <UserDetails modelId={userId} />
+    return <UserDetails />
   }
 
   throw Error("Detail page: missing userId parameter")

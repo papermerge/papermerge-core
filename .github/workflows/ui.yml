@@ -24,7 +24,9 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install # will run `yarn install` command
+          dir: ui2
       - name: Run tsc
         uses: borales/actions-yarn@v4
         with:
           cmd: build  # runs tsc & vite build
+          dir: ui2

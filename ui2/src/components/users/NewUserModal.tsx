@@ -14,12 +14,12 @@ import {
 
 import {addUser} from "@/slices/users"
 import {UserEditableFields, Group as GroupType} from "@/types"
-import {selectUserDetails} from "@/slices/userDetails"
 
 import {RootState} from "@/app/types"
-import type {SliceState, SliceStateStatus, UserDetails} from "@/types"
+import type {SliceStateStatus, UserDetails} from "@/types"
 import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
 import {makeRandomString} from "@/utils"
+import {emailValidator, usernameValidator} from "./validators"
 
 type GenericModalArgs = {
   userId: string
@@ -42,7 +42,11 @@ export default function EditUserModal({
   const [groups, setGroups] = useState<string[]>([])
 
   const form = useForm<UserEditableFields>({
-    mode: "uncontrolled"
+    mode: "uncontrolled",
+    validate: {
+      username: usernameValidator,
+      email: emailValidator
+    }
   })
 
   const onSubmit = async (userFields: UserEditableFields) => {
@@ -87,6 +91,7 @@ export default function EditUserModal({
         <TextInput
           mt="sm"
           label="Email"
+          type="email"
           placeholder="email"
           key={form.key("email")}
           {...form.getInputProps("email")}

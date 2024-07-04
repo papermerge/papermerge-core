@@ -1,3 +1,4 @@
+import os
 import logging
 from typing import Annotated
 from uuid import UUID
@@ -168,11 +169,14 @@ def delete_user(
         )
 
     try:
-        delete_user_data.apply_async(
-            kwargs={
-                'user_id': str(user_id)
-            }
-        )
+        if os.environ.get('PAPERMERGE__REDIS__URL'):
+            delete_user_data.apply_async(
+                kwargs={
+                    'user_id': str(user_id)
+                }
+            )
+        else:
+            delete_user_data(user_id)
     except User.DoesNotExist:
         raise HTTPException(
             status_code=404,

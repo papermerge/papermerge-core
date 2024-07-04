@@ -1,0 +1,30 @@
+name: UI build
+
+on:
+  workflow_dispatch:
+
+  push:
+    paths:
+      - 'ui2/**'
+      - '.github/workflows/ui-linting.yml'
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ui2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+      - name: Run tsc
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build  # runs tsc & vite build

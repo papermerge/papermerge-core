@@ -24,14 +24,9 @@ jobs:
           cache-dependency-path: ui2/yarn.lock
       - name: Install latest Yarn
         run: corepack prepare yarn@stable --activate
-        working-directory: ui2
       - name: Activate latest Yarn
         run: yarn set version stable
-        working-directory: ui2
       - name: Install Node.js dependencies
         run: yarn install
-        working-directory: ui2
       - name: Run yarn build
         run: yarn build
-        working-directory: ui2
-

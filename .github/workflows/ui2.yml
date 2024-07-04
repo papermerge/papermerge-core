@@ -1,4 +1,4 @@
-name: UI build
+name: UI2 Build
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
   push:
     paths:
       - 'ui2/**'
-      - '.github/workflows/ui-linting.yml'
+      - '.github/workflows/ui2.yml'
 
 jobs:
   ui:

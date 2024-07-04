@@ -7,7 +7,7 @@ import {
 import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {NewUser, User, UserDetails, Paginated, UserFields} from "@/types"
+import type {CreateUser, User, UserDetails, Paginated} from "@/types"
 
 import type {SliceStateStatus, SliceStateError} from "@/types"
 
@@ -112,9 +112,9 @@ export const fetchUser = createAsyncThunk<User, string>(
   }
 )
 
-export const addUser = createAsyncThunk<User, NewUser>(
+export const addUser = createAsyncThunk<User, CreateUser>(
   "users/addUser",
-  async (newUser: NewUser) => {
+  async (newUser: CreateUser) => {
     const response = await axios.post("/api/users/", newUser)
     const data = response.data as User
     return data

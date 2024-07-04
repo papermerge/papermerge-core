@@ -12,13 +12,14 @@ import {
   LoadingOverlay
 } from "@mantine/core"
 
-import {updateUser} from "@/slices/users"
+import {addUser} from "@/slices/users"
 import {UserEditableFields, Group as GroupType} from "@/types"
 import {selectUserDetails} from "@/slices/userDetails"
 
 import {RootState} from "@/app/types"
 import type {SliceState, SliceStateStatus, UserDetails} from "@/types"
 import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
+import {makeRandomString} from "@/utils"
 
 type GenericModalArgs = {
   userId: string
@@ -48,16 +49,17 @@ export default function EditUserModal({
     const group_ids = allGroups
       .filter(g => groups.includes(g.name))
       .map(g => g.id)
-    const updatedData = {
-      id: userId,
+    const newUserData = {
       username: userFields.username,
       email: userFields.email,
-      is_active: userFields.is_active,
-      is_superuser: userFields.is_superuser,
+      is_active: userFields.is_active || false,
+      is_superuser: userFields.is_superuser || false,
+      password: makeRandomString(24),
+      scopes: [],
       group_ids: group_ids
     }
 
-    const response = await dispatch(updateUser(updatedData))
+    const response = await dispatch(addUser(newUserData))
     const userDetailsData = response.payload as UserDetails
 
     onOK(userDetailsData)

@@ -14,6 +14,14 @@ export type OcrStatusEnum =
 
 export type CType = "folder" | "document"
 
+export type CreateUser = {
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  group_ids: number[]
+}
+
 export type NewUser = {
   username: string
   email: string

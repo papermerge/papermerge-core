@@ -12,6 +12,5 @@
 #!.yarn/cache
 .pnp.*
 node_modules/
-.yarn/
 .vscode/
 .env.development.local

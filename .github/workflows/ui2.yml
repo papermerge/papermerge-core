@@ -20,13 +20,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install # will run `yarn install` command
-          dir: ui2
-      - name: Run tsc
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: build  # runs tsc & vite build
-          dir: ui2
+          cache: 'yarn'
+      - name: Install latest Yarn
+        run: corepack prepare yarn@stable --activate
+      - name: Activate latest Yarn
+        run: yarn set version stable
+      - name: Install Node.js dependencies
+        run: yarn install
+      - name: Run yarn build
+        run: yarn build

@@ -3,7 +3,7 @@ import {Group} from "@mantine/core"
 import {selectSelectedIds} from "@/slices/groups"
 import NewButton from "./NewButton"
 import EditButton from "./EditButton"
-import DeleteButton from "./DeleteButton"
+import {DeleteGroupsButton} from "./DeleteButton"
 
 export default function ActionButtons() {
   const selectedIds = useSelector(selectSelectedIds)
@@ -12,7 +12,7 @@ export default function ActionButtons() {
     <Group>
       <NewButton />
       {selectedIds.length == 1 ? <EditButton groupId={selectedIds[0]} /> : ""}
-      {selectedIds.length >= 1 ? <DeleteButton /> : ""}
+      {selectedIds.length >= 1 ? <DeleteGroupsButton /> : ""}
     </Group>
   )
 }

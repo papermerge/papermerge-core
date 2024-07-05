@@ -134,9 +134,11 @@ export const updateGroup = createAsyncThunk<Group, Group>(
 export const removeGroups = createAsyncThunk<number[], number[]>(
   "groups/removeGroup",
   async (groupIds: number[]) => {
-    groupIds.forEach(gid => {
-      axios.delete(`/api/groups/${gid}`)
-    })
+    await Promise.all(
+      groupIds.map(gid => {
+        axios.delete(`/api/groups/${gid}`)
+      })
+    )
 
     return groupIds
   }

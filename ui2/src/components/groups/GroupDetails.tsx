@@ -8,7 +8,7 @@ import type {GroupDetails, SliceState} from "@/types"
 import type {RootState} from "@/app/types"
 import GroupForm from "./GroupForm"
 import EditButton from "./EditButton"
-import DeleteButton from "./DeleteButton"
+import {DeleteGroupButton} from "./DeleteButton"
 
 export default function GroupDetailsComponent() {
   const {data} = useSelector<RootState>(
@@ -49,11 +49,11 @@ function Path({group}: {group: GroupDetails | null}) {
   )
 }
 
-function ActionButtons({modelId}: {modelId?: string}) {
+function ActionButtons({modelId}: {modelId?: number}) {
   return (
     <Group>
       <EditButton groupId={modelId} />
-      <DeleteButton />
+      <DeleteGroupButton groupId={modelId!} />
     </Group>
   )
 }

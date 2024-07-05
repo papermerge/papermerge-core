@@ -1,9 +1,12 @@
+import {useEffect} from "react"
 import {Button} from "@mantine/core"
 import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
+import {useNavigate} from "react-router-dom"
 
 import {
   selectSelectedIds,
+  selectUserById,
   selectUsersByIds,
   clearSelection
 } from "@/slices/users"
@@ -11,10 +14,40 @@ import {openModal} from "@/components/modals/Generic"
 
 import type {User} from "@/types"
 
-import RemoveUserModal from "./RemoveModal"
+import {RemoveUserModal, RemoveUsersModal} from "./RemoveModal"
 import {RootState} from "@/app/types"
 
-export default function DeleteButton() {
+export function DeleteUserButton({userId}: {userId: string}) {
+  const navigate = useNavigate()
+
+  const deletedUser = useSelector<RootState>(state =>
+    selectUserById(state, userId)
+  )
+
+  useEffect(() => {
+    if (!deletedUser) {
+      navigate("/users/")
+    }
+  }, [deletedUser])
+
+  const onClick = () => {
+    openModal<User[], {userId: string}>(RemoveUserModal, {
+      userId: userId
+    })
+      .then(() => {
+        //
+      })
+      .catch(() => {})
+  }
+  return (
+    <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
+      Delete
+    </Button>
+  )
+}
+
+/* Deletes one or multiple users (with confirmation) */
+export function DeleteUsersButton() {
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
   const users = useSelector<RootState>(state =>
@@ -22,7 +55,7 @@ export default function DeleteButton() {
   ) as Array<User>
 
   const onClick = () => {
-    openModal<User[], {users: Array<User>}>(RemoveUserModal, {
+    openModal<User[], {users: Array<User>}>(RemoveUsersModal, {
       users: users
     })
       .then(() => {

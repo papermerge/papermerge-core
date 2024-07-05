@@ -140,3 +140,9 @@ export type NewGroup = {
 export type Group = NewGroup & {
   id: number
 }
+
+export type GroupDetails = {
+  id: number
+  name: string
+  scopes: Array<string>
+}

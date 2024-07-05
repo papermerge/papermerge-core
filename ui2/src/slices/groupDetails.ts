@@ -1,8 +1,8 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
+import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "axios"
 
 import {RootState} from "@/app/types"
-import type {Group, SliceState} from "@/types"
+import type {Group, GroupDetails, SliceState} from "@/types"
 
 const initialState: SliceState<Group> = {
   data: null,
@@ -18,6 +18,11 @@ const groupsSlice = createSlice({
       state.data = null
       state.status = "idle"
       state.error = null
+    },
+    updateGroupDetails: (state, action: PayloadAction<GroupDetails>) => {
+      state.data = action.payload
+      state.error = null
+      state.status = "succeeded"
     }
   },
   extraReducers(builder) {
@@ -48,7 +53,7 @@ export const fetchGroupDetails = createAsyncThunk<Group, number>(
   }
 )
 
-export const {clearGroupDetails} = groupsSlice.actions
+export const {clearGroupDetails, updateGroupDetails} = groupsSlice.actions
 export default groupsSlice.reducer
 
 export const selectGroupDetails = (state: RootState): SliceState<Group> => {

@@ -10,7 +10,7 @@ import GroupRow from "./GroupRow"
 import ActionButtons from "./ActionButtons"
 import Pagination from "./Pagination"
 
-export default function Groups() {
+export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const groups = useSelector(selectAllGroups)
   const dispatch = useDispatch()
@@ -45,7 +45,7 @@ export default function Groups() {
             <Table.Th>
               <Checkbox
                 checked={groups.length == selectedIds.length}
-                onClick={e => onCheckAll(e.currentTarget.checked)}
+                onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>

@@ -1,6 +1,20 @@
-import {useState} from "react"
+import {useDispatch, useSelector} from "react-redux"
+import {useState, useEffect} from "react"
+import {
+  Modal,
+  LoadingOverlay,
+  Group,
+  Button,
+  TextInput,
+  Table,
+  Checkbox,
+  Tooltip
+} from "@mantine/core"
 
-import {Container, TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
+import {updateGroup} from "@/slices/groups"
+import {selectGroupDetails} from "@/slices/groupDetails"
+import {RootState} from "@/app/types"
+import type {GroupDetails, SliceState} from "@/types"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {
@@ -15,22 +29,42 @@ function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
 }
 
 type Args = {
-  initialName: string
-  initialScopes: string[]
-  onNameChange: (name: string) => void
-  onPermsChange: (scopes: string[]) => void
+  groupId: number
+  onOK: (value: GroupDetails) => void
+  onCancel: (reason?: any) => void
 }
 
-export default function GroupModal({
-  initialName,
-  initialScopes,
-  onNameChange,
-  onPermsChange
-}: Args) {
-  const [name, setName] = useState<string>(initialName)
-  const [scopes, setScopes] = useState<Record<string, boolean>>(
-    initialScopesDict(initialScopes)
-  )
+export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
+  const dispatch = useDispatch()
+  const {status, data} = useSelector<RootState>(
+    selectGroupDetails
+  ) as SliceState<GroupDetails>
+  const [show, setShow] = useState<boolean>(true)
+  const [name, setName] = useState<string>()
+  const [scopes, setScopes] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (data) {
+      setName(data.name)
+      setScopes(initialScopesDict(data.scopes))
+    }
+  }, [status])
+
+  const onSubmit = async () => {
+    const updatedData = {
+      id: groupId,
+      scopes: Object.keys(scopes),
+      name: name!
+    }
+    await dispatch(updateGroup(updatedData))
+    onOK(updatedData)
+    setShow(false)
+  }
+
+  const onClose = () => {
+    onCancel()
+    setShow(false)
+  }
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newScopes: Record<string, boolean> = {}
@@ -42,7 +76,6 @@ export default function GroupModal({
       newScopes = {}
       setScopes(newScopes)
     }
-    onPermsChange(Object.keys(newScopes))
   }
   const onChangePerm = (perm: string, checked: boolean) => {
     let newScopes: Record<string, boolean> = {}
@@ -61,7 +94,6 @@ export default function GroupModal({
       })
       setScopes(newScopes)
     }
-    onPermsChange(Object.keys(newScopes))
   }
   const onChangePerms = (perms: string[], checked: boolean) => {
     let newScopes: Record<string, boolean> = {}
@@ -80,16 +112,19 @@ export default function GroupModal({
       })
       setScopes(newScopes)
     }
-    onPermsChange(Object.keys(newScopes))
   }
 
   const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.currentTarget.value)
-    onNameChange(e.currentTarget.value)
   }
 
   return (
-    <Container>
+    <Modal title={"Edit Group"} opened={show} size="lg" onClose={onClose}>
+      <LoadingOverlay
+        visible={data == null || status == "loading"}
+        zIndex={1000}
+        overlayProps={{radius: "sm", blur: 2}}
+      />
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
@@ -472,7 +507,13 @@ export default function GroupModal({
           </Table.Tr>
         </Table.Tbody>
       </Table>
-    </Container>
+      <Group justify="space-between" mt="md">
+        <Button variant="default" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button onClick={onSubmit}>Submit</Button>
+      </Group>
+    </Modal>
   )
 }
 

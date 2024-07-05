@@ -274,7 +274,6 @@ function hasPerm(scopes: string[], perm: string): boolean {
 
 const DOCUMENT_DOWNLOAD = "document.download"
 const DOCUMENT_UPLOAD = "document.upload"
-const PAGE_VIEW = "page.view"
 const PAGE_MOVE = "page.move"
 const PAGE_UPDATE = "page.update"
 const PAGE_DELETE = "page.delete"
@@ -283,7 +282,6 @@ const USER_VIEW = "user.view"
 const USER_CREATE = "user.create"
 const USER_UPDATE = "user.update"
 const USER_DELETE = "user.delete"
-const USER_ME = "user.me"
 const GROUP_VIEW = "group.view"
 const GROUP_CREATE = "group.create"
 const GROUP_UPDATE = "group.update"
@@ -292,40 +290,8 @@ const TAG_VIEW = "tag.view"
 const TAG_CREATE = "tag.create"
 const TAG_UPDATE = "tag.update"
 const TAG_DELETE = "tag.delete"
-const NODE_VIEW = "node.view"
 const NODE_CREATE = "node.create"
 const NODE_UPDATE = "node.update"
 const NODE_DELETE = "node.delete"
 const NODE_MOVE = "node.move"
 const TASK_OCR = "task.ocr"
-const OCRLANG_VIEW = "ocrlang.view"
-
-const ALL_PERMS = [
-  DOCUMENT_DOWNLOAD,
-  DOCUMENT_UPLOAD,
-  PAGE_VIEW,
-  PAGE_MOVE,
-  PAGE_UPDATE,
-  PAGE_DELETE,
-  PAGE_EXTRACT,
-  USER_VIEW,
-  USER_CREATE,
-  USER_UPDATE,
-  USER_DELETE,
-  USER_ME,
-  GROUP_VIEW,
-  GROUP_CREATE,
-  GROUP_UPDATE,
-  GROUP_DELETE,
-  TAG_VIEW,
-  TAG_CREATE,
-  TAG_UPDATE,
-  TAG_DELETE,
-  NODE_VIEW,
-  NODE_MOVE,
-  NODE_CREATE,
-  NODE_UPDATE,
-  NODE_DELETE,
-  TASK_OCR,
-  OCRLANG_VIEW
-]

@@ -1,3 +1,4 @@
-import Groups from "./Groups"
+import GroupsList from "./List"
+import GroupDetails from "./GroupDetails"
 
-export default Groups
+export {GroupsList, GroupDetails}

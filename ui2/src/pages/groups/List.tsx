@@ -1,9 +1,9 @@
-import Groups from "@/components/groups"
+import GroupsList from "@/components/groups/List"
 import {fetchGroups} from "@/slices/groups"
 import {store} from "@/app/store"
 
 export default function GroupsPage() {
-  return <Groups />
+  return <GroupsList />
 }
 
 export async function loader() {

@@ -1,5 +1,5 @@
 import {useDispatch, useSelector} from "react-redux"
-import {useState, useEffect} from "react"
+import {useState} from "react"
 import {
   Modal,
   LoadingOverlay,
@@ -11,52 +11,31 @@ import {
   Tooltip
 } from "@mantine/core"
 
-import {updateGroup} from "@/slices/groups"
-import {selectGroupDetails} from "@/slices/groupDetails"
-import {RootState} from "@/app/types"
-import type {GroupDetails, SliceState} from "@/types"
-
-function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
-  let scopes: Record<string, boolean> = {
-    "user.me": true,
-    "page.view": true,
-    "node.view": true,
-    "ocrlang.view": true
-  }
-  initialScopes.map(i => (scopes[i] = true))
-
-  return scopes
-}
+import {addGroup} from "@/slices/groups"
+import type {GroupDetails} from "@/types"
 
 type Args = {
-  groupId: number
   onOK: (value: GroupDetails) => void
   onCancel: (reason?: any) => void
 }
 
-export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
+export default function NewGroupModal({onOK, onCancel}: Args) {
   const dispatch = useDispatch()
-  const {status, data} = useSelector<RootState>(
-    selectGroupDetails
-  ) as SliceState<GroupDetails>
   const [show, setShow] = useState<boolean>(true)
   const [name, setName] = useState<string>()
-  const [scopes, setScopes] = useState<Record<string, boolean>>({})
-
-  useEffect(() => {
-    if (data) {
-      setName(data.name)
-      setScopes(initialScopesDict(data.scopes))
-    }
-  }, [status])
+  const [scopes, setScopes] = useState<Record<string, boolean>>({
+    "user.me": true,
+    "page.view": true,
+    "node.view": true,
+    "ocrlang.view": true
+  })
 
   const onSubmit = async () => {
     const updatedData = {
-      id: groupId,
       scopes: Object.keys(scopes),
       name: name!
     }
-    const response = await dispatch(updateGroup(updatedData))
+    const response = await dispatch(addGroup(updatedData))
     const groupDetailsData = response.payload as GroupDetails
 
     onOK(groupDetailsData)
@@ -121,12 +100,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
   }
 
   return (
-    <Modal title={"Edit User"} opened={show} onClose={onClose}>
-      <LoadingOverlay
-        visible={data == null || status == "loading"}
-        zIndex={1000}
-        overlayProps={{radius: "sm", blur: 2}}
-      />
+    <Modal title={"New Group"} opened={show} size="lg" onClose={onClose}>
       <TextInput
         value={name}
         onChange={onNameChangeHandler}

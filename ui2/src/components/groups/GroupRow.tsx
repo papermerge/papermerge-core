@@ -1,3 +1,4 @@
+import {Link} from "react-router-dom"
 import {useDispatch, useSelector} from "react-redux"
 import {Table, Checkbox} from "@mantine/core"
 import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/groups"
@@ -27,7 +28,9 @@ export default function GroupRow({group}: Args) {
           onChange={onChange}
         />
       </Table.Td>
-      <Table.Td>{group.name}</Table.Td>
+      <Table.Td>
+        <Link to={`/groups/${group.id}`}>{group.name}</Link>
+      </Table.Td>
     </Table.Tr>
   )
 }

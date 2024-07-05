@@ -1,112 +1,26 @@
-import {useState} from "react"
-
 import {Container, TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
+import CopyButton from "@/components/CopyButton"
 
-function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
-  let scopes: Record<string, boolean> = {
-    "user.me": true,
-    "page.view": true,
-    "node.view": true,
-    "ocrlang.view": true
-  }
-  initialScopes.map(i => (scopes[i] = true))
-
-  return scopes
-}
+import type {GroupDetails} from "@/types"
 
 type Args = {
-  initialName: string
-  initialScopes: string[]
-  onNameChange: (name: string) => void
-  onPermsChange: (scopes: string[]) => void
+  group: GroupDetails | null
 }
 
-export default function GroupModal({
-  initialName,
-  initialScopes,
-  onNameChange,
-  onPermsChange
-}: Args) {
-  const [name, setName] = useState<string>(initialName)
-  const [scopes, setScopes] = useState<Record<string, boolean>>(
-    initialScopesDict(initialScopes)
-  )
-
-  const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let newScopes: Record<string, boolean> = {}
-
-    if (event.target.checked) {
-      ALL_PERMS.forEach(p => (newScopes[p] = true))
-      setScopes(newScopes)
-    } else {
-      newScopes = {}
-      setScopes(newScopes)
-    }
-    onPermsChange(Object.keys(newScopes))
-  }
-  const onChangePerm = (perm: string, checked: boolean) => {
-    let newScopes: Record<string, boolean> = {}
-
-    if (checked) {
-      Object.keys(scopes).forEach(p => {
-        newScopes[p] = true
-      })
-      newScopes[perm] = true
-      setScopes(newScopes)
-    } else {
-      Object.keys(scopes).forEach(p => {
-        if (p != perm) {
-          newScopes[p] = true
-        }
-      })
-      setScopes(newScopes)
-    }
-    onPermsChange(Object.keys(newScopes))
-  }
-  const onChangePerms = (perms: string[], checked: boolean) => {
-    let newScopes: Record<string, boolean> = {}
-
-    if (checked) {
-      Object.keys(scopes).forEach(p => {
-        newScopes[p] = true
-      })
-      perms.forEach(p => (newScopes[p] = true))
-      setScopes(newScopes)
-    } else {
-      Object.keys(scopes).forEach(p => {
-        if (!perms.find(i => i == p)) {
-          newScopes[p] = true
-        }
-      })
-      setScopes(newScopes)
-    }
-    onPermsChange(Object.keys(newScopes))
-  }
-
-  const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.currentTarget.value)
-    onNameChange(e.currentTarget.value)
-  }
-
+export default function GroupModal({group}: Args) {
   return (
     <Container>
       <TextInput
-        value={name}
-        onChange={onNameChangeHandler}
+        value={group?.name}
+        onChange={() => {}}
         label="Name"
-        placeholder="Group name"
+        rightSection={<CopyButton value={group?.name || ""} />}
       />
       <Table>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Permissions</Table.Th>
-            <Table.Th>
-              <Checkbox
-                checked={hasAllPerms(scopes)}
-                onChange={onChangeAll}
-                label="All"
-              />
-            </Table.Th>
+            <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
@@ -114,101 +28,50 @@ export default function GroupModal({
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr key="document">
+            <Table.Td>Documents</Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerms(scopes, [DOCUMENT_UPLOAD, DOCUMENT_DOWNLOAD])}
-                onChange={e =>
-                  onChangePerms(
-                    [DOCUMENT_UPLOAD, DOCUMENT_DOWNLOAD],
-                    e.target.checked
-                  )
-                }
-                label="Documents"
-              />
-            </Table.Td>
-            <Table.Td>
-              <Checkbox
-                checked={hasPerm(scopes, DOCUMENT_UPLOAD)}
-                onChange={e => onChangePerm(DOCUMENT_UPLOAD, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], DOCUMENT_UPLOAD)}
                 label="Upload"
               />
             </Table.Td>
 
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, DOCUMENT_DOWNLOAD)}
-                onChange={e =>
-                  onChangePerm(DOCUMENT_DOWNLOAD, e.target.checked)
-                }
+                checked={hasPerm(group?.scopes || [], DOCUMENT_DOWNLOAD)}
                 label="Download"
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="pages">
+            <Table.Td>Pages</Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerms(scopes, [
-                  PAGE_UPDATE,
-                  PAGE_MOVE,
-                  PAGE_DELETE,
-                  PAGE_EXTRACT
-                ])}
-                onChange={e =>
-                  onChangePerms(
-                    [PAGE_UPDATE, PAGE_MOVE, PAGE_DELETE, PAGE_EXTRACT],
-                    e.target.checked
-                  )
-                }
-                label="Pages"
-              />
-            </Table.Td>
-            <Table.Td>
-              <Checkbox
-                checked={hasPerm(scopes, PAGE_MOVE)}
-                onChange={e => onChangePerm(PAGE_MOVE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], PAGE_MOVE)}
                 label="Move"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, PAGE_UPDATE)}
-                onChange={e => onChangePerm(PAGE_UPDATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], PAGE_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, PAGE_EXTRACT)}
-                onChange={e => onChangePerm(PAGE_EXTRACT, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], PAGE_EXTRACT)}
                 label="Extract"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, PAGE_DELETE)}
-                onChange={e => onChangePerm(PAGE_DELETE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], PAGE_DELETE)}
                 label="Delete"
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="users">
-            <Table.Td>
-              <Checkbox
-                checked={hasPerms(scopes, [
-                  USER_VIEW,
-                  USER_CREATE,
-                  USER_UPDATE,
-                  USER_DELETE
-                ])}
-                onChange={e =>
-                  onChangePerms(
-                    [USER_VIEW, USER_CREATE, USER_UPDATE, USER_DELETE],
-                    e.target.checked
-                  )
-                }
-                label="Users"
-              />
-            </Table.Td>
+            <Table.Td>Users</Table.Td>
             <Tooltip
               label="Grants access to users tab on left side navigation panel"
               multiline
@@ -218,52 +81,32 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, USER_VIEW)}
-                  onChange={e => onChangePerm(USER_VIEW, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], USER_VIEW)}
                   label="View"
                 />
               </Table.Td>
             </Tooltip>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, USER_CREATE)}
-                onChange={e => onChangePerm(USER_CREATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], USER_CREATE)}
                 label="Create"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, USER_UPDATE)}
-                onChange={e => onChangePerm(USER_UPDATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], USER_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, USER_DELETE)}
-                onChange={e => onChangePerm(USER_DELETE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], USER_DELETE)}
                 label="Delete"
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="group">
-            <Table.Td>
-              <Checkbox
-                checked={hasPerms(scopes, [
-                  GROUP_VIEW,
-                  GROUP_CREATE,
-                  GROUP_UPDATE,
-                  GROUP_DELETE
-                ])}
-                onChange={e =>
-                  onChangePerms(
-                    [GROUP_VIEW, GROUP_CREATE, GROUP_UPDATE, GROUP_DELETE],
-                    e.target.checked
-                  )
-                }
-                label="Groups"
-              />
-            </Table.Td>
+            <Table.Td>Groups</Table.Td>
             <Tooltip
               label="Grants access to groups tab on left side navigation panel"
               multiline
@@ -273,52 +116,32 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, GROUP_VIEW)}
-                  onChange={e => onChangePerm(GROUP_VIEW, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], GROUP_VIEW)}
                   label="View"
                 />
               </Table.Td>
             </Tooltip>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, GROUP_CREATE)}
-                onChange={e => onChangePerm(GROUP_CREATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], GROUP_CREATE)}
                 label="Create"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, GROUP_UPDATE)}
-                onChange={e => onChangePerm(GROUP_UPDATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], GROUP_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, GROUP_DELETE)}
-                onChange={e => onChangePerm(GROUP_DELETE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], GROUP_DELETE)}
                 label="Delete"
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="tags">
-            <Table.Td>
-              <Checkbox
-                checked={hasPerms(scopes, [
-                  TAG_VIEW,
-                  TAG_CREATE,
-                  TAG_UPDATE,
-                  TAG_DELETE
-                ])}
-                onChange={e =>
-                  onChangePerms(
-                    [TAG_VIEW, TAG_CREATE, TAG_UPDATE, TAG_DELETE],
-                    e.target.checked
-                  )
-                }
-                label="Tags"
-              />
-            </Table.Td>
+            <Table.Td>Tags</Table.Td>
             <Tooltip
               label="Grants access to tags tab on left side navigation panel"
               multiline
@@ -328,8 +151,7 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, TAG_VIEW)}
-                  onChange={e => onChangePerm(TAG_VIEW, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], TAG_VIEW)}
                   label="View"
                 />
               </Table.Td>
@@ -343,8 +165,7 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, TAG_CREATE)}
-                  onChange={e => onChangePerm(TAG_CREATE, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], TAG_CREATE)}
                   label="Create"
                 />
               </Table.Td>
@@ -358,8 +179,7 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, TAG_UPDATE)}
-                  onChange={e => onChangePerm(TAG_UPDATE, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], TAG_UPDATE)}
                   label="Update"
                 />
               </Table.Td>
@@ -376,8 +196,7 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, TAG_DELETE)}
-                  onChange={e => onChangePerm(TAG_DELETE, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], TAG_DELETE)}
                   label="Delete"
                 />
               </Table.Td>
@@ -391,23 +210,7 @@ export default function GroupModal({
               openDelay={2000}
               withArrow
             >
-              <Table.Td>
-                <Checkbox
-                  checked={hasPerms(scopes, [
-                    NODE_CREATE,
-                    NODE_DELETE,
-                    NODE_MOVE,
-                    NODE_UPDATE
-                  ])}
-                  onChange={e =>
-                    onChangePerms(
-                      [NODE_CREATE, NODE_DELETE, NODE_MOVE, NODE_UPDATE],
-                      e.target.checked
-                    )
-                  }
-                  label="Nodes"
-                />
-              </Table.Td>
+              <Table.Td>Nodes</Table.Td>
             </Tooltip>
             <Tooltip
               label={"Grants permission to create folders"}
@@ -418,42 +221,32 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, NODE_CREATE)}
-                  onChange={e => onChangePerm(NODE_CREATE, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], NODE_CREATE)}
                   label="Create"
                 />
               </Table.Td>
             </Tooltip>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, NODE_UPDATE)}
-                onChange={e => onChangePerm(NODE_UPDATE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], NODE_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, NODE_DELETE)}
-                onChange={e => onChangePerm(NODE_DELETE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], NODE_DELETE)}
                 label="Delete"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
-                checked={hasPerm(scopes, NODE_MOVE)}
-                onChange={e => onChangePerm(NODE_MOVE, e.target.checked)}
+                checked={hasPerm(group?.scopes || [], NODE_MOVE)}
                 label="Move"
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="tasks">
-            <Table.Td>
-              <Checkbox
-                checked={hasPerms(scopes, [TASK_OCR])}
-                onChange={e => onChangePerms([TASK_OCR], e.target.checked)}
-                label="Tasks"
-              />
-            </Table.Td>
+            <Table.Td>Tasks</Table.Td>
             <Tooltip
               label={"Grants permission to manually trigger OCR"}
               multiline
@@ -463,8 +256,7 @@ export default function GroupModal({
             >
               <Table.Td>
                 <Checkbox
-                  checked={hasPerm(scopes, TASK_OCR)}
-                  onChange={e => onChangePerm(TASK_OCR, e.target.checked)}
+                  checked={hasPerm(group?.scopes || [], TASK_OCR)}
                   label="OCR"
                 />
               </Table.Td>
@@ -476,39 +268,8 @@ export default function GroupModal({
   )
 }
 
-function hasPerm(scopes: Record<string, boolean>, perm: string): boolean {
-  return scopes[perm] == true
-}
-
-function hasPerms(scopes: Record<string, boolean>, perms: string[]): boolean {
-  return perms.every(p => scopes[p] == true)
-}
-
-/**
- * @param scopes
- * @returns `true` if and only if `scopes` contains all available permissions
- */
-function hasAllPerms(scopes: Record<string, boolean>): boolean {
-  const set1 = new Set(Object.keys(scopes))
-  const set2 = new Set(ALL_PERMS)
-
-  return equalSets(set1, set2)
-}
-
-function equalSets(x: Set<string>, y: Set<string>): boolean {
-  const sameSize = x.size === y.size
-
-  if (!sameSize) {
-    return false
-  }
-
-  const sameElements = [...x].every(i => y.has(i))
-
-  if (!sameElements) {
-    return false
-  }
-
-  return true
+function hasPerm(scopes: string[], perm: string): boolean {
+  return scopes.includes(perm)
 }
 
 const DOCUMENT_DOWNLOAD = "document.download"

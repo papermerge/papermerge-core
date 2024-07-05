@@ -15,8 +15,9 @@ export default function GroupDetailsPage() {
 
 export async function loader({params}: LoaderFunctionArgs) {
   if (params.groupId) {
-    store.dispatch(fetchGroupDetails(params.groupId))
-    return params.userId
+    const groupId = parseInt(params.groupId)
+    store.dispatch(fetchGroupDetails(groupId))
+    return params.groupId
   }
 
   throw Error("Loader: Missing groupId parameter")

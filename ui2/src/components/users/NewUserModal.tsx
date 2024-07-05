@@ -22,7 +22,6 @@ import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 
 type GenericModalArgs = {
-  userId: string
   onOK: (value: UserDetails) => void
   onCancel: (reason?: any) => void
 }

@@ -8,8 +8,8 @@ import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
 import type {CreateUser, User, UserDetails, Paginated} from "@/types"
-
 import type {SliceStateStatus, SliceStateError} from "@/types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 export type Pagination = {
   numPages: number
@@ -22,16 +22,16 @@ export type ExtraStateType = {
   error: SliceStateError
   selectedIds: Array<string>
   pagination: Pagination | null
+  lastPageSize: number
 }
 
 export const extraState: ExtraStateType = {
   status: "idle",
   error: null,
   selectedIds: [],
-  pagination: null
+  pagination: null,
+  lastPageSize: INITIAL_PAGE_SIZE
 }
-
-export const INITIAL_PAGE_SIZE = 5
 
 const usersAdapter = createEntityAdapter({
   selectId: (user: User) => user.id,
@@ -66,6 +66,7 @@ const usersSlice = createSlice({
         pageNumber: action.payload.page_number,
         pageSize: action.payload.page_size
       }
+      state.lastPageSize = action.payload.page_size
     })
     builder.addCase(fetchUser.fulfilled, (state, action) => {
       const newUser = action.payload
@@ -174,4 +175,8 @@ export const selectUsersByIds = (state: RootState, userIds: string[]) => {
 
 export const selectPagination = (state: RootState): Pagination | null => {
   return state.users.pagination
+}
+
+export const selectLastPageSize = (state: RootState): number => {
+  return state.users.lastPageSize
 }

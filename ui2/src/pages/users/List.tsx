@@ -7,7 +7,11 @@ export default function UsersListPage() {
 }
 
 export async function loader() {
-  await store.dispatch(fetchUsers({pageNumber: 1}))
+  const state = store.getState()
+
+  await store.dispatch(
+    fetchUsers({pageNumber: 1, pageSize: state.users.lastPageSize})
+  )
 
   return null
 }

@@ -24,6 +24,7 @@ export function DeleteGroupButton({groupId}: {groupId: number}) {
   )
 
   useEffect(() => {
+    // (1)
     // waits until deletedGroup does not exit i.e. group
     // was removed from storage. Only then navigate to
     // "/groups/" page (to make sure delete group does not appear in the list)

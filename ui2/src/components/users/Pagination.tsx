@@ -1,12 +1,13 @@
 import {Pagination, Skeleton, Group, Select} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
-import {selectPagination, fetchUsers} from "@/slices/users"
+import {selectPagination, fetchUsers, selectLastPageSize} from "@/slices/users"
 import classes from "./Pagination.module.css"
 import {PAGINATION_PAGE_SIZES} from "@/cconstants"
 
 export default function UserPagination() {
   const dispatch = useDispatch()
   const pagination = useSelector(selectPagination)
+  const lastPageSize = useSelector(selectLastPageSize)
 
   const onPageNumberChange = (page: number) => {
     dispatch(fetchUsers({pageNumber: page, pageSize: pagination?.pageSize}))
@@ -26,6 +27,7 @@ export default function UserPagination() {
           className={classes.select}
           value={`${pagination.pageSize}`}
           onChange={onPageSizeChange}
+          defaultValue={`${lastPageSize}`}
           data={PAGINATION_PAGE_SIZES}
         />
       </Group>

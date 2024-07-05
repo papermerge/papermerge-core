@@ -50,7 +50,7 @@ export default function UsersList() {
             </Table.Th>
             <Table.Th>Username</Table.Th>
             <Table.Th>Email</Table.Th>
-            <Table.Th>UUID</Table.Th>
+            <Table.Th>ID</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{groupRows}</Table.Tbody>

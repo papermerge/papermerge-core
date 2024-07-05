@@ -14,8 +14,8 @@ import UsersList from "@/pages/users/List.tsx"
 import {loader as usersListLoader} from "@/pages/users/List"
 import UserDetails from "@/pages/users/Details.tsx"
 import {loader as userDetailsLoader} from "@/pages/users/Details"
-import Groups from "@/pages/Groups.tsx"
-import {loader as groupsLoader} from "@/pages/Groups"
+import GroupsList from "@/pages/groups/List.tsx"
+import {loader as groupsListLoader} from "@/pages/groups/List"
 import ErrorPage from "@/pages/Error.tsx"
 
 const router = createBrowserRouter([
@@ -50,8 +50,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/groups",
-        element: <Groups />,
-        loader: groupsLoader
+        element: <GroupsList />,
+        loader: groupsListLoader
       },
       {
         path: "/users",

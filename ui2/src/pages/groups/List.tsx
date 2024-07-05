@@ -1,4 +1,4 @@
-import Groups from "@/components/Groups"
+import Groups from "@/components/groups"
 import {fetchGroups} from "@/slices/groups"
 import {store} from "@/app/store"
 

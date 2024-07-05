@@ -45,7 +45,7 @@ export default function GroupsList() {
             <Table.Th>
               <Checkbox
                 checked={groups.length == selectedIds.length}
-                onClick={e => onCheckAll(e.currentTarget.checked)}
+                onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>

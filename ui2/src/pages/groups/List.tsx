@@ -7,7 +7,10 @@ export default function GroupsPage() {
 }
 
 export async function loader() {
-  await store.dispatch(fetchGroups({pageNumber: 1}))
+  const state = store.getState()
+  await store.dispatch(
+    fetchGroups({pageNumber: 1, pageSize: state.groups.lastPageSize})
+  )
 
   return null
 }

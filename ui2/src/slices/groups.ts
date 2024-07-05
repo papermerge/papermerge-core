@@ -8,8 +8,8 @@ import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
 import type {NewGroup, Group, Paginated} from "@/types"
-
 import type {SliceStateStatus, SliceStateError} from "@/types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 export type Pagination = {
   numPages: number
@@ -22,16 +22,16 @@ export type ExtraStateType = {
   error: SliceStateError
   selectedIds: Array<number>
   pagination: Pagination | null
+  lastPageSize: number
 }
 
 export const extraState: ExtraStateType = {
   status: "idle",
   error: null,
   selectedIds: [],
-  pagination: null
+  pagination: null,
+  lastPageSize: INITIAL_PAGE_SIZE
 }
-
-export const INITIAL_PAGE_SIZE = 5
 
 const groupsAdapter = createEntityAdapter({
   selectId: (group: Group) => group.id,
@@ -66,6 +66,7 @@ const groupsSlice = createSlice({
         pageNumber: action.payload.page_number,
         pageSize: action.payload.page_size
       }
+      state.lastPageSize = action.payload.page_size
     })
     builder.addCase(fetchGroup.fulfilled, (state, action) => {
       const newGroup = action.payload

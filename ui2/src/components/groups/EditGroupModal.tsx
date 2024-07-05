@@ -56,10 +56,8 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
       scopes: Object.keys(scopes),
       name: name!
     }
-    const response = await dispatch(updateGroup(updatedData))
-    const groupDetailsData = response.payload as GroupDetails
-
-    onOK(groupDetailsData)
+    await dispatch(updateGroup(updatedData))
+    onOK(updatedData)
     setShow(false)
   }
 
@@ -121,7 +119,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
   }
 
   return (
-    <Modal title={"Edit User"} opened={show} onClose={onClose}>
+    <Modal title={"Edit Group"} opened={show} size="lg" onClose={onClose}>
       <LoadingOverlay
         visible={data == null || status == "loading"}
         zIndex={1000}

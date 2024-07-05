@@ -8,7 +8,7 @@ import type {UserDetails, SliceState} from "@/types"
 import type {RootState} from "@/app/types"
 import UserForm from "./UserForm"
 import EditButton from "./EditButton"
-import DeleteButton from "./DeleteButton"
+import {DeleteUserButton} from "./DeleteButton"
 import ChangePasswordButton from "./ChangePasswordButton"
 
 export default function UserDetailsComponent() {
@@ -55,7 +55,7 @@ function ActionButtons({modelId}: {modelId?: string}) {
     <Group>
       <ChangePasswordButton userId={modelId} />
       <EditButton userId={modelId} />
-      <DeleteButton />
+      <DeleteUserButton userId={modelId!} />
     </Group>
   )
 }

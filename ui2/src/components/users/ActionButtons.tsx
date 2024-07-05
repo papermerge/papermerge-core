@@ -4,7 +4,7 @@ import {selectSelectedIds} from "@/slices/users"
 
 import NewButton from "./NewButton"
 import ChangePasswordButton from "./ChangePasswordButton"
-import DeleteButton from "./DeleteButton"
+import {DeleteUsersButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 
 export default function ActionButtons() {
@@ -19,7 +19,7 @@ export default function ActionButtons() {
         ""
       )}
       {selectedIds.length == 1 ? <EditButton userId={selectedIds[0]} /> : ""}
-      {selectedIds.length >= 1 ? <DeleteButton /> : ""}
+      {selectedIds.length >= 1 ? <DeleteUsersButton /> : ""}
     </Group>
   )
 }

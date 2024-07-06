@@ -1,7 +1,6 @@
 import {createBrowserRouter} from "react-router-dom"
 
 import App from "@/app/App.tsx"
-import Tags from "@/pages/Tags.tsx"
 import Home from "@/pages/Home"
 import {loader as homeLoader} from "@/pages/Home"
 import Inbox from "@/pages/Inbox"
@@ -18,6 +17,8 @@ import GroupsList from "@/pages/groups/List.tsx"
 import {loader as groupsListLoader} from "@/pages/groups/List"
 import GroupDetails from "@/pages/groups/Details.tsx"
 import {loader as groupDetailsLoader} from "@/pages/groups/Details"
+import TagsList from "@/pages/tags/List"
+import {loader as tagsListLoader} from "@/pages/tags/List"
 
 import ErrorPage from "@/pages/Error.tsx"
 
@@ -49,7 +50,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/tags",
-        element: <Tags />
+        element: <TagsList />,
+        loader: tagsListLoader
       },
       {
         path: "/groups",

@@ -62,6 +62,16 @@ export type SliceState<T> = {
   error: SliceStateError
 }
 
+export type NewColoredTag = {
+  name: string
+  bg_color: string
+  fg_color: string
+}
+
+export type ColoredTag = NewColoredTag & {
+  id: string
+}
+
 export type ColoredTagType = {
   name: string
   bg_color: string

@@ -1,4 +1,4 @@
-import {Container, TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
+import {TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
 import CopyButton from "@/components/CopyButton"
 
 import type {GroupDetails} from "@/types"
@@ -9,7 +9,7 @@ type Args = {
 
 export default function GroupModal({group}: Args) {
   return (
-    <Container>
+    <div>
       <TextInput
         value={group?.name}
         onChange={() => {}}
@@ -264,7 +264,7 @@ export default function GroupModal({group}: Args) {
           </Table.Tr>
         </Table.Tbody>
       </Table>
-    </Container>
+    </div>
   )
 }
 

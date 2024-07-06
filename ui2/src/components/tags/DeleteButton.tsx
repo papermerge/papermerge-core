@@ -6,40 +6,41 @@ import {useNavigate} from "react-router-dom"
 
 import {
   selectSelectedIds,
-  selectUserById,
-  selectUsersByIds,
-  clearSelection
-} from "@/slices/users"
+  selectTagsByIds,
+  clearSelection,
+  selectTagById
+} from "@/slices/tags"
+
 import {openModal} from "@/components/modals/Generic"
 
-import type {User} from "@/types"
-
-import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
+import {DeleteTagModal, DeleteTagsModal} from "./DeleteModal"
 import {RootState} from "@/app/types"
+import {ColoredTagType} from "@/types"
 
-export function DeleteUserButton({userId}: {userId: string}) {
+export function DeleteTagButton({tagId}: {tagId: string}) {
   const [redirect, setRedirect] = useState<boolean>(false)
   const navigate = useNavigate()
-
-  const deletedUser = useSelector<RootState>(state =>
-    selectUserById(state, userId)
+  const deletedTag = useSelector<RootState>(state =>
+    selectTagById(state, tagId)
   )
 
   useEffect(() => {
-    if (redirect && deletedUser == null) {
-      navigate("/users/")
+    if (redirect && deletedTag == null) {
+      // nagivate only after tag was removed from the storage
+      navigate("/tags/")
     }
-  }, [deletedUser, redirect])
+  }, [deletedTag, redirect])
 
   const onClick = () => {
-    openModal<User[], {userId: string}>(RemoveUserModal, {
-      userId: userId
+    openModal<ColoredTagType[], {tagId: string}>(DeleteTagModal, {
+      tagId: tagId
     })
       .then(() => {
         setRedirect(true)
       })
       .catch(() => {})
   }
+
   return (
     <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
       Delete
@@ -47,18 +48,20 @@ export function DeleteUserButton({userId}: {userId: string}) {
   )
 }
 
-/* Deletes one or multiple users (with confirmation) */
-export function DeleteUsersButton() {
+export function DeleteTagsButton() {
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
-  const users = useSelector<RootState>(state =>
-    selectUsersByIds(state, selectedIds)
-  ) as Array<User>
+  const tags = useSelector<RootState>(state =>
+    selectTagsByIds(state, selectedIds)
+  ) as Array<ColoredTagType>
 
   const onClick = () => {
-    openModal<User[], {users: Array<User>}>(RemoveUsersModal, {
-      users: users
-    })
+    openModal<ColoredTagType[], {tags: Array<ColoredTagType>}>(
+      DeleteTagsModal,
+      {
+        tags: tags
+      }
+    )
       .then(() => {
         dispatch(clearSelection())
       })

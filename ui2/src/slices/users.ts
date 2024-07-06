@@ -7,21 +7,21 @@ import {
 import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {CreateUser, User, UserDetails, Paginated} from "@/types"
+import type {
+  CreateUser,
+  User,
+  UserDetails,
+  Paginated,
+  PaginationType
+} from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
-
-export type Pagination = {
-  numPages: number
-  pageNumber: number
-  pageSize: number
-}
 
 export type ExtraStateType = {
   status: SliceStateStatus
   error: SliceStateError
   selectedIds: Array<string>
-  pagination: Pagination | null
+  pagination: PaginationType | null
   lastPageSize: number
 }
 
@@ -143,9 +143,11 @@ export const updateUser = createAsyncThunk<UserDetails, UserUpdateFields>(
 export const removeUsers = createAsyncThunk<string[], string[]>(
   "users/removeUser",
   async (userIds: string[]) => {
-    userIds.forEach(uid => {
-      axios.delete(`/api/users/${uid}`)
-    })
+    await Promise.all(
+      userIds.map(uid => {
+        axios.delete(`/api/users/${uid}`)
+      })
+    )
 
     return userIds
   }
@@ -173,7 +175,7 @@ export const selectUsersByIds = (state: RootState, userIds: string[]) => {
   )
 }
 
-export const selectPagination = (state: RootState): Pagination | null => {
+export const selectPagination = (state: RootState): PaginationType | null => {
   return state.users.pagination
 }
 

@@ -1,30 +1,30 @@
 import {Center, Stack, Table, Checkbox} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
-  selectAllUsers,
+  selectAllTags,
   selectionAddMany,
   selectSelectedIds,
   clearSelection,
-  fetchUsers,
   selectPagination,
+  fetchTags,
   selectLastPageSize
-} from "@/slices/users"
-import Pagination from "@/components/Pagination"
+} from "@/slices/tags"
 
-import UserRow from "./UserRow"
+import Pagination from "@/components/Pagination"
+import TagRow from "./TagRow"
 import ActionButtons from "./ActionButtons"
 
-export default function UsersList() {
+export default function TagsList() {
   const selectedIds = useSelector(selectSelectedIds)
-  const users = useSelector(selectAllUsers)
+  const tags = useSelector(selectAllTags)
+  const dispatch = useDispatch()
   const pagination = useSelector(selectPagination)
   const lastPageSize = useSelector(selectLastPageSize)
-  const dispatch = useDispatch()
 
   const onCheckAll = (checked: boolean) => {
     if (checked) {
       // check all/select all group items
-      dispatch(selectionAddMany(users.map(i => i.id)))
+      dispatch(selectionAddMany(tags.map(i => i.id)))
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
@@ -32,16 +32,16 @@ export default function UsersList() {
   }
 
   const onPageNumberChange = (page: number) => {
-    dispatch(fetchUsers({pageNumber: page, pageSize: pagination?.pageSize}))
+    dispatch(fetchTags({pageNumber: page, pageSize: pagination?.pageSize}))
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      dispatch(fetchUsers({pageNumber: 1, pageSize: parseInt(value)}))
+      dispatch(fetchTags({pageNumber: 1, pageSize: parseInt(value)}))
     }
   }
 
-  if (users.length == 0) {
+  if (tags.length == 0) {
     return (
       <div>
         <ActionButtons />
@@ -50,7 +50,7 @@ export default function UsersList() {
     )
   }
 
-  const groupRows = users.map(u => <UserRow key={u.id} user={u} />)
+  const tagRows = tags.map(t => <TagRow key={t.id} tag={t} />)
 
   return (
     <Stack>
@@ -60,16 +60,17 @@ export default function UsersList() {
           <Table.Tr>
             <Table.Th>
               <Checkbox
-                checked={users.length == selectedIds.length}
+                checked={tags.length == selectedIds.length}
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
-            <Table.Th>Username</Table.Th>
-            <Table.Th>Email</Table.Th>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Pinned?</Table.Th>
+            <Table.Th>Description</Table.Th>
             <Table.Th>ID</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{groupRows}</Table.Tbody>
+        <Table.Tbody>{tagRows}</Table.Tbody>
       </Table>
       <Pagination
         pagination={pagination}
@@ -85,7 +86,7 @@ function Empty() {
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no users</div>
+        <div>Currently there are no tags</div>
       </Stack>
     </Center>
   )

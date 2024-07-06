@@ -4,16 +4,22 @@ import {
   selectAllGroups,
   selectionAddMany,
   selectSelectedIds,
-  clearSelection
+  clearSelection,
+  fetchGroups,
+  selectPagination,
+  selectLastPageSize
 } from "@/slices/groups"
+
+import Pagination from "@/components/Pagination"
 import GroupRow from "./GroupRow"
 import ActionButtons from "./ActionButtons"
-import Pagination from "./Pagination"
 
 export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const groups = useSelector(selectAllGroups)
   const dispatch = useDispatch()
+  const pagination = useSelector(selectPagination)
+  const lastPageSize = useSelector(selectLastPageSize)
 
   const onCheckAll = (checked: boolean) => {
     if (checked) {
@@ -22,6 +28,16 @@ export default function GroupsList() {
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
+    }
+  }
+
+  const onPageNumberChange = (page: number) => {
+    dispatch(fetchGroups({pageNumber: page, pageSize: pagination?.pageSize}))
+  }
+
+  const onPageSizeChange = (value: string | null) => {
+    if (value) {
+      dispatch(fetchGroups({pageNumber: 1, pageSize: parseInt(value)}))
     }
   }
 
@@ -53,7 +69,12 @@ export default function GroupsList() {
         </Table.Thead>
         <Table.Tbody>{groupRows}</Table.Tbody>
       </Table>
-      <Pagination />
+      <Pagination
+        pagination={pagination}
+        onPageNumberChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        lastPageSize={lastPageSize}
+      />
     </Stack>
   )
 }

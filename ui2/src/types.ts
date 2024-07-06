@@ -62,10 +62,25 @@ export type SliceState<T> = {
   error: SliceStateError
 }
 
-export type ColoredTagType = {
+export type NewColoredTag = {
   name: string
   bg_color: string
   fg_color: string
+  pinned: boolean
+  description: string
+}
+
+export type ColoredTag = NewColoredTag & {
+  id: string
+}
+
+export type ColoredTagType = {
+  id: string
+  name: string
+  bg_color: string
+  fg_color: string
+  pinned: boolean
+  description: string
 }
 
 export type NType = {
@@ -103,6 +118,12 @@ export type NodeSortOrderEnum = "asc" | "desc"
 export type Pagination = {
   page_number: number
   per_page: number
+}
+
+export type PaginationType = {
+  numPages: number
+  pageNumber: number
+  pageSize: number
 }
 
 export type Sorting = {

@@ -46,6 +46,32 @@ def retrieve_tags(
     ).order_by(*order_by)
 
 
+@router.get("/{tag_id}", response_model=schemas.Tag)
+@utils.docstring_parameter(scope=scopes.TAG_VIEW)
+def get_tag_details(
+    tag_id: UUID,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_VIEW])
+    ]
+):
+    """Get tag details
+
+    Required scope: `{scope}`
+    """
+    try:
+        tag = Tag.objects.get(
+            user_id=user.id,
+            id=tag_id
+        )
+    except Tag.DoesNotExist:
+        raise HTTPException(
+            status_code=404,
+            detail="Does not exists"
+        )
+
+    return schemas.Tag.model_validate(tag)
+
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.TAG_CREATE)
 def create_tag(

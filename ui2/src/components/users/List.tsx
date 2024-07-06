@@ -4,15 +4,21 @@ import {
   selectAllUsers,
   selectionAddMany,
   selectSelectedIds,
-  clearSelection
+  clearSelection,
+  fetchUsers,
+  selectPagination,
+  selectLastPageSize
 } from "@/slices/users"
+import Pagination from "@/components/Pagination"
+
 import UserRow from "./UserRow"
 import ActionButtons from "./ActionButtons"
-import Pagination from "./Pagination"
 
 export default function UsersList() {
   const selectedIds = useSelector(selectSelectedIds)
   const users = useSelector(selectAllUsers)
+  const pagination = useSelector(selectPagination)
+  const lastPageSize = useSelector(selectLastPageSize)
   const dispatch = useDispatch()
 
   const onCheckAll = (checked: boolean) => {
@@ -22,6 +28,16 @@ export default function UsersList() {
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
+    }
+  }
+
+  const onPageNumberChange = (page: number) => {
+    dispatch(fetchUsers({pageNumber: page, pageSize: pagination?.pageSize}))
+  }
+
+  const onPageSizeChange = (value: string | null) => {
+    if (value) {
+      dispatch(fetchUsers({pageNumber: 1, pageSize: parseInt(value)}))
     }
   }
 
@@ -55,7 +71,12 @@ export default function UsersList() {
         </Table.Thead>
         <Table.Tbody>{groupRows}</Table.Tbody>
       </Table>
-      <Pagination />
+      <Pagination
+        pagination={pagination}
+        onPageNumberChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        lastPageSize={lastPageSize}
+      />
     </Stack>
   )
 }

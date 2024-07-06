@@ -171,3 +171,7 @@ export const selectGroupsByIds = (state: RootState, groupIds: number[]) => {
 export const selectPagination = (state: RootState): Pagination | null => {
   return state.groups.pagination
 }
+
+export const selectLastPageSize = (state: RootState): number => {
+  return state.groups.lastPageSize
+}

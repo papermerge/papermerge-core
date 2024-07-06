@@ -115,6 +115,12 @@ export type Pagination = {
   per_page: number
 }
 
+export type PaginationType = {
+  numPages: number
+  pageNumber: number
+  pageSize: number
+}
+
 export type Sorting = {
   sort_field: NodeSortFieldEnum
   sort_order: NodeSortOrderEnum

@@ -4,16 +4,22 @@ import {
   selectAllTags,
   selectionAddMany,
   selectSelectedIds,
-  clearSelection
+  clearSelection,
+  selectPagination,
+  fetchTags,
+  selectLastPageSize
 } from "@/slices/tags"
+
+import Pagination from "@/components/Pagination"
 import TagRow from "./TagRow"
 import ActionButtons from "./ActionButtons"
-import Pagination from "./Pagination"
 
 export default function TagsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const tags = useSelector(selectAllTags)
   const dispatch = useDispatch()
+  const pagination = useSelector(selectPagination)
+  const lastPageSize = useSelector(selectLastPageSize)
 
   const onCheckAll = (checked: boolean) => {
     if (checked) {
@@ -22,6 +28,16 @@ export default function TagsList() {
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
+    }
+  }
+
+  const onPageNumberChange = (page: number) => {
+    dispatch(fetchTags({pageNumber: page, pageSize: pagination?.pageSize}))
+  }
+
+  const onPageSizeChange = (value: string | null) => {
+    if (value) {
+      dispatch(fetchTags({pageNumber: 1, pageSize: parseInt(value)}))
     }
   }
 
@@ -53,7 +69,12 @@ export default function TagsList() {
         </Table.Thead>
         <Table.Tbody>{tagRows}</Table.Tbody>
       </Table>
-      <Pagination />
+      <Pagination
+        pagination={pagination}
+        onPageNumberChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        lastPageSize={lastPageSize}
+      />
     </Stack>
   )
 }

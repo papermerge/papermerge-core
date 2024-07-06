@@ -7,21 +7,20 @@ import {
 import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {NewColoredTag, ColoredTag, Paginated} from "@/types"
+import type {
+  NewColoredTag,
+  ColoredTag,
+  Paginated,
+  PaginationType
+} from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
-
-export type Pagination = {
-  numPages: number
-  pageNumber: number
-  pageSize: number
-}
 
 export type ExtraStateType = {
   status: SliceStateStatus
   error: SliceStateError
   selectedIds: Array<string>
-  pagination: Pagination | null
+  pagination: PaginationType | null
   lastPageSize: number
 }
 
@@ -169,6 +168,10 @@ export const selectGroupsByIds = (state: RootState, tagIds: string[]) => {
   )
 }
 
-export const selectPagination = (state: RootState): Pagination | null => {
-  return state.groups.pagination
+export const selectPagination = (state: RootState): PaginationType | null => {
+  return state.tags.pagination
+}
+
+export const selectLastPageSize = (state: RootState): number => {
+  return state.tags.lastPageSize
 }

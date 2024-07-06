@@ -66,6 +66,8 @@ export type NewColoredTag = {
   name: string
   bg_color: string
   fg_color: string
+  pinned: boolean
+  description: string
 }
 
 export type ColoredTag = NewColoredTag & {

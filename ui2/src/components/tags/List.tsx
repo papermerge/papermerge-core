@@ -65,6 +65,9 @@ export default function TagsList() {
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>
+            <Table.Th>Pinned?</Table.Th>
+            <Table.Th>Description</Table.Th>
+            <Table.Th>ID</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{tagRows}</Table.Tbody>

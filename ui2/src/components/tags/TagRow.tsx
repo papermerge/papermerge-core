@@ -4,6 +4,8 @@ import {Table, Checkbox} from "@mantine/core"
 import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/tags"
 import type {ColoredTag} from "@/types"
 
+import Check from "@/components/Check"
+
 type Args = {
   tag: ColoredTag
 }
@@ -28,6 +30,11 @@ export default function TagRow({tag}: Args) {
       <Table.Td>
         <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
       </Table.Td>
+      <Table.Td>
+        <Check check={tag.pinned} />
+      </Table.Td>
+      <Table.Td>{tag.description}</Table.Td>
+      <Table.Td>{tag.id}</Table.Td>
     </Table.Tr>
   )
 }

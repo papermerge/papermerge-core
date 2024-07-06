@@ -14,11 +14,11 @@ import {
 import type {GroupDetails, SliceState} from "@/types"
 */
 
-export default function EditButton({groupId}: {groupId?: number}) {
+export default function EditButton({tagId}: {tagId?: string}) {
   /*
   const dispatch = useDispatch()
   const group = useSelector(selectGroupDetails) as SliceState<GroupDetails>
-  
+
   const missingGroupDetails = (groupId: number) => {
     if (!group) {
       return true
@@ -52,7 +52,7 @@ export default function EditButton({groupId}: {groupId?: number}) {
     */
   }
 
-  if (!groupId) {
+  if (!tagId) {
     return (
       <Button leftSection={<IconEdit />} variant={"default"} disabled={true}>
         Edit

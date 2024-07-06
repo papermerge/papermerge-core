@@ -1,6 +1,6 @@
 import {Link} from "react-router-dom"
 import {useDispatch, useSelector} from "react-redux"
-import {Table, Checkbox} from "@mantine/core"
+import {Table, Checkbox, Pill} from "@mantine/core"
 import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/tags"
 import type {ColoredTag} from "@/types"
 
@@ -28,7 +28,11 @@ export default function TagRow({tag}: Args) {
         <Checkbox checked={selectedIds.includes(tag.id)} onChange={onChange} />
       </Table.Td>
       <Table.Td>
-        <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
+        <Link to={`/tags/${tag.id}`}>
+          <Pill style={{backgroundColor: tag.bg_color, color: tag.fg_color}}>
+            {tag.name}
+          </Pill>
+        </Link>
       </Table.Td>
       <Table.Td>
         <Check check={tag.pinned} />

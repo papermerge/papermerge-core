@@ -6,10 +6,10 @@ import {useNavigate} from "react-router-dom"
 
 import {
   selectSelectedIds,
-  selectGroupsByIds,
+  selectTagsByIds,
   clearSelection,
-  selectGroupById
-} from "@/slices/groups"
+  selectTagById
+} from "@/slices/tags"
 
 //import {openModal} from "@/components/modals/Generic"
 
@@ -18,21 +18,21 @@ import {
 //import {RemoveGroupModal, RemoveGroupsModal} from "./RemoveModal"
 import {RootState} from "@/app/types"
 
-export function DeleteGroupButton({groupId}: {groupId: number}) {
+export function DeleteTagButton({tagId}: {tagId: string}) {
   const navigate = useNavigate()
-  const deletedGroup = useSelector<RootState>(state =>
-    selectGroupById(state, groupId)
+  const deletedTag = useSelector<RootState>(state =>
+    selectTagById(state, tagId)
   )
 
-  useEffect(() => {
-    // (1)
-    // waits until deletedGroup does not exit i.e. group
-    // was removed from storage. Only then navigate to
-    // "/groups/" page (to make sure delete group does not appear in the list)
-    if (!deletedGroup) {
-      navigate("/groups/")
-    }
-  }, [deletedGroup])
+  //useEffect(() => {
+  // (1)
+  // waits until deletedGroup does not exit i.e. group
+  // was removed from storage. Only then navigate to
+  // "/groups/" page (to make sure delete group does not appear in the list)
+  //if (!deletedTag) {
+  //  navigate("/tags/")
+  // }
+  //}, [deletedTag])
 
   const onClick = () => {
     /*
@@ -56,7 +56,7 @@ export function DeleteGroupButton({groupId}: {groupId: number}) {
   )
 }
 
-export function DeleteGroupsButton() {
+export function DeleteTagsButton() {
   /*
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)

@@ -2,7 +2,7 @@ import {createSlice} from "@reduxjs/toolkit"
 import {RootState} from "@/app/types"
 
 const COLLAPSED_WIDTH = 55
-const FULL_WIDTH = 150
+const FULL_WIDTH = 160
 
 interface NavBar {
   collapsed: boolean

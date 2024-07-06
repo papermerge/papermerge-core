@@ -1,4 +1,4 @@
-import {useEffect} from "react"
+import {useEffect, useState} from "react"
 import {Button} from "@mantine/core"
 import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
@@ -14,34 +14,28 @@ import {openModal} from "@/components/modals/Generic"
 
 import type {Group} from "@/types"
 
-import {RemoveGroupModal, RemoveGroupsModal} from "./RemoveModal"
+import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 import {RootState} from "@/app/types"
 
 export function DeleteGroupButton({groupId}: {groupId: number}) {
+  const [redirect, setRedirect] = useState<boolean>(false)
   const navigate = useNavigate()
   const deletedGroup = useSelector<RootState>(state =>
     selectGroupById(state, groupId)
   )
 
   useEffect(() => {
-    // (1)
-    // waits until deletedGroup does not exit i.e. group
-    // was removed from storage. Only then navigate to
-    // "/groups/" page (to make sure delete group does not appear in the list)
-    if (!deletedGroup) {
+    if (redirect && deletedGroup == null) {
       navigate("/groups/")
     }
-  }, [deletedGroup])
+  }, [deletedGroup, redirect])
 
   const onClick = () => {
     openModal<Group[], {groupId: number}>(RemoveGroupModal, {
       groupId: groupId
     })
       .then(() => {
-        // In ideal world it should be following line that
-        // navigates to "/groups/" page
-        // navigate("/groups/")
-        // In our case, we use (1) for navigating to "/groups/" page
+        setRedirect(true)
       })
       .catch(() => {})
   }

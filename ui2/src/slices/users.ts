@@ -143,9 +143,11 @@ export const updateUser = createAsyncThunk<UserDetails, UserUpdateFields>(
 export const removeUsers = createAsyncThunk<string[], string[]>(
   "users/removeUser",
   async (userIds: string[]) => {
-    userIds.forEach(uid => {
-      axios.delete(`/api/users/${uid}`)
-    })
+    await Promise.all(
+      userIds.map(uid => {
+        axios.delete(`/api/users/${uid}`)
+      })
+    )
 
     return userIds
   }

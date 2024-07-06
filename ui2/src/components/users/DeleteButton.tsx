@@ -1,4 +1,4 @@
-import {useEffect} from "react"
+import {useEffect, useState} from "react"
 import {Button} from "@mantine/core"
 import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
@@ -14,10 +14,11 @@ import {openModal} from "@/components/modals/Generic"
 
 import type {User} from "@/types"
 
-import {RemoveUserModal, RemoveUsersModal} from "./RemoveModal"
+import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
 import {RootState} from "@/app/types"
 
 export function DeleteUserButton({userId}: {userId: string}) {
+  const [redirect, setRedirect] = useState<boolean>(false)
   const navigate = useNavigate()
 
   const deletedUser = useSelector<RootState>(state =>
@@ -25,17 +26,17 @@ export function DeleteUserButton({userId}: {userId: string}) {
   )
 
   useEffect(() => {
-    if (!deletedUser) {
+    if (redirect && deletedUser == null) {
       navigate("/users/")
     }
-  }, [deletedUser])
+  }, [deletedUser, redirect])
 
   const onClick = () => {
     openModal<User[], {userId: string}>(RemoveUserModal, {
       userId: userId
     })
       .then(() => {
-        //
+        setRedirect(true)
       })
       .catch(() => {})
   }

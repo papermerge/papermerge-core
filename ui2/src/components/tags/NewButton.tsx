@@ -1,20 +1,20 @@
-//import {useDispatch} from "react-redux"
+import {useDispatch} from "react-redux"
 import {Button} from "@mantine/core"
 
 import {IconPlus} from "@tabler/icons-react"
 
 import {openModal} from "@/components/modals/Generic"
-//import {updateGroupDetails} from "@/slices/tagDetails"
+import {updateTagDetails} from "@/slices/tagDetails"
 import NewTagModal from "./NewTagModal"
 import type {ColoredTagType} from "@/types"
 
 export default function NewButton() {
-  //const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   const onClick = () => {
     openModal<any, {groupId: number}>(NewTagModal)
       .then((tag: ColoredTagType) => {
-        //dispatch(updateTagDetails(tag))
+        dispatch(updateTagDetails(tag))
       })
       .catch(() => {})
   }

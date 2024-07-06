@@ -1,4 +1,4 @@
-import {Container, TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
+import {TextInput, Table, Checkbox, Tooltip} from "@mantine/core"
 import CopyButton from "@/components/CopyButton"
 
 import type {GroupDetails} from "@/types"

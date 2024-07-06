@@ -94,13 +94,12 @@ function NavBar() {
   return <NavBarFull />
 }
 
-type ResponsiveLink = ({
-  isActive,
-  isPending
-}: {
+type NavLinkState = {
   isActive: boolean
   isPending: boolean
-}) => JSX.Element
+}
+
+type ResponsiveLink = ({isActive, isPending}: NavLinkState) => JSX.Element
 
 function NavLinkWithFeedback(text: string, icon: JSX.Element): ResponsiveLink {
   return ({isActive, isPending}) => {

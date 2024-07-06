@@ -7,7 +7,7 @@ import {
   IconUsers,
   IconUsersGroup
 } from "@tabler/icons-react"
-import {Group} from "@mantine/core"
+import {Group, Loader} from "@mantine/core"
 import {
   selectCurrentUser,
   selectCurrentUserStatus,
@@ -35,32 +35,17 @@ function NavBarFull() {
     <>
       <div className="navbar">
         <NavLink to={`/home/${user.home_folder_id}`}>
-          <Group>
-            <IconHome /> Home
-          </Group>
+          {NavLinkWithFeedback("Home", <IconHome />)}
         </NavLink>
         <NavLink to={`/inbox/${user.inbox_folder_id}`}>
-          <Group>
-            <IconInbox /> Inbox
-          </Group>
+          {NavLinkWithFeedback("Inbox", <IconInbox />)}
         </NavLink>
-        <NavLink to="/tags">
-          <Group>
-            <IconTag />
-            Tags
-          </Group>
-        </NavLink>
+        <NavLink to="/tags">{NavLinkWithFeedback("Tags", <IconTag />)}</NavLink>
         <NavLink to="/users">
-          <Group>
-            <IconUsers />
-            Users
-          </Group>
+          {NavLinkWithFeedback("Users", <IconUsers />)}
         </NavLink>
         <NavLink to="/groups">
-          <Group>
-            <IconUsersGroup />
-            Groups
-          </Group>
+          {NavLinkWithFeedback("Groups", <IconUsersGroup />)}
         </NavLink>
       </div>
     </>
@@ -84,29 +69,15 @@ function NavBarCollapsed() {
     <>
       <div className="navbar">
         <NavLink to={`/home/${user.home_folder_id}`}>
-          <Group>
-            <IconHome />
-          </Group>
+          {NavLinkWithFeedbackShort(<IconHome />)}
         </NavLink>
         <NavLink to={`/inbox/${user.inbox_folder_id}`}>
-          <Group>
-            <IconInbox />
-          </Group>
+          {NavLinkWithFeedbackShort(<IconInbox />)}
         </NavLink>
-        <NavLink to="/tags">
-          <Group>
-            <IconTag />
-          </Group>
-        </NavLink>
-        <NavLink to="/users">
-          <Group>
-            <IconUsers />
-          </Group>
-        </NavLink>
+        <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
+        <NavLink to="/users">{NavLinkWithFeedbackShort(<IconUsers />)}</NavLink>
         <NavLink to="/groups">
-          <Group>
-            <IconUsersGroup />
-          </Group>
+          {NavLinkWithFeedbackShort(<IconUsersGroup />)}
         </NavLink>
       </div>
     </>
@@ -121,6 +92,57 @@ function NavBar() {
   }
 
   return <NavBarFull />
+}
+
+type NavLinkState = {
+  isActive: boolean
+  isPending: boolean
+}
+
+type ResponsiveLink = ({isActive, isPending}: NavLinkState) => JSX.Element
+
+function NavLinkWithFeedback(text: string, icon: JSX.Element): ResponsiveLink {
+  return ({isActive, isPending}) => {
+    if (isActive) {
+      return (
+        <Group>
+          {icon}
+          {text}
+        </Group>
+      )
+    }
+    if (isPending) {
+      return (
+        <Group>
+          {icon}
+          {text}
+          <Loader size={"sm"} />
+        </Group>
+      )
+    }
+    return (
+      <Group>
+        {icon}
+        {text}
+      </Group>
+    )
+  }
+}
+
+function NavLinkWithFeedbackShort(icon: JSX.Element): ResponsiveLink {
+  return ({isActive, isPending}) => {
+    if (isActive) {
+      return <Group>{icon}</Group>
+    }
+    if (isPending) {
+      return (
+        <Group>
+          <Loader size={"sm"} />
+        </Group>
+      )
+    }
+    return <Group>{icon}</Group>
+  }
 }
 
 export default NavBar

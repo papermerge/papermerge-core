@@ -1,55 +1,50 @@
-//import {useDispatch, useSelector} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import {Button} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
-/*
+
 import {openModal} from "@/components/modals/Generic"
 
 import {
-  fetchGroupDetails,
-  selectGroupDetails,
-  updateGroupDetails
-} from "@/slices/groupDetails"
+  fetchTagDetails,
+  selectTagDetails,
+  updateTagDetails
+} from "@/slices/tagDetails"
 
-//import EditGroupModal from "./EditGroupModal"
-import type {GroupDetails, SliceState} from "@/types"
-*/
+import EditTagModal from "./EditTagModal"
+import type {ColoredTagType, SliceState} from "@/types"
 
 export default function EditButton({tagId}: {tagId?: string}) {
-  /*
   const dispatch = useDispatch()
-  const group = useSelector(selectGroupDetails) as SliceState<GroupDetails>
+  const tag = useSelector(selectTagDetails) as SliceState<ColoredTagType>
 
-  const missingGroupDetails = (groupId: number) => {
-    if (!group) {
+  const missingTagDetails = (tagId: string) => {
+    if (!tag) {
       return true
     }
 
-    if (!group.data) {
+    if (!tag.data) {
       return true
     }
 
-    if (group.data.id != groupId) {
+    if (tag.data.id != tagId) {
       return true
     }
 
     return false
   }
-    */
 
   const onClick = () => {
-    /*
-    if (groupId && missingGroupDetails(groupId)) {
-      dispatch(fetchGroupDetails(groupId!))
+    if (tagId && missingTagDetails(tagId)) {
+      dispatch(fetchTagDetails(tagId!))
     }
 
-    openModal<any, {groupId: number}>(EditGroupModal, {
-      groupId: groupId!
+    openModal<any, {tagId: string}>(EditTagModal, {
+      tagId: tagId!
     })
-      .then((group: GroupDetails) => {
-        dispatch(updateGroupDetails(group))
+      .then((tag: ColoredTagType) => {
+        dispatch(updateTagDetails(tag))
       })
       .catch(() => {})
-    */
   }
 
   if (!tagId) {

@@ -8,6 +8,7 @@ import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
 import type {
+  ColoredTagType,
   NewColoredTag,
   ColoredTag,
   Paginated,
@@ -123,7 +124,7 @@ export const addTag = createAsyncThunk<ColoredTag, NewColoredTag>(
 
 export const updateTag = createAsyncThunk<ColoredTag, ColoredTag>(
   "tags/updateTag",
-  async (tag: ColoredTag) => {
+  async (tag: ColoredTagType) => {
     const response = await axios.patch(`/api/tags/${tag.id}`, tag)
     const data = response.data as ColoredTag
     return data

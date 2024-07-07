@@ -12,7 +12,8 @@ import {
 } from "@/slices/dualPanel"
 
 import type {RootState} from "@/app/types"
-import type {NodeType, PanelMode} from "@/types"
+import type {NType, NodeType, PanelMode} from "@/types"
+import Breadcrumbs from "@/components/Breadcrumbs"
 
 type Args = {
   mode: PanelMode
@@ -42,7 +43,7 @@ export default function Commander({mode}: Args) {
     )
   }
 
-  const onClick = (node: NodeType) => {
+  const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
         fetchPaginatedNodes({
@@ -53,7 +54,7 @@ export default function Commander({mode}: Args) {
       )
       dispatch(
         setCurrentNode({
-          node: {id: node.id, ctype: "folder"},
+          node: {id: node.id, ctype: "folder", breadcrumb: null},
           panel: "secondary"
         })
       )
@@ -70,6 +71,7 @@ export default function Commander({mode}: Args) {
     return (
       <div>
         <FolderNodeActions mode={mode} />
+        <Breadcrumbs mode={mode} onClick={onClick} />
         <Group>{nodes}</Group>
       </div>
     )
@@ -78,6 +80,7 @@ export default function Commander({mode}: Args) {
   return (
     <div>
       <FolderNodeActions mode={mode} />
+      <Breadcrumbs mode={mode} onClick={onClick} />
       <Group>Empty</Group>
     </div>
   )

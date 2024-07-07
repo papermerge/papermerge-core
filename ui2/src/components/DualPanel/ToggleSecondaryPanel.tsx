@@ -26,7 +26,13 @@ export default function ToggleSecondaryPanel({mode}: Args) {
 
   const onClick = () => {
     const folderId = user.home_folder_id
-    dispatch(openSecondaryPanel())
+    dispatch(
+      openSecondaryPanel({
+        id: folderId,
+        ctype: "folder",
+        breadcrumb: null
+      })
+    )
     dispatch(
       fetchPaginatedNodes({
         folderId,
@@ -36,7 +42,11 @@ export default function ToggleSecondaryPanel({mode}: Args) {
     )
     dispatch(
       setCurrentNode({
-        node: {id: folderId, ctype: "folder"},
+        node: {
+          id: folderId,
+          ctype: "folder",
+          breadcrumb: [[folderId, ".home"]]
+        },
         panel: "secondary"
       })
     )

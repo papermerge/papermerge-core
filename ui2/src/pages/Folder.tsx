@@ -25,7 +25,7 @@ export async function loader({params, request}: LoaderFunctionArgs) {
 
   store.dispatch(
     setCurrentNode({
-      node: {id: folderId, ctype: "folder"},
+      node: {id: folderId, ctype: "folder", breadcrumb: null},
       panel: "main"
     })
   )

@@ -12,10 +12,10 @@ import type {
   SliceState,
   NodeType,
   PanelMode,
-  NType,
   Paginated,
   NodeLoaderResponseType,
-  FolderType
+  FolderType,
+  CurrentNodeType
 } from "@/types"
 
 type NodeWithSpinner = {
@@ -27,7 +27,7 @@ type NodeWithSpinner = {
 }
 
 type SetCurrentNodeArgs = {
-  node: NType
+  node: CurrentNodeType
   panel: PanelMode
 }
 
@@ -37,7 +37,7 @@ type FolderAddedArgs = {
 }
 
 interface Commander {
-  currentNode: string | null
+  currentNode: CurrentNodeType | null
   pageSize: number
   pageNumber: number
   sort: string
@@ -57,9 +57,9 @@ interface DualPanelState {
   nodes: Array<NodeType>
 }
 
-function commanderInitialState(folderId: string | null): Commander {
+function commanderInitialState(node: CurrentNodeType | null): Commander {
   return {
-    currentNode: folderId,
+    currentNode: node,
     pageSize: 15,
     pageNumber: 1,
     sort: "-title",
@@ -129,13 +129,22 @@ const dualPanelSlice = createSlice({
         if (action.payload.node.ctype == "folder") {
           // commander
           if (state.mainPanel.commander) {
+            // preserve breadcrumb
+            const prevBreadcrumb =
+              state.mainPanel.commander.currentNode?.breadcrumb
             // just update commander's current node
-            state.mainPanel.commander.currentNode = action.payload.node.id
+            state.mainPanel.commander.currentNode = {
+              id: action.payload.node.id,
+              ctype: action.payload.node.ctype,
+              breadcrumb: prevBreadcrumb
+            }
           } else {
             // re-open commander
-            state.mainPanel.commander = commanderInitialState(
-              action.payload.node.id
-            )
+            state.mainPanel.commander = commanderInitialState({
+              id: action.payload.node.id,
+              ctype: "folder",
+              breadcrumb: null
+            })
           }
         } else {
           // viewer
@@ -157,9 +166,9 @@ const dualPanelSlice = createSlice({
         })
       }
     },
-    openSecondaryPanel(state) {
+    openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {
-        commander: commanderInitialState(null),
+        commander: commanderInitialState(action.payload),
         viewer: null
       }
     },
@@ -192,12 +201,20 @@ const dualPanelSlice = createSlice({
             error: null,
             data: newNodes
           }
+          if (state.mainPanel.commander.currentNode) {
+            state.mainPanel.commander.currentNode.breadcrumb =
+              action.payload.breadcrumb
+          }
         }
       } else if (state.secondaryPanel && state.secondaryPanel.commander) {
         state.secondaryPanel.commander.nodes = {
           status: "succeeded",
           error: null,
           data: newNodes
+        }
+        if (state.secondaryPanel.commander.currentNode) {
+          state.secondaryPanel.commander.currentNode.breadcrumb =
+            action.payload.breadcrumb
         }
       }
     })
@@ -311,6 +328,21 @@ export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
 
   if (state.dualPanel.secondaryPanel?.commander) {
     return state.dualPanel.secondaryPanel.commander.currentNode
+  }
+
+  return null
+}
+
+export const selectPanelBreadcrumbs = (
+  state: RootState,
+  mode: PanelMode
+): Array<[string, string]> | null | undefined => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander) {
+    return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
   }
 
   return null

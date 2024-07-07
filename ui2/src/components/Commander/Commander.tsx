@@ -3,7 +3,7 @@ import {Group} from "@mantine/core"
 import {useSelector, useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import FolderNodeActions from "@/components/FolderNodeActions"
+import FolderNodeActions from "@/components/Commander/FolderNodeActions"
 import Node from "@/components/Node"
 import {
   selectPanelNodes,
@@ -111,7 +111,7 @@ export default function Commander({mode}: Args) {
   }
 
   const nodes = data.map((n: NodeType) => (
-    <Node onClick={onClick} key={n.id} node={n} />
+    <Node onClick={onClick} key={n.id} node={n} mode={mode} />
   ))
 
   if (nodes.length > 0) {

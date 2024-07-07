@@ -228,6 +228,14 @@ const dualPanelSlice = createSlice({
           )
           state.mainPanel.commander.selectedIds = newSelectedIds
         }
+      } else {
+        if (state.secondaryPanel?.commander) {
+          const newSelectedIds =
+            state.secondaryPanel.commander.selectedIds.filter(
+              i => i != action.payload.selectionId
+            )
+          state.secondaryPanel.commander.selectedIds = newSelectedIds
+        }
       }
     },
     clearNodesSelection: (state, action: PayloadAction<string>) => {
@@ -494,4 +502,12 @@ export const selectCommanderPageNumber = (
   }
 
   return state.dualPanel.secondaryPanel?.commander?.pagination?.pageNumber
+}
+
+export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.selectedIds
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.selectedIds
 }

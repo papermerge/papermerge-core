@@ -15,8 +15,10 @@ import type {
   Paginated,
   NodeLoaderResponseType,
   FolderType,
-  CurrentNodeType
+  CurrentNodeType,
+  PaginationType
 } from "@/types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 type NodeWithSpinner = {
   id: string
@@ -38,9 +40,8 @@ type FolderAddedArgs = {
 
 interface Commander {
   currentNode: CurrentNodeType | null
-  pageSize: number
-  pageNumber: number
-  sort: string
+  pagination: PaginationType | null | undefined
+  lastPageSize: number
   nodes: SliceState<Array<NodeWithSpinner>>
 }
 
@@ -60,9 +61,8 @@ interface DualPanelState {
 function commanderInitialState(node: CurrentNodeType | null): Commander {
   return {
     currentNode: node,
-    pageSize: 15,
-    pageNumber: 1,
-    sort: "-title",
+    pagination: null,
+    lastPageSize: INITIAL_PAGE_SIZE,
     nodes: {
       status: "idle",
       error: null,
@@ -205,6 +205,12 @@ const dualPanelSlice = createSlice({
             state.mainPanel.commander.currentNode.breadcrumb =
               action.payload.breadcrumb
           }
+          state.mainPanel.commander.pagination = {
+            pageSize: action.payload.per_page,
+            pageNumber: action.payload.page_number,
+            numPages: action.payload.num_pages
+          }
+          state.mainPanel.commander.lastPageSize = action.payload.per_page
         }
       } else if (state.secondaryPanel && state.secondaryPanel.commander) {
         state.secondaryPanel.commander.nodes = {
@@ -215,6 +221,24 @@ const dualPanelSlice = createSlice({
         if (state.secondaryPanel.commander.currentNode) {
           state.secondaryPanel.commander.currentNode.breadcrumb =
             action.payload.breadcrumb
+        }
+        state.secondaryPanel.commander.pagination = {
+          pageSize: action.payload.per_page,
+          pageNumber: action.payload.page_number,
+          numPages: action.payload.num_pages
+        }
+        state.secondaryPanel.commander.lastPageSize = action.payload.per_page
+      }
+    })
+    builder.addCase(fetchPaginatedNodes.pending, (state, action) => {
+      if (action.meta.arg.panel == "main") {
+        if (state.mainPanel.commander) {
+          state.mainPanel.commander.nodes.status = "loading"
+        }
+      }
+      if (action.meta.arg.panel == "secondary") {
+        if (state.secondaryPanel?.commander) {
+          state.secondaryPanel.commander.nodes.status = "loading"
         }
       }
     })
@@ -275,32 +299,21 @@ export const selectPanelNodes = (
 const selectMainPanelNodes = (
   state: RootState
 ): SliceState<Array<NodeType>> => {
-  if (state.dualPanel.mainPanel.commander!.nodes.status == "succeeded") {
-    const nodeIds = state.dualPanel.mainPanel.commander!.nodes.data!.map(
-      (n: NodeWithSpinner) => n.id
-    )
-    const output = {
-      status: "succeeded",
-      error: null,
-      data: state.dualPanel.nodes.filter((n: NodeType) =>
-        nodeIds.includes(n.id)
-      )
-    } as SliceState<Array<NodeType>>
-    return output
-  } else {
-    // main panel commander nodes are either loading or there was an error
-    return {
-      status: state.dualPanel.mainPanel.commander!.nodes.status,
-      error: state.dualPanel.mainPanel.commander!.nodes.error,
-      data: null
-    }
-  }
+  const nodeIds = state.dualPanel.mainPanel.commander!.nodes.data!.map(
+    (n: NodeWithSpinner) => n.id
+  )
+  const output = {
+    status: "succeeded",
+    error: null,
+    data: state.dualPanel.nodes.filter((n: NodeType) => nodeIds.includes(n.id))
+  } as SliceState<Array<NodeType>>
+  return output
 }
 
 const selectSecondaryPanelNodes = (
   state: RootState
 ): SliceState<Array<NodeType>> => {
-  if (state.dualPanel.secondaryPanel!.commander!.nodes.status == "succeeded") {
+  if (state.dualPanel.secondaryPanel!.commander!.nodes.data) {
     const nodeIds = state.dualPanel.secondaryPanel!.commander!.nodes.data!.map(
       (n: NodeWithSpinner) => n.id
     )
@@ -311,13 +324,12 @@ const selectSecondaryPanelNodes = (
         nodeIds.includes(n.id)
       )
     }
-  } else {
-    // secondary panel commander nodes are either loading or there was an error
-    return {
-      status: state.dualPanel.secondaryPanel!.commander!.nodes.status,
-      error: state.dualPanel.secondaryPanel!.commander!.nodes.error,
-      data: null
-    }
+  }
+
+  return {
+    status: state.dualPanel.secondaryPanel!.commander!.nodes.status,
+    error: state.dualPanel.secondaryPanel!.commander!.nodes.error,
+    data: null
   }
 }
 
@@ -346,4 +358,60 @@ export const selectPanelBreadcrumbs = (
   }
 
   return null
+}
+
+export const selectPagination = (
+  state: RootState,
+  mode: PanelMode
+): PaginationType | null | undefined => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.pagination
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.pagination
+}
+
+export const selectLastPageSize = (
+  state: RootState,
+  mode: PanelMode
+): number => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.commander?.lastPageSize) {
+      return state.dualPanel.mainPanel.commander?.lastPageSize
+    }
+    return INITIAL_PAGE_SIZE
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander?.lastPageSize) {
+    return state.dualPanel.secondaryPanel?.commander.lastPageSize
+  }
+
+  return INITIAL_PAGE_SIZE
+}
+
+export const selectPanelNodesStatus = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.nodes.status
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.nodes.status
+}
+
+export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.pagination?.pageSize
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageSize
+}
+
+export const selectCommanderPageNumber = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.pagination?.pageNumber
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageNumber
 }

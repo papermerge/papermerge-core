@@ -1,7 +1,10 @@
 import {useSelector} from "react-redux"
-import {Breadcrumbs, Skeleton, Anchor} from "@mantine/core"
+import {Breadcrumbs, Skeleton, Anchor, Loader} from "@mantine/core"
 
-import {selectPanelBreadcrumbs} from "@/slices/dualPanel"
+import {
+  selectPanelBreadcrumbs,
+  selectPanelNodesStatus
+} from "@/slices/dualPanel"
 import type {PanelMode, NType} from "@/types"
 import type {RootState} from "@/app/types"
 
@@ -11,6 +14,10 @@ type Args = {
 }
 
 export default function BreadcrumbsComponent({mode, onClick}: Args) {
+  const nodesStatus = useSelector((state: RootState) =>
+    selectPanelNodesStatus(state, mode)
+  )
+
   const items = useSelector<RootState>(state =>
     selectPanelBreadcrumbs(state, mode)
   ) as Array<[string, string]> | null | undefined
@@ -22,7 +29,7 @@ export default function BreadcrumbsComponent({mode, onClick}: Args) {
       </Skeleton>
     )
   }
-  console.log(items)
+
   const links = items.slice(0, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}
@@ -35,6 +42,7 @@ export default function BreadcrumbsComponent({mode, onClick}: Args) {
       <Breadcrumbs>
         {links}
         {lastOne}
+        {nodesStatus == "loading" && <Loader size={"sm"} />}
       </Breadcrumbs>
     </>
   )

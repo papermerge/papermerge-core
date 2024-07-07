@@ -5,7 +5,7 @@ import {PAGINATION_PAGE_SIZES} from "@/cconstants"
 import type {PaginationType} from "@/types"
 
 type Args = {
-  pagination: PaginationType | null
+  pagination: PaginationType | null | undefined
   onPageNumberChange: (page: number) => void
   onPageSizeChange: (value: string | null) => void
   lastPageSize: number
@@ -20,7 +20,11 @@ export default function PaginationWithSelector({
   if (pagination) {
     return (
       <Group>
-        <Pagination onChange={onPageNumberChange} total={pagination.numPages} />
+        <Pagination
+          onChange={onPageNumberChange}
+          value={pagination.pageNumber}
+          total={pagination.numPages}
+        />
         <Select
           className={classes.select}
           value={`${pagination.pageSize}`}

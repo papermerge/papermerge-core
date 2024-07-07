@@ -20,7 +20,11 @@ export default function PaginationWithSelector({
   if (pagination) {
     return (
       <Group>
-        <Pagination onChange={onPageNumberChange} total={pagination.numPages} />
+        <Pagination
+          onChange={onPageNumberChange}
+          value={pagination.pageNumber}
+          total={pagination.numPages}
+        />
         <Select
           className={classes.select}
           value={`${pagination.pageSize}`}

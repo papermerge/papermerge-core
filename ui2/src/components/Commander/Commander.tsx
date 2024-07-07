@@ -12,7 +12,9 @@ import {
   fetchPaginatedNodes,
   selectPagination,
   selectLastPageSize,
-  selectCurrentFolderID
+  selectCurrentFolderID,
+  selectCommanderPageSize,
+  selectCommanderPageNumber
 } from "@/slices/dualPanel"
 
 import type {RootState} from "@/app/types"
@@ -39,10 +41,14 @@ export default function Commander({mode}: Args) {
   const lastPageSize = useSelector((state: RootState) =>
     selectLastPageSize(state, mode)
   )
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
-  const [pageNumber, setPageNumber] = useState<number>(1)
+  const pageSize = useSelector((state: RootState) =>
+    selectCommanderPageSize(state, mode)
+  )
+  const pageNumber = useSelector((state: RootState) =>
+    selectCommanderPageNumber(state, mode)
+  )
 
-  if (status === "loading") {
+  if (status === "loading" && !data) {
     return <div>Loading...</div>
   }
 
@@ -89,7 +95,6 @@ export default function Commander({mode}: Args) {
         )
       })
     )
-    setPageNumber(page)
   }
 
   const onPageSizeChange = (value: string | null) => {
@@ -103,7 +108,6 @@ export default function Commander({mode}: Args) {
           )
         })
       )
-      setPageSize(parseInt(value))
     }
   }
 

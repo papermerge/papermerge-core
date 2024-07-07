@@ -4,12 +4,15 @@ import {IconColumns2, IconX} from "@tabler/icons-react"
 import {
   openSecondaryPanel,
   closeSecondaryPanel,
-  selectPanels
+  selectPanels,
+  selectLastPageSize
 } from "@/slices/dualPanel"
 import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel"
 import {selectCurrentUser} from "@/slices/currentUser"
 
 import type {PanelMode, User} from "@/types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
+import {RootState} from "@/app/types"
 
 type Args = {
   mode: PanelMode
@@ -19,6 +22,9 @@ export default function ToggleSecondaryPanel({mode}: Args) {
   const [mainPanel, secondaryPanel] = useSelector(selectPanels)
   const user: User = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
+  const lastPageSize = useSelector((state: RootState) =>
+    selectLastPageSize(state, mode)
+  )
 
   if (mainPanel) {
     // mainPanel is always there
@@ -37,7 +43,9 @@ export default function ToggleSecondaryPanel({mode}: Args) {
       fetchPaginatedNodes({
         folderId,
         panel: "secondary",
-        urlParams: new URLSearchParams("")
+        urlParams: new URLSearchParams(
+          `page_number=1&page_size=${lastPageSize || INITIAL_PAGE_SIZE}`
+        )
       })
     )
     dispatch(

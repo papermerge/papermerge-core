@@ -16,7 +16,7 @@ export default function TagDetailsPage() {
 export async function loader({params}: LoaderFunctionArgs) {
   if (params.tagId) {
     const tagId = params.tagId
-    await store.dispatch(fetchTagDetails(tagId))
+    store.dispatch(fetchTagDetails(tagId))
     return params.tagId
   }
 

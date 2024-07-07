@@ -15,17 +15,19 @@ export default function Home() {
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const user: User = await getCurrentUser()
-  let folderId
+  let folderId, breadcrumb
 
   if (params.folderId) {
     folderId = params.folderId
+    breadcrumb = null
   } else {
     folderId = user.home_folder_id
+    breadcrumb = [[folderId, ".home"]] as Array<[string, string]>
   }
 
   store.dispatch(
     setCurrentNode({
-      node: {id: folderId, ctype: "folder"},
+      node: {id: folderId, ctype: "folder", breadcrumb: breadcrumb},
       panel: "main"
     })
   )

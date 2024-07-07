@@ -14,6 +14,12 @@ export type OcrStatusEnum =
 
 export type CType = "folder" | "document"
 
+export type CurrentNodeType = {
+  id: string
+  ctype: CType
+  breadcrumb: Array<[string, string]> | null | undefined
+}
+
 export type CreateUser = {
   username: string
   email: string
@@ -101,6 +107,7 @@ export type NodeType = NType & {
   ocr_status: OcrStatusEnum
   ocr: boolean
   thumbnail_url: string | null
+  breadcrumb: Array<[string, string]>
 }
 
 export type BreadcrumbItemType = [string, string]

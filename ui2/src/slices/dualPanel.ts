@@ -15,8 +15,10 @@ import type {
   Paginated,
   NodeLoaderResponseType,
   FolderType,
-  CurrentNodeType
+  CurrentNodeType,
+  PaginationType
 } from "@/types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 type NodeWithSpinner = {
   id: string
@@ -38,9 +40,8 @@ type FolderAddedArgs = {
 
 interface Commander {
   currentNode: CurrentNodeType | null
-  pageSize: number
-  pageNumber: number
-  sort: string
+  pagination: PaginationType | null | undefined
+  lastPageSize: number
   nodes: SliceState<Array<NodeWithSpinner>>
 }
 
@@ -60,9 +61,8 @@ interface DualPanelState {
 function commanderInitialState(node: CurrentNodeType | null): Commander {
   return {
     currentNode: node,
-    pageSize: 15,
-    pageNumber: 1,
-    sort: "-title",
+    pagination: null,
+    lastPageSize: INITIAL_PAGE_SIZE,
     nodes: {
       status: "idle",
       error: null,
@@ -205,6 +205,12 @@ const dualPanelSlice = createSlice({
             state.mainPanel.commander.currentNode.breadcrumb =
               action.payload.breadcrumb
           }
+          state.mainPanel.commander.pagination = {
+            pageSize: action.payload.per_page,
+            pageNumber: action.payload.page_number,
+            numPages: action.payload.num_pages
+          }
+          state.mainPanel.commander.lastPageSize = action.payload.per_page
         }
       } else if (state.secondaryPanel && state.secondaryPanel.commander) {
         state.secondaryPanel.commander.nodes = {
@@ -216,6 +222,12 @@ const dualPanelSlice = createSlice({
           state.secondaryPanel.commander.currentNode.breadcrumb =
             action.payload.breadcrumb
         }
+        state.secondaryPanel.commander.pagination = {
+          pageSize: action.payload.per_page,
+          pageNumber: action.payload.num_pages,
+          numPages: action.payload.num_pages
+        }
+        state.secondaryPanel.commander.lastPageSize = action.payload.per_page
       }
     })
   }
@@ -346,4 +358,33 @@ export const selectPanelBreadcrumbs = (
   }
 
   return null
+}
+
+export const selectPagination = (
+  state: RootState,
+  mode: PanelMode
+): PaginationType | null | undefined => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.commander?.pagination
+  }
+
+  return state.dualPanel.secondaryPanel?.commander?.pagination
+}
+
+export const selectLastPageSize = (
+  state: RootState,
+  mode: PanelMode
+): number => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.commander?.lastPageSize) {
+      return state.dualPanel.mainPanel.commander?.lastPageSize
+    }
+    return INITIAL_PAGE_SIZE
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander?.lastPageSize) {
+    return state.dualPanel.secondaryPanel?.commander.lastPageSize
+  }
+
+  return INITIAL_PAGE_SIZE
 }

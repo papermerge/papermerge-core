@@ -1,3 +1,4 @@
+import {useState} from "react"
 import {Group} from "@mantine/core"
 
 import {useSelector, useDispatch} from "react-redux"
@@ -8,12 +9,16 @@ import Node from "@/components/Node"
 import {
   selectPanelNodes,
   setCurrentNode,
-  fetchPaginatedNodes
+  fetchPaginatedNodes,
+  selectPagination,
+  selectLastPageSize,
+  selectCurrentFolderID
 } from "@/slices/dualPanel"
 
 import type {RootState} from "@/app/types"
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
+import Pagination from "@/components/Pagination"
 
 type Args = {
   mode: PanelMode
@@ -25,6 +30,17 @@ export default function Commander({mode}: Args) {
   const {data, status, error} = useSelector((state: RootState) =>
     selectPanelNodes(state, mode)
   )
+  const currentNodeID = useSelector((state: RootState) =>
+    selectCurrentFolderID(state, mode)
+  )
+  const pagination = useSelector((state: RootState) =>
+    selectPagination(state, mode)
+  )
+  const lastPageSize = useSelector((state: RootState) =>
+    selectLastPageSize(state, mode)
+  )
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  const [pageNumber, setPageNumber] = useState<number>(1)
 
   if (status === "loading") {
     return <div>Loading...</div>
@@ -63,6 +79,34 @@ export default function Commander({mode}: Args) {
     }
   }
 
+  const onPageNumberChange = (page: number) => {
+    dispatch(
+      fetchPaginatedNodes({
+        folderId: currentNodeID!,
+        panel: mode,
+        urlParams: new URLSearchParams(
+          `page_number=${page}&page_size=${pageSize}`
+        )
+      })
+    )
+    setPageNumber(page)
+  }
+
+  const onPageSizeChange = (value: string | null) => {
+    if (value) {
+      dispatch(
+        fetchPaginatedNodes({
+          folderId: currentNodeID!,
+          panel: mode,
+          urlParams: new URLSearchParams(
+            `page_number=${pageNumber}&page_size=${value}`
+          )
+        })
+      )
+      setPageSize(parseInt(value))
+    }
+  }
+
   const nodes = data.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
   ))
@@ -73,6 +117,12 @@ export default function Commander({mode}: Args) {
         <FolderNodeActions mode={mode} />
         <Breadcrumbs mode={mode} onClick={onClick} />
         <Group>{nodes}</Group>
+        <Pagination
+          pagination={pagination}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={lastPageSize}
+        />
       </div>
     )
   }

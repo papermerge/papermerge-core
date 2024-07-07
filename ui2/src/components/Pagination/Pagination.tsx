@@ -5,7 +5,7 @@ import {PAGINATION_PAGE_SIZES} from "@/cconstants"
 import type {PaginationType} from "@/types"
 
 type Args = {
-  pagination: PaginationType | null
+  pagination: PaginationType | null | undefined
   onPageNumberChange: (page: number) => void
   onPageSizeChange: (value: string | null) => void
   lastPageSize: number

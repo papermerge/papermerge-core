@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
-import {Link} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group} from "@mantine/core"
+import {Link, useNavigation} from "react-router-dom"
+import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
 import {selectTagDetails} from "@/slices/tagDetails"
 
@@ -10,7 +10,7 @@ import TagForm from "./TagForm"
 import EditButton from "./EditButton"
 import {DeleteTagButton} from "./DeleteButton"
 
-export default function TagDetailsComponent() {
+export default function TagDetails() {
   const {data} = useSelector<RootState>(
     selectTagDetails
   ) as SliceState<ColoredTagType>
@@ -41,11 +41,16 @@ export default function TagDetailsComponent() {
 }
 
 function Path({tag}: {tag: ColoredTagType | null}) {
+  const navigation = useNavigation()
+
   return (
-    <Breadcrumbs>
-      <Link to="/tags/">Tags</Link>
-      <Link to={`/tags/${tag?.id}`}>{tag?.name}</Link>
-    </Breadcrumbs>
+    <Group>
+      <Breadcrumbs>
+        <Link to="/tags/">Tags</Link>
+        <Link to={`/tags/${tag?.id}`}>{tag?.name}</Link>
+      </Breadcrumbs>
+      {navigation.state == "loading" && <Loader size={"sm"} />}
+    </Group>
   )
 }
 

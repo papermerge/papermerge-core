@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
-import {Link} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group} from "@mantine/core"
+import {Link, useNavigation} from "react-router-dom"
+import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
 import {selectUserDetails} from "@/slices/userDetails"
 
@@ -42,11 +42,16 @@ export default function UserDetailsComponent() {
 }
 
 function Path({user}: {user: UserDetails | null}) {
+  const navigation = useNavigation()
+
   return (
-    <Breadcrumbs>
-      <Link to="/users/">Users</Link>
-      <Link to={`/users/${user?.id}`}>{user?.username}</Link>
-    </Breadcrumbs>
+    <Group>
+      <Breadcrumbs>
+        <Link to="/users/">Users</Link>
+        <Link to={`/users/${user?.id}`}>{user?.username}</Link>
+      </Breadcrumbs>
+      {navigation.state == "loading" && <Loader size={"sm"} />}
+    </Group>
   )
 }
 

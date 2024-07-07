@@ -323,11 +323,11 @@ const selectSecondaryPanelNodes = (
 
 export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.currentNode
+    return state.dualPanel.mainPanel.commander?.currentNode?.id
   }
 
   if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel.commander.currentNode
+    return state.dualPanel.secondaryPanel.commander.currentNode?.id
   }
 
   return null

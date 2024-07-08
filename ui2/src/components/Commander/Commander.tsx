@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {Group} from "@mantine/core"
 
 import {useSelector, useDispatch} from "react-redux"
@@ -20,12 +21,10 @@ import type {RootState} from "@/app/types"
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
+import PanelContext from "@/contexts/PanelContext"
 
-type Args = {
-  mode: PanelMode
-}
-
-export default function Commander({mode}: Args) {
+export default function Commander() {
+  const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const {data, status, error} = useSelector((state: RootState) =>
@@ -111,14 +110,14 @@ export default function Commander({mode}: Args) {
   }
 
   const nodes = data.map((n: NodeType) => (
-    <Node onClick={onClick} key={n.id} node={n} mode={mode} />
+    <Node onClick={onClick} key={n.id} node={n} />
   ))
 
   if (nodes.length > 0) {
     return (
       <div>
-        <FolderNodeActions mode={mode} />
-        <Breadcrumbs mode={mode} onClick={onClick} />
+        <FolderNodeActions />
+        <Breadcrumbs onClick={onClick} />
         <Group>{nodes}</Group>
         <Pagination
           pagination={pagination}
@@ -132,8 +131,8 @@ export default function Commander({mode}: Args) {
 
   return (
     <div>
-      <FolderNodeActions mode={mode} />
-      <Breadcrumbs mode={mode} onClick={onClick} />
+      <FolderNodeActions />
+      <Breadcrumbs onClick={onClick} />
       <Group>Empty</Group>
     </div>
   )

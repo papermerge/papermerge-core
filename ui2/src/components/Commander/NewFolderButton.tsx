@@ -1,5 +1,5 @@
 import {useContext} from "react"
-import {Tooltip, ActionIcon, Box} from "@mantine/core"
+import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconFolderPlus} from "@tabler/icons-react"
 import {useSelector, useDispatch} from "react-redux"
 import {selectCurrentFolderID, folderAdded} from "@/slices/dualPanel"

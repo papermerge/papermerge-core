@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {ActionIcon} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {IconColumns2, IconX} from "@tabler/icons-react"
@@ -14,11 +15,10 @@ import type {PanelMode, User} from "@/types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
 import {RootState} from "@/app/types"
 
-type Args = {
-  mode: PanelMode
-}
+import PanelContext from "@/contexts/PanelContext"
 
-export default function ToggleSecondaryPanel({mode}: Args) {
+export default function ToggleSecondaryPanel() {
+  const mode: PanelMode = useContext(PanelContext)
   const [mainPanel, secondaryPanel] = useSelector(selectPanels)
   const user: User = useSelector(selectCurrentUser)
   const dispatch = useDispatch()

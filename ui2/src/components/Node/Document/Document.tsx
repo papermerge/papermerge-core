@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {useDispatch, useSelector} from "react-redux"
 import {Checkbox} from "@mantine/core"
 
@@ -10,14 +11,15 @@ import {
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.css"
 import {RootState} from "@/app/types"
+import PanelContext from "@/contexts/PanelContext"
 
 type Args = {
   node: NodeType
-  mode: PanelMode
   onClick: (node: NodeType) => void
 }
 
-export default function Document({node, mode, onClick}: Args) {
+export default function Document({node, onClick}: Args) {
+  const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedNodeIds(state, mode)
   ) as Array<string>

@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {ActionIcon} from "@mantine/core"
 import {IconFolderPlus} from "@tabler/icons-react"
 import {useSelector, useDispatch} from "react-redux"
@@ -7,11 +8,10 @@ import create_new_folder from "@/components/modals/NewFolder"
 import type {RootState} from "@/app/types"
 import type {NodeType, PanelMode} from "@/types"
 
-type Args = {
-  mode: PanelMode
-}
+import PanelContext from "@/contexts/PanelContext"
 
-export default function NewFolderButton({mode}: Args) {
+export default function NewFolderButton() {
+  const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
   const currentFolderId = useSelector((state: RootState) =>
     selectCurrentFolderID(state, mode)

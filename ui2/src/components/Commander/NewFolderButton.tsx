@@ -1,5 +1,5 @@
 import {useContext} from "react"
-import {ActionIcon} from "@mantine/core"
+import {Tooltip, ActionIcon, Box} from "@mantine/core"
 import {IconFolderPlus} from "@tabler/icons-react"
 import {useSelector, useDispatch} from "react-redux"
 import {selectCurrentFolderID, folderAdded} from "@/slices/dualPanel"
@@ -28,8 +28,10 @@ export default function NewFolderButton() {
   }
 
   return (
-    <ActionIcon onClick={onNewFolder} size="lg" variant="default">
-      <IconFolderPlus size={18} />
-    </ActionIcon>
+    <Tooltip label="New Folder" withArrow>
+      <ActionIcon size={"lg"} variant="default" onClick={onNewFolder}>
+        <IconFolderPlus />
+      </ActionIcon>
+    </Tooltip>
   )
 }

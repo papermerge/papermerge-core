@@ -21,8 +21,8 @@ export default function FolderNodeActions() {
   return (
     <Group justify="space-between">
       <Group>
-        <UploadButton />
-        <NewFolderButton />
+        {selectedIds.length == 0 && <UploadButton />}
+        {selectedIds.length == 0 && <NewFolderButton />}
         {selectedIds.length > 0 && <DeleteButton />}
       </Group>
       <Group>

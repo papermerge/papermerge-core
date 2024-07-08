@@ -1,4 +1,4 @@
-import {ActionIcon, FileButton} from "@mantine/core"
+import {FileButton, ActionIcon, Tooltip} from "@mantine/core"
 import {IconUpload} from "@tabler/icons-react"
 
 export default function UploadButton() {
@@ -6,10 +6,12 @@ export default function UploadButton() {
 
   return (
     <FileButton onChange={onUpload} multiple>
-      {props => (
-        <ActionIcon {...props} size="lg" variant="default">
-          <IconUpload size={18} />
-        </ActionIcon>
+      {() => (
+        <Tooltip label="Upload" withArrow>
+          <ActionIcon size="lg" variant="default">
+            <IconUpload />
+          </ActionIcon>
+        </Tooltip>
       )}
     </FileButton>
   )

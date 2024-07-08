@@ -22,7 +22,7 @@ export default function DualPanel() {
   }
 
   return (
-    <PanelContext.Provider value="main">
+    <PanelContext.Provider value={"main"}>
       <SinglePanel />
     </PanelContext.Provider>
   )

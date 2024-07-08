@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import {selectSelectedNodeIds} from "@/slices/dualPanel"
@@ -9,11 +10,10 @@ import DeleteButton from "@/components/Commander/DeleteButton"
 import NewFolderButton from "@/components/Commander/NewFolderButton"
 import UploadButton from "@/components/Commander/UploadButton"
 
-type Args = {
-  mode: PanelMode
-}
+import PanelContext from "@/contexts/PanelContext"
 
-export default function FolderNodeActions({mode}: Args) {
+export default function FolderNodeActions() {
+  const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
@@ -22,11 +22,11 @@ export default function FolderNodeActions({mode}: Args) {
     <Group justify="space-between">
       <Group>
         <UploadButton />
-        <NewFolderButton mode={mode} />
+        <NewFolderButton />
         {selectedIds.length > 0 && <DeleteButton />}
       </Group>
       <Group>
-        <ToggleSecondaryPanel mode={mode} />
+        <ToggleSecondaryPanel />
       </Group>
     </Group>
   )

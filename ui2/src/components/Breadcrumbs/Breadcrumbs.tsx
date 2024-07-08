@@ -1,3 +1,4 @@
+import {useContext} from "react"
 import {useSelector} from "react-redux"
 import {Breadcrumbs, Skeleton, Anchor, Loader} from "@mantine/core"
 
@@ -8,12 +9,14 @@ import {
 import type {PanelMode, NType} from "@/types"
 import type {RootState} from "@/app/types"
 
+import PanelContext from "@/contexts/PanelContext"
+
 type Args = {
-  mode: PanelMode
   onClick: (node: NType) => void
 }
 
-export default function BreadcrumbsComponent({mode, onClick}: Args) {
+export default function BreadcrumbsComponent({onClick}: Args) {
+  const mode: PanelMode = useContext(PanelContext)
   const nodesStatus = useSelector((state: RootState) =>
     selectPanelNodesStatus(state, mode)
   )

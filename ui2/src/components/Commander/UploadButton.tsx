@@ -9,7 +9,7 @@ export default function UploadButton() {
       {() => (
         <Tooltip label="Upload" withArrow>
           <ActionIcon size="lg" variant="default">
-            <IconUpload />
+            <IconUpload stroke={1.4} />
           </ActionIcon>
         </Tooltip>
       )}

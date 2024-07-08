@@ -11,6 +11,8 @@ import NewFolderButton from "@/components/Commander/NewFolderButton"
 import UploadButton from "@/components/Commander/UploadButton"
 
 import PanelContext from "@/contexts/PanelContext"
+import EditNodeTagsButton from "@/components/SinglePanel/EditNodeTagsButton"
+import EditNodeTitleButton from "@/components/SinglePanel/EditNodeTitleButton"
 
 export default function FolderNodeActions() {
   const mode: PanelMode = useContext(PanelContext)
@@ -23,6 +25,8 @@ export default function FolderNodeActions() {
       <Group>
         {selectedIds.length == 0 && <UploadButton />}
         {selectedIds.length == 0 && <NewFolderButton />}
+        {selectedIds.length == 1 && <EditNodeTitleButton />}
+        {selectedIds.length == 1 && <EditNodeTagsButton />}
         {selectedIds.length > 0 && <DeleteButton />}
       </Group>
       <Group>

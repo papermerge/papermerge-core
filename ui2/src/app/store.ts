@@ -1,6 +1,6 @@
 import {configureStore} from "@reduxjs/toolkit"
 import currentUserReducer from "@/slices/currentUser"
-import dualPanelReducer from "@/slices/dualPanel"
+import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import navBarReducer from "@/slices/navBar"
 import tagsReducer from "@/slices/tags"
 import groupsReducer from "@/slices/groups"

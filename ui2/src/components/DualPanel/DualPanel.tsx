@@ -1,6 +1,6 @@
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
-import {selectPanels} from "@/slices/dualPanel"
+import {selectPanels} from "@/slices/dualPanel/dualPanel"
 import SinglePanel from "@/components/SinglePanel"
 
 import PanelContext from "@/contexts/PanelContext"

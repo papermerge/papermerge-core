@@ -5,7 +5,7 @@ import {Breadcrumbs, Skeleton, Anchor, Loader} from "@mantine/core"
 import {
   selectPanelBreadcrumbs,
   selectPanelNodesStatus
-} from "@/slices/dualPanel"
+} from "@/slices/dualPanel/dualPanel"
 import type {PanelMode, NType} from "@/types"
 import type {RootState} from "@/app/types"
 

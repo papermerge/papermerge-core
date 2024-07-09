@@ -7,6 +7,12 @@ axios.defaults.baseURL = getBaseURL()
 axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
+import {
+  removeNodesHelper,
+  selectionAddNodeHelper,
+  selectionRemoveNodeHelper,
+  clearNodesSelectionHelper
+} from "./helpers"
 
 import type {
   SliceState,
@@ -18,56 +24,15 @@ import type {
   CurrentNodeType,
   PaginationType
 } from "@/types"
+import {
+  Commander,
+  DualPanelState,
+  SetCurrentNodeArgs,
+  FolderAddedArgs,
+  NodeWithSpinner,
+  SelectionNodePayload
+} from "./types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
-
-type NodeWithSpinner = {
-  id: string
-  // When user clicks a node in commander, respective node
-  // gives user immediate feedback by showing rotating spinner
-  // next to the node (i.e. I got your click => now loading subfolder/doc)
-  status: "idle" | "loading"
-}
-
-type SetCurrentNodeArgs = {
-  node: CurrentNodeType
-  panel: PanelMode
-}
-
-type FolderAddedArgs = {
-  node: NodeType
-  mode: PanelMode
-}
-
-type SelectionNodePayload = {
-  selectionId: string
-  mode: PanelMode
-}
-
-type SelectionNodesPayload = {
-  selectionIds: Array<string>
-  mode: PanelMode
-}
-
-interface Commander {
-  currentNode: CurrentNodeType | null
-  pagination: PaginationType | null | undefined
-  lastPageSize: number
-  nodes: SliceState<Array<NodeWithSpinner>>
-  selectedIds: Array<string>
-}
-
-interface Viewer {}
-
-interface SinglePanel {
-  commander: Commander | null
-  viewer: Viewer | null
-}
-
-interface DualPanelState {
-  mainPanel: SinglePanel
-  secondaryPanel: SinglePanel | null
-  nodes: Array<NodeType>
-}
 
 function commanderInitialState(node: CurrentNodeType | null): Commander {
   return {
@@ -131,6 +96,15 @@ export const fetchPaginatedNodes = createAsyncThunk<
   return result
 })
 
+export const deleteNodes = createAsyncThunk<string[], string[]>(
+  "dualPanel/deleteNodes",
+  async (nodeIds: string[]) => {
+    await axios.delete("/api/nodes/", {data: nodeIds})
+
+    return nodeIds
+  }
+)
+
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
@@ -188,66 +162,20 @@ const dualPanelSlice = createSlice({
       state.secondaryPanel = null
     },
     selectionAddNode: (state, action: PayloadAction<SelectionNodePayload>) => {
-      if (action.payload.mode == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.selectedIds.push(action.payload.selectionId)
-        }
-      } else {
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.selectedIds.push(
-            action.payload.selectionId
-          )
-        }
-      }
-    },
-    selectionAddNodes: (
-      state,
-      action: PayloadAction<SelectionNodesPayload>
-    ) => {
-      if (action.payload.mode == "main") {
-        // main panel / commander
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.selectedIds = action.payload.selectionIds
-        }
-      } else {
-        // secondary panel / commander
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.selectedIds =
-            action.payload.selectionIds
-        }
-      }
+      const nodeId = action.payload.selectionId
+      const mode = action.payload.mode
+      selectionAddNodeHelper(state, nodeId, mode)
     },
     selectionRemoveNode: (
       state,
       action: PayloadAction<SelectionNodePayload>
     ) => {
-      if (action.payload.mode == "main") {
-        if (state.mainPanel.commander) {
-          const newSelectedIds = state.mainPanel.commander.selectedIds.filter(
-            i => i != action.payload.selectionId
-          )
-          state.mainPanel.commander.selectedIds = newSelectedIds
-        }
-      } else {
-        if (state.secondaryPanel?.commander) {
-          const newSelectedIds =
-            state.secondaryPanel.commander.selectedIds.filter(
-              i => i != action.payload.selectionId
-            )
-          state.secondaryPanel.commander.selectedIds = newSelectedIds
-        }
-      }
+      const nodeId = action.payload.selectionId
+      const {mode} = action.payload
+      selectionRemoveNodeHelper(state, nodeId, mode)
     },
-    clearNodesSelection: (state, action: PayloadAction<string>) => {
-      if (action.payload == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.selectedIds = []
-        }
-      } else {
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.selectedIds = []
-        }
-      }
+    clearNodesSelection: (state, action: PayloadAction<PanelMode>) => {
+      clearNodesSelectionHelper(state, action.payload)
     }
   },
   extraReducers(builder) {
@@ -316,6 +244,13 @@ const dualPanelSlice = createSlice({
         }
       }
     })
+    builder.addCase(
+      deleteNodes.fulfilled,
+      (state, action: PayloadAction<string[]>) => {
+        const nodeIds = action.payload
+        removeNodesHelper(state, nodeIds)
+      }
+    )
   }
 })
 
@@ -325,7 +260,6 @@ export const {
   openSecondaryPanel,
   closeSecondaryPanel,
   selectionAddNode,
-  selectionAddNodes,
   selectionRemoveNode,
   clearNodesSelection
 } = dualPanelSlice.actions
@@ -510,4 +444,22 @@ export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.commander?.selectedIds
+}
+
+export const selectSelectedNodes = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    const selectedIds = state.dualPanel.mainPanel.commander?.selectedIds
+    if (selectedIds) {
+      return Object.values(state.dualPanel.nodes).filter((i: NodeType) =>
+        selectedIds.includes(i.id)
+      )
+    }
+  }
+
+  const selectedIds = state.dualPanel.secondaryPanel?.commander?.selectedIds
+  if (selectedIds) {
+    return Object.values(state.dualPanel.nodes).filter((i: NodeType) =>
+      selectedIds.includes(i.id)
+    )
+  }
 }

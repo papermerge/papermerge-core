@@ -6,7 +6,7 @@ import {
   selectSelectedNodeIds,
   selectionAddNode,
   selectionRemoveNode
-} from "@/slices/dualPanel"
+} from "@/slices/dualPanel/dualPanel"
 
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.css"

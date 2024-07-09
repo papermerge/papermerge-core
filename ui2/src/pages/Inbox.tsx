@@ -1,7 +1,7 @@
 import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
-import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel"
+import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
 
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"

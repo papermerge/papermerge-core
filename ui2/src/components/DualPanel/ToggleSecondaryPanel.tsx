@@ -7,8 +7,8 @@ import {
   closeSecondaryPanel,
   selectPanels,
   selectLastPageSize
-} from "@/slices/dualPanel"
-import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel"
+} from "@/slices/dualPanel/dualPanel"
+import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
 import {selectCurrentUser} from "@/slices/currentUser"
 
 import type {PanelMode, User} from "@/types"

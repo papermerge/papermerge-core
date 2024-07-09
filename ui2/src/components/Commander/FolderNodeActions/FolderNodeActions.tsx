@@ -1,7 +1,7 @@
 import {useContext} from "react"
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
-import {selectSelectedNodeIds} from "@/slices/dualPanel"
+import {selectSelectedNodeIds} from "@/slices/dualPanel/dualPanel"
 
 import type {RootState} from "@/app/types"
 import type {PanelMode} from "@/types"

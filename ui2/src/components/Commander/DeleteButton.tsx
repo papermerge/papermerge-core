@@ -5,24 +5,28 @@ import {IconTrash} from "@tabler/icons-react"
 import {openModal} from "@/components/modals/Generic"
 import {NodeType, PanelMode} from "@/types"
 import DeleteNodesModal from "./DeleteModal"
-import {useSelector} from "react-redux"
-import {selectSelectedNodes} from "@/slices/dualPanel"
+import {useSelector, useDispatch} from "react-redux"
+import {
+  selectSelectedNodes,
+  clearNodesSelection
+} from "@/slices/dualPanel/dualPanel"
 import {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
 export default function DeleteButton() {
   const mode: PanelMode = useContext(PanelContext)
+  const dispatch = useDispatch()
   const nodes = useSelector((state: RootState) =>
     selectSelectedNodes(state, mode)
   ) as NodeType[]
 
   const onClick = () => {
-    openModal<NodeType[], {nodes: NodeType[]}>(DeleteNodesModal, {
+    openModal<string[], {nodes: NodeType[]}>(DeleteNodesModal, {
       nodes: nodes
     })
       .then(() => {
-        //setRedirect(true)
+        dispatch(clearNodesSelection(mode))
       })
       .catch(() => {})
   }

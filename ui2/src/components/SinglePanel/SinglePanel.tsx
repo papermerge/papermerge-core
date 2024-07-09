@@ -1,6 +1,6 @@
 import {useContext} from "react"
 
-import {selectPanelComponents} from "@/slices/dualPanel"
+import {selectPanelComponents} from "@/slices/dualPanel/dualPanel"
 import {useSelector} from "react-redux"
 import Commander from "@/components/Commander"
 import Viewer from "@/components/Viewer"

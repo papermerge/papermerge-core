@@ -15,7 +15,7 @@ import {
   selectCurrentFolderID,
   selectCommanderPageSize,
   selectCommanderPageNumber
-} from "@/slices/dualPanel"
+} from "@/slices/dualPanel/dualPanel"
 
 import type {RootState} from "@/app/types"
 import type {NType, NodeType, PanelMode} from "@/types"

@@ -2,7 +2,7 @@ import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconFolderPlus} from "@tabler/icons-react"
 import {useSelector, useDispatch} from "react-redux"
-import {selectCurrentFolderID, folderAdded} from "@/slices/dualPanel"
+import {selectCurrentFolderID, folderAdded} from "@/slices/dualPanel/dualPanel"
 import create_new_folder from "@/components/modals/NewFolder"
 
 import type {RootState} from "@/app/types"

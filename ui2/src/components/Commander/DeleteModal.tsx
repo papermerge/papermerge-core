@@ -1,6 +1,6 @@
 import {useState} from "react"
 import {store} from "@/app/store"
-import {removeGroups} from "@/slices/groups"
+import {deleteNodes} from "@/slices/dualPanel/dualPanel"
 import GenericModal from "@/components/modals/Generic"
 import type {NodeType} from "@/types"
 
@@ -20,7 +20,7 @@ export default function DeleteNodesModal({
   const nodeTitles = nodes.map(g => g.title).join(",")
 
   const handleSubmit = async () => {
-    //store.dispatch(removeGroups(nodes.map(g => g.id)))
+    store.dispatch(deleteNodes(nodes.map(g => g.id)))
     onOK(nodes)
   }
   const handleCancel = () => {

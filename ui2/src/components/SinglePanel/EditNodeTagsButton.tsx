@@ -1,4 +1,4 @@
-import {useContext} from "react"
+//import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconTag} from "@tabler/icons-react"
 /*
@@ -8,12 +8,12 @@ import create_new_folder from "@/components/modals/NewFolder"
 
 import type {RootState} from "@/app/types"
 */
-import type {NodeType, PanelMode} from "@/types"
+//import type {PanelMode} from "@/types"
 
-import PanelContext from "@/contexts/PanelContext"
+//import PanelContext from "@/contexts/PanelContext"
 
 export default function EditNodeTagsButton() {
-  const mode: PanelMode = useContext(PanelContext)
+  //const mode: PanelMode = useContext(PanelContext)
   /*
   const dispatch = useDispatch()
   const currentFolderId = useSelector((state: RootState) =>

@@ -1,4 +1,9 @@
-import {createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit"
+import {
+  createSlice,
+  PayloadAction,
+  createAsyncThunk,
+  createSelector
+} from "@reduxjs/toolkit"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
@@ -269,9 +274,14 @@ export default dualPanelSlice.reducer
 export const selectMainCurrentFolderId = (state: RootState) =>
   state.dualPanel.mainPanel.commander?.currentNode
 
-export const selectPanels = (state: RootState) => {
-  return [state.dualPanel.mainPanel, state.dualPanel.secondaryPanel]
-}
+export const selectMainPanel = (state: RootState) => state.dualPanel.mainPanel
+export const selectSecondaryPanel = (state: RootState) =>
+  state.dualPanel.secondaryPanel
+
+export const selectPanels = createSelector(
+  [selectMainPanel, selectSecondaryPanel],
+  (a, b) => [a, b]
+)
 
 export const selectPanelComponents = (state: RootState, mode: PanelMode) => {
   if (mode === "main") {

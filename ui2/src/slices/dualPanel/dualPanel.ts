@@ -278,23 +278,20 @@ export const selectMainPanel = (state: RootState) => state.dualPanel.mainPanel
 export const selectSecondaryPanel = (state: RootState) =>
   state.dualPanel.secondaryPanel
 
-export const selectPanels = createSelector(
-  [selectMainPanel, selectSecondaryPanel],
-  (a, b) => [a, b]
-)
-
-export const selectPanelComponents = (state: RootState, mode: PanelMode) => {
+export const selectCommander = (state: RootState, mode: PanelMode) => {
   if (mode === "main") {
-    return [
-      state.dualPanel.mainPanel.commander,
-      state.dualPanel.mainPanel.viewer
-    ]
+    return state.dualPanel.mainPanel.commander
   }
 
-  return [
-    state.dualPanel.secondaryPanel?.commander,
-    state.dualPanel.secondaryPanel?.viewer
-  ]
+  return state.dualPanel.secondaryPanel?.commander
+}
+
+export const selectViewer = (state: RootState, mode: PanelMode) => {
+  if (mode === "main") {
+    return state.dualPanel.mainPanel.viewer
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer
 }
 
 export const selectPanelNodes = (

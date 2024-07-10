@@ -1,6 +1,6 @@
 import {useContext} from "react"
 
-import {selectPanelComponents} from "@/slices/dualPanel/dualPanel"
+import {selectCommander, selectViewer} from "@/slices/dualPanel/dualPanel"
 import {useSelector} from "react-redux"
 import Commander from "@/components/Commander"
 import Viewer from "@/components/Viewer"
@@ -10,9 +10,11 @@ import {RootState} from "@/app/types"
 
 export default function SinglePanel() {
   const mode: PanelMode = useContext(PanelContext)
-  const [commander, viewer] = useSelector((state: RootState) =>
-    selectPanelComponents(state, mode)
+  const commander = useSelector((state: RootState) =>
+    selectCommander(state, mode)
   )
+  const viewer = useSelector((state: RootState) => selectViewer(state, mode))
+
   if (commander) {
     return <Commander />
   }

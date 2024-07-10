@@ -8,8 +8,7 @@ import {
   Group,
   Menu,
   ActionIcon,
-  MenuItem,
-  Box
+  MenuItem
 } from "@mantine/core"
 import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
 import classes from "./Breadcrumbs.module.css"
@@ -18,7 +17,7 @@ import {
   selectPanelBreadcrumbs,
   selectPanelNodesStatus
 } from "@/slices/dualPanel/dualPanel"
-import type {PanelMode, NType, SliceState, UserDetails} from "@/types"
+import type {PanelMode, NType, UserDetails} from "@/types"
 import type {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"

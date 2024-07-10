@@ -5,7 +5,8 @@ import {IconColumns2, IconX} from "@tabler/icons-react"
 import {
   openSecondaryPanel,
   closeSecondaryPanel,
-  selectPanels,
+  selectMainPanel,
+  selectSecondaryPanel,
   selectLastPageSize
 } from "@/slices/dualPanel/dualPanel"
 import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
@@ -19,7 +20,8 @@ import PanelContext from "@/contexts/PanelContext"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
-  const [mainPanel, secondaryPanel] = useSelector(selectPanels)
+  const mainPanel = useSelector(selectMainPanel)
+  const secondaryPanel = useSelector(selectSecondaryPanel)
   const user: User = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
   const lastPageSize = useSelector((state: RootState) =>

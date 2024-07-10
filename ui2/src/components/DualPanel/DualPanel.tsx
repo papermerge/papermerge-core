@@ -10,7 +10,7 @@ export default function DualPanel() {
 
   if (secondaryPanel) {
     return (
-      <Group grow justify="space-between">
+      <Group grow align="flex-start" justify="space-between">
         <PanelContext.Provider value={"main"}>
           <SinglePanel />
         </PanelContext.Provider>

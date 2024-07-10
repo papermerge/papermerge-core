@@ -442,20 +442,18 @@ export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   return state.dualPanel.secondaryPanel?.commander?.selectedIds
 }
 
-export const selectSelectedNodes = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    const selectedIds = state.dualPanel.mainPanel.commander?.selectedIds
-    if (selectedIds) {
-      return Object.values(state.dualPanel.nodes).filter((i: NodeType) =>
+export const selectSelectedNodes = createSelector(
+  [selectSelectedNodeIds, selectNodesRaw],
+  (
+    selectedIds: Array<string> | undefined,
+    allNodes: Array<NodeType> | undefined
+  ): Array<NodeType> => {
+    if (selectedIds && allNodes) {
+      return Object.values(allNodes).filter((i: NodeType) =>
         selectedIds.includes(i.id)
       )
     }
-  }
 
-  const selectedIds = state.dualPanel.secondaryPanel?.commander?.selectedIds
-  if (selectedIds) {
-    return Object.values(state.dualPanel.nodes).filter((i: NodeType) =>
-      selectedIds.includes(i.id)
-    )
+    return []
   }
-}
+)

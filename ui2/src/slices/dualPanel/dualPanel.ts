@@ -1,4 +1,9 @@
-import {createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit"
+import {
+  createSlice,
+  PayloadAction,
+  createAsyncThunk,
+  createSelector
+} from "@reduxjs/toolkit"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
@@ -289,73 +294,62 @@ export const selectViewer = (state: RootState, mode: PanelMode) => {
   return state.dualPanel.secondaryPanel?.viewer
 }
 
-export const selectPanelNodes = (
+export const selectPanelNodesRaw = (
   state: RootState,
   mode: PanelMode
-): SliceState<Array<NodeType>> => {
+): SliceState<Array<NodeWithSpinner>> | undefined => {
   if (mode === "main") {
     if (state.dualPanel.mainPanel.commander) {
-      return selectMainPanelNodes(state)
+      return state.dualPanel.mainPanel.commander.nodes
     }
   }
 
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return selectSecondaryPanelNodes(state)
-  }
-
-  return {
-    data: null,
-    error: null,
-    status: "idle"
-  }
+  return state.dualPanel.secondaryPanel?.commander?.nodes
 }
 
-const selectMainPanelNodes = (
-  state: RootState
-): SliceState<Array<NodeType>> => {
-  if (state.dualPanel.mainPanel!.commander!.nodes.data) {
-    const nodeIds = state.dualPanel.mainPanel.commander!.nodes.data!.map(
-      (n: NodeWithSpinner) => n.id
-    )
-    const output = {
-      status: "succeeded",
-      error: null,
-      data: state.dualPanel.nodes.filter((n: NodeType) =>
-        nodeIds.includes(n.id)
-      )
-    } as SliceState<Array<NodeType>>
-    return output
+export const selectNodesRaw = (
+  state: RootState,
+  mode: PanelMode
+): Array<NodeType> | undefined => {
+  if (mode) {
+    // mode is not used here
   }
-
-  return {
-    status: state.dualPanel.mainPanel!.commander!.nodes.status,
-    error: state.dualPanel.mainPanel!.commander!.nodes.error,
-    data: null
-  }
+  return state.dualPanel.nodes
 }
 
-const selectSecondaryPanelNodes = (
-  state: RootState
-): SliceState<Array<NodeType>> => {
-  if (state.dualPanel.secondaryPanel!.commander!.nodes.data) {
-    const nodeIds = state.dualPanel.secondaryPanel!.commander!.nodes.data!.map(
-      (n: NodeWithSpinner) => n.id
-    )
+export const selectPanelNodes = createSelector(
+  [selectPanelNodesRaw, selectNodesRaw],
+  (
+    panelNodes: SliceState<Array<NodeWithSpinner>> | undefined,
+    allNodes: Array<NodeType> | undefined
+  ) => {
+    const IDLE = {
+      data: null,
+      status: "idle",
+      error: null
+    }
+
+    if (!panelNodes) {
+      return IDLE
+    }
+
+    if (panelNodes?.data && allNodes) {
+      const nodeIds = panelNodes?.data.map(n => n.id)
+
+      return {
+        status: panelNodes?.status,
+        error: panelNodes?.error,
+        data: allNodes.filter(n => nodeIds.includes(n.id))
+      }
+    }
+
     return {
-      status: "succeeded",
-      error: null,
-      data: state.dualPanel.nodes.filter((n: NodeType) =>
-        nodeIds.includes(n.id)
-      )
+      status: panelNodes.status,
+      error: panelNodes.error,
+      data: null
     }
   }
-
-  return {
-    status: state.dualPanel.secondaryPanel!.commander!.nodes.status,
-    error: state.dualPanel.secondaryPanel!.commander!.nodes.error,
-    data: null
-  }
-}
+)
 
 export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {

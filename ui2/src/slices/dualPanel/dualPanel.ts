@@ -1,9 +1,4 @@
-import {
-  createSlice,
-  PayloadAction,
-  createAsyncThunk,
-  createSelector
-} from "@reduxjs/toolkit"
+import {createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"

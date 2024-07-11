@@ -153,6 +153,5 @@ function equalUUIDs(id1: string, id2: string): boolean {
   const i1 = id1.replace(/\-/g, "")
   const i2 = id2.replace(/\-/g, "")
 
-  console.log(`${i1} == ${i2}`)
   return i1 == i2
 }

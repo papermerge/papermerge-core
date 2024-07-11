@@ -1,5 +1,6 @@
-import type {NodeType, PanelMode} from "@/types"
-import {DualPanelState, NodeWithSpinner} from "./types"
+import type {CurrentNodeType, NodeType, PanelMode} from "@/types"
+import {DualPanelState, NodeWithSpinner, Commander} from "./types"
+import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 export function selectionAddNodeHelper(
   state: DualPanelState,
@@ -81,6 +82,117 @@ export function removeNodesHelper(state: DualPanelState, nodeIds: string[]) {
   if (newNodes && state.nodes) {
     state.nodes = newNodes
   }
+}
+
+export function setCurrentNodeHelper({
+  state,
+  node,
+  mode
+}: {
+  state: DualPanelState
+  node: CurrentNodeType
+  mode: PanelMode
+}) {
+  if (mode == "main") {
+    // main panel
+    if (node.ctype == "folder") {
+      // commander
+      if (state.mainPanel.commander) {
+        // preserve breadcrumb
+        const prevBreadcrumb = state.mainPanel.commander.currentNode?.breadcrumb
+        // just update commander's current node
+        state.mainPanel.commander.currentNode = {
+          id: node.id,
+          ctype: node.ctype,
+          breadcrumb: prevBreadcrumb
+        }
+      } else {
+        // re-open commander
+        state.mainPanel.commander = commanderInitialState({
+          id: node.id,
+          ctype: "folder",
+          breadcrumb: null
+        })
+      }
+    } else {
+      // viewer
+    }
+  }
+
+  if (mode == "secondary") {
+    if (state.secondaryPanel?.commander) {
+      // preserve breadcrumb
+      const prevBreadcrumb =
+        state.secondaryPanel.commander.currentNode?.breadcrumb
+      state.secondaryPanel.commander.currentNode = {
+        id: node.id,
+        ctype: node.ctype,
+        breadcrumb: prevBreadcrumb
+      }
+    }
+  }
+}
+
+export function folderAddedHelper({
+  state,
+  node,
+  mode
+}: {
+  state: DualPanelState
+  node: NodeType
+  mode: PanelMode
+}) {
+  const addToBothPanels = equalPanels(state)
+
+  state.nodes.push(node)
+
+  if (mode == "main" || addToBothPanels) {
+    state.mainPanel.commander?.nodes.data!.push({
+      id: node.id,
+      status: "idle"
+    })
+  }
+
+  if (mode == "secondary" || addToBothPanels) {
+    state.secondaryPanel!.commander?.nodes.data!.push({
+      id: node.id,
+      status: "idle"
+    })
+  }
+}
+
+export function commanderInitialState(node: CurrentNodeType | null): Commander {
+  return {
+    currentNode: node,
+    pagination: null,
+    lastPageSize: INITIAL_PAGE_SIZE,
+    nodes: {
+      status: "idle",
+      error: null,
+      data: null
+    },
+    selectedIds: []
+  }
+}
+
+/** Returns true if and only if both panels are of same type
+  (e.g. commander, commander; or viewer, viewer)
+  and their current node (ID) is the same */
+export function equalPanels(state: DualPanelState): boolean {
+  if (!state.secondaryPanel) {
+    return false
+  }
+
+  if (state.mainPanel.commander && state.secondaryPanel.commander) {
+    const mainID = state.mainPanel.commander.currentNode?.id
+    const secondaryID = state.secondaryPanel.commander.currentNode?.id
+
+    if (mainID && secondaryID) {
+      return mainID == secondaryID
+    }
+  }
+
+  return false
 }
 
 function _removePanelNodes(

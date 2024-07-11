@@ -69,7 +69,7 @@ export default function Commander() {
         fetchPaginatedNodes({
           folderId: node.id,
           panel: "secondary",
-          urlParams: new URLSearchParams("")
+          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
         })
       )
       dispatch(
@@ -79,7 +79,7 @@ export default function Commander() {
         })
       )
     } else if (mode == "main" && node.ctype == "folder") {
-      navigate(`/folder/${node.id}`)
+      navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
     }
   }
 

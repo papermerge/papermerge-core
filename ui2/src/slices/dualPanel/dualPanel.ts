@@ -16,7 +16,10 @@ import {
   removeNodesHelper,
   selectionAddNodeHelper,
   selectionRemoveNodeHelper,
-  clearNodesSelectionHelper
+  clearNodesSelectionHelper,
+  commanderInitialState,
+  setCurrentNodeHelper,
+  folderAddedHelper
 } from "./helpers"
 
 import type {
@@ -30,7 +33,6 @@ import type {
   PaginationType
 } from "@/types"
 import {
-  Commander,
   DualPanelState,
   SetCurrentNodeArgs,
   FolderAddedArgs,
@@ -38,20 +40,6 @@ import {
   SelectionNodePayload
 } from "./types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
-
-function commanderInitialState(node: CurrentNodeType | null): Commander {
-  return {
-    currentNode: node,
-    pagination: null,
-    lastPageSize: INITIAL_PAGE_SIZE,
-    nodes: {
-      status: "idle",
-      error: null,
-      data: null
-    },
-    selectedIds: []
-  }
-}
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -115,47 +103,18 @@ const dualPanelSlice = createSlice({
   initialState,
   reducers: {
     setCurrentNode(state, action: PayloadAction<SetCurrentNodeArgs>) {
-      if (action.payload.panel == "main") {
-        // main panel
-        if (action.payload.node.ctype == "folder") {
-          // commander
-          if (state.mainPanel.commander) {
-            // preserve breadcrumb
-            const prevBreadcrumb =
-              state.mainPanel.commander.currentNode?.breadcrumb
-            // just update commander's current node
-            state.mainPanel.commander.currentNode = {
-              id: action.payload.node.id,
-              ctype: action.payload.node.ctype,
-              breadcrumb: prevBreadcrumb
-            }
-          } else {
-            // re-open commander
-            state.mainPanel.commander = commanderInitialState({
-              id: action.payload.node.id,
-              ctype: "folder",
-              breadcrumb: null
-            })
-          }
-        } else {
-          // viewer
-        }
-      } else {
-        // secondary panel
-      }
+      setCurrentNodeHelper({
+        state,
+        node: action.payload.node,
+        mode: action.payload.panel
+      })
     },
     folderAdded(state, action: PayloadAction<FolderAddedArgs>) {
-      if (action.payload.mode == "main") {
-        state.mainPanel.commander?.nodes.data!.push({
-          id: action.payload.node.id,
-          status: "idle"
-        })
-      } else {
-        state.secondaryPanel!.commander?.nodes.data!.push({
-          id: action.payload.node.id,
-          status: "idle"
-        })
-      }
+      folderAddedHelper({
+        state,
+        node: action.payload.node,
+        mode: action.payload.mode
+      })
     },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {

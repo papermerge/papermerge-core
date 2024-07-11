@@ -45,14 +45,24 @@ def get_paginated_nodes(
     user_id: UUID,
     page_size: int,
     page_number: int,
-    order_by: List[str]
+    order_by: List[str],
+    filter: str | None = None
 ) -> PaginatedResponse[Union[schemas.Document, schemas.Folder]]:
     loader_opt = selectin_polymorphic(Node, [Folder, Document])
 
-    stmt = (select(Node).filter_by(
-        user_id=user_id,
-        parent_id=parent_id
-    ).offset(
+    if filter:
+        query = select(Node).filter(
+            func.lower(Node.title).contains(
+                filter.strip().lower(), autoescape=True
+            )
+        ).filter_by(
+            user_id=user_id,
+            parent_id=parent_id
+        )
+    else:
+        query = select(Node).filter_by(user_id=user_id, parent_id=parent_id)
+
+    stmt = (query.offset(
         (page_number - 1) * page_size
     ).order_by(
      *str2colexpr(order_by)

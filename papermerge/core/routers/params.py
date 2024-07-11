@@ -14,3 +14,4 @@ class CommonQueryParams(BaseModel):
         description="Page number. It is first, second etc. page?"
     )
     order_by: str | None = None
+    filter: str | None = None

@@ -1,7 +1,7 @@
-import {useContext} from "react"
+import {useContext, useState} from "react"
 import {TextInput} from "@mantine/core"
 import {useSelector, useDispatch} from "react-redux"
-import {IconSearch} from "@tabler/icons-react"
+import {IconSearch, IconX} from "@tabler/icons-react"
 import {useThrottledCallback} from "@mantine/hooks"
 
 import PanelContext from "@/contexts/PanelContext"
@@ -14,6 +14,7 @@ import type {RootState} from "@/app/types"
 import type {PanelMode} from "@/types"
 
 export default function QuickFilter() {
+  const [filterText, setFilterText] = useState<string | null>()
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
   const folderId = useSelector((state: RootState) =>
@@ -24,31 +25,41 @@ export default function QuickFilter() {
   )
   const throttledSetValue = useThrottledCallback(value => onChange(value), 1500)
 
+  const onClear = () => {
+    setFilterText(null)
+    dispatch(
+      fetchPaginatedNodes({
+        folderId: folderId!,
+        panel: mode,
+        urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
+      })
+    )
+  }
+
   const onChange = (value: string) => {
-    if (!value) {
-      return
-    }
+    const trimmedValue = value.trim() || ""
 
-    const trimmedValue = value.trim()
-
-    if (trimmedValue.length > 1) {
-      dispatch(
-        fetchPaginatedNodes({
-          folderId: folderId!,
-          panel: mode,
-          urlParams: new URLSearchParams(
-            `page_size=${lastPageSize}&filter=${trimmedValue}`
-          )
-        })
-      )
-    }
+    setFilterText(trimmedValue)
+    dispatch(
+      fetchPaginatedNodes({
+        folderId: folderId!,
+        panel: mode,
+        urlParams: new URLSearchParams(
+          `page_size=${lastPageSize}&filter=${trimmedValue}`
+        )
+      })
+    )
   }
 
   return (
     <TextInput
-      rightSection={<IconSearch />}
-      onChange={event => throttledSetValue(event.currentTarget.value)}
+      rightSection={filterText ? <IconX onClick={onClear} /> : <IconSearch />}
+      onChange={event => {
+        setFilterText(event.currentTarget.value)
+        throttledSetValue(event.currentTarget.value)
+      }}
       placeholder="Quick search"
+      value={filterText || ""}
     />
   )
 }

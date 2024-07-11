@@ -142,10 +142,14 @@ export function folderAddedHelper({
   node: NodeType
   mode: PanelMode
 }) {
+  // in case panels are equal (i.e. both have same current node) ->
+  // both panels need to be updated
   const addToBothPanels = equalPanels(state)
 
+  // first add node data in common list of nodes
   state.nodes.push(node)
 
+  // update list of ids in main panel
   if (mode == "main" || addToBothPanels) {
     state.mainPanel.commander?.nodes.data!.push({
       id: node.id,
@@ -153,6 +157,7 @@ export function folderAddedHelper({
     })
   }
 
+  // update list of ids in secondary panel
   if (mode == "secondary" || addToBothPanels) {
     state.secondaryPanel!.commander?.nodes.data!.push({
       id: node.id,

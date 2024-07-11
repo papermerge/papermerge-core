@@ -13,7 +13,7 @@ import UploadButton from "@/components/Commander/UploadButton"
 import PanelContext from "@/contexts/PanelContext"
 import EditNodeTagsButton from "@/components/SinglePanel/EditNodeTagsButton"
 import EditNodeTitleButton from "@/components/SinglePanel/EditNodeTitleButton"
-import QuickFilter from "../QuickFilter"
+import QuickFilter from "@/components/Commander/QuickFilter"
 
 export default function FolderNodeActions() {
   const mode: PanelMode = useContext(PanelContext)

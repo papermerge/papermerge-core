@@ -77,7 +77,8 @@ def get_node(
         user_id=user.id,
         page_size=params.page_size,
         page_number=params.page_number,
-        order_by=order_by
+        order_by=order_by,
+        filter=params.filter
     )
 
 

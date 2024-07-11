@@ -72,6 +72,7 @@ def get_tag_details(
 
     return schemas.Tag.model_validate(tag)
 
+
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.TAG_CREATE)
 def create_tag(

@@ -30,11 +30,11 @@ export default function EditNodeTitleButton() {
 
     let node: NodeType = selectedNodes[0]
 
-    edit_node_title(node).then((node: NodeType) => {
-      dispatch(nodeUpdated({node, mode}))
-      dispatch(clearNodesSelection(mode))
-      return false
-    })
+    edit_node_title(node)
+      .then((node: NodeType) => {
+        dispatch(nodeUpdated({node, mode}))
+      })
+      .finally(() => dispatch(clearNodesSelection(mode)))
   }
 
   return (

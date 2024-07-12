@@ -22,6 +22,7 @@ export function RemoveUsersModal({
   const handleSubmit = async () => {
     store.dispatch(removeUsers(users.map(u => u.id)))
     onOK(users)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")
@@ -56,6 +57,7 @@ export function RemoveUserModal({userId, onOK, onCancel}: RemoveUserModalArgs) {
   const handleSubmit = async () => {
     await store.dispatch(removeUsers([userId]))
     onOK(userId)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")

@@ -22,6 +22,7 @@ export default function DeleteNodesModal({
   const handleSubmit = async () => {
     store.dispatch(deleteNodes(nodes.map(g => g.id)))
     onOK(nodes)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")

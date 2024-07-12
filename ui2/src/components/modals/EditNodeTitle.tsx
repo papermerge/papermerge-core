@@ -4,41 +4,20 @@ import {createRoot} from "react-dom/client"
 import {MantineProvider, TextInput} from "@mantine/core"
 import {theme} from "@/app/theme"
 import GenericModal from "@/components/modals/Generic"
-
+import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
-import axios, {AxiosResponse} from "axios"
-
-type CreateFolderType = {
-  title: string
-  parent_id: string
-  ctype: "folder"
-}
+import axios, {AxiosError} from "axios"
 
 type Args = {
-  parent_id: string
+  node: NodeType
   onOK: (node: NodeType) => void
   onCancel: (msg?: string) => void
 }
 
-async function api_create_new_folder(
-  title: string,
-  parent_id: string,
-  signal: AbortSignal
-): Promise<AxiosResponse> {
-  let data: CreateFolderType = {
-    title: title,
-    parent_id: parent_id,
-    ctype: "folder"
-  }
-
-  return axios.post("/api/nodes/", data, {
-    signal
-  })
-}
-
-const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
-  const [title, setTitle] = useState("")
+const EditNodeTitleModal = ({node, onOK, onCancel}: Args) => {
+  const [title, setTitle] = useState(node.title)
+  const [error, setError] = useState("")
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value
@@ -48,18 +27,26 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
 
   const handleSubmit = async (signal: AbortSignal) => {
     try {
-      let response = await api_create_new_folder(title, parent_id, signal)
+      let response = await axios.patch(
+        `/api/nodes/${node.id}`,
+        {title},
+        {signal}
+      )
       let new_node: NodeType = response.data as NodeType
       onOK(new_node)
-    } catch (error: any) {
-      onCancel(error.toString())
+    } catch (error: any | AxiosError) {
+      if (axios.isAxiosError(error)) {
+        setError(error.message)
+        return false // i.e. do not close dialog
+      }
     }
-    return true
+    return true // i.e. close dialog
   }
 
   const handleCancel = () => {
+    // just close the dialog
     setTitle("")
-
+    setError("")
     onCancel()
   }
 
@@ -73,15 +60,17 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}
+        value={title}
         label="Folder title"
         placeholder="title"
         mt="md"
       />
+      {error && <Error message={error} />}
     </GenericModal>
   )
 }
 
-function create_new_folder(parent_id: string) {
+function edit_node_title(node: NodeType) {
   let modals = document.getElementById(MODALS)
 
   let promise = new Promise<NodeType>(function (onOK, onCancel) {
@@ -89,11 +78,7 @@ function create_new_folder(parent_id: string) {
       let dom_root = createRoot(modals)
       dom_root.render(
         <MantineProvider theme={theme}>
-          <NewFolderModal
-            parent_id={parent_id}
-            onOK={onOK}
-            onCancel={onCancel}
-          />
+          <EditNodeTitleModal node={node} onOK={onOK} onCancel={onCancel} />
         </MantineProvider>
       )
     }
@@ -102,4 +87,4 @@ function create_new_folder(parent_id: string) {
   return promise
 }
 
-export default create_new_folder
+export default edit_node_title

@@ -132,6 +132,22 @@ export function setCurrentNodeHelper({
     }
   }
 }
+export function nodeUpdatedHelper({
+  state,
+  node
+}: {
+  state: DualPanelState
+  node: NodeType
+}) {
+  const newNodes = state.nodes.map(n => {
+    if (n.id != node.id) {
+      return n
+    }
+    return node
+  })
+
+  state.nodes = newNodes
+}
 
 export function folderAddedHelper({
   state,

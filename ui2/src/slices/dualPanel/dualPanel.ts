@@ -19,7 +19,8 @@ import {
   clearNodesSelectionHelper,
   commanderInitialState,
   setCurrentNodeHelper,
-  folderAddedHelper
+  folderAddedHelper,
+  nodeUpdatedHelper
 } from "./helpers"
 
 import type {
@@ -36,6 +37,7 @@ import {
   DualPanelState,
   SetCurrentNodeArgs,
   FolderAddedArgs,
+  NodeUpdatedArgs,
   NodeWithSpinner,
   SelectionNodePayload
 } from "./types"
@@ -111,6 +113,13 @@ const dualPanelSlice = createSlice({
     },
     folderAdded(state, action: PayloadAction<FolderAddedArgs>) {
       folderAddedHelper({
+        state,
+        node: action.payload.node,
+        mode: action.payload.mode
+      })
+    },
+    nodeUpdated(state, action: PayloadAction<NodeUpdatedArgs>) {
+      nodeUpdatedHelper({
         state,
         node: action.payload.node,
         mode: action.payload.mode
@@ -221,6 +230,7 @@ const dualPanelSlice = createSlice({
 export const {
   setCurrentNode,
   folderAdded,
+  nodeUpdated,
   openSecondaryPanel,
   closeSecondaryPanel,
   selectionAddNode,

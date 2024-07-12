@@ -4,10 +4,10 @@ import {createRoot} from "react-dom/client"
 import {MantineProvider, TextInput} from "@mantine/core"
 import {theme} from "@/app/theme"
 import GenericModal from "@/components/modals/Generic"
-
+import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
-import axios from "axios"
+import axios, {AxiosError} from "axios"
 
 type Args = {
   node: NodeType
@@ -17,6 +17,7 @@ type Args = {
 
 const EditNodeTitleModal = ({node, onOK, onCancel}: Args) => {
   const [title, setTitle] = useState(node.title)
+  const [error, setError] = useState("")
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value
@@ -26,16 +27,21 @@ const EditNodeTitleModal = ({node, onOK, onCancel}: Args) => {
 
   const handleSubmit = async (signal: AbortSignal) => {
     try {
-      let response = await axios.patch(`/api/nodes/${node.id}/`, {title})
+      let response = await axios.patch(`/api/nodes/${node.id}`, {title})
       let new_node: NodeType = response.data as NodeType
       onOK(new_node)
-    } catch (error: any) {
-      onCancel(error.toString())
+    } catch (error: any | AxiosError) {
+      if (axios.isAxiosError(error)) {
+        setError(error.message)
+        return true // i.e. do not close dialog
+      }
     }
+    return false // i.e. close dialog
   }
 
   const handleCancel = () => {
     setTitle("")
+    setError("")
 
     onCancel()
   }
@@ -55,6 +61,7 @@ const EditNodeTitleModal = ({node, onOK, onCancel}: Args) => {
         placeholder="title"
         mt="md"
       />
+      {error && <Error message={error} />}
     </GenericModal>
   )
 }

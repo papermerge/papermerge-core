@@ -20,7 +20,7 @@ type Args = {
   submit_button_title?: string
   submit_button_variant?: string
   onCancel: () => void
-  onSubmit: (signal: AbortSignal) => void
+  onSubmit: (signal: AbortSignal) => Promise<boolean>
   size?: string
   submit_button_color?: string
 }
@@ -51,9 +51,8 @@ const GenericModal = ({
   }
 
   const handleSubmit = async () => {
-    await onSubmit(controller.signal)
-
-    setShow(false)
+    const closeMe = (await onSubmit(controller.signal)) as boolean
+    setShow(closeMe)
   }
 
   const handleCancel = () => {

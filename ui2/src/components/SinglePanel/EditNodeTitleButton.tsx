@@ -33,6 +33,7 @@ export default function EditNodeTitleButton() {
     edit_node_title(node).then((node: NodeType) => {
       dispatch(nodeUpdated({node, mode}))
       dispatch(clearNodesSelection(mode))
+      return false
     })
   }
 

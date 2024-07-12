@@ -11,7 +11,8 @@ import {
   Container,
   Group,
   Space,
-  MantineProvider
+  MantineProvider,
+  Loader
 } from "@mantine/core"
 
 type Args = {
@@ -36,6 +37,7 @@ const GenericModal = ({
   size
 }: Args) => {
   const [show, setShow] = useState<boolean>(true)
+  const [inProgress, setInProgress] = useState<boolean>(false)
   const [controller, setController] = useState<AbortController>(
     new AbortController()
   )
@@ -51,15 +53,19 @@ const GenericModal = ({
   }
 
   const handleSubmit = async () => {
+    setInProgress(true)
     const closeMe = (await onSubmit(controller.signal)) as boolean
-    setShow(closeMe)
+    if (closeMe) {
+      setInProgress(false)
+      setShow(false)
+      return
+    }
+    setInProgress(false)
   }
 
   const handleCancel = () => {
     controller.abort()
-
     onCancel()
-
     setShow(false)
     setController(new AbortController())
   }
@@ -99,7 +105,12 @@ const GenericModal = ({
           <Button variant="default" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color={submit_button_color || "blue"}>
+          <Button
+            leftSection={inProgress && <Loader size={"sm"} />}
+            onClick={handleSubmit}
+            disabled={inProgress}
+            color={submit_button_color || "blue"}
+          >
             {submit_button_title || "Submit"}
           </Button>
         </Group>

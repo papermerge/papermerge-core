@@ -27,22 +27,26 @@ const EditNodeTitleModal = ({node, onOK, onCancel}: Args) => {
 
   const handleSubmit = async (signal: AbortSignal) => {
     try {
-      let response = await axios.patch(`/api/nodes/${node.id}`, {title})
+      let response = await axios.patch(
+        `/api/nodes/${node.id}`,
+        {title},
+        {signal}
+      )
       let new_node: NodeType = response.data as NodeType
       onOK(new_node)
     } catch (error: any | AxiosError) {
       if (axios.isAxiosError(error)) {
         setError(error.message)
-        return true // i.e. do not close dialog
+        return false // i.e. do not close dialog
       }
     }
-    return false // i.e. close dialog
+    return true // i.e. close dialog
   }
 
   const handleCancel = () => {
+    // just close the dialog
     setTitle("")
     setError("")
-
     onCancel()
   }
 

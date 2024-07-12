@@ -54,6 +54,7 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
     } catch (error: any) {
       onCancel(error.toString())
     }
+    return true
   }
 
   const handleCancel = () => {

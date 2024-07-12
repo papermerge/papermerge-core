@@ -121,8 +121,7 @@ const dualPanelSlice = createSlice({
     nodeUpdated(state, action: PayloadAction<NodeUpdatedArgs>) {
       nodeUpdatedHelper({
         state,
-        node: action.payload.node,
-        mode: action.payload.mode
+        node: action.payload.node
       })
     },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {

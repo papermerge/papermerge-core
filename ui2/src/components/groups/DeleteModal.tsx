@@ -22,6 +22,7 @@ export function RemoveGroupsModal({
   const handleSubmit = async () => {
     store.dispatch(removeGroups(groups.map(g => g.id)))
     onOK(groups)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")
@@ -61,6 +62,7 @@ export function RemoveGroupModal({
     await store.dispatch(removeGroups([groupId]))
 
     onOK(groupId)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")

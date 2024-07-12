@@ -134,12 +134,10 @@ export function setCurrentNodeHelper({
 }
 export function nodeUpdatedHelper({
   state,
-  node,
-  mode
+  node
 }: {
   state: DualPanelState
   node: NodeType
-  mode: PanelMode
 }) {
   const newNodes = state.nodes.map(n => {
     if (n.id != node.id) {

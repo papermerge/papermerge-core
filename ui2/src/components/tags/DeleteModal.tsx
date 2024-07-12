@@ -18,6 +18,7 @@ export function DeleteTagsModal({tags, onOK, onCancel}: RemoveUsersModalArgs) {
   const handleSubmit = async () => {
     store.dispatch(removeTags(tags.map(t => t.id)))
     onOK(tags)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")
@@ -52,6 +53,7 @@ export function DeleteTagModal({tagId, onOK, onCancel}: DeleteTagModalArgs) {
   const handleSubmit = async () => {
     store.dispatch(removeTags([tagId]))
     onOK(tagId)
+    return true
   }
   const handleCancel = () => {
     setErrorMessage("")

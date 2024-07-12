@@ -3,7 +3,7 @@ import {useEffect, useState, useRef} from "react"
 import {Provider} from "react-redux"
 import React from "react"
 import {theme} from "@/app/theme"
-import {store} from "@/app/store.ts"
+import {store} from "@/app/store"
 
 import {
   Button,

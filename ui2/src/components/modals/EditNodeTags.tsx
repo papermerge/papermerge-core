@@ -1,4 +1,3 @@
-import {ChangeEvent} from "react"
 import {useState} from "react"
 import {createRoot} from "react-dom/client"
 import {MantineProvider, TagsInput} from "@mantine/core"
@@ -8,6 +7,7 @@ import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
 import axios, {AxiosError} from "axios"
+import {store} from "@/app/store"
 
 type Args = {
   node: NodeType
@@ -16,7 +16,9 @@ type Args = {
 }
 
 const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
-  const [tags, setTags] = useState<string[]>([])
+  const state = store.getState()
+  const allTagNames = Object.values(state.tags.entities).map(t => t.name)
+  const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))
   const [error, setError] = useState("")
 
   const handleSubmit = async (signal: AbortSignal) => {
@@ -55,7 +57,7 @@ const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
         onChange={setTags}
         value={tags}
         label="Tags"
-        data={["coco", "bill", "three"]}
+        data={allTagNames}
         mt="md"
       />
       {error && <Error message={error} />}

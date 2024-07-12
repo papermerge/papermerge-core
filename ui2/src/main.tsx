@@ -6,13 +6,15 @@ import {MantineProvider} from "@mantine/core"
 
 import "@/index.css"
 import {store} from "@/app/store.ts"
-import {fetchCurrentUser} from "@/slices/currentUser.ts"
+import {fetchCurrentUser} from "@/slices/currentUser"
+import {fetchTags} from "@/slices/tags"
 
 import {theme} from "@/app/theme"
 import router from "./router"
 
 function start_app() {
   store.dispatch(fetchCurrentUser())
+  store.dispatch(fetchTags({pageNumber: 1, pageSize: 999}))
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

@@ -1,5 +1,6 @@
 .document {
   padding: 0.3rem;
+  position: relative;
 
   &:hover {
     background-color: #8ed2fe66;

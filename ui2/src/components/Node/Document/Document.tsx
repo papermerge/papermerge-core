@@ -8,6 +8,7 @@ import {
   selectionRemoveNode
 } from "@/slices/dualPanel/dualPanel"
 
+import Tags from "@/components/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.css"
 import {RootState} from "@/app/types"
@@ -24,6 +25,7 @@ export default function Document({node, onClick}: Args) {
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
   const dispatch = useDispatch()
+  const tagNames = node.tags.map(t => t.name)
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
@@ -38,6 +40,7 @@ export default function Document({node, onClick}: Args) {
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
         <img className={classes.documentIcon} src={node.thumbnail_url!}></img>
+        <Tags names={tagNames} />
         <div className="title">{node.title}</div>
       </a>
     </div>

@@ -331,6 +331,11 @@ export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
   return null
 }
 
+export const selectCurrentFolder = createSelector(
+  [selectCurrentFolderID, selectNodesRaw],
+  (folderId, nodes) => nodes?.find(i => i.id == folderId)
+)
+
 export const selectPanelBreadcrumbs = (
   state: RootState,
   mode: PanelMode

@@ -164,11 +164,6 @@ export const selectTagById = (state: RootState, tagId?: string) => {
 
   return null
 }
-export const selectTagsByIds = (state: RootState, tagIds: string[]) => {
-  return Object.values(state.tags.entities).filter((t: ColoredTag) =>
-    tagIds.includes(t.id)
-  )
-}
 
 export const selectTagEntities = (
   state: RootState
@@ -178,6 +173,8 @@ export const selectTagEntities = (
 
 // @ts-ignore
 export const selectItemNames = (state: RootState, names: string[]) => names
+// @ts-ignore
+export const selectItemIds = (state: RootState, itemIds: string[]) => itemIds
 
 export const selectTagsByName = createSelector(
   [selectTagEntities, selectItemNames],
@@ -194,3 +191,11 @@ export const selectPagination = (state: RootState): PaginationType | null => {
 export const selectLastPageSize = (state: RootState): number => {
   return state.tags.lastPageSize
 }
+
+export const selectTagsByIds = createSelector(
+  [selectTagEntities, selectItemIds],
+  (tags: Record<string, ColoredTagType>, itemIds: Array<string>) => {
+    const allTags = Object.values(tags)
+    return allTags.filter(t => itemIds.includes(t.id))
+  }
+)

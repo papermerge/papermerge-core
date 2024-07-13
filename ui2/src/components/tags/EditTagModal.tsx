@@ -37,10 +37,10 @@ export default function EditTagModal({onOK, onCancel}: Args) {
 
   useEffect(() => {
     if (data) {
-      setName(data.name)
-      setBgColor(data.bg_color)
-      setFgColor(data.fg_color)
-      setDescription(data.description)
+      setName(data.name || "")
+      setBgColor(data.bg_color || "")
+      setFgColor(data.fg_color || "")
+      setDescription(data.description || "")
       setPinned(data.pinned)
     }
   }, [status])

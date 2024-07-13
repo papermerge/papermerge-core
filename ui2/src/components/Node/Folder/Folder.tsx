@@ -26,6 +26,7 @@ export default function Folder({node, onClick}: Args) {
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
   const dispatch = useDispatch()
+  const tagNames = node.tags.map(t => t.name)
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
@@ -40,7 +41,7 @@ export default function Folder({node, onClick}: Args) {
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
         <div className={classes.folderIcon}></div>
-        <Tags tags={node.tags} />
+        <Tags names={tagNames} />
         <div>{node.title}</div>
       </a>
     </div>

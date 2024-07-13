@@ -2,7 +2,8 @@ import {
   createSlice,
   createAsyncThunk,
   createEntityAdapter,
-  PayloadAction
+  PayloadAction,
+  createSelector
 } from "@reduxjs/toolkit"
 import axios from "@/httpClient"
 
@@ -168,6 +169,23 @@ export const selectTagsByIds = (state: RootState, tagIds: string[]) => {
     tagIds.includes(t.id)
   )
 }
+
+export const selectTagEntities = (
+  state: RootState
+): Record<string, ColoredTagType> => {
+  return state.tags.entities
+}
+
+// @ts-ignore
+export const selectItemNames = (state: RootState, names: string[]) => names
+
+export const selectTagsByName = createSelector(
+  [selectTagEntities, selectItemNames],
+  (tags: Record<string, ColoredTagType>, names: Array<string>) => {
+    const allTags = Object.values(tags)
+    return allTags.filter(t => names.includes(t.name))
+  }
+)
 
 export const selectPagination = (state: RootState): PaginationType | null => {
   return state.tags.pagination

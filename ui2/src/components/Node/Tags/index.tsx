@@ -1,19 +1,22 @@
+import {useSelector} from "react-redux"
 import {Pill, Stack} from "@mantine/core"
+import {selectTagsByName} from "@/slices/tags"
 import type {ColoredTagType} from "@/types"
 import classes from "./Tags.module.css"
+import {RootState} from "@/app/types"
 
 type Args = {
-  tags: Array<ColoredTagType>
+  names: Array<string>
   maxItems?: number
 }
 
-export default function Tags({tags, maxItems}: Args) {
+export default function Tags({names, maxItems}: Args) {
+  const tags = useSelector((state: RootState) =>
+    selectTagsByName(state, names)
+  ) as Array<ColoredTagType>
+
   if (!maxItems) {
     maxItems = 4
-  }
-
-  if (!tags) {
-    return <ul className="tags"></ul>
   }
 
   let tags_list = tags.map((item: ColoredTagType) => (

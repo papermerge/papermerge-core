@@ -6,14 +6,7 @@ import {
 } from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
-import type {FolderType} from "@/types"
-
-export type FileItemType = {
-  status: "pending" | "uploading" | "success" | "failure"
-  error: string | null
-  name: string
-  target: string
-}
+import type {FolderType, FileItemType} from "@/types"
 
 export type UploaderState = {
   opened: boolean
@@ -23,8 +16,8 @@ export type UploaderState = {
 const initialState: UploaderState = {
   files: [
     {status: "pending", error: null, name: "coco.pdf", target: "home"},
-    {status: "pending", error: null, name: "coco.pdf", target: "home"},
-    {status: "pending", error: null, name: "coco.pdf", target: "home"}
+    {status: "pending", error: null, name: "jumbo.pdf", target: "home"},
+    {status: "pending", error: null, name: "momo.pdf", target: "home"}
   ],
   opened: true
 }

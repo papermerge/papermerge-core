@@ -1,10 +1,14 @@
-import {Dialog, Group, Button, TextInput, Text} from "@mantine/core"
+import {Dialog, List, Container} from "@mantine/core"
 import {useSelector, useDispatch} from "react-redux"
-import {selectOpened, closeUploader} from "@/slices/uploader"
+import {selectOpened, selectFiles, closeUploader} from "@/slices/uploader"
+import UploaderItem from "./uploaderItem"
 
 export default function Uploader() {
   const opened = useSelector(selectOpened)
+  const files = useSelector(selectFiles)
   const dispatch = useDispatch()
+
+  const fileItems = files.map(f => <UploaderItem key={f.name} fileItem={f} />)
 
   const onClose = () => {
     dispatch(closeUploader())
@@ -13,19 +17,17 @@ export default function Uploader() {
   return (
     <Dialog
       opened={opened}
+      withBorder
       withCloseButton
       onClose={onClose}
       size="lg"
       radius="md"
     >
-      <Text size="sm" mb="xs" fw={500}>
-        Subscribe to email newsletter
-      </Text>
-
-      <Group align="flex-end">
-        <TextInput placeholder="hello@gluesticker.com" style={{flex: 1}} />
-        <Button onClick={close}>Subscribe</Button>
-      </Group>
+      <Container>
+        <List size="lg" spacing="xs">
+          {fileItems}
+        </List>
+      </Container>
     </Dialog>
   )
 }

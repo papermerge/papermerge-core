@@ -174,3 +174,10 @@ export type GroupDetails = {
   name: string
   scopes: Array<string>
 }
+
+export type FileItemType = {
+  status: "pending" | "uploading" | "success" | "failure"
+  error: string | null
+  name: string
+  target: string
+}

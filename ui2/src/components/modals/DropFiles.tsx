@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useContext, useState} from "react"
 import {createRoot} from "react-dom/client"
 import {Checkbox, MantineProvider, Text} from "@mantine/core"
 import {theme} from "@/app/theme"
@@ -8,6 +8,8 @@ import type {NodeType, FolderType} from "@/types"
 import {MODALS} from "@/cconstants"
 import {store} from "@/app/store"
 import {uploadFile} from "@/slices/uploader"
+import {nodeAdded} from "@/slices/dualPanel/dualPanel"
+import PanelContext from "@/contexts/PanelContext"
 
 type Args = {
   source_files: File[]
@@ -18,6 +20,7 @@ type Args = {
 
 const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
   const state = store.getState()
+  const mode = useContext(PanelContext)
   const [error, setError] = useState("")
   const source_titles = [...source_files].map(n => n.name).join(", ")
   const target_title = target.title
@@ -34,7 +37,9 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
           })
         )
         .then(value => {
-          console.log(value)
+          // @ts-ignore
+          const node: NodeType = value.payload.source as NodeType
+          store.dispatch(nodeAdded({node, mode}))
         })
     }
     return true

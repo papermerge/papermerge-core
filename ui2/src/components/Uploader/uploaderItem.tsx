@@ -1,15 +1,26 @@
+import {useContext} from "react"
 import {List, Box, Group, ThemeIcon, rem} from "@mantine/core"
 import {IconCircleCheck, IconFolder} from "@tabler/icons-react"
-import {FileItemType} from "@/types"
+import {useNavigate} from "react-router-dom"
+import {useSelector} from "react-redux"
+import PanelContext from "@/contexts/PanelContext"
+import {FileItemType, PanelMode} from "@/types"
+import type {RootState} from "@/app/types"
 import classes from "./uploaderItem.module.css"
+import {selectLastPageSize} from "@/slices/dualPanel/dualPanel"
 
 type Args = {
   fileItem: FileItemType
 }
 
 export default function UploaderItem({fileItem}: Args) {
+  const mode: PanelMode = useContext(PanelContext)
+  const navigate = useNavigate()
+  const lastPageSize = useSelector((state: RootState) =>
+    selectLastPageSize(state, mode)
+  )
   const onTargetClick = () => {
-    console.log(`Target clicked ${fileItem.target}`)
+    navigate(`/folder/${fileItem.target.id}?page_size=${lastPageSize}`)
   }
 
   const onFileClick = () => {

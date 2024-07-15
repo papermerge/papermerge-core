@@ -19,7 +19,7 @@ import {
   clearNodesSelectionHelper,
   commanderInitialState,
   setCurrentNodeHelper,
-  folderAddedHelper,
+  nodeAddedHelper,
   nodeUpdatedHelper
 } from "./helpers"
 
@@ -144,7 +144,13 @@ const dualPanelSlice = createSlice({
       }
       state.nodes.push(node)
     },
-
+    nodeAdded(state, action: PayloadAction<FolderAddedArgs>) {
+      nodeAddedHelper({
+        state,
+        node: action.payload.node,
+        mode: action.payload.mode
+      })
+    },
     setCurrentNode(state, action: PayloadAction<SetCurrentNodeArgs>) {
       setCurrentNodeHelper({
         state,
@@ -153,7 +159,7 @@ const dualPanelSlice = createSlice({
       })
     },
     folderAdded(state, action: PayloadAction<FolderAddedArgs>) {
-      folderAddedHelper({
+      nodeAddedHelper({
         state,
         node: action.payload.node,
         mode: action.payload.mode
@@ -285,7 +291,8 @@ export const {
   selectionRemoveNode,
   clearNodesSelection,
   storeHomeNode,
-  storeInboxNode
+  storeInboxNode,
+  nodeAdded
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer

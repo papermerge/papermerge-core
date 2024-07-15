@@ -201,6 +201,14 @@ const dualPanelSlice = createSlice({
           state.nodes.push(incomingNode)
         }
       })
+
+      const found = state.nodes.find(
+        (i: NodeType) => i.id == action.payload.parent.id
+      )
+      if (!found) {
+        state.nodes.push(action.payload.parent)
+      }
+
       const newNodes: Array<NodeWithSpinner> = action.payload.nodes.map(
         (n: NodeType) => {
           return {

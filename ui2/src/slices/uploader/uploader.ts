@@ -4,6 +4,7 @@ import axios from "axios"
 import {RootState} from "@/app/types"
 import type {FolderType, FileItemType, NodeType} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
+import type {UploadFileOutput} from "./types"
 
 export type UploaderState = {
   opened: boolean
@@ -18,7 +19,7 @@ const initialState: UploaderState = {
 type NodeCreatedArg = {
   source: NodeType
   target: FolderType
-  file: File
+  file_name: string
 }
 
 const uploaderSlice = createSlice({
@@ -27,17 +28,17 @@ const uploaderSlice = createSlice({
   reducers: {
     closeUploader: state => {
       state.opened = false
+      state.files = []
     },
     openUploader: state => {
       state.opened = true
     },
     nodeCreated: (state, action: PayloadAction<NodeCreatedArg>) => {
-      // mark uploader file item as "uploading"
       state.opened = true
       state.files.push({
         status: "uploading",
         error: null,
-        file: action.payload.file,
+        file_name: action.payload.file_name,
         source: action.payload.source,
         target: action.payload.target
       })
@@ -45,8 +46,13 @@ const uploaderSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(uploadFile.pending, (state, {payload}) => {})
-    builder.addCase(uploadFile.fulfilled, (state, {payload}) => {})
-    builder.addCase(uploadFile.rejected, (state, {payload}) => {})
+    builder.addCase(uploadFile.fulfilled, (state, {payload}) => {
+      // mark file item as green
+      console.log("upload complete!")
+    })
+    builder.addCase(uploadFile.rejected, (state, {payload}) => {
+      // mark file item as red
+    })
   }
 })
 
@@ -63,12 +69,6 @@ type UploadFileInput = {
   refreshTarget: boolean
   target: FolderType
   skipOCR: boolean
-}
-
-type UploadFileOutput = {
-  source: NodeType
-  target: FolderType
-  file: File
 }
 
 type CreateDocumentType = {
@@ -90,32 +90,35 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       ocr: !args.skipOCR
     }
 
+    console.log("creating node...")
     const response1 = await axios.post(`${baseUrl}api/nodes/`, data1, {
       headers: defaultHeaders
     })
     const createdNode = response1.data as NodeType
+    console.log("node was created")
     const form_data = new FormData()
 
     form_data.append("file", args.file)
 
+    console.log("dispatch nodeCreated")
     thunkApi.dispatch(
       nodeCreated({
         source: createdNode,
         target: args.target,
-        file: args.file
+        file_name: args.file.name
       })
     )
 
     defaultHeaders["Content-Type"] = "multipart/form-data"
-
+    console.log("upload file")
     const response2 = await axios.post(
       `${baseUrl}api/documents/${createdNode.id}/upload`,
       form_data,
       {headers: defaultHeaders}
     )
-
+    console.log("file upload ready")
     return {
-      file: args.file,
+      file_name: args.file.name,
       source: createdNode,
       target: args.target
     }

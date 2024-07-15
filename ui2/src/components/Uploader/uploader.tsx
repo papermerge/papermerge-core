@@ -8,7 +8,9 @@ export default function Uploader() {
   const files = useSelector(selectFiles)
   const dispatch = useDispatch()
 
-  const fileItems = files.map(f => <UploaderItem key={f.name} fileItem={f} />)
+  const fileItems = files.map(f => (
+    <UploaderItem key={f.source.id} fileItem={f} />
+  ))
 
   const onClose = () => {
     dispatch(closeUploader())

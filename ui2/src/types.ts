@@ -178,7 +178,7 @@ export type GroupDetails = {
 export type FileItemType = {
   status: "uploading" | "success" | "failure"
   error: string | null
-  file: File
+  file_name: string
   source: NodeType
   target: FolderType
 }

@@ -24,14 +24,18 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
 
   const handleSubmit = async (signal: AbortSignal) => {
     for (let i = 0; i < source_files.length; i++) {
-      store.dispatch(
-        uploadFile({
-          file: source_files[i],
-          refreshTarget: true,
-          skipOCR: true,
-          target
+      store
+        .dispatch(
+          uploadFile({
+            file: source_files[i],
+            refreshTarget: true,
+            skipOCR: true,
+            target
+          })
+        )
+        .then(value => {
+          console.log(value)
         })
-      )
     }
     return true
   }

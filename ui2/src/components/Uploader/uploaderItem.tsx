@@ -13,7 +13,7 @@ export default function UploaderItem({fileItem}: Args) {
   }
 
   const onFileClick = () => {
-    console.log(`File clicked ${fileItem.name}`)
+    console.log(`File clicked ${fileItem.file_name}`)
   }
 
   return (
@@ -32,10 +32,10 @@ export default function UploaderItem({fileItem}: Args) {
           className={classes.uploaderItemTarget}
           onClick={onTargetClick}
         >
-          <IconFolder /> {fileItem.target}
+          <IconFolder /> {fileItem.target.title}
         </Group>
         <Box className={classes.uploaderItemFile} onClick={onFileClick}>
-          {fileItem.name}
+          {fileItem.file_name}
         </Box>
       </Group>
     </List.Item>

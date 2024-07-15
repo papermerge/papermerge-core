@@ -5,7 +5,7 @@ import {RouterProvider} from "react-router-dom"
 import {MantineProvider} from "@mantine/core"
 
 import "@/index.css"
-import {store} from "@/app/store.ts"
+import {store} from "@/app/store"
 import {fetchCurrentUser} from "@/slices/currentUser"
 import {fetchTags} from "@/slices/tags"
 

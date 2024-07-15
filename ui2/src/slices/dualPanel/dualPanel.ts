@@ -99,11 +99,52 @@ export const deleteNodes = createAsyncThunk<string[], string[]>(
     return nodeIds
   }
 )
+type StoreNodeInput = {
+  folder_id: string
+  user_id: string
+}
 
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    storeHomeNode(state, action: PayloadAction<StoreNodeInput>) {
+      const node: NodeType = {
+        id: action.payload.folder_id,
+        ctype: "folder",
+        title: ".home",
+        breadcrumb: [],
+        tags: [],
+        user_id: action.payload.user_id,
+        update_at: "",
+        ocr_status: "UNKNOWN",
+        ocr: false,
+        parent_id: null,
+        thumbnail_url: null,
+        accept_dropped_nodes: false,
+        is_currently_dragged: false
+      }
+      state.nodes.push(node)
+    },
+    storeInboxNode(state, action: PayloadAction<StoreNodeInput>) {
+      const node: NodeType = {
+        id: action.payload.folder_id,
+        ctype: "folder",
+        title: ".inbox",
+        breadcrumb: [],
+        tags: [],
+        user_id: action.payload.user_id,
+        update_at: "",
+        ocr_status: "UNKNOWN",
+        ocr: false,
+        parent_id: null,
+        thumbnail_url: null,
+        accept_dropped_nodes: false,
+        is_currently_dragged: false
+      }
+      state.nodes.push(node)
+    },
+
     setCurrentNode(state, action: PayloadAction<SetCurrentNodeArgs>) {
       setCurrentNodeHelper({
         state,
@@ -234,7 +275,9 @@ export const {
   closeSecondaryPanel,
   selectionAddNode,
   selectionRemoveNode,
-  clearNodesSelection
+  clearNodesSelection,
+  storeHomeNode,
+  storeInboxNode
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer

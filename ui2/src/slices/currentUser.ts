@@ -1,6 +1,8 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit"
+import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "@/httpClient"
-import type {SliceState, User} from "@/types"
+import type {SliceState, User, UserDetails} from "@/types"
+import {store} from "@/app/store"
+import {storeHomeNode, storeInboxNode} from "./dualPanel/dualPanel"
 
 const initialState: SliceState<User> = {
   data: null,
@@ -12,8 +14,21 @@ export const fetchCurrentUser = createAsyncThunk(
   "user/fetchCurrentUser",
   async () => {
     const response = await axios.get("/api/users/me")
+    const userDetails = response.data as UserDetails
+    store.dispatch(
+      storeHomeNode({
+        folder_id: userDetails.home_folder_id,
+        user_id: userDetails.id
+      })
+    )
+    store.dispatch(
+      storeInboxNode({
+        folder_id: userDetails.home_folder_id,
+        user_id: userDetails.id
+      })
+    )
 
-    return response.data
+    return userDetails
   }
 )
 
@@ -26,10 +41,13 @@ const currentUserSlice = createSlice({
       .addCase(fetchCurrentUser.pending, state => {
         state.status = "loading"
       })
-      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.status = "succeeded"
-        state.data = action.payload
-      })
+      .addCase(
+        fetchCurrentUser.fulfilled,
+        (state, action: PayloadAction<UserDetails>) => {
+          state.status = "succeeded"
+          state.data = action.payload
+        }
+      )
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.status = "failed"
         const message =

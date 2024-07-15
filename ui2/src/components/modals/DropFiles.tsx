@@ -6,8 +6,8 @@ import GenericModal from "@/components/modals/Generic"
 import Error from "@/components/modals/Error"
 import type {NodeType, FolderType} from "@/types"
 import {MODALS} from "@/cconstants"
-import axios, {AxiosError} from "axios"
 import {store} from "@/app/store"
+import {uploadFile} from "@/slices/uploader"
 
 type Args = {
   source_files: File[]
@@ -23,6 +23,16 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
   const target_title = target.title
 
   const handleSubmit = async (signal: AbortSignal) => {
+    for (let i = 0; i < source_files.length; i++) {
+      store.dispatch(
+        uploadFile({
+          file: source_files[i],
+          refreshTarget: true,
+          skipOCR: true,
+          target
+        })
+      )
+    }
     return true
   }
 

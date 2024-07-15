@@ -11,12 +11,14 @@ export type UploaderState = {
 }
 
 const initialState: UploaderState = {
-  files: [
-    {status: "pending", error: null, name: "coco.pdf", target: "home"},
-    {status: "pending", error: null, name: "jumbo.pdf", target: "home"},
-    {status: "pending", error: null, name: "momo.pdf", target: "home"}
-  ],
-  opened: true
+  files: [],
+  opened: false
+}
+
+type NodeCreatedArg = {
+  source: NodeType
+  target: FolderType
+  file: File
 }
 
 const uploaderSlice = createSlice({
@@ -28,13 +30,28 @@ const uploaderSlice = createSlice({
     },
     openUploader: state => {
       state.opened = true
+    },
+    nodeCreated: (state, action: PayloadAction<NodeCreatedArg>) => {
+      // mark uploader file item as "uploading"
+      state.opened = true
+      state.files.push({
+        status: "uploading",
+        error: null,
+        file: action.payload.file,
+        source: action.payload.source,
+        target: action.payload.target
+      })
     }
   },
-  extraReducers(builder) {}
+  extraReducers(builder) {
+    builder.addCase(uploadFile.pending, (state, {payload}) => {})
+    builder.addCase(uploadFile.fulfilled, (state, {payload}) => {})
+    builder.addCase(uploadFile.rejected, (state, {payload}) => {})
+  }
 })
 
 export default uploaderSlice.reducer
-export const {openUploader, closeUploader} = uploaderSlice.actions
+export const {openUploader, closeUploader, nodeCreated} = uploaderSlice.actions
 
 export const selectOpened = (state: RootState): boolean => state.uploader.opened
 
@@ -48,6 +65,12 @@ type UploadFileInput = {
   skipOCR: boolean
 }
 
+type UploadFileOutput = {
+  source: NodeType
+  target: FolderType
+  file: File
+}
+
 type CreateDocumentType = {
   title: string
   parent_id: string
@@ -55,9 +78,9 @@ type CreateDocumentType = {
   ocr: boolean
 }
 
-export const uploadFile = createAsyncThunk<NodeType, UploadFileInput>(
-  "group/fetchGroupDetails",
-  async (args: UploadFileInput) => {
+export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
+  "upload/file",
+  async (args: UploadFileInput, thunkApi) => {
     const baseUrl = getBaseURL()
     let defaultHeaders = getDefaultHeaders()
     const data1: CreateDocumentType = {
@@ -75,6 +98,14 @@ export const uploadFile = createAsyncThunk<NodeType, UploadFileInput>(
 
     form_data.append("file", args.file)
 
+    thunkApi.dispatch(
+      nodeCreated({
+        source: createdNode,
+        target: args.target,
+        file: args.file
+      })
+    )
+
     defaultHeaders["Content-Type"] = "multipart/form-data"
 
     const response2 = await axios.post(
@@ -83,6 +114,10 @@ export const uploadFile = createAsyncThunk<NodeType, UploadFileInput>(
       {headers: defaultHeaders}
     )
 
-    return createdNode
+    return {
+      file: args.file,
+      source: createdNode,
+      target: args.target
+    }
   }
 )

@@ -118,7 +118,7 @@ export function setCurrentNodeHelper({
       // viewer. Here node.ctype == "document"
       state.mainPanel.commander = null
       state.mainPanel.viewer = {
-        breadcrumb: []
+        breadcrumb: null
       }
     }
   }

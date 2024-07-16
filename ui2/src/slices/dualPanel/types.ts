@@ -41,7 +41,7 @@ export interface Commander {
 }
 
 export interface Viewer {
-  breadcrumb: Array<BreadcrumbItemType>
+  breadcrumb: Array<BreadcrumbItemType> | null
 }
 
 export interface SinglePanel {

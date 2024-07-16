@@ -4,6 +4,7 @@ import {useNavigate} from "react-router-dom"
 import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
+import ActionButtons from "./ActionButtons"
 
 export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
@@ -15,8 +16,10 @@ export default function Viewer() {
       navigate(`/folder/${node.id}`)
     }
   }
+
   return (
     <div>
+      <ActionButtons />
       <Breadcrumbs onClick={onClick} />
     </div>
   )

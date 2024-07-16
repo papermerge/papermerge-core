@@ -3,7 +3,8 @@ import type {
   NodeType,
   PanelMode,
   CurrentNodeType,
-  PaginationType
+  PaginationType,
+  BreadcrumbItemType
 } from "@/types"
 
 export type NodeWithSpinner = {
@@ -39,7 +40,9 @@ export interface Commander {
   selectedIds: Array<string>
 }
 
-export interface Viewer {}
+export interface Viewer {
+  breadcrumb: Array<BreadcrumbItemType>
+}
 
 export interface SinglePanel {
   commander: Commander | null

@@ -67,7 +67,7 @@ export default function Commander() {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
         fetchPaginatedNodes({
-          folderId: node.id,
+          nodeId: node.id,
           panel: "secondary",
           urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
         })
@@ -90,7 +90,7 @@ export default function Commander() {
   const onPageNumberChange = (page: number) => {
     dispatch(
       fetchPaginatedNodes({
-        folderId: currentNodeID!,
+        nodeId: currentNodeID!,
         panel: mode,
         urlParams: new URLSearchParams(
           `page_number=${page}&page_size=${pageSize}`
@@ -103,7 +103,7 @@ export default function Commander() {
     if (value) {
       dispatch(
         fetchPaginatedNodes({
-          folderId: currentNodeID!,
+          nodeId: currentNodeID!,
           panel: mode,
           urlParams: new URLSearchParams(
             `page_number=${pageNumber}&page_size=${value}`

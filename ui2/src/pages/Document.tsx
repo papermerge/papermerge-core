@@ -1,18 +1,14 @@
 import {LoaderFunctionArgs} from "react-router"
-
 import DualPanel from "@/components/DualPanel"
 import {
   fetchPaginatedDocument,
   setCurrentNode
 } from "@/slices/dualPanel/dualPanel"
 
-import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
 
-import type {User} from "@/types"
-
 export default function Document() {
-  return <div>Document</div>
+  return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {

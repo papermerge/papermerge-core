@@ -38,5 +38,5 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     })
   )
 
-  return {folderId, urlParams: url.searchParams}
+  return {nodeId: folderId, urlParams: url.searchParams}
 }

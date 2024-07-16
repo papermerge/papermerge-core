@@ -115,7 +115,11 @@ export function setCurrentNodeHelper({
         })
       }
     } else {
-      // viewer
+      // viewer. Here node.ctype == "document"
+      state.mainPanel.commander = null
+      state.mainPanel.viewer = {
+        breadcrumb: []
+      }
     }
   }
 

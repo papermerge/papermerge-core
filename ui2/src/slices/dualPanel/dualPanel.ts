@@ -32,7 +32,8 @@ import type {
   FolderType,
   DocumentType,
   CurrentNodeType,
-  PaginationType
+  PaginationType,
+  SliceStateStatus
 } from "@/types"
 import {
   DualPanelState,
@@ -54,23 +55,22 @@ const initialState: DualPanelState = {
   nodes: []
 }
 
-type DocumentLoaderResponseType = {}
-
 type ThunkArgs = {
   panel: PanelMode
   nodeId: string
   urlParams: URLSearchParams
 }
 
-export const fetchPaginatedDocument = createAsyncThunk<
-  DocumentLoaderResponseType,
-  ThunkArgs
->("paginatedDocument/fetchDocument", async ({nodeId, urlParams}: ThunkArgs) => {
-  const response = await axios.get(`/api/documents/${nodeId}`, {
-    validateStatus: () => true
-  })
-  const doc = response.data as DocumentType
-})
+export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
+  "paginatedDocument/fetchDocument",
+  async ({nodeId, urlParams}: ThunkArgs) => {
+    const response = await axios.get(`/api/documents/${nodeId}`, {
+      validateStatus: () => true
+    })
+    const doc = response.data as DocumentType
+    return doc
+  }
+)
 
 export const fetchPaginatedNodes = createAsyncThunk<
   NodeLoaderResponseType,
@@ -291,6 +291,11 @@ const dualPanelSlice = createSlice({
         removeNodesHelper(state, nodeIds)
       }
     )
+    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
+      if (state.mainPanel.viewer) {
+        state.mainPanel.viewer.breadcrumb = action.payload.breadcrumb
+      }
+    })
   }
 })
 
@@ -412,7 +417,11 @@ export const selectPanelBreadcrumbs = (
   mode: PanelMode
 ): Array<[string, string]> | null | undefined => {
   if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
+    if (state.dualPanel.mainPanel.commander) {
+      return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
+    } else if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.breadcrumb
+    }
   }
 
   if (state.dualPanel.secondaryPanel?.commander) {
@@ -451,12 +460,22 @@ export const selectLastPageSize = (
   return INITIAL_PAGE_SIZE
 }
 
-export const selectPanelNodesStatus = (state: RootState, mode: PanelMode) => {
+export const selectPanelNodesStatus = (
+  state: RootState,
+  mode: PanelMode
+): SliceStateStatus => {
   if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.nodes.status
+    if (state.dualPanel.mainPanel.commander) {
+      return state.dualPanel.mainPanel.commander?.nodes.status
+    }
+    return "idle"
   }
 
-  return state.dualPanel.secondaryPanel?.commander?.nodes.status
+  if (state.dualPanel.secondaryPanel?.commander) {
+    return state.dualPanel.secondaryPanel?.commander?.nodes.status
+  }
+
+  return "idle"
 }
 
 export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {

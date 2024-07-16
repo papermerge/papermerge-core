@@ -3,9 +3,14 @@ import {store} from "@/app/store"
 
 import type {User} from "@/types"
 
-export function getBaseURL(): string {
+export function getBaseURL(trimBackslash?: boolean): string {
   const base_url = import.meta.env.VITE_BASE_URL
+
   if (base_url) {
+    if (trimBackslash) {
+      return base_url.substring(0, base_url.length - 1)
+    }
+
     return base_url
   }
 

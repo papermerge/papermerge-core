@@ -13,6 +13,7 @@ import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.css"
 import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
+import {useProtectedJpg} from "@/hooks/protected_image"
 
 type Args = {
   node: NodeType
@@ -24,6 +25,7 @@ export default function Document({node, onClick}: Args) {
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
+  const protected_image = useProtectedJpg(node.thumbnail_url)
   const dispatch = useDispatch()
   const tagNames = node.tags.map(t => t.name)
 
@@ -39,7 +41,7 @@ export default function Document({node, onClick}: Args) {
     <div className={classes.document}>
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
-        <img className={classes.documentIcon} src={node.thumbnail_url!}></img>
+        {protected_image.data}
         <Tags names={tagNames} />
         <div className="title">{node.title}</div>
       </a>

@@ -149,7 +149,7 @@ export function nodeUpdatedHelper({
   state.nodes = newNodes
 }
 
-export function folderAddedHelper({
+export function nodeAddedHelper({
   state,
   node,
   mode

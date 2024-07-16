@@ -8,9 +8,11 @@ import Header from "@/components/Header/Header"
 import {
   selectCurrentUserError,
   selectCurrentUserStatus
-} from "@/slices/currentUser.ts"
+} from "@/slices/currentUser"
+
 import classes from "./App.module.css"
 import {selectNavBarWidth} from "@/slices/navBar"
+import Uploader from "@/components/Uploader"
 
 function App() {
   const status = useSelector(selectCurrentUserStatus)
@@ -41,6 +43,7 @@ function App() {
 
         <AppShell.Main>
           <Outlet />
+          <Uploader />
         </AppShell.Main>
       </AppShell>
     </>

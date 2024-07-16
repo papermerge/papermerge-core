@@ -174,3 +174,13 @@ export type GroupDetails = {
   name: string
   scopes: Array<string>
 }
+
+export type FileItemStatus = "uploading" | "success" | "failure"
+
+export type FileItemType = {
+  status: FileItemStatus
+  error: string | null
+  file_name: string
+  source: NodeType | null
+  target: FolderType
+}

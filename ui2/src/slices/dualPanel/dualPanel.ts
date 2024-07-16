@@ -30,6 +30,7 @@ import type {
   Paginated,
   NodeLoaderResponseType,
   FolderType,
+  DocumentType,
   CurrentNodeType,
   PaginationType
 } from "@/types"
@@ -53,19 +54,31 @@ const initialState: DualPanelState = {
   nodes: []
 }
 
+type DocumentLoaderResponseType = {}
+
 type ThunkArgs = {
   panel: PanelMode
-  folderId: string
+  nodeId: string
   urlParams: URLSearchParams
 }
+
+export const fetchPaginatedDocument = createAsyncThunk<
+  DocumentLoaderResponseType,
+  ThunkArgs
+>("paginatedDocument/fetchDocument", async ({nodeId, urlParams}: ThunkArgs) => {
+  const response = await axios.get(`/api/documents/${nodeId}`, {
+    validateStatus: () => true
+  })
+  const doc = response.data as DocumentType
+})
 
 export const fetchPaginatedNodes = createAsyncThunk<
   NodeLoaderResponseType,
   ThunkArgs
->("paginatedNodes/fetchNodes", async ({folderId, urlParams}: ThunkArgs) => {
+>("paginatedNodes/fetchNodes", async ({nodeId, urlParams}: ThunkArgs) => {
   const prom = axios.all([
-    axios.get(`/api/nodes/${folderId}?${urlParams}`),
-    axios.get(`/api/folders/${folderId}`)
+    axios.get(`/api/nodes/${nodeId}?${urlParams}`),
+    axios.get(`/api/folders/${nodeId}`)
   ])
   const [nodesResp, folderResp] = await prom
 

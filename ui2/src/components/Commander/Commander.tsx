@@ -81,6 +81,10 @@ export default function Commander() {
     } else if (mode == "main" && node.ctype == "folder") {
       navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
     }
+
+    if (mode == "main" && node.ctype == "document") {
+      navigate(`/document/${node.id}`)
+    }
   }
 
   const onPageNumberChange = (page: number) => {

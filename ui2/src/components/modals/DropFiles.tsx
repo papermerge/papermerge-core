@@ -19,13 +19,12 @@ type Args = {
 }
 
 const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
-  const state = store.getState()
   const mode = useContext(PanelContext)
   const [error, setError] = useState("")
   const source_titles = [...source_files].map(n => n.name).join(", ")
   const target_title = target.title
 
-  const handleSubmit = async (signal: AbortSignal) => {
+  const handleSubmit = async () => {
     for (let i = 0; i < source_files.length; i++) {
       store
         .dispatch(
@@ -40,8 +39,10 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
           // @ts-ignore
           const node: NodeType = value.payload.source as NodeType
           store.dispatch(nodeAdded({node, mode}))
+          onOK(node)
         })
     }
+
     return true
   }
 

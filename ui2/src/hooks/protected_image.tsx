@@ -11,7 +11,7 @@ function fetch_jpeg(
   setResult: any
 ) {
   if (!url) {
-    return new Promise((resolve, reject) => {
+    return new Promise((_, reject) => {
       reject({
         is_loading: false,
         data: null,
@@ -57,13 +57,13 @@ export const useProtectedSVG = (
   }
   const [svg, setSVG] = useState("")
   const [result, setResult] = useState(initial_state)
-  const [base64, setBase64] = useState("data:image/jpeg;base64,")
+  const [_, setBase64] = useState("data:image/jpeg;base64,")
   const headers = getDefaultHeaders()
   const ref = useRef<HTMLInputElement>(null)
   const result_svg_component = <div ref={ref}></div>
 
   if (!url) {
-    return new Promise((resolve, reject) => {
+    return new Promise((_, reject) => {
       reject({
         is_loading: false,
         data: null,
@@ -73,7 +73,7 @@ export const useProtectedSVG = (
   }
 
   if (!url.startsWith("/api/")) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       resolve({
         is_loading: false,
         data: <img src={url!}></img>,
@@ -129,7 +129,7 @@ export const useProtectedJpg = (url: string | null) => {
     error: null,
     data: null
   }
-  const [base64, setBase64] = useState("data:image/jpeg;base64,")
+  const [_, setBase64] = useState("data:image/jpeg;base64,")
   const [result, setResult] = useState(initial_state)
   const headers = getDefaultHeaders()
 

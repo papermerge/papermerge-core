@@ -113,6 +113,8 @@ export function setCurrentNodeHelper({
           ctype: "folder",
           breadcrumb: null
         })
+        // close viewer
+        state.mainPanel.viewer = null
       }
     } else {
       // viewer. Here node.ctype == "document"

@@ -31,7 +31,7 @@ function fetch_jpeg(
         setResult({
           is_loading: false,
           error: null,
-          data: <img src={_imageEncode(data, "image/jpeg")}></img>
+          data: _imageEncode(data, "image/jpeg")
         })
       })
     }
@@ -76,7 +76,7 @@ export const useProtectedSVG = (
     return new Promise((resolve, _) => {
       resolve({
         is_loading: false,
-        data: <img src={url!}></img>,
+        data: url!,
         error: null
       })
     })
@@ -124,7 +124,7 @@ export const useProtectedSVG = (
 
 export const useProtectedJpg = (url: string | null) => {
   //The initial value is empty
-  const initial_state: State<JSX.Element | null> = {
+  const initial_state: State<string | null> = {
     is_loading: true,
     error: null,
     data: null
@@ -145,7 +145,7 @@ export const useProtectedJpg = (url: string | null) => {
   if (!url.startsWith("/api/")) {
     setResult({
       is_loading: false,
-      data: <img src={url!}></img>,
+      data: url!,
       error: null
     })
     return result

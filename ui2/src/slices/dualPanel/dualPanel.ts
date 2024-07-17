@@ -293,7 +293,10 @@ const dualPanelSlice = createSlice({
     )
     builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
       if (state.mainPanel.viewer) {
+        const versionNumbers = action.payload.versions.map(v => v.number)
         state.mainPanel.viewer.breadcrumb = action.payload.breadcrumb
+        state.mainPanel.viewer.versions = action.payload.versions
+        state.mainPanel.viewer.currentVersion = Math.max(...versionNumbers)
       }
     })
   }
@@ -518,5 +521,41 @@ export const selectSelectedNodes = createSelector(
     }
 
     return []
+  }
+)
+
+export const selectDocumentVersions = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.versions
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.viewer) {
+    return state.dualPanel.secondaryPanel?.viewer.versions
+  }
+}
+
+export const selectDocumentCurrentVersionNumber = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.currentVersion
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.viewer) {
+    return state.dualPanel.secondaryPanel?.viewer.currentVersion
+  }
+}
+
+export const selectDocumentCurrentVersion = createSelector(
+  [selectDocumentVersions, selectDocumentCurrentVersionNumber],
+  (versions, number) => {
+    if (versions && versions.length && number !== undefined) {
+      return versions[number - 1]
+    }
   }
 )

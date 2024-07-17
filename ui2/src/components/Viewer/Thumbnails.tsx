@@ -7,6 +7,7 @@ import PanelContext from "@/contexts/PanelContext"
 import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
 import Thumbnail from "./Thumbnail"
+import classes from "./Thumbnails.module.css"
 
 export default function Thumbnails() {
   const mode: PanelMode = useContext(PanelContext)
@@ -14,7 +15,11 @@ export default function Thumbnails() {
     selectDocumentCurrentVersion(state, mode)
   )
 
-  const pages = docVersion?.pages.map(p => <Thumbnail page={p} />)
+  const thumbnails = docVersion?.pages.map(p => <Thumbnail page={p} />)
 
-  return <Stack justify="flex-start">{pages}</Stack>
+  return (
+    <Stack className={classes.thumbnails} justify="flex-start">
+      {thumbnails}
+    </Stack>
+  )
 }

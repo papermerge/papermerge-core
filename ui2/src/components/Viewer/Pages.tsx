@@ -7,6 +7,7 @@ import PanelContext from "@/contexts/PanelContext"
 import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
 import Page from "./Page"
+import classes from "./Pages.module.css"
 
 export default function Pages() {
   const mode: PanelMode = useContext(PanelContext)
@@ -16,5 +17,9 @@ export default function Pages() {
 
   const pages = docVersion?.pages.map(p => <Page page={p} />)
 
-  return <Stack>{pages}</Stack>
+  return (
+    <Stack justify="center" className={classes.pages}>
+      {pages}
+    </Stack>
+  )
 }

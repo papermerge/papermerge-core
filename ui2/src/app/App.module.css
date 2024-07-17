@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  overflow: hidden;
 }
 
 .navbar {
@@ -12,4 +13,8 @@
 .header {
   background-color: #1c47a7;
   padding: 0.75rem;
+}
+
+body {
+  overflow: hidden;
 }

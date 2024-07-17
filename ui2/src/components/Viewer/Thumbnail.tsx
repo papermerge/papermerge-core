@@ -11,7 +11,7 @@ export default function Thumbnail({page}: Args) {
 
   return (
     <Stack align="center">
-      <img width={"100px"} src={protectedImage.data || ""} /> {page.number}
+      <img src={protectedImage.data || ""} /> {page.number}
     </Stack>
   )
 }

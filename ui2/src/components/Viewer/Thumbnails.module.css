@@ -1,0 +1,12 @@
+.thumbnails {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #666;
+  color: white;
+  img {
+    padding: 1rem 1rem 0rem 1rem;
+    width: 150px;
+  }
+}

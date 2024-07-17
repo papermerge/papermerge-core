@@ -1,4 +1,4 @@
-import {Group} from "@mantine/core"
+import {Flex} from "@mantine/core"
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -24,10 +24,10 @@ export default function Viewer() {
     <div>
       <ActionButtons />
       <Breadcrumbs onClick={onClick} />
-      <Group>
+      <Flex style={{height: "740px"}}>
         <Thumbnails />
         <Pages />
-      </Group>
+      </Flex>
     </div>
   )
 }

@@ -8,3 +8,12 @@ __pycache__
 build
 dist
 tmp
+ui2/.yarn/sdks/
+ui2/.yarn/*.gz
+ui2/.yarn/unplugged/
+ui2/dist
+ui2/node_modules
+ui2/.vscode
+ui2/.pnp.cjs
+ui2/.pnp.loader.mjs
+ui2/.env.development.local

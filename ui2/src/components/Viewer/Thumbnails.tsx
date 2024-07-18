@@ -15,7 +15,9 @@ export default function Thumbnails() {
     selectDocumentCurrentVersion(state, mode)
   )
 
-  const thumbnails = docVersion?.pages.map(p => <Thumbnail page={p} />)
+  const thumbnails = docVersion?.pages.map(p => (
+    <Thumbnail key={p.id} page={p} />
+  ))
 
   return (
     <Stack className={classes.thumbnails} justify="flex-start">

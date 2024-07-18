@@ -14,7 +14,8 @@ import {
   selectLastPageSize,
   selectCurrentFolderID,
   selectCommanderPageSize,
-  selectCommanderPageNumber
+  selectCommanderPageNumber,
+  fetchPaginatedDocument
 } from "@/slices/dualPanel/dualPanel"
 
 import type {RootState} from "@/app/types"
@@ -67,7 +68,7 @@ export default function Commander() {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
         fetchPaginatedNodes({
-          folderId: node.id,
+          nodeId: node.id,
           panel: "secondary",
           urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
         })
@@ -81,12 +82,24 @@ export default function Commander() {
     } else if (mode == "main" && node.ctype == "folder") {
       navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
     }
+
+    if (mode == "main" && node.ctype == "document") {
+      navigate(`/document/${node.id}`)
+    } else if (mode == "secondary" && node.ctype == "document") {
+      dispatch(
+        fetchPaginatedDocument({
+          nodeId: node.id,
+          panel: "secondary",
+          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
+        })
+      )
+    }
   }
 
   const onPageNumberChange = (page: number) => {
     dispatch(
       fetchPaginatedNodes({
-        folderId: currentNodeID!,
+        nodeId: currentNodeID!,
         panel: mode,
         urlParams: new URLSearchParams(
           `page_number=${page}&page_size=${pageSize}`
@@ -99,7 +112,7 @@ export default function Commander() {
     if (value) {
       dispatch(
         fetchPaginatedNodes({
-          folderId: currentNodeID!,
+          nodeId: currentNodeID!,
           panel: mode,
           urlParams: new URLSearchParams(
             `page_number=${pageNumber}&page_size=${value}`

@@ -29,7 +29,7 @@ export default function QuickFilter() {
     setFilterText(null)
     dispatch(
       fetchPaginatedNodes({
-        folderId: folderId!,
+        nodeId: folderId!,
         panel: mode,
         urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
       })
@@ -42,7 +42,7 @@ export default function QuickFilter() {
     setFilterText(trimmedValue)
     dispatch(
       fetchPaginatedNodes({
-        folderId: folderId!,
+        nodeId: folderId!,
         panel: mode,
         urlParams: new URLSearchParams(
           `page_size=${lastPageSize}&filter=${trimmedValue}`

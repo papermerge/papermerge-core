@@ -43,7 +43,7 @@ export default function ToggleSecondaryPanel() {
     )
     dispatch(
       fetchPaginatedNodes({
-        folderId,
+        nodeId: folderId,
         panel: "secondary",
         urlParams: new URLSearchParams(
           `page_number=1&page_size=${lastPageSize || INITIAL_PAGE_SIZE}`

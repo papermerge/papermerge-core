@@ -1,3 +1,57 @@
+import {Flex} from "@mantine/core"
+import {useContext} from "react"
+import {useDispatch, useSelector} from "react-redux"
+import {useNavigate} from "react-router-dom"
+
+import {
+  fetchPaginatedNodes,
+  setCurrentNode,
+  selectLastPageSize
+} from "@/slices/dualPanel/dualPanel"
+import type {RootState} from "@/app/types"
+import type {PanelMode, NType} from "@/types"
+import Breadcrumbs from "@/components/Breadcrumbs"
+import PanelContext from "@/contexts/PanelContext"
+import ActionButtons from "./ActionButtons"
+import Pages from "./Pages"
+import Thumbnails from "./Thumbnails"
+
 export default function Viewer() {
-  return <div>Viewer</div>
+  const mode: PanelMode = useContext(PanelContext)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const lastPageSize = useSelector((state: RootState) =>
+    selectLastPageSize(state, mode)
+  )
+
+  const onClick = (node: NType) => {
+    if (mode == "secondary" && node.ctype == "folder") {
+      dispatch(
+        fetchPaginatedNodes({
+          nodeId: node.id,
+          panel: "secondary",
+          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
+        })
+      )
+      dispatch(
+        setCurrentNode({
+          node: {id: node.id, ctype: "folder", breadcrumb: null},
+          panel: "secondary"
+        })
+      )
+    } else if (mode == "main" && node.ctype == "folder") {
+      navigate(`/folder/${node.id}`)
+    }
+  }
+
+  return (
+    <div>
+      <ActionButtons />
+      <Breadcrumbs onClick={onClick} />
+      <Flex style={{height: "740px"}}>
+        <Thumbnails />
+        <Pages />
+      </Flex>
+    </div>
+  )
 }

@@ -113,21 +113,53 @@ export function setCurrentNodeHelper({
           ctype: "folder",
           breadcrumb: null
         })
+        // close viewer
+        state.mainPanel.viewer = null
       }
     } else {
-      // viewer
+      // viewer. Here node.ctype == "document"
+      state.mainPanel.commander = null
+      state.mainPanel.viewer = {
+        breadcrumb: null,
+        versions: [],
+        currentVersion: null
+      }
     }
   }
 
   if (mode == "secondary") {
-    if (state.secondaryPanel?.commander) {
-      // preserve breadcrumb
-      const prevBreadcrumb =
-        state.secondaryPanel.commander.currentNode?.breadcrumb
-      state.secondaryPanel.commander.currentNode = {
-        id: node.id,
-        ctype: node.ctype,
-        breadcrumb: prevBreadcrumb
+    if (node.ctype == "folder") {
+      if (state.secondaryPanel?.commander) {
+        // preserve breadcrumb
+        const prevBreadcrumb =
+          state.secondaryPanel.commander.currentNode?.breadcrumb
+        state.secondaryPanel.commander.currentNode = {
+          id: node.id,
+          ctype: node.ctype,
+          breadcrumb: prevBreadcrumb
+        }
+      } else {
+        // re-open commander
+        state.secondaryPanel = {
+          commander: commanderInitialState({
+            id: node.id,
+            ctype: "folder",
+            breadcrumb: null
+          }),
+          viewer: null
+        }
+        // close viewer
+        state.secondaryPanel.viewer = null
+      }
+    } else {
+      // viewer. Here node.ctype == "document"
+      state.secondaryPanel = {
+        commander: null,
+        viewer: {
+          breadcrumb: null,
+          versions: [],
+          currentVersion: null
+        }
       }
     }
   }

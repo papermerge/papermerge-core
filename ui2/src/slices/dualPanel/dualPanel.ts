@@ -30,8 +30,10 @@ import type {
   Paginated,
   NodeLoaderResponseType,
   FolderType,
+  DocumentType,
   CurrentNodeType,
-  PaginationType
+  PaginationType,
+  SliceStateStatus
 } from "@/types"
 import {
   DualPanelState,
@@ -55,17 +57,29 @@ const initialState: DualPanelState = {
 
 type ThunkArgs = {
   panel: PanelMode
-  folderId: string
+  nodeId: string
   urlParams: URLSearchParams
 }
+
+export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
+  "paginatedDocument/fetchDocument",
+  async ({nodeId, urlParams}: ThunkArgs) => {
+    console.log(urlParams)
+    const response = await axios.get(`/api/documents/${nodeId}`, {
+      validateStatus: () => true
+    })
+    const doc = response.data as DocumentType
+    return doc
+  }
+)
 
 export const fetchPaginatedNodes = createAsyncThunk<
   NodeLoaderResponseType,
   ThunkArgs
->("paginatedNodes/fetchNodes", async ({folderId, urlParams}: ThunkArgs) => {
+>("paginatedNodes/fetchNodes", async ({nodeId, urlParams}: ThunkArgs) => {
   const prom = axios.all([
-    axios.get(`/api/nodes/${folderId}?${urlParams}`),
-    axios.get(`/api/folders/${folderId}`)
+    axios.get(`/api/nodes/${nodeId}?${urlParams}`),
+    axios.get(`/api/folders/${nodeId}`)
   ])
   const [nodesResp, folderResp] = await prom
 
@@ -278,6 +292,30 @@ const dualPanelSlice = createSlice({
         removeNodesHelper(state, nodeIds)
       }
     )
+    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
+      if (action.meta.arg.panel == "main") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.mainPanel.viewer = {
+          breadcrumb: action.payload.breadcrumb,
+          versions: action.payload.versions,
+          currentVersion: Math.max(...versionNumbers)
+        }
+        return
+      }
+
+      if (action.meta.arg.panel == "secondary") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.secondaryPanel = {
+          commander: null,
+          viewer: {
+            breadcrumb: action.payload.breadcrumb,
+            versions: action.payload.versions,
+            currentVersion: Math.max(...versionNumbers)
+          }
+        }
+        return
+      }
+    })
   }
 })
 
@@ -399,11 +437,21 @@ export const selectPanelBreadcrumbs = (
   mode: PanelMode
 ): Array<[string, string]> | null | undefined => {
   if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
+    if (state.dualPanel.mainPanel.commander) {
+      return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
+    } else if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.breadcrumb
+    }
   }
 
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
+  if (mode == "secondary") {
+    if (state.dualPanel.secondaryPanel?.commander) {
+      return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
+    }
+
+    if (state.dualPanel.secondaryPanel?.viewer) {
+      return state.dualPanel.secondaryPanel.viewer.breadcrumb
+    }
   }
 
   return null
@@ -438,12 +486,22 @@ export const selectLastPageSize = (
   return INITIAL_PAGE_SIZE
 }
 
-export const selectPanelNodesStatus = (state: RootState, mode: PanelMode) => {
+export const selectPanelNodesStatus = (
+  state: RootState,
+  mode: PanelMode
+): SliceStateStatus => {
   if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.nodes.status
+    if (state.dualPanel.mainPanel.commander) {
+      return state.dualPanel.mainPanel.commander?.nodes.status
+    }
+    return "idle"
   }
 
-  return state.dualPanel.secondaryPanel?.commander?.nodes.status
+  if (state.dualPanel.secondaryPanel?.commander) {
+    return state.dualPanel.secondaryPanel?.commander?.nodes.status
+  }
+
+  return "idle"
 }
 
 export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
@@ -486,5 +544,41 @@ export const selectSelectedNodes = createSelector(
     }
 
     return []
+  }
+)
+
+export const selectDocumentVersions = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.versions
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.viewer) {
+    return state.dualPanel.secondaryPanel?.viewer.versions
+  }
+}
+
+export const selectDocumentCurrentVersionNumber = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.currentVersion
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.viewer) {
+    return state.dualPanel.secondaryPanel?.viewer.currentVersion
+  }
+}
+
+export const selectDocumentCurrentVersion = createSelector(
+  [selectDocumentVersions, selectDocumentCurrentVersionNumber],
+  (versions, number) => {
+    if (versions && versions.length && number !== undefined && number != null) {
+      return versions[number - 1]
+    }
   }
 )

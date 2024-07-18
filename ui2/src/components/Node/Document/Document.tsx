@@ -41,7 +41,7 @@ export default function Document({node, onClick}: Args) {
     <div className={classes.document}>
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
-        {protected_image.data}
+        <img src={protected_image.data || ""} />
         <Tags names={tagNames} />
         <div className="title">{node.title}</div>
       </a>

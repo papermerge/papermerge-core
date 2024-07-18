@@ -39,7 +39,7 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   )
 
   store.dispatch(
-    fetchPaginatedNodes({folderId, panel: "main", urlParams: urlParams})
+    fetchPaginatedNodes({nodeId: folderId, panel: "main", urlParams: urlParams})
   )
 
   return {folderId, urlParams: url.searchParams}

@@ -1,16 +1,12 @@
+import type {BreadcrumbType} from "./breadcrumb"
+import type {OcrStatusEnum} from "./ocr"
+
 export type State<T> = {
   is_loading: boolean
   error: string | null
   data: T | null
 }
 export type DefaultHeaderType = Record<string, string>
-
-export type OcrStatusEnum =
-  | "UNKNOWN"
-  | "RECEIVED"
-  | "STARTED"
-  | "SUCCESS"
-  | "FAILURE"
 
 export type CType = "folder" | "document"
 
@@ -110,10 +106,6 @@ export type NodeType = NType & {
   breadcrumb: Array<[string, string]>
 }
 
-export type BreadcrumbItemType = [string, string]
-
-export type BreadcrumbType = Array<BreadcrumbItemType>
-
 export type FolderType = NodeType & {
   breadcrumb: BreadcrumbType
 }
@@ -183,65 +175,4 @@ export type FileItemType = {
   file_name: string
   source: NodeType | null
   target: FolderType
-}
-
-export type OCRCode =
-  | "ces"
-  | "dan"
-  | "deu"
-  | "ell"
-  | "eng"
-  | "fin"
-  | "fra"
-  | "guj"
-  | "heb"
-  | "hin"
-  | "ita"
-  | "jpn"
-  | "kor"
-  | "lit"
-  | "nld"
-  | "nor"
-  | "osd"
-  | "pol"
-  | "por"
-  | "ron"
-  | "san"
-  | "spa"
-
-export type PageType = {
-  id: string
-  document_version_id: string
-  jpg_url: string | null
-  svg_url: string | null
-  lang: string
-  number: number
-  text: string
-}
-
-export type DocumentVersion = {
-  id: string
-  document_id: string
-  download_url: string
-  file_name: string
-  lang: OCRCode
-  number: number
-  page_count: number
-  pages: Array<PageType>
-  short_description: string
-  size: number
-}
-
-export type DocumentType = {
-  id: string
-  ctype: "document"
-  title: string
-  breadcrumb: BreadcrumbType
-  ocr: boolean
-  ocr_status: OcrStatusEnum
-  thumbnail_url: string
-  versions: Array<DocumentVersion>
-  parent_id: string | null
-  user_id: string
-  updated_at: string
 }

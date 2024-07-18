@@ -1,13 +1,15 @@
-FROM node:19 as  build
+FROM node:20.13 as  build
 
 WORKDIR build_ui_app
-COPY ui/package.json ui/package-lock.json ui/tsconfig.json .
-COPY ui/ .
-RUN npm install
-RUN npm run build
+ENV NODE_OPTIONS=--openssl-legacy-provider
+COPY ui2/package.json ui2/yarn.lock ui2/tsconfig.json ui2/vite.config.ts ui2/index.html .
+COPY ui2/ .
+RUN yarn install
+RUN NODE_ENV=production yarn build
+
 
 FROM papermerge/auth-server:0.9.0 as auth_server
-FROM python:3.10 as papermerge_core
+FROM python:3.11 as papermerge_core
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
@@ -15,6 +17,7 @@ ENV DJANGO_SETTINGS_MODULE=config.settings
 ENV PAPERMERGE__AUTH__USERNAME=admin
 ENV PAPERMERGE__AUTH__EMAIL=admin@example.com
 ENV PAPERMERGE__OCR__DEFAULT_LANGUAGE=deu
+ENV PAPERMERGE__MAIN__API_PREFIX=""
 
 ENV VIRTUAL_ENV=${CORE_APP}/.venv
 
@@ -61,7 +64,7 @@ RUN chmod +x /run.bash
 
 COPY --from=auth_server /auth_server_app/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
-COPY --from=build /build_ui_app/build/ /usr/share/nginx/html/ui
+COPY --from=build /build_ui_app/dist/ /usr/share/nginx/html/ui
 
 EXPOSE 80
 

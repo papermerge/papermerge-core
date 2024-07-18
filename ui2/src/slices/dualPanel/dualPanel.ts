@@ -64,6 +64,7 @@ type ThunkArgs = {
 export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
   "paginatedDocument/fetchDocument",
   async ({nodeId, urlParams}: ThunkArgs) => {
+    console.log(urlParams)
     const response = await axios.get(`/api/documents/${nodeId}`, {
       validateStatus: () => true
     })
@@ -292,11 +293,27 @@ const dualPanelSlice = createSlice({
       }
     )
     builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
-      if (state.mainPanel.viewer) {
+      if (action.meta.arg.panel == "main") {
         const versionNumbers = action.payload.versions.map(v => v.number)
-        state.mainPanel.viewer.breadcrumb = action.payload.breadcrumb
-        state.mainPanel.viewer.versions = action.payload.versions
-        state.mainPanel.viewer.currentVersion = Math.max(...versionNumbers)
+        state.mainPanel.viewer = {
+          breadcrumb: action.payload.breadcrumb,
+          versions: action.payload.versions,
+          currentVersion: Math.max(...versionNumbers)
+        }
+        return
+      }
+
+      if (action.meta.arg.panel == "secondary") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.secondaryPanel = {
+          commander: null,
+          viewer: {
+            breadcrumb: action.payload.breadcrumb,
+            versions: action.payload.versions,
+            currentVersion: Math.max(...versionNumbers)
+          }
+        }
+        return
       }
     })
   }
@@ -427,8 +444,14 @@ export const selectPanelBreadcrumbs = (
     }
   }
 
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
+  if (mode == "secondary") {
+    if (state.dualPanel.secondaryPanel?.commander) {
+      return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
+    }
+
+    if (state.dualPanel.secondaryPanel?.viewer) {
+      return state.dualPanel.secondaryPanel.viewer.breadcrumb
+    }
   }
 
   return null
@@ -554,7 +577,7 @@ export const selectDocumentCurrentVersionNumber = (
 export const selectDocumentCurrentVersion = createSelector(
   [selectDocumentVersions, selectDocumentCurrentVersionNumber],
   (versions, number) => {
-    if (versions && versions.length && number !== undefined) {
+    if (versions && versions.length && number !== undefined && number != null) {
       return versions[number - 1]
     }
   }

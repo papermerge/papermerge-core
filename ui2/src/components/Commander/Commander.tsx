@@ -14,7 +14,8 @@ import {
   selectLastPageSize,
   selectCurrentFolderID,
   selectCommanderPageSize,
-  selectCommanderPageNumber
+  selectCommanderPageNumber,
+  fetchPaginatedDocument
 } from "@/slices/dualPanel/dualPanel"
 
 import type {RootState} from "@/app/types"
@@ -84,6 +85,14 @@ export default function Commander() {
 
     if (mode == "main" && node.ctype == "document") {
       navigate(`/document/${node.id}`)
+    } else if (mode == "secondary" && node.ctype == "document") {
+      dispatch(
+        fetchPaginatedDocument({
+          nodeId: node.id,
+          panel: "secondary",
+          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
+        })
+      )
     }
   }
 

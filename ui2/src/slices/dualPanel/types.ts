@@ -45,7 +45,7 @@ export interface Commander {
 export interface Viewer {
   breadcrumb: Array<BreadcrumbItemType> | null
   versions: Array<DocumentVersion>
-  currentVersion: number
+  currentVersion: number | null
 }
 
 export interface SinglePanel {

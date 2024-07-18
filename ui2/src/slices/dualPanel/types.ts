@@ -5,8 +5,7 @@ import type {
   CurrentNodeType,
   PaginationType,
   BreadcrumbItemType,
-  DocumentVersion,
-  PageType
+  DocumentVersion
 } from "@/types"
 
 export type NodeWithSpinner = {

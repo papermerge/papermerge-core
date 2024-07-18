@@ -1,3 +1,4 @@
+import Cookies from "js-cookie"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"

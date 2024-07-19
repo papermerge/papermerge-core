@@ -16,7 +16,7 @@ import {
 import {selectNavBarCollapsed} from "@/slices/navBar"
 
 import type {User} from "@/types.ts"
-import "./NavBar.css"
+import NavBarCss from "./NavBar.module.css"
 
 function NavBarFull() {
   const user = useSelector(selectCurrentUser) as User

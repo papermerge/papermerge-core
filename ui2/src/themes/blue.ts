@@ -15,9 +15,5 @@ export const theme = createTheme({
       "#004ecc",
       "#0043b5"
     ]
-  },
-  primaryShade: {
-    light: 0,
-    dark: 6
   }
 })

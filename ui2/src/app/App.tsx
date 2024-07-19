@@ -10,7 +10,7 @@ import {
   selectCurrentUserStatus
 } from "@/slices/currentUser"
 
-import "./App.module.css"
+import "./App.css"
 import {selectNavBarWidth} from "@/slices/navBar"
 import Uploader from "@/components/Uploader"
 

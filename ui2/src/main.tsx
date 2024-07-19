@@ -9,7 +9,7 @@ import {store} from "@/app/store"
 import {fetchCurrentUser} from "@/slices/currentUser"
 import {fetchTags} from "@/slices/tags"
 
-import {theme} from "@/app/theme"
+import theme from "@/themes"
 import router from "./router"
 
 function start_app() {

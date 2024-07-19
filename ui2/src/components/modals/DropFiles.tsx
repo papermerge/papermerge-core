@@ -1,7 +1,7 @@
 import {useContext, useState} from "react"
 import {createRoot} from "react-dom/client"
 import {Checkbox, MantineProvider, Text} from "@mantine/core"
-import {theme} from "@/app/theme"
+import theme from "@/themes"
 import GenericModal from "@/components/modals/Generic"
 import Error from "@/components/modals/Error"
 import type {NodeType, FolderType} from "@/types"

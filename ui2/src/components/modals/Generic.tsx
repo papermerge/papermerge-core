@@ -2,7 +2,7 @@ import {createRoot} from "react-dom/client"
 import {useEffect, useState, useRef} from "react"
 import {Provider} from "react-redux"
 import React from "react"
-import {theme} from "@/app/theme"
+import theme from "@/themes"
 import {store} from "@/app/store"
 
 import {

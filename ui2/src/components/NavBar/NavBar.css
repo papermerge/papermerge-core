@@ -5,7 +5,7 @@ a.active {
 
 a {
   padding: 0.75rem;
-  color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-1));
+  color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-9));
 }
 
 .navbar {

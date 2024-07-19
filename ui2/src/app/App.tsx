@@ -10,7 +10,7 @@ import {
   selectCurrentUserStatus
 } from "@/slices/currentUser"
 
-import classes from "./App.module.css"
+import "./App.module.css"
 import {selectNavBarWidth} from "@/slices/navBar"
 import Uploader from "@/components/Uploader"
 
@@ -37,7 +37,7 @@ function App() {
           <Header />
         </AppShell.Header>
 
-        <AppShell.Navbar className={classes.navbar}>
+        <AppShell.Navbar>
           <NavBar />
         </AppShell.Navbar>
 

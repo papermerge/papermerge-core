@@ -109,7 +109,7 @@ const GenericModal = ({
             leftSection={inProgress && <Loader size={"sm"} />}
             onClick={handleSubmit}
             disabled={inProgress}
-            color={submit_button_color || "blue"}
+            color={submit_button_color || "pmg.9"}
           >
             {submit_button_title || "Submit"}
           </Button>

@@ -12,10 +12,9 @@ function Header() {
 
   return (
     <header
-      className={classes.header}
       style={{
-        backgroundColor: theme.colors[theme.primaryColor][9],
-        color: theme.colors[theme.primaryColor][0]
+        backgroundColor: theme.colors.pmg[9],
+        color: theme.colors.pmg[0]
       }}
     >
       <div className={classes.inner}>

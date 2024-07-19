@@ -33,7 +33,7 @@ function App() {
         }}
         padding="md"
       >
-        <AppShell.Header className={classes.header}>
+        <AppShell.Header>
           <Header />
         </AppShell.Header>
 

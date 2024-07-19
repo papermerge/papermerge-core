@@ -1,14 +1,6 @@
 .logo {
   width: 5rem;
 }
-.header {
-  margin-bottom: rem(120px);
-  color: rgb(241, 241, 241);
-  border-bottom: rem(1px) solid
-    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  padding-left: var(--mantine-spacing-md);
-  padding-right: var(--mantine-spacing-md);
-}
 
 .search {
   flex: 0.7;
@@ -18,22 +10,5 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.link {
-  display: block;
-  line-height: 1;
-  padding: rem(8px) rem(12px);
-  border-radius: var(--mantine-radius-sm);
-  text-decoration: none;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  font-size: var(--mantine-font-size-sm);
-  font-weight: 500;
-
-  @mixin hover {
-    background-color: light-dark(
-      var(--mantine-color-gray-0),
-      var(--mantine-color-dark-6)
-    );
-  }
+  padding: 0.75rem;
 }

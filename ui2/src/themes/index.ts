@@ -6,7 +6,7 @@ const THEMES = {
   blue: blue
 }
 
-const currentThemeName = "blue"
+const currentThemeName = "gray"
 
 const currentTheme = THEMES[currentThemeName]
 

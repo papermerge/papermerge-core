@@ -39,7 +39,7 @@ function App() {
         header={{height: 60}}
         navbar={{
           width: navBarWidth,
-          breakpoint: "sm"
+          breakpoint: 0
         }}
         padding="md"
       >

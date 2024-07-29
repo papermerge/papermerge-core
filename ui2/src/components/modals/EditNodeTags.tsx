@@ -26,7 +26,7 @@ const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
       let response = await axios.post(`/api/nodes/${node.id}/tags`, tags, {
         signal
       })
-      let new_node: NodeType = response.data as NodeType
+      let new_node = response.data as NodeType
       onOK(new_node)
     } catch (error: any | AxiosError) {
       if (axios.isAxiosError(error)) {

@@ -23,15 +23,15 @@ function App() {
   const navBarWidth = useSelector(selectNavBarWidth)
   const user = useSelector(selectCurrentUser)
 
-  if (status == "failed") {
-    return <>{error}</>
-  }
-
   useEffect(() => {
     if (status == "succeeded" && user) {
       navigate(`/home/${user.home_folder_id}`)
     }
   }, [status])
+
+  if (status == "failed") {
+    return <>{error}</>
+  }
 
   return (
     <>

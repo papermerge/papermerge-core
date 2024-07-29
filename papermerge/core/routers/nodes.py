@@ -309,6 +309,7 @@ def assign_node_tags(
 
     return schemas.Document.model_validate(node)
 
+
 @router.patch("/{node_id}/tags")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node_tags(

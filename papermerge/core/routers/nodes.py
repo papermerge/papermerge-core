@@ -280,7 +280,7 @@ def assign_node_tags(
             scopes=[scopes.NODE_UPDATE]
         )
     ]
-) -> PyNode:
+) -> schemas.Document | schemas.Folder:
     """
     Assigns given list of tag names to the node.
 
@@ -302,9 +302,12 @@ def assign_node_tags(
         )
 
     node.tags.set(tags, tag_kwargs={"user_id": user.id})
-    _notify_index(node_id)
+    _notify_index(str(node_id))
 
-    return PyNode.model_validate(node)
+    if node.ctype == "folder":
+        return schemas.Folder.model_validate(node)
+
+    return schemas.Document.model_validate(node)
 
 
 @router.patch("/{node_id}/tags")

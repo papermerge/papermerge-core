@@ -1,23 +1,33 @@
+import {useEffect} from "react"
 import "@mantine/core/styles.css"
 import {AppShell} from "@mantine/core"
-import {Outlet} from "react-router-dom"
+import {Outlet, useNavigate} from "react-router-dom"
 import {useSelector} from "react-redux"
 
 import NavBar from "@/components/NavBar"
 import Header from "@/components/Header/Header"
 import {
   selectCurrentUserError,
-  selectCurrentUserStatus
+  selectCurrentUserStatus,
+  selectCurrentUser
 } from "@/slices/currentUser"
 
-import classes from "./App.module.css"
+import "./App.css"
 import {selectNavBarWidth} from "@/slices/navBar"
 import Uploader from "@/components/Uploader"
 
 function App() {
+  const navigate = useNavigate()
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
   const navBarWidth = useSelector(selectNavBarWidth)
+  const user = useSelector(selectCurrentUser)
+
+  useEffect(() => {
+    if (status == "succeeded" && user) {
+      navigate(`/home/${user.home_folder_id}`)
+    }
+  }, [status])
 
   if (status == "failed") {
     return <>{error}</>
@@ -29,15 +39,15 @@ function App() {
         header={{height: 60}}
         navbar={{
           width: navBarWidth,
-          breakpoint: "sm"
+          breakpoint: 0
         }}
         padding="md"
       >
-        <AppShell.Header className={classes.header}>
+        <AppShell.Header>
           <Header />
         </AppShell.Header>
 
-        <AppShell.Navbar className={classes.navbar}>
+        <AppShell.Navbar>
           <NavBar />
         </AppShell.Navbar>
 

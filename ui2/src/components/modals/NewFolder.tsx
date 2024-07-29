@@ -2,7 +2,7 @@ import {ChangeEvent} from "react"
 import {useState} from "react"
 import {createRoot} from "react-dom/client"
 import {MantineProvider, TextInput} from "@mantine/core"
-import {theme} from "@/app/theme"
+import theme from "@/themes"
 import GenericModal from "@/components/modals/Generic"
 
 import type {NodeType} from "@/types"

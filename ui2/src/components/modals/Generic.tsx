@@ -2,7 +2,7 @@ import {createRoot} from "react-dom/client"
 import {useEffect, useState, useRef} from "react"
 import {Provider} from "react-redux"
 import React from "react"
-import {theme} from "@/app/theme"
+import theme from "@/themes"
 import {store} from "@/app/store"
 
 import {
@@ -109,7 +109,7 @@ const GenericModal = ({
             leftSection={inProgress && <Loader size={"sm"} />}
             onClick={handleSubmit}
             disabled={inProgress}
-            color={submit_button_color || "blue"}
+            color={submit_button_color || "pmg.9"}
           >
             {submit_button_title || "Submit"}
           </Button>

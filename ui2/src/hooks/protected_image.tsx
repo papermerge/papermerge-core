@@ -132,37 +132,34 @@ export const useProtectedJpg = (url: string | null) => {
   const [_, setBase64] = useState("data:image/jpeg;base64,")
   const [result, setResult] = useState(initial_state)
   const headers = getDefaultHeaders()
-
-  if (!url) {
-    setResult({
-      is_loading: false,
-      data: null,
-      error: "Page url is null. Maybe page previews not yet ready?"
-    })
-    return result
+  const noPreview = {
+    is_loading: false,
+    data: null,
+    error: "Page url is null. Maybe page previews not yet ready?"
   }
-
-  if (!url.startsWith("/api/")) {
-    setResult({
-      is_loading: false,
-      data: url!,
-      error: null
-    })
-    return result
+  const cloudURL = {
+    is_loading: false,
+    data: url!,
+    error: null
   }
-  // url starts with /api/ -> images are served by own backend
-  // TODO: add global variable to distinguish who serves protected images
-
-  url = `${getBaseURL(true)}${url}`
 
   useEffect(() => {
-    fetch_jpeg(url, headers, setBase64, setResult).catch((error: Error) => {
-      setResult({
-        is_loading: false,
-        data: null,
-        error: error.toString()
+    if (!url) {
+      setResult(noPreview)
+    } else if (url && !url.startsWith("/api/")) {
+      setResult(cloudURL)
+    } else if (url) {
+      // url starts with /api/ -> images are served by own backend
+      // TODO: add global variable to distinguish who serves protected images
+      url = `${getBaseURL(true)}${url}`
+      fetch_jpeg(url, headers, setBase64, setResult).catch((error: Error) => {
+        setResult({
+          is_loading: false,
+          data: null,
+          error: error.toString()
+        })
       })
-    })
+    }
   }, [url])
 
   return result

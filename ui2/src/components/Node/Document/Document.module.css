@@ -10,4 +10,8 @@
   img {
     height: 64px;
   }
+
+  a {
+    color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));
+  }
 }

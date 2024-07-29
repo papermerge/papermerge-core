@@ -6,6 +6,10 @@
     background-color: #8ed2fe66;
     outline: 1px solid #6fc5ff;
   }
+
+  a {
+    color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));
+  }
 }
 
 .folderIcon {

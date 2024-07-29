@@ -1,6 +1,6 @@
 import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "@/httpClient"
-import type {SliceState, User, UserDetails} from "@/types"
+import type {SliceState, SliceStateStatus, User, UserDetails} from "@/types"
 import {store} from "@/app/store"
 import {storeHomeNode, storeInboxNode} from "./dualPanel/dualPanel"
 
@@ -61,6 +61,9 @@ const currentUserSlice = createSlice({
 
 export default currentUserSlice.reducer
 
-export const selectCurrentUser = (state: any) => state.currentUser.data
-export const selectCurrentUserStatus = (state: any) => state.currentUser.status
-export const selectCurrentUserError = (state: any) => state.currentUser.error
+export const selectCurrentUser = (state: any): User =>
+  state.currentUser.data as User
+export const selectCurrentUserStatus = (state: any): SliceStateStatus =>
+  state.currentUser.status as SliceStateStatus
+export const selectCurrentUserError = (state: any): string =>
+  state.currentUser.error as string

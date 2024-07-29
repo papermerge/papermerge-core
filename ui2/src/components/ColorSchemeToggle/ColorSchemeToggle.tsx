@@ -1,15 +1,38 @@
 import {useState} from "react"
-import {Switch, useMantineColorScheme} from "@mantine/core"
+import {
+  Switch,
+  useMantineColorScheme,
+  useMantineTheme,
+  rem
+} from "@mantine/core"
+import {IconSun, IconMoonStars} from "@tabler/icons-react"
 
 export function ColorSchemeToggle() {
+  const theme = useMantineTheme()
   const {setColorScheme} = useMantineColorScheme()
   const [checked, setChecked] = useState(false)
 
+  const sunIcon = (
+    <IconSun
+      style={{width: rem(16), height: rem(16)}}
+      stroke={2.5}
+      color={theme.colors.yellow[4]}
+    />
+  )
+
+  const moonIcon = (
+    <IconMoonStars
+      style={{width: rem(16), height: rem(16)}}
+      stroke={2.5}
+      color={theme.colors.blue[6]}
+    />
+  )
+
   const onToggleColorScheme = () => {
     if (checked) {
-      setColorScheme("dark")
-    } else {
       setColorScheme("light")
+    } else {
+      setColorScheme("dark")
     }
     setChecked(!checked)
   }
@@ -18,7 +41,9 @@ export function ColorSchemeToggle() {
     <Switch
       checked={checked}
       onChange={onToggleColorScheme}
-      label="Dark mode"
+      color="dark.4"
+      onLabel={sunIcon}
+      offLabel={moonIcon}
     />
   )
 }

@@ -24,7 +24,7 @@ export function ColorSchemeToggle() {
     <IconMoonStars
       style={{width: rem(16), height: rem(16)}}
       stroke={2.5}
-      color={theme.colors.blue[6]}
+      color={theme.colors.pmg[9]}
     />
   )
 

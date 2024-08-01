@@ -31,7 +31,7 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
           uploadFile({
             file: source_files[i],
             refreshTarget: true,
-            skipOCR: true,
+            skipOCR: false,
             target
           })
         )

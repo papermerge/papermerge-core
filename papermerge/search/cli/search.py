@@ -1,10 +1,9 @@
 import os
 
 import typer
-from rich import print_json
 from salinic import IndexRO, Search, create_engine
 
-from papermerge.search.schema import Model
+from papermerge.search.schema import SearchIndex as Index
 
 app = typer.Typer(help="Search documents")
 
@@ -13,14 +12,14 @@ if not SEARCH_URL:
     raise ValueError("missing PAPERMERGE__SEARCH__URL")
 
 engine = create_engine(SEARCH_URL)
-index = IndexRO(engine, schema=Model)
+index = IndexRO(engine, schema=Index)
 
 
 @app.command()
 def search_cmd(
     q: str
 ):
-    sq = Search(Model).query(q)
+    sq = Search(Index).query(q)
 
     for entity in index.search(sq):
-        print_json(data=entity.model_dump())
+        print(entity.model_dump())

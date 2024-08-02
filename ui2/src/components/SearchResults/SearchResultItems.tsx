@@ -4,14 +4,20 @@ import {RootState} from "@/app/types"
 import {selectSearchResultItems} from "@/slices/dualPanel/dualPanel"
 import SearchResultItem from "./SearchResultItem"
 import PanelContext from "@/contexts/PanelContext"
-import {PanelMode} from "@/types"
+import {PanelMode, SearchResultNode} from "@/types"
 
-export default function SearchResultItems() {
+type Args = {
+  onClick: (item: SearchResultNode) => void
+}
+
+export default function SearchResultItems({onClick}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const items = useSelector((state: RootState) =>
     selectSearchResultItems(state, mode)
   )
-  const itemComponents = items?.data?.map(i => <SearchResultItem item={i} />)
+  const itemComponents = items?.data?.map(i => (
+    <SearchResultItem key={i.id} item={i} onClick={onClick} />
+  ))
 
   return <div>{itemComponents}</div>
 }

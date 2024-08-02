@@ -33,7 +33,8 @@ import type {
   DocumentType,
   CurrentNodeType,
   PaginationType,
-  SliceStateStatus
+  SliceStateStatus,
+  SearchResultNode
 } from "@/types"
 import {
   DualPanelState,
@@ -48,7 +49,8 @@ import {INITIAL_PAGE_SIZE} from "@/cconstants"
 const initialState: DualPanelState = {
   mainPanel: {
     commander: commanderInitialState(null),
-    viewer: null
+    viewer: null,
+    searchResults: null
   },
   secondaryPanel: null,
   // common nodes data shared between mainPanel and secondary Panel
@@ -104,6 +106,26 @@ export const fetchPaginatedNodes = createAsyncThunk<
 
   return result
 })
+
+type fetchPaginatedSearchResultsArgs = {
+  query: string
+}
+
+export const fetchPaginatedSearchResults = createAsyncThunk<
+  Array<SearchResultNode>,
+  fetchPaginatedSearchResultsArgs
+>(
+  "paginatedSearchResults/fetchSearchResults",
+  async ({query}: fetchPaginatedSearchResultsArgs) => {
+    const resp = await axios.get("/api/search/", {
+      params: {
+        q: query
+      },
+      validateStatus: () => true
+    })
+    return resp.data as Array<SearchResultNode>
+  }
+)
 
 export const deleteNodes = createAsyncThunk<string[], string[]>(
   "dualPanel/deleteNodes",
@@ -188,7 +210,8 @@ const dualPanelSlice = createSlice({
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {
         commander: commanderInitialState(action.payload),
-        viewer: null
+        viewer: null,
+        searchResults: null
       }
     },
     closeSecondaryPanel(state) {
@@ -307,6 +330,7 @@ const dualPanelSlice = createSlice({
         const versionNumbers = action.payload.versions.map(v => v.number)
         state.secondaryPanel = {
           commander: null,
+          searchResults: null,
           viewer: {
             breadcrumb: action.payload.breadcrumb,
             versions: action.payload.versions,
@@ -314,6 +338,24 @@ const dualPanelSlice = createSlice({
           }
         }
         return
+      }
+    })
+    builder.addCase(fetchPaginatedSearchResults.fulfilled, (state, action) => {
+      state.mainPanel = {
+        commander: null,
+        viewer: null,
+        searchResults: {
+          pagination: {
+            numPages: 1,
+            pageNumber: 1,
+            pageSize: 100
+          },
+          items: {
+            data: action.payload,
+            status: "succeeded",
+            error: null
+          }
+        }
       }
     })
   }
@@ -356,6 +398,25 @@ export const selectViewer = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.viewer
+}
+
+export const selectSearchResults = (state: RootState, mode: PanelMode) => {
+  if (mode === "main") {
+    return state.dualPanel.mainPanel.searchResults
+  }
+
+  return null
+}
+
+export const selectSearchResultItems = (
+  state: RootState,
+  mode: PanelMode
+): SliceState<Array<SearchResultNode>> | null | undefined => {
+  if (mode === "main") {
+    return state.dualPanel.mainPanel.searchResults?.items
+  }
+
+  return null
 }
 
 export const selectPanelNodesRaw = (

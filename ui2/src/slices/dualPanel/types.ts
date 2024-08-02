@@ -1,6 +1,7 @@
 import type {
   SliceState,
   NodeType,
+  SearchResultNode,
   PanelMode,
   CurrentNodeType,
   PaginationType,
@@ -47,9 +48,15 @@ export interface Viewer {
   currentVersion: number | null
 }
 
+export interface SearchResults {
+  pagination: PaginationType | null | undefined
+  items: SliceState<Array<SearchResultNode>>
+}
+
 export interface SinglePanel {
   commander: Commander | null
   viewer: Viewer | null
+  searchResults: SearchResults | null
 }
 
 export interface DualPanelState {

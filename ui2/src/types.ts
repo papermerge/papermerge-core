@@ -245,3 +245,19 @@ export type DocumentType = {
   user_id: string
   updated_at: string
 }
+
+export type SearchResultPage = {
+  id: string
+  page_number: number
+  text: string
+}
+
+export type SearchResultNode = {
+  id: string
+  title: string
+  entity_type: CType
+  lang: string | null
+  breadcrumb: Array<[string, string]> | null | undefined
+  tags: Array<string>
+  pages: Array<SearchResultPage>
+}

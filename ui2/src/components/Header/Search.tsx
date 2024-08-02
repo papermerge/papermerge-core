@@ -1,8 +1,11 @@
 import {useState} from "react"
+import {useDispatch} from "react-redux"
 import {Input, CloseButton, rem} from "@mantine/core"
 import {IconSearch} from "@tabler/icons-react"
+import {fetchPaginatedSearchResults} from "@/slices/dualPanel/dualPanel"
 
 export default function Search() {
+  const dispatch = useDispatch()
   const [value, setValue] = useState("Clear me")
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -14,6 +17,11 @@ export default function Search() {
 
     if (key === "Enter") {
       console.log(`Enter pressed. Query = ${value}`)
+      dispatch(
+        fetchPaginatedSearchResults({
+          query: value
+        })
+      )
     }
   }
 

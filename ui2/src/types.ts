@@ -252,12 +252,18 @@ export type SearchResultPage = {
   text: string
 }
 
+export type NodeTag = {
+  name: string
+  bg_color: string
+  fg_color: string
+}
+
 export type SearchResultNode = {
   id: string
   title: string
   entity_type: CType
   lang: string | null
   breadcrumb: Array<[string, string]> | null | undefined
-  tags: Array<string>
+  tags: Array<NodeTag>
   pages: Array<SearchResultPage>
 }

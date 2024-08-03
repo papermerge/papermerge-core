@@ -1,5 +1,6 @@
 .item {
   cursor: pointer;
+  color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));
 }
 
 .folderIcon {

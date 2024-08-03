@@ -4,10 +4,10 @@ import {RootState} from "@/app/types"
 import {selectSearchResultItems} from "@/slices/dualPanel/dualPanel"
 import SearchResultItem from "./SearchResultItem"
 import PanelContext from "@/contexts/PanelContext"
-import {PanelMode, SearchResultNode} from "@/types"
+import {NType, PanelMode} from "@/types"
 
 type Args = {
-  onClick: (item: SearchResultNode) => void
+  onClick: (n: NType) => void
 }
 
 export default function SearchResultItems({onClick}: Args) {

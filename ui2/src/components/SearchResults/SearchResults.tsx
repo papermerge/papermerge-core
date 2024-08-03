@@ -10,7 +10,7 @@ import {
 } from "@/slices/dualPanel/dualPanel"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
-import {SearchResultNode} from "@/types"
+import {NType} from "@/types"
 
 export default function SearchResults() {
   const dispatch = useDispatch()
@@ -18,8 +18,8 @@ export default function SearchResults() {
     selectLastPageSize(state, "secondary")
   )
 
-  const onClick = (item: SearchResultNode) => {
-    if (item.entity_type == "document") {
+  const onClick = (item: NType) => {
+    if (item.ctype == "document") {
       dispatch(
         fetchPaginatedDocument({
           nodeId: item.id,
@@ -27,7 +27,7 @@ export default function SearchResults() {
           urlParams: new URLSearchParams("page_size=100")
         })
       )
-    } else if (item.entity_type == "folder") {
+    } else if (item.ctype == "folder") {
       dispatch(
         fetchPaginatedNodes({
           nodeId: item.id,

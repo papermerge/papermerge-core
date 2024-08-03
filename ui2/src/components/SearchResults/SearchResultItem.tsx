@@ -1,30 +1,39 @@
-import {Group} from "@mantine/core"
-import type {SearchResultNode} from "@/types"
+import {Group, Stack} from "@mantine/core"
+import type {NType, SearchResultNode} from "@/types"
 import classes from "./item.module.css"
+import Breadcrumb from "./Breadcrumb"
 
 type Args = {
   item: SearchResultNode
-  onClick: (item: SearchResultNode) => void
+  onClick: (n: NType) => void
 }
 
 export default function SearchResultItem({item, onClick}: Args) {
   if (item.entity_type == "folder") {
     return (
-      <Group
-        className={classes.item}
-        my={"sm"}
-        align="center"
-        onClick={() => onClick(item)}
-      >
-        <div className={classes.folderIcon}></div>
-        <div className={classes.title}>{item.title}</div>
-      </Group>
+      <Stack my={"lg"} gap="xs">
+        <Breadcrumb onClick={onClick} items={item.breadcrumb || []} />
+        <Group
+          className={classes.item}
+          align="center"
+          onClick={() => onClick({id: item.id, ctype: "folder"})}
+        >
+          <div className={classes.folderIcon}></div>
+          <div className={classes.title}>{item.title}</div>
+        </Group>
+      </Stack>
     )
   }
 
   return (
-    <Group className={classes.item} my={"sm"} onClick={() => onClick(item)}>
-      <div className={classes.title}>{item.title}</div>
-    </Group>
+    <Stack my={"lg"} pt={"sm"} gap="xs">
+      <Breadcrumb onClick={onClick} items={item.breadcrumb || []} />
+      <Group
+        className={classes.item}
+        onClick={() => onClick({id: item.id, ctype: "document"})}
+      >
+        <div className={classes.title}>{item.title}</div>
+      </Group>
+    </Stack>
   )
 }

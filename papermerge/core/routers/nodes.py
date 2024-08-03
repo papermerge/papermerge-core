@@ -1,11 +1,12 @@
 import logging
+import uuid
 from typing import Annotated, List, Union
 from uuid import UUID
 
 from celery import current_app
 from django.conf import settings
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, Query
 from fastapi.responses import RedirectResponse
 
 from papermerge.core import db, schemas, utils
@@ -36,14 +37,29 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-def get_nodes(
-    user: schemas.User = Depends(get_current_user)
-) -> RedirectResponse:
-    """Redirects to current user home folder"""
-    parent_id = str(user.home_folder_id)
-    return RedirectResponse(
-        f"/nodes/{parent_id}"
-    )
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_nodes_details(
+    user: Annotated[
+        schemas.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.NODE_VIEW]
+        )
+    ],
+    node_ids: list[uuid.UUID] | None = Query(default=None),
+    db_session: db.Session = Depends(db.get_session)
+) -> list[PyFolder | PyDocument]:
+    """Returns detailed information about queried nodes
+    (breadcrumb, tags)
+
+    Required scope: `{scope}`
+    """
+    if len(node_ids) == 0:
+        return []
+
+    nodes = db.get_nodes(db_session, node_ids)
+
+    return nodes
 
 
 @router.get(

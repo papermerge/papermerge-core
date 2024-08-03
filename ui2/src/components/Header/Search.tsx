@@ -6,7 +6,7 @@ import {fetchPaginatedSearchResults} from "@/slices/dualPanel/dualPanel"
 
 export default function Search() {
   const dispatch = useDispatch()
-  const [value, setValue] = useState("Clear me")
+  const [value, setValue] = useState("")
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.currentTarget.value)

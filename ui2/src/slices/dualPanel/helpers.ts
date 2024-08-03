@@ -146,7 +146,8 @@ export function setCurrentNodeHelper({
             ctype: "folder",
             breadcrumb: null
           }),
-          viewer: null
+          viewer: null,
+          searchResults: null
         }
         // close viewer
         state.secondaryPanel.viewer = null
@@ -159,7 +160,8 @@ export function setCurrentNodeHelper({
           breadcrumb: null,
           versions: [],
           currentVersion: null
-        }
+        },
+        searchResults: null
       }
     }
   }

@@ -1,7 +1,9 @@
+import logging
 import os
 from django.conf import settings
 from fastapi import FastAPI
 
+from papermerge.core.log import log_task_routes
 from .document_version import router as document_versions_router
 from .documents import router as documents_router
 from .folders import router as folders_router
@@ -21,7 +23,9 @@ from .ws import router as ws_router
 __all__ = ("register_routers",)
 
 API_PREFIX = os.environ.get("PAPERMERGE__MAIN__API_PREFIX", "/api")
+logger = logging.getLogger(__name__)
 
+log_task_routes()
 
 def register_routers(app: FastAPI):
     app.include_router(users_router, prefix=API_PREFIX)

@@ -39,7 +39,7 @@ def get_ancestors(
             )
             SELECT id, title
             FROM tree
-            WHERE NOT id = node_id
+            WHERE NOT id = :node_id
             ORDER BY level DESC
         ''')
 

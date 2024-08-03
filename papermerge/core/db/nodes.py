@@ -11,6 +11,7 @@ from papermerge.core import schemas
 from papermerge.core.schemas.documents import Tag as NodeTag
 from papermerge.core.types import PaginatedResponse
 
+from .common import get_ancestors
 from .models import ColoredTag, Document, Folder, Node
 
 T = TypeVar('T')
@@ -126,7 +127,9 @@ def get_nodes(
 
         for node in nodes:
             tags = _get_tags_for(colored_tags, node.id)
+            ancestors = get_ancestors(db_session, node.id, include_self=False)
             node.tags = tags
+            node.breadcrumb = ancestors
             if node.ctype == 'folder':
                 items.append(
                     schemas.Folder.model_validate(node)

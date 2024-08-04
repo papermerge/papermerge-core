@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 log_task_routes()
 
+
 def register_routers(app: FastAPI):
     app.include_router(users_router, prefix=API_PREFIX)
     app.include_router(nodes_router, prefix=API_PREFIX)

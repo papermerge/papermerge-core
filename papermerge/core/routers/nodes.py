@@ -54,6 +54,9 @@ def get_nodes_details(
 
     Required scope: `{scope}`
     """
+    if node_ids is None:
+        return []
+
     if len(node_ids) == 0:
         return []
 

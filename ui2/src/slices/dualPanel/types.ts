@@ -3,6 +3,7 @@ import type {
   NodeType,
   SearchResultNode,
   PanelMode,
+  PanelType,
   CurrentNodeType,
   PaginationType,
   BreadcrumbItemType,
@@ -51,6 +52,9 @@ export interface Viewer {
 export interface SearchResults {
   pagination: PaginationType | null | undefined
   items: SliceState<Array<SearchResultNode>>
+  // when clicking on search result item - in which panel
+  // should it be opened? in main or in secondary ?
+  openItemTargetPanel: PanelType
 }
 
 export interface SinglePanel {

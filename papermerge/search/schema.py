@@ -66,23 +66,24 @@ class SearchIndex(Schema):
             f'type={self.entity_type})'
 
 
-class Page(BaseModel):
-    id: UUID
-    page_number: int
-    text: str | None = None
-
-
-class Document(BaseModel):
-    id: UUID
+class SearchResultItem(BaseModel):
+    id: str
     title: str
     lang: str
     tags: list[str] = []
-    pages: list[Page]
+
+
+class DocumentPage(SearchResultItem):
+    page_number: int
+    document_id: str
     entity_type: str = 'document'
 
+    def __hash__(self):
+        return hash(self.model_dump_json())
 
-class Folder(BaseModel):
-    id: UUID
-    title: str
-    tags: list[str] = []
+
+class Folder(SearchResultItem):
     entity_type: str = 'folder'
+
+    def __hash__(self):
+        return hash(self.model_dump_json())

@@ -5,7 +5,7 @@ from salinic import IndexRO, Search, create_engine
 
 from papermerge.core import schemas
 from papermerge.core.auth import get_current_user
-from papermerge.search.schema import Document, Folder, SearchIndex
+from papermerge.search.schema import DocumentPage, Folder, SearchIndex
 
 router = APIRouter(
     prefix="/search",
@@ -19,7 +19,7 @@ def search(
     start: int = 0,
     rows: int = 100,
     user: schemas.User = Depends(get_current_user)
-) -> list[Document | Folder]:
+) -> list[DocumentPage | Folder]:
     engine = create_engine(settings.SEARCH_URL)
     index = IndexRO(engine, schema=SearchIndex)
 
@@ -28,7 +28,6 @@ def search(
         start=start,
         rows=rows
     )
-
-    results: list[Document | Folder] = index.search(sq, user_id=str(user.id))
+    results: list[DocumentPage | Folder] = index.search(sq, user_id=str(user.id))
 
     return results

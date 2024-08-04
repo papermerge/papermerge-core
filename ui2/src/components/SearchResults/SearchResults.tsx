@@ -6,16 +6,20 @@ import {
   fetchPaginatedDocument,
   fetchPaginatedNodes,
   selectLastPageSize,
+  selectSearchResultOpenItemTarget,
   setCurrentNode
 } from "@/slices/dualPanel/dualPanel"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
-import {NType} from "@/types"
+import {NType, PanelMode} from "@/types"
 
 export default function SearchResults() {
   const dispatch = useDispatch()
   const lastPageSize = useSelector((state: RootState) =>
     selectLastPageSize(state, "secondary")
+  )
+  const targetPanel = useSelector((state: RootState) =>
+    selectSearchResultOpenItemTarget(state)
   )
 
   const onClick = (item: NType) => {
@@ -23,7 +27,7 @@ export default function SearchResults() {
       dispatch(
         fetchPaginatedDocument({
           nodeId: item.id,
-          panel: "secondary",
+          panel: targetPanel as PanelMode,
           urlParams: new URLSearchParams("page_size=100")
         })
       )
@@ -31,14 +35,14 @@ export default function SearchResults() {
       dispatch(
         fetchPaginatedNodes({
           nodeId: item.id,
-          panel: "secondary",
+          panel: targetPanel as PanelMode,
           urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
         })
       )
       dispatch(
         setCurrentNode({
           node: {id: item.id, ctype: "folder", breadcrumb: null},
-          panel: "secondary"
+          panel: targetPanel as PanelMode
         })
       )
     }

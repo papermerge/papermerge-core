@@ -27,6 +27,7 @@ import type {
   SliceState,
   NodeType,
   PanelMode,
+  PanelType,
   Paginated,
   NodeLoaderResponseType,
   FolderType,
@@ -133,6 +134,11 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
       },
       validateStatus: () => true
     })
+
+    if (result.length == 0) {
+      return []
+    }
+
     const result2 = result.map(i => {
       const found = resp2.data.find((x: NodeType) => x.id == i.id)
       if (found) {
@@ -253,6 +259,12 @@ const dualPanelSlice = createSlice({
     },
     clearNodesSelection: (state, action: PayloadAction<PanelMode>) => {
       clearNodesSelectionHelper(state, action.payload)
+    },
+    updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
+      const targetPanel: PanelType = action.payload
+      if (state?.mainPanel?.searchResults) {
+        state.mainPanel.searchResults.openItemTargetPanel = targetPanel
+      }
     }
   },
   extraReducers(builder) {
@@ -375,7 +387,8 @@ const dualPanelSlice = createSlice({
             data: action.payload,
             status: "succeeded",
             error: null
-          }
+          },
+          openItemTargetPanel: "secondary"
         }
       }
     })
@@ -391,6 +404,7 @@ export const {
   selectionAddNode,
   selectionRemoveNode,
   clearNodesSelection,
+  updateSearchResultItemTarget,
   storeHomeNode,
   storeInboxNode,
   nodeAdded
@@ -664,3 +678,15 @@ export const selectDocumentCurrentVersion = createSelector(
     }
   }
 )
+
+export const selectSearchResultOpenItemTarget = (
+  state: RootState
+): PanelType => {
+  if (state.dualPanel.mainPanel.searchResults) {
+    return (
+      state.dualPanel.mainPanel.searchResults.openItemTargetPanel || "secondary"
+    )
+  }
+
+  return "secondary"
+}

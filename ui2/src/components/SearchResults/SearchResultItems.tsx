@@ -1,3 +1,4 @@
+import {Text} from "@mantine/core"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
 import {RootState} from "@/app/types"
@@ -15,6 +16,11 @@ export default function SearchResultItems({onClick}: Args) {
   const items = useSelector((state: RootState) =>
     selectSearchResultItems(state, mode)
   )
+
+  if (items?.data?.length == 0) {
+    return <Text my={"md"}>Nothing was found</Text>
+  }
+
   const itemComponents = items?.data?.map(i => (
     <SearchResultItem key={i.id} item={i} onClick={onClick} />
   ))

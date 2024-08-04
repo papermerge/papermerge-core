@@ -159,6 +159,7 @@ export type OCRLangType = {
 }
 
 export type PanelMode = "main" | "secondary"
+export type PanelType = "main" | "secondary"
 
 export type NewGroup = {
   name: string

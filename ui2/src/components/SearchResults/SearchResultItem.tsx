@@ -31,7 +31,7 @@ export default function SearchResultItem({item, onClick}: Args) {
   return (
     <Stack my={"lg"} pt={"sm"} gap="xs">
       <Breadcrumb onClick={onClick} items={item.breadcrumb || []} />
-
+      page {item.page_number}
       <Group
         className={classes.item}
         onClick={() => onClick({id: item.id, ctype: "document"})}

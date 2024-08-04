@@ -24,6 +24,7 @@ export default function Path({items, onClick}: Args) {
       {i[1]}
     </Anchor>
   ))
+
   return (
     <Breadcrumbs>
       <RootItem itemId={items[0][0]} onClick={onClick} />

@@ -127,7 +127,9 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
     let result = resp.data as Array<SearchResultNode>
     const resp2 = await axios.get("/api/nodes/", {
       params: {
-        node_ids: result.map(i => i.id)
+        node_ids: result.map(i =>
+          i.entity_type == "folder" ? i.id : i.document_id
+        )
       },
       paramsSerializer: {
         indexes: null // no brackets in `node_ids` parameter list
@@ -140,7 +142,9 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
     }
 
     const result2 = result.map(i => {
-      const found = resp2.data.find((x: NodeType) => x.id == i.id)
+      const found = resp2.data.find((x: NodeType) =>
+        x.ctype == "folder" ? x.id == i.id : x.id == i.document_id
+      )
       if (found) {
         i.breadcrumb = found.breadcrumb
         i.tags = found.tags

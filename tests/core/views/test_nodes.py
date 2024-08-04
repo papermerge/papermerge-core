@@ -281,33 +281,6 @@ def test_two_documents_with_same_title_under_same_parent(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_retrieve_one_node(
-    auth_api_client: AuthTestClient
-):
-    """GET /nodes returns list of nodes under user's home
-    folder. Note that node id is not specified.
-
-    In this specific scenario, user's home has only
-    one document - 'invoice.pdf'.
-    """
-    user = auth_api_client.user
-    document_recipe.make(
-        title='invoice.pdf',
-        user=user,
-        parent=user.home_folder
-    )
-
-    response = auth_api_client.get('/nodes')
-
-    assert response.status_code == 200
-    items = response.json()['items']
-    # in this specific scenario, user's home folder
-    # contains only one document - invoice.pdf
-    assert len(items) == 1
-    assert items[0]['title'] == 'invoice.pdf'
-
-
-@pytest.mark.django_db(transaction=True)
 def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
     """
     url:

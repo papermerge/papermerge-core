@@ -15,4 +15,3 @@ def log_task_routes():
 
     for key, value in celery_app.conf.task_routes.items():
         logger.info(f"{key} -> {value['queue']}")
-

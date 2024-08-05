@@ -35,7 +35,8 @@ import type {
   CurrentNodeType,
   PaginationType,
   SliceStateStatus,
-  SearchResultNode
+  SearchResultNode,
+  PaginatedSearchResult
 } from "@/types"
 import {
   DualPanelState,
@@ -110,24 +111,28 @@ export const fetchPaginatedNodes = createAsyncThunk<
 
 type fetchPaginatedSearchResultsArgs = {
   query: string
+  page_size: number
+  page_number: number
 }
 
 export const fetchPaginatedSearchResults = createAsyncThunk<
-  Array<SearchResultNode>,
+  PaginatedSearchResult,
   fetchPaginatedSearchResultsArgs
 >(
   "paginatedSearchResults/fetchSearchResults",
-  async ({query}: fetchPaginatedSearchResultsArgs) => {
+  async ({query, page_number, page_size}: fetchPaginatedSearchResultsArgs) => {
     const resp = await axios.get("/api/search/", {
       params: {
-        q: query
+        q: query,
+        page_size: page_size,
+        page_number: page_number
       },
       validateStatus: () => true
     })
-    let result = resp.data as Array<SearchResultNode>
+    let result = resp.data as PaginatedSearchResult
     const resp2 = await axios.get("/api/nodes/", {
       params: {
-        node_ids: result.map(i =>
+        node_ids: result.items.map(i =>
           i.entity_type == "folder" ? i.id : i.document_id
         )
       },
@@ -137,11 +142,17 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
       validateStatus: () => true
     })
 
-    if (result.length == 0) {
-      return []
+    if (result.items.length == 0) {
+      return {
+        num_pages: result.num_pages,
+        page_number: result.page_number,
+        page_size: result.page_size,
+        items: [],
+        query: query
+      }
     }
 
-    const result2 = result.map(i => {
+    const result2 = result.items.map(i => {
       const found = resp2.data.find((x: NodeType) =>
         x.ctype == "folder" ? x.id == i.id : x.id == i.document_id
       )
@@ -154,7 +165,13 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
       return i
     })
 
-    return result2
+    return {
+      num_pages: result.num_pages,
+      page_number: result.page_number,
+      page_size: result.page_size,
+      items: result2,
+      query: query
+    }
   }
 )
 
@@ -383,16 +400,17 @@ const dualPanelSlice = createSlice({
         viewer: null,
         searchResults: {
           pagination: {
-            numPages: 1,
-            pageNumber: 1,
-            pageSize: 100
+            numPages: action.payload.num_pages,
+            pageNumber: action.payload.page_number,
+            pageSize: action.payload.page_size
           },
           items: {
-            data: action.payload,
+            data: action.payload.items,
             status: "succeeded",
             error: null
           },
-          openItemTargetPanel: "secondary"
+          openItemTargetPanel: "secondary",
+          query: action.payload.query
         }
       }
     })
@@ -694,3 +712,15 @@ export const selectSearchResultOpenItemTarget = (
 
   return "secondary"
 }
+
+export const selectSearchPagination = (state: RootState) =>
+  state.dualPanel.mainPanel?.searchResults?.pagination
+
+export const selectSearchQuery = (state: RootState) =>
+  state.dualPanel.mainPanel?.searchResults?.query
+
+export const selectSearchPageSize = (state: RootState) =>
+  state.dualPanel.mainPanel?.searchResults?.pagination?.pageSize
+
+export const selectSearchPageNumber = (state: RootState) =>
+  state.dualPanel.mainPanel?.searchResults?.pagination?.pageNumber

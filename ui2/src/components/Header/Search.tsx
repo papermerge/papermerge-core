@@ -16,10 +16,11 @@ export default function Search() {
     const {key} = event
 
     if (key === "Enter") {
-      console.log(`Enter pressed. Query = ${value}`)
       dispatch(
         fetchPaginatedSearchResults({
-          query: value
+          query: value,
+          page_number: 1,
+          page_size: 10
         })
       )
     }

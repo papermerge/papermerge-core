@@ -2380,21 +2380,19 @@ name = "salinic"
 version = "0.6.0"
 description = "Search abstraction layer"
 optional = false
-python-versions = ">=3.11, <4.0"
-files = []
-develop = true
+python-versions = "<4.0,>=3.11"
+files = [
+    {file = "salinic-0.6.0-py3-none-any.whl", hash = "sha256:d2e1e4e30a207f351856d13ab580b4d0b7f6afd498a2e8b0340ead05375628a2"},
+    {file = "salinic-0.6.0.tar.gz", hash = "sha256:b9db7e889178874a4d808bde01f2a82282af13861afa6ffdf9dea54366dffd72"},
+]
 
 [package.dependencies]
-glom = "^23.5.0"
-pydantic = "^2.8"
-requests = "^2.31.0"
+glom = ">=23.5.0,<24.0.0"
+pydantic = ">=2.8,<3.0"
+requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
 xapian = ["xapianpy (==1.4.22.post2406040406)"]
-
-[package.source]
-type = "directory"
-url = "../SalinicProj"
 
 [[package]]
 name = "setuptools"
@@ -3019,4 +3017,4 @@ xapian = ["xapianpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <4.0"
-content-hash = "b0ad785ef9d6d9d7de3bc3c238d24c227647e489315587fadd04ee1f4a9c51db"
+content-hash = "5631cbd724e9ee0f6ed02f135e50c92c8ba5fe30fdd49c13c25b1891d32b02e4"

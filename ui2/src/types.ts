@@ -263,3 +263,11 @@ export type SearchResultNode = {
   breadcrumb: Array<[string, string]> | null | undefined
   tags: Array<NodeTag>
 }
+
+export type PaginatedSearchResult = {
+  num_pages: number
+  page_number: number
+  page_size: number
+  items: Array<SearchResultNode>
+  query: string
+}

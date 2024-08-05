@@ -87,3 +87,12 @@ class Folder(SearchResultItem):
 
     def __hash__(self):
         return hash(self.model_dump_json())
+
+
+class PaginatedResponse(BaseModel):
+    page_size: int
+    page_number: int
+    num_pages: int
+    items: list[Folder | DocumentPage]
+
+    model_config = ConfigDict(from_attributes=True)

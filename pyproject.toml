@@ -60,7 +60,7 @@ dj-config-url = "^0.1.1"
 websockets = "^11.0.3"
 httpx = "^0.24.1"
 configula = "^0.5.4"
-salinic = {path = "/home/eugen/GitHub/papermerge/SalinicProj", develop = true}
+salinic = "^0.6.0"
 img2pdf = "^0.5.1"
 passlib = "^1.7.4"
 sqlalchemy = "^2.0.24"

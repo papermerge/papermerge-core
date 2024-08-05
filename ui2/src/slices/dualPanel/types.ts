@@ -55,6 +55,7 @@ export interface SearchResults {
   // when clicking on search result item - in which panel
   // should it be opened? in main or in secondary ?
   openItemTargetPanel: PanelType
+  query: string
 }
 
 export interface SinglePanel {

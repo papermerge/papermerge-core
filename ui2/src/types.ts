@@ -247,12 +247,6 @@ export type DocumentType = {
   updated_at: string
 }
 
-export type SearchResultPage = {
-  id: string
-  page_number: number
-  text: string
-}
-
 export type NodeTag = {
   name: string
   bg_color: string
@@ -264,7 +258,16 @@ export type SearchResultNode = {
   title: string
   entity_type: CType
   lang: string | null
+  page_number: number | null
+  document_id: string | null
   breadcrumb: Array<[string, string]> | null | undefined
   tags: Array<NodeTag>
-  pages: Array<SearchResultPage>
+}
+
+export type PaginatedSearchResult = {
+  num_pages: number
+  page_number: number
+  page_size: number
+  items: Array<SearchResultNode>
+  query: string
 }

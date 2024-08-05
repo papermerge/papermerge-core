@@ -8,10 +8,11 @@ import type {NType, UserDetails} from "@/types"
 
 type Args = {
   items: Array<[string, string]>
+  pageNumber?: number | null
   onClick: (n: NType) => void
 }
 
-export default function Path({items, onClick}: Args) {
+export default function Path({items, onClick, pageNumber}: Args) {
   if (items.length == 1) {
     return (
       <Breadcrumbs>
@@ -24,10 +25,12 @@ export default function Path({items, onClick}: Args) {
       {i[1]}
     </Anchor>
   ))
+
   return (
     <Breadcrumbs>
       <RootItem itemId={items[0][0]} onClick={onClick} />
       {links}
+      {pageNumber && pageNumber > 1 && `Page ${pageNumber}`}
     </Breadcrumbs>
   )
 }

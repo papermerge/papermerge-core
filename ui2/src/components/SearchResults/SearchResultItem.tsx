@@ -30,11 +30,14 @@ export default function SearchResultItem({item, onClick}: Args) {
 
   return (
     <Stack my={"lg"} pt={"sm"} gap="xs">
-      <Breadcrumb onClick={onClick} items={item.breadcrumb || []} />
-
+      <Breadcrumb
+        onClick={onClick}
+        pageNumber={item.page_number}
+        items={item.breadcrumb || []}
+      />
       <Group
         className={classes.item}
-        onClick={() => onClick({id: item.id, ctype: "document"})}
+        onClick={() => onClick({id: item.document_id!, ctype: "document"})}
       >
         <div className={classes.title}>{item.title}</div>
         <Tags items={item.tags} maxItems={8} />

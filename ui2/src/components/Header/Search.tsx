@@ -36,7 +36,6 @@ export default function Search() {
         <IconSearch style={{width: rem(16), height: rem(16)}} stroke={1.5} />
       }
       rightSectionPointerEvents="all"
-      mt="md"
       rightSection={
         <CloseButton
           aria-label="Clear input"

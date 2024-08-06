@@ -122,7 +122,8 @@ export function setCurrentNodeHelper({
       state.mainPanel.viewer = {
         breadcrumb: null,
         versions: [],
-        currentVersion: null
+        currentVersion: null,
+        currentPage: 1
       }
     }
   }
@@ -159,7 +160,8 @@ export function setCurrentNodeHelper({
         viewer: {
           breadcrumb: null,
           versions: [],
-          currentVersion: null
+          currentVersion: null,
+          currentPage: 1
         },
         searchResults: null
       }

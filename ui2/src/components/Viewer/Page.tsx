@@ -28,7 +28,7 @@ export default function Page({page}: Args) {
   }, [page.number, protectedImage.data])
 
   return (
-    <Stack align="center">
+    <Stack className="page" align="center">
       <img ref={targetRef} src={protectedImage.data || ""} /> {page.number}
     </Stack>
   )

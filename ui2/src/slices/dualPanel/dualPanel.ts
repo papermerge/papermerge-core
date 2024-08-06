@@ -63,11 +63,12 @@ type ThunkArgs = {
   panel: PanelMode
   nodeId: string
   urlParams: URLSearchParams
+  page?: number
 }
 
 export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
   "paginatedDocument/fetchDocument",
-  async ({nodeId, urlParams}: ThunkArgs) => {
+  async ({nodeId, urlParams, page}: ThunkArgs) => {
     console.log(urlParams)
     const response = await axios.get(`/api/documents/${nodeId}`, {
       validateStatus: () => true
@@ -375,7 +376,8 @@ const dualPanelSlice = createSlice({
         state.mainPanel.viewer = {
           breadcrumb: action.payload.breadcrumb,
           versions: action.payload.versions,
-          currentVersion: Math.max(...versionNumbers)
+          currentVersion: Math.max(...versionNumbers),
+          currentPage: action.meta.arg.page || 1
         }
         return
       }
@@ -388,7 +390,8 @@ const dualPanelSlice = createSlice({
           viewer: {
             breadcrumb: action.payload.breadcrumb,
             versions: action.payload.versions,
-            currentVersion: Math.max(...versionNumbers)
+            currentVersion: Math.max(...versionNumbers),
+            currentPage: action.meta.arg.page || 1
           }
         }
         return
@@ -700,6 +703,23 @@ export const selectDocumentCurrentVersion = createSelector(
     }
   }
 )
+
+export const selectDocumentCurrentPage = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.viewer) {
+      return state.dualPanel.mainPanel.viewer.currentPage || 1
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.viewer) {
+    return state.dualPanel.secondaryPanel?.viewer.currentPage || 1
+  }
+
+  return 1
+}
 
 export const selectSearchResultOpenItemTarget = (
   state: RootState

@@ -39,13 +39,14 @@ export default function SearchResults() {
     selectSearchPageNumber(state)
   )
 
-  const onClick = (item: NType) => {
+  const onClick = (item: NType, page?: number) => {
     if (item.ctype == "document") {
       dispatch(
         fetchPaginatedDocument({
           nodeId: item.id,
           panel: targetPanel as PanelMode,
-          urlParams: new URLSearchParams("page_size=100")
+          urlParams: new URLSearchParams("page_size=100"),
+          page: page
         })
       )
     } else if (item.ctype == "folder") {

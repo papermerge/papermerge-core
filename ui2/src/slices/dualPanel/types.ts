@@ -47,6 +47,7 @@ export interface Viewer {
   breadcrumb: Array<BreadcrumbItemType> | null
   versions: Array<DocumentVersion>
   currentVersion: number | null
+  currentPage: number
 }
 
 export interface SearchResults {

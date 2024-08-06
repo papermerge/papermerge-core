@@ -8,7 +8,7 @@ import PanelContext from "@/contexts/PanelContext"
 import {NType, PanelMode} from "@/types"
 
 type Args = {
-  onClick: (n: NType) => void
+  onClick: (n: NType, page?: number) => void
 }
 
 export default function SearchResultItems({onClick}: Args) {

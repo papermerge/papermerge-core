@@ -68,6 +68,7 @@ type ThunkArgs = {
 
 export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
   "paginatedDocument/fetchDocument",
+  // @ts-ignore
   async ({nodeId, urlParams, page}: ThunkArgs) => {
     console.log(urlParams)
     const response = await axios.get(`/api/documents/${nodeId}`, {

@@ -26,9 +26,10 @@ import {equalUUIDs} from "@/utils"
 
 type Args = {
   onClick: (node: NType) => void
+  className?: string
 }
 
-export default function BreadcrumbsComponent({onClick}: Args) {
+export default function BreadcrumbsComponent({onClick, className}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const nodesStatus = useSelector((state: RootState) =>
     selectPanelNodesStatus(state, mode)
@@ -59,7 +60,7 @@ export default function BreadcrumbsComponent({onClick}: Args) {
 
   if (items.length == 1) {
     return (
-      <Group my={"lg"}>
+      <Group my={"lg"} className={className}>
         <Breadcrumbs className={classes.breadcrumbs}>
           <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         </Breadcrumbs>
@@ -69,7 +70,7 @@ export default function BreadcrumbsComponent({onClick}: Args) {
   }
 
   return (
-    <Group my={"lg"}>
+    <Group my={"lg"} className={className}>
       <Breadcrumbs className={classes.breadcrumbs}>
         <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         {links}

@@ -23,7 +23,7 @@ export default function Thumbnail({page}: Args) {
   useEffect(() => {
     if (currentPage == page.number) {
       if (targetRef.current) {
-        targetRef.current.scrollIntoView()
+        // targetRef.current.scrollIntoView()
       }
     }
   }, [page.number, protectedImage.data])

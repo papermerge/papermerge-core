@@ -41,7 +41,6 @@ function App() {
           width: navBarWidth,
           breakpoint: 0
         }}
-        padding="md"
       >
         <AppShell.Header>
           <Header />

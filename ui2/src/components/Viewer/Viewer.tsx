@@ -12,12 +12,14 @@ import type {RootState} from "@/app/types"
 import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
+import {useContentHeight} from "@/hooks/useContentHeight"
 import ActionButtons from "./ActionButtons"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
 
 export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
+  const height = useContentHeight(mode)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const lastPageSize = useSelector((state: RootState) =>
@@ -47,8 +49,8 @@ export default function Viewer() {
   return (
     <div>
       <ActionButtons />
-      <Breadcrumbs onClick={onClick} />
-      <Flex style={{height: "740px"}}>
+      <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
+      <Flex style={{height: `${height}px`}}>
         <Thumbnails />
         <Pages />
       </Flex>

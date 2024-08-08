@@ -22,7 +22,7 @@ export default function FolderNodeActions() {
   ) as Array<string>
 
   return (
-    <Group justify="space-between">
+    <Group className={`${mode}-action-panel`} justify="space-between">
       <Group>
         {selectedIds.length == 0 && <UploadButton />}
         {selectedIds.length == 0 && <NewFolderButton />}

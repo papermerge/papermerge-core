@@ -12,6 +12,7 @@ function Header() {
 
   return (
     <header
+      className="top-header"
       style={{
         backgroundColor: theme.colors.pmg[9],
         color: theme.colors.pmg[0]

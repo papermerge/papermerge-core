@@ -22,7 +22,7 @@ export default function Page({page}: Args) {
   useEffect(() => {
     if (currentPage == page.number) {
       if (targetRef.current) {
-        targetRef.current.scrollIntoView()
+        //targetRef.current.scrollIntoView()
       }
     }
   }, [page.number, protectedImage.data])

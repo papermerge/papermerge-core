@@ -41,7 +41,6 @@ function App() {
           width: navBarWidth,
           breakpoint: 0
         }}
-        padding="md"
       >
         <AppShell.Header>
           <Header />
@@ -51,7 +50,7 @@ function App() {
           <NavBar />
         </AppShell.Navbar>
 
-        <AppShell.Main>
+        <AppShell.Main className="outlet">
           <Outlet />
           <Uploader />
         </AppShell.Main>

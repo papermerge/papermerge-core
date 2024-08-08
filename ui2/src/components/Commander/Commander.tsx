@@ -1,5 +1,5 @@
 import {useContext} from "react"
-import {Group} from "@mantine/core"
+import {Group, Stack} from "@mantine/core"
 
 import {useSelector, useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
@@ -23,11 +23,14 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
+import {useContentHeight} from "@/hooks/useContentHeight"
 
 export default function Commander() {
   const mode: PanelMode = useContext(PanelContext)
+  const height = useContentHeight(mode)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+
   const {data, status, error} = useSelector((state: RootState) =>
     selectPanelNodes(state, mode)
   )
@@ -130,14 +133,16 @@ export default function Commander() {
     return (
       <div>
         <FolderNodeActions />
-        <Breadcrumbs onClick={onClick} />
-        <Group>{nodes}</Group>
-        <Pagination
-          pagination={pagination}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
-        />
+        <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
+        <Stack justify={"space-between"} style={{height: `${height}px`}}>
+          <Group>{nodes}</Group>
+          <Pagination
+            pagination={pagination}
+            onPageNumberChange={onPageNumberChange}
+            onPageSizeChange={onPageSizeChange}
+            lastPageSize={lastPageSize}
+          />
+        </Stack>
       </div>
     )
   }
@@ -145,7 +150,7 @@ export default function Commander() {
   return (
     <div>
       <FolderNodeActions />
-      <Breadcrumbs onClick={onClick} />
+      <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
       <Group>Empty</Group>
     </div>
   )

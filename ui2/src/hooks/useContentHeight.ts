@@ -1,11 +1,25 @@
 import {useState, useEffect} from "react"
 import {PanelMode} from "@/types"
 
-export const useViewerContentHeight = (mode: PanelMode) => {
+const SMALL_BOTTOM_MARGIN = 3 /* pixles */
+
+export const useContentHeight = (mode: PanelMode) => {
   /**
-   * Calculate the height of the viewer/commander content visible area as
+   * Calculate the height of the viewer/commander content
+   * using following formula. Content is everything in viewer
+   * commander but "action panel and breadcrumb":
    *
-   * window_height - breadcrumb_height - nav_top_height
+   *  Content Height = W - B - H - O - S
+   *
+   * W = window height (same as viewport?)
+   * B = breadcrumb height (includes margins and padding)
+   * H = header height (includes margin and padding)
+   * O = outlet top margin plus top padding
+   * S = small adjustment value just to leave couple of pixels
+   *     as bottom margin - it is just looks better.
+   *     This value is subjective. When set to 0 it, the
+   *     Content Height will perfectly alight with window's
+   *     bottom.
    */
   //The initial value is empty
   const [height, setHeight] = useState(getHeight(mode))
@@ -66,15 +80,33 @@ function getComputedHeight({
   return height
 }
 
-function getNavbarHeight(): number {
-  let result = getComputedHeight({
-    element_class: "top-header",
-    default_value: 56
-  })
+function getOutletTopMarginAndPadding(): number {
+  /**
+   * main.outlet is the DOM element which holds the react router
+   * DOM outlet:
+   *  https://reactrouter.com/en/main/components/outlet
+   * The outlet element is wrapped around
+   *  <AppShell.Main className="outlet" />
+   *
+   * Important point is viewer's (or commander's)
+   * "action panel" and "breadcrumb" are pushed down by outlet's top
+   * margin and padding. Outlet itself is being aligned with top
+   * viewport.
+   */
+  let value
+  const el = document.getElementsByClassName("outlet")[0]
 
-  console.log(`getNavbarHeight = ${result}`)
+  if (!el) {
+    console.log("Outlet not found")
+    return 0
+  }
 
-  return result
+  const styles = window.getComputedStyle(el)
+
+  value = parseInt(styles.marginTop)
+  value += parseInt(styles.paddingTop)
+
+  return value
 }
 
 function getBreadcrumbHeight(mode: PanelMode): number {
@@ -82,8 +114,6 @@ function getBreadcrumbHeight(mode: PanelMode): number {
     element_class: `${mode}-breadcrumb`,
     default_value: 40
   })
-
-  console.log(`getBreadcrumbHeight = ${result}`)
 
   return result
 }
@@ -94,18 +124,24 @@ function getActionPanelHeight(mode: PanelMode): number {
     default_value: 100
   })
 
-  console.log(`get_action_panel_height = ${result}`)
-
   return result
 }
 
-function getHeight(mode: PanelMode) {
+function getHeight(mode: PanelMode): number {
+  /*
+  Returns height of viewer/commander's content.
+  The "viewer/commander" content is all what remains
+  in viewport after breadcrumb, action panel and area
+  ABOVE it is substracted.
+  */
   let height: number = window.innerHeight
 
-  height -= getNavbarHeight()
+  height -= getOutletTopMarginAndPadding()
   height -= getBreadcrumbHeight(mode)
   height -= getActionPanelHeight(mode)
 
-  console.log(`NEW HEIGHT=${height}`)
+  /* Let there be a small margin at the bottom of the viewport */
+  height -= SMALL_BOTTOM_MARGIN
+
   return height
 }

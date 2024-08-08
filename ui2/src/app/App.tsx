@@ -50,7 +50,7 @@ function App() {
           <NavBar />
         </AppShell.Navbar>
 
-        <AppShell.Main>
+        <AppShell.Main className="outlet">
           <Outlet />
           <Uploader />
         </AppShell.Main>

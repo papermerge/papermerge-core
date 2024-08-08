@@ -22,10 +22,10 @@ export default function Page({page}: Args) {
   useEffect(() => {
     if (currentPage == page.number) {
       if (targetRef.current) {
-        //targetRef.current.scrollIntoView()
+        targetRef.current.scrollIntoView(false)
       }
     }
-  }, [page.number, protectedImage.data])
+  }, [currentPage, protectedImage, page.number])
 
   return (
     <Stack className="page" align="center">

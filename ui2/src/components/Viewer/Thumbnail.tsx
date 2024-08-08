@@ -1,15 +1,11 @@
-import {useEffect, useContext, useRef} from "react"
-import {useSelector, useDispatch} from "react-redux"
+import {useContext} from "react"
+import {useDispatch} from "react-redux"
 import {Stack} from "@mantine/core"
 import PanelContext from "@/contexts/PanelContext"
 
 import {useProtectedJpg} from "@/hooks/protected_image"
-import {
-  selectDocumentCurrentPage,
-  setCurrentPage
-} from "@/slices/dualPanel/dualPanel"
+import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
 import type {PanelMode, PageType} from "@/types"
-import {RootState} from "@/app/types"
 
 type Args = {
   page: PageType

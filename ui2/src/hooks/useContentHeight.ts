@@ -106,9 +106,6 @@ function getOutletTopMarginAndPadding(): number {
   value = parseInt(styles.marginTop)
   value += parseInt(styles.paddingTop)
 
-  console.log(`Outlet marginTop = ${styles.marginTop}`)
-  console.log(`Outlet paddingTop = ${styles.paddingTop}`)
-
   return value
 }
 

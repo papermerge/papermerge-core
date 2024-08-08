@@ -190,6 +190,11 @@ type StoreNodeInput = {
   user_id: string
 }
 
+type SetCurrentPageArg = {
+  mode: PanelMode
+  page: number
+}
+
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
@@ -287,6 +292,22 @@ const dualPanelSlice = createSlice({
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
         state.mainPanel.searchResults.openItemTargetPanel = targetPanel
+      }
+    },
+    setCurrentPage: (state, action: PayloadAction<SetCurrentPageArg>) => {
+      const mode = action.payload.mode
+      const page = action.payload.page
+
+      if (mode == "main") {
+        if (state?.mainPanel.viewer) {
+          state.mainPanel.viewer.currentPage = page
+        }
+      }
+
+      if (mode == "secondary") {
+        if (state?.secondaryPanel?.viewer) {
+          state.secondaryPanel.viewer.currentPage = page
+        }
       }
     }
   },
@@ -433,7 +454,8 @@ export const {
   updateSearchResultItemTarget,
   storeHomeNode,
   storeInboxNode,
-  nodeAdded
+  nodeAdded,
+  setCurrentPage
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer

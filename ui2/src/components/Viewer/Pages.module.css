@@ -1,7 +1,7 @@
 .pages {
   display: block;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   background-color: #666;
   color: white;
   width: 100%;

@@ -1,15 +1,18 @@
 import {PanelMode} from "@/types"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
+import {RootState} from "@/app/types"
+
+const SMALL_BOTTOM_MARGIN = 3 /* pixles */
 
 // i.e Commander's panel, viewer's panel
 type PanelSizes = {
   actionPanelHeight: number
   breadcrumbHeight: number
-  pagination: number
 }
 
 type Sizes = {
   outletTopMarginAndPadding: number
+  windowInnerHeight: number
   main: PanelSizes
   secondary?: PanelSizes
 }
@@ -21,10 +24,10 @@ type DualArg = {
 
 const initialState: Sizes = {
   outletTopMarginAndPadding: 0,
+  windowInnerHeight: window.innerHeight,
   main: {
     actionPanelHeight: 0,
-    breadcrumbHeight: 0,
-    pagination: 0
+    breadcrumbHeight: 0
   }
 }
 
@@ -33,12 +36,32 @@ const sizesSlice = createSlice({
   initialState,
   reducers: {
     updateOutlet(state, action: PayloadAction<number>) {
+      state.windowInnerHeight = window.innerHeight
       state.outletTopMarginAndPadding = action.payload
     },
-    updateActionPanel(state) {},
+    updateActionPanel(state, action: PayloadAction<DualArg>) {
+      const {value, mode} = action.payload
+
+      state.windowInnerHeight = window.innerHeight
+      if (mode == "main") {
+        // main panel
+        state.main.actionPanelHeight = value
+      } else if (mode == "secondary") {
+        // secondary panel
+        if (state.secondary) {
+          state.secondary.actionPanelHeight = value
+        } else {
+          state.secondary = {
+            breadcrumbHeight: 0,
+            actionPanelHeight: value
+          }
+        }
+      }
+    },
     updateBreadcrumb(state, action: PayloadAction<DualArg>) {
       const {value, mode} = action.payload
 
+      state.windowInnerHeight = window.innerHeight
       if (mode == "main") {
         // main panel
         state.main.breadcrumbHeight = value
@@ -49,21 +72,36 @@ const sizesSlice = createSlice({
         } else {
           state.secondary = {
             breadcrumbHeight: value,
-            pagination: 0,
             actionPanelHeight: 0
           }
         }
       }
-    },
-    updatePagination(state) {}
+    }
   }
 })
 
 export default sizesSlice.reducer
 
-export const {
-  updateOutlet,
-  updateActionPanel,
-  updateBreadcrumb,
-  updatePagination
-} = sizesSlice.actions
+export const {updateOutlet, updateActionPanel, updateBreadcrumb} =
+  sizesSlice.actions
+
+export const selectContentHeight = (state: RootState, mode: PanelMode) => {
+  let height: number = state.sizes.windowInnerHeight
+
+  height -= state.sizes.outletTopMarginAndPadding
+
+  if (mode == "main") {
+    height -= state.sizes.main.actionPanelHeight
+    height -= state.sizes.main.breadcrumbHeight
+  } else if (mode == "secondary") {
+    if (state.sizes.secondary) {
+      height -= state.sizes.secondary.actionPanelHeight
+      height -= state.sizes.secondary.breadcrumbHeight
+    }
+  }
+
+  /* Let there be a small margin at the bottom of the viewport */
+  height -= SMALL_BOTTOM_MARGIN
+
+  return height
+}

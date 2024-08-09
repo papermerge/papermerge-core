@@ -23,11 +23,14 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import {useContentHeight} from "@/hooks/useContentHeight"
+import {selectContentHeight} from "@/slices/sizes"
+import classes from "./Commander.module.css"
 
 export default function Commander() {
   const mode: PanelMode = useContext(PanelContext)
-  const height = useContentHeight(mode)
+  const height = useSelector((state: RootState) =>
+    selectContentHeight(state, mode)
+  )
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -133,8 +136,12 @@ export default function Commander() {
     return (
       <div>
         <FolderNodeActions />
-        <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
-        <Stack justify={"space-between"} style={{height: `${height}px`}}>
+        <Breadcrumbs onClick={onClick} />
+        <Stack
+          className={classes.content}
+          justify={"space-between"}
+          style={{height: `${height}px`}}
+        >
           <Group>{nodes}</Group>
           <Pagination
             pagination={pagination}

@@ -4,6 +4,10 @@ import {RootState} from "@/app/types"
 
 const SMALL_BOTTOM_MARGIN = 3 /* pixles */
 
+type SearchPanelSizes = {
+  actionPanelHeight: number
+}
+
 // i.e Commander's panel, viewer's panel
 type PanelSizes = {
   actionPanelHeight: number
@@ -15,6 +19,7 @@ type Sizes = {
   windowInnerHeight: number
   main: PanelSizes
   secondary?: PanelSizes
+  search?: SearchPanelSizes
 }
 
 type DualArg = {
@@ -76,14 +81,28 @@ const sizesSlice = createSlice({
           }
         }
       }
+    },
+    updateSearchActionPanel(state, action: PayloadAction<number>) {
+      state.windowInnerHeight = window.innerHeight
+      if (state.search) {
+        state.search.actionPanelHeight = action.payload
+      } else {
+        state.search = {
+          actionPanelHeight: action.payload
+        }
+      }
     }
   }
 })
 
 export default sizesSlice.reducer
 
-export const {updateOutlet, updateActionPanel, updateBreadcrumb} =
-  sizesSlice.actions
+export const {
+  updateOutlet,
+  updateActionPanel,
+  updateSearchActionPanel,
+  updateBreadcrumb
+} = sizesSlice.actions
 
 export const selectContentHeight = (state: RootState, mode: PanelMode) => {
   let height: number = state.sizes.windowInnerHeight
@@ -98,6 +117,21 @@ export const selectContentHeight = (state: RootState, mode: PanelMode) => {
       height -= state.sizes.secondary.actionPanelHeight
       height -= state.sizes.secondary.breadcrumbHeight
     }
+  }
+
+  /* Let there be a small margin at the bottom of the viewport */
+  height -= SMALL_BOTTOM_MARGIN
+
+  return height
+}
+
+export const selectSearchContentHeight = (state: RootState) => {
+  let height: number = state.sizes.windowInnerHeight
+
+  height -= state.sizes.outletTopMarginAndPadding
+
+  if (state.sizes.search) {
+    height -= state.sizes.search.actionPanelHeight
   }
 
   /* Let there be a small margin at the bottom of the viewport */

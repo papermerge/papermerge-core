@@ -40,7 +40,7 @@ export default function FolderNodeActions() {
   }, [width, height])
 
   return (
-    <Group ref={ref} className={`${mode}-action-panel`} justify="space-between">
+    <Group ref={ref} justify="space-between">
       <Group>
         {selectedIds.length == 0 && <UploadButton />}
         {selectedIds.length == 0 && <NewFolderButton />}

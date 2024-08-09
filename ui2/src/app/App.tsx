@@ -65,7 +65,7 @@ function App() {
           <NavBar />
         </AppShell.Navbar>
 
-        <AppShell.Main className="outlet" ref={ref}>
+        <AppShell.Main ref={ref}>
           <Outlet />
           <Uploader />
         </AppShell.Main>

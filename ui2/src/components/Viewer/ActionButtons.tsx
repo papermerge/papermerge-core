@@ -29,7 +29,7 @@ export default function ActionButtons() {
   }, [width, height])
 
   return (
-    <Group className={`${mode}-action-panel`} justify="space-between">
+    <Group justify="space-between">
       <Group>
         <EditTitleButton />
       </Group>

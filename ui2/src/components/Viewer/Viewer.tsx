@@ -51,7 +51,7 @@ export default function Viewer() {
   return (
     <div>
       <ActionButtons />
-      <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
+      <Breadcrumbs onClick={onClick} />
       <Flex style={{height: `${height}px`}}>
         <Thumbnails />
         <Pages />

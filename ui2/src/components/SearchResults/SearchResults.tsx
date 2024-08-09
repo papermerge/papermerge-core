@@ -1,4 +1,4 @@
-import {Flex} from "@mantine/core"
+import {Stack} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import Pagination from "@/components/Pagination"
 import type {RootState} from "@/app/types"
@@ -18,10 +18,15 @@ import {
 } from "@/slices/dualPanel/dualPanel"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
+import {selectSearchContentHeight} from "@/slices/sizes"
 import {NType, PanelMode} from "@/types"
+import classes from "./SearchResults.module.css"
 
 export default function SearchResults() {
   const dispatch = useDispatch()
+  const height = useSelector((state: RootState) =>
+    selectSearchContentHeight(state)
+  )
   const lastPageSize = useSelector((state: RootState) =>
     selectLastPageSize(state, "secondary")
   )
@@ -95,16 +100,20 @@ export default function SearchResults() {
   return (
     <div>
       <ActionButtons />
-      <Flex style={{height: "740px"}}>
+      <Stack
+        className={classes.content}
+        justify={"space-between"}
+        style={{height: `${height}px`}}
+      >
         <SearchResultItems onClick={onClick} />
-      </Flex>
 
-      <Pagination
-        pagination={pagination}
-        onPageNumberChange={onPageNumberChange}
-        onPageSizeChange={onPageSizeChange}
-        lastPageSize={PAGINATION_DEFAULT_ITEMS_PER_PAGES}
-      />
+        <Pagination
+          pagination={pagination}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={PAGINATION_DEFAULT_ITEMS_PER_PAGES}
+        />
+      </Stack>
     </div>
   )
 }

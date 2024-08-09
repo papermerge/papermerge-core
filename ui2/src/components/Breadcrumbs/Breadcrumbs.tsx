@@ -1,5 +1,5 @@
-import {useContext} from "react"
-import {useSelector} from "react-redux"
+import {useContext, useEffect, useRef} from "react"
+import {useSelector, useDispatch} from "react-redux"
 import {
   Breadcrumbs,
   Skeleton,
@@ -10,6 +10,7 @@ import {
   ActionIcon,
   MenuItem
 } from "@mantine/core"
+import {useViewportSize} from "@mantine/hooks"
 import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
 import classes from "./Breadcrumbs.module.css"
 
@@ -17,6 +18,8 @@ import {
   selectPanelBreadcrumbs,
   selectPanelNodesStatus
 } from "@/slices/dualPanel/dualPanel"
+import {updateBreadcrumb} from "@/slices/sizes"
+
 import type {PanelMode, NType, UserDetails} from "@/types"
 import type {RootState} from "@/app/types"
 
@@ -30,6 +33,9 @@ type Args = {
 }
 
 export default function BreadcrumbsComponent({onClick, className}: Args) {
+  const dispatch = useDispatch()
+  const {height, width} = useViewportSize()
+  const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const nodesStatus = useSelector((state: RootState) =>
     selectPanelNodesStatus(state, mode)
@@ -42,6 +48,19 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
   const onRootElementClick = (n: NType) => {
     onClick(n)
   }
+
+  useEffect(() => {
+    if (ref?.current) {
+      let value = 0
+      const styles = window.getComputedStyle(ref?.current)
+      value = parseInt(styles.marginTop)
+      value += parseInt(styles.marginBottom)
+      value += parseInt(styles.paddingBottom)
+      value += parseInt(styles.paddingTop)
+      value += parseInt(styles.height)
+      dispatch(updateBreadcrumb({mode, value}))
+    }
+  }, [width, height])
 
   if (!items) {
     return (
@@ -60,7 +79,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
 
   if (items.length == 1) {
     return (
-      <Group my={"lg"} className={className}>
+      <Group ref={ref} my={"lg"} className={className}>
         <Breadcrumbs className={classes.breadcrumbs}>
           <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         </Breadcrumbs>
@@ -70,7 +89,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
   }
 
   return (
-    <Group my={"lg"} className={className}>
+    <Group ref={ref} my={"lg"} className={className}>
       <Breadcrumbs className={classes.breadcrumbs}>
         <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         {links}

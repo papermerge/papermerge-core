@@ -9,6 +9,7 @@ import tagDetailsReducer from "@/slices/tagDetails"
 import groupDetailsReducer from "@/slices/groupDetails"
 import userDetailsReducer from "@/slices/userDetails"
 import {uploaderReducer} from "@/slices/uploader"
+import sizesSliceReducer from "@/slices/sizes"
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     tagDetails: tagDetailsReducer,
     groupDetails: groupDetailsReducer,
     userDetails: userDetailsReducer,
-    uploader: uploaderReducer
+    uploader: uploaderReducer,
+    sizes: sizesSliceReducer
   }
 })

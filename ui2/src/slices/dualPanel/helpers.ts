@@ -123,7 +123,8 @@ export function setCurrentNodeHelper({
         breadcrumb: null,
         versions: [],
         currentVersion: null,
-        currentPage: 1
+        currentPage: 1,
+        thumbnailsPanelOpen: false
       }
     }
   }
@@ -161,7 +162,8 @@ export function setCurrentNodeHelper({
           breadcrumb: null,
           versions: [],
           currentVersion: null,
-          currentPage: 1
+          currentPage: 1,
+          thumbnailsPanelOpen: false
         },
         searchResults: null
       }

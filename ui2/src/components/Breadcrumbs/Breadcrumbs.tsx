@@ -79,7 +79,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
 
   if (items.length == 1) {
     return (
-      <Group ref={ref} my={"lg"} className={className}>
+      <Group ref={ref} my={0} className={className}>
         <Breadcrumbs className={classes.breadcrumbs}>
           <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         </Breadcrumbs>
@@ -89,7 +89,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
   }
 
   return (
-    <Group ref={ref} my={"lg"} className={className}>
+    <Group ref={ref} my={0} className={className}>
       <Breadcrumbs className={classes.breadcrumbs}>
         <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         {links}

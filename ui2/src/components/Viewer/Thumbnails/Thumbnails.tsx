@@ -6,8 +6,7 @@ import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
-import Thumbnail from "./Thumbnail"
-import ThumbnailsToggle from "./ThumbnailsToggle"
+import Thumbnail from "../Thumbnail"
 import classes from "./Thumbnails.module.css"
 
 export default function Thumbnails() {
@@ -23,7 +22,6 @@ export default function Thumbnails() {
   return (
     <Stack className={classes.thumbnails} justify="flex-start">
       {thumbnails}
-      <ThumbnailsToggle />
     </Stack>
   )
 }

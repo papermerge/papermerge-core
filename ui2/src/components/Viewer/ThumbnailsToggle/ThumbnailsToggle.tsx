@@ -8,7 +8,7 @@ export default function ThumbnailsToggle() {
   }
 
   return (
-    <Flex align-items={"flex-start"} className={classes.thumbnailsToggle}>
+    <Flex align={"flex-start"} className={classes.thumbnailsToggle}>
       <UnstyledButton onClick={() => onClick()}>
         <IconMenu2 />
       </UnstyledButton>

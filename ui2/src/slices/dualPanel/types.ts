@@ -48,6 +48,8 @@ export interface Viewer {
   versions: Array<DocumentVersion>
   currentVersion: number | null
   currentPage: number
+  // is thumbnails panel open?
+  thumbnailsPanelOpen: boolean
 }
 
 export interface SearchResults {

@@ -14,8 +14,10 @@ import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 import {selectContentHeight} from "@/slices/sizes"
 import ActionButtons from "./ActionButtons"
+import ThumbnailsToggle from "./ThumbnailsToggle"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
+import classes from "./Viewer.module.css"
 
 export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
@@ -52,8 +54,9 @@ export default function Viewer() {
     <div>
       <ActionButtons />
       <Breadcrumbs onClick={onClick} />
-      <Flex style={{height: `${height}px`}}>
+      <Flex className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails />
+        <ThumbnailsToggle />
         <Pages />
       </Flex>
     </div>

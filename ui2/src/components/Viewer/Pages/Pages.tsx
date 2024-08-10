@@ -6,7 +6,7 @@ import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
-import Page from "./Page"
+import Page from "../Page"
 import classes from "./Pages.module.css"
 
 export default function Pages() {

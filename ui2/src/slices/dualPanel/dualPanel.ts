@@ -199,6 +199,23 @@ const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    toggleThumbnailsPanel(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+
+      if (mode == "main") {
+        if (state.mainPanel.viewer) {
+          state.mainPanel.viewer.thumbnailsPanelOpen =
+            !state.mainPanel.viewer.thumbnailsPanelOpen
+        }
+      }
+
+      if (mode == "secondary") {
+        if (state.secondaryPanel?.viewer) {
+          state.secondaryPanel.viewer.thumbnailsPanelOpen =
+            !state.secondaryPanel.viewer.thumbnailsPanelOpen
+        }
+      }
+    },
     storeHomeNode(state, action: PayloadAction<StoreNodeInput>) {
       const node: NodeType = {
         id: action.payload.folder_id,
@@ -399,7 +416,8 @@ const dualPanelSlice = createSlice({
           breadcrumb: action.payload.breadcrumb,
           versions: action.payload.versions,
           currentVersion: Math.max(...versionNumbers),
-          currentPage: action.meta.arg.page || 1
+          currentPage: action.meta.arg.page || 1,
+          thumbnailsPanelOpen: false
         }
         return
       }
@@ -413,7 +431,8 @@ const dualPanelSlice = createSlice({
             breadcrumb: action.payload.breadcrumb,
             versions: action.payload.versions,
             currentVersion: Math.max(...versionNumbers),
-            currentPage: action.meta.arg.page || 1
+            currentPage: action.meta.arg.page || 1,
+            thumbnailsPanelOpen: false
           }
         }
         return
@@ -443,6 +462,7 @@ const dualPanelSlice = createSlice({
 })
 
 export const {
+  toggleThumbnailsPanel,
   setCurrentNode,
   folderAdded,
   nodeUpdated,
@@ -767,3 +787,14 @@ export const selectSearchPageSize = (state: RootState) =>
 
 export const selectSearchPageNumber = (state: RootState) =>
   state.dualPanel.mainPanel?.searchResults?.pagination?.pageNumber
+
+export const selectThumbnailsPanelOpen = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.thumbnailsPanelOpen
+  }
+
+  return Boolean(state.dualPanel?.secondaryPanel?.viewer?.thumbnailsPanelOpen)
+}

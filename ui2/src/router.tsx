@@ -38,8 +38,7 @@ const router = createBrowserRouter([
       {
         path: "/home/:folderId",
         element: <Home />,
-        loader: homeLoader,
-        index: true
+        loader: homeLoader
       },
       {
         path: "/inbox/:folderId",

@@ -29,7 +29,7 @@ export default function ActionButtons() {
   }, [width, height])
 
   return (
-    <Group justify="space-between">
+    <Group ref={ref} justify="space-between">
       <Group>
         <EditTitleButton />
       </Group>

@@ -3,10 +3,16 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #666;
+  background-color: #3d3b3b;
   color: white;
+  padding: 0.5rem 1rem;
   img {
     padding: 1rem 1rem 0rem 1rem;
     width: 150px;
   }
+}
+
+.thumbnails:over {
+  overflow-y: auto;
+  overflow-x: hidden;
 }

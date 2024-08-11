@@ -50,6 +50,10 @@ export interface Viewer {
   currentPage: number
   // is thumbnails panel open?
   thumbnailsPanelOpen: boolean
+  // zoom factor is expressed as percentage.
+  // 5 -> means 5%
+  // 100 -> means 100% i.e exact fit
+  zoomFactor: number
 }
 
 export interface SearchResults {

@@ -2,7 +2,10 @@ import {useEffect, useContext, useRef} from "react"
 import {useSelector} from "react-redux"
 import {Stack} from "@mantine/core"
 import PanelContext from "@/contexts/PanelContext"
-import {selectDocumentCurrentPage} from "@/slices/dualPanel/dualPanel"
+import {
+  selectDocumentCurrentPage,
+  selectZoomFactor
+} from "@/slices/dualPanel/dualPanel"
 import {PageType, PanelMode} from "@/types"
 import {useProtectedJpg} from "@/hooks/protected_image"
 import {RootState} from "@/app/types"
@@ -18,6 +21,9 @@ export default function Page({page}: Args) {
     selectDocumentCurrentPage(state, mode)
   )
   const targetRef = useRef<HTMLImageElement | null>(null)
+  const zoomFactor = useSelector((state: RootState) =>
+    selectZoomFactor(state, mode)
+  )
 
   useEffect(() => {
     if (currentPage == page.number) {
@@ -29,7 +35,12 @@ export default function Page({page}: Args) {
 
   return (
     <Stack className="page" align="center">
-      <img ref={targetRef} src={protectedImage.data || ""} /> {page.number}
+      <img
+        style={{width: `${zoomFactor}%`}}
+        ref={targetRef}
+        src={protectedImage.data || ""}
+      />{" "}
+      {page.number}
     </Stack>
   )
 }

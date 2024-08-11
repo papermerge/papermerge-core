@@ -6,6 +6,7 @@ import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
+import Zoom from "../Zoom"
 import Page from "../Page"
 import classes from "./Pages.module.css"
 
@@ -20,6 +21,7 @@ export default function Pages() {
   return (
     <Stack justify="center" className={classes.pages}>
       {pages}
+      <Zoom />
     </Stack>
   )
 }

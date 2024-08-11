@@ -124,7 +124,8 @@ export function setCurrentNodeHelper({
         versions: [],
         currentVersion: null,
         currentPage: 1,
-        thumbnailsPanelOpen: false
+        thumbnailsPanelOpen: false,
+        zoomFactor: 100
       }
     }
   }
@@ -163,7 +164,8 @@ export function setCurrentNodeHelper({
           versions: [],
           currentVersion: null,
           currentPage: 1,
-          thumbnailsPanelOpen: false
+          thumbnailsPanelOpen: false,
+          zoomFactor: 100
         },
         searchResults: null
       }

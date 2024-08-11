@@ -46,7 +46,12 @@ import {
   NodeWithSpinner,
   SelectionNodePayload
 } from "./types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
+import {
+  INITIAL_PAGE_SIZE,
+  MIN_ZOOM_FACTOR,
+  MAX_ZOOM_FACTOR,
+  ZOOM_FACTOR_STEP
+} from "@/cconstants"
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -198,6 +203,57 @@ const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    incZoomFactor(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        if (state.mainPanel.viewer) {
+          let zoom = state.mainPanel.viewer?.zoomFactor
+          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
+            state.mainPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
+          }
+        }
+      }
+      if (mode == "secondary") {
+        if (state.secondaryPanel?.viewer) {
+          let zoom = state.secondaryPanel.viewer.zoomFactor
+          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
+            state.secondaryPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
+          }
+        }
+      }
+    },
+    decZoomFactor(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        if (state.mainPanel.viewer) {
+          let zoom = state.mainPanel.viewer?.zoomFactor
+          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
+            state.mainPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
+          }
+        }
+      }
+      if (mode == "secondary") {
+        if (state.secondaryPanel?.viewer) {
+          let zoom = state.secondaryPanel.viewer.zoomFactor
+          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
+            state.secondaryPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
+          }
+        }
+      }
+    },
+    fitZoomFactor(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        if (state.mainPanel.viewer) {
+          state.mainPanel.viewer.zoomFactor = 100
+        }
+      }
+      if (mode == "secondary") {
+        if (state.secondaryPanel?.viewer) {
+          state.secondaryPanel.viewer.zoomFactor = 100
+        }
+      }
+    },
     toggleThumbnailsPanel(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
 
@@ -416,7 +472,8 @@ const dualPanelSlice = createSlice({
           versions: action.payload.versions,
           currentVersion: Math.max(...versionNumbers),
           currentPage: action.meta.arg.page || 1,
-          thumbnailsPanelOpen: false
+          thumbnailsPanelOpen: false,
+          zoomFactor: 100
         }
         return
       }
@@ -431,7 +488,8 @@ const dualPanelSlice = createSlice({
             versions: action.payload.versions,
             currentVersion: Math.max(...versionNumbers),
             currentPage: action.meta.arg.page || 1,
-            thumbnailsPanelOpen: false
+            thumbnailsPanelOpen: false,
+            zoomFactor: 100
           }
         }
         return
@@ -461,6 +519,9 @@ const dualPanelSlice = createSlice({
 })
 
 export const {
+  incZoomFactor,
+  decZoomFactor,
+  fitZoomFactor,
   toggleThumbnailsPanel,
   setCurrentNode,
   folderAdded,
@@ -796,4 +857,12 @@ export const selectThumbnailsPanelOpen = (
   }
 
   return Boolean(state.dualPanel?.secondaryPanel?.viewer?.thumbnailsPanelOpen)
+}
+
+export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.zoomFactor
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
 }

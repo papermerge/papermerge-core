@@ -9,6 +9,7 @@ import {
 import {PageType, PanelMode} from "@/types"
 import {useProtectedJpg} from "@/hooks/protected_image"
 import {RootState} from "@/app/types"
+import classes from "./Page.module.css"
 
 type Args = {
   page: PageType
@@ -34,13 +35,13 @@ export default function Page({page}: Args) {
   }, [currentPage, protectedImage, page.number])
 
   return (
-    <Stack className="page" align="center">
+    <Stack className={classes.page}>
       <img
         style={{width: `${zoomFactor}%`}}
         ref={targetRef}
         src={protectedImage.data || ""}
-      />{" "}
-      {page.number}
+      />
+      <div>{page.number}</div>
     </Stack>
   )
 }

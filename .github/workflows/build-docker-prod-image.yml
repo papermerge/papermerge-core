@@ -32,7 +32,7 @@ jobs:
           push: true
           tags: papermerge/papermerge:${{ github.ref_name }}
           file: docker/prod/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

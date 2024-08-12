@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:${{ github.ref_name }}-arm64
+          tags: urganot/papermerge-raspberry:${{ github.ref_name }}-arm64
           file: docker/prod/Dockerfile
           platforms: linux/arm64
           build-args: AUTH_SERVER_TAG=0.9.0-arm64

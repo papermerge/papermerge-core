@@ -30,9 +30,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: papermerge/papermerge:${{ github.ref_name }}
+          tags: papermerge/papermerge:${{ github.ref_name }}-arm64
           file: docker/prod/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/arm64
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

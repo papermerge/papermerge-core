@@ -1,6 +1,3 @@
-# Define the ARG before the first FROM
-ARG AUTH_SERVER_TAG=0.9.0
-
 FROM node:20.13 AS  build
 
 WORKDIR build_ui_app
@@ -10,7 +7,7 @@ COPY ui2/ .
 RUN yarn install
 RUN NODE_ENV=production yarn build
 
-FROM papermerge/auth-server:${AUTH_SERVER_TAG} AS auth_server
+FROM papermerge/auth-server:0.9.0 AS auth_server
 FROM python:3.11 AS papermerge_core
 
 ENV CORE_APP=/core_app

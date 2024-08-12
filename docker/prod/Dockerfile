@@ -1,4 +1,7 @@
-FROM node:20.13 as  build
+# Define the ARG before the first FROM
+ARG AUTH_SERVER_TAG=0.9.0
+
+FROM node:20.13 AS  build
 
 WORKDIR build_ui_app
 ENV NODE_OPTIONS=--openssl-legacy-provider
@@ -7,9 +10,8 @@ COPY ui2/ .
 RUN yarn install
 RUN NODE_ENV=production yarn build
 
-
-FROM papermerge/auth-server:0.9.0 as auth_server
-FROM python:3.11 as papermerge_core
+FROM papermerge/auth-server:${AUTH_SERVER_TAG} AS auth_server
+FROM python:3.11 AS papermerge_core
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3

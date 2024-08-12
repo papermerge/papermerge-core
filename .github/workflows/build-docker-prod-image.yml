@@ -33,6 +33,7 @@ jobs:
           tags: papermerge/papermerge:${{ github.ref_name }}
           file: docker/prod/Dockerfile
           platforms: linux/amd64
+          build-args: AUTH_SERVER_TAG=0.9.0-arm64
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

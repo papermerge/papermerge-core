@@ -42,7 +42,7 @@ COPY docker/cloud/run.bash /run.bash
 RUN chmod +x /run.bash
 
 COPY --from=oidc_app /oidc_app/ /oidc_app
-COPY --from=build /build_ui_app/build/ /usr/share/html/ui
+COPY --from=build /build_ui_app/dist/ /usr/share/html/ui
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 EXPOSE 80

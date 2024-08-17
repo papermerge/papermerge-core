@@ -2,9 +2,9 @@ FROM node:19 as  build
 
 WORKDIR build_ui_app
 COPY ui/package.json ui/package-lock.json ui/tsconfig.json ./
-COPY ui/ .
-RUN npm install
-RUN npm run build
+COPY ui2/ .
+RUN yarn install
+RUN yarn build
 
 FROM papermerge/oidc:0.2.3 as oidc_app
 FROM caddy:2.7 AS caddy

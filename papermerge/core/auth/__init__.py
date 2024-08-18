@@ -83,13 +83,12 @@ def get_current_user(
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(token_data.groups) > 0:
-            total_scopes.extend(
-                db.get_user_scopes_from_groups(
-                    engine=engine,
-                    user_id=UUID(token_data.user_id),
-                    groups=token_data.groups
-                )
+            s = db.get_user_scopes_from_groups(
+                engine=engine,
+                user_id=UUID(token_data.user_id),
+                groups=token_data.groups
             )
+            total_scopes.extend(s)
 
     elif remote_user:  # get user from headers
         # Using here external identity provider i.e.
@@ -111,13 +110,12 @@ def get_current_user(
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(remote_user.groups) > 0:
-            total_scopes.extend(
-                db.get_user_scopes_from_groups(
-                    engine=engine,
-                    user_id=user.id,
-                    groups=remote_user.groups
-                )
+            s = db.get_user_scopes_from_groups(
+                engine=engine,
+                user_id=user.id,
+                groups=remote_user.groups
             )
+            total_scopes.extend(s)
 
     if user is None:
         raise HTTPException(

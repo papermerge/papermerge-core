@@ -224,10 +224,12 @@ def get_user_scopes_from_groups(
     user_id: UUID,
     groups: list[str]
 ) -> list[str]:
+
     with Session(engine) as session:
         db_user = session.get(User, user_id)
 
         if db_user is None:
+            logger.debug(f"User with user_id {user_id} not found")
             return []
 
         db_groups = session.scalars(

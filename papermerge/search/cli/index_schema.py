@@ -4,7 +4,7 @@ import typer
 from rich import print_json
 from salinic import SchemaManager, create_engine
 
-from papermerge.search.schema import Model
+from papermerge.search.schema import SearchIndex
 
 app = typer.Typer(help="Index Schema Management")
 
@@ -13,7 +13,7 @@ if not SEARCH_URL:
     raise ValueError("missing PAPERMERGE__SEARCH__URL")
 
 engine = create_engine(SEARCH_URL)
-schema_manager = SchemaManager(engine, model=Model)
+schema_manager = SchemaManager(engine, model=SearchIndex)
 
 
 @app.command(name="apply")

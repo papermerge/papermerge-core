@@ -8,7 +8,7 @@ from salinic import IndexRW, create_engine
 from typing_extensions import Annotated
 
 from papermerge.core import db, schemas
-from papermerge.search.schema import FOLDER, PAGE, Model
+from papermerge.search.schema import FOLDER, PAGE, SearchIndex
 
 app = typer.Typer(help="Index documents")
 
@@ -17,7 +17,7 @@ if not SEARCH_URL:
     raise ValueError("missing PAPERMERGE__SEARCH__URL")
 
 engine = create_engine(SEARCH_URL)
-index = IndexRW(engine, schema=Model)
+index = IndexRW(engine, schema=SearchIndex)
 db_session = db.get_session()
 
 NodeIDsType = Annotated[
@@ -42,7 +42,7 @@ def index_cmd(
             )
             pages = db.get_doc_ver_pages(db_session, last_ver.id)
             for page in pages:
-                item = Model(
+                item = SearchIndex(
                     id=str(page.id),
                     title=node.title,
                     user_id=str(node.user_id),
@@ -55,7 +55,7 @@ def index_cmd(
                 )
                 items.append(item)
         else:
-            item = Model(
+            item = SearchIndex(
                 id=str(node.id),
                 title=node.title,
                 user_id=str(node.user_id),

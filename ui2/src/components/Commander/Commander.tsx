@@ -159,32 +159,22 @@ export default function Commander() {
     <Node onClick={onClick} key={n.id} node={n} />
   ))
 
+  let commanderContent: JSX.Element
+
   if (nodes.length > 0) {
-    return (
-      <Box
-        onDragEnter={onDragEnter}
-        onDragLeave={onDragLeave}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        className={dragOver ? classes.accept_files : classes.commander}
-      >
-        <FolderNodeActions />
-        <Breadcrumbs onClick={onClick} />
-        <Stack
-          className={classes.content}
-          justify={"space-between"}
-          style={{height: `${height}px`}}
-        >
-          <Group>{nodes}</Group>
-          <Pagination
-            pagination={pagination}
-            onPageNumberChange={onPageNumberChange}
-            onPageSizeChange={onPageSizeChange}
-            lastPageSize={lastPageSize}
-          />
-        </Stack>
-      </Box>
+    commanderContent = (
+      <>
+        <Group>{nodes}</Group>
+        <Pagination
+          pagination={pagination}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={lastPageSize}
+        />
+      </>
     )
+  } else {
+    commanderContent = <Group>Empty</Group>
   }
 
   return (
@@ -196,13 +186,13 @@ export default function Commander() {
       className={dragOver ? classes.accept_files : classes.commander}
     >
       <FolderNodeActions />
-      <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
+      <Breadcrumbs onClick={onClick} />
       <Stack
         className={classes.content}
         justify={"space-between"}
         style={{height: `${height}px`}}
       >
-        <Group>Empty</Group>
+        {commanderContent}
       </Stack>
     </Box>
   )

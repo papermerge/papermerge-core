@@ -1,5 +1,5 @@
-import {useContext} from "react"
-import {Group, Stack} from "@mantine/core"
+import {useContext, useState} from "react"
+import {Group, Stack, Box} from "@mantine/core"
 
 import {useSelector, useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
@@ -13,6 +13,7 @@ import {
   selectPagination,
   selectLastPageSize,
   selectCurrentFolderID,
+  selectCurrentFolder,
   selectCommanderPageSize,
   selectCommanderPageNumber,
   fetchPaginatedDocument
@@ -23,10 +24,12 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
+import drop_files from "@/components/modals/DropFiles"
 import {selectContentHeight} from "@/slices/sizes"
-import classes from "./Commander.module.css"
+import classes from "./Commander.module.scss"
 
 export default function Commander() {
+  const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useSelector((state: RootState) =>
     selectContentHeight(state, mode)
@@ -39,6 +42,9 @@ export default function Commander() {
   )
   const currentNodeID = useSelector((state: RootState) =>
     selectCurrentFolderID(state, mode)
+  )
+  const currentFolder = useSelector((state: RootState) =>
+    selectCurrentFolder(state, mode)
   )
   const pagination = useSelector((state: RootState) =>
     selectPagination(state, mode)
@@ -127,38 +133,67 @@ export default function Commander() {
       )
     }
   }
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setDragOver(true)
+  }
+
+  const onDragEnter = () => {
+    setDragOver(true)
+  }
+
+  const onDragLeave = () => {
+    setDragOver(false)
+  }
+
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    setDragOver(false)
+    event.preventDefault()
+    drop_files({
+      source_files: event.dataTransfer.files,
+      target: currentFolder!
+    }).then(() => {})
+  }
 
   const nodes = data.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
   ))
 
+  let commanderContent: JSX.Element
+
   if (nodes.length > 0) {
-    return (
-      <div>
-        <FolderNodeActions />
-        <Breadcrumbs onClick={onClick} />
-        <Stack
-          className={classes.content}
-          justify={"space-between"}
-          style={{height: `${height}px`}}
-        >
-          <Group>{nodes}</Group>
-          <Pagination
-            pagination={pagination}
-            onPageNumberChange={onPageNumberChange}
-            onPageSizeChange={onPageSizeChange}
-            lastPageSize={lastPageSize}
-          />
-        </Stack>
-      </div>
+    commanderContent = (
+      <>
+        <Group>{nodes}</Group>
+        <Pagination
+          pagination={pagination}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={lastPageSize}
+        />
+      </>
     )
+  } else {
+    commanderContent = <Group>Empty</Group>
   }
 
   return (
-    <div>
+    <Box
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      className={dragOver ? classes.accept_files : classes.commander}
+    >
       <FolderNodeActions />
-      <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
-      <Group>Empty</Group>
-    </div>
+      <Breadcrumbs onClick={onClick} />
+      <Stack
+        className={classes.content}
+        justify={"space-between"}
+        style={{height: `${height}px`}}
+      >
+        {commanderContent}
+      </Stack>
+    </Box>
   )
 }

@@ -12,7 +12,7 @@ import {nodeAdded} from "@/slices/dualPanel/dualPanel"
 import PanelContext from "@/contexts/PanelContext"
 
 type Args = {
-  source_files: File[]
+  source_files: FileList | File[]
   target: FolderType
   onOK: (node: NodeType) => void
   onCancel: (msg?: string) => void
@@ -74,7 +74,7 @@ const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
 }
 
 type DropFileArgs = {
-  source_files: File[]
+  source_files: FileList | File[]
   target: FolderType
 }
 

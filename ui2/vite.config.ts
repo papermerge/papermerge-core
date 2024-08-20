@@ -6,5 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: [{find: "@", replacement: "/src"}]
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "./src/_mantine";`
+      }
+    }
   }
 })

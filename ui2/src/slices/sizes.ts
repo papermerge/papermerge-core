@@ -2,7 +2,7 @@ import {PanelMode} from "@/types"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {RootState} from "@/app/types"
 
-const SMALL_BOTTOM_MARGIN = 3 /* pixles */
+const SMALL_BOTTOM_MARGIN = 13 /* pixles */
 
 type SearchPanelSizes = {
   actionPanelHeight: number

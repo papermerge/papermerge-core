@@ -1,5 +1,5 @@
-import {useContext} from "react"
-import {Group, Stack} from "@mantine/core"
+import {useContext, useState} from "react"
+import {Group, Stack, Box} from "@mantine/core"
 
 import {useSelector, useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
@@ -26,9 +26,10 @@ import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import drop_files from "@/components/modals/DropFiles"
 import {selectContentHeight} from "@/slices/sizes"
-import classes from "./Commander.module.css"
+import classes from "./Commander.module.scss"
 
 export default function Commander() {
+  const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useSelector((state: RootState) =>
     selectContentHeight(state, mode)
@@ -134,12 +135,20 @@ export default function Commander() {
   }
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    console.log("something is being dragged over")
+    setDragOver(true)
+  }
+
+  const onDragEnter = () => {
+    setDragOver(true)
+  }
+
+  const onDragLeave = () => {
+    setDragOver(false)
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    setDragOver(false)
     event.preventDefault()
-
     drop_files({
       source_files: event.dataTransfer.files,
       target: currentFolder!
@@ -152,7 +161,13 @@ export default function Commander() {
 
   if (nodes.length > 0) {
     return (
-      <div onDragOver={onDragOver} onDrop={onDrop}>
+      <Box
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        className={dragOver ? classes.accept_files : classes.commander}
+      >
         <FolderNodeActions />
         <Breadcrumbs onClick={onClick} />
         <Stack
@@ -168,15 +183,27 @@ export default function Commander() {
             lastPageSize={lastPageSize}
           />
         </Stack>
-      </div>
+      </Box>
     )
   }
 
   return (
-    <div>
+    <Box
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      className={dragOver ? classes.accept_files : classes.commander}
+    >
       <FolderNodeActions />
       <Breadcrumbs className={`${mode}-breadcrumb`} onClick={onClick} />
-      <Group>Empty</Group>
-    </div>
+      <Stack
+        className={classes.content}
+        justify={"space-between"}
+        style={{height: `${height}px`}}
+      >
+        <Group>Empty</Group>
+      </Stack>
+    </Box>
   )
 }

@@ -22,7 +22,7 @@ export default function UploadButton() {
       selectCurrentFolder(state, mode) as FolderType | undefined
   )
 
-  const onUpload = (files: File[]) => {
+  const onUpload = (files: FileList) => {
     if (!files) {
       console.error("Empty array for uploaded files")
       return

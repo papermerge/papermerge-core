@@ -13,6 +13,7 @@ import {
   selectPagination,
   selectLastPageSize,
   selectCurrentFolderID,
+  selectCurrentFolder,
   selectCommanderPageSize,
   selectCommanderPageNumber,
   fetchPaginatedDocument
@@ -23,6 +24,7 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
+import drop_files from "@/components/modals/DropFiles"
 import {selectContentHeight} from "@/slices/sizes"
 import classes from "./Commander.module.css"
 
@@ -39,6 +41,9 @@ export default function Commander() {
   )
   const currentNodeID = useSelector((state: RootState) =>
     selectCurrentFolderID(state, mode)
+  )
+  const currentFolder = useSelector((state: RootState) =>
+    selectCurrentFolder(state, mode)
   )
   const pagination = useSelector((state: RootState) =>
     selectPagination(state, mode)
@@ -127,6 +132,19 @@ export default function Commander() {
       )
     }
   }
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    console.log("something is being dragged over")
+  }
+
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+
+    drop_files({
+      source_files: event.dataTransfer.files,
+      target: currentFolder!
+    }).then(() => {})
+  }
 
   const nodes = data.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
@@ -134,7 +152,7 @@ export default function Commander() {
 
   if (nodes.length > 0) {
     return (
-      <div>
+      <div onDragOver={onDragOver} onDrop={onDrop}>
         <FolderNodeActions />
         <Breadcrumbs onClick={onClick} />
         <Stack

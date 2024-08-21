@@ -8,6 +8,7 @@ import PanelContext from "@/contexts/PanelContext"
 import EditTitleButton from "./EditTitleButton"
 
 import type {PanelMode} from "@/types"
+import DownloadButton from "./DownloadButton/DownloadButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()
@@ -32,6 +33,7 @@ export default function ActionButtons() {
     <Group ref={ref} justify="space-between">
       <Group>
         <EditTitleButton />
+        <DownloadButton />
       </Group>
       <Group>
         <ToggleSecondaryPanel />

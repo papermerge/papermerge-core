@@ -67,6 +67,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: #f9f9f9;
+  flex-grow: 1;
 }
 
 a {

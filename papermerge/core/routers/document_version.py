@@ -2,10 +2,11 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 
-from papermerge.core import schemas, utils
+from papermerge.core import schemas, utils, db
+from papermerge.core.db import exceptions as db_exc
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import DocumentVersion
 
@@ -56,3 +57,31 @@ def download_document_version(
         filename=doc_ver.file_name,
         content_disposition_type='attachment'
     )
+
+
+@router.get("/{document_version_id}", response_model=schemas.DocumentVersion)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def document_version_details(
+    document_version_id: uuid.UUID,
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
+    engine: db.Engine = Depends(db.get_engine)
+):
+    """Get document version details
+
+    Required scope: `{scope}`
+    """
+    try:
+        doc_ver = db.get_doc_ver(
+            engine,
+            id=document_version_id
+        )
+    except db_exc.PageNotFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Page not found"
+        )
+
+    return doc_ver

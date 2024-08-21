@@ -1,7 +1,31 @@
+import {useContext} from "react"
+import {useSelector} from "react-redux"
 import {Menu, Tooltip, ActionIcon} from "@mantine/core"
 import {IconDownload} from "@tabler/icons-react"
+import {selectDocumentVersions} from "@/slices/dualPanel/dualPanel"
+import {RootState} from "@/app/types"
+import {download_file} from "@/httpClient"
+
+import PanelContext from "@/contexts/PanelContext"
+import {DocumentVersion} from "@/types"
 
 export default function DownloadButton() {
+  const mode = useContext(PanelContext)
+
+  const vers = useSelector((state: RootState) =>
+    selectDocumentVersions(state, mode)
+  )
+
+  const onClick = (v: DocumentVersion) => {
+    download_file(v)
+  }
+
+  const versionComponents = vers?.map(v => (
+    <Menu.Item key={v.id} onClick={() => onClick(v)}>
+      Version {v.number} - {v.short_description}
+    </Menu.Item>
+  ))
+
   return (
     <Menu>
       <Menu.Target>
@@ -11,10 +35,7 @@ export default function DownloadButton() {
           </ActionIcon>
         </Tooltip>
       </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Item>Version 1</Menu.Item>
-        <Menu.Item>Version 2</Menu.Item>
-      </Menu.Dropdown>
+      <Menu.Dropdown>{versionComponents}</Menu.Dropdown>
     </Menu>
   )
 }

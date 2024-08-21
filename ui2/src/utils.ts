@@ -115,8 +115,6 @@ async function getCurrentUser(): Promise<User> {
   })
 }
 
-export {getCurrentUser}
-
 export function makeRandomString(length: number): string {
   let result = ""
   const characters =
@@ -136,3 +134,5 @@ export function equalUUIDs(id1: string, id2: string): boolean {
 
   return i1 == i2
 }
+
+export {getCurrentUser}

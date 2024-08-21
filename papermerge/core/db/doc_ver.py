@@ -31,14 +31,18 @@ def get_last_doc_ver(
 
 def get_doc_ver(
     engine: Engine,
-    id: UUID  # noqa
+    id: UUID,  # noqa
+    user_id: UUID
 ) -> schemas.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
     """
     with Session(engine) as session:  # noqa
-        stmt = select(DocumentVersion).where(DocumentVersion.id == id)
+        stmt = select(DocumentVersion).join(Document).where(
+            Document.user_id == user_id,
+            DocumentVersion.id == id
+        )
         db_doc_ver = session.scalars(stmt).one()
         model_doc_ver = schemas.DocumentVersion.model_validate(db_doc_ver)
 

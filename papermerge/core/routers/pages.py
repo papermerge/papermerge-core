@@ -94,7 +94,11 @@ def get_page_jpg_url(
     """
     try:
         page = db.get_page(engine, id=page_id, user_id=user.id)
-        doc_ver = db.get_doc_ver(engine, id=page.document_version_id)
+        doc_ver = db.get_doc_ver(
+            engine,
+            id=page.document_version_id,
+            user_id=user.id
+        )
     except db_exc.PageNotFound:
         raise HTTPException(
             status_code=404,

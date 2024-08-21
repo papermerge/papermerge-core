@@ -76,7 +76,8 @@ def document_version_details(
     try:
         doc_ver = db.get_doc_ver(
             engine,
-            id=document_version_id
+            id=document_version_id,
+            user_id=user.id
         )
     except db_exc.PageNotFound:
         raise HTTPException(

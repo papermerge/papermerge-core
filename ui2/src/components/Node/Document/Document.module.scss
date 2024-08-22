@@ -1,0 +1,9 @@
+@import "../Node.module.scss";
+
+.document {
+  @extend %node;
+
+  img {
+    height: $node-img-height;
+  }
+}

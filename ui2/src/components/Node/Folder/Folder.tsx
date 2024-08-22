@@ -9,7 +9,7 @@ import {
 } from "@/slices/dualPanel/dualPanel"
 
 import Tags from "@/components/Node/Tags"
-import classes from "./Folder.module.css"
+import classes from "./Folder.module.scss"
 import {RootState} from "@/app/types"
 import type {NodeType, PanelMode} from "@/types"
 
@@ -42,7 +42,7 @@ export default function Folder({node, onClick}: Args) {
       <a onClick={() => onClick(node)}>
         <div className={classes.folderIcon}></div>
         <Tags names={tagNames} />
-        <div>{node.title}</div>
+        <div className={classes.title}>{node.title}</div>
       </a>
     </div>
   )

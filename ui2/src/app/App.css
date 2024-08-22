@@ -14,3 +14,7 @@ main {
 .borderline-bottom {
   border-bottom: #7474ff 3px solid;
 }
+
+.dragged {
+  opacity: 0.3;
+}

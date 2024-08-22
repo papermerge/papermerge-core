@@ -10,7 +10,7 @@ import {
 
 import Tags from "@/components/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
-import classes from "./Document.module.css"
+import classes from "./Document.module.scss"
 import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
 import {useProtectedJpg} from "@/hooks/protected_image"
@@ -43,7 +43,7 @@ export default function Document({node, onClick}: Args) {
       <a onClick={() => onClick(node)}>
         <img src={protected_image.data || ""} />
         <Tags names={tagNames} />
-        <div className="title">{node.title}</div>
+        <div className={classes.title}>{node.title}</div>
       </a>
     </div>
   )

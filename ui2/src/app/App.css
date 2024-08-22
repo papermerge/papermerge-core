@@ -6,3 +6,11 @@
 main {
   margin: 0.5rem;
 }
+
+.borderline-top {
+  border-top: #7474ff 3px solid;
+}
+
+.borderline-bottom {
+  border-bottom: #7474ff 3px solid;
+}

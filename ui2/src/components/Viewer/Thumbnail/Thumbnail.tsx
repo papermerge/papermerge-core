@@ -9,7 +9,8 @@ import {
   dropThumbnailPage,
   selectionAddPage,
   selectionRemovePage,
-  selectSelectedPageIds
+  selectSelectedPageIds,
+  selectSelectedPages
 } from "@/slices/dualPanel/dualPanel"
 import {
   dragPagesStart,
@@ -35,6 +36,9 @@ export default function Thumbnail({page}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedPageIds(state, mode)
+  )
+  const selectedPages = useSelector((state: RootState) =>
+    selectSelectedPages(state, mode)
   )
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
@@ -101,7 +105,7 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragStart = () => {
-    dispatch(dragPagesStart([page]))
+    dispatch(dragPagesStart([page, ...selectedPages]))
   }
 
   const onDragEnd = () => {

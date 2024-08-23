@@ -12,18 +12,18 @@ import {reorder as reorder_pages} from "@/utils"
 
 export function selectionAddPageHelper(
   state: DualPanelState,
-  nodeId: string,
+  pageId: string,
   mode: PanelMode
 ) {
   switch (mode) {
     case "main":
       if (state.mainPanel.viewer) {
-        state.mainPanel.viewer.selectedIds.push(nodeId)
+        state.mainPanel.viewer.selectedIds.push(pageId)
       }
       break
     case "secondary":
       if (state.secondaryPanel?.viewer) {
-        state.secondaryPanel.viewer.selectedIds.push(nodeId)
+        state.secondaryPanel.viewer.selectedIds.push(pageId)
       }
       break
     default:
@@ -78,13 +78,13 @@ export function selectionRemoveNodeHelper(
 
 export function selectionRemovePageHelper(
   state: DualPanelState,
-  nodeId: string,
+  pageId: string,
   mode: PanelMode
 ) {
   if (mode == "main") {
     if (state.mainPanel.viewer) {
       const newSelectedIds = state.mainPanel.viewer.selectedIds.filter(
-        i => i != nodeId
+        i => i != pageId
       )
       state.mainPanel.viewer.selectedIds = newSelectedIds
     }
@@ -93,7 +93,7 @@ export function selectionRemovePageHelper(
   if (mode == "secondary") {
     if (state.secondaryPanel?.viewer) {
       const newSelectedIds = state.secondaryPanel.viewer.selectedIds.filter(
-        i => i != nodeId
+        i => i != pageId
       )
       state.secondaryPanel.viewer.selectedIds = newSelectedIds
     }

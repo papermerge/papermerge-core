@@ -217,17 +217,17 @@ const dualPanelSlice = createSlice({
   initialState,
   reducers: {
     selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
-      const nodeId = action.payload.selectionId
+      const pageId = action.payload.selectionId
       const mode = action.payload.mode
-      selectionAddPageHelper(state, nodeId, mode)
+      selectionAddPageHelper(state, pageId, mode)
     },
     selectionRemovePage: (
       state,
       action: PayloadAction<SelectionPagePayload>
     ) => {
-      const nodeId = action.payload.selectionId
+      const pageId = action.payload.selectionId
       const mode = action.payload.mode
-      selectionRemovePageHelper(state, nodeId, mode)
+      selectionRemovePageHelper(state, pageId, mode)
     },
     dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
       const {mode, sources, target, position} = action.payload
@@ -804,6 +804,56 @@ export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
 
   return state.dualPanel.secondaryPanel?.viewer?.selectedIds
 }
+
+export const selectPagesRaw = (
+  state: RootState,
+  mode: PanelMode
+): Array<PageType> | undefined => {
+  let verNumber
+  let ver
+
+  if (mode == "main") {
+    verNumber = state.dualPanel.mainPanel?.viewer?.currentVersion
+    if (
+      verNumber &&
+      state.dualPanel.mainPanel?.viewer?.versions &&
+      state.dualPanel.mainPanel?.viewer?.versions.length >= verNumber
+    ) {
+      ver = state.dualPanel.mainPanel?.viewer?.versions[verNumber - 1]
+      if (ver) {
+        return ver.pages
+      }
+    }
+  } else {
+    verNumber = state.dualPanel.secondaryPanel?.viewer?.currentVersion
+    if (
+      verNumber &&
+      state.dualPanel.secondaryPanel?.viewer?.versions &&
+      state.dualPanel.secondaryPanel?.viewer?.versions.length >= verNumber
+    ) {
+      ver = state.dualPanel.secondaryPanel?.viewer?.versions[verNumber - 1]
+      if (ver) {
+        return ver.pages
+      }
+    }
+  }
+}
+
+export const selectSelectedPages = createSelector(
+  [selectSelectedPageIds, selectPagesRaw],
+  (
+    selectedIds: Array<string> | undefined,
+    allNodes: Array<PageType> | undefined
+  ): Array<PageType> => {
+    if (selectedIds && allNodes) {
+      return Object.values(allNodes).filter((i: PageType) =>
+        selectedIds.includes(i.id)
+      )
+    }
+
+    return []
+  }
+)
 
 export const selectSelectedNodes = createSelector(
   [selectSelectedNodeIds, selectNodesRaw],

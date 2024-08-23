@@ -278,3 +278,5 @@ export type ThumbnailPageDroppedArgs = {
   target: PageType
   position: DroppedThumbnailPosition
 }
+
+export type NavBarCollapsedCookieStrings = "true" | "false"

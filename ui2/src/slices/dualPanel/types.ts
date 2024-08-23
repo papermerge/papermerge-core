@@ -35,6 +35,11 @@ export type SelectionNodePayload = {
   mode: PanelMode
 }
 
+export type SelectionPagePayload = {
+  selectionId: string
+  mode: PanelMode
+}
+
 export interface Commander {
   currentNode: CurrentNodeType | null
   pagination: PaginationType | null | undefined
@@ -54,6 +59,8 @@ export interface Viewer {
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
   zoomFactor: number
+  // selected page IDs
+  selectedIds: Array<string>
 }
 
 export interface SearchResults {

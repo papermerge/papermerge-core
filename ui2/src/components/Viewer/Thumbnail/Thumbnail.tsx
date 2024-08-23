@@ -4,13 +4,19 @@ import {Stack, Checkbox} from "@mantine/core"
 import PanelContext from "@/contexts/PanelContext"
 
 import {useProtectedJpg} from "@/hooks/protected_image"
-import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
+import {
+  setCurrentPage,
+  dropThumbnailPage,
+  selectionAddPage,
+  selectionRemovePage,
+  selectSelectedPageIds
+} from "@/slices/dualPanel/dualPanel"
 import {
   dragPagesStart,
   dragPagesEnd,
   selectDraggedPages
 } from "@/slices/dragndrop"
-import type {PanelMode, PageType} from "@/types"
+import type {PanelMode, PageType, DroppedThumbnailPosition} from "@/types"
 
 import classes from "./Thumbnail.module.scss"
 import {RootState} from "@/app/types"
@@ -27,6 +33,9 @@ export default function Thumbnail({page}: Args) {
   const dispatch = useDispatch()
   const protectedImage = useProtectedJpg(page.jpg_url)
   const mode: PanelMode = useContext(PanelContext)
+  const selectedIds = useSelector((state: RootState) =>
+    selectSelectedPageIds(state, mode)
+  )
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useSelector((state: RootState) =>
@@ -96,15 +105,56 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragEnd = () => {
-    dispatch(dragPagesEnd())
+    //dispatch(dragPagesEnd())
   }
 
-  const onLocalDrop = () => {
+  const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    let position: DroppedThumbnailPosition = "before"
+    const y = event.clientY
+
+    if (!draggedPages) {
+      console.warn("Dragged pages array is empty")
+      return
+    }
+
+    event.preventDefault()
+
+    if (ref?.current) {
+      const rect = ref?.current.getBoundingClientRect()
+      const half = (rect.bottom - rect.top) / 2
+
+      if (y >= rect.top && y < rect.top + half) {
+        // dropped over upper half of the page
+        position = "before"
+      } else if (y >= rect.top + half && y < rect.bottom) {
+        // dropped over lower half of the page
+        position = "after"
+      }
+
+      dispatch(
+        dropThumbnailPage({
+          mode: mode,
+          sources: draggedPages,
+          target: page,
+          position: position
+        })
+      )
+      dispatch(dragPagesEnd())
+    } // if (ref?.current)
+
     // remove both borderline_bottom and borderline_top
     const new_array = cssClassNames.filter(
       i => i != BORDERLINE_BOTTOM && i != BORDERLINE_TOP
     )
     setCssClassNames(new_array)
+  }
+
+  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.currentTarget.checked) {
+      dispatch(selectionAddPage({selectionId: page.id, mode}))
+    } else {
+      dispatch(selectionRemovePage({selectionId: page.id, mode}))
+    }
   }
 
   return (
@@ -122,7 +172,11 @@ export default function Thumbnail({page}: Args) {
       onDragEnter={onLocalDragEnter}
       onDrop={onLocalDrop}
     >
-      <Checkbox className={classes.checkbox} />
+      <Checkbox
+        onChange={onCheck}
+        checked={selectedIds && selectedIds.includes(page.id)}
+        className={classes.checkbox}
+      />
       <img src={protectedImage.data || ""} />
       {page.number}
     </Stack>

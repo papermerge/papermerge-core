@@ -271,3 +271,10 @@ export type PaginatedSearchResult = {
   items: Array<SearchResultNode>
   query: string
 }
+
+export type DroppedThumbnailPosition = "before" | "after"
+export type ThumbnailPageDroppedArgs = {
+  sources: PageType[]
+  target: PageType
+  position: DroppedThumbnailPosition
+}

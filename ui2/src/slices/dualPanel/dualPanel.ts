@@ -15,12 +15,15 @@ import {RootState} from "@/app/types"
 import {
   removeNodesHelper,
   selectionAddNodeHelper,
+  selectionAddPageHelper,
   selectionRemoveNodeHelper,
+  selectionRemovePageHelper,
   clearNodesSelectionHelper,
   commanderInitialState,
   setCurrentNodeHelper,
   nodeAddedHelper,
-  nodeUpdatedHelper
+  nodeUpdatedHelper,
+  dropThumbnailPageHelper
 } from "./helpers"
 
 import type {
@@ -36,7 +39,9 @@ import type {
   PaginationType,
   SliceStateStatus,
   SearchResultNode,
-  PaginatedSearchResult
+  PaginatedSearchResult,
+  DroppedThumbnailPosition,
+  PageType
 } from "@/types"
 import {
   DualPanelState,
@@ -44,7 +49,8 @@ import {
   FolderAddedArgs,
   NodeUpdatedArgs,
   NodeWithSpinner,
-  SelectionNodePayload
+  SelectionNodePayload,
+  SelectionPagePayload
 } from "./types"
 import {
   INITIAL_PAGE_SIZE,
@@ -199,10 +205,41 @@ type SetCurrentPageArg = {
   page: number
 }
 
+type DropThumbnailPageArgs = {
+  mode: PanelMode
+  sources: PageType[]
+  target: PageType
+  position: DroppedThumbnailPosition
+}
+
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
+      const nodeId = action.payload.selectionId
+      const mode = action.payload.mode
+      selectionAddPageHelper(state, nodeId, mode)
+    },
+    selectionRemovePage: (
+      state,
+      action: PayloadAction<SelectionPagePayload>
+    ) => {
+      const nodeId = action.payload.selectionId
+      const mode = action.payload.mode
+      selectionRemovePageHelper(state, nodeId, mode)
+    },
+    dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
+      const {mode, sources, target, position} = action.payload
+
+      dropThumbnailPageHelper({
+        state,
+        mode,
+        sources,
+        target,
+        position
+      })
+    },
     incZoomFactor(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
       if (mode == "main") {
@@ -473,7 +510,8 @@ const dualPanelSlice = createSlice({
           currentVersion: Math.max(...versionNumbers),
           currentPage: action.meta.arg.page || 1,
           thumbnailsPanelOpen: false,
-          zoomFactor: 100
+          zoomFactor: 100,
+          selectedIds: []
         }
         return
       }
@@ -489,7 +527,8 @@ const dualPanelSlice = createSlice({
             currentVersion: Math.max(...versionNumbers),
             currentPage: action.meta.arg.page || 1,
             thumbnailsPanelOpen: false,
-            zoomFactor: 100
+            zoomFactor: 100,
+            selectedIds: []
           }
         }
         return
@@ -530,12 +569,15 @@ export const {
   closeSecondaryPanel,
   selectionAddNode,
   selectionRemoveNode,
+  selectionAddPage,
+  selectionRemovePage,
   clearNodesSelection,
   updateSearchResultItemTarget,
   storeHomeNode,
   storeInboxNode,
   nodeAdded,
-  setCurrentPage
+  setCurrentPage,
+  dropThumbnailPage
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
@@ -753,6 +795,14 @@ export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.commander?.selectedIds
+}
+
+export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.selectedIds
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer?.selectedIds
 }
 
 export const selectSelectedNodes = createSelector(

@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 import {RootState} from "@/app/types"
-import type {NavBarCollapsedCookieStrings} from "@/types"
+import type {BooleanString} from "@/types"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 160
@@ -40,9 +40,7 @@ const navBarSlice = createSlice({
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {
-  const collapsed = Cookies.get(
-    NAVBAR_COLLAPSED_COOKIE
-  ) as NavBarCollapsedCookieStrings
+  const collapsed = Cookies.get(NAVBAR_COLLAPSED_COOKIE) as BooleanString
 
   if (collapsed == "true") {
     return true

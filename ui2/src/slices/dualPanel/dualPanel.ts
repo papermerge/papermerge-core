@@ -1,3 +1,4 @@
+import Cookies from "js-cookie"
 import {
   createSlice,
   PayloadAction,
@@ -41,7 +42,8 @@ import type {
   SearchResultNode,
   PaginatedSearchResult,
   DroppedThumbnailPosition,
-  PageType
+  PageType,
+  BooleanString
 } from "@/types"
 import {
   DualPanelState,
@@ -58,6 +60,10 @@ import {
   MAX_ZOOM_FACTOR,
   ZOOM_FACTOR_STEP
 } from "@/cconstants"
+
+const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
+const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
+  "secondary_thumbnails_panel_opened"
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -296,15 +302,25 @@ const dualPanelSlice = createSlice({
 
       if (mode == "main") {
         if (state.mainPanel.viewer) {
-          state.mainPanel.viewer.thumbnailsPanelOpen =
-            !state.mainPanel.viewer.thumbnailsPanelOpen
+          const new_value = !state.mainPanel.viewer.thumbnailsPanelOpen
+          state.mainPanel.viewer.thumbnailsPanelOpen = new_value
+          if (new_value) {
+            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+          } else {
+            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+          }
         }
       }
 
       if (mode == "secondary") {
         if (state.secondaryPanel?.viewer) {
-          state.secondaryPanel.viewer.thumbnailsPanelOpen =
-            !state.secondaryPanel.viewer.thumbnailsPanelOpen
+          const new_value = !state.secondaryPanel.viewer.thumbnailsPanelOpen
+          state.secondaryPanel.viewer.thumbnailsPanelOpen = new_value
+          if (new_value) {
+            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+          } else {
+            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+          }
         }
       }
     },
@@ -509,7 +525,7 @@ const dualPanelSlice = createSlice({
           versions: action.payload.versions,
           currentVersion: Math.max(...versionNumbers),
           currentPage: action.meta.arg.page || 1,
-          thumbnailsPanelOpen: false,
+          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
           zoomFactor: 100,
           selectedIds: []
         }
@@ -526,7 +542,7 @@ const dualPanelSlice = createSlice({
             versions: action.payload.versions,
             currentVersion: Math.max(...versionNumbers),
             currentPage: action.meta.arg.page || 1,
-            thumbnailsPanelOpen: false,
+            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
             zoomFactor: 100,
             selectedIds: []
           }
@@ -965,4 +981,28 @@ export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
+}
+
+function mainThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function secondaryThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
 }

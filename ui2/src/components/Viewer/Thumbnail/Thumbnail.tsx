@@ -167,7 +167,6 @@ export default function Thumbnail({page}: Args) {
       className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
       align="center"
       gap={"xs"}
-      onClick={onClick}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -181,7 +180,7 @@ export default function Thumbnail({page}: Args) {
         checked={selectedIds && selectedIds.includes(page.id)}
         className={classes.checkbox}
       />
-      <img src={protectedImage.data || ""} />
+      <img onClick={onClick} src={protectedImage.data || ""} />
       {page.number}
     </Stack>
   )

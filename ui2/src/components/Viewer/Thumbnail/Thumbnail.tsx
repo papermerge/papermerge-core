@@ -17,7 +17,7 @@ import {
   dragPagesEnd,
   selectDraggedPages
 } from "@/slices/dragndrop"
-import type {PanelMode, PageType, DroppedThumbnailPosition} from "@/types"
+import type {PanelMode, PageAndRotOp, DroppedThumbnailPosition} from "@/types"
 
 import classes from "./Thumbnail.module.scss"
 import {RootState} from "@/app/types"
@@ -27,12 +27,12 @@ const BORDERLINE_BOTTOM = "borderline-bottom"
 const DRAGGED = "dragged"
 
 type Args = {
-  page: PageType
+  page: PageAndRotOp
 }
 
 export default function Thumbnail({page}: Args) {
   const dispatch = useDispatch()
-  const protectedImage = useProtectedJpg(page.jpg_url)
+  const protectedImage = useProtectedJpg(page.page.jpg_url)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedPageIds(state, mode)
@@ -47,7 +47,9 @@ export default function Thumbnail({page}: Args) {
   )
 
   useEffect(() => {
-    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
+    const cur_page_is_being_dragged = draggedPages?.find(
+      p => p.page.id == page.page.id
+    )
     if (cur_page_is_being_dragged) {
       if (cssClassNames.indexOf(DRAGGED) < 0) {
         setCssClassNames([...cssClassNames, DRAGGED])
@@ -62,7 +64,7 @@ export default function Thumbnail({page}: Args) {
   }, [draggedPages?.length])
 
   const onClick = () => {
-    dispatch(setCurrentPage({mode, page: page.number}))
+    dispatch(setCurrentPage({mode, page: page.page.number}))
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -155,9 +157,9 @@ export default function Thumbnail({page}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(selectionAddPage({selectionId: page.id, mode}))
+      dispatch(selectionAddPage({selectionId: page.page.id, mode}))
     } else {
-      dispatch(selectionRemovePage({selectionId: page.id, mode}))
+      dispatch(selectionRemovePage({selectionId: page.page.id, mode}))
     }
   }
 
@@ -177,11 +179,15 @@ export default function Thumbnail({page}: Args) {
     >
       <Checkbox
         onChange={onCheck}
-        checked={selectedIds && selectedIds.includes(page.id)}
+        checked={selectedIds && selectedIds.includes(page.page.id)}
         className={classes.checkbox}
       />
-      <img onClick={onClick} src={protectedImage.data || ""} />
-      {page.number}
+      <img
+        style={{transform: `rotate(${page.angle}deg)`}}
+        onClick={onClick}
+        src={protectedImage.data || ""}
+      />
+      {page.page.number}
     </Stack>
   )
 }

@@ -32,6 +32,7 @@ import {
 import type {
   SliceState,
   NodeType,
+  PageType,
   PanelMode,
   PanelType,
   Paginated,
@@ -44,8 +45,10 @@ import type {
   SearchResultNode,
   PaginatedSearchResult,
   DroppedThumbnailPosition,
-  PageType,
-  BooleanString
+  BooleanString,
+  PageAndRotOp,
+  DocumentVersion,
+  DocumentVersionWithPageRot
 } from "@/types"
 import {
   DualPanelState,
@@ -215,15 +218,41 @@ type SetCurrentPageArg = {
 
 type DropThumbnailPageArgs = {
   mode: PanelMode
-  sources: PageType[]
-  target: PageType
+  sources: PageAndRotOp[]
+  target: PageAndRotOp
   position: DroppedThumbnailPosition
+}
+
+type RotatePageArg = {
+  mode: PanelMode
+  angle: number
+  pages: PageType[]
 }
 
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    rotatePages: (state, action: PayloadAction<RotatePageArg>) => {
+      const {pages, mode, angle} = action.payload
+      const page_ids = pages.map(p => p.id)
+
+      let curVer
+      if (mode == "main") {
+        curVer = state.mainPanel.viewer?.currentVersion
+        if (curVer && curVer > 0) {
+          let foundPages = state.mainPanel.viewer?.versions[
+            curVer - 1
+          ].pages.filter(p => page_ids.includes(p.page.id))
+          if (foundPages) {
+            for (let i = 0; i < foundPages.length; i++) {
+              foundPages[i].angle = foundPages[i].angle + angle
+            }
+          }
+        }
+      }
+    },
+    rotatePageCC: (state, action: PayloadAction<RotatePageArg>) => {},
     resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
       const mode = action.payload
       resetPageChangesHelper(state, mode)
@@ -528,12 +557,13 @@ const dualPanelSlice = createSlice({
         const versionNumbers = action.payload.versions.map(v => v.number)
         state.mainPanel.viewer = {
           breadcrumb: action.payload.breadcrumb,
-          versions: action.payload.versions,
+          versions: injectPageRotOp(action.payload.versions),
           currentVersion: Math.max(...versionNumbers),
           currentPage: action.meta.arg.page || 1,
           thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
           zoomFactor: 100,
           selectedIds: [],
+          //@ts-ignore
           initialPages: getLatestVersionPages(action.payload.versions)
         }
         return
@@ -546,12 +576,13 @@ const dualPanelSlice = createSlice({
           searchResults: null,
           viewer: {
             breadcrumb: action.payload.breadcrumb,
-            versions: action.payload.versions,
+            versions: injectPageRotOp(action.payload.versions),
             currentVersion: Math.max(...versionNumbers),
             currentPage: action.meta.arg.page || 1,
             thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
             zoomFactor: 100,
             selectedIds: [],
+            //@ts-ignore
             initialPages: getLatestVersionPages(action.payload.versions)
           }
         }
@@ -582,6 +613,7 @@ const dualPanelSlice = createSlice({
 })
 
 export const {
+  rotatePages,
   incZoomFactor,
   decZoomFactor,
   fitZoomFactor,
@@ -833,7 +865,7 @@ export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
 export const selectInitialPages = (
   state: RootState,
   mode: PanelMode
-): Array<PageType> | undefined => {
+): Array<PageAndRotOp> | undefined => {
   if (mode == "main") {
     return state.dualPanel.mainPanel.viewer?.initialPages
   }
@@ -844,7 +876,7 @@ export const selectInitialPages = (
 export const selectPagesRaw = (
   state: RootState,
   mode: PanelMode
-): Array<PageType> | undefined => {
+): Array<PageAndRotOp> | undefined => {
   let verNumber
   let ver
 
@@ -879,11 +911,11 @@ export const selectSelectedPages = createSelector(
   [selectSelectedPageIds, selectPagesRaw],
   (
     selectedIds: Array<string> | undefined,
-    allNodes: Array<PageType> | undefined
-  ): Array<PageType> => {
+    allNodes: Array<PageAndRotOp> | undefined
+  ): Array<PageAndRotOp> => {
     if (selectedIds && allNodes) {
-      return Object.values(allNodes).filter((i: PageType) =>
-        selectedIds.includes(i.id)
+      return Object.values(allNodes).filter((i: PageAndRotOp) =>
+        selectedIds.includes(i.page.id)
       )
     }
 
@@ -894,8 +926,8 @@ export const selectSelectedPages = createSelector(
 export const selectPagesHaveChanged = createSelector(
   [selectInitialPages, selectPagesRaw],
   (
-    initialPages: Array<PageType> | undefined,
-    currentPages: Array<PageType> | undefined
+    initialPages: Array<PageAndRotOp> | undefined,
+    currentPages: Array<PageAndRotOp> | undefined
   ): boolean => {
     if (!initialPages) {
       return false
@@ -910,11 +942,15 @@ export const selectPagesHaveChanged = createSelector(
     }
 
     for (let i = 0; i < (initialPages?.length || 0); i++) {
-      if (initialPages[i].id != currentPages[i].id) {
+      if (initialPages[i].page.id != currentPages[i].page.id) {
         return true
       }
 
-      if (initialPages[i].number != currentPages[i].number) {
+      if (initialPages[i].page.number != currentPages[i].page.number) {
+        return true
+      }
+
+      if (initialPages[i].angle != currentPages[i].angle) {
         return true
       }
     }
@@ -1057,4 +1093,23 @@ function secondaryThumbnailsPanelInitialState(): boolean {
   }
 
   return false
+}
+
+function injectPageRotOp(
+  vers: DocumentVersion[]
+): DocumentVersionWithPageRot[] {
+  return vers.map(raw => injectPageRotOpForDocVer(raw))
+}
+
+function injectPageRotOpForDocVer(
+  ver: DocumentVersion
+): DocumentVersionWithPageRot {
+  let result = ver
+  // @ts-ignore
+  result.pages = ver.pages.map(p => {
+    return {page: p, angle: 0}
+  })
+
+  //@ts-ignore
+  return result
 }

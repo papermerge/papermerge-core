@@ -22,7 +22,7 @@ export default function Thumbnails() {
   )
 
   const thumbnails = docVersion?.pages.map(p => (
-    <Thumbnail key={p.id} page={p} />
+    <Thumbnail key={p.page.id} page={p} />
   ))
   // display: none
   if (thumbnailsIsOpen) {

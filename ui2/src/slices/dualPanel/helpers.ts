@@ -4,7 +4,8 @@ import type {
   PanelMode,
   PageType,
   DroppedThumbnailPosition,
-  DocumentVersion
+  DocumentVersion,
+  PageAndRotOp
 } from "@/types"
 import {DualPanelState, NodeWithSpinner, Commander} from "./types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
@@ -323,11 +324,11 @@ export function dropThumbnailPageHelper({
 }: {
   mode: PanelMode
   state: DualPanelState
-  sources: PageType[]
-  target: PageType
+  sources: PageAndRotOp[]
+  target: PageAndRotOp
   position: DroppedThumbnailPosition
 }) {
-  let pages: PageType[]
+  let pages: PageAndRotOp[]
   let curVer
   if (mode == "main") {
     curVer = state.mainPanel.viewer!.currentVersion!
@@ -336,19 +337,19 @@ export function dropThumbnailPageHelper({
     curVer = state.secondaryPanel!.viewer!.currentVersion!
     pages = state.secondaryPanel!.viewer?.versions[curVer - 1].pages!
   }
-  const page_ids = pages.map(p => p.id)
-  const source_ids = sources.map(p => p.id)
+  const page_ids = pages.map(p => p.page.id)
+  const source_ids = sources.map(p => p.page.id)
   if (contains_every({container: page_ids, items: source_ids})) {
     /* Here we deal with page transfer is within the same document
       i.e we just reordering. It is so because all source pages (their IDs)
       were found in the target document version.
     */
-    const new_pages = reorder_pages<PageType, string>({
+    const new_pages = reorder_pages<PageAndRotOp, string>({
       arr: pages,
       source_ids: source_ids,
-      target_id: target.id,
+      target_id: target.page.id,
       position: position,
-      idf: (val: PageType) => val.id
+      idf: (val: PageAndRotOp) => val.page.id
     })
     if (mode == "main") {
       curVer = state.mainPanel.viewer!.currentVersion!

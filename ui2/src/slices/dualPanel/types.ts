@@ -7,8 +7,9 @@ import type {
   CurrentNodeType,
   PaginationType,
   BreadcrumbItemType,
-  DocumentVersion,
-  PageType
+  DocumentVersionWithPageRot,
+  PageType,
+  PageAndRotOp
 } from "@/types"
 
 export type NodeWithSpinner = {
@@ -51,7 +52,7 @@ export interface Commander {
 
 export interface Viewer {
   breadcrumb: Array<BreadcrumbItemType> | null
-  versions: Array<DocumentVersion>
+  versions: Array<DocumentVersionWithPageRot>
   currentVersion: number | null
   currentPage: number
   // is thumbnails panel open?
@@ -62,7 +63,7 @@ export interface Viewer {
   zoomFactor: number
   // selected page IDs
   selectedIds: Array<string>
-  initialPages: Array<PageType>
+  initialPages: Array<PageAndRotOp>
 }
 
 export interface SearchResults {

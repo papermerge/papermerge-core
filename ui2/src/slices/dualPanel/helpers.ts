@@ -3,7 +3,8 @@ import type {
   NodeType,
   PanelMode,
   PageType,
-  DroppedThumbnailPosition
+  DroppedThumbnailPosition,
+  DocumentVersion
 } from "@/types"
 import {DualPanelState, NodeWithSpinner, Commander} from "./types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
@@ -179,7 +180,8 @@ export function setCurrentNodeHelper({
         currentPage: 1,
         thumbnailsPanelOpen: false,
         zoomFactor: 100,
-        selectedIds: []
+        selectedIds: [],
+        initialPages: []
       }
     }
   }
@@ -220,7 +222,8 @@ export function setCurrentNodeHelper({
           currentPage: 1,
           thumbnailsPanelOpen: false,
           zoomFactor: 100,
-          selectedIds: []
+          selectedIds: [],
+          initialPages: []
         },
         searchResults: null
       }
@@ -371,6 +374,28 @@ export function dropThumbnailPageHelper({
   }
 }
 
+export function resetPageChangesHelper(state: DualPanelState, mode: PanelMode) {
+  let curVer
+
+  if (mode == "main") {
+    if (state.mainPanel.viewer) {
+      curVer = state.mainPanel.viewer?.currentVersion
+      if (curVer && curVer > 1) {
+        state.mainPanel.viewer.versions[curVer - 1].pages =
+          state.mainPanel.viewer.initialPages
+      }
+    }
+  } else {
+    if (state.secondaryPanel && state.secondaryPanel.viewer) {
+      curVer = state.secondaryPanel.viewer.currentVersion
+      if (curVer && curVer > 1) {
+        state.secondaryPanel.viewer.versions[curVer - 1].pages =
+          state.secondaryPanel.viewer.initialPages
+      }
+    }
+  }
+}
+
 function _removePanelNodes(
   state: DualPanelState,
   idsToRemove: string[],
@@ -408,4 +433,14 @@ function _removeNodes(
     return newNodes
   }
   return state.nodes
+}
+
+export function getLatestVersionPages(vers: DocumentVersion[]): PageType[] {
+  const lastVer = vers.reduce((maxVer, v) => {
+    if (maxVer.number > v.number) {
+      return maxVer
+    }
+    return v
+  }, vers[0])
+  return lastVer.pages
 }

@@ -7,7 +7,8 @@ import type {
   CurrentNodeType,
   PaginationType,
   BreadcrumbItemType,
-  DocumentVersion
+  DocumentVersion,
+  PageType
 } from "@/types"
 
 export type NodeWithSpinner = {
@@ -61,6 +62,7 @@ export interface Viewer {
   zoomFactor: number
   // selected page IDs
   selectedIds: Array<string>
+  initialPages: Array<PageType>
 }
 
 export interface SearchResults {

@@ -24,7 +24,9 @@ import {
   setCurrentNodeHelper,
   nodeAddedHelper,
   nodeUpdatedHelper,
-  dropThumbnailPageHelper
+  dropThumbnailPageHelper,
+  resetPageChangesHelper,
+  getLatestVersionPages
 } from "./helpers"
 
 import type {
@@ -222,6 +224,10 @@ const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
+      const mode = action.payload
+      resetPageChangesHelper(state, mode)
+    },
     selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
       const pageId = action.payload.selectionId
       const mode = action.payload.mode
@@ -527,7 +533,8 @@ const dualPanelSlice = createSlice({
           currentPage: action.meta.arg.page || 1,
           thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
           zoomFactor: 100,
-          selectedIds: []
+          selectedIds: [],
+          initialPages: getLatestVersionPages(action.payload.versions)
         }
         return
       }
@@ -544,7 +551,8 @@ const dualPanelSlice = createSlice({
             currentPage: action.meta.arg.page || 1,
             thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
             zoomFactor: 100,
-            selectedIds: []
+            selectedIds: [],
+            initialPages: getLatestVersionPages(action.payload.versions)
           }
         }
         return
@@ -593,7 +601,8 @@ export const {
   storeInboxNode,
   nodeAdded,
   setCurrentPage,
-  dropThumbnailPage
+  dropThumbnailPage,
+  resetPageChanges
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
@@ -821,6 +830,17 @@ export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
   return state.dualPanel.secondaryPanel?.viewer?.selectedIds
 }
 
+export const selectInitialPages = (
+  state: RootState,
+  mode: PanelMode
+): Array<PageType> | undefined => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.initialPages
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer?.initialPages
+}
+
 export const selectPagesRaw = (
   state: RootState,
   mode: PanelMode
@@ -868,6 +888,38 @@ export const selectSelectedPages = createSelector(
     }
 
     return []
+  }
+)
+
+export const selectPagesHaveChanged = createSelector(
+  [selectInitialPages, selectPagesRaw],
+  (
+    initialPages: Array<PageType> | undefined,
+    currentPages: Array<PageType> | undefined
+  ): boolean => {
+    if (!initialPages) {
+      return false
+    }
+
+    if (!currentPages) {
+      return false
+    }
+
+    if (initialPages?.length != currentPages?.length) {
+      return true
+    }
+
+    for (let i = 0; i < (initialPages?.length || 0); i++) {
+      if (initialPages[i].id != currentPages[i].id) {
+        return true
+      }
+
+      if (initialPages[i].number != currentPages[i].number) {
+        return true
+      }
+    }
+
+    return false
   }
 )
 

@@ -8,7 +8,6 @@ import type {
   PaginationType,
   BreadcrumbItemType,
   DocumentVersionWithPageRot,
-  PageType,
   PageAndRotOp
 } from "@/types"
 

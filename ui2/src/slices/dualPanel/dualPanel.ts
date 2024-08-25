@@ -101,10 +101,20 @@ export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
   }
 )
 
-export const applyPageOpChanges = createAsyncThunk<void, ApplyPagesType[]>(
+type ApplyPageOpChangesThunkArgs = {
+  panel: PanelMode
+  pages: ApplyPagesType[]
+}
+
+export const applyPageOpChanges = createAsyncThunk<
+  DocumentType,
+  ApplyPageOpChangesThunkArgs
+>(
   "document/applyPageOpChanges",
-  async (pages: ApplyPagesType[]) => {
-    axios.post("/api/pages/", pages)
+  async ({pages}: ApplyPageOpChangesThunkArgs) => {
+    const response = await axios.post("/api/pages/", pages)
+    const doc = response.data as DocumentType
+    return doc
   }
 )
 
@@ -559,6 +569,43 @@ const dualPanelSlice = createSlice({
         removeNodesHelper(state, nodeIds)
       }
     )
+    builder.addCase(applyPageOpChanges.fulfilled, (state, action) => {
+      if (action.meta.arg.panel == "main") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.mainPanel.viewer = {
+          breadcrumb: action.payload.breadcrumb,
+          versions: injectPageRotOp(action.payload.versions),
+          currentVersion: Math.max(...versionNumbers),
+          currentPage: 1,
+          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
+          zoomFactor: 100,
+          selectedIds: [],
+          //@ts-ignore
+          initialPages: getLatestVersionPages(action.payload.versions)
+        }
+        return
+      }
+
+      if (action.meta.arg.panel == "secondary") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.secondaryPanel = {
+          commander: null,
+          searchResults: null,
+          viewer: {
+            breadcrumb: action.payload.breadcrumb,
+            versions: injectPageRotOp(action.payload.versions),
+            currentVersion: Math.max(...versionNumbers),
+            currentPage: 1,
+            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
+            zoomFactor: 100,
+            selectedIds: [],
+            //@ts-ignore
+            initialPages: getLatestVersionPages(action.payload.versions)
+          }
+        }
+        return
+      }
+    })
     builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
       if (action.meta.arg.panel == "main") {
         const versionNumbers = action.payload.versions.map(v => v.number)

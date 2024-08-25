@@ -17,6 +17,7 @@ from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
 from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
 from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
+from papermerge.core.schemas.documents import Document as PyDocument
 from papermerge.core.schemas.pages import (ExtractPagesIn, MovePagesIn,
                                            PageAndRotOp)
 from papermerge.core.utils import image
@@ -136,7 +137,7 @@ def apply_page_operations(
         schemas.User,
         Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
     ],
-) -> List[PyDocVer]:
+) -> PyDocument:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
 
     Required scope: `{scope}`
@@ -156,9 +157,9 @@ def apply_page_operations(
     When `angle` > 0 -> the rotation is clockwise.
     When `angle` < 0 -> the rotation is counterclockwise.
     """
-    new_versions = apply_pages_op(items)
+    new_doc = apply_pages_op(items)
 
-    return [PyDocVer.model_validate(version) for version in new_versions]
+    return PyDocument.model_validate(new_doc)
 
 
 @router.post("/move")

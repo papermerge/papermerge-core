@@ -43,7 +43,7 @@ export default function ThumbnailsToggle() {
           page: {id: p.page.id, number: p.page.number}
         }
       })
-      dispatch(applyPageOpChanges(_pages))
+      dispatch(applyPageOpChanges({pages, panel: mode}))
     }
   }
 

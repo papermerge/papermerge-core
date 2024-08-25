@@ -48,7 +48,8 @@ import type {
   BooleanString,
   PageAndRotOp,
   DocumentVersion,
-  DocumentVersionWithPageRot
+  DocumentVersionWithPageRot,
+  ApplyPagesType
 } from "@/types"
 import {
   DualPanelState,
@@ -97,6 +98,13 @@ export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
     })
     const doc = response.data as DocumentType
     return doc
+  }
+)
+
+export const applyPageOpChanges = createAsyncThunk<void, ApplyPagesType[]>(
+  "document/applyPageOpChanges",
+  async (pages: ApplyPagesType[]) => {
+    axios.post("/api/pages/", pages)
   }
 )
 
@@ -252,7 +260,6 @@ const dualPanelSlice = createSlice({
         }
       }
     },
-    rotatePageCC: (state, action: PayloadAction<RotatePageArg>) => {},
     resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
       const mode = action.payload
       resetPageChangesHelper(state, mode)

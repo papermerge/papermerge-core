@@ -1,4 +1,4 @@
-import type {DocumentVersion} from "@/types"
+import type {DocumentVersion, DocumentVersionWithPageRot} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
@@ -32,7 +32,7 @@ First gets the current `download_url`, as in case of S3 storage
 (S3 private storage actually) there expiration keys are
 valid for couple of minutes only
 */
-async function download_file(doc_ver: DocumentVersion) {
+async function download_file(doc_ver: DocumentVersionWithPageRot) {
   const resp1 = await client.get(`/api/document-versions/${doc_ver.id}`)
   const v = resp1.data as DocumentVersion
   // now, with `download_url` at hand, actual download starts!
@@ -50,7 +50,11 @@ async function download_file(doc_ver: DocumentVersion) {
   const basename = get_file_basename(v.file_name)
 
   a.href = url
-  a.download = `${basename}-v${v.number}-${v.short_description}.${ext}`
+  if (v.short_description) {
+    a.download = `${basename}-v${v.number}-${v.short_description}.${ext}`
+  } else {
+    a.download = `${basename}-v${v.number}.${ext}`
+  }
   // we need to append the element to the dom -> otherwise it will not work in firefox
   document.body.appendChild(a)
   a.click()

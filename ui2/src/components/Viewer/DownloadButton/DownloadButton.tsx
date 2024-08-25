@@ -7,7 +7,7 @@ import {RootState} from "@/app/types"
 import {download_file} from "@/httpClient"
 
 import PanelContext from "@/contexts/PanelContext"
-import {DocumentVersion} from "@/types"
+import {DocumentVersionWithPageRot} from "@/types"
 
 export default function DownloadButton() {
   const mode = useContext(PanelContext)
@@ -16,15 +16,24 @@ export default function DownloadButton() {
     selectDocumentVersions(state, mode)
   )
 
-  const onClick = (v: DocumentVersion) => {
+  const onClick = (v: DocumentVersionWithPageRot) => {
     download_file(v)
   }
 
-  const versionComponents = vers?.map(v => (
-    <Menu.Item key={v.id} onClick={() => onClick(v)}>
-      Version {v.number} - {v.short_description}
-    </Menu.Item>
-  ))
+  const versionComponents = vers?.map(v => {
+    if (v.short_description) {
+      return (
+        <Menu.Item key={v.id} onClick={() => onClick(v)}>
+          Version {v.number} - {v.short_description}
+        </Menu.Item>
+      )
+    }
+    return (
+      <Menu.Item key={v.id} onClick={() => onClick(v)}>
+        Version {v.number}
+      </Menu.Item>
+    )
+  })
 
   return (
     <Menu>

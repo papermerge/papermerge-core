@@ -11,7 +11,9 @@ import {
   toggleThumbnailsPanel,
   selectThumbnailsPanelOpen,
   selectPagesHaveChanged,
-  resetPageChanges
+  resetPageChanges,
+  applyPageOpChanges,
+  selectPagesRaw
 } from "@/slices/dualPanel/dualPanel"
 import PanelContext from "@/contexts/PanelContext"
 import {PanelMode} from "@/types"
@@ -27,13 +29,22 @@ export default function ThumbnailsToggle() {
   const pagesHaveChanged = useSelector((state: RootState) =>
     selectPagesHaveChanged(state, mode)
   )
+  const pages = useSelector((state: RootState) => selectPagesRaw(state, mode))
 
   const onClick = () => {
     dispatch(toggleThumbnailsPanel(mode))
   }
 
   const onSave = () => {
-    // dispatch((state: RootState) => savePageChanges(state, mode))
+    if (pages) {
+      const _pages = pages.map(p => {
+        return {
+          angle: p.angle,
+          page: {id: p.page.id, number: p.page.number}
+        }
+      })
+      dispatch(applyPageOpChanges(_pages))
+    }
   }
 
   const onReset = () => {

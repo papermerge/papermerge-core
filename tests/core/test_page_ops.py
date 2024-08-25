@@ -64,11 +64,11 @@ def test_apply_pages_op(_):
     items = [PageAndRotOp(page=pypage, angle=0)]
 
     # It should copy only first page which contains word "cat"
-    versions = apply_pages_op(items)
+    new_doc = apply_pages_op(items)
 
     # now there one more version (originally was only one doc ver)
-    assert versions.count() == 2
-    newly_created_version = versions.last()
+    assert new_doc.versions.count() == 2
+    newly_created_version = new_doc.versions.last()
 
     # newly create version should have only one page
     assert newly_created_version.pages.count() == 1

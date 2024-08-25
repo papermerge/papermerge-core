@@ -16,7 +16,7 @@ export default function Pages() {
     selectDocumentCurrentVersion(state, mode)
   )
 
-  const pages = docVersion?.pages.map(p => <Page key={p.id} page={p} />)
+  const pages = docVersion?.pages.map(p => <Page key={p.page.id} page={p} />)
 
   return (
     <Stack justify="center" className={classes.pages}>

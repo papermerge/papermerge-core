@@ -220,6 +220,12 @@ export type PageType = {
   text: string
 }
 
+// page and rotation operation
+export type PageAndRotOp = {
+  page: PageType
+  angle: number // rotation degree, can be positive or negative
+}
+
 export type DocumentVersion = {
   id: string
   document_id: string
@@ -229,6 +235,19 @@ export type DocumentVersion = {
   number: number
   page_count: number
   pages: Array<PageType>
+  short_description: string
+  size: number
+}
+
+export type DocumentVersionWithPageRot = {
+  id: string
+  document_id: string
+  download_url: string
+  file_name: string
+  lang: OCRCode
+  number: number
+  page_count: number
+  pages: Array<PageAndRotOp>
   short_description: string
   size: number
 }
@@ -270,4 +289,23 @@ export type PaginatedSearchResult = {
   page_size: number
   items: Array<SearchResultNode>
   query: string
+}
+
+export type DroppedThumbnailPosition = "before" | "after"
+export type ThumbnailPageDroppedArgs = {
+  sources: PageType[]
+  target: PageType
+  position: DroppedThumbnailPosition
+}
+
+export type BooleanString = "true" | "false"
+
+export type ShortPageType = {
+  number: number
+  id: string
+}
+
+export type ApplyPagesType = {
+  angle: number
+  page: ShortPageType
 }

@@ -1,3 +1,4 @@
+import Cookies from "js-cookie"
 import {
   createSlice,
   PayloadAction,
@@ -15,17 +16,23 @@ import {RootState} from "@/app/types"
 import {
   removeNodesHelper,
   selectionAddNodeHelper,
+  selectionAddPageHelper,
   selectionRemoveNodeHelper,
+  selectionRemovePageHelper,
   clearNodesSelectionHelper,
   commanderInitialState,
   setCurrentNodeHelper,
   nodeAddedHelper,
-  nodeUpdatedHelper
+  nodeUpdatedHelper,
+  dropThumbnailPageHelper,
+  resetPageChangesHelper,
+  getLatestVersionPages
 } from "./helpers"
 
 import type {
   SliceState,
   NodeType,
+  PageType,
   PanelMode,
   PanelType,
   Paginated,
@@ -36,7 +43,13 @@ import type {
   PaginationType,
   SliceStateStatus,
   SearchResultNode,
-  PaginatedSearchResult
+  PaginatedSearchResult,
+  DroppedThumbnailPosition,
+  BooleanString,
+  PageAndRotOp,
+  DocumentVersion,
+  DocumentVersionWithPageRot,
+  ApplyPagesType
 } from "@/types"
 import {
   DualPanelState,
@@ -44,7 +57,8 @@ import {
   FolderAddedArgs,
   NodeUpdatedArgs,
   NodeWithSpinner,
-  SelectionNodePayload
+  SelectionNodePayload,
+  SelectionPagePayload
 } from "./types"
 import {
   INITIAL_PAGE_SIZE,
@@ -52,6 +66,10 @@ import {
   MAX_ZOOM_FACTOR,
   ZOOM_FACTOR_STEP
 } from "@/cconstants"
+
+const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
+const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
+  "secondary_thumbnails_panel_opened"
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -78,6 +96,23 @@ export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
     const response = await axios.get(`/api/documents/${nodeId}`, {
       validateStatus: () => true
     })
+    const doc = response.data as DocumentType
+    return doc
+  }
+)
+
+type ApplyPageOpChangesThunkArgs = {
+  panel: PanelMode
+  pages: ApplyPagesType[]
+}
+
+export const applyPageOpChanges = createAsyncThunk<
+  DocumentType,
+  ApplyPageOpChangesThunkArgs
+>(
+  "document/applyPageOpChanges",
+  async ({pages}: ApplyPageOpChangesThunkArgs) => {
+    const response = await axios.post("/api/pages/", pages)
     const doc = response.data as DocumentType
     return doc
   }
@@ -199,10 +234,70 @@ type SetCurrentPageArg = {
   page: number
 }
 
+type DropThumbnailPageArgs = {
+  mode: PanelMode
+  sources: PageAndRotOp[]
+  target: PageAndRotOp
+  position: DroppedThumbnailPosition
+}
+
+type RotatePageArg = {
+  mode: PanelMode
+  angle: number
+  pages: PageType[]
+}
+
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
+    rotatePages: (state, action: PayloadAction<RotatePageArg>) => {
+      const {pages, mode, angle} = action.payload
+      const page_ids = pages.map(p => p.id)
+
+      let curVer
+      if (mode == "main") {
+        curVer = state.mainPanel.viewer?.currentVersion
+        if (curVer && curVer > 0) {
+          let foundPages = state.mainPanel.viewer?.versions[
+            curVer - 1
+          ].pages.filter(p => page_ids.includes(p.page.id))
+          if (foundPages) {
+            for (let i = 0; i < foundPages.length; i++) {
+              foundPages[i].angle = foundPages[i].angle + angle
+            }
+          }
+        }
+      }
+    },
+    resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
+      const mode = action.payload
+      resetPageChangesHelper(state, mode)
+    },
+    selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
+      const pageId = action.payload.selectionId
+      const mode = action.payload.mode
+      selectionAddPageHelper(state, pageId, mode)
+    },
+    selectionRemovePage: (
+      state,
+      action: PayloadAction<SelectionPagePayload>
+    ) => {
+      const pageId = action.payload.selectionId
+      const mode = action.payload.mode
+      selectionRemovePageHelper(state, pageId, mode)
+    },
+    dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
+      const {mode, sources, target, position} = action.payload
+
+      dropThumbnailPageHelper({
+        state,
+        mode,
+        sources,
+        target,
+        position
+      })
+    },
     incZoomFactor(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
       if (mode == "main") {
@@ -259,15 +354,25 @@ const dualPanelSlice = createSlice({
 
       if (mode == "main") {
         if (state.mainPanel.viewer) {
-          state.mainPanel.viewer.thumbnailsPanelOpen =
-            !state.mainPanel.viewer.thumbnailsPanelOpen
+          const new_value = !state.mainPanel.viewer.thumbnailsPanelOpen
+          state.mainPanel.viewer.thumbnailsPanelOpen = new_value
+          if (new_value) {
+            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+          } else {
+            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+          }
         }
       }
 
       if (mode == "secondary") {
         if (state.secondaryPanel?.viewer) {
-          state.secondaryPanel.viewer.thumbnailsPanelOpen =
-            !state.secondaryPanel.viewer.thumbnailsPanelOpen
+          const new_value = !state.secondaryPanel.viewer.thumbnailsPanelOpen
+          state.secondaryPanel.viewer.thumbnailsPanelOpen = new_value
+          if (new_value) {
+            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+          } else {
+            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+          }
         }
       }
     },
@@ -464,16 +569,19 @@ const dualPanelSlice = createSlice({
         removeNodesHelper(state, nodeIds)
       }
     )
-    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
+    builder.addCase(applyPageOpChanges.fulfilled, (state, action) => {
       if (action.meta.arg.panel == "main") {
         const versionNumbers = action.payload.versions.map(v => v.number)
         state.mainPanel.viewer = {
           breadcrumb: action.payload.breadcrumb,
-          versions: action.payload.versions,
+          versions: injectPageRotOp(action.payload.versions),
           currentVersion: Math.max(...versionNumbers),
-          currentPage: action.meta.arg.page || 1,
-          thumbnailsPanelOpen: false,
-          zoomFactor: 100
+          currentPage: 1,
+          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
+          zoomFactor: 100,
+          selectedIds: [],
+          //@ts-ignore
+          initialPages: getLatestVersionPages(action.payload.versions)
         }
         return
       }
@@ -485,11 +593,51 @@ const dualPanelSlice = createSlice({
           searchResults: null,
           viewer: {
             breadcrumb: action.payload.breadcrumb,
-            versions: action.payload.versions,
+            versions: injectPageRotOp(action.payload.versions),
+            currentVersion: Math.max(...versionNumbers),
+            currentPage: 1,
+            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
+            zoomFactor: 100,
+            selectedIds: [],
+            //@ts-ignore
+            initialPages: getLatestVersionPages(action.payload.versions)
+          }
+        }
+        return
+      }
+    })
+    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
+      if (action.meta.arg.panel == "main") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.mainPanel.viewer = {
+          breadcrumb: action.payload.breadcrumb,
+          versions: injectPageRotOp(action.payload.versions),
+          currentVersion: Math.max(...versionNumbers),
+          currentPage: action.meta.arg.page || 1,
+          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
+          zoomFactor: 100,
+          selectedIds: [],
+          //@ts-ignore
+          initialPages: getLatestVersionPages(action.payload.versions)
+        }
+        return
+      }
+
+      if (action.meta.arg.panel == "secondary") {
+        const versionNumbers = action.payload.versions.map(v => v.number)
+        state.secondaryPanel = {
+          commander: null,
+          searchResults: null,
+          viewer: {
+            breadcrumb: action.payload.breadcrumb,
+            versions: injectPageRotOp(action.payload.versions),
             currentVersion: Math.max(...versionNumbers),
             currentPage: action.meta.arg.page || 1,
-            thumbnailsPanelOpen: false,
-            zoomFactor: 100
+            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
+            zoomFactor: 100,
+            selectedIds: [],
+            //@ts-ignore
+            initialPages: getLatestVersionPages(action.payload.versions)
           }
         }
         return
@@ -519,6 +667,7 @@ const dualPanelSlice = createSlice({
 })
 
 export const {
+  rotatePages,
   incZoomFactor,
   decZoomFactor,
   fitZoomFactor,
@@ -530,12 +679,16 @@ export const {
   closeSecondaryPanel,
   selectionAddNode,
   selectionRemoveNode,
+  selectionAddPage,
+  selectionRemovePage,
   clearNodesSelection,
   updateSearchResultItemTarget,
   storeHomeNode,
   storeInboxNode,
   nodeAdded,
-  setCurrentPage
+  setCurrentPage,
+  dropThumbnailPage,
+  resetPageChanges
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
@@ -755,6 +908,111 @@ export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   return state.dualPanel.secondaryPanel?.commander?.selectedIds
 }
 
+export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.selectedIds
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer?.selectedIds
+}
+
+export const selectInitialPages = (
+  state: RootState,
+  mode: PanelMode
+): Array<PageAndRotOp> | undefined => {
+  if (mode == "main") {
+    return state.dualPanel.mainPanel.viewer?.initialPages
+  }
+
+  return state.dualPanel.secondaryPanel?.viewer?.initialPages
+}
+
+export const selectPagesRaw = (
+  state: RootState,
+  mode: PanelMode
+): Array<PageAndRotOp> | undefined => {
+  let verNumber
+  let ver
+
+  if (mode == "main") {
+    verNumber = state.dualPanel.mainPanel?.viewer?.currentVersion
+    if (
+      verNumber &&
+      state.dualPanel.mainPanel?.viewer?.versions &&
+      state.dualPanel.mainPanel?.viewer?.versions.length >= verNumber
+    ) {
+      ver = state.dualPanel.mainPanel?.viewer?.versions[verNumber - 1]
+      if (ver) {
+        return ver.pages
+      }
+    }
+  } else {
+    verNumber = state.dualPanel.secondaryPanel?.viewer?.currentVersion
+    if (
+      verNumber &&
+      state.dualPanel.secondaryPanel?.viewer?.versions &&
+      state.dualPanel.secondaryPanel?.viewer?.versions.length >= verNumber
+    ) {
+      ver = state.dualPanel.secondaryPanel?.viewer?.versions[verNumber - 1]
+      if (ver) {
+        return ver.pages
+      }
+    }
+  }
+}
+
+export const selectSelectedPages = createSelector(
+  [selectSelectedPageIds, selectPagesRaw],
+  (
+    selectedIds: Array<string> | undefined,
+    allNodes: Array<PageAndRotOp> | undefined
+  ): Array<PageAndRotOp> => {
+    if (selectedIds && allNodes) {
+      return Object.values(allNodes).filter((i: PageAndRotOp) =>
+        selectedIds.includes(i.page.id)
+      )
+    }
+
+    return []
+  }
+)
+
+export const selectPagesHaveChanged = createSelector(
+  [selectInitialPages, selectPagesRaw],
+  (
+    initialPages: Array<PageAndRotOp> | undefined,
+    currentPages: Array<PageAndRotOp> | undefined
+  ): boolean => {
+    if (!initialPages) {
+      return false
+    }
+
+    if (!currentPages) {
+      return false
+    }
+
+    if (initialPages?.length != currentPages?.length) {
+      return true
+    }
+
+    for (let i = 0; i < (initialPages?.length || 0); i++) {
+      if (initialPages[i].page.id != currentPages[i].page.id) {
+        return true
+      }
+
+      if (initialPages[i].page.number != currentPages[i].page.number) {
+        return true
+      }
+
+      if (initialPages[i].angle != currentPages[i].angle) {
+        return true
+      }
+    }
+
+    return false
+  }
+)
+
 export const selectSelectedNodes = createSelector(
   [selectSelectedNodeIds, selectNodesRaw],
   (
@@ -865,4 +1123,47 @@ export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
+}
+
+function mainThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function secondaryThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function injectPageRotOp(
+  vers: DocumentVersion[]
+): DocumentVersionWithPageRot[] {
+  return vers.map(raw => injectPageRotOpForDocVer(raw))
+}
+
+function injectPageRotOpForDocVer(
+  ver: DocumentVersion
+): DocumentVersionWithPageRot {
+  let result = ver
+  // @ts-ignore
+  result.pages = ver.pages.map(p => {
+    return {page: p, angle: 0}
+  })
+
+  //@ts-ignore
+  return result
 }

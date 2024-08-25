@@ -7,7 +7,8 @@ import type {
   CurrentNodeType,
   PaginationType,
   BreadcrumbItemType,
-  DocumentVersion
+  DocumentVersionWithPageRot,
+  PageAndRotOp
 } from "@/types"
 
 export type NodeWithSpinner = {
@@ -35,6 +36,11 @@ export type SelectionNodePayload = {
   mode: PanelMode
 }
 
+export type SelectionPagePayload = {
+  selectionId: string
+  mode: PanelMode
+}
+
 export interface Commander {
   currentNode: CurrentNodeType | null
   pagination: PaginationType | null | undefined
@@ -45,7 +51,7 @@ export interface Commander {
 
 export interface Viewer {
   breadcrumb: Array<BreadcrumbItemType> | null
-  versions: Array<DocumentVersion>
+  versions: Array<DocumentVersionWithPageRot>
   currentVersion: number | null
   currentPage: number
   // is thumbnails panel open?
@@ -54,6 +60,9 @@ export interface Viewer {
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
   zoomFactor: number
+  // selected page IDs
+  selectedIds: Array<string>
+  initialPages: Array<PageAndRotOp>
 }
 
 export interface SearchResults {

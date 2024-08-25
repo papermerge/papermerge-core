@@ -22,7 +22,7 @@ from papermerge.core.utils.decorators import skip_in_tests
 logger = logging.getLogger(__name__)
 
 
-def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
+def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocument]:
     pages = Page.objects.filter(
         pk__in=[item.page.id for item in items]
     )
@@ -51,7 +51,7 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocVer]:
     )
     notify_generate_previews(str(doc.id))
 
-    return doc.versions.all()
+    return doc
 
 
 def copy_pdf_pages(

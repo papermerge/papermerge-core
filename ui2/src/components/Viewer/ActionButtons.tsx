@@ -1,20 +1,27 @@
 import {useContext, useRef, useEffect} from "react"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {useDispatch} from "react-redux"
+import {useDispatch, useSelector} from "react-redux"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import {updateActionPanel} from "@/slices/sizes"
 import PanelContext from "@/contexts/PanelContext"
 import EditTitleButton from "./EditTitleButton"
 
 import type {PanelMode} from "@/types"
+import type {RootState} from "@/app/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
+import {selectSelectedPages} from "@/slices/dualPanel/dualPanel"
+import RotateCCButton from "./RotateCCButton"
+import RotateButton from "./RotateButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()
   const dispatch = useDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
+  const selectedPages = useSelector((state: RootState) =>
+    selectSelectedPages(state, mode)
+  )
 
   useEffect(() => {
     if (ref?.current) {
@@ -34,6 +41,8 @@ export default function ActionButtons() {
       <Group>
         <EditTitleButton />
         <DownloadButton />
+        {selectedPages.length > 0 && <RotateButton />}
+        {selectedPages.length > 0 && <RotateCCButton />}
       </Group>
       <Group>
         <ToggleSecondaryPanel />

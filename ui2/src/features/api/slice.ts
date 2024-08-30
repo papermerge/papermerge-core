@@ -37,7 +37,6 @@ const baseQuery = fetchBaseQuery({
   }
 })
 
-// Define our single API slice object
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
@@ -48,5 +47,4 @@ export const apiSlice = createApi({
   })
 })
 
-// Export the auto-generated hook for the `getPosts` query endpoint
 export const {useGetGroupsQuery} = apiSlice

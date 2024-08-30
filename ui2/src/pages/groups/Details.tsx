@@ -1,5 +1,5 @@
 import {LoaderFunctionArgs, useLoaderData} from "react-router"
-import GroupDetails from "@/components/groups/GroupDetails.tsx"
+import {GroupDetails} from "@/features/groups/components"
 import {fetchGroupDetails} from "@/slices/groupDetails"
 import {store} from "@/app/store"
 

@@ -1,6 +1,6 @@
 import {useState} from "react"
 import {store} from "@/app/store"
-import {removeGroups} from "@/slices/groups"
+import {removeGroups} from "@/features/groups/slice"
 import GenericModal from "@/components/modals/Generic"
 import type {Group} from "@/types"
 

@@ -3,7 +3,7 @@ import {Button} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
 import {openModal} from "@/components/modals/Generic"
-import {fetchGroups} from "@/slices/groups"
+import {fetchGroups} from "@/features/groups/slice"
 import {
   fetchUserDetails,
   selectUserDetails,

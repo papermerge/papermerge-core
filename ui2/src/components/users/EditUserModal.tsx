@@ -18,7 +18,7 @@ import {selectUserDetails} from "@/slices/userDetails"
 
 import {RootState} from "@/app/types"
 import type {SliceState, SliceStateStatus, UserDetails} from "@/types"
-import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
+import {selectAllGroups, selectAllGroupsStatus} from "@/features/groups/slice"
 
 type GenericModalArgs = {
   userId: string

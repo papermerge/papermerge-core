@@ -1,7 +1,11 @@
 import {Link} from "react-router-dom"
 import {useDispatch, useSelector} from "react-redux"
 import {Table, Checkbox} from "@mantine/core"
-import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/groups"
+import {
+  selectionAdd,
+  selectionRemove,
+  selectSelectedIds
+} from "@/features/groups/slice"
 import type {Group} from "@/types"
 
 type Args = {

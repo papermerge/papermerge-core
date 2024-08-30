@@ -4,7 +4,7 @@ import {IconPlus} from "@tabler/icons-react"
 
 import {openModal} from "@/components/modals/Generic"
 import {updateUserDetails} from "@/slices/userDetails"
-import {fetchGroups} from "@/slices/groups"
+import {fetchGroups} from "@/features/groups/slice"
 import NewUserModal from "./NewUserModal"
 import type {UserDetails} from "@/types"
 

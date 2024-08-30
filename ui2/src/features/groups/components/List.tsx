@@ -8,7 +8,8 @@ import {
   fetchGroups,
   selectPagination,
   selectLastPageSize
-} from "@/slices/groups"
+} from "@/features/groups/slice"
+import {useGetGroupsQuery} from "@/features/api/slice"
 
 import Pagination from "@/components/Pagination"
 import GroupRow from "./GroupRow"
@@ -16,7 +17,14 @@ import ActionButtons from "./ActionButtons"
 
 export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
-  const groups = useSelector(selectAllGroups)
+  //const groups = useSelector(selectAllGroups)
+  const {
+    data: groups = [],
+    isLoading,
+    isSuccess,
+    isError,
+    error
+  } = useGetGroupsQuery()
   const dispatch = useDispatch()
   const pagination = useSelector(selectPagination)
   const lastPageSize = useSelector(selectLastPageSize)
@@ -50,6 +58,8 @@ export default function GroupsList() {
     )
   }
 
+  return <>Groups</>
+  /*
   const groupRows = groups.map(g => <GroupRow key={g.id} group={g} />)
 
   return (
@@ -77,6 +87,7 @@ export default function GroupsList() {
       />
     </Stack>
   )
+    */
 }
 
 function Empty() {

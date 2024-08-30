@@ -17,7 +17,7 @@ import {UserEditableFields, Group as GroupType} from "@/types"
 
 import {RootState} from "@/app/types"
 import type {SliceStateStatus, UserDetails} from "@/types"
-import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
+import {selectAllGroups, selectAllGroupsStatus} from "@/features/groups/slice"
 import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 

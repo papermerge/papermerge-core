@@ -1,9 +1,11 @@
 import {configureStore} from "@reduxjs/toolkit"
+import {apiSlice} from "@/features/api/slice"
+import authSliceReducer from "@/features/auth/slice"
 import currentUserReducer from "@/slices/currentUser"
 import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import navBarReducer from "@/slices/navBar"
 import tagsReducer from "@/slices/tags"
-import groupsReducer from "@/slices/groups"
+import groupsReducer from "@/features/groups/slice"
 import usersReducer from "@/slices/users"
 import tagDetailsReducer from "@/slices/tagDetails"
 import groupDetailsReducer from "@/slices/groupDetails"
@@ -14,6 +16,7 @@ import dragndropReducer from "@/slices/dragndrop"
 
 export const store = configureStore({
   reducer: {
+    auth: authSliceReducer,
     currentUser: currentUserReducer,
     dualPanel: dualPanelReducer,
     navBar: navBarReducer,
@@ -25,6 +28,9 @@ export const store = configureStore({
     userDetails: userDetailsReducer,
     uploader: uploaderReducer,
     sizes: sizesSliceReducer,
-    dragndrop: dragndropReducer
-  }
+    dragndrop: dragndropReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer
+  },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(apiSlice.middleware)
 })

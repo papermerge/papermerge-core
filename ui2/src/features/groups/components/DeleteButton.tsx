@@ -9,7 +9,7 @@ import {
   selectGroupsByIds,
   clearSelection,
   selectGroupById
-} from "@/slices/groups"
+} from "@/features/groups/slice"
 import {openModal} from "@/components/modals/Generic"
 
 import type {Group} from "@/types"

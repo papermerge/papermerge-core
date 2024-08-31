@@ -9,7 +9,8 @@ import axios from "@/httpClient"
 import {RootState} from "@/app/types"
 import type {NewGroup, Group, Paginated, PaginationType} from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {apiSlice} from "../api/slice"
 
 export type ExtraStateType = {
   status: SliceStateStatus
@@ -24,7 +25,7 @@ export const extraState: ExtraStateType = {
   error: null,
   selectedIds: [],
   pagination: null,
-  lastPageSize: INITIAL_PAGE_SIZE
+  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
 }
 
 const groupsAdapter = createEntityAdapter({
@@ -50,18 +51,12 @@ const groupsSlice = createSlice({
     },
     clearSelection: state => {
       state.selectedIds = []
+    },
+    lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
+      state.lastPageSize = action.payload
     }
   },
   extraReducers(builder) {
-    builder.addCase(fetchGroups.fulfilled, (state, action) => {
-      groupsAdapter.setAll(state, action.payload.items)
-      state.pagination = {
-        numPages: action.payload.num_pages,
-        pageNumber: action.payload.page_number,
-        pageSize: action.payload.page_size
-      }
-      state.lastPageSize = action.payload.page_size
-    })
     builder.addCase(fetchGroup.fulfilled, (state, action) => {
       const newGroup = action.payload
       const newGroupID = action.payload.id
@@ -73,30 +68,20 @@ const groupsSlice = createSlice({
       state.entities[group.id] = group
     })
     builder.addCase(removeGroups.fulfilled, groupsAdapter.removeMany)
+    builder.addMatcher(
+      apiSlice.endpoints.getGroups.matchFulfilled,
+      (state, action) => {
+        const payload: Paginated<Group> = action.payload
+        state.pagination = {
+          pageNumber: payload.page_number,
+          pageSize: payload.page_size,
+          numPages: payload.num_pages
+        }
+        state.lastPageSize = payload.page_size
+      }
+    )
   }
 })
-
-type fetchGroupsArgs = {
-  pageNumber?: number
-  pageSize?: number
-}
-
-export const fetchGroups = createAsyncThunk<Paginated<Group>, fetchGroupsArgs>(
-  "groups/fetchGroups",
-  async (args: fetchGroupsArgs) => {
-    const pageNumber = args.pageNumber || 1
-    const pageSize = args.pageSize || INITIAL_PAGE_SIZE
-
-    const response = await axios.get("/api/groups/", {
-      params: {
-        page_size: pageSize,
-        page_number: pageNumber
-      }
-    })
-    const data = response.data as Paginated<Group>
-    return data
-  }
-)
 
 export const fetchGroup = createAsyncThunk<Group, number>(
   "groups/fetchGroup",
@@ -138,8 +123,13 @@ export const removeGroups = createAsyncThunk<number[], number[]>(
   }
 )
 
-export const {selectionAdd, selectionAddMany, selectionRemove, clearSelection} =
-  groupsSlice.actions
+export const {
+  selectionAdd,
+  selectionAddMany,
+  selectionRemove,
+  clearSelection,
+  lastPageSizeUpdate
+} = groupsSlice.actions
 export default groupsSlice.reducer
 
 export const {selectAll: selectAllGroups} =

@@ -1,8 +1,14 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {Group} from "@/types"
+import type {Group, Paginated} from "@/types"
 import type {RootState} from "@/app/types"
+
+type GetGroupsArgs = {
+  page_number?: number
+  page_size?: number
+}
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${getBaseURL()}api`,
@@ -40,9 +46,14 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
+  keepUnusedDataFor: 60,
   endpoints: builder => ({
-    getGroups: builder.query<Group[], void>({
-      query: () => "/groups/"
+    getGroups: builder.query<Paginated<Group>, GetGroupsArgs | void>({
+      query: ({
+        page_number = 1,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
+      }: GetGroupsArgs) =>
+        `/groups/?page_number=${page_number}&page_size=${page_size}`
     })
   })
 })

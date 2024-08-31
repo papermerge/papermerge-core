@@ -1,13 +1,12 @@
-import {Center, Stack, Table, Checkbox} from "@mantine/core"
+import {useState} from "react"
+import {Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
-  selectAllGroups,
   selectionAddMany,
   selectSelectedIds,
   clearSelection,
-  fetchGroups,
-  selectPagination,
-  selectLastPageSize
+  selectLastPageSize,
+  lastPageSizeUpdate
 } from "@/features/groups/slice"
 import {useGetGroupsQuery} from "@/features/api/slice"
 
@@ -17,22 +16,26 @@ import ActionButtons from "./ActionButtons"
 
 export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
-  //const groups = useSelector(selectAllGroups)
-  const {
-    data: groups = [],
-    isLoading,
-    isSuccess,
-    isError,
-    error
-  } = useGetGroupsQuery()
   const dispatch = useDispatch()
-  const pagination = useSelector(selectPagination)
   const lastPageSize = useSelector(selectLastPageSize)
+  //const pag = useSelector(selectPagination)
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+
+  const {data, isLoading, isSuccess, isError, error} = useGetGroupsQuery({
+    page_number: page,
+    page_size: pageSize
+  })
 
   const onCheckAll = (checked: boolean) => {
+    if (!data) {
+      console.log(`undefined data`)
+      return
+    }
+
     if (checked) {
       // check all/select all group items
-      dispatch(selectionAddMany(groups.map(i => i.id)))
+      dispatch(selectionAddMany(data.items.map(i => i.id)))
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
@@ -40,16 +43,30 @@ export default function GroupsList() {
   }
 
   const onPageNumberChange = (page: number) => {
-    dispatch(fetchGroups({pageNumber: page, pageSize: pagination?.pageSize}))
+    setPage(page)
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      dispatch(fetchGroups({pageNumber: 1, pageSize: parseInt(value)}))
+      const pageSize = parseInt(value)
+
+      dispatch(lastPageSizeUpdate(pageSize))
+      setPageSize(pageSize)
     }
   }
 
-  if (groups.length == 0) {
+  if (isLoading || !data) {
+    return (
+      <Stack>
+        <ActionButtons />
+        <Center>
+          <Loader type="bars" />
+        </Center>
+      </Stack>
+    )
+  }
+
+  if (data.items.length == 0) {
     return (
       <div>
         <ActionButtons />
@@ -58,9 +75,7 @@ export default function GroupsList() {
     )
   }
 
-  return <>Groups</>
-  /*
-  const groupRows = groups.map(g => <GroupRow key={g.id} group={g} />)
+  const groupRows = data.items.map(g => <GroupRow key={g.id} group={g} />)
 
   return (
     <Stack>
@@ -70,7 +85,7 @@ export default function GroupsList() {
           <Table.Tr>
             <Table.Th>
               <Checkbox
-                checked={groups.length == selectedIds.length}
+                checked={data.items.length == selectedIds.length}
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
@@ -80,14 +95,17 @@ export default function GroupsList() {
         <Table.Tbody>{groupRows}</Table.Tbody>
       </Table>
       <Pagination
-        pagination={pagination}
+        pagination={{
+          pageNumber: page,
+          pageSize: pageSize,
+          numPages: data.num_pages
+        }}
         onPageNumberChange={onPageNumberChange}
         onPageSizeChange={onPageSizeChange}
         lastPageSize={lastPageSize}
       />
     </Stack>
   )
-    */
 }
 
 function Empty() {

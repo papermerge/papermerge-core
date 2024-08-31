@@ -17,7 +17,7 @@ import type {Group} from "@/types"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 import {RootState} from "@/app/types"
 
-export function DeleteGroupButton({groupId}: {groupId: number}) {
+export function DeleteGroupButton({groupId}: {groupId: string}) {
   const [redirect, setRedirect] = useState<boolean>(false)
   const navigate = useNavigate()
   const deletedGroup = useSelector<RootState>(state =>
@@ -31,7 +31,7 @@ export function DeleteGroupButton({groupId}: {groupId: number}) {
   }, [deletedGroup, redirect])
 
   const onClick = () => {
-    openModal<Group[], {groupId: number}>(RemoveGroupModal, {
+    openModal<Group[], {groupId: string}>(RemoveGroupModal, {
       groupId: groupId
     })
       .then(() => {

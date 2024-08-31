@@ -167,11 +167,11 @@ export type NewGroup = {
 }
 
 export type Group = NewGroup & {
-  id: number
+  id: string
 }
 
 export type GroupDetails = {
-  id: number
+  id: string
   name: string
   scopes: Array<string>
 }

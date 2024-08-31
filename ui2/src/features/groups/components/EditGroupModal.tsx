@@ -12,9 +12,10 @@ import {
 } from "@mantine/core"
 
 import {updateGroup} from "@/features/groups/slice"
-import {selectGroupDetails} from "@/slices/groupDetails"
+//import {selectGroupDetails} from "@/slices/groupDetails"
 import {RootState} from "@/app/types"
 import type {GroupDetails, SliceState} from "@/types"
+import {useGetGroupQuery} from "@/features/api/slice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {
@@ -29,18 +30,16 @@ function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
 }
 
 type Args = {
-  groupId: number
+  groupId: string
   onOK: (value: GroupDetails) => void
   onCancel: (reason?: any) => void
 }
 
 export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
   const dispatch = useDispatch()
-  const {status, data} = useSelector<RootState>(
-    selectGroupDetails
-  ) as SliceState<GroupDetails>
+  const {data, isLoading} = useGetGroupQuery(groupId)
   const [show, setShow] = useState<boolean>(true)
-  const [name, setName] = useState<string>()
+  const [name, setName] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
       setName(data.name)
       setScopes(initialScopesDict(data.scopes))
     }
-  }, [status])
+  }, [isLoading])
 
   const onSubmit = async () => {
     const updatedData = {
@@ -56,7 +55,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
       scopes: Object.keys(scopes),
       name: name!
     }
-    await dispatch(updateGroup(updatedData))
+    //await dispatch(updateGroup(updatedData))
     onOK(updatedData)
     setShow(false)
   }
@@ -114,10 +113,6 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
     }
   }
 
-  const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.currentTarget.value)
-  }
-
   return (
     <Modal title={"Edit Group"} opened={show} size="lg" onClose={onClose}>
       <LoadingOverlay
@@ -127,7 +122,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
       />
       <TextInput
         value={name}
-        onChange={onNameChangeHandler}
+        onChange={e => setName(e.currentTarget.value)}
         label="Name"
         placeholder="Group name"
       />

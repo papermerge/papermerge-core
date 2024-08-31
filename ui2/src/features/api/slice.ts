@@ -54,8 +54,11 @@ export const apiSlice = createApi({
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
       }: GetGroupsArgs) =>
         `/groups/?page_number=${page_number}&page_size=${page_size}`
+    }),
+    getGroup: builder.query<Group, string>({
+      query: groupID => `/groups/${groupID}`
     })
   })
 })
 
-export const {useGetGroupsQuery} = apiSlice
+export const {useGetGroupsQuery, useGetGroupQuery} = apiSlice

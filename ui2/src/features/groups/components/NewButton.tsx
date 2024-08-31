@@ -13,7 +13,7 @@ export default function NewButton() {
   const onClick = () => {
     openModal<any, {groupId: number}>(NewGroupModal)
       .then((group: GroupDetails) => {
-        dispatch(updateGroupDetails(group))
+        //dispatch(updateGroupDetails(group))
       })
       .catch(() => {})
   }

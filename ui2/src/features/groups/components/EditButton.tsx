@@ -4,29 +4,25 @@ import {IconEdit} from "@tabler/icons-react"
 
 import {openModal} from "@/components/modals/Generic"
 
-import {
-  fetchGroupDetails,
-  selectGroupDetails,
-  updateGroupDetails
-} from "@/slices/groupDetails"
+import {useGetGroupQuery} from "@/features/api/slice"
 
 import EditGroupModal from "./EditGroupModal"
-import type {GroupDetails, SliceState} from "@/types"
+import type {GroupDetails} from "@/types"
 
-export default function EditButton({groupId}: {groupId?: number}) {
+interface Args {
+  groupId: string
+}
+
+export default function EditButton({groupId}: Args) {
   const dispatch = useDispatch()
-  const group = useSelector(selectGroupDetails) as SliceState<GroupDetails>
+  const {data, isLoading} = useGetGroupQuery(groupId)
 
-  const missingGroupDetails = (groupId: number) => {
-    if (!group) {
+  const missingGroupDetails = (groupId: string) => {
+    if (!data) {
       return true
     }
 
-    if (!group.data) {
-      return true
-    }
-
-    if (group.data.id != groupId) {
+    if (data.id != groupId) {
       return true
     }
 
@@ -34,15 +30,15 @@ export default function EditButton({groupId}: {groupId?: number}) {
   }
 
   const onClick = () => {
-    if (groupId && missingGroupDetails(groupId)) {
-      dispatch(fetchGroupDetails(groupId!))
-    }
+    // if (groupId && missingGroupDetails(data)) {
+    //dispatch(fetchGroupDetails(groupId!))
+    //}
 
-    openModal<any, {groupId: number}>(EditGroupModal, {
+    openModal<any, {groupId: string}>(EditGroupModal, {
       groupId: groupId!
     })
       .then((group: GroupDetails) => {
-        dispatch(updateGroupDetails(group))
+        //dispatch(updateGroupDetails(group))
       })
       .catch(() => {})
   }

@@ -1,24 +1,8 @@
-import {LoaderFunctionArgs, useLoaderData} from "react-router"
+import {useParams} from "react-router"
 import {GroupDetails} from "@/features/groups/components"
-import {fetchGroupDetails} from "@/slices/groupDetails"
-import {store} from "@/app/store"
 
 export default function GroupDetailsPage() {
-  const groupId = useLoaderData() as string
+  const {groupId} = useParams()
 
-  if (groupId) {
-    return <GroupDetails />
-  }
-
-  throw Error("Detail page: missing groupId parameter")
-}
-
-export async function loader({params}: LoaderFunctionArgs) {
-  if (params.groupId) {
-    const groupId = parseInt(params.groupId)
-    store.dispatch(fetchGroupDetails(groupId))
-    return params.groupId
-  }
-
-  throw Error("Loader: Missing groupId parameter")
+  return <GroupDetails groupId={groupId!} />
 }

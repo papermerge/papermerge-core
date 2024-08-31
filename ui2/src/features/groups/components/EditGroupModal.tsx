@@ -8,14 +8,15 @@ import {
   TextInput,
   Table,
   Checkbox,
-  Tooltip
+  Tooltip,
+  Loader
 } from "@mantine/core"
 
 import {updateGroup} from "@/features/groups/slice"
 //import {selectGroupDetails} from "@/slices/groupDetails"
 import {RootState} from "@/app/types"
 import type {GroupDetails, SliceState} from "@/types"
-import {useGetGroupQuery} from "@/features/api/slice"
+import {useGetGroupQuery, useEditGroupMutation} from "@/features/api/slice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {
@@ -36,8 +37,9 @@ type Args = {
 }
 
 export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
-  const dispatch = useDispatch()
   const {data, isLoading} = useGetGroupQuery(groupId)
+  const [updateGroup, {isLoading: isLoadingGroupUpdate}] =
+    useEditGroupMutation()
   const [show, setShow] = useState<boolean>(true)
   const [name, setName] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>({})
@@ -55,7 +57,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
       scopes: Object.keys(scopes),
       name: name!
     }
-    //await dispatch(updateGroup(updatedData))
+    await updateGroup(updatedData)
     onOK(updatedData)
     setShow(false)
   }
@@ -116,7 +118,7 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
   return (
     <Modal title={"Edit Group"} opened={show} size="lg" onClose={onClose}>
       <LoadingOverlay
-        visible={data == null || status == "loading"}
+        visible={data == null || isLoading}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />
@@ -506,7 +508,12 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
         <Button variant="default" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Group>
+          {isLoadingGroupUpdate && <Loader size="sm" />}
+          <Button disabled={isLoadingGroupUpdate} onClick={onSubmit}>
+            Update Group
+          </Button>
+        </Group>
       </Group>
     </Modal>
   )

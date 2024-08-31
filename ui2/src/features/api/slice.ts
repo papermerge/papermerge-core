@@ -2,7 +2,7 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {Group, Paginated} from "@/types"
+import type {Group, GroupUpdate, Paginated} from "@/types"
 import type {RootState} from "@/app/types"
 
 type GetGroupsArgs = {
@@ -47,18 +47,37 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
   keepUnusedDataFor: 60,
+  tagTypes: ["Group"],
   endpoints: builder => ({
     getGroups: builder.query<Paginated<Group>, GetGroupsArgs | void>({
       query: ({
         page_number = 1,
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
       }: GetGroupsArgs) =>
-        `/groups/?page_number=${page_number}&page_size=${page_size}`
+        `/groups/?page_number=${page_number}&page_size=${page_size}`,
+      providesTags: (
+        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        error,
+        arg
+      ) => [
+        "Group",
+        ...result.items.map(({id}) => ({type: "Group", id}) as const)
+      ]
     }),
     getGroup: builder.query<Group, string>({
-      query: groupID => `/groups/${groupID}`
+      query: groupID => `/groups/${groupID}`,
+      providesTags: (result, error, arg) => [{type: "Group", id: arg}]
+    }),
+    editGroup: builder.mutation<Group, GroupUpdate>({
+      query: group => ({
+        url: `groups/${group.id}`,
+        method: "PATCH",
+        body: group
+      }),
+      invalidatesTags: (result, error, arg) => [{type: "Group", id: arg.id}]
     })
   })
 })
 
-export const {useGetGroupsQuery, useGetGroupQuery} = apiSlice
+export const {useGetGroupsQuery, useGetGroupQuery, useEditGroupMutation} =
+  apiSlice

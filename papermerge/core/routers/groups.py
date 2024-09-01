@@ -1,7 +1,6 @@
 import logging
 from typing import Annotated
 
-from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 

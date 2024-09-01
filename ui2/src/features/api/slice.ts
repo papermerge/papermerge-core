@@ -123,6 +123,13 @@ export const apiSlice = createApi({
         ...result.items.map(({id}) => ({type: "User", id}) as const)
       ]
     }),
+    getUsers: builder.query<User[], void>({
+      query: users => "/users/all",
+      providesTags: (result = [], _error, _arg) => [
+        "User",
+        ...result.map(({id}) => ({type: "User", id}) as const)
+      ]
+    }),
     getUser: builder.query<UserDetails, string>({
       query: userID => `/users/${userID}`,
       providesTags: (_result, _error, arg) => [{type: "User", id: arg}]
@@ -168,6 +175,7 @@ export const {
   useDeleteGroupMutation,
   useAddNewGroupMutation,
   useGetPaginatedUsersQuery,
+  useGetUsersQuery,
   useGetUserQuery,
   useAddNewUserMutation,
   useEditUserMutation,

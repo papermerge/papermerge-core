@@ -1,34 +1,22 @@
-import {createSlice, createEntityAdapter, PayloadAction} from "@reduxjs/toolkit"
+import {createSlice, PayloadAction, createSelector} from "@reduxjs/toolkit"
 
 import {apiSlice} from "@/features/api/slice"
 
 import {RootState} from "@/app/types"
 import type {User, Paginated, PaginationType} from "@/types"
-import type {SliceStateStatus, SliceStateError} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-export type ExtraStateType = {
-  status: SliceStateStatus
-  error: SliceStateError
+export type UserSlice = {
   selectedIds: Array<string>
   pagination: PaginationType | null
   lastPageSize: number
 }
 
-export const extraState: ExtraStateType = {
-  status: "idle",
-  error: null,
+export const initialState: UserSlice = {
   selectedIds: [],
   pagination: null,
   lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
 }
-
-const usersAdapter = createEntityAdapter({
-  selectId: (user: User) => user.id,
-  sortComparer: (u1, u2) => u1.username.localeCompare(u2.username)
-})
-
-const initialState = usersAdapter.getInitialState(extraState)
 
 const usersSlice = createSlice({
   name: "users",
@@ -76,19 +64,25 @@ export const {
 } = usersSlice.actions
 export default usersSlice.reducer
 
-export const selectSelectedIds = (state: RootState) => state.users.selectedIds
-export const selectUserById = (state: RootState, userId?: string) => {
-  if (userId) {
-    return state.users.entities[userId]
-  }
+export const selectUsersResult = apiSlice.endpoints.getUsers.select()
+export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
+export const selectItemId = (_: RootState, itemId: string) => itemId
 
-  return null
-}
-export const selectUsersByIds = (state: RootState, userIds: string[]) => {
-  return Object.values(state.users.entities).filter((u: User) =>
-    userIds.includes(u.id)
-  )
-}
+export const selectUsersById = createSelector(
+  [selectUsersResult, selectItemIds],
+  (usersData, userIds) => {
+    return usersData.data?.filter(u => userIds.includes(u.id))
+  }
+)
+
+export const selectUserById = createSelector(
+  [selectUsersResult, selectItemId],
+  (usersData, userId) => {
+    return usersData.data?.find(u => userId == u.id)
+  }
+)
+
+export const selectSelectedIds = (state: RootState) => state.users.selectedIds
 
 export const selectPagination = (state: RootState): PaginationType | null => {
   return state.users.pagination

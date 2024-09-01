@@ -1,28 +1,21 @@
-import {createSlice, createEntityAdapter, PayloadAction} from "@reduxjs/toolkit"
+import {createSlice, createSelector, PayloadAction} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
 import type {Group, Paginated, PaginationType} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import {apiSlice} from "../api/slice"
 
-export type ExtraStateType = {
+export type GroupSlice = {
   selectedIds: Array<string>
   pagination: PaginationType | null
   lastPageSize: number
 }
 
-export const extraState: ExtraStateType = {
+export const initialState: GroupSlice = {
   selectedIds: [],
   pagination: null,
   lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
 }
-
-const groupsAdapter = createEntityAdapter({
-  selectId: (group: Group) => group.id,
-  sortComparer: (g1, g2) => g1.name.localeCompare(g2.name)
-})
-
-const initialState = groupsAdapter.getInitialState(extraState)
 
 const groupsSlice = createSlice({
   name: "groups",
@@ -47,7 +40,7 @@ const groupsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addMatcher(
-      apiSlice.endpoints.getGroups.matchFulfilled,
+      apiSlice.endpoints.getPaginatedGroups.matchFulfilled,
       (state, action) => {
         const payload: Paginated<Group> = action.payload
         state.pagination = {
@@ -70,22 +63,25 @@ export const {
 } = groupsSlice.actions
 export default groupsSlice.reducer
 
-export const {selectAll: selectAllGroups} =
-  groupsAdapter.getSelectors<RootState>(state => state.groups)
+export const selectGroupsResult = apiSlice.endpoints.getGroups.select()
+export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
+export const selectItemId = (_: RootState, itemId: string) => itemId
+
+export const selectGroupsById = createSelector(
+  [selectGroupsResult, selectItemIds],
+  (groupsData, groupIds) => {
+    return groupsData.data?.filter(g => groupIds.includes(g.id))
+  }
+)
+
+export const selectGroupById = createSelector(
+  [selectGroupsResult, selectItemId],
+  (groupsData, groupId) => {
+    return groupsData.data?.find(g => groupId == g.id)
+  }
+)
 
 export const selectSelectedIds = (state: RootState) => state.groups.selectedIds
-export const selectGroupById = (state: RootState, groupId?: string) => {
-  if (groupId) {
-    return state.groups.entities[groupId]
-  }
-
-  return null
-}
-export const selectGroupsByIds = (state: RootState, groupIds: string[]) => {
-  return Object.values(state.groups.entities).filter((g: Group) =>
-    groupIds.includes(g.id)
-  )
-}
 
 export const selectPagination = (state: RootState): PaginationType | null => {
   return state.groups.pagination

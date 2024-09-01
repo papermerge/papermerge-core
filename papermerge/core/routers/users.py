@@ -40,7 +40,6 @@ def get_current_user(
     logger.debug(f"User {user} found")
     return PyUser.model_validate(user)
 
-
 @router.get("/", response_model=PaginatorGeneric[PyUser])
 @paginate
 @utils.docstring_parameter(scope=scopes.USER_VIEW)
@@ -61,6 +60,23 @@ def get_users(
         order_by = [
             item.strip() for item in params.order_by.split(',')
         ]
+
+    return User.objects.order_by(*order_by)
+
+
+@router.get("/all", response_model=list[PyUser])
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_users_without_pagination(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.USER_VIEW])
+    ]
+):
+    """Get all users without pagination/filtering/sorting
+
+    Required scope: `{scope}`
+    """
+    order_by = ['username']
 
     return User.objects.order_by(*order_by)
 

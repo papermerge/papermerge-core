@@ -83,10 +83,16 @@ def create_group(
             name=pygroup.name,
             scopes=pygroup.scopes,
         )
-    except IntegrityError:
+    except Exception as e:
+        error_msg = str(e)
+        if "UNIQUE constraint failed" in error_msg:
+            raise HTTPException(
+                status_code=400,
+                detail="Group already exists"
+            )
         raise HTTPException(
             status_code=400,
-            detail="User already exists"
+            detail=error_msg
         )
 
     return group

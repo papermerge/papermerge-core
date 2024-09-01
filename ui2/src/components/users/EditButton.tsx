@@ -3,7 +3,7 @@ import {Button} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
 import {openModal} from "@/components/modals/Generic"
-import {fetchGroups} from "@/slices/groups"
+//import {fetchGroups} from "@/features/groups/slice"
 import {
   fetchUserDetails,
   selectUserDetails,
@@ -37,7 +37,7 @@ export default function EditButton({userId}: {userId?: string}) {
     if (userId && missingUserDetails(userId)) {
       dispatch(fetchUserDetails(userId!))
     }
-    dispatch(fetchGroups({pageNumber: 1, pageSize: 999}))
+    //dispatch(fetchGroups({pageNumber: 1, pageSize: 999}))
 
     openModal<any, {userId: string}>(EditUserModal, {
       userId: userId!

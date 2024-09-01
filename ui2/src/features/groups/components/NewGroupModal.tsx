@@ -1,27 +1,30 @@
-import {useDispatch} from "react-redux"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {
   Modal,
   Group,
   Button,
+  Text,
   TextInput,
   Table,
   Checkbox,
-  Tooltip
+  Tooltip,
+  Loader
 } from "@mantine/core"
 
-import {addGroup} from "@/slices/groups"
 import type {GroupDetails} from "@/types"
+import {useAddNewGroupMutation} from "@/features/api/slice"
 
 type Args = {
   onOK: (value: GroupDetails) => void
   onCancel: (reason?: any) => void
 }
 
-export default function NewGroupModal({onOK, onCancel}: Args) {
-  const dispatch = useDispatch()
+export default function NewGroupModal({onCancel}: Args) {
+  const [addNewGroup, {isLoading, isError, isSuccess}] =
+    useAddNewGroupMutation()
   const [show, setShow] = useState<boolean>(true)
-  const [name, setName] = useState<string>()
+  const [name, setName] = useState<string>("")
+  const [error, setError] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>({
     "user.me": true,
     "page.view": true,
@@ -29,16 +32,25 @@ export default function NewGroupModal({onOK, onCancel}: Args) {
     "ocrlang.view": true
   })
 
+  useEffect(() => {
+    // close dialog as soon as we have
+    // "success" status from the mutation
+    if (isSuccess) {
+      setShow(false)
+    }
+  }, [isSuccess])
+
   const onSubmit = async () => {
     const updatedData = {
       scopes: Object.keys(scopes),
       name: name!
     }
-    const response = await dispatch(addGroup(updatedData))
-    const groupDetailsData = response.payload as GroupDetails
-
-    onOK(groupDetailsData)
-    setShow(false)
+    try {
+      await addNewGroup(updatedData).unwrap()
+    } catch (err: unknown) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
   }
 
   const onClose = () => {
@@ -482,11 +494,17 @@ export default function NewGroupModal({onOK, onCancel}: Args) {
           </Table.Tr>
         </Table.Tbody>
       </Table>
+      {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Group>
+          {isLoading && <Loader size="sm" />}
+          <Button disabled={isLoading || isSuccess} onClick={onSubmit}>
+            Submit
+          </Button>
+        </Group>
       </Group>
     </Modal>
   )

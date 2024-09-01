@@ -167,14 +167,16 @@ export type NewGroup = {
 }
 
 export type Group = NewGroup & {
-  id: number
+  id: string
 }
 
 export type GroupDetails = {
-  id: number
+  id: string
   name: string
   scopes: Array<string>
 }
+
+export type GroupUpdate = Pick<Group, "id" | "name" | "scopes">
 
 export type FileItemStatus = "uploading" | "success" | "failure"
 

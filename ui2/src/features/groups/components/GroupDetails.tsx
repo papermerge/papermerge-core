@@ -1,21 +1,20 @@
-import {useSelector} from "react-redux"
 import {Link, useNavigation} from "react-router-dom"
 import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
-import {selectGroupDetails} from "@/slices/groupDetails"
-
-import type {GroupDetails, SliceState} from "@/types"
-import type {RootState} from "@/app/types"
+import {useGetGroupQuery} from "@/features/api/slice"
+import type {GroupDetails} from "@/types"
 import GroupForm from "./GroupForm"
 import EditButton from "./EditButton"
 import {DeleteGroupButton} from "./DeleteButton"
 
-export default function GroupDetailsComponent() {
-  const {data} = useSelector<RootState>(
-    selectGroupDetails
-  ) as SliceState<GroupDetails>
+interface GroupDetailsArgs {
+  groupId: string
+}
 
-  if (data == null) {
+export default function GroupDetailsComponent({groupId}: GroupDetailsArgs) {
+  const {data, isLoading} = useGetGroupQuery(groupId)
+
+  if (isLoading || !data) {
     return (
       <Box pos="relative">
         <LoadingOverlay
@@ -54,10 +53,10 @@ function Path({group}: {group: GroupDetails | null}) {
   )
 }
 
-function ActionButtons({modelId}: {modelId?: number}) {
+function ActionButtons({modelId}: {modelId?: string}) {
   return (
     <Group>
-      <EditButton groupId={modelId} />
+      <EditButton groupId={modelId!} />
       <DeleteGroupButton groupId={modelId!} />
     </Group>
   )

@@ -1,27 +1,27 @@
 import {useState} from "react"
-import {store} from "@/app/store"
-import {removeGroups} from "@/slices/groups"
 import GenericModal from "@/components/modals/Generic"
 import type {Group} from "@/types"
+import {useDeleteGroupMutation} from "@/features/api/slice"
 
 type RemoveGroupsModalArgs = {
-  groups: Group[]
+  groupIds: string[]
   onOK: (value: Group[]) => void
   onCancel: (reason?: any) => void
 }
 
 /* Removes multiple groups */
 export function RemoveGroupsModal({
-  groups,
+  groupIds,
   onOK,
   onCancel
 }: RemoveGroupsModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
-  const groupNames = groups.map(g => g.name).join(",")
+  const [deletedGroup] = useDeleteGroupMutation()
+  //const groupNames = groups.map(g => g.name).join(",")
 
   const handleSubmit = async () => {
-    store.dispatch(removeGroups(groups.map(g => g.id)))
-    onOK(groups)
+    await Promise.all(groupIds.map(i => deletedGroup(i)))
+    onOK([])
     return true
   }
   const handleCancel = () => {
@@ -38,15 +38,15 @@ export function RemoveGroupsModal({
       submit_button_title="Remove"
       submit_button_color="red"
     >
-      <p>Are you sure you want to delete following groups: {groupNames}?</p>
+      <p>Are you sure you want to delete selected groups?</p>
       {errorMessage}
     </GenericModal>
   )
 }
 
 type RemoveGroupModalArgs = {
-  groupId: number
-  onOK: (value: number) => void
+  groupId: string
+  onOK: () => void
   onCancel: (reason?: any) => void
 }
 
@@ -57,11 +57,10 @@ export function RemoveGroupModal({
   onCancel
 }: RemoveGroupModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
-
+  const [deletedGroup] = useDeleteGroupMutation()
   const handleSubmit = async () => {
-    await store.dispatch(removeGroups([groupId]))
-
-    onOK(groupId)
+    await deletedGroup(groupId).unwrap()
+    onOK()
     return true
   }
   const handleCancel = () => {

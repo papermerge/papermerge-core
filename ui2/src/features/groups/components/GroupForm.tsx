@@ -11,7 +11,7 @@ export default function GroupModal({group}: Args) {
   return (
     <div>
       <TextInput
-        value={group?.name}
+        value={group?.name || ""}
         onChange={() => {}}
         label="Name"
         rightSection={<CopyButton value={group?.name || ""} />}
@@ -31,6 +31,8 @@ export default function GroupModal({group}: Args) {
             <Table.Td>Documents</Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], DOCUMENT_UPLOAD)}
                 label="Upload"
               />
@@ -38,6 +40,8 @@ export default function GroupModal({group}: Args) {
 
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], DOCUMENT_DOWNLOAD)}
                 label="Download"
               />
@@ -47,24 +51,32 @@ export default function GroupModal({group}: Args) {
             <Table.Td>Pages</Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], PAGE_MOVE)}
                 label="Move"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], PAGE_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], PAGE_EXTRACT)}
                 label="Extract"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], PAGE_DELETE)}
                 label="Delete"
               />
@@ -81,6 +93,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], USER_VIEW)}
                   label="View"
                 />
@@ -88,18 +102,24 @@ export default function GroupModal({group}: Args) {
             </Tooltip>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], USER_CREATE)}
                 label="Create"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], USER_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], USER_DELETE)}
                 label="Delete"
               />
@@ -116,6 +136,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], GROUP_VIEW)}
                   label="View"
                 />
@@ -123,12 +145,16 @@ export default function GroupModal({group}: Args) {
             </Tooltip>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], GROUP_CREATE)}
                 label="Create"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], GROUP_UPDATE)}
                 label="Update"
               />
@@ -136,6 +162,8 @@ export default function GroupModal({group}: Args) {
             <Table.Td>
               <Checkbox
                 checked={hasPerm(group?.scopes || [], GROUP_DELETE)}
+                onChange={() => {}}
+                readOnly={group == null}
                 label="Delete"
               />
             </Table.Td>
@@ -151,6 +179,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], TAG_VIEW)}
                   label="View"
                 />
@@ -165,6 +195,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], TAG_CREATE)}
                   label="Create"
                 />
@@ -179,6 +211,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], TAG_UPDATE)}
                   label="Update"
                 />
@@ -196,6 +230,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], TAG_DELETE)}
                   label="Delete"
                 />
@@ -221,6 +257,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], NODE_CREATE)}
                   label="Create"
                 />
@@ -228,18 +266,24 @@ export default function GroupModal({group}: Args) {
             </Tooltip>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], NODE_UPDATE)}
                 label="Update"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], NODE_DELETE)}
                 label="Delete"
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
+                readOnly={group == null}
+                onChange={() => {}}
                 checked={hasPerm(group?.scopes || [], NODE_MOVE)}
                 label="Move"
               />
@@ -256,6 +300,8 @@ export default function GroupModal({group}: Args) {
             >
               <Table.Td>
                 <Checkbox
+                  readOnly={group == null}
+                  onChange={() => {}}
                   checked={hasPerm(group?.scopes || [], TASK_OCR)}
                   label="OCR"
                 />

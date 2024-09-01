@@ -17,7 +17,7 @@ import {UserEditableFields, Group as GroupType} from "@/types"
 
 import {RootState} from "@/app/types"
 import type {SliceStateStatus, UserDetails} from "@/types"
-import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
+import {selectAllGroups} from "@/features/groups/slice"
 import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 
@@ -29,9 +29,9 @@ type GenericModalArgs = {
 export default function NewUserModal({onOK, onCancel}: GenericModalArgs) {
   const dispatch = useDispatch()
   const allGroups = useSelector<RootState>(selectAllGroups) as Array<GroupType>
-  const allGroupsStatus = useSelector<RootState>(
-    selectAllGroupsStatus
-  ) as SliceStateStatus
+  //const allGroupsStatus = useSelector<RootState>(
+  //    selectAllGroupsStatus
+  //  ) as SliceStateStatus
 
   const [show, setShow] = useState<boolean>(true)
   const [groups, setGroups] = useState<string[]>([])
@@ -58,10 +58,10 @@ export default function NewUserModal({onOK, onCancel}: GenericModalArgs) {
       group_ids: group_ids
     }
 
-    const response = await dispatch(addUser(newUserData))
-    const userDetailsData = response.payload as UserDetails
+    //const response = await dispatch(addUser(newUserData))
+    //const userDetailsData = response.payload as UserDetails
 
-    onOK(userDetailsData)
+    //onOK(userDetailsData)
     setShow(false)
   }
   const onClose = () => {
@@ -72,7 +72,7 @@ export default function NewUserModal({onOK, onCancel}: GenericModalArgs) {
   return (
     <Modal title={"New User"} opened={show} onClose={onClose}>
       <LoadingOverlay
-        visible={allGroupsStatus == "loading"}
+        visible={false}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />

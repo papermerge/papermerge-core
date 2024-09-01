@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
 import {Group} from "@mantine/core"
-import {selectSelectedIds} from "@/slices/groups"
+import {selectSelectedIds} from "@/features/groups/slice"
 import NewButton from "./NewButton"
 import EditButton from "./EditButton"
 import {DeleteGroupsButton} from "./DeleteButton"

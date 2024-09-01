@@ -18,7 +18,7 @@ import {selectUserDetails} from "@/slices/userDetails"
 
 import {RootState} from "@/app/types"
 import type {SliceState, SliceStateStatus, UserDetails} from "@/types"
-import {selectAllGroups, selectAllGroupsStatus} from "@/slices/groups"
+import {selectAllGroups} from "@/features/groups/slice"
 
 type GenericModalArgs = {
   userId: string
@@ -36,9 +36,9 @@ export default function EditUserModal({
     selectUserDetails
   ) as SliceState<UserDetails>
   const allGroups = useSelector<RootState>(selectAllGroups) as Array<GroupType>
-  const allGroupsStatus = useSelector<RootState>(
-    selectAllGroupsStatus
-  ) as SliceStateStatus
+  //const allGroupsStatus = useSelector<RootState>(
+  //  selectAllGroupsStatus
+  //) as SliceStateStatus
 
   const [show, setShow] = useState<boolean>(true)
   const [groups, setGroups] = useState<string[]>(
@@ -74,10 +74,10 @@ export default function EditUserModal({
       group_ids: group_ids
     }
 
-    const response = await dispatch(updateUser(updatedData))
-    const userDetailsData = response.payload as UserDetails
+    //const response = await dispatch(updateUser(updatedData))
+    //const userDetailsData = response.payload as UserDetails
 
-    onOK(userDetailsData)
+    //onOK(userDetailsData)
     setShow(false)
   }
   const onClose = () => {
@@ -88,7 +88,7 @@ export default function EditUserModal({
   return (
     <Modal title={"Edit User"} opened={show} onClose={onClose}>
       <LoadingOverlay
-        visible={data == null || allGroupsStatus == "loading"}
+        visible={false}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />

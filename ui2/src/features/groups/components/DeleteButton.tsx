@@ -6,10 +6,9 @@ import {useNavigate} from "react-router-dom"
 
 import {
   selectSelectedIds,
-  selectGroupsByIds,
   clearSelection,
   selectGroupById
-} from "@/slices/groups"
+} from "@/features/groups/slice"
 import {openModal} from "@/components/modals/Generic"
 
 import type {Group} from "@/types"
@@ -17,7 +16,7 @@ import type {Group} from "@/types"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 import {RootState} from "@/app/types"
 
-export function DeleteGroupButton({groupId}: {groupId: number}) {
+export function DeleteGroupButton({groupId}: {groupId: string}) {
   const [redirect, setRedirect] = useState<boolean>(false)
   const navigate = useNavigate()
   const deletedGroup = useSelector<RootState>(state =>
@@ -31,7 +30,7 @@ export function DeleteGroupButton({groupId}: {groupId: number}) {
   }, [deletedGroup, redirect])
 
   const onClick = () => {
-    openModal<Group[], {groupId: number}>(RemoveGroupModal, {
+    openModal<Group[], {groupId: string}>(RemoveGroupModal, {
       groupId: groupId
     })
       .then(() => {
@@ -50,13 +49,10 @@ export function DeleteGroupButton({groupId}: {groupId: number}) {
 export function DeleteGroupsButton() {
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
-  const groups = useSelector<RootState>(state =>
-    selectGroupsByIds(state, selectedIds)
-  ) as Array<Group>
 
   const onClick = () => {
-    openModal<Group[], {groups: Array<Group>}>(RemoveGroupsModal, {
-      groups: groups
+    openModal<Group[], {groupIds: Array<string>}>(RemoveGroupsModal, {
+      groupIds: selectedIds
     })
       .then(() => {
         dispatch(clearSelection())

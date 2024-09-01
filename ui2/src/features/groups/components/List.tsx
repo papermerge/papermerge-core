@@ -1,5 +1,13 @@
 import {useState} from "react"
-import {Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
+import {
+  Center,
+  Stack,
+  Table,
+  Checkbox,
+  Loader,
+  LoadingOverlay,
+  Box
+} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
   selectionAddMany,
@@ -22,7 +30,7 @@ export default function GroupsList() {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isSuccess, isError, error} = useGetGroupsQuery({
+  const {data, isLoading, isFetching} = useGetGroupsQuery({
     page_number: page,
     page_size: pageSize
   })
@@ -80,30 +88,36 @@ export default function GroupsList() {
   return (
     <Stack>
       <ActionButtons />
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>
-              <Checkbox
-                checked={data.items.length == selectedIds.length}
-                onChange={e => onCheckAll(e.currentTarget.checked)}
-              />
-            </Table.Th>
-            <Table.Th>Name</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{groupRows}</Table.Tbody>
-      </Table>
-      <Pagination
-        pagination={{
-          pageNumber: page,
-          pageSize: pageSize,
-          numPages: data.num_pages
-        }}
-        onPageNumberChange={onPageNumberChange}
-        onPageSizeChange={onPageSizeChange}
-        lastPageSize={lastPageSize}
-      />
+      <Box pos="relative">
+        <LoadingOverlay
+          visible={isFetching}
+          loaderProps={{children: <Loader type="bars" />}}
+        />
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>
+                <Checkbox
+                  checked={data.items.length == selectedIds.length}
+                  onChange={e => onCheckAll(e.currentTarget.checked)}
+                />
+              </Table.Th>
+              <Table.Th>Name</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{groupRows}</Table.Tbody>
+        </Table>
+        <Pagination
+          pagination={{
+            pageNumber: page,
+            pageSize: pageSize,
+            numPages: data.num_pages
+          }}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={lastPageSize}
+        />
+      </Box>
     </Stack>
   )
 }

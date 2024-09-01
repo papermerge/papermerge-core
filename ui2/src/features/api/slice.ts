@@ -57,8 +57,8 @@ export const apiSlice = createApi({
         `/groups/?page_number=${page_number}&page_size=${page_size}`,
       providesTags: (
         result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
-        error,
-        arg
+        _error,
+        _arg
       ) => [
         "Group",
         ...result.items.map(({id}) => ({type: "Group", id}) as const)
@@ -66,7 +66,7 @@ export const apiSlice = createApi({
     }),
     getGroup: builder.query<Group, string>({
       query: groupID => `/groups/${groupID}`,
-      providesTags: (result, error, arg) => [{type: "Group", id: arg}]
+      providesTags: (_result, _error, arg) => [{type: "Group", id: arg}]
     }),
     addNewGroup: builder.mutation<Group, NewGroup>({
       query: group => ({
@@ -82,14 +82,14 @@ export const apiSlice = createApi({
         method: "PATCH",
         body: group
       }),
-      invalidatesTags: (result, error, arg) => [{type: "Group", id: arg.id}]
+      invalidatesTags: (_result, _error, arg) => [{type: "Group", id: arg.id}]
     }),
     deleteGroup: builder.mutation<void, string>({
       query: groupID => ({
         url: `groups/${groupID}`,
         method: "DELETE"
       }),
-      invalidatesTags: (result, error, id) => [{type: "Group", id: id}]
+      invalidatesTags: (_result, _error, id) => [{type: "Group", id: id}]
     })
   })
 })

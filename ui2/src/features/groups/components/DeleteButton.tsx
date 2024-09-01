@@ -6,7 +6,6 @@ import {useNavigate} from "react-router-dom"
 
 import {
   selectSelectedIds,
-  selectGroupsByIds,
   clearSelection,
   selectGroupById
 } from "@/features/groups/slice"

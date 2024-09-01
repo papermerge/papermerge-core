@@ -1,5 +1,4 @@
 import {useState} from "react"
-import {store} from "@/app/store"
 import GenericModal from "@/components/modals/Generic"
 import type {Group} from "@/types"
 import {useDeleteGroupMutation} from "@/features/api/slice"
@@ -47,7 +46,7 @@ export function RemoveGroupsModal({
 
 type RemoveGroupModalArgs = {
   groupId: string
-  onOK: (value: string) => void
+  onOK: () => void
   onCancel: (reason?: any) => void
 }
 
@@ -60,10 +59,8 @@ export function RemoveGroupModal({
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedGroup] = useDeleteGroupMutation()
   const handleSubmit = async () => {
-    //await store.dispatch(removeGroups([groupId]))
-    await deletedGroup(groupId)
-
-    onOK(groupId)
+    await deletedGroup(groupId).unwrap()
+    onOK()
     return true
   }
   const handleCancel = () => {

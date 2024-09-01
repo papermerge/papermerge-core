@@ -78,15 +78,6 @@ const usersSlice = createSlice({
   }
 })
 
-export const fetchUser = createAsyncThunk<User, string>(
-  "users/fetchUser",
-  async (userId: string) => {
-    const response = await axios.get(`/api/users/${userId}`)
-    const data = response.data as User
-    return data
-  }
-)
-
 type UserUpdateFields = {
   id: string
   username: string
@@ -102,19 +93,6 @@ export const updateUser = createAsyncThunk<UserDetails, UserUpdateFields>(
     const response = await axios.patch(`/api/users/${user.id}`, user)
     const data = response.data as UserDetails
     return data
-  }
-)
-
-export const removeUsers = createAsyncThunk<string[], string[]>(
-  "users/removeUser",
-  async (userIds: string[]) => {
-    await Promise.all(
-      userIds.map(uid => {
-        axios.delete(`/api/users/${uid}`)
-      })
-    )
-
-    return userIds
   }
 )
 

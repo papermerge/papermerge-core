@@ -21,7 +21,6 @@ import GroupDetails from "@/pages/groups/Details.tsx"
 import UserDetails from "@/pages/users/Details.tsx"
 
 import {loader as tagDetailsLoader} from "@/pages/tags/Details"
-import {loader as userDetailsLoader} from "@/pages/users/Details"
 import {loader as documentLoader} from "@/pages/Document"
 
 import ErrorPage from "@/pages/Error.tsx"
@@ -76,8 +75,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/users/:userId",
-        element: <UserDetails />,
-        loader: userDetailsLoader
+        element: <UserDetails />
       }
     ]
   }

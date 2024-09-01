@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react"
-import {useDispatch, useSelector} from "react-redux"
 
 import {useForm} from "@mantine/form"
 import {
+  Loader,
   MultiSelect,
   Checkbox,
   Group,
@@ -12,13 +12,14 @@ import {
   LoadingOverlay
 } from "@mantine/core"
 
-import {updateUser} from "@/slices/users"
-import {UserEditableFields, Group as GroupType} from "@/types"
-import {selectUserDetails} from "@/slices/userDetails"
+import {UserEditableFields} from "@/types"
+import {
+  useGetUserQuery,
+  useGetGroupsQuery,
+  useEditUserMutation
+} from "@/features/api/slice"
 
-import {RootState} from "@/app/types"
-import type {SliceState, SliceStateStatus, UserDetails} from "@/types"
-import {selectAllGroups} from "@/features/groups/slice"
+import type {UserDetails} from "@/types"
 
 type GenericModalArgs = {
   userId: string
@@ -26,19 +27,10 @@ type GenericModalArgs = {
   onCancel: (reason?: any) => void
 }
 
-export default function EditUserModal({
-  userId,
-  onOK,
-  onCancel
-}: GenericModalArgs) {
-  const dispatch = useDispatch()
-  const {status, data} = useSelector<RootState>(
-    selectUserDetails
-  ) as SliceState<UserDetails>
-  const allGroups = useSelector<RootState>(selectAllGroups) as Array<GroupType>
-  //const allGroupsStatus = useSelector<RootState>(
-  //  selectAllGroupsStatus
-  //) as SliceStateStatus
+export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
+  const {data: allGroups = []} = useGetGroupsQuery()
+  const {data, isLoading, isSuccess} = useGetUserQuery(userId)
+  const [updateUser, {isLoading: isLoadingUserUpdate}] = useEditUserMutation()
 
   const [show, setShow] = useState<boolean>(true)
   const [groups, setGroups] = useState<string[]>(
@@ -50,7 +42,7 @@ export default function EditUserModal({
   })
 
   useEffect(() => {
-    if (data) {
+    if (isSuccess) {
       form.setValues({
         username: data.username,
         email: data.email,
@@ -59,7 +51,7 @@ export default function EditUserModal({
         groups: data.groups.map(g => g.name)
       })
     }
-  }, [status])
+  }, [isLoading])
 
   const onSubmit = async (userFields: UserEditableFields) => {
     const group_ids = allGroups
@@ -73,11 +65,9 @@ export default function EditUserModal({
       is_superuser: userFields.is_superuser,
       group_ids: group_ids
     }
-
-    //const response = await dispatch(updateUser(updatedData))
-    //const userDetailsData = response.payload as UserDetails
-
-    //onOK(userDetailsData)
+    try {
+      await updateUser(updatedData).unwrap()
+    } catch (err) {}
     setShow(false)
   }
   const onClose = () => {
@@ -88,7 +78,7 @@ export default function EditUserModal({
   return (
     <Modal title={"Edit User"} opened={show} onClose={onClose}>
       <LoadingOverlay
-        visible={false}
+        visible={isLoading}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />
@@ -129,7 +119,12 @@ export default function EditUserModal({
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">Submit</Button>
+          <Group>
+            {isLoadingUserUpdate && <Loader size="sm" />}
+            <Button disabled={isLoadingUserUpdate} type="submit">
+              Submit
+            </Button>
+          </Group>
         </Group>
       </form>
     </Modal>

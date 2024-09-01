@@ -55,6 +55,15 @@ export type UserEditableFields = {
   groups: string[]
 }
 
+export type UserUpdate = {
+  id: string
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  group_ids: string[]
+}
+
 export type UserFields = UserEditableFields & {
   id: string
 }

@@ -1,4 +1,3 @@
-import {useDispatch, useSelector} from "react-redux"
 import {useState, useEffect} from "react"
 import {
   Modal,
@@ -12,10 +11,7 @@ import {
   Loader
 } from "@mantine/core"
 
-import {updateGroup} from "@/features/groups/slice"
-//import {selectGroupDetails} from "@/slices/groupDetails"
-import {RootState} from "@/app/types"
-import type {GroupDetails, SliceState} from "@/types"
+import type {GroupDetails} from "@/types"
 import {useGetGroupQuery, useEditGroupMutation} from "@/features/api/slice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {

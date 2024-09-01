@@ -5,6 +5,8 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import type {
   User,
   CreateUser,
+  UserUpdate,
+  UserDetails,
   Group,
   GroupUpdate,
   Paginated,
@@ -120,7 +122,7 @@ export const apiSlice = createApi({
         ...result.items.map(({id}) => ({type: "User", id}) as const)
       ]
     }),
-    getUser: builder.query<User, string>({
+    getUser: builder.query<UserDetails, string>({
       query: userID => `/users/${userID}`,
       providesTags: (_result, _error, arg) => [{type: "User", id: arg}]
     }),
@@ -131,6 +133,21 @@ export const apiSlice = createApi({
         body: user
       }),
       invalidatesTags: ["User"]
+    }),
+    editUser: builder.mutation<User, UserUpdate>({
+      query: user => ({
+        url: `users/${user.id}`,
+        method: "PATCH",
+        body: user
+      }),
+      invalidatesTags: (_result, _error, arg) => [{type: "User", id: arg.id}]
+    }),
+    deleteUser: builder.mutation<void, string>({
+      query: userID => ({
+        url: `users/${userID}`,
+        method: "DELETE"
+      }),
+      invalidatesTags: (_result, _error, id) => [{type: "User", id: id}]
     })
   })
 })
@@ -144,5 +161,7 @@ export const {
   useAddNewGroupMutation,
   useGetPaginatedUsersQuery,
   useGetUserQuery,
-  useAddNewUserMutation
+  useAddNewUserMutation,
+  useEditUserMutation,
+  useDeleteUserMutation
 } = apiSlice

@@ -16,7 +16,7 @@ import {
   selectLastPageSize,
   lastPageSizeUpdate
 } from "@/features/groups/slice"
-import {useGetGroupsQuery} from "@/features/api/slice"
+import {useGetPaginatedGroupsQuery} from "@/features/api/slice"
 
 import Pagination from "@/components/Pagination"
 import GroupRow from "./GroupRow"
@@ -30,7 +30,7 @@ export default function GroupsList() {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetGroupsQuery({
+  const {data, isLoading, isFetching} = useGetPaginatedGroupsQuery({
     page_number: page,
     page_size: pageSize
   })

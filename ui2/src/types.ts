@@ -25,7 +25,7 @@ export type CreateUser = {
   email: string
   is_superuser: boolean
   is_active: boolean
-  group_ids: number[]
+  group_ids: string[]
 }
 
 export type NewUser = {

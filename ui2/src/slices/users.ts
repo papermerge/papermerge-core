@@ -64,7 +64,7 @@ const usersSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addMatcher(
-      apiSlice.endpoints.getUsers.matchFulfilled,
+      apiSlice.endpoints.getPaginatedUsers.matchFulfilled,
       (state, action) => {
         const payload: Paginated<User> = action.payload
         state.pagination = {
@@ -82,15 +82,6 @@ export const fetchUser = createAsyncThunk<User, string>(
   "users/fetchUser",
   async (userId: string) => {
     const response = await axios.get(`/api/users/${userId}`)
-    const data = response.data as User
-    return data
-  }
-)
-
-export const addUser = createAsyncThunk<User, CreateUser>(
-  "users/addUser",
-  async (newUser: CreateUser) => {
-    const response = await axios.post("/api/users/", newUser)
     const data = response.data as User
     return data
   }

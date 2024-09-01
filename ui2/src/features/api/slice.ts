@@ -2,7 +2,14 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {User, Group, GroupUpdate, Paginated, NewGroup} from "@/types"
+import type {
+  User,
+  CreateUser,
+  Group,
+  GroupUpdate,
+  Paginated,
+  NewGroup
+} from "@/types"
 import type {RootState} from "@/app/types"
 
 type PaginatedArgs = {
@@ -49,7 +56,7 @@ export const apiSlice = createApi({
   keepUnusedDataFor: 60,
   tagTypes: ["Group", "User"],
   endpoints: builder => ({
-    getGroups: builder.query<Paginated<Group>, PaginatedArgs | void>({
+    getPaginatedGroups: builder.query<Paginated<Group>, PaginatedArgs | void>({
       query: ({
         page_number = 1,
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
@@ -62,6 +69,13 @@ export const apiSlice = createApi({
       ) => [
         "Group",
         ...result.items.map(({id}) => ({type: "Group", id}) as const)
+      ]
+    }),
+    getGroups: builder.query<Group[], void>({
+      query: groups => "/groups/all",
+      providesTags: (result = [], _error, _arg) => [
+        "Group",
+        ...result.map(({id}) => ({type: "Group", id}) as const)
       ]
     }),
     getGroup: builder.query<Group, string>({
@@ -91,7 +105,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (_result, _error, id) => [{type: "Group", id: id}]
     }),
-    getUsers: builder.query<Paginated<User>, PaginatedArgs | void>({
+    getPaginatedUsers: builder.query<Paginated<User>, PaginatedArgs | void>({
       query: ({
         page_number = 1,
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
@@ -105,15 +119,30 @@ export const apiSlice = createApi({
         "User",
         ...result.items.map(({id}) => ({type: "User", id}) as const)
       ]
+    }),
+    getUser: builder.query<User, string>({
+      query: userID => `/users/${userID}`,
+      providesTags: (_result, _error, arg) => [{type: "User", id: arg}]
+    }),
+    addNewUser: builder.mutation<User, CreateUser>({
+      query: user => ({
+        url: "/users/",
+        method: "POST",
+        body: user
+      }),
+      invalidatesTags: ["User"]
     })
   })
 })
 
 export const {
+  useGetPaginatedGroupsQuery,
   useGetGroupsQuery,
   useGetGroupQuery,
   useEditGroupMutation,
   useDeleteGroupMutation,
   useAddNewGroupMutation,
-  useGetUsersQuery
+  useGetPaginatedUsersQuery,
+  useGetUserQuery,
+  useAddNewUserMutation
 } = apiSlice

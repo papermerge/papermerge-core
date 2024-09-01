@@ -7,6 +7,7 @@ import type {
   CreateUser,
   UserUpdate,
   UserDetails,
+  ChangePassword,
   Group,
   GroupUpdate,
   Paginated,
@@ -148,6 +149,13 @@ export const apiSlice = createApi({
         method: "DELETE"
       }),
       invalidatesTags: (_result, _error, id) => [{type: "User", id: id}]
+    }),
+    changePassword: builder.mutation<void, ChangePassword>({
+      query: chPwd => ({
+        url: `/users/${chPwd.userId}/change-password/`,
+        method: "POST",
+        body: chPwd
+      })
     })
   })
 })
@@ -163,5 +171,6 @@ export const {
   useGetUserQuery,
   useAddNewUserMutation,
   useEditUserMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useChangePasswordMutation
 } = apiSlice

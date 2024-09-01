@@ -64,6 +64,11 @@ export type UserUpdate = {
   group_ids: string[]
 }
 
+export type ChangePassword = {
+  userId: string
+  password: string
+}
+
 export type UserFields = UserEditableFields & {
   id: string
 }

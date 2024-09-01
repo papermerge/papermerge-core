@@ -10,8 +10,8 @@ import {
   Tooltip
 } from "@mantine/core"
 
-import {addGroup} from "@/features/groups/slice"
 import type {GroupDetails} from "@/types"
+import {useAddNewGroupMutation} from "@/features/api/slice"
 
 type Args = {
   onOK: (value: GroupDetails) => void
@@ -19,7 +19,7 @@ type Args = {
 }
 
 export default function NewGroupModal({onOK, onCancel}: Args) {
-  const dispatch = useDispatch()
+  const [addNewGroup, isLoading] = useAddNewGroupMutation()
   const [show, setShow] = useState<boolean>(true)
   const [name, setName] = useState<string>()
   const [scopes, setScopes] = useState<Record<string, boolean>>({
@@ -34,10 +34,9 @@ export default function NewGroupModal({onOK, onCancel}: Args) {
       scopes: Object.keys(scopes),
       name: name!
     }
-    const response = await dispatch(addGroup(updatedData))
-    const groupDetailsData = response.payload as GroupDetails
-
-    onOK(groupDetailsData)
+    //const response = await dispatch(addGroup(updatedData))
+    //const groupDetailsData = response.payload as GroupDetails
+    await addNewGroup(updatedData).unwrap()
     setShow(false)
   }
 

@@ -2,7 +2,7 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {Group, GroupUpdate, Paginated} from "@/types"
+import type {Group, GroupUpdate, Paginated, NewGroup} from "@/types"
 import type {RootState} from "@/app/types"
 
 type GetGroupsArgs = {
@@ -68,6 +68,14 @@ export const apiSlice = createApi({
       query: groupID => `/groups/${groupID}`,
       providesTags: (result, error, arg) => [{type: "Group", id: arg}]
     }),
+    addNewGroup: builder.mutation<Group, NewGroup>({
+      query: group => ({
+        url: "/groups/",
+        method: "POST",
+        body: group
+      }),
+      invalidatesTags: ["Group"]
+    }),
     editGroup: builder.mutation<Group, GroupUpdate>({
       query: group => ({
         url: `groups/${group.id}`,
@@ -75,9 +83,21 @@ export const apiSlice = createApi({
         body: group
       }),
       invalidatesTags: (result, error, arg) => [{type: "Group", id: arg.id}]
+    }),
+    deleteGroup: builder.mutation<void, string>({
+      query: groupID => ({
+        url: `groups/${groupID}`,
+        method: "DELETE"
+      }),
+      invalidatesTags: (result, error, id) => [{type: "Group", id: id}]
     })
   })
 })
 
-export const {useGetGroupsQuery, useGetGroupQuery, useEditGroupMutation} =
-  apiSlice
+export const {
+  useGetGroupsQuery,
+  useGetGroupQuery,
+  useEditGroupMutation,
+  useDeleteGroupMutation,
+  useAddNewGroupMutation
+} = apiSlice

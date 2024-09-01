@@ -50,13 +50,10 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
 export function DeleteGroupsButton() {
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
-  const groups = useSelector<RootState>(state =>
-    selectGroupsByIds(state, selectedIds)
-  ) as Array<Group>
 
   const onClick = () => {
-    openModal<Group[], {groups: Array<Group>}>(RemoveGroupsModal, {
-      groups: groups
+    openModal<Group[], {groupIds: Array<string>}>(RemoveGroupsModal, {
+      groupIds: selectedIds
     })
       .then(() => {
         dispatch(clearSelection())

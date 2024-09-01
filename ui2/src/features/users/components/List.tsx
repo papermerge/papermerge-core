@@ -1,13 +1,5 @@
 import {useState} from "react"
-import {
-  LoadingOverlay,
-  Box,
-  Center,
-  Stack,
-  Table,
-  Checkbox,
-  Loader
-} from "@mantine/core"
+import {Group, Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
   selectionAddMany,
@@ -88,39 +80,35 @@ export default function UsersList() {
 
   return (
     <Stack>
-      <ActionButtons />
-      <Box pos="relative">
-        <LoadingOverlay
-          visible={isFetching}
-          loaderProps={{children: <Loader type="bars" />}}
-        />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>
-                <Checkbox
-                  checked={data.items.length == selectedIds.length}
-                  onChange={e => onCheckAll(e.currentTarget.checked)}
-                />
-              </Table.Th>
-              <Table.Th>Username</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>ID</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{userRows}</Table.Tbody>
-        </Table>
-        <Pagination
-          pagination={{
-            pageNumber: page,
-            pageSize: pageSize,
-            numPages: data.num_pages
-          }}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
-        />
-      </Box>
+      <Group>
+        <ActionButtons /> {isFetching && <Loader size="sm" />}
+      </Group>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>
+              <Checkbox
+                checked={data.items.length == selectedIds.length}
+                onChange={e => onCheckAll(e.currentTarget.checked)}
+              />
+            </Table.Th>
+            <Table.Th>Username</Table.Th>
+            <Table.Th>Email</Table.Th>
+            <Table.Th>ID</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{userRows}</Table.Tbody>
+      </Table>
+      <Pagination
+        pagination={{
+          pageNumber: page,
+          pageSize: pageSize,
+          numPages: data.num_pages
+        }}
+        onPageNumberChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        lastPageSize={lastPageSize}
+      />
     </Stack>
   )
 }

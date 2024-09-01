@@ -75,7 +75,7 @@ export const apiSlice = createApi({
       ]
     }),
     getGroups: builder.query<Group[], void>({
-      query: groups => "/groups/all",
+      query: _groups => "/groups/all",
       providesTags: (result = [], _error, _arg) => [
         "Group",
         ...result.map(({id}) => ({type: "Group", id}) as const)
@@ -124,7 +124,7 @@ export const apiSlice = createApi({
       ]
     }),
     getUsers: builder.query<User[], void>({
-      query: users => "/users/all",
+      query: _users => "/users/all",
       providesTags: (result = [], _error, _arg) => [
         "User",
         ...result.map(({id}) => ({type: "User", id}) as const)

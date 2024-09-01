@@ -5,6 +5,7 @@ import {
   PayloadAction
 } from "@reduxjs/toolkit"
 import axios from "@/httpClient"
+import {apiSlice} from "@/features/api/slice"
 
 import {RootState} from "@/app/types"
 import type {
@@ -15,7 +16,7 @@ import type {
   PaginationType
 } from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export type ExtraStateType = {
   status: SliceStateStatus
@@ -30,7 +31,7 @@ export const extraState: ExtraStateType = {
   error: null,
   selectedIds: [],
   pagination: null,
-  lastPageSize: INITIAL_PAGE_SIZE
+  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
 }
 
 const usersAdapter = createEntityAdapter({
@@ -56,53 +57,26 @@ const usersSlice = createSlice({
     },
     clearSelection: state => {
       state.selectedIds = []
+    },
+    lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
+      state.lastPageSize = action.payload
     }
   },
   extraReducers(builder) {
-    builder.addCase(fetchUsers.fulfilled, (state, action) => {
-      usersAdapter.setAll(state, action.payload.items)
-      state.pagination = {
-        numPages: action.payload.num_pages,
-        pageNumber: action.payload.page_number,
-        pageSize: action.payload.page_size
+    builder.addMatcher(
+      apiSlice.endpoints.getUsers.matchFulfilled,
+      (state, action) => {
+        const payload: Paginated<User> = action.payload
+        state.pagination = {
+          pageNumber: payload.page_number,
+          pageSize: payload.page_size,
+          numPages: payload.num_pages
+        }
+        state.lastPageSize = payload.page_size
       }
-      state.lastPageSize = action.payload.page_size
-    })
-    builder.addCase(fetchUser.fulfilled, (state, action) => {
-      const newUser = action.payload
-      const newUserID = action.payload.id
-      state.entities[newUserID] = newUser
-    })
-    builder.addCase(addUser.fulfilled, usersAdapter.addOne)
-    builder.addCase(updateUser.fulfilled, (state, action) => {
-      const group = action.payload
-      state.entities[group.id] = group
-    })
-    builder.addCase(removeUsers.fulfilled, usersAdapter.removeMany)
+    )
   }
 })
-
-type fetchUsersArgs = {
-  pageNumber?: number
-  pageSize?: number
-}
-
-export const fetchUsers = createAsyncThunk<Paginated<User>, fetchUsersArgs>(
-  "users/fetchUsers",
-  async (args: fetchUsersArgs) => {
-    const pageNumber = args.pageNumber || 1
-    const pageSize = args.pageSize || INITIAL_PAGE_SIZE
-
-    const response = await axios.get("/api/users/", {
-      params: {
-        page_size: pageSize,
-        page_number: pageNumber
-      }
-    })
-    const data = response.data as Paginated<User>
-    return data
-  }
-)
 
 export const fetchUser = createAsyncThunk<User, string>(
   "users/fetchUser",
@@ -153,8 +127,13 @@ export const removeUsers = createAsyncThunk<string[], string[]>(
   }
 )
 
-export const {selectionAdd, selectionAddMany, selectionRemove, clearSelection} =
-  usersSlice.actions
+export const {
+  selectionAdd,
+  selectionAddMany,
+  selectionRemove,
+  clearSelection,
+  lastPageSizeUpdate
+} = usersSlice.actions
 export default usersSlice.reducer
 
 export const {selectAll: selectAllUsers} = usersAdapter.getSelectors<RootState>(

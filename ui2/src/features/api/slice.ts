@@ -2,10 +2,10 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {Group, GroupUpdate, Paginated, NewGroup} from "@/types"
+import type {User, Group, GroupUpdate, Paginated, NewGroup} from "@/types"
 import type {RootState} from "@/app/types"
 
-type GetGroupsArgs = {
+type PaginatedArgs = {
   page_number?: number
   page_size?: number
 }
@@ -47,13 +47,13 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
   keepUnusedDataFor: 60,
-  tagTypes: ["Group"],
+  tagTypes: ["Group", "User"],
   endpoints: builder => ({
-    getGroups: builder.query<Paginated<Group>, GetGroupsArgs | void>({
+    getGroups: builder.query<Paginated<Group>, PaginatedArgs | void>({
       query: ({
         page_number = 1,
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: GetGroupsArgs) =>
+      }: PaginatedArgs) =>
         `/groups/?page_number=${page_number}&page_size=${page_size}`,
       providesTags: (
         result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
@@ -90,6 +90,21 @@ export const apiSlice = createApi({
         method: "DELETE"
       }),
       invalidatesTags: (_result, _error, id) => [{type: "Group", id: id}]
+    }),
+    getUsers: builder.query<Paginated<User>, PaginatedArgs | void>({
+      query: ({
+        page_number = 1,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
+      }: PaginatedArgs) =>
+        `/users/?page_number=${page_number}&page_size=${page_size}`,
+      providesTags: (
+        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        _error,
+        _arg
+      ) => [
+        "User",
+        ...result.items.map(({id}) => ({type: "User", id}) as const)
+      ]
     })
   })
 })
@@ -99,5 +114,6 @@ export const {
   useGetGroupQuery,
   useEditGroupMutation,
   useDeleteGroupMutation,
-  useAddNewGroupMutation
+  useAddNewGroupMutation,
+  useGetUsersQuery
 } = apiSlice

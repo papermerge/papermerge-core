@@ -1,14 +1,16 @@
-import {Center, Stack, Table, Checkbox} from "@mantine/core"
+import {useState} from "react"
+import {Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
   selectAllUsers,
   selectionAddMany,
   selectSelectedIds,
   clearSelection,
-  fetchUsers,
-  selectPagination,
-  selectLastPageSize
+  selectLastPageSize,
+  lastPageSizeUpdate
 } from "@/slices/users"
+import {useGetUsersQuery} from "@/features/api/slice"
+
 import Pagination from "@/components/Pagination"
 
 import UserRow from "./UserRow"
@@ -16,15 +18,26 @@ import ActionButtons from "./ActionButtons"
 
 export default function UsersList() {
   const selectedIds = useSelector(selectSelectedIds)
-  const users = useSelector(selectAllUsers)
-  const pagination = useSelector(selectPagination)
   const lastPageSize = useSelector(selectLastPageSize)
   const dispatch = useDispatch()
 
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+
+  const {data, isLoading, isFetching} = useGetUsersQuery({
+    page_number: page,
+    page_size: pageSize
+  })
+
   const onCheckAll = (checked: boolean) => {
+    if (!data) {
+      console.log(`undefined data`)
+      return
+    }
+
     if (checked) {
       // check all/select all group items
-      dispatch(selectionAddMany(users.map(i => i.id)))
+      dispatch(selectionAddMany(data.items.map(i => i.id)))
     } else {
       // uncheck all/unselect all group items
       dispatch(clearSelection())
@@ -32,16 +45,30 @@ export default function UsersList() {
   }
 
   const onPageNumberChange = (page: number) => {
-    dispatch(fetchUsers({pageNumber: page, pageSize: pagination?.pageSize}))
+    setPage(page)
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      dispatch(fetchUsers({pageNumber: 1, pageSize: parseInt(value)}))
+      const pageSize = parseInt(value)
+
+      dispatch(lastPageSizeUpdate(pageSize))
+      setPageSize(pageSize)
     }
   }
 
-  if (users.length == 0) {
+  if (isLoading || !data) {
+    return (
+      <Stack>
+        <ActionButtons />
+        <Center>
+          <Loader type="bars" />
+        </Center>
+      </Stack>
+    )
+  }
+
+  if (data.items.length == 0) {
     return (
       <div>
         <ActionButtons />
@@ -50,7 +77,7 @@ export default function UsersList() {
     )
   }
 
-  const groupRows = users.map(u => <UserRow key={u.id} user={u} />)
+  const userRows = data.items.map(u => <UserRow key={u.id} user={u} />)
 
   return (
     <Stack>
@@ -60,7 +87,7 @@ export default function UsersList() {
           <Table.Tr>
             <Table.Th>
               <Checkbox
-                checked={users.length == selectedIds.length}
+                checked={data.items.length == selectedIds.length}
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
@@ -69,10 +96,14 @@ export default function UsersList() {
             <Table.Th>ID</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{groupRows}</Table.Tbody>
+        <Table.Tbody>{userRows}</Table.Tbody>
       </Table>
       <Pagination
-        pagination={pagination}
+        pagination={{
+          pageNumber: page,
+          pageSize: pageSize,
+          numPages: data.num_pages
+        }}
         onPageNumberChange={onPageNumberChange}
         onPageSizeChange={onPageSizeChange}
         lastPageSize={lastPageSize}

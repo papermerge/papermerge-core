@@ -15,7 +15,6 @@ import GroupsList from "@/pages/groups/List.tsx"
 import UsersList from "@/pages/users/List.tsx"
 
 import {loader as tagsListLoader} from "@/pages/tags/List"
-import {loader as usersListLoader} from "@/pages/users/List"
 
 import TagDetails from "@/pages/tags/Details.tsx"
 import GroupDetails from "@/pages/groups/Details.tsx"
@@ -73,8 +72,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: <UsersList />,
-        loader: usersListLoader
+        element: <UsersList />
       },
       {
         path: "/users/:userId",

@@ -1,13 +1,5 @@
 import {useState} from "react"
-import {
-  Center,
-  Stack,
-  Table,
-  Checkbox,
-  Loader,
-  LoadingOverlay,
-  Box
-} from "@mantine/core"
+import {Group, Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
   selectionAddMany,
@@ -16,7 +8,7 @@ import {
   selectLastPageSize,
   lastPageSizeUpdate
 } from "@/features/groups/slice"
-import {useGetGroupsQuery} from "@/features/api/slice"
+import {useGetPaginatedGroupsQuery} from "@/features/api/slice"
 
 import Pagination from "@/components/Pagination"
 import GroupRow from "./GroupRow"
@@ -26,11 +18,11 @@ export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
-  //const pag = useSelector(selectPagination)
+
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetGroupsQuery({
+  const {data, isLoading, isFetching} = useGetPaginatedGroupsQuery({
     page_number: page,
     page_size: pageSize
   })
@@ -87,37 +79,33 @@ export default function GroupsList() {
 
   return (
     <Stack>
-      <ActionButtons />
-      <Box pos="relative">
-        <LoadingOverlay
-          visible={isFetching}
-          loaderProps={{children: <Loader type="bars" />}}
-        />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>
-                <Checkbox
-                  checked={data.items.length == selectedIds.length}
-                  onChange={e => onCheckAll(e.currentTarget.checked)}
-                />
-              </Table.Th>
-              <Table.Th>Name</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{groupRows}</Table.Tbody>
-        </Table>
-        <Pagination
-          pagination={{
-            pageNumber: page,
-            pageSize: pageSize,
-            numPages: data.num_pages
-          }}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
-        />
-      </Box>
+      <Group>
+        <ActionButtons /> {isFetching && <Loader size={"sm"} />}
+      </Group>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>
+              <Checkbox
+                checked={data.items.length == selectedIds.length}
+                onChange={e => onCheckAll(e.currentTarget.checked)}
+              />
+            </Table.Th>
+            <Table.Th>Name</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{groupRows}</Table.Tbody>
+      </Table>
+      <Pagination
+        pagination={{
+          pageNumber: page,
+          pageSize: pageSize,
+          numPages: data.num_pages
+        }}
+        onPageNumberChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        lastPageSize={lastPageSize}
+      />
     </Stack>
   )
 }

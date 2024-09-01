@@ -6,9 +6,8 @@ import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import navBarReducer from "@/slices/navBar"
 import tagsReducer from "@/slices/tags"
 import groupsReducer from "@/features/groups/slice"
-import usersReducer from "@/slices/users"
+import usersReducer from "@/features/users/slice"
 import tagDetailsReducer from "@/slices/tagDetails"
-import userDetailsReducer from "@/slices/userDetails"
 import {uploaderReducer} from "@/slices/uploader"
 import sizesSliceReducer from "@/slices/sizes"
 import dragndropReducer from "@/slices/dragndrop"
@@ -23,7 +22,6 @@ export const store = configureStore({
     groups: groupsReducer,
     users: usersReducer,
     tagDetails: tagDetailsReducer,
-    userDetails: userDetailsReducer,
     uploader: uploaderReducer,
     sizes: sizesSliceReducer,
     dragndrop: dragndropReducer,

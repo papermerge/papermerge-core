@@ -1,7 +1,5 @@
 import Cookies from "js-cookie"
 import {createSlice} from "@reduxjs/toolkit"
-import type {RootState} from "@/app/types"
-import {createAppAsyncThunk} from "@/app/withTypes"
 import {getDefaultHeaders} from "@/utils"
 
 const COOKIE_NAME = "access_token"

@@ -153,9 +153,6 @@ export const {selectAll: selectAllTags} = tagsAdapter.getSelectors<RootState>(
   state => state.tags
 )
 
-export const selectAllGroupsStatus = (state: RootState): SliceStateStatus =>
-  state.groups.status
-
 export const selectSelectedIds = (state: RootState) => state.tags.selectedIds
 export const selectTagById = (state: RootState, tagId?: string) => {
   if (tagId) {

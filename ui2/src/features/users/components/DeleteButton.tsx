@@ -7,9 +7,8 @@ import {useNavigate} from "react-router-dom"
 import {
   selectSelectedIds,
   selectUserById,
-  selectUsersByIds,
   clearSelection
-} from "@/slices/users"
+} from "@/features/users/slice"
 import {openModal} from "@/components/modals/Generic"
 
 import type {User} from "@/types"
@@ -51,13 +50,10 @@ export function DeleteUserButton({userId}: {userId: string}) {
 export function DeleteUsersButton() {
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
-  const users = useSelector<RootState>(state =>
-    selectUsersByIds(state, selectedIds)
-  ) as Array<User>
 
   const onClick = () => {
-    openModal<User[], {users: Array<User>}>(RemoveUsersModal, {
-      users: users
+    openModal<User[], {userIds: Array<string>}>(RemoveUsersModal, {
+      userIds: selectedIds
     })
       .then(() => {
         dispatch(clearSelection())

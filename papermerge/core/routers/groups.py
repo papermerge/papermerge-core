@@ -1,7 +1,6 @@
 import logging
 from typing import Annotated
 
-from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
@@ -19,6 +18,23 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
+@router.get("/all", response_model=list[schemas.Group])
+@utils.docstring_parameter(scope=scopes.GROUP_VIEW)
+def get_groups_without_pagination(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+    ],
+    db_session: db.Session = Depends(db.get_session)
+):
+    """Get all groups without pagination/filtering/sorting
+
+    Required scope: `{scope}`
+    """
+
+    return db.get_groups(db_session)
+
+
 
 @router.get("/", response_model=PaginatorGeneric[schemas.Group])
 @paginate
@@ -31,7 +47,7 @@ def get_groups(
     params: CommonQueryParams = Depends(),
     db_session: db.Session = Depends(db.get_session)
 ):
-    """Get all groups
+    """Get all (paginated) groups
 
     Required scope: `{scope}`
     """

@@ -11,18 +11,14 @@ import {loader as folderLoader} from "@/pages/Folder"
 import Document from "@/pages/Document"
 
 import TagsList from "@/pages/tags/List"
-import GroupsList from "@/pages/groups/List.tsx"
-import UsersList from "@/pages/users/List.tsx"
+
+import {GroupsList, GroupDetails} from "@/features/groups/pages"
+import {UsersList, UserDetails} from "@/features/users/pages"
 
 import {loader as tagsListLoader} from "@/pages/tags/List"
-import {loader as usersListLoader} from "@/pages/users/List"
-
 import TagDetails from "@/pages/tags/Details.tsx"
-import GroupDetails from "@/pages/groups/Details.tsx"
-import UserDetails from "@/pages/users/Details.tsx"
 
 import {loader as tagDetailsLoader} from "@/pages/tags/Details"
-import {loader as userDetailsLoader} from "@/pages/users/Details"
 import {loader as documentLoader} from "@/pages/Document"
 
 import ErrorPage from "@/pages/Error.tsx"
@@ -73,13 +69,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: <UsersList />,
-        loader: usersListLoader
+        element: <UsersList />
       },
       {
         path: "/users/:userId",
-        element: <UserDetails />,
-        loader: userDetailsLoader
+        element: <UserDetails />
       }
     ]
   }

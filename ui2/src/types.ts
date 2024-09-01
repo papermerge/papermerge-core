@@ -25,7 +25,7 @@ export type CreateUser = {
   email: string
   is_superuser: boolean
   is_active: boolean
-  group_ids: number[]
+  group_ids: string[]
 }
 
 export type NewUser = {
@@ -53,6 +53,20 @@ export type UserEditableFields = {
   is_superuser: boolean
   is_active: boolean
   groups: string[]
+}
+
+export type UserUpdate = {
+  id: string
+  username: string
+  email: string
+  is_superuser: boolean
+  is_active: boolean
+  group_ids: string[]
+}
+
+export type ChangePassword = {
+  userId: string
+  password: string
 }
 
 export type UserFields = UserEditableFields & {

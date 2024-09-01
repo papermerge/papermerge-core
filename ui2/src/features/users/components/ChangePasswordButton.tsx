@@ -1,11 +1,10 @@
 import {useState} from "react"
-import {useDispatch} from "react-redux"
 
 import {useForm} from "@mantine/form"
-import {PasswordInput, Group, Button, Box, Modal} from "@mantine/core"
+import {PasswordInput, Group, Button, Box, Modal, Loader} from "@mantine/core"
 import {IconPassword} from "@tabler/icons-react"
 import {openModal} from "@/components/modals/Generic"
-import {changePassword} from "@/slices/userDetails"
+import {useChangePasswordMutation} from "@/features/api/slice"
 
 type ChangePasswordButtonArgs = {
   userId?: string
@@ -55,8 +54,8 @@ type GenericModalArgs = {
   onCancel: (reason?: any) => void
 }
 
-function ChangeUserPasswordModal({userId, onOK, onCancel}: GenericModalArgs) {
-  const dispatch = useDispatch()
+function ChangeUserPasswordModal({userId, onCancel}: GenericModalArgs) {
+  const [changePassword, {isLoading, isSuccess}] = useChangePasswordMutation()
   const [show, setShow] = useState<boolean>(true)
 
   const form = useForm({
@@ -75,8 +74,7 @@ function ChangeUserPasswordModal({userId, onOK, onCancel}: GenericModalArgs) {
   })
 
   const onSubmit = async ({password}: {password: string}) => {
-    await dispatch(changePassword({userId, password: password}))
-    onOK()
+    await changePassword({userId, password})
     setShow(false)
   }
   const onClose = () => {
@@ -105,7 +103,12 @@ function ChangeUserPasswordModal({userId, onOK, onCancel}: GenericModalArgs) {
             <Button variant="default" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">Submit</Button>
+            <Group>
+              {isLoading && <Loader size="sm" />}
+              <Button disabled={isLoading || isSuccess} type="submit">
+                Submit
+              </Button>
+            </Group>
           </Group>
         </form>
       </Box>

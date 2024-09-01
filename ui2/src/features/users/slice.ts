@@ -1,20 +1,9 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  createEntityAdapter,
-  PayloadAction
-} from "@reduxjs/toolkit"
-import axios from "@/httpClient"
+import {createSlice, createEntityAdapter, PayloadAction} from "@reduxjs/toolkit"
+
 import {apiSlice} from "@/features/api/slice"
 
 import {RootState} from "@/app/types"
-import type {
-  CreateUser,
-  User,
-  UserDetails,
-  Paginated,
-  PaginationType
-} from "@/types"
+import type {User, Paginated, PaginationType} from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -78,24 +67,6 @@ const usersSlice = createSlice({
   }
 })
 
-type UserUpdateFields = {
-  id: string
-  username: string
-  email: string
-  is_superuser: boolean
-  is_active: boolean
-  group_ids: number[]
-}
-
-export const updateUser = createAsyncThunk<UserDetails, UserUpdateFields>(
-  "users/updateUser",
-  async (user: UserUpdateFields) => {
-    const response = await axios.patch(`/api/users/${user.id}`, user)
-    const data = response.data as UserDetails
-    return data
-  }
-)
-
 export const {
   selectionAdd,
   selectionAddMany,
@@ -104,10 +75,6 @@ export const {
   lastPageSizeUpdate
 } = usersSlice.actions
 export default usersSlice.reducer
-
-export const {selectAll: selectAllUsers} = usersAdapter.getSelectors<RootState>(
-  state => state.users
-)
 
 export const selectSelectedIds = (state: RootState) => state.users.selectedIds
 export const selectUserById = (state: RootState, userId?: string) => {

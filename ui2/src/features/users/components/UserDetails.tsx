@@ -1,10 +1,8 @@
-import {useSelector} from "react-redux"
 import {Link, useNavigation} from "react-router-dom"
 import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
 import {useGetUserQuery} from "@/features/api/slice"
-import type {UserDetails, SliceState} from "@/types"
-import type {RootState} from "@/app/types"
+import type {UserDetails} from "@/types"
 import UserForm from "./UserForm"
 import EditButton from "./EditButton"
 import {DeleteUserButton} from "./DeleteButton"
@@ -15,7 +13,7 @@ interface UserDetailsArgs {
 }
 
 export default function UserDetailsComponent({userId}: UserDetailsArgs) {
-  const {data, isLoading} = useGetUserQuery(userId)
+  const {data} = useGetUserQuery(userId)
 
   if (data == null) {
     return (

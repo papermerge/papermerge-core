@@ -1,7 +1,7 @@
 import {Button} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import {openModal} from "@/components/modals/Generic"
 import EditGroupModal from "./EditGroupModal"
 
 interface Args {
@@ -9,11 +9,7 @@ interface Args {
 }
 
 export default function EditButton({groupId}: Args) {
-  const onClick = () => {
-    openModal<any, {groupId: string}>(EditGroupModal, {
-      groupId: groupId!
-    })
-  }
+  const [opened, {open, close}] = useDisclosure(false)
 
   if (!groupId) {
     return (
@@ -24,8 +20,16 @@ export default function EditButton({groupId}: Args) {
   }
 
   return (
-    <Button leftSection={<IconEdit />} variant={"default"} onClick={onClick}>
-      Edit
-    </Button>
+    <>
+      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
+        Edit
+      </Button>
+      <EditGroupModal
+        opened={opened}
+        onSubmit={close}
+        onCancel={close}
+        groupId={groupId}
+      />
+    </>
   )
 }

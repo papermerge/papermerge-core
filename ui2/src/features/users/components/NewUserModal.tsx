@@ -14,21 +14,24 @@ import {
 
 import {UserEditableFields} from "@/types"
 
-import type {UserDetails} from "@/types"
 import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 import {useAddNewUserMutation, useGetGroupsQuery} from "@/features/api/slice"
 
-type GenericModalArgs = {
-  onOK: (value: UserDetails) => void
-  onCancel: (reason?: any) => void
+interface GenericModalArgs {
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-export default function NewUserModal({onCancel}: GenericModalArgs) {
+export default function NewUserModal({
+  onCancel,
+  onSubmit,
+  opened
+}: GenericModalArgs) {
   const {data = []} = useGetGroupsQuery()
   const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
 
-  const [show, setShow] = useState<boolean>(true)
   const [groups, setGroups] = useState<string[]>([])
 
   const form = useForm<UserEditableFields>({
@@ -39,13 +42,7 @@ export default function NewUserModal({onCancel}: GenericModalArgs) {
     }
   })
 
-  useEffect(() => {
-    if (isSuccess) {
-      setShow(false)
-    }
-  }, [isSuccess])
-
-  const onSubmit = async (userFields: UserEditableFields) => {
+  const onLocalSubmit = async (userFields: UserEditableFields) => {
     const group_ids = data.filter(g => groups.includes(g.name)).map(g => g.id)
     const newUserData = {
       username: userFields.username,
@@ -59,20 +56,29 @@ export default function NewUserModal({onCancel}: GenericModalArgs) {
     try {
       await addNewUser(newUserData).unwrap()
     } catch (err) {}
+
+    onSubmit()
+    reset()
   }
-  const onClose = () => {
+
+  const reset = () => {
+    form.reset()
+    setGroups([])
+  }
+
+  const onLocalCancel = () => {
     onCancel()
-    setShow(false)
+    reset()
   }
 
   return (
-    <Modal title={"New User"} opened={show} onClose={onClose}>
+    <Modal title={"New User"} opened={opened} onClose={onLocalCancel}>
       <LoadingOverlay
         visible={false}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />
-      <form onSubmit={form.onSubmit(onSubmit)}>
+      <form onSubmit={form.onSubmit(onLocalSubmit)}>
         <TextInput
           label="Username"
           placeholder="username"
@@ -107,7 +113,7 @@ export default function NewUserModal({onCancel}: GenericModalArgs) {
           data={data.map(g => g.name) || []}
         />
         <Group justify="space-between" mt="md">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onLocalCancel}>
             Cancel
           </Button>
           <Group>

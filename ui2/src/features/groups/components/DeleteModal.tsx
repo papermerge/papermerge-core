@@ -1,84 +1,104 @@
 import {useState} from "react"
-import GenericModal from "@/components/modals/Generic"
-import type {Group} from "@/types"
+import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
 import {useDeleteGroupMutation} from "@/features/api/slice"
 
-type RemoveGroupsModalArgs = {
+interface RemoveGroupsModalArgs {
   groupIds: string[]
-  onOK: (value: Group[]) => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
+  opened: boolean
 }
 
 /* Removes multiple groups */
 export function RemoveGroupsModal({
   groupIds,
-  onOK,
+  opened,
+  onSubmit,
   onCancel
 }: RemoveGroupsModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
-  const [deletedGroup] = useDeleteGroupMutation()
-  //const groupNames = groups.map(g => g.name).join(",")
+  const [deletedGroup, {isLoading}] = useDeleteGroupMutation()
 
   const handleSubmit = async () => {
     await Promise.all(groupIds.map(i => deletedGroup(i)))
-    onOK([])
-    return true
+    onSubmit()
   }
+
   const handleCancel = () => {
     setErrorMessage("")
-
     onCancel()
   }
 
   return (
-    <GenericModal
-      modal_title={"Delete Groups"}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      submit_button_title="Remove"
-      submit_button_color="red"
-    >
-      <p>Are you sure you want to delete selected groups?</p>
-      {errorMessage}
-    </GenericModal>
+    <Modal title="Delete Groups" opened={opened} onClose={handleCancel}>
+      <Container>
+        <p>Are you sure you want to delete selected groups?</p>
+        {errorMessage}
+        <Space h="md" />
+        <Group gap="lg" justify="space-between">
+          <Button variant="default" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            leftSection={isLoading && <Loader size={"sm"} />}
+            onClick={handleSubmit}
+            disabled={isLoading}
+            color={"red"}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Container>
+    </Modal>
   )
 }
 
-type RemoveGroupModalArgs = {
+interface RemoveGroupModalArgs {
   groupId: string
-  onOK: () => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
+  opened: boolean
 }
 
 /* Removes one specific group */
 export function RemoveGroupModal({
   groupId,
-  onOK,
-  onCancel
+  onSubmit,
+  onCancel,
+  opened
 }: RemoveGroupModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
-  const [deletedGroup] = useDeleteGroupMutation()
+  const [deletedGroup, {isLoading}] = useDeleteGroupMutation()
+
   const handleSubmit = async () => {
     await deletedGroup(groupId).unwrap()
-    onOK()
-    return true
+    onSubmit()
   }
   const handleCancel = () => {
     setErrorMessage("")
-
     onCancel()
   }
 
   return (
-    <GenericModal
-      modal_title={"Delete Group"}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      submit_button_title="Remove"
-      submit_button_color="red"
-    >
-      <p>Are you sure you want to delete this group?</p>
-      {errorMessage}
-    </GenericModal>
+    <Modal title="Delete Group" opened={opened} onClose={handleCancel}>
+      <Container>
+        <p>Are you sure you want to delete this group?</p>
+        {errorMessage}
+        <Space h="md" />
+        <Group gap="lg" justify="space-between">
+          <Button variant="default" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            leftSection={isLoading && <Loader size={"sm"} />}
+            onClick={handleSubmit}
+            disabled={isLoading}
+            color={"red"}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Container>
+    </Modal>
   )
 }

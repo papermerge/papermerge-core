@@ -11,36 +11,43 @@ import {
   Loader
 } from "@mantine/core"
 
-import type {GroupDetails} from "@/types"
 import {useAddNewGroupMutation} from "@/features/api/slice"
 
-type Args = {
-  onOK: (value: GroupDetails) => void
-  onCancel: (reason?: any) => void
+const INITIAL_SCOPES = {
+  "user.me": true,
+  "page.view": true,
+  "node.view": true,
+  "ocrlang.view": true
 }
 
-export default function NewGroupModal({onCancel}: Args) {
+interface Args {
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
+}
+
+export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
   const [addNewGroup, {isLoading, isError, isSuccess}] =
     useAddNewGroupMutation()
-  const [show, setShow] = useState<boolean>(true)
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
-  const [scopes, setScopes] = useState<Record<string, boolean>>({
-    "user.me": true,
-    "page.view": true,
-    "node.view": true,
-    "ocrlang.view": true
-  })
+  const [scopes, setScopes] = useState<Record<string, boolean>>(INITIAL_SCOPES)
 
   useEffect(() => {
     // close dialog as soon as we have
     // "success" status from the mutation
     if (isSuccess) {
-      setShow(false)
+      onSubmit()
     }
   }, [isSuccess])
 
-  const onSubmit = async () => {
+  const reset = () => {
+    setName("")
+    setError("")
+    setScopes(INITIAL_SCOPES)
+  }
+
+  const onLocalSubmit = async () => {
     const updatedData = {
       scopes: Object.keys(scopes),
       name: name!
@@ -51,11 +58,12 @@ export default function NewGroupModal({onCancel}: Args) {
       // @ts-ignore
       setError(err.data.detail)
     }
+    reset()
   }
 
-  const onClose = () => {
+  const onLocalCancel = () => {
+    reset()
     onCancel()
-    setShow(false)
   }
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +119,12 @@ export default function NewGroupModal({onCancel}: Args) {
   }
 
   return (
-    <Modal title={"New Group"} opened={show} size="lg" onClose={onClose}>
+    <Modal
+      title={"New Group"}
+      opened={opened}
+      size="lg"
+      onClose={onLocalCancel}
+    >
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
@@ -496,12 +509,12 @@ export default function NewGroupModal({onCancel}: Args) {
       </Table>
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onClose}>
+        <Button variant="default" onClick={onLocalCancel}>
           Cancel
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading || isSuccess} onClick={onSubmit}>
+          <Button disabled={isLoading || isSuccess} onClick={onLocalSubmit}>
             Submit
           </Button>
         </Group>

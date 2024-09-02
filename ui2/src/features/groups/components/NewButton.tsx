@@ -1,16 +1,17 @@
 import {Button} from "@mantine/core"
 import {IconPlus} from "@tabler/icons-react"
-import {openModal} from "@/components/modals/Generic"
+import {useDisclosure} from "@mantine/hooks"
 import NewGroupModal from "./NewGroupModal"
 
 export default function NewButton() {
-  const onClick = () => {
-    openModal<any, {groupId: number}>(NewGroupModal)
-  }
+  const [opened, {open, close}] = useDisclosure(false)
 
   return (
-    <Button leftSection={<IconPlus />} onClick={onClick} variant="default">
-      New
-    </Button>
+    <>
+      <Button leftSection={<IconPlus />} onClick={open} variant="default">
+        New
+      </Button>
+      <NewGroupModal opened={opened} onSubmit={close} onCancel={close} />
+    </>
   )
 }

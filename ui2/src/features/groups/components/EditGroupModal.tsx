@@ -11,7 +11,6 @@ import {
   Loader
 } from "@mantine/core"
 
-import type {GroupDetails} from "@/types"
 import {useGetGroupQuery, useEditGroupMutation} from "@/features/api/slice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
@@ -26,17 +25,22 @@ function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   return scopes
 }
 
-type Args = {
+interface Args {
+  opened: boolean
   groupId: string
-  onOK: (value: GroupDetails) => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
+export default function EditGroupModal({
+  groupId,
+  onSubmit,
+  onCancel,
+  opened
+}: Args) {
   const {data, isLoading} = useGetGroupQuery(groupId)
   const [updateGroup, {isLoading: isLoadingGroupUpdate}] =
     useEditGroupMutation()
-  const [show, setShow] = useState<boolean>(true)
   const [name, setName] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>({})
 
@@ -47,20 +51,25 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
     }
   }, [isLoading])
 
-  const onSubmit = async () => {
+  const formReset = () => {
+    setName("")
+    setScopes({})
+  }
+
+  const onLocalSubmit = async () => {
     const updatedData = {
       id: groupId,
       scopes: Object.keys(scopes),
       name: name!
     }
     await updateGroup(updatedData)
-    onOK(updatedData)
-    setShow(false)
+    formReset()
+    onSubmit()
   }
 
-  const onClose = () => {
+  const onLocalCancel = () => {
+    formReset()
     onCancel()
-    setShow(false)
   }
 
   const onChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +121,12 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
   }
 
   return (
-    <Modal title={"Edit Group"} opened={show} size="lg" onClose={onClose}>
+    <Modal
+      title={"Edit Group"}
+      opened={opened}
+      size="lg"
+      onClose={onLocalCancel}
+    >
       <LoadingOverlay
         visible={data == null || isLoading}
         zIndex={1000}
@@ -501,12 +515,12 @@ export default function EditGroupModal({groupId, onOK, onCancel}: Args) {
         </Table.Tbody>
       </Table>
       <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onClose}>
+        <Button variant="default" onClick={onLocalCancel}>
           Cancel
         </Button>
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}
-          <Button disabled={isLoadingGroupUpdate} onClick={onSubmit}>
+          <Button disabled={isLoadingGroupUpdate} onClick={onLocalSubmit}>
             Update Group
           </Button>
         </Group>

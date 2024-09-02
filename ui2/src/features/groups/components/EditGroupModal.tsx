@@ -45,15 +45,17 @@ export default function EditGroupModal({
   const [scopes, setScopes] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
+    formReset()
+  }, [isLoading, data, opened])
+
+  const formReset = () => {
     if (data) {
       setName(data.name)
       setScopes(initialScopesDict(data.scopes))
+    } else {
+      setName("")
+      setScopes({})
     }
-  }, [isLoading])
-
-  const formReset = () => {
-    setName("")
-    setScopes({})
   }
 
   const onLocalSubmit = async () => {

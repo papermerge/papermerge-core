@@ -38,10 +38,12 @@ export function DeleteTagsButton() {
 
   const onSubmit = () => {
     dispatch(clearSelection())
+    close()
   }
 
   const onCancel = () => {
     dispatch(clearSelection())
+    close()
   }
 
   return (

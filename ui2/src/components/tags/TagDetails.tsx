@@ -1,10 +1,7 @@
-import {useSelector} from "react-redux"
 import {Link, useNavigation} from "react-router-dom"
 import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
-import {selectTagDetails} from "@/slices/tagDetails"
-
-import type {SliceState, ColoredTagType} from "@/types"
+import type {ColoredTagType} from "@/types"
 import {useGetTagQuery} from "@/features/tags/apiSlice"
 import TagForm from "./TagForm"
 import EditButton from "./EditButton"

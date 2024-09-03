@@ -1,19 +1,12 @@
 import {
   createSlice,
-  createAsyncThunk,
   createEntityAdapter,
   PayloadAction,
   createSelector
 } from "@reduxjs/toolkit"
-import axios from "@/httpClient"
 
 import {RootState} from "@/app/types"
-import type {
-  ColoredTagType,
-  NewColoredTag,
-  ColoredTag,
-  PaginationType
-} from "@/types"
+import type {ColoredTagType, ColoredTag, PaginationType} from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
 import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
@@ -60,32 +53,8 @@ const tagsSlice = createSlice({
     lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
       state.lastPageSize = action.payload
     }
-  },
-  extraReducers(builder) {
-    builder.addCase(updateTag.fulfilled, (state, action) => {
-      const group = action.payload
-      state.entities[group.id] = group
-    })
   }
 })
-
-export const fetchTag = createAsyncThunk<ColoredTag, string>(
-  "tags/fetchTag",
-  async (tagId: string) => {
-    const response = await axios.get(`/api/tags/${tagId}`)
-    const data = response.data as ColoredTag
-    return data
-  }
-)
-
-export const updateTag = createAsyncThunk<ColoredTag, ColoredTag>(
-  "tags/updateTag",
-  async (tag: ColoredTagType) => {
-    const response = await axios.patch(`/api/tags/${tag.id}`, tag)
-    const data = response.data as ColoredTag
-    return data
-  }
-)
 
 export const {
   selectionAdd,

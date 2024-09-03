@@ -1,5 +1,4 @@
 import {useState, useEffect} from "react"
-import {useDispatch, useSelector} from "react-redux"
 
 import {
   Loader,
@@ -14,11 +13,7 @@ import {
   LoadingOverlay
 } from "@mantine/core"
 
-import {selectTagDetails} from "@/slices/tagDetails"
 import {useGetTagQuery, useEditTagMutation} from "@/features/tags/apiSlice"
-
-import {RootState} from "@/app/types"
-import type {ColoredTagType, SliceState} from "@/types"
 
 interface Args {
   tagId: string

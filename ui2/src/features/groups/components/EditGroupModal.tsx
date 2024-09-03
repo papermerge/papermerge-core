@@ -11,7 +11,10 @@ import {
   Loader
 } from "@mantine/core"
 
-import {useGetGroupQuery, useEditGroupMutation} from "@/features/api/slice"
+import {
+  useGetGroupQuery,
+  useEditGroupMutation
+} from "@/features/groups/apiSlice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {

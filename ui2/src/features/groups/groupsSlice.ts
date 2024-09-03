@@ -3,7 +3,7 @@ import {createSlice, createSelector, PayloadAction} from "@reduxjs/toolkit"
 import {RootState} from "@/app/types"
 import type {Group, Paginated, PaginationType} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import {apiSlice} from "../api/slice"
+import {apiSliceWithGroups} from "./apiSlice"
 
 export type GroupSlice = {
   selectedIds: Array<string>
@@ -40,7 +40,7 @@ const groupsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addMatcher(
-      apiSlice.endpoints.getPaginatedGroups.matchFulfilled,
+      apiSliceWithGroups.endpoints.getPaginatedGroups.matchFulfilled,
       (state, action) => {
         const payload: Paginated<Group> = action.payload
         state.pagination = {
@@ -63,7 +63,8 @@ export const {
 } = groupsSlice.actions
 export default groupsSlice.reducer
 
-export const selectGroupsResult = apiSlice.endpoints.getGroups.select()
+export const selectGroupsResult =
+  apiSliceWithGroups.endpoints.getGroups.select()
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 

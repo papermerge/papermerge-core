@@ -19,20 +19,23 @@ import {
   useEditUserMutation
 } from "@/features/api/slice"
 
-import type {UserDetails} from "@/types"
-
-type GenericModalArgs = {
+interface EditUserModalArgs {
+  opened: boolean
   userId: string
-  onOK: (value: UserDetails) => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
+export default function EditUserModal({
+  userId,
+  onCancel,
+  onSubmit,
+  opened
+}: EditUserModalArgs) {
   const {data: allGroups = []} = useGetGroupsQuery()
   const {data, isLoading, isSuccess} = useGetUserQuery(userId)
   const [updateUser, {isLoading: isLoadingUserUpdate}] = useEditUserMutation()
 
-  const [show, setShow] = useState<boolean>(true)
   const [groups, setGroups] = useState<string[]>(
     data?.groups.map(g => g.name) || []
   )
@@ -43,6 +46,12 @@ export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
 
   useEffect(() => {
     if (isSuccess) {
+      resetForm()
+    }
+  }, [isLoading, data, opened])
+
+  const resetForm = () => {
+    if (data) {
       form.setValues({
         username: data.username,
         email: data.email,
@@ -51,9 +60,11 @@ export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
         groups: data.groups.map(g => g.name)
       })
     }
-  }, [isLoading])
 
-  const onSubmit = async (userFields: UserEditableFields) => {
+    setGroups(data?.groups.map(g => g.name) || [])
+  }
+
+  const onLocalSubmit = async (userFields: UserEditableFields) => {
     const group_ids = allGroups
       .filter(g => groups.includes(g.name))
       .map(g => g.id)
@@ -68,21 +79,21 @@ export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
     try {
       await updateUser(updatedData).unwrap()
     } catch (err) {}
-    setShow(false)
+
+    onSubmit()
   }
   const onClose = () => {
     onCancel()
-    setShow(false)
   }
 
   return (
-    <Modal title={"Edit User"} opened={show} onClose={onClose}>
+    <Modal title={"Edit User"} opened={opened} onClose={onClose}>
       <LoadingOverlay
         visible={isLoading}
         zIndex={1000}
         overlayProps={{radius: "sm", blur: 2}}
       />
-      <form onSubmit={form.onSubmit(onSubmit)}>
+      <form onSubmit={form.onSubmit(onLocalSubmit)}>
         <TextInput
           label="Username"
           placeholder="username"
@@ -116,7 +127,7 @@ export default function EditUserModal({userId, onCancel}: GenericModalArgs) {
           data={allGroups.map(g => g.name) || []}
         />
         <Group justify="space-between" mt="md">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onCancel}>
             Cancel
           </Button>
           <Group>

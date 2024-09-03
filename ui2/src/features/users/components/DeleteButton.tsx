@@ -1,68 +1,63 @@
-import {useEffect, useState} from "react"
 import {Button} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {
-  selectSelectedIds,
-  selectUserById,
-  clearSelection
-} from "@/features/users/slice"
-import {openModal} from "@/components/modals/Generic"
-
-import type {User} from "@/types"
+import {selectSelectedIds, clearSelection} from "@/features/users/slice"
 
 import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
-import {RootState} from "@/app/types"
 
 export function DeleteUserButton({userId}: {userId: string}) {
-  const [redirect, setRedirect] = useState<boolean>(false)
+  const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
-  const deletedUser = useSelector<RootState>(state =>
-    selectUserById(state, userId)
-  )
-
-  useEffect(() => {
-    if (redirect && deletedUser == null) {
-      navigate("/users/")
-    }
-  }, [deletedUser, redirect])
-
-  const onClick = () => {
-    openModal<User[], {userId: string}>(RemoveUserModal, {
-      userId: userId
-    })
-      .then(() => {
-        setRedirect(true)
-      })
-      .catch(() => {})
+  const onSubmit = () => {
+    navigate("/users/")
   }
+
   return (
-    <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
-      Delete
-    </Button>
+    <>
+      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+        Delete
+      </Button>
+      <RemoveUserModal
+        opened={opened}
+        onSubmit={onSubmit}
+        onCancel={close}
+        userId={userId}
+      />
+    </>
   )
 }
 
 /* Deletes one or multiple users (with confirmation) */
 export function DeleteUsersButton() {
+  const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
 
-  const onClick = () => {
-    openModal<User[], {userIds: Array<string>}>(RemoveUsersModal, {
-      userIds: selectedIds
-    })
-      .then(() => {
-        dispatch(clearSelection())
-      })
-      .catch(() => dispatch(clearSelection()))
+  const onSubmit = () => {
+    close()
+    dispatch(clearSelection())
   }
+
+  const onCancel = () => {
+    close()
+    dispatch(clearSelection())
+  }
+
   return (
-    <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
-      Delete
-    </Button>
+    <>
+      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+        Delete
+      </Button>
+      <RemoveUsersModal
+        opened={opened}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        userIds={selectedIds}
+      />
+    </>
   )
 }

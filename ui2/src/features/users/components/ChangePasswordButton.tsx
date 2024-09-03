@@ -1,27 +1,18 @@
-import {useState} from "react"
-
+import {useEffect} from "react"
+import {useDisclosure} from "@mantine/hooks"
 import {useForm} from "@mantine/form"
 import {PasswordInput, Group, Button, Box, Modal, Loader} from "@mantine/core"
 import {IconPassword} from "@tabler/icons-react"
-import {openModal} from "@/components/modals/Generic"
 import {useChangePasswordMutation} from "@/features/api/slice"
 
-type ChangePasswordButtonArgs = {
+interface ChangePasswordButtonArgs {
   userId?: string
 }
 
 export default function ChangePasswordButton({
   userId
 }: ChangePasswordButtonArgs) {
-  const onClick = () => {
-    // onClick hanlder is attached to the button
-    // only when userId is defined and non-empty
-    openModal<any, {userId: string}>(ChangeUserPasswordModal, {
-      userId: userId!
-    })
-      .then(() => {})
-      .catch(() => {})
-  }
+  const [opened, {open, close}] = useDisclosure(false)
 
   if (!userId) {
     // if userId is not defined, render button as disabled
@@ -38,25 +29,38 @@ export default function ChangePasswordButton({
   }
 
   return (
-    <Button
-      leftSection={<IconPassword />}
-      onClick={onClick} // only with userId defined and non-empty
-      variant={"default"}
-    >
-      Change Password
-    </Button>
+    <>
+      <Button
+        leftSection={<IconPassword />}
+        onClick={open} // only with userId defined and non-empty
+        variant={"default"}
+      >
+        Change Password
+      </Button>
+      <ChangeUserPasswordModal
+        opened={opened}
+        userId={userId}
+        onSubmit={close}
+        onCancel={close}
+      />
+    </>
   )
 }
 
-type GenericModalArgs = {
+interface ChangePasswordModalArgs {
+  opened: boolean
   userId: string
-  onOK: () => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-function ChangeUserPasswordModal({userId, onCancel}: GenericModalArgs) {
+function ChangeUserPasswordModal({
+  userId,
+  onCancel,
+  onSubmit,
+  opened
+}: ChangePasswordModalArgs) {
   const [changePassword, {isLoading, isSuccess}] = useChangePasswordMutation()
-  const [show, setShow] = useState<boolean>(true)
 
   const form = useForm({
     mode: "uncontrolled",
@@ -73,19 +77,22 @@ function ChangeUserPasswordModal({userId, onCancel}: GenericModalArgs) {
     }
   })
 
-  const onSubmit = async ({password}: {password: string}) => {
+  useEffect(() => {
+    form.reset()
+  }, [opened])
+
+  const onLocalSubmit = async ({password}: {password: string}) => {
     await changePassword({userId, password})
-    setShow(false)
+    onSubmit()
   }
   const onClose = () => {
     onCancel()
-    setShow(false)
   }
 
   return (
-    <Modal title={"Change Password"} opened={show} onClose={onClose}>
+    <Modal title={"Change Password"} opened={opened} onClose={onClose}>
       <Box>
-        <form onSubmit={form.onSubmit(onSubmit)}>
+        <form onSubmit={form.onSubmit(onLocalSubmit)}>
           <PasswordInput
             label="Password"
             placeholder="Password"

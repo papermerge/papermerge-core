@@ -1,16 +1,11 @@
+import {useDisclosure} from "@mantine/hooks"
 import {Button} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
-
-import {openModal} from "@/components/modals/Generic"
 
 import EditUserModal from "./EditUserModal"
 
 export default function EditButton({userId}: {userId?: string}) {
-  const onClick = () => {
-    openModal<any, {userId: string}>(EditUserModal, {
-      userId: userId!
-    })
-  }
+  const [opened, {open, close}] = useDisclosure(false)
 
   if (!userId) {
     return (
@@ -21,8 +16,16 @@ export default function EditButton({userId}: {userId?: string}) {
   }
 
   return (
-    <Button leftSection={<IconEdit />} variant={"default"} onClick={onClick}>
-      Edit
-    </Button>
+    <>
+      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
+        Edit
+      </Button>
+      <EditUserModal
+        opened={opened}
+        userId={userId}
+        onSubmit={close}
+        onCancel={close}
+      />
+    </>
   )
 }

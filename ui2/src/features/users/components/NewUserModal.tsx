@@ -18,7 +18,7 @@ import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 import {useAddNewUserMutation, useGetGroupsQuery} from "@/features/api/slice"
 
-interface GenericModalArgs {
+interface NewUserModalArgs {
   opened: boolean
   onSubmit: () => void
   onCancel: () => void
@@ -28,7 +28,7 @@ export default function NewUserModal({
   onCancel,
   onSubmit,
   opened
-}: GenericModalArgs) {
+}: NewUserModalArgs) {
   const {data = []} = useGetGroupsQuery()
   const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
 

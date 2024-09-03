@@ -1,80 +1,115 @@
 import {useState} from "react"
+import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
 import {useDeleteUserMutation} from "@/features/api/slice"
 
-import GenericModal from "@/components/modals/Generic"
-
-type RemoveUsersModalArgs = {
+interface RemoveUsersModalArgs {
+  opened: boolean
   userIds: string[]
-  onOK: () => void
-  onCancel: (reason?: any) => void
+  onSubmit: () => void
+  onCancel: () => void
 }
 
 /* Removes multiple users */
 export function RemoveUsersModal({
+  opened,
   userIds,
-  onOK,
+  onSubmit,
   onCancel
 }: RemoveUsersModalArgs) {
   const [errorMessage, setErrorMessage] = useState("")
-  const [deletedUser] = useDeleteUserMutation()
+  const [deletedUser, {isLoading}] = useDeleteUserMutation()
 
   const handleSubmit = async () => {
     await Promise.all(userIds.map(i => deletedUser(i)))
-    onOK()
-    return true
+    onSubmit()
+    reset()
   }
-  const handleCancel = () => {
-    setErrorMessage("")
 
+  const handleCancel = () => {
     onCancel()
+    reset()
+  }
+
+  const reset = () => {
+    setErrorMessage("")
   }
 
   return (
-    <GenericModal
-      modal_title={"Delete Users"}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      submit_button_title="Remove"
-      submit_button_color="red"
-    >
-      <p>Are you sure you want to delete selected users?</p>
-      {errorMessage}
-    </GenericModal>
+    <Modal title="Delete Users" opened={opened} onClose={handleCancel}>
+      <Container>
+        <p>Are you sure you want to delete selected users?</p>
+        {errorMessage}
+        <Space h="md" />
+        <Group gap="lg" justify="space-between">
+          <Button variant="default" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            leftSection={isLoading && <Loader size={"sm"} />}
+            onClick={handleSubmit}
+            disabled={isLoading}
+            color={"red"}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Container>
+    </Modal>
   )
 }
 
-type RemoveUserModalArgs = {
+interface RemoveUserModalArgs {
   userId: string
-  onOK: (value: string) => void
-  onCancel: (reason?: any) => void
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
 }
 
 /* Removes one specific user */
-export function RemoveUserModal({userId, onOK, onCancel}: RemoveUserModalArgs) {
-  const [deletedUser] = useDeleteUserMutation()
+export function RemoveUserModal({
+  opened,
+  userId,
+  onSubmit,
+  onCancel
+}: RemoveUserModalArgs) {
+  const [deletedUser, {isLoading}] = useDeleteUserMutation()
   const [errorMessage, setErrorMessage] = useState("")
 
   const handleSubmit = async () => {
     await deletedUser(userId)
-    onOK(userId)
-    return true
+    onSubmit()
+    reset()
   }
-  const handleCancel = () => {
-    setErrorMessage("")
 
+  const handleCancel = () => {
     onCancel()
+    reset()
+  }
+
+  const reset = () => {
+    setErrorMessage("")
   }
 
   return (
-    <GenericModal
-      modal_title={"Delete Users"}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      submit_button_title="Remove"
-      submit_button_color="red"
-    >
-      <p>Are you sure you want to delete user?</p>
-      {errorMessage}
-    </GenericModal>
+    <Modal title="Delete User" opened={opened} onClose={handleCancel}>
+      <Container>
+        <p>Are you sure you want to delete user?</p>
+        {errorMessage}
+        <Space h="md" />
+        <Group gap="lg" justify="space-between">
+          <Button variant="default" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            leftSection={isLoading && <Loader size={"sm"} />}
+            onClick={handleSubmit}
+            disabled={isLoading}
+            color={"red"}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Container>
+    </Modal>
   )
 }

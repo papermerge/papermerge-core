@@ -8,7 +8,6 @@ import "@/index.css"
 import {store} from "@/app/store"
 import {fetchCurrentUser} from "@/slices/currentUser"
 import {cookieLoaded} from "@/features/auth/slice"
-import {fetchTags} from "@/slices/tags"
 
 import theme from "@/themes"
 import router from "./router"
@@ -16,7 +15,6 @@ import router from "./router"
 function start_app() {
   store.dispatch(cookieLoaded())
   store.dispatch(fetchCurrentUser())
-  store.dispatch(fetchTags({pageNumber: 1, pageSize: 999}))
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

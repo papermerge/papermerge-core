@@ -1,21 +1,20 @@
-import {useSelector} from "react-redux"
 import {Link, useNavigation} from "react-router-dom"
 import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
-import {selectTagDetails} from "@/slices/tagDetails"
-
-import type {SliceState, ColoredTagType} from "@/types"
-import type {RootState} from "@/app/types"
+import type {ColoredTagType} from "@/types"
+import {useGetTagQuery} from "@/features/tags/apiSlice"
 import TagForm from "./TagForm"
 import EditButton from "./EditButton"
 import {DeleteTagButton} from "./DeleteButton"
 
-export default function TagDetails() {
-  const {data} = useSelector<RootState>(
-    selectTagDetails
-  ) as SliceState<ColoredTagType>
+interface TagDetailsArgs {
+  tagId: string
+}
 
-  if (data == null) {
+export default function TagDetails({tagId}: TagDetailsArgs) {
+  const {data, isLoading} = useGetTagQuery(tagId)
+
+  if (isLoading || !data) {
     return (
       <Box pos="relative">
         <LoadingOverlay

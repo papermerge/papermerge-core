@@ -1,14 +1,14 @@
-import {Center, Stack, Table, Checkbox} from "@mantine/core"
+import {useState} from "react"
+import {Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
 import {
-  selectAllTags,
   selectionAddMany,
   selectSelectedIds,
   clearSelection,
-  selectPagination,
-  fetchTags,
-  selectLastPageSize
+  selectLastPageSize,
+  lastPageSizeUpdate
 } from "@/slices/tags"
+import {useGetPaginatedTagsQuery} from "@/features/tags/apiSlice"
 
 import Pagination from "@/components/Pagination"
 import TagRow from "./TagRow"
@@ -16,32 +16,55 @@ import ActionButtons from "./ActionButtons"
 
 export default function TagsList() {
   const selectedIds = useSelector(selectSelectedIds)
-  const tags = useSelector(selectAllTags)
   const dispatch = useDispatch()
-  const pagination = useSelector(selectPagination)
   const lastPageSize = useSelector(selectLastPageSize)
 
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+
+  const {data, isLoading, isFetching} = useGetPaginatedTagsQuery({
+    page_number: page,
+    page_size: pageSize
+  })
+
   const onCheckAll = (checked: boolean) => {
+    if (!data) {
+      console.log(`undefined data`)
+      return
+    }
+
     if (checked) {
-      // check all/select all group items
-      dispatch(selectionAddMany(tags.map(i => i.id)))
+      dispatch(selectionAddMany(data.items.map(i => i.id)))
     } else {
-      // uncheck all/unselect all group items
       dispatch(clearSelection())
     }
   }
 
   const onPageNumberChange = (page: number) => {
-    dispatch(fetchTags({pageNumber: page, pageSize: pagination?.pageSize}))
+    setPage(page)
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      dispatch(fetchTags({pageNumber: 1, pageSize: parseInt(value)}))
+      const pageSize = parseInt(value)
+
+      dispatch(lastPageSizeUpdate(pageSize))
+      setPageSize(pageSize)
     }
   }
 
-  if (tags.length == 0) {
+  if (isLoading || !data) {
+    return (
+      <Stack>
+        <ActionButtons />
+        <Center>
+          <Loader type="bars" />
+        </Center>
+      </Stack>
+    )
+  }
+
+  if (data.items.length == 0) {
     return (
       <div>
         <ActionButtons />
@@ -50,17 +73,17 @@ export default function TagsList() {
     )
   }
 
-  const tagRows = tags.map(t => <TagRow key={t.id} tag={t} />)
+  const tagRows = data?.items.map(t => <TagRow key={t.id} tag={t} />)
 
   return (
     <Stack>
-      <ActionButtons />
+      <ActionButtons /> {isFetching && <Loader size={"sm"} />}
       <Table>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>
               <Checkbox
-                checked={tags.length == selectedIds.length}
+                checked={data.items.length == selectedIds.length}
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
@@ -73,7 +96,11 @@ export default function TagsList() {
         <Table.Tbody>{tagRows}</Table.Tbody>
       </Table>
       <Pagination
-        pagination={pagination}
+        pagination={{
+          pageNumber: page,
+          pageSize: pageSize,
+          numPages: data.num_pages
+        }}
         onPageNumberChange={onPageNumberChange}
         onPageSizeChange={onPageSizeChange}
         lastPageSize={lastPageSize}

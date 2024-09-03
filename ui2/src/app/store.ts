@@ -7,7 +7,6 @@ import navBarReducer from "@/slices/navBar"
 import tagsReducer from "@/slices/tags"
 import groupsReducer from "@/features/groups/groupsSlice"
 import usersReducer from "@/features/users/usersSlice"
-import tagDetailsReducer from "@/slices/tagDetails"
 import {uploaderReducer} from "@/slices/uploader"
 import sizesSliceReducer from "@/slices/sizes"
 import dragndropReducer from "@/slices/dragndrop"
@@ -21,7 +20,6 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     users: usersReducer,
-    tagDetails: tagDetailsReducer,
     uploader: uploaderReducer,
     sizes: sizesSliceReducer,
     dragndrop: dragndropReducer,

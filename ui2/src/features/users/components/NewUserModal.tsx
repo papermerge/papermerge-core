@@ -16,7 +16,8 @@ import {UserEditableFields} from "@/types"
 
 import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
-import {useAddNewUserMutation, useGetGroupsQuery} from "@/features/api/slice"
+import {useGetGroupsQuery} from "@/features/api/slice"
+import {useAddNewUserMutation} from "@/features/users/api"
 
 interface NewUserModalArgs {
   opened: boolean

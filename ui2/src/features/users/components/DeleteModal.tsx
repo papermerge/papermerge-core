@@ -1,6 +1,6 @@
 import {useState} from "react"
 import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
-import {useDeleteUserMutation} from "@/features/api/slice"
+import {useDeleteUserMutation} from "@/features/users/api"
 
 interface RemoveUsersModalArgs {
   opened: boolean

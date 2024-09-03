@@ -1,7 +1,7 @@
 import {Link, useNavigation} from "react-router-dom"
 import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
-import {useGetUserQuery} from "@/features/api/slice"
+import {useGetUserQuery} from "@/features/users/api"
 import type {UserDetails} from "@/types"
 import UserForm from "./UserForm"
 import EditButton from "./EditButton"

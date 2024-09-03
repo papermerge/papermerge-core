@@ -325,3 +325,8 @@ export type ApplyPagesType = {
   angle: number
   page: ShortPageType
 }
+
+export type PaginatedArgs = {
+  page_number?: number
+  page_size?: number
+}

@@ -2,17 +2,7 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-import type {
-  User,
-  CreateUser,
-  UserUpdate,
-  UserDetails,
-  ChangePassword,
-  Group,
-  GroupUpdate,
-  Paginated,
-  NewGroup
-} from "@/types"
+import type {Group, GroupUpdate, Paginated, NewGroup} from "@/types"
 import type {RootState} from "@/app/types"
 
 type PaginatedArgs = {
@@ -107,62 +97,6 @@ export const apiSlice = createApi({
         method: "DELETE"
       }),
       invalidatesTags: (_result, _error, id) => [{type: "Group", id: id}]
-    }),
-    getPaginatedUsers: builder.query<Paginated<User>, PaginatedArgs | void>({
-      query: ({
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: PaginatedArgs) =>
-        `/users/?page_number=${page_number}&page_size=${page_size}`,
-      providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
-        _error,
-        _arg
-      ) => [
-        "User",
-        ...result.items.map(({id}) => ({type: "User", id}) as const)
-      ]
-    }),
-    getUsers: builder.query<User[], void>({
-      query: _users => "/users/all",
-      providesTags: (result = [], _error, _arg) => [
-        "User",
-        ...result.map(({id}) => ({type: "User", id}) as const)
-      ]
-    }),
-    getUser: builder.query<UserDetails, string>({
-      query: userID => `/users/${userID}`,
-      providesTags: (_result, _error, arg) => [{type: "User", id: arg}]
-    }),
-    addNewUser: builder.mutation<User, CreateUser>({
-      query: user => ({
-        url: "/users/",
-        method: "POST",
-        body: user
-      }),
-      invalidatesTags: ["User"]
-    }),
-    editUser: builder.mutation<User, UserUpdate>({
-      query: user => ({
-        url: `users/${user.id}`,
-        method: "PATCH",
-        body: user
-      }),
-      invalidatesTags: (_result, _error, arg) => [{type: "User", id: arg.id}]
-    }),
-    deleteUser: builder.mutation<void, string>({
-      query: userID => ({
-        url: `users/${userID}`,
-        method: "DELETE"
-      }),
-      invalidatesTags: (_result, _error, id) => [{type: "User", id: id}]
-    }),
-    changePassword: builder.mutation<void, ChangePassword>({
-      query: chPwd => ({
-        url: `/users/${chPwd.userId}/change-password/`,
-        method: "POST",
-        body: chPwd
-      })
     })
   })
 })
@@ -173,12 +107,5 @@ export const {
   useGetGroupQuery,
   useEditGroupMutation,
   useDeleteGroupMutation,
-  useAddNewGroupMutation,
-  useGetPaginatedUsersQuery,
-  useGetUsersQuery,
-  useGetUserQuery,
-  useAddNewUserMutation,
-  useEditUserMutation,
-  useDeleteUserMutation,
-  useChangePasswordMutation
+  useAddNewGroupMutation
 } = apiSlice

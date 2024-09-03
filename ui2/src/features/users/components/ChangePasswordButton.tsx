@@ -3,7 +3,7 @@ import {useDisclosure} from "@mantine/hooks"
 import {useForm} from "@mantine/form"
 import {PasswordInput, Group, Button, Box, Modal, Loader} from "@mantine/core"
 import {IconPassword} from "@tabler/icons-react"
-import {useChangePasswordMutation} from "@/features/api/slice"
+import {useChangePasswordMutation} from "@/features/users/api"
 
 interface ChangePasswordButtonArgs {
   userId?: string

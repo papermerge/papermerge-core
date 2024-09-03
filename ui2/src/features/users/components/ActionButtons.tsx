@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
 import {Group} from "@mantine/core"
-import {selectSelectedIds} from "@/features/users/slice"
+import {selectSelectedIds} from "@/features/users/usersSlice"
 
 import NewButton from "./NewButton"
 import ChangePasswordButton from "./ChangePasswordButton"

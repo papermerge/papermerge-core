@@ -13,9 +13,9 @@ import {
 } from "@mantine/core"
 
 import {UserEditableFields} from "@/types"
-import {useGetUserQuery, useEditUserMutation} from "@/features/users/api"
+import {useGetUserQuery, useEditUserMutation} from "@/features/users/apiSlice"
 
-import {useGetGroupsQuery} from "@/features/api/slice"
+import {useGetGroupsQuery} from "@/features/groups/apiSlice"
 
 interface EditUserModalArgs {
   opened: boolean

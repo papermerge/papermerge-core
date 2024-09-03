@@ -1,6 +1,6 @@
 import {createSlice, PayloadAction, createSelector} from "@reduxjs/toolkit"
 
-import {apiSliceWithUsers} from "./api"
+import {apiSliceWithUsers} from "./apiSlice"
 
 import {RootState} from "@/app/types"
 import type {User, Paginated, PaginationType} from "@/types"

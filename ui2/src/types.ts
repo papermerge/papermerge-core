@@ -90,6 +90,11 @@ export type NewColoredTag = {
   description: string
 }
 
+export type ColoredTagUpdate = Pick<
+  ColoredTag,
+  "id" | "name" | "bg_color" | "fg_color" | "description" | "pinned"
+>
+
 export type ColoredTag = NewColoredTag & {
   id: string
 }

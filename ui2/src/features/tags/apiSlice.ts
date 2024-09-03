@@ -1,5 +1,11 @@
 import {apiSlice} from "@/features/api/slice"
-import type {ColoredTag, NewColoredTag, Paginated, PaginatedArgs} from "@/types"
+import type {
+  ColoredTag,
+  NewColoredTag,
+  ColoredTagUpdate,
+  Paginated,
+  PaginatedArgs
+} from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -27,6 +33,10 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "Tag", id}) as const)
       ]
     }),
+    getTag: builder.query<ColoredTag, string>({
+      query: tagID => `/tags/${tagID}`,
+      providesTags: (_result, _error, arg) => [{type: "Tag", id: arg}]
+    }),
     addNewTag: builder.mutation<ColoredTag, NewColoredTag>({
       query: tag => ({
         url: "/tags/",
@@ -34,6 +44,14 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
         body: tag
       }),
       invalidatesTags: ["Tag"]
+    }),
+    editTag: builder.mutation<ColoredTag, ColoredTagUpdate>({
+      query: tag => ({
+        url: `tags/${tag.id}`,
+        method: "PATCH",
+        body: tag
+      }),
+      invalidatesTags: (_result, _error, arg) => [{type: "Tag", id: arg.id}]
     }),
     deleteTag: builder.mutation<void, string>({
       query: tagID => ({
@@ -48,6 +66,8 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
 export const {
   useGetPaginatedTagsQuery,
   useGetTagsQuery,
+  useGetTagQuery,
+  useEditTagMutation,
   useAddNewTagMutation,
   useDeleteTagMutation
 } = apiSliceWithTags

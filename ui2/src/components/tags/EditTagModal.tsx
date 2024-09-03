@@ -2,6 +2,7 @@ import {useState, useEffect} from "react"
 import {useDispatch, useSelector} from "react-redux"
 
 import {
+  Loader,
   Checkbox,
   Group,
   Button,
@@ -14,36 +15,38 @@ import {
 } from "@mantine/core"
 
 import {selectTagDetails} from "@/slices/tagDetails"
-import {updateTag} from "@/slices/tags"
+import {useGetTagQuery, useEditTagMutation} from "@/features/tags/apiSlice"
+
 import {RootState} from "@/app/types"
 import type {ColoredTagType, SliceState} from "@/types"
 
-type Args = {
-  onOK: (value: ColoredTagType) => void
-  onCancel: (reason?: any) => void
+interface Args {
+  tagId: string
+  onSubmit: () => void
+  onCancel: () => void
+  opened: boolean
 }
 
-export default function EditTagModal({onOK, onCancel}: Args) {
+export default function EditTagModal({
+  onSubmit,
+  onCancel,
+  tagId,
+  opened
+}: Args) {
+  const {data} = useGetTagQuery(tagId)
+  const [updateTag, {isLoading: isLoadingTagUpdate}] = useEditTagMutation()
   const [name, setName] = useState<string>("")
-  const {status, data} = useSelector<RootState>(
-    selectTagDetails
-  ) as SliceState<ColoredTagType>
+
   const [description, setDescription] = useState<string>("")
   const [pinned, setPinned] = useState<boolean>(false)
   const [bgColor, setBgColor] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
-  const dispatch = useDispatch()
-  const [show, setShow] = useState<boolean>(true)
 
   useEffect(() => {
     if (data) {
-      setName(data.name || "")
-      setBgColor(data.bg_color || "")
-      setFgColor(data.fg_color || "")
-      setDescription(data.description || "")
-      setPinned(data.pinned)
+      formReset()
     }
-  }, [status])
+  }, [opened])
 
   const onNameChange = (value: string) => {
     setName(value)
@@ -57,7 +60,7 @@ export default function EditTagModal({onOK, onCancel}: Args) {
     setFgColor(value)
   }
 
-  const onSubmit = async () => {
+  const onLocalSubmit = async () => {
     const updatedTagData = {
       name,
       pinned,
@@ -67,19 +70,27 @@ export default function EditTagModal({onOK, onCancel}: Args) {
       fg_color: fgColor
     }
 
-    const response = await dispatch(updateTag(updatedTagData))
-    const tagDetailsData = response.payload as ColoredTagType
-
-    onOK(tagDetailsData)
-    setShow(false)
+    await updateTag(updatedTagData)
+    formReset()
+    onSubmit()
   }
-  const onClose = () => {
+
+  const onLocalCancel = () => {
     onCancel()
-    setShow(false)
+  }
+
+  const formReset = () => {
+    if (data) {
+      setName(data.name || "")
+      setBgColor(data.bg_color || "")
+      setFgColor(data.fg_color || "")
+      setDescription(data.description || "")
+      setPinned(data.pinned || false)
+    }
   }
 
   return (
-    <Modal title={"Edit Tag"} opened={show} onClose={onClose}>
+    <Modal title={"Edit Tag"} opened={opened} onClose={onLocalCancel}>
       <Box>
         <LoadingOverlay
           visible={data == null}
@@ -124,10 +135,15 @@ export default function EditTagModal({onOK, onCancel}: Args) {
           </Pill>
         </Box>
         <Group justify="space-between" mt="md">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onLocalCancel}>
             Cancel
           </Button>
-          <Button onClick={onSubmit}>Submit</Button>
+          <Group>
+            {isLoadingTagUpdate && <Loader size="sm" />}
+            <Button disabled={isLoadingTagUpdate} onClick={onLocalSubmit}>
+              Submit
+            </Button>
+          </Group>
         </Group>
       </Box>
     </Modal>

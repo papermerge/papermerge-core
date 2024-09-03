@@ -12,7 +12,6 @@ import type {
   ColoredTagType,
   NewColoredTag,
   ColoredTag,
-  Paginated,
   PaginationType
 } from "@/types"
 import type {SliceStateStatus, SliceStateError} from "@/types"
@@ -57,18 +56,12 @@ const tagsSlice = createSlice({
     },
     clearSelection: state => {
       state.selectedIds = []
+    },
+    lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
+      state.lastPageSize = action.payload
     }
   },
   extraReducers(builder) {
-    builder.addCase(fetchTags.fulfilled, (state, action) => {
-      tagsAdapter.setAll(state, action.payload.items)
-      state.pagination = {
-        numPages: action.payload.num_pages,
-        pageNumber: action.payload.page_number,
-        pageSize: action.payload.page_size
-      }
-      state.lastPageSize = action.payload.page_size
-    })
     builder.addCase(fetchTag.fulfilled, (state, action) => {
       const newGroup = action.payload
       const newGroupID = action.payload.id
@@ -82,28 +75,6 @@ const tagsSlice = createSlice({
     builder.addCase(removeTags.fulfilled, tagsAdapter.removeMany)
   }
 })
-
-type fetchTagsArgs = {
-  pageNumber?: number
-  pageSize?: number
-}
-
-export const fetchTags = createAsyncThunk<Paginated<ColoredTag>, fetchTagsArgs>(
-  "tags/fetchTags",
-  async (args: fetchTagsArgs) => {
-    const pageNumber = args.pageNumber || 1
-    const pageSize = args.pageSize || INITIAL_PAGE_SIZE
-
-    const response = await axios.get("/api/tags/", {
-      params: {
-        page_size: pageSize,
-        page_number: pageNumber
-      }
-    })
-    const data = response.data as Paginated<ColoredTag>
-    return data
-  }
-)
 
 export const fetchTag = createAsyncThunk<ColoredTag, string>(
   "tags/fetchTag",
@@ -145,8 +116,13 @@ export const removeTags = createAsyncThunk<string[], string[]>(
   }
 )
 
-export const {selectionAdd, selectionAddMany, selectionRemove, clearSelection} =
-  tagsSlice.actions
+export const {
+  selectionAdd,
+  selectionAddMany,
+  selectionRemove,
+  clearSelection,
+  lastPageSizeUpdate
+} = tagsSlice.actions
 export default tagsSlice.reducer
 
 export const {selectAll: selectAllTags} = tagsAdapter.getSelectors<RootState>(
@@ -180,10 +156,6 @@ export const selectTagsByName = createSelector(
     return allTags.filter(t => names.includes(t.name))
   }
 )
-
-export const selectPagination = (state: RootState): PaginationType | null => {
-  return state.tags.pagination
-}
 
 export const selectLastPageSize = (state: RootState): number => {
   return state.tags.lastPageSize

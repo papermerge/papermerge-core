@@ -6,7 +6,7 @@ import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
-} from "@/features/users/slice"
+} from "@/features/users/usersSlice"
 
 import type {User} from "@/types"
 

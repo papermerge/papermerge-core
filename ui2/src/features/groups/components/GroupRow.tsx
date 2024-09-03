@@ -5,7 +5,7 @@ import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
-} from "@/features/groups/slice"
+} from "@/features/groups/groupsSlice"
 import type {Group} from "@/types"
 
 type Args = {

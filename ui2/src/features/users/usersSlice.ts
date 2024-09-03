@@ -1,6 +1,6 @@
 import {createSlice, PayloadAction, createSelector} from "@reduxjs/toolkit"
 
-import {apiSlice} from "@/features/api/slice"
+import {apiSliceWithUsers} from "./apiSlice"
 
 import {RootState} from "@/app/types"
 import type {User, Paginated, PaginationType} from "@/types"
@@ -41,7 +41,7 @@ const usersSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addMatcher(
-      apiSlice.endpoints.getPaginatedUsers.matchFulfilled,
+      apiSliceWithUsers.endpoints.getPaginatedUsers.matchFulfilled,
       (state, action) => {
         const payload: Paginated<User> = action.payload
         state.pagination = {
@@ -64,7 +64,7 @@ export const {
 } = usersSlice.actions
 export default usersSlice.reducer
 
-export const selectUsersResult = apiSlice.endpoints.getUsers.select()
+export const selectUsersResult = apiSliceWithUsers.endpoints.getUsers.select()
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 

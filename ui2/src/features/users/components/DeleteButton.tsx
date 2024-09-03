@@ -4,7 +4,7 @@ import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIds, clearSelection} from "@/features/users/slice"
+import {selectSelectedIds, clearSelection} from "@/features/users/usersSlice"
 
 import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
 

@@ -7,8 +7,8 @@ import {
   clearSelection,
   selectLastPageSize,
   lastPageSizeUpdate
-} from "@/features/users/slice"
-import {useGetPaginatedUsersQuery} from "@/features/api/slice"
+} from "@/features/users/usersSlice"
+import {useGetPaginatedUsersQuery} from "@/features/users/apiSlice"
 
 import Pagination from "@/components/Pagination"
 

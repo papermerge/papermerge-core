@@ -4,7 +4,7 @@ import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIds, clearSelection} from "@/features/groups/slice"
+import {selectSelectedIds, clearSelection} from "@/features/groups/groupsSlice"
 
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 

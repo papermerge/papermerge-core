@@ -11,7 +11,7 @@ import {
   Loader
 } from "@mantine/core"
 
-import {useAddNewGroupMutation} from "@/features/api/slice"
+import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
 
 const INITIAL_SCOPES = {
   "user.me": true,

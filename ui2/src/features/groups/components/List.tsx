@@ -7,8 +7,8 @@ import {
   clearSelection,
   selectLastPageSize,
   lastPageSizeUpdate
-} from "@/features/groups/slice"
-import {useGetPaginatedGroupsQuery} from "@/features/api/slice"
+} from "@/features/groups/groupsSlice"
+import {useGetPaginatedGroupsQuery} from "@/features/groups/apiSlice"
 
 import Pagination from "@/components/Pagination"
 import GroupRow from "./GroupRow"

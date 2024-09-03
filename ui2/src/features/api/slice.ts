@@ -41,14 +41,5 @@ export const apiSlice = createApi({
   baseQuery: baseQuery,
   keepUnusedDataFor: 60,
   tagTypes: ["Group", "User"],
-  endpoints: builder => ({})
+  endpoints: _ => ({})
 })
-
-export const {
-  useGetPaginatedGroupsQuery,
-  useGetGroupsQuery,
-  useGetGroupQuery,
-  useEditGroupMutation,
-  useDeleteGroupMutation,
-  useAddNewGroupMutation
-} = apiSlice

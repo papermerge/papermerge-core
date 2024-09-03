@@ -514,7 +514,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading || isSuccess} onClick={onLocalSubmit}>
+          <Button disabled={isLoading} onClick={onLocalSubmit}>
             Submit
           </Button>
         </Group>

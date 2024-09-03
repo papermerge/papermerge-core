@@ -1,7 +1,8 @@
-import {useState} from "react"
-import {useDispatch} from "react-redux"
+import {useState, useEffect} from "react"
 
 import {
+  Text,
+  Loader,
   Checkbox,
   Group,
   Button,
@@ -11,24 +12,31 @@ import {
   Pill,
   Box
 } from "@mantine/core"
+import {useAddNewTagMutation} from "@/features/tags/apiSlice"
 
-import {addTag} from "@/slices/tags"
-
-import type {ColoredTagType} from "@/types"
-
-type Args = {
-  onOK: (value: ColoredTagType) => void
-  onCancel: (reason?: any) => void
+interface Args {
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-export default function NewTagModal({onOK, onCancel}: Args) {
+export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
+  const [addNewTag, {isLoading, isError, isSuccess}] = useAddNewTagMutation()
   const [name, setName] = useState<string>("")
   const [description, setDescription] = useState<string>("")
   const [pinned, setPinned] = useState<boolean>(false)
   const [bgColor, setBgColor] = useState<string>("")
+  const [error, setError] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
-  const dispatch = useDispatch()
-  const [show, setShow] = useState<boolean>(true)
+
+  useEffect(() => {
+    // close dialog as soon as we have
+    // "success" status from the mutation
+    if (isSuccess) {
+      onSubmit()
+      reset()
+    }
+  }, [isSuccess])
 
   const onNameChange = (value: string) => {
     setName(value)
@@ -42,7 +50,7 @@ export default function NewTagModal({onOK, onCancel}: Args) {
     setFgColor(value)
   }
 
-  const onSubmit = async () => {
+  const onLocalSubmit = async () => {
     const newTagData = {
       name,
       pinned,
@@ -50,20 +58,30 @@ export default function NewTagModal({onOK, onCancel}: Args) {
       bg_color: bgColor,
       fg_color: fgColor
     }
-
-    const response = await dispatch(addTag(newTagData))
-    const tagDetailsData = response.payload as ColoredTagType
-
-    onOK(tagDetailsData)
-    setShow(false)
+    try {
+      await addNewTag(newTagData).unwrap()
+    } catch (err: unknown) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
   }
-  const onClose = () => {
+
+  const onLocalCancel = () => {
+    reset()
     onCancel()
-    setShow(false)
+  }
+
+  const reset = () => {
+    setName("")
+    setDescription("")
+    setPinned(false)
+    setBgColor("")
+    setFgColor("")
+    setError("")
   }
 
   return (
-    <Modal title={"New Tag"} opened={show} onClose={onClose}>
+    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         label="Name"
         onChange={e => onNameChange(e.currentTarget.value)}
@@ -93,14 +111,20 @@ export default function NewTagModal({onOK, onCancel}: Args) {
       />
       <Box my="md">
         <Pill size={"lg"} style={{backgroundColor: bgColor, color: fgColor}}>
-          {name || "preview"}
+          {name || ""}
         </Pill>
       </Box>
+      {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onClose}>
+        <Button variant="default" onClick={onLocalCancel}>
           Cancel
         </Button>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Group>
+          {isLoading && <Loader size="sm" />}
+          <Button disabled={isLoading} onClick={onLocalSubmit}>
+            Submit
+          </Button>
+        </Group>
       </Group>
     </Modal>
   )

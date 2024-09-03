@@ -1,5 +1,5 @@
 import {apiSlice} from "@/features/api/slice"
-import type {ColoredTag, Paginated, PaginatedArgs} from "@/types"
+import type {ColoredTag, NewColoredTag, Paginated, PaginatedArgs} from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -26,8 +26,17 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
         "Tag",
         ...result.map(({id}) => ({type: "Tag", id}) as const)
       ]
+    }),
+    addNewTag: builder.mutation<ColoredTag, NewColoredTag>({
+      query: tag => ({
+        url: "/tags/",
+        method: "POST",
+        body: tag
+      }),
+      invalidatesTags: ["Tag"]
     })
   })
 })
 
-export const {useGetPaginatedTagsQuery, useGetTagsQuery} = apiSliceWithTags
+export const {useGetPaginatedTagsQuery, useGetTagsQuery, useAddNewTagMutation} =
+  apiSliceWithTags

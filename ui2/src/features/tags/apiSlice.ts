@@ -34,9 +34,20 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
         body: tag
       }),
       invalidatesTags: ["Tag"]
+    }),
+    deleteTag: builder.mutation<void, string>({
+      query: tagID => ({
+        url: `tags/${tagID}`,
+        method: "DELETE"
+      }),
+      invalidatesTags: (_result, _error, id) => [{type: "Tag", id: id}]
     })
   })
 })
 
-export const {useGetPaginatedTagsQuery, useGetTagsQuery, useAddNewTagMutation} =
-  apiSliceWithTags
+export const {
+  useGetPaginatedTagsQuery,
+  useGetTagsQuery,
+  useAddNewTagMutation,
+  useDeleteTagMutation
+} = apiSliceWithTags

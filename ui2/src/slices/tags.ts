@@ -62,17 +62,10 @@ const tagsSlice = createSlice({
     }
   },
   extraReducers(builder) {
-    builder.addCase(fetchTag.fulfilled, (state, action) => {
-      const newGroup = action.payload
-      const newGroupID = action.payload.id
-      state.entities[newGroupID] = newGroup
-    })
-    builder.addCase(addTag.fulfilled, tagsAdapter.addOne)
     builder.addCase(updateTag.fulfilled, (state, action) => {
       const group = action.payload
       state.entities[group.id] = group
     })
-    builder.addCase(removeTags.fulfilled, tagsAdapter.removeMany)
   }
 })
 
@@ -85,34 +78,12 @@ export const fetchTag = createAsyncThunk<ColoredTag, string>(
   }
 )
 
-export const addTag = createAsyncThunk<ColoredTag, NewColoredTag>(
-  "tags/addTag",
-  async (newTag: NewColoredTag) => {
-    const response = await axios.post("/api/tags/", newTag)
-    const data = response.data as ColoredTag
-    return data
-  }
-)
-
 export const updateTag = createAsyncThunk<ColoredTag, ColoredTag>(
   "tags/updateTag",
   async (tag: ColoredTagType) => {
     const response = await axios.patch(`/api/tags/${tag.id}`, tag)
     const data = response.data as ColoredTag
     return data
-  }
-)
-
-export const removeTags = createAsyncThunk<string[], string[]>(
-  "tags/removeTag",
-  async (tagIds: string[]) => {
-    await Promise.all(
-      tagIds.map(tid => {
-        axios.delete(`/api/tags/${tid}`)
-      })
-    )
-
-    return tagIds
   }
 )
 

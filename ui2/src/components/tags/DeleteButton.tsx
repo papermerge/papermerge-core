@@ -1,75 +1,60 @@
-import {useEffect, useState} from "react"
 import {Button} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {
-  selectSelectedIds,
-  selectTagsByIds,
-  clearSelection,
-  selectTagById
-} from "@/slices/tags"
-
-import {openModal} from "@/components/modals/Generic"
+import {selectSelectedIds, clearSelection} from "@/slices/tags"
 
 import {DeleteTagModal, DeleteTagsModal} from "./DeleteModal"
-import {RootState} from "@/app/types"
-import {ColoredTagType} from "@/types"
 
 export function DeleteTagButton({tagId}: {tagId: string}) {
-  const [redirect, setRedirect] = useState<boolean>(false)
+  const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
-  const deletedTag = useSelector<RootState>(state =>
-    selectTagById(state, tagId)
-  )
 
-  useEffect(() => {
-    if (redirect && deletedTag == null) {
-      // nagivate only after tag was removed from the storage
-      navigate("/tags/")
-    }
-  }, [deletedTag, redirect])
-
-  const onClick = () => {
-    openModal<ColoredTagType[], {tagId: string}>(DeleteTagModal, {
-      tagId: tagId
-    })
-      .then(() => {
-        setRedirect(true)
-      })
-      .catch(() => {})
+  const onSubmit = () => {
+    navigate("/tags/")
   }
 
   return (
-    <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
-      Delete
-    </Button>
+    <>
+      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+        Delete
+      </Button>
+      <DeleteTagModal
+        opened={opened}
+        onSubmit={onSubmit}
+        onCancel={close}
+        tagId={tagId}
+      />
+    </>
   )
 }
 
 export function DeleteTagsButton() {
+  const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
-  const tags = useSelector<RootState>(state =>
-    selectTagsByIds(state, selectedIds)
-  ) as Array<ColoredTagType>
 
-  const onClick = () => {
-    openModal<ColoredTagType[], {tags: Array<ColoredTagType>}>(
-      DeleteTagsModal,
-      {
-        tags: tags
-      }
-    )
-      .then(() => {
-        dispatch(clearSelection())
-      })
-      .catch(() => dispatch(clearSelection()))
+  const onSubmit = () => {
+    dispatch(clearSelection())
   }
+
+  const onCancel = () => {
+    dispatch(clearSelection())
+  }
+
   return (
-    <Button leftSection={<IconTrash />} onClick={onClick} variant={"default"}>
-      Delete
-    </Button>
+    <>
+      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+        Delete
+      </Button>
+      <DeleteTagsModal
+        opened={opened}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        tagIds={selectedIds}
+      />
+    </>
   )
 }

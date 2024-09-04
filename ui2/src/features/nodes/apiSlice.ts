@@ -1,6 +1,12 @@
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, FolderType, NodeType} from "@/types"
 
+type CreateFolderType = {
+  title: string
+  parent_id: string
+  ctype: "folder"
+}
+
 export type PaginatedArgs = {
   nodeID: string
   page_number?: number
@@ -32,8 +38,20 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
     getFolder: builder.query<FolderType, string>({
       query: folderID => `/folders/${folderID}`,
       providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}]
+    }),
+    addNewFolder: builder.mutation<NodeType, CreateFolderType>({
+      query: folder => ({
+        url: "/nodes/",
+        method: "POST",
+        body: folder
+      }),
+      invalidatesTags: ["Node"]
     })
   })
 })
 
-export const {useGetPaginatedNodesQuery, useGetFolderQuery} = apiSliceWithNodes
+export const {
+  useGetPaginatedNodesQuery,
+  useGetFolderQuery,
+  useAddNewFolderMutation
+} = apiSliceWithNodes

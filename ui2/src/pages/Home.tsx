@@ -17,11 +17,6 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const user: User = await getCurrentUser()
   let folderId, breadcrumb
-  const state = store.getState()
-  const pageSize = state.dualPanel.mainPanel.commander?.lastPageSize
-  const urlParams = new URLSearchParams(
-    `page_number=1&page_size=${pageSize || INITIAL_PAGE_SIZE}`
-  )
 
   if (params.folderId) {
     folderId = params.folderId
@@ -36,10 +31,6 @@ export async function loader({params, request}: LoaderFunctionArgs) {
       node: {id: folderId, ctype: "folder", breadcrumb: breadcrumb},
       panel: "main"
     })
-  )
-
-  store.dispatch(
-    fetchPaginatedNodes({nodeId: folderId, panel: "main", urlParams: urlParams})
   )
 
   return {folderId, urlParams: url.searchParams}

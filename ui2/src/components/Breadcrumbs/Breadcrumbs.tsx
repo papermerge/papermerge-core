@@ -16,16 +16,18 @@ import classes from "./Breadcrumbs.module.css"
 
 import {
   selectPanelBreadcrumbs,
-  selectPanelNodesStatus
+  selectPanelNodesStatus,
+  selectCurrentFolderID
 } from "@/slices/dualPanel/dualPanel"
 import {updateBreadcrumb} from "@/slices/sizes"
 
-import type {PanelMode, NType, UserDetails} from "@/types"
+import type {PanelMode, NType, UserDetails, FolderType} from "@/types"
 import type {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
+import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   onClick: (node: NType) => void
@@ -40,10 +42,11 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
   const nodesStatus = useSelector((state: RootState) =>
     selectPanelNodesStatus(state, mode)
   )
+  const currentNodeID = useSelector((state: RootState) =>
+    selectCurrentFolderID(state, mode)
+  )
 
-  const items = useSelector<RootState>(state =>
-    selectPanelBreadcrumbs(state, mode)
-  ) as Array<[string, string]> | null | undefined
+  const {data, isLoading} = useGetFolderQuery(currentNodeID!)
 
   const onRootElementClick = (n: NType) => {
     onClick(n)
@@ -62,7 +65,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
     }
   }, [width, height])
 
-  if (!items) {
+  if (isLoading || !data) {
     return (
       <Skeleton width={"25%"} my="md">
         <Breadcrumbs>{["one", "two"]}</Breadcrumbs>
@@ -70,6 +73,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
     )
   }
 
+  const items = data.breadcrumb
   const links = items.slice(1, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}

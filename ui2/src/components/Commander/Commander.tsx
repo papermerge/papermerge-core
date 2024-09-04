@@ -27,6 +27,7 @@ import PanelContext from "@/contexts/PanelContext"
 import drop_files from "@/components/modals/DropFiles"
 import {selectContentHeight} from "@/slices/sizes"
 import classes from "./Commander.module.scss"
+import {useGetPaginatedNodesQuery} from "@/features/nodes/apiSlice"
 
 export default function Commander() {
   const [dragOver, setDragOver] = useState<boolean>(false)
@@ -36,44 +37,44 @@ export default function Commander() {
   )
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
-  const {data, status, error} = useSelector((state: RootState) =>
-    selectPanelNodes(state, mode)
+  const lastPageSize = useSelector((state: RootState) =>
+    selectLastPageSize(state, mode)
   )
   const currentNodeID = useSelector((state: RootState) =>
     selectCurrentFolderID(state, mode)
   )
+  const pageSize = useSelector((state: RootState) =>
+    selectCommanderPageSize(state, mode)
+  )
+  const [page, setPage] = useState<number>(1)
+
+  const {data, isLoading, isFetching, isError} = useGetPaginatedNodesQuery({
+    nodeID: currentNodeID!,
+    page_number: page,
+    page_size: pageSize
+  })
+
   const currentFolder = useSelector((state: RootState) =>
     selectCurrentFolder(state, mode)
   )
   const pagination = useSelector((state: RootState) =>
     selectPagination(state, mode)
   )
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
-  const pageSize = useSelector((state: RootState) =>
-    selectCommanderPageSize(state, mode)
-  )
+
   const pageNumber = useSelector((state: RootState) =>
     selectCommanderPageNumber(state, mode)
   )
 
-  if (status === "loading" && !data) {
+  if (isLoading && !data) {
     return <div>Loading...</div>
   }
 
-  if (status === "failed") {
-    return <div>{error}</div>
+  if (isError) {
+    return <div>{`some error`}</div>
   }
 
   if (!data) {
-    return (
-      <div>
-        Data is null Error: {error}
-        Status: {status}
-      </div>
-    )
+    return <div>Data is null</div>
   }
 
   const onClick = (node: NType) => {
@@ -155,7 +156,7 @@ export default function Commander() {
     }).then(() => {})
   }
 
-  const nodes = data.map((n: NodeType) => (
+  const nodes = data.items.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
   ))
 
@@ -166,7 +167,11 @@ export default function Commander() {
       <>
         <Group>{nodes}</Group>
         <Pagination
-          pagination={pagination}
+          pagination={{
+            pageNumber: page,
+            pageSize: pageSize!,
+            numPages: data.num_pages
+          }}
           onPageNumberChange={onPageNumberChange}
           onPageSizeChange={onPageSizeChange}
           lastPageSize={lastPageSize}

@@ -1,7 +1,6 @@
 import {ChangeEvent} from "react"
 import {useState, useEffect} from "react"
 import {TextInput, Loader, Group, Button, Modal} from "@mantine/core"
-import axios, {AxiosResponse} from "axios"
 import {useAddNewFolderMutation} from "@/features/nodes/apiSlice"
 
 type CreateFolderType = {
@@ -17,30 +16,13 @@ type Args = {
   onCancel: () => void
 }
 
-async function api_create_new_folder(
-  title: string,
-  parent_id: string,
-  signal: AbortSignal
-): Promise<AxiosResponse> {
-  let data: CreateFolderType = {
-    title: title,
-    parent_id: parent_id,
-    ctype: "folder"
-  }
-
-  return axios.post("/api/nodes/", data, {
-    signal
-  })
-}
-
 export const NewFolderModal = ({
   parent_id,
   onSubmit,
   onCancel,
   opened
 }: Args) => {
-  const [addNewFolder, {isLoading, isError, isSuccess}] =
-    useAddNewFolderMutation()
+  const [addNewFolder, {isLoading, isSuccess}] = useAddNewFolderMutation()
   const [title, setTitle] = useState("")
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {

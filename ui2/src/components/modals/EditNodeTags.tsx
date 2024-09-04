@@ -7,7 +7,7 @@ import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
 import {MODALS} from "@/cconstants"
 import axios, {AxiosError} from "axios"
-import {store} from "@/app/store"
+//import {store} from "@/app/store"
 
 type Args = {
   node: NodeType
@@ -16,8 +16,8 @@ type Args = {
 }
 
 const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
-  const state = store.getState()
-  const allTagNames = Object.values(state.tags.entities).map(t => t.name)
+  // const state = store.getState()
+  const allTagNames: string[] = [] //Object.values(state.tags.entities).map(t => t.name)
   const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))
   const [error, setError] = useState("")
 

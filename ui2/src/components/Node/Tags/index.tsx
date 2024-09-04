@@ -1,6 +1,6 @@
 import {useSelector} from "react-redux"
 import {Pill, Stack} from "@mantine/core"
-import {selectTagsByName} from "@/slices/tags"
+import {selectTagsByName} from "@/features/tags/tagsSlice"
 import type {ColoredTagType} from "@/types"
 import classes from "./Tags.module.css"
 import {RootState} from "@/app/types"

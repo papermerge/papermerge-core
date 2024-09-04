@@ -1,7 +1,11 @@
 import {Link} from "react-router-dom"
 import {useDispatch, useSelector} from "react-redux"
 import {Table, Checkbox, Pill} from "@mantine/core"
-import {selectionAdd, selectionRemove, selectSelectedIds} from "@/slices/tags"
+import {
+  selectionAdd,
+  selectionRemove,
+  selectSelectedIds
+} from "@/features/tags/tagsSlice"
 import type {ColoredTag} from "@/types"
 
 import Check from "@/components/Check"

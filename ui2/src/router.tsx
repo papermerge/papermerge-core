@@ -9,13 +9,9 @@ import Folder from "@/pages/Folder"
 import {loader as folderLoader} from "@/pages/Folder"
 
 import Document from "@/pages/Document"
-
-import TagsList from "@/pages/tags/List"
-
 import {GroupsList, GroupDetails} from "@/features/groups/pages"
 import {UsersList, UserDetails} from "@/features/users/pages"
-
-import TagDetails from "@/pages/tags/Details.tsx"
+import {TagDetails, TagsList} from "@/features/tags/pages"
 
 import {loader as documentLoader} from "@/pages/Document"
 

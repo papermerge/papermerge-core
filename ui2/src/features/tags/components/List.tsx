@@ -7,7 +7,7 @@ import {
   clearSelection,
   selectLastPageSize,
   lastPageSizeUpdate
-} from "@/slices/tags"
+} from "@/features/tags/tagsSlice"
 import {useGetPaginatedTagsQuery} from "@/features/tags/apiSlice"
 
 import Pagination from "@/components/Pagination"

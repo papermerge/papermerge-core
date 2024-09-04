@@ -18,7 +18,7 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
           page_number = 1,
           page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
         }: PaginatedArgs) =>
-          `/nodes/${nodeID}/?page_number=${page_number}&page_size=${page_size}`,
+          `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`,
         providesTags: (
           result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
           _error,

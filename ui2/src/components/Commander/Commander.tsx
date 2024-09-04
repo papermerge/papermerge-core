@@ -7,15 +7,10 @@ import {useNavigate} from "react-router-dom"
 import FolderNodeActions from "@/components/Commander/FolderNodeActions"
 import Node from "@/components/Node"
 import {
-  selectPanelNodes,
   setCurrentNode,
-  fetchPaginatedNodes,
-  selectPagination,
   selectLastPageSize,
   selectCurrentFolderID,
   selectCurrentFolder,
-  selectCommanderPageSize,
-  selectCommanderPageNumber,
   fetchPaginatedDocument
 } from "@/slices/dualPanel/dualPanel"
 
@@ -43,9 +38,7 @@ export default function Commander() {
   const currentNodeID = useSelector((state: RootState) =>
     selectCurrentFolderID(state, mode)
   )
-  const pageSize = useSelector((state: RootState) =>
-    selectCommanderPageSize(state, mode)
-  )
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
 
   const {data, isLoading, isFetching, isError} = useGetPaginatedNodesQuery({
@@ -56,13 +49,6 @@ export default function Commander() {
 
   const currentFolder = useSelector((state: RootState) =>
     selectCurrentFolder(state, mode)
-  )
-  const pagination = useSelector((state: RootState) =>
-    selectPagination(state, mode)
-  )
-
-  const pageNumber = useSelector((state: RootState) =>
-    selectCommanderPageNumber(state, mode)
   )
 
   if (isLoading && !data) {
@@ -79,13 +65,6 @@ export default function Commander() {
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        fetchPaginatedNodes({
-          nodeId: node.id,
-          panel: "secondary",
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
       dispatch(
         setCurrentNode({
           node: {id: node.id, ctype: "folder", breadcrumb: null},
@@ -110,28 +89,12 @@ export default function Commander() {
   }
 
   const onPageNumberChange = (page: number) => {
-    dispatch(
-      fetchPaginatedNodes({
-        nodeId: currentNodeID!,
-        panel: mode,
-        urlParams: new URLSearchParams(
-          `page_number=${page}&page_size=${pageSize}`
-        )
-      })
-    )
+    setPage(page)
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      dispatch(
-        fetchPaginatedNodes({
-          nodeId: currentNodeID!,
-          panel: mode,
-          urlParams: new URLSearchParams(
-            `page_number=${pageNumber}&page_size=${value}`
-          )
-        })
-      )
+      setPageSize(parseInt(value))
     }
   }
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {

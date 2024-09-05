@@ -72,6 +72,17 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         body: node.tags
       }),
       invalidatesTags: ["Node", "Tag"]
+    }),
+    deleteNodes: builder.mutation<void, string[]>({
+      query: nodeIDs => ({
+        url: `nodes/`,
+        method: "DELETE",
+        body: nodeIDs
+      }),
+      invalidatesTags: (_result, _error, ids) =>
+        ids.map(id => {
+          return {type: "Node", id: id}
+        })
     })
   })
 })
@@ -81,5 +92,6 @@ export const {
   useGetFolderQuery,
   useAddNewFolderMutation,
   useRenameFolderMutation,
-  useUpdateNodeTagsMutation
+  useUpdateNodeTagsMutation,
+  useDeleteNodesMutation
 } = apiSliceWithNodes

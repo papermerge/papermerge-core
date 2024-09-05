@@ -8,7 +8,7 @@ import {
   nodeUpdated,
   clearNodesSelection
 } from "@/slices/dualPanel/dualPanel"
-import edit_node_title from "@/components/modals/EditNodeTitle"
+//import edit_node_title from "@/components/modals/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
 
@@ -29,12 +29,13 @@ export default function EditTitleButton() {
     }
 
     let node: NodeType = selectedNodes[0]
-
+    /*
     edit_node_title(node)
       .then((node: NodeType) => {
         dispatch(nodeUpdated({node, mode}))
       })
       .finally(() => dispatch(clearNodesSelection(mode)))
+     */
   }
 
   return (

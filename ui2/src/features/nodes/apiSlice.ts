@@ -7,6 +7,11 @@ type CreateFolderType = {
   ctype: "folder"
 }
 
+type RenameFolderType = {
+  title: string
+  id: string
+}
+
 export type PaginatedArgs = {
   nodeID: string
   page_number?: number
@@ -46,6 +51,14 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         body: folder
       }),
       invalidatesTags: ["Node"]
+    }),
+    renameFolder: builder.mutation<NodeType, RenameFolderType>({
+      query: folder => ({
+        url: `/nodes/${folder.id}`,
+        method: "PATCH",
+        body: folder
+      }),
+      invalidatesTags: ["Node"]
     })
   })
 })
@@ -53,5 +66,6 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
 export const {
   useGetPaginatedNodesQuery,
   useGetFolderQuery,
-  useAddNewFolderMutation
+  useAddNewFolderMutation,
+  useRenameFolderMutation
 } = apiSliceWithNodes

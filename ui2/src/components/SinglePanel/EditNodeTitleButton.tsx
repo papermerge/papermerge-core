@@ -1,47 +1,67 @@
+import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
 import {useSelector, useDispatch} from "react-redux"
 import {
-  selectSelectedNodes,
-  nodeUpdated,
+  selectSelectedNodeIds,
   clearNodesSelection
 } from "@/slices/dualPanel/dualPanel"
-import edit_node_title from "@/components/modals/EditNodeTitle"
+import {EditNodeTitleModal} from "@/components/modals/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
 
-import type {NodeType, PanelMode} from "@/types"
+import type {PanelMode, NodeType} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
+import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 
 export default function EditNodeTitleButton() {
+  const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
-  const selectedNodes = useSelector((state: RootState) =>
-    selectSelectedNodes(state, mode)
+  const selectedIds = useSelector((state: RootState) =>
+    selectSelectedNodeIds(state, mode)
   )
-  const onEditNodeTitle = () => {
+  const selectedNodes = useSelector((state: RootState) =>
+    selectNodesByIds(state, selectedIds || [])
+  )
+
+  const dispatch = useDispatch()
+  let node: NodeType = selectedNodes[0]
+
+  const onClick = () => {
     if (selectedNodes.length < 1) {
       console.log("Error: no selected nodes")
       return
     }
+    node = selectedNodes[0]
+    open()
+  }
 
-    let node: NodeType = selectedNodes[0]
+  const onSubmit = () => {
+    dispatch(clearNodesSelection(mode))
+    close()
+  }
 
-    edit_node_title(node)
-      .then((node: NodeType) => {
-        dispatch(nodeUpdated({node, mode}))
-      })
-      .finally(() => dispatch(clearNodesSelection(mode)))
+  const onCancel = () => {
+    dispatch(clearNodesSelection(mode))
+    close()
   }
 
   return (
-    <Tooltip label="Change title" withArrow>
-      <ActionIcon size={"lg"} variant="default" onClick={onEditNodeTitle}>
-        <IconEdit stroke={1.4} />
-      </ActionIcon>
-    </Tooltip>
+    <>
+      <Tooltip label="Change title" withArrow>
+        <ActionIcon size={"lg"} variant="default" onClick={onClick}>
+          <IconEdit stroke={1.4} />
+        </ActionIcon>
+      </Tooltip>
+      <EditNodeTitleModal
+        opened={opened}
+        node={node}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+      />
+    </>
   )
 }

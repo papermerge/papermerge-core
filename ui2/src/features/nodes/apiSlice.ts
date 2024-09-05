@@ -12,6 +12,11 @@ type RenameFolderType = {
   id: string
 }
 
+type UpdateNodeTagsType = {
+  id: string
+  tags: string[]
+}
+
 export type PaginatedArgs = {
   nodeID: string
   page_number?: number
@@ -59,6 +64,14 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         body: folder
       }),
       invalidatesTags: ["Node"]
+    }),
+    updateNodeTags: builder.mutation<NodeType, UpdateNodeTagsType>({
+      query: node => ({
+        url: `/nodes/${node.id}/tags`,
+        method: "POST",
+        body: node.tags
+      }),
+      invalidatesTags: ["Node"]
     })
   })
 })
@@ -67,5 +80,6 @@ export const {
   useGetPaginatedNodesQuery,
   useGetFolderQuery,
   useAddNewFolderMutation,
-  useRenameFolderMutation
+  useRenameFolderMutation,
+  useUpdateNodeTagsMutation
 } = apiSliceWithNodes

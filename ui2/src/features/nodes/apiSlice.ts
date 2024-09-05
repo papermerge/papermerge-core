@@ -71,7 +71,7 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         method: "POST",
         body: node.tags
       }),
-      invalidatesTags: ["Node"]
+      invalidatesTags: ["Node", "Tag"]
     })
   })
 })

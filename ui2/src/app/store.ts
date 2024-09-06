@@ -8,6 +8,7 @@ import tagsReducer from "@/features/tags/tagsSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import usersReducer from "@/features/users/usersSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
+import uiReducer from "@/features/ui/uiSlice"
 import {uploaderReducer} from "@/slices/uploader"
 import sizesSliceReducer from "@/slices/sizes"
 import dragndropReducer from "@/slices/dragndrop"
@@ -25,6 +26,7 @@ export const store = configureStore({
     sizes: sizesSliceReducer,
     dragndrop: dragndropReducer,
     nodes: nodesReducer,
+    ui: uiReducer,
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware =>

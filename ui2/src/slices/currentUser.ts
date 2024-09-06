@@ -1,8 +1,6 @@
 import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
 import axios from "@/httpClient"
 import type {SliceState, SliceStateStatus, User, UserDetails} from "@/types"
-import {store} from "@/app/store"
-import {storeHomeNode, storeInboxNode} from "./dualPanel/dualPanel"
 
 const initialState: SliceState<User> = {
   data: null,
@@ -15,19 +13,6 @@ export const fetchCurrentUser = createAsyncThunk(
   async () => {
     const response = await axios.get("/api/users/me")
     const userDetails = response.data as UserDetails
-    store.dispatch(
-      storeHomeNode({
-        folder_id: userDetails.home_folder_id,
-        user_id: userDetails.id
-      })
-    )
-    store.dispatch(
-      storeInboxNode({
-        folder_id: userDetails.home_folder_id,
-        user_id: userDetails.id
-      })
-    )
-
     return userDetails
   }
 )

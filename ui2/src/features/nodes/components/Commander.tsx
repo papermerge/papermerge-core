@@ -4,8 +4,8 @@ import {Group, Stack, Box} from "@mantine/core"
 import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
-import FolderNodeActions from "@/components/Commander/FolderNodeActions"
-import Node from "@/components/Node"
+import FolderNodeActions from "@/features/nodes/components/FolderNodeActions"
+import Node from "@/features/nodes/components/Node"
 import {
   setCurrentNode,
   selectLastPageSize,

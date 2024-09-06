@@ -23,7 +23,6 @@ import {
   commanderInitialState,
   setCurrentNodeHelper,
   nodeAddedHelper,
-  nodeUpdatedHelper,
   dropThumbnailPageHelper,
   resetPageChangesHelper,
   getLatestVersionPages
@@ -55,7 +54,6 @@ import {
   DualPanelState,
   SetCurrentNodeArgs,
   FolderAddedArgs,
-  NodeUpdatedArgs,
   NodeWithSpinner,
   SelectionNodePayload,
   SelectionPagePayload
@@ -229,10 +227,6 @@ export const deleteNodes = createAsyncThunk<string[], string[]>(
     return nodeIds
   }
 )
-type StoreNodeInput = {
-  folder_id: string
-  user_id: string
-}
 
 type SetCurrentPageArg = {
   mode: PanelMode
@@ -381,42 +375,6 @@ const dualPanelSlice = createSlice({
         }
       }
     },
-    storeHomeNode(state, action: PayloadAction<StoreNodeInput>) {
-      const node: NodeType = {
-        id: action.payload.folder_id,
-        ctype: "folder",
-        title: ".home",
-        breadcrumb: [],
-        tags: [],
-        user_id: action.payload.user_id,
-        update_at: "",
-        ocr_status: "UNKNOWN",
-        ocr: false,
-        parent_id: null,
-        thumbnail_url: null,
-        accept_dropped_nodes: false,
-        is_currently_dragged: false
-      }
-      state.nodes.push(node)
-    },
-    storeInboxNode(state, action: PayloadAction<StoreNodeInput>) {
-      const node: NodeType = {
-        id: action.payload.folder_id,
-        ctype: "folder",
-        title: ".inbox",
-        breadcrumb: [],
-        tags: [],
-        user_id: action.payload.user_id,
-        update_at: "",
-        ocr_status: "UNKNOWN",
-        ocr: false,
-        parent_id: null,
-        thumbnail_url: null,
-        accept_dropped_nodes: false,
-        is_currently_dragged: false
-      }
-      state.nodes.push(node)
-    },
     nodeAdded(state, action: PayloadAction<FolderAddedArgs>) {
       nodeAddedHelper({
         state,
@@ -429,19 +387,6 @@ const dualPanelSlice = createSlice({
         state,
         node: action.payload.node,
         mode: action.payload.panel
-      })
-    },
-    folderAdded(state, action: PayloadAction<FolderAddedArgs>) {
-      nodeAddedHelper({
-        state,
-        node: action.payload.node,
-        mode: action.payload.mode
-      })
-    },
-    nodeUpdated(state, action: PayloadAction<NodeUpdatedArgs>) {
-      nodeUpdatedHelper({
-        state,
-        node: action.payload.node
       })
     },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
@@ -692,8 +637,6 @@ export const {
   fitZoomFactor,
   toggleThumbnailsPanel,
   setCurrentNode,
-  folderAdded,
-  nodeUpdated,
   openSecondaryPanel,
   closeSecondaryPanel,
   selectionAddNode,
@@ -702,8 +645,6 @@ export const {
   selectionRemovePage,
   clearNodesSelection,
   updateSearchResultItemTarget,
-  storeHomeNode,
-  storeInboxNode,
   nodeAdded,
   setCurrentPage,
   dropThumbnailPage,

@@ -21,6 +21,7 @@ export type PaginatedArgs = {
   nodeID: string
   page_number?: number
   page_size?: number
+  filter?: string | null
 }
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
@@ -32,9 +33,15 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         query: ({
           nodeID,
           page_number = 1,
-          page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-        }: PaginatedArgs) =>
-          `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`,
+          page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+          filter = undefined
+        }: PaginatedArgs) => {
+          if (!filter) {
+            return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`
+          }
+
+          return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}`
+        },
         providesTags: (
           result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
           _error,

@@ -291,7 +291,8 @@ export function commanderInitialState(node: CurrentNodeType | null): Commander {
       error: null,
       data: null
     },
-    selectedIds: []
+    selectedIds: [],
+    filter: null
   }
 }
 

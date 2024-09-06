@@ -11,7 +11,8 @@ import {
   selectLastPageSize,
   selectCurrentFolderID,
   selectCurrentFolder,
-  fetchPaginatedDocument
+  fetchPaginatedDocument,
+  selectFilterText
 } from "@/slices/dualPanel/dualPanel"
 
 import type {NType, NodeType, PanelMode} from "@/types"
@@ -33,11 +34,12 @@ export default function Commander() {
   const currentNodeID = useAppSelector(s => selectCurrentFolderID(s, mode))
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
-
+  const filter = useAppSelector(s => selectFilterText(s, mode))
   const {data, isLoading, isError} = useGetPaginatedNodesQuery({
     nodeID: currentNodeID!,
     page_number: page,
-    page_size: pageSize
+    page_size: pageSize,
+    filter: filter
   })
 
   const currentFolder = useAppSelector(s => selectCurrentFolder(s, mode))

@@ -2,7 +2,7 @@ import {useDispatch} from "react-redux"
 import {IconMenu2} from "@tabler/icons-react"
 import {UnstyledButton} from "@mantine/core"
 
-import {toggleNavBar} from "@/slices/navBar"
+import {toggleNavBar} from "@/features/ui/uiSlice"
 
 export default function SidebarToggle() {
   const dispatch = useDispatch()

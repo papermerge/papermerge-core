@@ -3,7 +3,7 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useDispatch} from "react-redux"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
-import {updateSearchActionPanel} from "@/slices/sizes"
+import {updateSearchActionPanel} from "@/features/ui/uiSlice"
 
 import GoBackButton from "./GoBackButton"
 import OpenInOtherPanelCheckbox from "./OpenInOtherPanelCheckbox"

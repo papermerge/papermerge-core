@@ -1,6 +1,6 @@
 import {Dialog, List, Container} from "@mantine/core"
 import {useSelector, useDispatch} from "react-redux"
-import {selectOpened, selectFiles, closeUploader} from "@/slices/uploader"
+import {selectOpened, selectFiles, closeUploader} from "@/features/ui/uiSlice"
 import UploaderItem from "./uploaderItem"
 
 export default function Uploader() {

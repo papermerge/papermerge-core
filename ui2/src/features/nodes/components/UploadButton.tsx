@@ -1,12 +1,12 @@
-import {useSelector} from "react-redux"
+import {useAppSelector} from "@/app/hooks"
 import {FileButton, ActionIcon, Tooltip} from "@mantine/core"
 import {IconUpload} from "@tabler/icons-react"
 import drop_files from "@/components/modals/DropFiles"
 import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
-import {FolderType, PanelMode} from "@/types"
-import {RootState} from "@/app/types"
-import {selectCurrentFolder} from "@/slices/dualPanel/dualPanel"
+import {PanelMode} from "@/types"
+import {selectCurrentFolderID} from "@/slices/dualPanel/dualPanel"
+import {useGetFolderQuery} from "../apiSlice"
 
 const MIME_TYPES = [
   "image/png",
@@ -17,10 +17,8 @@ const MIME_TYPES = [
 
 export default function UploadButton() {
   const mode: PanelMode = useContext(PanelContext)
-  const target = useSelector(
-    (state: RootState) =>
-      selectCurrentFolder(state, mode) as FolderType | undefined
-  )
+  const folderID = useAppSelector(s => selectCurrentFolderID(s, mode))
+  const {data: target} = useGetFolderQuery(folderID!)
 
   const onUpload = (files: File[]) => {
     if (!files) {
@@ -31,7 +29,6 @@ export default function UploadButton() {
       console.error("Current folder is undefined")
       return
     }
-
     drop_files({source_files: files, target}).then(() => {})
   }
 

@@ -6,15 +6,12 @@ import {
   openSecondaryPanel,
   closeSecondaryPanel,
   selectMainPanel,
-  selectSecondaryPanel,
-  selectLastPageSize
+  selectSecondaryPanel
 } from "@/slices/dualPanel/dualPanel"
-import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
+import {setCurrentNode} from "@/slices/dualPanel/dualPanel"
 import {selectCurrentUser} from "@/slices/currentUser"
 
 import type {PanelMode, User} from "@/types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
-import {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
@@ -24,9 +21,6 @@ export default function ToggleSecondaryPanel() {
   const secondaryPanel = useSelector(selectSecondaryPanel)
   const user: User = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
 
   if (mainPanel) {
     // mainPanel is always there
@@ -39,15 +33,6 @@ export default function ToggleSecondaryPanel() {
         id: folderId,
         ctype: "folder",
         breadcrumb: null
-      })
-    )
-    dispatch(
-      fetchPaginatedNodes({
-        nodeId: folderId,
-        panel: "secondary",
-        urlParams: new URLSearchParams(
-          `page_number=1&page_size=${lastPageSize || INITIAL_PAGE_SIZE}`
-        )
       })
     )
     dispatch(

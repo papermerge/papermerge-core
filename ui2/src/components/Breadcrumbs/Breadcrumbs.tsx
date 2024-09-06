@@ -18,7 +18,7 @@ import {
   selectPanelNodesStatus,
   selectCurrentFolderID
 } from "@/slices/dualPanel/dualPanel"
-import {updateBreadcrumb} from "@/slices/sizes"
+import {updateBreadcrumb} from "@/features/ui/uiSlice"
 
 import type {PanelMode, NType, UserDetails} from "@/types"
 

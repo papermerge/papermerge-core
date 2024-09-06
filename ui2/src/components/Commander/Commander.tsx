@@ -41,7 +41,7 @@ export default function Commander() {
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
 
-  const {data, isLoading, isFetching, isError} = useGetPaginatedNodesQuery({
+  const {data, isLoading, isError} = useGetPaginatedNodesQuery({
     nodeID: currentNodeID!,
     page_number: page,
     page_size: pageSize

@@ -15,13 +15,12 @@ import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
 import classes from "./Breadcrumbs.module.css"
 
 import {
-  selectPanelBreadcrumbs,
   selectPanelNodesStatus,
   selectCurrentFolderID
 } from "@/slices/dualPanel/dualPanel"
 import {updateBreadcrumb} from "@/slices/sizes"
 
-import type {PanelMode, NType, UserDetails, FolderType} from "@/types"
+import type {PanelMode, NType, UserDetails} from "@/types"
 import type {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"

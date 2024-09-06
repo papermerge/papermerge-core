@@ -1,13 +1,12 @@
 import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
-import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
+import {setCurrentNode} from "@/slices/dualPanel/dualPanel"
 
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
 
 import type {User} from "@/types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
 
 export default function Home() {
   return <DualPanel />

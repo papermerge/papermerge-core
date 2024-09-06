@@ -13,7 +13,7 @@ import {
   selectCurrentUserStatus,
   selectCurrentUserError
 } from "@/slices/currentUser.ts"
-import {selectNavBarCollapsed} from "@/slices/navBar"
+import {selectNavBarCollapsed} from "@/features/ui/uiSlice"
 
 import type {User} from "@/types.ts"
 

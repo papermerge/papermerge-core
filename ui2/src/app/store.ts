@@ -3,7 +3,6 @@ import {apiSlice} from "@/features/api/slice"
 import authSliceReducer from "@/features/auth/slice"
 import currentUserReducer from "@/slices/currentUser"
 import dualPanelReducer from "@/slices/dualPanel/dualPanel"
-import navBarReducer from "@/slices/navBar"
 import tagsReducer from "@/features/tags/tagsSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import usersReducer from "@/features/users/usersSlice"
@@ -18,7 +17,6 @@ export const store = configureStore({
     auth: authSliceReducer,
     currentUser: currentUserReducer,
     dualPanel: dualPanelReducer,
-    navBar: navBarReducer,
     tags: tagsReducer,
     groups: groupsReducer,
     users: usersReducer,

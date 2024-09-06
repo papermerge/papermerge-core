@@ -16,7 +16,7 @@ import {
 import {updateOutlet} from "@/slices/sizes"
 
 import "./App.css"
-import {selectNavBarWidth} from "@/slices/navBar"
+import {selectNavBarWidth} from "@/features/ui/uiSlice"
 import Uploader from "@/components/Uploader"
 
 function App() {

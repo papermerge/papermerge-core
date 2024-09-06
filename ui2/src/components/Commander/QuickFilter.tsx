@@ -1,54 +1,26 @@
 import {useContext, useState} from "react"
 import {TextInput} from "@mantine/core"
-import {useSelector, useDispatch} from "react-redux"
+import {useAppDispatch} from "@/app/hooks"
 import {IconSearch, IconX} from "@tabler/icons-react"
 import {useThrottledCallback} from "@mantine/hooks"
 
 import PanelContext from "@/contexts/PanelContext"
-import {
-  selectCurrentFolderID,
-  selectLastPageSize,
-  fetchPaginatedNodes
-} from "@/slices/dualPanel/dualPanel"
-import type {RootState} from "@/app/types"
-import type {PanelMode} from "@/types"
+import {filterUpdated} from "@/slices/dualPanel/dualPanel"
 
 export default function QuickFilter() {
-  const [filterText, setFilterText] = useState<string | null>()
-  const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
-  const folderId = useSelector((state: RootState) =>
-    selectCurrentFolderID(state, mode)
-  )
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
+  const dispatch = useAppDispatch()
+  const mode = useContext(PanelContext)
+  const [filterText, setFilterText] = useState<string | null>(null)
   const throttledSetValue = useThrottledCallback(value => onChange(value), 1500)
-
   const onClear = () => {
     setFilterText(null)
-    dispatch(
-      fetchPaginatedNodes({
-        nodeId: folderId!,
-        panel: mode,
-        urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-      })
-    )
+    dispatch(filterUpdated({mode, filter: null}))
   }
 
   const onChange = (value: string) => {
     const trimmedValue = value.trim() || ""
-
     setFilterText(trimmedValue)
-    dispatch(
-      fetchPaginatedNodes({
-        nodeId: folderId!,
-        panel: mode,
-        urlParams: new URLSearchParams(
-          `page_size=${lastPageSize}&filter=${trimmedValue}`
-        )
-      })
-    )
+    dispatch(filterUpdated({mode, filter: trimmedValue}))
   }
 
   return (

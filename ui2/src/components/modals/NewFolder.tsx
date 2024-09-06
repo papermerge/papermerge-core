@@ -1,13 +1,7 @@
 import {ChangeEvent} from "react"
-import {useState} from "react"
-import {createRoot} from "react-dom/client"
-import {MantineProvider, TextInput} from "@mantine/core"
-import theme from "@/themes"
-import GenericModal from "@/components/modals/Generic"
-
-import type {NodeType} from "@/types"
-import {MODALS} from "@/cconstants"
-import axios, {AxiosResponse} from "axios"
+import {useState, useEffect} from "react"
+import {TextInput, Loader, Group, Button, Modal} from "@mantine/core"
+import {useAddNewFolderMutation} from "@/features/nodes/apiSlice"
 
 type CreateFolderType = {
   title: string
@@ -17,27 +11,18 @@ type CreateFolderType = {
 
 type Args = {
   parent_id: string
-  onOK: (node: NodeType) => void
-  onCancel: (msg?: string) => void
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-async function api_create_new_folder(
-  title: string,
-  parent_id: string,
-  signal: AbortSignal
-): Promise<AxiosResponse> {
-  let data: CreateFolderType = {
-    title: title,
-    parent_id: parent_id,
-    ctype: "folder"
-  }
-
-  return axios.post("/api/nodes/", data, {
-    signal
-  })
-}
-
-const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
+export const NewFolderModal = ({
+  parent_id,
+  onSubmit,
+  onCancel,
+  opened
+}: Args) => {
+  const [addNewFolder, {isLoading, isSuccess}] = useAddNewFolderMutation()
   const [title, setTitle] = useState("")
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
@@ -46,30 +31,40 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
     setTitle(value)
   }
 
-  const handleSubmit = async (signal: AbortSignal) => {
-    try {
-      let response = await api_create_new_folder(title, parent_id, signal)
-      let new_node: NodeType = response.data as NodeType
-      onOK(new_node)
-    } catch (error: any) {
-      onCancel(error.toString())
+  useEffect(() => {
+    // close dialog as soon as we have
+    // "success" status from the mutation
+    if (isSuccess) {
+      onSubmit()
+      reset()
     }
-    return true
+  }, [isSuccess])
+
+  const onLocalSubmit = async () => {
+    let data: CreateFolderType = {
+      title: title,
+      parent_id: parent_id,
+      ctype: "folder"
+    }
+    try {
+      await addNewFolder(data)
+    } catch (error: any) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
   }
 
-  const handleCancel = () => {
-    setTitle("")
-
+  const onLocalCancel = () => {
+    reset()
     onCancel()
   }
 
+  const reset = () => {
+    setTitle("")
+  }
+
   return (
-    <GenericModal
-      modal_title="Create Folder"
-      submit_button_title="Create"
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-    >
+    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}
@@ -77,29 +72,17 @@ const NewFolderModal = ({parent_id, onOK, onCancel}: Args) => {
         placeholder="title"
         mt="md"
       />
-    </GenericModal>
+      <Group justify="space-between" mt="md">
+        <Button variant="default" onClick={onLocalCancel}>
+          Cancel
+        </Button>
+        <Group>
+          {isLoading && <Loader size="sm" />}
+          <Button disabled={isLoading} onClick={onLocalSubmit}>
+            Submit
+          </Button>
+        </Group>
+      </Group>
+    </Modal>
   )
 }
-
-function create_new_folder(parent_id: string) {
-  let modals = document.getElementById(MODALS)
-
-  let promise = new Promise<NodeType>(function (onOK, onCancel) {
-    if (modals) {
-      let dom_root = createRoot(modals)
-      dom_root.render(
-        <MantineProvider theme={theme}>
-          <NewFolderModal
-            parent_id={parent_id}
-            onOK={onOK}
-            onCancel={onCancel}
-          />
-        </MantineProvider>
-      )
-    }
-  }) // new Promise...
-
-  return promise
-}
-
-export default create_new_folder

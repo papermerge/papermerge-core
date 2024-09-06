@@ -1,5 +1,5 @@
 import {useContext, useEffect, useRef} from "react"
-import {useSelector, useDispatch} from "react-redux"
+import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {
   Breadcrumbs,
   Skeleton,
@@ -15,17 +15,17 @@ import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
 import classes from "./Breadcrumbs.module.css"
 
 import {
-  selectPanelBreadcrumbs,
-  selectPanelNodesStatus
+  selectPanelNodesStatus,
+  selectCurrentFolderID
 } from "@/slices/dualPanel/dualPanel"
 import {updateBreadcrumb} from "@/slices/sizes"
 
 import type {PanelMode, NType, UserDetails} from "@/types"
-import type {RootState} from "@/app/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
+import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   onClick: (node: NType) => void
@@ -33,17 +33,14 @@ type Args = {
 }
 
 export default function BreadcrumbsComponent({onClick, className}: Args) {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const {height, width} = useViewportSize()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const nodesStatus = useSelector((state: RootState) =>
-    selectPanelNodesStatus(state, mode)
-  )
+  const nodesStatus = useAppSelector(s => selectPanelNodesStatus(s, mode))
+  const currentNodeID = useAppSelector(s => selectCurrentFolderID(s, mode))
 
-  const items = useSelector<RootState>(state =>
-    selectPanelBreadcrumbs(state, mode)
-  ) as Array<[string, string]> | null | undefined
+  const {data, isLoading} = useGetFolderQuery(currentNodeID!)
 
   const onRootElementClick = (n: NType) => {
     onClick(n)
@@ -62,14 +59,15 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
     }
   }, [width, height])
 
-  if (!items) {
+  if (isLoading || !data) {
     return (
-      <Skeleton width={"25%"} my="md">
+      <Skeleton ref={ref} width={"25%"} my="md">
         <Breadcrumbs>{["one", "two"]}</Breadcrumbs>
       </Skeleton>
     )
   }
 
+  const items = data.breadcrumb
   const links = items.slice(1, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}
@@ -106,7 +104,7 @@ type RootItemArgs = {
 }
 
 function RootItem({itemId, onClick}: RootItemArgs) {
-  const user = useSelector(selectCurrentUser) as UserDetails | undefined
+  const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
 
   const onLocalClick = (id: string) => {
     onClick({id: id, ctype: "folder"})

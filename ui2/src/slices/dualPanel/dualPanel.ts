@@ -71,6 +71,11 @@ const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
 const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
   "secondary_thumbnails_panel_opened"
 
+type UpdateFilterType = {
+  mode: PanelMode
+  filter: string | null
+}
+
 const initialState: DualPanelState = {
   mainPanel: {
     commander: commanderInitialState(null),
@@ -486,6 +491,20 @@ const dualPanelSlice = createSlice({
           state.secondaryPanel.viewer.currentPage = page
         }
       }
+    },
+    filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
+      const {mode, filter} = action.payload
+      if (mode == "main") {
+        if (state.mainPanel.commander) {
+          state.mainPanel.commander.filter = filter
+        }
+      }
+
+      if (mode == "secondary") {
+        if (state.secondaryPanel?.commander) {
+          state.secondaryPanel.commander.filter = filter
+        }
+      }
     }
   },
   extraReducers(builder) {
@@ -688,7 +707,8 @@ export const {
   nodeAdded,
   setCurrentPage,
   dropThumbnailPage,
-  resetPageChanges
+  resetPageChanges,
+  filterUpdated
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
@@ -861,6 +881,23 @@ export const selectLastPageSize = (
   }
 
   return INITIAL_PAGE_SIZE
+}
+
+export const selectFilterText = (
+  state: RootState,
+  mode: PanelMode
+): string | null => {
+  if (mode == "main") {
+    if (state.dualPanel.mainPanel.commander?.filter) {
+      return state.dualPanel.mainPanel.commander?.filter
+    }
+  }
+
+  if (state.dualPanel.secondaryPanel?.commander?.filter) {
+    return state.dualPanel.secondaryPanel?.commander.filter
+  }
+
+  return null
 }
 
 export const selectPanelNodesStatus = (

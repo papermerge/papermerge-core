@@ -19,6 +19,24 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
+@router.get("/all", response_model=list[schemas.Tag])
+@utils.docstring_parameter(scope=scopes.TAG_VIEW)
+def retrieve_tags_without_pagination(
+    user: Annotated[
+        schemas.User,
+        Security(get_current_user, scopes=[scopes.TAG_VIEW])
+    ]
+):
+    """Retrieves (without pagination) tags of the current user
+
+    Required scope: `{scope}`
+    """
+    order_by = ['name', ]
+
+    return Tag.objects.filter(
+        user_id=user.id
+    ).order_by(*order_by)
+
 
 @router.get("/", response_model=PaginatorGeneric[schemas.Tag])
 @paginate
@@ -30,7 +48,7 @@ def retrieve_tags(
     ],
     params: CommonQueryParams = Depends(),
 ):
-    """Retrieves current user tags
+    """Retrieves (paginated) tags of the current user
 
     Required scope: `{scope}`
     """

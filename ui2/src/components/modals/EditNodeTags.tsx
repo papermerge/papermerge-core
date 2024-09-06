@@ -1,55 +1,53 @@
-import {useState} from "react"
-import {createRoot} from "react-dom/client"
-import {MantineProvider, TagsInput} from "@mantine/core"
-import theme from "@/themes"
-import GenericModal from "@/components/modals/Generic"
+import {useState, useEffect} from "react"
+import {TagsInput, Loader, Group, Button, Modal} from "@mantine/core"
 import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
-import {MODALS} from "@/cconstants"
-import axios, {AxiosError} from "axios"
-//import {store} from "@/app/store"
+import {useUpdateNodeTagsMutation} from "@/features/nodes/apiSlice"
 
-type Args = {
+interface Args {
   node: NodeType
-  onOK: (node: NodeType) => void
-  onCancel: (msg?: string) => void
+  opened: boolean
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
+export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   // const state = store.getState()
+  const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()
   const allTagNames: string[] = [] //Object.values(state.tags.entities).map(t => t.name)
   const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))
   const [error, setError] = useState("")
 
-  const handleSubmit = async (signal: AbortSignal) => {
-    try {
-      let response = await axios.post(`/api/nodes/${node.id}/tags`, tags, {
-        signal
-      })
-      let new_node = response.data as NodeType
-      onOK(new_node)
-    } catch (error: any | AxiosError) {
-      if (axios.isAxiosError(error)) {
-        setError(error.message)
-        return false // i.e. do not close dialog
-      }
+  useEffect(() => {
+    // close dialog as soon as we have
+    // "success" status from the mutation
+    if (isSuccess) {
+      onSubmit()
+      reset()
     }
-    return true // i.e. close dialog
+  }, [isSuccess])
+
+  const onLocalSubmit = async () => {
+    try {
+      await updateNodeTags({id: node.id, tags: tags})
+    } catch (error: any) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
   }
 
-  const handleCancel = () => {
-    // just close the dialog
+  const onLocalCancel = () => {
+    onCancel()
+    reset()
+  }
+
+  const reset = () => {
     setTags([])
     setError("")
-    onCancel()
   }
 
   return (
-    <GenericModal
-      modal_title="Edit Tags"
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-    >
+    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
       <TagsInput
         data-autofocus
         onChange={setTags}
@@ -59,25 +57,17 @@ const EditNodeTagsModal = ({node, onOK, onCancel}: Args) => {
         mt="md"
       />
       {error && <Error message={error} />}
-    </GenericModal>
+      <Group justify="space-between" mt="md">
+        <Button variant="default" onClick={onLocalCancel}>
+          Cancel
+        </Button>
+        <Group>
+          {isLoading && <Loader size="sm" />}
+          <Button disabled={isLoading} onClick={onLocalSubmit}>
+            Submit
+          </Button>
+        </Group>
+      </Group>
+    </Modal>
   )
 }
-
-function edit_node_tags(node: NodeType) {
-  let modals = document.getElementById(MODALS)
-
-  let promise = new Promise<NodeType>(function (onOK, onCancel) {
-    if (modals) {
-      let dom_root = createRoot(modals)
-      dom_root.render(
-        <MantineProvider theme={theme}>
-          <EditNodeTagsModal node={node} onOK={onOK} onCancel={onCancel} />
-        </MantineProvider>
-      )
-    }
-  }) // new Promise...
-
-  return promise
-}
-
-export default edit_node_tags

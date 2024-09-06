@@ -1,7 +1,7 @@
 import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
-import {fetchPaginatedNodes, setCurrentNode} from "@/slices/dualPanel/dualPanel"
+import {setCurrentNode} from "@/slices/dualPanel/dualPanel"
 
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
@@ -27,14 +27,6 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     setCurrentNode({
       node: {id: folderId, ctype: "folder", breadcrumb: null},
       panel: "main"
-    })
-  )
-
-  await store.dispatch(
-    fetchPaginatedNodes({
-      nodeId: folderId,
-      panel: "main",
-      urlParams: url.searchParams
     })
   )
 

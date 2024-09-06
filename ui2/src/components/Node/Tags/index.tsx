@@ -1,9 +1,10 @@
 import {useSelector} from "react-redux"
 import {Pill, Stack} from "@mantine/core"
-import {selectTagsByName} from "@/features/tags/tagsSlice"
 import type {ColoredTagType} from "@/types"
 import classes from "./Tags.module.css"
 import {RootState} from "@/app/types"
+import {selectTagsByName} from "@/features/tags/tagsSlice"
+import {useGetTagsQuery} from "@/features/tags/apiSlice"
 
 type Args = {
   names: Array<string>
@@ -11,9 +12,12 @@ type Args = {
 }
 
 export default function Tags({names, maxItems}: Args) {
-  const tags = useSelector((state: RootState) =>
-    selectTagsByName(state, names)
-  ) as Array<ColoredTagType>
+  const {data, isLoading} = useGetTagsQuery()
+  const tags = useSelector((state: RootState) => selectTagsByName(state, names))
+
+  if (!data || isLoading) {
+    return <Stack></Stack>
+  }
 
   if (!maxItems) {
     maxItems = 4

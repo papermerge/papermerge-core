@@ -47,6 +47,7 @@ export interface Commander {
   lastPageSize: number
   nodes: SliceState<Array<NodeWithSpinner>>
   selectedIds: Array<string>
+  filter: string | null
 }
 
 export interface Viewer {

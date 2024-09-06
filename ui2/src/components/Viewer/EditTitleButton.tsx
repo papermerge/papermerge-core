@@ -2,23 +2,23 @@ import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
-import {useSelector, useDispatch} from "react-redux"
+import {useSelector} from "react-redux"
 import {
-  selectSelectedNodes,
-  nodeUpdated,
-  clearNodesSelection
+  selectSelectedNodes
+  //nodeUpdated,
+  //clearNodesSelection
 } from "@/slices/dualPanel/dualPanel"
-import edit_node_title from "@/components/modals/EditNodeTitle"
+//import edit_node_title from "@/components/modals/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
 
-import type {NodeType, PanelMode} from "@/types"
+import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
 export default function EditTitleButton() {
   const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
+  //const dispatch = useDispatch()
   const selectedNodes = useSelector((state: RootState) =>
     selectSelectedNodes(state, mode)
   )
@@ -28,13 +28,14 @@ export default function EditTitleButton() {
       return
     }
 
-    let node: NodeType = selectedNodes[0]
-
+    //let node: NodeType = selectedNodes[0]
+    /*
     edit_node_title(node)
       .then((node: NodeType) => {
         dispatch(nodeUpdated({node, mode}))
       })
       .finally(() => dispatch(clearNodesSelection(mode)))
+     */
   }
 
   return (

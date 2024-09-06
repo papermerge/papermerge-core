@@ -1,7 +1,7 @@
 import {useContext, useState} from "react"
 import {Group, Stack, Box} from "@mantine/core"
 
-import {useSelector, useDispatch} from "react-redux"
+import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
 import FolderNodeActions from "@/components/Commander/FolderNodeActions"
@@ -14,7 +14,6 @@ import {
   fetchPaginatedDocument
 } from "@/slices/dualPanel/dualPanel"
 
-import type {RootState} from "@/app/types"
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
@@ -27,17 +26,11 @@ import {useGetPaginatedNodesQuery} from "@/features/nodes/apiSlice"
 export default function Commander() {
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
-  const height = useSelector((state: RootState) =>
-    selectContentHeight(state, mode)
-  )
-  const dispatch = useDispatch()
+  const height = useAppSelector(s => selectContentHeight(s, mode))
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
-  const currentNodeID = useSelector((state: RootState) =>
-    selectCurrentFolderID(state, mode)
-  )
+  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
+  const currentNodeID = useAppSelector(s => selectCurrentFolderID(s, mode))
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
 
@@ -47,9 +40,7 @@ export default function Commander() {
     page_size: pageSize
   })
 
-  const currentFolder = useSelector((state: RootState) =>
-    selectCurrentFolder(state, mode)
-  )
+  const currentFolder = useAppSelector(s => selectCurrentFolder(s, mode))
 
   if (isLoading && !data) {
     return <div>Loading...</div>

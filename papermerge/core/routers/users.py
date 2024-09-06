@@ -40,6 +40,7 @@ def get_current_user(
     logger.debug(f"User {user} found")
     return PyUser.model_validate(user)
 
+
 @router.get("/", response_model=PaginatorGeneric[PyUser])
 @paginate
 @utils.docstring_parameter(scope=scopes.USER_VIEW)

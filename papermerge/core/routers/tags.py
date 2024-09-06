@@ -19,6 +19,7 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
+
 @router.get("/all", response_model=list[schemas.Tag])
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags_without_pagination(

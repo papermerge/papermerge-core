@@ -18,6 +18,7 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
+
 @router.get("/all", response_model=list[schemas.Group])
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups_without_pagination(
@@ -33,7 +34,6 @@ def get_groups_without_pagination(
     """
 
     return db.get_groups(db_session)
-
 
 
 @router.get("/", response_model=PaginatorGeneric[schemas.Group])

@@ -3,7 +3,7 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useSelector, useDispatch} from "react-redux"
 import {selectSelectedNodeIds} from "@/slices/dualPanel/dualPanel"
-import {updateActionPanel} from "@/slices/sizes"
+import {updateActionPanel} from "@/features/ui/uiSlice"
 
 import type {RootState} from "@/app/types"
 import type {PanelMode} from "@/types"

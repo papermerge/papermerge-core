@@ -20,7 +20,7 @@ import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import drop_files from "@/components/modals/DropFiles"
-import {selectContentHeight} from "@/slices/sizes"
+import {selectContentHeight} from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
 import {useGetPaginatedNodesQuery} from "@/features/nodes/apiSlice"
 

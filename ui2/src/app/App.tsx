@@ -13,7 +13,7 @@ import {
   selectCurrentUserStatus,
   selectCurrentUser
 } from "@/slices/currentUser"
-import {updateOutlet} from "@/slices/sizes"
+import {updateOutlet} from "@/features/ui/uiSlice"
 
 import "./App.css"
 import {selectNavBarWidth} from "@/features/ui/uiSlice"

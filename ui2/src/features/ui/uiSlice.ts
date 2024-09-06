@@ -1,7 +1,7 @@
 import Cookies from "js-cookie"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {RootState} from "@/app/types"
-import type {BooleanString} from "@/types"
+import type {BooleanString, PanelMode} from "@/types"
 
 import type {FolderType, FileItemType, FileItemStatus, NodeType} from "@/types"
 
@@ -9,6 +9,13 @@ const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 160
 const NAVBAR_COLLAPSED_COOKIE = "navbar_collapsed"
 const NAVBAR_WIDTH_COOKIE = "navbar_width"
+
+const SMALL_BOTTOM_MARGIN = 13 /* pixles */
+
+type DualArg = {
+  mode: PanelMode
+  value: number
+}
 
 type UpdateFileStatusArg = {
   item: {
@@ -30,9 +37,28 @@ interface UploaderState {
   files: Array<FileItemType>
 }
 
+interface SearchPanelSizes {
+  actionPanelHeight: number
+}
+
+// i.e Commander's panel, viewer's panel
+interface PanelSizes {
+  actionPanelHeight: number
+  breadcrumbHeight: number
+}
+
+interface SizesState {
+  outletTopMarginAndPadding: number
+  windowInnerHeight: number
+  main: PanelSizes
+  secondary?: PanelSizes
+  search?: SearchPanelSizes
+}
+
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
+  sizes: SizesState
 }
 
 const initialState: UIState = {
@@ -43,6 +69,14 @@ const initialState: UIState = {
   navbar: {
     collapsed: initial_collapse_value(),
     width: initial_width_value()
+  },
+  sizes: {
+    outletTopMarginAndPadding: 0,
+    windowInnerHeight: window.innerHeight,
+    main: {
+      actionPanelHeight: 0,
+      breadcrumbHeight: 0
+    }
   }
 }
 
@@ -100,11 +134,71 @@ const uiSlice = createSlice({
         Cookies.set(NAVBAR_COLLAPSED_COOKIE, "true")
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
       }
+    },
+    updateOutlet(state, action: PayloadAction<number>) {
+      state.sizes.windowInnerHeight = window.innerHeight
+      state.sizes.outletTopMarginAndPadding = action.payload
+    },
+    updateActionPanel(state, action: PayloadAction<DualArg>) {
+      const {value, mode} = action.payload
+
+      state.sizes.windowInnerHeight = window.innerHeight
+      if (mode == "main") {
+        // main panel
+        state.sizes.main.actionPanelHeight = value
+      } else if (mode == "secondary") {
+        // secondary panel
+        if (state.sizes.secondary) {
+          state.sizes.secondary.actionPanelHeight = value
+        } else {
+          state.sizes.secondary = {
+            breadcrumbHeight: 0,
+            actionPanelHeight: value
+          }
+        }
+      }
+    },
+    updateBreadcrumb(state, action: PayloadAction<DualArg>) {
+      const {value, mode} = action.payload
+
+      state.sizes.windowInnerHeight = window.innerHeight
+      if (mode == "main") {
+        // main panel
+        state.sizes.main.breadcrumbHeight = value
+      } else if (mode == "secondary") {
+        // secondary panel
+        if (state.sizes.secondary) {
+          state.sizes.secondary.breadcrumbHeight = value
+        } else {
+          state.sizes.secondary = {
+            breadcrumbHeight: value,
+            actionPanelHeight: 0
+          }
+        }
+      }
+    },
+    updateSearchActionPanel(state, action: PayloadAction<number>) {
+      state.sizes.windowInnerHeight = window.innerHeight
+      if (state.sizes.search) {
+        state.sizes.search.actionPanelHeight = action.payload
+      } else {
+        state.sizes.search = {
+          actionPanelHeight: action.payload
+        }
+      }
     }
   }
 })
-export const {openUploader, closeUploader, updateFileItem, toggleNavBar} =
-  uiSlice.actions
+export const {
+  openUploader,
+  closeUploader,
+  updateFileItem,
+  toggleNavBar,
+  updateOutlet,
+  updateActionPanel,
+  updateSearchActionPanel,
+  updateBreadcrumb
+} = uiSlice.actions
 export default uiSlice.reducer
 
 export const selectOpened = (state: RootState): boolean => state.uploader.opened
@@ -115,6 +209,41 @@ export const selectFiles = (state: RootState): Array<FileItemType> =>
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed
 export const selectNavBarWidth = (state: RootState) => state.ui.navbar.width
+
+export const selectContentHeight = (state: RootState, mode: PanelMode) => {
+  let height: number = state.ui.sizes.windowInnerHeight
+
+  height -= state.ui.sizes.outletTopMarginAndPadding
+
+  if (mode == "main") {
+    height -= state.ui.sizes.main.actionPanelHeight
+    height -= state.ui.sizes.main.breadcrumbHeight
+  } else if (mode == "secondary") {
+    if (state.ui.sizes.secondary) {
+      height -= state.ui.sizes.secondary.actionPanelHeight
+      height -= state.ui.sizes.secondary.breadcrumbHeight
+    }
+  }
+
+  /* Let there be a small margin at the bottom of the viewport */
+  height -= SMALL_BOTTOM_MARGIN
+  return height
+}
+
+export const selectSearchContentHeight = (state: RootState) => {
+  let height: number = state.ui.sizes.windowInnerHeight
+
+  height -= state.ui.sizes.outletTopMarginAndPadding
+
+  if (state.ui.sizes.search) {
+    height -= state.ui.sizes.search.actionPanelHeight
+  }
+
+  /* Let there be a small margin at the bottom of the viewport */
+  height -= SMALL_BOTTOM_MARGIN
+
+  return height
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

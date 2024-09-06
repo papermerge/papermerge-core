@@ -9,7 +9,6 @@ import usersReducer from "@/features/users/usersSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import uiReducer from "@/features/ui/uiSlice"
 import {uploaderReducer} from "@/slices/uploader"
-import sizesSliceReducer from "@/slices/sizes"
 import dragndropReducer from "@/slices/dragndrop"
 
 export const store = configureStore({
@@ -21,7 +20,6 @@ export const store = configureStore({
     groups: groupsReducer,
     users: usersReducer,
     uploader: uploaderReducer,
-    sizes: sizesSliceReducer,
     dragndrop: dragndropReducer,
     nodes: nodesReducer,
     ui: uiReducer,

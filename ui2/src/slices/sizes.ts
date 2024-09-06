@@ -121,7 +121,6 @@ export const selectContentHeight = (state: RootState, mode: PanelMode) => {
 
   /* Let there be a small margin at the bottom of the viewport */
   height -= SMALL_BOTTOM_MARGIN
-
   return height
 }
 

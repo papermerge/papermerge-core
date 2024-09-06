@@ -8,14 +8,14 @@ import {updateActionPanel} from "@/slices/sizes"
 import type {RootState} from "@/app/types"
 import type {PanelMode} from "@/types"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
-import DeleteButton from "@/components/Commander/DeleteButton"
-import NewFolderButton from "@/components/Commander/NewFolderButton"
-import UploadButton from "@/components/Commander/UploadButton"
+import DeleteButton from "@/features/nodes/components/DeleteButton"
+import NewFolderButton from "@/features/nodes/components/NewFolderButton"
+import UploadButton from "@/features/nodes/components/UploadButton"
 
 import PanelContext from "@/contexts/PanelContext"
 import EditNodeTagsButton from "@/components/SinglePanel/EditNodeTagsButton"
 import EditNodeTitleButton from "@/components/SinglePanel/EditNodeTitleButton"
-import QuickFilter from "@/components/Commander/QuickFilter"
+import QuickFilter from "@/features/nodes/components/QuickFilter"
 
 export default function FolderNodeActions() {
   const {height, width} = useViewportSize()

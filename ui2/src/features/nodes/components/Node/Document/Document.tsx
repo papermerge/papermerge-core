@@ -8,7 +8,7 @@ import {
   selectionRemoveNode
 } from "@/slices/dualPanel/dualPanel"
 
-import Tags from "@/components/Node/Tags"
+import Tags from "@/features/nodes/components/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.scss"
 import {RootState} from "@/app/types"

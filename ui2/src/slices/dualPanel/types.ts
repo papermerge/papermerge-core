@@ -29,8 +29,6 @@ export type FolderAddedArgs = {
   mode: PanelMode
 }
 
-export type NodeUpdatedArgs = FolderAddedArgs
-
 export type SelectionNodePayload = {
   selectionId: string
   mode: PanelMode

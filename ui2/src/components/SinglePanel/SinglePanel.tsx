@@ -6,7 +6,7 @@ import {
   selectSearchResults
 } from "@/slices/dualPanel/dualPanel"
 import {useSelector} from "react-redux"
-import Commander from "@/components/Commander"
+import Commander from "@/features/nodes/components/Commander"
 import Viewer from "@/components/Viewer"
 import SearchResults from "@/components/SearchResults"
 import PanelContext from "@/contexts/PanelContext"

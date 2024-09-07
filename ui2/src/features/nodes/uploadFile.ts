@@ -1,84 +1,9 @@
-import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit"
+import {createAsyncThunk} from "@reduxjs/toolkit"
 
 import axios from "axios"
-import {RootState} from "@/app/types"
-import type {FolderType, FileItemType, FileItemStatus, NodeType} from "@/types"
+import type {FolderType, NodeType} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
-import type {UploadFileOutput} from "./types"
-
-export type UploaderState = {
-  opened: boolean
-  files: Array<FileItemType>
-}
-
-const initialState: UploaderState = {
-  files: [],
-  opened: false
-}
-
-type UpdateFileStatusArg = {
-  item: {
-    source: NodeType | null
-    target: FolderType
-    file_name: string
-  }
-  status: FileItemStatus
-  error: string | null
-}
-
-const uploaderSlice = createSlice({
-  name: "uploader",
-  initialState,
-  reducers: {
-    closeUploader: state => {
-      state.opened = false
-      state.files = []
-    },
-    openUploader: state => {
-      state.opened = true
-    },
-    updateFileItem: (state, action: PayloadAction<UpdateFileStatusArg>) => {
-      const file_name = action.payload.item.file_name
-      const target_id = action.payload.item.target.id
-      const itemToAdd = {
-        status: action.payload.status,
-        error: action.payload.error,
-        file_name: action.payload.item.file_name,
-        source: action.payload.item.source,
-        target: action.payload.item.target
-      }
-
-      const found = state.files.find(
-        i => i.file_name == file_name && i.target.id == target_id
-      )
-      if (!found) {
-        state.files.push(itemToAdd)
-        state.opened = true
-        return
-      }
-
-      const newItems = state.files.map(i => {
-        if (i.file_name == file_name && i.target.id == target_id) {
-          return itemToAdd
-        } else {
-          return i
-        }
-      })
-
-      state.files = newItems
-      state.opened = true
-    }
-  }
-})
-
-export default uploaderSlice.reducer
-export const {openUploader, closeUploader, updateFileItem} =
-  uploaderSlice.actions
-
-export const selectOpened = (state: RootState): boolean => state.uploader.opened
-
-export const selectFiles = (state: RootState): Array<FileItemType> =>
-  state.uploader.files
+import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
 
 type UploadFileInput = {
   file: File
@@ -92,6 +17,12 @@ type CreateDocumentType = {
   parent_id: string
   ctype: "document"
   ocr: boolean
+}
+
+type UploadFileOutput = {
+  source: NodeType | null
+  target: FolderType
+  file_name: string
 }
 
 export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
@@ -111,7 +42,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     }
 
     thunkApi.dispatch(
-      updateFileItem({
+      uploaderFileItemUpdated({
         item: {
           source: null,
           target: args.target,
@@ -129,7 +60,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
     if (response1.status >= 400) {
       thunkApi.dispatch(
-        updateFileItem({
+        uploaderFileItemUpdated({
           item: {
             source: null,
             target: args.target,
@@ -162,7 +93,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
     if (response2.status == 200 || response2.status == 201) {
       thunkApi.dispatch(
-        updateFileItem({
+        uploaderFileItemUpdated({
           item: {
             source: createdNode,
             target: args.target,
@@ -175,7 +106,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     }
     if (response2.status >= 400) {
       thunkApi.dispatch(
-        updateFileItem({
+        uploaderFileItemUpdated({
           item: {
             source: null,
             target: args.target,

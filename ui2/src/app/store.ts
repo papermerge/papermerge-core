@@ -8,7 +8,6 @@ import groupsReducer from "@/features/groups/groupsSlice"
 import usersReducer from "@/features/users/usersSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import uiReducer from "@/features/ui/uiSlice"
-import {uploaderReducer} from "@/slices/uploader"
 import dragndropReducer from "@/slices/dragndrop"
 
 export const store = configureStore({
@@ -19,7 +18,6 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     users: usersReducer,
-    uploader: uploaderReducer,
     dragndrop: dragndropReducer,
     nodes: nodesReducer,
     ui: uiReducer,

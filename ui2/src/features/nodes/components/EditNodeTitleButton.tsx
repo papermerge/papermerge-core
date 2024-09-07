@@ -8,7 +8,7 @@ import {
   selectSelectedNodeIds,
   clearNodesSelection
 } from "@/slices/dualPanel/dualPanel"
-import {EditNodeTitleModal} from "@/components/modals/EditNodeTitle"
+import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
 

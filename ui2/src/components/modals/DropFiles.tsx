@@ -1,13 +1,12 @@
-import {useContext, useState} from "react"
+import {useState} from "react"
 import {Checkbox, Text} from "@mantine/core"
 import {Button, Modal, Container, Group, Loader} from "@mantine/core"
 import Error from "@/components/modals/Error"
-import type {NodeType, FolderType} from "@/types"
-import {store} from "@/app/store"
+import type {FolderType} from "@/types"
+
 import {uploadFile} from "@/slices/uploader"
-import {nodeAdded} from "@/slices/dualPanel/dualPanel"
-import PanelContext from "@/contexts/PanelContext"
-import {useAddNewDocumentNodeMutation} from "@/features/nodes/apiSlice"
+import {apiSlice} from "@/features/api/slice"
+import {useAppDispatch} from "@/app/hooks"
 
 type Args = {
   opened: boolean
@@ -27,23 +26,27 @@ export const DropFilesModal = ({
   if (!source_files) {
     return
   }
+  const dispatch = useAppDispatch()
   const [error, setError] = useState("")
   const source_titles = [...source_files].map(n => n.name).join(", ")
   const target_title = target.title
-  const [addNewDocummentNode] = useAddNewDocumentNodeMutation()
 
   const localSubmit = async () => {
     for (let i = 0; i < source_files.length; i++) {
-      addNewDocummentNode({
-        title: source_files[i].name,
-        ocr: false,
-        target: target,
-        ctype: "document"
-      }).then(() => {
-        console.log(`Node ${source_files[i].name} was created`)
+      dispatch(
+        uploadFile({
+          file: source_files[i],
+          refreshTarget: true,
+          skipOCR: false,
+          target
+        })
+      ).then(() => {
+        dispatch(apiSlice.util.invalidateTags(["Node"]))
         onSubmit()
       })
     }
+
+    return true
   }
 
   const localCancel = () => {

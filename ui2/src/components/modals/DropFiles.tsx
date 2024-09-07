@@ -42,11 +42,10 @@ export const DropFilesModal = ({
         })
       ).then(() => {
         dispatch(apiSlice.util.invalidateTags(["Node"]))
-        onSubmit()
       })
     }
 
-    return true
+    onSubmit()
   }
 
   const localCancel = () => {

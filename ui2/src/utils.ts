@@ -273,4 +273,19 @@ function reorder<T = number, K = string>({
   return result
 }
 
-export {getCurrentUser, contains_every, reorder}
+type MimeType = "image/jpeg" | "image/svg+xml"
+
+function imageEncode(arrayBuffer: ArrayBuffer, mimetype: MimeType) {
+  let bytes = new Uint8Array(arrayBuffer)
+  let binary: string = ""
+
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+
+  let b64encoded = window.btoa(binary)
+
+  return "data:" + mimetype + ";base64," + b64encoded
+}
+
+export {getCurrentUser, contains_every, reorder, imageEncode}

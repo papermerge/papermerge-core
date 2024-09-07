@@ -1,3 +1,4 @@
+import {getDefaultHeaders, imageEncode} from "@/utils"
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, FolderType, NodeType} from "@/types"
 
@@ -25,6 +26,7 @@ export type PaginatedArgs = {
 }
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {RootState} from "@/app/types"
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -55,6 +57,33 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
     getFolder: builder.query<FolderType, string>({
       query: folderID => `/folders/${folderID}`,
       providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}]
+    }),
+    getDocumentThumbnail: builder.query<string, string>({
+      //@ts-ignore
+      queryFn: async (node_id, queryApi) => {
+        const state = queryApi.getState() as RootState
+        const node = state.nodes.entities[node_id]
+        const thumbnails_url = node.thumbnail_url
+        const headers = getDefaultHeaders()
+
+        if (!thumbnails_url) {
+          return "node does not have thumbnail"
+        }
+        try {
+          const response = await fetch(thumbnails_url, {headers: headers})
+          const resp2 = await response.arrayBuffer()
+          const encodedData = imageEncode(resp2, "image/jpeg")
+          return {data: encodedData}
+        } catch (err) {
+          return {err}
+        }
+
+        return "OK"
+      },
+      transformResponse: (resp: string) => {
+        debugger
+        return resp
+      }
     }),
     addNewFolder: builder.mutation<NodeType, CreateFolderType>({
       query: folder => ({
@@ -100,5 +129,6 @@ export const {
   useAddNewFolderMutation,
   useRenameFolderMutation,
   useUpdateNodeTagsMutation,
-  useDeleteNodesMutation
+  useDeleteNodesMutation,
+  useGetDocumentThumbnailQuery
 } = apiSliceWithNodes

@@ -14,6 +14,7 @@ import classes from "./Document.module.scss"
 import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
 import {useProtectedJpg} from "@/hooks/protected_image"
+import {useGetDocumentThumbnailQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   node: NodeType
@@ -26,6 +27,7 @@ export default function Document({node, onClick}: Args) {
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
   const protected_image = useProtectedJpg(node.thumbnail_url)
+  const {data} = useGetDocumentThumbnailQuery(node.id)
   const dispatch = useDispatch()
   const tagNames = node.tags.map(t => t.name)
 

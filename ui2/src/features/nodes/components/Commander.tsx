@@ -14,7 +14,7 @@ import {
   fetchPaginatedDocument,
   selectFilterText
 } from "@/slices/dualPanel/dualPanel"
-import {DropFilesModal} from "@/components/modals/DropFiles"
+import {DropFilesModal} from "@/features/nodes/components/DropFiles"
 
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"

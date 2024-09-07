@@ -1,9 +1,10 @@
 import {ChangeEvent} from "react"
 import {useState, useEffect} from "react"
 import {TextInput, Loader, Group, Button, Modal} from "@mantine/core"
-import Error from "@/components/modals/Error"
 import type {NodeType} from "@/types"
 import {useRenameFolderMutation} from "@/features/nodes/apiSlice"
+
+import Error from "./Error"
 
 interface Args {
   node: NodeType

@@ -4,11 +4,12 @@ import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconFolderPlus} from "@tabler/icons-react"
 import {useSelector} from "react-redux"
 import {selectCurrentFolderID} from "@/slices/dualPanel/dualPanel"
-import {NewFolderModal} from "@/components/modals/NewFolder"
+
 import type {RootState} from "@/app/types"
 import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
+import {NewFolderModal} from "./NewFolder"
 
 export default function NewFolderButton() {
   const [opened, {open, close}] = useDisclosure(false)

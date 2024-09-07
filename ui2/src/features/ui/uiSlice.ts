@@ -17,7 +17,7 @@ type DualArg = {
   value: number
 }
 
-export interface UpdateFileStatusArg {
+export interface UploaderFileItemArgs {
   item: {
     source: NodeType | null
     target: FolderType
@@ -88,9 +88,9 @@ const uiSlice = createSlice({
       state.uploader.opened = false
       state.uploader.files = []
     },
-    uploaderFileItemAdded: (
+    uploaderFileItemUpdated: (
       state,
-      action: PayloadAction<UpdateFileStatusArg>
+      action: PayloadAction<UploaderFileItemArgs>
     ) => {
       const file_name = action.payload.item.file_name
       const target_id = action.payload.item.target.id
@@ -105,6 +105,7 @@ const uiSlice = createSlice({
       const found = state.uploader.files.find(
         i => i.file_name == file_name && i.target.id == target_id
       )
+
       if (!found) {
         state.uploader.files.push(itemToAdd)
         state.uploader.opened = true
@@ -122,10 +123,6 @@ const uiSlice = createSlice({
       state.uploader.files = newItems
       state.uploader.opened = true
     },
-    uploaderFileItemFailed: (
-      state,
-      action: PayloadAction<UpdateFileStatusArg>
-    ) => {},
     toggleNavBar(state) {
       if (state.navbar.collapsed) {
         state.navbar.collapsed = false
@@ -195,8 +192,7 @@ const uiSlice = createSlice({
 })
 export const {
   closeUploader,
-  uploaderFileItemAdded,
-  uploaderFileItemFailed,
+  uploaderFileItemUpdated,
   toggleNavBar,
   updateOutlet,
   updateActionPanel,

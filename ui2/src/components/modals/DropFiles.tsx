@@ -4,7 +4,7 @@ import {Button, Modal, Container, Group, Loader} from "@mantine/core"
 import Error from "@/components/modals/Error"
 import type {FolderType} from "@/types"
 
-import {uploadFile} from "@/slices/uploader"
+import {uploadFile} from "@/features/nodes/uploadFile"
 import {apiSlice} from "@/features/api/slice"
 import {useAppDispatch} from "@/app/hooks"
 

@@ -17,7 +17,7 @@ type DualArg = {
   value: number
 }
 
-type UpdateFileStatusArg = {
+export interface UpdateFileStatusArg {
   item: {
     source: NodeType | null
     target: FolderType
@@ -88,10 +88,10 @@ const uiSlice = createSlice({
       state.uploader.opened = false
       state.uploader.files = []
     },
-    openUploader: state => {
-      state.uploader.opened = true
-    },
-    updateFileItem: (state, action: PayloadAction<UpdateFileStatusArg>) => {
+    uploaderFileItemAdded: (
+      state,
+      action: PayloadAction<UpdateFileStatusArg>
+    ) => {
       const file_name = action.payload.item.file_name
       const target_id = action.payload.item.target.id
       const itemToAdd = {
@@ -122,6 +122,10 @@ const uiSlice = createSlice({
       state.uploader.files = newItems
       state.uploader.opened = true
     },
+    uploaderFileItemFailed: (
+      state,
+      action: PayloadAction<UpdateFileStatusArg>
+    ) => {},
     toggleNavBar(state) {
       if (state.navbar.collapsed) {
         state.navbar.collapsed = false
@@ -190,9 +194,9 @@ const uiSlice = createSlice({
   }
 })
 export const {
-  openUploader,
   closeUploader,
-  updateFileItem,
+  uploaderFileItemAdded,
+  uploaderFileItemFailed,
   toggleNavBar,
   updateOutlet,
   updateActionPanel,
@@ -201,10 +205,11 @@ export const {
 } = uiSlice.actions
 export default uiSlice.reducer
 
-export const selectOpened = (state: RootState): boolean => state.uploader.opened
+export const selectOpened = (state: RootState): boolean =>
+  state.ui.uploader.opened
 
 export const selectFiles = (state: RootState): Array<FileItemType> =>
-  state.uploader.files
+  state.ui.uploader.files
 
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed

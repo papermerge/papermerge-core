@@ -1,10 +1,22 @@
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, FolderType, NodeType} from "@/types"
+import {
+  uploaderFileItemAdded,
+  uploaderFileItemFailed,
+  UpdateFileStatusArg
+} from "@/features/ui/uiSlice"
 
 type CreateFolderType = {
   title: string
   parent_id: string
   ctype: "folder"
+}
+
+type CreateDocumentNodeType = {
+  title: string
+  target: FolderType
+  ocr: boolean
+  ctype: "document"
 }
 
 type RenameFolderType = {
@@ -64,6 +76,36 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Node"]
     }),
+    addNewDocumentNode: builder.mutation<NodeType, CreateDocumentNodeType>({
+      query: docData => ({
+        url: "/nodes/",
+        method: "POST",
+        body: {
+          parent_id: docData.target.id,
+          title: docData.title,
+          ocr: docData.ocr,
+          ctype: "document"
+        }
+      }),
+      invalidatesTags: ["Node"],
+      async onQueryStarted(arg, {dispatch, queryFulfilled}) {
+        let itemData: UpdateFileStatusArg = {
+          item: {
+            source: null,
+            file_name: arg.title,
+            target: arg.target
+          },
+          status: "uploading",
+          error: null
+        }
+        dispatch(uploaderFileItemAdded(itemData))
+        try {
+          await queryFulfilled
+        } catch (err) {
+          dispatch(uploaderFileItemFailed(itemData))
+        }
+      }
+    }),
     renameFolder: builder.mutation<NodeType, RenameFolderType>({
       query: folder => ({
         url: `/nodes/${folder.id}`,
@@ -98,6 +140,7 @@ export const {
   useGetPaginatedNodesQuery,
   useGetFolderQuery,
   useAddNewFolderMutation,
+  useAddNewDocumentNodeMutation,
   useRenameFolderMutation,
   useUpdateNodeTagsMutation,
   useDeleteNodesMutation

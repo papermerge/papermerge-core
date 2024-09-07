@@ -1,103 +1,85 @@
 import {useContext, useState} from "react"
-import {createRoot} from "react-dom/client"
-import {Checkbox, MantineProvider, Text} from "@mantine/core"
-import theme from "@/themes"
-import GenericModal from "@/components/modals/Generic"
+import {Checkbox, Text} from "@mantine/core"
+import {Button, Modal, Container, Group, Loader} from "@mantine/core"
 import Error from "@/components/modals/Error"
 import type {NodeType, FolderType} from "@/types"
-import {MODALS} from "@/cconstants"
 import {store} from "@/app/store"
 import {uploadFile} from "@/slices/uploader"
 import {nodeAdded} from "@/slices/dualPanel/dualPanel"
 import PanelContext from "@/contexts/PanelContext"
+import {useAddNewDocumentNodeMutation} from "@/features/nodes/apiSlice"
 
 type Args = {
+  opened: boolean
   source_files: FileList | File[]
   target: FolderType
-  onOK: (node: NodeType) => void
-  onCancel: (msg?: string) => void
+  onSubmit: () => void
+  onCancel: () => void
 }
 
-const DropFilesModal = ({source_files, target, onOK, onCancel}: Args) => {
-  const mode = useContext(PanelContext)
+export const DropFilesModal = ({
+  source_files,
+  target,
+  onSubmit,
+  onCancel,
+  opened
+}: Args) => {
+  if (!source_files) {
+    return
+  }
   const [error, setError] = useState("")
   const source_titles = [...source_files].map(n => n.name).join(", ")
   const target_title = target.title
+  const [addNewDocummentNode] = useAddNewDocumentNodeMutation()
 
-  const handleSubmit = async () => {
+  const localSubmit = async () => {
     for (let i = 0; i < source_files.length; i++) {
-      store
-        .dispatch(
-          uploadFile({
-            file: source_files[i],
-            refreshTarget: true,
-            skipOCR: false,
-            target
-          })
-        )
-        .then(value => {
-          // @ts-ignore
-          const node: NodeType = value.payload.source as NodeType
-          store.dispatch(nodeAdded({node, mode}))
-          onOK(node)
-        })
+      addNewDocummentNode({
+        title: source_files[i].name,
+        ocr: false,
+        target: target,
+        ctype: "document"
+      }).then(() => {
+        console.log(`Node ${source_files[i].name} was created`)
+        onSubmit()
+      })
     }
-
-    return true
   }
 
-  const handleCancel = () => {
+  const localCancel = () => {
     // just close the dialog
     setError("")
     onCancel()
   }
 
   return (
-    <GenericModal
-      modal_title="Upload documents"
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-    >
-      Are you sure you want to upload
-      <Text span c="blue">
-        {` ${source_titles} `}
-      </Text>
-      to
-      <Text span c="green">
-        {` ${target_title}`}
-      </Text>
-      ?
-      <Checkbox mt="md" mb="md" label="Skip OCR" />
-      {error && <Error message={error} />}
-    </GenericModal>
+    <Modal title="Upload Files" opened={opened} onClose={localCancel}>
+      <Container>
+        Are you sure you want to upload
+        <Text span c="blue">
+          {` ${source_titles} `}
+        </Text>
+        to
+        <Text span c="green">
+          {` ${target_title}`}
+        </Text>
+        ?
+        <Checkbox mt="md" mb="md" label="Skip OCR" />
+        {error && <Error message={error} />}
+        <Group gap="lg" justify="space-between">
+          <Button variant="default" onClick={localSubmit}>
+            Cancel
+          </Button>
+          <Button
+            leftSection={false && <Loader size={"sm"} />}
+            onClick={localSubmit}
+            disabled={false}
+            color={"red"}
+          >
+            Upload
+          </Button>
+        </Group>
+      </Container>
+    </Modal>
   )
 }
-
-type DropFileArgs = {
-  source_files: FileList | File[]
-  target: FolderType
-}
-
-function drop_files({source_files, target}: DropFileArgs) {
-  let modals = document.getElementById(MODALS)
-
-  let promise = new Promise<NodeType>(function (onOK, onCancel) {
-    if (modals) {
-      let dom_root = createRoot(modals)
-      dom_root.render(
-        <MantineProvider theme={theme}>
-          <DropFilesModal
-            source_files={source_files}
-            target={target}
-            onOK={onOK}
-            onCancel={onCancel}
-          />
-        </MantineProvider>
-      )
-    }
-  }) // new Promise...
-
-  return promise
-}
-
-export default drop_files

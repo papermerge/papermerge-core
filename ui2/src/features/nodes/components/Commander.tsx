@@ -19,7 +19,6 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import drop_files from "@/components/modals/DropFiles"
 import {selectContentHeight} from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
 import {useGetPaginatedNodesQuery} from "@/features/nodes/apiSlice"
@@ -106,10 +105,10 @@ export default function Commander() {
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     setDragOver(false)
     event.preventDefault()
-    drop_files({
-      source_files: event.dataTransfer.files,
-      target: currentFolder!
-    }).then(() => {})
+    //drop_files({
+    //  source_files: event.dataTransfer.files,
+    //  target: currentFolder!
+    //}).then(() => {})
   }
 
   const nodes = data.items.map((n: NodeType) => (

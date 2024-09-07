@@ -9,7 +9,7 @@ import {PanelMode} from "@/types"
 import {selectCurrentFolderID} from "@/slices/dualPanel/dualPanel"
 import {useGetFolderQuery} from "../apiSlice"
 
-import {DropFilesModal} from "@/features/nodes/components/DropFiles"
+import {DropFilesModal} from "./DropFiles"
 
 const MIME_TYPES = [
   "image/png",

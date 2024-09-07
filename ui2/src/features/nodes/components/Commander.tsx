@@ -5,8 +5,6 @@ import {useDisclosure} from "@mantine/hooks"
 import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
-import FolderNodeActions from "@/features/nodes/components/FolderNodeActions"
-import Node from "@/features/nodes/components/Node"
 import {
   setCurrentNode,
   selectLastPageSize,
@@ -14,7 +12,6 @@ import {
   fetchPaginatedDocument,
   selectFilterText
 } from "@/slices/dualPanel/dualPanel"
-import {DropFilesModal} from "@/features/nodes/components/DropFiles"
 
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
@@ -26,6 +23,10 @@ import {
   useGetFolderQuery,
   useGetPaginatedNodesQuery
 } from "@/features/nodes/apiSlice"
+
+import Node from "./Node"
+import {DropFilesModal} from "./DropFiles"
+import FolderNodeActions from "./FolderNodeActions"
 
 export default function Commander() {
   const [opened, {open, close}] = useDisclosure(false)

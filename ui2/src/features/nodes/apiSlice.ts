@@ -1,21 +1,10 @@
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, FolderType, NodeType} from "@/types"
-import {
-  uploaderFileItemAdded,
-  uploaderFileItemFailed,
-  UpdateFileStatusArg
-} from "@/features/ui/uiSlice"
 
 type CreateFolderType = {
   title: string
   parent_id: string
   ctype: "folder"
-}
-
-type CreateDocumentNodesType = {
-  source_files: File[]
-  target: FolderType
-  ocr: boolean
 }
 
 type RenameFolderType = {

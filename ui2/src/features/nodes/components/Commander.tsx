@@ -1,5 +1,6 @@
 import {useContext, useState} from "react"
 import {Group, Stack, Box} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 
 import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
@@ -10,10 +11,10 @@ import {
   setCurrentNode,
   selectLastPageSize,
   selectCurrentFolderID,
-  selectCurrentFolder,
   fetchPaginatedDocument,
   selectFilterText
 } from "@/slices/dualPanel/dualPanel"
+import {DropFilesModal} from "@/components/modals/DropFiles"
 
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
@@ -21,9 +22,13 @@ import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {selectContentHeight} from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
-import {useGetPaginatedNodesQuery} from "@/features/nodes/apiSlice"
+import {
+  useGetFolderQuery,
+  useGetPaginatedNodesQuery
+} from "@/features/nodes/apiSlice"
 
 export default function Commander() {
+  const [opened, {open, close}] = useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
@@ -40,8 +45,9 @@ export default function Commander() {
     page_size: pageSize,
     filter: filter
   })
+  const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 
-  const currentFolder = useAppSelector(s => selectCurrentFolder(s, mode))
+  const {data: currentFolder} = useGetFolderQuery(currentNodeID!)
 
   if (isLoading && !data) {
     return <div>Loading...</div>
@@ -105,10 +111,8 @@ export default function Commander() {
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     setDragOver(false)
     event.preventDefault()
-    //drop_files({
-    //  source_files: event.dataTransfer.files,
-    //  target: currentFolder!
-    //}).then(() => {})
+    setUploadFiles(event.dataTransfer.files)
+    open()
   }
 
   const nodes = data.items.map((n: NodeType) => (
@@ -138,22 +142,31 @@ export default function Commander() {
   }
 
   return (
-    <Box
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      className={dragOver ? classes.accept_files : classes.commander}
-    >
-      <FolderNodeActions />
-      <Breadcrumbs onClick={onClick} />
-      <Stack
-        className={classes.content}
-        justify={"space-between"}
-        style={{height: `${height}px`}}
+    <>
+      <Box
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        className={dragOver ? classes.accept_files : classes.commander}
       >
-        {commanderContent}
-      </Stack>
-    </Box>
+        <FolderNodeActions />
+        <Breadcrumbs onClick={onClick} />
+        <Stack
+          className={classes.content}
+          justify={"space-between"}
+          style={{height: `${height}px`}}
+        >
+          {commanderContent}
+        </Stack>
+      </Box>
+      <DropFilesModal
+        opened={opened}
+        source_files={uploadFiles!}
+        target={currentFolder!}
+        onSubmit={close}
+        onCancel={close}
+      />
+    </>
   )
 }

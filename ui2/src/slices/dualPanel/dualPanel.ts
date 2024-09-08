@@ -824,9 +824,7 @@ export const selectFilterText = (
   mode: PanelMode
 ): string | null => {
   if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander?.filter) {
-      return state.dualPanel.mainPanel.commander?.filter
-    }
+    return state.dualPanel.mainPanel.commander?.filter || null
   }
 
   if (state.dualPanel.secondaryPanel?.commander?.filter) {

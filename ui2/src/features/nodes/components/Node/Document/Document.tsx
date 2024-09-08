@@ -13,7 +13,6 @@ import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.scss"
 import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
-import {useProtectedJpg} from "@/hooks/protected_image"
 import {useGetDocumentThumbnailQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
@@ -26,7 +25,6 @@ export default function Document({node, onClick}: Args) {
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedNodeIds(state, mode)
   ) as Array<string>
-  const protected_image = useProtectedJpg(node.thumbnail_url)
   const {data} = useGetDocumentThumbnailQuery(node.id)
   const dispatch = useDispatch()
   const tagNames = node.tags.map(t => t.name)
@@ -43,7 +41,7 @@ export default function Document({node, onClick}: Args) {
     <div className={classes.document}>
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
-        <img src={protected_image.data || ""} />
+        <img src={data} />
         <Tags names={tagNames} />
         <div className={classes.title}>{node.title}</div>
       </a>

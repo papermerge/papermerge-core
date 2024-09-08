@@ -1,4 +1,4 @@
-import {getDefaultHeaders, imageEncode} from "@/utils"
+import {getDefaultHeaders, imageEncode, getBaseURL} from "@/utils"
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, FolderType, NodeType} from "@/types"
 
@@ -62,27 +62,48 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
       //@ts-ignore
       queryFn: async (node_id, queryApi) => {
         const state = queryApi.getState() as RootState
+
+        if (!node_id) {
+          console.error("Node ID is empty or null")
+          return "Node ID is empty or null"
+        }
+
         const node = state.nodes.entities[node_id]
+
+        if (!node) {
+          console.error(
+            `Node with ID=${node_id} not found in state.nodes.entities`
+          )
+          return `Node ID = ${node_id} not found`
+        }
+
         const thumbnails_url = node.thumbnail_url
         const headers = getDefaultHeaders()
+        let url
 
-        if (!thumbnails_url) {
+        if (thumbnails_url && !thumbnails_url.startsWith("/api/")) {
+          // cloud URL e.g. aws cloudfront URL
+          url = thumbnails_url
+        } else {
+          // use backend server URL (which may differ from frontend's URL)
+          url = `${getBaseURL(true)}${thumbnails_url}`
+        }
+
+        if (!thumbnails_url || !url) {
+          console.error(
+            `Thumbnail URL for Node ID=${node_id} is undefined or null`
+          )
           return "node does not have thumbnail"
         }
+
         try {
-          const response = await fetch(thumbnails_url, {headers: headers})
+          const response = await fetch(url, {headers: headers})
           const resp2 = await response.arrayBuffer()
           const encodedData = imageEncode(resp2, "image/jpeg")
           return {data: encodedData}
         } catch (err) {
           return {err}
         }
-
-        return "OK"
-      },
-      transformResponse: (resp: string) => {
-        debugger
-        return resp
       }
     }),
     addNewFolder: builder.mutation<NodeType, CreateFolderType>({

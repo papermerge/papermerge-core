@@ -1,8 +1,7 @@
 import {useState, useEffect, useRef} from "react"
 import {State} from "@/types"
 import {getDefaultHeaders, getBaseURL} from "@/utils"
-
-type MimeType = "image/jpeg" | "image/svg+xml"
+import {imageEncode} from "@/utils"
 
 function fetch_jpeg(
   url: string | null,
@@ -27,11 +26,11 @@ function fetch_jpeg(
 
     if (res.status === 200) {
       res.arrayBuffer().then(data => {
-        setBase(_imageEncode(data, "image/jpeg"))
+        setBase(imageEncode(data, "image/jpeg"))
         setResult({
           is_loading: false,
           error: null,
-          data: _imageEncode(data, "image/jpeg")
+          data: imageEncode(data, "image/jpeg")
         })
       })
     }
@@ -163,17 +162,4 @@ export const useProtectedJpg = (url: string | null) => {
   }, [url])
 
   return result
-}
-
-function _imageEncode(arrayBuffer: ArrayBuffer, mimetype: MimeType) {
-  let bytes = new Uint8Array(arrayBuffer)
-  let binary: string = ""
-
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-
-  let b64encoded = window.btoa(binary)
-
-  return "data:" + mimetype + ";base64," + b64encoded
 }

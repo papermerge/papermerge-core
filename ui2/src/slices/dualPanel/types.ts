@@ -19,11 +19,6 @@ export type NodeWithSpinner = {
   status: "idle" | "loading"
 }
 
-export type SetCurrentNodeArgs = {
-  node: CurrentNodeType
-  panel: PanelMode
-}
-
 export type FolderAddedArgs = {
   node: NodeType
   mode: PanelMode

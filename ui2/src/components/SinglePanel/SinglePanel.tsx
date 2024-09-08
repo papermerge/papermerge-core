@@ -1,37 +1,27 @@
 import {useContext} from "react"
 
-import {
-  selectCommander,
-  selectViewer,
-  selectSearchResults
-} from "@/slices/dualPanel/dualPanel"
-import {useSelector} from "react-redux"
+import {useAppSelector} from "@/app/hooks"
 import Commander from "@/features/nodes/components/Commander"
 import Viewer from "@/components/Viewer"
 import SearchResults from "@/components/SearchResults"
 import PanelContext from "@/contexts/PanelContext"
 import {PanelMode} from "@/types"
-import {RootState} from "@/app/types"
+
+import {selectPanelComponent} from "@/features/ui/uiSlice"
 
 export default function SinglePanel() {
   const mode: PanelMode = useContext(PanelContext)
-  const commander = useSelector((state: RootState) =>
-    selectCommander(state, mode)
-  )
-  const viewer = useSelector((state: RootState) => selectViewer(state, mode))
-  const searchResults = useSelector((state: RootState) =>
-    selectSearchResults(state, mode)
-  )
+  const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
 
-  if (commander) {
+  if (panelComponent == "commander") {
     return <Commander />
   }
 
-  if (viewer) {
+  if (panelComponent == "viewer") {
     return <Viewer />
   }
 
-  if (searchResults) {
+  if (panelComponent == "searchResults") {
     return <SearchResults />
   }
 

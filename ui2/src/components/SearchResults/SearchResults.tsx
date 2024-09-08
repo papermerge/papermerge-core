@@ -5,8 +5,6 @@ import type {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 import {
-  fetchPaginatedDocument,
-  fetchPaginatedNodes,
   fetchPaginatedSearchResults,
   selectLastPageSize,
   selectSearchResultOpenItemTarget,
@@ -48,6 +46,7 @@ export default function SearchResults() {
 
   const onClick = (item: NType, page?: number) => {
     if (item.ctype == "document") {
+      /*
       dispatch(
         fetchPaginatedDocument({
           nodeId: item.id,
@@ -56,14 +55,8 @@ export default function SearchResults() {
           page: page
         })
       )
+        */
     } else if (item.ctype == "folder") {
-      dispatch(
-        fetchPaginatedNodes({
-          nodeId: item.id,
-          panel: targetPanel as PanelMode,
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
       dispatch(
         currentNodeChanged({
           id: item.id,

@@ -13,7 +13,11 @@ import {selectCurrentUser} from "@/slices/currentUser"
 import type {PanelMode, User} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {currentNodeChanged} from "@/features/ui/uiSlice"
+import {
+  currentNodeChanged,
+  secondaryPanelClosed,
+  secondaryPanelOpened
+} from "@/features/ui/uiSlice"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
@@ -28,13 +32,7 @@ export default function ToggleSecondaryPanel() {
 
   const onClick = () => {
     const folderId = user.home_folder_id
-    dispatch(
-      openSecondaryPanel({
-        id: folderId,
-        ctype: "folder",
-        breadcrumb: null
-      })
-    )
+    dispatch(secondaryPanelOpened("commander"))
     dispatch(
       currentNodeChanged({id: folderId, ctype: "folder", panel: "secondary"})
     )
@@ -54,7 +52,7 @@ export default function ToggleSecondaryPanel() {
 
   return (
     <ActionIcon
-      onClick={() => dispatch(closeSecondaryPanel())}
+      onClick={() => dispatch(secondaryPanelClosed())}
       size="lg"
       variant="default"
     >

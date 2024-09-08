@@ -40,6 +40,6 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
   keepUnusedDataFor: 60,
-  tagTypes: ["Group", "User", "Tag", "Node", "Folder"],
+  tagTypes: ["Group", "User", "Tag", "Node", "Folder", "Document"],
   endpoints: _ => ({})
 })

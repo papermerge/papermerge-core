@@ -7,7 +7,6 @@ import {useNavigate} from "react-router-dom"
 
 import {
   selectLastPageSize,
-  fetchPaginatedDocument,
   selectFilterText
 } from "@/slices/dualPanel/dualPanel"
 
@@ -78,6 +77,7 @@ export default function Commander() {
     if (mode == "main" && node.ctype == "document") {
       navigate(`/document/${node.id}`)
     } else if (mode == "secondary" && node.ctype == "document") {
+      /*
       dispatch(
         fetchPaginatedDocument({
           nodeId: node.id,
@@ -85,6 +85,7 @@ export default function Commander() {
           urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
         })
       )
+        */
     }
   }
 

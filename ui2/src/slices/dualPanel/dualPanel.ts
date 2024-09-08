@@ -31,9 +31,6 @@ import type {
   PageType,
   PanelMode,
   PanelType,
-  Paginated,
-  NodeLoaderResponseType,
-  FolderType,
   DocumentType,
   CurrentNodeType,
   PaginationType,
@@ -48,7 +45,6 @@ import type {
 } from "@/types"
 import {
   DualPanelState,
-  SetCurrentNodeArgs,
   SelectionNodePayload,
   SelectionPagePayload
 } from "./types"
@@ -77,25 +73,6 @@ const initialState: DualPanelState = {
   secondaryPanel: null
 }
 
-type ThunkArgs = {
-  panel: PanelMode
-  nodeId: string
-  urlParams: URLSearchParams
-  page?: number
-}
-
-export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
-  "paginatedDocument/fetchDocument",
-  // @ts-ignore
-  async ({nodeId, urlParams, page}: ThunkArgs) => {
-    const response = await axios.get(`/api/documents/${nodeId}`, {
-      validateStatus: () => true
-    })
-    const doc = response.data as DocumentType
-    return doc
-  }
-)
-
 type ApplyPageOpChangesThunkArgs = {
   panel: PanelMode
   pages: ApplyPagesType[]
@@ -112,38 +89,6 @@ export const applyPageOpChanges = createAsyncThunk<
     return doc
   }
 )
-
-export const fetchPaginatedNodes = createAsyncThunk<
-  NodeLoaderResponseType,
-  ThunkArgs
->("paginatedNodes/fetchNodes", async ({nodeId, urlParams}: ThunkArgs) => {
-  const prom = axios.all([
-    axios.get(`/api/nodes/${nodeId}?${urlParams}`),
-    axios.get(`/api/folders/${nodeId}`)
-  ])
-  const [nodesResp, folderResp] = await prom
-
-  if (!nodesResp) {
-    throw new Response("", {
-      status: 404,
-      statusText: "Not Found"
-    })
-  }
-
-  const paginatedNodes = nodesResp.data as Paginated<NodeType>
-  const folder = folderResp.data as FolderType
-
-  const result = {
-    nodes: paginatedNodes.items,
-    parent: folder,
-    breadcrumb: folder.breadcrumb,
-    per_page: paginatedNodes.page_size,
-    num_pages: paginatedNodes.num_pages,
-    page_number: paginatedNodes.page_number
-  }
-
-  return result
-})
 
 type fetchPaginatedSearchResultsArgs = {
   query: string
@@ -458,43 +403,6 @@ const dualPanelSlice = createSlice({
             versions: injectPageRotOp(action.payload.versions),
             currentVersion: Math.max(...versionNumbers),
             currentPage: 1,
-            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
-            zoomFactor: 100,
-            selectedIds: [],
-            //@ts-ignore
-            initialPages: getLatestVersionPages(action.payload.versions)
-          }
-        }
-        return
-      }
-    })
-    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
-      if (action.meta.arg.panel == "main") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.mainPanel.viewer = {
-          breadcrumb: action.payload.breadcrumb,
-          versions: injectPageRotOp(action.payload.versions),
-          currentVersion: Math.max(...versionNumbers),
-          currentPage: action.meta.arg.page || 1,
-          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
-          zoomFactor: 100,
-          selectedIds: [],
-          //@ts-ignore
-          initialPages: getLatestVersionPages(action.payload.versions)
-        }
-        return
-      }
-
-      if (action.meta.arg.panel == "secondary") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.secondaryPanel = {
-          commander: null,
-          searchResults: null,
-          viewer: {
-            breadcrumb: action.payload.breadcrumb,
-            versions: injectPageRotOp(action.payload.versions),
-            currentVersion: Math.max(...versionNumbers),
-            currentPage: action.meta.arg.page || 1,
             thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
             zoomFactor: 100,
             selectedIds: [],

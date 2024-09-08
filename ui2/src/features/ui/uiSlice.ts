@@ -66,12 +66,22 @@ interface CurrentNode {
   ctype: CType
 }
 
+interface ViewerState {
+  currentDocumentVersion: number
+}
+
+type PanelComponent = "commander" | "viewer" | "searchResults"
+
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
   sizes: SizesState
   currentNodeMain?: CurrentNode
   currentNodeSecondary?: CurrentNode
+  mainViewer?: ViewerState
+  secondaryViewer?: ViewerState
+  mainPanelComponent?: PanelComponent
+  secondaryPanelComponent?: PanelComponent
 }
 
 const initialState: UIState = {
@@ -208,15 +218,34 @@ const uiSlice = createSlice({
           id: payload.id,
           ctype: payload.ctype
         }
+        if (payload.ctype == "folder") {
+          state.mainPanelComponent = "commander"
+        }
+        if (payload.ctype == "document") {
+          state.mainPanelComponent = "viewer"
+        }
       } else {
         state.currentNodeSecondary = {
           id: payload.id,
           ctype: payload.ctype
         }
+        if (payload.ctype == "folder") {
+          state.secondaryPanelComponent = "commander"
+        }
+        if (payload.ctype == "document") {
+          state.secondaryPanelComponent = "viewer"
+        }
       }
+    },
+    secondaryPanelOpened(state, action: PayloadAction<PanelComponent>) {
+      state.secondaryPanelComponent = action.payload
+    },
+    secondaryPanelClosed(state) {
+      state.secondaryPanelComponent = undefined
     }
   }
 })
+
 export const {
   closeUploader,
   uploaderFileItemUpdated,
@@ -225,7 +254,9 @@ export const {
   updateActionPanel,
   updateSearchActionPanel,
   updateBreadcrumb,
-  currentNodeChanged
+  currentNodeChanged,
+  secondaryPanelClosed,
+  secondaryPanelOpened
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -288,6 +319,14 @@ export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.currentNodeSecondary?.ctype
+}
+
+export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainPanelComponent
+  }
+
+  return state.ui.secondaryPanelComponent
 }
 
 /* Load initial collapse state value from cookie */

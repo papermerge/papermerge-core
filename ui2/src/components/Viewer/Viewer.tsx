@@ -3,10 +3,7 @@ import {useContext} from "react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {
-  fetchPaginatedNodes,
-  selectLastPageSize
-} from "@/slices/dualPanel/dualPanel"
+import {selectLastPageSize} from "@/slices/dualPanel/dualPanel"
 
 import type {RootState} from "@/app/types"
 import type {PanelMode, NType} from "@/types"
@@ -32,13 +29,6 @@ export default function Viewer() {
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        fetchPaginatedNodes({
-          nodeId: node.id,
-          panel: "secondary",
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
       dispatch(
         currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )

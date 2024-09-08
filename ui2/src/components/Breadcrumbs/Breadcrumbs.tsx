@@ -14,11 +14,8 @@ import {useViewportSize} from "@mantine/hooks"
 import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
 import classes from "./Breadcrumbs.module.css"
 
-import {
-  selectPanelNodesStatus,
-  selectCurrentFolderID
-} from "@/slices/dualPanel/dualPanel"
 import {updateBreadcrumb} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 
 import type {PanelMode, NType, UserDetails} from "@/types"
 
@@ -37,8 +34,8 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
   const {height, width} = useViewportSize()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const nodesStatus = useAppSelector(s => selectPanelNodesStatus(s, mode))
-  const currentNodeID = useAppSelector(s => selectCurrentFolderID(s, mode))
+  //const nodesStatus = useAppSelector(s => selectPanelNodesStatus(s, mode))
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
 
   const {data, isLoading} = useGetFolderQuery(currentNodeID!)
 
@@ -81,7 +78,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
         <Breadcrumbs className={classes.breadcrumbs}>
           <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         </Breadcrumbs>
-        {nodesStatus == "loading" && <Loader size={"sm"} />}
+        {/*nodesStatus == "loading" && <Loader size={"sm"} />*/}
       </Group>
     )
   }
@@ -93,7 +90,7 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
         {links}
         <Anchor>{lastOne}</Anchor>
       </Breadcrumbs>
-      {nodesStatus == "loading" && <Loader size={"sm"} />}
+      {/*nodesStatus == "loading" && <Loader size={"sm"} />*/}
     </Group>
   )
 }

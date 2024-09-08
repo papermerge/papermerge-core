@@ -6,12 +6,12 @@ import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
 import {
-  setCurrentNode,
   selectLastPageSize,
-  selectCurrentFolderID,
   fetchPaginatedDocument,
   selectFilterText
 } from "@/slices/dualPanel/dualPanel"
+
+import {currentNodeChanged, selectCurrentNodeID} from "@/features/ui/uiSlice"
 
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
@@ -36,7 +36,7 @@ export default function Commander() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
-  const currentNodeID = useAppSelector(s => selectCurrentFolderID(s, mode))
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
@@ -48,7 +48,11 @@ export default function Commander() {
   })
   const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 
-  const {data: currentFolder} = useGetFolderQuery(currentNodeID!)
+  if (!currentNodeID) {
+    return <div>Loading...</div>
+  }
+
+  const {data: currentFolder} = useGetFolderQuery(currentNodeID)
 
   if (isLoading && !data) {
     return <div>Loading...</div>
@@ -65,10 +69,7 @@ export default function Commander() {
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
-        setCurrentNode({
-          node: {id: node.id, ctype: "folder", breadcrumb: null},
-          panel: "secondary"
-        })
+        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )
     } else if (mode == "main" && node.ctype == "folder") {
       navigate(`/folder/${node.id}?page_size=${lastPageSize}`)

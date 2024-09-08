@@ -1,7 +1,7 @@
 import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
-import {setCurrentNode} from "@/slices/dualPanel/dualPanel"
+import {currentNodeChanged} from "@/features/ui/uiSlice"
 
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
@@ -24,10 +24,7 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   }
 
   store.dispatch(
-    setCurrentNode({
-      node: {id: folderId, ctype: "folder", breadcrumb: null},
-      panel: "main"
-    })
+    currentNodeChanged({id: folderId, ctype: "folder", panel: "main"})
   )
 
   return {nodeId: folderId, urlParams: url.searchParams}

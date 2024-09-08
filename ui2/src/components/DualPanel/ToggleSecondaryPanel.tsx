@@ -8,12 +8,12 @@ import {
   selectMainPanel,
   selectSecondaryPanel
 } from "@/slices/dualPanel/dualPanel"
-import {setCurrentNode} from "@/slices/dualPanel/dualPanel"
 import {selectCurrentUser} from "@/slices/currentUser"
 
 import type {PanelMode, User} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
+import {currentNodeChanged} from "@/features/ui/uiSlice"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
@@ -36,14 +36,7 @@ export default function ToggleSecondaryPanel() {
       })
     )
     dispatch(
-      setCurrentNode({
-        node: {
-          id: folderId,
-          ctype: "folder",
-          breadcrumb: [[folderId, ".home"]]
-        },
-        panel: "secondary"
-      })
+      currentNodeChanged({id: folderId, ctype: "folder", panel: "secondary"})
     )
   }
 

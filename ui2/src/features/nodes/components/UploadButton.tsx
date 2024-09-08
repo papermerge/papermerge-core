@@ -1,15 +1,22 @@
 import {useState} from "react"
 import {useAppSelector} from "@/app/hooks"
-import {FileButton, ActionIcon, Tooltip} from "@mantine/core"
+import {
+  FileButton,
+  ActionIcon,
+  Tooltip,
+  Skeleton,
+  Button,
+  Loader
+} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
 import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import {PanelMode} from "@/types"
-import {selectCurrentFolderID} from "@/slices/dualPanel/dualPanel"
 import {useGetFolderQuery} from "../apiSlice"
 
 import {DropFilesModal} from "./DropFiles"
+import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 
 const MIME_TYPES = [
   "image/png",
@@ -22,8 +29,13 @@ export default function UploadButton() {
   const [opened, {open, close}] = useDisclosure(false)
   const [uploadFiles, setUploadFiles] = useState<File[]>()
   const mode: PanelMode = useContext(PanelContext)
-  const folderID = useAppSelector(s => selectCurrentFolderID(s, mode))
-  const {data: target} = useGetFolderQuery(folderID!)
+  const folderID = useAppSelector(s => selectCurrentNodeID(s, mode))
+
+  if (!folderID) {
+    return <Loader size={"xs"} />
+  }
+
+  const {data: target} = useGetFolderQuery(folderID)
 
   const onUpload = (files: File[]) => {
     if (!files) {

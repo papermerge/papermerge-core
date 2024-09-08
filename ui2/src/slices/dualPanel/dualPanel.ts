@@ -14,15 +14,12 @@ axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
 import {
-  removeNodesHelper,
   selectionAddNodeHelper,
   selectionAddPageHelper,
   selectionRemoveNodeHelper,
   selectionRemovePageHelper,
   clearNodesSelectionHelper,
   commanderInitialState,
-  setCurrentNodeHelper,
-  nodeAddedHelper,
   dropThumbnailPageHelper,
   resetPageChangesHelper,
   getLatestVersionPages
@@ -40,7 +37,6 @@ import type {
   DocumentType,
   CurrentNodeType,
   PaginationType,
-  SliceStateStatus,
   SearchResultNode,
   PaginatedSearchResult,
   DroppedThumbnailPosition,
@@ -53,8 +49,6 @@ import type {
 import {
   DualPanelState,
   SetCurrentNodeArgs,
-  FolderAddedArgs,
-  NodeWithSpinner,
   SelectionNodePayload,
   SelectionPagePayload
 } from "./types"
@@ -80,9 +74,7 @@ const initialState: DualPanelState = {
     viewer: null,
     searchResults: null
   },
-  secondaryPanel: null,
-  // common nodes data shared between mainPanel and secondary Panel
-  nodes: []
+  secondaryPanel: null
 }
 
 type ThunkArgs = {
@@ -375,20 +367,6 @@ const dualPanelSlice = createSlice({
         }
       }
     },
-    nodeAdded(state, action: PayloadAction<FolderAddedArgs>) {
-      nodeAddedHelper({
-        state,
-        node: action.payload.node,
-        mode: action.payload.mode
-      })
-    },
-    setCurrentNode(state, action: PayloadAction<SetCurrentNodeArgs>) {
-      setCurrentNodeHelper({
-        state,
-        node: action.payload.node,
-        mode: action.payload.panel
-      })
-    },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {
         commander: commanderInitialState(action.payload),
@@ -453,86 +431,6 @@ const dualPanelSlice = createSlice({
     }
   },
   extraReducers(builder) {
-    builder.addCase(fetchPaginatedNodes.fulfilled, (state, action) => {
-      action.payload.nodes.forEach((incomingNode: NodeType) => {
-        let found = state.nodes.find((i: NodeType) => i.id == incomingNode.id)
-        if (found) {
-          found = incomingNode
-        } else {
-          state.nodes.push(incomingNode)
-        }
-      })
-
-      const found = state.nodes.find(
-        (i: NodeType) => i.id == action.payload.parent.id
-      )
-      if (!found) {
-        state.nodes.push(action.payload.parent)
-      }
-
-      const newNodes: Array<NodeWithSpinner> = action.payload.nodes.map(
-        (n: NodeType) => {
-          return {
-            id: n.id,
-            status: "idle"
-          }
-        }
-      )
-      if (action.meta.arg.panel == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.nodes = {
-            status: "succeeded",
-            error: null,
-            data: newNodes
-          }
-          if (state.mainPanel.commander.currentNode) {
-            state.mainPanel.commander.currentNode.breadcrumb =
-              action.payload.breadcrumb
-          }
-          state.mainPanel.commander.pagination = {
-            pageSize: action.payload.per_page,
-            pageNumber: action.payload.page_number,
-            numPages: action.payload.num_pages
-          }
-          state.mainPanel.commander.lastPageSize = action.payload.per_page
-        }
-      } else if (state.secondaryPanel && state.secondaryPanel.commander) {
-        state.secondaryPanel.commander.nodes = {
-          status: "succeeded",
-          error: null,
-          data: newNodes
-        }
-        if (state.secondaryPanel.commander.currentNode) {
-          state.secondaryPanel.commander.currentNode.breadcrumb =
-            action.payload.breadcrumb
-        }
-        state.secondaryPanel.commander.pagination = {
-          pageSize: action.payload.per_page,
-          pageNumber: action.payload.page_number,
-          numPages: action.payload.num_pages
-        }
-        state.secondaryPanel.commander.lastPageSize = action.payload.per_page
-      }
-    })
-    builder.addCase(fetchPaginatedNodes.pending, (state, action) => {
-      if (action.meta.arg.panel == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.nodes.status = "loading"
-        }
-      }
-      if (action.meta.arg.panel == "secondary") {
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.nodes.status = "loading"
-        }
-      }
-    })
-    builder.addCase(
-      deleteNodes.fulfilled,
-      (state, action: PayloadAction<string[]>) => {
-        const nodeIds = action.payload
-        removeNodesHelper(state, nodeIds)
-      }
-    )
     builder.addCase(applyPageOpChanges.fulfilled, (state, action) => {
       if (action.meta.arg.panel == "main") {
         const versionNumbers = action.payload.versions.map(v => v.number)
@@ -636,7 +534,6 @@ export const {
   decZoomFactor,
   fitZoomFactor,
   toggleThumbnailsPanel,
-  setCurrentNode,
   openSecondaryPanel,
   closeSecondaryPanel,
   selectionAddNode,
@@ -645,7 +542,6 @@ export const {
   selectionRemovePage,
   clearNodesSelection,
   updateSearchResultItemTarget,
-  nodeAdded,
   setCurrentPage,
   dropThumbnailPage,
   resetPageChanges,
@@ -695,63 +591,6 @@ export const selectSearchResultItems = (
 
   return null
 }
-
-export const selectPanelNodesRaw = (
-  state: RootState,
-  mode: PanelMode
-): SliceState<Array<NodeWithSpinner>> | undefined => {
-  if (mode === "main") {
-    if (state.dualPanel.mainPanel.commander) {
-      return state.dualPanel.mainPanel.commander.nodes
-    }
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.nodes
-}
-
-export const selectNodesRaw = (
-  state: RootState,
-  mode: PanelMode
-): Array<NodeType> | undefined => {
-  if (mode) {
-    // mode is not used here
-  }
-  return state.dualPanel.nodes
-}
-
-export const selectPanelNodes = createSelector(
-  [selectPanelNodesRaw, selectNodesRaw],
-  (
-    panelNodes: SliceState<Array<NodeWithSpinner>> | undefined,
-    allNodes: Array<NodeType> | undefined
-  ) => {
-    const IDLE = {
-      data: null,
-      status: "idle",
-      error: null
-    }
-
-    if (!panelNodes) {
-      return IDLE
-    }
-
-    if (panelNodes?.data && allNodes) {
-      const nodeIds = panelNodes?.data.map(n => n.id)
-
-      return {
-        status: panelNodes?.status,
-        error: panelNodes?.error,
-        data: allNodes.filter(n => nodeIds.includes(n.id))
-      }
-    }
-
-    return {
-      status: panelNodes.status,
-      error: panelNodes.error,
-      data: null
-    }
-  }
-)
 
 export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
@@ -832,24 +671,6 @@ export const selectFilterText = (
   }
 
   return null
-}
-
-export const selectPanelNodesStatus = (
-  state: RootState,
-  mode: PanelMode
-): SliceStateStatus => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander) {
-      return state.dualPanel.mainPanel.commander?.nodes.status
-    }
-    return "idle"
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel?.commander?.nodes.status
-  }
-
-  return "idle"
 }
 
 export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
@@ -981,22 +802,6 @@ export const selectPagesHaveChanged = createSelector(
     }
 
     return false
-  }
-)
-
-export const selectSelectedNodes = createSelector(
-  [selectSelectedNodeIds, selectNodesRaw],
-  (
-    selectedIds: Array<string> | undefined,
-    allNodes: Array<NodeType> | undefined
-  ): Array<NodeType> => {
-    if (selectedIds && allNodes) {
-      return Object.values(allNodes).filter((i: NodeType) =>
-        selectedIds.includes(i.id)
-      )
-    }
-
-    return []
   }
 )
 

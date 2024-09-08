@@ -43,7 +43,6 @@ export interface Commander {
   currentNode: CurrentNodeType | null
   pagination: PaginationType | null | undefined
   lastPageSize: number
-  nodes: SliceState<Array<NodeWithSpinner>>
   selectedIds: Array<string>
   filter: string | null
 }
@@ -82,5 +81,4 @@ export interface SinglePanel {
 export interface DualPanelState {
   mainPanel: SinglePanel
   secondaryPanel: SinglePanel | null
-  nodes: Array<NodeType>
 }

@@ -12,13 +12,15 @@ import {
   selectSearchResultOpenItemTarget,
   selectSearchPagination,
   selectSearchQuery,
-  setCurrentNode,
   selectSearchPageSize,
   selectSearchPageNumber
 } from "@/slices/dualPanel/dualPanel"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
-import {selectSearchContentHeight} from "@/features/ui/uiSlice"
+import {
+  currentNodeChanged,
+  selectSearchContentHeight
+} from "@/features/ui/uiSlice"
 import {NType, PanelMode} from "@/types"
 import classes from "./SearchResults.module.css"
 
@@ -63,8 +65,9 @@ export default function SearchResults() {
         })
       )
       dispatch(
-        setCurrentNode({
-          node: {id: item.id, ctype: "folder", breadcrumb: null},
+        currentNodeChanged({
+          id: item.id,
+          ctype: "folder",
           panel: targetPanel as PanelMode
         })
       )

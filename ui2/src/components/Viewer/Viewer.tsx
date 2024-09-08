@@ -5,14 +5,14 @@ import {useNavigate} from "react-router-dom"
 
 import {
   fetchPaginatedNodes,
-  setCurrentNode,
   selectLastPageSize
 } from "@/slices/dualPanel/dualPanel"
+
 import type {RootState} from "@/app/types"
 import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import {selectContentHeight} from "@/features/ui/uiSlice"
+import {currentNodeChanged, selectContentHeight} from "@/features/ui/uiSlice"
 import ActionButtons from "./ActionButtons"
 import ThumbnailsToggle from "./ThumbnailsToggle"
 import Pages from "./Pages"
@@ -40,10 +40,7 @@ export default function Viewer() {
         })
       )
       dispatch(
-        setCurrentNode({
-          node: {id: node.id, ctype: "folder", breadcrumb: null},
-          panel: "secondary"
-        })
+        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )
     } else if (mode == "main" && node.ctype == "folder") {
       navigate(`/folder/${node.id}`)

@@ -1,11 +1,9 @@
 import {LoaderFunctionArgs} from "react-router"
 import DualPanel from "@/components/DualPanel"
-import {
-  fetchPaginatedDocument,
-  setCurrentNode
-} from "@/slices/dualPanel/dualPanel"
+import {fetchPaginatedDocument} from "@/slices/dualPanel/dualPanel"
 
 import {store} from "@/app/store"
+import {currentNodeChanged} from "@/features/ui/uiSlice"
 
 export default function Document() {
   return <DualPanel />
@@ -16,8 +14,9 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   const documentId = params.documentId
 
   store.dispatch(
-    setCurrentNode({
-      node: {id: params.documentId!, ctype: "document", breadcrumb: null},
+    currentNodeChanged({
+      id: params.documentId!,
+      ctype: "document",
       panel: "main"
     })
   )

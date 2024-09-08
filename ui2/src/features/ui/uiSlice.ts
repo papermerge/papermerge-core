@@ -1,7 +1,7 @@
 import Cookies from "js-cookie"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {RootState} from "@/app/types"
-import type {BooleanString, PanelMode} from "@/types"
+import type {BooleanString, CType, PanelMode} from "@/types"
 
 import type {FolderType, FileItemType, FileItemStatus, NodeType} from "@/types"
 
@@ -55,10 +55,23 @@ interface SizesState {
   search?: SearchPanelSizes
 }
 
+interface CurrentNodeArgs {
+  id: string
+  ctype: CType
+  panel: PanelMode
+}
+
+interface CurrentNode {
+  id: string
+  ctype: CType
+}
+
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
   sizes: SizesState
+  currentNodeMain?: CurrentNode
+  currentNodeSecondary?: CurrentNode
 }
 
 const initialState: UIState = {
@@ -187,6 +200,20 @@ const uiSlice = createSlice({
           actionPanelHeight: action.payload
         }
       }
+    },
+    currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
+      const payload = action.payload
+      if (payload.panel == "main") {
+        state.currentNodeMain = {
+          id: payload.id,
+          ctype: payload.ctype
+        }
+      } else {
+        state.currentNodeSecondary = {
+          id: payload.id,
+          ctype: payload.ctype
+        }
+      }
     }
   }
 })
@@ -197,7 +224,8 @@ export const {
   updateOutlet,
   updateActionPanel,
   updateSearchActionPanel,
-  updateBreadcrumb
+  updateBreadcrumb,
+  currentNodeChanged
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -244,6 +272,22 @@ export const selectSearchContentHeight = (state: RootState) => {
   height -= SMALL_BOTTOM_MARGIN
 
   return height
+}
+
+export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.currentNodeMain?.id
+  }
+
+  return state.ui.currentNodeSecondary?.id
+}
+
+export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.currentNodeMain?.ctype
+  }
+
+  return state.ui.currentNodeSecondary?.ctype
 }
 
 /* Load initial collapse state value from cookie */

@@ -3,11 +3,10 @@ import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
 import {useSelector} from "react-redux"
-import {
-  selectSelectedNodes
-  //nodeUpdated,
-  //clearNodesSelection
-} from "@/slices/dualPanel/dualPanel"
+//import {} from // selectSelectedNodes
+//nodeUpdated,
+//clearNodesSelection
+;("@/slices/dualPanel/dualPanel")
 //import edit_node_title from "@/components/modals/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
@@ -19,15 +18,14 @@ import PanelContext from "@/contexts/PanelContext"
 export default function EditTitleButton() {
   const mode: PanelMode = useContext(PanelContext)
   //const dispatch = useDispatch()
-  const selectedNodes = useSelector((state: RootState) =>
-    selectSelectedNodes(state, mode)
-  )
+  // const selectedNodes = useSelector((state: RootState) =>
+  //  selectSelectedNodes(state, mode)
+  // )
   const onEditNodeTitle = () => {
-    if (selectedNodes.length < 1) {
-      console.log("Error: no selected nodes")
-      return
-    }
-
+    // if (selectedNodes.length < 1) {
+    //  console.log("Error: no selected nodes")
+    //  return
+    // }
     //let node: NodeType = selectedNodes[0]
     /*
     edit_node_title(node)

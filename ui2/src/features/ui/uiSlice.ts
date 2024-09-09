@@ -1,5 +1,5 @@
 import Cookies from "js-cookie"
-import {createSlice, PayloadAction} from "@reduxjs/toolkit"
+import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {RootState} from "@/app/types"
 import type {BooleanString, CType, PanelMode} from "@/types"
 
@@ -15,6 +15,11 @@ const SMALL_BOTTOM_MARGIN = 13 /* pixles */
 type DualArg = {
   mode: PanelMode
   value: number
+}
+
+interface PanelSelectionArg {
+  itemID: string
+  mode: PanelMode
 }
 
 export interface UploaderFileItemArgs {
@@ -70,6 +75,12 @@ interface ViewerState {
   currentDocumentVersion: number
 }
 
+interface PaginationType {
+  numPages: number
+  pageNumber: number
+  pageSize: number
+}
+
 type PanelComponent = "commander" | "viewer" | "searchResults"
 
 interface UIState {
@@ -80,6 +91,8 @@ interface UIState {
   currentNodeSecondary?: CurrentNode
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
+  mainCommanderSelectedIDs?: Array<string>
+  secondaryCommanderSelectedIDs?: Array<String>
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
 }
@@ -145,7 +158,8 @@ const uiSlice = createSlice({
 
       state.uploader.files = newItems
       state.uploader.opened = true
-    },
+    }, // end of uploaderFileItemUpdated
+    // ---------------------------------------------------------
     toggleNavBar(state) {
       if (state.navbar.collapsed) {
         state.navbar.collapsed = false
@@ -224,24 +238,89 @@ const uiSlice = createSlice({
         if (payload.ctype == "document") {
           state.mainPanelComponent = "viewer"
         }
-      } else {
-        state.currentNodeSecondary = {
-          id: payload.id,
-          ctype: payload.ctype
-        }
-        if (payload.ctype == "folder") {
-          state.secondaryPanelComponent = "commander"
-        }
-        if (payload.ctype == "document") {
-          state.secondaryPanelComponent = "viewer"
-        }
+        state.mainCommanderSelectedIDs = []
+        return
       }
-    },
+
+      // mode == secondary
+      state.currentNodeSecondary = {
+        id: payload.id,
+        ctype: payload.ctype
+      }
+      if (payload.ctype == "folder") {
+        state.secondaryPanelComponent = "commander"
+      }
+      if (payload.ctype == "document") {
+        state.secondaryPanelComponent = "viewer"
+      }
+      state.secondaryCommanderSelectedIDs = []
+    }, // end of currentNodeChanged
+    //------------------------------------------------------------------
     secondaryPanelOpened(state, action: PayloadAction<PanelComponent>) {
       state.secondaryPanelComponent = action.payload
     },
+
     secondaryPanelClosed(state) {
       state.secondaryPanelComponent = undefined
+    },
+
+    commanderSelectionNodeAdded(
+      state,
+      action: PayloadAction<PanelSelectionArg>
+    ) {
+      const mode = action.payload.mode
+      const itemID = action.payload.itemID
+      if (mode == "main") {
+        if (state.mainCommanderSelectedIDs) {
+          state.mainCommanderSelectedIDs.push(itemID)
+        } else {
+          state.mainCommanderSelectedIDs = [itemID]
+        }
+        return
+      }
+
+      // mode == secondary
+      if (state.secondaryCommanderSelectedIDs) {
+        state.secondaryCommanderSelectedIDs.push(itemID)
+      } else {
+        state.secondaryCommanderSelectedIDs = [itemID]
+      }
+    }, // end of commanderSelectionNodeAdded
+    //------------------------------------------------------------------
+    commanderSelectionNodeRemoved(
+      state,
+      action: PayloadAction<PanelSelectionArg>
+    ) {
+      const mode = action.payload.mode
+      const itemID = action.payload.itemID
+      if (mode == "main") {
+        if (state.mainCommanderSelectedIDs) {
+          const newValues = state.mainCommanderSelectedIDs.filter(
+            i => i != itemID
+          )
+          state.mainCommanderSelectedIDs = newValues
+        }
+
+        return
+      }
+      // secondary
+      if (state.secondaryCommanderSelectedIDs) {
+        const newValues = state.secondaryCommanderSelectedIDs.filter(
+          i => i != itemID
+        )
+        state.secondaryCommanderSelectedIDs = newValues
+      }
+    }, // commanderSelectionNodeRemoved
+    //------------------------------------------------------------------
+    commanderSelectionCleared(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+
+      if (mode == "main") {
+        state.mainCommanderSelectedIDs = []
+        return
+      }
+      // secondary
+      state.secondaryCommanderSelectedIDs = []
     }
   }
 })
@@ -256,7 +335,10 @@ export const {
   updateBreadcrumb,
   currentNodeChanged,
   secondaryPanelClosed,
-  secondaryPanelOpened
+  secondaryPanelOpened,
+  commanderSelectionNodeAdded,
+  commanderSelectionNodeRemoved,
+  commanderSelectionCleared
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -328,6 +410,30 @@ export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
 
   return state.ui.secondaryPanelComponent
 }
+
+const selectSelectedNodeIdsRaw = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderSelectedIDs
+  }
+
+  return state.ui.secondaryCommanderSelectedIDs
+}
+
+export const selectSelectedNodeIds = createSelector(
+  selectSelectedNodeIdsRaw,
+  selectedIds => (selectedIds ? selectedIds : [])
+)
+
+export const selectSelectedNodesCount = createSelector(
+  selectSelectedNodeIdsRaw,
+  selectedIds => {
+    if (!selectedIds) {
+      return 0
+    }
+
+    return selectedIds.length
+  }
+)
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

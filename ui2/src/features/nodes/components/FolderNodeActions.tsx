@@ -1,8 +1,8 @@
 import {useContext, useRef, useEffect} from "react"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {useSelector, useDispatch} from "react-redux"
-import {selectSelectedNodeIds} from "@/slices/dualPanel/dualPanel"
+import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {selectSelectedNodesCount} from "@/features/ui/uiSlice"
 import {updateActionPanel} from "@/features/ui/uiSlice"
 
 import type {RootState} from "@/app/types"
@@ -20,12 +20,10 @@ import EditNodeTitleButton from "./EditNodeTitleButton"
 
 export default function FolderNodeActions() {
   const {height, width} = useViewportSize()
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useSelector((state: RootState) =>
-    selectSelectedNodeIds(state, mode)
-  ) as Array<string>
+  const selectedCount = useAppSelector(s => selectSelectedNodesCount(s, mode))
 
   useEffect(() => {
     if (ref?.current) {
@@ -43,11 +41,11 @@ export default function FolderNodeActions() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        {selectedIds.length == 0 && <UploadButton />}
-        {selectedIds.length == 0 && <NewFolderButton />}
-        {selectedIds.length == 1 && <EditNodeTitleButton />}
-        {selectedIds.length == 1 && <EditNodeTagsButton />}
-        {selectedIds.length > 0 && <DeleteButton />}
+        {selectedCount == 0 && <UploadButton />}
+        {selectedCount == 0 && <NewFolderButton />}
+        {selectedCount == 1 && <EditNodeTitleButton />}
+        {selectedCount == 1 && <EditNodeTagsButton />}
+        {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group>
         <QuickFilter />

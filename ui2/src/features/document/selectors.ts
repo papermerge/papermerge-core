@@ -5,8 +5,8 @@ import {apiSliceWithDocuments} from "./apiSlice"
 
 export const selectDocumentResult = (
   state: RootState,
+  mode: PanelMode,
   nodeID: string,
-  mode: PanelMode
 ) => apiSliceWithDocuments.endpoints.getDocument.select(nodeID)
 
 const selectCurDocVerNumber = (state: RootState, mode: PanelMode) => {

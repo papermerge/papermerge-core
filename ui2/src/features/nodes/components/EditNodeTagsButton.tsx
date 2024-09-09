@@ -3,14 +3,14 @@ import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconTag} from "@tabler/icons-react"
 
-import {useSelector, useDispatch} from "react-redux"
+import {useAppSelector, useAppDispatch} from "@/app/hooks"
+
 import {
   selectSelectedNodeIds,
-  clearNodesSelection
-} from "@/slices/dualPanel/dualPanel"
-import {EditNodeTagsModal} from "@/features/nodes/components/EditNodeTags"
+  commanderSelectionCleared
+} from "@/features/ui/uiSlice"
 
-import type {RootState} from "@/app/types"
+import {EditNodeTagsModal} from "@/features/nodes/components/EditNodeTags"
 
 import type {NodeType, PanelMode} from "@/types"
 
@@ -20,12 +20,10 @@ import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 export default function EditNodeTagsButton() {
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
-  const selectedIds = useSelector((state: RootState) =>
-    selectSelectedNodeIds(state, mode)
-  )
-  const selectedNodes = useSelector((state: RootState) =>
-    selectNodesByIds(state, selectedIds || [])
+  const dispatch = useAppDispatch()
+  const selectedIds = useAppSelector(s => selectSelectedNodeIds(s, mode))
+  const selectedNodes = useAppSelector(s =>
+    selectNodesByIds(s, selectedIds as string[])
   )
   let node: NodeType = selectedNodes[0]
 
@@ -40,12 +38,12 @@ export default function EditNodeTagsButton() {
   }
 
   const onSubmit = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 

@@ -5,12 +5,13 @@ import {useDisclosure} from "@mantine/hooks"
 import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
-import {
-  selectLastPageSize,
-  selectFilterText
-} from "@/slices/dualPanel/dualPanel"
+import {selectLastPageSize} from "@/slices/dualPanel/dualPanel"
 
-import {currentNodeChanged, selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {
+  currentNodeChanged,
+  selectCurrentNodeID,
+  selectFilterText
+} from "@/features/ui/uiSlice"
 
 import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"

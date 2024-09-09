@@ -32,51 +32,6 @@ export function selectionAddPageHelper(
   }
 }
 
-export function selectionAddNodeHelper(
-  state: DualPanelState,
-  nodeId: string,
-  mode: PanelMode
-) {
-  switch (mode) {
-    case "main":
-      if (state.mainPanel.commander) {
-        state.mainPanel.commander.selectedIds.push(nodeId)
-      }
-      break
-    case "secondary":
-      if (state.secondaryPanel?.commander) {
-        state.secondaryPanel.commander.selectedIds.push(nodeId)
-      }
-      break
-    default:
-      throw Error("Should never reach this place")
-  }
-}
-
-export function selectionRemoveNodeHelper(
-  state: DualPanelState,
-  nodeId: string,
-  mode: PanelMode
-) {
-  if (mode == "main") {
-    if (state.mainPanel.commander) {
-      const newSelectedIds = state.mainPanel.commander.selectedIds.filter(
-        i => i != nodeId
-      )
-      state.mainPanel.commander.selectedIds = newSelectedIds
-    }
-  }
-
-  if (mode == "secondary") {
-    if (state.secondaryPanel?.commander) {
-      const newSelectedIds = state.secondaryPanel.commander.selectedIds.filter(
-        i => i != nodeId
-      )
-      state.secondaryPanel.commander.selectedIds = newSelectedIds
-    }
-  }
-}
-
 export function selectionRemovePageHelper(
   state: DualPanelState,
   pageId: string,
@@ -101,50 +56,11 @@ export function selectionRemovePageHelper(
   }
 }
 
-export function clearNodesSelectionHelper(
-  state: DualPanelState,
-  mode: PanelMode
-) {
-  if (mode == "main") {
-    if (state.mainPanel.commander) {
-      state.mainPanel.commander.selectedIds = []
-    }
-  }
-  if (mode == "secondary") {
-    if (state.secondaryPanel?.commander) {
-      state.secondaryPanel.commander.selectedIds = []
-    }
-  }
-}
-
 export function commanderInitialState(node: CurrentNodeType | null): Commander {
   return {
-    currentNode: node,
     pagination: null,
-    lastPageSize: INITIAL_PAGE_SIZE,
-    selectedIds: [],
-    filter: null
+    lastPageSize: INITIAL_PAGE_SIZE
   }
-}
-
-/** Returns true if and only if both panels are of same type
-  (e.g. commander, commander; or viewer, viewer)
-  and their current node (ID) is the same */
-export function equalPanels(state: DualPanelState): boolean {
-  if (!state.secondaryPanel) {
-    return false
-  }
-
-  if (state.mainPanel.commander && state.secondaryPanel.commander) {
-    const mainID = state.mainPanel.commander.currentNode?.id
-    const secondaryID = state.secondaryPanel.commander.currentNode?.id
-
-    if (mainID && secondaryID) {
-      return mainID == secondaryID
-    }
-  }
-
-  return false
 }
 
 export function dropThumbnailPageHelper({

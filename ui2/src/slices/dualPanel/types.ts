@@ -35,11 +35,8 @@ export type SelectionPagePayload = {
 }
 
 export interface Commander {
-  currentNode: CurrentNodeType | null
   pagination: PaginationType | null | undefined
   lastPageSize: number
-  selectedIds: Array<string>
-  filter: string | null
 }
 
 export interface Viewer {

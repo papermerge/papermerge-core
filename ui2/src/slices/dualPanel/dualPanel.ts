@@ -14,11 +14,8 @@ axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
 import {
-  selectionAddNodeHelper,
   selectionAddPageHelper,
-  selectionRemoveNodeHelper,
   selectionRemovePageHelper,
-  clearNodesSelectionHelper,
   commanderInitialState,
   dropThumbnailPageHelper,
   resetPageChangesHelper,
@@ -58,11 +55,6 @@ import {
 const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
 const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
   "secondary_thumbnails_panel_opened"
-
-type UpdateFilterType = {
-  mode: PanelMode
-  filter: string | null
-}
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -322,22 +314,6 @@ const dualPanelSlice = createSlice({
     closeSecondaryPanel(state) {
       state.secondaryPanel = null
     },
-    selectionAddNode: (state, action: PayloadAction<SelectionNodePayload>) => {
-      const nodeId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionAddNodeHelper(state, nodeId, mode)
-    },
-    selectionRemoveNode: (
-      state,
-      action: PayloadAction<SelectionNodePayload>
-    ) => {
-      const nodeId = action.payload.selectionId
-      const {mode} = action.payload
-      selectionRemoveNodeHelper(state, nodeId, mode)
-    },
-    clearNodesSelection: (state, action: PayloadAction<PanelMode>) => {
-      clearNodesSelectionHelper(state, action.payload)
-    },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
@@ -357,20 +333,6 @@ const dualPanelSlice = createSlice({
       if (mode == "secondary") {
         if (state?.secondaryPanel?.viewer) {
           state.secondaryPanel.viewer.currentPage = page
-        }
-      }
-    },
-    filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
-      const {mode, filter} = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.filter = filter
-        }
-      }
-
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.filter = filter
         }
       }
     }
@@ -444,22 +406,15 @@ export const {
   toggleThumbnailsPanel,
   openSecondaryPanel,
   closeSecondaryPanel,
-  selectionAddNode,
-  selectionRemoveNode,
   selectionAddPage,
   selectionRemovePage,
-  clearNodesSelection,
   updateSearchResultItemTarget,
   setCurrentPage,
   dropThumbnailPage,
-  resetPageChanges,
-  filterUpdated
+  resetPageChanges
 } = dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
-
-export const selectMainCurrentFolderId = (state: RootState) =>
-  state.dualPanel.mainPanel.commander?.currentNode
 
 export const selectMainPanel = (state: RootState) => state.dualPanel.mainPanel
 export const selectSecondaryPanel = (state: RootState) =>
@@ -500,43 +455,6 @@ export const selectSearchResultItems = (
   return null
 }
 
-export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.currentNode?.id
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel.commander.currentNode?.id
-  }
-
-  return null
-}
-
-export const selectPanelBreadcrumbs = (
-  state: RootState,
-  mode: PanelMode
-): Array<[string, string]> | null | undefined => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander) {
-      return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
-    } else if (state.dualPanel.mainPanel.viewer) {
-      return state.dualPanel.mainPanel.viewer.breadcrumb
-    }
-  }
-
-  if (mode == "secondary") {
-    if (state.dualPanel.secondaryPanel?.commander) {
-      return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
-    }
-
-    if (state.dualPanel.secondaryPanel?.viewer) {
-      return state.dualPanel.secondaryPanel.viewer.breadcrumb
-    }
-  }
-
-  return null
-}
-
 export const selectPagination = (
   state: RootState,
   mode: PanelMode
@@ -566,21 +484,6 @@ export const selectLastPageSize = (
   return INITIAL_PAGE_SIZE
 }
 
-export const selectFilterText = (
-  state: RootState,
-  mode: PanelMode
-): string | null => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.filter || null
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander?.filter) {
-    return state.dualPanel.secondaryPanel?.commander.filter
-  }
-
-  return null
-}
-
 export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.dualPanel.mainPanel.commander?.pagination?.pageSize
@@ -598,14 +501,6 @@ export const selectCommanderPageNumber = (
   }
 
   return state.dualPanel.secondaryPanel?.commander?.pagination?.pageNumber
-}
-
-export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.selectedIds
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.selectedIds
 }
 
 export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {

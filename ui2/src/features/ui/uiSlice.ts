@@ -17,6 +17,11 @@ type DualArg = {
   value: number
 }
 
+type UpdateFilterType = {
+  mode: PanelMode
+  filter?: string
+}
+
 interface PanelSelectionArg {
   itemID: string
   mode: PanelMode
@@ -92,7 +97,9 @@ interface UIState {
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
   mainCommanderSelectedIDs?: Array<string>
+  mainCommanderFilter?: string
   secondaryCommanderSelectedIDs?: Array<String>
+  secondaryCommanderFilter?: string
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
 }
@@ -321,6 +328,16 @@ const uiSlice = createSlice({
       }
       // secondary
       state.secondaryCommanderSelectedIDs = []
+    }, // end of commanderSelectionCleared
+    //-------------------------------------------
+    filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
+      const {mode, filter} = action.payload
+      if (mode == "main") {
+        state.mainCommanderFilter = filter
+        return
+      }
+
+      state.secondaryCommanderFilter = filter
     }
   }
 })
@@ -338,7 +355,8 @@ export const {
   secondaryPanelOpened,
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
-  commanderSelectionCleared
+  commanderSelectionCleared,
+  filterUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -434,6 +452,14 @@ export const selectSelectedNodesCount = createSelector(
     return selectedIds.length
   }
 )
+
+export const selectFilterText = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderFilter
+  }
+
+  return state.ui.secondaryCommanderFilter
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

@@ -6,7 +6,6 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 import {
   fetchPaginatedSearchResults,
-  selectLastPageSize,
   selectSearchResultOpenItemTarget,
   selectSearchPagination,
   selectSearchQuery,
@@ -27,9 +26,7 @@ export default function SearchResults() {
   const height = useSelector((state: RootState) =>
     selectSearchContentHeight(state)
   )
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, "secondary")
-  )
+
   const targetPanel = useSelector((state: RootState) =>
     selectSearchResultOpenItemTarget(state)
   )

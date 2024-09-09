@@ -16,7 +16,6 @@ import {RootState} from "@/app/types"
 import {
   selectionAddPageHelper,
   selectionRemovePageHelper,
-  commanderInitialState,
   dropThumbnailPageHelper,
   resetPageChangesHelper,
   getLatestVersionPages
@@ -30,7 +29,6 @@ import type {
   PanelType,
   DocumentType,
   CurrentNodeType,
-  PaginationType,
   SearchResultNode,
   PaginatedSearchResult,
   DroppedThumbnailPosition,
@@ -40,17 +38,8 @@ import type {
   DocumentVersionWithPageRot,
   ApplyPagesType
 } from "@/types"
-import {
-  DualPanelState,
-  SelectionNodePayload,
-  SelectionPagePayload
-} from "./types"
-import {
-  INITIAL_PAGE_SIZE,
-  MIN_ZOOM_FACTOR,
-  MAX_ZOOM_FACTOR,
-  ZOOM_FACTOR_STEP
-} from "@/cconstants"
+import {DualPanelState, SelectionPagePayload} from "./types"
+import {MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR, ZOOM_FACTOR_STEP} from "@/cconstants"
 
 const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
 const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
@@ -58,7 +47,6 @@ const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
 
 const initialState: DualPanelState = {
   mainPanel: {
-    commander: commanderInitialState(null),
     viewer: null,
     searchResults: null
   },
@@ -306,7 +294,6 @@ const dualPanelSlice = createSlice({
     },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {
-        commander: commanderInitialState(action.payload),
         viewer: null,
         searchResults: null
       }
@@ -377,7 +364,6 @@ const dualPanelSlice = createSlice({
     })
     builder.addCase(fetchPaginatedSearchResults.fulfilled, (state, action) => {
       state.mainPanel = {
-        commander: null,
         viewer: null,
         searchResults: {
           pagination: {
@@ -420,14 +406,6 @@ export const selectMainPanel = (state: RootState) => state.dualPanel.mainPanel
 export const selectSecondaryPanel = (state: RootState) =>
   state.dualPanel.secondaryPanel
 
-export const selectCommander = (state: RootState, mode: PanelMode) => {
-  if (mode === "main") {
-    return state.dualPanel.mainPanel.commander
-  }
-
-  return state.dualPanel.secondaryPanel?.commander
-}
-
 export const selectViewer = (state: RootState, mode: PanelMode) => {
   if (mode === "main") {
     return state.dualPanel.mainPanel.viewer
@@ -453,54 +431,6 @@ export const selectSearchResultItems = (
   }
 
   return null
-}
-
-export const selectPagination = (
-  state: RootState,
-  mode: PanelMode
-): PaginationType | null | undefined => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination
-}
-
-export const selectLastPageSize = (
-  state: RootState,
-  mode: PanelMode
-): number => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander?.lastPageSize) {
-      return state.dualPanel.mainPanel.commander?.lastPageSize
-    }
-    return INITIAL_PAGE_SIZE
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander?.lastPageSize) {
-    return state.dualPanel.secondaryPanel?.commander.lastPageSize
-  }
-
-  return INITIAL_PAGE_SIZE
-}
-
-export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination?.pageSize
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageSize
-}
-
-export const selectCommanderPageNumber = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination?.pageNumber
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageNumber
 }
 
 export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {

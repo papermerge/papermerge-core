@@ -56,13 +56,6 @@ export function selectionRemovePageHelper(
   }
 }
 
-export function commanderInitialState(node: CurrentNodeType | null): Commander {
-  return {
-    pagination: null,
-    lastPageSize: INITIAL_PAGE_SIZE
-  }
-}
-
 export function dropThumbnailPageHelper({
   mode,
   state,

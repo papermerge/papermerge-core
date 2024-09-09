@@ -5,8 +5,6 @@ import {useDisclosure} from "@mantine/hooks"
 import {useAppSelector, useAppDispatch} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
-import {selectLastPageSize} from "@/slices/dualPanel/dualPanel"
-
 import {
   currentNodeChanged,
   selectCurrentNodeID,
@@ -17,7 +15,11 @@ import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import {selectContentHeight} from "@/features/ui/uiSlice"
+import {
+  selectContentHeight,
+  selectLastPageSize,
+  commanderLastPageSizeUpdated
+} from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
 import {
   useGetFolderQuery,
@@ -96,7 +98,12 @@ export default function Commander() {
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      setPageSize(parseInt(value))
+      const pSize = parseInt(value)
+      setPageSize(pSize)
+      // reset current page
+      setPage(1)
+      // remember last page size
+      dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
     }
   }
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {

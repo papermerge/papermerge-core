@@ -2,6 +2,7 @@ import Cookies from "js-cookie"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {RootState} from "@/app/types"
 import type {BooleanString, CType, PanelMode} from "@/types"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 import type {FolderType, FileItemType, FileItemStatus, NodeType} from "@/types"
 
@@ -20,6 +21,11 @@ type DualArg = {
 type UpdateFilterType = {
   mode: PanelMode
   filter?: string
+}
+
+type LastPageSizeArg = {
+  mode: PanelMode
+  pageSize: number
 }
 
 interface PanelSelectionArg {
@@ -80,12 +86,6 @@ interface ViewerState {
   currentDocumentVersion: number
 }
 
-interface PaginationType {
-  numPages: number
-  pageNumber: number
-  pageSize: number
-}
-
 type PanelComponent = "commander" | "viewer" | "searchResults"
 
 interface UIState {
@@ -98,8 +98,10 @@ interface UIState {
   secondaryViewer?: ViewerState
   mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
+  mainCommanderLastPageSize?: number
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
+  secondaryCommanderLastPageSize?: number
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
 }
@@ -338,6 +340,18 @@ const uiSlice = createSlice({
       }
 
       state.secondaryCommanderFilter = filter
+    },
+    commanderLastPageSizeUpdated(
+      state,
+      action: PayloadAction<LastPageSizeArg>
+    ) {
+      const {mode, pageSize} = action.payload
+      if (mode == "main") {
+        state.mainCommanderLastPageSize = pageSize
+        return
+      }
+
+      state.secondaryCommanderLastPageSize = pageSize
     }
   }
 })
@@ -356,7 +370,8 @@ export const {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   commanderSelectionCleared,
-  filterUpdated
+  filterUpdated,
+  commanderLastPageSizeUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -459,6 +474,22 @@ export const selectFilterText = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryCommanderFilter
+}
+
+export const selectLastPageSize = (
+  state: RootState,
+  mode: PanelMode
+): number => {
+  if (mode == "main") {
+    return (
+      state.ui.mainCommanderLastPageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
+    )
+  }
+
+  return (
+    state.ui.secondaryCommanderLastPageSize ||
+    PAGINATION_DEFAULT_ITEMS_PER_PAGES
+  )
 }
 
 /* Load initial collapse state value from cookie */

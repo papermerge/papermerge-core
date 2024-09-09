@@ -65,7 +65,6 @@ export interface SearchResults {
 }
 
 export interface SinglePanel {
-  commander: Commander | null
   viewer: Viewer | null
   searchResults: SearchResults | null
 }

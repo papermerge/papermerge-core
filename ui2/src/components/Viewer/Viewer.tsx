@@ -3,8 +3,6 @@ import {useContext} from "react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectLastPageSize} from "@/slices/dualPanel/dualPanel"
-
 import type {RootState} from "@/app/types"
 import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
@@ -23,9 +21,6 @@ export default function Viewer() {
   )
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {

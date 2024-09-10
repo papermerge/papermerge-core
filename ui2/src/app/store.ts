@@ -1,14 +1,15 @@
-import {configureStore} from "@reduxjs/toolkit"
 import {apiSlice} from "@/features/api/slice"
 import authSliceReducer from "@/features/auth/slice"
-import currentUserReducer from "@/slices/currentUser"
-import dualPanelReducer from "@/slices/dualPanel/dualPanel"
-import tagsReducer from "@/features/tags/tagsSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
-import usersReducer from "@/features/users/usersSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
+import pagesReducer from "@/features/pages/pagesSlice"
+import tagsReducer from "@/features/tags/tagsSlice"
 import uiReducer from "@/features/ui/uiSlice"
+import usersReducer from "@/features/users/usersSlice"
+import currentUserReducer from "@/slices/currentUser"
 import dragndropReducer from "@/slices/dragndrop"
+import dualPanelReducer from "@/slices/dualPanel/dualPanel"
+import {configureStore} from "@reduxjs/toolkit"
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     users: usersReducer,
     dragndrop: dragndropReducer,
     nodes: nodesReducer,
+    pages: pagesReducer,
     ui: uiReducer,
     [apiSlice.reducerPath]: apiSlice.reducer
   },

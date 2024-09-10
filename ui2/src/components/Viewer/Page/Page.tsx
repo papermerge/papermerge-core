@@ -1,14 +1,14 @@
-import {useEffect, useContext, useRef} from "react"
-import {useSelector} from "react-redux"
-import {Stack} from "@mantine/core"
+import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
+import {useGetPageImageQuery} from "@/features/pages/apiSlice"
 import {
   selectDocumentCurrentPage,
   selectZoomFactor
 } from "@/slices/dualPanel/dualPanel"
 import {PageAndRotOp, PanelMode} from "@/types"
-import {useProtectedJpg} from "@/hooks/protected_image"
-import {RootState} from "@/app/types"
+import {Stack} from "@mantine/core"
+import {useContext, useEffect, useRef} from "react"
+import {useSelector} from "react-redux"
 import classes from "./Page.module.css"
 
 type Args = {
@@ -16,7 +16,7 @@ type Args = {
 }
 
 export default function Page({page}: Args) {
-  const protectedImage = useProtectedJpg(page.page.jpg_url)
+  const {data} = useGetPageImageQuery(page.page.id)
   const mode: PanelMode = useContext(PanelContext)
   const currentPage = useSelector((state: RootState) =>
     selectDocumentCurrentPage(state, mode)
@@ -32,14 +32,14 @@ export default function Page({page}: Args) {
         targetRef.current.scrollIntoView(false)
       }
     }
-  }, [currentPage, protectedImage, page.page.number])
+  }, [currentPage, data, page.page.number])
 
   return (
     <Stack className={classes.page}>
       <img
         style={{transform: `rotate(${page.angle}deg)`, width: `${zoomFactor}%`}}
         ref={targetRef}
-        src={protectedImage.data || ""}
+        src={data}
       />
       <div>{page.page.number}</div>
     </Stack>

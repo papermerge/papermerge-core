@@ -1,26 +1,26 @@
-import {useContext, useRef, useState, useEffect} from "react"
-import {useDispatch, useSelector} from "react-redux"
-import {Stack, Checkbox} from "@mantine/core"
 import PanelContext from "@/contexts/PanelContext"
+import {Checkbox, Stack} from "@mantine/core"
+import {useContext, useEffect, useRef, useState} from "react"
+import {useDispatch, useSelector} from "react-redux"
 
-import {useProtectedJpg} from "@/hooks/protected_image"
+import {useGetPageImageQuery} from "@/features/pages/apiSlice"
 import {
-  setCurrentPage,
-  dropThumbnailPage,
-  selectionAddPage,
-  selectionRemovePage,
-  selectSelectedPageIds,
-  selectSelectedPages
-} from "@/slices/dualPanel/dualPanel"
-import {
-  dragPagesStart,
   dragPagesEnd,
+  dragPagesStart,
   selectDraggedPages
 } from "@/slices/dragndrop"
-import type {PanelMode, PageAndRotOp, DroppedThumbnailPosition} from "@/types"
+import {
+  dropThumbnailPage,
+  selectSelectedPageIds,
+  selectSelectedPages,
+  selectionAddPage,
+  selectionRemovePage,
+  setCurrentPage
+} from "@/slices/dualPanel/dualPanel"
+import type {DroppedThumbnailPosition, PageAndRotOp, PanelMode} from "@/types"
 
-import classes from "./Thumbnail.module.scss"
 import {RootState} from "@/app/types"
+import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
@@ -32,7 +32,7 @@ type Args = {
 
 export default function Thumbnail({page}: Args) {
   const dispatch = useDispatch()
-  const protectedImage = useProtectedJpg(page.page.jpg_url)
+  const {data} = useGetPageImageQuery(page.page.id)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useSelector((state: RootState) =>
     selectSelectedPageIds(state, mode)
@@ -185,7 +185,7 @@ export default function Thumbnail({page}: Args) {
       <img
         style={{transform: `rotate(${page.angle}deg)`}}
         onClick={onClick}
-        src={protectedImage.data || ""}
+        src={data}
       />
       {page.page.number}
     </Stack>

@@ -39,7 +39,11 @@ export default function Pages() {
     return <Loader />
   }
 
-  const pages = docVersion?.pages.map(p => (
+  if (!docVersion) {
+    return <Loader />
+  }
+
+  const pages = docVersion.pages.map(p => (
     <Page key={p.id} page={{page: p, angle: 0}} />
   ))
 

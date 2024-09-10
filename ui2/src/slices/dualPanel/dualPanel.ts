@@ -23,7 +23,6 @@ import {
 import {MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, ZOOM_FACTOR_STEP} from "@/cconstants"
 import type {
   ApplyPagesType,
-  CurrentNodeType,
   DocumentType,
   DocumentVersion,
   DocumentVersionWithPageRot,
@@ -259,16 +258,6 @@ const dualPanelSlice = createSlice({
         }
       }
     },
-
-    openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
-      state.secondaryPanel = {
-        viewer: null,
-        searchResults: null
-      }
-    },
-    closeSecondaryPanel(state) {
-      state.secondaryPanel = null
-    },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
@@ -355,8 +344,6 @@ export const {
   incZoomFactor,
   decZoomFactor,
   fitZoomFactor,
-  openSecondaryPanel,
-  closeSecondaryPanel,
   selectionAddPage,
   selectionRemovePage,
   updateSearchResultItemTarget,

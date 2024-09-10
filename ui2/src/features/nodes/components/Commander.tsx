@@ -69,26 +69,20 @@ export default function Commander() {
   }
 
   const onClick = (node: NType) => {
-    if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
+    if (mode == "secondary") {
+      return dispatch(
+        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
       )
-    } else if (mode == "main" && node.ctype == "folder") {
-      navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
     }
 
-    if (mode == "main" && node.ctype == "document") {
-      navigate(`/document/${node.id}`)
-    } else if (mode == "secondary" && node.ctype == "document") {
-      /*
-      dispatch(
-        fetchPaginatedDocument({
-          nodeId: node.id,
-          panel: "secondary",
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
-        */
+    // mode == "main"
+    switch (node.ctype) {
+      case "folder":
+        navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
+        break
+      case "document":
+        navigate(`/document/${node.id}`)
+        break
     }
   }
 

@@ -1,15 +1,18 @@
-import Cookies from "js-cookie"
-import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {RootState} from "@/app/types"
-import type {BooleanString, CType, PanelMode} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import type {BooleanString, CType, PanelMode} from "@/types"
+import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
+import Cookies from "js-cookie"
 
-import type {FolderType, FileItemType, FileItemStatus, NodeType} from "@/types"
+import type {FileItemStatus, FileItemType, FolderType, NodeType} from "@/types"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 160
 const NAVBAR_COLLAPSED_COOKIE = "navbar_collapsed"
 const NAVBAR_WIDTH_COOKIE = "navbar_width"
+const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
+const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
+  "secondary_thumbnails_panel_opened"
 
 const SMALL_BOTTOM_MARGIN = 13 /* pixles */
 
@@ -104,6 +107,8 @@ interface UIState {
   secondaryCommanderLastPageSize?: number
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
+  mainViewerThumbnailsPanelOpen?: boolean
+  secondaryViewerThumbnailsPanelOpen?: boolean
 }
 
 const initialState: UIState = {
@@ -122,7 +127,9 @@ const initialState: UIState = {
       actionPanelHeight: 0,
       breadcrumbHeight: 0
     }
-  }
+  },
+  mainViewerThumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
+  secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState()
 }
 
 const uiSlice = createSlice({
@@ -352,6 +359,27 @@ const uiSlice = createSlice({
       }
 
       state.secondaryCommanderLastPageSize = pageSize
+    },
+    viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+
+      if (mode == "main") {
+        const new_value = !Boolean(state.mainViewerThumbnailsPanelOpen)
+        state.mainViewerThumbnailsPanelOpen = new_value
+        if (new_value) {
+          Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+        } else {
+          Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+        }
+        return
+      }
+      const new_value = !Boolean(state.secondaryViewerThumbnailsPanelOpen)
+      state.secondaryViewerThumbnailsPanelOpen = new_value
+      if (new_value) {
+        Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
+      } else {
+        Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
+      }
     }
   }
 })
@@ -371,7 +399,8 @@ export const {
   commanderSelectionNodeRemoved,
   commanderSelectionCleared,
   filterUpdated,
-  commanderLastPageSizeUpdated
+  commanderLastPageSizeUpdated,
+  viewerThumbnailsPanelToggled
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -476,6 +505,17 @@ export const selectFilterText = (state: RootState, mode: PanelMode) => {
   return state.ui.secondaryCommanderFilter
 }
 
+export const selectThumbnailsPanelOpen = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return Boolean(state.ui.mainViewerThumbnailsPanelOpen)
+  }
+
+  return Boolean(state.ui.secondaryViewerThumbnailsPanelOpen)
+}
+
 export const selectLastPageSize = (
   state: RootState,
   mode: PanelMode
@@ -517,4 +557,28 @@ function initial_width_value(): number {
   }
 
   return FULL_WIDTH
+}
+
+function mainThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function secondaryThumbnailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
 }

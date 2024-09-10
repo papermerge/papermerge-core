@@ -1,11 +1,10 @@
-import Cookies from "js-cookie"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {
-  createSlice,
   PayloadAction,
   createAsyncThunk,
-  createSelector
+  createSelector,
+  createSlice
 } from "@reduxjs/toolkit"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
 
@@ -14,36 +13,31 @@ axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
 import {
-  selectionAddPageHelper,
-  selectionRemovePageHelper,
   dropThumbnailPageHelper,
+  getLatestVersionPages,
   resetPageChangesHelper,
-  getLatestVersionPages
+  selectionAddPageHelper,
+  selectionRemovePageHelper
 } from "./helpers"
 
+import {MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, ZOOM_FACTOR_STEP} from "@/cconstants"
 import type {
-  SliceState,
-  NodeType,
-  PageType,
-  PanelMode,
-  PanelType,
-  DocumentType,
+  ApplyPagesType,
   CurrentNodeType,
-  SearchResultNode,
-  PaginatedSearchResult,
-  DroppedThumbnailPosition,
-  BooleanString,
-  PageAndRotOp,
+  DocumentType,
   DocumentVersion,
   DocumentVersionWithPageRot,
-  ApplyPagesType
+  DroppedThumbnailPosition,
+  NodeType,
+  PageAndRotOp,
+  PageType,
+  PaginatedSearchResult,
+  PanelMode,
+  PanelType,
+  SearchResultNode,
+  SliceState
 } from "@/types"
 import {DualPanelState, SelectionPagePayload} from "./types"
-import {MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR, ZOOM_FACTOR_STEP} from "@/cconstants"
-
-const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
-const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
-  "secondary_thumbnails_panel_opened"
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -265,33 +259,7 @@ const dualPanelSlice = createSlice({
         }
       }
     },
-    toggleThumbnailsPanel(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
 
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          const new_value = !state.mainPanel.viewer.thumbnailsPanelOpen
-          state.mainPanel.viewer.thumbnailsPanelOpen = new_value
-          if (new_value) {
-            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-          } else {
-            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
-          }
-        }
-      }
-
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          const new_value = !state.secondaryPanel.viewer.thumbnailsPanelOpen
-          state.secondaryPanel.viewer.thumbnailsPanelOpen = new_value
-          if (new_value) {
-            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-          } else {
-            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
-          }
-        }
-      }
-    },
     openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
       state.secondaryPanel = {
         viewer: null,
@@ -333,7 +301,6 @@ const dualPanelSlice = createSlice({
           versions: injectPageRotOp(action.payload.versions),
           currentVersion: Math.max(...versionNumbers),
           currentPage: 1,
-          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
           zoomFactor: 100,
           selectedIds: [],
           //@ts-ignore
@@ -352,7 +319,6 @@ const dualPanelSlice = createSlice({
             versions: injectPageRotOp(action.payload.versions),
             currentVersion: Math.max(...versionNumbers),
             currentPage: 1,
-            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
             zoomFactor: 100,
             selectedIds: [],
             //@ts-ignore
@@ -389,7 +355,6 @@ export const {
   incZoomFactor,
   decZoomFactor,
   fitZoomFactor,
-  toggleThumbnailsPanel,
   openSecondaryPanel,
   closeSecondaryPanel,
   selectionAddPage,
@@ -632,30 +597,6 @@ export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
   }
 
   return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
-}
-
-function mainThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
-}
-
-function secondaryThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
 }
 
 function injectPageRotOp(

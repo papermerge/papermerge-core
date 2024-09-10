@@ -1,26 +1,30 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Flex} from "@mantine/core"
 import {useContext} from "react"
-import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import type {RootState} from "@/app/types"
-import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import {currentNodeChanged, selectContentHeight} from "@/features/ui/uiSlice"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {
+  currentNodeChanged,
+  selectContentHeight,
+  selectCurrentNodeID
+} from "@/features/ui/uiSlice"
+import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
-import ThumbnailsToggle from "./ThumbnailsToggle"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
+import ThumbnailsToggle from "./ThumbnailsToggle"
 import classes from "./Viewer.module.css"
 
 export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
-  const height = useSelector((state: RootState) =>
-    selectContentHeight(state, mode)
-  )
+  const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {data: doc} = useGetDocumentQuery(currentNodeID!)
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
@@ -35,7 +39,7 @@ export default function Viewer() {
   return (
     <div>
       <ActionButtons />
-      <Breadcrumbs onClick={onClick} />
+      <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
       <Flex className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails />
         <ThumbnailsToggle />

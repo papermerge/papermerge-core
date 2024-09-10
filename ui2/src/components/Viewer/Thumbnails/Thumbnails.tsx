@@ -1,47 +1,50 @@
-import {Stack, Loader} from "@mantine/core"
+import {Loader, Stack} from "@mantine/core"
 
 import {useAppSelector} from "@/app/hooks"
-import {useSelector} from "react-redux"
-import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
-import {selectThumbnailsPanelOpen} from "@/slices/dualPanel/dualPanel"
+import {selectThumbnailsPanelOpen} from "@/features/ui/uiSlice"
+import {useContext, useMemo} from "react"
+import {useSelector} from "react-redux"
 
-import {selectDocumentCurrentVersion} from "@/features/document/selectors"
+import {selectCurrentDocumentVersionNumber} from "@/features/document/selectors"
 
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 
-import type {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
+import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import type {PanelMode} from "@/types"
 import Thumbnail from "../Thumbnail"
 import classes from "./Thumbnails.module.css"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 
 export default function Thumbnails() {
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {data: doc, isLoading} = useGetDocumentQuery(currentNodeID!)
+  const currDocumentVersionNumber = useAppSelector(s =>
+    selectCurrentDocumentVersionNumber(s, mode)
+  )
+  const thumbnailsIsOpen = useSelector((state: RootState) =>
+    selectThumbnailsPanelOpen(state, mode)
+  )
+  const docVersion = useMemo(() => {
+    if (!doc) {
+      return null
+    }
+    let maxVerNum = currDocumentVersionNumber
 
-  if (!currentNodeID) {
-    return <Loader />
-  }
+    if (!maxVerNum) {
+      maxVerNum = Math.max(...doc.versions.map(v => v.number))
+    }
 
-  const {data, isLoading, isSuccess} = useGetDocumentQuery(currentNodeID)
+    return doc.versions.find(v => v.number == maxVerNum)
+  }, [doc, currDocumentVersionNumber])
 
   if (isLoading) {
     return <Loader />
   }
 
-  const docVersion = useAppSelector(s =>
-    selectDocumentCurrentVersion(s, mode, currentNodeID)
-  )
-
-  debugger
-
-  const thumbnailsIsOpen = useSelector((state: RootState) =>
-    selectThumbnailsPanelOpen(state, mode)
-  )
-
   const thumbnails = docVersion?.pages.map(p => (
-    <Thumbnail key={p.page.id} page={p} />
+    <Thumbnail key={p.id} page={{page: p, angle: 0}} />
   ))
   // display: none
   if (thumbnailsIsOpen) {

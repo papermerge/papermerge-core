@@ -1,43 +1,41 @@
-import {useContext, useEffect, useRef} from "react"
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
-  Breadcrumbs,
-  Skeleton,
+  ActionIcon,
   Anchor,
-  Loader,
+  Breadcrumbs,
   Group,
   Menu,
-  ActionIcon,
-  MenuItem
+  MenuItem,
+  Skeleton
 } from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {IconHome, IconInbox, IconChevronDown} from "@tabler/icons-react"
+import {IconChevronDown, IconHome, IconInbox} from "@tabler/icons-react"
+import {useContext, useEffect, useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
 
 import {updateBreadcrumb} from "@/features/ui/uiSlice"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 
-import type {PanelMode, NType, UserDetails} from "@/types"
+import type {NType, PanelMode, UserDetails} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
-import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   onClick: (node: NType) => void
   className?: string
+  breadcrumb?: Array<[string, string]>
 }
 
-export default function BreadcrumbsComponent({onClick, className}: Args) {
+export default function BreadcrumbsComponent({
+  onClick,
+  className,
+  breadcrumb
+}: Args) {
   const dispatch = useAppDispatch()
   const {height, width} = useViewportSize()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  //const nodesStatus = useAppSelector(s => selectPanelNodesStatus(s, mode))
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-
-  const {data, isLoading} = useGetFolderQuery(currentNodeID!)
 
   const onRootElementClick = (n: NType) => {
     onClick(n)
@@ -56,15 +54,14 @@ export default function BreadcrumbsComponent({onClick, className}: Args) {
     }
   }, [width, height])
 
-  if (isLoading || !data) {
+  if (!breadcrumb) {
     return (
       <Skeleton ref={ref} width={"25%"} my="md">
         <Breadcrumbs>{["one", "two"]}</Breadcrumbs>
       </Skeleton>
     )
   }
-
-  const items = data.breadcrumb
+  const items = breadcrumb
   const links = items.slice(1, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}

@@ -1,8 +1,8 @@
-import {useContext, useState} from "react"
-import {Group, Stack, Box} from "@mantine/core"
+import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import {useContext, useState} from "react"
 
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -11,24 +11,24 @@ import {
   selectFilterText
 } from "@/features/ui/uiSlice"
 
-import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {
-  selectContentHeight,
-  selectLastPageSize,
-  commanderLastPageSizeUpdated
-} from "@/features/ui/uiSlice"
-import classes from "./Commander.module.scss"
-import {
   useGetFolderQuery,
   useGetPaginatedNodesQuery
 } from "@/features/nodes/apiSlice"
+import {
+  commanderLastPageSizeUpdated,
+  selectContentHeight,
+  selectLastPageSize
+} from "@/features/ui/uiSlice"
+import type {NType, NodeType, PanelMode} from "@/types"
+import classes from "./Commander.module.scss"
 
-import Node from "./Node"
 import {DropFilesModal} from "./DropFiles"
 import FolderNodeActions from "./FolderNodeActions"
+import Node from "./Node"
 
 export default function Commander() {
   const [opened, {open, close}] = useDisclosure(false)
@@ -162,7 +162,7 @@ export default function Commander() {
         className={dragOver ? classes.accept_files : classes.commander}
       >
         <FolderNodeActions />
-        <Breadcrumbs onClick={onClick} />
+        <Breadcrumbs breadcrumb={currentFolder?.breadcrumb} onClick={onClick} />
         <Stack
           className={classes.content}
           justify={"space-between"}

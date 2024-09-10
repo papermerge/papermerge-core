@@ -1,38 +1,42 @@
-import {useContext, useState} from "react"
-import {useDispatch, useSelector} from "react-redux"
-import {UnstyledButton, Flex} from "@mantine/core"
-import {Popover, Stack, Group, Button, Tooltip} from "@mantine/core"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import PanelContext from "@/contexts/PanelContext"
 import {
-  IconLayoutSidebarRightExpand,
-  IconLayoutSidebarRightCollapse
-} from "@tabler/icons-react"
-import classes from "./ThumbnailsToggle.module.css"
-import {
-  toggleThumbnailsPanel,
   selectThumbnailsPanelOpen,
-  selectPagesHaveChanged,
-  resetPageChanges,
+  viewerThumbnailsPanelToggled
+} from "@/features/ui/uiSlice"
+import {
   applyPageOpChanges,
+  resetPageChanges,
+  selectPagesHaveChanged,
   selectPagesRaw
 } from "@/slices/dualPanel/dualPanel"
-import PanelContext from "@/contexts/PanelContext"
 import {PanelMode} from "@/types"
-import {RootState} from "@/app/types"
+import {
+  Button,
+  Flex,
+  Group,
+  Popover,
+  Stack,
+  Tooltip,
+  UnstyledButton
+} from "@mantine/core"
+import {
+  IconLayoutSidebarRightCollapse,
+  IconLayoutSidebarRightExpand
+} from "@tabler/icons-react"
+import {useContext, useState} from "react"
+import classes from "./ThumbnailsToggle.module.css"
 
 export default function ThumbnailsToggle() {
   const [dontBotherMe, setDontBotherMe] = useState<boolean>(false)
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
-  const isOpen = useSelector((state: RootState) =>
-    selectThumbnailsPanelOpen(state, mode)
-  )
-  const pagesHaveChanged = useSelector((state: RootState) =>
-    selectPagesHaveChanged(state, mode)
-  )
-  const pages = useSelector((state: RootState) => selectPagesRaw(state, mode))
+  const isOpen = useAppSelector(s => selectThumbnailsPanelOpen(s, mode))
+  const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
+  const pages = useAppSelector(s => selectPagesRaw(s, mode))
 
   const onClick = () => {
-    dispatch(toggleThumbnailsPanel(mode))
+    dispatch(viewerThumbnailsPanelToggled(mode))
   }
 
   const onSave = () => {

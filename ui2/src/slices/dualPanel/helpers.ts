@@ -1,11 +1,10 @@
 import type {
+  ClientPage,
   DocumentVersion,
   DroppedThumbnailPosition,
-  PageAndRotOp,
   PageType,
   PanelMode
 } from "@/types"
-import {contains_every, reorder as reorder_pages} from "@/utils"
 import {DualPanelState} from "./types"
 
 export function dropThumbnailPageHelper({
@@ -17,32 +16,28 @@ export function dropThumbnailPageHelper({
 }: {
   mode: PanelMode
   state: DualPanelState
-  sources: PageAndRotOp[]
-  target: PageAndRotOp
+  sources: ClientPage[]
+  target: ClientPage
   position: DroppedThumbnailPosition
 }) {
-  let pages: PageAndRotOp[]
+  /*
+  let pages: ClientPage[]
   let curVer
   if (mode == "main") {
-    curVer = state.mainPanel.viewer!.currentVersion!
-    pages = state.mainPanel.viewer?.versions[curVer - 1].pages!
+    curVer = state.pages = state.mainPanel.viewer?.versions[curVer - 1].pages!
   } else {
     curVer = state.secondaryPanel!.viewer!.currentVersion!
     pages = state.secondaryPanel!.viewer?.versions[curVer - 1].pages!
   }
-  const page_ids = pages.map(p => p.page.id)
-  const source_ids = sources.map(p => p.page.id)
+  const page_ids = pages.map(p => p.id)
+  const source_ids = sources.map(p => p.id)
   if (contains_every({container: page_ids, items: source_ids})) {
-    /* Here we deal with page transfer is within the same document
-      i.e we just reordering. It is so because all source pages (their IDs)
-      were found in the target document version.
-    */
-    const new_pages = reorder_pages<PageAndRotOp, string>({
+    const new_pages = reorder_pages<ClientPage, string>({
       arr: pages,
       source_ids: source_ids,
-      target_id: target.page.id,
+      target_id: target.id,
       position: position,
-      idf: (val: PageAndRotOp) => val.page.id
+      idf: (val: ClientPage) => val.id
     })
     if (mode == "main") {
       curVer = state.mainPanel.viewer!.currentVersion!
@@ -66,6 +61,7 @@ export function dropThumbnailPageHelper({
       }
     }
   }
+    */
 }
 
 export function resetPageChangesHelper(state: DualPanelState, mode: PanelMode) {

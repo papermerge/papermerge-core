@@ -1,12 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Flex} from "@mantine/core"
-import {useContext} from "react"
+import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
+  currentDocVerUpdated,
   currentNodeChanged,
   selectContentHeight,
   selectCurrentNodeID
@@ -24,7 +25,7 @@ export default function Viewer() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {data: doc} = useGetDocumentQuery(currentNodeID!)
+  const {data: doc, isSuccess} = useGetDocumentQuery(currentNodeID!)
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
@@ -35,6 +36,16 @@ export default function Viewer() {
       navigate(`/folder/${node.id}`)
     }
   }
+
+  useEffect(() => {
+    if (isSuccess) {
+      const maxVerNum = Math.max(...doc.versions.map(v => v.number))
+      const docVer = doc.versions.find(v => v.number == maxVerNum)
+      if (docVer) {
+        dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
+      }
+    }
+  }, [isSuccess])
 
   return (
     <div>

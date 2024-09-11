@@ -20,6 +20,7 @@ import {
 
 import type {
   ApplyPagesType,
+  ClientPage,
   DocumentType,
   DocumentVersion,
   DocumentVersionWithPageRot,
@@ -142,8 +143,8 @@ type SetCurrentPageArg = {
 
 type DropThumbnailPageArgs = {
   mode: PanelMode
-  sources: PageAndRotOp[]
-  target: PageAndRotOp
+  sources: ClientPage[]
+  target: ClientPage
   position: DroppedThumbnailPosition
 }
 
@@ -313,14 +314,6 @@ export const selectSearchResultItems = (
   return null
 }
 
-export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.selectedIds
-  }
-
-  return state.dualPanel.secondaryPanel?.viewer?.selectedIds
-}
-
 export const selectInitialPages = (
   state: RootState,
   mode: PanelMode
@@ -365,22 +358,6 @@ export const selectPagesRaw = (
     }
   }
 }
-
-export const selectSelectedPages = createSelector(
-  [selectSelectedPageIds, selectPagesRaw],
-  (
-    selectedIds: Array<string> | undefined,
-    allNodes: Array<PageAndRotOp> | undefined
-  ): Array<PageAndRotOp> => {
-    if (selectedIds && allNodes) {
-      return Object.values(allNodes).filter((i: PageAndRotOp) =>
-        selectedIds.includes(i.page.id)
-      )
-    }
-
-    return []
-  }
-)
 
 export const selectPagesHaveChanged = createSelector(
   [selectInitialPages, selectPagesRaw],

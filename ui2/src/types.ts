@@ -287,6 +287,22 @@ export type DocumentType = {
   updated_at: string
 }
 
+export interface ClientPage {
+  id: string
+  angle: number
+  number: number
+}
+
+export interface ClientDocumentVersion {
+  id: string
+  lang: OCRCode
+  number: number
+  page_count: number
+  short_description: string
+  size: number
+  pages: Array<ClientPage>
+}
+
 export type NodeTag = {
   name: string
   bg_color: string

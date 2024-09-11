@@ -1,9 +1,9 @@
-import {PageAndRotOp} from "@/types"
-import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {RootState} from "@/app/types"
+import {ClientPage} from "@/types"
+import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 
 type DragNDrop = {
-  pages: Array<PageAndRotOp> | null
+  pages: Array<ClientPage> | null
 }
 
 const initialState: DragNDrop = {
@@ -14,7 +14,7 @@ const dragndropSlice = createSlice({
   name: "dragndrop",
   initialState,
   reducers: {
-    dragPagesStart(state, action: PayloadAction<Array<PageAndRotOp>>) {
+    dragPagesStart(state, action: PayloadAction<Array<ClientPage>>) {
       state.pages = action.payload
     },
     dragPagesEnd(state) {

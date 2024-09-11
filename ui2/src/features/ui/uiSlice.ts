@@ -38,6 +38,11 @@ type LastPageSizeArg = {
   pageSize: number
 }
 
+type CurrentDocVerUpdateArg = {
+  mode: PanelMode
+  docVerID: string
+}
+
 interface PanelSelectionArg {
   itemID: string
   mode: PanelMode
@@ -120,9 +125,11 @@ interface UIState {
   // 100 -> means 100% i.e exact fit
   mainViewerZoomFactor?: number
   mainViewerSelectedIDs?: Array<string>
+  mainViewerCurrentDocVerID?: string
   secondaryViewerThumbnailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
   secondaryViewerSelectedIDs?: Array<string>
+  secondaryViewerCurrentDocVerID?: string
 }
 
 const initialState: UIState = {
@@ -484,6 +491,14 @@ const uiSlice = createSlice({
       }
       // secondary
       state.secondaryViewerSelectedIDs = []
+    },
+    currentDocVerUpdated(state, action: PayloadAction<CurrentDocVerUpdateArg>) {
+      const {mode, docVerID} = action.payload
+      if (mode == "main") {
+        state.mainViewerCurrentDocVerID = docVerID
+      } else {
+        state.secondaryViewerCurrentDocVerID = docVerID
+      }
     }
   }
 })
@@ -510,7 +525,8 @@ export const {
   zoomFactorReseted,
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved,
-  viewerSelectionCleared
+  viewerSelectionCleared,
+  currentDocVerUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -643,6 +659,14 @@ export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
+}
+
+export const selectCurrentDocVerID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainViewerCurrentDocVerID
+  }
+
+  return state.ui.secondaryViewerCurrentDocVerID
 }
 
 /* Load initial collapse state value from cookie */

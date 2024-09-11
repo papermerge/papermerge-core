@@ -1,14 +1,13 @@
 import type {
-  SliceState,
-  NodeType,
-  SearchResultNode,
-  PanelMode,
-  PanelType,
-  CurrentNodeType,
-  PaginationType,
   BreadcrumbItemType,
   DocumentVersionWithPageRot,
-  PageAndRotOp
+  NodeType,
+  PageAndRotOp,
+  PaginationType,
+  PanelMode,
+  PanelType,
+  SearchResultNode,
+  SliceState
 } from "@/types"
 
 export type NodeWithSpinner = {

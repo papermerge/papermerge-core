@@ -1,4 +1,4 @@
-import {RootState} from "@/app/types"
+import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetPageImageQuery} from "@/features/pages/apiSlice"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
@@ -6,7 +6,6 @@ import {selectDocumentCurrentPage} from "@/slices/dualPanel/dualPanel"
 import {PageAndRotOp, PanelMode} from "@/types"
 import {Stack} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
-import {useSelector} from "react-redux"
 import classes from "./Page.module.css"
 
 type Args = {
@@ -16,13 +15,9 @@ type Args = {
 export default function Page({page}: Args) {
   const {data} = useGetPageImageQuery(page.page.id)
   const mode: PanelMode = useContext(PanelContext)
-  const currentPage = useSelector((state: RootState) =>
-    selectDocumentCurrentPage(state, mode)
-  )
+  const currentPage = useAppSelector(s => selectDocumentCurrentPage(s, mode))
   const targetRef = useRef<HTMLImageElement | null>(null)
-  const zoomFactor = useSelector((state: RootState) =>
-    selectZoomFactor(state, mode)
-  )
+  const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
 
   useEffect(() => {
     if (currentPage == page.page.number) {

@@ -1,60 +1,12 @@
 import type {
-  CurrentNodeType,
-  PanelMode,
-  PageType,
-  DroppedThumbnailPosition,
   DocumentVersion,
-  PageAndRotOp
+  DroppedThumbnailPosition,
+  PageAndRotOp,
+  PageType,
+  PanelMode
 } from "@/types"
-import {DualPanelState, Commander} from "./types"
-import {INITIAL_PAGE_SIZE} from "@/cconstants"
-import {contains_every} from "@/utils"
-import {reorder as reorder_pages} from "@/utils"
-
-export function selectionAddPageHelper(
-  state: DualPanelState,
-  pageId: string,
-  mode: PanelMode
-) {
-  switch (mode) {
-    case "main":
-      if (state.mainPanel.viewer) {
-        state.mainPanel.viewer.selectedIds.push(pageId)
-      }
-      break
-    case "secondary":
-      if (state.secondaryPanel?.viewer) {
-        state.secondaryPanel.viewer.selectedIds.push(pageId)
-      }
-      break
-    default:
-      throw Error("Should never reach this place")
-  }
-}
-
-export function selectionRemovePageHelper(
-  state: DualPanelState,
-  pageId: string,
-  mode: PanelMode
-) {
-  if (mode == "main") {
-    if (state.mainPanel.viewer) {
-      const newSelectedIds = state.mainPanel.viewer.selectedIds.filter(
-        i => i != pageId
-      )
-      state.mainPanel.viewer.selectedIds = newSelectedIds
-    }
-  }
-
-  if (mode == "secondary") {
-    if (state.secondaryPanel?.viewer) {
-      const newSelectedIds = state.secondaryPanel.viewer.selectedIds.filter(
-        i => i != pageId
-      )
-      state.secondaryPanel.viewer.selectedIds = newSelectedIds
-    }
-  }
-}
+import {contains_every, reorder as reorder_pages} from "@/utils"
+import {DualPanelState} from "./types"
 
 export function dropThumbnailPageHelper({
   mode,

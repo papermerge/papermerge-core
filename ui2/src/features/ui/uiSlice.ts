@@ -119,8 +119,10 @@ interface UIState {
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
   mainViewerZoomFactor?: number
+  mainViewerSelectedIDs?: Array<string>
   secondaryViewerThumbnailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
+  secondaryViewerSelectedIDs?: Array<string>
 }
 
 const initialState: UIState = {
@@ -431,6 +433,57 @@ const uiSlice = createSlice({
       if (mode == "secondary") {
         state.secondaryViewerZoomFactor = ZOOM_FACTOR_INIT
       }
+    },
+    viewerSelectionPageAdded(state, action: PayloadAction<PanelSelectionArg>) {
+      const mode = action.payload.mode
+      const itemID = action.payload.itemID
+      if (mode == "main") {
+        if (state.mainViewerSelectedIDs) {
+          state.mainViewerSelectedIDs.push(itemID)
+        } else {
+          state.mainViewerSelectedIDs = [itemID]
+        }
+        return
+      }
+
+      // mode == secondary
+      if (state.secondaryViewerSelectedIDs) {
+        state.secondaryViewerSelectedIDs.push(itemID)
+      } else {
+        state.secondaryViewerSelectedIDs = [itemID]
+      }
+    },
+    viewerSelectionPageRemoved(
+      state,
+      action: PayloadAction<PanelSelectionArg>
+    ) {
+      const mode = action.payload.mode
+      const itemID = action.payload.itemID
+      if (mode == "main") {
+        if (state.mainViewerSelectedIDs) {
+          const newValues = state.mainViewerSelectedIDs.filter(i => i != itemID)
+          state.mainViewerSelectedIDs = newValues
+        }
+
+        return
+      }
+      // secondary
+      if (state.secondaryViewerSelectedIDs) {
+        const newValues = state.secondaryViewerSelectedIDs.filter(
+          i => i != itemID
+        )
+        state.secondaryViewerSelectedIDs = newValues
+      }
+    },
+    viewerSelectionCleared(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+
+      if (mode == "main") {
+        state.mainViewerSelectedIDs = []
+        return
+      }
+      // secondary
+      state.secondaryViewerSelectedIDs = []
     }
   }
 })
@@ -454,7 +507,10 @@ export const {
   viewerThumbnailsPanelToggled,
   zoomFactorIncremented,
   zoomFactorDecremented,
-  zoomFactorReseted
+  zoomFactorReseted,
+  viewerSelectionPageAdded,
+  viewerSelectionPageRemoved,
+  viewerSelectionCleared
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -527,21 +583,16 @@ export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
   return state.ui.secondaryPanelComponent
 }
 
-const selectSelectedNodeIdsRaw = (state: RootState, mode: PanelMode) => {
+export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
-    return state.ui.mainCommanderSelectedIDs
+    return state.ui.mainCommanderSelectedIDs || []
   }
 
-  return state.ui.secondaryCommanderSelectedIDs
+  return state.ui.secondaryCommanderSelectedIDs || []
 }
 
-export const selectSelectedNodeIds = createSelector(
-  selectSelectedNodeIdsRaw,
-  selectedIds => (selectedIds ? selectedIds : [])
-)
-
 export const selectSelectedNodesCount = createSelector(
-  selectSelectedNodeIdsRaw,
+  selectSelectedNodeIds,
   selectedIds => {
     if (!selectedIds) {
       return 0

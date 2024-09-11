@@ -13,11 +13,14 @@ import {
   dropThumbnailPage,
   selectSelectedPageIds,
   selectSelectedPages,
-  selectionAddPage,
-  selectionRemovePage,
   setCurrentPage
 } from "@/slices/dualPanel/dualPanel"
 import type {DroppedThumbnailPosition, PageAndRotOp, PanelMode} from "@/types"
+
+import {
+  viewerSelectionPageAdded,
+  viewerSelectionPageRemoved
+} from "@/features/ui/uiSlice"
 
 import {RootState} from "@/app/types"
 import classes from "./Thumbnail.module.scss"
@@ -157,9 +160,9 @@ export default function Thumbnail({page}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(selectionAddPage({selectionId: page.page.id, mode}))
+      dispatch(viewerSelectionPageAdded({itemID: page.page.id, mode}))
     } else {
-      dispatch(selectionRemovePage({selectionId: page.page.id, mode}))
+      dispatch(viewerSelectionPageRemoved({itemID: page.page.id, mode}))
     }
   }
 

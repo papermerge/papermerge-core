@@ -15,9 +15,7 @@ import {RootState} from "@/app/types"
 import {
   dropThumbnailPageHelper,
   getLatestVersionPages,
-  resetPageChangesHelper,
-  selectionAddPageHelper,
-  selectionRemovePageHelper
+  resetPageChangesHelper
 } from "./helpers"
 
 import type {
@@ -35,7 +33,7 @@ import type {
   SearchResultNode,
   SliceState
 } from "@/types"
-import {DualPanelState, SelectionPagePayload} from "./types"
+import {DualPanelState} from "./types"
 
 const initialState: DualPanelState = {
   mainPanel: {
@@ -182,19 +180,6 @@ const dualPanelSlice = createSlice({
       const mode = action.payload
       resetPageChangesHelper(state, mode)
     },
-    selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
-      const pageId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionAddPageHelper(state, pageId, mode)
-    },
-    selectionRemovePage: (
-      state,
-      action: PayloadAction<SelectionPagePayload>
-    ) => {
-      const pageId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionRemovePageHelper(state, pageId, mode)
-    },
     dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
       const {mode, sources, target, position} = action.payload
 
@@ -289,8 +274,6 @@ const dualPanelSlice = createSlice({
 
 export const {
   rotatePages,
-  selectionAddPage,
-  selectionRemovePage,
   updateSearchResultItemTarget,
   setCurrentPage,
   dropThumbnailPage,

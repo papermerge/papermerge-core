@@ -4,6 +4,13 @@ import type {BooleanString, CType, PanelMode} from "@/types"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
+import {
+  MAX_ZOOM_FACTOR,
+  MIN_ZOOM_FACTOR,
+  ZOOM_FACTOR_INIT,
+  ZOOM_FACTOR_STEP
+} from "@/cconstants"
+
 import type {FileItemStatus, FileItemType, FolderType, NodeType} from "@/types"
 
 const COLLAPSED_WIDTH = 55
@@ -108,7 +115,12 @@ interface UIState {
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
   mainViewerThumbnailsPanelOpen?: boolean
+  // zoom factor is expressed as percentage.
+  // 5 -> means 5%
+  // 100 -> means 100% i.e exact fit
+  mainViewerZoomFactor?: number
   secondaryViewerThumbnailsPanelOpen?: boolean
+  secondaryViewerZoomFactor?: number
 }
 
 const initialState: UIState = {
@@ -380,6 +392,45 @@ const uiSlice = createSlice({
       } else {
         Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
       }
+    },
+    zoomFactorIncremented(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        const zoom = state.mainViewerZoomFactor || ZOOM_FACTOR_INIT
+        if (zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
+          state.mainViewerZoomFactor = zoom + ZOOM_FACTOR_STEP
+        }
+      }
+      if (mode == "secondary") {
+        const zoom = state.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
+        if (zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
+          state.secondaryViewerZoomFactor = zoom + ZOOM_FACTOR_STEP
+        }
+      }
+    },
+    zoomFactorDecremented(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        let zoom = state.mainViewerZoomFactor || ZOOM_FACTOR_INIT
+        if (zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
+          state.mainViewerZoomFactor = zoom - ZOOM_FACTOR_STEP
+        }
+      }
+      if (mode == "secondary") {
+        let zoom = state.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
+        if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
+          state.secondaryViewerZoomFactor = zoom - ZOOM_FACTOR_STEP
+        }
+      }
+    },
+    zoomFactorReseted(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+      if (mode == "main") {
+        state.mainViewerZoomFactor = ZOOM_FACTOR_INIT
+      }
+      if (mode == "secondary") {
+        state.secondaryViewerZoomFactor = ZOOM_FACTOR_INIT
+      }
     }
   }
 })
@@ -400,7 +451,10 @@ export const {
   commanderSelectionCleared,
   filterUpdated,
   commanderLastPageSizeUpdated,
-  viewerThumbnailsPanelToggled
+  viewerThumbnailsPanelToggled,
+  zoomFactorIncremented,
+  zoomFactorDecremented,
+  zoomFactorReseted
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -530,6 +584,14 @@ export const selectLastPageSize = (
     state.ui.secondaryCommanderLastPageSize ||
     PAGINATION_DEFAULT_ITEMS_PER_PAGES
   )
+}
+
+export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainViewerZoomFactor || ZOOM_FACTOR_INIT
+  }
+
+  return state.ui.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
 }
 
 /* Load initial collapse state value from cookie */

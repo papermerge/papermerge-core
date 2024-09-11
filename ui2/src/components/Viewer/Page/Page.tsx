@@ -1,10 +1,8 @@
 import {RootState} from "@/app/types"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetPageImageQuery} from "@/features/pages/apiSlice"
-import {
-  selectDocumentCurrentPage,
-  selectZoomFactor
-} from "@/slices/dualPanel/dualPanel"
+import {selectZoomFactor} from "@/features/ui/uiSlice"
+import {selectDocumentCurrentPage} from "@/slices/dualPanel/dualPanel"
 import {PageAndRotOp, PanelMode} from "@/types"
 import {Stack} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"

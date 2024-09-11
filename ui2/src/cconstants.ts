@@ -44,6 +44,7 @@ export const STORAGE_KEY_PAGINATION_SITEMS_PER_PAGE = "sitems_per_page"
 
 export const PAGINATION_PAGE_SIZES = ["5", "10", "15", "25", "50"]
 export const INITIAL_PAGE_SIZE = 5
+export const ZOOM_FACTOR_INIT = 100
 export const ZOOM_FACTOR_STEP = 10 // percents
 export const MIN_ZOOM_FACTOR = 25 // percents
 export const MAX_ZOOM_FACTOR = 300 // percents

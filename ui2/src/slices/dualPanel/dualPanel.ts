@@ -20,7 +20,6 @@ import {
   selectionRemovePageHelper
 } from "./helpers"
 
-import {MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, ZOOM_FACTOR_STEP} from "@/cconstants"
 import type {
   ApplyPagesType,
   DocumentType,
@@ -207,57 +206,6 @@ const dualPanelSlice = createSlice({
         position
       })
     },
-    incZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          let zoom = state.mainPanel.viewer?.zoomFactor
-          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-            state.mainPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
-          }
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          let zoom = state.secondaryPanel.viewer.zoomFactor
-          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-            state.secondaryPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
-          }
-        }
-      }
-    },
-    decZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          let zoom = state.mainPanel.viewer?.zoomFactor
-          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-            state.mainPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
-          }
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          let zoom = state.secondaryPanel.viewer.zoomFactor
-          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-            state.secondaryPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
-          }
-        }
-      }
-    },
-    fitZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          state.mainPanel.viewer.zoomFactor = 100
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          state.secondaryPanel.viewer.zoomFactor = 100
-        }
-      }
-    },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
@@ -341,9 +289,6 @@ const dualPanelSlice = createSlice({
 
 export const {
   rotatePages,
-  incZoomFactor,
-  decZoomFactor,
-  fitZoomFactor,
   selectionAddPage,
   selectionRemovePage,
   updateSearchResultItemTarget,
@@ -576,14 +521,6 @@ export const selectThumbnailsPanelOpen = (
   }
 
   return Boolean(state.dualPanel?.secondaryPanel?.viewer?.thumbnailsPanelOpen)
-}
-
-export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.zoomFactor
-  }
-
-  return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
 }
 
 function injectPageRotOp(

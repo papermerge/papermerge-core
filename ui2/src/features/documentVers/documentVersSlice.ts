@@ -69,6 +69,11 @@ const docVersSlice = createSlice({
         return p
       })
       state.entities[targetDocVerID].pages = newPages
+    },
+    pagesReseted(state, action: PayloadAction<string>) {
+      const docVerID = action.payload
+      const docVer = state.entities[docVerID]
+      state.entities[docVerID].pages = docVer.initial_pages
     }
   },
   extraReducers(builder) {
@@ -101,7 +106,8 @@ const docVersSlice = createSlice({
   }
 })
 
-export const {pagesDroppedInDoc, pagesRotated} = docVersSlice.actions
+export const {pagesDroppedInDoc, pagesRotated, pagesReseted} =
+  docVersSlice.actions
 export default docVersSlice.reducer
 
 export const {
@@ -155,5 +161,59 @@ export const selectSelectedPages = createSelector(
   [selectAllPages, selectSelectedPageIDs],
   (pages, pageIDs) => {
     return pages.filter(p => pageIDs?.includes(p.id))
+  }
+)
+
+export const selectInitialPages = (
+  state: RootState,
+  mode: PanelMode
+): Array<ClientPage> | undefined => {
+  if (mode == "main") {
+    const curDocVerID = state.ui.mainViewerCurrentDocVerID
+    if (curDocVerID) {
+      return state.docVers.entities[curDocVerID].initial_pages
+    }
+  }
+  if (mode == "secondary") {
+    const curDocVerID = state.ui.secondaryViewerCurrentDocVerID
+    if (curDocVerID) {
+      return state.docVers.entities[curDocVerID].initial_pages
+    }
+  }
+}
+
+export const selectPagesHaveChanged = createSelector(
+  [selectInitialPages, selectAllPages],
+  (
+    initialPages: Array<ClientPage> | undefined,
+    currentPages: Array<ClientPage> | undefined
+  ): boolean => {
+    if (!initialPages) {
+      return false
+    }
+
+    if (!currentPages) {
+      return false
+    }
+
+    if (initialPages?.length != currentPages?.length) {
+      return true
+    }
+
+    for (let i = 0; i < (initialPages?.length || 0); i++) {
+      if (initialPages[i].id != currentPages[i].id) {
+        return true
+      }
+
+      if (initialPages[i].number != currentPages[i].number) {
+        return true
+      }
+
+      if (initialPages[i].angle != currentPages[i].angle) {
+        return true
+      }
+    }
+
+    return false
   }
 )

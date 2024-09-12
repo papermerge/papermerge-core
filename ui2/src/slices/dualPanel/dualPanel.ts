@@ -12,13 +12,8 @@ axios.defaults.baseURL = getBaseURL()
 axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
-import {getLatestVersionPages, resetPageChangesHelper} from "./helpers"
 
 import type {
-  ApplyPagesType,
-  DocumentType,
-  DocumentVersion,
-  DocumentVersionWithPageRot,
   NodeType,
   PageAndRotOp,
   PaginatedSearchResult,
@@ -36,23 +31,6 @@ const initialState: DualPanelState = {
   },
   secondaryPanel: null
 }
-
-type ApplyPageOpChangesThunkArgs = {
-  panel: PanelMode
-  pages: ApplyPagesType[]
-}
-
-export const applyPageOpChanges = createAsyncThunk<
-  DocumentType,
-  ApplyPageOpChangesThunkArgs
->(
-  "document/applyPageOpChanges",
-  async ({pages}: ApplyPageOpChangesThunkArgs) => {
-    const response = await axios.post("/api/pages/", pages)
-    const doc = response.data as DocumentType
-    return doc
-  }
-)
 
 type fetchPaginatedSearchResultsArgs = {
   query: string
@@ -120,15 +98,6 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
   }
 )
 
-export const deleteNodes = createAsyncThunk<string[], string[]>(
-  "dualPanel/deleteNodes",
-  async (nodeIds: string[]) => {
-    await axios.delete("/api/nodes/", {data: nodeIds})
-
-    return nodeIds
-  }
-)
-
 type SetCurrentPageArg = {
   mode: PanelMode
   page: number
@@ -138,10 +107,6 @@ const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
-    resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
-      const mode = action.payload
-      resetPageChangesHelper(state, mode)
-    },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
@@ -166,41 +131,6 @@ const dualPanelSlice = createSlice({
     }
   },
   extraReducers(builder) {
-    builder.addCase(applyPageOpChanges.fulfilled, (state, action) => {
-      if (action.meta.arg.panel == "main") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.mainPanel.viewer = {
-          breadcrumb: action.payload.breadcrumb,
-          versions: injectPageRotOp(action.payload.versions),
-          currentVersion: Math.max(...versionNumbers),
-          currentPage: 1,
-          zoomFactor: 100,
-          selectedIds: [],
-          //@ts-ignore
-          initialPages: getLatestVersionPages(action.payload.versions)
-        }
-        return
-      }
-
-      if (action.meta.arg.panel == "secondary") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.secondaryPanel = {
-          commander: null,
-          searchResults: null,
-          viewer: {
-            breadcrumb: action.payload.breadcrumb,
-            versions: injectPageRotOp(action.payload.versions),
-            currentVersion: Math.max(...versionNumbers),
-            currentPage: 1,
-            zoomFactor: 100,
-            selectedIds: [],
-            //@ts-ignore
-            initialPages: getLatestVersionPages(action.payload.versions)
-          }
-        }
-        return
-      }
-    })
     builder.addCase(fetchPaginatedSearchResults.fulfilled, (state, action) => {
       state.mainPanel = {
         viewer: null,
@@ -223,7 +153,7 @@ const dualPanelSlice = createSlice({
   }
 })
 
-export const {updateSearchResultItemTarget, setCurrentPage, resetPageChanges} =
+export const {updateSearchResultItemTarget, setCurrentPage} =
   dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
@@ -269,76 +199,6 @@ export const selectInitialPages = (
 
   return state.dualPanel.secondaryPanel?.viewer?.initialPages
 }
-
-export const selectPagesRaw = (
-  state: RootState,
-  mode: PanelMode
-): Array<PageAndRotOp> | undefined => {
-  let verNumber
-  let ver
-
-  if (mode == "main") {
-    verNumber = state.dualPanel.mainPanel?.viewer?.currentVersion
-    if (
-      verNumber &&
-      state.dualPanel.mainPanel?.viewer?.versions &&
-      state.dualPanel.mainPanel?.viewer?.versions.length >= verNumber
-    ) {
-      ver = state.dualPanel.mainPanel?.viewer?.versions[verNumber - 1]
-      if (ver) {
-        return ver.pages
-      }
-    }
-  } else {
-    verNumber = state.dualPanel.secondaryPanel?.viewer?.currentVersion
-    if (
-      verNumber &&
-      state.dualPanel.secondaryPanel?.viewer?.versions &&
-      state.dualPanel.secondaryPanel?.viewer?.versions.length >= verNumber
-    ) {
-      ver = state.dualPanel.secondaryPanel?.viewer?.versions[verNumber - 1]
-      if (ver) {
-        return ver.pages
-      }
-    }
-  }
-}
-
-export const selectPagesHaveChanged = createSelector(
-  [selectInitialPages, selectPagesRaw],
-  (
-    initialPages: Array<PageAndRotOp> | undefined,
-    currentPages: Array<PageAndRotOp> | undefined
-  ): boolean => {
-    if (!initialPages) {
-      return false
-    }
-
-    if (!currentPages) {
-      return false
-    }
-
-    if (initialPages?.length != currentPages?.length) {
-      return true
-    }
-
-    for (let i = 0; i < (initialPages?.length || 0); i++) {
-      if (initialPages[i].page.id != currentPages[i].page.id) {
-        return true
-      }
-
-      if (initialPages[i].page.number != currentPages[i].page.number) {
-        return true
-      }
-
-      if (initialPages[i].angle != currentPages[i].angle) {
-        return true
-      }
-    }
-
-    return false
-  }
-)
 
 export const selectDocumentVersions = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
@@ -416,33 +276,3 @@ export const selectSearchPageSize = (state: RootState) =>
 
 export const selectSearchPageNumber = (state: RootState) =>
   state.dualPanel.mainPanel?.searchResults?.pagination?.pageNumber
-
-export const selectThumbnailsPanelOpen = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.thumbnailsPanelOpen
-  }
-
-  return Boolean(state.dualPanel?.secondaryPanel?.viewer?.thumbnailsPanelOpen)
-}
-
-function injectPageRotOp(
-  vers: DocumentVersion[]
-): DocumentVersionWithPageRot[] {
-  return vers.map(raw => injectPageRotOpForDocVer(raw))
-}
-
-function injectPageRotOpForDocVer(
-  ver: DocumentVersion
-): DocumentVersionWithPageRot {
-  let result = ver
-  // @ts-ignore
-  result.pages = ver.pages.map(p => {
-    return {page: p, angle: 0}
-  })
-
-  //@ts-ignore
-  return result
-}

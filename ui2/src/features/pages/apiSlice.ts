@@ -1,5 +1,6 @@
 import {RootState} from "@/app/types"
 import {apiSlice} from "@/features/api/slice"
+import type {ApplyPagesType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 export const apiSliceWithPages = apiSlice.injectEndpoints({
@@ -49,8 +50,16 @@ export const apiSliceWithPages = apiSlice.injectEndpoints({
           return {err}
         }
       }
+    }),
+    applyPageOpChanges: builder.mutation<void, Array<ApplyPagesType>>({
+      query: pages => ({
+        url: "/pages/",
+        method: "POST",
+        body: pages
+      })
     })
   })
 })
 
-export const {useGetPageImageQuery} = apiSliceWithPages
+export const {useGetPageImageQuery, useApplyPageOpChangesMutation} =
+  apiSliceWithPages

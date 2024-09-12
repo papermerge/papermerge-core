@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+
 import {Flex} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
@@ -14,6 +15,7 @@ import {
 } from "@/features/ui/uiSlice"
 import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
+import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
 import ThumbnailsToggle from "./ThumbnailsToggle"
@@ -55,6 +57,7 @@ export default function Viewer() {
         <Thumbnails />
         <ThumbnailsToggle />
         <Pages />
+        <PagesHaveChangedDialog />
       </Flex>
     </div>
   )

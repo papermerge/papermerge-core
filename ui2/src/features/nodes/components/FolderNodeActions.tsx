@@ -1,22 +1,23 @@
-import {useContext, useRef, useEffect} from "react"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {
+  selectSelectedNodesCount,
+  updateActionPanel
+} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
-import {selectSelectedNodesCount} from "@/features/ui/uiSlice"
-import {updateActionPanel} from "@/features/ui/uiSlice"
+import {useContext, useEffect, useRef} from "react"
 
-import type {RootState} from "@/app/types"
-import type {PanelMode} from "@/types"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
+import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
-import QuickFilter from "./QuickFilter"
 import DeleteButton from "./DeleteButton"
-import NewFolderButton from "./NewFolderButton"
-import UploadButton from "./UploadButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
+import NewFolderButton from "./NewFolderButton"
+import QuickFilter from "./QuickFilter"
+import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
   const {height, width} = useViewportSize()

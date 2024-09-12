@@ -1,14 +1,12 @@
-import {useContext} from "react"
-import {ActionIcon} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import {IconColumns2, IconX} from "@tabler/icons-react"
+import {selectCurrentUser} from "@/slices/currentUser"
 import {
-  openSecondaryPanel,
-  closeSecondaryPanel,
   selectMainPanel,
   selectSecondaryPanel
 } from "@/slices/dualPanel/dualPanel"
-import {selectCurrentUser} from "@/slices/currentUser"
+import {ActionIcon} from "@mantine/core"
+import {IconColumns2, IconX} from "@tabler/icons-react"
+import {useContext} from "react"
+import {useDispatch, useSelector} from "react-redux"
 
 import type {PanelMode, User} from "@/types"
 

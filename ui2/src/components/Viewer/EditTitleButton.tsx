@@ -1,22 +1,9 @@
-import {useContext} from "react"
-import {Tooltip, ActionIcon} from "@mantine/core"
+import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
-
-import {useSelector} from "react-redux"
-//import {} from // selectSelectedNodes
-//nodeUpdated,
-//clearNodesSelection
 ;("@/slices/dualPanel/dualPanel")
 //import edit_node_title from "@/components/modals/EditNodeTitle"
 
-import type {RootState} from "@/app/types"
-
-import type {PanelMode} from "@/types"
-
-import PanelContext from "@/contexts/PanelContext"
-
 export default function EditTitleButton() {
-  const mode: PanelMode = useContext(PanelContext)
   //const dispatch = useDispatch()
   // const selectedNodes = useSelector((state: RootState) =>
   //  selectSelectedNodes(state, mode)

@@ -1,34 +1,25 @@
-import {Stack} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import Pagination from "@/components/Pagination"
 import type {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import Pagination from "@/components/Pagination"
+import {Stack} from "@mantine/core"
+import {useDispatch, useSelector} from "react-redux"
 
+import {selectSearchContentHeight} from "@/features/ui/uiSlice"
 import {
   fetchPaginatedSearchResults,
-  selectSearchResultOpenItemTarget,
-  selectSearchPagination,
-  selectSearchQuery,
+  selectSearchPageNumber,
   selectSearchPageSize,
-  selectSearchPageNumber
+  selectSearchPagination,
+  selectSearchQuery
 } from "@/slices/dualPanel/dualPanel"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
-import {
-  currentNodeChanged,
-  selectSearchContentHeight
-} from "@/features/ui/uiSlice"
-import {NType, PanelMode} from "@/types"
 import classes from "./SearchResults.module.css"
 
 export default function SearchResults() {
   const dispatch = useDispatch()
   const height = useSelector((state: RootState) =>
     selectSearchContentHeight(state)
-  )
-
-  const targetPanel = useSelector((state: RootState) =>
-    selectSearchResultOpenItemTarget(state)
   )
   const pagination = useSelector((state: RootState) =>
     selectSearchPagination(state)
@@ -41,28 +32,7 @@ export default function SearchResults() {
     selectSearchPageNumber(state)
   )
 
-  const onClick = (item: NType, page?: number) => {
-    if (item.ctype == "document") {
-      /*
-      dispatch(
-        fetchPaginatedDocument({
-          nodeId: item.id,
-          panel: targetPanel as PanelMode,
-          urlParams: new URLSearchParams("page_size=100"),
-          page: page
-        })
-      )
-        */
-    } else if (item.ctype == "folder") {
-      dispatch(
-        currentNodeChanged({
-          id: item.id,
-          ctype: "folder",
-          panel: targetPanel as PanelMode
-        })
-      )
-    }
-  }
+  const onClick = () => {}
 
   const onPageNumberChange = (page: number) => {
     dispatch(

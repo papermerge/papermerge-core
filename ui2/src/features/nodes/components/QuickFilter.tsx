@@ -5,16 +5,16 @@ import {IconSearch, IconX} from "@tabler/icons-react"
 import {useThrottledCallback} from "@mantine/hooks"
 
 import PanelContext from "@/contexts/PanelContext"
-import {filterUpdated} from "@/slices/dualPanel/dualPanel"
+import {filterUpdated} from "@/features/ui/uiSlice"
 
 export default function QuickFilter() {
   const dispatch = useAppDispatch()
   const mode = useContext(PanelContext)
-  const [filterText, setFilterText] = useState<string | null>(null)
+  const [filterText, setFilterText] = useState<string>()
   const throttledSetValue = useThrottledCallback(value => onChange(value), 1500)
   const onClear = () => {
-    setFilterText(null)
-    dispatch(filterUpdated({mode, filter: null}))
+    setFilterText(undefined)
+    dispatch(filterUpdated({mode, filter: undefined}))
   }
 
   const onChange = (value: string) => {

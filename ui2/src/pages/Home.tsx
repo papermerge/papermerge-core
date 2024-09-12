@@ -2,11 +2,11 @@ import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
 
-import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
+import {getCurrentUser} from "@/utils"
 
-import type {User} from "@/types"
 import {currentNodeChanged} from "@/features/ui/uiSlice"
+import type {User} from "@/types"
 
 export default function Home() {
   return <DualPanel />
@@ -15,14 +15,12 @@ export default function Home() {
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const user: User = await getCurrentUser()
-  let folderId, breadcrumb
+  let folderId
 
   if (params.folderId) {
     folderId = params.folderId
-    breadcrumb = null
   } else {
     folderId = user.home_folder_id
-    breadcrumb = [[folderId, ".home"]] as Array<[string, string]>
   }
 
   store.dispatch(

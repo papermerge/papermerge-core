@@ -1,31 +1,30 @@
-import {useContext, useRef, useEffect} from "react"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {
+  selectSelectedNodesCount,
+  updateActionPanel
+} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {useSelector, useDispatch} from "react-redux"
-import {selectSelectedNodeIds} from "@/slices/dualPanel/dualPanel"
-import {updateActionPanel} from "@/features/ui/uiSlice"
+import {useContext, useEffect, useRef} from "react"
 
-import type {RootState} from "@/app/types"
-import type {PanelMode} from "@/types"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
+import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
-import QuickFilter from "./QuickFilter"
 import DeleteButton from "./DeleteButton"
-import NewFolderButton from "./NewFolderButton"
-import UploadButton from "./UploadButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
+import NewFolderButton from "./NewFolderButton"
+import QuickFilter from "./QuickFilter"
+import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
   const {height, width} = useViewportSize()
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useSelector((state: RootState) =>
-    selectSelectedNodeIds(state, mode)
-  ) as Array<string>
+  const selectedCount = useAppSelector(s => selectSelectedNodesCount(s, mode))
 
   useEffect(() => {
     if (ref?.current) {
@@ -43,11 +42,11 @@ export default function FolderNodeActions() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        {selectedIds.length == 0 && <UploadButton />}
-        {selectedIds.length == 0 && <NewFolderButton />}
-        {selectedIds.length == 1 && <EditNodeTitleButton />}
-        {selectedIds.length == 1 && <EditNodeTagsButton />}
-        {selectedIds.length > 0 && <DeleteButton />}
+        {selectedCount == 0 && <UploadButton />}
+        {selectedCount == 0 && <NewFolderButton />}
+        {selectedCount == 1 && <EditNodeTitleButton />}
+        {selectedCount == 1 && <EditNodeTagsButton />}
+        {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group>
         <QuickFilter />

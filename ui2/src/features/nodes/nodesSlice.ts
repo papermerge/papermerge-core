@@ -20,7 +20,7 @@ const nodesSlice = createSlice({
       apiSliceWithNodes.endpoints.getPaginatedNodes.matchFulfilled,
       (state, action: PayloadAction<Paginated<NodeType>>) => {
         const payload = action.payload
-        nodeAdapter.upsertMany(state, payload.items)
+        nodeAdapter.addMany(state, payload.items)
       }
     )
   }

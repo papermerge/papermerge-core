@@ -1,14 +1,16 @@
 import {Group} from "@mantine/core"
-import {useSelector} from "react-redux"
-import {selectSecondaryPanel} from "@/slices/dualPanel/dualPanel"
+import {useAppSelector} from "@/app/hooks"
 import SinglePanel from "@/components/SinglePanel"
 
 import PanelContext from "@/contexts/PanelContext"
+import {selectPanelComponent} from "@/features/ui/uiSlice"
 
 export default function DualPanel() {
-  const secondaryPanel = useSelector(selectSecondaryPanel)
+  const secondayPanelComponent = useAppSelector(s =>
+    selectPanelComponent(s, "secondary")
+  )
 
-  if (secondaryPanel) {
+  if (secondayPanelComponent) {
     return (
       <Group grow align="flex-start" justify="space-between">
         <PanelContext.Provider value={"main"}>

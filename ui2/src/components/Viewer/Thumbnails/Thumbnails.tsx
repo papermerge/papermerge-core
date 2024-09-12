@@ -1,29 +1,29 @@
 import {Stack} from "@mantine/core"
 
-import {useSelector} from "react-redux"
-import {useContext} from "react"
+import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
-  selectDocumentCurrentVersion,
+  selectCurrentDocVerID,
   selectThumbnailsPanelOpen
-} from "@/slices/dualPanel/dualPanel"
-import type {PanelMode} from "@/types"
+} from "@/features/ui/uiSlice"
+import {useContext} from "react"
+import {useSelector} from "react-redux"
+
 import {RootState} from "@/app/types"
+import {selectCurrentPages} from "@/features/documentVers/documentVersSlice"
+import type {PanelMode} from "@/types"
 import Thumbnail from "../Thumbnail"
 import classes from "./Thumbnails.module.css"
 
 export default function Thumbnails() {
   const mode: PanelMode = useContext(PanelContext)
-  const docVersion = useSelector((state: RootState) =>
-    selectDocumentCurrentVersion(state, mode)
-  )
+  const currDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const thumbnailsIsOpen = useSelector((state: RootState) =>
     selectThumbnailsPanelOpen(state, mode)
   )
+  const pages = useAppSelector(s => selectCurrentPages(s, currDocVerID!))
 
-  const thumbnails = docVersion?.pages.map(p => (
-    <Thumbnail key={p.page.id} page={p} />
-  ))
+  const thumbnails = pages.map(p => <Thumbnail key={p.id} page={p} />)
   // display: none
   if (thumbnailsIsOpen) {
     return (

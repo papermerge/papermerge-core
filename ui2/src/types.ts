@@ -287,6 +287,27 @@ export type DocumentType = {
   updated_at: string
 }
 
+export interface ClientPage {
+  id: string
+  angle: number
+  /* Page number as it came from the server*/
+  number: number
+}
+
+export interface ClientDocumentVersion {
+  id: string
+  lang: OCRCode
+  number: number
+  page_count: number
+  short_description: string
+  size: number
+  pages: Array<ClientPage>
+  /* Page array in same order as received from server side.
+  Also angle here is set to 0. `initial_pages` attribute
+  is used to restore `pages` attribute to their initial value  */
+  initial_pages: Array<ClientPage>
+}
+
 export type NodeTag = {
   name: string
   bg_color: string

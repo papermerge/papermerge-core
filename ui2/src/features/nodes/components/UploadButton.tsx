@@ -1,22 +1,14 @@
-import {useState} from "react"
 import {useAppSelector} from "@/app/hooks"
-import {
-  FileButton,
-  ActionIcon,
-  Tooltip,
-  Skeleton,
-  Button,
-  Loader
-} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
-import {IconUpload} from "@tabler/icons-react"
-import {useContext} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import {PanelMode} from "@/types"
+import {ActionIcon, FileButton, Loader, Tooltip} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
+import {IconUpload} from "@tabler/icons-react"
+import {useContext, useState} from "react"
 import {useGetFolderQuery} from "../apiSlice"
 
-import {DropFilesModal} from "./DropFiles"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {DropFilesModal} from "./DropFiles"
 
 const MIME_TYPES = [
   "image/png",

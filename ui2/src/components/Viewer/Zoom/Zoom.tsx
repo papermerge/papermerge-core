@@ -1,29 +1,29 @@
-import {useContext} from "react"
-import {useDispatch} from "react-redux"
+import PanelContext from "@/contexts/PanelContext"
+import {
+  zoomFactorDecremented,
+  zoomFactorIncremented,
+  zoomFactorReseted
+} from "@/features/ui/uiSlice"
+import type {PanelMode} from "@/types"
 import {Group} from "@mantine/core"
 import {IconZoomIn, IconZoomOut} from "@tabler/icons-react"
+import {useContext} from "react"
+import {useDispatch} from "react-redux"
 import classes from "./Zoom.module.css"
-import PanelContext from "@/contexts/PanelContext"
-import type {PanelMode} from "@/types"
-import {
-  incZoomFactor,
-  decZoomFactor,
-  fitZoomFactor
-} from "@/slices/dualPanel/dualPanel"
 
 export default function Zoom() {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
 
   const incZoom = () => {
-    dispatch(incZoomFactor(mode))
+    dispatch(zoomFactorIncremented(mode))
   }
   const decZoom = () => {
-    dispatch(decZoomFactor(mode))
+    dispatch(zoomFactorDecremented(mode))
   }
 
   const fitZoom = () => {
-    dispatch(fitZoomFactor(mode))
+    dispatch(zoomFactorReseted(mode))
   }
 
   return (

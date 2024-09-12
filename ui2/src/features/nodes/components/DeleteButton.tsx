@@ -5,33 +5,32 @@ import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconTrash} from "@tabler/icons-react"
 import {PanelMode} from "@/types"
 import DeleteNodesModal from "./DeleteModal"
-import {useSelector, useDispatch} from "react-redux"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+
 import {
   selectSelectedNodeIds,
-  clearNodesSelection
-} from "@/slices/dualPanel/dualPanel"
-import {RootState} from "@/app/types"
+  commanderSelectionCleared
+} from "@/features/ui/uiSlice"
+
 import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 import PanelContext from "@/contexts/PanelContext"
 
 export default function DeleteButton() {
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
-  const selectedIds = useSelector((state: RootState) =>
-    selectSelectedNodeIds(state, mode)
-  )
-  const selectedNodes = useSelector((state: RootState) =>
-    selectNodesByIds(state, selectedIds || [])
+  const dispatch = useAppDispatch()
+  const selectedIds = useAppSelector(s => selectSelectedNodeIds(s, mode))
+  const selectedNodes = useAppSelector(s =>
+    selectNodesByIds(s, selectedIds as string[])
   )
 
   const onSubmit = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 

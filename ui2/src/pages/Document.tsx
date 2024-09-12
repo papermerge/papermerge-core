@@ -1,6 +1,5 @@
 import {LoaderFunctionArgs} from "react-router"
 import DualPanel from "@/components/DualPanel"
-import {fetchPaginatedDocument} from "@/slices/dualPanel/dualPanel"
 
 import {store} from "@/app/store"
 import {currentNodeChanged} from "@/features/ui/uiSlice"
@@ -18,14 +17,6 @@ export async function loader({params, request}: LoaderFunctionArgs) {
       id: params.documentId!,
       ctype: "document",
       panel: "main"
-    })
-  )
-
-  await store.dispatch(
-    fetchPaginatedDocument({
-      nodeId: documentId!,
-      panel: "main",
-      urlParams: url.searchParams
     })
   )
 

@@ -1,55 +1,51 @@
-import {useContext, useRef, useState, useEffect} from "react"
-import {useDispatch, useSelector} from "react-redux"
-import {Stack, Checkbox} from "@mantine/core"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
+import {Checkbox, Stack} from "@mantine/core"
+import {useContext, useEffect, useRef, useState} from "react"
 
-import {useProtectedJpg} from "@/hooks/protected_image"
 import {
-  setCurrentPage,
-  dropThumbnailPage,
-  selectionAddPage,
-  selectionRemovePage,
-  selectSelectedPageIds,
+  pagesDroppedInDoc,
+  selectSelectedPageIDs,
   selectSelectedPages
-} from "@/slices/dualPanel/dualPanel"
+} from "@/features/documentVers/documentVersSlice"
+import {useGetPageImageQuery} from "@/features/pages/apiSlice"
 import {
-  dragPagesStart,
-  dragPagesEnd,
+  dragPagesEnded,
+  dragPagesStarted,
+  selectCurrentDocVerID,
   selectDraggedPages
-} from "@/slices/dragndrop"
-import type {PanelMode, PageAndRotOp, DroppedThumbnailPosition} from "@/types"
+} from "@/features/ui/uiSlice"
+import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
+import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
+
+import {
+  viewerSelectionPageAdded,
+  viewerSelectionPageRemoved
+} from "@/features/ui/uiSlice"
 
 import classes from "./Thumbnail.module.scss"
-import {RootState} from "@/app/types"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
 const DRAGGED = "dragged"
 
 type Args = {
-  page: PageAndRotOp
+  page: ClientPage
 }
 
 export default function Thumbnail({page}: Args) {
-  const dispatch = useDispatch()
-  const protectedImage = useProtectedJpg(page.page.jpg_url)
+  const dispatch = useAppDispatch()
+  const {data} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useSelector((state: RootState) =>
-    selectSelectedPageIds(state, mode)
-  )
-  const selectedPages = useSelector((state: RootState) =>
-    selectSelectedPages(state, mode)
-  )
+  const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode))
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
-  const draggedPages = useSelector((state: RootState) =>
-    selectDraggedPages(state)
-  )
+  const draggedPages = useAppSelector(selectDraggedPages)
+  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
 
   useEffect(() => {
-    const cur_page_is_being_dragged = draggedPages?.find(
-      p => p.page.id == page.page.id
-    )
+    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
     if (cur_page_is_being_dragged) {
       if (cssClassNames.indexOf(DRAGGED) < 0) {
         setCssClassNames([...cssClassNames, DRAGGED])
@@ -64,7 +60,7 @@ export default function Thumbnail({page}: Args) {
   }, [draggedPages?.length])
 
   const onClick = () => {
-    dispatch(setCurrentPage({mode, page: page.page.number}))
+    dispatch(setCurrentPage({mode, page: page.number}))
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -107,11 +103,11 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragStart = () => {
-    dispatch(dragPagesStart([page, ...selectedPages]))
+    dispatch(dragPagesStarted([page, ...selectedPages]))
   }
 
   const onDragEnd = () => {
-    //dispatch(dragPagesEnd())
+    dispatch(dragPagesEnded())
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -138,14 +134,14 @@ export default function Thumbnail({page}: Args) {
       }
 
       dispatch(
-        dropThumbnailPage({
-          mode: mode,
+        pagesDroppedInDoc({
           sources: draggedPages,
           target: page,
+          targetDocVerID: docVerID!,
           position: position
         })
       )
-      dispatch(dragPagesEnd())
+      dispatch(dragPagesEnded())
     } // if (ref?.current)
 
     // remove both borderline_bottom and borderline_top
@@ -157,9 +153,9 @@ export default function Thumbnail({page}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(selectionAddPage({selectionId: page.page.id, mode}))
+      dispatch(viewerSelectionPageAdded({itemID: page.id, mode}))
     } else {
-      dispatch(selectionRemovePage({selectionId: page.page.id, mode}))
+      dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
     }
   }
 
@@ -179,15 +175,15 @@ export default function Thumbnail({page}: Args) {
     >
       <Checkbox
         onChange={onCheck}
-        checked={selectedIds && selectedIds.includes(page.page.id)}
+        checked={selectedIds ? selectedIds.includes(page.id) : false}
         className={classes.checkbox}
       />
       <img
         style={{transform: `rotate(${page.angle}deg)`}}
         onClick={onClick}
-        src={protectedImage.data || ""}
+        src={data}
       />
-      {page.page.number}
+      {page.number}
     </Stack>
   )
 }

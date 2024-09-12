@@ -1,18 +1,18 @@
-import {useContext, useRef, useEffect} from "react"
+import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
+import PanelContext from "@/contexts/PanelContext"
+import {updateActionPanel} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
+import {useContext, useEffect, useRef} from "react"
 import {useDispatch, useSelector} from "react-redux"
-import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
-import {updateActionPanel} from "@/features/ui/uiSlice"
-import PanelContext from "@/contexts/PanelContext"
 import EditTitleButton from "./EditTitleButton"
 
-import type {PanelMode} from "@/types"
 import type {RootState} from "@/app/types"
+import {selectSelectedPages} from "@/features/documentVers/documentVersSlice"
+import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
-import {selectSelectedPages} from "@/slices/dualPanel/dualPanel"
-import RotateCCButton from "./RotateCCButton"
 import RotateButton from "./RotateButton"
+import RotateCCButton from "./RotateCCButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()

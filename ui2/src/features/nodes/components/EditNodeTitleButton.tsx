@@ -3,11 +3,8 @@ import {useContext} from "react"
 import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
-import {useSelector, useDispatch} from "react-redux"
-import {
-  selectSelectedNodeIds,
-  clearNodesSelection
-} from "@/slices/dualPanel/dualPanel"
+import {useAppSelector, useAppDispatch} from "@/app/hooks"
+
 import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
@@ -15,19 +12,23 @@ import type {RootState} from "@/app/types"
 import type {PanelMode, NodeType} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
+import {
+  selectSelectedNodeIds,
+  commanderSelectionCleared
+} from "@/features/ui/uiSlice"
 import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 
 export default function EditNodeTitleButton() {
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useSelector((state: RootState) =>
+  const selectedIds = useAppSelector((state: RootState) =>
     selectSelectedNodeIds(state, mode)
   )
-  const selectedNodes = useSelector((state: RootState) =>
-    selectNodesByIds(state, selectedIds || [])
+  const selectedNodes = useAppSelector(s =>
+    selectNodesByIds(s, selectedIds as string[])
   )
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   let node: NodeType = selectedNodes[0]
 
   const onClick = () => {
@@ -40,12 +41,12 @@ export default function EditNodeTitleButton() {
   }
 
   const onSubmit = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearNodesSelection(mode))
+    dispatch(commanderSelectionCleared(mode))
     close()
   }
 

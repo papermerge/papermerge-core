@@ -1,44 +1,36 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+
 import {Flex} from "@mantine/core"
-import {useContext} from "react"
-import {useDispatch, useSelector} from "react-redux"
+import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 
-import {
-  fetchPaginatedNodes,
-  selectLastPageSize
-} from "@/slices/dualPanel/dualPanel"
-
-import type {RootState} from "@/app/types"
-import type {PanelMode, NType} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import {currentNodeChanged, selectContentHeight} from "@/features/ui/uiSlice"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {
+  currentDocVerUpdated,
+  currentNodeChanged,
+  selectContentHeight,
+  selectCurrentNodeID
+} from "@/features/ui/uiSlice"
+import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
-import ThumbnailsToggle from "./ThumbnailsToggle"
+import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
+import ThumbnailsToggle from "./ThumbnailsToggle"
 import classes from "./Viewer.module.css"
 
 export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
-  const height = useSelector((state: RootState) =>
-    selectContentHeight(state, mode)
-  )
+  const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const lastPageSize = useSelector((state: RootState) =>
-    selectLastPageSize(state, mode)
-  )
+  const dispatch = useAppDispatch()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {data: doc, isSuccess} = useGetDocumentQuery(currentNodeID!)
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        fetchPaginatedNodes({
-          nodeId: node.id,
-          panel: "secondary",
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
       dispatch(
         currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )
@@ -47,14 +39,25 @@ export default function Viewer() {
     }
   }
 
+  useEffect(() => {
+    if (isSuccess) {
+      const maxVerNum = Math.max(...doc.versions.map(v => v.number))
+      const docVer = doc.versions.find(v => v.number == maxVerNum)
+      if (docVer) {
+        dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
+      }
+    }
+  }, [isSuccess])
+
   return (
     <div>
       <ActionButtons />
-      <Breadcrumbs onClick={onClick} />
+      <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
       <Flex className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails />
         <ThumbnailsToggle />
         <Pages />
+        <PagesHaveChangedDialog />
       </Flex>
     </div>
   )

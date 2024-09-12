@@ -1,11 +1,10 @@
-import Cookies from "js-cookie"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {
-  createSlice,
   PayloadAction,
   createAsyncThunk,
-  createSelector
+  createSelector,
+  createSlice
 } from "@reduxjs/toolkit"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
 
@@ -13,137 +12,25 @@ axios.defaults.baseURL = getBaseURL()
 axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
-import {
-  selectionAddNodeHelper,
-  selectionAddPageHelper,
-  selectionRemoveNodeHelper,
-  selectionRemovePageHelper,
-  clearNodesSelectionHelper,
-  commanderInitialState,
-  dropThumbnailPageHelper,
-  resetPageChangesHelper,
-  getLatestVersionPages
-} from "./helpers"
 
 import type {
-  SliceState,
   NodeType,
-  PageType,
+  PageAndRotOp,
+  PaginatedSearchResult,
   PanelMode,
   PanelType,
-  Paginated,
-  NodeLoaderResponseType,
-  FolderType,
-  DocumentType,
-  CurrentNodeType,
-  PaginationType,
   SearchResultNode,
-  PaginatedSearchResult,
-  DroppedThumbnailPosition,
-  BooleanString,
-  PageAndRotOp,
-  DocumentVersion,
-  DocumentVersionWithPageRot,
-  ApplyPagesType
+  SliceState
 } from "@/types"
-import {
-  DualPanelState,
-  SetCurrentNodeArgs,
-  SelectionNodePayload,
-  SelectionPagePayload
-} from "./types"
-import {
-  INITIAL_PAGE_SIZE,
-  MIN_ZOOM_FACTOR,
-  MAX_ZOOM_FACTOR,
-  ZOOM_FACTOR_STEP
-} from "@/cconstants"
-
-const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
-const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
-  "secondary_thumbnails_panel_opened"
-
-type UpdateFilterType = {
-  mode: PanelMode
-  filter: string | null
-}
+import {DualPanelState} from "./types"
 
 const initialState: DualPanelState = {
   mainPanel: {
-    commander: commanderInitialState(null),
     viewer: null,
     searchResults: null
   },
   secondaryPanel: null
 }
-
-type ThunkArgs = {
-  panel: PanelMode
-  nodeId: string
-  urlParams: URLSearchParams
-  page?: number
-}
-
-export const fetchPaginatedDocument = createAsyncThunk<DocumentType, ThunkArgs>(
-  "paginatedDocument/fetchDocument",
-  // @ts-ignore
-  async ({nodeId, urlParams, page}: ThunkArgs) => {
-    const response = await axios.get(`/api/documents/${nodeId}`, {
-      validateStatus: () => true
-    })
-    const doc = response.data as DocumentType
-    return doc
-  }
-)
-
-type ApplyPageOpChangesThunkArgs = {
-  panel: PanelMode
-  pages: ApplyPagesType[]
-}
-
-export const applyPageOpChanges = createAsyncThunk<
-  DocumentType,
-  ApplyPageOpChangesThunkArgs
->(
-  "document/applyPageOpChanges",
-  async ({pages}: ApplyPageOpChangesThunkArgs) => {
-    const response = await axios.post("/api/pages/", pages)
-    const doc = response.data as DocumentType
-    return doc
-  }
-)
-
-export const fetchPaginatedNodes = createAsyncThunk<
-  NodeLoaderResponseType,
-  ThunkArgs
->("paginatedNodes/fetchNodes", async ({nodeId, urlParams}: ThunkArgs) => {
-  const prom = axios.all([
-    axios.get(`/api/nodes/${nodeId}?${urlParams}`),
-    axios.get(`/api/folders/${nodeId}`)
-  ])
-  const [nodesResp, folderResp] = await prom
-
-  if (!nodesResp) {
-    throw new Response("", {
-      status: 404,
-      statusText: "Not Found"
-    })
-  }
-
-  const paginatedNodes = nodesResp.data as Paginated<NodeType>
-  const folder = folderResp.data as FolderType
-
-  const result = {
-    nodes: paginatedNodes.items,
-    parent: folder,
-    breadcrumb: folder.breadcrumb,
-    per_page: paginatedNodes.page_size,
-    num_pages: paginatedNodes.num_pages,
-    page_number: paginatedNodes.page_number
-  }
-
-  return result
-})
 
 type fetchPaginatedSearchResultsArgs = {
   query: string
@@ -211,188 +98,15 @@ export const fetchPaginatedSearchResults = createAsyncThunk<
   }
 )
 
-export const deleteNodes = createAsyncThunk<string[], string[]>(
-  "dualPanel/deleteNodes",
-  async (nodeIds: string[]) => {
-    await axios.delete("/api/nodes/", {data: nodeIds})
-
-    return nodeIds
-  }
-)
-
 type SetCurrentPageArg = {
   mode: PanelMode
   page: number
-}
-
-type DropThumbnailPageArgs = {
-  mode: PanelMode
-  sources: PageAndRotOp[]
-  target: PageAndRotOp
-  position: DroppedThumbnailPosition
-}
-
-type RotatePageArg = {
-  mode: PanelMode
-  angle: number
-  pages: PageType[]
 }
 
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
-    rotatePages: (state, action: PayloadAction<RotatePageArg>) => {
-      const {pages, mode, angle} = action.payload
-      const page_ids = pages.map(p => p.id)
-
-      let curVer
-      if (mode == "main") {
-        curVer = state.mainPanel.viewer?.currentVersion
-        if (curVer && curVer > 0) {
-          let foundPages = state.mainPanel.viewer?.versions[
-            curVer - 1
-          ].pages.filter(p => page_ids.includes(p.page.id))
-          if (foundPages) {
-            for (let i = 0; i < foundPages.length; i++) {
-              foundPages[i].angle = foundPages[i].angle + angle
-            }
-          }
-        }
-      }
-    },
-    resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
-      const mode = action.payload
-      resetPageChangesHelper(state, mode)
-    },
-    selectionAddPage: (state, action: PayloadAction<SelectionPagePayload>) => {
-      const pageId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionAddPageHelper(state, pageId, mode)
-    },
-    selectionRemovePage: (
-      state,
-      action: PayloadAction<SelectionPagePayload>
-    ) => {
-      const pageId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionRemovePageHelper(state, pageId, mode)
-    },
-    dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
-      const {mode, sources, target, position} = action.payload
-
-      dropThumbnailPageHelper({
-        state,
-        mode,
-        sources,
-        target,
-        position
-      })
-    },
-    incZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          let zoom = state.mainPanel.viewer?.zoomFactor
-          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-            state.mainPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
-          }
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          let zoom = state.secondaryPanel.viewer.zoomFactor
-          if (zoom && zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-            state.secondaryPanel.viewer.zoomFactor = zoom + ZOOM_FACTOR_STEP
-          }
-        }
-      }
-    },
-    decZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          let zoom = state.mainPanel.viewer?.zoomFactor
-          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-            state.mainPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
-          }
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          let zoom = state.secondaryPanel.viewer.zoomFactor
-          if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-            state.secondaryPanel.viewer.zoomFactor = zoom - ZOOM_FACTOR_STEP
-          }
-        }
-      }
-    },
-    fitZoomFactor(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          state.mainPanel.viewer.zoomFactor = 100
-        }
-      }
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          state.secondaryPanel.viewer.zoomFactor = 100
-        }
-      }
-    },
-    toggleThumbnailsPanel(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-
-      if (mode == "main") {
-        if (state.mainPanel.viewer) {
-          const new_value = !state.mainPanel.viewer.thumbnailsPanelOpen
-          state.mainPanel.viewer.thumbnailsPanelOpen = new_value
-          if (new_value) {
-            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-          } else {
-            Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
-          }
-        }
-      }
-
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.viewer) {
-          const new_value = !state.secondaryPanel.viewer.thumbnailsPanelOpen
-          state.secondaryPanel.viewer.thumbnailsPanelOpen = new_value
-          if (new_value) {
-            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-          } else {
-            Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
-          }
-        }
-      }
-    },
-    openSecondaryPanel(state, action: PayloadAction<CurrentNodeType>) {
-      state.secondaryPanel = {
-        commander: commanderInitialState(action.payload),
-        viewer: null,
-        searchResults: null
-      }
-    },
-    closeSecondaryPanel(state) {
-      state.secondaryPanel = null
-    },
-    selectionAddNode: (state, action: PayloadAction<SelectionNodePayload>) => {
-      const nodeId = action.payload.selectionId
-      const mode = action.payload.mode
-      selectionAddNodeHelper(state, nodeId, mode)
-    },
-    selectionRemoveNode: (
-      state,
-      action: PayloadAction<SelectionNodePayload>
-    ) => {
-      const nodeId = action.payload.selectionId
-      const {mode} = action.payload
-      selectionRemoveNodeHelper(state, nodeId, mode)
-    },
-    clearNodesSelection: (state, action: PayloadAction<PanelMode>) => {
-      clearNodesSelectionHelper(state, action.payload)
-    },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
       if (state?.mainPanel?.searchResults) {
@@ -414,100 +128,11 @@ const dualPanelSlice = createSlice({
           state.secondaryPanel.viewer.currentPage = page
         }
       }
-    },
-    filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
-      const {mode, filter} = action.payload
-      if (mode == "main") {
-        if (state.mainPanel.commander) {
-          state.mainPanel.commander.filter = filter
-        }
-      }
-
-      if (mode == "secondary") {
-        if (state.secondaryPanel?.commander) {
-          state.secondaryPanel.commander.filter = filter
-        }
-      }
     }
   },
   extraReducers(builder) {
-    builder.addCase(applyPageOpChanges.fulfilled, (state, action) => {
-      if (action.meta.arg.panel == "main") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.mainPanel.viewer = {
-          breadcrumb: action.payload.breadcrumb,
-          versions: injectPageRotOp(action.payload.versions),
-          currentVersion: Math.max(...versionNumbers),
-          currentPage: 1,
-          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
-          zoomFactor: 100,
-          selectedIds: [],
-          //@ts-ignore
-          initialPages: getLatestVersionPages(action.payload.versions)
-        }
-        return
-      }
-
-      if (action.meta.arg.panel == "secondary") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.secondaryPanel = {
-          commander: null,
-          searchResults: null,
-          viewer: {
-            breadcrumb: action.payload.breadcrumb,
-            versions: injectPageRotOp(action.payload.versions),
-            currentVersion: Math.max(...versionNumbers),
-            currentPage: 1,
-            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
-            zoomFactor: 100,
-            selectedIds: [],
-            //@ts-ignore
-            initialPages: getLatestVersionPages(action.payload.versions)
-          }
-        }
-        return
-      }
-    })
-    builder.addCase(fetchPaginatedDocument.fulfilled, (state, action) => {
-      if (action.meta.arg.panel == "main") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.mainPanel.viewer = {
-          breadcrumb: action.payload.breadcrumb,
-          versions: injectPageRotOp(action.payload.versions),
-          currentVersion: Math.max(...versionNumbers),
-          currentPage: action.meta.arg.page || 1,
-          thumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
-          zoomFactor: 100,
-          selectedIds: [],
-          //@ts-ignore
-          initialPages: getLatestVersionPages(action.payload.versions)
-        }
-        return
-      }
-
-      if (action.meta.arg.panel == "secondary") {
-        const versionNumbers = action.payload.versions.map(v => v.number)
-        state.secondaryPanel = {
-          commander: null,
-          searchResults: null,
-          viewer: {
-            breadcrumb: action.payload.breadcrumb,
-            versions: injectPageRotOp(action.payload.versions),
-            currentVersion: Math.max(...versionNumbers),
-            currentPage: action.meta.arg.page || 1,
-            thumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
-            zoomFactor: 100,
-            selectedIds: [],
-            //@ts-ignore
-            initialPages: getLatestVersionPages(action.payload.versions)
-          }
-        }
-        return
-      }
-    })
     builder.addCase(fetchPaginatedSearchResults.fulfilled, (state, action) => {
       state.mainPanel = {
-        commander: null,
         viewer: null,
         searchResults: {
           pagination: {
@@ -528,42 +153,14 @@ const dualPanelSlice = createSlice({
   }
 })
 
-export const {
-  rotatePages,
-  incZoomFactor,
-  decZoomFactor,
-  fitZoomFactor,
-  toggleThumbnailsPanel,
-  openSecondaryPanel,
-  closeSecondaryPanel,
-  selectionAddNode,
-  selectionRemoveNode,
-  selectionAddPage,
-  selectionRemovePage,
-  clearNodesSelection,
-  updateSearchResultItemTarget,
-  setCurrentPage,
-  dropThumbnailPage,
-  resetPageChanges,
-  filterUpdated
-} = dualPanelSlice.actions
+export const {updateSearchResultItemTarget, setCurrentPage} =
+  dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
-
-export const selectMainCurrentFolderId = (state: RootState) =>
-  state.dualPanel.mainPanel.commander?.currentNode
 
 export const selectMainPanel = (state: RootState) => state.dualPanel.mainPanel
 export const selectSecondaryPanel = (state: RootState) =>
   state.dualPanel.secondaryPanel
-
-export const selectCommander = (state: RootState, mode: PanelMode) => {
-  if (mode === "main") {
-    return state.dualPanel.mainPanel.commander
-  }
-
-  return state.dualPanel.secondaryPanel?.commander
-}
 
 export const selectViewer = (state: RootState, mode: PanelMode) => {
   if (mode === "main") {
@@ -592,122 +189,6 @@ export const selectSearchResultItems = (
   return null
 }
 
-export const selectCurrentFolderID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.currentNode?.id
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander) {
-    return state.dualPanel.secondaryPanel.commander.currentNode?.id
-  }
-
-  return null
-}
-
-export const selectPanelBreadcrumbs = (
-  state: RootState,
-  mode: PanelMode
-): Array<[string, string]> | null | undefined => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander) {
-      return state.dualPanel.mainPanel.commander?.currentNode?.breadcrumb
-    } else if (state.dualPanel.mainPanel.viewer) {
-      return state.dualPanel.mainPanel.viewer.breadcrumb
-    }
-  }
-
-  if (mode == "secondary") {
-    if (state.dualPanel.secondaryPanel?.commander) {
-      return state.dualPanel.secondaryPanel.commander.currentNode?.breadcrumb
-    }
-
-    if (state.dualPanel.secondaryPanel?.viewer) {
-      return state.dualPanel.secondaryPanel.viewer.breadcrumb
-    }
-  }
-
-  return null
-}
-
-export const selectPagination = (
-  state: RootState,
-  mode: PanelMode
-): PaginationType | null | undefined => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination
-}
-
-export const selectLastPageSize = (
-  state: RootState,
-  mode: PanelMode
-): number => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.commander?.lastPageSize) {
-      return state.dualPanel.mainPanel.commander?.lastPageSize
-    }
-    return INITIAL_PAGE_SIZE
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander?.lastPageSize) {
-    return state.dualPanel.secondaryPanel?.commander.lastPageSize
-  }
-
-  return INITIAL_PAGE_SIZE
-}
-
-export const selectFilterText = (
-  state: RootState,
-  mode: PanelMode
-): string | null => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.filter || null
-  }
-
-  if (state.dualPanel.secondaryPanel?.commander?.filter) {
-    return state.dualPanel.secondaryPanel?.commander.filter
-  }
-
-  return null
-}
-
-export const selectCommanderPageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination?.pageSize
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageSize
-}
-
-export const selectCommanderPageNumber = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.pagination?.pageNumber
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.pagination?.pageNumber
-}
-
-export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.commander?.selectedIds
-  }
-
-  return state.dualPanel.secondaryPanel?.commander?.selectedIds
-}
-
-export const selectSelectedPageIds = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.selectedIds
-  }
-
-  return state.dualPanel.secondaryPanel?.viewer?.selectedIds
-}
-
 export const selectInitialPages = (
   state: RootState,
   mode: PanelMode
@@ -718,92 +199,6 @@ export const selectInitialPages = (
 
   return state.dualPanel.secondaryPanel?.viewer?.initialPages
 }
-
-export const selectPagesRaw = (
-  state: RootState,
-  mode: PanelMode
-): Array<PageAndRotOp> | undefined => {
-  let verNumber
-  let ver
-
-  if (mode == "main") {
-    verNumber = state.dualPanel.mainPanel?.viewer?.currentVersion
-    if (
-      verNumber &&
-      state.dualPanel.mainPanel?.viewer?.versions &&
-      state.dualPanel.mainPanel?.viewer?.versions.length >= verNumber
-    ) {
-      ver = state.dualPanel.mainPanel?.viewer?.versions[verNumber - 1]
-      if (ver) {
-        return ver.pages
-      }
-    }
-  } else {
-    verNumber = state.dualPanel.secondaryPanel?.viewer?.currentVersion
-    if (
-      verNumber &&
-      state.dualPanel.secondaryPanel?.viewer?.versions &&
-      state.dualPanel.secondaryPanel?.viewer?.versions.length >= verNumber
-    ) {
-      ver = state.dualPanel.secondaryPanel?.viewer?.versions[verNumber - 1]
-      if (ver) {
-        return ver.pages
-      }
-    }
-  }
-}
-
-export const selectSelectedPages = createSelector(
-  [selectSelectedPageIds, selectPagesRaw],
-  (
-    selectedIds: Array<string> | undefined,
-    allNodes: Array<PageAndRotOp> | undefined
-  ): Array<PageAndRotOp> => {
-    if (selectedIds && allNodes) {
-      return Object.values(allNodes).filter((i: PageAndRotOp) =>
-        selectedIds.includes(i.page.id)
-      )
-    }
-
-    return []
-  }
-)
-
-export const selectPagesHaveChanged = createSelector(
-  [selectInitialPages, selectPagesRaw],
-  (
-    initialPages: Array<PageAndRotOp> | undefined,
-    currentPages: Array<PageAndRotOp> | undefined
-  ): boolean => {
-    if (!initialPages) {
-      return false
-    }
-
-    if (!currentPages) {
-      return false
-    }
-
-    if (initialPages?.length != currentPages?.length) {
-      return true
-    }
-
-    for (let i = 0; i < (initialPages?.length || 0); i++) {
-      if (initialPages[i].page.id != currentPages[i].page.id) {
-        return true
-      }
-
-      if (initialPages[i].page.number != currentPages[i].page.number) {
-        return true
-      }
-
-      if (initialPages[i].angle != currentPages[i].angle) {
-        return true
-      }
-    }
-
-    return false
-  }
-)
 
 export const selectDocumentVersions = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
@@ -881,65 +276,3 @@ export const selectSearchPageSize = (state: RootState) =>
 
 export const selectSearchPageNumber = (state: RootState) =>
   state.dualPanel.mainPanel?.searchResults?.pagination?.pageNumber
-
-export const selectThumbnailsPanelOpen = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.thumbnailsPanelOpen
-  }
-
-  return Boolean(state.dualPanel?.secondaryPanel?.viewer?.thumbnailsPanelOpen)
-}
-
-export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.dualPanel.mainPanel.viewer?.zoomFactor
-  }
-
-  return state.dualPanel.secondaryPanel?.viewer?.zoomFactor
-}
-
-function mainThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
-}
-
-function secondaryThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
-}
-
-function injectPageRotOp(
-  vers: DocumentVersion[]
-): DocumentVersionWithPageRot[] {
-  return vers.map(raw => injectPageRotOpForDocVer(raw))
-}
-
-function injectPageRotOpForDocVer(
-  ver: DocumentVersion
-): DocumentVersionWithPageRot {
-  let result = ver
-  // @ts-ignore
-  result.pages = ver.pages.map(p => {
-    return {page: p, angle: 0}
-  })
-
-  //@ts-ignore
-  return result
-}

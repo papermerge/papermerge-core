@@ -1,32 +1,34 @@
-import {useContext, useState} from "react"
-import {Group, Stack, Box} from "@mantine/core"
+import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import {useContext, useState} from "react"
 
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
 import {
-  selectLastPageSize,
-  fetchPaginatedDocument,
+  currentNodeChanged,
+  selectCurrentNodeID,
   selectFilterText
-} from "@/slices/dualPanel/dualPanel"
+} from "@/features/ui/uiSlice"
 
-import {currentNodeChanged, selectCurrentNodeID} from "@/features/ui/uiSlice"
-
-import type {NType, NodeType, PanelMode} from "@/types"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import {selectContentHeight} from "@/features/ui/uiSlice"
-import classes from "./Commander.module.scss"
 import {
   useGetFolderQuery,
   useGetPaginatedNodesQuery
 } from "@/features/nodes/apiSlice"
+import {
+  commanderLastPageSizeUpdated,
+  selectContentHeight,
+  selectLastPageSize
+} from "@/features/ui/uiSlice"
+import type {NType, NodeType, PanelMode} from "@/types"
+import classes from "./Commander.module.scss"
 
-import Node from "./Node"
 import {DropFilesModal} from "./DropFiles"
 import FolderNodeActions from "./FolderNodeActions"
+import Node from "./Node"
 
 export default function Commander() {
   const [opened, {open, close}] = useDisclosure(false)
@@ -67,24 +69,20 @@ export default function Commander() {
   }
 
   const onClick = (node: NType) => {
-    if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
+    if (mode == "secondary") {
+      return dispatch(
+        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
       )
-    } else if (mode == "main" && node.ctype == "folder") {
-      navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
     }
 
-    if (mode == "main" && node.ctype == "document") {
-      navigate(`/document/${node.id}`)
-    } else if (mode == "secondary" && node.ctype == "document") {
-      dispatch(
-        fetchPaginatedDocument({
-          nodeId: node.id,
-          panel: "secondary",
-          urlParams: new URLSearchParams(`page_size=${lastPageSize}`)
-        })
-      )
+    // mode == "main"
+    switch (node.ctype) {
+      case "folder":
+        navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
+        break
+      case "document":
+        navigate(`/document/${node.id}`)
+        break
     }
   }
 
@@ -94,7 +92,12 @@ export default function Commander() {
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
-      setPageSize(parseInt(value))
+      const pSize = parseInt(value)
+      setPageSize(pSize)
+      // reset current page
+      setPage(1)
+      // remember last page size
+      dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
     }
   }
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -153,7 +156,7 @@ export default function Commander() {
         className={dragOver ? classes.accept_files : classes.commander}
       >
         <FolderNodeActions />
-        <Breadcrumbs onClick={onClick} />
+        <Breadcrumbs breadcrumb={currentFolder?.breadcrumb} onClick={onClick} />
         <Stack
           className={classes.content}
           justify={"space-between"}

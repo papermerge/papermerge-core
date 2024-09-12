@@ -1,14 +1,13 @@
 import type {
-  SliceState,
-  NodeType,
-  SearchResultNode,
-  PanelMode,
-  PanelType,
-  CurrentNodeType,
-  PaginationType,
   BreadcrumbItemType,
   DocumentVersionWithPageRot,
-  PageAndRotOp
+  NodeType,
+  PageAndRotOp,
+  PaginationType,
+  PanelMode,
+  PanelType,
+  SearchResultNode,
+  SliceState
 } from "@/types"
 
 export type NodeWithSpinner = {
@@ -17,11 +16,6 @@ export type NodeWithSpinner = {
   // gives user immediate feedback by showing rotating spinner
   // next to the node (i.e. I got your click => now loading subfolder/doc)
   status: "idle" | "loading"
-}
-
-export type SetCurrentNodeArgs = {
-  node: CurrentNodeType
-  panel: PanelMode
 }
 
 export type FolderAddedArgs = {
@@ -40,11 +34,8 @@ export type SelectionPagePayload = {
 }
 
 export interface Commander {
-  currentNode: CurrentNodeType | null
   pagination: PaginationType | null | undefined
   lastPageSize: number
-  selectedIds: Array<string>
-  filter: string | null
 }
 
 export interface Viewer {
@@ -73,7 +64,6 @@ export interface SearchResults {
 }
 
 export interface SinglePanel {
-  commander: Commander | null
   viewer: Viewer | null
   searchResults: SearchResults | null
 }

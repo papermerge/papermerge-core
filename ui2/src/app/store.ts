@@ -8,7 +8,6 @@ import tagsReducer from "@/features/tags/tagsSlice"
 import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/usersSlice"
 import currentUserReducer from "@/slices/currentUser"
-import dragndropReducer from "@/slices/dragndrop"
 import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import {configureStore} from "@reduxjs/toolkit"
 
@@ -20,7 +19,6 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     users: usersReducer,
-    dragndrop: dragndropReducer,
     nodes: nodesReducer,
     pages: pagesReducer,
     ui: uiReducer,

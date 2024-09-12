@@ -12,22 +12,15 @@ axios.defaults.baseURL = getBaseURL()
 axios.defaults.headers.common = getDefaultHeaders()
 
 import {RootState} from "@/app/types"
-import {
-  dropThumbnailPageHelper,
-  getLatestVersionPages,
-  resetPageChangesHelper
-} from "./helpers"
+import {getLatestVersionPages, resetPageChangesHelper} from "./helpers"
 
 import type {
   ApplyPagesType,
-  ClientPage,
   DocumentType,
   DocumentVersion,
   DocumentVersionWithPageRot,
-  DroppedThumbnailPosition,
   NodeType,
   PageAndRotOp,
-  PageType,
   PaginatedSearchResult,
   PanelMode,
   PanelType,
@@ -141,56 +134,13 @@ type SetCurrentPageArg = {
   page: number
 }
 
-type DropThumbnailPageArgs = {
-  mode: PanelMode
-  sources: ClientPage[]
-  target: ClientPage
-  position: DroppedThumbnailPosition
-}
-
-type RotatePageArg = {
-  mode: PanelMode
-  angle: number
-  pages: PageType[]
-}
-
 const dualPanelSlice = createSlice({
   name: "dualPanel",
   initialState,
   reducers: {
-    rotatePages: (state, action: PayloadAction<RotatePageArg>) => {
-      const {pages, mode, angle} = action.payload
-      const page_ids = pages.map(p => p.id)
-
-      let curVer
-      if (mode == "main") {
-        curVer = state.mainPanel.viewer?.currentVersion
-        if (curVer && curVer > 0) {
-          let foundPages = state.mainPanel.viewer?.versions[
-            curVer - 1
-          ].pages.filter(p => page_ids.includes(p.page.id))
-          if (foundPages) {
-            for (let i = 0; i < foundPages.length; i++) {
-              foundPages[i].angle = foundPages[i].angle + angle
-            }
-          }
-        }
-      }
-    },
     resetPageChanges: (state, action: PayloadAction<PanelMode>) => {
       const mode = action.payload
       resetPageChangesHelper(state, mode)
-    },
-    dropThumbnailPage(state, action: PayloadAction<DropThumbnailPageArgs>) {
-      const {mode, sources, target, position} = action.payload
-
-      dropThumbnailPageHelper({
-        state,
-        mode,
-        sources,
-        target,
-        position
-      })
     },
     updateSearchResultItemTarget: (state, action: PayloadAction<PanelType>) => {
       const targetPanel: PanelType = action.payload
@@ -273,13 +223,8 @@ const dualPanelSlice = createSlice({
   }
 })
 
-export const {
-  rotatePages,
-  updateSearchResultItemTarget,
-  setCurrentPage,
-  dropThumbnailPage,
-  resetPageChanges
-} = dualPanelSlice.actions
+export const {updateSearchResultItemTarget, setCurrentPage, resetPageChanges} =
+  dualPanelSlice.actions
 
 export default dualPanelSlice.reducer
 

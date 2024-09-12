@@ -1,21 +1,29 @@
-import type {RootState} from "@/app/types"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {selectSelectedPages} from "@/features/documentVers/documentVersSlice"
+import {
+  pagesRotated,
+  selectSelectedPages
+} from "@/features/documentVers/documentVersSlice"
+import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconRotate} from "@tabler/icons-react"
 import {useContext} from "react"
-import {useDispatch, useSelector} from "react-redux"
 
 export default function RotateCCButton() {
   const mode: PanelMode = useContext(PanelContext)
-  const dispatch = useDispatch()
-  const selectedPages = useSelector((state: RootState) =>
-    selectSelectedPages(state, mode)
-  )
+  const dispatch = useAppDispatch()
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode))
+  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+
   const onClick = () => {
-    //const pages = selectedPages.map(p => p.page)
-    //dispatch(rotatePages({mode, pages, angle: -90}))
+    dispatch(
+      pagesRotated({
+        sources: selectedPages,
+        angle: -90,
+        targetDocVerID: docVerID!
+      })
+    )
   }
 
   return (

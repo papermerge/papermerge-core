@@ -1,13 +1,32 @@
 import {RootState} from "@/app/types"
 import {apiSliceWithDocuments} from "@/features/document/apiSlice"
-import type {ClientDocumentVersion, DocumentType} from "@/types"
+import type {
+  ClientDocumentVersion,
+  ClientPage,
+  DocumentType,
+  DroppedThumbnailPosition
+} from "@/types"
 import {PanelMode} from "@/types"
+import {contains_every, reorder} from "@/utils"
 import {
   PayloadAction,
   createEntityAdapter,
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
+
+type PageDroppedArgs = {
+  sources: ClientPage[]
+  target: ClientPage
+  targetDocVerID: string
+  position: DroppedThumbnailPosition
+}
+
+type PageRotatedArgs = {
+  sources: ClientPage[]
+  angle: number
+  targetDocVerID: string
+}
 
 const docVerAdapter = createEntityAdapter<ClientDocumentVersion>()
 const initialState = docVerAdapter.getInitialState()
@@ -19,7 +38,39 @@ const initialState = docVerAdapter.getInitialState()
 const docVersSlice = createSlice({
   name: "documentVersion",
   initialState,
-  reducers: {},
+  reducers: {
+    pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
+      const {targetDocVerID, sources, target, position} = action.payload
+      const docVer = state.entities[targetDocVerID]
+      const pages = docVer.pages
+      const page_ids = pages.map(p => p.id)
+      const source_ids = sources.map(p => p.id)
+      if (contains_every({container: page_ids, items: source_ids})) {
+        const newPages = reorder<ClientPage, string>({
+          arr: pages,
+          source_ids: source_ids,
+          target_id: target.id,
+          position: position,
+          idf: (val: ClientPage) => val.id
+        })
+        state.entities[targetDocVerID].pages = newPages
+      }
+    },
+    pagesRotated(state, action: PayloadAction<PageRotatedArgs>) {
+      const {targetDocVerID, sources, angle} = action.payload
+      const docVer = state.entities[targetDocVerID]
+      const pages = docVer.pages
+      const newPages = pages.map(p => {
+        for (let i = 0; i < sources.length; i++) {
+          if (sources[i].id == p.id) {
+            return {id: p.id, angle: p.angle + angle, number: p.number}
+          }
+        }
+        return p
+      })
+      state.entities[targetDocVerID].pages = newPages
+    }
+  },
   extraReducers(builder) {
     builder.addMatcher(
       apiSliceWithDocuments.endpoints.getDocument.matchFulfilled,
@@ -36,6 +87,9 @@ const docVersSlice = createSlice({
             size: v.size,
             pages: v.pages.map(p => {
               return {id: p.id, number: p.number, angle: 0}
+            }),
+            initial_pages: v.pages.map(p => {
+              return {id: p.id, number: p.number, angle: 0}
             })
           }
           all_vers.push(ver)
@@ -47,6 +101,7 @@ const docVersSlice = createSlice({
   }
 })
 
+export const {pagesDroppedInDoc, pagesRotated} = docVersSlice.actions
 export default docVersSlice.reducer
 
 export const {

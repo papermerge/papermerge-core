@@ -290,6 +290,7 @@ export type DocumentType = {
 export interface ClientPage {
   id: string
   angle: number
+  /* Page number as it came from the server*/
   number: number
 }
 
@@ -301,6 +302,10 @@ export interface ClientDocumentVersion {
   short_description: string
   size: number
   pages: Array<ClientPage>
+  /* Page array in same order as received from server side.
+  Also angle here is set to 0. `initial_pages` attribute
+  is used to restore `pages` attribute to their initial value  */
+  initial_pages: Array<ClientPage>
 }
 
 export type NodeTag = {

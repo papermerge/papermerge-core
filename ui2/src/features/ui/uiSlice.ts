@@ -1,6 +1,6 @@
 import type {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {BooleanString, CType, PanelMode} from "@/types"
+import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
@@ -101,12 +101,23 @@ interface ViewerState {
   currentDocumentVersion: number
 }
 
+interface DragNDropState {
+  /*
+  Document pages currently being dragged.
+  Pages can be dragged from Viewer's Thumbnails panel.
+  Pages can be dropped either in same Thumbnail's panel,
+  in another thumbnail panel or inside Commander
+  */
+  pages: Array<ClientPage> | null
+}
+
 type PanelComponent = "commander" | "viewer" | "searchResults"
 
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
   sizes: SizesState
+  dragndrop?: DragNDropState
   currentNodeMain?: CurrentNode
   currentNodeSecondary?: CurrentNode
   mainViewer?: ViewerState
@@ -499,6 +510,20 @@ const uiSlice = createSlice({
       } else {
         state.secondaryViewerCurrentDocVerID = docVerID
       }
+    },
+    dragPagesStarted(state, action: PayloadAction<Array<ClientPage>>) {
+      if (state.dragndrop) {
+        state.dragndrop.pages = action.payload
+      } else {
+        state.dragndrop = {
+          pages: action.payload
+        }
+      }
+    },
+    dragPagesEnded(state) {
+      if (state.dragndrop) {
+        state.dragndrop.pages = []
+      }
     }
   }
 })
@@ -526,7 +551,9 @@ export const {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved,
   viewerSelectionCleared,
-  currentDocVerUpdated
+  currentDocVerUpdated,
+  dragPagesStarted,
+  dragPagesEnded
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -668,6 +695,9 @@ export const selectCurrentDocVerID = (state: RootState, mode: PanelMode) => {
 
   return state.ui.secondaryViewerCurrentDocVerID
 }
+
+export const selectDraggedPages = (state: RootState) =>
+  state.ui.dragndrop?.pages
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

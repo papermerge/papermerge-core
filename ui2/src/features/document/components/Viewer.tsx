@@ -47,7 +47,7 @@ export default function Viewer() {
         dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
       }
     }
-  }, [isSuccess])
+  }, [isSuccess, doc])
 
   return (
     <div>

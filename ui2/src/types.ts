@@ -342,16 +342,6 @@ export type ThumbnailPageDroppedArgs = {
 
 export type BooleanString = "true" | "false"
 
-export type ShortPageType = {
-  number: number
-  id: string
-}
-
-export type ApplyPagesType = {
-  angle: number
-  page: ShortPageType
-}
-
 export type PaginatedArgs = {
   page_number?: number
   page_size?: number

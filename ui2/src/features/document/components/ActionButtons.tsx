@@ -1,13 +1,12 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
 import {updateActionPanel} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
-import {useDispatch, useSelector} from "react-redux"
 import EditTitleButton from "./EditTitleButton"
 
-import type {RootState} from "@/app/types"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
@@ -16,12 +15,10 @@ import RotateCCButton from "./RotateCCButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedPages = useSelector((state: RootState) =>
-    selectSelectedPages(state, mode)
-  )
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
 
   useEffect(() => {
     if (ref?.current) {

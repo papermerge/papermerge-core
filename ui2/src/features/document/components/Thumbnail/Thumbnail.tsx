@@ -4,6 +4,7 @@ import {Checkbox, Stack} from "@mantine/core"
 import {useContext, useEffect, useRef, useState} from "react"
 
 import {useGetPageImageQuery} from "@/features/document/apiSlice"
+import {selectPageMemoryData} from "@/features/document/documentSlice"
 import {
   pagesDroppedInDoc,
   selectSelectedPageIDs,
@@ -13,8 +14,10 @@ import {
   dragPagesEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
+  selectCurrentNodeID,
   selectDraggedPages
 } from "@/features/ui/uiSlice"
+
 import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
 import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
@@ -35,14 +38,18 @@ type Args = {
 
 export default function Thumbnail({page}: Args) {
   const dispatch = useAppDispatch()
-  const {data} = useGetPageImageQuery(page.id)
+  const {data, isFetching, isSuccess} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode))
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const pageMemoryData = useAppSelector(s =>
+    selectPageMemoryData(s, docID!, page.number)
+  )
 
   useEffect(() => {
     const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
@@ -157,6 +164,34 @@ export default function Thumbnail({page}: Args) {
     } else {
       dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
     }
+  }
+
+  if (isFetching && pageMemoryData) {
+    return (
+      <Stack
+        ref={ref}
+        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
+        align="center"
+        gap={"xs"}
+      >
+        <Checkbox
+          disabled={true}
+          onChange={onCheck}
+          className={classes.checkbox}
+          checked={selectedIds ? selectedIds.includes(page.id) : false}
+        />
+        <img
+          style={{
+            transform: `rotate(${pageMemoryData.angle}deg)`,
+            opacity: 0.75,
+            filter: "blur(4px)"
+          }}
+          onClick={onClick}
+          src={pageMemoryData.data}
+        />
+        {page.number}
+      </Stack>
+    )
   }
 
   return (

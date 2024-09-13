@@ -1,5 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
 import authSliceReducer from "@/features/auth/slice"
+import docReducer from "@/features/document/documentSlice"
 import docVersReducer from "@/features/document/documentVersSlice"
 import pagesReducer from "@/features/document/pagesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
@@ -21,6 +22,7 @@ export const store = configureStore({
     users: usersReducer,
     nodes: nodesReducer,
     pages: pagesReducer,
+    doc: docReducer,
     ui: uiReducer,
     docVers: docVersReducer,
     [apiSlice.reducerPath]: apiSlice.reducer

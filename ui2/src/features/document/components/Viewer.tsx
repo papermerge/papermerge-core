@@ -27,7 +27,7 @@ export default function Viewer() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {data: doc, isSuccess} = useGetDocumentQuery(currentNodeID!)
+  const {currentData: doc, isSuccess} = useGetDocumentQuery(currentNodeID!)
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
@@ -40,7 +40,7 @@ export default function Viewer() {
   }
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && doc) {
       const maxVerNum = Math.max(...doc.versions.map(v => v.number))
       const docVer = doc.versions.find(v => v.number == maxVerNum)
       if (docVer) {

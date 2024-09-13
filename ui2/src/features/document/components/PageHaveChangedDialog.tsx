@@ -7,9 +7,9 @@ import {
   pagesReseted,
   selectAllPages,
   selectPagesHaveChanged
-} from "@/features/documentVers/documentVersSlice"
+} from "@/features/document/documentVersSlice"
 
-import {useApplyPageOpChangesMutation} from "@/features/pages/apiSlice"
+import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
 import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 

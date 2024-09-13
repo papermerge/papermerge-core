@@ -10,7 +10,7 @@ import {useContext} from "react"
 import {useSelector} from "react-redux"
 
 import {RootState} from "@/app/types"
-import {selectCurrentPages} from "@/features/documentVers/documentVersSlice"
+import {selectCurrentPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import Thumbnail from "../Thumbnail"
 import classes from "./Thumbnails.module.css"

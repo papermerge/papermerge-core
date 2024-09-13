@@ -3,12 +3,12 @@ import PanelContext from "@/contexts/PanelContext"
 import {Checkbox, Stack} from "@mantine/core"
 import {useContext, useEffect, useRef, useState} from "react"
 
+import {useGetPageImageQuery} from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
   selectSelectedPageIDs,
   selectSelectedPages
-} from "@/features/documentVers/documentVersSlice"
-import {useGetPageImageQuery} from "@/features/pages/apiSlice"
+} from "@/features/document/documentVersSlice"
 import {
   dragPagesEnded,
   dragPagesStarted,

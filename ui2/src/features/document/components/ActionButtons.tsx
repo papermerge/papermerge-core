@@ -8,7 +8,7 @@ import {useDispatch, useSelector} from "react-redux"
 import EditTitleButton from "./EditTitleButton"
 
 import type {RootState} from "@/app/types"
-import {selectSelectedPages} from "@/features/documentVers/documentVersSlice"
+import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"

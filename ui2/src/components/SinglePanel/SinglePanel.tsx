@@ -1,10 +1,10 @@
 import {useContext} from "react"
 
 import {useAppSelector} from "@/app/hooks"
-import Commander from "@/features/nodes/components/Commander"
-import Viewer from "@/components/Viewer"
 import SearchResults from "@/components/SearchResults"
 import PanelContext from "@/contexts/PanelContext"
+import Viewer from "@/features/document/components/Viewer"
+import Commander from "@/features/nodes/components/Commander"
 import {PanelMode} from "@/types"
 
 import {selectPanelComponent} from "@/features/ui/uiSlice"

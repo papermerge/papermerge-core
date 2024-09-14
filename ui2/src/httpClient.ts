@@ -1,4 +1,4 @@
-import type {DocumentVersion, DocumentVersionWithPageRot} from "@/types"
+import type {DocumentVersion} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"
@@ -32,7 +32,7 @@ First gets the current `download_url`, as in case of S3 storage
 (S3 private storage actually) there expiration keys are
 valid for couple of minutes only
 */
-async function download_file(doc_ver: DocumentVersionWithPageRot) {
+async function download_file(doc_ver: DocumentVersion) {
   const resp1 = await client.get(`/api/document-versions/${doc_ver.id}`)
   const v = resp1.data as DocumentVersion
   // now, with `download_url` at hand, actual download starts!

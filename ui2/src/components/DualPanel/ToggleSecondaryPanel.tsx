@@ -1,4 +1,4 @@
-import {selectCurrentUser} from "@/slices/currentUser"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   selectMainPanel,
   selectSecondaryPanel
@@ -6,33 +6,34 @@ import {
 import {ActionIcon} from "@mantine/core"
 import {IconColumns2, IconX} from "@tabler/icons-react"
 import {useContext} from "react"
-import {useDispatch, useSelector} from "react-redux"
 
-import type {PanelMode, User} from "@/types"
+import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {
   currentNodeChanged,
   secondaryPanelClosed,
-  secondaryPanelOpened
+  secondaryPanelOpened,
+  selectCurrentNodeCType,
+  selectCurrentNodeID
 } from "@/features/ui/uiSlice"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
-  const mainPanel = useSelector(selectMainPanel)
-  const secondaryPanel = useSelector(selectSecondaryPanel)
-  const user: User = useSelector(selectCurrentUser)
-  const dispatch = useDispatch()
+  const mainPanel = useAppSelector(selectMainPanel)
+  const secondaryPanel = useAppSelector(selectSecondaryPanel)
+  const dispatch = useAppDispatch()
+  const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
 
   if (mainPanel) {
     // mainPanel is always there
   }
 
   const onClick = () => {
-    const folderId = user.home_folder_id
-    dispatch(secondaryPanelOpened("commander"))
+    dispatch(secondaryPanelOpened(ctype == "folder" ? "commander" : "viewer"))
     dispatch(
-      currentNodeChanged({id: folderId, ctype: "folder", panel: "secondary"})
+      currentNodeChanged({id: nodeID!, ctype: ctype!, panel: "secondary"})
     )
   }
 

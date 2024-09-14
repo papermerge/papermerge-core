@@ -1,10 +1,5 @@
 import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {
-  PayloadAction,
-  createAsyncThunk,
-  createSelector,
-  createSlice
-} from "@reduxjs/toolkit"
+import {PayloadAction, createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 import axios from "axios"
 
@@ -199,42 +194,6 @@ export const selectInitialPages = (
 
   return state.dualPanel.secondaryPanel?.viewer?.initialPages
 }
-
-export const selectDocumentVersions = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.viewer) {
-      return state.dualPanel.mainPanel.viewer.versions
-    }
-  }
-
-  if (state.dualPanel.secondaryPanel?.viewer) {
-    return state.dualPanel.secondaryPanel?.viewer.versions
-  }
-}
-
-export const selectDocumentCurrentVersionNumber = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    if (state.dualPanel.mainPanel.viewer) {
-      return state.dualPanel.mainPanel.viewer.currentVersion
-    }
-  }
-
-  if (state.dualPanel.secondaryPanel?.viewer) {
-    return state.dualPanel.secondaryPanel?.viewer.currentVersion
-  }
-}
-
-export const selectDocumentCurrentVersion = createSelector(
-  [selectDocumentVersions, selectDocumentCurrentVersionNumber],
-  (versions, number) => {
-    if (versions && versions.length && number !== undefined && number != null) {
-      return versions[number - 1]
-    }
-  }
-)
 
 export const selectDocumentCurrentPage = (
   state: RootState,

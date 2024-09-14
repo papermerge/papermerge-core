@@ -1,9 +1,9 @@
-import {useRef, useEffect} from "react"
-import {Group} from "@mantine/core"
-import {useViewportSize} from "@mantine/hooks"
-import {useDispatch} from "react-redux"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import {updateSearchActionPanel} from "@/features/ui/uiSlice"
+import {Group} from "@mantine/core"
+import {useViewportSize} from "@mantine/hooks"
+import {useEffect, useRef} from "react"
+import {useDispatch} from "react-redux"
 
 import GoBackButton from "./GoBackButton"
 import OpenInOtherPanelCheckbox from "./OpenInOtherPanelCheckbox"

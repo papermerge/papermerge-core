@@ -43,7 +43,7 @@ export default function Commander() {
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
-  const {data, isLoading, isError} = useGetPaginatedNodesQuery({
+  const {data, isLoading, isFetching, isError} = useGetPaginatedNodesQuery({
     nodeID: currentNodeID!,
     page_number: page,
     page_size: pageSize,
@@ -157,7 +157,11 @@ export default function Commander() {
         className={dragOver ? classes.accept_files : classes.commander}
       >
         <FolderNodeActions />
-        <Breadcrumbs breadcrumb={currentFolder?.breadcrumb} onClick={onClick} />
+        <Breadcrumbs
+          breadcrumb={currentFolder?.breadcrumb}
+          onClick={onClick}
+          isFetching={isFetching}
+        />
         <Stack
           className={classes.content}
           justify={"space-between"}

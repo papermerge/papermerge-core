@@ -4,6 +4,7 @@ import {
   Anchor,
   Breadcrumbs,
   Group,
+  Loader,
   Menu,
   MenuItem,
   Skeleton
@@ -25,12 +26,14 @@ type Args = {
   onClick: (node: NType) => void
   className?: string
   breadcrumb?: Array<[string, string]>
+  isFetching?: boolean
 }
 
 export default function BreadcrumbsComponent({
   onClick,
   className,
-  breadcrumb
+  breadcrumb,
+  isFetching
 }: Args) {
   const dispatch = useAppDispatch()
   const {height, width} = useViewportSize()
@@ -75,7 +78,7 @@ export default function BreadcrumbsComponent({
         <Breadcrumbs className={classes.breadcrumbs}>
           <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
         </Breadcrumbs>
-        {/*nodesStatus == "loading" && <Loader size={"sm"} />*/}
+        {isFetching && <Loader size={"sm"} />}
       </Group>
     )
   }
@@ -87,7 +90,7 @@ export default function BreadcrumbsComponent({
         {links}
         <Anchor>{lastOne}</Anchor>
       </Breadcrumbs>
-      {/*nodesStatus == "loading" && <Loader size={"sm"} />*/}
+      {isFetching && <Loader size={"sm"} />}
     </Group>
   )
 }

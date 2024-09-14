@@ -1,6 +1,6 @@
-import {getDefaultHeaders, imageEncode, getBaseURL} from "@/utils"
 import {apiSlice} from "@/features/api/slice"
-import type {Paginated, FolderType, NodeType} from "@/types"
+import type {FolderType, NodeType, Paginated} from "@/types"
+import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type CreateFolderType = {
   title: string
@@ -25,8 +25,8 @@ export type PaginatedArgs = {
   filter?: string | null
 }
 
-import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import {RootState} from "@/app/types"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -115,12 +115,15 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
       invalidatesTags: ["Node"]
     }),
     renameFolder: builder.mutation<NodeType, RenameFolderType>({
-      query: folder => ({
-        url: `/nodes/${folder.id}`,
+      query: node => ({
+        url: `/nodes/${node.id}`,
         method: "PATCH",
-        body: folder
+        body: node
       }),
-      invalidatesTags: ["Node"]
+      invalidatesTags: (_result, _error, node) => [
+        "Node",
+        {type: "Document", id: node.id}
+      ]
     }),
     updateNodeTags: builder.mutation<NodeType, UpdateNodeTagsType>({
       query: node => ({

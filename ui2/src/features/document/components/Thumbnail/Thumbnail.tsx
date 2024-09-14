@@ -36,7 +36,7 @@ type Args = {
 
 export default function Thumbnail({page}: Args) {
   const dispatch = useAppDispatch()
-  const {data, isFetching, isSuccess} = useGetPageImageQuery(page.id)
+  const {data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []

@@ -40,7 +40,7 @@ type LastPageSizeArg = {
 
 type CurrentDocVerUpdateArg = {
   mode: PanelMode
-  docVerID: string
+  docVerID: string | undefined
 }
 
 interface PanelSelectionArg {

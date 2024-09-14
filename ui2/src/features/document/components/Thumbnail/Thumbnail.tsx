@@ -1,10 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {Checkbox, Stack} from "@mantine/core"
+import {Checkbox, Skeleton, Stack} from "@mantine/core"
 import {useContext, useEffect, useRef, useState} from "react"
 
 import {useGetPageImageQuery} from "@/features/document/apiSlice"
-import {selectPageMemoryData} from "@/features/document/documentSlice"
 import {
   pagesDroppedInDoc,
   selectSelectedPageIDs,
@@ -14,7 +13,6 @@ import {
   dragPagesEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
-  selectCurrentNodeID,
   selectDraggedPages
 } from "@/features/ui/uiSlice"
 
@@ -46,10 +44,6 @@ export default function Thumbnail({page}: Args) {
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const pageMemoryData = useAppSelector(s =>
-    selectPageMemoryData(s, docID!, page.number)
-  )
 
   useEffect(() => {
     const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
@@ -166,30 +160,11 @@ export default function Thumbnail({page}: Args) {
     }
   }
 
-  if (isFetching && pageMemoryData) {
+  if (isFetching) {
     return (
-      <Stack
-        ref={ref}
-        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
-        align="center"
-        gap={"xs"}
-      >
-        <Checkbox
-          disabled={true}
-          onChange={onCheck}
-          className={classes.checkbox}
-          checked={selectedIds ? selectedIds.includes(page.id) : false}
-        />
-        <img
-          style={{
-            transform: `rotate(${pageMemoryData.angle}deg)`,
-            opacity: 0.75,
-            filter: "blur(4px)"
-          }}
-          onClick={onClick}
-          src={pageMemoryData.data}
-        />
-        {page.number}
+      <Stack justify="center" align="center">
+        <Skeleton width={"100%"} height={160} />
+        <div>{page.number}</div>
       </Stack>
     )
   }

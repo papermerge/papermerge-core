@@ -13,7 +13,7 @@ import {useContext} from "react"
 export default function RotateCCButton() {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode))
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
 
   const onClick = () => {

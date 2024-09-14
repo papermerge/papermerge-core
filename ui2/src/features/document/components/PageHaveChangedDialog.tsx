@@ -9,6 +9,8 @@ import {
   selectPagesHaveChanged
 } from "@/features/document/documentVersSlice"
 
+import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+
 import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
 import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
@@ -17,10 +19,11 @@ export default function PagesHaveChangedDialog() {
   const [dontBotherMe, setDontBotherMe] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
-  const pages = useAppSelector(s => selectAllPages(s, mode))
+  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
 
   const onSave = async () => {
     const pageData = pages.map(p => {
@@ -33,7 +36,7 @@ export default function PagesHaveChangedDialog() {
       }
       return result
     })
-    await applyPageOpChanges(pageData)
+    await applyPageOpChanges({pages: pageData, documentID: docID!})
   }
 
   const onReset = () => {

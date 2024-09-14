@@ -143,8 +143,6 @@ export const selectAllPages = (state: RootState, mode: PanelMode) => {
       }
     }
   }
-
-  return []
 }
 
 export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
@@ -160,7 +158,9 @@ export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
 export const selectSelectedPages = createSelector(
   [selectAllPages, selectSelectedPageIDs],
   (pages, pageIDs) => {
-    return pages.filter(p => pageIDs?.includes(p.id))
+    if (pages) {
+      return pages.filter(p => pageIDs?.includes(p.id))
+    }
   }
 )
 

@@ -20,6 +20,7 @@ import {
 } from "@/features/nodes/apiSlice"
 import {
   commanderLastPageSizeUpdated,
+  currentDocVerUpdated,
   selectContentHeight,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
@@ -74,10 +75,10 @@ export default function Commander() {
         currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
       )
     }
-
     // mode == "main"
     switch (node.ctype) {
       case "folder":
+        dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
         navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
         break
       case "document":

@@ -1,8 +1,22 @@
 import {RootState} from "@/app/types"
 import {apiSlice} from "@/features/api/slice"
-import type {ApplyPagesType} from "@/types"
 import {DocumentType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
+
+type ShortPageType = {
+  number: number
+  id: string
+}
+
+type PagesType = {
+  angle: number
+  page: ShortPageType
+}
+
+type ApplyPagesType = {
+  documentID: string
+  pages: PagesType[]
+}
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -56,12 +70,15 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         }
       }
     }),
-    applyPageOpChanges: builder.mutation<void, Array<ApplyPagesType>>({
-      query: pages => ({
+    applyPageOpChanges: builder.mutation<void, ApplyPagesType>({
+      query: data => ({
         url: "/pages/",
         method: "POST",
-        body: pages
-      })
+        body: data.pages
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "Document", id: arg.documentID}
+      ]
     })
   })
 })

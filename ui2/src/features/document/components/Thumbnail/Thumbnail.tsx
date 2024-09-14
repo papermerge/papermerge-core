@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {Checkbox, Stack} from "@mantine/core"
+import {Checkbox, Skeleton, Stack} from "@mantine/core"
 import {useContext, useEffect, useRef, useState} from "react"
 
 import {useGetPageImageQuery} from "@/features/document/apiSlice"
@@ -15,6 +15,7 @@ import {
   selectCurrentDocVerID,
   selectDraggedPages
 } from "@/features/ui/uiSlice"
+
 import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
 import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
@@ -35,10 +36,10 @@ type Args = {
 
 export default function Thumbnail({page}: Args) {
   const dispatch = useAppDispatch()
-  const {data} = useGetPageImageQuery(page.id)
+  const {data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode))
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
@@ -157,6 +158,15 @@ export default function Thumbnail({page}: Args) {
     } else {
       dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
     }
+  }
+
+  if (isFetching) {
+    return (
+      <Stack justify="center" align="center">
+        <Skeleton width={"100%"} height={160} />
+        <div>{page.number}</div>
+      </Stack>
+    )
   }
 
   return (

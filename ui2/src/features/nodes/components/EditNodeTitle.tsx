@@ -1,13 +1,12 @@
-import {ChangeEvent} from "react"
-import {useState, useEffect} from "react"
-import {TextInput, Loader, Group, Button, Modal} from "@mantine/core"
-import type {NodeType} from "@/types"
 import {useRenameFolderMutation} from "@/features/nodes/apiSlice"
+import type {EditEntityTitle} from "@/types"
+import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
+import {ChangeEvent, useEffect, useRef, useState} from "react"
 
 import Error from "./Error"
 
 interface Args {
-  node: NodeType
+  node: EditEntityTitle
   opened: boolean
   onSubmit: () => void
   onCancel: () => void
@@ -19,23 +18,42 @@ export const EditNodeTitleModal = ({
   onCancel,
   opened
 }: Args) => {
-  const [renameFolder, {isLoading, isSuccess}] = useRenameFolderMutation()
+  const [renameFolder, {isLoading}] = useRenameFolderMutation()
+  const ref = useRef<HTMLButtonElement>(null)
   const [title, setTitle] = useState(node.title)
   const [error, setError] = useState("")
 
   useEffect(() => {
-    // close dialog as soon as we have
-    // "success" status from the mutation
-    if (isSuccess) {
-      onSubmit()
-      reset()
+    // handle "enter" keyboard press
+    document.addEventListener("keydown", handleKeydown, false)
+
+    return () => {
+      document.removeEventListener("keydown", handleKeydown, false)
     }
-  }, [isSuccess])
+  }, [])
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value
-
     setTitle(value)
+  }
+
+  const handleKeydown = async (e: KeyboardEvent) => {
+    switch (e.code) {
+      case "Enter":
+        /*
+         * The intuitive code here would be:
+         *```
+         * await onLocalSubmit()
+         *```
+         * However, the `await onLocalSubmit()` code will submit only
+         * initial value of the `title` field. Is that because of
+         * useEffect / addEventListener / react magic ?
+         */
+        if (ref.current) {
+          ref.current.click()
+        }
+        break
+    }
   }
 
   const onLocalSubmit = async () => {
@@ -43,8 +61,11 @@ export const EditNodeTitleModal = ({
       title: title,
       id: node.id
     }
+
     try {
       await renameFolder(data)
+      onSubmit()
+      reset() // sets error message back to empty string
     } catch (error: any) {
       // @ts-ignore
       setError(err.data.detail)
@@ -57,17 +78,16 @@ export const EditNodeTitleModal = ({
   }
 
   const reset = () => {
-    setTitle("")
     setError("")
   }
 
   return (
-    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={"Edit Title"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}
         value={title}
-        label="Folder title"
+        label="New Title"
         placeholder="title"
         mt="md"
       />
@@ -79,7 +99,7 @@ export const EditNodeTitleModal = ({
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onLocalSubmit}>
+          <Button ref={ref} disabled={isLoading} onClick={onLocalSubmit}>
             Submit
           </Button>
         </Group>

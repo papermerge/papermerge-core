@@ -1,12 +1,12 @@
-import {
-  createSelector,
-  createEntityAdapter,
-  createSlice,
-  PayloadAction
-} from "@reduxjs/toolkit"
 import {RootState} from "@/app/types"
-import {apiSliceWithNodes} from "./apiSlice"
 import type {NodeType, Paginated} from "@/types"
+import {
+  PayloadAction,
+  createEntityAdapter,
+  createSelector,
+  createSlice
+} from "@reduxjs/toolkit"
+import {apiSliceWithNodes} from "./apiSlice"
 
 const nodeAdapter = createEntityAdapter<NodeType>()
 const initialState = nodeAdapter.getInitialState()
@@ -21,6 +21,13 @@ const nodesSlice = createSlice({
       (state, action: PayloadAction<Paginated<NodeType>>) => {
         const payload = action.payload
         nodeAdapter.addMany(state, payload.items)
+      }
+    )
+    builder.addMatcher(
+      apiSliceWithNodes.endpoints.renameFolder.matchFulfilled,
+      (state, action: PayloadAction<NodeType>) => {
+        const payload = action.payload
+        nodeAdapter.setOne(state, payload)
       }
     )
   }

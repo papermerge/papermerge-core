@@ -157,6 +157,11 @@ export type Sorting = {
   sort_order: NodeSortOrderEnum
 }
 
+export interface EditEntityTitle {
+  id: string
+  title: string
+}
+
 export type Paginated<T> = {
   page_size: number
   page_number: number

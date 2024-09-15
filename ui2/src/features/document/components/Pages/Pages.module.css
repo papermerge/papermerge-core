@@ -12,7 +12,6 @@
 }
 
 .loader {
-  min-width: 600px;
   overflow-y: auto;
   overflow-x: auto;
   background-color: #666;

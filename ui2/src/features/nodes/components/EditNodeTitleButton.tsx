@@ -1,22 +1,22 @@
+import {ActionIcon, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {useContext} from "react"
-import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
+import {useContext} from "react"
 
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
 
 import type {RootState} from "@/app/types"
 
-import type {PanelMode, NodeType} from "@/types"
+import type {NodeType, PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {
-  selectSelectedNodeIds,
-  commanderSelectionCleared
-} from "@/features/ui/uiSlice"
 import {selectNodesByIds} from "@/features/nodes/nodesSlice"
+import {
+  commanderSelectionCleared,
+  selectSelectedNodeIds
+} from "@/features/ui/uiSlice"
 
 export default function EditNodeTitleButton() {
   const [opened, {open, close}] = useDisclosure(false)

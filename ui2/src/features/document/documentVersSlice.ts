@@ -28,6 +28,11 @@ type PageRotatedArgs = {
   targetDocVerID: string
 }
 
+type PageDeletedArgs = {
+  sources: ClientPage[]
+  targetDocVerID: string
+}
+
 const docVerAdapter = createEntityAdapter<ClientDocumentVersion>()
 const initialState = docVerAdapter.getInitialState()
 
@@ -74,6 +79,20 @@ const docVersSlice = createSlice({
       const docVerID = action.payload
       const docVer = state.entities[docVerID]
       state.entities[docVerID].pages = docVer.initial_pages
+    },
+    pagesDeleted(state, action: PayloadAction<PageDeletedArgs>) {
+      const {sources, targetDocVerID} = action.payload
+      const docVer = state.entities[targetDocVerID]
+      const pages = docVer.pages
+      const pageIDsToBeDeleted = sources.map(i => i.id)
+      const newPages = pages.filter(p => {
+        for (let i = 0; i < sources.length; i++) {
+          if (!pageIDsToBeDeleted.includes(p.id)) {
+            return p
+          }
+        }
+      })
+      state.entities[targetDocVerID].pages = newPages
     }
   },
   extraReducers(builder) {
@@ -106,7 +125,7 @@ const docVersSlice = createSlice({
   }
 })
 
-export const {pagesDroppedInDoc, pagesRotated, pagesReseted} =
+export const {pagesDroppedInDoc, pagesRotated, pagesReseted, pagesDeleted} =
   docVersSlice.actions
 export default docVersSlice.reducer
 

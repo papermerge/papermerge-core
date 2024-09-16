@@ -1,19 +1,19 @@
-import {useContext} from "react"
 import {useDisclosure} from "@mantine/hooks"
+import {useContext} from "react"
 
-import {Tooltip, ActionIcon} from "@mantine/core"
-import {IconTrash} from "@tabler/icons-react"
-import {PanelMode} from "@/types"
-import DeleteNodesModal from "./DeleteModal"
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {PanelMode} from "@/types"
+import {ActionIcon, Tooltip} from "@mantine/core"
+import {IconTrash} from "@tabler/icons-react"
+import DeleteNodesModal from "./DeleteModal"
 
 import {
-  selectSelectedNodeIds,
-  commanderSelectionCleared
+  commanderSelectionCleared,
+  selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
-import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 import PanelContext from "@/contexts/PanelContext"
+import {selectNodesByIds} from "@/features/nodes/nodesSlice"
 
 export default function DeleteButton() {
   const [opened, {open, close}] = useDisclosure(false)

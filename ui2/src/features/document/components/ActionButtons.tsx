@@ -5,6 +5,7 @@ import {updateActionPanel} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
+import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
@@ -40,6 +41,7 @@ export default function ActionButtons() {
         <DownloadButton />
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
+        {selectedPages.length > 0 && <DeletePagesButton />}
       </Group>
       <Group>
         <ToggleSecondaryPanel />

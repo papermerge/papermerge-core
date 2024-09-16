@@ -26,7 +26,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
 
   return (
     <Menu
-      position="top"
+      position="bottom-start"
       opened={opened}
       onChange={onChange}
       shadow="md"

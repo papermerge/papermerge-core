@@ -351,3 +351,8 @@ export type PaginatedArgs = {
   page_number?: number
   page_size?: number
 }
+
+export type Coord = {
+  x: number
+  y: number
+}

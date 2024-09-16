@@ -3,33 +3,58 @@ import {useContext} from "react"
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {PanelMode} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
+import {useNavigate} from "react-router-dom"
 
 import {
   pagesDeleted,
+  selectAllPages,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {
   selectCurrentDocVerID,
   viewerSelectionCleared
 } from "@/features/ui/uiSlice"
+import {selectCurrentUser} from "@/slices/currentUser"
 
 import PanelContext from "@/contexts/PanelContext"
+import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 
 export default function DeleteButton() {
+  const navigate = useNavigate()
+  const user = useAppSelector(selectCurrentUser)
+  const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const allPages = useAppSelector(s => selectAllPages(s, mode)) || []
 
   const onClick = () => {
-    dispatch(
-      pagesDeleted({
-        sources: selectedPages,
-        targetDocVerID: docVerID!
-      })
-    )
-    dispatch(viewerSelectionCleared(mode))
+    if (selectedPages.length == allPages.length) {
+      /* Confirm that user intends to delete entire document */
+      open()
+    } else {
+      dispatch(
+        pagesDeleted({
+          sources: selectedPages,
+          targetDocVerID: docVerID!
+        })
+      )
+      dispatch(viewerSelectionCleared(mode))
+    }
+  }
+
+  const onCancel = () => {
+    close()
+  }
+
+  const onSubmit = () => {
+    /* User deleted entire document*/
+    close()
+    /* Redirect user back to commander */
+    navigate(`/home/${user.home_folder_id}`)
   }
 
   return (
@@ -39,6 +64,11 @@ export default function DeleteButton() {
           <IconTrash />
         </ActionIcon>
       </Tooltip>
+      <DeleteEntireDocumentConfirm
+        opened={opened}
+        onCancel={onCancel}
+        onSubmit={onSubmit}
+      />
     </>
   )
 }

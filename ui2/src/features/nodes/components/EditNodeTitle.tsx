@@ -3,7 +3,7 @@ import type {EditEntityTitle} from "@/types"
 import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
 import {ChangeEvent, useEffect, useRef, useState} from "react"
 
-import Error from "./Error"
+import Error from "@/components/Error"
 
 interface Args {
   node: EditEntityTitle

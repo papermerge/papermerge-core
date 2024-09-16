@@ -1,13 +1,20 @@
+import {
+  Button,
+  Checkbox,
+  Container,
+  Group,
+  Loader,
+  Modal,
+  Text
+} from "@mantine/core"
 import {useState} from "react"
-import {Checkbox, Text} from "@mantine/core"
-import {Button, Modal, Container, Group, Loader} from "@mantine/core"
 
-import {uploadFile} from "@/features/nodes/uploadFile"
-import {apiSlice} from "@/features/api/slice"
 import {useAppDispatch} from "@/app/hooks"
+import {apiSlice} from "@/features/api/slice"
+import {uploadFile} from "@/features/nodes/uploadFile"
 
+import Error from "@/components/Error"
 import type {FolderType} from "@/types"
-import Error from "./Error"
 
 type Args = {
   opened: boolean

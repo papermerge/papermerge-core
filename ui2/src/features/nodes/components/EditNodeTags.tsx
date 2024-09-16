@@ -1,9 +1,9 @@
-import {useState, useEffect} from "react"
-import {TagsInput, Loader, Group, Button, Modal} from "@mantine/core"
+import {Button, Group, Loader, Modal, TagsInput} from "@mantine/core"
+import {useEffect, useState} from "react"
 
-import type {NodeType} from "@/types"
+import Error from "@/components/Error"
 import {useUpdateNodeTagsMutation} from "@/features/nodes/apiSlice"
-import Error from "./Error"
+import type {NodeType} from "@/types"
 
 interface Args {
   node: NodeType

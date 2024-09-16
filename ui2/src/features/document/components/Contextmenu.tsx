@@ -62,7 +62,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
               <IconRotate style={{width: rem(14), height: rem(14)}} />
             }
           >
-            Rotate couter-clockwise
+            Rotate counter-clockwise
           </Menu.Item>
         )}
         {selectedPages.length > 0 && (

@@ -8,9 +8,14 @@ import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconRotateClockwise} from "@tabler/icons-react"
-import {useContext} from "react"
+import {forwardRef, useContext} from "react"
 
-export default function RotateCCButton() {
+interface Args {
+  hidden?: boolean
+}
+
+const RotateButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const {hidden} = props
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
@@ -28,9 +33,17 @@ export default function RotateCCButton() {
 
   return (
     <Tooltip label="Rotate selected pages clockwise" withArrow>
-      <ActionIcon size={"lg"} variant="default" onClick={onClick}>
+      <ActionIcon
+        ref={ref}
+        size={"lg"}
+        variant="default"
+        style={hidden ? {display: "None"} : {}}
+        onClick={onClick}
+      >
         <IconRotateClockwise stroke={1.4} />
       </ActionIcon>
     </Tooltip>
   )
-}
+})
+
+export default RotateButton

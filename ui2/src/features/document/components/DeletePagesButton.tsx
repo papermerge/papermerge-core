@@ -1,4 +1,4 @@
-import {useContext} from "react"
+import {forwardRef, useContext} from "react"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {PanelMode} from "@/types"
@@ -21,7 +21,12 @@ import {selectCurrentUser} from "@/slices/currentUser"
 import PanelContext from "@/contexts/PanelContext"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 
-export default function DeleteButton() {
+interface Args {
+  hidden?: boolean
+}
+
+const DeleteButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const {hidden} = props
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
   const [opened, {open, close}] = useDisclosure(false)
@@ -60,7 +65,13 @@ export default function DeleteButton() {
   return (
     <>
       <Tooltip withArrow label="Delete">
-        <ActionIcon size="lg" onClick={onClick} color={"red"}>
+        <ActionIcon
+          ref={ref}
+          size="lg"
+          onClick={onClick}
+          color={"red"}
+          style={hidden ? {display: "None"} : {}}
+        >
           <IconTrash />
         </ActionIcon>
       </Tooltip>
@@ -71,4 +82,6 @@ export default function DeleteButton() {
       />
     </>
   )
-}
+})
+
+export default DeleteButton

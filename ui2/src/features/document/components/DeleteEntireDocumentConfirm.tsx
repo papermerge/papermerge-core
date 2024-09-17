@@ -12,12 +12,17 @@ interface Args {
   opened: boolean
   onCancel: () => void
   onSubmit: () => void
+  text?: string
 }
+
+const TEXT =
+  "You are about to delete ALL pages. This is same as deleting entire document. Delete entire document?"
 
 export default function DeleteWithAllPagesSelected({
   opened,
   onCancel,
-  onSubmit
+  onSubmit,
+  text = TEXT
 }: Args) {
   const [error, setError] = useState("")
   const mode: PanelMode = useContext(PanelContext)
@@ -41,8 +46,7 @@ export default function DeleteWithAllPagesSelected({
 
   return (
     <Modal title={"Delete Document"} opened={opened} onClose={onCancel}>
-      You are about to delete ALL pages. This is same as deleting entire
-      document. Delete entire document?
+      {text}
       {error && <Error message={error} />}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onCancel}>

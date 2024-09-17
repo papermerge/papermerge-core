@@ -1,9 +1,20 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import PanelContext from "@/contexts/PanelContext"
+import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
+import {
+  pagesReseted,
+  selectAllPages,
+  selectPagesHaveChanged,
+  selectSelectedPages
+} from "@/features/document/documentVersSlice"
+import {selectCurrentDocVerID, selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
-import type {Coord} from "@/types"
+import type {Coord, PanelMode} from "@/types"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {
+  IconArrowBackUp,
+  IconArrowMoveDown,
   IconEdit,
   IconRotate,
   IconRotateClockwise,
@@ -12,10 +23,6 @@ import {
 } from "@tabler/icons-react"
 import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
-
-import PanelContext from "@/contexts/PanelContext"
-import {selectSelectedPages} from "@/features/document/documentVersSlice"
-import type {PanelMode} from "@/types"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
@@ -32,6 +39,7 @@ const DELETE_DOCUMENT_TEXT =
   "Are you sure you want to delete entire document with all its versions?"
 
 export default function ContextMenu({position, opened, onChange}: Args) {
+  const dispatch = useAppDispatch()
   const [delDocOpened, {open: delDocOpen, close: delDocClose}] =
     useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
@@ -42,6 +50,11 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const refRotateButton = useRef<HTMLButtonElement>(null)
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
+  const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const [applyPageOpChanges] = useApplyPageOpChangesMutation()
+  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
 
   const onChangeTitle = () => {
     if (refEditTitleButton.current) {
@@ -74,8 +87,26 @@ export default function ContextMenu({position, opened, onChange}: Args) {
 
   const onDocumentDeleted = () => {
     // document was already deleted
-    delDocClose()
+    delDocClose() // close confirmation dialog
     navigate(`/home/${user.home_folder_id}`)
+  }
+
+  const onApplyPagesOpChanges = async () => {
+    const pageData = pages.map(p => {
+      const result = {
+        angle: p.angle,
+        page: {
+          number: p.number,
+          id: p.id
+        }
+      }
+      return result
+    })
+    await applyPageOpChanges({pages: pageData, documentID: docID!})
+  }
+
+  const onResetPagesChanges = () => {
+    dispatch(pagesReseted(docVerID!))
   }
 
   return (
@@ -123,6 +154,26 @@ export default function ContextMenu({position, opened, onChange}: Args) {
               }
             >
               Rotate counter-clockwise
+            </Menu.Item>
+          )}
+          {pagesHaveChanged && (
+            <Menu.Item
+              onClick={onResetPagesChanges}
+              leftSection={
+                <IconArrowBackUp style={{width: rem(14), height: rem(14)}} />
+              }
+            >
+              Reset changes
+            </Menu.Item>
+          )}
+          {pagesHaveChanged && (
+            <Menu.Item
+              onClick={onApplyPagesOpChanges}
+              leftSection={
+                <IconArrowMoveDown style={{width: rem(14), height: rem(14)}} />
+              }
+            >
+              Save changes
             </Menu.Item>
           )}
           {selectedPages.length > 0 && (

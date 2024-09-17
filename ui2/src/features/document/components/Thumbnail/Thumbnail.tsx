@@ -4,7 +4,10 @@ import {Checkbox, Skeleton, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useEffect, useRef, useState} from "react"
 
-import {useGetPageImageQuery} from "@/features/document/apiSlice"
+import {
+  useGetDocumentQuery,
+  useGetPageImageQuery
+} from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
   selectCurrentPages,
@@ -15,7 +18,9 @@ import {
   dragPagesEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
-  selectDraggedPages
+  selectCurrentNodeID,
+  selectDraggedPages,
+  selectDraggedPagesDocID
 } from "@/features/ui/uiSlice"
 
 import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
@@ -27,7 +32,7 @@ import {
 } from "@/features/ui/uiSlice"
 
 import {contains_every} from "@/utils"
-import MovePagesModal from "../MovePagesModal"
+import TransferPagesModal from "../TransferPagesModal"
 import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
@@ -40,8 +45,8 @@ type Args = {
 
 export default function Thumbnail({page}: Args) {
   const [
-    movePagesDialogOpened,
-    {open: movePagesDialogOpen, close: movePagesDialogClose}
+    trPagesDialogOpened,
+    {open: trPagesDialogOpen, close: trPagesDialogClose}
   ] = useDisclosure(false)
   const dispatch = useAppDispatch()
   const {data, isFetching} = useGetPageImageQuery(page.id)
@@ -51,6 +56,10 @@ export default function Thumbnail({page}: Args) {
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
+  const draggedPagesIDs = draggedPages?.map(p => p.id)
+  const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc} = useGetDocumentQuery(currentNodeID!)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
@@ -113,7 +122,11 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragStart = () => {
-    dispatch(dragPagesStarted([page, ...selectedPages]))
+    const data = {
+      pages: [page, ...selectedPages],
+      docID: doc!.id
+    }
+    dispatch(dragPagesStarted(data))
   }
 
   const onDragEnd = () => {
@@ -161,7 +174,8 @@ export default function Thumbnail({page}: Args) {
         dispatch(dragPagesEnded())
       } else {
         // here we deal with pages transfer between documents
-        movePagesDialogOpen()
+        trPagesDialogOpen()
+        console.log(`dragged pages IDs= ${draggedPagesIDs}`)
       }
     } // if (ref?.current)
 
@@ -216,10 +230,14 @@ export default function Thumbnail({page}: Args) {
         />
         {page.number}
       </Stack>
-      <MovePagesModal
-        opened={movePagesDialogOpened}
-        onCancel={movePagesDialogClose}
-        onSubmit={movePagesDialogOpen}
+      <TransferPagesModal
+        targetDoc={doc!}
+        sourceDocID={draggedPagesDocID}
+        sourcePageIDs={draggedPagesIDs}
+        targetPageID={page.id}
+        opened={trPagesDialogOpened}
+        onCancel={trPagesDialogClose}
+        onSubmit={trPagesDialogOpen}
       />
     </>
   )

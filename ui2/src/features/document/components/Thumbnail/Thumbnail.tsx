@@ -1,11 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {Checkbox, Skeleton, Stack} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {useContext, useEffect, useRef, useState} from "react"
 
 import {useGetPageImageQuery} from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
+  selectCurrentPages,
   selectSelectedPageIDs,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
@@ -24,6 +26,8 @@ import {
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
 
+import {contains_every} from "@/utils"
+import MovePagesModal from "../MovePagesModal"
 import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
@@ -35,6 +39,10 @@ type Args = {
 }
 
 export default function Thumbnail({page}: Args) {
+  const [
+    movePagesDialogOpened,
+    {open: movePagesDialogOpen, close: movePagesDialogClose}
+  ] = useDisclosure(false)
   const dispatch = useAppDispatch()
   const {data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
@@ -44,6 +52,7 @@ export default function Thumbnail({page}: Args) {
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
   useEffect(() => {
     const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
@@ -134,15 +143,26 @@ export default function Thumbnail({page}: Args) {
         position = "after"
       }
 
-      dispatch(
-        pagesDroppedInDoc({
-          sources: draggedPages,
-          target: page,
-          targetDocVerID: docVerID!,
-          position: position
-        })
-      )
-      dispatch(dragPagesEnded())
+      const page_ids = docVerPages.map(p => p.id)
+      const source_ids = draggedPages.map(p => p.id)
+      if (contains_every({container: page_ids, items: source_ids})) {
+        /* Here we deal with page transfer is within the same document
+        i.e we are just reordering. It is so because all source pages (their IDs)
+        were found in the target document version.
+        */
+        dispatch(
+          pagesDroppedInDoc({
+            sources: draggedPages,
+            target: page,
+            targetDocVerID: docVerID!,
+            position: position
+          })
+        )
+        dispatch(dragPagesEnded())
+      } else {
+        // here we deal with pages transfer between documents
+        movePagesDialogOpen()
+      }
     } // if (ref?.current)
 
     // remove both borderline_bottom and borderline_top
@@ -170,30 +190,37 @@ export default function Thumbnail({page}: Args) {
   }
 
   return (
-    <Stack
-      ref={ref}
-      className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
-      align="center"
-      gap={"xs"}
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragOver={onLocalDragOver}
-      onDragLeave={onLocalDragLeave}
-      onDragEnter={onLocalDragEnter}
-      onDrop={onLocalDrop}
-    >
-      <Checkbox
-        onChange={onCheck}
-        checked={selectedIds ? selectedIds.includes(page.id) : false}
-        className={classes.checkbox}
+    <>
+      <Stack
+        ref={ref}
+        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
+        align="center"
+        gap={"xs"}
+        draggable
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={onLocalDragOver}
+        onDragLeave={onLocalDragLeave}
+        onDragEnter={onLocalDragEnter}
+        onDrop={onLocalDrop}
+      >
+        <Checkbox
+          onChange={onCheck}
+          checked={selectedIds ? selectedIds.includes(page.id) : false}
+          className={classes.checkbox}
+        />
+        <img
+          style={{transform: `rotate(${page.angle}deg)`}}
+          onClick={onClick}
+          src={data}
+        />
+        {page.number}
+      </Stack>
+      <MovePagesModal
+        opened={movePagesDialogOpened}
+        onCancel={movePagesDialogClose}
+        onSubmit={movePagesDialogOpen}
       />
-      <img
-        style={{transform: `rotate(${page.angle}deg)`}}
-        onClick={onClick}
-        src={data}
-      />
-      {page.number}
-    </Stack>
+    </>
   )
 }

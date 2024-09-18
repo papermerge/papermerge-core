@@ -359,6 +359,8 @@ export type Coord = {
 
 export type TransferStrategyType = "mix" | "replace"
 
+export type ExtractStrategyType = "one-page-per-doc" | "all-pages-in-one-doc"
+
 export interface ServerErrorType {
   status: number
   data: {

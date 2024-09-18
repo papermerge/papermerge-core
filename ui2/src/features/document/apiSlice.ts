@@ -1,6 +1,6 @@
 import {RootState} from "@/app/types"
 import {apiSlice} from "@/features/api/slice"
-import {DocumentType, TransferStrategyType} from "@/types"
+import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type ShortPageType = {
@@ -26,6 +26,16 @@ type MovePagesType = {
   }
   sourceDocID: string
   targetDocID: string
+}
+
+type ExtractPagesType = {
+  body: {
+    source_page_ids: string[]
+    target_folder_id: string
+    strategy: ExtractStrategyType
+    title_format: string
+  }
+  sourceDocID: string
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -100,6 +110,17 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "Document", id: arg.targetDocID},
         {type: "Document", id: arg.sourceDocID}
       ]
+    }),
+    extractPages: builder.mutation<void, ExtractPagesType>({
+      query: data => ({
+        url: "/pages/extract",
+        method: "POST",
+        body: data.body
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "Node", id: arg.body.target_folder_id},
+        {type: "Document", id: arg.sourceDocID}
+      ]
     })
   })
 })
@@ -108,5 +129,6 @@ export const {
   useGetDocumentQuery,
   useGetPageImageQuery,
   useApplyPageOpChangesMutation,
-  useMovePagesMutation
+  useMovePagesMutation,
+  useExtractPagesMutation
 } = apiSliceWithDocuments

@@ -22,17 +22,26 @@ import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
   selectContentHeight,
+  selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import type {NType, NodeType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
 import {DropFilesModal} from "./DropFiles"
+import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import Node from "./Node"
 
 export default function Commander() {
-  const [opened, {open, close}] = useDisclosure(false)
+  // dialog for dropped files from local file system (i.e. from outside of browser)
+  const [dropFilesOpened, {open: dropFilesOpen, close: dropFilesClose}] =
+    useDisclosure(false)
+  // dialog for extracting document pages (i.e. doc -> commander)
+  const [
+    extractPagesOpened,
+    {open: extractPagesOpen, close: extractPagesClose}
+  ] = useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
@@ -40,6 +49,7 @@ export default function Commander() {
   const navigate = useNavigate()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const draggedPages = useAppSelector(selectDraggedPages)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
@@ -115,10 +125,37 @@ export default function Commander() {
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    setDragOver(false)
     event.preventDefault()
-    setUploadFiles(event.dataTransfer.files)
-    open()
+    // #1 drop files from local FS into the commander
+    if (event.dataTransfer.files.length > 0) {
+      // workaround for weird bug BEGIN
+      if (
+        event.dataTransfer.files.length === 1 &&
+        event.dataTransfer.files[0].name === "download.jpg"
+      ) {
+        // bug bug
+        // really weird one - for some unknown to me reason, event.dataTransfer.files
+        // has one entry with (seems to me) completely unrelated file
+        // named 'download.jpg'.
+        // I was able to reproduce this behavior
+        // only in Google Chrome 117.0. For time being let just console
+        // message log that it.
+        // For this weird "file" we of course skip "drop_files" operation
+        console.log("Where is this weird download.jpg is coming from ?")
+        // workaround for weird bug END
+      } else if (event.dataTransfer.files.length > 0) {
+        // files dropped from local FS
+        setDragOver(false)
+        setUploadFiles(event.dataTransfer.files)
+        dropFilesOpen()
+        return
+      }
+    }
+    if (draggedPages && draggedPages?.length > 0) {
+      console.log(draggedPages)
+      extractPagesOpen()
+      return
+    }
   }
 
   const nodes = data.items.map((n: NodeType) => (
@@ -170,13 +207,25 @@ export default function Commander() {
           {commanderContent}
         </Stack>
       </Box>
-      <DropFilesModal
-        opened={opened}
-        source_files={uploadFiles!}
-        target={currentFolder!}
-        onSubmit={close}
-        onCancel={close}
-      />
+      {currentFolder && uploadFiles && uploadFiles.length > 0 && (
+        <DropFilesModal
+          opened={dropFilesOpened}
+          source_files={uploadFiles}
+          target={currentFolder}
+          onSubmit={dropFilesClose}
+          onCancel={dropFilesClose}
+        />
+      )}
+      {currentFolder && draggedPages && draggedPages.length > 0 && (
+        <ExtractPagesModal
+          sourcePages={draggedPages}
+          sourceDocID={"1"}
+          targetFolder={currentFolder}
+          opened={extractPagesOpened}
+          onSubmit={extractPagesClose}
+          onCancel={extractPagesClose}
+        />
+      )}
     </>
   )
 }

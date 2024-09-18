@@ -6,9 +6,9 @@ import {useState} from "react"
 import type {DocumentType, ServerErrorType, TransferStrategyType} from "@/types"
 
 interface Args {
-  sourceDocID?: string
-  targetDoc?: DocumentType
-  sourcePageIDs?: string[]
+  sourceDocID: string
+  targetDoc: DocumentType
+  sourcePageIDs: string[]
   targetPageID: string
   opened: boolean
   onCancel: () => void
@@ -27,19 +27,6 @@ export default function TransferPagesModal({
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
   const [movePages, {isLoading}] = useMovePagesMutation()
-
-  if (!sourceDocID) {
-    return <></>
-  }
-
-  if (!targetDoc) {
-    return <></>
-  }
-
-  if (!sourcePageIDs || sourcePageIDs.length == 0) {
-    console.warn("Missing source page IDs")
-    return <></>
-  }
 
   const onTransferPages = async () => {
     const transferStrategy = (value?.value || "mix") as TransferStrategyType

@@ -229,15 +229,17 @@ export default function Thumbnail({page}: Args) {
         />
         {page.number}
       </Stack>
-      <TransferPagesModal
-        targetDoc={doc!}
-        sourceDocID={draggedPagesDocID}
-        sourcePageIDs={draggedPagesIDs}
-        targetPageID={page.id}
-        opened={trPagesDialogOpened}
-        onCancel={trPagesDialogClose}
-        onSubmit={trPagesDialogClose}
-      />
+      {draggedPagesDocID && draggedPagesIDs && doc && (
+        <TransferPagesModal
+          targetDoc={doc}
+          sourceDocID={draggedPagesDocID}
+          sourcePageIDs={draggedPagesIDs}
+          targetPageID={page.id}
+          opened={trPagesDialogOpened}
+          onCancel={trPagesDialogClose}
+          onSubmit={trPagesDialogClose}
+        />
+      )}
     </>
   )
 }

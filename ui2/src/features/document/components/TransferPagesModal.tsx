@@ -1,10 +1,9 @@
 import Error from "@/components/Error"
-import PanelContext from "@/contexts/PanelContext"
 import {useMovePagesMutation} from "@/features/document/apiSlice"
 import {Button, ComboboxItem, Group, Loader, Modal, Select} from "@mantine/core"
-import {useContext, useState} from "react"
+import {useState} from "react"
 
-import type {DocumentType, PanelMode, TransferStrategyType} from "@/types"
+import type {DocumentType, ServerErrorType, TransferStrategyType} from "@/types"
 
 interface Args {
   sourceDocID?: string
@@ -27,7 +26,6 @@ export default function TransferPagesModal({
 }: Args) {
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
-  const mode: PanelMode = useContext(PanelContext)
   const [movePages, {isLoading}] = useMovePagesMutation()
 
   if (!sourceDocID) {
@@ -58,8 +56,8 @@ export default function TransferPagesModal({
       await movePages(data)
       onSubmit()
       reset()
-    } catch (error: unknown) {
-      // @ts-ignore
+    } catch (e: unknown) {
+      const err = e as ServerErrorType
       setError(err.data.detail)
     }
   }

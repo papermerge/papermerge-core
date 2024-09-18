@@ -18,7 +18,7 @@ import {
   selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
-import type {Coord, NType, PanelMode} from "@/types"
+import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import ActionButtons from "./ActionButtons"
 import ContextMenu from "./Contextmenu"
@@ -27,13 +27,6 @@ import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
 import ThumbnailsToggle from "./ThumbnailsToggle"
 import classes from "./Viewer.module.css"
-
-interface ServerErrorType {
-  status: number
-  data: {
-    detail: string
-  }
-}
 
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)

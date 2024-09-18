@@ -358,3 +358,10 @@ export type Coord = {
 }
 
 export type TransferStrategyType = "mix" | "replace"
+
+export interface ServerErrorType {
+  status: number
+  data: {
+    detail: string
+  }
+}

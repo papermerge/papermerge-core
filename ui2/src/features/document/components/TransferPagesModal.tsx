@@ -45,10 +45,9 @@ export default function TransferPagesModal({
 
   const onTransferPages = async () => {
     const transferStrategy = (value?.value || "mix") as TransferStrategyType
-    debugger
     const data = {
       body: {
-        source_pages_ids: sourcePageIDs,
+        source_page_ids: sourcePageIDs,
         target_page_id: targetPageID,
         move_strategy: transferStrategy
       },

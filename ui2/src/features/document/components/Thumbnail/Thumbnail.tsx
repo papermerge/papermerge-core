@@ -130,7 +130,7 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragEnd = () => {
-    dispatch(dragPagesEnded())
+    //dispatch(dragPagesEnded())
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -175,7 +175,6 @@ export default function Thumbnail({page}: Args) {
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()
-        console.log(`dragged pages IDs= ${draggedPagesIDs}`)
       }
     } // if (ref?.current)
 
@@ -237,7 +236,7 @@ export default function Thumbnail({page}: Args) {
         targetPageID={page.id}
         opened={trPagesDialogOpened}
         onCancel={trPagesDialogClose}
-        onSubmit={trPagesDialogOpen}
+        onSubmit={trPagesDialogClose}
       />
     </>
   )

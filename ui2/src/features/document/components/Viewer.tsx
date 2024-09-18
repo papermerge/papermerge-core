@@ -13,7 +13,9 @@ import {HIDDEN} from "@/cconstants"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
+  secondaryPanelClosed,
   selectContentHeight,
+  selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
 import type {Coord, NType, PanelMode} from "@/types"
@@ -26,6 +28,13 @@ import Thumbnails from "./Thumbnails"
 import ThumbnailsToggle from "./ThumbnailsToggle"
 import classes from "./Viewer.module.css"
 
+interface ServerErrorType {
+  status: number
+  data: {
+    detail: string
+  }
+}
+
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
@@ -34,8 +43,19 @@ export default function Viewer() {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const secondaryPanelNodeID = useAppSelector(s =>
+    selectCurrentNodeID(s, "secondary")
+  )
+  const secondaryPanelNodeCType = useAppSelector(s =>
+    selectCurrentNodeCType(s, "secondary")
+  )
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc, isSuccess} = useGetDocumentQuery(currentNodeID!)
+  const {
+    currentData: doc,
+    isSuccess,
+    isError,
+    error
+  } = useGetDocumentQuery(currentNodeID!)
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -62,6 +82,35 @@ export default function Viewer() {
       close()
     }
   }
+
+  useEffect(() => {
+    /* In case user decides to transfer all source pages,
+    the source document will vanish as server will remove it.
+    The outcome is that `useGetDocumentQuery` will result in
+    error with HTTP status 404. In this case we close
+    panel of the delete document.
+    */
+    if (isError && error && (error as ServerErrorType).status == 404) {
+      if (mode == "secondary") {
+        // the 404 was in secondary panel. Just close it.
+        dispatch(secondaryPanelClosed())
+      } else {
+        if (secondaryPanelNodeID && secondaryPanelNodeCType) {
+          // the 404 is in main panel. In this case, open
+          // in main panel whatever was in secondary
+          dispatch(
+            currentNodeChanged({
+              id: secondaryPanelNodeID,
+              ctype: secondaryPanelNodeCType,
+              panel: "main"
+            })
+          )
+          // and then close secondary panel
+          dispatch(secondaryPanelClosed())
+        }
+      }
+    }
+  }, [isError])
 
   useEffect(() => {
     if (doc) {

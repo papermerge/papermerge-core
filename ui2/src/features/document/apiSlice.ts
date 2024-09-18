@@ -20,7 +20,7 @@ type ApplyPagesType = {
 
 type MovePagesType = {
   body: {
-    source_pages_ids: string[]
+    source_page_ids: string[]
     target_page_id: string
     move_strategy: TransferStrategyType
   }

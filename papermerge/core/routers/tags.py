@@ -4,6 +4,7 @@ from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import schemas, utils
 from papermerge.core.auth import get_current_user, scopes

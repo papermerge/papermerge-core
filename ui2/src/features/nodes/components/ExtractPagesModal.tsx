@@ -45,7 +45,7 @@ export default function ExtractPagesModal({
   }
 
   return (
-    <Modal title="Delete Nodes" opened={opened} onClose={localCancel}>
+    <Modal title="Extract Pages" opened={opened} onClose={localCancel}>
       <Container>
         <p>
           Do you want to extract selected pages to folder

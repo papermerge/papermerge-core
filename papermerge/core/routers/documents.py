@@ -3,7 +3,8 @@ import uuid
 from typing import Annotated
 
 from celery.app import default_app as celery_app
-from fastapi import APIRouter, Depends, Security, UploadFile
+from fastapi import APIRouter, Depends, Security, UploadFile, HTTPException
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.conf import settings
 from papermerge.core import constants as const
@@ -32,8 +33,13 @@ def get_document_details(
 
     Required scope: `{scope}`
     """
-    doc = db.get_doc(engine, id=document_id, user_id=user.id)
-
+    try:
+        doc = db.get_doc(engine, id=document_id, user_id=user.id)
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found"
+        )
     return doc
 
 

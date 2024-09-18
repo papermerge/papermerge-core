@@ -48,6 +48,11 @@ interface PanelSelectionArg {
   mode: PanelMode
 }
 
+type DragPageStartedArg = {
+  pages: Array<ClientPage>
+  docID: string
+}
+
 export interface UploaderFileItemArgs {
   item: {
     source: NodeType | null
@@ -109,6 +114,7 @@ interface DragNDropState {
   in another thumbnail panel or inside Commander
   */
   pages: Array<ClientPage> | null
+  pagesDocID: string
 }
 
 type PanelComponent = "commander" | "viewer" | "searchResults"
@@ -511,12 +517,15 @@ const uiSlice = createSlice({
         state.secondaryViewerCurrentDocVerID = docVerID
       }
     },
-    dragPagesStarted(state, action: PayloadAction<Array<ClientPage>>) {
+    dragPagesStarted(state, action: PayloadAction<DragPageStartedArg>) {
+      const {pages, docID} = action.payload
       if (state.dragndrop) {
-        state.dragndrop.pages = action.payload
+        state.dragndrop.pages = pages
+        state.dragndrop.pagesDocID = docID
       } else {
         state.dragndrop = {
-          pages: action.payload
+          pages: pages,
+          pagesDocID: docID
         }
       }
     },
@@ -698,6 +707,9 @@ export const selectCurrentDocVerID = (state: RootState, mode: PanelMode) => {
 
 export const selectDraggedPages = (state: RootState) =>
   state.ui.dragndrop?.pages
+
+export const selectDraggedPagesDocID = (state: RootState) =>
+  state.ui.dragndrop?.pagesDocID
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

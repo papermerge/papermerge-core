@@ -51,6 +51,10 @@ const docVersSlice = createSlice({
       const page_ids = pages.map(p => p.id)
       const source_ids = sources.map(p => p.id)
       if (contains_every({container: page_ids, items: source_ids})) {
+        /* Here we deal with page transfer is within the same document
+        i.e we are just reordering. It is so because all source pages (their IDs)
+        were found in the target document version.
+        */
         const newPages = reorder<ClientPage, string>({
           arr: pages,
           source_ids: source_ids,

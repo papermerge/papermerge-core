@@ -356,3 +356,12 @@ export type Coord = {
   x: number
   y: number
 }
+
+export type TransferStrategyType = "mix" | "replace"
+
+export interface ServerErrorType {
+  status: number
+  data: {
+    detail: string
+  }
+}

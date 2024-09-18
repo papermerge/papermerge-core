@@ -1,11 +1,16 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {Checkbox, Skeleton, Stack} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {useContext, useEffect, useRef, useState} from "react"
 
-import {useGetPageImageQuery} from "@/features/document/apiSlice"
+import {
+  useGetDocumentQuery,
+  useGetPageImageQuery
+} from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
+  selectCurrentPages,
   selectSelectedPageIDs,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
@@ -13,7 +18,9 @@ import {
   dragPagesEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
-  selectDraggedPages
+  selectCurrentNodeID,
+  selectDraggedPages,
+  selectDraggedPagesDocID
 } from "@/features/ui/uiSlice"
 
 import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
@@ -24,6 +31,8 @@ import {
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
 
+import {contains_every} from "@/utils"
+import TransferPagesModal from "../TransferPagesModal"
 import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
@@ -35,6 +44,10 @@ type Args = {
 }
 
 export default function Thumbnail({page}: Args) {
+  const [
+    trPagesDialogOpened,
+    {open: trPagesDialogOpen, close: trPagesDialogClose}
+  ] = useDisclosure(false)
   const dispatch = useAppDispatch()
   const {data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
@@ -43,7 +56,12 @@ export default function Thumbnail({page}: Args) {
   const ref = useRef<HTMLDivElement>(null)
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
+  const draggedPagesIDs = draggedPages?.map(p => p.id)
+  const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc} = useGetDocumentQuery(currentNodeID!)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
   useEffect(() => {
     const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
@@ -104,11 +122,15 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragStart = () => {
-    dispatch(dragPagesStarted([page, ...selectedPages]))
+    const data = {
+      pages: [page, ...selectedPages],
+      docID: doc!.id
+    }
+    dispatch(dragPagesStarted(data))
   }
 
   const onDragEnd = () => {
-    dispatch(dragPagesEnded())
+    //dispatch(dragPagesEnded())
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -134,15 +156,26 @@ export default function Thumbnail({page}: Args) {
         position = "after"
       }
 
-      dispatch(
-        pagesDroppedInDoc({
-          sources: draggedPages,
-          target: page,
-          targetDocVerID: docVerID!,
-          position: position
-        })
-      )
-      dispatch(dragPagesEnded())
+      const page_ids = docVerPages.map(p => p.id)
+      const source_ids = draggedPages.map(p => p.id)
+      if (contains_every({container: page_ids, items: source_ids})) {
+        /* Here we deal with page transfer is within the same document
+        i.e we are just reordering. It is so because all source pages (their IDs)
+        were found in the target document version.
+        */
+        dispatch(
+          pagesDroppedInDoc({
+            sources: draggedPages,
+            target: page,
+            targetDocVerID: docVerID!,
+            position: position
+          })
+        )
+        dispatch(dragPagesEnded())
+      } else {
+        // here we deal with pages transfer between documents
+        trPagesDialogOpen()
+      }
     } // if (ref?.current)
 
     // remove both borderline_bottom and borderline_top
@@ -170,30 +203,43 @@ export default function Thumbnail({page}: Args) {
   }
 
   return (
-    <Stack
-      ref={ref}
-      className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
-      align="center"
-      gap={"xs"}
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragOver={onLocalDragOver}
-      onDragLeave={onLocalDragLeave}
-      onDragEnter={onLocalDragEnter}
-      onDrop={onLocalDrop}
-    >
-      <Checkbox
-        onChange={onCheck}
-        checked={selectedIds ? selectedIds.includes(page.id) : false}
-        className={classes.checkbox}
-      />
-      <img
-        style={{transform: `rotate(${page.angle}deg)`}}
-        onClick={onClick}
-        src={data}
-      />
-      {page.number}
-    </Stack>
+    <>
+      <Stack
+        ref={ref}
+        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
+        align="center"
+        gap={"xs"}
+        draggable
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={onLocalDragOver}
+        onDragLeave={onLocalDragLeave}
+        onDragEnter={onLocalDragEnter}
+        onDrop={onLocalDrop}
+      >
+        <Checkbox
+          onChange={onCheck}
+          checked={selectedIds ? selectedIds.includes(page.id) : false}
+          className={classes.checkbox}
+        />
+        <img
+          style={{transform: `rotate(${page.angle}deg)`}}
+          onClick={onClick}
+          src={data}
+        />
+        {page.number}
+      </Stack>
+      {draggedPagesDocID && draggedPagesIDs && doc && (
+        <TransferPagesModal
+          targetDoc={doc}
+          sourceDocID={draggedPagesDocID}
+          sourcePageIDs={draggedPagesIDs}
+          targetPageID={page.id}
+          opened={trPagesDialogOpened}
+          onCancel={trPagesDialogClose}
+          onSubmit={trPagesDialogClose}
+        />
+      )}
+    </>
   )
 }

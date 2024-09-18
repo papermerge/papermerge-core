@@ -270,7 +270,7 @@ def move_pages_mix(
         dst_old=dst_old_version.file_path,
         dst_new=dst_new_version.file_path,
         src_page_numbers=[p.number for p in moved_pages.order_by('number')],
-        dst_position=0
+        dst_position=dst_page.number
     )
 
     src_keys_1 = moved_page_ids

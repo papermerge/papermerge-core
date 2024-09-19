@@ -59,7 +59,7 @@ export default function Commander() {
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
-  const {currentData, isLoading, isFetching, isError, refetch} =
+  const {data, isLoading, isFetching, isError, refetch} =
     useGetPaginatedNodesQuery({
       nodeID: currentNodeID!,
       page_number: page,
@@ -74,7 +74,7 @@ export default function Commander() {
 
   const {data: currentFolder} = useGetFolderQuery(currentNodeID)
 
-  if (isLoading && !currentData) {
+  if (isLoading && !data) {
     return <div>Loading...</div>
   }
 
@@ -82,7 +82,7 @@ export default function Commander() {
     return <div>{`some error`}</div>
   }
 
-  if (!currentData) {
+  if (!data) {
     return <div>Data is null</div>
   }
 
@@ -172,7 +172,7 @@ export default function Commander() {
     refetch()
   }
 
-  const nodes = currentData.items.map((n: NodeType) => (
+  const nodes = data.items.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
   ))
 
@@ -186,7 +186,7 @@ export default function Commander() {
           pagination={{
             pageNumber: page,
             pageSize: pageSize!,
-            numPages: currentData.num_pages
+            numPages: data.num_pages
           }}
           onPageNumberChange={onPageNumberChange}
           onPageSizeChange={onPageSizeChange}

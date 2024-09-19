@@ -20,7 +20,8 @@ import {
   selectCurrentDocVerID,
   selectCurrentNodeID,
   selectDraggedPages,
-  selectDraggedPagesDocID
+  selectDraggedPagesDocID,
+  selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"
 
 import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
@@ -58,6 +59,7 @@ export default function Thumbnail({page}: Args) {
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedPagesIDs = draggedPages?.map(p => p.id)
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
+  const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {currentData: doc} = useGetDocumentQuery(currentNodeID!)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
@@ -230,17 +232,21 @@ export default function Thumbnail({page}: Args) {
         />
         {page.number}
       </Stack>
-      {draggedPagesDocID && draggedPagesIDs && doc && (
-        <TransferPagesModal
-          targetDoc={doc}
-          sourceDocID={draggedPagesDocID}
-          sourcePageIDs={draggedPagesIDs}
-          targetPageID={page.id}
-          opened={trPagesDialogOpened}
-          onCancel={trPagesDialogClose}
-          onSubmit={trPagesDialogClose}
-        />
-      )}
+      {draggedPagesDocParentID &&
+        draggedPagesDocID &&
+        draggedPagesIDs &&
+        doc && (
+          <TransferPagesModal
+            targetDoc={doc}
+            sourceDocID={draggedPagesDocID}
+            sourceDocParentID={draggedPagesDocParentID}
+            sourcePageIDs={draggedPagesIDs}
+            targetPageID={page.id}
+            opened={trPagesDialogOpened}
+            onCancel={trPagesDialogClose}
+            onSubmit={trPagesDialogClose}
+          />
+        )}
     </>
   )
 }

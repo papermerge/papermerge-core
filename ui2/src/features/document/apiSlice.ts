@@ -27,6 +27,7 @@ type MovePagesType = {
   }
   sourceDocID: string
   targetDocID: string
+  sourceDocParentID: string
 }
 
 type ExtractPagesType = {
@@ -111,7 +112,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => [
         {type: "Document", id: arg.targetDocID},
-        {type: "Document", id: arg.sourceDocID}
+        {type: "Document", id: arg.sourceDocID},
+        {type: "Node", id: arg.sourceDocParentID}
       ]
     }),
     extractPages: builder.mutation<void, ExtractPagesType>({

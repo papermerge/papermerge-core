@@ -9,6 +9,7 @@ import {
   currentNodeChanged,
   selectCurrentNodeID,
   selectDraggedPagesDocID,
+  selectDraggedPagesDocParentID,
   selectFilterText
 } from "@/features/ui/uiSlice"
 
@@ -51,11 +52,14 @@ export default function Commander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const draggedPages = useAppSelector(selectDraggedPages)
+  // needed to invalidate document tag
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
+  // needed to invalidate document's parent node tag
+  const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
-  const {data, isLoading, isFetching, isError, refetch} =
+  const {currentData, isLoading, isFetching, isError, refetch} =
     useGetPaginatedNodesQuery({
       nodeID: currentNodeID!,
       page_number: page,
@@ -70,7 +74,7 @@ export default function Commander() {
 
   const {data: currentFolder} = useGetFolderQuery(currentNodeID)
 
-  if (isLoading && !data) {
+  if (isLoading && !currentData) {
     return <div>Loading...</div>
   }
 
@@ -78,7 +82,7 @@ export default function Commander() {
     return <div>{`some error`}</div>
   }
 
-  if (!data) {
+  if (!currentData) {
     return <div>Data is null</div>
   }
 
@@ -168,7 +172,7 @@ export default function Commander() {
     refetch()
   }
 
-  const nodes = data.items.map((n: NodeType) => (
+  const nodes = currentData.items.map((n: NodeType) => (
     <Node onClick={onClick} key={n.id} node={n} />
   ))
 
@@ -182,7 +186,7 @@ export default function Commander() {
           pagination={{
             pageNumber: page,
             pageSize: pageSize!,
-            numPages: data.num_pages
+            numPages: currentData.num_pages
           }}
           onPageNumberChange={onPageNumberChange}
           onPageSizeChange={onPageSizeChange}
@@ -226,13 +230,15 @@ export default function Commander() {
           onCancel={dropFilesClose}
         />
       )}
-      {draggedPagesDocID &&
+      {draggedPagesDocParentID &&
+        draggedPagesDocID &&
         currentFolder &&
         draggedPages &&
         draggedPages.length > 0 && (
           <ExtractPagesModal
             sourcePages={draggedPages}
             sourceDocID={draggedPagesDocID}
+            sourceDocParentID={draggedPagesDocParentID}
             targetFolder={currentFolder}
             opened={extractPagesOpened}
             onSubmit={onPagesExtracted}

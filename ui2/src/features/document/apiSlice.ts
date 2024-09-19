@@ -37,6 +37,7 @@ type ExtractPagesType = {
     title_format: string
   }
   sourceDocID: string
+  sourceDocParentID: string
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -119,9 +120,12 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         method: "POST",
         body: data.body
       }),
-      invalidatesTags: (_result, _error, arg) => [
-        {type: "Document", id: arg.sourceDocID}
-      ]
+      invalidatesTags: (_result, _error, arg) => {
+        return [
+          {type: "Document", id: arg.sourceDocID},
+          {type: "Node", id: arg.sourceDocParentID}
+        ]
+      }
     })
   })
 })

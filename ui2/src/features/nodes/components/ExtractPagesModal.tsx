@@ -26,6 +26,7 @@ import {
 type ExtractPagesModalArgs = {
   sourcePages: ClientPage[]
   sourceDocID: string
+  sourceDocParentID: string
   targetFolder: FolderType
   opened: boolean
   onSubmit: () => void
@@ -35,6 +36,7 @@ type ExtractPagesModalArgs = {
 export default function ExtractPagesModal({
   sourcePages,
   sourceDocID,
+  sourceDocParentID,
   targetFolder,
   opened,
   onSubmit,
@@ -75,7 +77,8 @@ export default function ExtractPagesModal({
         strategy: separateDocs ? multiple_docs : one_doc,
         title_format: titleFormat
       },
-      sourceDocID: sourceDocID
+      sourceDocID: sourceDocID,
+      sourceDocParentID: sourceDocParentID
     }
     try {
       await extractPages(data)

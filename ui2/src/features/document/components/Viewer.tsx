@@ -44,6 +44,7 @@ export default function Viewer() {
   )
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {
+    data,
     currentData: doc,
     isSuccess,
     isError,

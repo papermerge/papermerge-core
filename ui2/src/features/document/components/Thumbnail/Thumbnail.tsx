@@ -124,7 +124,8 @@ export default function Thumbnail({page}: Args) {
   const onDragStart = () => {
     const data = {
       pages: [page, ...selectedPages],
-      docID: doc!.id
+      docID: doc!.id,
+      docParentID: doc!.parent_id!
     }
     dispatch(dragPagesStarted(data))
   }

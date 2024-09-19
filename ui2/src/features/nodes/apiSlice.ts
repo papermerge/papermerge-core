@@ -30,30 +30,30 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getPaginatedNodes: builder.query<Paginated<NodeType>, PaginatedArgs | void>(
-      {
-        query: ({
-          nodeID,
-          page_number = 1,
-          page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
-          filter = undefined
-        }: PaginatedArgs) => {
-          if (!filter) {
-            return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`
-          }
+    getPaginatedNodes: builder.query<Paginated<NodeType>, PaginatedArgs>({
+      query: ({
+        nodeID,
+        page_number = 1,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+        filter = undefined
+      }: PaginatedArgs) => {
+        if (!filter) {
+          return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`
+        }
 
-          return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}`
-        },
-        providesTags: (
-          result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
-          _error,
-          _arg
-        ) => [
-          "Node",
-          ...result.items.map(({id}) => ({type: "Node", id}) as const)
-        ]
-      }
-    ),
+        return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}`
+      },
+      providesTags: (
+        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        _error,
+        arg
+      ) => [
+        "Node", // generic Node tag
+        {type: "Node", id: arg.nodeID}, // "Node" tag per parent ID
+        // "Node" tag per each returned item
+        ...result.items.map(({id}) => ({type: "Node", id}) as const)
+      ]
+    }),
     getFolder: builder.query<FolderType, string>({
       query: folderID => `/folders/${folderID}`,
       providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}]

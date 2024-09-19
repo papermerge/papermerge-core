@@ -1,6 +1,6 @@
-import {Dialog, List, Container} from "@mantine/core"
-import {useSelector, useDispatch} from "react-redux"
-import {selectOpened, selectFiles, closeUploader} from "@/features/ui/uiSlice"
+import {closeUploader, selectFiles, selectOpened} from "@/features/ui/uiSlice"
+import {Container, Dialog, List} from "@mantine/core"
+import {useDispatch, useSelector} from "react-redux"
 import UploaderItem from "./uploaderItem"
 
 export default function Uploader() {
@@ -22,7 +22,7 @@ export default function Uploader() {
       withBorder
       withCloseButton
       onClose={onClose}
-      size="lg"
+      size="xl"
       radius="md"
     >
       <Container>

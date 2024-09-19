@@ -1,13 +1,22 @@
-import {useContext} from "react"
-import {List, Box, Group, ThemeIcon, rem, Loader, Tooltip} from "@mantine/core"
-import {IconCircleCheck, IconFolder, IconX} from "@tabler/icons-react"
-import {useNavigate} from "react-router-dom"
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {FileItemType, PanelMode} from "@/types"
+import {
+  Box,
+  Group,
+  List,
+  Loader,
+  Text,
+  ThemeIcon,
+  Tooltip,
+  rem
+} from "@mantine/core"
+import {IconCircleCheck, IconFolder, IconX} from "@tabler/icons-react"
+import {useContext} from "react"
+import {useNavigate} from "react-router-dom"
 
-import classes from "./uploaderItem.module.css"
 import {selectLastPageSize} from "@/features/ui/uiSlice"
+import classes from "./uploaderItem.module.css"
 
 type Args = {
   fileItem: FileItemType
@@ -66,16 +75,16 @@ export default function UploaderItem({fileItem}: Args) {
   return (
     <List.Item className={classes.uploaderItem} icon={statusComponent}>
       <Group justify="space-between">
-        <Group
-          justify="center"
-          gap="xs"
-          className={classes.uploaderItemTarget}
-          onClick={onTargetClick}
-        >
-          <IconFolder /> {fileItem.target.title}
+        <Group className={classes.uploaderItemTarget} onClick={onTargetClick}>
+          <IconFolder />
+          <Text w={150} truncate="end">
+            {fileItem.target.title}
+          </Text>
         </Group>
         <Box className={classes.uploaderItemFile} onClick={onFileClick}>
-          {fileItem.file_name}
+          <Text w={150} truncate="end">
+            {fileItem.file_name}
+          </Text>
         </Box>
         <Box>{fileItem.error}</Box>
       </Group>

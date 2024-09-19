@@ -7,6 +7,7 @@ import type {DocumentType, ServerErrorType, TransferStrategyType} from "@/types"
 
 interface Args {
   sourceDocID: string
+  sourceDocParentID: string
   targetDoc: DocumentType
   sourcePageIDs: string[]
   targetPageID: string
@@ -20,6 +21,7 @@ export default function TransferPagesModal({
   onCancel,
   onSubmit,
   sourceDocID,
+  sourceDocParentID,
   targetDoc,
   targetPageID,
   sourcePageIDs
@@ -37,6 +39,7 @@ export default function TransferPagesModal({
         move_strategy: transferStrategy
       },
       sourceDocID: sourceDocID,
+      sourceDocParentID: sourceDocParentID,
       targetDocID: targetDoc.id
     }
     try {

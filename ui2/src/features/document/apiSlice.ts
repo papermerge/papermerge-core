@@ -1,6 +1,7 @@
 import {RootState} from "@/app/types"
+import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import {DocumentType, TransferStrategyType} from "@/types"
+import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type ShortPageType = {
@@ -26,6 +27,18 @@ type MovePagesType = {
   }
   sourceDocID: string
   targetDocID: string
+  sourceDocParentID: string
+}
+
+type ExtractPagesType = {
+  body: {
+    source_page_ids: string[]
+    target_folder_id: string
+    strategy: ExtractStrategyType
+    title_format: string
+  }
+  sourceDocID: string
+  sourceDocParentID: string
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -78,7 +91,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         } catch (err) {
           return {err}
         }
-      }
+      },
+      keepUnusedDataFor: ONE_DAY_IN_SECONDS
     }),
     applyPageOpChanges: builder.mutation<void, ApplyPagesType>({
       query: data => ({
@@ -98,8 +112,22 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => [
         {type: "Document", id: arg.targetDocID},
-        {type: "Document", id: arg.sourceDocID}
+        {type: "Document", id: arg.sourceDocID},
+        {type: "Node", id: arg.sourceDocParentID}
       ]
+    }),
+    extractPages: builder.mutation<void, ExtractPagesType>({
+      query: data => ({
+        url: "/pages/extract",
+        method: "POST",
+        body: data.body
+      }),
+      invalidatesTags: (_result, _error, arg) => {
+        return [
+          {type: "Document", id: arg.sourceDocID},
+          {type: "Node", id: arg.sourceDocParentID}
+        ]
+      }
     })
   })
 })
@@ -108,5 +136,6 @@ export const {
   useGetDocumentQuery,
   useGetPageImageQuery,
   useApplyPageOpChangesMutation,
-  useMovePagesMutation
+  useMovePagesMutation,
+  useExtractPagesMutation
 } = apiSliceWithDocuments

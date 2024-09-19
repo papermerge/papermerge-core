@@ -8,6 +8,7 @@ import {useNavigate} from "react-router-dom"
 import {
   currentNodeChanged,
   selectCurrentNodeID,
+  selectDraggedPagesDocID,
   selectFilterText
 } from "@/features/ui/uiSlice"
 
@@ -50,6 +51,7 @@ export default function Commander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const draggedPages = useAppSelector(selectDraggedPages)
+  const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
@@ -152,10 +154,14 @@ export default function Commander() {
       }
     }
     if (draggedPages && draggedPages?.length > 0) {
-      console.log(draggedPages)
       extractPagesOpen()
+      setDragOver(false)
       return
     }
+  }
+
+  const onPagesExtracted = () => {
+    extractPagesClose()
   }
 
   const nodes = data.items.map((n: NodeType) => (
@@ -216,16 +222,19 @@ export default function Commander() {
           onCancel={dropFilesClose}
         />
       )}
-      {currentFolder && draggedPages && draggedPages.length > 0 && (
-        <ExtractPagesModal
-          sourcePages={draggedPages}
-          sourceDocID={"1"}
-          targetFolder={currentFolder}
-          opened={extractPagesOpened}
-          onSubmit={extractPagesClose}
-          onCancel={extractPagesClose}
-        />
-      )}
+      {draggedPagesDocID &&
+        currentFolder &&
+        draggedPages &&
+        draggedPages.length > 0 && (
+          <ExtractPagesModal
+            sourcePages={draggedPages}
+            sourceDocID={draggedPagesDocID}
+            targetFolder={currentFolder}
+            opened={extractPagesOpened}
+            onSubmit={onPagesExtracted}
+            onCancel={extractPagesClose}
+          />
+        )}
     </>
   )
 }

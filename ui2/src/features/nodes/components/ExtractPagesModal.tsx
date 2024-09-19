@@ -1,17 +1,27 @@
-import {useState} from "react"
+import {useEffect, useState} from "react"
 
-import {useExtractPagesMutation} from "@/features/document/apiSlice"
+import {
+  useExtractPagesMutation,
+  useGetDocumentQuery
+} from "@/features/document/apiSlice"
+import type {
+  ClientPage,
+  ExtractStrategyType,
+  FolderType,
+  ServerErrorType
+} from "@/types"
+import {drop_extension} from "@/utils"
 import {
   Button,
+  Checkbox,
   Container,
   Group,
   Loader,
   Modal,
   Space,
-  Text
+  Text,
+  TextInput
 } from "@mantine/core"
-
-import type {ClientPage, FolderType} from "@/types"
 
 type ExtractPagesModalArgs = {
   sourcePages: ClientPage[]
@@ -31,12 +41,49 @@ export default function ExtractPagesModal({
   onCancel
 }: ExtractPagesModalArgs) {
   const [extractPages, {isLoading}] = useExtractPagesMutation()
-  const [errorMessage, setErrorMessage] = useState("")
-  //const nodeTitles = nodes.map(g => g.title).join(",")
+  const {currentData: doc} = useGetDocumentQuery(sourceDocID)
+  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [titleFormat, setTitleFormat] = useState<string>("")
+  const [separateDocs, setSeparateDocs] = useState<boolean>(false)
+  const [titleFormatDescription, setTitleFormatDescription] =
+    useState<string>("")
 
-  const localSubmit = async () => {
-    //await extractPages(nodes.map(n => n.id))
-    onSubmit()
+  useEffect(() => {
+    if (doc?.title) {
+      setTitleFormat(drop_extension(doc.title))
+      setTitleFormatDescription(
+        `Extracted pages will be placed in document(s) with name ${titleFormat}-[ID].pdf`
+      )
+    }
+  }, [doc?.title])
+
+  useEffect(() => {
+    if (titleFormat) {
+      setTitleFormatDescription(
+        `Extracted pages will be placed in document(s) with title ${titleFormat}-[ID].pdf`
+      )
+    }
+  }, [titleFormat])
+
+  const onExtractPages = async () => {
+    const multiple_docs: ExtractStrategyType = "one-page-per-doc"
+    const one_doc: ExtractStrategyType = "all-pages-in-one-doc"
+    const data = {
+      body: {
+        source_page_ids: sourcePages.map(p => p.id),
+        target_folder_id: targetFolder.id,
+        strategy: separateDocs ? multiple_docs : one_doc,
+        title_format: titleFormat
+      },
+      sourceDocID: sourceDocID
+    }
+    try {
+      await extractPages(data)
+      onSubmit()
+    } catch (e: unknown) {
+      const err = e as ServerErrorType
+      setErrorMessage(err.data.detail)
+    }
   }
   const localCancel = () => {
     setErrorMessage("")
@@ -45,12 +92,35 @@ export default function ExtractPagesModal({
   }
 
   return (
-    <Modal title="Extract Pages" opened={opened} onClose={localCancel}>
+    <Modal
+      title="Extract Pages"
+      opened={opened}
+      size="lg"
+      onClose={localCancel}
+    >
       <Container>
-        <p>
+        <Text>
           Do you want to extract selected pages to folder
-          <Text c="green">{targetFolder.title}</Text>?
-        </p>
+          <Text c="green" px="xs" span>
+            {targetFolder.title}
+          </Text>
+          ?
+        </Text>
+        <TextInput
+          my="md"
+          label="Title Format"
+          rightSectionPointerEvents="none"
+          description={titleFormatDescription}
+          rightSection={".pdf"}
+          value={titleFormat}
+          onChange={event => setTitleFormat(event.currentTarget.value)}
+        />
+        <Checkbox
+          label="Extract each page into separate document"
+          my="md"
+          checked={separateDocs}
+          onChange={event => setSeparateDocs(event.currentTarget.checked)}
+        />
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
@@ -59,7 +129,7 @@ export default function ExtractPagesModal({
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
-            onClick={localSubmit}
+            onClick={onExtractPages}
             disabled={isLoading}
           >
             Yes, extract

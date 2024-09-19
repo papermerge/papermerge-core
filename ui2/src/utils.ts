@@ -1,6 +1,6 @@
-import Cookies from "js-cookie"
-import {SliceState} from "@/types"
 import {store} from "@/app/store"
+import {SliceState} from "@/types"
+import Cookies from "js-cookie"
 
 import type {User} from "@/types"
 
@@ -288,4 +288,8 @@ function imageEncode(arrayBuffer: ArrayBuffer, mimetype: MimeType) {
   return "data:" + mimetype + ";base64," + b64encoded
 }
 
-export {getCurrentUser, contains_every, reorder, imageEncode}
+function drop_extension(value: string): string {
+  return value.substring(0, value.lastIndexOf("."))
+}
+
+export {contains_every, drop_extension, getCurrentUser, imageEncode, reorder}

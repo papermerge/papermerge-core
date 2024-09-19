@@ -1,4 +1,5 @@
 import {RootState} from "@/app/types"
+import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
 import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
@@ -88,7 +89,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         } catch (err) {
           return {err}
         }
-      }
+      },
+      keepUnusedDataFor: ONE_DAY_IN_SECONDS
     }),
     applyPageOpChanges: builder.mutation<void, ApplyPagesType>({
       query: data => ({
@@ -118,7 +120,6 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => [
-        {type: "Node", id: arg.body.target_folder_id},
         {type: "Document", id: arg.sourceDocID}
       ]
     })

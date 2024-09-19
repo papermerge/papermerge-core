@@ -55,12 +55,13 @@ export default function Commander() {
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
-  const {data, isLoading, isFetching, isError} = useGetPaginatedNodesQuery({
-    nodeID: currentNodeID!,
-    page_number: page,
-    page_size: pageSize,
-    filter: filter
-  })
+  const {data, isLoading, isFetching, isError, refetch} =
+    useGetPaginatedNodesQuery({
+      nodeID: currentNodeID!,
+      page_number: page,
+      page_size: pageSize,
+      filter: filter
+    })
   const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 
   if (!currentNodeID) {
@@ -162,6 +163,9 @@ export default function Commander() {
 
   const onPagesExtracted = () => {
     extractPagesClose()
+    // Fetch again (bypassing cache) nodes of current folder.
+    // Current folder has now newly extracted docs.
+    refetch()
   }
 
   const nodes = data.items.map((n: NodeType) => (

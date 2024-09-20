@@ -6,6 +6,7 @@ import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   dragNodesStarted,
+  selectCurrentNodeID,
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
@@ -34,6 +35,7 @@ export default function Folder({
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
+  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
@@ -46,7 +48,11 @@ export default function Folder({
   }
 
   const onDragStartLocal = (e: React.DragEvent) => {
-    dispatch(dragNodesStarted([node.id, ...selectedIds]))
+    const data = {
+      nodes: [node.id, ...selectedIds],
+      sourceFolderID: currentFolderID!
+    }
+    dispatch(dragNodesStarted(data))
     onDragStart(node.id, e)
   }
 

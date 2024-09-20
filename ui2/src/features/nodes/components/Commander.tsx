@@ -26,6 +26,7 @@ import {
   currentDocVerUpdated,
   selectContentHeight,
   selectDraggedNodes,
+  selectDraggedNodesSourceFolderID,
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
@@ -60,6 +61,9 @@ export default function Commander() {
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedNodes = useAppSelector(selectDraggedNodes)
+  const draggedNodesSourceFolderID = useAppSelector(
+    selectDraggedNodesSourceFolderID
+  )
   // needed to invalidate document tag
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   // needed to invalidate document's parent node tag
@@ -278,15 +282,19 @@ export default function Commander() {
             onCancel={extractPagesClose}
           />
         )}
-      {draggedNodes && currentFolder && draggedNodes.length > 0 && (
-        <DropNodesModal
-          sourceNodes={draggedNodes}
-          targetFolder={currentFolder}
-          opened={dropNodesOpened}
-          onSubmit={dropNodesClose}
-          onCancel={dropNodesClose}
-        />
-      )}
+      {draggedNodes &&
+        currentFolder &&
+        draggedNodes.length > 0 &&
+        draggedNodesSourceFolderID && (
+          <DropNodesModal
+            sourceNodes={draggedNodes}
+            targetFolder={currentFolder}
+            sourceFolderID={draggedNodesSourceFolderID}
+            opened={dropNodesOpened}
+            onSubmit={dropNodesClose}
+            onCancel={dropNodesClose}
+          />
+        )}
     </>
   )
 }

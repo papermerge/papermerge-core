@@ -54,6 +54,11 @@ type DragPageStartedArg = {
   docParentID: string
 }
 
+type DragNodeStartedArg = {
+  nodes: string[]
+  sourceFolderID: string
+}
+
 export interface UploaderFileItemArgs {
   item: {
     source: NodeType | null
@@ -119,6 +124,10 @@ interface DragNDropState {
   pagesDocParentID?: string
   // IDs of the nodes being dragged
   nodeIDs: string[] | null
+  // ID of the folder where drag 'n drop started
+  // or in other words: parent node ID of the dragged nodes
+  // used for cache tag invalidation
+  sourceFolderID?: string
 }
 
 type PanelComponent = "commander" | "viewer" | "searchResults"
@@ -536,12 +545,16 @@ const uiSlice = createSlice({
         }
       }
     },
-    dragNodesStarted(state, action: PayloadAction<string[]>) {
+    dragNodesStarted(state, action: PayloadAction<DragNodeStartedArg>) {
+      const {nodes, sourceFolderID} = action.payload
+
       if (state.dragndrop) {
-        state.dragndrop.nodeIDs = action.payload
+        state.dragndrop.nodeIDs = nodes
+        state.dragndrop.sourceFolderID = sourceFolderID
       } else {
         state.dragndrop = {
-          nodeIDs: action.payload,
+          nodeIDs: nodes,
+          sourceFolderID: sourceFolderID,
           pages: null
         }
       }
@@ -744,6 +757,10 @@ export const selectDraggedNodes = createSelector(
     return nodes.filter((n: NodeType) => nodeIDs?.includes(n.id))
   }
 )
+
+export const selectDraggedNodesSourceFolderID = (state: RootState) => {
+  return state.ui.dragndrop?.sourceFolderID
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

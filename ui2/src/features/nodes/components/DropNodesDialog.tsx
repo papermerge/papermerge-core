@@ -11,9 +11,12 @@ import {
   Text
 } from "@mantine/core"
 
+import {useMoveNodesMutation} from "@/features/nodes/apiSlice"
+
 type DropNodesModalArgs = {
   sourceNodes: NodeType[]
   targetFolder: FolderType
+  sourceFolderID: string
   opened: boolean
   onSubmit: () => void
   onCancel: () => void
@@ -22,14 +25,24 @@ type DropNodesModalArgs = {
 export default function DropNodesModal({
   sourceNodes,
   targetFolder,
+  sourceFolderID,
   opened,
   onSubmit,
   onCancel
 }: DropNodesModalArgs) {
   const [errorMessage, setErrorMessage] = useState<string>("")
   const movedNodesTitles = sourceNodes.map(p => p.title).join(",")
-
-  const onMoveNodes = async () => {}
+  const [moveNodes, {isLoading}] = useMoveNodesMutation()
+  const onMoveNodes = async () => {
+    const data = {
+      body: {
+        source_ids: sourceNodes.map(p => p.id),
+        target_id: targetFolder.id
+      },
+      sourceFolderID: sourceFolderID
+    }
+    await moveNodes(data)
+  }
   const localCancel = () => {
     setErrorMessage("")
 
@@ -57,9 +70,9 @@ export default function DropNodesModal({
             Cancel
           </Button>
           <Button
-            leftSection={false && <Loader size={"sm"} />}
+            leftSection={isLoading && <Loader size={"sm"} />}
             onClick={onMoveNodes}
-            disabled={false}
+            disabled={isLoading}
           >
             Yes, move
           </Button>

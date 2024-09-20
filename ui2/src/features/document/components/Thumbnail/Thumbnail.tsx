@@ -15,7 +15,7 @@ import {
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {
-  dragPagesEnded,
+  dragEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
   selectCurrentNodeID,
@@ -174,7 +174,7 @@ export default function Thumbnail({page}: Args) {
             position: position
           })
         )
-        dispatch(dragPagesEnded())
+        dispatch(dragEnded())
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()

@@ -1,10 +1,11 @@
-import {useContext} from "react"
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {Checkbox} from "@mantine/core"
+import {Checkbox, Stack} from "@mantine/core"
+import {useContext} from "react"
 
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
+  dragNodesStarted,
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
@@ -18,9 +19,11 @@ import {useGetDocumentThumbnailQuery} from "@/features/nodes/apiSlice"
 type Args = {
   node: NodeType
   onClick: (node: NodeType) => void
+  onDragStart: (nodeID: string, event: React.DragEvent) => void
+  onDrag: (nodeID: string, event: React.DragEvent) => void
 }
 
-export default function Document({node, onClick}: Args) {
+export default function Document({node, onClick, onDrag, onDragStart}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
@@ -37,14 +40,31 @@ export default function Document({node, onClick}: Args) {
     }
   }
 
+  const onDragStartLocal = (e: React.DragEvent) => {
+    dispatch(dragNodesStarted([node.id, ...selectedIds]))
+    onDragStart(node.id, e)
+  }
+
+  const onDragEnd = () => {}
+
+  const onDragLocal = (e: React.DragEvent) => {
+    onDrag(node.id, e)
+  }
+
   return (
-    <div className={classes.document}>
+    <Stack
+      className={classes.document}
+      draggable
+      onDragStart={onDragStartLocal}
+      onDrag={onDragLocal}
+      onDragEnd={onDragEnd}
+    >
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
         <img src={data} />
         <Tags names={tagNames} />
         <div className={classes.title}>{node.title}</div>
       </a>
-    </div>
+    </Stack>
   )
 }

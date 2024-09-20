@@ -1,6 +1,7 @@
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useState} from "react"
+import {createRoot} from "react-dom/client"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
@@ -30,6 +31,7 @@ import {
 import type {NType, NodeType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
+import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
@@ -172,8 +174,28 @@ export default function Commander() {
     refetch()
   }
 
+  const onNodeDrag = (nodeID: string, event: React.DragEvent) => {}
+
+  const onNodeDragStart = (nodeID: string, event: React.DragEvent) => {
+    const image = <DraggingIcon nodeID={nodeID} />
+    let ghost = document.createElement("div")
+    ghost.style.transform = "translate(-10000px, -10000px)"
+    ghost.style.position = "absolute"
+    document.body.appendChild(ghost)
+    event.dataTransfer.setDragImage(ghost, 0, -10)
+
+    let root = createRoot(ghost)
+    root.render(image)
+  }
+
   const nodes = data.items.map((n: NodeType) => (
-    <Node onClick={onClick} key={n.id} node={n} />
+    <Node
+      onClick={onClick}
+      key={n.id}
+      node={n}
+      onDrag={onNodeDrag}
+      onDragStart={onNodeDragStart}
+    />
   ))
 
   let commanderContent: JSX.Element

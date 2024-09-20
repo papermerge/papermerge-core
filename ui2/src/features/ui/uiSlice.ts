@@ -115,8 +115,10 @@ interface DragNDropState {
   in another thumbnail panel or inside Commander
   */
   pages: Array<ClientPage> | null
-  pagesDocID: string
-  pagesDocParentID: string
+  pagesDocID?: string
+  pagesDocParentID?: string
+  // IDs of the nodes being dragged
+  nodeIDs: string[] | null
 }
 
 type PanelComponent = "commander" | "viewer" | "searchResults"
@@ -529,11 +531,22 @@ const uiSlice = createSlice({
         state.dragndrop = {
           pages: pages,
           pagesDocID: docID,
-          pagesDocParentID: docParentID
+          pagesDocParentID: docParentID,
+          nodeIDs: null
         }
       }
     },
-    dragPagesEnded(state) {
+    dragNodesStarted(state, action: PayloadAction<string[]>) {
+      if (state.dragndrop) {
+        state.dragndrop.nodeIDs = action.payload
+      } else {
+        state.dragndrop = {
+          nodeIDs: action.payload,
+          pages: null
+        }
+      }
+    },
+    dragEnded(state) {
       if (state.dragndrop) {
         state.dragndrop = undefined
       }
@@ -566,7 +579,8 @@ export const {
   viewerSelectionCleared,
   currentDocVerUpdated,
   dragPagesStarted,
-  dragPagesEnded
+  dragNodesStarted,
+  dragEnded
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -717,6 +731,9 @@ export const selectDraggedPagesDocID = (state: RootState) =>
 
 export const selectDraggedPagesDocParentID = (state: RootState) =>
   state.ui.dragndrop?.pagesDocParentID
+
+export const selectDraggedNodeIDs = (state: RootState) =>
+  state.ui.dragndrop?.nodeIDs
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

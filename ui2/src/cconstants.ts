@@ -50,3 +50,4 @@ export const MIN_ZOOM_FACTOR = 25 // percents
 export const MAX_ZOOM_FACTOR = 300 // percents
 
 export const ONE_DAY_IN_SECONDS = 86400
+export const DRAGGED = "dragged"

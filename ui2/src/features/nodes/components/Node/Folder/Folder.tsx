@@ -20,9 +20,16 @@ type Args = {
   onClick: (node: NodeType) => void
   onDragStart: (nodeID: string, event: React.DragEvent) => void
   onDrag: (nodeID: string, event: React.DragEvent) => void
+  cssClassNames: string[]
 }
 
-export default function Folder({node, onClick, onDrag, onDragStart}: Args) {
+export default function Folder({
+  node,
+  onClick,
+  onDrag,
+  onDragStart,
+  cssClassNames
+}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
@@ -51,7 +58,7 @@ export default function Folder({node, onClick, onDrag, onDragStart}: Args) {
 
   return (
     <Stack
-      className={classes.folder}
+      className={`${classes.folder} ${cssClassNames.join(" ")}`}
       draggable
       onDragStart={onDragStartLocal}
       onDrag={onDragLocal}

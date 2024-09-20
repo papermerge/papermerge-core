@@ -24,13 +24,13 @@ import {
   selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"
 
-import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
-import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
-
+import {DRAGGED} from "@/cconstants"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
+import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
+import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
@@ -38,7 +38,6 @@ import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
-const DRAGGED = "dragged"
 
 type Args = {
   page: ClientPage

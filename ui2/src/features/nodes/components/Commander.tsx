@@ -25,6 +25,7 @@ import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
   selectContentHeight,
+  selectDraggedNodes,
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
@@ -33,6 +34,7 @@ import classes from "./Commander.module.scss"
 
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
+import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import Node from "./Node"
@@ -46,6 +48,9 @@ export default function Commander() {
     extractPagesOpened,
     {open: extractPagesOpen, close: extractPagesClose}
   ] = useDisclosure(false)
+  // confirmation dialog when dropping nodes in commander
+  const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
+    useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
@@ -54,6 +59,7 @@ export default function Commander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const draggedPages = useAppSelector(selectDraggedPages)
+  const draggedNodes = useAppSelector(selectDraggedNodes)
   // needed to invalidate document tag
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   // needed to invalidate document's parent node tag
@@ -165,6 +171,11 @@ export default function Commander() {
       setDragOver(false)
       return
     }
+    if (draggedNodes && draggedNodes?.length > 0) {
+      dropNodesOpen()
+      setDragOver(false)
+      return
+    }
   }
 
   const onPagesExtracted = () => {
@@ -174,7 +185,7 @@ export default function Commander() {
     refetch()
   }
 
-  const onNodeDrag = (nodeID: string, event: React.DragEvent) => {}
+  const onNodeDrag = () => {}
 
   const onNodeDragStart = (nodeID: string, event: React.DragEvent) => {
     const image = <DraggingIcon nodeID={nodeID} />
@@ -267,6 +278,15 @@ export default function Commander() {
             onCancel={extractPagesClose}
           />
         )}
+      {draggedNodes && currentFolder && draggedNodes.length > 0 && (
+        <DropNodesModal
+          sourceNodes={draggedNodes}
+          targetFolder={currentFolder}
+          opened={dropNodesOpened}
+          onSubmit={dropNodesClose}
+          onCancel={dropNodesClose}
+        />
+      )}
     </>
   )
 }

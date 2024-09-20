@@ -735,6 +735,16 @@ export const selectDraggedPagesDocParentID = (state: RootState) =>
 export const selectDraggedNodeIDs = (state: RootState) =>
   state.ui.dragndrop?.nodeIDs
 
+export const selectDraggedNodes = createSelector(
+  [
+    (state: RootState) => Object.values(state.nodes.entities),
+    selectDraggedNodeIDs
+  ],
+  (nodes: NodeType[], nodeIDs: string[] | undefined | null) => {
+    return nodes.filter((n: NodeType) => nodeIDs?.includes(n.id))
+  }
+)
+
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {
   const collapsed = Cookies.get(NAVBAR_COLLAPSED_COOKIE) as BooleanString

@@ -399,6 +399,10 @@ const uiSlice = createSlice({
 
       state.secondaryCommanderFilter = filter
     },
+    commanderAllSelectionsCleared(state) {
+      state.mainCommanderSelectedIDs = []
+      state.secondaryCommanderSelectedIDs = []
+    },
     commanderLastPageSizeUpdated(
       state,
       action: PayloadAction<LastPageSizeArg>
@@ -581,6 +585,7 @@ export const {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   commanderSelectionCleared,
+  commanderAllSelectionsCleared,
   filterUpdated,
   commanderLastPageSizeUpdated,
   viewerThumbnailsPanelToggled,

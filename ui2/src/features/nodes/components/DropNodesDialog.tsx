@@ -1,3 +1,4 @@
+import {useAppDispatch} from "@/app/hooks"
 import {useState} from "react"
 
 import type {FolderType, NodeType} from "@/types"
@@ -12,6 +13,7 @@ import {
 } from "@mantine/core"
 
 import {useMoveNodesMutation} from "@/features/nodes/apiSlice"
+import {commanderAllSelectionsCleared, dragEnded} from "@/features/ui/uiSlice"
 
 type DropNodesModalArgs = {
   sourceNodes: NodeType[]
@@ -33,6 +35,8 @@ export default function DropNodesModal({
   const [errorMessage, setErrorMessage] = useState<string>("")
   const movedNodesTitles = sourceNodes.map(p => p.title).join(",")
   const [moveNodes, {isLoading}] = useMoveNodesMutation()
+  const dispatch = useAppDispatch()
+
   const onMoveNodes = async () => {
     const data = {
       body: {
@@ -42,6 +46,9 @@ export default function DropNodesModal({
       sourceFolderID: sourceFolderID
     }
     await moveNodes(data)
+    dispatch(dragEnded())
+    onSubmit()
+    dispatch(commanderAllSelectionsCleared())
   }
   const localCancel = () => {
     setErrorMessage("")

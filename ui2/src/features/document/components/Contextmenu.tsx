@@ -16,6 +16,7 @@ import {
   IconArrowBackUp,
   IconArrowMoveDown,
   IconEdit,
+  IconEye,
   IconRotate,
   IconRotateClockwise,
   IconTrash,
@@ -26,6 +27,7 @@ import {useNavigate} from "react-router-dom"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
+import PageOCRDialog from "./PageOCRDialog"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 
@@ -35,6 +37,8 @@ interface Args {
   position: Coord
 }
 
+const ICON_CSS = {width: rem(18), height: rem(18)}
+
 const DELETE_DOCUMENT_TEXT =
   "Are you sure you want to delete entire document with all its versions?"
 
@@ -42,6 +46,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const dispatch = useAppDispatch()
   const [delDocOpened, {open: delDocOpen, close: delDocClose}] =
     useDisclosure(false)
+  const [
+    pageOCRDialogOpened,
+    {open: pageOCRDialogOpen, close: pageOCRDialogClose}
+  ] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
@@ -105,6 +113,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
     await applyPageOpChanges({pages: pageData, documentID: docID!})
   }
 
+  const onViewOCRedText = async () => {
+    pageOCRDialogOpen()
+  }
+
   const onResetPagesChanges = () => {
     dispatch(pagesReseted(docVerID!))
   }
@@ -130,18 +142,20 @@ export default function ContextMenu({position, opened, onChange}: Args) {
         <Menu.Dropdown>
           <Menu.Item
             onClick={onChangeTitle}
-            leftSection={<IconEdit style={{width: rem(14), height: rem(14)}} />}
+            leftSection={<IconEdit style={ICON_CSS} />}
           >
             Change title
+          </Menu.Item>
+          <Menu.Item
+            onClick={onViewOCRedText}
+            leftSection={<IconEye style={ICON_CSS} />}
+          >
+            OCR Text
           </Menu.Item>
           {selectedPages.length > 0 && (
             <Menu.Item
               onClick={onRotateCC}
-              leftSection={
-                <IconRotateClockwise
-                  style={{width: rem(14), height: rem(14)}}
-                />
-              }
+              leftSection={<IconRotateClockwise style={ICON_CSS} />}
             >
               Rotate clockwise
             </Menu.Item>
@@ -149,9 +163,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
           {selectedPages.length > 0 && (
             <Menu.Item
               onClick={onRotate}
-              leftSection={
-                <IconRotate style={{width: rem(14), height: rem(14)}} />
-              }
+              leftSection={<IconRotate style={ICON_CSS} />}
             >
               Rotate counter-clockwise
             </Menu.Item>
@@ -159,9 +171,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
           {pagesHaveChanged && (
             <Menu.Item
               onClick={onResetPagesChanges}
-              leftSection={
-                <IconArrowBackUp style={{width: rem(14), height: rem(14)}} />
-              }
+              leftSection={<IconArrowBackUp style={ICON_CSS} />}
             >
               Reset changes
             </Menu.Item>
@@ -169,9 +179,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
           {pagesHaveChanged && (
             <Menu.Item
               onClick={onApplyPagesOpChanges}
-              leftSection={
-                <IconArrowMoveDown style={{width: rem(14), height: rem(14)}} />
-              }
+              leftSection={<IconArrowMoveDown style={ICON_CSS} />}
             >
               Save changes
             </Menu.Item>
@@ -180,9 +188,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
             <Menu.Item
               onClick={onDeletePages}
               color="red"
-              leftSection={
-                <IconTrash style={{width: rem(14), height: rem(14)}} />
-              }
+              leftSection={<IconTrash style={ICON_CSS} />}
             >
               Delete pages
             </Menu.Item>
@@ -192,7 +198,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
           <Menu.Item
             onClick={onDeleteDocument}
             color="red"
-            leftSection={<IconX style={{width: rem(14), height: rem(14)}} />}
+            leftSection={<IconX style={ICON_CSS} />}
           >
             Delete Document
           </Menu.Item>
@@ -207,6 +213,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
         opened={delDocOpened}
         onCancel={delDocClose}
         onSubmit={onDocumentDeleted}
+      />
+      <PageOCRDialog
+        opened={pageOCRDialogOpened}
+        onClose={pageOCRDialogClose}
       />
     </>
   )

@@ -56,7 +56,7 @@ export const selectNodesByIds = createSelector(
 export const moveNodesListeners = (startAppListening: AppStartListening) => {
   startAppListening({
     matcher: apiSliceWithNodes.endpoints.moveNodes.matchFulfilled,
-    effect: async (action, listenerApi) => {
+    effect: async () => {
       notifications.show({
         withBorder: true,
         message: "Nodes successfully moved"
@@ -66,7 +66,7 @@ export const moveNodesListeners = (startAppListening: AppStartListening) => {
 
   startAppListening({
     matcher: apiSliceWithNodes.endpoints.moveNodes.matchRejected,
-    effect: async (action, listenerApi) => {
+    effect: async action => {
       const error = action.payload as ServerErrorType
       notifications.show({
         autoClose: false,

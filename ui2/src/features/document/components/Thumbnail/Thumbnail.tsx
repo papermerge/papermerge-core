@@ -15,7 +15,7 @@ import {
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {
-  dragPagesEnded,
+  dragEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
   selectCurrentNodeID,
@@ -24,13 +24,13 @@ import {
   selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"
 
-import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
-import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
-
+import {DRAGGED} from "@/cconstants"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
+import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
+import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
@@ -38,7 +38,6 @@ import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
-const DRAGGED = "dragged"
 
 type Args = {
   page: ClientPage
@@ -174,7 +173,7 @@ export default function Thumbnail({page}: Args) {
             position: position
           })
         )
-        dispatch(dragPagesEnded())
+        dispatch(dragEnded())
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()

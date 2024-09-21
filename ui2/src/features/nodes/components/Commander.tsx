@@ -1,6 +1,7 @@
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useState} from "react"
+import {createRoot} from "react-dom/client"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
@@ -24,13 +25,17 @@ import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
   selectContentHeight,
+  selectDraggedNodes,
+  selectDraggedNodesSourceFolderID,
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import type {NType, NodeType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
+import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
+import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import Node from "./Node"
@@ -44,6 +49,9 @@ export default function Commander() {
     extractPagesOpened,
     {open: extractPagesOpen, close: extractPagesClose}
   ] = useDisclosure(false)
+  // confirmation dialog when dropping nodes in commander
+  const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
+    useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
@@ -52,6 +60,10 @@ export default function Commander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const draggedPages = useAppSelector(selectDraggedPages)
+  const draggedNodes = useAppSelector(selectDraggedNodes)
+  const draggedNodesSourceFolderID = useAppSelector(
+    selectDraggedNodesSourceFolderID
+  )
   // needed to invalidate document tag
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   // needed to invalidate document's parent node tag
@@ -163,6 +175,11 @@ export default function Commander() {
       setDragOver(false)
       return
     }
+    if (draggedNodes && draggedNodes?.length > 0) {
+      dropNodesOpen()
+      setDragOver(false)
+      return
+    }
   }
 
   const onPagesExtracted = () => {
@@ -172,8 +189,28 @@ export default function Commander() {
     refetch()
   }
 
+  const onNodeDrag = () => {}
+
+  const onNodeDragStart = (nodeID: string, event: React.DragEvent) => {
+    const image = <DraggingIcon nodeID={nodeID} />
+    let ghost = document.createElement("div")
+    ghost.style.transform = "translate(-10000px, -10000px)"
+    ghost.style.position = "absolute"
+    document.body.appendChild(ghost)
+    event.dataTransfer.setDragImage(ghost, 0, -10)
+
+    let root = createRoot(ghost)
+    root.render(image)
+  }
+
   const nodes = data.items.map((n: NodeType) => (
-    <Node onClick={onClick} key={n.id} node={n} />
+    <Node
+      onClick={onClick}
+      key={n.id}
+      node={n}
+      onDrag={onNodeDrag}
+      onDragStart={onNodeDragStart}
+    />
   ))
 
   let commanderContent: JSX.Element
@@ -243,6 +280,19 @@ export default function Commander() {
             opened={extractPagesOpened}
             onSubmit={onPagesExtracted}
             onCancel={extractPagesClose}
+          />
+        )}
+      {draggedNodes &&
+        currentFolder &&
+        draggedNodes.length > 0 &&
+        draggedNodesSourceFolderID && (
+          <DropNodesModal
+            sourceNodes={draggedNodes}
+            targetFolder={currentFolder}
+            sourceFolderID={draggedNodesSourceFolderID}
+            opened={dropNodesOpened}
+            onSubmit={dropNodesClose}
+            onCancel={dropNodesClose}
           />
         )}
     </>

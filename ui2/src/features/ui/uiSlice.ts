@@ -54,6 +54,11 @@ type DragPageStartedArg = {
   docParentID: string
 }
 
+type DragNodeStartedArg = {
+  nodes: string[]
+  sourceFolderID: string
+}
+
 export interface UploaderFileItemArgs {
   item: {
     source: NodeType | null
@@ -115,8 +120,14 @@ interface DragNDropState {
   in another thumbnail panel or inside Commander
   */
   pages: Array<ClientPage> | null
-  pagesDocID: string
-  pagesDocParentID: string
+  pagesDocID?: string
+  pagesDocParentID?: string
+  // IDs of the nodes being dragged
+  nodeIDs: string[] | null
+  // ID of the folder where drag 'n drop started
+  // or in other words: parent node ID of the dragged nodes
+  // used for cache tag invalidation
+  sourceFolderID?: string
 }
 
 type PanelComponent = "commander" | "viewer" | "searchResults"
@@ -388,6 +399,10 @@ const uiSlice = createSlice({
 
       state.secondaryCommanderFilter = filter
     },
+    commanderAllSelectionsCleared(state) {
+      state.mainCommanderSelectedIDs = []
+      state.secondaryCommanderSelectedIDs = []
+    },
     commanderLastPageSizeUpdated(
       state,
       action: PayloadAction<LastPageSizeArg>
@@ -529,11 +544,26 @@ const uiSlice = createSlice({
         state.dragndrop = {
           pages: pages,
           pagesDocID: docID,
-          pagesDocParentID: docParentID
+          pagesDocParentID: docParentID,
+          nodeIDs: null
         }
       }
     },
-    dragPagesEnded(state) {
+    dragNodesStarted(state, action: PayloadAction<DragNodeStartedArg>) {
+      const {nodes, sourceFolderID} = action.payload
+
+      if (state.dragndrop) {
+        state.dragndrop.nodeIDs = nodes
+        state.dragndrop.sourceFolderID = sourceFolderID
+      } else {
+        state.dragndrop = {
+          nodeIDs: nodes,
+          sourceFolderID: sourceFolderID,
+          pages: null
+        }
+      }
+    },
+    dragEnded(state) {
       if (state.dragndrop) {
         state.dragndrop = undefined
       }
@@ -555,6 +585,7 @@ export const {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   commanderSelectionCleared,
+  commanderAllSelectionsCleared,
   filterUpdated,
   commanderLastPageSizeUpdated,
   viewerThumbnailsPanelToggled,
@@ -566,7 +597,8 @@ export const {
   viewerSelectionCleared,
   currentDocVerUpdated,
   dragPagesStarted,
-  dragPagesEnded
+  dragNodesStarted,
+  dragEnded
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -717,6 +749,23 @@ export const selectDraggedPagesDocID = (state: RootState) =>
 
 export const selectDraggedPagesDocParentID = (state: RootState) =>
   state.ui.dragndrop?.pagesDocParentID
+
+export const selectDraggedNodeIDs = (state: RootState) =>
+  state.ui.dragndrop?.nodeIDs
+
+export const selectDraggedNodes = createSelector(
+  [
+    (state: RootState) => Object.values(state.nodes.entities),
+    selectDraggedNodeIDs
+  ],
+  (nodes: NodeType[], nodeIDs: string[] | undefined | null) => {
+    return nodes.filter((n: NodeType) => nodeIDs?.includes(n.id))
+  }
+)
+
+export const selectDraggedNodesSourceFolderID = (state: RootState) => {
+  return state.ui.dragndrop?.sourceFolderID
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

@@ -18,6 +18,15 @@ type UpdateNodeTagsType = {
   tags: string[]
 }
 
+type MoveNodesType = {
+  body: {
+    source_ids: string[]
+    target_id: string
+  }
+  // this one is used for cache tag invalidation
+  sourceFolderID: string
+}
+
 export type PaginatedArgs = {
   nodeID: string
   page_number?: number
@@ -143,6 +152,17 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         ids.map(id => {
           return {type: "Node", id: id}
         })
+    }),
+    moveNodes: builder.mutation<void, MoveNodesType>({
+      query: data => ({
+        url: "/nodes/move",
+        method: "POST",
+        body: data.body
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "Node", id: arg.body.target_id},
+        {type: "Node", id: arg.sourceFolderID}
+      ]
     })
   })
 })
@@ -154,5 +174,6 @@ export const {
   useRenameFolderMutation,
   useUpdateNodeTagsMutation,
   useDeleteNodesMutation,
-  useGetDocumentThumbnailQuery
+  useGetDocumentThumbnailQuery,
+  useMoveNodesMutation
 } = apiSliceWithNodes

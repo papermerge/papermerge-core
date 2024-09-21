@@ -1,5 +1,7 @@
+import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
-import type {NodeType, Paginated} from "@/types"
+import type {NodeType, Paginated, ServerErrorType} from "@/types"
+import {notifications} from "@mantine/notifications"
 import {
   PayloadAction,
   createEntityAdapter,
@@ -50,3 +52,29 @@ export const selectNodesByIds = createSelector(
     return Object.values(entities).filter(i => ids.includes(i.id))
   }
 )
+
+export const moveNodesListeners = (startAppListening: AppStartListening) => {
+  startAppListening({
+    matcher: apiSliceWithNodes.endpoints.moveNodes.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Nodes successfully moved"
+      })
+    }
+  })
+
+  startAppListening({
+    matcher: apiSliceWithNodes.endpoints.moveNodes.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+}

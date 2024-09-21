@@ -72,7 +72,12 @@ const docVersSlice = createSlice({
       const newPages = pages.map(p => {
         for (let i = 0; i < sources.length; i++) {
           if (sources[i].id == p.id) {
-            return {id: p.id, angle: p.angle + angle, number: p.number}
+            return {
+              id: p.id,
+              angle: p.angle + angle,
+              number: p.number,
+              text: p.text
+            }
           }
         }
         return p
@@ -114,10 +119,10 @@ const docVersSlice = createSlice({
             short_description: v.short_description,
             size: v.size,
             pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0}
+              return {id: p.id, number: p.number, angle: 0, text: p.text}
             }),
             initial_pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0}
+              return {id: p.id, number: p.number, angle: 0, text: p.text}
             })
           }
           all_vers.push(ver)

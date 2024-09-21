@@ -12,9 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^7.10.2",
-    "@mantine/form": "^7.11.1",
-    "@mantine/hooks": "^7.10.2",
+    "@mantine/core": "^7.12.2",
+    "@mantine/form": "^7.12.2",
+    "@mantine/hooks": "^7.12.2",
     "@mantine/notifications": "^7.12.2",
     "@reduxjs/toolkit": "^2.2.5",
     "@tabler/icons-react": "^3.6.0",

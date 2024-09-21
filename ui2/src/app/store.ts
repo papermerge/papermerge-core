@@ -10,6 +10,7 @@ import usersReducer from "@/features/users/usersSlice"
 import currentUserReducer from "@/slices/currentUser"
 import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import {configureStore} from "@reduxjs/toolkit"
+import {listenerMiddleware} from "./listenerMiddleware"
 
 export const store = configureStore({
   reducer: {
@@ -26,5 +27,7 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat(apiSlice.middleware)
+    getDefaultMiddleware()
+      .prepend(listenerMiddleware.middleware)
+      .concat(apiSlice.middleware)
 })

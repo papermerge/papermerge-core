@@ -13,6 +13,7 @@ interface Args {
 }
 
 export const PageOCRDialog = ({onClose, opened}: Args) => {
+  /* Show OCRed text of one or multiple pages */
   const ref = useRef<HTMLButtonElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []

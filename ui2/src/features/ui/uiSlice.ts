@@ -130,12 +130,23 @@ interface DragNDropState {
   sourceFolderID?: string
 }
 
+interface SearchState {
+  /* Query string as entered by user i.e exactly what user sees
+  in search box when he/she submits search query */
+  query: string
+  /* when clicking on result item, should it open
+  clicked item (document or folder) in main panel or in secondary one? */
+  openResultItemInOtherPanel: boolean
+}
+
 type PanelComponent = "commander" | "viewer" | "searchResults"
 
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
   sizes: SizesState
+  search?: SearchState
+  searchLastPageSize?: number
   dragndrop?: DragNDropState
   currentNodeMain?: CurrentNode
   currentNodeSecondary?: CurrentNode
@@ -147,6 +158,8 @@ interface UIState {
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
+  /* Which component should main panel display:
+    commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
   mainViewerThumbnailsPanelOpen?: boolean
@@ -291,6 +304,18 @@ const uiSlice = createSlice({
           actionPanelHeight: action.payload
         }
       }
+    },
+    searchResultsLastPageSizeUpdated(state, action: PayloadAction<number>) {
+      state.searchLastPageSize = action.payload
+    },
+    mainPanelSwitchedToSearchResults(state, action: PayloadAction<string>) {
+      const query = action.payload
+      state.mainPanelComponent = "searchResults"
+      state.search = {
+        query: query,
+        openResultItemInOtherPanel: true
+      }
+      state.currentNodeMain = undefined
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
@@ -580,6 +605,11 @@ export const {
   updateSearchActionPanel,
   updateBreadcrumb,
   currentNodeChanged,
+  searchResultsLastPageSizeUpdated,
+  /* Main panel switched to show search results.
+  This happens when user clicks enter in search field
+  in the header */
+  mainPanelSwitchedToSearchResults,
   secondaryPanelClosed,
   secondaryPanelOpened,
   commanderSelectionNodeAdded,
@@ -766,6 +796,11 @@ export const selectDraggedNodes = createSelector(
 export const selectDraggedNodesSourceFolderID = (state: RootState) => {
   return state.ui.dragndrop?.sourceFolderID
 }
+
+export const selectSearchQuery = (state: RootState) => state.ui.search?.query
+
+export const selectSearchLastPageSize = (state: RootState): number =>
+  state.ui.searchLastPageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

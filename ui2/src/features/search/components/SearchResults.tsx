@@ -1,15 +1,20 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import Pagination from "@/components/Pagination"
 import {Center, Loader, Stack} from "@mantine/core"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 
-import {useGetPaginatedSearchResultsQuery} from "@/features/search/apiSlice"
+import {
+  useGetNodesQuery,
+  useGetPaginatedSearchResultsQuery
+} from "@/features/search/apiSlice"
 import {
   searchResultsLastPageSizeUpdated,
   selectSearchContentHeight,
   selectSearchLastPageSize,
   selectSearchQuery
 } from "@/features/ui/uiSlice"
+import {SearchResultNode} from "@/types"
+import {skipToken} from "@reduxjs/toolkit/query"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
 import classes from "./SearchResults.module.css"
@@ -18,6 +23,7 @@ export default function SearchResults() {
   const lastPageSize = useAppSelector(selectSearchLastPageSize)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  const [nodeIDs, setNodeIDs] = useState<string[] | null>(null)
 
   const dispatch = useAppDispatch()
   const height = useAppSelector(selectSearchContentHeight)
@@ -27,6 +33,23 @@ export default function SearchResults() {
     page_number: page,
     page_size: pageSize
   })
+
+  const {data: extraData} = useGetNodesQuery(nodeIDs ? nodeIDs : skipToken)
+
+  useEffect(() => {
+    const nonEmptyItems: SearchResultNode[] = data?.items || []
+    if (nonEmptyItems.length > 0) {
+      const newNodeIDs = nonEmptyItems.map(n =>
+        n.entity_type == "folder" ? n.id : n.document_id
+      ) as string[]
+
+      if (newNodeIDs.length > 0) {
+        setNodeIDs(newNodeIDs)
+      } else {
+        setNodeIDs(null)
+      }
+    }
+  }, [data?.items])
 
   const onClick = () => {}
 
@@ -62,7 +85,7 @@ export default function SearchResults() {
         justify={"space-between"}
         style={{height: `${height}px`}}
       >
-        <SearchResultItems onClick={onClick} />
+        <SearchResultItems items={data.items} onClick={onClick} />
 
         <Pagination
           pagination={{

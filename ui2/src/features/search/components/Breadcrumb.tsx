@@ -1,18 +1,26 @@
-import {Breadcrumbs, Anchor, Skeleton, Group} from "@mantine/core"
-import {useSelector} from "react-redux"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
+import {Anchor, Breadcrumbs, Group, Skeleton} from "@mantine/core"
 import {IconHome, IconInbox} from "@tabler/icons-react"
+import {useSelector} from "react-redux"
 
 import type {NType, UserDetails} from "@/types"
 
 type Args = {
-  items: Array<[string, string]>
+  items?: Array<[string, string]> | null
   pageNumber?: number | null
   onClick: (n: NType) => void
 }
 
 export default function Path({items, onClick, pageNumber}: Args) {
+  if (!items) {
+    return <Skeleton height={18} width={45} />
+  }
+
+  if (items.length == 0) {
+    return <Skeleton height={18} width={45} />
+  }
+
   if (items.length == 1) {
     return (
       <Breadcrumbs>

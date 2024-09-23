@@ -1,5 +1,8 @@
+import {useAppSelector} from "@/app/hooks"
+import {selectNodeById} from "@/features/search/searchSlice"
 import type {CType, NType, SearchResultNode} from "@/types"
 import {Group, Stack} from "@mantine/core"
+import Breadcrumb from "./Breadcrumb"
 import Tags from "./Tags"
 import classes from "./item.module.css"
 
@@ -9,6 +12,11 @@ type Args = {
 }
 
 export default function SearchResultItem({item, onClick}: Args) {
+  const item_id = (
+    item.entity_type == "document" ? item.document_id : item.id
+  ) as string
+  const nodeDetails = useAppSelector(s => selectNodeById(s, item_id))
+
   const onLocalClickDocumentItem = () => {
     const node = {
       id: item.document_id!,
@@ -30,7 +38,7 @@ export default function SearchResultItem({item, onClick}: Args) {
   if (item.entity_type == "folder") {
     return (
       <Stack my={"lg"} gap="xs">
-        {/*<Breadcrumb onClick={onClick} items={item.breadcrumb || []} /> */}
+        <Breadcrumb onClick={onClick} items={nodeDetails?.breadcrumb} />
 
         <Group
           className={classes.item}
@@ -39,7 +47,7 @@ export default function SearchResultItem({item, onClick}: Args) {
         >
           <div className={classes.folderIcon}></div>
           <div className={classes.title}>{item.title}</div>
-          <Tags items={item.tags} maxItems={8} />
+          <Tags items={nodeDetails?.tags} maxItems={8} />
         </Group>
       </Stack>
     )
@@ -47,14 +55,15 @@ export default function SearchResultItem({item, onClick}: Args) {
 
   return (
     <Stack my={"lg"} pt={"sm"} gap="xs">
-      {/*<Breadcrumb
+      <Breadcrumb
         onClick={onClick}
+        // for documents breadcrumb also indicates page number
         pageNumber={item.page_number}
-        items={item.breadcrumb || []}
-      />*/}
+        items={nodeDetails?.breadcrumb}
+      />
       <Group className={classes.item} onClick={onLocalClickDocumentItem}>
         <div className={classes.title}>{item.title}</div>
-        <Tags items={item.tags} maxItems={8} />
+        <Tags items={nodeDetails.tags} maxItems={8} />
       </Group>
     </Stack>
   )

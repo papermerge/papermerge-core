@@ -1,4 +1,4 @@
-import {Pill, Group} from "@mantine/core"
+import {Group, Pill, Skeleton} from "@mantine/core"
 
 import type {NodeTag} from "@/types"
 
@@ -8,6 +8,10 @@ type Args = {
 }
 
 export default function Tags({items, maxItems}: Args) {
+  if (!items) {
+    return <Skeleton height={18} width={45} />
+  }
+
   if (!maxItems) {
     maxItems = 4
   }

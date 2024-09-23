@@ -33,8 +33,9 @@ export default function SearchResults() {
     page_number: page,
     page_size: pageSize
   })
-
-  const {data: extraData} = useGetNodesQuery(nodeIDs ? nodeIDs : skipToken)
+  /* Nodes details are fetched here, but used
+  in different place (in `searchResultItem` via selector) */
+  const {data: _extraData} = useGetNodesQuery(nodeIDs ? nodeIDs : skipToken)
 
   useEffect(() => {
     const nonEmptyItems: SearchResultNode[] = data?.items || []

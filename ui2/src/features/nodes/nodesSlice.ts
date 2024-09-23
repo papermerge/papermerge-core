@@ -1,5 +1,6 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
+import {apiSliceWithSearch} from "@/features/search/apiSlice"
 import type {NodeType, Paginated, ServerErrorType} from "@/types"
 import {notifications} from "@mantine/notifications"
 import {
@@ -32,6 +33,13 @@ const nodesSlice = createSlice({
         nodeAdapter.setOne(state, payload)
       }
     )
+    builder.addMatcher(
+      apiSliceWithSearch.endpoints.getNodes.matchFulfilled,
+      (state, action: PayloadAction<NodeType[]>) => {
+        const payload = action.payload
+        nodeAdapter.addMany(state, payload)
+      }
+    )
   }
 })
 
@@ -42,9 +50,8 @@ export const selectFoldersResult = (folderID: string) =>
 
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 
-export const {selectEntities: selectNodeEntities} = nodeAdapter.getSelectors(
-  (state: RootState) => state.nodes
-)
+export const {selectEntities: selectNodeEntities, selectById: selectNodeById} =
+  nodeAdapter.getSelectors((state: RootState) => state.nodes)
 
 export const selectNodesByIds = createSelector(
   [selectNodeEntities, selectItemIds],

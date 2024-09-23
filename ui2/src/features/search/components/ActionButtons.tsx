@@ -1,4 +1,3 @@
-import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import {updateSearchActionPanel} from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
@@ -32,9 +31,11 @@ export default function ActionButtons() {
         <GoBackButton />
         <OpenInOtherPanelCheckbox />
       </Group>
+      {/*
       <Group>
         <ToggleSecondaryPanel />
       </Group>
+      */}
     </Group>
   )
 }

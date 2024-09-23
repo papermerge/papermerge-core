@@ -31,7 +31,7 @@ export default function SearchResults() {
   const height = useAppSelector(selectSearchContentHeight)
   const query = useAppSelector(selectSearchQuery)
   const openItemInOtherPanel = useAppSelector(selectOpenResultItemInOtherPanel)
-  const {data, isLoading, isFetching} = useGetPaginatedSearchResultsQuery({
+  const {data, isLoading} = useGetPaginatedSearchResultsQuery({
     qs: query!,
     page_number: page,
     page_size: pageSize
@@ -55,7 +55,7 @@ export default function SearchResults() {
     }
   }, [data?.items])
 
-  const onClick = (node: NType, pageNumber?: number) => {
+  const onClick = (node: NType) => {
     if (openItemInOtherPanel) {
       dispatch(
         currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})

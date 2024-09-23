@@ -11,7 +11,8 @@ import {
   secondaryPanelClosed,
   secondaryPanelOpened,
   selectCurrentNodeCType,
-  selectCurrentNodeID
+  selectCurrentNodeID,
+  selectPanelComponent
 } from "@/features/ui/uiSlice"
 
 export default function ToggleSecondaryPanel() {
@@ -19,6 +20,9 @@ export default function ToggleSecondaryPanel() {
   const dispatch = useAppDispatch()
   const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
+  const secondaryPanel = useAppSelector(s =>
+    selectPanelComponent(s, "secondary")
+  )
 
   const onClick = () => {
     dispatch(secondaryPanelOpened(ctype == "folder" ? "commander" : "viewer"))
@@ -28,11 +32,15 @@ export default function ToggleSecondaryPanel() {
   }
 
   if (mode == "main") {
-    return (
-      <ActionIcon size="lg" onClick={onClick} variant="default">
-        <IconColumns2 size={18} />
-      </ActionIcon>
-    )
+    /* Display button for splitting the panel if and only if there
+      is no secondary panel opened */
+    if (!secondaryPanel) {
+      return (
+        <ActionIcon size="lg" onClick={onClick} variant="default">
+          <IconColumns2 size={18} />
+        </ActionIcon>
+      )
+    }
 
     return <></>
   }

@@ -9,7 +9,6 @@ import tagsReducer from "@/features/tags/tagsSlice"
 import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/usersSlice"
 import currentUserReducer from "@/slices/currentUser"
-import dualPanelReducer from "@/slices/dualPanel/dualPanel"
 import {configureStore} from "@reduxjs/toolkit"
 import {listenerMiddleware} from "./listenerMiddleware"
 
@@ -17,7 +16,6 @@ export const store = configureStore({
   reducer: {
     auth: authSliceReducer,
     currentUser: currentUserReducer,
-    dualPanel: dualPanelReducer,
     tags: tagsReducer,
     groups: groupsReducer,
     users: usersReducer,

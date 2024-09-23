@@ -8,12 +8,14 @@ import {
   useGetPaginatedSearchResultsQuery
 } from "@/features/search/apiSlice"
 import {
+  currentNodeChanged,
   searchResultsLastPageSizeUpdated,
+  selectOpenResultItemInOtherPanel,
   selectSearchContentHeight,
   selectSearchLastPageSize,
   selectSearchQuery
 } from "@/features/ui/uiSlice"
-import {SearchResultNode} from "@/types"
+import {NType, SearchResultNode} from "@/types"
 import {skipToken} from "@reduxjs/toolkit/query"
 import ActionButtons from "./ActionButtons"
 import SearchResultItems from "./SearchResultItems"
@@ -28,6 +30,7 @@ export default function SearchResults() {
   const dispatch = useAppDispatch()
   const height = useAppSelector(selectSearchContentHeight)
   const query = useAppSelector(selectSearchQuery)
+  const openItemInOtherPanel = useAppSelector(selectOpenResultItemInOtherPanel)
   const {data, isLoading, isFetching} = useGetPaginatedSearchResultsQuery({
     qs: query!,
     page_number: page,
@@ -52,7 +55,17 @@ export default function SearchResults() {
     }
   }, [data?.items])
 
-  const onClick = () => {}
+  const onClick = (node: NType, pageNumber?: number) => {
+    if (openItemInOtherPanel) {
+      dispatch(
+        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
+      )
+    } else {
+      dispatch(
+        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "main"})
+      )
+    }
+  }
 
   const onPageNumberChange = (page: number) => {
     setPage(page)

@@ -57,13 +57,14 @@ export default function SearchResultItem({item, onClick}: Args) {
     <Stack my={"lg"} pt={"sm"} gap="xs">
       <Breadcrumb
         onClick={onClick}
-        // for documents breadcrumb also indicates page number
+        // for documents breadcrumb also indicates
+        // page number (if page number > 1)
         pageNumber={item.page_number}
         items={nodeDetails?.breadcrumb}
       />
       <Group className={classes.item} onClick={onLocalClickDocumentItem}>
         <div className={classes.title}>{item.title}</div>
-        <Tags items={nodeDetails.tags} maxItems={8} />
+        <Tags items={nodeDetails?.tags} maxItems={8} />
       </Group>
     </Stack>
   )

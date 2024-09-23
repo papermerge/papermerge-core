@@ -317,6 +317,12 @@ const uiSlice = createSlice({
       }
       state.currentNodeMain = undefined
     },
+    searchResultItemTargetUpdated(state, action: PayloadAction<boolean>) {
+      if (state.search) {
+        /* in which panel will search result item open ? */
+        state.search.openResultItemInOtherPanel = action.payload
+      }
+    },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
       if (payload.panel == "main") {
@@ -610,6 +616,7 @@ export const {
   This happens when user clicks enter in search field
   in the header */
   mainPanelSwitchedToSearchResults,
+  searchResultItemTargetUpdated,
   secondaryPanelClosed,
   secondaryPanelOpened,
   commanderSelectionNodeAdded,
@@ -801,6 +808,9 @@ export const selectSearchQuery = (state: RootState) => state.ui.search?.query
 
 export const selectSearchLastPageSize = (state: RootState): number =>
   state.ui.searchLastPageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
+
+export const selectOpenResultItemInOtherPanel = (state: RootState) =>
+  state.ui.search?.openResultItemInOtherPanel
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

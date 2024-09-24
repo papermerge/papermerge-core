@@ -29,7 +29,6 @@ import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import {setCurrentPage} from "@/slices/dualPanel/dualPanel"
 import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
@@ -80,7 +79,7 @@ export default function Thumbnail({page}: Args) {
   }, [draggedPages?.length])
 
   const onClick = () => {
-    dispatch(setCurrentPage({mode, page: page.number}))
+    //dispatch(setCurrentPage({mode, page: page.number}))
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {

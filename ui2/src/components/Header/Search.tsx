@@ -1,8 +1,8 @@
+import {mainPanelSwitchedToSearchResults} from "@/features/ui/uiSlice"
+import {CloseButton, Input, rem} from "@mantine/core"
+import {IconSearch} from "@tabler/icons-react"
 import {useState} from "react"
 import {useDispatch} from "react-redux"
-import {Input, CloseButton, rem} from "@mantine/core"
-import {IconSearch} from "@tabler/icons-react"
-import {fetchPaginatedSearchResults} from "@/slices/dualPanel/dualPanel"
 
 export default function Search() {
   const dispatch = useDispatch()
@@ -16,6 +16,7 @@ export default function Search() {
     const {key} = event
 
     if (key === "Enter") {
+      /*
       dispatch(
         fetchPaginatedSearchResults({
           query: value,
@@ -23,6 +24,8 @@ export default function Search() {
           page_size: 10
         })
       )
+      */
+      dispatch(mainPanelSwitchedToSearchResults(value))
     }
   }
 

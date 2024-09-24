@@ -1,8 +1,4 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {
-  selectMainPanel,
-  selectSecondaryPanel
-} from "@/slices/dualPanel/dualPanel"
 import {ActionIcon} from "@mantine/core"
 import {IconColumns2, IconX} from "@tabler/icons-react"
 import {useContext} from "react"
@@ -15,20 +11,18 @@ import {
   secondaryPanelClosed,
   secondaryPanelOpened,
   selectCurrentNodeCType,
-  selectCurrentNodeID
+  selectCurrentNodeID,
+  selectPanelComponent
 } from "@/features/ui/uiSlice"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
-  const mainPanel = useAppSelector(selectMainPanel)
-  const secondaryPanel = useAppSelector(selectSecondaryPanel)
   const dispatch = useAppDispatch()
   const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
-
-  if (mainPanel) {
-    // mainPanel is always there
-  }
+  const secondaryPanel = useAppSelector(s =>
+    selectPanelComponent(s, "secondary")
+  )
 
   const onClick = () => {
     dispatch(secondaryPanelOpened(ctype == "folder" ? "commander" : "viewer"))
@@ -38,6 +32,8 @@ export default function ToggleSecondaryPanel() {
   }
 
   if (mode == "main") {
+    /* Display button for splitting the panel if and only if there
+      is no secondary panel opened */
     if (!secondaryPanel) {
       return (
         <ActionIcon size="lg" onClick={onClick} variant="default">

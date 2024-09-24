@@ -1,15 +1,16 @@
 import {useDispatch} from "react-redux"
 
+import {searchResultItemTargetUpdated} from "@/features/ui/uiSlice"
 import {Checkbox} from "@mantine/core"
-import {updateSearchResultItemTarget} from "@/slices/dualPanel/dualPanel"
 
 export default function OpenInOtherPanelCheckbox() {
   const dispatch = useDispatch()
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const targetPanel = event.currentTarget.checked ? "secondary" : "main"
-    dispatch(updateSearchResultItemTarget(targetPanel))
+    const inOtherPanel = Boolean(event.currentTarget.checked)
+    dispatch(searchResultItemTargetUpdated(inOtherPanel))
   }
+
   return (
     <Checkbox onChange={onChange} defaultChecked label="Open in other panel" />
   )

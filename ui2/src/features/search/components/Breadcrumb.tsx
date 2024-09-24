@@ -25,6 +25,7 @@ export default function Path({items, onClick, pageNumber}: Args) {
     return (
       <Breadcrumbs>
         <RootItem itemId={items[0][0]} onClick={onClick} />
+        {pageNumber && pageNumber > 1 && `Page ${pageNumber}`}
       </Breadcrumbs>
     )
   }

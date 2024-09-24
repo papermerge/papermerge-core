@@ -1,7 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetPageImageQuery} from "@/features/document/apiSlice"
-import {selectZoomFactor} from "@/features/ui/uiSlice"
+import {
+  selectDocumentCurrentPage,
+  selectZoomFactor
+} from "@/features/ui/uiSlice"
 import {ClientPage, PanelMode} from "@/types"
 import {Skeleton, Stack} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
@@ -14,7 +17,7 @@ type Args = {
 export default function Page({page}: Args) {
   const {currentData, data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
-  const currentPage = 1
+  const currentPage = useAppSelector(s => selectDocumentCurrentPage(s, mode))
   const targetRef = useRef<HTMLImageElement | null>(null)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
 

@@ -103,6 +103,11 @@ interface CurrentNodeArgs {
   panel: PanelMode
 }
 
+interface CurrentPageUpdatedArgs {
+  pageNumber: number
+  panel: PanelMode
+}
+
 interface CurrentNode {
   id: string
   ctype: CType
@@ -169,10 +174,14 @@ interface UIState {
   mainViewerZoomFactor?: number
   mainViewerSelectedIDs?: Array<string>
   mainViewerCurrentDocVerID?: string
+  /* current page (number) in main viewer */
+  mainViewerCurrentPageNumber?: number
   secondaryViewerThumbnailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
   secondaryViewerSelectedIDs?: Array<string>
   secondaryViewerCurrentDocVerID?: string
+  /* current page (number) in secondary viewer */
+  secondaryViewerCurrentPageNumber?: number
 }
 
 const initialState: UIState = {
@@ -557,6 +566,19 @@ const uiSlice = createSlice({
       // secondary
       state.secondaryViewerSelectedIDs = []
     },
+    viewerCurrentPageUpdated(
+      state,
+      action: PayloadAction<CurrentPageUpdatedArgs>
+    ) {
+      const {pageNumber, panel} = action.payload
+
+      if (panel == "main") {
+        state.mainViewerCurrentPageNumber = pageNumber
+        return
+      }
+
+      state.secondaryViewerCurrentPageNumber = pageNumber
+    },
     currentDocVerUpdated(state, action: PayloadAction<CurrentDocVerUpdateArg>) {
       const {mode, docVerID} = action.payload
       if (mode == "main") {
@@ -632,6 +654,7 @@ export const {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved,
   viewerSelectionCleared,
+  viewerCurrentPageUpdated,
   currentDocVerUpdated,
   dragPagesStarted,
   dragNodesStarted,
@@ -811,6 +834,17 @@ export const selectSearchLastPageSize = (state: RootState): number =>
 
 export const selectOpenResultItemInOtherPanel = (state: RootState) =>
   state.ui.search?.openResultItemInOtherPanel
+
+export const selectDocumentCurrentPage = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainViewerCurrentPageNumber
+  }
+
+  return state.ui.secondaryViewerCurrentPageNumber
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

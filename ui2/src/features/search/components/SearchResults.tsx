@@ -13,7 +13,8 @@ import {
   selectOpenResultItemInOtherPanel,
   selectSearchContentHeight,
   selectSearchLastPageSize,
-  selectSearchQuery
+  selectSearchQuery,
+  viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
 import {NType, SearchResultNode} from "@/types"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -55,15 +56,28 @@ export default function SearchResults() {
     }
   }, [data?.items])
 
-  const onClick = (node: NType) => {
+  const onClick = (node: NType, page?: number) => {
     if (openItemInOtherPanel) {
       dispatch(
         currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
       )
+      if (node.ctype == "document" && page) {
+        // scroll into page
+        dispatch(
+          viewerCurrentPageUpdated({
+            pageNumber: page,
+            panel: "secondary"
+          })
+        )
+      }
     } else {
       dispatch(
         currentNodeChanged({id: node.id, ctype: node.ctype, panel: "main"})
       )
+      if (node.ctype == "document" && page) {
+        // scroll into page
+        dispatch(viewerCurrentPageUpdated({pageNumber: page, panel: "main"}))
+      }
     }
   }
 

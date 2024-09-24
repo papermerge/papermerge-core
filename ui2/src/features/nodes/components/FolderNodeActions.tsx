@@ -12,6 +12,7 @@ import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
+import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DeleteButton from "./DeleteButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
@@ -50,6 +51,7 @@ export default function FolderNodeActions() {
       </Group>
       <Group>
         <QuickFilter />
+        <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>
     </Group>

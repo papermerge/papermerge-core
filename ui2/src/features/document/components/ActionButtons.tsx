@@ -8,6 +8,7 @@ import {useContext, useEffect, useRef} from "react"
 import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
+import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
@@ -44,6 +45,7 @@ export default function ActionButtons() {
         {selectedPages.length > 0 && <DeletePagesButton />}
       </Group>
       <Group>
+        <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>
     </Group>

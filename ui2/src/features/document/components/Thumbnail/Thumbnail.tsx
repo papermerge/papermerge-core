@@ -21,7 +21,8 @@ import {
   selectCurrentNodeID,
   selectDraggedPages,
   selectDraggedPagesDocID,
-  selectDraggedPagesDocParentID
+  selectDraggedPagesDocParentID,
+  viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
 
 import {DRAGGED} from "@/cconstants"
@@ -79,7 +80,12 @@ export default function Thumbnail({page}: Args) {
   }, [draggedPages?.length])
 
   const onClick = () => {
-    //dispatch(setCurrentPage({mode, page: page.number}))
+    dispatch(
+      viewerCurrentPageUpdated({
+        pageNumber: page.number,
+        panel: mode
+      })
+    )
   }
 
   const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {

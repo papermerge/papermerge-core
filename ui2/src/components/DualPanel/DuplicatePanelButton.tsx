@@ -3,12 +3,14 @@ import type {PanelMode} from "@/types"
 import {ActionIcon} from "@mantine/core"
 import {IconArrowBarLeft, IconArrowBarRight} from "@tabler/icons-react"
 import {useContext} from "react"
+import {useNavigate} from "react-router-dom"
 
 import PanelContext from "@/contexts/PanelContext"
 import {
   currentNodeChanged,
   selectCurrentNodeCType,
   selectCurrentNodeID,
+  selectLastPageSize,
   selectPanelComponent
 } from "@/features/ui/uiSlice"
 
@@ -27,20 +29,39 @@ export default function DuplicatePanelButton() {
   const nodeIDSecondary = useAppSelector(s =>
     selectCurrentNodeID(s, "secondary")
   )
+  const lastPageSize = useAppSelector(s => selectLastPageSize(s, "main"))
   const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
   const secondaryPanel = useAppSelector(s =>
     selectPanelComponent(s, "secondary")
   )
+  const navigate = useNavigate()
   const panelsHaveDifferentNodes = nodeIDMain != nodeIDSecondary
 
   const onClickDuplicateMain = () => {
+    /* Duplicate content of the main panel into secondary i.e.
+      source is "main panel"
+      target is "secondary panel"
+      and the operation is "target := source" */
     dispatch(
       currentNodeChanged({id: nodeID!, ctype: ctype!, panel: "secondary"})
     )
   }
 
   const onClickDuplicateSecondary = () => {
-    dispatch(currentNodeChanged({id: nodeID!, ctype: ctype!, panel: "main"}))
+    /* Duplicate content of the secondary panel into main i.e.
+      source is "secondary panel"
+      target is "main panel"
+      and the operation is "target := source"
+
+      Current node in main panel should be switched via navigation.
+      This way, when user refreshes browser, he/she will
+      land on same node
+    */
+    if (ctype == "folder") {
+      navigate(`/folder/${nodeID}?page_size=${lastPageSize}`)
+    } else {
+      navigate(`/document/${nodeID}`)
+    }
   }
 
   if (mode == "main") {

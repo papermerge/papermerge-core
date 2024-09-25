@@ -1,10 +1,10 @@
-import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 import {getBaseURL} from "@/utils"
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 
 import type {RootState} from "@/app/types"
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${getBaseURL()}api`,
+  baseUrl: `${getBaseURL()}/api`,
   prepareHeaders: (headers, {getState}) => {
     const state = getState() as RootState
     const token = state.auth.token

@@ -9,7 +9,10 @@ export function getBaseURL(trimBackslash?: boolean): string {
 
   if (base_url) {
     if (trimBackslash) {
-      return base_url.substring(0, base_url.length - 1)
+      // trim backslash if and only if there is a backlash at the end of string
+      if (base_url.length > 0 && base_url[base_url.length - 1] == "/") {
+        return base_url.substring(0, base_url.length - 1)
+      }
     }
 
     return base_url

@@ -33,6 +33,7 @@ import {useNavigate} from "react-router-dom"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
+import MoveDocumentDialogConfirm from "./MoveDocumentDialogConfirm"
 import PageOCRDialog from "./PageOCRDialog"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
@@ -55,6 +56,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const [
     pageOCRDialogOpened,
     {open: pageOCRDialogOpen, close: pageOCRDialogClose}
+  ] = useDisclosure(false)
+  const [
+    moveDocumentDialogConfirmOpened,
+    {open: moveDocumentDialogConfirmOpen, close: moveDocumentDialogConfirmClose}
   ] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
@@ -128,7 +133,9 @@ export default function ContextMenu({position, opened, onChange}: Args) {
     dispatch(pagesReseted(docVerID!))
   }
 
-  const onMoveDocument = () => {}
+  const onMoveDocumentConfirm = () => {
+    moveDocumentDialogConfirmOpen()
+  }
 
   return (
     <>
@@ -203,7 +210,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
             </Menu.Item>
           )}
           {otherPanel == "commander" && (
-            <MoveDocumentMenuItem onClick={onMoveDocument} />
+            <MoveDocumentMenuItem onClick={onMoveDocumentConfirm} />
           )}
 
           <Menu.Label>Danger zone</Menu.Label>
@@ -229,6 +236,11 @@ export default function ContextMenu({position, opened, onChange}: Args) {
       <PageOCRDialog
         opened={pageOCRDialogOpened}
         onClose={pageOCRDialogClose}
+      />
+      <MoveDocumentDialogConfirm
+        opened={moveDocumentDialogConfirmOpened}
+        onSubmit={moveDocumentDialogConfirmClose}
+        onCancel={moveDocumentDialogConfirmClose}
       />
     </>
   )

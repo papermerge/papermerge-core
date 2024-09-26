@@ -1,9 +1,9 @@
 import {createAsyncThunk} from "@reduxjs/toolkit"
 
-import axios from "axios"
+import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
 import type {FolderType, NodeType} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
+import axios from "axios"
 
 type UploadFileInput = {
   file: File
@@ -53,10 +53,35 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       })
     )
 
-    const response1 = await axios.post(`${baseUrl}api/nodes/`, data1, {
-      headers: defaultHeaders,
-      validateStatus: () => true
-    })
+    let response1
+    const nodesURL = `${baseUrl}/api/nodes/`
+
+    try {
+      response1 = await axios.post(nodesURL, data1, {
+        headers: defaultHeaders,
+        validateStatus: () => true
+      })
+    } catch (error: unknown) {
+      /* Will happen when nodesURL points to invalid location */
+      console.error(`Error while POSTing to nodesURL=${nodesURL}`)
+      console.error(error)
+      thunkApi.dispatch(
+        uploaderFileItemUpdated({
+          item: {
+            source: null,
+            target: args.target,
+            file_name: args.file.name
+          },
+          status: "failure",
+          error: "Node creation error. See console for details"
+        })
+      )
+      return {
+        file_name: args.file.name,
+        source: null,
+        target: args.target
+      }
+    }
 
     if (response1.status >= 400) {
       thunkApi.dispatch(
@@ -85,11 +110,35 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
     defaultHeaders["Content-Type"] = "multipart/form-data"
 
-    const response2 = await axios.post(
-      `${baseUrl}api/documents/${createdNode.id}/upload`,
-      form_data,
-      {headers: defaultHeaders, validateStatus: () => true}
-    )
+    let response2
+    const uploadURL = `${baseUrl}/api/documents/${createdNode.id}/upload`
+
+    try {
+      response2 = await axios.post(uploadURL, form_data, {
+        headers: defaultHeaders,
+        validateStatus: () => true
+      })
+    } catch (error: unknown) {
+      /* Will happen when uploadURL points to invalid location */
+      console.error(`Error while uploading file to uploadURL=${uploadURL}`)
+      console.error(error)
+      thunkApi.dispatch(
+        uploaderFileItemUpdated({
+          item: {
+            source: null,
+            target: args.target,
+            file_name: args.file.name
+          },
+          status: "failure",
+          error: "Upload file error. See console for details"
+        })
+      )
+      return {
+        file_name: args.file.name,
+        source: null,
+        target: args.target
+      }
+    }
 
     if (response2.status == 200 || response2.status == 201) {
       thunkApi.dispatch(

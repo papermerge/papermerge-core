@@ -62,6 +62,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         validateStatus: () => true
       })
     } catch (error: unknown) {
+      /* Will happen when nodesURL points to invalid location */
       console.error(`Error while POSTing to nodesURL=${nodesURL}`)
       console.error(error)
       thunkApi.dispatch(
@@ -118,6 +119,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         validateStatus: () => true
       })
     } catch (error: unknown) {
+      /* Will happen when uploadURL points to invalid location */
       console.error(`Error while uploading file to uploadURL=${uploadURL}`)
       console.error(error)
       thunkApi.dispatch(

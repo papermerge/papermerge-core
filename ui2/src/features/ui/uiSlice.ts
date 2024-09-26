@@ -814,12 +814,17 @@ export const selectDraggedNodeIDs = (state: RootState) =>
   state.ui.dragndrop?.nodeIDs
 
 export const selectDraggedNodes = createSelector(
-  [
-    (state: RootState) => Object.values(state.nodes.entities),
-    selectDraggedNodeIDs
-  ],
-  (nodes: NodeType[], nodeIDs: string[] | undefined | null) => {
-    return nodes.filter((n: NodeType) => nodeIDs?.includes(n.id))
+  /** Input selectors */
+  [(state: RootState) => state.nodes.entities, selectDraggedNodeIDs],
+  (
+    entities: Record<string, NodeType>,
+    draggedNodeIDs: string[] | undefined | null
+  ) => {
+    /** Returns `NodeType` objects of the nodes
+     * currently being dragged */
+    return Object.values(entities).filter((n: NodeType) =>
+      draggedNodeIDs?.includes(n.id)
+    )
   }
 )
 

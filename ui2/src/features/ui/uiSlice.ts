@@ -731,6 +731,21 @@ export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
   return state.ui.secondaryPanelComponent
 }
 
+export const selectOtherPanelComponent = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  /* select other panel (as opposite to current one)
+  if mode == "main" => selects "secondary" panel component
+  if mode == "secondary" => select "main" panel component
+  */
+  if (mode == "main") {
+    return state.ui.secondaryPanelComponent
+  }
+
+  return state.ui.mainPanelComponent
+}
+
 export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.ui.mainCommanderSelectedIDs || []

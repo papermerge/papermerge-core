@@ -7,14 +7,20 @@ import {
   selectPagesHaveChanged,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
-import {selectCurrentDocVerID, selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {
+  selectCurrentDocVerID,
+  selectCurrentNodeID,
+  selectOtherPanelComponent
+} from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import type {Coord, PanelMode} from "@/types"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {
   IconArrowBackUp,
+  IconArrowLeft,
   IconArrowMoveDown,
+  IconArrowRight,
   IconEdit,
   IconEye,
   IconRotate,
@@ -63,6 +69,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const otherPanel = useAppSelector(s => selectOtherPanelComponent(s, mode))
 
   const onChangeTitle = () => {
     if (refEditTitleButton.current) {
@@ -120,6 +127,8 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const onResetPagesChanges = () => {
     dispatch(pagesReseted(docVerID!))
   }
+
+  const onMoveDocument = () => {}
 
   return (
     <>
@@ -193,6 +202,9 @@ export default function ContextMenu({position, opened, onChange}: Args) {
               Delete pages
             </Menu.Item>
           )}
+          {otherPanel == "commander" && (
+            <MoveDocumentMenuItem onClick={onMoveDocument} />
+          )}
 
           <Menu.Label>Danger zone</Menu.Label>
           <Menu.Item
@@ -219,5 +231,32 @@ export default function ContextMenu({position, opened, onChange}: Args) {
         onClose={pageOCRDialogClose}
       />
     </>
+  )
+}
+
+interface onMoveDocumentMenuItemArgs {
+  onClick: () => void
+}
+
+function MoveDocumentMenuItem({onClick}: onMoveDocumentMenuItemArgs) {
+  const mode: PanelMode = useContext(PanelContext)
+  if (mode == "main") {
+    return (
+      <Menu.Item
+        onClick={onClick}
+        leftSection={<IconArrowRight style={ICON_CSS} />}
+      >
+        Move Document
+      </Menu.Item>
+    )
+  }
+
+  return (
+    <Menu.Item
+      onClick={onClick}
+      leftSection={<IconArrowLeft style={ICON_CSS} />}
+    >
+      Move Document
+    </Menu.Item>
   )
 }

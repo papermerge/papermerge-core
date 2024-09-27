@@ -11,7 +11,14 @@ import {
   ZOOM_FACTOR_STEP
 } from "@/cconstants"
 
-import type {FileItemStatus, FileItemType, FolderType, NodeType} from "@/types"
+import type {
+  FileItemStatus,
+  FileItemType,
+  FolderType,
+  NodeType,
+  SortMenuColumn,
+  SortMenuDirection
+} from "@/types"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 160
@@ -57,6 +64,16 @@ type DragPageStartedArg = {
 type DragNodeStartedArg = {
   nodes: string[]
   sourceFolderID: string
+}
+
+type SortMenuColumnUpdatedArgs = {
+  mode: PanelMode
+  column: SortMenuColumn
+}
+
+type SortMenuDirectionUpdatedArgs = {
+  mode: PanelMode
+  direction: SortMenuDirection
 }
 
 export interface UploaderFileItemArgs {
@@ -160,9 +177,13 @@ interface UIState {
   mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
   mainCommanderLastPageSize?: number
+  mainCommanderSortMenuColumn?: SortMenuColumn
+  mainCommanderSortMenuDir?: SortMenuDirection
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
+  secondaryCommanderSortMenuColumn?: SortMenuColumn
+  secondaryCommanderSortMenuDir?: SortMenuDirection
   /* Which component should main panel display:
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
@@ -455,6 +476,28 @@ const uiSlice = createSlice({
 
       state.secondaryCommanderLastPageSize = pageSize
     },
+    commanderSortMenuColumnUpdated(
+      state,
+      action: PayloadAction<SortMenuColumnUpdatedArgs>
+    ) {
+      const {mode, column} = action.payload
+      if (mode == "main") {
+        state.mainCommanderSortMenuColumn = column
+      } else {
+        state.secondaryCommanderSortMenuColumn = column
+      }
+    },
+    commanderSortMenuDirectionUpdated(
+      state,
+      action: PayloadAction<SortMenuDirectionUpdatedArgs>
+    ) {
+      const {mode, direction} = action.payload
+      if (mode == "main") {
+        state.mainCommanderSortMenuDir = direction
+      } else {
+        state.secondaryCommanderSortMenuDir = direction
+      }
+    },
     viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
 
@@ -647,6 +690,8 @@ export const {
   commanderAllSelectionsCleared,
   filterUpdated,
   commanderLastPageSizeUpdated,
+  commanderSortMenuColumnUpdated,
+  commanderSortMenuDirectionUpdated,
   viewerThumbnailsPanelToggled,
   zoomFactorIncremented,
   zoomFactorDecremented,
@@ -798,6 +843,28 @@ export const selectLastPageSize = (
     state.ui.secondaryCommanderLastPageSize ||
     PAGINATION_DEFAULT_ITEMS_PER_PAGES
   )
+}
+
+export const selectCommanderSortMenuColumn = (
+  state: RootState,
+  mode: PanelMode
+): SortMenuColumn => {
+  if (mode == "main") {
+    return state.ui.mainCommanderSortMenuColumn || "modified"
+  }
+
+  return state.ui.secondaryCommanderSortMenuColumn || "modified"
+}
+
+export const selectCommanderSortMenuDir = (
+  state: RootState,
+  mode: PanelMode
+): SortMenuDirection => {
+  if (mode == "main") {
+    return state.ui.mainCommanderSortMenuDir || "az"
+  }
+
+  return state.ui.secondaryCommanderSortMenuDir || "az"
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {

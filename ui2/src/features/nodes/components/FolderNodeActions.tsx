@@ -18,6 +18,7 @@ import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
 import NewFolderButton from "./NewFolderButton"
 import QuickFilter from "./QuickFilter"
+import SortMenu from "./SortMenu"
 import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
@@ -50,6 +51,7 @@ export default function FolderNodeActions() {
         {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group>
+        <SortMenu />
         <QuickFilter />
         <DuplicatePanelButton />
         <ToggleSecondaryPanel />

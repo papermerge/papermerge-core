@@ -125,7 +125,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, arg) => {
         return [
           {type: "Document", id: arg.sourceDocID},
-          {type: "Node", id: arg.sourceDocParentID}
+          {type: "Node", id: arg.sourceDocParentID},
+          {type: "Node", id: arg.body.target_folder_id}
         ]
       }
     })

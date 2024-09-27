@@ -7,6 +7,7 @@ import {
   useMoveNodesMutation
 } from "@/features/nodes/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {otherPanel} from "@/utils"
 import {Button, Group, Loader, Modal, Text} from "@mantine/core"
 import {useContext, useState} from "react"
 
@@ -91,13 +92,4 @@ export default function MoveDocumentDialogConfirm({
       </Modal>
     )
   )
-}
-
-function otherPanel(mode: PanelMode): PanelMode {
-  if (mode == "main") {
-    return "secondary"
-  }
-
-  // here mode is == "secondary"
-  return "main"
 }

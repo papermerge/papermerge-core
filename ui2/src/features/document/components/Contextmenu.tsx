@@ -1,12 +1,17 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
+import {
+  useApplyPageOpChangesMutation,
+  useGetDocumentQuery
+} from "@/features/document/apiSlice"
 import {
   pagesReseted,
   selectAllPages,
   selectPagesHaveChanged,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
+import {useGetFolderQuery} from "@/features/nodes/apiSlice"
+import ExtractPagesModal from "@/features/nodes/components/ExtractPagesModal"
 import {
   selectCurrentDocVerID,
   selectCurrentNodeID,
@@ -14,6 +19,7 @@ import {
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import type {Coord, PanelMode} from "@/types"
+import {otherPanel} from "@/utils"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {
@@ -61,20 +67,31 @@ export default function ContextMenu({position, opened, onChange}: Args) {
     moveDocumentDialogConfirmOpened,
     {open: moveDocumentDialogConfirmOpen, close: moveDocumentDialogConfirmClose}
   ] = useDisclosure(false)
+  const [
+    extractPagesDialogOpened,
+    {open: extractPagesDialogOpen, close: extractPagesDialogClose}
+  ] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const hasSelectedPages = selectedPages && selectedPages.length > 0
   const refEditTitleButton = useRef<HTMLButtonElement>(null)
   const refRotateButton = useRef<HTMLButtonElement>(null)
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
   const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc} = useGetDocumentQuery(docID!)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
-  const otherPanel = useAppSelector(s => selectOtherPanelComponent(s, mode))
+  const otherPanelComponent = useAppSelector(s =>
+    selectOtherPanelComponent(s, mode)
+  )
+  const other = otherPanel(mode)
+  const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
+  const {data: targetFolder} = useGetFolderQuery(targetFolderID!)
 
   const onChangeTitle = () => {
     if (refEditTitleButton.current) {
@@ -135,6 +152,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
 
   const onMoveDocumentConfirm = () => {
     moveDocumentDialogConfirmOpen()
+  }
+
+  const onExtractPages = () => {
+    extractPagesDialogOpen()
   }
 
   return (
@@ -200,7 +221,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
               Save changes
             </Menu.Item>
           )}
-          {selectedPages.length > 0 && (
+          {hasSelectedPages && (
             <Menu.Item
               onClick={onDeletePages}
               color="red"
@@ -209,7 +230,10 @@ export default function ContextMenu({position, opened, onChange}: Args) {
               Delete pages
             </Menu.Item>
           )}
-          {otherPanel == "commander" && (
+          {otherPanelComponent == "commander" && hasSelectedPages && (
+            <ExtractPagesMenuItem onClick={onExtractPages} />
+          )}
+          {otherPanelComponent == "commander" && (
             <MoveDocumentMenuItem onClick={onMoveDocumentConfirm} />
           )}
 
@@ -242,15 +266,30 @@ export default function ContextMenu({position, opened, onChange}: Args) {
         onSubmit={moveDocumentDialogConfirmClose}
         onCancel={moveDocumentDialogConfirmClose}
       />
+      {hasSelectedPages &&
+        otherPanelComponent == "commander" &&
+        docID &&
+        targetFolder &&
+        doc && (
+          <ExtractPagesModal
+            sourcePages={selectedPages}
+            sourceDocID={docID}
+            targetFolder={targetFolder}
+            sourceDocParentID={doc?.parent_id!}
+            opened={extractPagesDialogOpened}
+            onSubmit={extractPagesDialogClose}
+            onCancel={extractPagesDialogClose}
+          />
+        )}
     </>
   )
 }
 
-interface onMoveDocumentMenuItemArgs {
+interface MenuItemArgs {
   onClick: () => void
 }
 
-function MoveDocumentMenuItem({onClick}: onMoveDocumentMenuItemArgs) {
+function MoveDocumentMenuItem({onClick}: MenuItemArgs) {
   const mode: PanelMode = useContext(PanelContext)
   if (mode == "main") {
     return (
@@ -269,6 +308,29 @@ function MoveDocumentMenuItem({onClick}: onMoveDocumentMenuItemArgs) {
       leftSection={<IconArrowLeft style={ICON_CSS} />}
     >
       Move Document
+    </Menu.Item>
+  )
+}
+
+function ExtractPagesMenuItem({onClick}: MenuItemArgs) {
+  const mode: PanelMode = useContext(PanelContext)
+  if (mode == "main") {
+    return (
+      <Menu.Item
+        onClick={onClick}
+        leftSection={<IconArrowRight style={ICON_CSS} />}
+      >
+        Extract Pages
+      </Menu.Item>
+    )
+  }
+
+  return (
+    <Menu.Item
+      onClick={onClick}
+      leftSection={<IconArrowLeft style={ICON_CSS} />}
+    >
+      Extract Pages
     </Menu.Item>
   )
 }

@@ -1,9 +1,13 @@
 import {useAppSelector} from "@/app/hooks"
 import Error from "@/components/Error"
 import PanelContext from "@/contexts/PanelContext"
-import {useMoveNodesMutation} from "@/features/nodes/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {
+  useGetFolderQuery,
+  useMoveNodesMutation
+} from "@/features/nodes/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {Button, Group, Loader, Modal} from "@mantine/core"
+import {Button, Group, Loader, Modal, Text} from "@mantine/core"
 import {useContext, useState} from "react"
 
 import type {PanelMode} from "@/types"
@@ -28,19 +32,25 @@ export default function MoveDocumentDialogConfirm({
     */
   const [error, setError] = useState("")
   const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const [moveNode, {isLoading}] = useMoveNodesMutation()
+  /* in source panel current node is a document */
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc} = useGetDocumentQuery(docID!)
+  const other = otherPanel(mode)
+  /* in other panel current node is folder */
+  const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
+  const {data: targetFolder} = useGetFolderQuery(targetFolderID!)
+  const [moveDocument, {isLoading}] = useMoveNodesMutation()
 
   const onMoveDocument = async () => {
     const data = {
       body: {
-        source_ids: [],
-        target_id: "111"
+        source_ids: [docID!],
+        target_id: targetFolderID!
       },
-      sourceFolderID: "12"
+      sourceFolderID: doc?.parent_id!
     }
     try {
-      await moveNode(data)
+      await moveDocument(data)
       onSubmit()
       reset()
     } catch (error: unknown) {
@@ -54,20 +64,40 @@ export default function MoveDocumentDialogConfirm({
   }
 
   return (
-    <Modal title={"Move Document"} opened={opened} onClose={onCancel}>
-      Move?
-      {error && <Error message={error} />}
-      <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onCancel}>
-          No
-        </Button>
-        <Group>
-          {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onMoveDocument}>
-            Yes
+    doc &&
+    targetFolder && (
+      <Modal title={"Move Document"} opened={opened} onClose={onCancel}>
+        Move document
+        <Text c="green" span>
+          {" "}
+          {doc.title}{" "}
+        </Text>
+        to folder{" "}
+        <Text c="blue" span>
+          {targetFolder.title}
+        </Text>
+        ?{error && <Error message={error} />}
+        <Group justify="space-between" mt="md">
+          <Button variant="default" onClick={onCancel}>
+            No
           </Button>
+          <Group>
+            {isLoading && <Loader size="sm" />}
+            <Button disabled={isLoading} onClick={onMoveDocument}>
+              Yes
+            </Button>
+          </Group>
         </Group>
-      </Group>
-    </Modal>
+      </Modal>
+    )
   )
+}
+
+function otherPanel(mode: PanelMode): PanelMode {
+  if (mode == "main") {
+    return "secondary"
+  }
+
+  // here mode is == "secondary"
+  return "main"
 }

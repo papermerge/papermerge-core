@@ -159,10 +159,23 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         method: "POST",
         body: data.body
       }),
-      invalidatesTags: (_result, _error, arg) => [
-        {type: "Node", id: arg.body.target_id},
-        {type: "Node", id: arg.sourceFolderID}
-      ]
+      // @ts-ignore
+      invalidatesTags: (_result, _error, arg) => {
+        /* Source IDs must be invalidated, as document nodes,
+        because their breadcrumb changes. Example: say user moves
+        3 nodes (one of which is a document D) from folder A two folder B.
+        If user opens document D AFTER the move operation document D
+        must have new breadcrumb featuring folder B.
+         */
+        const invalidatedDocs = arg.body.source_ids.map(i => {
+          return {type: "Document", id: i}
+        })
+        return [
+          ...invalidatedDocs,
+          {type: "Node", id: arg.body.target_id},
+          {type: "Node", id: arg.sourceFolderID}
+        ]
+      }
     })
   })
 })

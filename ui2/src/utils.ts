@@ -2,7 +2,7 @@ import {store} from "@/app/store"
 import {SliceState} from "@/types"
 import Cookies from "js-cookie"
 
-import type {User} from "@/types"
+import type {PanelMode, User} from "@/types"
 
 export function getBaseURL(trimBackslash?: boolean): string {
   const base_url = import.meta.env.VITE_BASE_URL
@@ -295,4 +295,20 @@ function drop_extension(value: string): string {
   return value.substring(0, value.lastIndexOf("."))
 }
 
-export {contains_every, drop_extension, getCurrentUser, imageEncode, reorder}
+function otherPanel(mode: PanelMode): PanelMode {
+  if (mode == "main") {
+    return "secondary"
+  }
+
+  // here mode is == "secondary"
+  return "main"
+}
+
+export {
+  contains_every,
+  drop_extension,
+  getCurrentUser,
+  imageEncode,
+  otherPanel,
+  reorder
+}

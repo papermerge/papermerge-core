@@ -88,7 +88,7 @@ def test_invalid_order_by(auth_api_client: AuthTestClient):
     """
     home = auth_api_client.user.home_folder
 
-    response = auth_api_client.get(f"/nodes/{home.id}?order_by=abc")
+    response = auth_api_client.get(f"/nodes/{home.id}?order_by=ab")
     assert response.status_code == 422
 
     # less obvious example: note `order_by` has UNSUPPORTED value type

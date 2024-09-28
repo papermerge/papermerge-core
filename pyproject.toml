@@ -102,7 +102,7 @@ model-bakery = "^1.5.0"
 pytest-asyncio = "^0.21.0"
 
 [tool.taskipy.tasks]
-test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest tests/ --disabl  e-warnings"
+test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest tests/ --disable-warnings"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/cloud/etc/logging.yaml"

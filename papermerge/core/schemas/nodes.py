@@ -18,6 +18,7 @@ class OrderBy(str, Enum):
     updated_at_asc = "updated_at"
     updated_at_desc = "-updated_at"
 
+
 class NodeType(str, Enum):
     document = "document"
     folder = "folder"

@@ -3,13 +3,16 @@ from fastapi.testclient import TestClient
 from papermerge.core.models import User
 from papermerge.core.types import PaginatedResponse
 from papermerge.core import schemas
-from papermerge.test.baker_recipes import folder_recipe,document_recipe
+from papermerge.test.baker_recipes import folder_recipe, document_recipe
 from typing import Union
 from papermerge.test.types import AuthTestClient
 
 
 @pytest.mark.django_db(transaction=True)
-def test_initial_users_home_folder_is_empty(montaigne: User, api_client: TestClient):
+def test_initial_users_home_folder_is_empty(
+    montaigne: User,
+    api_client: TestClient
+):
     parent_id = montaigne.home_folder.id
     response = api_client.get(
         f"/nodes/{parent_id}",
@@ -118,5 +121,7 @@ def test_invalid_order_by(auth_api_client: AuthTestClient):
 
     # less obvious example: note `order_by` has UNSUPPORTED value type
     # Do you see the problem?
-    response = auth_api_client.get(f"/nodes/{home.id}?order_by=type")  # Correct value is `ctype`
+    response = auth_api_client.get(
+        f"/nodes/{home.id}?order_by=type"
+    )  # Correct value is `ctype`
     assert response.status_code == 422

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from .documents import CreateDocument, Document, DocumentVersion, Page
 from .folders import CreateFolder, Folder
 from .groups import CreateGroup, Group, GroupDetails, UpdateGroup
-from .nodes import Node
+from .nodes import Node, OrderBy
 from .perms import Permission
 from .scopes import Scopes
 from .tags import CreateTag, Tag, UpdateTag
@@ -21,6 +21,7 @@ __all__ = [
     'UserDetails',
     'Folder',
     'Node',
+    'OrderBy',
     'CreateFolder',
     'Page',
     'Permission',

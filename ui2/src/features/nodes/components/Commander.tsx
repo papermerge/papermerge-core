@@ -24,6 +24,8 @@ import {
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
+  selectCommanderSortMenuColumn,
+  selectCommanderSortMenuDir,
   selectContentHeight,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
@@ -71,12 +73,17 @@ export default function Commander() {
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
   const filter = useAppSelector(s => selectFilterText(s, mode))
+  const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
+  const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
+
   const {data, isLoading, isFetching, isError, refetch} =
     useGetPaginatedNodesQuery({
       nodeID: currentNodeID!,
       page_number: page,
       page_size: pageSize,
-      filter: filter
+      filter: filter,
+      sortDir: sortDir,
+      sortColumn: sortColumn
     })
   const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 

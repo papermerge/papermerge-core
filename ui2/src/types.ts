@@ -368,3 +368,6 @@ export interface ServerErrorType {
     detail: string
   }
 }
+
+export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
+export type SortMenuDirection = "az" | "za"

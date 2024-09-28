@@ -1,5 +1,6 @@
 from fastapi import Query
 from pydantic import BaseModel
+from papermerge.core.schemas import OrderBy
 
 
 class CommonQueryParams(BaseModel):
@@ -13,5 +14,5 @@ class CommonQueryParams(BaseModel):
         ge=1,
         description="Page number. It is first, second etc. page?"
     )
-    order_by: str | None = None
+    order_by: OrderBy | None = None
     filter: str | None = None

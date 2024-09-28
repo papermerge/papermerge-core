@@ -24,18 +24,19 @@ def str2colexpr(keys: List[str]):
     result = []
     ORDER_BY_MAP = {
         'ctype': Node.ctype,
-        '-ctype': Node.ctype,
+        '-ctype': Node.ctype.desc(),
         'title': Node.title,
-        '-title': Node.title,
+        '-title': Node.title.desc(),
         'created_at': Node.created_at,
         '-created_at': Node.created_at.desc(),
         'updated_at': Node.updated_at,
         '-updated_at': Node.updated_at.desc(),
     }
     logger.debug(f"str2colexpr keys = {keys}")
+
     for key in keys:
-        if item := ORDER_BY_MAP.get(key, 'title'):
-            result.append(item)
+        item = ORDER_BY_MAP.get(key, Node.title)
+        result.append(item)
 
     return result
 

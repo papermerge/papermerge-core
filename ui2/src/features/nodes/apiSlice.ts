@@ -1,5 +1,11 @@
 import {apiSlice} from "@/features/api/slice"
-import type {FolderType, NodeType, Paginated} from "@/types"
+import type {
+  FolderType,
+  NodeType,
+  Paginated,
+  SortMenuColumn,
+  SortMenuDirection
+} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type CreateFolderType = {
@@ -32,6 +38,8 @@ export type PaginatedArgs = {
   page_number?: number
   page_size?: number
   filter?: string | null
+  sortDir: SortMenuDirection
+  sortColumn: SortMenuColumn
 }
 
 import {RootState} from "@/app/types"
@@ -44,13 +52,17 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         nodeID,
         page_number = 1,
         page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+        sortDir,
+        sortColumn,
         filter = undefined
       }: PaginatedArgs) => {
+        const orderBy = sortDir == "az" ? sortColumn : `-${sortColumn}`
+
         if (!filter) {
-          return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}`
+          return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}&order_by=${orderBy}`
         }
 
-        return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}`
+        return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}&order=${orderBy}`
       },
       providesTags: (
         result = {page_number: 1, page_size: 1, num_pages: 1, items: []},

@@ -86,7 +86,6 @@ xapian = ["xapianpy"]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pycodestyle = "^2.8"
 django-extensions = "^3.1"
 ipython = "^8.0.1"
 taskipy = "^1.10.2"
@@ -104,7 +103,6 @@ pytest-asyncio = "^0.21.0"
 
 [tool.taskipy.tasks]
 test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest tests/ --disabl  e-warnings"
-lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/cloud/etc/logging.yaml"

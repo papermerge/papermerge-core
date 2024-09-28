@@ -8,6 +8,16 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 from papermerge.core.types import OCRStatusEnum
 
 
+class OrderBy(str, Enum):
+    title_asc = "title"
+    title_desc = "-title"
+    ctype_asc = "ctype"
+    ctype_desc = "-ctype"
+    created_at_asc = "created_at"
+    created_at_desc = "-created_at"
+    updated_at_asc = "updated_at"
+    updated_at_desc = "-updated_at"
+
 class NodeType(str, Enum):
     document = "document"
     folder = "folder"

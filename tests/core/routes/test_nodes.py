@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from papermerge.core.models import User
 from papermerge.core.types import PaginatedResponse
 from papermerge.core import schemas
-from papermerge.test.baker_recipes import folder_recipe
+from papermerge.test.baker_recipes import folder_recipe,document_recipe
 from typing import Union
 from papermerge.test.types import AuthTestClient
 
@@ -61,3 +61,62 @@ def test_basic_sorting_by_title(auth_api_client: AuthTestClient):
     assert len(data.items) == 2
     assert data.items[0].title == "B"
     assert data.items[1].title == "A"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_basic_sorting_by_ctype(auth_api_client: AuthTestClient):
+    """
+    Tests very basic sorting. In this test sorting by ctype:
+
+        GET /nodes/parent_id?oder_by=ctype    (1)
+        GET /nodes/parent_id?oder_by=-ctype   (2)
+
+    (1) Must return items sorted asc by ctype
+    (2) Must return items sorted desc by ctype
+    """
+    home = auth_api_client.user.home_folder
+    folder_recipe.make(
+        title='A',
+        user=auth_api_client.user,
+        parent=home
+    )
+    document_recipe.make(
+        title='invoice.pdf',
+        user=auth_api_client.user,
+        parent=home
+    )
+
+    # Check "ASC" part; first returned document item, and second the folder
+    response = auth_api_client.get(f"/nodes/{home.id}?order_by=ctype")
+    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](
+        **response.json()
+    )
+    assert len(data.items) == 2
+    assert data.items[0].ctype == "document"
+    assert data.items[1].ctype == "folder"
+
+    # Check "DESC" part; first returned folder item, and second the document
+    response = auth_api_client.get(f"/nodes/{home.id}?order_by=-ctype")
+    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](
+        **response.json()
+    )
+    assert len(data.items) == 2
+    assert data.items[0].ctype == "folder"
+    assert data.items[1].ctype == "document"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_invalid_order_by(auth_api_client: AuthTestClient):
+    """
+    When receiving invalid `order_by` value, server must
+    return 422 (unprocessable entity).
+    """
+    home = auth_api_client.user.home_folder
+
+    response = auth_api_client.get(f"/nodes/{home.id}?order_by=xyz")
+    assert response.status_code == 422
+
+    # less obvious example: note `order_by` has UNSUPPORTED value type
+    # Do you see the problem?
+    response = auth_api_client.get(f"/nodes/{home.id}?order_by=type")  # Correct value is `ctype`
+    assert response.status_code == 422

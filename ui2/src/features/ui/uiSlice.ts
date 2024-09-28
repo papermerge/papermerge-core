@@ -850,10 +850,10 @@ export const selectCommanderSortMenuColumn = (
   mode: PanelMode
 ): SortMenuColumn => {
   if (mode == "main") {
-    return state.ui.mainCommanderSortMenuColumn || "modified"
+    return state.ui.mainCommanderSortMenuColumn || "updated_at"
   }
 
-  return state.ui.secondaryCommanderSortMenuColumn || "modified"
+  return state.ui.secondaryCommanderSortMenuColumn || "updated_at"
 }
 
 export const selectCommanderSortMenuDir = (

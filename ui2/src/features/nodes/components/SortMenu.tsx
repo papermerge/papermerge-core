@@ -40,20 +40,20 @@ export default function SortMenu() {
           Title
         </Menu.Item>
         <Menu.Item
-          onClick={() => onSortColumnChanged("type")}
-          rightSection={sortColumn == "type" && <IconCheck />}
+          onClick={() => onSortColumnChanged("ctype")}
+          rightSection={sortColumn == "ctype" && <IconCheck />}
         >
           Type
         </Menu.Item>
         <Menu.Item
-          onClick={() => onSortColumnChanged("modified")}
-          rightSection={sortColumn == "modified" && <IconCheck />}
+          onClick={() => onSortColumnChanged("updated_at")}
+          rightSection={sortColumn == "updated_at" && <IconCheck />}
         >
           Modified
         </Menu.Item>
         <Menu.Item
-          onClick={() => onSortColumnChanged("created")}
-          rightSection={sortColumn == "created" && <IconCheck />}
+          onClick={() => onSortColumnChanged("created_at")}
+          rightSection={sortColumn == "created_at" && <IconCheck />}
         >
           Created
         </Menu.Item>

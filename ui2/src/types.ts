@@ -369,5 +369,5 @@ export interface ServerErrorType {
   }
 }
 
-export type SortMenuColumn = "title" | "type" | "created" | "modified"
+export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
 export type SortMenuDirection = "az" | "za"

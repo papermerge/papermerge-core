@@ -1942,17 +1942,6 @@ files = [
 ]
 
 [[package]]
-name = "pycodestyle"
-version = "2.12.0"
-description = "Python style guide checker"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pycodestyle-2.12.0-py2.py3-none-any.whl", hash = "sha256:949a39f6b86c3e1515ba1787c2022131d165a8ad271b11370a8819aa070269e4"},
-    {file = "pycodestyle-2.12.0.tar.gz", hash = "sha256:442f950141b4f43df752dd303511ffded3a04c2b6fb7f65980574f0c31e6e79c"},
-]
-
-[[package]]
 name = "pycparser"
 version = "2.22"
 description = "C parser in Python"
@@ -3017,4 +3006,4 @@ xapian = ["xapianpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <4.0"
-content-hash = "5631cbd724e9ee0f6ed02f135e50c92c8ba5fe30fdd49c13c25b1891d32b02e4"
+content-hash = "bf19795816209b05f4f2c09851df2c18c5cbae60a904d10055aa882c21927215"

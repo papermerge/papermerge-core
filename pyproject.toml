@@ -103,7 +103,7 @@ model-bakery = "^1.5.0"
 pytest-asyncio = "^0.21.0"
 
 [tool.taskipy.tasks]
-test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest tests/ --disable-warnings"
+test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest tests/ --disabl  e-warnings"
 lint = "pycodestyle papermerge/ tests/"
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
@@ -119,6 +119,19 @@ sign_url = 'papermerge.core.cli.cf_sign_url:app'
 index_schema = 'papermerge.search.cli.index_schema:app'
 index = 'papermerge.search.cli.index:app'
 search = 'papermerge.search.cli.search:app'
+
+[tool.ruff]
+target-version = "py310"
+line-length = 80
+indent-width = 4
+
+[tool.ruff.lint]
+"select" = [
+  "F",    # pyflakes
+  "I001", # isort
+  "UP",   # pyupgrade
+]
+
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]

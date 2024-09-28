@@ -1,10 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
+
+from papermerge.core import schemas
 from papermerge.core.models import User
 from papermerge.core.types import PaginatedResponse
-from papermerge.core import schemas
-from papermerge.test.baker_recipes import folder_recipe, document_recipe
-from typing import Union
+from papermerge.test.baker_recipes import document_recipe, folder_recipe
 from papermerge.test.types import AuthTestClient
 
 
@@ -16,7 +16,7 @@ def test_initial_users_home_folder_is_empty(montaigne: User, api_client: TestCli
     )
     assert response.status_code == 200
 
-    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](**response.json())
+    data = PaginatedResponse[schemas.Document | schemas.Folder](**response.json())
     assert data.items == []
 
 
@@ -37,14 +37,14 @@ def test_basic_sorting_by_title(auth_api_client: AuthTestClient):
 
     # Check "ASC" part; first returned item must be A, and second B
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=title")
-    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](**response.json())
+    data = PaginatedResponse[schemas.Document | schemas.Folder](**response.json())
     assert len(data.items) == 2
     assert data.items[0].title == "A"
     assert data.items[1].title == "B"
 
     # Check "DESC" part; first returned item must be B, and second A
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=-title")
-    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](**response.json())
+    data = PaginatedResponse[schemas.Document | schemas.Folder](**response.json())
     assert len(data.items) == 2
     assert data.items[0].title == "B"
     assert data.items[1].title == "A"
@@ -67,14 +67,14 @@ def test_basic_sorting_by_ctype(auth_api_client: AuthTestClient):
 
     # Check "ASC" part; first returned document item, and second the folder
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=ctype")
-    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](**response.json())
+    data = PaginatedResponse[schemas.Document | schemas.Folder](**response.json())
     assert len(data.items) == 2
     assert data.items[0].ctype == "document"
     assert data.items[1].ctype == "folder"
 
     # Check "DESC" part; first returned folder item, and second the document
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=-ctype")
-    data = PaginatedResponse[Union[schemas.Document, schemas.Folder]](**response.json())
+    data = PaginatedResponse[schemas.Document | schemas.Folder](**response.json())
     assert len(data.items) == 2
     assert data.items[0].ctype == "folder"
     assert data.items[1].ctype == "document"

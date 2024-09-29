@@ -26,8 +26,13 @@ export default function DocumentDetails() {
       <Group align="flex-start" className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />
         <Stack className={classes.documentDetailsContent} justify="flex-start">
-          <TextInput label="ID" value={docID} />
-          <TextInput label="OCR Language" value={ocrLang} mt="md" />
+          <TextInput label="ID" readOnly defaultValue={docID} />
+          <TextInput
+            label="OCR Language"
+            readOnly
+            defaultValue={ocrLang}
+            mt="md"
+          />
           <TextInput label="Tags" placeholder={"tag1, tag2"} mt="md" />
         </Stack>
       </Group>

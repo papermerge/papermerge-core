@@ -27,6 +27,10 @@ const NAVBAR_WIDTH_COOKIE = "navbar_width"
 const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
 const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
   "secondary_thumbnails_panel_opened"
+const MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
+  "main_document_details_panel_opened"
+const SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
+  "secondary_document_details_panel_opened"
 
 const SMALL_BOTTOM_MARGIN = 13 /* pixles */
 
@@ -189,6 +193,7 @@ interface UIState {
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
   mainViewerThumbnailsPanelOpen?: boolean
+  mainViewerDocumentDetailsPanelOpen?: boolean
   // zoom factor is expressed as percentage.
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
@@ -198,6 +203,7 @@ interface UIState {
   /* current page (number) in main viewer */
   mainViewerCurrentPageNumber?: number
   secondaryViewerThumbnailsPanelOpen?: boolean
+  secondaryViewerDocumentDetailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
   secondaryViewerSelectedIDs?: Array<string>
   secondaryViewerCurrentDocVerID?: string
@@ -223,7 +229,10 @@ const initialState: UIState = {
     }
   },
   mainViewerThumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
-  secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState()
+  secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
+  mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
+  secondaryViewerDocumentDetailsPanelOpen:
+    secondaryDocumentDetailsPanelInitialState()
 }
 
 const uiSlice = createSlice({
@@ -519,6 +528,27 @@ const uiSlice = createSlice({
         Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
       }
     },
+    viewerDocumentDetailsPanelToggled(state, action: PayloadAction<PanelMode>) {
+      const mode = action.payload
+
+      if (mode == "main") {
+        const new_value = !Boolean(state.mainViewerDocumentDetailsPanelOpen)
+        state.mainViewerDocumentDetailsPanelOpen = new_value
+        if (new_value) {
+          Cookies.set(MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "true")
+        } else {
+          Cookies.set(MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "false")
+        }
+        return
+      }
+      const new_value = !Boolean(state.secondaryViewerDocumentDetailsPanelOpen)
+      state.secondaryViewerDocumentDetailsPanelOpen = new_value
+      if (new_value) {
+        Cookies.set(SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "true")
+      } else {
+        Cookies.set(SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "false")
+      }
+    },
     zoomFactorIncremented(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
       if (mode == "main") {
@@ -693,6 +723,7 @@ export const {
   commanderSortMenuColumnUpdated,
   commanderSortMenuDirectionUpdated,
   viewerThumbnailsPanelToggled,
+  viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
   zoomFactorDecremented,
   zoomFactorReseted,
@@ -827,6 +858,17 @@ export const selectThumbnailsPanelOpen = (
   }
 
   return Boolean(state.ui.secondaryViewerThumbnailsPanelOpen)
+}
+
+export const selectDocumentDetailsPanelOpen = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return Boolean(state.ui.mainViewerDocumentDetailsPanelOpen)
+  }
+
+  return Boolean(state.ui.secondaryViewerDocumentDetailsPanelOpen)
 }
 
 export const selectLastPageSize = (
@@ -975,6 +1017,30 @@ function mainThumbnailsPanelInitialState(): boolean {
 function secondaryThumbnailsPanelInitialState(): boolean {
   const is_opened = Cookies.get(
     SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function mainDocumentDetailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE
+  ) as BooleanString
+
+  if (is_opened == "true") {
+    return true
+  }
+
+  return false
+}
+
+function secondaryDocumentDetailsPanelInitialState(): boolean {
+  const is_opened = Cookies.get(
+    SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE
   ) as BooleanString
 
   if (is_opened == "true") {

@@ -3,6 +3,7 @@ import {Group, Stack, TextInput} from "@mantine/core"
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
+import {selectDocumentVersionOCRLang} from "@/features/document/documentVersSlice"
 import classes from "./DocumentDetails.module.css"
 
 import {
@@ -18,6 +19,7 @@ export default function DocumentDetails() {
   const documentDetailsIsOpen = useAppSelector(s =>
     selectDocumentDetailsPanelOpen(s, mode)
   )
+  const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
 
   if (documentDetailsIsOpen) {
     return (
@@ -25,7 +27,8 @@ export default function DocumentDetails() {
         <DocumentDetailsToggle />
         <Stack className={classes.documentDetailsContent} justify="flex-start">
           <TextInput label="ID" value={docID} />
-          <TextInput label="Email" placeholder="Email" mt="md" />
+          <TextInput label="OCR Language" value={ocrLang} mt="md" />
+          <TextInput label="Tags" placeholder={"tag1, tag2"} mt="md" />
         </Stack>
       </Group>
     )

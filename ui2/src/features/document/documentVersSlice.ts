@@ -173,6 +173,31 @@ export const selectAllPages = (state: RootState, mode: PanelMode) => {
   }
 }
 
+export const selectDocumentVersionOCRLang = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    const docVerID = state.ui.mainViewerCurrentDocVerID
+    if (docVerID) {
+      const docVer = state.docVers.entities[docVerID]
+      if (docVer) {
+        return docVer.lang
+      }
+    }
+  }
+
+  if (mode == "secondary") {
+    const docVerID = state.ui.secondaryViewerCurrentDocVerID
+    if (docVerID) {
+      const docVer = state.docVers.entities[docVerID]
+      if (docVer) {
+        return docVer.lang
+      }
+    }
+  }
+}
+
 export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.ui.mainViewerSelectedIDs

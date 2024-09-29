@@ -1,0 +1,10 @@
+.documentDetailsToggle {
+  background-color: #666;
+  color: #dadada;
+  button:focus {
+    outline: none;
+  }
+  align-self: flex-start;
+  margin-left: -3.5rem;
+  position: absolute;
+}

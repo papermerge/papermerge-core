@@ -11,6 +11,7 @@ import {
   IconLayoutSidebarLeftExpand
 } from "@tabler/icons-react"
 import {useContext} from "react"
+import classes from "./DocumentDetailsToggle.module.css"
 
 export default function DocumentDetailssToggle() {
   const dispatch = useAppDispatch()
@@ -31,5 +32,9 @@ export default function DocumentDetailssToggle() {
     </UnstyledButton>
   )
 
-  return <Flex align={"flex-start"}>{toggleElement}</Flex>
+  return (
+    <Flex align={"flex-start"} className={classes.documentDetailsToggle}>
+      {toggleElement}
+    </Flex>
+  )
 }

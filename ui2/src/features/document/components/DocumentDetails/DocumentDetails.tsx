@@ -1,14 +1,16 @@
 import {useAppSelector} from "@/app/hooks"
-import {Stack} from "@mantine/core"
+import {Group, Stack, TextInput} from "@mantine/core"
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
+import classes from "./DocumentDetails.module.css"
 
 import {
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
+import DocumentDetailsToggle from "../DocumentDetailsToggle"
 
 export default function DocumentDetails() {
   const mode: PanelMode = useContext(PanelContext)
@@ -18,8 +20,20 @@ export default function DocumentDetails() {
   )
 
   if (documentDetailsIsOpen) {
-    return <Stack justify="flex-start">{docID}</Stack>
+    return (
+      <Group className={classes.documentDetails}>
+        <DocumentDetailsToggle />
+        <Stack justify="flex-start" align="flex-star">
+          <TextInput label="UUID" value={docID} />
+          <TextInput label="Email" placeholder="Email" mt="md" />
+        </Stack>
+      </Group>
+    )
   }
 
-  return <Stack style={{display: "none"}} justify="flex-start"></Stack>
+  return (
+    <Group className={classes.documentDetails}>
+      <DocumentDetailsToggle />
+    </Group>
+  )
 }

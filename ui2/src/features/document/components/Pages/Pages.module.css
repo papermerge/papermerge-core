@@ -1,5 +1,7 @@
 .pages {
   display: block;
+  position: relative;
+  padding-right: 1rem;
   overflow-y: auto;
   overflow-x: auto;
   background-color: #666;

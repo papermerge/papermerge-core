@@ -21,10 +21,10 @@ export default function DocumentDetails() {
 
   if (documentDetailsIsOpen) {
     return (
-      <Group className={classes.documentDetails}>
+      <Group align="flex-start" className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />
-        <Stack justify="flex-start" align="flex-star">
-          <TextInput label="UUID" value={docID} />
+        <Stack className={classes.documentDetailsContent} justify="flex-start">
+          <TextInput label="ID" value={docID} />
           <TextInput label="Email" placeholder="Email" mt="md" />
         </Stack>
       </Group>
@@ -32,7 +32,7 @@ export default function DocumentDetails() {
   }
 
   return (
-    <Group className={classes.documentDetails}>
+    <Group className={classes.documentDetailsClosed}>
       <DocumentDetailsToggle />
     </Group>
   )

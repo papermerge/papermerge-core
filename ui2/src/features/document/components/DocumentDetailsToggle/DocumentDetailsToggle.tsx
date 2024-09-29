@@ -32,8 +32,19 @@ export default function DocumentDetailssToggle() {
     </UnstyledButton>
   )
 
+  if (isOpen) {
+    return (
+      <Flex
+        align={"flex-start"}
+        className={classes.documentDetailsToggleOpened}
+      >
+        {toggleElement}
+      </Flex>
+    )
+  }
+
   return (
-    <Flex align={"flex-start"} className={classes.documentDetailsToggle}>
+    <Flex align={"flex-start"} className={classes.documentDetailsToggleClosed}>
       {toggleElement}
     </Flex>
   )

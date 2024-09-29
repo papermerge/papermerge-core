@@ -1,5 +1,17 @@
-.documentDetails {
+.documentDetailsOpened {
   position: relative;
   padding-left: 1rem;
   padding-right: 1rem;
+  padding-top: 1rem;
+  width: 25%;
+}
+
+.documentDetailsClosed {
+  position: relative;
+  padding-left: 0rem;
+  padding-right: 0rem;
+}
+
+.documentDetailsContent {
+  width: 100%;
 }

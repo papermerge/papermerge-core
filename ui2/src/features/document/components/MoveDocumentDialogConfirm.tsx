@@ -9,6 +9,7 @@ import {
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {otherPanel} from "@/utils"
 import {Button, Group, Loader, Modal, Text} from "@mantine/core"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {useContext, useState} from "react"
 
 import type {PanelMode} from "@/types"
@@ -39,7 +40,7 @@ export default function MoveDocumentDialogConfirm({
   const other = otherPanel(mode)
   /* in other panel current node is folder */
   const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
-  const {data: targetFolder} = useGetFolderQuery(targetFolderID!)
+  const {data: targetFolder} = useGetFolderQuery(targetFolderID ?? skipToken)
   const [moveDocument, {isLoading}] = useMoveNodesMutation()
 
   const onMoveDocument = async () => {

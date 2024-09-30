@@ -22,6 +22,7 @@ import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import ActionButtons from "./ActionButtons"
 import ContextMenu from "./Contextmenu"
+import DocumentDetails from "./DocumentDetails/DocumentDetails"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
@@ -136,6 +137,7 @@ export default function Viewer() {
         <Thumbnails />
         <ThumbnailsToggle />
         <Pages />
+        <DocumentDetails />
         <PagesHaveChangedDialog />
         <ContextMenu
           opened={opened}

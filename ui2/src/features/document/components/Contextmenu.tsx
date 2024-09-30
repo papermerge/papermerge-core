@@ -22,6 +22,7 @@ import type {Coord, PanelMode} from "@/types"
 import {otherPanel} from "@/utils"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {
   IconArrowBackUp,
   IconArrowLeft,
@@ -91,7 +92,7 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   )
   const other = otherPanel(mode)
   const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
-  const {data: targetFolder} = useGetFolderQuery(targetFolderID!)
+  const {data: targetFolder} = useGetFolderQuery(targetFolderID ?? skipToken)
 
   const onChangeTitle = () => {
     if (refEditTitleButton.current) {

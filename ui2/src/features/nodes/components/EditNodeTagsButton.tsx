@@ -1,16 +1,16 @@
+import {ActionIcon, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {useContext} from "react"
-import {Tooltip, ActionIcon} from "@mantine/core"
 import {IconTag} from "@tabler/icons-react"
+import {useContext} from "react"
 
-import {useAppSelector, useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {
-  selectSelectedNodeIds,
-  commanderSelectionCleared
+  commanderSelectionCleared,
+  selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
-import {EditNodeTagsModal} from "@/features/nodes/components/EditNodeTags"
+import {EditNodeTagsModal} from "@/components/EditNodeTags"
 
 import type {NodeType, PanelMode} from "@/types"
 

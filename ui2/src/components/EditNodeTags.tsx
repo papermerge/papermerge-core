@@ -3,10 +3,10 @@ import {useEffect, useState} from "react"
 
 import Error from "@/components/Error"
 import {useUpdateNodeTagsMutation} from "@/features/nodes/apiSlice"
-import type {NodeType} from "@/types"
+import type {EntityWithTags} from "@/types"
 
 interface Args {
-  node: NodeType
+  node: EntityWithTags
   opened: boolean
   onSubmit: () => void
   onCancel: () => void
@@ -28,6 +28,12 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
     }
   }, [isSuccess])
 
+  useEffect(() => {
+    if (node) {
+      setTags(node.tags.map(t => t.name))
+    }
+  }, [node])
+
   const onLocalSubmit = async () => {
     try {
       await updateNodeTags({id: node.id, tags: tags})
@@ -43,12 +49,12 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   }
 
   const reset = () => {
-    setTags([])
+    setTags(node.tags.map(t => t.name))
     setError("")
   }
 
   return (
-    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={"Edit Tags"} opened={opened} onClose={onLocalCancel}>
       <TagsInput
         data-autofocus
         onChange={setTags}

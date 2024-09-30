@@ -1,11 +1,23 @@
 import {useAppSelector} from "@/app/hooks"
-import {Group, Stack, TextInput} from "@mantine/core"
+import {
+  ActionIcon,
+  Group,
+  Skeleton,
+  Stack,
+  TagsInput,
+  TextInput
+} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {selectDocumentVersionOCRLang} from "@/features/document/documentVersSlice"
+import {skipToken} from "@reduxjs/toolkit/query"
+import {IconEdit} from "@tabler/icons-react"
 import classes from "./DocumentDetails.module.css"
 
+import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import {
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
@@ -16,13 +28,23 @@ import DocumentDetailsToggle from "../DocumentDetailsToggle"
 export default function DocumentDetails() {
   const mode: PanelMode = useContext(PanelContext)
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
   const documentDetailsIsOpen = useAppSelector(s =>
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
 
-  if (!docID || !ocrLang) {
-    return <></>
+  if (!ocrLang || !docID || isLoading) {
+    return (
+      <Group align="flex-start" className={classes.documentDetailsOpened}>
+        <DocumentDetailsToggle />
+        <Stack className={classes.documentDetailsContent} justify="flex-start">
+          <Skeleton height={"20"} />
+          <Skeleton height={"20"} />
+          <Skeleton height={"20"} />
+        </Stack>
+      </Group>
+    )
   }
 
   if (documentDetailsIsOpen) {
@@ -32,7 +54,15 @@ export default function DocumentDetails() {
         <Stack className={classes.documentDetailsContent} justify="flex-start">
           <TextInput label="ID" readOnly value={docID} />
           <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
-          <TextInput label="Tags" placeholder={"tag1, tag2"} mt="md" />
+          <Group>
+            <TagsInput
+              rightSection={<EditTagsButton />}
+              label="Tags"
+              readOnly
+              value={doc?.tags?.map(t => t.name) || []}
+              mt="md"
+            />
+          </Group>
         </Stack>
       </Group>
     )
@@ -42,5 +72,40 @@ export default function DocumentDetails() {
     <Group className={classes.documentDetailsClosed}>
       <DocumentDetailsToggle />
     </Group>
+  )
+}
+
+function EditTagsButton() {
+  const [opened, {open, close}] = useDisclosure(false)
+  const mode: PanelMode = useContext(PanelContext)
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {currentData: doc} = useGetDocumentQuery(docID ?? skipToken)
+
+  const onClick = () => {
+    open()
+  }
+
+  const onSubmit = () => {
+    close()
+  }
+
+  const onCancel = () => {
+    close()
+  }
+
+  return (
+    <>
+      <ActionIcon variant="default" onClick={onClick}>
+        <IconEdit stroke={1.4} />
+      </ActionIcon>
+      {doc && (
+        <EditNodeTagsModal
+          opened={opened}
+          node={doc}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+        />
+      )}
+    </>
   )
 }

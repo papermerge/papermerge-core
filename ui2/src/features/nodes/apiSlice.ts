@@ -152,7 +152,11 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         method: "POST",
         body: node.tags
       }),
-      invalidatesTags: ["Node", "Tag"]
+      invalidatesTags: (_result, _error, input) => [
+        "Node",
+        "Tag",
+        {type: "Document", id: input.id}
+      ]
     }),
     deleteNodes: builder.mutation<void, string[]>({
       query: nodeIDs => ({

@@ -129,6 +129,11 @@ export type NodeType = NType & {
   breadcrumb: Array<[string, string]>
 }
 
+export type EntityWithTags = {
+  id: string
+  tags: Array<NodeTag>
+}
+
 export type BreadcrumbItemType = [string, string]
 
 export type BreadcrumbType = Array<BreadcrumbItemType>
@@ -283,6 +288,7 @@ export type DocumentType = {
   ctype: "document"
   title: string
   breadcrumb: BreadcrumbType
+  tags: Array<DocumentTag>
   ocr: boolean
   ocr_status: OcrStatusEnum
   thumbnail_url: string
@@ -319,6 +325,8 @@ export type NodeTag = {
   bg_color: string
   fg_color: string
 }
+
+export type DocumentTag = NodeTag
 
 export type SearchResultNode = {
   id: string

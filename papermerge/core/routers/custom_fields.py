@@ -39,7 +39,7 @@ def get_custom_fields_without_pagination(
 @router.get("/", response_model=PaginatorGeneric[schemas.CustomField])
 @paginate
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
-def get_groups(
+def get_custom_fields(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
@@ -68,7 +68,7 @@ def get_custom_field(
     Required scope: `{scope}`
     """
     try:
-        result = db.get_group(db_session, group_id=group_id)
+        result = db.get_group(db_session, group_id=custom_field_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
     return result
@@ -77,7 +77,7 @@ def get_custom_field(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_CREATE)
 def create_custom_field(
-    pygroup: schemas.CreateCustomField,
+    cfield: schemas.CreateCustomField,
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_CREATE])
     ],
@@ -88,18 +88,19 @@ def create_custom_field(
     Required scope: `{scope}`
     """
     try:
-        group = db.create_group(
+        custom_field = db.create_custom_field(
             db_session,
-            name=pygroup.name,
-            scopes=pygroup.scopes,
+            name=cfield.name,
+            data_type=cfield.data_type,
+            extra_data=cfield.extra_data,
         )
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
-            raise HTTPException(status_code=400, detail="Group already exists")
+            raise HTTPException(status_code=400, detail="Custom field already exists")
         raise HTTPException(status_code=400, detail=error_msg)
 
-    return group
+    return custom_field
 
 
 @router.delete(

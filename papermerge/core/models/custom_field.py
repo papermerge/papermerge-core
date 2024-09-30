@@ -36,6 +36,10 @@ class CustomField(models.Model):
         help_text="Extra data for the custom field, such as select options",
     )
 
+    user = models.ForeignKey(
+        "User", related_name="custom_fields", on_delete=models.CASCADE
+    )
+
     created = models.DateTimeField(
         "created",
         default=timezone.now,

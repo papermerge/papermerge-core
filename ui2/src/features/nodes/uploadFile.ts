@@ -32,7 +32,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
      * 1. POST /api/nodes/ - create node database entry (without associated file)
      * 2. POST /api/documents/<id from previous step>/upload/
      */
-    const baseUrl = getBaseURL() || "/"
+    const baseUrl = getBaseURL()
     let defaultHeaders = getDefaultHeaders()
     const data1: CreateDocumentType = {
       title: args.file.name,

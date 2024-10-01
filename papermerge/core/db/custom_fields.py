@@ -1,5 +1,5 @@
-import uuid
 import logging
+import uuid
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -22,10 +22,15 @@ def create_custom_field(
     session: Session,
     name: str,
     data_type: schemas.CustomFieldType,
-    extra_data: str = "",
+    user_id: uuid.UUID,
+    extra_data: str | None = None,
 ) -> schemas.CustomField:
     cfield = models.CustomField(
-        id=uuid.uuid4(), name=name, data_type=data_type, extra_data=extra_data
+        id=uuid.uuid4(),
+        name=name,
+        data_type=data_type,
+        extra_data=extra_data,
+        user_id=user_id,
     )
     session.add(cfield)
     session.commit()

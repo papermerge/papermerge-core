@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import List, Literal
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import Column, ForeignKey, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
-
 
 user_permissions_association = Table(
     "core_user_user_permissions",
@@ -48,7 +47,7 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
-    nodes: Mapped[List["Node"]] = relationship(
+    nodes: Mapped[list["Node"]] = relationship(
         back_populates="user", primaryjoin="User.id == Node.user_id"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
@@ -90,7 +89,7 @@ class Node(Base):
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8))
-    tags: List[str] = []
+    tags: list[str] = []
     user: Mapped["User"] = relationship(
         back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
@@ -240,7 +239,9 @@ class CustomField(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
     data_type: Mapped[str]
-    extra_data: Mapped[str]
+    extra_data: Mapped[str] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
 
 
 class CustomFieldValue(Base):

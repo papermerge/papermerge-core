@@ -93,6 +93,7 @@ def create_custom_field(
             name=cfield.name,
             data_type=cfield.data_type,
             extra_data=cfield.extra_data,
+            user_id=user.id,
         )
     except Exception as e:
         error_msg = str(e)

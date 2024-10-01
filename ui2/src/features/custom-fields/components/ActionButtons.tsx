@@ -1,15 +1,22 @@
+import {useAppSelector} from "@/app/hooks"
+import {selectSelectedIds} from "@/features/custom-fields/customFieldsSlice"
 import {Group} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
+import {DeleteCustomFieldsButton} from "./DeleteButton"
+import EditButton from "./EditButton"
 import NewButton from "./NewButton"
-import NewCustomFieldModal from "./NewCustomFieldModal"
 
 export default function ActionButtons() {
-  const [opened, {open, close}] = useDisclosure(false)
+  const selectedIds = useAppSelector(selectSelectedIds)
 
   return (
     <Group>
       <NewButton />
-      <NewCustomFieldModal opened={opened} onSubmit={close} onCancel={close} />
+      {selectedIds.length == 1 ? (
+        <EditButton customFieldId={selectedIds[0]} />
+      ) : (
+        ""
+      )}
+      {selectedIds.length >= 1 ? <DeleteCustomFieldsButton /> : ""}
     </Group>
   )
 }

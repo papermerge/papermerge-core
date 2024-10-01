@@ -8,6 +8,7 @@ class CustomFieldType(str, Enum):
     string = "string"
     url = "url"
     date = "date"
+    boolean = "boolean"
     int = "int"
     float = "float"
     monetary = "monetary"

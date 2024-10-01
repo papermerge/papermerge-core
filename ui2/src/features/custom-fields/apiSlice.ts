@@ -26,7 +26,7 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         _arg
       ) => [
         "CustomField",
-        ...result.items.map(({id}) => ({type: "Group", id}) as const)
+        ...result.items.map(({id}) => ({type: "CustomField", id}) as const)
       ]
     }),
     getCustomFields: builder.query<CustomField[], void>({
@@ -46,7 +46,7 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         method: "POST",
         body: cf
       }),
-      invalidatesTags: ["Group"]
+      invalidatesTags: ["CustomField"]
     }),
     editCustomField: builder.mutation<CustomField, CustomFieldUpdate>({
       query: cf => ({

@@ -11,7 +11,7 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getPaginatedCustomField: builder.query<
+    getPaginatedCustomFields: builder.query<
       Paginated<CustomField>,
       PaginatedArgs | void
     >({
@@ -69,7 +69,7 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
 })
 
 export const {
-  useGetPaginatedCustomFieldQuery,
+  useGetPaginatedCustomFieldsQuery,
   useGetCustomFieldsQuery,
   useGetCustomFieldQuery,
   useEditCustomFieldMutation,

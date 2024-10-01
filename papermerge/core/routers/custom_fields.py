@@ -50,7 +50,6 @@ def get_custom_fields(
 
     Required scope: `{scope}`
     """
-
     return db.get_custom_fields(db_session)
 
 

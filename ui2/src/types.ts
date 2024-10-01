@@ -212,6 +212,7 @@ export type CustomFieldDataType =
   | "url"
   | "date"
   | "boolean"
+  | "int"
   | "float"
   | "monetary"
   | "documentlink"

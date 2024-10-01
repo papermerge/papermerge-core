@@ -4,11 +4,9 @@ from typing import List, Literal
 from uuid import UUID
 
 from sqlalchemy import Column, ForeignKey, String, Table, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-class Base(DeclarativeBase):
-    pass
+from .base import Base
 
 
 user_permissions_association = Table(

@@ -6,7 +6,7 @@ from .groups import CreateGroup, Group, GroupDetails, UpdateGroup
 from .nodes import Node, OrderBy
 from .perms import Permission
 from .scopes import Scopes
-from .custom_fields import CustomField, UpdateCustomField, CreateCustomField
+from .custom_fields import CustomField, UpdateCustomField, CreateCustomField, CustomFieldType
 from .tags import CreateTag, Tag, UpdateTag
 from .users import CreateUser, RemoteUser, UpdateUser, User, UserDetails
 from .version import Version
@@ -35,7 +35,10 @@ __all__ = [
     'GroupDetails',
     'CreateGroup',
     'UpdateGroup',
-    'CustomField'
+    'CustomField',
+    'CreateCustomField',
+    'UpdateCustomField',
+    'CustomFieldType',
 ]
 
 

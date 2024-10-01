@@ -33,7 +33,7 @@ def get_custom_fields_without_pagination(
     Required scope: `{scope}`
     """
 
-    return db.get_groups(db_session)
+    return db.get_custom_fields(db_session)
 
 
 @router.get("/", response_model=PaginatorGeneric[schemas.CustomField])
@@ -51,7 +51,7 @@ def get_custom_fields(
     Required scope: `{scope}`
     """
 
-    return db.get_groups(db_session)
+    return db.get_custom_fields(db_session)
 
 
 @router.get("/{custom_field_id}", response_model=schemas.CustomField)
@@ -63,12 +63,12 @@ def get_custom_field(
     ],
     db_session: db.Session = Depends(db.get_session),
 ):
-    """Get custom field details
+    """Get custom field
 
     Required scope: `{scope}`
     """
     try:
-        result = db.get_group(db_session, group_id=custom_field_id)
+        result = db.get_custom_field(db_session, custom_field_id=custom_field_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
     return result
@@ -121,21 +121,21 @@ def delete_custom_field(
     ],
     db_session: db.Session = Depends(db.get_session),
 ) -> None:
-    """Deletes custom_field
+    """Deletes custom field
 
     Required scope: `{scope}`
     """
     try:
-        db.delete_group(db_session, custom_field_id)
+        db.delete_custom_field(db_session, custom_field_id)
     except NoResultFound:
-        raise HTTPException(status_code=404, detail="Group not found")
+        raise HTTPException(status_code=404, detail="Custom field not found")
 
 
 @router.patch("/{custom_field_id}", status_code=200, response_model=schemas.CustomField)
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_UPDATE)
 def update_custom_field(
     custom_field_id: uuid.UUID,
-    attrs: schemas.UpdateGroup,
+    attrs: schemas.UpdateCustomField,
     cur_user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
@@ -146,10 +146,10 @@ def update_custom_field(
     Required scope: `{scope}`
     """
     try:
-        group: schemas.Group = db.update_group(
-            db_session, group_id=custom_field_id, attrs=attrs
+        cfield: schemas.CustomField = db.update_custom_field(
+            db_session, custom_field_id=custom_field_id, attrs=attrs
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Group not found")
 
-    return group
+    return cfield

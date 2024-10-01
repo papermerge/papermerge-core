@@ -35,9 +35,6 @@ class CreateCustomField(BaseModel):
 
 
 class UpdateCustomField(BaseModel):
-    name: str
-    data_type: CustomFieldType
-    extra_data: str | None
-
-    # Config
-    model_config = ConfigDict(from_attributes=True)
+    name: str | None = None
+    data_type: CustomFieldType | None = None
+    extra_data: str | None = None

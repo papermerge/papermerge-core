@@ -21,7 +21,7 @@ import type {
 } from "@/types"
 
 const COLLAPSED_WIDTH = 55
-const FULL_WIDTH = 160
+const FULL_WIDTH = 180
 const NAVBAR_COLLAPSED_COOKIE = "navbar_collapsed"
 const NAVBAR_WIDTH_COOKIE = "navbar_width"
 const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"

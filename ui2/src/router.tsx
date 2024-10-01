@@ -1,17 +1,18 @@
 import {createBrowserRouter} from "react-router-dom"
 
 import App from "@/app/App.tsx"
-import Home from "@/pages/Home"
-import {loader as homeLoader} from "@/pages/Home"
-import Inbox from "@/pages/Inbox"
-import {loader as inboxLoader} from "@/pages/Inbox"
-import Folder from "@/pages/Folder"
-import {loader as folderLoader} from "@/pages/Folder"
+import Folder, {loader as folderLoader} from "@/pages/Folder"
+import Home, {loader as homeLoader} from "@/pages/Home"
+import Inbox, {loader as inboxLoader} from "@/pages/Inbox"
 
-import Document from "@/pages/Document"
-import {GroupsList, GroupDetails} from "@/features/groups/pages"
-import {UsersList, UserDetails} from "@/features/users/pages"
+import {
+  CustomFieldDetails,
+  CustomFieldsList
+} from "@/features/custom-fields/pages"
+import {GroupDetails, GroupsList} from "@/features/groups/pages"
 import {TagDetails, TagsList} from "@/features/tags/pages"
+import {UserDetails, UsersList} from "@/features/users/pages"
+import Document from "@/pages/Document"
 
 import {loader as documentLoader} from "@/pages/Document"
 
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
       {
         path: "/tags/:tagId",
         element: <TagDetails />
+      },
+      {
+        path: "/custom-fields/",
+        element: <CustomFieldsList />
+      },
+      {
+        path: "/custom-fields/:customFieldID",
+        element: <CustomFieldDetails />
       },
       {
         path: "/groups",

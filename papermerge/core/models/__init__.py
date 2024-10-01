@@ -10,18 +10,12 @@ from papermerge.core.models.folder import Folder
 from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.models.page import Page
 from papermerge.core.models.tags import Tag
+from papermerge.core.models.custom_field import CustomField
 
 logger = logging.getLogger(__name__)
 
 
-__all__ = [
-    Document,
-    DocumentVersion,
-    Page,
-    BaseTreeNode,
-    Tag,
-    Folder
-]
+__all__ = [Document, DocumentVersion, Page, BaseTreeNode, Tag, Folder, CustomField]
 
 
 class User(AbstractUser):
@@ -31,26 +25,22 @@ class User(AbstractUser):
     # Home and Inbox folder fields are populated as part of `post_save` model
     # `user` signal
     home_folder = models.OneToOneField(
-        'Folder',
+        "Folder",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        related_name='home_folder_of'
+        related_name="home_folder_of",
     )
     inbox_folder = models.OneToOneField(
-        'Folder',
+        "Folder",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        related_name='inbox_folder_of'
+        related_name="inbox_folder_of",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def create_special_folders(self):
         """
@@ -60,14 +50,10 @@ class User(AbstractUser):
         signal on model creation.
         """
         _inbox, _ = Folder.objects.get_or_create(
-            title=Folder.INBOX_TITLE,
-            parent=None,
-            user=self
+            title=Folder.INBOX_TITLE, parent=None, user=self
         )
         _home, _ = Folder.objects.get_or_create(
-            title=Folder.HOME_TITLE,
-            parent=None,
-            user=self
+            title=Folder.HOME_TITLE, parent=None, user=self
         )
         self.inbox_folder = _inbox
         self.home_folder = _home
@@ -91,6 +77,4 @@ class User(AbstractUser):
                     try:
                         page.txt_path.parent.rmdir()
                     except FileNotFoundError:
-                        logger.info(
-                            f"Directory {page.txt_path.parent} does not exist"
-                        )
+                        logger.info(f"Directory {page.txt_path.parent} does not exist")

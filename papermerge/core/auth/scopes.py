@@ -1,30 +1,34 @@
-NODE_CREATE = 'node.create'
-NODE_VIEW = 'node.view'
-NODE_UPDATE = 'node.update'
-NODE_DELETE = 'node.delete'
-NODE_MOVE = 'node.move'
-DOCUMENT_UPLOAD = 'document.upload'
-DOCUMENT_DOWNLOAD = 'document.download'
-TAG_CREATE = 'tag.create'
-TAG_VIEW = 'tag.view'
-TAG_UPDATE = 'tag.update'
-TAG_DELETE = 'tag.delete'
-USER_CREATE = 'user.create'
-USER_VIEW = 'user.view'
-USER_UPDATE = 'user.update'
-USER_DELETE = 'user.delete'
-USER_ME = 'user.me'
-GROUP_CREATE = 'group.create'
-GROUP_VIEW = 'group.view'
-GROUP_UPDATE = 'group.update'
-GROUP_DELETE = 'group.delete'
-TASK_OCR = 'task.ocr'
-OCRLANG_VIEW = 'ocrlang.view'
-PAGE_VIEW = 'page.view'
-PAGE_UPDATE = 'page.update'
-PAGE_MOVE = 'page.move'
-PAGE_EXTRACT = 'page.extract'
-PAGE_DELETE = 'page.delete'
+NODE_CREATE = "node.create"
+NODE_VIEW = "node.view"
+NODE_UPDATE = "node.update"
+NODE_DELETE = "node.delete"
+NODE_MOVE = "node.move"
+DOCUMENT_UPLOAD = "document.upload"
+DOCUMENT_DOWNLOAD = "document.download"
+TAG_CREATE = "tag.create"
+TAG_VIEW = "tag.view"
+TAG_UPDATE = "tag.update"
+TAG_DELETE = "tag.delete"
+USER_CREATE = "user.create"
+USER_VIEW = "user.view"
+USER_UPDATE = "user.update"
+USER_DELETE = "user.delete"
+USER_ME = "user.me"
+GROUP_CREATE = "group.create"
+GROUP_VIEW = "group.view"
+GROUP_UPDATE = "group.update"
+GROUP_DELETE = "group.delete"
+TASK_OCR = "task.ocr"
+OCRLANG_VIEW = "ocrlang.view"
+PAGE_VIEW = "page.view"
+PAGE_UPDATE = "page.update"
+PAGE_MOVE = "page.move"
+PAGE_EXTRACT = "page.extract"
+PAGE_DELETE = "page.delete"
+CUSTOM_FIELD_CREATE = "custom_field.create"
+CUSTOM_FIELD_VIEW = "custom_field.view"
+CUSTOM_FIELD_UPDATE = "custom_field.update"
+CUSTOM_FIELD_DELETE = "custom_field.delete"
 
 SCOPES = {
     NODE_CREATE: NODE_CREATE,
@@ -53,5 +57,9 @@ SCOPES = {
     PAGE_UPDATE: PAGE_UPDATE,
     PAGE_MOVE: PAGE_MOVE,
     PAGE_EXTRACT: PAGE_EXTRACT,
-    PAGE_DELETE: PAGE_DELETE
+    PAGE_DELETE: PAGE_DELETE,
+    CUSTOM_FIELD_CREATE: CUSTOM_FIELD_CREATE,
+    CUSTOM_FIELD_VIEW: CUSTOM_FIELD_VIEW,
+    CUSTOM_FIELD_UPDATE: CUSTOM_FIELD_UPDATE,
+    CUSTOM_FIELD_DELETE: CUSTOM_FIELD_DELETE,
 }

@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from papermerge.core import types
 from papermerge.core.auth import extract_token_data
+from papermerge.core.models import User
 
 
 def test_get_current_user(token):
@@ -12,16 +13,11 @@ def test_get_current_user(token):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_remote_based_authentication(montaigne, api_client: TestClient):
-    response = api_client.get(
-        '/users/me/',
-        headers={
-            'Remote-User': 'montaigne'
-        }
-    )
+def test_remote_based_authentication(montaigne: User, api_client: TestClient):
+    response = api_client.get("/users/me/", headers={"Remote-User": "montaigne"})
     assert response.status_code == 200
 
 
 def test_remote_based_authentication_no_headers(api_client: TestClient):
-    response = api_client.get('/users/me/')
+    response = api_client.get("/users/me/")
     assert response.status_code == 401

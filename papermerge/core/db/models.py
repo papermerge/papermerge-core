@@ -1,15 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import List, Literal
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import Column, ForeignKey, String, Table, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-class Base(DeclarativeBase):
-    pass
-
+from .base import Base
 
 user_permissions_association = Table(
     "core_user_user_permissions",
@@ -41,55 +38,44 @@ user_groups_association = Table(
 class User(Base):
     __tablename__ = "core_user"
 
-    id: Mapped[UUID] = mapped_column(
-        primary_key=True,
-        insert_default=uuid.uuid4()
-    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     username: Mapped[str]
     email: Mapped[str]
     password: Mapped[str]
-    first_name: Mapped[str] = mapped_column(default=' ')
-    last_name: Mapped[str] = mapped_column(default=' ')
+    first_name: Mapped[str] = mapped_column(default=" ")
+    last_name: Mapped[str] = mapped_column(default=" ")
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
-    nodes: Mapped[List["Node"]] = relationship(
-        back_populates="user",
-        primaryjoin="User.id == Node.user_id"
+    nodes: Mapped[list["Node"]] = relationship(
+        back_populates="user", primaryjoin="User.id == Node.user_id"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
     )
-    home_folder: Mapped['Folder'] = relationship(
+    home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
         back_populates="user",
-        viewonly=True
+        viewonly=True,
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
     )
-    inbox_folder: Mapped['Folder'] = relationship(
+    inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
         back_populates="user",
-        viewonly=True
+        viewonly=True,
     )
-    created_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
-    )
-    date_joined: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
+    date_joined: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(),
-        onupdate=func.now()
+        insert_default=func.now(), onupdate=func.now()
     )
     permissions: Mapped[list["Permission"]] = relationship(
-        secondary=user_permissions_association,
-        back_populates="users"
+        secondary=user_permissions_association, back_populates="users"
     )
     groups: Mapped[list["Group"]] = relationship(
-        secondary=user_groups_association,
-        back_populates="users"
+        secondary=user_groups_association, back_populates="users"
     )
 
 
@@ -99,25 +85,19 @@ CType = Literal["document", "folder"]
 class Node(Base):
     __tablename__ = "core_basetreenode"
 
-    id: Mapped[UUID] = mapped_column(
-        primary_key=True, insert_default=uuid.uuid4()
-    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8))
-    tags: List[str] = []
+    tags: list[str] = []
     user: Mapped["User"] = relationship(
-        back_populates="nodes",
-        primaryjoin="User.id == Node.user_id"
+        back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("core_basetreenode.id"))
-    created_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(),
-        onupdate=func.now()
+        insert_default=func.now(), onupdate=func.now()
     )
 
     __mapper_args__ = {
@@ -133,10 +113,10 @@ class Folder(Node):
     __tablename__ = "core_folder"
 
     id: Mapped[UUID] = mapped_column(
-        'basetreenode_ptr_id',
+        "basetreenode_ptr_id",
         ForeignKey("core_basetreenode.id"),
         primary_key=True,
-        insert_default=uuid.uuid4()
+        insert_default=uuid.uuid4(),
     )
 
     __mapper_args__ = {
@@ -148,8 +128,7 @@ class Document(Node):
     __tablename__ = "core_document"
 
     id: Mapped[UUID] = mapped_column(
-        'basetreenode_ptr_id',
-        ForeignKey("core_basetreenode.id"), primary_key=True
+        "basetreenode_ptr_id", ForeignKey("core_basetreenode.id"), primary_key=True
     )
 
     ocr: Mapped[bool]
@@ -199,12 +178,8 @@ class ColoredTag(Base):
     __tablename__ = "core_coloredtag"
     id: Mapped[int] = mapped_column(primary_key=True)
     object_id: Mapped[UUID]
-    tag_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_tag.id")
-    )
-    tag: Mapped["Tag"] = relationship(
-        primaryjoin="Tag.id == ColoredTag.tag_id"
-    )
+    tag_id: Mapped[UUID] = mapped_column(ForeignKey("core_tag.id"))
+    tag: Mapped["Tag"] = relationship(primaryjoin="Tag.id == ColoredTag.tag_id")
 
 
 group_permissions_association = Table(
@@ -227,19 +202,13 @@ class Permission(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     codename: Mapped[str]
-    content_type_id: Mapped[int] = mapped_column(
-        ForeignKey("django_content_type.id")
-    )
+    content_type_id: Mapped[int] = mapped_column(ForeignKey("django_content_type.id"))
     content_type: Mapped["ContentType"] = relationship()
     groups = relationship(
-        "Group",
-        secondary=group_permissions_association,
-        back_populates="permissions"
+        "Group", secondary=group_permissions_association, back_populates="permissions"
     )
     users = relationship(
-        "User",
-        secondary=user_permissions_association,
-        back_populates="permissions"
+        "User", secondary=user_permissions_association, back_populates="permissions"
     )
 
 
@@ -249,12 +218,10 @@ class Group(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     permissions: Mapped[list["Permission"]] = relationship(
-        secondary=group_permissions_association,
-        back_populates="groups"
+        secondary=group_permissions_association, back_populates="groups"
     )
     users: Mapped[list["User"]] = relationship(
-        secondary=user_groups_association,
-        back_populates="groups"
+        secondary=user_groups_association, back_populates="groups"
     )
 
 
@@ -264,3 +231,33 @@ class ContentType(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     app_label: Mapped[str]
     model: Mapped[str]
+
+
+class CustomField(Base):
+    __tablename__ = "core_customfield"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    data_type: Mapped[str]
+    extra_data: Mapped[str] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
+
+
+class CustomFieldValue(Base):
+    __tablename__ = "core_customfieldvalue"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_document.basetreenode_ptr_id")
+    )
+    field_id: Mapped[UUID] = mapped_column(ForeignKey("core_customfield.id"))
+    value_text: Mapped[str]
+    value_bool: Mapped[bool]
+    value_url: Mapped[str]
+    value_date: Mapped[datetime]
+    value_int: Mapped[int]
+    value_float: Mapped[float]
+    value_monetary: Mapped[str]
+    value_document_ids: Mapped[str]
+    value_select: Mapped[str]

@@ -11,7 +11,7 @@ import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
 import ActionButtons from "./ActionButtons"
-import CustomFieldRow from "./CustomFieldRow"
+import DocumentTypeRow from "./DocumentTypeRow"
 
 export default function DocumentTypesList() {
   const selectedIds = useSelector(selectSelectedIds)
@@ -72,7 +72,7 @@ export default function DocumentTypesList() {
     )
   }
   const documentTypeRows = data.items.map(dt => (
-    <CustomFieldRow key={dt.id} documentType={dt} />
+    <DocumentTypeRow key={dt.id} documentType={dt} />
   ))
 
   return (
@@ -90,7 +90,6 @@ export default function DocumentTypesList() {
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>
-            <Table.Th>Data Type</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{documentTypeRows}</Table.Tbody>

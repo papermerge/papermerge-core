@@ -50,7 +50,7 @@ def get_document_types(
 
     Required scope: `{scope}`
     """
-    return db.get_custom_fields(db_session)
+    return db.get_document_types(db_session)
 
 
 @router.get("/{document_type_id}", response_model=schemas.DocumentType)

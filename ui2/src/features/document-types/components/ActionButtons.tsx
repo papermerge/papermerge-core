@@ -1,7 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import {selectSelectedIds} from "@/features/document-types/documentTypesSlice"
 import {Group} from "@mantine/core"
-import {DeleteCustomFieldsButton} from "./DeleteButton"
+import {DeleteDocumentTypesButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
 
@@ -12,11 +12,11 @@ export default function ActionButtons() {
     <Group>
       <NewButton />
       {selectedIds.length == 1 ? (
-        <EditButton customFieldId={selectedIds[0]} />
+        <EditButton documentTypeId={selectedIds[0]} />
       ) : (
         ""
       )}
-      {selectedIds.length >= 1 ? <DeleteCustomFieldsButton /> : ""}
+      {selectedIds.length >= 1 ? <DeleteDocumentTypesButton /> : ""}
     </Group>
   )
 }

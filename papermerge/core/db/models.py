@@ -34,6 +34,19 @@ user_groups_association = Table(
     ),
 )
 
+document_type_custom_field_association = Table(
+    "core_documenttypecustomfield",
+    Base.metadata,
+    Column(
+        "document_type_id",
+        ForeignKey("core_documenttype.id"),
+    ),
+    Column(
+        "custom_field_id",
+        ForeignKey("core_customfield.id"),
+    ),
+)
+
 
 class User(Base):
     __tablename__ = "core_user"
@@ -133,6 +146,10 @@ class Document(Node):
 
     ocr: Mapped[bool]
     ocr_status: Mapped[str]
+    document_type: Mapped["DocumentType"] = relationship(
+        back_populates="documents",
+        primaryjoin="DocumentType.id == Document.document_type_id",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "document",
@@ -261,3 +278,14 @@ class CustomFieldValue(Base):
     value_monetary: Mapped[str]
     value_document_ids: Mapped[str]
     value_select: Mapped[str]
+
+
+class DocumentType(Base):
+    __tablename__ = "core_documenttype"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    custom_fields: Mapped[list["CustomField"]] = relationship(
+        secondary=document_type_custom_field_association, back_populates="documents"
+    )
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

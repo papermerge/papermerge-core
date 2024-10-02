@@ -114,7 +114,7 @@ def create_document_type(
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_DELETE)
 def delete_document_type(
-    custom_field_id: uuid.UUID,
+    document_type_id: uuid.UUID,
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE])
     ],
@@ -125,7 +125,7 @@ def delete_document_type(
     Required scope: `{scope}`
     """
     try:
-        db.delete_custom_field(db_session, custom_field_id)
+        db.delete_document_type(db_session, document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 

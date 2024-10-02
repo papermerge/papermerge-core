@@ -47,3 +47,18 @@ def make_custom_field(db_session: Session, user: User):
         )
 
     return _make_custom_field
+
+
+@pytest.fixture
+def make_document_type(db_session: Session, user: User, make_custom_field):
+    cf = make_custom_field(name="some-random-cf", data_type="boolean")
+
+    def _make_document_type(name: str):
+        return db.create_document_type(
+            db_session,
+            name=name,
+            custom_field_ids=[cf.id],
+            user_id=user.id,
+        )
+
+    return _make_document_type

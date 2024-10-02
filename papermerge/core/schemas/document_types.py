@@ -24,4 +24,4 @@ class CreateDocumentType(BaseModel):
 
 class UpdateDocumentType(BaseModel):
     name: str | None = None
-    custom_field_ids: list[str] | None = None
+    custom_field_ids: list[UUID] | None = None

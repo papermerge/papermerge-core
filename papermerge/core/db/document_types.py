@@ -59,11 +59,19 @@ def update_document_type(
 ) -> schemas.DocumentType:
     stmt = select(models.DocumentType).where(models.DocumentType.id == document_type_id)
     doc_type = session.execute(stmt).scalars().one()
-    session.add(doc_type)
+
+    stmt = select(models.CustomField).where(
+        models.CustomField.id.in_(attrs.custom_field_ids)
+    )
+    custom_fields = session.execute(stmt).scalars().all()
 
     if attrs.name:
         doc_type.name = attrs.name
 
+    if attrs.custom_field_ids:
+        doc_type.custom_fields = custom_fields
+
+    session.add(doc_type)
     session.commit()
     result = schemas.DocumentType.model_validate(doc_type)
 

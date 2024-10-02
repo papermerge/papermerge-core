@@ -9,6 +9,10 @@ import {
   CustomFieldDetails,
   CustomFieldsList
 } from "@/features/custom-fields/pages"
+import {
+  DocumentTypeDetails,
+  DocumentTypesList
+} from "@/features/document-types/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
@@ -59,6 +63,14 @@ const router = createBrowserRouter([
       {
         path: "/custom-fields/:customFieldID",
         element: <CustomFieldDetails />
+      },
+      {
+        path: "/document-types/",
+        element: <DocumentTypesList />
+      },
+      {
+        path: "/document-types/:documentTypeID",
+        element: <DocumentTypeDetails />
       },
       {
         path: "/groups",

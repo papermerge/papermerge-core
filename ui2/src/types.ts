@@ -233,6 +233,17 @@ export type CustomFieldUpdate = Pick<
   "id" | "name" | "data_type" | "extra_data"
 >
 
+export type NewDocType = {
+  name: string
+  custom_fields: Array<CustomField>
+}
+
+export type DocType = NewDocType & {
+  id: string
+}
+
+export type DocTypeUpdate = Pick<DocType, "id" | "name" | "custom_fields">
+
 export type FileItemStatus = "uploading" | "success" | "failure"
 
 export type FileItemType = {

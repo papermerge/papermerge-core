@@ -47,7 +47,8 @@ export const apiSlice = createApi({
     "Node",
     "Folder",
     "Document",
-    "CustomField"
+    "CustomField",
+    "DocumentType"
   ],
   endpoints: _ => ({})
 })

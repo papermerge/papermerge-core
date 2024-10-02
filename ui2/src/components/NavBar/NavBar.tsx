@@ -6,9 +6,10 @@ import {
 } from "@/slices/currentUser.ts"
 import {Group, Loader} from "@mantine/core"
 import {
-  IconFileDelta,
+  IconFile3d,
   IconHome,
   IconInbox,
+  IconSoccerField,
   IconTag,
   IconUsers,
   IconUsersGroup
@@ -42,7 +43,10 @@ function NavBarFull() {
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedback("Tags", <IconTag />)}</NavLink>
         <NavLink to="/custom-fields">
-          {NavLinkWithFeedback("Custom Fields", <IconFileDelta />)}
+          {NavLinkWithFeedback("Custom Fields", <IconSoccerField />)}
+        </NavLink>
+        <NavLink to="/document-types">
+          {NavLinkWithFeedback("Document Types", <IconFile3d />)}
         </NavLink>
         <NavLink to="/users">
           {NavLinkWithFeedback("Users", <IconUsers />)}
@@ -79,7 +83,10 @@ function NavBarCollapsed() {
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
         <NavLink to="/custom-fields">
-          {NavLinkWithFeedbackShort(<IconFileDelta />)}
+          {NavLinkWithFeedbackShort(<IconSoccerField />)}
+        </NavLink>
+        <NavLink to="/document-types">
+          {NavLinkWithFeedbackShort(<IconFile3d />)}
         </NavLink>
         <NavLink to="/users">{NavLinkWithFeedbackShort(<IconUsers />)}</NavLink>
         <NavLink to="/groups">

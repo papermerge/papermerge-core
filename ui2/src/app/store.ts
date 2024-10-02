@@ -1,6 +1,7 @@
 import {apiSlice} from "@/features/api/slice"
 import authSliceReducer from "@/features/auth/slice"
 import customFieldsReducer from "@/features/custom-fields/customFieldsSlice"
+import documentTypesReducer from "@/features/document-types/documentTypesSlice"
 import docVersReducer from "@/features/document/documentVersSlice"
 import pagesReducer from "@/features/document/pagesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
@@ -20,6 +21,7 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     customFields: customFieldsReducer,
+    documentTypes: documentTypesReducer,
     users: usersReducer,
     nodes: nodesReducer,
     search: searchReducer,

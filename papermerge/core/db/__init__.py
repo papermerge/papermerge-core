@@ -1,8 +1,22 @@
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from .custom_fields import (
+    create_custom_field,
+    delete_custom_field,
+    get_custom_field,
+    get_custom_fields,
+    update_custom_field,
+)
 from .doc import get_doc
 from .doc_ver import get_doc_ver, get_last_doc_ver
+from .document_types import (
+    create_document_type,
+    delete_document_type,
+    get_document_type,
+    get_document_types,
+    update_document_type,
+)
 from .engine import get_engine
 from .exceptions import UserNotFound
 from .folders import get_folder
@@ -18,13 +32,6 @@ from .users import (
     get_user_scopes_from_groups,
     get_users,
     update_user,
-)
-from .custom_fields import (
-    get_custom_fields,
-    create_custom_field,
-    get_custom_field,
-    delete_custom_field,
-    update_custom_field,
 )
 
 __all__ = [
@@ -60,4 +67,9 @@ __all__ = [
     "get_custom_field",
     "delete_custom_field",
     "update_custom_field",
+    "get_document_types",
+    "create_document_type",
+    "get_document_type",
+    "delete_document_type",
+    "update_document_type",
 ]

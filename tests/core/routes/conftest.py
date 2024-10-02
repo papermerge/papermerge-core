@@ -34,3 +34,16 @@ def custom_field_cf1(db_session: Session, user: User):
         data_type=schemas.CustomFieldType.string,
         user_id=user.id,
     )
+
+
+@pytest.fixture
+def make_custom_field(db_session: Session, user: User):
+    def _make_custom_field(name: str, data_type: schemas.CustomFieldType):
+        return db.create_custom_field(
+            db_session,
+            name=name,
+            data_type=data_type,
+            user_id=user.id,
+        )
+
+    return _make_custom_field

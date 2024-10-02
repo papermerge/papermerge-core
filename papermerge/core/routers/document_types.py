@@ -76,7 +76,7 @@ def get_custom_field(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_CREATE)
 def create_document_type(
-    cfield: schemas.CreateDocumentType,
+    dtype: schemas.CreateDocumentType,
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE])
     ],
@@ -87,20 +87,19 @@ def create_document_type(
     Required scope: `{scope}`
     """
     try:
-        custom_field = db.create_custom_field(
+        document_type = db.create_document_type(
             db_session,
-            name=cfield.name,
-            data_type=cfield.data_type,
-            extra_data=cfield.extra_data,
+            name=dtype.name,
+            custom_field_ids=dtype.custom_field_ids,
             user_id=user.id,
         )
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
-            raise HTTPException(status_code=400, detail="Custom field already exists")
+            raise HTTPException(status_code=400, detail="Document type already exists")
         raise HTTPException(status_code=400, detail=error_msg)
 
-    return custom_field
+    return document_type
 
 
 @router.delete(

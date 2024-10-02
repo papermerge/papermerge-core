@@ -147,9 +147,9 @@ class Document(Node):
     ocr: Mapped[bool]
     ocr_status: Mapped[str]
     document_type: Mapped["DocumentType"] = relationship(
-        back_populates="documents",
         primaryjoin="DocumentType.id == Document.document_type_id",
     )
+    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("core_documenttype.id"))
 
     __mapper_args__ = {
         "polymorphic_identity": "document",
@@ -286,6 +286,7 @@ class DocumentType(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
     custom_fields: Mapped[list["CustomField"]] = relationship(
-        secondary=document_type_custom_field_association, back_populates="documents"
+        secondary=document_type_custom_field_association
     )
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

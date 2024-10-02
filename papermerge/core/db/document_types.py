@@ -21,11 +21,21 @@ def get_document_types(session: Session) -> list[schemas.DocumentType]:
 def create_document_type(
     session: Session,
     name: str,
-    custom_fields_ids: list[str],
+    custom_field_ids: list[uuid.UUID],
     user_id: uuid.UUID,
-    extra_data: str | None = None,
 ) -> schemas.DocumentType:
-    pass
+    stmt = select(models.CustomField).where(models.CustomField.id.in_(custom_field_ids))
+    custom_fields = session.execute(stmt).scalars().all()
+    dtype = models.DocumentType(
+        id=uuid.uuid4(),
+        name=name,
+        custom_fields=custom_fields,
+        user_id=user_id,
+    )
+    session.add(dtype)
+    session.commit()
+    result = schemas.DocumentType.model_validate(dtype)
+    return result
 
 
 def get_document_type(

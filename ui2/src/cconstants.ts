@@ -1,4 +1,4 @@
-import {OCRLangType} from "@/types"
+import {CustomFieldDataType, OCRLangType} from "@/types"
 
 export const DEFAULT_TAG_BG_COLOR = "#c41fff"
 export const DEFAULT_TAG_FG_COLOR = "#ffffff"
@@ -51,3 +51,15 @@ export const MAX_ZOOM_FACTOR = 300 // percents
 
 export const ONE_DAY_IN_SECONDS = 86400
 export const DRAGGED = "dragged"
+
+export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
+  "string",
+  "url",
+  "date",
+  "boolean",
+  "int",
+  "float",
+  "monetary",
+  "documentlink",
+  "select"
+]

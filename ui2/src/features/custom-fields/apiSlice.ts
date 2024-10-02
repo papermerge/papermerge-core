@@ -37,7 +37,7 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
       ]
     }),
     getCustomField: builder.query<CustomField, string>({
-      query: groupID => `/custom-field/${groupID}`,
+      query: groupID => `/custom-fields/${groupID}`,
       providesTags: (_result, _error, arg) => [{type: "CustomField", id: arg}]
     }),
     addNewCustomField: builder.mutation<CustomField, NewCustomField>({

@@ -1,13 +1,16 @@
+import type {CustomFieldDataType} from "@/types"
 import {
   Button,
   Group,
   Loader,
   LoadingOverlay,
   Modal,
+  NativeSelect,
   TextInput
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
+import {CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
@@ -30,15 +33,25 @@ export default function EditGroupModal({
   const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =
     useEditCustomFieldMutation()
   const [name, setName] = useState<string>("")
+  const [dataType, setDataType] = useState<CustomFieldDataType>("string")
 
   useEffect(() => {
     formReset()
   }, [isLoading, data, opened])
 
-  const formReset = () => {}
+  const formReset = () => {
+    if (data) {
+      setName(data.name || "")
+    }
+  }
 
   const onLocalSubmit = async () => {
-    //await updateGroup(updatedData)
+    const updatedData = {
+      id: customFieldId,
+      name: name,
+      data_type: dataType
+    }
+    await updateCustomField(updatedData)
     formReset()
     onSubmit()
   }
@@ -64,7 +77,16 @@ export default function EditGroupModal({
         value={name}
         onChange={e => setName(e.currentTarget.value)}
         label="Name"
-        placeholder="Group name"
+        placeholder="name"
+      />
+      <NativeSelect
+        mt="sm"
+        label="Data Type"
+        value={dataType}
+        data={CUSTOM_FIELD_DATA_TYPES}
+        onChange={e =>
+          setDataType(e.currentTarget.value as CustomFieldDataType)
+        }
       />
 
       <Group justify="space-between" mt="md">
@@ -74,7 +96,7 @@ export default function EditGroupModal({
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}
           <Button disabled={isLoadingGroupUpdate} onClick={onLocalSubmit}>
-            Update Custom Field
+            Update
           </Button>
         </Group>
       </Group>

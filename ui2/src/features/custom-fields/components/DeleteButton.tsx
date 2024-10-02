@@ -20,7 +20,7 @@ export function DeleteCustomFieldButton({
   const navigate = useNavigate()
 
   const onSubmit = () => {
-    navigate("/groups/")
+    navigate("/custom-fields/")
     close()
   }
 

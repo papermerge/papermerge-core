@@ -78,6 +78,9 @@ function NavBarCollapsed() {
           {NavLinkWithFeedbackShort(<IconInbox />)}
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
+        <NavLink to="/custom-fields">
+          {NavLinkWithFeedbackShort(<IconFileDelta />)}
+        </NavLink>
         <NavLink to="/users">{NavLinkWithFeedbackShort(<IconUsers />)}</NavLink>
         <NavLink to="/groups">
           {NavLinkWithFeedbackShort(<IconUsersGroup />)}

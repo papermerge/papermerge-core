@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react"
 
+import {CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/apiSlice"
 import {CustomFieldDataType} from "@/types"
 import {
@@ -11,18 +12,6 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
-
-const DATA_TYPES: Array<CustomFieldDataType> = [
-  "string",
-  "url",
-  "date",
-  "boolean",
-  "int",
-  "float",
-  "monetary",
-  "documentlink",
-  "select"
-]
 
 interface Args {
   opened: boolean
@@ -89,7 +78,7 @@ export default function NewCustomFieldModal({
         mt="sm"
         label="Data Type"
         value={dataType}
-        data={DATA_TYPES}
+        data={CUSTOM_FIELD_DATA_TYPES}
         onChange={e =>
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }

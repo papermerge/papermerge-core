@@ -79,7 +79,6 @@ class CustomFieldValue(models.Model):
         blank=False,
         null=False,
         on_delete=models.CASCADE,
-        related_name="custom_fields",
         editable=False,
     )
 

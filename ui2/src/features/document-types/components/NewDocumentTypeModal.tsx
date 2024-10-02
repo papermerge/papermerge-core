@@ -14,7 +14,7 @@ export default function NewDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
-  const [addDocumentTypeField, {isLoading, isError, isSuccess}] =
+  const [addDocumentType, {isLoading, isError, isSuccess}] =
     useAddDocumentTypeMutation()
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
@@ -32,7 +32,18 @@ export default function NewDocumentTypeModal({
     setName(value)
   }
 
-  const onLocalSubmit = async () => {}
+  const onLocalSubmit = async () => {
+    const newDocumentTypeData = {
+      name,
+      custom_field_ids: []
+    }
+    try {
+      await addDocumentType(newDocumentTypeData).unwrap()
+    } catch (err: unknown) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
+  }
 
   const onLocalCancel = () => {
     reset()

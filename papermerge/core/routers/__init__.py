@@ -1,12 +1,15 @@
 import logging
 import os
+
 from django.conf import settings
 from fastapi import FastAPI
 
 from papermerge.core.log import log_task_routes
+
+from .custom_fields import router as custom_fields_router
+from .document_types import router as document_types_router
 from .document_version import router as document_versions_router
 from .documents import router as documents_router
-from .custom_fields import router as custom_fields_router
 from .folders import router as folders_router
 from .groups import router as groups_router
 from .nodes import router as nodes_router
@@ -45,6 +48,7 @@ def register_routers(app: FastAPI):
     app.include_router(groups_router, prefix=API_PREFIX)
     app.include_router(probe_router, prefix=API_PREFIX)
     app.include_router(custom_fields_router, prefix=API_PREFIX)
+    app.include_router(document_types_router, prefix=API_PREFIX)
 
     # if redis is not provided (i.e. memory backed for notif is used)
     # then ws_router will block all other http handlers and

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_custom_fields(session: Session) -> list[schemas.CustomField]:
-    stmt = select(models.Group)
+    stmt = select(models.CustomField)
     db_items = session.scalars(stmt).all()
     result = [schemas.CustomField.model_validate(db_item) for db_item in db_items]
 

@@ -207,6 +207,32 @@ export type GroupDetails = {
 
 export type GroupUpdate = Pick<Group, "id" | "name" | "scopes">
 
+export type CustomFieldDataType =
+  | "string"
+  | "url"
+  | "date"
+  | "boolean"
+  | "int"
+  | "float"
+  | "monetary"
+  | "documentlink"
+  | "select"
+
+export type NewCustomField = {
+  name: string
+  data_type: CustomFieldDataType
+  extra_data?: string
+}
+
+export type CustomField = NewCustomField & {
+  id: string
+}
+
+export type CustomFieldUpdate = Pick<
+  CustomField,
+  "id" | "name" | "data_type" | "extra_data"
+>
+
 export type FileItemStatus = "uploading" | "success" | "failure"
 
 export type FileItemType = {

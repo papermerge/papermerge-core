@@ -1,19 +1,20 @@
-import {useSelector} from "react-redux"
-import {NavLink} from "react-router-dom"
+import {selectNavBarCollapsed} from "@/features/ui/uiSlice"
 import {
+  selectCurrentUser,
+  selectCurrentUserError,
+  selectCurrentUserStatus
+} from "@/slices/currentUser.ts"
+import {Group, Loader} from "@mantine/core"
+import {
+  IconFileDelta,
   IconHome,
   IconInbox,
   IconTag,
   IconUsers,
   IconUsersGroup
 } from "@tabler/icons-react"
-import {Group, Loader} from "@mantine/core"
-import {
-  selectCurrentUser,
-  selectCurrentUserStatus,
-  selectCurrentUserError
-} from "@/slices/currentUser.ts"
-import {selectNavBarCollapsed} from "@/features/ui/uiSlice"
+import {useSelector} from "react-redux"
+import {NavLink} from "react-router-dom"
 
 import type {User} from "@/types.ts"
 
@@ -40,6 +41,9 @@ function NavBarFull() {
           {NavLinkWithFeedback("Inbox", <IconInbox />)}
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedback("Tags", <IconTag />)}</NavLink>
+        <NavLink to="/custom-fields">
+          {NavLinkWithFeedback("Custom Fields", <IconFileDelta />)}
+        </NavLink>
         <NavLink to="/users">
           {NavLinkWithFeedback("Users", <IconUsers />)}
         </NavLink>
@@ -74,6 +78,9 @@ function NavBarCollapsed() {
           {NavLinkWithFeedbackShort(<IconInbox />)}
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
+        <NavLink to="/custom-fields">
+          {NavLinkWithFeedbackShort(<IconFileDelta />)}
+        </NavLink>
         <NavLink to="/users">{NavLinkWithFeedbackShort(<IconUsers />)}</NavLink>
         <NavLink to="/groups">
           {NavLinkWithFeedbackShort(<IconUsersGroup />)}

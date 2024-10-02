@@ -1,7 +1,16 @@
 import {useEffect, useState} from "react"
 
+import {useGetCustomFieldsQuery} from "@/features/custom-fields/apiSlice"
 import {useAddDocumentTypeMutation} from "@/features/document-types/apiSlice"
-import {Button, Group, Loader, Modal, Text, TextInput} from "@mantine/core"
+import {
+  Button,
+  Group,
+  Loader,
+  Modal,
+  MultiSelect,
+  Text,
+  TextInput
+} from "@mantine/core"
 
 interface Args {
   opened: boolean
@@ -14,10 +23,12 @@ export default function NewDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const {data = []} = useGetCustomFieldsQuery()
   const [addDocumentType, {isLoading, isError, isSuccess}] =
     useAddDocumentTypeMutation()
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
+  const [customFieldIDs, setCustomFieldIDs] = useState<string[]>([])
 
   useEffect(() => {
     // close dialog as soon as we have
@@ -35,7 +46,7 @@ export default function NewDocumentTypeModal({
   const onLocalSubmit = async () => {
     const newDocumentTypeData = {
       name,
-      custom_field_ids: []
+      custom_field_ids: customFieldIDs
     }
     try {
       await addDocumentType(newDocumentTypeData).unwrap()
@@ -52,6 +63,7 @@ export default function NewDocumentTypeModal({
 
   const reset = () => {
     setName("")
+    setCustomFieldIDs([])
     setError("")
   }
 
@@ -61,6 +73,16 @@ export default function NewDocumentTypeModal({
         label="Name"
         onChange={e => onNameChange(e.currentTarget.value)}
         placeholder="Name"
+      />
+      <MultiSelect
+        label="Custom Fields"
+        placeholder="Pick value"
+        onChange={setCustomFieldIDs}
+        searchable
+        data={data.map(i => {
+          return {label: i.name, value: i.id}
+        })}
+        value={customFieldIDs}
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">

@@ -8,13 +8,13 @@ import DocumentTypeForm from "./DocumentTypeForm"
 import EditButton from "./EditButton"
 
 interface CustomFieldDetailsArgs {
-  customFieldId: string
+  documentTypeId: string
 }
 
 export default function CustomFieldDetailsComponent({
-  customFieldId
+  documentTypeId
 }: CustomFieldDetailsArgs) {
-  const {data, isLoading} = useGetDocumentTypeQuery(customFieldId)
+  const {data, isLoading} = useGetDocumentTypeQuery(documentTypeId)
 
   if (isLoading || !data) {
     return (

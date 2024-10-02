@@ -55,8 +55,8 @@ def get_document_types(
 
 @router.get("/{document_type_id}", response_model=schemas.DocumentType)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
-def get_custom_field(
-    custom_field_id: uuid.UUID,
+def get_document_type(
+    document_type_id: uuid.UUID,
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
     ],
@@ -67,7 +67,7 @@ def get_custom_field(
     Required scope: `{scope}`
     """
     try:
-        result = db.get_custom_field(db_session, custom_field_id=custom_field_id)
+        result = db.get_document_type(db_session, document_type_id=document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
     return result

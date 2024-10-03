@@ -7,27 +7,26 @@ from unittest.mock import patch
 import pytest
 from django.db import transaction
 from django.db.utils import IntegrityError
+from sqlalchemy.orm import Session
 
+from papermerge.core import db, schemas
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
-from papermerge.test.baker_recipes import (document_recipe, folder_recipe,
-                                           user_recipe)
+from papermerge.test.baker_recipes import document_recipe, folder_recipe, user_recipe
 from papermerge.test.utils import breadcrumb_fmt
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
-TEST_DIR_ABS_PATH = os.path.dirname(
-    os.path.dirname(MODELS_DIR_ABS_PATH)
-)
+TEST_DIR_ABS_PATH = os.path.dirname(os.path.dirname(MODELS_DIR_ABS_PATH))
 
 
 class TestDocumentModel(TestCase):
     def setUp(self):
-        self.resources = Path(TEST_DIR_ABS_PATH) / 'resources'
+        self.resources = Path(TEST_DIR_ABS_PATH) / "resources"
         self.user = User.objects.create_user(username="user1")
-        self.media = Path(TEST_DIR_ABS_PATH) / 'media'
-        shutil.rmtree(self.media / 'docs', ignore_errors=True)
-        shutil.rmtree(self.media / 'sidecars', ignore_errors=True)
+        self.media = Path(TEST_DIR_ABS_PATH) / "media"
+        shutil.rmtree(self.media / "docs", ignore_errors=True)
+        shutil.rmtree(self.media / "sidecars", ignore_errors=True)
 
     def test_basic_document_creation(self):
         """
@@ -37,7 +36,7 @@ class TestDocumentModel(TestCase):
             title="invoice.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         self.assertTrue(doc)
 
@@ -60,14 +59,11 @@ class TestDocumentModel(TestCase):
             title="invoice.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         self.assertEqual(doc.versions.count(), 1)
         last_version = doc.versions.last()
-        self.assertEqual(
-            last_version.number,
-            1  # versioning starts with 1
-        )
+        self.assertEqual(last_version.number, 1)  # versioning starts with 1
         # Initial document version is created with zero pages
         # i.e. without page models associated.
         # Create 3 pages (with page models)
@@ -78,43 +74,31 @@ class TestDocumentModel(TestCase):
         self.assertEqual(doc.versions.count(), 2)
 
         last_doc_version = doc.versions.last()
-        self.assertEqual(
-            last_doc_version.number,
-            2
-        )
+        self.assertEqual(last_doc_version.number, 2)
         # check that associated page models were created as well
-        self.assertEqual(
-            last_doc_version.pages.count(),
-            3
-        )
+        self.assertEqual(last_doc_version.pages.count(), 3)
 
     def test_idified_title_one_dot_in_title(self):
         doc = Document.objects.create_document(
             title="invoice.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
 
-        self.assertEqual(
-            f'invoice-{doc.id}.pdf',
-            doc.idified_title
-        )
+        self.assertEqual(f"invoice-{doc.id}.pdf", doc.idified_title)
 
     def test_idified_title_multiple_dots_in_title(self):
         doc = Document.objects.create_document(
             title="in.voi.ce.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
 
-        self.assertEqual(
-            f'in.voi.ce-{doc.id}.pdf',
-            doc.idified_title
-        )
+        self.assertEqual(f"in.voi.ce-{doc.id}.pdf", doc.idified_title)
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_upload_payload_to_zero_sized_document(self, _x):
         """
         Upon creation document model has associated zero sized document_version
@@ -128,32 +112,28 @@ class TestDocumentModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
 
-        with open(self.resources / 'three-pages.pdf', 'rb') as file:
+        with open(self.resources / "three-pages.pdf", "rb") as file:
             content = file.read()
-            size = os.stat(self.resources / 'three-pages.pdf').st_size
+            size = os.stat(self.resources / "three-pages.pdf").st_size
 
             last_version = doc.versions.last()
             assert doc.versions.count() == 1
             assert last_version.size == 0
 
             doc.upload(
-                content=io.BytesIO(content),
-                file_name='three-pages.pdf',
-                size=size
+                content=io.BytesIO(content), file_name="three-pages.pdf", size=size
             )
 
             last_version = doc.versions.last()
             assert doc.versions.count() == 1
             assert last_version.size > 0
 
-            assert os.path.exists(
-                abs_path(last_version.file_path)
-            )
+            assert os.path.exists(abs_path(last_version.file_path))
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_version_bump_from_pages(self, _):
         """
         Move two pages from source document to destination document
@@ -162,23 +142,21 @@ class TestDocumentModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
 
         dst_doc = Document.objects.create_document(
             title="one-page.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
 
-        with open(self.resources / 'three-pages.pdf', 'rb') as file:
+        with open(self.resources / "three-pages.pdf", "rb") as file:
             content = file.read()
-            size = os.stat(self.resources / 'three-pages.pdf').st_size
+            size = os.stat(self.resources / "three-pages.pdf").st_size
             source_doc.upload(
-                content=io.BytesIO(content),
-                file_name='three-pages.pdf',
-                size=size
+                content=io.BytesIO(content), file_name="three-pages.pdf", size=size
             )
 
             dst_doc.version_bump_from_pages(
@@ -198,7 +176,7 @@ class TestDocumentModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
@@ -206,7 +184,7 @@ class TestDocumentModel(TestCase):
                     title="three-pages.pdf",
                     lang="deu",
                     user_id=self.user.pk,
-                    parent=self.user.home_folder
+                    parent=self.user.home_folder,
                 )
 
     def test_two_documents_with_same_title_under_different_parents(self):
@@ -217,38 +195,65 @@ class TestDocumentModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         Document.objects.create_document(
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.inbox_folder  # this time - different parent
+            parent=self.user.inbox_folder,  # this time - different parent
         )
 
 
 @pytest.mark.django_db
 def test_document_breadcrumb():
     user = user_recipe.make()
-    folder1 = folder_recipe.make(
-        title='folder1',
-        user=user,
-        parent=user.home_folder
-    )
-    doc = document_recipe.make(
-        title='invoice.pdf',
-        user=user,
-        parent=folder1
-    )
+    folder1 = folder_recipe.make(title="folder1", user=user, parent=user.home_folder)
+    doc = document_recipe.make(title="invoice.pdf", user=user, parent=folder1)
 
     actual_breadcumb = breadcrumb_fmt(doc.breadcrumb)
 
-    assert actual_breadcumb == '.home/folder1/invoice.pdf'
-    assert doc.title == 'invoice.pdf'
+    assert actual_breadcumb == ".home/folder1/invoice.pdf"
+    assert doc.title == "invoice.pdf"
 
 
 @pytest.mark.django_db
-@patch('papermerge.core.utils.image.convert_from_path')
+@patch("papermerge.core.utils.image.convert_from_path")
 def test_generate_thumbnail(document: Document):
     # makes sure there are no exceptions raised
     document.generate_thumbnail()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_custom_field_values(
+    db_session: Session,
+    user: User,
+    document: Document,
+    document_type_with_two_integer_cf: schemas.DocumentType,
+):
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=user.id
+    )
+    assert len(total_cfv_after) == 0
+
+    dtype = document_type_with_two_integer_cf
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "100"},
+            {"custom_field_id": dtype.custom_fields[1].id, "value": "200"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=user.id
+    )
+    # two custom field values were created
+    assert len(total_cfv_after) == 2

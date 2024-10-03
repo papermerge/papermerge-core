@@ -1,19 +1,19 @@
-import {useState, useEffect} from "react"
 import {
-  Modal,
-  LoadingOverlay,
-  Group,
   Button,
-  TextInput,
-  Table,
   Checkbox,
-  Tooltip,
-  Loader
+  Group,
+  Loader,
+  LoadingOverlay,
+  Modal,
+  Table,
+  TextInput,
+  Tooltip
 } from "@mantine/core"
+import {useEffect, useState} from "react"
 
 import {
-  useGetGroupQuery,
-  useEditGroupMutation
+  useEditGroupMutation,
+  useGetGroupQuery
 } from "@/features/groups/apiSlice"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
@@ -430,6 +430,190 @@ export default function EditGroupModal({
               </Table.Td>
             </Tooltip>
           </Table.Tr>
+          <Table.Tr key="custom-fields">
+            <Table.Td>
+              <Checkbox
+                checked={hasPerms(scopes, [
+                  CUSTOM_FIELD_VIEW,
+                  CUSTOM_FIELD_CREATE,
+                  CUSTOM_FIELD_UPDATE,
+                  CUSTOM_FIELD_DELETE
+                ])}
+                onChange={e =>
+                  onChangePerms(
+                    [
+                      CUSTOM_FIELD_VIEW,
+                      CUSTOM_FIELD_CREATE,
+                      CUSTOM_FIELD_UPDATE,
+                      CUSTOM_FIELD_DELETE
+                    ],
+                    e.target.checked
+                  )
+                }
+                label="Custom Fields"
+              />
+            </Table.Td>
+            <Tooltip
+              label="Grants access to custom fields tab on left side navigation panel"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, CUSTOM_FIELD_VIEW)}
+                  onChange={e =>
+                    onChangePerm(CUSTOM_FIELD_VIEW, e.target.checked)
+                  }
+                  label="View"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label="Grants access to create new custom fields"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, CUSTOM_FIELD_CREATE)}
+                  onChange={e =>
+                    onChangePerm(CUSTOM_FIELD_CREATE, e.target.checked)
+                  }
+                  label="Create"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label="Grants access to update custom fields"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, CUSTOM_FIELD_UPDATE)}
+                  onChange={e =>
+                    onChangePerm(CUSTOM_FIELD_UPDATE, e.target.checked)
+                  }
+                  label="Update"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label={"Grants permissions to delete custom fields"}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, CUSTOM_FIELD_DELETE)}
+                  onChange={e =>
+                    onChangePerm(CUSTOM_FIELD_DELETE, e.target.checked)
+                  }
+                  label="Delete"
+                />
+              </Table.Td>
+            </Tooltip>
+          </Table.Tr>
+          <Table.Tr key="document-types">
+            <Table.Td>
+              <Checkbox
+                checked={hasPerms(scopes, [
+                  DOCUMENT_TYPE_VIEW,
+                  DOCUMENT_TYPE_CREATE,
+                  DOCUMENT_TYPE_UPDATE,
+                  DOCUMENT_TYPE_DELETE
+                ])}
+                onChange={e =>
+                  onChangePerms(
+                    [
+                      DOCUMENT_TYPE_VIEW,
+                      DOCUMENT_TYPE_CREATE,
+                      DOCUMENT_TYPE_UPDATE,
+                      DOCUMENT_TYPE_DELETE
+                    ],
+                    e.target.checked
+                  )
+                }
+                label="Document Types"
+              />
+            </Table.Td>
+            <Tooltip
+              label="Grants access to document types tab on left side navigation panel"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, DOCUMENT_TYPE_VIEW)}
+                  onChange={e =>
+                    onChangePerm(DOCUMENT_TYPE_VIEW, e.target.checked)
+                  }
+                  label="View"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label="Grants access to create new document types"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, DOCUMENT_TYPE_CREATE)}
+                  onChange={e =>
+                    onChangePerm(DOCUMENT_TYPE_CREATE, e.target.checked)
+                  }
+                  label="Create"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label="Grants access to update document types"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, DOCUMENT_TYPE_UPDATE)}
+                  onChange={e =>
+                    onChangePerm(DOCUMENT_TYPE_UPDATE, e.target.checked)
+                  }
+                  label="Update"
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label={"Grants permissions to delete document types"}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, DOCUMENT_TYPE_DELETE)}
+                  onChange={e =>
+                    onChangePerm(DOCUMENT_TYPE_DELETE, e.target.checked)
+                  }
+                  label="Delete"
+                />
+              </Table.Td>
+            </Tooltip>
+          </Table.Tr>
           <Table.Tr key="nodes">
             <Tooltip
               label={"Nodes here means both documents and folders"}
@@ -589,6 +773,14 @@ const TAG_VIEW = "tag.view"
 const TAG_CREATE = "tag.create"
 const TAG_UPDATE = "tag.update"
 const TAG_DELETE = "tag.delete"
+const CUSTOM_FIELD_VIEW = "custom_field.view"
+const CUSTOM_FIELD_CREATE = "custom_field.create"
+const CUSTOM_FIELD_UPDATE = "custom_field.update"
+const CUSTOM_FIELD_DELETE = "custom_field.delete"
+const DOCUMENT_TYPE_VIEW = "document_type.view"
+const DOCUMENT_TYPE_CREATE = "document_type.create"
+const DOCUMENT_TYPE_UPDATE = "document_type.update"
+const DOCUMENT_TYPE_DELETE = "document_type.delete"
 const NODE_VIEW = "node.view"
 const NODE_CREATE = "node.create"
 const NODE_UPDATE = "node.update"

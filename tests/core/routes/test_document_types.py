@@ -34,6 +34,14 @@ def test_create_document_type(
 
 
 @pytest.mark.django_db(transaction=True)
+def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):
+    make_document_type(name="Invoice")
+    response = auth_api_client.get("/document-types/")
+
+    assert response.status_code == 200, response.json()
+
+
+@pytest.mark.django_db(transaction=True)
 def test_update_document_type(
     auth_api_client: AuthTestClient,
     db_session: Session,

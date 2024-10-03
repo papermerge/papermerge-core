@@ -55,7 +55,8 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         body: cf
       }),
       invalidatesTags: (_result, _error, arg) => [
-        {type: "CustomField", id: arg.id}
+        {type: "CustomField", id: arg.id},
+        "DocumentType"
       ]
     }),
     deleteCustomField: builder.mutation<void, string>({
@@ -63,7 +64,10 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         url: `custom-fields/${cfID}`,
         method: "DELETE"
       }),
-      invalidatesTags: (_result, _error, id) => [{type: "CustomField", id: id}]
+      invalidatesTags: (_result, _error, id) => [
+        {type: "CustomField", id: id},
+        "DocumentType"
+      ]
     })
   })
 })

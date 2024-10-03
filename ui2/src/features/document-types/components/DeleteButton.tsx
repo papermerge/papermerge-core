@@ -20,7 +20,7 @@ export function DeleteDocumentTypeButton({
   const navigate = useNavigate()
 
   const onSubmit = () => {
-    navigate("/custom-fields/")
+    navigate("/document-types/")
     close()
   }
 

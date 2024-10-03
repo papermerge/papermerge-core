@@ -244,7 +244,11 @@ export type DocType = {
   custom_fields: Array<CustomField>
 }
 
-export type DocTypeUpdate = Pick<DocType, "id" | "name" | "custom_fields">
+export type DocTypeUpdate = {
+  id: string
+  name: string
+  custom_field_ids: Array<string>
+}
 
 export type FileItemStatus = "uploading" | "success" | "failure"
 

@@ -26,7 +26,6 @@ export default function DocumentTypeForm({documentType}: Args) {
         onChange={() => {}}
         rightSection={<CopyButton value={documentType?.name || ""} />}
       />
-
       {hasCustomFields && (
         <CustomFieldTable cfs={documentType?.custom_fields} />
       )}

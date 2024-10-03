@@ -1,9 +1,11 @@
+import {useGetCustomFieldsQuery} from "@/features/custom-fields/apiSlice"
 import {
   Button,
   Group,
   Loader,
   LoadingOverlay,
   Modal,
+  MultiSelect,
   TextInput
 } from "@mantine/core"
 import {useEffect, useState} from "react"
@@ -26,10 +28,12 @@ export default function EditDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const {data: allCustomFields = []} = useGetCustomFieldsQuery()
   const {data, isLoading} = useGetDocumentTypeQuery(documentTypeId)
-  const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =
+  const [updateDocumentType, {isLoading: isLoadingGroupUpdate}] =
     useEditDocumentTypeMutation()
   const [name, setName] = useState<string>("")
+  const [customFieldIDs, setCustomFieldIDs] = useState<string[]>([])
 
   useEffect(() => {
     formReset()
@@ -38,10 +42,22 @@ export default function EditDocumentTypeModal({
   const formReset = () => {
     if (data) {
       setName(data.name || "")
+      setCustomFieldIDs(data.custom_fields.map(cf => cf.id) || [])
     }
   }
 
   const onLocalSubmit = async () => {
+    const updatedDocumentType = {
+      id: documentTypeId,
+      name,
+      custom_field_ids: customFieldIDs
+    }
+    try {
+      await updateDocumentType(updatedDocumentType).unwrap()
+    } catch (err: unknown) {
+      // @ts-ignore
+      setError(err.data.detail)
+    }
     formReset()
     onSubmit()
   }
@@ -68,6 +84,16 @@ export default function EditDocumentTypeModal({
         onChange={e => setName(e.currentTarget.value)}
         label="Name"
         placeholder="name"
+      />
+      <MultiSelect
+        label="Custom Fields"
+        placeholder="Pick value"
+        onChange={setCustomFieldIDs}
+        searchable
+        data={allCustomFields.map(i => {
+          return {label: i.name, value: i.id}
+        })}
+        value={customFieldIDs}
       />
 
       <Group justify="space-between" mt="md">

@@ -30,7 +30,7 @@ export const apiSliceWithDocTypes = apiSlice.injectEndpoints({
       ]
     }),
     getDocumentTypes: builder.query<DocType[], void>({
-      query: docTypes => "/document-types/all",
+      query: _ => "/document-types/all",
       providesTags: (result = [], _error, _arg) => [
         "DocumentType",
         ...result.map(({id}) => ({type: "DocumentType", id}) as const)

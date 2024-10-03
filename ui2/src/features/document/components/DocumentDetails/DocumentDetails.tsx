@@ -24,6 +24,7 @@ import {
 } from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
+import CustomFields from "./CustomFields"
 
 export default function DocumentDetails() {
   const mode: PanelMode = useContext(PanelContext)
@@ -62,6 +63,9 @@ export default function DocumentDetails() {
               value={doc?.tags?.map(t => t.name) || []}
               mt="md"
             />
+          </Group>
+          <Group>
+            <CustomFields />
           </Group>
         </Stack>
       </Group>

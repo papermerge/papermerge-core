@@ -4,10 +4,18 @@ from .custom_fields import (
     CreateCustomField,
     CustomField,
     CustomFieldType,
+    CustomFieldValue,
     UpdateCustomField,
 )
 from .document_types import CreateDocumentType, DocumentType, UpdateDocumentType
-from .documents import CreateDocument, Document, DocumentVersion, Page
+from .documents import (
+    CreateDocument,
+    Document,
+    DocumentCustomFieldsUpdate,
+    DocumentCustomFieldsUpdateValue,
+    DocumentVersion,
+    Page,
+)
 from .folders import CreateFolder, Folder
 from .groups import CreateGroup, Group, GroupDetails, UpdateGroup
 from .nodes import Node, OrderBy
@@ -45,9 +53,12 @@ __all__ = [
     "CreateCustomField",
     "UpdateCustomField",
     "CustomFieldType",
+    "CustomFieldValue",
     "CreateDocumentType",
     "DocumentType",
     "UpdateDocumentType",
+    "DocumentCustomFieldsUpdate",
+    "DocumentCustomFieldsUpdateValue",
 ]
 
 

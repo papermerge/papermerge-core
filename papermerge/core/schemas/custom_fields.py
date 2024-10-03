@@ -39,3 +39,7 @@ class UpdateCustomField(BaseModel):
     name: str | None = None
     data_type: CustomFieldType | None = None
     extra_data: str | None = None
+
+
+class CustomFieldValue(CustomField):
+    value: str | None = None

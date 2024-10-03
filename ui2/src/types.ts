@@ -326,6 +326,9 @@ export type DocumentVersionWithPageRot = {
   size: number
 }
 
+/* Naming here is unfortunate.
+Correct name of this type would be `Document`; but it
+collides with https://developer.mozilla.org/en-US/docs/Web/API/Document */
 export type DocumentType = {
   id: string
   ctype: "document"
@@ -335,6 +338,9 @@ export type DocumentType = {
   ocr: boolean
   ocr_status: OcrStatusEnum
   thumbnail_url: string
+  /* Naming here is correct; it refers to specific
+  document type id (i.e. to the "kind" of the document) */
+  document_type_id?: string
   versions: Array<DocumentVersion>
   parent_id: string | null
   user_id: string

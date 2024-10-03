@@ -4,7 +4,7 @@ from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.models import Document, DocumentVersion, Page, ColoredTag
+from papermerge.core.db.models import ColoredTag, Document, DocumentVersion, Page
 
 from .common import get_ancestors
 
@@ -58,3 +58,20 @@ def get_doc(
         model_doc = schemas.Document.model_validate(db_doc)
 
     return model_doc
+
+
+def update_document_custom_field_values(
+    session: Session,
+    id: UUID,
+    custom_fields_update: schemas.DocumentCustomFieldsUpdate,
+    user_id: UUID,
+):
+    pass
+
+
+def get_document_custom_field_values(
+    session: Session,
+    id: UUID,
+    user_id: UUID,
+):
+    pass

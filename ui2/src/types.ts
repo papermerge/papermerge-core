@@ -433,3 +433,11 @@ export interface CustomFieldValueType {
   custom_field_id: string
   value: string
 }
+
+export type DocumentCustomFieldValue = {
+  id: string
+  name: string
+  data_type: string
+  extra_data: string
+  value: string
+}

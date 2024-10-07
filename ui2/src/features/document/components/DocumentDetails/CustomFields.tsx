@@ -9,7 +9,10 @@ import {
   useGetDocumentTypeQuery,
   useGetDocumentTypesQuery
 } from "@/features/document-types/apiSlice"
-import {useUpdateDocumentCustomFieldsMutation} from "@/features/document/apiSlice"
+import {
+  useGetDocumentCustomFieldsQuery,
+  useUpdateDocumentCustomFieldsMutation
+} from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import type {CustomField, CustomFieldValueType, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
@@ -30,6 +33,9 @@ export default function CustomFields() {
   >([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
+  const {data: documentCustomFields} = useGetDocumentCustomFieldsQuery(
+    docID ?? skipToken
+  )
 
   useEffect(() => {
     if (documentType?.custom_fields) {
@@ -110,6 +116,7 @@ export default function CustomFields() {
       {showSaveButton && <Button onClick={onSave}>Save</Button>}
       {error && (
         <div>
+          {/* @ts-ignore*/}
           {error.status} {JSON.stringify(error.data)}
         </div>
       )}

@@ -9,14 +9,10 @@ import {
   useGetDocumentTypeQuery,
   useGetDocumentTypesQuery
 } from "@/features/document-types/apiSlice"
+import {useUpdateDocumentCustomFieldsMutation} from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import type {CustomField, PanelMode} from "@/types"
+import type {CustomField, CustomFieldValueType, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
-
-interface CustomFieldValueType {
-  custom_field_id: string
-  value: string
-}
 
 export default function CustomFields() {
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
@@ -32,6 +28,8 @@ export default function CustomFields() {
   const [customFieldValues, setCustomFieldValues] = useState<
     CustomFieldValueType[]
   >([])
+  const [updateDocumentCustomFields, {error}] =
+    useUpdateDocumentCustomFieldsMutation()
 
   useEffect(() => {
     if (documentType?.custom_fields) {
@@ -78,9 +76,18 @@ export default function CustomFields() {
     }
   }
 
-  const onSave = () => {
-    console.log(`Document ID=${docID}; documentTypeID=${documentTypeID?.value}`)
-    console.log(customFieldValues)
+  const onSave = async () => {
+    const data = {
+      documentID: docID!,
+      body: {
+        document_type_id: documentTypeID?.value!,
+        custom_fields: customFieldValues
+      }
+    }
+
+    await updateDocumentCustomFields(data)
+
+    setShowSaveButton(false)
   }
 
   if (isLoading || !docID || !doc) {
@@ -101,6 +108,11 @@ export default function CustomFields() {
       />
       {genericCustomFieldsComponents}
       {showSaveButton && <Button onClick={onSave}>Save</Button>}
+      {error && (
+        <div>
+          {error.status} {JSON.stringify(error.data)}
+        </div>
+      )}
     </>
   )
 }

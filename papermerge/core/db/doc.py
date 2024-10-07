@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import Engine, select
@@ -108,8 +109,12 @@ def update_document_custom_field_values(
             }
             attr_name = CUSTOM_FIELD_DATA_TYPE_MAP.get(found.data_type.value, None)
             if attr_name:
-                _dic[f"value_{attr_name}"] = incoming_cf.value
-
+                if attr_name == "date":
+                    _dic[f"value_{attr_name}"] = datetime.strptime(
+                        incoming_cf.value, "%d.%m.%Y"
+                    )
+                else:
+                    _dic[f"value_{attr_name}"] = incoming_cf.value
             cfv = CustomFieldValue(
                 id=uuid.uuid4(),
                 field_id=incoming_cf.custom_field_id,

@@ -67,6 +67,7 @@ def update_document_custom_fields(
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
+
     return doc
 
 

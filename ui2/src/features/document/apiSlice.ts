@@ -1,6 +1,7 @@
 import {RootState} from "@/app/types"
 import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
+import type {CustomFieldValueType} from "@/types"
 import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
@@ -39,6 +40,14 @@ type ExtractPagesType = {
   }
   sourceDocID: string
   sourceDocParentID: string
+}
+
+type UpdateDocumentCustomFields = {
+  documentID: string
+  body: {
+    document_type_id: string
+    custom_fields: Array<CustomFieldValueType>
+  }
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -129,6 +138,16 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
           {type: "Node", id: arg.body.target_folder_id}
         ]
       }
+    }),
+    updateDocumentCustomFields: builder.mutation<
+      void,
+      UpdateDocumentCustomFields
+    >({
+      query: data => ({
+        url: `/documents/${data.documentID}/custom-fields`,
+        method: "PATCH",
+        body: data.body
+      })
     })
   })
 })
@@ -138,5 +157,6 @@ export const {
   useGetPageImageQuery,
   useApplyPageOpChangesMutation,
   useMovePagesMutation,
-  useExtractPagesMutation
+  useExtractPagesMutation,
+  useUpdateDocumentCustomFieldsMutation
 } = apiSliceWithDocuments

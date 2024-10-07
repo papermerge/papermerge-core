@@ -257,3 +257,40 @@ def test_document_update_custom_field_values(
     )
     # two custom field values were created
     assert len(total_cfv_after) == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_custom_field_value_of_type_date(
+    db_session: Session,
+    user: User,
+    document: Document,
+    document_type_with_one_date_cf: schemas.DocumentType,
+):
+    """
+    Custom field of type `date` is set to string "28.10.2024"
+    """
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=user.id
+    )
+    assert len(total_cfv_after) == 0
+
+    dtype = document_type_with_one_date_cf
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=user.id
+    )
+    # one custom field value was created
+    assert len(total_cfv_after) == 1

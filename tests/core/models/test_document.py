@@ -227,12 +227,11 @@ def test_generate_thumbnail(document: Document):
 @pytest.mark.django_db(transaction=True)
 def test_document_update_custom_field_values(
     db_session: Session,
-    user: User,
     document: Document,
     document_type_with_two_integer_cf: schemas.DocumentType,
 ):
     total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=user.id
+        db_session, id=document.id, user_id=document.user.id
     )
     assert len(total_cfv_after) == 0
 
@@ -249,20 +248,23 @@ def test_document_update_custom_field_values(
         db_session,
         id=document.id,
         custom_fields_update=custom_fields_update,
-        user_id=user.id,
+        user_id=document.user.id,
     )
 
     total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=user.id
+        db_session, id=document.id, user_id=document.user.id
     )
     # two custom field values were created
     assert len(total_cfv_after) == 2
+
+    fresh_doc = db.get_doc(db_session, document.id, document.user.id)
+    # document type should have been updated to the dtype
+    assert fresh_doc.document_type_id == dtype.id
 
 
 @pytest.mark.django_db(transaction=True)
 def test_document_update_custom_field_value_of_type_date(
     db_session: Session,
-    user: User,
     document: Document,
     document_type_with_one_date_cf: schemas.DocumentType,
 ):
@@ -270,7 +272,7 @@ def test_document_update_custom_field_value_of_type_date(
     Custom field of type `date` is set to string "28.10.2024"
     """
     total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=user.id
+        db_session, id=document.id, user_id=document.user.id
     )
     assert len(total_cfv_after) == 0
 
@@ -286,11 +288,11 @@ def test_document_update_custom_field_value_of_type_date(
         db_session,
         id=document.id,
         custom_fields_update=custom_fields_update,
-        user_id=user.id,
+        user_id=document.user.id,
     )
 
     total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=user.id
+        db_session, id=document.id, user_id=document.user.id
     )
     # one custom field value was created
     assert len(total_cfv_after) == 1

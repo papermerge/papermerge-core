@@ -25,7 +25,7 @@ def get_document_details(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
-    engine: db.Engine = Depends(db.get_engine),
+    db_session: db.Session = Depends(db.get_session),
 ) -> schemas.Document:
     """
     Get document details
@@ -33,7 +33,7 @@ def get_document_details(
     Required scope: `{scope}`
     """
     try:
-        doc = db.get_doc(engine, id=document_id, user_id=user.id)
+        doc = db.get_doc(db_session, id=document_id, user_id=user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc

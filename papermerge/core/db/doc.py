@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
@@ -30,52 +30,49 @@ CUSTOM_FIELD_DATA_TYPE_MAP = {
 
 
 def get_doc(
-    engine: Engine,
+    session: Session,
     id: UUID,
     user_id: UUID,
 ) -> schemas.Document:
-    with Session(engine) as session:  # noqa
-        stmt_doc = select(Document).where(
-            Document.id == id, Document.user_id == user_id
+    stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
+    db_doc = session.scalars(stmt_doc).one()
+    breadcrumb = get_ancestors(session, id)
+    db_doc.breadcrumb = breadcrumb
+
+    stmt_doc_ver = (
+        select(DocumentVersion)
+        .where(
+            DocumentVersion.document_id == id,
         )
-        db_doc = session.scalars(stmt_doc).one()
-        breadcrumb = get_ancestors(session, id)
-        db_doc.breadcrumb = breadcrumb
+        .order_by("number")
+    )
+    db_doc_vers = session.scalars(stmt_doc_ver).all()
 
-        stmt_doc_ver = (
-            select(DocumentVersion)
-            .where(
-                DocumentVersion.document_id == id,
-            )
-            .order_by("number")
-        )
-        db_doc_vers = session.scalars(stmt_doc_ver).all()
+    stmt_pages = select(Page).where(Document.id == id)
+    db_pages = session.scalars(stmt_pages).all()
 
-        stmt_pages = select(Page).where(Document.id == id)
-        db_pages = session.scalars(stmt_pages).all()
+    db_doc.versions = list(
+        [
+            schemas.DocumentVersion.model_validate(db_doc_ver)
+            for db_doc_ver in db_doc_vers
+        ]
+    )
+    colored_tags_stmt = select(ColoredTag).where(ColoredTag.object_id == id)
+    colored_tags = session.scalars(colored_tags_stmt).all()
+    db_doc.tags = [ct.tag for ct in colored_tags]
 
-        db_doc.versions = list(
-            [
-                schemas.DocumentVersion.model_validate(db_doc_ver)
-                for db_doc_ver in db_doc_vers
-            ]
-        )
-        colored_tags_stmt = select(ColoredTag).where(ColoredTag.object_id == id)
-        colored_tags = session.scalars(colored_tags_stmt).all()
-        db_doc.tags = [ct.tag for ct in colored_tags]
+    def get_page(doc_ver_id):
+        result = []
+        for db_page in db_pages:
+            if db_page.document_version_id == doc_ver_id:
+                result.append(db_page)
 
-        def get_page(doc_ver_id):
-            result = []
-            for db_page in db_pages:
-                if db_page.document_version_id == doc_ver_id:
-                    result.append(db_page)
+        return sorted(result, key=lambda x: x.number)
 
-            return sorted(result, key=lambda x: x.number)
-
-        for version in db_doc.versions:
-            pages = get_page(version.id)
-            version.pages = list([schemas.Page.model_validate(page) for page in pages])
-        model_doc = schemas.Document.model_validate(db_doc)
+    for version in db_doc.versions:
+        pages = get_page(version.id)
+        version.pages = list([schemas.Page.model_validate(page) for page in pages])
+    model_doc = schemas.Document.model_validate(db_doc)
 
     return model_doc
 
@@ -86,6 +83,13 @@ def update_document_custom_field_values(
     custom_fields_update: schemas.DocumentCustomFieldsUpdate,
     user_id: UUID,
 ):
+    # fetch doc
+    stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
+    db_doc = session.scalars(stmt_doc).one()
+    # set document type ID to the input value
+    db_doc.document_type_id = custom_fields_update.document_type_id
+    session.add(db_doc)
+    # continue to update document fields
     custom_field_ids = [cf.custom_field_id for cf in custom_fields_update.custom_fields]
     stmt = select(CustomField).where(CustomField.id.in_(custom_field_ids))
     results = session.execute(stmt).all()

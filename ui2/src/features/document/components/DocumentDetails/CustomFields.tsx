@@ -28,15 +28,15 @@ export default function CustomFields() {
   const [documentTypeID, setDocumentTypeID] = useState<ComboboxItem | null>(
     null
   )
-  const {currentData: documentType, isLoading: documentTypeIsLoading} =
-    useGetDocumentTypeQuery(documentTypeID?.value ?? skipToken)
+  const {currentData: documentType} = useGetDocumentTypeQuery(
+    documentTypeID?.value ?? skipToken
+  )
   const [customFieldValues, setCustomFieldValues] = useState<
     DocumentCustomFieldValue[]
   >([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
-  const [addDocumentCustomFields, {error: erroraddDocumentCustomFields}] =
-    useAddDocumentCustomFieldsMutation()
+  const [addDocumentCustomFields] = useAddDocumentCustomFieldsMutation()
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 

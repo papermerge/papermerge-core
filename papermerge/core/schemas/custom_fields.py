@@ -39,3 +39,11 @@ class UpdateCustomField(BaseModel):
     name: str | None = None
     data_type: CustomFieldType | None = None
     extra_data: str | None = None
+
+
+class CustomFieldValue(CustomField):
+    # notice that attribue `id` indicates the ID of
+    # custom field value
+    value: str | None = None
+    # the ID of the custom field
+    field_id: UUID

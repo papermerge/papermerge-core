@@ -269,6 +269,9 @@ class CustomFieldValue(Base):
         ForeignKey("core_document.basetreenode_ptr_id")
     )
     field_id: Mapped[UUID] = mapped_column(ForeignKey("core_customfield.id"))
+    field = relationship(
+        "CustomField", primaryjoin="CustomField.id == CustomFieldValue.field_id"
+    )
     value_text: Mapped[str]
     value_bool: Mapped[bool]
     value_url: Mapped[str]
@@ -278,6 +281,7 @@ class CustomFieldValue(Base):
     value_monetary: Mapped[str]
     value_document_ids: Mapped[str]
     value_select: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
 
 class DocumentType(Base):

@@ -1,13 +1,10 @@
-
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple
+from typing import Annotated, Literal
 from uuid import UUID
 
 from django.conf import settings
 from django.db.models.manager import BaseManager
-from pydantic import (BaseModel, ConfigDict, Field, ValidationInfo,
-                      field_validator)
-from typing_extensions import Annotated
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
@@ -16,8 +13,8 @@ from papermerge.core.types import OCRStatusEnum
 
 class Tag(BaseModel):
     name: str
-    bg_color: str = '#c41fff'
-    fg_color: str = '#FFFFF'
+    bg_color: str = "#c41fff"
+    fg_color: str = "#FFFFF"
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -26,32 +23,32 @@ class Tag(BaseModel):
 class Page(BaseModel):
     id: UUID
     number: int
-    text: str = ''
+    text: str = ""
     lang: str
     document_version_id: UUID
-    svg_url: Annotated[Optional[str], Field(validate_default=True)] = None
-    jpg_url: Annotated[Optional[str], Field(validate_default=True)] = None
+    svg_url: Annotated[str | None, Field(validate_default=True)] = None
+    jpg_url: Annotated[str | None, Field(validate_default=True)] = None
 
-    @field_validator("svg_url", mode='before')
+    @field_validator("svg_url", mode="before")
     @classmethod
     def svg_url_value(cls, value, info: ValidationInfo) -> str:
-        if settings.FILE_SERVER == 'local':
+        if settings.FILE_SERVER == "local":
             return f"/api/pages/{info.data['id']}/svg"
 
         s3_url = _s3_page_svg_url(
-            info.data['id']  # UUID of the page here
+            info.data["id"]  # UUID of the page here
         )
         return s3_url
 
-    @field_validator("jpg_url", mode='before')
+    @field_validator("jpg_url", mode="before")
     @classmethod
     def jpg_url_value(cls, value, info: ValidationInfo) -> str:
-        if settings.FILE_SERVER == 'local':
+        if settings.FILE_SERVER == "local":
             return f"/api/pages/{info.data['id']}/jpg"
 
         s3_url = _s3_page_thumbnail_url(
-            info.data['id'],  # UUID of the page here
-            size=const.DEFAULT_PAGE_SIZE
+            info.data["id"],  # UUID of the page here
+            size=const.DEFAULT_PAGE_SIZE,
         )
 
         return s3_url
@@ -60,10 +57,7 @@ class Page(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-DownloadUrl = Annotated[
-    str | None,
-    Field(validate_default=True)
-]
+DownloadUrl = Annotated[str | None, Field(validate_default=True)]
 
 
 class DocumentVersion(BaseModel):
@@ -76,9 +70,9 @@ class DocumentVersion(BaseModel):
     short_description: str
     document_id: UUID
     download_url: DownloadUrl = None
-    pages: Optional[List[Page]] = []
+    pages: list[Page] | None = []
 
-    @field_validator("pages", mode='before')
+    @field_validator("pages", mode="before")
     @classmethod
     def get_all_from_manager(cls, value, info: ValidationInfo) -> object:
         if isinstance(value, BaseManager):
@@ -88,12 +82,12 @@ class DocumentVersion(BaseModel):
                 return []
         return value
 
-    @field_validator('download_url', mode='before')
+    @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
-        if settings.FILE_SERVER == 'local':
+        if settings.FILE_SERVER == "local":
             return f"/api/document-versions/{info.data['id']}/download"
 
-        return _s3_docver_download_url(info.data['id'], info.data['file_name'])
+        return _s3_docver_download_url(info.data["id"], info.data["file_name"])
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -103,42 +97,40 @@ def thumbnail_url(value, info):
     return f"/api/thumbnails/{info.data['id']}"
 
 
-ThumbnailUrl = Annotated[
-    str | None,
-    Field(validate_default=True)
-]
+ThumbnailUrl = Annotated[str | None, Field(validate_default=True)]
 
 
 class Document(BaseModel):
     id: UUID
     title: str
     ctype: Literal["document"]
-    tags: List[Tag] = []
+    tags: list[Tag] = []
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
     user_id: UUID
-    breadcrumb: list[Tuple[UUID, str]] = []
-    versions: Optional[List[DocumentVersion]] = []
+    document_type_id: UUID | None = None
+    breadcrumb: list[tuple[UUID, str]] = []
+    versions: list[DocumentVersion] | None = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
 
-    @field_validator("versions", mode='before')
+    @field_validator("versions", mode="before")
     def get_all_from_manager(cls, v: object) -> object:
         if isinstance(v, BaseManager):
             return list(v.all())
         return v
 
-    @field_validator('thumbnail_url', mode='before')
+    @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
-        if settings.FILE_SERVER == 'local':
+        if settings.FILE_SERVER == "local":
             return f"/api/thumbnails/{info.data['id']}"
 
         # if it is not local, then it is s3 + cloudfront
-        return _s3_doc_thumbnail_url(info.data['id'])
+        return _s3_doc_thumbnail_url(info.data["id"])
 
-    @field_validator('tags', mode='before')
+    @field_validator("tags", mode="before")
     def tags_validator(cls, value):
         if not isinstance(value, list):
             return list(value.all())
@@ -169,7 +161,7 @@ class CreateDocument(BaseModel):
                 {
                     "title": "invoice.pdf",
                     "ctype": "document",
-                    "parent_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    "parent_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                 }
             ]
         }
@@ -185,7 +177,7 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid)
-    prefix = getattr(settings, 'PREFIX', None)
+    prefix = getattr(settings, "PREFIX", None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -193,7 +185,7 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
 
     return sign_url(
         url,
-        valid_for=600  # valid for 600 seconds
+        valid_for=600,  # valid for 600 seconds
     )
 
 
@@ -201,7 +193,7 @@ def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.thumbnail_path(uid, size=size)
-    prefix = getattr(settings, 'PREFIX', None)
+    prefix = getattr(settings, "PREFIX", None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -209,7 +201,7 @@ def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
 
     return sign_url(
         url,
-        valid_for=600  # valid for 600 seconds
+        valid_for=600,  # valid for 600 seconds
     )
 
 
@@ -217,7 +209,7 @@ def _s3_page_svg_url(uid: UUID) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.page_svg_path(uid)
-    prefix = getattr(settings, 'PREFIX', None)
+    prefix = getattr(settings, "PREFIX", None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -225,7 +217,7 @@ def _s3_page_svg_url(uid: UUID) -> str:
 
     return sign_url(
         url,
-        valid_for=600  # valid for 600 seconds
+        valid_for=600,  # valid for 600 seconds
     )
 
 
@@ -233,7 +225,7 @@ def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
     from papermerge.core.cloudfront import sign_url
 
     resource_path = plib.docver_path(uid, file_name)
-    prefix = getattr(settings, 'PREFIX', None)
+    prefix = getattr(settings, "PREFIX", None)
     if prefix:
         url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
     else:
@@ -241,5 +233,25 @@ def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
 
     return sign_url(
         url,
-        valid_for=600  # valid for 600 seconds
+        valid_for=600,  # valid for 600 seconds
     )
+
+
+class DocumentCustomFieldsAddValue(BaseModel):
+    custom_field_id: UUID  # custom field ID here, NOT custom field *value* ID!
+    value: str
+
+
+class DocumentCustomFieldsAdd(BaseModel):
+    document_type_id: UUID | None = None
+    custom_fields: list[DocumentCustomFieldsAddValue]
+
+
+class DocumentCustomFieldsUpdateValue(BaseModel):
+    custom_field_value_id: UUID
+    value: str
+
+
+class DocumentCustomFieldsUpdate(BaseModel):
+    document_type_id: UUID | None = None
+    custom_fields: list[DocumentCustomFieldsUpdateValue]

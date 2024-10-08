@@ -33,7 +33,7 @@ def get_document_types_without_pagination(
     Required scope: `{scope}`
     """
 
-    return db.get_custom_fields(db_session)
+    return db.get_document_types(db_session)
 
 
 @router.get("/", response_model=PaginatorGeneric[schemas.DocumentType])

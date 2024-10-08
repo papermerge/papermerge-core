@@ -39,19 +39,19 @@ def get_document_details(
     return doc
 
 
-@router.patch("/{document_id}/custom-fields")
+@router.post("/{document_id}/custom-fields")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def update_document_custom_fields(
+def add_document_custom_field_values(
     document_id: uuid.UUID,
-    custom_fields_update: schemas.DocumentCustomFieldsUpdate,
+    custom_fields_add: schemas.DocumentCustomFieldsAdd,
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: db.Session = Depends(db.get_session),
-):
+) -> list[schemas.CustomFieldValue]:
     """
-    Update document type to specified `document_type_id` and set it custom field
-    value(s)
+    Associates document type to specified `document_type_id` and set it custom field
+    value(s). This API will create a NEW custom field value
 
     All custom fields must be part of `DocumentType` specified by `document_type_id`,
     otherwise response will return error 400 - invalid request.
@@ -59,7 +59,39 @@ def update_document_custom_fields(
     Required scope: `{scope}`
     """
     try:
-        doc = db.update_document_custom_field_values(
+        added_entries = db.add_document_custom_field_values(
+            db_session,
+            id=document_id,
+            custom_fields_add=custom_fields_add,
+            user_id=user.id,
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return added_entries
+
+
+@router.patch("/{document_id}/custom-fields")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
+def update_document_custom_field_values(
+    document_id: uuid.UUID,
+    custom_fields_update: schemas.DocumentCustomFieldsUpdate,
+    user: Annotated[
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
+    db_session: db.Session = Depends(db.get_session),
+) -> list[schemas.CustomFieldValue]:
+    """
+    Update document type to specified `document_type_id` and set it custom field
+    value(s). Will update existing custom field values.
+
+    All custom fields must be part of `DocumentType` specified by `document_type_id`,
+    otherwise response will return error 400 - invalid request.
+
+    Required scope: `{scope}`
+    """
+    try:
+        updated_entries = db.update_document_custom_field_values(
             db_session,
             id=document_id,
             custom_fields_update=custom_fields_update,
@@ -68,7 +100,7 @@ def update_document_custom_fields(
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    return doc
+    return updated_entries
 
 
 @router.get("/{document_id}/custom-fields")

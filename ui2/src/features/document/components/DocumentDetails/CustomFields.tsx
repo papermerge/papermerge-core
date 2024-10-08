@@ -14,12 +14,13 @@ import {
   useUpdateDocumentCustomFieldsMutation
 } from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import type {CustomField, CustomFieldValueType, PanelMode} from "@/types"
+import type {DocumentCustomFieldValue, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
 
 export default function CustomFields() {
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
-  const {data: allDocumentTypes = []} = useGetDocumentTypesQuery()
+  const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
+    useGetDocumentTypesQuery()
   const mode: PanelMode = useContext(PanelContext)
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
@@ -29,33 +30,69 @@ export default function CustomFields() {
   const {currentData: documentType, isLoading: documentTypeIsLoading} =
     useGetDocumentTypeQuery(documentTypeID?.value ?? skipToken)
   const [customFieldValues, setCustomFieldValues] = useState<
-    CustomFieldValueType[]
+    DocumentCustomFieldValue[]
   >([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
-  const {data: documentCustomFields} = useGetDocumentCustomFieldsQuery(
-    docID ?? skipToken
-  )
+  const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
+    useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
   useEffect(() => {
-    if (documentType?.custom_fields) {
+    if (
+      isSuccessDocumentCustomFields &&
+      documentCustomFields &&
+      documentCustomFields.length > 0
+    ) {
+      const initialCustFieldValues = documentCustomFields.map(i => {
+        return {...i, value: i.value}
+      })
+      setCustomFieldValues(initialCustFieldValues)
+    } else if (documentType?.custom_fields) {
       const initialCustFieldValues = documentType?.custom_fields.map(i => {
-        return {custom_field_id: i.id, value: ""}
+        return {...i, value: ""}
       })
       setCustomFieldValues(initialCustFieldValues)
     }
-  }, [documentType?.custom_fields])
+  }, [documentType?.custom_fields, isSuccessDocumentCustomFields])
+
+  useEffect(() => {
+    /* Update (local) documentTypeID state based on the
+    actual doc.document_type_id
+
+    When both document's data is loaded AND all document types data are
+    loaded - update currently selected item in "document type <Select /> component"
+    */
+    if (doc && doc.document_type_id) {
+      // ok, document data is loaded and document has associated a non-empty document type
+      if (
+        allDocumentTypes &&
+        allDocumentTypes.length > 0 &&
+        isSuccessAllDocumentTypes
+      ) {
+        // ok, all document types were loaded as well.
+        const foundDocType = allDocumentTypes.find(
+          i => i.id == doc.document_type_id
+        )
+        if (foundDocType) {
+          setDocumentTypeID({
+            label: foundDocType.name,
+            value: foundDocType.id
+          })
+        }
+      }
+    }
+  }, [doc, isSuccessAllDocumentTypes])
 
   const onCustomFieldValueChanged = ({
     customField,
     value
   }: {
-    customField: CustomField
+    customField: DocumentCustomFieldValue
     value: string
   }) => {
     const newCustomFieldValues = customFieldValues.map(cf => {
-      if (cf.custom_field_id == customField.id) {
-        return {custom_field_id: cf.custom_field_id, value}
+      if (cf.id == customField.id) {
+        return {...cf, value}
       }
 
       return cf
@@ -64,7 +101,7 @@ export default function CustomFields() {
     setShowSaveButton(true)
   }
 
-  const genericCustomFieldsComponents = documentType?.custom_fields.map(cf => (
+  const genericCustomFieldsComponents = customFieldValues.map(cf => (
     <GenericCustomField
       key={cf.id}
       documentID={docID}
@@ -87,7 +124,9 @@ export default function CustomFields() {
       documentID: docID!,
       body: {
         document_type_id: documentTypeID?.value!,
-        custom_fields: customFieldValues
+        custom_fields: customFieldValues.map(i => {
+          return {custom_field_id: i.field_id!, value: i.value}
+        })
       }
     }
 
@@ -125,13 +164,13 @@ export default function CustomFields() {
 }
 
 interface GenericCustomFieldArg {
-  customField: CustomField
+  customField: DocumentCustomFieldValue
   documentID?: string
   onChange: ({
     customField,
     value
   }: {
-    customField: CustomField
+    customField: DocumentCustomFieldValue
     value: string
   }) => void
 }
@@ -141,7 +180,7 @@ function GenericCustomField({
   documentID,
   onChange
 }: GenericCustomFieldArg) {
-  const [value, setValue] = useState<string>("")
+  const [value, setValue] = useState<string>(customField.value)
 
   const onLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.currentTarget.value)

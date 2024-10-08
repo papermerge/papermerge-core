@@ -225,7 +225,7 @@ def test_generate_thumbnail(document: Document):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_custom_field_values(
+def test_document_add_custom_field_values(
     db_session: Session,
     document: Document,
     document_type_with_two_integer_cf: schemas.DocumentType,
@@ -236,18 +236,18 @@ def test_document_update_custom_field_values(
     assert len(total_cfv_after) == 0
 
     dtype = document_type_with_two_integer_cf
-    cf_update = {
+    cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
             {"custom_field_id": dtype.custom_fields[0].id, "value": "100"},
             {"custom_field_id": dtype.custom_fields[1].id, "value": "200"},
         ],
     }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    db.update_document_custom_field_values(
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
         db_session,
         id=document.id,
-        custom_fields_update=custom_fields_update,
+        custom_fields_add=custom_fields_add,
         user_id=document.user.id,
     )
 
@@ -263,7 +263,7 @@ def test_document_update_custom_field_values(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_custom_field_value_of_type_date(
+def test_document_add_custom_field_value_of_type_date(
     db_session: Session,
     document: Document,
     document_type_with_one_date_cf: schemas.DocumentType,
@@ -277,17 +277,17 @@ def test_document_update_custom_field_value_of_type_date(
     assert len(total_cfv_after) == 0
 
     dtype = document_type_with_one_date_cf
-    cf_update = {
+    cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
             {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
         ],
     }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    db.update_document_custom_field_values(
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
         db_session,
         id=document.id,
-        custom_fields_update=custom_fields_update,
+        custom_fields_add=custom_fields_add,
         user_id=document.user.id,
     )
 
@@ -340,3 +340,119 @@ def test_document_update_same_custom_field_value_multiple_times(
     assert len(total_cfv_after) == 1
     # and the value is - last one
     assert total_cfv_after[0].value == "2024-10-30 00:00:00"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_same_custom_field_value_multiple_times2(
+    db_session: Session,
+    document: Document,
+    document_type_with_one_date_cf: schemas.DocumentType,
+):
+    """
+    Every time custom field value is updated the retrieved value
+    is latest one
+    """
+    dtype = document_type_with_one_date_cf
+
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+
+    assert len(total_cfv_after) == 1
+    assert total_cfv_after[0].value == "2024-10-28 00:00:00"
+
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "29.10.2024"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    # update it again
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+
+    assert len(total_cfv_after) == 1
+    # and make sure the retrieved value is
+    # the latest one i.e. 29th of oct instead of 28th of oct
+    assert total_cfv_after[0].value == "2024-10-29 00:00:00"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_string_custom_field_value_multiple_times(
+    db_session: Session,
+    document: Document,
+    document_type_with_one_string_cf: schemas.DocumentType,
+):
+    """
+    Every time custom field value is updated the retrieved value
+    is the latest one
+    """
+    dtype = document_type_with_one_string_cf
+
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+
+    assert len(total_cfv_after) == 1
+    assert total_cfv_after[0].value == "smb 1"
+
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 2"},
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+    # update it again
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+
+    assert len(total_cfv_after) == 1
+    # and make sure the retrieved value is
+    # the latest one i.e. "smb 2" instead of "smb 1"
+    assert total_cfv_after[0].value == "smb 2"

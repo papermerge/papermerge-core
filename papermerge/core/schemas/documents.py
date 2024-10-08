@@ -237,8 +237,18 @@ def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
     )
 
 
+class DocumentCustomFieldsAddValue(BaseModel):
+    custom_field_id: UUID  # custom field ID here, NOT custom field *value* ID!
+    value: str
+
+
+class DocumentCustomFieldsAdd(BaseModel):
+    document_type_id: UUID
+    custom_fields: list[DocumentCustomFieldsAddValue]
+
+
 class DocumentCustomFieldsUpdateValue(BaseModel):
-    custom_field_id: UUID
+    custom_field_value_id: UUID
     value: str
 
 

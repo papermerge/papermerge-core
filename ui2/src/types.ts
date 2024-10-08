@@ -438,6 +438,9 @@ export type DocumentCustomFieldValue = {
   id: string
   name: string
   data_type: string
-  extra_data: string
+  extra_data?: string
   value: string
+  /* optionally store ID of the custom field this
+  this value is associated with */
+  field_id?: string
 }

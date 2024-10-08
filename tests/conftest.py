@@ -127,3 +127,17 @@ def document_type_with_one_date_cf(  # cf = custom field
         custom_field_ids=[cf1.id],
         user_id=user.id,
     )
+
+
+@pytest.fixture
+def document_type_with_one_string_cf(  # cf = custom field
+    db_session: Session, user: User, make_custom_field
+):
+    cf1 = make_custom_field(name="string-name1", data_type=CustomFieldType.string)
+
+    return db.create_document_type(
+        db_session,
+        name="document_type_with_one_string_cf",
+        custom_field_ids=[cf1.id],
+        user_id=user.id,
+    )

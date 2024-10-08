@@ -11,6 +11,8 @@ from .document_types import CreateDocumentType, DocumentType, UpdateDocumentType
 from .documents import (
     CreateDocument,
     Document,
+    DocumentCustomFieldsAdd,
+    DocumentCustomFieldsAddValue,
     DocumentCustomFieldsUpdate,
     DocumentCustomFieldsUpdateValue,
     DocumentVersion,
@@ -59,6 +61,8 @@ __all__ = [
     "UpdateDocumentType",
     "DocumentCustomFieldsUpdate",
     "DocumentCustomFieldsUpdateValue",
+    "DocumentCustomFieldsAdd",
+    "DocumentCustomFieldsAddValue",
 ]
 
 

@@ -147,7 +147,10 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         url: `/documents/${data.documentID}/custom-fields`,
         method: "PATCH",
         body: data.body
-      })
+      }),
+      invalidatesTags: (_result, _error, arg) => {
+        return [{type: "DocumentCustomField", id: arg.documentID}]
+      }
     }),
     getDocumentCustomFields: builder.query<DocumentCustomFieldValue[], string>({
       query: documentID => ({

@@ -253,5 +253,5 @@ class DocumentCustomFieldsUpdateValue(BaseModel):
 
 
 class DocumentCustomFieldsUpdate(BaseModel):
-    document_type_id: UUID
+    document_type_id: UUID | None = None
     custom_fields: list[DocumentCustomFieldsUpdateValue]

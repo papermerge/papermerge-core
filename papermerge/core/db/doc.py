@@ -84,9 +84,11 @@ def update_document_custom_field_values(
     user_id: UUID,
 ) -> list[schemas.CustomFieldValue]:
     """
-    Updates already existing `CustomFieldValue` instances
+    If document_type_id is None, will just set document's `document_type_id`
+    field to None and return an empty list.
 
-    Returns a list of updated `CustomFieldValue`
+    If `document_type_id` is not empty  - updates already existing
+    `CustomFieldValue` instances and returns a list of updated `CustomFieldValue`
     """
     # fetch doc
     stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
@@ -94,6 +96,10 @@ def update_document_custom_field_values(
     # set document type ID to the input value
     db_doc.document_type_id = custom_fields_update.document_type_id
     session.add(db_doc)
+    if custom_fields_update.document_type_id is None:
+        session.commit()
+        return []
+
     updated_db_items = []
 
     field_value_ids = [
@@ -237,15 +243,26 @@ def get_document_custom_field_values(
     user_id: UUID,
 ) -> list[schemas.CustomFieldValue]:
     result = []
+    custom_field_ids = []
+    stmt_doc = select(Document).where(Document.id == id)
+    db_doc = session.scalars(stmt_doc).one()
+    if db_doc.document_type:
+        custom_field_ids = [cf.id for cf in db_doc.document_type.custom_fields]
+
+    if len(custom_field_ids) == 0:
+        return result  # which at this point is []
+
     stmt = (
         select(CustomFieldValue)
         .join(CustomField)
         .where(
             CustomFieldValue.document_id == id,
             CustomField.id == CustomFieldValue.field_id,
+            CustomField.id.in_(custom_field_ids),
         )
     )
     db_results = session.scalars(stmt).all()
+
     for db_item in db_results:
         if db_item.field.data_type == schemas.CustomFieldType.int:
             value = db_item.value_int

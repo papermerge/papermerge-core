@@ -82,11 +82,14 @@ def update_document_custom_field_values(
     db_session: db.Session = Depends(db.get_session),
 ) -> list[schemas.CustomFieldValue]:
     """
-    Update document type to specified `document_type_id` and set it custom field
-    value(s). Will update existing custom field values.
+    If `document_type_id` is empty - will set document's `document_type_id`
+    field to None (i.e. will mark document as of no particular type) and
+    return an empty list.
 
-    All custom fields must be part of `DocumentType` specified by `document_type_id`,
-    otherwise response will return error 400 - invalid request.
+    If `document_type_id` is NOT empty - will update document type to specified
+    `document_type_id` and set it custom field value(s). In this case
+    (of non emtpy `document_type`) will return a list of updated
+    cust field values.
 
     Required scope: `{scope}`
     """

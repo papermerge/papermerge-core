@@ -434,6 +434,16 @@ export interface CustomFieldValueType {
   value: string
 }
 
+export interface AddCustomFieldValueType {
+  custom_field_id: string
+  value: string
+}
+
+export interface UpdateCustomFieldValueType {
+  custom_field_value_id: string
+  value: string
+}
+
 export type DocumentCustomFieldValue = {
   id: string
   name: string

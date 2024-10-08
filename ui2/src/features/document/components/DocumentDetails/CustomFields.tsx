@@ -10,12 +10,15 @@ import {
   useGetDocumentTypesQuery
 } from "@/features/document-types/apiSlice"
 import {
+  useAddDocumentCustomFieldsMutation,
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation
 } from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import type {DocumentCustomFieldValue, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
+
+type CustomFieldsOperation = "add" | "update"
 
 export default function CustomFields() {
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
@@ -34,6 +37,8 @@ export default function CustomFields() {
   >([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
+  const [addDocumentCustomFields, {error: erroraddDocumentCustomFields}] =
+    useAddDocumentCustomFieldsMutation()
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
@@ -120,17 +125,34 @@ export default function CustomFields() {
   }
 
   const onSave = async () => {
-    const data = {
-      documentID: docID!,
-      body: {
-        document_type_id: documentTypeID?.value!,
-        custom_fields: customFieldValues.map(i => {
-          return {custom_field_id: i.field_id!, value: i.value}
-        })
+    if (documentCustomFields && customFieldValues.length > 0) {
+      // document already has custom fields associated
+      // we need to update existing custom field value
+      const data = {
+        documentID: docID!,
+        body: {
+          document_type_id: documentTypeID?.value!,
+          custom_fields: customFieldValues.map(i => {
+            return {custom_field_value_id: i.id, value: i.value}
+          })
+        }
       }
-    }
+      await updateDocumentCustomFields(data)
+    } else {
+      // document does not have custom field values associated
+      // create new ones based on field_id
+      const data = {
+        documentID: docID!,
+        body: {
+          document_type_id: documentTypeID?.value!,
+          custom_fields: customFieldValues.map(i => {
+            return {custom_field_id: i.field_id!, value: i.value}
+          })
+        }
+      }
 
-    await updateDocumentCustomFields(data)
+      await addDocumentCustomFields(data)
+    }
 
     setShowSaveButton(false)
   }

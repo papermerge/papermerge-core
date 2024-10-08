@@ -119,14 +119,31 @@ def update_document_custom_field_values(
                     )
                 else:
                     _dic[f"value_{attr_name}"] = incoming_cf.value
-            cfv = CustomFieldValue(
-                id=uuid.uuid4(),
-                field_id=incoming_cf.custom_field_id,
-                document_id=id,
-                **_dic,
-            )
 
-            session.add(cfv)
+            stmt = select(CustomFieldValue).where(
+                CustomFieldValue.field_id == incoming_cf.custom_field_id,
+                CustomFieldValue.document_id == id,
+            )
+            db_found = session.scalar(stmt)
+            if db_found is None:
+                cfv = CustomFieldValue(
+                    id=uuid.uuid4(),
+                    field_id=incoming_cf.custom_field_id,
+                    document_id=id,
+                    **_dic,
+                )
+                session.add(cfv)
+            else:
+                # one of `_dic` values was changed
+                db_found.value_text = _dic["value_text"]
+                db_found.value_bool = _dic["value_bool"]
+                db_found.value_url = _dic["value_url"]
+                db_found.value_date = _dic["value_date"]
+                db_found.value_int = _dic["value_int"]
+                db_found.value_float = _dic["value_float"]
+                db_found.value_monetary = _dic["value_monetary"]
+                db_found.value_select = _dic["value_select"]
+                session.add(db_found)
 
     session.commit()
 

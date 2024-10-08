@@ -296,3 +296,47 @@ def test_document_update_custom_field_value_of_type_date(
     )
     # one custom field value was created
     assert len(total_cfv_after) == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_same_custom_field_value_multiple_times(
+    db_session: Session,
+    document: Document,
+    document_type_with_one_date_cf: schemas.DocumentType,
+):
+    """
+    There should be no problem updating custom field value multiple times
+    """
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+    assert len(total_cfv_after) == 0
+
+    dtype = document_type_with_one_date_cf
+
+    for v in ["28.10.2024", "29.10.2024", "30.10.2024"]:
+        # updating same custom field multiple times should not raise
+        # exceptions
+        cf_update = {
+            "document_type_id": dtype.id,
+            "custom_fields": [
+                {"custom_field_id": dtype.custom_fields[0].id, "value": v},
+            ],
+        }
+        custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+        db.update_document_custom_field_values(
+            db_session,
+            id=document.id,
+            custom_fields_update=custom_fields_update,
+            user_id=document.user.id,
+        )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+    # even though we update multiple times - only the value is
+    # updated - and number of custom fields associated with
+    # the document is the same i.e. - one
+    assert len(total_cfv_after) == 1
+    # and the value is - last one
+    assert total_cfv_after[0].value == "2024-10-30 00:00:00"

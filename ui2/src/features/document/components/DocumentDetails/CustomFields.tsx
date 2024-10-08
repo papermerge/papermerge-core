@@ -18,8 +18,6 @@ import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import type {DocumentCustomFieldValue, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
 
-type CustomFieldsOperation = "add" | "update"
-
 export default function CustomFields() {
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
   const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
@@ -44,6 +42,8 @@ export default function CustomFields() {
 
   useEffect(() => {
     if (
+      documentTypeID &&
+      documentTypeID.value == doc?.document_type_id &&
       isSuccessDocumentCustomFields &&
       documentCustomFields &&
       documentCustomFields.length > 0
@@ -124,6 +124,12 @@ export default function CustomFields() {
     }
   }
 
+  const onClear = () => {
+    setDocumentTypeID(null)
+    setShowSaveButton(true)
+    setCustomFieldValues([])
+  }
+
   const onSave = async () => {
     if (documentCustomFields && customFieldValues.length > 0) {
       // document already has custom fields associated
@@ -171,6 +177,7 @@ export default function CustomFields() {
         value={documentTypeID ? documentTypeID.value : null}
         placeholder="Pick Value"
         onChange={onDocumentTypeChange}
+        onClear={onClear}
         clearable
       />
       {genericCustomFieldsComponents}

@@ -122,6 +122,18 @@ export default function CustomFields() {
     } else {
       setShowSaveButton(false)
     }
+    if (
+      documentTypeID &&
+      documentTypeID.value == doc?.document_type_id &&
+      isSuccessDocumentCustomFields &&
+      documentCustomFields &&
+      documentCustomFields.length > 0
+    ) {
+      const initialCustFieldValues = documentCustomFields.map(i => {
+        return {...i, value: i.value}
+      })
+      setCustomFieldValues(initialCustFieldValues)
+    }
   }
 
   const onClear = () => {

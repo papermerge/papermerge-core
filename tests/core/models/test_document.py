@@ -525,3 +525,54 @@ def test_document_update_document_type_to_none(
     )
 
     assert len(total_cfv_after) == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_set_document_type_to_none(
+    db_session: Session,
+    document: Document,
+    document_type_with_one_string_cf: schemas.DocumentType,
+):
+    """
+    when `document_type_id` is set to None - document type will
+    be updated to None
+    """
+    dtype = document_type_with_one_string_cf
+    cf_add = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
+        ],
+    }
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_add=custom_fields_add,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after1: list[schemas.CustomFieldValue] = (
+        db.get_document_custom_field_values(
+            db_session, id=document.id, user_id=document.user.id
+        )
+    )
+    assert len(total_cfv_after1) == 1
+
+    assert total_cfv_after1[0].value == "smb 1"
+
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(
+        document_type_id=None, custom_fields=[]
+    )
+    db.add_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_add=custom_fields_add,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+
+    assert len(total_cfv_after) == 0

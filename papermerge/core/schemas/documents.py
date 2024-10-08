@@ -243,7 +243,7 @@ class DocumentCustomFieldsAddValue(BaseModel):
 
 
 class DocumentCustomFieldsAdd(BaseModel):
-    document_type_id: UUID
+    document_type_id: UUID | None = None
     custom_fields: list[DocumentCustomFieldsAddValue]
 
 

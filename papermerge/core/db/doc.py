@@ -184,6 +184,11 @@ def add_document_custom_field_values(
     # set document type ID to the input value
     db_doc.document_type_id = custom_fields_add.document_type_id
     session.add(db_doc)
+
+    if custom_fields_add.document_type_id is None:
+        session.commit()
+        return []
+
     # continue to update document fields
     custom_field_ids = [cf.custom_field_id for cf in custom_fields_add.custom_fields]
     stmt = select(CustomField).where(CustomField.id.in_(custom_field_ids))

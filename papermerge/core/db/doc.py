@@ -96,13 +96,15 @@ def update_document_custom_field_values(
     session.add(db_doc)
     updated_db_items = []
 
-    field_value_ids = [cf.id for cf in custom_fields_update.custom_fields]
+    field_value_ids = [
+        cf.custom_field_value_id for cf in custom_fields_update.custom_fields
+    ]
     # fetch existing `CustomFieldValue` instances
     stmt = select(CustomFieldValue).where(
-        CustomFieldValue.field_id.in_(field_value_ids),
+        CustomFieldValue.id.in_(field_value_ids),
         CustomFieldValue.document_id == id,
     )
-    db_field_values = session.execute(stmt).all()
+    db_field_values = session.scalars(stmt).all()
     for db_field_value in db_field_values:
         incoming_cf = None
         # for each DB item, find corresponding incoming values (i.e. newly provided by user)
@@ -144,7 +146,15 @@ def update_document_custom_field_values(
             session.add(db_field_value)
 
     result = [
-        schemas.CustomFieldValue.model_validate(db_item) for db_item in updated_db_items
+        schemas.CustomFieldValue(
+            id=db_item.id,
+            name=db_item.field.name,
+            data_type=db_item.field.data_type,
+            extra_data=db_item.field.extra_data,
+            field_id=db_item.field.id,
+            value=str(getattr(db_item, f"value_{db_item.field.data_type}", "")),
+        )
+        for db_item in updated_db_items
     ]
 
     session.commit()

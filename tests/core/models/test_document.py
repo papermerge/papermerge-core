@@ -299,7 +299,7 @@ def test_document_add_custom_field_value_of_type_date(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_same_custom_field_value_multiple_times(
+def test_document_update_same_custom_field_value_multiple_times1(
     db_session: Session,
     document: Document,
     document_type_with_one_date_cf: schemas.DocumentType,
@@ -307,23 +307,39 @@ def test_document_update_same_custom_field_value_multiple_times(
     """
     There should be no problem updating custom field value multiple times
     """
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    assert len(total_cfv_after) == 0
-
     dtype = document_type_with_one_date_cf
+    cf_add = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+        ],
+    }
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_add=custom_fields_add,
+        user_id=document.user.id,
+    )
 
-    for v in ["28.10.2024", "29.10.2024", "30.10.2024"]:
+    total_cfv_after1: list[schemas.CustomFieldValue] = (
+        db.get_document_custom_field_values(
+            db_session, id=document.id, user_id=document.user.id
+        )
+    )
+    assert len(total_cfv_after1) == 1
+
+    for value in ["29.10.2024", "30.10.2024"]:
         # updating same custom field multiple times should not raise
         # exceptions
         cf_update = {
             "document_type_id": dtype.id,
             "custom_fields": [
-                {"custom_field_id": dtype.custom_fields[0].id, "value": v},
+                {"custom_field_value_id": total_cfv_after1[0].id, "value": value},
             ],
         }
         custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+
         db.update_document_custom_field_values(
             db_session,
             id=document.id,
@@ -331,15 +347,15 @@ def test_document_update_same_custom_field_value_multiple_times(
             user_id=document.user.id,
         )
 
-    total_cfv_after = db.get_document_custom_field_values(
+    total_cfv_after2 = db.get_document_custom_field_values(
         db_session, id=document.id, user_id=document.user.id
     )
     # even though we update multiple times - only the value is
     # updated - and number of custom fields associated with
     # the document is the same i.e. - one
-    assert len(total_cfv_after) == 1
+    assert len(total_cfv_after2) == 1
     # and the value is - last one
-    assert total_cfv_after[0].value == "2024-10-30 00:00:00"
+    assert total_cfv_after2[0].value == "2024-10-30 00:00:00"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -350,35 +366,36 @@ def test_document_update_same_custom_field_value_multiple_times2(
 ):
     """
     Every time custom field value is updated the retrieved value
-    is latest one
+    is the latest one
     """
     dtype = document_type_with_one_date_cf
-
-    cf_update = {
+    cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
             {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
         ],
     }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    db.update_document_custom_field_values(
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
         db_session,
         id=document.id,
-        custom_fields_update=custom_fields_update,
+        custom_fields_add=custom_fields_add,
         user_id=document.user.id,
     )
 
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
+    total_cfv_after1: list[schemas.CustomFieldValue] = (
+        db.get_document_custom_field_values(
+            db_session, id=document.id, user_id=document.user.id
+        )
     )
+    assert len(total_cfv_after1) == 1
 
-    assert len(total_cfv_after) == 1
-    assert total_cfv_after[0].value == "2024-10-28 00:00:00"
+    assert total_cfv_after1[0].value == "2024-10-28 00:00:00"
 
     cf_update = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "29.10.2024"},
+            {"custom_field_value_id": total_cfv_after1[0].id, "value": "29.10.2024"},
         ],
     }
     custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
@@ -411,32 +428,33 @@ def test_document_update_string_custom_field_value_multiple_times(
     is the latest one
     """
     dtype = document_type_with_one_string_cf
-
-    cf_update = {
+    cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
             {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
         ],
     }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    db.update_document_custom_field_values(
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
         db_session,
         id=document.id,
-        custom_fields_update=custom_fields_update,
+        custom_fields_add=custom_fields_add,
         user_id=document.user.id,
     )
 
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
+    total_cfv_after1: list[schemas.CustomFieldValue] = (
+        db.get_document_custom_field_values(
+            db_session, id=document.id, user_id=document.user.id
+        )
     )
+    assert len(total_cfv_after1) == 1
 
-    assert len(total_cfv_after) == 1
-    assert total_cfv_after[0].value == "smb 1"
+    assert total_cfv_after1[0].value == "smb 1"
 
     cf_update = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 2"},
+            {"custom_field_value_id": total_cfv_after1[0].id, "value": "smb 2"},
         ],
     }
     custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)

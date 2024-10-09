@@ -3,7 +3,10 @@ import {useContext, useEffect, useState} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {CustomFieldDate} from "@/features/document/components/customFields"
+import {
+  CustomFieldDate,
+  CustomFieldMonetary
+} from "@/features/document/components/customFields"
 import {skipToken} from "@reduxjs/toolkit/query"
 
 import {
@@ -235,6 +238,10 @@ function GenericCustomField({
 
   if (customField.data_type == "date") {
     return <CustomFieldDate customField={customField} onChange={onChange} />
+  }
+
+  if (customField.data_type == "monetary") {
+    return <CustomFieldMonetary customField={customField} onChange={onChange} />
   }
 
   return (

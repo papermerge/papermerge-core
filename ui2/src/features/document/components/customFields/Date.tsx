@@ -1,23 +1,14 @@
-import type {DocumentCustomFieldValue} from "@/types"
 import {rem} from "@mantine/core"
 import {DatePickerInput, DateValue} from "@mantine/dates"
 import {IconCalendar} from "@tabler/icons-react"
 import dayjs from "dayjs"
 import {useEffect, useState} from "react"
+import {CustomFieldArgs} from "./types"
 
-type onChangeArgs = {
-  customField: DocumentCustomFieldValue
-  value: string
-}
-
-type onChangeType = ({customField, value}: onChangeArgs) => void
-
-interface Args {
-  customField: DocumentCustomFieldValue
-  onChange: onChangeType
-}
-
-export default function CustomFieldDate({customField, onChange}: Args) {
+export default function CustomFieldDate({
+  customField,
+  onChange
+}: CustomFieldArgs) {
   const [value, setValue] = useState<Date | null>(null)
   const icon = (
     <IconCalendar style={{width: rem(18), height: rem(18)}} stroke={1.5} />

@@ -269,7 +269,7 @@ def test_document_add_custom_field_value_of_type_date(
     document_type_with_one_date_cf: schemas.DocumentType,
 ):
     """
-    Custom field of type `date` is set to string "28.10.2024"
+    Custom field of type `date` is set to string "2024-10-28"
     """
     total_cfv_after = db.get_document_custom_field_values(
         db_session, id=document.id, user_id=document.user.id
@@ -280,7 +280,9 @@ def test_document_add_custom_field_value_of_type_date(
     cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+            # date is expected to be in:
+            # papermerge.core.constants.INCOMING_DATE_FORMAT
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
         ],
     }
     custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
@@ -311,7 +313,9 @@ def test_document_update_same_custom_field_value_multiple_times1(
     cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+            # date is expected to be in:
+            # papermerge.core.constants.INCOMING_DATE_FORMAT
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
         ],
     }
     custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
@@ -329,7 +333,9 @@ def test_document_update_same_custom_field_value_multiple_times1(
     )
     assert len(total_cfv_after1) == 1
 
-    for value in ["29.10.2024", "30.10.2024"]:
+    # date is expected to be in:
+    # papermerge.core.constants.INCOMING_DATE_FORMAT
+    for value in ["2024-10-29", "2024-10-30"]:
         # updating same custom field multiple times should not raise
         # exceptions
         cf_update = {
@@ -372,7 +378,7 @@ def test_document_update_same_custom_field_value_multiple_times2(
     cf_add = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "28.10.2024"},
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
         ],
     }
     custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
@@ -395,7 +401,7 @@ def test_document_update_same_custom_field_value_multiple_times2(
     cf_update = {
         "document_type_id": dtype.id,
         "custom_fields": [
-            {"custom_field_value_id": total_cfv_after1[0].id, "value": "29.10.2024"},
+            {"custom_field_value_id": total_cfv_after1[0].id, "value": "2024-10-29"},
         ],
     }
     custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)

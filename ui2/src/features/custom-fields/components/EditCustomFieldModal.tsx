@@ -33,7 +33,9 @@ export default function EditGroupModal({
   const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =
     useEditCustomFieldMutation()
   const [name, setName] = useState<string>("")
-  const [dataType, setDataType] = useState<CustomFieldDataType>("string")
+  const [dataType, setDataType] = useState<CustomFieldDataType>(
+    data?.data_type || "string"
+  )
 
   useEffect(() => {
     formReset()

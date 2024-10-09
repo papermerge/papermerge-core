@@ -3,6 +3,7 @@ import {useContext, useEffect, useState} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {CustomFieldDate} from "@/features/document/components/customFields"
 import {skipToken} from "@reduxjs/toolkit/query"
 
 import {
@@ -143,7 +144,7 @@ export default function CustomFields() {
   }
 
   const onSave = async () => {
-    if (documentCustomFields && customFieldValues.length > 0) {
+    if (documentCustomFields && documentCustomFields.length > 0) {
       // document already has custom fields associated
       // we need to update existing custom field value
       const data = {
@@ -164,7 +165,7 @@ export default function CustomFields() {
         body: {
           document_type_id: documentTypeID?.value!,
           custom_fields: customFieldValues.map(i => {
-            return {custom_field_id: i.field_id!, value: i.value}
+            return {custom_field_id: i.id, value: i.value}
           })
         }
       }
@@ -230,6 +231,10 @@ function GenericCustomField({
 
   if (!documentID) {
     return <Skeleton height={"20"} />
+  }
+
+  if (customField.data_type == "date") {
+    return <CustomFieldDate customField={customField} onChange={onChange} />
   }
 
   return (

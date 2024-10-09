@@ -1,23 +1,23 @@
-import {useLocation} from "react-router-dom"
-import {useEffect, useRef} from "react"
-import "@mantine/core/styles.css"
 import {AppShell} from "@mantine/core"
+import "@mantine/core/styles.css"
+import "@mantine/dates/styles.css"
 import {useViewportSize} from "@mantine/hooks"
-import {Outlet, useNavigate} from "react-router-dom"
-import {useSelector, useDispatch} from "react-redux"
+import {useEffect, useRef} from "react"
+import {useDispatch, useSelector} from "react-redux"
+import {Outlet, useLocation, useNavigate} from "react-router-dom"
 
-import NavBar from "@/components/NavBar"
 import Header from "@/components/Header/Header"
-import {
-  selectCurrentUserError,
-  selectCurrentUserStatus,
-  selectCurrentUser
-} from "@/slices/currentUser"
+import NavBar from "@/components/NavBar"
 import {updateOutlet} from "@/features/ui/uiSlice"
+import {
+  selectCurrentUser,
+  selectCurrentUserError,
+  selectCurrentUserStatus
+} from "@/slices/currentUser"
 
-import "./App.css"
-import {selectNavBarWidth} from "@/features/ui/uiSlice"
 import Uploader from "@/components/Uploader"
+import {selectNavBarWidth} from "@/features/ui/uiSlice"
+import "./App.css"
 
 function App() {
   const {height, width} = useViewportSize()

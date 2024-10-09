@@ -30,7 +30,6 @@ export default function EditGroupModal({
   onCancel,
   opened
 }: Args) {
-  const [showCurrency, setShowCurrency] = useState<boolean>(false)
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const {data, isLoading} = useGetCustomFieldQuery(customFieldId)
   const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =

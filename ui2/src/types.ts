@@ -454,3 +454,17 @@ export type DocumentCustomFieldValue = {
   this value is associated with */
   field_id?: string
 }
+
+export type CurrencyType =
+  | "CHF"
+  | "CZK"
+  | "DKK"
+  | "EUR"
+  | "GBP"
+  | "HUF"
+  | "ISK"
+  | "NOK"
+  | "USD"
+  | "RON"
+  | "RUB"
+  | "SEK"

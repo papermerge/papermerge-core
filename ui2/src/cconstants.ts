@@ -63,3 +63,18 @@ export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
   "documentlink",
   "select"
 ]
+
+export const CURRENCIES = [
+  "CHF",
+  "CZK",
+  "DKK",
+  "EUR",
+  "GBP",
+  "HUF",
+  "ISK",
+  "NOK",
+  "USD",
+  "RON",
+  "RUB",
+  "SEK"
+]

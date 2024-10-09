@@ -1,4 +1,4 @@
-import type {CustomFieldDataType} from "@/types"
+import type {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,
   Group,
@@ -6,11 +6,12 @@ import {
   LoadingOverlay,
   Modal,
   NativeSelect,
+  Select,
   TextInput
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import {CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
+import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
@@ -29,6 +30,7 @@ export default function EditGroupModal({
   onCancel,
   opened
 }: Args) {
+  const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const {data, isLoading} = useGetCustomFieldQuery(customFieldId)
   const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =
     useEditCustomFieldMutation()
@@ -48,11 +50,19 @@ export default function EditGroupModal({
   }
 
   const onLocalSubmit = async () => {
-    const updatedData = {
+    let extra_data: string | undefined
+
+    if (dataType == "monetary") {
+      extra_data = JSON.stringify({currency: currency})
+    }
+
+    let updatedData = {
       id: customFieldId,
       name: name,
-      data_type: dataType
+      data_type: dataType,
+      extra_data: extra_data
     }
+
     await updateCustomField(updatedData)
     formReset()
     onSubmit()
@@ -61,6 +71,10 @@ export default function EditGroupModal({
   const onLocalCancel = () => {
     formReset()
     onCancel()
+  }
+
+  const onCurrencyChange = (value: string | null) => {
+    setCurrency(value as CurrencyType)
   }
 
   return (
@@ -90,6 +104,16 @@ export default function EditGroupModal({
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }
       />
+      {dataType == "monetary" && (
+        <Select
+          mt="sm"
+          searchable
+          label="Currency"
+          value={currency}
+          data={CURRENCIES}
+          onChange={onCurrencyChange}
+        />
+      )}
 
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>

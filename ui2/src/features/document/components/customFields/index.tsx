@@ -1,3 +1,4 @@
-import CustomFieldDate from "./CustomFieldDate"
+import CustomFieldDate from "./Date"
+import CustomFieldMonetary from "./Monetary"
 
-export {CustomFieldDate}
+export {CustomFieldDate, CustomFieldMonetary}

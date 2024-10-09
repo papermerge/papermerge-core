@@ -1,14 +1,15 @@
 import {useEffect, useState} from "react"
 
-import {CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
+import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/apiSlice"
-import {CustomFieldDataType} from "@/types"
+import {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,
   Group,
   Loader,
   Modal,
   NativeSelect,
+  Select,
   Text,
   TextInput
 } from "@mantine/core"
@@ -24,6 +25,7 @@ export default function NewCustomFieldModal({
   onCancel,
   opened
 }: Args) {
+  const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const [addNewCustomField, {isLoading, isError, isSuccess}] =
     useAddNewCustomFieldMutation()
   const [name, setName] = useState<string>("")
@@ -44,8 +46,15 @@ export default function NewCustomFieldModal({
   }
 
   const onLocalSubmit = async () => {
+    let extra_data: string | undefined
+
+    if (dataType == "monetary") {
+      extra_data = JSON.stringify({currency: currency})
+    }
+
     const newCustomFieldData = {
       name,
+      extra_data,
       data_type: dataType
     }
     try {
@@ -67,6 +76,10 @@ export default function NewCustomFieldModal({
     setError("")
   }
 
+  const onCurrencyChange = (value: string | null) => {
+    setCurrency(value as CurrencyType)
+  }
+
   return (
     <Modal title={"New Custom Field"} opened={opened} onClose={onLocalCancel}>
       <TextInput
@@ -83,6 +96,16 @@ export default function NewCustomFieldModal({
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }
       />
+      {dataType == "monetary" && (
+        <Select
+          mt="sm"
+          searchable
+          label="Currency"
+          value={currency}
+          data={CURRENCIES}
+          onChange={onCurrencyChange}
+        />
+      )}
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>

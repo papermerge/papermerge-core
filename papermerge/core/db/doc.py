@@ -15,6 +15,7 @@ from papermerge.core.db.models import (
     DocumentVersion,
     Page,
 )
+from papermerge.core.exceptions import InvalidDateFormat
 
 from .common import get_ancestors
 
@@ -28,6 +29,22 @@ CUSTOM_FIELD_DATA_TYPE_MAP = {
     "monetary": "monetary",
     "select": "select",
 }
+
+
+def str2date(value: str) -> datetime.date:
+    """Convert incoming user string to datetime.date"""
+    # 10 = 4 Y chars +  1 "-" char + 2 M chars + 1 "-" char + 2 D chars
+    DATE_LEN = 10
+    stripped_value = value.strip()
+    if len(stripped_value) < DATE_LEN:
+        raise InvalidDateFormat(
+            f"{stripped_value} expected to have at least {DATE_LEN} characters"
+        )
+
+    return datetime.strptime(
+        value[:DATE_LEN],
+        INCOMING_DATE_FORMAT,
+    ).date()
 
 
 def get_doc(
@@ -135,9 +152,7 @@ def update_document_custom_field_values(
             )
             if attr_name:
                 if attr_name == "date":
-                    _dic[f"value_{attr_name}"] = datetime.strptime(
-                        incoming_cf.value, INCOMING_DATE_FORMAT
-                    )
+                    _dic[f"value_{attr_name}"] = str2date(incoming_cf.value)
                 else:
                     _dic[f"value_{attr_name}"] = incoming_cf.value
 
@@ -216,7 +231,7 @@ def add_document_custom_field_values(
             value = ""
             if attr_name:
                 if attr_name == "date":
-                    value = datetime.strptime(incoming_cf.value, INCOMING_DATE_FORMAT)
+                    value = str2date(incoming_cf.value)
                 else:
                     value = incoming_cf.value
                 _dic[f"value_{attr_name}"] = value

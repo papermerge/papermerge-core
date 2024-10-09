@@ -687,13 +687,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/router@npm:1.16.1":
-  version: 1.16.1
-  resolution: "@remix-run/router@npm:1.16.1"
-  checksum: 10c0/5f1b0aef4924830eeab9c86dcaa5af8157066e5de65b449e7fdf406532b2384828a46a447c31b0735fd713a06938dd88bfd4e566d9989be70c770457dda16c92
-  languageName: node
-  linkType: hard
-
 "@remix-run/router@npm:1.19.2":
   version: 1.19.2
   resolution: "@remix-run/router@npm:1.19.2"
@@ -2234,31 +2227,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^6.23.1":
-  version: 6.23.1
-  resolution: "react-router-dom@npm:6.23.1"
+"react-router-dom@npm:^6.26.2":
+  version: 6.26.2
+  resolution: "react-router-dom@npm:6.26.2"
   dependencies:
-    "@remix-run/router": "npm:1.16.1"
-    react-router: "npm:6.23.1"
+    "@remix-run/router": "npm:1.19.2"
+    react-router: "npm:6.26.2"
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
-  checksum: 10c0/01b954d7d0ff4c53bb2edbc816458f3fad1ce9ee49a4dfdc5c866065c23026c9cce429b46b754cbaebb83b22cfe5f605bbf441acf515e3c377cbdf021b0bec4c
+  checksum: 10c0/7515128a98eef0a6b2bf354ef9dfefad03556a06be00fa9220eda6526aaada8a42f294911083473d7ced6d7128c3088bd193218bbb3d62593f9f4f7053781c23
   languageName: node
   linkType: hard
 
-"react-router@npm:6.23.1":
-  version: 6.23.1
-  resolution: "react-router@npm:6.23.1"
-  dependencies:
-    "@remix-run/router": "npm:1.16.1"
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 10c0/091949805745136350ab049b2a96281bf38742c9d3651019fb48ea79c5eafbfb0379f1d3e636602dd56b0ef278389e8fd25be983dc2c0ffd1103d06dfa8019f3
-  languageName: node
-  linkType: hard
-
-"react-router@npm:^6.26.2":
+"react-router@npm:6.26.2, react-router@npm:^6.26.2":
   version: 6.26.2
   resolution: "react-router@npm:6.26.2"
   dependencies:
@@ -2704,7 +2686,7 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-redux: "npm:^9.1.2"
     react-router: "npm:^6.26.2"
-    react-router-dom: "npm:^6.23.1"
+    react-router-dom: "npm:^6.26.2"
     sass: "npm:^1.77.8"
     typescript: "npm:^5.4.5"
     vite: "npm:^5.4.8"

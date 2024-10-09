@@ -7,9 +7,11 @@ from unittest.mock import patch
 import pytest
 from django.db import transaction
 from django.db.utils import IntegrityError
+from django.utils.datetime_safe import datetime
 from sqlalchemy.orm import Session
 
 from papermerge.core import db, schemas
+from papermerge.core.db.doc import str2date
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
@@ -301,6 +303,65 @@ def test_document_add_custom_field_value_of_type_date(
 
 
 @pytest.mark.django_db(transaction=True)
+def test_document_update_custom_field_of_type_date1(
+    db_session: Session,
+    document: Document,
+    document_type_with_one_date_cf: schemas.DocumentType,
+):
+    dtype = document_type_with_one_date_cf
+    cf_add = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            # date is expected to be in:
+            # papermerge.core.constants.INCOMING_DATE_FORMAT
+            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
+        ],
+    }
+    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
+    db.add_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_add=custom_fields_add,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after1: list[schemas.CustomFieldValue] = (
+        db.get_document_custom_field_values(
+            db_session, id=document.id, user_id=document.user.id
+        )
+    )
+    assert len(total_cfv_after1) == 1
+
+    cf_update = {
+        "document_type_id": dtype.id,
+        "custom_fields": [
+            {
+                "custom_field_value_id": total_cfv_after1[0].id,
+                "value": "2024-02-28 00:00:00",
+            },
+        ],
+    }
+    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
+
+    db.update_document_custom_field_values(
+        db_session,
+        id=document.id,
+        custom_fields_update=custom_fields_update,
+        user_id=document.user.id,
+    )
+
+    total_cfv_after2 = db.get_document_custom_field_values(
+        db_session, id=document.id, user_id=document.user.id
+    )
+    # even though we update multiple times - only the value is
+    # updated - and number of custom fields associated with
+    # the document is the same i.e. - one
+    assert len(total_cfv_after2) == 1
+    # and the value is - last one
+    assert total_cfv_after2[0].value == "2024-02-28 00:00:00"
+
+
+@pytest.mark.django_db(transaction=True)
 def test_document_update_same_custom_field_value_multiple_times1(
     db_session: Session,
     document: Document,
@@ -582,3 +643,8 @@ def test_document_set_document_type_to_none(
     )
 
     assert len(total_cfv_after) == 0
+
+
+def test_str2date():
+    assert str2date("2024-10-30") == datetime(2024, 10, 30).date()
+    assert str2date("2024-10-30 00:00:00") == datetime(2024, 10, 30).date()

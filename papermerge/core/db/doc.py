@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from papermerge.core import schemas
 from papermerge.core.constants import INCOMING_DATE_FORMAT
@@ -12,6 +12,8 @@ from papermerge.core.db.models import (
     CustomField,
     CustomFieldValue,
     Document,
+    DocumentType,
+    DocumentTypeCustomField,
     DocumentVersion,
     Page,
 )
@@ -315,3 +317,41 @@ def get_document_custom_field_values(
         result.append(cfv)
 
     return result
+
+
+def get_documents_by_type(
+    session: Session,
+    type_id: UUID,
+    user_id: UUID,
+):
+    cfv = aliased(CustomFieldValue)
+    cf = aliased(CustomField)
+    dtcf = aliased(DocumentTypeCustomField)
+    dt = aliased(DocumentType)
+    doc = aliased(Document)
+
+    stmt = (
+        select(
+            doc.id.label("doc_id"),
+            dt.name.label("document_type"),
+            dt.id.label("document_type_id"),
+            cf.name.label("cf_name"),
+            cfv.value_text,
+            cfv.value_date,
+            cfv.value_monetary,
+        )
+        .select_from(cfv)
+        .join(cf, cf.id == cfv.field_id)
+        .join(dtcf, dtcf.custom_field_id == cf.id)
+        .join(dt, dt.id == dtcf.document_type_id)
+        .join(doc, doc.document_type_id == dt.id)
+        .where(
+            dt.id == type_id,
+            doc.id == cfv.document_id,
+        )
+    )
+
+    for row in session.execute(stmt):
+        print(row)
+
+    return []

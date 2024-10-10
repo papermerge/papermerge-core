@@ -110,6 +110,7 @@ server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/
 [tool.poetry.scripts]
 token = 'papermerge.core.cli.token:app'
 users = 'papermerge.core.cli.users:app'
+docs = 'papermerge.core.cli.docs:app'
 perms = 'papermerge.core.cli.perms:app'
 groups = 'papermerge.core.cli.groups:app'
 scopes = 'papermerge.core.cli.scopes:app'

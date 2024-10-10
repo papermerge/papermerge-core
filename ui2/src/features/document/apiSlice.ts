@@ -158,7 +158,10 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => {
-        return [{type: "DocumentCustomField", id: arg.documentID}]
+        return [
+          {type: "DocumentCustomField", id: arg.documentID},
+          {type: "Document", id: arg.documentID}
+        ]
       }
     }),
     updateDocumentCustomFields: builder.mutation<
@@ -171,7 +174,10 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => {
-        return [{type: "DocumentCustomField", id: arg.documentID}]
+        return [
+          {type: "DocumentCustomField", id: arg.documentID},
+          {type: "Document", id: arg.documentID}
+        ]
       }
     }),
     getDocumentCustomFields: builder.query<DocumentCustomFieldValue[], string>({

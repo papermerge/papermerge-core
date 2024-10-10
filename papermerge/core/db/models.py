@@ -34,18 +34,15 @@ user_groups_association = Table(
     ),
 )
 
-document_type_custom_field_association = Table(
-    "core_documenttypecustomfield",
-    Base.metadata,
-    Column(
-        "document_type_id",
-        ForeignKey("core_documenttype.id"),
-    ),
-    Column(
-        "custom_field_id",
+
+class DocumentTypeCustomField(Base):
+    __tablename__ = "core_documenttypecustomfield"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("core_documenttype.id"))
+
+    custom_field_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_customfield.id"),
-    ),
-)
+    )
 
 
 class User(Base):
@@ -290,7 +287,7 @@ class DocumentType(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
     custom_fields: Mapped[list["CustomField"]] = relationship(
-        secondary=document_type_custom_field_association
+        secondary="core_documenttypecustomfield"
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

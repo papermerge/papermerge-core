@@ -18,6 +18,26 @@ router = APIRouter(
 )
 
 
+@router.get("/type/{document_type_id}")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_documents_by_type(
+    user: Annotated[
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
+    type_id: uuid.UUID,
+    db_session: db.Session = Depends(db.get_session),
+):
+    """
+    Get all documents of specific type with all custom field values
+
+    Required scope: `{scope}`
+    """
+
+    docs = db.get_documents_by_type(db_session, type_id=type_id, user_id=user.id)
+
+    return docs
+
+
 @router.get("/{document_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_details(

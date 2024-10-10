@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import case, desc, select
 from sqlalchemy.orm import Session, aliased
 
 from papermerge.core import schemas
@@ -15,6 +15,7 @@ from papermerge.core.db.models import (
     DocumentType,
     DocumentTypeCustomField,
     DocumentVersion,
+    Node,
     Page,
 )
 from papermerge.core.exceptions import InvalidDateFormat
@@ -319,27 +320,16 @@ def get_document_custom_field_values(
     return result
 
 
-def get_documents_by_type(
-    session: Session,
-    type_id: UUID,
-    user_id: UUID,
-):
+def get_subq(session: Session, type_id: UUID):
+    nd = aliased(Node)
     cfv = aliased(CustomFieldValue)
     cf = aliased(CustomField)
     dtcf = aliased(DocumentTypeCustomField)
     dt = aliased(DocumentType)
     doc = aliased(Document)
 
-    stmt = (
-        select(
-            doc.id.label("doc_id"),
-            dt.name.label("document_type"),
-            dt.id.label("document_type_id"),
-            cf.name.label("cf_name"),
-            cfv.value_text,
-            cfv.value_date,
-            cfv.value_monetary,
-        )
+    subq = (
+        select(doc.id.label("doc_id"), doc.document_type_id.label("document_type_id"))
         .select_from(cfv)
         .join(cf, cf.id == cfv.field_id)
         .join(dtcf, dtcf.custom_field_id == cf.id)
@@ -348,10 +338,58 @@ def get_documents_by_type(
         .where(
             dt.id == type_id,
             doc.id == cfv.document_id,
+            cf.name == "Total",
+            nd.parent_id == UUID("4fdcfbc9-64cb-46d3-bc7e-e1677eaecc70"),
         )
+        .order_by(desc(cfv.value_monetary))
+        .subquery()
     )
 
-    for row in session.execute(stmt):
-        print(row)
+    return subq
 
-    return []
+
+def get_documents_by_type(
+    session: Session,
+    type_id: UUID,
+    user_id: UUID,
+):
+    subq = get_subq(session, type_id=type_id)
+    nd = aliased(Node)
+    cfv = aliased(CustomFieldValue)
+    cf = aliased(CustomField)
+    dtcf = aliased(DocumentTypeCustomField)
+    dt = aliased(DocumentType)
+
+    stmt = (
+        select(
+            subq.c.doc_id.label("doc_id"),
+            nd.title,
+            cf.name.label("cf_name"),
+            case(
+                (cf.data_type == "monetary", cfv.value_monetary),
+                (cf.data_type == "string", cfv.value_text),
+                (cf.data_type == "date", cfv.value_date),
+                (cf.data_type == "boolean", cfv.value_bool),
+                (cf.data_type == "url", cfv.value_url),
+            ).label("cf_value"),
+        )
+        .select_from(cfv)
+        .join(cf, cf.id == cfv.field_id)
+        .join(dtcf, dtcf.custom_field_id == cf.id)
+        .join(dt, dtcf.document_type_id == dt.id)
+        .join(subq, subq.c.document_type_id == dt.id)
+        .where(subq.c.doc_id == cfv.document_id)
+    )
+
+    documents = {}
+    for row in session.execute(stmt):
+        if row.doc_id not in documents.keys():
+            documents[row.doc_id] = {
+                "doc_id": row.doc_id,
+                "title": row.title,
+                "custom_fields": [],
+            }
+        else:
+            documents[row.doc_id]["custom_fields"].append((row.cf_name, row.cf_value))
+
+    return documents

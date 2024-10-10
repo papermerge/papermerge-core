@@ -27,7 +27,14 @@ def list_documents_by_type(type_id: uuid.UUID):
 
 
 def print_docs(docs):
-    pass
+    table = Table(title="Users")
+
+    table.add_column("UUID", style="cyan", no_wrap=True)
+    table.add_column("Title", style="magenta")
+
+    for key, value in docs.items():
+        print("*********************************")
+        print(f"{value['doc_id']} {value['custom_fields']}")
 
 
 def print_doc_types(doc_types: list[schemas.DocumentType]):

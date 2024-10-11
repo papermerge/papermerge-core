@@ -29,11 +29,33 @@ def document_types():
     print_doc_types(doc_types)
 
 
-@app.command(name="list")
+@app.command(name="list-by-type")
 def list_documents_by_type(type_id: uuid.UUID):
     """List all documents by specific document type"""
     docs = get_documents_by_type(session, type_id=type_id, user_id=uuid.uuid4())
     print_docs(docs)
+
+
+@app.command(name="update-cf")
+def update_doc_custom_fields(doc_id: uuid.UUID, custom_fields: list[str]):
+    """Update custom fields for specific document
+
+    Example: docs update-cf <UUID>  Total "22.89" Shop lidl Date "2024-12-26"
+    Note that name of the custom field is case-sensitive i.e. "Total" and "total"
+    are different things.
+    Number of items after <UUID> should be even. There should be at
+    least two items after <UUID>.
+    """
+    cf = {}
+    if len(custom_fields) % 2 != 0:
+        raise ValueError("Number of items after UUID must be even")
+
+    half_length = int(len(custom_fields) / 2)
+
+    for i in range(0, half_length):
+        cf[custom_fields[i]] = custom_fields[i + 1]
+
+    db.update_document_custom_fields(session, id=doc_id, custom_fields=cf)
 
 
 def get_subq():

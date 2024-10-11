@@ -280,6 +280,9 @@ class CustomFieldValue(Base):
     value_select: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
+    def __repr__(self):
+        return f"CustomFieldValue(ID={self.id})"
+
 
 class DocumentType(Base):
     __tablename__ = "core_documenttype"

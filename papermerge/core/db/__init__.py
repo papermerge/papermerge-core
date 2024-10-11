@@ -14,6 +14,7 @@ from .doc import (
     get_document_custom_field_values,
     get_documents_by_type,
     update_document_custom_field_values,
+    update_document_custom_fields,
 )
 from .doc_ver import get_doc_ver, get_last_doc_ver
 from .document_types import (
@@ -79,6 +80,7 @@ __all__ = [
     "delete_document_type",
     "update_document_type",
     "update_document_custom_field_values",
+    "update_document_custom_fields",
     "add_document_custom_field_values",
     "get_document_custom_field_values",
     "get_documents_by_type",

@@ -34,12 +34,15 @@ CUSTOM_FIELD_DATA_TYPE_MAP = {
 }
 
 
-def str2date(value: str) -> datetime.date:
+def str2date(value: str) -> datetime.date | None:
     """Convert incoming user string to datetime.date"""
     # 10 = 4 Y chars +  1 "-" char + 2 M chars + 1 "-" char + 2 D chars
     DATE_LEN = 10
     stripped_value = value.strip()
-    if len(stripped_value) < DATE_LEN:
+    if len(stripped_value) == 0:
+        return None
+
+    if len(stripped_value) < DATE_LEN and len(stripped_value) > 0:
         raise InvalidDateFormat(
             f"{stripped_value} expected to have at least {DATE_LEN} characters"
         )
@@ -329,15 +332,19 @@ def get_subq(session: Session, type_id: UUID):
     doc = aliased(Document)
 
     subq = (
-        select(doc.id.label("doc_id"), doc.document_type_id.label("document_type_id"))
-        .select_from(cfv)
-        .join(cf, cf.id == cfv.field_id)
-        .join(dtcf, dtcf.custom_field_id == cf.id)
-        .join(dt, dt.id == dtcf.document_type_id)
-        .join(doc, doc.document_type_id == dt.id)
+        select(
+            nd.title.label("title"),
+            doc.id.label("doc_id"),
+            doc.document_type_id.label("document_type_id"),
+        )
+        .select_from(doc)
+        .join(nd, nd.id == doc.id)
+        .join(dt, doc.document_type_id == dt.id)
+        .join(dtcf, dtcf.document_type_id == dt.id)
+        .join(cf, cf.id == dtcf.custom_field_id)
+        .join(cfv, cfv.document_id == doc.id, isouter=True)
         .where(
             dt.id == type_id,
-            doc.id == cfv.document_id,
             cf.name == "Total",
             nd.parent_id == UUID("4fdcfbc9-64cb-46d3-bc7e-e1677eaecc70"),
         )
@@ -354,7 +361,6 @@ def get_documents_by_type(
     user_id: UUID,
 ):
     subq = get_subq(session, type_id=type_id)
-    nd = aliased(Node)
     cfv = aliased(CustomFieldValue)
     cf = aliased(CustomField)
     dtcf = aliased(DocumentTypeCustomField)
@@ -362,8 +368,8 @@ def get_documents_by_type(
 
     stmt = (
         select(
+            subq.c.title.label("title"),
             subq.c.doc_id.label("doc_id"),
-            nd.title,
             cf.name.label("cf_name"),
             case(
                 (cf.data_type == "monetary", cfv.value_monetary),
@@ -373,12 +379,11 @@ def get_documents_by_type(
                 (cf.data_type == "url", cfv.value_url),
             ).label("cf_value"),
         )
-        .select_from(cfv)
-        .join(cf, cf.id == cfv.field_id)
-        .join(dtcf, dtcf.custom_field_id == cf.id)
-        .join(dt, dtcf.document_type_id == dt.id)
-        .join(subq, subq.c.document_type_id == dt.id)
-        .where(subq.c.doc_id == cfv.document_id)
+        .select_from(subq)
+        .join(dt, subq.c.document_type_id == dt.id)
+        .join(dtcf, dtcf.document_type_id == dt.id)
+        .join(cf, cf.id == dtcf.custom_field_id)
+        .join(cfv, cfv.document_id == subq.c.doc_id, isouter=True)
     )
 
     documents = {}
@@ -387,7 +392,7 @@ def get_documents_by_type(
             documents[row.doc_id] = {
                 "doc_id": row.doc_id,
                 "title": row.title,
-                "custom_fields": [],
+                "custom_fields": [(row.cf_name, row.cf_value)],
             }
         else:
             documents[row.doc_id]["custom_fields"].append((row.cf_name, row.cf_value))

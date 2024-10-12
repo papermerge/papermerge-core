@@ -11,6 +11,7 @@ from .custom_fields import (
 from .doc import (
     add_document_custom_field_values,
     get_doc,
+    get_doc_cfv,
     get_document_custom_field_values,
     get_documents_by_type,
     update_document_custom_field_values,
@@ -83,5 +84,6 @@ __all__ = [
     "update_document_custom_fields",
     "add_document_custom_field_values",
     "get_document_custom_field_values",
+    "get_doc_cfv",
     "get_documents_by_type",
 ]

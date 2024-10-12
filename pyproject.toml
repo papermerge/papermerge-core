@@ -120,7 +120,7 @@ index = 'papermerge.search.cli.index:app'
 search = 'papermerge.search.cli.search:app'
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 # say hello to balck rigidity
 line-length = 88  # same as black's hardcoded
 indent-width = 4

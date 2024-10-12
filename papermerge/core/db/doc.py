@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import case, desc, select
+from sqlalchemy import and_, case, desc, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from papermerge.core import schemas
@@ -101,52 +101,90 @@ def get_doc(
     return model_doc
 
 
-def update_document_custom_fields(
-    session: Session,
-    id: UUID,
-    custom_fields: dict,  # if of the document
-):
+def get_doc_cfv(session: Session, document_id: UUID, cf_names: list[str]):
     """
+    Fetch document's custom field values for each CF name, even of CFV is NULL
 
+    Example: Say there is one document with ID=123 and document type Grocery.
+    Document type Grocery has 3 custom fields: Shop, Total, Date.
+
+    get_doc_cfv(ID=123) will return one list with 3 items in it:
+
+    1. doc_id=123 cf_name=Shop cf_value=None
+    2. doc_id=123 cf_name=Total cf_value=17.29
+    3. doc_id=123 cf_name=Date cf_value=None
+
+    Notice that item 1 and 3 have cf_value=None, which indicates
+    that there is no value for it in `custom_field_values` table.
+
+    The corresponding Sql query is (just an example):
+    ```
     SELECT doc.basetreenode_ptr_id AS 'Doc ID',
       dt.name AS 'Document Type',
-      cf.name AS 'Custom Field Name',
+      cf.cf_name AS 'Custom Field Name',
       CASE
-        WHEN cf.data_type == 'monetary' THEN cfv.value_monetary
-        WHEN cf.data_type == 'date' THEN cfv.value_date
-        WHEN cf.data_type == 'string' THEN cfv.value_text
-      END AS 'CF VALUE'
+        WHEN cf.cf_data_type == 'monetary' THEN cf.value_monetary
+        WHEN cf.cf_data_type == 'date' THEN cf.value_date
+        WHEN cf.cf_data_type == 'string' THEN cf.value_text
+      END AS 'CF VALUE',
+      cf.cfv_id
     FROM core_document AS doc
     JOIN core_documenttype AS dt ON doc.document_type_id = dt.id
     JOIN core_documenttypecustomfield dtcf ON dtcf.document_type_id = dt.id
-    JOIN core_customfield cf ON dtcf.custom_field_id = cf.id
-    LEFT JOIN core_customfieldvalue cfv ON cfv.document_id = doc.basetreenode_ptr_id
-    WHERE cf.name in ('Total', 'Shop')
+    JOIN (
+      SELECT sub_cf.id AS cf_id,
+        sub_cf.name AS cf_name,
+        sub_cf.data_type AS cf_data_type,
+        sub_cfv.id AS cfv_id,
+        sub_cfv.value_monetary AS value_monetary,
+        sub_cfv.value_date AS value_date,
+        sub_cfv.value_text AS value_text
+      FROM core_customfield sub_cf
+      LEFT OUTER JOIN core_customfieldvalue sub_cfv ON sub_cfv.field_id = sub_cf.id
+      WHERE (sub_cfv.document_id = 'b0c90f2f7380404c81179903c55f113b' AND sub_cf.name IN ('Shop', 'Total', 'Date') )
+      OR (sub_cfv.document_id IS NULL AND sub_cf.name IN ('Shop', 'Total', 'Date'))
+    ) cf ON cf.cf_id = dtcf.custom_field_id
+    WHERE cf.cf_name in ('Total', 'Shop', 'Date')
       AND doc.basetreenode_ptr_id = 'b0c90f2f7380404c81179903c55f113b';
+      ```
     """
+    cfv = aliased(CustomFieldValue)
+    cf = aliased(CustomField)
+
     stmt = (
         select(
-            CustomFieldValue.id.label("cfv_id"),
-            CustomField.name.label("cf_name"),
-            CustomField.id.label("cf_id"),
-            CustomField.data_type.label("cf_data_type"),
-            Document.id.label("doc_id"),
+            cf.id.label("cf_id"),
+            cf.name,
+            cf.data_type,
+            cfv.id.label("cfv_id"),
+            cfv.value_monetary,
+            cfv.value_text,
+            cfv.value_date,
         )
-        .join(DocumentType, DocumentType.id == Document.document_type_id)
-        .join(
-            DocumentTypeCustomField,
-            DocumentTypeCustomField.document_type_id == DocumentType.id,
+        .select_from(cf)
+        .join(cfv, cfv.field_id == cf.id, isouter=True)
+        .where(
+            or_(
+                and_(cfv.document_id == document_id, cf.name.in_(cf_names)),
+                and_(cfv.document_id is None, cf.name.in_(cf_names)),
+            )
         )
-        .join(CustomField, CustomField.id == DocumentTypeCustomField.custom_field_id)
-        .join(
-            CustomFieldValue, CustomFieldValue.document_id == Document.id, isouter=True
-        )
-    ).where(
-        Document.id == id,
-        CustomField.name.in_(custom_fields.keys()),
     )
-    print(stmt)
-    for row in session.execute(stmt).all():
+    for row in session.execute(stmt):
+        print(row)
+
+    return []
+
+
+def update_document_custom_fields(
+    session: Session,
+    document_id: UUID,
+    custom_fields: dict,  # if of the document
+):
+    """ """
+    rows = get_doc_cfv(session, document_id=document_id)
+
+    for row in rows:
         # new_value = custom_fields[row.cf_name]
         print(
             f"CFV_ID = {row.cfv_id} | CF_Name = {row.cf_name} | CF_ID = {row.cf_id} | DOC ID = {row.doc_id}"

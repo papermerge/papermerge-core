@@ -102,7 +102,9 @@ def get_doc(
     return model_doc
 
 
-def get_doc_cfv(session: Session, document_id: UUID, cf_names: list[str]):
+def get_doc_cfv(
+    session: Session, document_id: UUID, cf_names: list[str]
+) -> list[schemas.CFV]:
     """
     Fetch document's custom field values for each CF name, even of CFV is NULL
 
@@ -149,57 +151,90 @@ def get_doc_cfv(session: Session, document_id: UUID, cf_names: list[str]):
       AND doc.basetreenode_ptr_id = 'b0c90f2f7380404c81179903c55f113b';
       ```
     """
-    cfv = aliased(CustomFieldValue)
-    cf = aliased(CustomField)
 
+    def get_subq():
+        cfv = aliased(CustomFieldValue)
+        cf = aliased(CustomField)
+
+        subq = (
+            select(
+                cf.id.label("cf_id"),
+                cf.name.label("cf_name"),
+                cf.data_type.label("cf_data_type"),
+                cf.extra_data.label("cf_extra_data"),
+                cfv.id.label("cfv_id"),
+                cfv.value_monetary,
+                cfv.value_text,
+                cfv.value_date,
+                cfv.value_bool,
+            )
+            .select_from(cf)
+            .join(cfv, cfv.field_id == cf.id, isouter=True)
+            .where(
+                or_(
+                    and_(cfv.document_id == document_id, cf.name.in_(cf_names)),
+                    and_(cfv.document_id == None, cf.name.in_(cf_names)),
+                )
+            )
+            .subquery()
+        )
+        return subq
+
+    subq = get_subq()
+    doc = aliased(Document)
+    dt = aliased(DocumentType)
+    dtcf = aliased(DocumentTypeCustomField)
     stmt = (
         select(
-            cf.id.label("cf_id"),
-            cf.name,
-            cf.data_type,
-            cfv.id.label("cfv_id"),
-            cfv.value_monetary,
-            cfv.value_text,
-            cfv.value_date,
+            doc.id.label("doc_id"),
+            doc.document_type_id,
+            subq.c.cf_name.label("cf_name"),
+            subq.c.cf_data_type.label("cf_type"),
+            subq.c.cf_extra_data.label("cf_extra_data"),
+            subq.c.cf_id.label("cf_id"),
+            subq.c.cfv_id.label("cfv_id"),
+            case(
+                (subq.c.cf_data_type == "monetary", subq.c.value_monetary),
+                (subq.c.cf_data_type == "string", subq.c.value_text),
+                (subq.c.cf_data_type == "date", subq.c.value_date),
+                "--",
+            ).label("cf_value"),
         )
-        .select_from(cf)
-        .join(cfv, cfv.field_id == cf.id, isouter=True)
-        .where(
-            or_(
-                and_(cfv.document_id == document_id, cf.name.in_(cf_names)),
-                and_(cfv.document_id is None, cf.name.in_(cf_names)),
+        .select_from(doc)
+        .join(dt, dt.id == doc.document_type_id)
+        .join(dtcf, dt.id == dtcf.document_type_id)
+        .join(subq, subq.c.cf_id == dtcf.custom_field_id)
+        .where(subq.c.cf_name.in_(cf_names), doc.id == document_id)
+    )
+    result = []
+    for row in session.execute(stmt):
+        result.append(
+            schemas.CFV(
+                document_id=row.doc_id,
+                document_type_id=row.document_type_id,
+                custom_field_id=row.cf_id,
+                name=row.cf_name,
+                type=row.cf_type,
+                extra_data=row.cf_extra_data,
+                custom_field_value_id=row.cfv_id,
+                value=row.cf_value,
             )
         )
-    )
-    for row in session.execute(stmt):
-        print(row)
 
-    return []
+    return result
 
 
 def update_document_custom_fields(
     session: Session,
     document_id: UUID,
     custom_fields: dict,  # if of the document
-):
+) -> list[schemas.CFV]:
     """ """
-    rows = get_doc_cfv(session, document_id=document_id)
+    items = get_doc_cfv(
+        session, document_id=document_id, cf_names=list(custom_fields.keys())
+    )
 
-    for row in rows:
-        # new_value = custom_fields[row.cf_name]
-        print(
-            f"CFV_ID = {row.cfv_id} | CF_Name = {row.cf_name} | CF_ID = {row.cf_id} | DOC ID = {row.doc_id}"
-        )
-        # cfv = session.query(CustomFieldValue).where(id == row.cfv_id).one()
-        # match row.cf_data_type:
-        #    case "monetary":
-        #        cfv.value_monetary = new_value
-        #    case "string":
-        #        cfv.value_text = new_value
-        #    case "date":
-        #        cfv.value_date = new_value
-
-    # session.commit()
+    return items
 
 
 def update_document_custom_field_values(

@@ -36,6 +36,40 @@ def list_documents_by_type(type_id: uuid.UUID):
     print_docs(docs)
 
 
+@app.command(name="cfv")
+def get_cfv(doc_id: uuid.UUID, custom_fields: list[str]):
+    cf = {}
+    if len(custom_fields) % 2 != 0:
+        raise ValueError("Number of items after UUID must be even")
+
+    for i in range(0, len(custom_fields), 2):
+        cf[custom_fields[i]] = custom_fields[i + 1]
+
+    items: list[schemas.CFV] = db.update_document_custom_fields(
+        session, document_id=doc_id, custom_fields=cf
+    )
+
+    table = Table(title="Document's Custom Field Values")
+
+    table.add_column("CF ID", style="magenta")
+    table.add_column("CF Name")
+    table.add_column("CF Type")
+    table.add_column("CF Extra Data")
+    table.add_column("CF Value")
+
+    for item in items:
+        table.add_row(
+            str(item.custom_field_id),
+            item.name,
+            item.type,
+            item.extra_data,
+            str(item.value),
+        )
+
+    console = Console()
+    console.print(table)
+
+
 @app.command(name="update-cf")
 def update_doc_custom_fields(doc_id: uuid.UUID, custom_fields: list[str]):
     """Update custom fields for specific document
@@ -50,12 +84,13 @@ def update_doc_custom_fields(doc_id: uuid.UUID, custom_fields: list[str]):
     if len(custom_fields) % 2 != 0:
         raise ValueError("Number of items after UUID must be even")
 
-    half_length = int(len(custom_fields) / 2)
-
-    for i in range(0, half_length):
+    for i in range(0, len(custom_fields), 2):
         cf[custom_fields[i]] = custom_fields[i + 1]
 
-    db.update_document_custom_fields(session, id=doc_id, custom_fields=cf)
+    items: list[schemas.CFV] = db.update_document_custom_fields(
+        session, document_id=doc_id, custom_fields=cf
+    )
+    print(items)
 
 
 def get_subq():

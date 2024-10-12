@@ -37,16 +37,13 @@ def list_documents_by_type(type_id: uuid.UUID):
 
 
 @app.command(name="cfv")
-def get_cfv(doc_id: uuid.UUID, custom_fields: list[str]):
-    cf = {}
-    if len(custom_fields) % 2 != 0:
-        raise ValueError("Number of items after UUID must be even")
+def get_cfv(doc_id: uuid.UUID, cf_names: list[str]):
+    """Print custom field values for specific document
 
-    for i in range(0, len(custom_fields), 2):
-        cf[custom_fields[i]] = custom_fields[i + 1]
-
-    items: list[schemas.CFV] = db.update_document_custom_fields(
-        session, document_id=doc_id, custom_fields=cf
+    Receives as input document ID and list of custom field names
+    """
+    items: list[schemas.CFV] = db.get_doc_cfv(
+        session, document_id=doc_id, cf_names=cf_names
     )
 
     table = Table(title="Document's Custom Field Values")
@@ -87,10 +84,7 @@ def update_doc_custom_fields(doc_id: uuid.UUID, custom_fields: list[str]):
     for i in range(0, len(custom_fields), 2):
         cf[custom_fields[i]] = custom_fields[i + 1]
 
-    items: list[schemas.CFV] = db.update_document_custom_fields(
-        session, document_id=doc_id, custom_fields=cf
-    )
-    print(items)
+    db.update_document_custom_fields(session, document_id=doc_id, custom_fields=cf)
 
 
 def get_subq():

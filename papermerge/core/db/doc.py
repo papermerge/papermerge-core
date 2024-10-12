@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import and_, case, desc, or_, select
+from sqlalchemy import and_, case, desc, insert, or_, select, update
 from sqlalchemy.orm import Session, aliased
 
 from papermerge.core import schemas
@@ -106,7 +106,7 @@ def get_doc_cfv(
     session: Session, document_id: UUID, cf_names: list[str]
 ) -> list[schemas.CFV]:
     """
-    Fetch document's custom field values for each CF name, even of CFV is NULL
+    Fetch document's custom field values for each CF name, even if CFV is NULL
 
     Example: Say there is one document with ID=123 and document type Grocery.
     Document type Grocery has 3 custom fields: Shop, Total, Date.
@@ -233,6 +233,39 @@ def update_document_custom_fields(
     items = get_doc_cfv(
         session, document_id=document_id, cf_names=list(custom_fields.keys())
     )
+    insert_values = []
+    update_values = []
+    for item in items:
+        mapped_type = CUSTOM_FIELD_DATA_TYPE_MAP.get(item.type)
+        if item.custom_field_value_id is None:
+            # prepare insert values
+            v = dict(
+                id=uuid.uuid4(),
+                document_id=item.document_id,
+                field_id=item.custom_field_id,
+            )
+            if item.type == "date":
+                v[f"value_{mapped_type}"] = str2date(item.value)
+            else:
+                v[f"value_{mapped_type}"] = item.value
+            insert_values.append(v)
+        else:
+            # prepare update values
+            v = dict(id=item.custom_field_value_id)
+            if item.type == "date":
+                v[f"value_{mapped_type}"] = str2date(custom_fields[item.name])
+            else:
+                v[f"value_{mapped_type}"] = custom_fields[item.name]
+            update_values.append(v)
+
+    if len(insert_values) > 0:
+        insert_statement = insert(CustomFieldValue).values(insert_values)
+        session.execute(insert_statement)
+
+    if len(update_values) > 0:
+        session.execute(update(CustomFieldValue), update_values)
+
+    session.commit()
 
     return items
 

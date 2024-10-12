@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import and_, case, desc, or_, select
@@ -34,7 +35,7 @@ CUSTOM_FIELD_DATA_TYPE_MAP = {
 }
 
 
-def str2date(value: str) -> datetime.date | None:
+def str2date(value: str) -> Optional[datetime.date]:
     """Convert incoming user string to datetime.date"""
     # 10 = 4 Y chars +  1 "-" char + 2 M chars + 1 "-" char + 2 D chars
     DATE_LEN = 10

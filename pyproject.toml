@@ -127,9 +127,12 @@ indent-width = 4
 
 [tool.ruff.lint]
 "select" = [
-  "F",    # pyflakes
-  "I001", # isort
-  "UP",   # pyupgrade
+    "F",    # pyflakes
+    "I001", # isort
+    "UP",   # pyupgrade
+]
+"ignore" = [
+    "UP007"
 ]
 
 

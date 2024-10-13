@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import case, desc, insert, select, text, update
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy import insert, select, text, update
+from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
 from papermerge.core.constants import INCOMING_DATE_FORMAT
@@ -13,10 +13,7 @@ from papermerge.core.db.models import (
     CustomField,
     CustomFieldValue,
     Document,
-    DocumentType,
-    DocumentTypeCustomField,
     DocumentVersion,
-    Node,
     Page,
 )
 from papermerge.core.exceptions import InvalidDateFormat
@@ -442,78 +439,52 @@ def get_document_custom_field_values(
     return result
 
 
-def get_subq(session: Session, type_id: UUID):
-    nd = aliased(Node)
-    cfv = aliased(CustomFieldValue)
-    cf = aliased(CustomField)
-    dtcf = aliased(DocumentTypeCustomField)
-    dt = aliased(DocumentType)
-    doc = aliased(Document)
-
-    subq = (
-        select(
-            nd.title.label("title"),
-            doc.id.label("doc_id"),
-            doc.document_type_id.label("document_type_id"),
-        )
-        .select_from(doc)
-        .join(nd, nd.id == doc.id)
-        .join(dt, doc.document_type_id == dt.id)
-        .join(dtcf, dtcf.document_type_id == dt.id)
-        .join(cf, cf.id == dtcf.custom_field_id)
-        .join(cfv, cfv.document_id == doc.id, isouter=True)
-        .where(
-            dt.id == type_id,
-            cf.name == "Total",
-            nd.parent_id == UUID("4fdcfbc9-64cb-46d3-bc7e-e1677eaecc70"),
-        )
-        .order_by(desc(cfv.value_monetary))
-        .subquery()
-    )
-
-    return subq
-
-
 def get_documents_by_type(
     session: Session,
     type_id: UUID,
     user_id: UUID,
 ):
-    subq = get_subq(session, type_id=type_id)
-    cfv = aliased(CustomFieldValue)
-    cf = aliased(CustomField)
-    dtcf = aliased(DocumentTypeCustomField)
-    dt = aliased(DocumentType)
+    """
+    Returns node / cf / cfv for all documents with `document_type_id = type_id`
+    """
+    stmt = """
+        SELECT node.title,
+            doc.basetreenode_ptr_id AS doc_id,
+            doc.document_type_id,
+            cf.cf_id AS cf_id,
+            cf.cf_name,
+            cf.cf_type AS cf_type,
+            cf.cf_extra_data,
+            cfv.id AS cfv_id,
+            CASE
+                WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
+                WHEN(cf.cf_type = 'string') THEN cfv.value_text
+                WHEN(cf.cf_type = 'date') THEN cfv.value_date
+                WHEN(cf.cf_type = 'boolean') THEN cfv.value_bool
+            END AS cf_value
+        FROM core_document AS doc
+        JOIN core_basetreenode AS node
+          ON node.id == doc.basetreenode_ptr_id
+        JOIN core_documenttypecustomfield AS dtcf ON dtcf.document_type_id = doc.document_type_id
+        JOIN(
+            SELECT
+                sub_cf1.id AS cf_id,
+                sub_cf1.name AS cf_name,
+                sub_cf1.data_type AS cf_type,
+                sub_cf1.extra_data AS cf_extra_data
+            FROM core_documenttype AS sub_dt1
+            JOIN core_documenttypecustomfield AS sub_dtcf1
+                ON sub_dtcf1.document_type_id = sub_dt1.id
+            JOIN core_customfield AS sub_cf1
+                ON sub_cf1.id = sub_dtcf1.custom_field_id
+            WHERE sub_dt1.id = :document_type_id
+        ) AS cf ON cf.cf_id = dtcf.custom_field_id
+        LEFT OUTER JOIN core_customfieldvalue AS cfv
+            ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
+        WHERE node.parent_id = :parent_id
+    """
+    params = {"parent_id": "hoho", "type_id": str(type_id).replace("-", "")}
+    for row in session.execute(text(stmt), params):
+        print(row)
 
-    stmt = (
-        select(
-            subq.c.title.label("title"),
-            subq.c.doc_id.label("doc_id"),
-            cf.name.label("cf_name"),
-            case(
-                (cf.data_type == "monetary", cfv.value_monetary),
-                (cf.data_type == "string", cfv.value_text),
-                (cf.data_type == "date", cfv.value_date),
-                (cf.data_type == "boolean", cfv.value_bool),
-                (cf.data_type == "url", cfv.value_url),
-            ).label("cf_value"),
-        )
-        .select_from(subq)
-        .join(dt, subq.c.document_type_id == dt.id)
-        .join(dtcf, dtcf.document_type_id == dt.id)
-        .join(cf, cf.id == dtcf.custom_field_id)
-        .join(cfv, cfv.document_id == subq.c.doc_id, isouter=True)
-    )
-
-    documents = {}
-    for row in session.execute(stmt):
-        if row.doc_id not in documents.keys():
-            documents[row.doc_id] = {
-                "doc_id": row.doc_id,
-                "title": row.title,
-                "custom_fields": [(row.cf_name, row.cf_value)],
-            }
-        else:
-            documents[row.doc_id]["custom_fields"].append((row.cf_name, row.cf_value))
-
-    return documents
+    return []

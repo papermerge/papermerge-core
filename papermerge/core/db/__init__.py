@@ -14,9 +14,8 @@ from .doc import (
     get_doc_cfv,
     get_document_custom_field_values,
     get_documents_by_type,
+    update_doc_cfv,
     update_doc_type,
-    update_document_custom_field_values,
-    update_document_custom_fields,
 )
 from .doc_ver import get_doc_ver, get_last_doc_ver
 from .document_types import (
@@ -81,8 +80,7 @@ __all__ = [
     "get_document_type",
     "delete_document_type",
     "update_document_type",
-    "update_document_custom_field_values",
-    "update_document_custom_fields",
+    "update_doc_cfv",
     "add_document_custom_field_values",
     "get_document_custom_field_values",
     "get_doc_cfv",

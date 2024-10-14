@@ -275,9 +275,7 @@ def test_document_add_valid_date_cfv(
     # value = custom field value
     cf = {"EffectiveDate": effective_date_input}
 
-    db.update_document_custom_fields(
-        db_session, document_id=receipt.id, custom_fields=cf
-    )
+    db.update_doc_cfv(db_session, document_id=receipt.id, custom_fields=cf)
 
     items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
     eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
@@ -293,14 +291,14 @@ def test_document_update_custom_field_of_type_date(
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
 
     # add some value (for first time)
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-26"},
     )
 
     # update existing value
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
@@ -320,14 +318,14 @@ def test_document_add_multiple_CFVs(
 ):
     """
     In this scenario we pass multiple custom field values to
-    `db_update_document_custom_fields` function
+    `db.update_doc_cfv` function
     Initial document does NOT have custom field values before the update.
     """
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -350,14 +348,14 @@ def test_document_update_multiple_CFVs(
 ):
     """
     In this scenario we pass multiple custom field values to
-    `db_update_document_custom_fields` function.
+    `db.update_doc_cfv` function.
     Initial document does have custom field values before the update.
     """
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
 
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -365,7 +363,7 @@ def test_document_update_multiple_CFVs(
 
     # Update all existing CFVs in one shot
     cf = {"EffectiveDate": "2024-09-27", "Shop": "Lidl", "Total": "40.22"}
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -393,14 +391,14 @@ def test_document_update_string_custom_field_value_multiple_times(
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
 
     # add some value (for first time)
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "lidl"},
     )
 
     # update existing value
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "rewe"},
@@ -456,7 +454,7 @@ def test_document_with_cfv_update_document_type_to_none(
     """
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
     # add some cfv
-    db.update_document_custom_fields(
+    db.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},

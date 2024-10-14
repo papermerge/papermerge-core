@@ -194,7 +194,7 @@ def update_doc_type(session: Session, document_id: UUID, document_type_id: UUID 
     session.commit()
 
 
-def update_document_custom_fields(
+def update_doc_cfv(
     session: Session,
     document_id: UUID,
     custom_fields: dict,  # if of the document
@@ -238,94 +238,6 @@ def update_document_custom_fields(
     session.commit()
 
     return items
-
-
-def update_document_custom_field_values(
-    session: Session,
-    id: UUID,  # id of the document
-    custom_fields_update: schemas.DocumentCustomFieldsUpdate,
-    user_id: UUID,
-) -> list[schemas.CustomFieldValue]:
-    """
-    If document_type_id is None, will just set document's `document_type_id`
-    field to None and return an empty list.
-
-    If `document_type_id` is not empty  - updates already existing
-    `CustomFieldValue` instances and returns a list of updated `CustomFieldValue`
-    """
-    # fetch doc
-    stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
-    db_doc = session.scalars(stmt_doc).one()
-    # set document type ID to the input value
-    db_doc.document_type_id = custom_fields_update.document_type_id
-    session.add(db_doc)
-    if custom_fields_update.document_type_id is None:
-        session.commit()
-        return []
-
-    updated_db_items = []
-
-    field_value_ids = [
-        cf.custom_field_value_id for cf in custom_fields_update.custom_fields
-    ]
-    # fetch existing `CustomFieldValue` instances
-    stmt = select(CustomFieldValue).where(
-        CustomFieldValue.id.in_(field_value_ids),
-        CustomFieldValue.document_id == id,
-    )
-    db_field_values = session.scalars(stmt).all()
-    for db_field_value in db_field_values:
-        incoming_cf = None
-        # for each DB item, find corresponding incoming values (i.e. newly provided by user)
-        for incoming in custom_fields_update.custom_fields:
-            if incoming.custom_field_value_id == db_field_value.id:
-                incoming_cf = incoming
-
-        if incoming_cf:
-            _dic = {
-                "value_text": None,
-                "value_bool": None,
-                "value_url": None,
-                "value_date": None,
-                "value_int": None,
-                "value_float": None,
-                "value_monetary": None,
-                "value_select": None,
-            }
-            attr_name = CUSTOM_FIELD_DATA_TYPE_MAP.get(
-                db_field_value.field.data_type, None
-            )
-            if attr_name:
-                if attr_name == "date":
-                    _dic[f"value_{attr_name}"] = str2date(incoming_cf.value)
-                else:
-                    _dic[f"value_{attr_name}"] = incoming_cf.value
-
-            db_field_value.value_text = _dic["value_text"]
-            db_field_value.value_bool = _dic["value_bool"]
-            db_field_value.value_url = _dic["value_url"]
-            db_field_value.value_date = _dic["value_date"]
-            db_field_value.value_int = _dic["value_int"]
-            db_field_value.value_float = _dic["value_float"]
-            db_field_value.value_monetary = _dic["value_monetary"]
-            db_field_value.value_select = _dic["value_select"]
-            updated_db_items.append(db_field_value)
-            session.add(db_field_value)
-
-    result = [
-        schemas.CustomFieldValue(
-            id=db_item.id,
-            name=db_item.field.name,
-            data_type=db_item.field.data_type,
-            extra_data=db_item.field.extra_data,
-            field_id=db_item.field.id,
-            value=str(getattr(db_item, f"value_{db_item.field.data_type}", "")),
-        )
-        for db_item in updated_db_items
-    ]
-
-    session.commit()
-    return result
 
 
 def add_document_custom_field_values(

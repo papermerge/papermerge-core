@@ -8,7 +8,7 @@ import {useContext, useState} from "react"
 import {useGetFolderQuery} from "../apiSlice"
 
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {DropFilesModal} from "./DropFiles"
+import {DropFilesModal} from "./Commander/NodesCommander/DropFiles"
 
 const MIME_TYPES = [
   "image/png",

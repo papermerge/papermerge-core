@@ -543,6 +543,7 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
 
     assert len(items) == 2
 
+    # returned items are not sorted i.e. may be in any order
     for i in range(0, 2):
         cf = dict(items[i].custom_fields)
         if items[i].id == doc_1.id:

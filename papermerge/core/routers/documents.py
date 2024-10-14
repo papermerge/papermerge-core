@@ -134,17 +134,16 @@ def get_document_custom_field_values(
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     db_session: db.Session = Depends(db.get_session),
-) -> list[schemas.CustomFieldValue]:
+) -> list[schemas.CFV]:
     """
     Get document custom field values
 
     Required scope: `{scope}`
     """
     try:
-        doc = db.get_document_custom_field_values(
+        doc = db.get_doc_cfv(
             db_session,
-            id=document_id,
-            user_id=user.id,
+            document_id=document_id,
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")

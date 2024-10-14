@@ -11,7 +11,7 @@ import {
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
-import ExtractPagesModal from "@/features/nodes/components/ExtractPagesModal"
+import ExtractPagesModal from "@/features/nodes/components/Commander/NodesCommander/ExtractPagesModal"
 import {
   selectCurrentDocVerID,
   selectCurrentNodeID,

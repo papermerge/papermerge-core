@@ -10,7 +10,7 @@ import {
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
-import Tags from "@/features/nodes/components/Node/Tags"
+import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.scss"
 

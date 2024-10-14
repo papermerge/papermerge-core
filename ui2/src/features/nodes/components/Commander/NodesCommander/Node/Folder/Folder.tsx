@@ -13,8 +13,8 @@ import {
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
-import DropNodesModal from "@/features/nodes/components/DropNodesDialog"
-import Tags from "@/features/nodes/components/Node/Tags"
+import DropNodesModal from "@/features/nodes/components/Commander/NodesCommander/DropNodesDialog"
+import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Folder.module.scss"
 

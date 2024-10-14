@@ -1,6 +1,12 @@
 import type {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
+import type {
+  BooleanString,
+  CType,
+  ClientPage,
+  PanelMode,
+  ViewOption
+} from "@/types"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
@@ -78,6 +84,11 @@ type SortMenuColumnUpdatedArgs = {
 type SortMenuDirectionUpdatedArgs = {
   mode: PanelMode
   direction: SortMenuDirection
+}
+
+type ViewOptionArgs = {
+  mode: PanelMode
+  viewOption: ViewOption
 }
 
 export interface UploaderFileItemArgs {
@@ -183,11 +194,13 @@ interface UIState {
   mainCommanderLastPageSize?: number
   mainCommanderSortMenuColumn?: SortMenuColumn
   mainCommanderSortMenuDir?: SortMenuDirection
+  mainCommanderViewOption?: ViewOption
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
   secondaryCommanderSortMenuColumn?: SortMenuColumn
   secondaryCommanderSortMenuDir?: SortMenuDirection
+  secondaryCommanderViewOption?: ViewOption
   /* Which component should main panel display:
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
@@ -507,6 +520,14 @@ const uiSlice = createSlice({
         state.secondaryCommanderSortMenuDir = direction
       }
     },
+    commanderViewOptionUpdated(state, action: PayloadAction<ViewOptionArgs>) {
+      const {mode, viewOption} = action.payload
+      if (mode == "main") {
+        state.mainCommanderViewOption = viewOption
+      } else {
+        state.secondaryCommanderViewOption = viewOption
+      }
+    },
     viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
 
@@ -722,6 +743,7 @@ export const {
   commanderLastPageSizeUpdated,
   commanderSortMenuColumnUpdated,
   commanderSortMenuDirectionUpdated,
+  commanderViewOptionUpdated,
   viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
@@ -907,6 +929,17 @@ export const selectCommanderSortMenuDir = (
   }
 
   return state.ui.secondaryCommanderSortMenuDir || "az"
+}
+
+export const selectCommanderViewOption = (
+  state: RootState,
+  mode: PanelMode
+): ViewOption => {
+  if (mode == "main") {
+    return state.ui.mainCommanderViewOption || "tile"
+  }
+
+  return state.ui.secondaryCommanderViewOption || "tile"
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {

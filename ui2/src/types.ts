@@ -428,7 +428,7 @@ export interface ServerErrorType {
 
 export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
 export type SortMenuDirection = "az" | "za"
-export type ViewOptionColumn = "tile" | "list" | "document-type"
+export type ViewOption = "tile" | "list" | "document-type"
 
 export interface CustomFieldValueType {
   custom_field_id: string

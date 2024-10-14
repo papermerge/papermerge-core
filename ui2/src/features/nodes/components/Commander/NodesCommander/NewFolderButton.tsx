@@ -1,14 +1,14 @@
-import {useContext} from "react"
-import {useDisclosure} from "@mantine/hooks"
-import {Tooltip, ActionIcon} from "@mantine/core"
-import {IconFolderPlus} from "@tabler/icons-react"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {useAppSelector} from "@/app/hooks"
+import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {ActionIcon, Tooltip} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
+import {IconFolderPlus} from "@tabler/icons-react"
+import {useContext} from "react"
 
 import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {NewFolderModal} from "./NewFolder"
+import {NewFolderModal} from "../../NewFolder"
 
 export default function NewFolderButton() {
   const [opened, {open, close}] = useDisclosure(false)

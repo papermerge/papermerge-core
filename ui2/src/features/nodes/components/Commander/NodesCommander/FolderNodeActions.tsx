@@ -13,13 +13,14 @@ import type {PanelMode} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
-import DeleteButton from "../../DeleteButton"
-import EditNodeTagsButton from "../../EditNodeTagsButton"
-import EditNodeTitleButton from "../../EditNodeTitleButton"
-import NewFolderButton from "../../NewFolderButton"
-import QuickFilter from "../../QuickFilter"
-import SortMenu from "../../SortMenu"
-import UploadButton from "../../UploadButton"
+import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
+import DeleteButton from "./DeleteButton"
+import EditNodeTagsButton from "./EditNodeTagsButton"
+import EditNodeTitleButton from "./EditNodeTitleButton"
+import NewFolderButton from "./NewFolderButton"
+import QuickFilter from "./QuickFilter"
+import SortMenu from "./SortMenu"
+import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
   const {height, width} = useViewportSize()
@@ -51,6 +52,7 @@ export default function FolderNodeActions() {
         {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group>
+        <ViewOptionsMenu />
         <SortMenu />
         <QuickFilter />
         <DuplicatePanelButton />

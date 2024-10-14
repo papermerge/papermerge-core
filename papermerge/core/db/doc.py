@@ -1,3 +1,4 @@
+import itertools
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -442,6 +443,7 @@ def get_document_custom_field_values(
 def get_documents_by_type(
     session: Session,
     type_id: UUID,
+    parent_id: UUID,
     user_id: UUID,
 ):
     """
@@ -483,8 +485,20 @@ def get_documents_by_type(
             ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
         WHERE node.parent_id = :parent_id
     """
-    params = {"parent_id": "hoho", "type_id": str(type_id).replace("-", "")}
-    for row in session.execute(text(stmt), params):
-        print(row)
+    str_parent_id = str(parent_id).replace("-", "")
+    str_type_id = str(type_id).replace("-", "")
+    params = {"parent_id": str_parent_id, "document_type_id": str_type_id}
+    results = []
+    rows = session.execute(text(stmt), params)
+    for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):
+        items = list(group)
+        results.append(
+            schemas.DocumentCFV(
+                id=uuid.UUID(document_id),
+                title=items[0].title,
+                document_type_id=uuid.UUID(items[0].document_type_id),
+                custom_fields=[(i.cf_name, str(i.cf_value)) for i in items],
+            )
+        )
 
-    return []
+    return results

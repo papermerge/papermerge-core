@@ -66,3 +66,15 @@ class CFV(BaseModel):
     custom_field_value_id: UUID | None = None
     # `custom_field_values.value_text` or `custom_field_values.value_int` or ...
     value: str | int | date | bool | float | None = None
+
+
+class DocumentCFV(BaseModel):
+    id: UUID
+    title: str
+    # created_at: datetime
+    # updated_at: datetime
+    # parent_id: UUID | None
+    # user_id: UUID
+    document_type_id: UUID | None = None
+    thumbnail_url: str | None = None
+    custom_fields: list[tuple[str, str]]

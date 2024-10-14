@@ -6,6 +6,7 @@ from .custom_fields import (
     CustomField,
     CustomFieldType,
     CustomFieldValue,
+    DocumentCFV,
     UpdateCustomField,
 )
 from .document_types import CreateDocumentType, DocumentType, UpdateDocumentType
@@ -58,6 +59,7 @@ __all__ = [
     "CustomFieldType",
     "CustomFieldValue",
     "CFV",
+    "DocumentCFV",
     "CreateDocumentType",
     "DocumentType",
     "UpdateDocumentType",

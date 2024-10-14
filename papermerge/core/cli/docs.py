@@ -20,9 +20,11 @@ def document_types():
 
 
 @app.command(name="list-by-type")
-def list_documents_by_type(type_id: uuid.UUID):
+def list_documents_by_type(type_id: uuid.UUID, parent_id: uuid.UUID):
     """List all documents by specific document type"""
-    docs = get_documents_by_type(session, type_id=type_id, user_id=uuid.uuid4())
+    docs = get_documents_by_type(
+        session, type_id=type_id, user_id=uuid.uuid4(), parent_id=parent_id
+    )
     print_docs(docs)
 
 
@@ -76,7 +78,7 @@ def update_doc_custom_fields(doc_id: uuid.UUID, custom_fields: list[str]):
     db.update_document_custom_fields(session, document_id=doc_id, custom_fields=cf)
 
 
-def print_docs(docs):
+def print_docs(docs: list[schemas.DocumentCFV]):
     if len(docs) == 0:
         print("No entries")
         return
@@ -84,19 +86,19 @@ def print_docs(docs):
     table = Table(title="Documents (with custom fields)")
     table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("Title", style="magenta")
-    first_item = list(docs.items())[0]
+    first_item = list(docs)[0]
 
-    for cf in first_item[1]["custom_fields"]:
+    for cf in first_item.custom_fields:
         table.add_column(cf[0])
 
-    for key, doc in docs.items():
+    for doc in docs:
         cf_list = []
-        for label, value in doc["custom_fields"]:
+        for label, value in doc.custom_fields:
             if value is not None:
                 cf_list.append(str(value))
             else:
                 cf_list.append("-")
-        table.add_row(str(doc["doc_id"]), doc["title"], *cf_list)
+        table.add_row(str(doc.id), doc.title, *cf_list)
 
     console = Console()
     console.print(table)

@@ -218,7 +218,7 @@ def update_document_custom_fields(
             if item.type == "date":
                 v[f"value_{mapped_type}"] = str2date(custom_fields[item.name])
             else:
-                v[f"value_{mapped_type}"] = item.value
+                v[f"value_{mapped_type}"] = custom_fields[item.name]
             insert_values.append(v)
         else:
             # prepare update values
@@ -230,8 +230,7 @@ def update_document_custom_fields(
             update_values.append(v)
 
     if len(insert_values) > 0:
-        insert_statement = insert(CustomFieldValue).values(insert_values)
-        session.execute(insert_statement)
+        session.execute(insert(CustomFieldValue), insert_values)
 
     if len(update_values) > 0:
         session.execute(update(CustomFieldValue), update_values)

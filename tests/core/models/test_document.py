@@ -321,12 +321,12 @@ def test_document_add_multiple_CFVs(
     """
     In this scenario we pass multiple custom field values to
     `db_update_document_custom_fields` function
+    Initial document does NOT have custom field values before the update.
     """
     receipt: Document = make_document_receipt(title="receipt-1.pdf")
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-
     db.update_document_custom_fields(
         db_session,
         document_id=receipt.id,
@@ -340,7 +340,45 @@ def test_document_add_multiple_CFVs(
 
     assert eff_date_cf.value == Date(2024, 9, 26)
     assert shop_cf.value == "Aldi"
-    assert total_cf.value == "32.97"
+    assert total_cf.value == 32.97
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_update_multiple_CFVs(
+    db_session: Session,
+    make_document_receipt,
+):
+    """
+    In this scenario we pass multiple custom field values to
+    `db_update_document_custom_fields` function.
+    Initial document does have custom field values before the update.
+    """
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+
+    # set initial CFVs
+    cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
+    db.update_document_custom_fields(
+        db_session,
+        document_id=receipt.id,
+        custom_fields=cf,
+    )
+
+    # Update all existing CFVs in one shot
+    cf = {"EffectiveDate": "2024-09-27", "Shop": "Lidl", "Total": "40.22"}
+    db.update_document_custom_fields(
+        db_session,
+        document_id=receipt.id,
+        custom_fields=cf,
+    )
+
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+    shop_cf = next(item for item in items if item.name == "Shop")
+    total_cf = next(item for item in items if item.name == "Total")
+
+    assert eff_date_cf.value == Date(2024, 9, 27)
+    assert shop_cf.value == "Lidl"
+    assert total_cf.value == 40.22
 
 
 @pytest.mark.django_db(transaction=True)

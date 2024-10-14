@@ -33,9 +33,12 @@ CUSTOM_FIELD_DATA_TYPE_MAP = {
 }
 
 
-def str2date(value: str) -> Optional[datetime.date]:
+def str2date(value: str | None) -> Optional[datetime.date]:
     """Convert incoming user string to datetime.date"""
     # 10 = 4 Y chars +  1 "-" char + 2 M chars + 1 "-" char + 2 D chars
+    if value is None:
+        return None
+
     DATE_LEN = 10
     stripped_value = value.strip()
     if len(stripped_value) == 0:
@@ -155,6 +158,11 @@ def get_doc_cfv(session: Session, document_id: UUID) -> list[schemas.CFV]:
     result = []
     str_doc_id = str(document_id).replace("-", "")
     for row in session.execute(text(stmt), {"document_id": str_doc_id}):
+        if row.cf_type == "date":
+            value = str2date(row.cf_value)
+        else:
+            value = row.cf_value
+
         result.append(
             schemas.CFV(
                 document_id=row.doc_id,
@@ -164,7 +172,7 @@ def get_doc_cfv(session: Session, document_id: UUID) -> list[schemas.CFV]:
                 type=row.cf_type,
                 extra_data=row.cf_extra_data,
                 custom_field_value_id=row.cfv_id,
-                value=row.cf_value,
+                value=value,
             )
         )
 

@@ -11,6 +11,7 @@ from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.schemas import CustomFieldType
 from papermerge.core.utils import base64
 from papermerge.search.routers import register_routers as reg_search_routers
+from papermerge.test.baker_recipes import document_recipe
 from papermerge.test.types import AuthTestClient
 
 
@@ -98,6 +99,33 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
         )
 
     return _make_document_type
+
+
+@pytest.fixture
+def document_type_groceries(db_session: Session, user: User, make_custom_field):
+    cf1 = make_custom_field(name="Shop", data_type=CustomFieldType.string)
+    cf2 = make_custom_field(name="Total", data_type=CustomFieldType.monetary)
+    cf3 = make_custom_field(name="EffectiveDate", data_type=CustomFieldType.date)
+
+    return db.create_document_type(
+        db_session,
+        name="Groceries",
+        custom_field_ids=[cf1.id, cf2.id, cf3.id],
+        user_id=user.id,
+    )
+
+
+@pytest.fixture
+def make_document_receipt(db_session: Session, user: User, document_type_groceries):
+    def _make_receipt(title: str):
+        return document_recipe.make(
+            user=user,
+            title=title,
+            parent=user.home_folder,
+            document_type_id=document_type_groceries.id,
+        )
+
+    return _make_receipt
 
 
 @pytest.fixture

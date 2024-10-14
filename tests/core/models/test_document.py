@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+from datetime import date as Date
 from pathlib import Path
 from unittest.mock import patch
 
@@ -227,79 +228,59 @@ def test_generate_thumbnail(document: Document):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_add_custom_field_values(
-    db_session: Session,
-    document: Document,
-    document_type_with_two_integer_cf: schemas.DocumentType,
-):
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    assert len(total_cfv_after) == 0
+def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receipt):
+    """
+    In this scenario we have one document of type "Groceries" i.e. a receipt.
+    Groceries document type has following custom fields:
+        - Effective Date (date)
+        - Total (monetary)
+        - Shop (string)
 
-    dtype = document_type_with_two_integer_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "100"},
-            {"custom_field_id": dtype.custom_fields[1].id, "value": "200"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
-    )
-
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    # two custom field values were created
-    assert len(total_cfv_after) == 2
-
-    fresh_doc = db.get_doc(db_session, document.id, document.user.id)
-    # document type should have been updated to the dtype
-    assert fresh_doc.document_type_id == dtype.id
+    `db.get_doc_cfv` method should return 3 items (each corresponding
+    to one custom field) with all values (i.e. custom field values, in short cfv)
+    set to None. In other words, document custom fields are returned in
+    regardless if custom field has set a value or no
+    """
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    assert len(items) == 3
+    # with just value set to None it is ambiguous:
+    # was value was set to None or was value not set at all ?
+    assert items[0].value is None
+    # when `custom_field_value_id` is None => value was not set yet
+    assert items[0].custom_field_value_id is None
+    assert items[1].value is None
+    assert items[1].custom_field_value_id is None
+    assert items[2].value is None
+    assert items[2].custom_field_value_id is None
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_add_custom_field_value_of_type_date(
+@pytest.mark.parametrize(
+    "effective_date_input",
+    ["2024-10-28", "2024-10-28 00:00:00", "2024-10-28 00", "2024-10-28 anything here"],
+)
+def test_document_add_valid_date_cfv(
+    effective_date_input,
     db_session: Session,
-    document: Document,
-    document_type_with_one_date_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
     """
     Custom field of type `date` is set to string "2024-10-28"
     """
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    assert len(total_cfv_after) == 0
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+    # key = custom field name
+    # value = custom field value
+    cf = {"EffectiveDate": effective_date_input}
 
-    dtype = document_type_with_one_date_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            # date is expected to be in:
-            # papermerge.core.constants.INCOMING_DATE_FORMAT
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
+    db.update_document_custom_fields(
+        db_session, document_id=receipt.id, custom_fields=cf
     )
 
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    # one custom field value was created
-    assert len(total_cfv_after) == 1
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+
+    assert eff_date_cf.value == Date(2024, 10, 28)
 
 
 @pytest.mark.django_db(transaction=True)

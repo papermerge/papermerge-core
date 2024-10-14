@@ -9,10 +9,12 @@ import pytest
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils.datetime_safe import datetime
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import db, schemas
 from papermerge.core.db.doc import str2date
+from papermerge.core.db.models import CustomFieldValue
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
@@ -284,346 +286,165 @@ def test_document_add_valid_date_cfv(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_custom_field_of_type_date1(
+def test_document_update_custom_field_of_type_date(
     db_session: Session,
-    document: Document,
-    document_type_with_one_date_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
-    dtype = document_type_with_one_date_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            # date is expected to be in:
-            # papermerge.core.constants.INCOMING_DATE_FORMAT
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+
+    # add some value (for first time)
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields={"EffectiveDate": "2024-09-26"},
     )
 
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
-
-    cf_update = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {
-                "custom_field_value_id": total_cfv_after1[0].id,
-                "value": "2024-02-28 00:00:00",
-            },
-        ],
-    }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-
-    db.update_document_custom_field_values(
+    # update existing value
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_update=custom_fields_update,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields={"EffectiveDate": "2024-09-27"},
     )
 
-    total_cfv_after2 = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    # even though we update multiple times - only the value is
-    # updated - and number of custom fields associated with
-    # the document is the same i.e. - one
-    assert len(total_cfv_after2) == 1
-    # and the value is - last one
-    assert total_cfv_after2[0].value == "2024-02-28 00:00:00"
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+
+    # notice it is 27, not 26
+    assert eff_date_cf.value == Date(2024, 9, 27)
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_same_custom_field_value_multiple_times1(
+def test_document_add_multiple_CFVs(
     db_session: Session,
-    document: Document,
-    document_type_with_one_date_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
     """
-    There should be no problem updating custom field value multiple times
+    In this scenario we pass multiple custom field values to
+    `db_update_document_custom_fields` function
     """
-    dtype = document_type_with_one_date_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            # date is expected to be in:
-            # papermerge.core.constants.INCOMING_DATE_FORMAT
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+
+    # pass 3 custom field values in one shot
+    cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
+
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields=cf,
     )
 
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+    shop_cf = next(item for item in items if item.name == "Shop")
+    total_cf = next(item for item in items if item.name == "Total")
 
-    # date is expected to be in:
-    # papermerge.core.constants.INCOMING_DATE_FORMAT
-    for value in ["2024-10-29", "2024-10-30"]:
-        # updating same custom field multiple times should not raise
-        # exceptions
-        cf_update = {
-            "document_type_id": dtype.id,
-            "custom_fields": [
-                {"custom_field_value_id": total_cfv_after1[0].id, "value": value},
-            ],
-        }
-        custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-
-        db.update_document_custom_field_values(
-            db_session,
-            id=document.id,
-            custom_fields_update=custom_fields_update,
-            user_id=document.user.id,
-        )
-
-    total_cfv_after2 = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-    # even though we update multiple times - only the value is
-    # updated - and number of custom fields associated with
-    # the document is the same i.e. - one
-    assert len(total_cfv_after2) == 1
-    # and the value is - last one
-    assert total_cfv_after2[0].value == "2024-10-30 00:00:00"
-
-
-@pytest.mark.django_db(transaction=True)
-def test_document_update_same_custom_field_value_multiple_times2(
-    db_session: Session,
-    document: Document,
-    document_type_with_one_date_cf: schemas.DocumentType,
-):
-    """
-    Every time custom field value is updated the retrieved value
-    is the latest one
-    """
-    dtype = document_type_with_one_date_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "2024-10-28"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
-    )
-
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
-
-    assert total_cfv_after1[0].value == "2024-10-28 00:00:00"
-
-    cf_update = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_value_id": total_cfv_after1[0].id, "value": "2024-10-29"},
-        ],
-    }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    # update it again
-    db.update_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_update=custom_fields_update,
-        user_id=document.user.id,
-    )
-
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-
-    assert len(total_cfv_after) == 1
-    # and make sure the retrieved value is
-    # the latest one i.e. 29th of oct instead of 28th of oct
-    assert total_cfv_after[0].value == "2024-10-29 00:00:00"
+    assert eff_date_cf.value == Date(2024, 9, 26)
+    assert shop_cf.value == "Aldi"
+    assert total_cf.value == "32.97"
 
 
 @pytest.mark.django_db(transaction=True)
 def test_document_update_string_custom_field_value_multiple_times(
     db_session: Session,
-    document: Document,
-    document_type_with_one_string_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
     """
     Every time custom field value is updated the retrieved value
     is the latest one
     """
-    dtype = document_type_with_one_string_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+
+    # add some value (for first time)
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields={"Shop": "lidl"},
     )
 
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
-
-    assert total_cfv_after1[0].value == "smb 1"
-
-    cf_update = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_value_id": total_cfv_after1[0].id, "value": "smb 2"},
-        ],
-    }
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(**cf_update)
-    # update it again
-    db.update_document_custom_field_values(
+    # update existing value
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_update=custom_fields_update,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields={"Shop": "rewe"},
     )
 
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
+    items: list[schemas.CFV] = db.get_doc_cfv(db_session, document_id=receipt.id)
+    shop_cf = next(item for item in items if item.name == "Shop")
 
-    assert len(total_cfv_after) == 1
-    # and make sure the retrieved value is
-    # the latest one i.e. "smb 2" instead of "smb 1"
-    assert total_cfv_after[0].value == "smb 2"
+    assert shop_cf.value == "rewe"
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_update_document_type_to_none(
+def test_document_without_cfv_update_document_type_to_none(
     db_session: Session,
-    document: Document,
-    document_type_with_one_string_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
     """
-    when `document_type_id` is set to None - document type will
-    be updated to None
+    In this scenario we have a document of specific document type (groceries)
+
+    If document's type is cleared (set to None) then no more custom
+    fields will be returned for this document.
+
+    In this scenario document does not have associated CFV
     """
-    dtype = document_type_with_one_string_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
-    )
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+    items = db.get_doc_cfv(db_session, document_id=receipt.id)
+    # document is of type Groceries, thus there are custom fields
+    assert len(items) == 3
+    db.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
+    items = db.get_doc_cfv(db_session, document_id=receipt.id)
+    # document does not have any type associated, thus no custom fields
+    assert len(items) == 0
 
-    assert total_cfv_after1[0].value == "smb 1"
-
-    custom_fields_update = schemas.DocumentCustomFieldsUpdate(
-        document_type_id=None, custom_fields=[]
+    stmt = select(func.count(CustomFieldValue.id)).where(
+        CustomFieldValue.document_id == receipt.id
     )
-    db.update_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_update=custom_fields_update,
-        user_id=document.user.id,
-    )
-
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-
-    assert len(total_cfv_after) == 0
+    assert db_session.execute(stmt).scalar() == 0
 
 
 @pytest.mark.django_db(transaction=True)
-def test_document_set_document_type_to_none(
+def test_document_with_cfv_update_document_type_to_none(
     db_session: Session,
-    document: Document,
-    document_type_with_one_string_cf: schemas.DocumentType,
+    make_document_receipt,
 ):
     """
-    when `document_type_id` is set to None - document type will
-    be updated to None
+    In this scenario we have a document of specific document type (groceries)
+
+    If document's type is cleared (set to None) then no more custom
+    fields will be returned for this document.
+
+    In this scenario document has associated CFV
     """
-    dtype = document_type_with_one_string_cf
-    cf_add = {
-        "document_type_id": dtype.id,
-        "custom_fields": [
-            {"custom_field_id": dtype.custom_fields[0].id, "value": "smb 1"},
-        ],
-    }
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(**cf_add)
-    db.add_document_custom_field_values(
+    receipt: Document = make_document_receipt(title="receipt-1.pdf")
+    # add some cfv
+    db.update_document_custom_fields(
         db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
+        document_id=receipt.id,
+        custom_fields={"EffectiveDate": "2024-09-27"},
+    )
+    items = db.get_doc_cfv(db_session, document_id=receipt.id)
+    # document is of type Groceries, thus there are custom fields
+    assert len(items) == 3
+    # there is exactly one cfv: one value for EffectiveDate
+    stmt = select(func.count(CustomFieldValue.id)).where(
+        CustomFieldValue.document_id == receipt.id
+    )
+    assert db_session.execute(stmt).scalar() == 1
+
+    # set document type to None
+    db.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
+
+    items = db.get_doc_cfv(db_session, document_id=receipt.id)
+    # document does not have any type associated, thus no custom fields
+    assert len(items) == 0
+
+    stmt = select(func.count(CustomFieldValue.id)).where(
+        CustomFieldValue.document_id == receipt.id
     )
 
-    total_cfv_after1: list[schemas.CustomFieldValue] = (
-        db.get_document_custom_field_values(
-            db_session, id=document.id, user_id=document.user.id
-        )
-    )
-    assert len(total_cfv_after1) == 1
-
-    assert total_cfv_after1[0].value == "smb 1"
-
-    custom_fields_add = schemas.DocumentCustomFieldsAdd(
-        document_type_id=None, custom_fields=[]
-    )
-    db.add_document_custom_field_values(
-        db_session,
-        id=document.id,
-        custom_fields_add=custom_fields_add,
-        user_id=document.user.id,
-    )
-
-    total_cfv_after = db.get_document_custom_field_values(
-        db_session, id=document.id, user_id=document.user.id
-    )
-
-    assert len(total_cfv_after) == 0
+    # no more associated CFVs
+    assert db_session.execute(stmt).scalar() == 0
 
 
 def test_str2date():

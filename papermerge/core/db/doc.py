@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import insert, select, text, update
+from sqlalchemy import delete, insert, select, text, update
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
@@ -177,6 +177,21 @@ def get_doc_cfv(session: Session, document_id: UUID) -> list[schemas.CFV]:
         )
 
     return result
+
+
+def update_doc_type(session: Session, document_id: UUID, document_type_id: UUID | None):
+    stmt = select(Document).where(Document.id == document_id)
+    doc = session.scalars(stmt).one()
+    if doc.document_type_id != document_type_id:
+        # new value for document type
+        doc.document_type_id = document_type_id
+        # -> clear existing CFV
+        del_stmt = delete(CustomFieldValue).where(
+            CustomFieldValue.document_id == document_id
+        )
+        session.execute(del_stmt)
+
+    session.commit()
 
 
 def update_document_custom_fields(

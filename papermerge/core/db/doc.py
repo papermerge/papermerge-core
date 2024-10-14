@@ -374,14 +374,16 @@ def get_document_custom_field_values(
     return result
 
 
-def get_documents_by_type(
+def get_docs_by_type(
     session: Session,
     type_id: UUID,
-    parent_id: UUID,
+    ancestor_id: UUID,
     user_id: UUID,
 ):
     """
-    Returns node / cf / cfv for all documents with `document_type_id = type_id`
+    Returns list of documents + doc CFv for all documents with of given type
+
+    All fetched documents are descendants of `ancestor_id` node.
     """
     stmt = """
         SELECT node.title,
@@ -419,19 +421,28 @@ def get_documents_by_type(
             ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
         WHERE node.parent_id = :parent_id
     """
-    str_parent_id = str(parent_id).replace("-", "")
+    str_parent_id = str(ancestor_id).replace("-", "")
     str_type_id = str(type_id).replace("-", "")
     params = {"parent_id": str_parent_id, "document_type_id": str_type_id}
     results = []
     rows = session.execute(text(stmt), params)
     for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):
         items = list(group)
+        custom_fields = []
+
+        for item in items:
+            if item.cf_type == "date":
+                value = str2date(item.cf_value)
+            else:
+                value = item.cf_value
+            custom_fields.append((item.cf_name, value))
+
         results.append(
             schemas.DocumentCFV(
                 id=uuid.UUID(document_id),
                 title=items[0].title,
                 document_type_id=uuid.UUID(items[0].document_type_id),
-                custom_fields=[(i.cf_name, str(i.cf_value)) for i in items],
+                custom_fields=custom_fields,
             )
         )
 

@@ -483,6 +483,80 @@ def test_document_with_cfv_update_document_type_to_none(
     assert db_session.execute(stmt).scalar() == 0
 
 
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
+    """
+    `db.get_docs_by_type` must return all documents of specific type
+    regardless if they (documents) have or no associated custom field values.
+
+    In this scenario all returned documents must have custom fields with empty
+    values.
+    And number of returned items must be equal to the number of documents
+    of type "Grocery"
+    """
+    doc_1: Document = make_document_receipt(title="receipt_1.pdf")
+    make_document_receipt(title="receipt_2.pdf")
+    user_id = doc_1.user.id
+    parent_id = doc_1.parent.id
+    type_id = doc_1.document_type.id
+
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session, type_id=type_id, user_id=user_id, ancestor_id=parent_id
+    )
+
+    assert len(items) == 2
+
+    for i in range(0, 2):
+        cf = dict(items[i].custom_fields)
+        assert cf["EffectiveDate"] is None
+        assert cf["Shop"] is None
+        assert cf["Total"] is None
+
+
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_by_type_one_doc_with_nonempty_cfv(
+    db_session: Session, make_document_receipt
+):
+    """
+    `db.get_docs_by_type` must return all documents of specific type
+    regardless if they (documents) have or no associated custom field values.
+
+    In this scenario one of the returned documents has all CFVs set to
+    non empty values and the other one - to all values empty
+    """
+    doc_1: Document = make_document_receipt(title="receipt_1.pdf")
+    make_document_receipt(title="receipt_2.pdf")
+    user_id = doc_1.user.id
+    parent_id = doc_1.parent.id
+    type_id = doc_1.document_type.id
+
+    # update all CFV of receipt_1.pdf to non-empty values
+    db.update_doc_cfv(
+        db_session,
+        document_id=doc_1.id,
+        custom_fields={"Shop": "rewe", "EffectiveDate": "2024-10-15", "Total": "15.63"},
+    )
+
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session, type_id=type_id, user_id=user_id, ancestor_id=parent_id
+    )
+
+    assert len(items) == 2
+
+    for i in range(0, 2):
+        cf = dict(items[i].custom_fields)
+        if items[i].id == doc_1.id:
+            #  receipt_1.pdf has all cf set correctly
+            assert cf["EffectiveDate"] == Date(2024, 10, 15)
+            assert cf["Shop"] == "rewe"
+            assert cf["Total"] == 15.63
+        else:
+            # receipt_2.pdf has all cf set to None
+            assert cf["EffectiveDate"] is None
+            assert cf["Shop"] is None
+            assert cf["Total"] is None
+
+
 def test_str2date():
     assert str2date("2024-10-30") == datetime(2024, 10, 30).date()
     assert str2date("2024-10-30 00:00:00") == datetime(2024, 10, 30).date()

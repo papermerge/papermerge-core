@@ -12,8 +12,8 @@ from .doc import (
     add_document_custom_field_values,
     get_doc,
     get_doc_cfv,
+    get_docs_by_type,
     get_document_custom_field_values,
-    get_documents_by_type,
     update_doc_cfv,
     update_doc_type,
 )
@@ -85,5 +85,5 @@ __all__ = [
     "get_document_custom_field_values",
     "get_doc_cfv",
     "update_doc_type",
-    "get_documents_by_type",
+    "get_docs_by_type",
 ]

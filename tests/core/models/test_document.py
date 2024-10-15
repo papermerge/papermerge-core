@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from papermerge.core import db, schemas
 from papermerge.core.db.doc import str2date
-from papermerge.core.db.models import CustomFieldValue
+from papermerge.core.db.models import CustomField, CustomFieldValue
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.test import TestCase
@@ -556,6 +556,60 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
             assert cf["EffectiveDate"] is None
             assert cf["Shop"] is None
             assert cf["Total"] is None
+
+
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_receipt):
+    """
+    `db.get_docs_by_type` must return ONLY documents of the specificified type
+
+    In this scenario we have two document types:
+
+    1. Groceries with two documents
+    2. Bill without any document
+
+    If we request documents of type "Bill" - no documents should be returned.
+
+    In order to reproduce (very subtle) bug, in this scenario "Bill" document
+    type shares at least one custom field with "Groceries".
+    Bug is (was?) that if "Bill" and "Groceries" share at least one custom field
+    then querying for "Bill" type documents returned documents of type
+    "Groceries"
+    """
+    # create two docs of type 'Groceries'
+    doc_1: Document = make_document_receipt(title="receipt_1.pdf")
+    make_document_receipt(title="receipt_2.pdf")
+    user_id = doc_1.user.id
+    parent_id = doc_1.parent.id
+    groceries_type_id = doc_1.document_type.id
+
+    # to reproduce the bug bill document type should share at least one
+    # custom field with Groceries
+    stmt = select(CustomField.id).where(
+        CustomField.name.in_(["Total", "EffectiveDate"])
+    )
+    custom_field_ids = list([row.id for row in db_session.execute(stmt)])
+    billType = db.create_document_type(
+        db_session,
+        name="Bill",
+        custom_field_ids=custom_field_ids,
+        user_id=user_id,
+    )
+
+    billDocs: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session,
+        type_id=billType.id,
+        user_id=user_id,
+        ancestor_id=parent_id,
+    )
+    groceriesDocs: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session, type_id=groceries_type_id, user_id=user_id, ancestor_id=parent_id
+    )
+
+    # because there are no documents of type "Bill"
+    assert len(billDocs) == 0
+    # because there are exactly two documents of type "Groceries"
+    assert len(groceriesDocs) == 2
 
 
 def test_str2date():

@@ -420,6 +420,7 @@ def get_docs_by_type(
         LEFT OUTER JOIN core_customfieldvalue AS cfv
             ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
         WHERE node.parent_id = :parent_id
+            AND doc.document_type_id = :document_type_id
     """
     str_parent_id = str(ancestor_id).replace("-", "")
     str_type_id = str(type_id).replace("-", "")

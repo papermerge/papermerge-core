@@ -3,6 +3,7 @@ import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
 import type {
   AddCustomFieldValueType,
+  DocumentCFV,
   DocumentCustomFieldValue,
   UpdateCustomFieldValueType
 } from "@/types"
@@ -60,6 +61,11 @@ type AddDocumentCustomFields = {
     document_type_id: string
     custom_fields: Array<AddCustomFieldValueType>
   }
+}
+
+type GetDocsByTypeArgs = {
+  document_type_id: string
+  ancestor_id: string
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -187,6 +193,14 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       providesTags: (_result, _error, arg) => [
         {type: "DocumentCustomField", id: arg}
       ]
+    }),
+    getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
+      query: args => ({
+        url: `/documents/type/${args.document_type_id}?ancestor_id=${args.ancestor_id}`
+      }),
+      providesTags: (_result, _error, arg) => [
+        {type: "DocumentCFV", id: arg.document_type_id}
+      ]
     })
   })
 })
@@ -199,5 +213,6 @@ export const {
   useExtractPagesMutation,
   useUpdateDocumentCustomFieldsMutation,
   useAddDocumentCustomFieldsMutation,
-  useGetDocumentCustomFieldsQuery
+  useGetDocumentCustomFieldsQuery,
+  useGetDocsByTypeQuery
 } = apiSliceWithDocuments

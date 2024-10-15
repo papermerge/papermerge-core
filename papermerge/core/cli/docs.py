@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.table import Table
 
 from papermerge.core import db, schemas
-from papermerge.core.db.doc import get_documents_by_type
+from papermerge.core.db.doc import get_docs_by_type
 from papermerge.core.db.document_types import get_document_types
 
 app = typer.Typer(help="List various entities")
@@ -22,8 +22,8 @@ def document_types():
 @app.command(name="list-by-type")
 def list_documents_by_type(type_id: uuid.UUID, parent_id: uuid.UUID):
     """List all documents by specific document type"""
-    docs = get_documents_by_type(
-        session, type_id=type_id, user_id=uuid.uuid4(), parent_id=parent_id
+    docs = get_docs_by_type(
+        session, type_id=type_id, user_id=uuid.uuid4(), ancestor_id=parent_id
     )
     print_docs(docs)
 

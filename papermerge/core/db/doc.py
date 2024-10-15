@@ -379,7 +379,7 @@ def get_docs_by_type(
     type_id: UUID,
     ancestor_id: UUID,
     user_id: UUID,
-):
+) -> list[schemas.DocumentCFV]:
     """
     Returns list of documents + doc CFv for all documents with of given type
 

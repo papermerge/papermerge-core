@@ -49,7 +49,8 @@ export const apiSlice = createApi({
     "Document",
     "CustomField", // CRUD custom field
     "DocumentType",
-    "DocumentCustomField" // custom fields associated to specific document (via document type)
+    "DocumentCustomField", // custom fields associated to specific document (via document type)
+    "DocumentCFV"
   ],
   endpoints: _ => ({})
 })

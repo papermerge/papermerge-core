@@ -456,6 +456,14 @@ export type DocumentCustomFieldValue = {
   field_id?: string
 }
 
+export type DocumentCFV = {
+  id: string
+  title: string
+  document_type_id: string
+  thumbnail_url: string
+  custom_fields: Array<[string, string]>
+}
+
 export type CurrencyType =
   | "CHF"
   | "CZK"

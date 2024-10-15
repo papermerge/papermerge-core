@@ -14,12 +14,11 @@ import {
   useGetDocumentTypesQuery
 } from "@/features/document-types/apiSlice"
 import {
-  useAddDocumentCustomFieldsMutation,
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation
 } from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import type {DocumentCustomFieldValue, PanelMode} from "@/types"
+import type {CFV, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
 
 export default function CustomFields() {
@@ -35,12 +34,10 @@ export default function CustomFields() {
   const {currentData: documentType} = useGetDocumentTypeQuery(
     documentTypeID?.value ?? skipToken
   )
-  const [customFieldValues, setCustomFieldValues] = useState<
-    DocumentCustomFieldValue[]
-  >([])
+  const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
-  const [addDocumentCustomFields] = useAddDocumentCustomFieldsMutation()
+
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
@@ -58,7 +55,14 @@ export default function CustomFields() {
       setCustomFieldValues(initialCustFieldValues)
     } else if (documentType?.custom_fields) {
       const initialCustFieldValues = documentType?.custom_fields.map(i => {
-        return {...i, value: ""}
+        return {
+          custom_field_id: i.id,
+          document_id: docID!,
+          document_type_id: documentTypeID?.value!,
+          type: i.data_type,
+          name: i.name,
+          value: ""
+        }
       })
       setCustomFieldValues(initialCustFieldValues)
     }
@@ -96,23 +100,24 @@ export default function CustomFields() {
     customField,
     value
   }: {
-    customField: DocumentCustomFieldValue
+    customField: CFV
     value: string
   }) => {
     const newCustomFieldValues = customFieldValues.map(cf => {
-      if (cf.id == customField.id) {
+      if (cf.name == customField.name) {
         return {...cf, value}
       }
 
       return cf
     })
+
     setCustomFieldValues(newCustomFieldValues)
     setShowSaveButton(true)
   }
 
   const genericCustomFieldsComponents = customFieldValues.map(cf => (
     <GenericCustomField
-      key={cf.id}
+      key={cf.name}
       documentID={docID}
       customField={cf}
       onChange={onCustomFieldValueChanged}
@@ -150,30 +155,20 @@ export default function CustomFields() {
     if (documentCustomFields && documentCustomFields.length > 0) {
       // document already has custom fields associated
       // we need to update existing custom field value
+      const content = customFieldValues.map(i => {
+        return {
+          custom_field_value_id: i.custom_field_value_id,
+          key: i.name,
+          value: i.value
+        }
+      })
+
       const data = {
         documentID: docID!,
-        body: {
-          document_type_id: documentTypeID?.value!,
-          custom_fields: customFieldValues.map(i => {
-            return {custom_field_value_id: i.id, value: i.value}
-          })
-        }
+        documentTypeID: documentTypeID?.value!,
+        body: content
       }
       await updateDocumentCustomFields(data)
-    } else {
-      // document does not have custom field values associated
-      // create new ones based on field_id
-      const data = {
-        documentID: docID!,
-        body: {
-          document_type_id: documentTypeID?.value!,
-          custom_fields: customFieldValues.map(i => {
-            return {custom_field_id: i.id, value: i.value}
-          })
-        }
-      }
-
-      await addDocumentCustomFields(data)
     }
 
     setShowSaveButton(false)
@@ -209,15 +204,9 @@ export default function CustomFields() {
 }
 
 interface GenericCustomFieldArg {
-  customField: DocumentCustomFieldValue
+  customField: CFV
   documentID?: string
-  onChange: ({
-    customField,
-    value
-  }: {
-    customField: DocumentCustomFieldValue
-    value: string
-  }) => void
+  onChange: ({customField, value}: {customField: CFV; value: string}) => void
 }
 
 function GenericCustomField({
@@ -236,11 +225,11 @@ function GenericCustomField({
     return <Skeleton height={"20"} />
   }
 
-  if (customField.data_type == "date") {
+  if (customField.type == "date") {
     return <CustomFieldDate customField={customField} onChange={onChange} />
   }
 
-  if (customField.data_type == "monetary") {
+  if (customField.type == "monetary") {
     return <CustomFieldMonetary customField={customField} onChange={onChange} />
   }
 

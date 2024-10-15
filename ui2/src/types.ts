@@ -428,6 +428,7 @@ export interface ServerErrorType {
 
 export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
 export type SortMenuDirection = "az" | "za"
+export type ViewOption = "tile" | "list" | "document-type"
 
 export interface CustomFieldValueType {
   custom_field_id: string
@@ -444,15 +445,23 @@ export interface UpdateCustomFieldValueType {
   value: string
 }
 
-export type DocumentCustomFieldValue = {
-  id: string
+export type CFV = {
+  custom_field_id: string
+  custom_field_value_id?: string
+  document_id: string
+  document_type_id: string
   name: string
-  data_type: string
+  type: string
   extra_data?: string
   value: string
-  /* optionally store ID of the custom field this
-  this value is associated with */
-  field_id?: string
+}
+
+export type DocumentCFV = {
+  id: string
+  title: string
+  document_type_id: string
+  thumbnail_url: string
+  custom_fields: Array<[string, string]>
 }
 
 export type CurrencyType =

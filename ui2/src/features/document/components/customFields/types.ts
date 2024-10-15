@@ -1,13 +1,13 @@
-import type {DocumentCustomFieldValue} from "@/types"
+import type {CFV} from "@/types"
 
 export type onChangeArgs = {
-  customField: DocumentCustomFieldValue
+  customField: CFV
   value: string
 }
 
 export type onChangeType = ({customField, value}: onChangeArgs) => void
 
 export interface CustomFieldArgs {
-  customField: DocumentCustomFieldValue
+  customField: CFV
   onChange: onChangeType
 }

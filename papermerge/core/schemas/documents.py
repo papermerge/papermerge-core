@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 
 from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
-from papermerge.core.types import OCRStatusEnum
+from papermerge.core.types import CFNameType, CFValueType, OCRStatusEnum
 
 
 class Tag(BaseModel):
@@ -253,5 +253,6 @@ class DocumentCustomFieldsUpdateValue(BaseModel):
 
 
 class DocumentCustomFieldsUpdate(BaseModel):
-    document_type_id: UUID | None = None
-    custom_fields: list[DocumentCustomFieldsUpdateValue]
+    custom_field_value_id: UUID | None
+    key: CFNameType
+    value: CFValueType

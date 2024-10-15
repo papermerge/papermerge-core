@@ -1,19 +1,20 @@
 from collections.abc import Sequence
+from datetime import date
 from enum import Enum
-from typing import Generic, TypeVar
+from typing import Generic, TypeAlias, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
-T = TypeVar('T')
+T = TypeVar("T")
 DocumentVersion = TypeVar("DocumentVersion")
 
 
 class OCRStatusEnum(str, Enum):
-    unknown = 'UNKNOWN'
-    received = 'RECEIVED'
-    started = 'STARTED'
-    success = 'SUCCESS'
-    failure = 'FAILURE'
+    unknown = "UNKNOWN"
+    received = "RECEIVED"
+    started = "STARTED"
+    success = "SUCCESS"
+    failure = "FAILURE"
 
 
 class PaginatedResponse(BaseModel, Generic[T]):
@@ -31,3 +32,7 @@ class TokenData(BaseModel):
     email: str
     scopes: list[str] = []
     groups: list[str] = []
+
+
+CFValueType: TypeAlias = str | int | date | bool | float | None
+CFNameType: TypeAlias = str

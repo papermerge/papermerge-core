@@ -1,6 +1,12 @@
 import type {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
+import type {
+  BooleanString,
+  CType,
+  ClientPage,
+  PanelMode,
+  ViewOption
+} from "@/types"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
@@ -78,6 +84,16 @@ type SortMenuColumnUpdatedArgs = {
 type SortMenuDirectionUpdatedArgs = {
   mode: PanelMode
   direction: SortMenuDirection
+}
+
+type ViewOptionArgs = {
+  mode: PanelMode
+  viewOption: ViewOption
+}
+
+type DocumentTypeIDArgs = {
+  mode: PanelMode
+  documentTypeID?: string
 }
 
 export interface UploaderFileItemArgs {
@@ -183,11 +199,15 @@ interface UIState {
   mainCommanderLastPageSize?: number
   mainCommanderSortMenuColumn?: SortMenuColumn
   mainCommanderSortMenuDir?: SortMenuDirection
+  mainCommanderViewOption?: ViewOption
+  mainCommanderDocumentTypeID?: string
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
   secondaryCommanderSortMenuColumn?: SortMenuColumn
   secondaryCommanderSortMenuDir?: SortMenuDirection
+  secondaryCommanderViewOption?: ViewOption
+  secondaryCommanderDocumentTypeID?: string
   /* Which component should main panel display:
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
@@ -507,6 +527,25 @@ const uiSlice = createSlice({
         state.secondaryCommanderSortMenuDir = direction
       }
     },
+    commanderViewOptionUpdated(state, action: PayloadAction<ViewOptionArgs>) {
+      const {mode, viewOption} = action.payload
+      if (mode == "main") {
+        state.mainCommanderViewOption = viewOption
+      } else {
+        state.secondaryCommanderViewOption = viewOption
+      }
+    },
+    commanderDocumentTypeIDUpdated(
+      state,
+      action: PayloadAction<DocumentTypeIDArgs>
+    ) {
+      const {mode, documentTypeID} = action.payload
+      if (mode == "main") {
+        state.mainCommanderDocumentTypeID = documentTypeID
+      } else {
+        state.secondaryCommanderDocumentTypeID = documentTypeID
+      }
+    },
     viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
 
@@ -722,6 +761,8 @@ export const {
   commanderLastPageSizeUpdated,
   commanderSortMenuColumnUpdated,
   commanderSortMenuDirectionUpdated,
+  commanderViewOptionUpdated,
+  commanderDocumentTypeIDUpdated,
   viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
@@ -907,6 +948,28 @@ export const selectCommanderSortMenuDir = (
   }
 
   return state.ui.secondaryCommanderSortMenuDir || "az"
+}
+
+export const selectCommanderViewOption = (
+  state: RootState,
+  mode: PanelMode
+): ViewOption => {
+  if (mode == "main") {
+    return state.ui.mainCommanderViewOption || "tile"
+  }
+
+  return state.ui.secondaryCommanderViewOption || "tile"
+}
+
+export const selectCommanderDocumentTypeID = (
+  state: RootState,
+  mode: PanelMode
+): string | undefined => {
+  if (mode == "main") {
+    return state.ui.mainCommanderDocumentTypeID
+  }
+
+  return state.ui.secondaryCommanderDocumentTypeID
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {

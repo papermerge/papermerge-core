@@ -1,12 +1,13 @@
 import {RootState} from "@/app/types"
 import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import type {
-  AddCustomFieldValueType,
-  DocumentCustomFieldValue,
-  UpdateCustomFieldValueType
+import type {DocumentCFV} from "@/types"
+import {
+  CFV,
+  DocumentType,
+  ExtractStrategyType,
+  TransferStrategyType
 } from "@/types"
-import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type ShortPageType = {
@@ -48,18 +49,17 @@ type ExtractPagesType = {
 
 type UpdateDocumentCustomFields = {
   documentID: string
-  body: {
-    document_type_id: string
-    custom_fields: Array<UpdateCustomFieldValueType>
-  }
+  documentTypeID: string
+  body: Array<{
+    custom_field_value_id?: string
+    key: string
+    value: string
+  }>
 }
 
-type AddDocumentCustomFields = {
-  documentID: string
-  body: {
-    document_type_id: string
-    custom_fields: Array<AddCustomFieldValueType>
-  }
+type GetDocsByTypeArgs = {
+  document_type_id: string
+  ancestor_id: string
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -151,16 +151,6 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         ]
       }
     }),
-    addDocumentCustomFields: builder.mutation<void, AddDocumentCustomFields>({
-      query: data => ({
-        url: `/documents/${data.documentID}/custom-fields`,
-        method: "POST",
-        body: data.body
-      }),
-      invalidatesTags: (_result, _error, arg) => {
-        return [{type: "DocumentCustomField", id: arg.documentID}]
-      }
-    }),
     updateDocumentCustomFields: builder.mutation<
       void,
       UpdateDocumentCustomFields
@@ -171,15 +161,27 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => {
-        return [{type: "DocumentCustomField", id: arg.documentID}]
+        return [
+          {type: "DocumentCustomField", id: arg.documentID},
+          {type: "Document", id: arg.documentID},
+          {type: "DocumentCFV", id: arg.documentTypeID}
+        ]
       }
     }),
-    getDocumentCustomFields: builder.query<DocumentCustomFieldValue[], string>({
+    getDocumentCustomFields: builder.query<CFV[], string>({
       query: documentID => ({
         url: `/documents/${documentID}/custom-fields`
       }),
       providesTags: (_result, _error, arg) => [
         {type: "DocumentCustomField", id: arg}
+      ]
+    }),
+    getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
+      query: args => ({
+        url: `/documents/type/${args.document_type_id}?ancestor_id=${args.ancestor_id}`
+      }),
+      providesTags: (_result, _error, arg) => [
+        {type: "DocumentCFV", id: arg.document_type_id}
       ]
     })
   })
@@ -192,6 +194,6 @@ export const {
   useMovePagesMutation,
   useExtractPagesMutation,
   useUpdateDocumentCustomFieldsMutation,
-  useAddDocumentCustomFieldsMutation,
-  useGetDocumentCustomFieldsQuery
+  useGetDocumentCustomFieldsQuery,
+  useGetDocsByTypeQuery
 } = apiSliceWithDocuments

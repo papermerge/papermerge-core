@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
 from .custom_fields import (
+    CFV,
     CreateCustomField,
     CustomField,
     CustomFieldType,
     CustomFieldValue,
+    DocumentCFV,
     UpdateCustomField,
 )
 from .document_types import CreateDocumentType, DocumentType, UpdateDocumentType
@@ -56,6 +58,8 @@ __all__ = [
     "UpdateCustomField",
     "CustomFieldType",
     "CustomFieldValue",
+    "CFV",
+    "DocumentCFV",
     "CreateDocumentType",
     "DocumentType",
     "UpdateDocumentType",

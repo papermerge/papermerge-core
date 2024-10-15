@@ -17,12 +17,16 @@ export default function CustomFieldDate({
   useEffect(() => {
     if (customField.value && customField.value.length > 0) {
       const parts = customField.value.split("-")
-      const year = Number(parts[0])
-      const month = Number(parts[1]) - 1
-      const day = Number(parts[2].substring(0, 2))
+      if (parts.length < 3) {
+        setValue(null)
+      } else {
+        const year = Number(parts[0])
+        const month = Number(parts[1]) - 1
+        const day = Number(parts[2].substring(0, 2))
 
-      const date = new Date(year, month, day)
-      setValue(date)
+        const date = new Date(year, month, day)
+        setValue(date)
+      }
     }
   }, [])
 

@@ -5,7 +5,7 @@ import {ActionIcon, FileButton, Loader, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
 import {useContext, useState} from "react"
-import {useGetFolderQuery} from "../apiSlice"
+import {useGetFolderQuery} from "../../../apiSlice"
 
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {DropFilesModal} from "./DropFiles"

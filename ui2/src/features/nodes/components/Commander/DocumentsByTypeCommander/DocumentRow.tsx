@@ -1,5 +1,5 @@
 import {Checkbox, Table} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
+import {useSelector} from "react-redux"
 import {Link} from "react-router-dom"
 
 import {selectSelectedIds} from "@/features/users/usersSlice"
@@ -12,12 +12,11 @@ type Args = {
 
 export default function DocumentRow({doc}: Args) {
   const selectedIds = useSelector(selectSelectedIds)
-  const dispatch = useDispatch()
   const customFieldsDataColumns = doc.custom_fields.map(cf => (
     <Table.Td key={cf[0]}>{cf[1]}</Table.Td>
   ))
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {}
+  const onChange = () => {}
 
   return (
     <Table.Tr>

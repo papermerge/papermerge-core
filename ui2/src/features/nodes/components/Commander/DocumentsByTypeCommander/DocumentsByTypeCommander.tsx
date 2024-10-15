@@ -27,7 +27,7 @@ export default function DocumentsByCategoryCommander() {
       : skipToken
   )
 
-  const onClick = (node: NType) => {}
+  const onClick = (_node: NType) => {}
 
   if (!nodes || (nodes && nodes.length == 0)) {
     return (

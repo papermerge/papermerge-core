@@ -14,7 +14,6 @@ import {
   useGetDocumentTypesQuery
 } from "@/features/document-types/apiSlice"
 import {
-  useAddDocumentCustomFieldsMutation,
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation
 } from "@/features/document/apiSlice"
@@ -38,7 +37,7 @@ export default function CustomFields() {
   const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
-  const [addDocumentCustomFields] = useAddDocumentCustomFieldsMutation()
+
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 

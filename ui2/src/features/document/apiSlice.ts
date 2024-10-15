@@ -1,7 +1,7 @@
 import {RootState} from "@/app/types"
 import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import type {AddCustomFieldValueType, DocumentCFV} from "@/types"
+import type {DocumentCFV} from "@/types"
 import {
   CFV,
   DocumentType,
@@ -55,14 +55,6 @@ type UpdateDocumentCustomFields = {
     key: string
     value: string
   }>
-}
-
-type AddDocumentCustomFields = {
-  documentID: string
-  body: {
-    document_type_id: string
-    custom_fields: Array<AddCustomFieldValueType>
-  }
 }
 
 type GetDocsByTypeArgs = {
@@ -159,19 +151,6 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         ]
       }
     }),
-    addDocumentCustomFields: builder.mutation<void, AddDocumentCustomFields>({
-      query: data => ({
-        url: `/documents/${data.documentID}/custom-fields`,
-        method: "POST",
-        body: data.body
-      }),
-      invalidatesTags: (_result, _error, arg) => {
-        return [
-          {type: "DocumentCustomField", id: arg.documentID},
-          {type: "Document", id: arg.documentID}
-        ]
-      }
-    }),
     updateDocumentCustomFields: builder.mutation<
       void,
       UpdateDocumentCustomFields
@@ -215,7 +194,6 @@ export const {
   useMovePagesMutation,
   useExtractPagesMutation,
   useUpdateDocumentCustomFieldsMutation,
-  useAddDocumentCustomFieldsMutation,
   useGetDocumentCustomFieldsQuery,
   useGetDocsByTypeQuery
 } = apiSliceWithDocuments

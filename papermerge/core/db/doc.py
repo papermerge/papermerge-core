@@ -203,18 +203,18 @@ def update_doc_cfv(
                 document_id=item.document_id,
                 field_id=item.custom_field_id,
             )
-            if item.type == "date":
-                v[f"value_{item.type}"] = str2date(custom_fields[item.name])
+            if item.type.value == "date":
+                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
             else:
-                v[f"value_{item.type}"] = custom_fields[item.name]
+                v[f"value_{item.type.value}"] = custom_fields[item.name]
             insert_values.append(v)
         else:
             # prepare update values
             v = dict(id=item.custom_field_value_id)
             if item.type == "date":
-                v[f"value_{item.type}"] = str2date(custom_fields[item.name])
+                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
             else:
-                v[f"value_{item.type}"] = custom_fields[item.name]
+                v[f"value_{item.type.value}"] = custom_fields[item.name]
             update_values.append(v)
 
     if len(insert_values) > 0:

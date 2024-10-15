@@ -36,12 +36,12 @@ user_groups_association = Table(
 
 
 class DocumentTypeCustomField(Base):
-    __tablename__ = "core_documenttypecustomfield"
+    __tablename__ = "document_type_custom_field"
     id: Mapped[int] = mapped_column(primary_key=True)
-    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("core_documenttype.id"))
+    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))
 
     custom_field_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_customfield.id"),
+        ForeignKey("custom_fields.id"),
     )
 
 
@@ -146,7 +146,7 @@ class Document(Node):
     document_type: Mapped["DocumentType"] = relationship(
         primaryjoin="DocumentType.id == Document.document_type_id",
     )
-    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("core_documenttype.id"))
+    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))
 
     __mapper_args__ = {
         "polymorphic_identity": "document",
@@ -248,33 +248,30 @@ class ContentType(Base):
 
 
 class CustomField(Base):
-    __tablename__ = "core_customfield"
+    __tablename__ = "custom_fields"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
-    data_type: Mapped[str]
+    type: Mapped[str]
     extra_data: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
 
 
 class CustomFieldValue(Base):
-    __tablename__ = "core_customfieldvalue"
+    __tablename__ = "custom_field_values"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     document_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_document.basetreenode_ptr_id")
     )
-    field_id: Mapped[UUID] = mapped_column(ForeignKey("core_customfield.id"))
+    field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
     value_text: Mapped[str]
-    value_bool: Mapped[bool]
-    value_url: Mapped[str]
+    value_boolean: Mapped[bool]
     value_date: Mapped[datetime]
     value_int: Mapped[int]
     value_float: Mapped[float]
     value_monetary: Mapped[str]
-    value_document_ids: Mapped[str]
-    value_select: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     def __repr__(self):
@@ -282,12 +279,12 @@ class CustomFieldValue(Base):
 
 
 class DocumentType(Base):
-    __tablename__ = "core_documenttype"
+    __tablename__ = "document_types"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
     custom_fields: Mapped[list["CustomField"]] = relationship(
-        secondary="core_documenttypecustomfield"
+        secondary="document_type_custom_field"
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

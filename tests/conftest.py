@@ -75,11 +75,11 @@ def index(tmp_path, request) -> IndexRW:
 
 @pytest.fixture
 def make_custom_field(db_session: Session, user: User):
-    def _make_custom_field(name: str, data_type: schemas.CustomFieldType):
+    def _make_custom_field(name: str, type: schemas.CustomFieldType):
         return db.create_custom_field(
             db_session,
             name=name,
-            data_type=data_type,
+            type=type,
             user_id=user.id,
         )
 
@@ -88,7 +88,7 @@ def make_custom_field(db_session: Session, user: User):
 
 @pytest.fixture
 def make_document_type(db_session: Session, user: User, make_custom_field):
-    cf = make_custom_field(name="some-random-cf", data_type=CustomFieldType.boolean)
+    cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
 
     def _make_document_type(name: str):
         return db.create_document_type(
@@ -103,9 +103,9 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
 
 @pytest.fixture
 def document_type_groceries(db_session: Session, user: User, make_custom_field):
-    cf1 = make_custom_field(name="Shop", data_type=CustomFieldType.string)
-    cf2 = make_custom_field(name="Total", data_type=CustomFieldType.monetary)
-    cf3 = make_custom_field(name="EffectiveDate", data_type=CustomFieldType.date)
+    cf1 = make_custom_field(name="Shop", type=CustomFieldType.string)
+    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
+    cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
 
     return db.create_document_type(
         db_session,
@@ -132,8 +132,8 @@ def make_document_receipt(db_session: Session, user: User, document_type_groceri
 def document_type_with_two_integer_cf(
     db_session: Session, user: User, make_custom_field
 ):
-    cf1 = make_custom_field(name="int-name1", data_type=CustomFieldType.int)
-    cf2 = make_custom_field(name="int-name2", data_type=CustomFieldType.int)
+    cf1 = make_custom_field(name="int-name1", type=CustomFieldType.int)
+    cf2 = make_custom_field(name="int-name2", type=CustomFieldType.int)
 
     return db.create_document_type(
         db_session,
@@ -147,7 +147,7 @@ def document_type_with_two_integer_cf(
 def document_type_with_one_date_cf(  # cf = custom field
     db_session: Session, user: User, make_custom_field
 ):
-    cf1 = make_custom_field(name="date-name1", data_type=CustomFieldType.date)
+    cf1 = make_custom_field(name="date-name1", type=CustomFieldType.date)
 
     return db.create_document_type(
         db_session,
@@ -161,7 +161,7 @@ def document_type_with_one_date_cf(  # cf = custom field
 def document_type_with_one_string_cf(  # cf = custom field
     db_session: Session, user: User, make_custom_field
 ):
-    cf1 = make_custom_field(name="string-name1", data_type=CustomFieldType.string)
+    cf1 = make_custom_field(name="string-name1", type=CustomFieldType.string)
 
     return db.create_document_type(
         db_session,

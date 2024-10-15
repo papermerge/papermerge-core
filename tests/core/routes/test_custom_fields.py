@@ -13,7 +13,7 @@ def test_create_custom_field(auth_api_client: AuthTestClient, db_session: Sessio
     assert count_before == 0
 
     response = auth_api_client.post(
-        "/custom-fields/", json={"name": "cf1", "data_type": "int"}
+        "/custom-fields/", json={"name": "cf1", "type": "int"}
     )
     assert response.status_code == 201, response.json()
 
@@ -32,7 +32,7 @@ def test_update_custom_field(
 
     response = auth_api_client.patch(
         f"/custom-fields/{custom_field_cf1.id}",
-        json={"name": "cf1_updated", "data_type": "int"},
+        json={"name": "cf1_updated", "type": "int"},
     )
     assert response.status_code == 200
     updated_cf = schemas.CustomField(**response.json())

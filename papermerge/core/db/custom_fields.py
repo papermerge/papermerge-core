@@ -21,14 +21,14 @@ def get_custom_fields(session: Session) -> list[schemas.CustomField]:
 def create_custom_field(
     session: Session,
     name: str,
-    data_type: schemas.CustomFieldType,
+    type: schemas.CustomFieldType,
     user_id: uuid.UUID,
     extra_data: str | None = None,
 ) -> schemas.CustomField:
     cfield = models.CustomField(
         id=uuid.uuid4(),
         name=name,
-        data_type=data_type,
+        type=type,
         extra_data=extra_data,
         user_id=user_id,
     )
@@ -65,8 +65,8 @@ def update_custom_field(
     if attrs.name:
         cfield.name = attrs.name
 
-    if attrs.data_type:
-        cfield.data_type = attrs.data_type
+    if attrs.type:
+        cfield.type = attrs.type
 
     if attrs.extra_data:
         cfield.extra_data = attrs.extra_data

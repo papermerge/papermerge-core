@@ -19,7 +19,7 @@ class CustomFieldType(str, Enum):
 class CustomField(BaseModel):
     id: UUID
     name: str
-    data_type: CustomFieldType
+    type: CustomFieldType
     extra_data: str | None
 
     # Config
@@ -28,7 +28,7 @@ class CustomField(BaseModel):
 
 class CreateCustomField(BaseModel):
     name: str
-    data_type: CustomFieldType
+    type: CustomFieldType
     extra_data: str | None = None
 
     # Config
@@ -37,7 +37,7 @@ class CreateCustomField(BaseModel):
 
 class UpdateCustomField(BaseModel):
     name: str | None = None
-    data_type: CustomFieldType | None = None
+    type: CustomFieldType | None = None
     extra_data: str | None = None
 
 

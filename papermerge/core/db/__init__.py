@@ -9,11 +9,9 @@ from .custom_fields import (
     update_custom_field,
 )
 from .doc import (
-    add_document_custom_field_values,
     get_doc,
     get_doc_cfv,
     get_docs_by_type,
-    get_document_custom_field_values,
     update_doc_cfv,
     update_doc_type,
 )
@@ -81,8 +79,6 @@ __all__ = [
     "delete_document_type",
     "update_document_type",
     "update_doc_cfv",
-    "add_document_custom_field_values",
-    "get_document_custom_field_values",
     "get_doc_cfv",
     "update_doc_type",
     "get_docs_by_type",

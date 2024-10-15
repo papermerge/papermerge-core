@@ -203,12 +203,13 @@ def update_doc_cfv(
     items = get_doc_cfv(session, document_id=document_id)
     insert_values = []
     update_values = []
+
     for item in items:
         if item.name not in custom_fields.keys():
             continue
 
         mapped_type = CUSTOM_FIELD_DATA_TYPE_MAP.get(item.type)
-        if item.custom_field_value_id is None:
+        if item.value is None:
             # prepare insert values
             v = dict(
                 id=uuid.uuid4(),

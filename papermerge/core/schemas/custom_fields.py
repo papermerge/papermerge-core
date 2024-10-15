@@ -1,9 +1,9 @@
-from datetime import date
 from enum import Enum
-from typing import TypeAlias
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
+
+from papermerge.core import types
 
 
 class CustomFieldType(str, Enum):
@@ -49,10 +49,6 @@ class CustomFieldValue(CustomField):
     field_id: UUID
 
 
-CFValueType: TypeAlias = str | int | date | bool | float | None
-CFNameType: TypeAlias = str
-
-
 class CFV(BaseModel):
     # custom field value
     # `core_documents.id`
@@ -62,7 +58,7 @@ class CFV(BaseModel):
     # `custom_fields.id`
     custom_field_id: UUID
     # `custom_fields.name`
-    name: CFNameType
+    name: types.CFNameType
     # `custom_fields.type`
     type: CustomFieldType
     # `custom_fields.extra_data`
@@ -70,7 +66,7 @@ class CFV(BaseModel):
     # `custom_field_values.id`
     custom_field_value_id: UUID | None = None
     # `custom_field_values.value_text` or `custom_field_values.value_int` or ...
-    value: CFValueType = None
+    value: types.CFValueType = None
 
 
 class DocumentCFV(BaseModel):
@@ -82,4 +78,4 @@ class DocumentCFV(BaseModel):
     # user_id: UUID
     document_type_id: UUID | None = None
     thumbnail_url: str | None = None
-    custom_fields: list[tuple[CFNameType, CFValueType]]
+    custom_fields: list[tuple[types.CFNameType, types.CFValueType]]

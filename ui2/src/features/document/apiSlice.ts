@@ -1,13 +1,13 @@
 import {RootState} from "@/app/types"
 import {ONE_DAY_IN_SECONDS} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import type {
-  AddCustomFieldValueType,
-  DocumentCFV,
-  DocumentCustomFieldValue,
-  UpdateCustomFieldValueType
+import type {AddCustomFieldValueType, DocumentCFV} from "@/types"
+import {
+  CFV,
+  DocumentType,
+  ExtractStrategyType,
+  TransferStrategyType
 } from "@/types"
-import {DocumentType, ExtractStrategyType, TransferStrategyType} from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 
 type ShortPageType = {
@@ -49,10 +49,12 @@ type ExtractPagesType = {
 
 type UpdateDocumentCustomFields = {
   documentID: string
-  body: {
-    document_type_id: string
-    custom_fields: Array<UpdateCustomFieldValueType>
-  }
+  documentTypeID: string
+  body: Array<{
+    custom_field_value_id?: string
+    key: string
+    value: string
+  }>
 }
 
 type AddDocumentCustomFields = {
@@ -182,11 +184,12 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, arg) => {
         return [
           {type: "DocumentCustomField", id: arg.documentID},
-          {type: "Document", id: arg.documentID}
+          {type: "Document", id: arg.documentID},
+          {type: "DocumentCFV", id: arg.documentTypeID}
         ]
       }
     }),
-    getDocumentCustomFields: builder.query<DocumentCustomFieldValue[], string>({
+    getDocumentCustomFields: builder.query<CFV[], string>({
       query: documentID => ({
         url: `/documents/${documentID}/custom-fields`
       }),

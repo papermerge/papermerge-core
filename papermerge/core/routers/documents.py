@@ -98,30 +98,27 @@ def add_document_custom_field_values(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_custom_field_values(
     document_id: uuid.UUID,
-    custom_fields_update: schemas.DocumentCustomFieldsUpdate,
+    custom_fields_update: list[schemas.DocumentCustomFieldsUpdate],
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: db.Session = Depends(db.get_session),
-) -> list[schemas.CustomFieldValue]:
+) -> list[schemas.CFV]:
     """
-    If `document_type_id` is empty - will set document's `document_type_id`
-    field to None (i.e. will mark document as of no particular type) and
-    return an empty list.
-
-    If `document_type_id` is NOT empty - will update document type to specified
-    `document_type_id` and set it custom field value(s). In this case
-    (of non emtpy `document_type`) will return a list of updated
-    cust field values.
-
+    Update document's custom fields
     Required scope: `{scope}`
     """
+    custom_fields = {}
+    for cf in custom_fields_update:
+        if cf.value is None and cf.custom_field_value_id is None:
+            continue
+        custom_fields[cf.key] = cf.value
+
     try:
-        updated_entries = db.update_document_custom_field_values(
+        updated_entries = db.update_doc_cfv(
             db_session,
-            id=document_id,
-            custom_fields_update=custom_fields_update,
-            user_id=user.id,
+            document_id=document_id,
+            custom_fields=custom_fields,
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")

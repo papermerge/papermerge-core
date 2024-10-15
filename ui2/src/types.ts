@@ -445,15 +445,15 @@ export interface UpdateCustomFieldValueType {
   value: string
 }
 
-export type DocumentCustomFieldValue = {
-  id: string
+export type CFV = {
+  custom_field_id: string
+  custom_field_value_id?: string
+  document_id: string
+  document_type_id: string
   name: string
-  data_type: string
+  type: string
   extra_data?: string
   value: string
-  /* optionally store ID of the custom field this
-  this value is associated with */
-  field_id?: string
 }
 
 export type DocumentCFV = {

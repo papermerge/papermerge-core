@@ -11,7 +11,7 @@ from papermerge.test.types import AuthTestClient
 def test_create_document_type(
     make_custom_field, auth_api_client: AuthTestClient, db_session: Session
 ):
-    cf1: schemas.CustomField = make_custom_field(name="shop", type="string")
+    cf1: schemas.CustomField = make_custom_field(name="shop", type="text")
     cf2: schemas.CustomField = make_custom_field(name="total", type="monetary")
 
     count_before = db_session.query(func.count(models.DocumentType.id)).scalar()
@@ -48,7 +48,7 @@ def test_update_document_type(
     make_document_type,
     make_custom_field,
 ):
-    cf1 = make_custom_field(name="cf1", type="string")
+    cf1 = make_custom_field(name="cf1", type="text")
     cf2 = make_custom_field(name="cf2", type="boolean")
     doc_type = make_document_type(name="Invoice")
 

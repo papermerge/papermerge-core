@@ -250,7 +250,7 @@ def get_docs_by_type(
             cfv.id AS cfv_id,
             CASE
                 WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-                WHEN(cf.cf_type = 'string') THEN cfv.value_text
+                WHEN(cf.cf_type = 'text') THEN cfv.value_text
                 WHEN(cf.cf_type = 'date') THEN cfv.value_date
                 WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
             END AS cf_value

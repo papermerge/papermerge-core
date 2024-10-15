@@ -7,8 +7,7 @@ from papermerge.core import types
 
 
 class CustomFieldType(str, Enum):
-    string = "string"
-    url = "url"
+    text = "text"
     date = "date"
     boolean = "boolean"
     int = "int"

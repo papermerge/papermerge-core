@@ -31,6 +31,6 @@ def custom_field_cf1(db_session: Session, user: User):
     return db.create_custom_field(
         db_session,
         name="cf1",
-        data_type=schemas.CustomFieldType.string,
+        type=schemas.CustomFieldType.string,
         user_id=user.id,
     )

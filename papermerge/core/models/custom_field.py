@@ -9,22 +9,8 @@ from .document import Document
 class CustomField(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
-    class FieldDataType(models.TextChoices):
-        TEXT = ("text", "Text")
-        INT = ("int", "Integer")
-        DATE = ("date", "Date")
-        BOOLEAN = ("boolean", "Boolean")
-        FLOAT = ("float", "Float")
-        MONETARY = ("monetary", "Monetary")
-
     name = models.CharField(max_length=128)
-
-    type = models.CharField(
-        "type",
-        max_length=50,
-        choices=FieldDataType.choices,
-        editable=False,
-    )
+    type = models.CharField(max_length=50)
 
     extra_data = models.JSONField(
         "extra data",
@@ -61,14 +47,6 @@ class CustomField(models.Model):
 class CustomFieldValue(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
-    TYPE_TO_DATA_STORE_NAME_MAP = {
-        CustomField.FieldDataType.TEXT: "value_text",
-        CustomField.FieldDataType.DATE: "value_date",
-        CustomField.FieldDataType.BOOLEAN: "value_boolean",
-        CustomField.FieldDataType.INT: "value_int",
-        CustomField.FieldDataType.FLOAT: "value_float",
-        CustomField.FieldDataType.MONETARY: "value_monetary",
-    }
     document = models.ForeignKey(
         Document,
         blank=False,

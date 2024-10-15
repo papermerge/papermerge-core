@@ -103,7 +103,7 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
 
 @pytest.fixture
 def document_type_groceries(db_session: Session, user: User, make_custom_field):
-    cf1 = make_custom_field(name="Shop", type=CustomFieldType.string)
+    cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
 
@@ -161,7 +161,7 @@ def document_type_with_one_date_cf(  # cf = custom field
 def document_type_with_one_string_cf(  # cf = custom field
     db_session: Session, user: User, make_custom_field
 ):
-    cf1 = make_custom_field(name="string-name1", type=CustomFieldType.string)
+    cf1 = make_custom_field(name="string-name1", type=CustomFieldType.text)
 
     return db.create_document_type(
         db_session,

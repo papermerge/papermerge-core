@@ -4,6 +4,7 @@ from typing import Annotated
 
 from celery.app import default_app as celery_app
 from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.conf import settings
@@ -16,6 +17,10 @@ router = APIRouter(
     prefix="/documents",
     tags=["documents"],
 )
+
+
+class DocumentTypeArg(BaseModel):
+    document_type_id: uuid.UUID | None = None
 
 
 @router.get("/type/{document_type_id}")
@@ -148,6 +153,31 @@ def get_document_custom_field_values(
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc
+
+
+@router.patch("/{document_id}/type")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
+def update_document_type(
+    document_id: uuid.UUID,
+    document_type: DocumentTypeArg,
+    user: Annotated[
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
+    db_session: db.Session = Depends(db.get_session),
+):
+    """
+    Updates document type
+
+    Required scope: `{scope}`
+    """
+    try:
+        db.update_doc_type(
+            db_session,
+            document_id=document_id,
+            document_type_id=document_type.document_type_id,
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Document not found")
 
 
 @router.post("/{document_id}/upload")

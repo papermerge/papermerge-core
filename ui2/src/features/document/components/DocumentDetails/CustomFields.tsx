@@ -15,7 +15,8 @@ import {
 } from "@/features/document-types/apiSlice"
 import {
   useGetDocumentCustomFieldsQuery,
-  useUpdateDocumentCustomFieldsMutation
+  useUpdateDocumentCustomFieldsMutation,
+  useUpdateDocumentTypeMutation
 } from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import type {CFV, PanelMode} from "@/types"
@@ -37,6 +38,7 @@ export default function CustomFields() {
   const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
+  const [updateDocumentType] = useUpdateDocumentTypeMutation()
 
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
@@ -124,7 +126,20 @@ export default function CustomFields() {
     />
   ))
 
-  const onDocumentTypeChange = (_: any, option: ComboboxItem) => {
+  const onDocumentTypeChange = async (_: any, option: ComboboxItem) => {
+    if (documentTypeID == null) {
+      // means document does not have a document type yet ->
+      // no CFV associated to lose
+      const data = {
+        document_id: docID!,
+        body: {
+          document_type_id: documentTypeID
+        }
+      }
+      await updateDocumentType(data)
+      setDocumentTypeID(option)
+      return
+    }
     setDocumentTypeID(option)
     if (option && option.value != doc?.document_type_id) {
       setShowSaveButton(true)

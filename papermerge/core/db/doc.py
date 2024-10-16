@@ -11,6 +11,7 @@ from papermerge.core import schemas
 from papermerge.core.constants import INCOMING_DATE_FORMAT
 from papermerge.core.db.models import (
     ColoredTag,
+    CustomField,
     CustomFieldValue,
     Document,
     DocumentVersion,
@@ -185,18 +186,28 @@ def update_doc_type(session: Session, document_id: UUID, document_type_id: UUID 
 def update_doc_cfv(
     session: Session,
     document_id: UUID,
-    custom_fields: dict,  # if of the document
+    custom_fields: dict,
 ) -> list[schemas.CFV]:
-    """ """
+    """
+    Update document's custom field values
+    """
     items = get_doc_cfv(session, document_id=document_id)
     insert_values = []
     update_values = []
+
+    stmt = (
+        select(CustomField.name)
+        .select_from(CustomFieldValue)
+        .join(CustomField)
+        .where(CustomFieldValue.document_id == document_id)
+    )
+    existing_cf_name = [row[0] for row in session.execute(stmt).all()]
 
     for item in items:
         if item.name not in custom_fields.keys():
             continue
 
-        if item.value is None:
+        if item.name not in existing_cf_name:
             # prepare insert values
             v = dict(
                 id=uuid.uuid4(),

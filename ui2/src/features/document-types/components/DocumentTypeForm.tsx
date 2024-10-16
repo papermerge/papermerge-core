@@ -59,7 +59,7 @@ function CustomFieldRow({cf}: {cf: CustomField}) {
   return (
     <Table.Tr>
       <Table.Td>{cf.name}</Table.Td>
-      <Table.Td>{cf.data_type}</Table.Td>
+      <Table.Td>{cf.type}</Table.Td>
     </Table.Tr>
   )
 }

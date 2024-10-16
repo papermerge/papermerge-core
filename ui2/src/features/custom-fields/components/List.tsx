@@ -90,7 +90,7 @@ export default function CustomFieldsList() {
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>
-            <Table.Th>Data Type</Table.Th>
+            <Table.Th>Type</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{customFieldRows}</Table.Tbody>

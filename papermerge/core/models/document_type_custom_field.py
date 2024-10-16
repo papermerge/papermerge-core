@@ -13,3 +13,6 @@ class DocumentTypeCustomField(models.Model):
     custom_field = models.ForeignKey(
         on_delete=models.CASCADE, related_name="document_types", to=CustomField
     )
+
+    class Meta:
+        db_table = "document_type_custom_field"

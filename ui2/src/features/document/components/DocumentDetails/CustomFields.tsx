@@ -59,7 +59,7 @@ export default function CustomFields() {
           custom_field_id: i.id,
           document_id: docID!,
           document_type_id: documentTypeID?.value!,
-          type: i.data_type,
+          type: i.type,
           name: i.name,
           value: ""
         }

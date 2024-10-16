@@ -11,7 +11,6 @@ from papermerge.core import schemas
 from papermerge.core.constants import INCOMING_DATE_FORMAT
 from papermerge.core.db.models import (
     ColoredTag,
-    CustomField,
     CustomFieldValue,
     Document,
     DocumentVersion,
@@ -20,17 +19,6 @@ from papermerge.core.db.models import (
 from papermerge.core.exceptions import InvalidDateFormat
 
 from .common import get_ancestors
-
-CUSTOM_FIELD_DATA_TYPE_MAP = {
-    "string": "text",
-    "boolean": "bool",
-    "url": "url",
-    "date": "date",
-    "int": "int",
-    "float": "float",
-    "monetary": "monetary",
-    "select": "select",
-}
 
 
 def str2date(value: str | None) -> Optional[datetime.date]:
@@ -131,26 +119,26 @@ def get_doc_cfv(session: Session, document_id: UUID) -> list[schemas.CFV]:
             cfv.id AS cfv_id,
             CASE
                 WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-                WHEN(cf.cf_type = 'string') THEN cfv.value_text
+                WHEN(cf.cf_type = 'text') THEN cfv.value_text
                 WHEN(cf.cf_type = 'date') THEN cfv.value_date
-                WHEN(cf.cf_type = 'boolean') THEN cfv.value_bool
+                WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
             END AS cf_value
         FROM core_document AS doc
-        JOIN core_documenttypecustomfield AS dtcf ON dtcf.document_type_id = doc.document_type_id
+        JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
         JOIN(
             SELECT
                 sub_cf1.id AS cf_id,
                 sub_cf1.name AS cf_name,
-                sub_cf1.data_type AS cf_type,
+                sub_cf1.type AS cf_type,
                 sub_cf1.extra_data AS cf_extra_data
             FROM core_document AS sub_doc1
-            JOIN core_documenttypecustomfield AS sub_dtcf1
+            JOIN document_type_custom_field AS sub_dtcf1
                 ON sub_dtcf1.document_type_id = sub_doc1.document_type_id
-            JOIN core_customfield AS sub_cf1
+            JOIN custom_fields AS sub_cf1
                 ON sub_cf1.id = sub_dtcf1.custom_field_id
             WHERE sub_doc1.basetreenode_ptr_id = :document_id
         ) AS cf ON cf.cf_id = dtcf.custom_field_id
-        LEFT OUTER JOIN core_customfieldvalue AS cfv
+        LEFT OUTER JOIN custom_field_values AS cfv
             ON cfv.field_id = cf.cf_id AND cfv.document_id = :document_id
     WHERE
         doc.basetreenode_ptr_id = :document_id
@@ -208,7 +196,6 @@ def update_doc_cfv(
         if item.name not in custom_fields.keys():
             continue
 
-        mapped_type = CUSTOM_FIELD_DATA_TYPE_MAP.get(item.type)
         if item.value is None:
             # prepare insert values
             v = dict(
@@ -216,18 +203,18 @@ def update_doc_cfv(
                 document_id=item.document_id,
                 field_id=item.custom_field_id,
             )
-            if item.type == "date":
-                v[f"value_{mapped_type}"] = str2date(custom_fields[item.name])
+            if item.type.value == "date":
+                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
             else:
-                v[f"value_{mapped_type}"] = custom_fields[item.name]
+                v[f"value_{item.type.value}"] = custom_fields[item.name]
             insert_values.append(v)
         else:
             # prepare update values
             v = dict(id=item.custom_field_value_id)
             if item.type == "date":
-                v[f"value_{mapped_type}"] = str2date(custom_fields[item.name])
+                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
             else:
-                v[f"value_{mapped_type}"] = custom_fields[item.name]
+                v[f"value_{item.type.value}"] = custom_fields[item.name]
             update_values.append(v)
 
     if len(insert_values) > 0:
@@ -239,140 +226,6 @@ def update_doc_cfv(
     session.commit()
 
     return items
-
-
-def add_document_custom_field_values(
-    session: Session,
-    id: UUID,  # id of the document
-    custom_fields_add: schemas.DocumentCustomFieldsAdd,
-    user_id: UUID,
-) -> list[schemas.CustomFieldValue]:
-    """
-    Adds new `CustomFieldValue` instances
-
-    Returns a list of newly added `CustomFieldValue`
-    """
-    # fetch doc
-    stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
-    db_doc = session.scalars(stmt_doc).one()
-    # set document type ID to the input value
-    db_doc.document_type_id = custom_fields_add.document_type_id
-    session.add(db_doc)
-
-    if custom_fields_add.document_type_id is None:
-        session.commit()
-        return []
-
-    # continue to update document fields
-    custom_field_ids = [cf.custom_field_id for cf in custom_fields_add.custom_fields]
-    stmt = select(CustomField).where(CustomField.id.in_(custom_field_ids))
-    results = session.execute(stmt).all()
-    added_items = []
-
-    custom_fields = [schemas.CustomField.model_validate(cf[0]) for cf in results]
-    for incoming_cf in custom_fields_add.custom_fields:
-        found = next(
-            (cf for cf in custom_fields if cf.id == incoming_cf.custom_field_id), None
-        )
-        if found:
-            _dic = {
-                "value_text": None,
-                "value_bool": None,
-                "value_url": None,
-                "value_date": None,
-                "value_int": None,
-                "value_float": None,
-                "value_monetary": None,
-                "value_select": None,
-            }
-            attr_name = CUSTOM_FIELD_DATA_TYPE_MAP.get(found.data_type.value, None)
-            value = ""
-            if attr_name:
-                if attr_name == "date":
-                    value = str2date(incoming_cf.value)
-                else:
-                    value = incoming_cf.value
-                _dic[f"value_{attr_name}"] = value
-
-            _id = uuid.uuid4()
-            cfv = CustomFieldValue(
-                id=uuid.uuid4(),
-                field_id=found.id,
-                document_id=id,
-                **_dic,
-            )
-            session.add(cfv)
-            validated_item = schemas.CustomFieldValue(
-                id=_id,
-                name=found.name,
-                data_type=found.data_type,
-                extra_data=found.extra_data,
-                value=str(value),
-                field_id=found.id,
-            )
-            added_items.append(validated_item)
-
-    session.commit()
-    return added_items
-
-
-def get_document_custom_field_values(
-    session: Session,
-    id: UUID,
-    user_id: UUID,
-) -> list[schemas.CustomFieldValue]:
-    result = []
-    custom_field_ids = []
-    stmt_doc = select(Document).where(Document.id == id)
-    db_doc = session.scalars(stmt_doc).one()
-    if db_doc.document_type:
-        custom_field_ids = [cf.id for cf in db_doc.document_type.custom_fields]
-
-    if len(custom_field_ids) == 0:
-        return result  # which at this point is []
-
-    stmt = (
-        select(CustomFieldValue)
-        .join(CustomField)
-        .where(
-            CustomFieldValue.document_id == id,
-            CustomField.id == CustomFieldValue.field_id,
-            CustomField.id.in_(custom_field_ids),
-        )
-    )
-    db_results = session.scalars(stmt).all()
-
-    for db_item in db_results:
-        if db_item.field.data_type == schemas.CustomFieldType.int:
-            value = db_item.value_int
-        elif db_item.field.data_type == schemas.CustomFieldType.string:
-            value = db_item.value_text
-        elif db_item.field.data_type == schemas.CustomFieldType.date:
-            value = db_item.value_date
-        elif db_item.field.data_type == schemas.CustomFieldType.boolean:
-            value = db_item.value_bool
-        elif db_item.field.data_type == schemas.CustomFieldType.float:
-            value = db_item.value_float
-        elif db_item.field.data_type == schemas.CustomFieldType.select:
-            value = db_item.value_select
-        elif db_item.field.data_type == schemas.CustomFieldType.url:
-            value = db_item.value_url
-        elif db_item.field.data_type == schemas.CustomFieldType.monetary:
-            value = db_item.value_monetary
-        else:
-            raise ValueError(f"Data type not supported: {db_item.field.data_type}")
-
-        cfv = schemas.CustomFieldValue(
-            id=db_item.id,
-            name=db_item.field.name,
-            data_type=db_item.field.data_type,
-            extra_data=db_item.field.extra_data,
-            value=str(value),
-            field_id=db_item.field_id,
-        )
-        result.append(cfv)
-
-    return result
 
 
 def get_docs_by_type(
@@ -397,28 +250,28 @@ def get_docs_by_type(
             cfv.id AS cfv_id,
             CASE
                 WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-                WHEN(cf.cf_type = 'string') THEN cfv.value_text
+                WHEN(cf.cf_type = 'text') THEN cfv.value_text
                 WHEN(cf.cf_type = 'date') THEN cfv.value_date
-                WHEN(cf.cf_type = 'boolean') THEN cfv.value_bool
+                WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
             END AS cf_value
         FROM core_document AS doc
         JOIN core_basetreenode AS node
           ON node.id == doc.basetreenode_ptr_id
-        JOIN core_documenttypecustomfield AS dtcf ON dtcf.document_type_id = doc.document_type_id
+        JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
         JOIN(
             SELECT
                 sub_cf1.id AS cf_id,
                 sub_cf1.name AS cf_name,
-                sub_cf1.data_type AS cf_type,
+                sub_cf1.type AS cf_type,
                 sub_cf1.extra_data AS cf_extra_data
-            FROM core_documenttype AS sub_dt1
-            JOIN core_documenttypecustomfield AS sub_dtcf1
+            FROM document_types AS sub_dt1
+            JOIN document_type_custom_field AS sub_dtcf1
                 ON sub_dtcf1.document_type_id = sub_dt1.id
-            JOIN core_customfield AS sub_cf1
+            JOIN custom_fields AS sub_cf1
                 ON sub_cf1.id = sub_dtcf1.custom_field_id
             WHERE sub_dt1.id = :document_type_id
         ) AS cf ON cf.cf_id = dtcf.custom_field_id
-        LEFT OUTER JOIN core_customfieldvalue AS cfv
+        LEFT OUTER JOIN custom_field_values AS cfv
             ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
         WHERE node.parent_id = :parent_id
             AND doc.document_type_id = :document_type_id

@@ -90,7 +90,7 @@ def create_custom_field(
         custom_field = db.create_custom_field(
             db_session,
             name=cfield.name,
-            data_type=cfield.data_type,
+            type=cfield.type,
             extra_data=cfield.extra_data,
             user_id=user.id,
         )

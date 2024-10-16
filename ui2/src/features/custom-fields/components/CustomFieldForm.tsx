@@ -26,8 +26,8 @@ export default function CustomFieldForm({customField}: Args) {
       />
       <NativeSelect
         mt="sm"
-        label="Data Type"
-        value={customField?.data_type || ""}
+        label="Type"
+        value={customField?.type || ""}
         data={CUSTOM_FIELD_DATA_TYPES}
         onChange={() => {}}
       />

@@ -36,7 +36,7 @@ export default function EditGroupModal({
     useEditCustomFieldMutation()
   const [name, setName] = useState<string>("")
   const [dataType, setDataType] = useState<CustomFieldDataType>(
-    data?.data_type || "string"
+    data?.type || "text"
   )
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function EditGroupModal({
     let updatedData = {
       id: customFieldId,
       name: name,
-      data_type: dataType,
+      type: dataType,
       extra_data: extra_data
     }
 
@@ -97,7 +97,7 @@ export default function EditGroupModal({
       />
       <NativeSelect
         mt="sm"
-        label="Data Type"
+        label="Type"
         value={dataType}
         data={CUSTOM_FIELD_DATA_TYPES}
         onChange={e =>

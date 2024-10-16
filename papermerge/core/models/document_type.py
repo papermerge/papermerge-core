@@ -19,6 +19,7 @@ class DocumentType(models.Model):
 
     class Meta:
         ordering = ("created_at",)
+        db_table = "document_types"
         constraints = [
             models.UniqueConstraint(
                 fields=["name"],

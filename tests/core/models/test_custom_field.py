@@ -10,12 +10,12 @@ def test_custom_filed_create(db_session: Session, user: User):
     cfield = db.create_custom_field(
         db_session,
         name="cf1",
-        data_type=schemas.CustomFieldType.string,
+        type=schemas.CustomFieldType.text,
         user_id=user.id,
     )
 
     assert cfield.name == "cf1"
-    assert cfield.data_type == schemas.CustomFieldType.string
+    assert cfield.type == schemas.CustomFieldType.text
 
     retrieved_cf1 = db.get_custom_field(db_session, cfield.id)
     assert retrieved_cf1.id == cfield.id
@@ -27,7 +27,7 @@ def test_custom_field_delete(db_session: Session, user: User):
     cfield = db.create_custom_field(
         db_session,
         name="cf1",
-        data_type=schemas.CustomFieldType.string,
+        type=schemas.CustomFieldType.text,
         user_id=user.id,
     )
 
@@ -41,7 +41,7 @@ def test_custom_field_update(db_session: Session, user: User):
     cfield = db.create_custom_field(
         db_session,
         name="cf1",
-        data_type=schemas.CustomFieldType.string,
+        type=schemas.CustomFieldType.text,
         user_id=user.id,
     )
 

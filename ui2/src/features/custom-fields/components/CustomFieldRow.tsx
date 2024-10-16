@@ -36,9 +36,7 @@ export default function CustomFieldRow({customField}: Args) {
         <Link to={`/custom-fields/${customField.id}`}>{customField.name}</Link>
       </Table.Td>
       <Table.Td>
-        <Link to={`/custom-fields/${customField.id}`}>
-          {customField.data_type}
-        </Link>
+        <Link to={`/custom-fields/${customField.id}`}>{customField.type}</Link>
       </Table.Td>
     </Table.Tr>
   )

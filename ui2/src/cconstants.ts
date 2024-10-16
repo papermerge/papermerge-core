@@ -53,15 +53,12 @@ export const ONE_DAY_IN_SECONDS = 86400
 export const DRAGGED = "dragged"
 
 export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
-  "string",
-  "url",
+  "text",
   "date",
   "boolean",
   "int",
   "float",
-  "monetary",
-  "documentlink",
-  "select"
+  "monetary"
 ]
 
 export const CURRENCIES = [

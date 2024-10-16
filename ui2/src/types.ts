@@ -208,19 +208,16 @@ export type GroupDetails = {
 export type GroupUpdate = Pick<Group, "id" | "name" | "scopes">
 
 export type CustomFieldDataType =
-  | "string"
-  | "url"
+  | "text"
   | "date"
   | "boolean"
   | "int"
   | "float"
   | "monetary"
-  | "documentlink"
-  | "select"
 
 export type NewCustomField = {
   name: string
-  data_type: CustomFieldDataType
+  type: CustomFieldDataType
   extra_data?: string
 }
 
@@ -230,7 +227,7 @@ export type CustomField = NewCustomField & {
 
 export type CustomFieldUpdate = Pick<
   CustomField,
-  "id" | "name" | "data_type" | "extra_data"
+  "id" | "name" | "type" | "extra_data"
 >
 
 export type NewDocType = {

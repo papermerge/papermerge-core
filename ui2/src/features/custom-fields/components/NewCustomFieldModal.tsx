@@ -29,7 +29,7 @@ export default function NewCustomFieldModal({
   const [addNewCustomField, {isLoading, isError, isSuccess}] =
     useAddNewCustomFieldMutation()
   const [name, setName] = useState<string>("")
-  const [dataType, setDataType] = useState<CustomFieldDataType>("string")
+  const [dataType, setDataType] = useState<CustomFieldDataType>("text")
   const [error, setError] = useState<string>("")
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function NewCustomFieldModal({
     const newCustomFieldData = {
       name,
       extra_data,
-      data_type: dataType
+      type: dataType
     }
     try {
       await addNewCustomField(newCustomFieldData).unwrap()
@@ -72,7 +72,7 @@ export default function NewCustomFieldModal({
 
   const reset = () => {
     setName("")
-    setDataType("string")
+    setDataType("text")
     setError("")
   }
 
@@ -89,7 +89,7 @@ export default function NewCustomFieldModal({
       />
       <NativeSelect
         mt="sm"
-        label="Data Type"
+        label="Type"
         value={dataType}
         data={CUSTOM_FIELD_DATA_TYPES}
         onChange={e =>

@@ -57,10 +57,6 @@ type UpdateDocumentCustomFields = {
   }>
 }
 
-type GetDocsByTypeArgs = {
-  document_type_id: string
-}
-
 type UpdateDocumentTypeArgs = {
   document_id?: string
   invalidatesTags: {

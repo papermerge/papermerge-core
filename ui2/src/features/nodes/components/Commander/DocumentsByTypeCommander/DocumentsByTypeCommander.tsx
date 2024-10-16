@@ -1,11 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
-import {useGetFolderQuery} from "@/features/nodes/apiSlice"
-import {
-  selectCommanderDocumentTypeID,
-  selectCurrentNodeID
-} from "@/features/ui/uiSlice"
+import {selectCommanderDocumentTypeID} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
 import {Box, Checkbox, Stack, Table} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -15,11 +11,9 @@ import DocumentRow from "./DocumentRow"
 
 export default function DocumentsByCategoryCommander() {
   const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
   )
-  const {data: currentFolder} = useGetFolderQuery(currentNodeID ?? skipToken)
   const {data: nodes} = useGetDocsByTypeQuery(
     currentDocumentTypeID ?? skipToken
   )

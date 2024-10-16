@@ -59,7 +59,6 @@ type UpdateDocumentCustomFields = {
 
 type GetDocsByTypeArgs = {
   document_type_id: string
-  ancestor_id: string
 }
 
 type UpdateDocumentTypeArgs = {
@@ -199,12 +198,12 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "DocumentCustomField", id: arg}
       ]
     }),
-    getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
-      query: args => ({
-        url: `/documents/type/${args.document_type_id}?ancestor_id=${args.ancestor_id}`
+    getDocsByType: builder.query<DocumentCFV[], string>({
+      query: document_type_id => ({
+        url: `/documents/type/${document_type_id}`
       }),
-      providesTags: (_result, _error, arg) => [
-        {type: "DocumentCFV", id: arg.document_type_id}
+      providesTags: (_result, _error, document_type_id) => [
+        {type: "DocumentCFV", id: document_type_id}
       ]
     })
   })

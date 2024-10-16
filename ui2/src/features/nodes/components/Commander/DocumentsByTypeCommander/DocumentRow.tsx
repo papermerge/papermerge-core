@@ -1,8 +1,7 @@
+import {useAppDispatch} from "@/app/hooks"
+import {currentNodeChanged} from "@/features/ui/uiSlice"
 import {Checkbox, Table} from "@mantine/core"
-import {useSelector} from "react-redux"
-import {Link} from "react-router-dom"
-
-import {selectSelectedIds} from "@/features/users/usersSlice"
+import {useNavigate} from "react-router-dom"
 
 import type {DocumentCFV} from "@/types"
 
@@ -11,20 +10,33 @@ type Args = {
 }
 
 export default function DocumentRow({doc}: Args) {
-  const selectedIds = useSelector(selectSelectedIds)
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+
   const customFieldsDataColumns = doc.custom_fields.map(cf => (
     <Table.Td key={cf[0]}>{cf[1]}</Table.Td>
   ))
 
-  const onChange = () => {}
+  const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    if (e.ctrlKey) {
+      dispatch(
+        currentNodeChanged({id: doc.id, ctype: "document", panel: "secondary"})
+      )
+    } else {
+      navigate(`/document/${doc.id}`)
+    }
+  }
 
   return (
     <Table.Tr>
       <Table.Td>
-        <Checkbox checked={selectedIds.includes(doc.id)} onChange={onChange} />
+        <Checkbox />
       </Table.Td>
       <Table.Td>
-        <Link to={`/document/${doc.id}`}>{doc.title}</Link>
+        <a href="#" onClick={onClick}>
+          {doc.title}
+        </a>
       </Table.Td>
       {customFieldsDataColumns}
     </Table.Tr>

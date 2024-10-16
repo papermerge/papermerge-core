@@ -253,6 +253,6 @@ class DocumentCustomFieldsUpdateValue(BaseModel):
 
 
 class DocumentCustomFieldsUpdate(BaseModel):
-    custom_field_value_id: UUID | None
+    custom_field_value_id: UUID | None = None
     key: CFNameType
     value: CFValueType

@@ -36,6 +36,8 @@ export default function CustomFieldDate({
       const DATE_FORMAT = "YYYY-MM-DD"
       const strValue = d.format(DATE_FORMAT)
       onChange({customField, value: strValue})
+    } else {
+      onChange({customField, value: ""})
     }
     setValue(value)
   }

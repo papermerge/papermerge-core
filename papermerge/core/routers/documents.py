@@ -67,38 +67,6 @@ def get_document_details(
     return doc
 
 
-@router.post("/{document_id}/custom-fields")
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def add_document_custom_field_values(
-    document_id: uuid.UUID,
-    custom_fields_add: schemas.DocumentCustomFieldsAdd,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
-    db_session: db.Session = Depends(db.get_session),
-) -> list[schemas.CustomFieldValue]:
-    """
-    Associates document type to specified `document_type_id` and set it custom field
-    value(s). This API will create a NEW custom field value
-
-    All custom fields must be part of `DocumentType` specified by `document_type_id`,
-    otherwise response will return error 400 - invalid request.
-
-    Required scope: `{scope}`
-    """
-    try:
-        added_entries = db.add_document_custom_field_values(
-            db_session,
-            id=document_id,
-            custom_fields_add=custom_fields_add,
-            user_id=user.id,
-        )
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document not found")
-
-    return added_entries
-
-
 @router.patch("/{document_id}/custom-fields")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_custom_field_values(

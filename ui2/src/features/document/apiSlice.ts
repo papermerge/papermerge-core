@@ -64,6 +64,9 @@ type GetDocsByTypeArgs = {
 
 type UpdateDocumentTypeArgs = {
   document_id?: string
+  invalidatesTags: {
+    documentTypeID?: string
+  }
   body: {
     document_type_id: string | null
   }
@@ -178,10 +181,14 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
     updateDocumentType: builder.mutation<void, UpdateDocumentTypeArgs>({
       query: data => ({
         url: `/documents/${data.document_id}/type`,
+        method: "PATCH",
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => {
-        return [{type: "Document", id: arg.document_id}]
+        return [
+          {type: "Document", id: arg.document_id},
+          {type: "DocumentCFV", id: arg.invalidatesTags.documentTypeID}
+        ]
       }
     }),
     getDocumentCustomFields: builder.query<CFV[], string>({

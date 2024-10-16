@@ -23,23 +23,24 @@ import type {CFV, PanelMode} from "@/types"
 import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
 
 export default function CustomFields() {
-  const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
-  const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
-    useGetDocumentTypesQuery()
   const mode: PanelMode = useContext(PanelContext)
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
+  const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
+  const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [documentTypeID, setDocumentTypeID] = useState<ComboboxItem | null>(
     null
   )
+
+  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
+
+  const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
+    useGetDocumentTypesQuery()
+  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
   const {currentData: documentType} = useGetDocumentTypeQuery(
     documentTypeID?.value ?? skipToken
   )
-  const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
   const [updateDocumentType] = useUpdateDocumentTypeMutation()
-
   const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
@@ -127,47 +128,33 @@ export default function CustomFields() {
   ))
 
   const onDocumentTypeChange = async (_: any, option: ComboboxItem) => {
-    if (documentTypeID == null) {
-      // means document does not have a document type yet ->
-      // no CFV associated to lose
-      const data = {
-        document_id: docID!,
-        body: {
-          document_type_id: documentTypeID
-        }
+    const documentTypeIDToInvalidate =
+      doc?.document_type_id || (option ? option.value : undefined)
+
+    const data = {
+      document_id: docID!,
+      invalidatesTags: {
+        documentTypeID: documentTypeIDToInvalidate
+      },
+      body: {
+        document_type_id: option ? option.value : null
       }
-      await updateDocumentType(data)
-      setDocumentTypeID(option)
-      return
     }
+    await updateDocumentType(data)
+
     setDocumentTypeID(option)
-    if (option && option.value != doc?.document_type_id) {
-      setShowSaveButton(true)
-    } else {
-      setShowSaveButton(false)
-    }
-    if (
-      documentTypeID &&
-      documentTypeID.value == doc?.document_type_id &&
-      isSuccessDocumentCustomFields &&
-      documentCustomFields &&
-      documentCustomFields.length > 0
-    ) {
-      const initialCustFieldValues = documentCustomFields.map(i => {
-        return {...i, value: i.value}
-      })
-      setCustomFieldValues(initialCustFieldValues)
-    }
+    setCustomFieldValues([])
+    setShowSaveButton(false)
   }
 
-  const onClear = () => {
+  const onClearDocumentType = () => {
     setDocumentTypeID(null)
     setShowSaveButton(true)
     setCustomFieldValues([])
   }
 
   const onSave = async () => {
-    if (documentCustomFields && documentCustomFields.length > 0) {
+    if (customFieldValues && customFieldValues.length > 0) {
       // document already has custom fields associated
       // we need to update existing custom field value
       const content = customFieldValues.map(i => {
@@ -203,7 +190,7 @@ export default function CustomFields() {
         value={documentTypeID ? documentTypeID.value : null}
         placeholder="Pick Value"
         onChange={onDocumentTypeChange}
-        onClear={onClear}
+        onClear={onClearDocumentType}
         clearable
       />
       {genericCustomFieldsComponents}

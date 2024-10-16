@@ -242,13 +242,10 @@ def update_doc_cfv(
 def get_docs_by_type(
     session: Session,
     type_id: UUID,
-    ancestor_id: UUID,
     user_id: UUID,
 ) -> list[schemas.DocumentCFV]:
     """
     Returns list of documents + doc CFv for all documents with of given type
-
-    All fetched documents are descendants of `ancestor_id` node.
     """
     stmt = """
         SELECT node.title,
@@ -284,12 +281,10 @@ def get_docs_by_type(
         ) AS cf ON cf.cf_id = dtcf.custom_field_id
         LEFT OUTER JOIN custom_field_values AS cfv
             ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
-        WHERE node.parent_id = :parent_id
-            AND doc.document_type_id = :document_type_id
+        WHERE doc.document_type_id = :document_type_id
     """
-    str_parent_id = str(ancestor_id).replace("-", "")
     str_type_id = str(type_id).replace("-", "")
-    params = {"parent_id": str_parent_id, "document_type_id": str_type_id}
+    params = {"document_type_id": str_type_id}
     results = []
     rows = session.execute(text(stmt), params)
     for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):

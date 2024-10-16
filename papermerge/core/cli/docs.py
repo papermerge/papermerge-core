@@ -20,11 +20,9 @@ def document_types():
 
 
 @app.command(name="list-by-type")
-def list_documents_by_type(type_id: uuid.UUID, parent_id: uuid.UUID):
+def list_documents_by_type(type_id: uuid.UUID):
     """List all documents by specific document type"""
-    docs = get_docs_by_type(
-        session, type_id=type_id, user_id=uuid.uuid4(), ancestor_id=parent_id
-    )
+    docs = get_docs_by_type(session, type_id=type_id, user_id=uuid.uuid4())
     print_docs(docs)
 
 

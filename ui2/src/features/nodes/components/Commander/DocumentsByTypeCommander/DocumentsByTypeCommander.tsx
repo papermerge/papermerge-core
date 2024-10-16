@@ -1,13 +1,8 @@
 import {useAppSelector} from "@/app/hooks"
-import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
-import {useGetFolderQuery} from "@/features/nodes/apiSlice"
-import {
-  selectCommanderDocumentTypeID,
-  selectCurrentNodeID
-} from "@/features/ui/uiSlice"
-import type {NType, PanelMode} from "@/types"
+import {selectCommanderDocumentTypeID} from "@/features/ui/uiSlice"
+import type {PanelMode} from "@/types"
 import {Box, Checkbox, Stack, Table} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {useContext} from "react"
@@ -16,29 +11,18 @@ import DocumentRow from "./DocumentRow"
 
 export default function DocumentsByCategoryCommander() {
   const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
   )
-  const {data: currentFolder} = useGetFolderQuery(currentNodeID ?? skipToken)
   const {data: nodes} = useGetDocsByTypeQuery(
-    currentNodeID && currentDocumentTypeID
-      ? {document_type_id: currentDocumentTypeID, ancestor_id: currentNodeID}
-      : skipToken
+    currentDocumentTypeID ?? skipToken
   )
-
-  const onClick = (_node: NType) => {}
 
   if (!nodes || (nodes && nodes.length == 0)) {
     return (
       <Box>
         <Stack>
           <ActionButtons />
-          <Breadcrumbs
-            breadcrumb={currentFolder?.breadcrumb}
-            onClick={onClick}
-            isFetching={false}
-          />
         </Stack>
         <Stack>Empty</Stack>
       </Box>
@@ -54,14 +38,9 @@ export default function DocumentsByCategoryCommander() {
     <Box>
       <Stack>
         <ActionButtons />
-        <Breadcrumbs
-          breadcrumb={currentFolder?.breadcrumb}
-          onClick={onClick}
-          isFetching={false}
-        />
       </Stack>
       <Stack>
-        <Table>
+        <Table mt={"lg"}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>

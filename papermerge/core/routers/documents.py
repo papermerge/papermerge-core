@@ -30,7 +30,6 @@ def get_documents_by_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
-    ancestor_id: uuid.UUID,
     db_session: db.Session = Depends(db.get_session),
 ) -> list[schemas.DocumentCFV]:
     """
@@ -39,9 +38,7 @@ def get_documents_by_type(
     Required scope: `{scope}`
     """
 
-    docs = db.get_docs_by_type(
-        db_session, type_id=document_type_id, ancestor_id=ancestor_id, user_id=user.id
-    )
+    docs = db.get_docs_by_type(db_session, type_id=document_type_id, user_id=user.id)
 
     return docs
 

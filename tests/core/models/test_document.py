@@ -497,11 +497,10 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
     doc_1: Document = make_document_receipt(title="receipt_1.pdf")
     make_document_receipt(title="receipt_2.pdf")
     user_id = doc_1.user.id
-    parent_id = doc_1.parent.id
     type_id = doc_1.document_type.id
 
     items: list[schemas.DocumentCFV] = db.get_docs_by_type(
-        db_session, type_id=type_id, user_id=user_id, ancestor_id=parent_id
+        db_session, type_id=type_id, user_id=user_id
     )
 
     assert len(items) == 2
@@ -527,7 +526,6 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     doc_1: Document = make_document_receipt(title="receipt_1.pdf")
     make_document_receipt(title="receipt_2.pdf")
     user_id = doc_1.user.id
-    parent_id = doc_1.parent.id
     type_id = doc_1.document_type.id
 
     # update all CFV of receipt_1.pdf to non-empty values
@@ -538,7 +536,7 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     )
 
     items: list[schemas.DocumentCFV] = db.get_docs_by_type(
-        db_session, type_id=type_id, user_id=user_id, ancestor_id=parent_id
+        db_session, type_id=type_id, user_id=user_id
     )
 
     assert len(items) == 2
@@ -580,7 +578,6 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
     doc_1: Document = make_document_receipt(title="receipt_1.pdf")
     make_document_receipt(title="receipt_2.pdf")
     user_id = doc_1.user.id
-    parent_id = doc_1.parent.id
     groceries_type_id = doc_1.document_type.id
 
     # to reproduce the bug bill document type should share at least one
@@ -600,10 +597,9 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
         db_session,
         type_id=billType.id,
         user_id=user_id,
-        ancestor_id=parent_id,
     )
     groceriesDocs: list[schemas.DocumentCFV] = db.get_docs_by_type(
-        db_session, type_id=groceries_type_id, user_id=user_id, ancestor_id=parent_id
+        db_session, type_id=groceries_type_id, user_id=user_id
     )
 
     # because there are no documents of type "Bill"

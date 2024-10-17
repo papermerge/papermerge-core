@@ -608,6 +608,142 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
     assert len(groceriesDocs) == 2
 
 
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receipt):
+    """
+    `db.get_docs_by_type` with order by parameter
+    """
+    doc_1: Document = make_document_receipt(title="receipt_1.pdf")
+    doc_2 = make_document_receipt(title="receipt_2.pdf")
+    doc_3 = make_document_receipt(title="receipt_3.pdf")
+
+    user_id = doc_1.user.id
+    type_id = doc_1.document_type.id
+
+    input_data = [
+        {
+            "document_id": doc_1.id,
+            "custom_fields": {
+                "Shop": "rewe",
+                "EffectiveDate": "2024-07-01",
+                "Total": "34",
+            },
+        },
+        {
+            "document_id": doc_2.id,
+            "custom_fields": {
+                "Shop": "rewe",
+                "EffectiveDate": "2024-10-15",
+                "Total": "15.63",
+            },
+        },
+        {
+            "document_id": doc_3.id,
+            "custom_fields": {
+                "Shop": "lidl",
+                "EffectiveDate": "2024-02-25",
+                "Total": "18.63",
+            },
+        },
+    ]
+    for data in input_data:
+        db.update_doc_cfv(
+            db_session,
+            document_id=data["document_id"],
+            custom_fields=data["custom_fields"],
+        )
+
+    # sort data by "EffectiveDate" in descending order
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session,
+        type_id=type_id,
+        user_id=user_id,
+        order_by="EffectiveDate",  # !!! EffectiveDate !!!
+        order="desc",  # !!! DESC !!!
+    )
+
+    assert len(items) == 3
+
+    results_eff_date_desc = []
+    for i in range(0, 3):
+        # !!! EffectiveDate !!!
+        cf = dict(items[i].custom_fields)
+        results_eff_date_desc.append(cf["EffectiveDate"])
+
+    # !!! EffectiveDate DESC !!!
+    assert results_eff_date_desc == [
+        Date(2024, 10, 15),
+        Date(2024, 7, 1),
+        Date(2024, 2, 25),
+    ]
+
+    # sort data by "EffectiveDate" in ASC order
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session,
+        type_id=type_id,
+        user_id=user_id,
+        order_by="EffectiveDate",  #  !!! EffectiveDate !!!
+        order="asc",  # !!! ASC !!!
+    )
+
+    results_eff_date_asc = []
+    for i in range(0, 3):
+        #  !!! EffectiveDate !!!
+        cf = dict(items[i].custom_fields)
+        results_eff_date_asc.append(cf["EffectiveDate"])
+
+    # !!! ASC !!!
+    assert results_eff_date_asc == [
+        Date(2024, 2, 25),
+        Date(2024, 7, 1),
+        Date(2024, 10, 15),
+    ]
+
+    # sort data by "Total" in DESC order
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session,
+        type_id=type_id,
+        user_id=user_id,
+        order_by="Total",  #  !!! Total !!!
+        order="desc",  # !!! desc !!!
+    )
+
+    results_total_desc = []
+    for i in range(0, 3):
+        #  !!! Total !!!
+        cf = dict(items[i].custom_fields)
+        results_total_desc.append(cf["Total"])
+
+    # !!! DESC !!!
+    assert results_total_desc == [
+        34,
+        18.63,
+        15.63,
+    ]
+
+    # sort data by "Total" in ASC order
+    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+        db_session,
+        type_id=type_id,
+        user_id=user_id,
+        order_by="Total",  #  !!! Total !!!
+        order="asc",  # !!! ASC !!!
+    )
+
+    results_total_asc = []
+    for i in range(0, 3):
+        #  !!! Total !!!
+        cf = dict(items[i].custom_fields)
+        results_total_asc.append(cf["Total"])
+
+    # !!! ASC !!!
+    assert results_total_asc == [
+        15.63,
+        18.63,
+        34,
+    ]
+
+
 def test_str2date():
     assert str2date("2024-10-30") == datetime(2024, 10, 30).date()
     assert str2date("2024-10-30 00:00:00") == datetime(2024, 10, 30).date()

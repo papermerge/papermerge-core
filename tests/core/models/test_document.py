@@ -745,6 +745,80 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     ]
 
 
+@pytest.mark.django_db(transaction=True)
+def test_document_type_cf_count_1(db_session: Session, user: User, make_custom_field):
+    cf1 = make_custom_field(
+        name="some-random-cf1", type=schemas.CustomFieldType.boolean
+    )
+    cf2 = make_custom_field(
+        name="some-random-cf2", type=schemas.CustomFieldType.boolean
+    )
+
+    dtype1 = db.create_document_type(
+        db_session,
+        name="document_type_1",
+        custom_field_ids=[cf1.id, cf2.id],
+        user_id=user.id,
+    )
+
+    assert db.document_type_cf_count(db_session, document_type_id=dtype1.id) == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_document_type_cf_count_without_cf(db_session: Session, user: User):
+    # document type does not have any custom field associated
+    dtype1 = db.create_document_type(
+        db_session,
+        name="document_type_1",
+        user_id=user.id,
+    )
+
+    actual_cf_count = db.document_type_cf_count(db_session, document_type_id=dtype1.id)
+    assert actual_cf_count == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_count_by_type(db_session, user: User):
+    """
+    1. Create document type which does not have any document associated
+    2. Expected result should be that number of the documents in this
+    type is 0
+    """
+    dtype1 = db.create_document_type(
+        db_session,
+        name="document_type_1",
+        user_id=user.id,
+    )
+    docs_count = db.get_docs_count_by_type(db_session, type_id=dtype1.id)
+    # there are no documents of type "document_type_1" yet
+    assert docs_count == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_get_docs_count_by_type_with_two_document(db_session, user: User):
+    """
+    Create document type which has two documents associated
+    and validate that `db.get_docs_count_by_type` returns 2
+    """
+    DOCS_COUNT = 2
+    dtype = db.create_document_type(
+        db_session,
+        name="document_type_1",
+        user_id=user.id,
+    )
+    for idx in range(0, DOCS_COUNT):
+        document_recipe.make(
+            user=user,
+            title=f"Document {idx}",
+            parent=user.home_folder,
+            document_type_id=dtype.id,
+        )
+
+    docs_count = db.get_docs_count_by_type(db_session, type_id=dtype.id)
+    # there are two documents in this category
+    assert docs_count == DOCS_COUNT
+
+
 def test_str2date():
     assert str2date("2024-10-30") == datetime(2024, 10, 30).date()
     assert str2date("2024-10-30 00:00:00") == datetime(2024, 10, 30).date()

@@ -26,14 +26,16 @@ Papermerge is perfect tool for long term storage of your documents.
 * Web UI with desktop like experience
 * OpenAPI compliant REST API
 * Works with PDF, JPEG, PNG and TIFF documents
-* OCR (Optical Character Recognition) of the documents (uses [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF))
+* OCR (Optical Character Recognition) of the documents
 * OCRed text overlay (you can download document with OCRed text overlay)
-* Full Text Search of the scanned documents (supports [Solr](https://solr.apache.org/) backend, uses [Xapian](https://getting-started-with-xapian.readthedocs.io/en/latest/) by default)
+* Full Text Search of the scanned documents
 * Document Versioning
 * Tags - assign colored tags to documents or folders
 * Documents and Folders - users can organize documents in folders
+* Document Types
+* Custom Fields (metadata) per document type
 * Multi-User
-* Page Management - delete, reorder, cut & paste pages (uses [PikePDF](https://github.com/pikepdf/pikepdf))
+* Page Management - delete, reorder, cut, move, extract pages
 
 ## Documentation
 

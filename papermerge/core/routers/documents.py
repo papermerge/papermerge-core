@@ -12,7 +12,7 @@ from papermerge.core import constants as const
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Document
-from papermerge.core.types import OrderEnum
+from papermerge.core.types import OrderEnum, PaginatedResponse
 
 OrderBy = Annotated[
     str | None,
@@ -22,6 +22,12 @@ OrderBy = Annotated[
     custom field name is case sensitive and may include spaces
 """
     ),
+]
+
+PageSize = Annotated[int, Query(ge=1, lt=100, description="Number of items per page")]
+PageNumber = Annotated[
+    int,
+    Query(ge=1, description="Page number. It is first, second etc. page?"),
 ]
 
 router = APIRouter(
@@ -41,25 +47,35 @@ def get_documents_by_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
+    page_size: PageSize = 5,
+    page_number: PageNumber = 1,
     db_session: db.Session = Depends(db.get_session),
     order_by: OrderBy = None,
     order: OrderEnum = OrderEnum.desc,
-) -> list[schemas.DocumentCFV]:
+) -> PaginatedResponse[schemas.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
 
     Required scope: `{scope}`
     """
 
-    docs = db.get_docs_by_type(
+    items = db.get_docs_by_type(
         db_session,
         type_id=document_type_id,
         user_id=user.id,
         order_by=order_by,
         order=order,
+        page_number=page_number,
+        page_size=page_size,
     )
+    total_count = db.get_docs_count_by_type(db_session, type_id=document_type_id)
 
-    return docs
+    return PaginatedResponse(
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=int(total_count / page_size) + 1,
+        items=items,
+    )
 
 
 @router.get("/{document_id}")

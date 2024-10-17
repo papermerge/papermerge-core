@@ -3,12 +3,17 @@
 <!-- towncrier release notes start -->
 
 
-## [3.3] - 2024-xx-yy
+## [3.3] - 2024-11-yy
 
 ### Changes
 
 - logging.yaml location changed from /core_app/logging.yaml to /etc/papermerge/logging.yaml
 
+### Adds
+
+- Document Type
+- Custom Fields per document type
+- List all documents along with custom fields (+ order by custom fields)
 
 ## [3.2] - 2024-04-07
 

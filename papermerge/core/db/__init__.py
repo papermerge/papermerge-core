@@ -12,6 +12,7 @@ from .doc import (
     get_doc,
     get_doc_cfv,
     get_docs_by_type,
+    get_docs_count_by_type,
     update_doc_cfv,
     update_doc_type,
 )
@@ -19,6 +20,7 @@ from .doc_ver import get_doc_ver, get_last_doc_ver
 from .document_types import (
     create_document_type,
     delete_document_type,
+    document_type_cf_count,
     get_document_type,
     get_document_types,
     update_document_type,
@@ -82,4 +84,6 @@ __all__ = [
     "get_doc_cfv",
     "update_doc_type",
     "get_docs_by_type",
+    "document_type_cf_count",
+    "get_docs_count_by_type",
 ]

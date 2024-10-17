@@ -1,14 +1,27 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
-import {selectCommanderDocumentTypeID} from "@/features/ui/uiSlice"
+import {
+  commanderLastPageSizeUpdated,
+  selectCommanderDocumentTypeID,
+  selectLastPageSize
+} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
-import {Box, Checkbox, Stack, Table} from "@mantine/core"
+import {
+  Box,
+  Center,
+  Checkbox,
+  Group,
+  Stack,
+  Table,
+  Text,
+  UnstyledButton,
+  rem
+} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
-import {useContext, useState} from "react"
-
-import {Center, Group, Text, UnstyledButton, rem} from "@mantine/core"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
+import {useContext, useState} from "react"
 import classes from "./TableSort.module.css"
 
 import ActionButtons from "./ActionButtons"
@@ -18,14 +31,20 @@ export default function DocumentsByCategoryCommander() {
   const [orderBy, setOrderBy] = useState<string | null>(null)
   const [reverseOrderDirection, setReverseOrderDirection] = useState(false)
   const mode: PanelMode = useContext(PanelContext)
+  const dispatch = useAppDispatch()
+  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
+  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  const [page, setPage] = useState<number>(1)
 
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
   )
-  const {data: nodes} = useGetDocsByTypeQuery(
+  const {data} = useGetDocsByTypeQuery(
     currentDocumentTypeID
       ? {
           document_type_id: currentDocumentTypeID,
+          page_number: page,
+          page_size: pageSize,
           order_by: orderBy,
           order: reverseOrderDirection ? "asc" : "desc"
         }
@@ -38,7 +57,22 @@ export default function DocumentsByCategoryCommander() {
     setOrderBy(field)
   }
 
-  if (!nodes || (nodes && nodes.length == 0)) {
+  const onPageNumberChange = (page: number) => {
+    setPage(page)
+  }
+
+  const onPageSizeChange = (value: string | null) => {
+    if (value) {
+      const pSize = parseInt(value)
+      setPageSize(pSize)
+      // reset current page
+      setPage(1)
+      // remember last page size
+      dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
+    }
+  }
+
+  if (!data || (data && data.items.length == 0)) {
     return (
       <Box>
         <Stack>
@@ -49,8 +83,8 @@ export default function DocumentsByCategoryCommander() {
     )
   }
 
-  const rows = nodes.map(n => <DocumentRow key={n.id} doc={n} />)
-  const customFieldsHeaderColumns = nodes[0].custom_fields.map(cf => (
+  const rows = data.items.map(n => <DocumentRow key={n.id} doc={n} />)
+  const customFieldsHeaderColumns = data.items[0].custom_fields.map(cf => (
     <Th
       sorted={orderBy === cf[0]}
       reversed={reverseOrderDirection}
@@ -79,6 +113,16 @@ export default function DocumentsByCategoryCommander() {
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
+        <Pagination
+          pagination={{
+            pageNumber: page,
+            pageSize: pageSize,
+            numPages: data.num_pages
+          }}
+          onPageNumberChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          lastPageSize={lastPageSize}
+        />
       </Stack>
     </Box>
   )

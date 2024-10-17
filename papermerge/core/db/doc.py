@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import delete, insert, select, text, update
+from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
@@ -21,6 +21,7 @@ from papermerge.core.exceptions import InvalidDateFormat
 from papermerge.core.types import OrderEnum
 
 from .common import get_ancestors
+from .document_types import document_type_cf_count
 
 
 def str2date(value: str | None) -> Optional[datetime.date]:
@@ -240,6 +241,17 @@ def update_doc_cfv(
     return items
 
 
+def get_docs_count_by_type(session: Session, type_id: UUID):
+    """Returns number of documents of specific document type"""
+    stmt = (
+        select(func.count())
+        .select_from(Document)
+        .where(Document.document_type_id == type_id)
+    )
+
+    return session.scalars(stmt).one()
+
+
 STMT_WITH_ORDER_BY = """
 SELECT node.title,
     doc.basetreenode_ptr_id AS doc_id,
@@ -331,6 +343,8 @@ STMT = """
     WHERE doc.document_type_id = :document_type_id
 """
 
+PAGINATION = " LIMIT {limit} OFFSET {offset} "
+
 
 def get_docs_by_type(
     session: Session,
@@ -338,19 +352,32 @@ def get_docs_by_type(
     user_id: UUID,
     order_by: str | None = None,
     order: OrderEnum = OrderEnum.desc,
+    page_number: int = 1,
+    page_size: int = 5,
 ) -> list[schemas.DocumentCFV]:
     """
     Returns list of documents + doc CFv for all documents with of given type
     """
+    if page_number < 1:
+        raise ValueError(f"page_number must be >= 1; got value={page_number}")
+
+    if page_size < 1:
+        raise ValueError(f"page_size must be >= 1; got value={page_size}")
+
     str_type_id = str(type_id).replace("-", "")
     results = []
+    cf_count = document_type_cf_count(session, document_type_id=type_id)
 
     if order_by is None:
-        stmt = STMT
+        stmt = STMT + PAGINATION.format(
+            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        )
         params = {"document_type_id": str_type_id}
         rows = session.execute(text(stmt), params)
     else:
-        stmt = STMT_WITH_ORDER_BY.format(order=order.value)
+        stmt = STMT_WITH_ORDER_BY.format(order=order.value) + PAGINATION.format(
+            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        )
         params = {"document_type_id": str_type_id, "custom_field_name": order_by}
         rows = session.execute(text(stmt), params)
 

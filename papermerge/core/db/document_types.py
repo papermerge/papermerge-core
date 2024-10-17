@@ -18,13 +18,25 @@ def get_document_types(session: Session) -> list[schemas.DocumentType]:
     return result
 
 
+def document_type_cf_count(session: Session, document_type_id: uuid.UUID):
+    """count number of custom fields associated to document type"""
+    stmt = select(models.DocumentType).where(models.DocumentType.id == document_type_id)
+    dtype = session.scalars(stmt).one()
+    return len(dtype.custom_fields)
+
+
 def create_document_type(
     session: Session,
     name: str,
-    custom_field_ids: list[uuid.UUID],
     user_id: uuid.UUID,
+    custom_field_ids: list[uuid.UUID] | None = None,
 ) -> schemas.DocumentType:
-    stmt = select(models.CustomField).where(models.CustomField.id.in_(custom_field_ids))
+    if custom_field_ids is None:
+        cf_ids = []
+    else:
+        cf_ids = custom_field_ids
+
+    stmt = select(models.CustomField).where(models.CustomField.id.in_(cf_ids))
     custom_fields = session.execute(stmt).scalars().all()
     dtype = models.DocumentType(
         id=uuid.uuid4(),

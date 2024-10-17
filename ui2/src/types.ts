@@ -145,6 +145,7 @@ export type FolderType = NodeType & {
 export type NodeSortFieldEnum = "title" | "ctype" | "created_at" | "updated_at"
 
 export type NodeSortOrderEnum = "asc" | "desc"
+export type OrderType = "asc" | "desc"
 
 export type Pagination = {
   page_number: number

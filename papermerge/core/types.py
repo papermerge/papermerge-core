@@ -36,3 +36,8 @@ class TokenData(BaseModel):
 
 CFValueType: TypeAlias = str | int | date | bool | float | None
 CFNameType: TypeAlias = str
+
+
+class OrderEnum(str, Enum):
+    asc = "asc"
+    desc = "desc"

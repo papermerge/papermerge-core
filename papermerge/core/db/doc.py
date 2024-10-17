@@ -18,6 +18,7 @@ from papermerge.core.db.models import (
     Page,
 )
 from papermerge.core.exceptions import InvalidDateFormat
+from papermerge.core.types import OrderEnum
 
 from .common import get_ancestors
 
@@ -336,7 +337,7 @@ def get_docs_by_type(
     type_id: UUID,
     user_id: UUID,
     order_by: str | None = None,
-    order: str = "desc",
+    order: OrderEnum = OrderEnum.desc,
 ) -> list[schemas.DocumentCFV]:
     """
     Returns list of documents + doc CFv for all documents with of given type
@@ -349,7 +350,7 @@ def get_docs_by_type(
         params = {"document_type_id": str_type_id}
         rows = session.execute(text(stmt), params)
     else:
-        stmt = STMT_WITH_ORDER_BY.format(order=order)
+        stmt = STMT_WITH_ORDER_BY.format(order=order.value)
         params = {"document_type_id": str_type_id, "custom_field_name": order_by}
         rows = session.execute(text(stmt), params)
 

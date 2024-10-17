@@ -12,6 +12,7 @@ from papermerge.core import constants as const
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Document
+from papermerge.core.types import OrderEnum
 
 router = APIRouter(
     prefix="/documents",
@@ -32,7 +33,7 @@ def get_documents_by_type(
     ],
     db_session: db.Session = Depends(db.get_session),
     order_by: str | None = None,
-    order: str = "desc",
+    order: OrderEnum = OrderEnum.desc,
 ) -> list[schemas.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values

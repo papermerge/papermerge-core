@@ -17,6 +17,7 @@ from papermerge.core.db.doc import str2date
 from papermerge.core.db.models import CustomField, CustomFieldValue
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
+from papermerge.core.types import OrderEnum
 from papermerge.test import TestCase
 from papermerge.test.baker_recipes import document_recipe, folder_recipe, user_recipe
 from papermerge.test.utils import breadcrumb_fmt
@@ -659,7 +660,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
         type_id=type_id,
         user_id=user_id,
         order_by="EffectiveDate",  # !!! EffectiveDate !!!
-        order="desc",  # !!! DESC !!!
+        order=OrderEnum.desc,  # !!! DESC !!!
     )
 
     assert len(items) == 3
@@ -683,7 +684,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
         type_id=type_id,
         user_id=user_id,
         order_by="EffectiveDate",  #  !!! EffectiveDate !!!
-        order="asc",  # !!! ASC !!!
+        order=OrderEnum.asc,  # !!! ASC !!!
     )
 
     results_eff_date_asc = []
@@ -705,7 +706,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
         type_id=type_id,
         user_id=user_id,
         order_by="Total",  #  !!! Total !!!
-        order="desc",  # !!! desc !!!
+        order=OrderEnum.desc,  # !!! desc !!!
     )
 
     results_total_desc = []
@@ -727,7 +728,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
         type_id=type_id,
         user_id=user_id,
         order_by="Total",  #  !!! Total !!!
-        order="asc",  # !!! ASC !!!
+        order=OrderEnum.asc,  # !!! ASC !!!
     )
 
     results_total_asc = []

@@ -331,6 +331,8 @@ STMT = """
     WHERE doc.document_type_id = :document_type_id
 """
 
+PAGINATION = " LIMIT {limit} OFFSET {offset} "
+
 
 def get_docs_by_type(
     session: Session,
@@ -338,19 +340,26 @@ def get_docs_by_type(
     user_id: UUID,
     order_by: str | None = None,
     order: OrderEnum = OrderEnum.desc,
+    page_number: int = 1,
+    page_size: int = 5,
 ) -> list[schemas.DocumentCFV]:
     """
     Returns list of documents + doc CFv for all documents with of given type
     """
     str_type_id = str(type_id).replace("-", "")
     results = []
+    cf_count = 3
 
     if order_by is None:
-        stmt = STMT
+        stmt = STMT + PAGINATION.format(
+            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        )
         params = {"document_type_id": str_type_id}
         rows = session.execute(text(stmt), params)
     else:
-        stmt = STMT_WITH_ORDER_BY.format(order=order.value)
+        stmt = STMT_WITH_ORDER_BY.format(order=order.value) + PAGINATION.format(
+            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        )
         params = {"document_type_id": str_type_id, "custom_field_name": order_by}
         rows = session.execute(text(stmt), params)
 

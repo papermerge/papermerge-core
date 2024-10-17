@@ -43,6 +43,8 @@ export default function DocumentsByCategoryCommander() {
     currentDocumentTypeID
       ? {
           document_type_id: currentDocumentTypeID,
+          page_number: page,
+          page_size: pageSize,
           order_by: orderBy,
           order: reverseOrderDirection ? "asc" : "desc"
         }

@@ -24,6 +24,12 @@ OrderBy = Annotated[
     ),
 ]
 
+PageSize = Annotated[int, Query(ge=1, lt=100, description="Number of items per page")]
+PageNumber = Annotated[
+    int,
+    Query(ge=1, description="Page number. It is first, second etc. page?"),
+]
+
 router = APIRouter(
     prefix="/documents",
     tags=["documents"],
@@ -41,6 +47,8 @@ def get_documents_by_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
+    page_size: PageSize = 5,
+    page_number: PageNumber = 1,
     db_session: db.Session = Depends(db.get_session),
     order_by: OrderBy = None,
     order: OrderEnum = OrderEnum.desc,
@@ -57,6 +65,8 @@ def get_documents_by_type(
         user_id=user.id,
         order_by=order_by,
         order=order,
+        page_number=page_number,
+        page_size=page_size,
     )
 
     return docs

@@ -6,6 +6,7 @@ import {
   CFV,
   DocumentType,
   ExtractStrategyType,
+  OrderType,
   TransferStrategyType
 } from "@/types"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
@@ -65,6 +66,12 @@ type UpdateDocumentTypeArgs = {
   body: {
     document_type_id: string | null
   }
+}
+
+interface GetDocsByTypeArgs {
+  document_type_id: string
+  order_by?: string | null
+  order?: OrderType
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -194,12 +201,26 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "DocumentCustomField", id: arg}
       ]
     }),
-    getDocsByType: builder.query<DocumentCFV[], string>({
-      query: document_type_id => ({
-        url: `/documents/type/${document_type_id}`
-      }),
-      providesTags: (_result, _error, document_type_id) => [
-        {type: "DocumentCFV", id: document_type_id}
+    getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
+      query: args => {
+        // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+        if (args.order_by) {
+          const params = new URLSearchParams({
+            order_by: args.order_by,
+            order: `${args.order ? args.order : "asc"}`
+          })
+
+          return {
+            url: `/documents/type/${args.document_type_id}?${params.toString()}`
+          }
+        }
+        // no params
+        return {
+          url: `/documents/type/${args.document_type_id}`
+        }
+      },
+      providesTags: (_result, _error, args) => [
+        {type: "DocumentCFV", id: args.document_type_id}
       ]
     })
   })

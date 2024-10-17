@@ -1,5 +1,8 @@
 import {RootState} from "@/app/types"
-import {ONE_DAY_IN_SECONDS} from "@/cconstants"
+import {
+  ONE_DAY_IN_SECONDS,
+  PAGINATION_DEFAULT_ITEMS_PER_PAGES
+} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
 import type {DocumentCFV} from "@/types"
 import {
@@ -58,7 +61,7 @@ type UpdateDocumentCustomFields = {
   }>
 }
 
-type UpdateDocumentTypeArgs = {
+interface UpdateDocumentTypeArgs {
   document_id?: string
   invalidatesTags: {
     documentTypeID?: string
@@ -70,6 +73,8 @@ type UpdateDocumentTypeArgs = {
 
 interface GetDocsByTypeArgs {
   document_type_id: string
+  page_number: number
+  page_size: number
   order_by?: string | null
   order?: OrderType
 }
@@ -202,21 +207,33 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       ]
     }),
     getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
-      query: args => {
+      query: ({
+        document_type_id,
+        page_number = 1,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+        order_by,
+        order
+      }: GetDocsByTypeArgs) => {
         // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-        if (args.order_by) {
+        if (order_by) {
           const params = new URLSearchParams({
-            order_by: args.order_by,
-            order: `${args.order ? args.order : "asc"}`
+            order_by: order_by,
+            order: `${order ? order : "asc"}`,
+            page_number: String(page_number),
+            page_size: String(page_size)
           })
 
           return {
-            url: `/documents/type/${args.document_type_id}?${params.toString()}`
+            url: `/documents/type/${document_type_id}?${params.toString()}`
           }
         }
-        // no params
+        const params = new URLSearchParams({
+          page_number: String(page_number),
+          page_size: String(page_size)
+        })
+
         return {
-          url: `/documents/type/${args.document_type_id}`
+          url: `/documents/type/${document_type_id}?${params.toString()}`
         }
       },
       providesTags: (_result, _error, args) => [

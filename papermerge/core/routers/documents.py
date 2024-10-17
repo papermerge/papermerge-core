@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated
 
 from celery.app import default_app as celery_app
-from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, Security, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound
 
@@ -13,6 +13,16 @@ from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.models import Document
 from papermerge.core.types import OrderEnum
+
+OrderBy = Annotated[
+    str | None,
+    Query(
+        description="""
+    Name of custom field e.g. 'Total EUR' (without quotes). Note that
+    custom field name is case sensitive and may include spaces
+"""
+    ),
+]
 
 router = APIRouter(
     prefix="/documents",
@@ -32,7 +42,7 @@ def get_documents_by_type(
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     db_session: db.Session = Depends(db.get_session),
-    order_by: str | None = None,
+    order_by: OrderBy = None,
     order: OrderEnum = OrderEnum.desc,
 ) -> list[schemas.DocumentCFV]:
     """

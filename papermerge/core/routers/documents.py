@@ -31,6 +31,8 @@ def get_documents_by_type(
         schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     db_session: db.Session = Depends(db.get_session),
+    order_by: str | None = None,
+    order: str = "desc",
 ) -> list[schemas.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
@@ -38,7 +40,13 @@ def get_documents_by_type(
     Required scope: `{scope}`
     """
 
-    docs = db.get_docs_by_type(db_session, type_id=document_type_id, user_id=user.id)
+    docs = db.get_docs_by_type(
+        db_session,
+        type_id=document_type_id,
+        user_id=user.id,
+        order_by=order_by,
+        order=order,
+    )
 
     return docs
 

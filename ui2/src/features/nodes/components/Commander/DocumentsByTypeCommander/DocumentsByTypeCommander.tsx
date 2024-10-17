@@ -39,7 +39,7 @@ export default function DocumentsByCategoryCommander() {
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
   )
-  const {data: nodes} = useGetDocsByTypeQuery(
+  const {data} = useGetDocsByTypeQuery(
     currentDocumentTypeID
       ? {
           document_type_id: currentDocumentTypeID,
@@ -72,7 +72,7 @@ export default function DocumentsByCategoryCommander() {
     }
   }
 
-  if (!nodes || (nodes && nodes.length == 0)) {
+  if (!data || (data && data.items.length == 0)) {
     return (
       <Box>
         <Stack>
@@ -83,8 +83,8 @@ export default function DocumentsByCategoryCommander() {
     )
   }
 
-  const rows = nodes.map(n => <DocumentRow key={n.id} doc={n} />)
-  const customFieldsHeaderColumns = nodes[0].custom_fields.map(cf => (
+  const rows = data.items.map(n => <DocumentRow key={n.id} doc={n} />)
+  const customFieldsHeaderColumns = data.items[0].custom_fields.map(cf => (
     <Th
       sorted={orderBy === cf[0]}
       reversed={reverseOrderDirection}
@@ -117,7 +117,7 @@ export default function DocumentsByCategoryCommander() {
           pagination={{
             pageNumber: page,
             pageSize: pageSize,
-            numPages: 3
+            numPages: data.num_pages
           }}
           onPageNumberChange={onPageNumberChange}
           onPageSizeChange={onPageSizeChange}

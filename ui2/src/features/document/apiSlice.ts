@@ -4,7 +4,7 @@ import {
   PAGINATION_DEFAULT_ITEMS_PER_PAGES
 } from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import type {DocumentCFV} from "@/types"
+import type {DocumentCFV, Paginated} from "@/types"
 import {
   CFV,
   DocumentType,
@@ -206,7 +206,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "DocumentCustomField", id: arg}
       ]
     }),
-    getDocsByType: builder.query<DocumentCFV[], GetDocsByTypeArgs>({
+    getDocsByType: builder.query<Paginated<DocumentCFV>, GetDocsByTypeArgs>({
       query: ({
         document_type_id,
         page_number = 1,

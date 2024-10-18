@@ -6,12 +6,7 @@ from uuid import UUID
 from sqlalchemy import Column, ForeignKey, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from papermerge.core.features.document_types.db import DocumentType
-
 from .base import Base
-
-__all__ = ["DocumentType"]
-
 
 user_permissions_association = Table(
     "core_user_user_permissions",
@@ -148,7 +143,7 @@ class Document(Node):
 
     ocr: Mapped[bool]
     ocr_status: Mapped[str]
-    document_type: Mapped["DocumentType"] = relationship(
+    document_type: Mapped["DocumentType"] = relationship(  # noqa: F821
         primaryjoin="DocumentType.id == Document.document_type_id",
     )
     document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))

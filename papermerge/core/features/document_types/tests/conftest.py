@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from papermerge.core import db, schemas
+from papermerge.core import schemas
 from papermerge.core.auth.scopes import SCOPES
+from papermerge.core.db import create_custom_field
 from papermerge.core.db.engine import engine
+from papermerge.core.features.document_types import db
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.schemas import CustomFieldType
@@ -37,7 +39,7 @@ def auth_api_client(user: User):
 @pytest.fixture
 def make_custom_field(db_session: Session, user: User):
     def _make_custom_field(name: str, type: schemas.CustomFieldType):
-        return db.create_custom_field(
+        return create_custom_field(
             db_session,
             name=name,
             type=type,

@@ -1,14 +1,6 @@
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from papermerge.core.features.document_types.db import (
-    create_document_type,
-    delete_document_type,
-    document_type_cf_count,
-    get_document_types,
-    update_document_type,
-)
-
 from .custom_fields import (
     create_custom_field,
     delete_custom_field,
@@ -80,9 +72,4 @@ __all__ = [
     "update_doc_type",
     "get_docs_by_type",
     "get_docs_count_by_type",
-    "document_type_cf_count",
-    "create_document_type",
-    "get_document_types",
-    "delete_document_type",
-    "update_document_type",
 ]

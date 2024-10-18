@@ -9,10 +9,7 @@ import {
 } from "@/features/document/components/customFields"
 import {skipToken} from "@reduxjs/toolkit/query"
 
-import {
-  useGetDocumentTypeQuery,
-  useGetDocumentTypesQuery
-} from "@/features/document-types/apiSlice"
+import {useGetDocumentTypesQuery} from "@/features/document-types/apiSlice"
 import {
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation,
@@ -35,9 +32,6 @@ export default function CustomFields() {
   const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
     useGetDocumentTypesQuery()
   const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
-  const {currentData: documentType} = useGetDocumentTypeQuery(
-    documentTypeID?.value ?? skipToken
-  )
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
   const [updateDocumentType] = useUpdateDocumentTypeMutation()

@@ -1,5 +1,5 @@
 import {NumberInput} from "@mantine/core"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {CustomFieldArgs} from "./types"
 
 type MonetaryExtraDataType = {
@@ -31,6 +31,11 @@ export default function CustomFieldMonetary({
     setValue(v)
     onChange({customField, value: v.toString()})
   }
+  console.log(`Monetary state=${value} CFV=${customField.value}`)
+
+  useEffect(() => {
+    setValue(customField.value)
+  }, [customField.value])
 
   return (
     <NumberInput

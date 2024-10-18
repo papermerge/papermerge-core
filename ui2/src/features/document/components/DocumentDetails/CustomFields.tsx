@@ -45,32 +45,15 @@ export default function CustomFields() {
     useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
   useEffect(() => {
-    if (
-      documentTypeID &&
-      documentTypeID.value == doc?.document_type_id &&
-      isSuccessDocumentCustomFields &&
-      documentCustomFields &&
-      documentCustomFields.length > 0
-    ) {
+    if (documentCustomFields && documentCustomFields.length > 0) {
       const initialCustFieldValues = documentCustomFields.map(i => {
         return {...i, value: i.value}
       })
-      setCustomFieldValues(initialCustFieldValues)
-    } else if (documentType?.custom_fields) {
-      const initialCustFieldValues = documentType?.custom_fields.map(i => {
-        return {
-          custom_field_id: i.id,
-          document_id: docID!,
-          document_type_id: documentTypeID?.value!,
-          type: i.type,
-          name: i.name,
-          extra_data: i.extra_data,
-          value: ""
-        }
-      })
+
+      console.log(initialCustFieldValues)
       setCustomFieldValues(initialCustFieldValues)
     }
-  }, [documentType?.custom_fields, isSuccessDocumentCustomFields])
+  }, [documentCustomFields, isSuccessDocumentCustomFields])
 
   useEffect(() => {
     /* Update (local) documentTypeID state based on the
@@ -223,6 +206,10 @@ function GenericCustomField({
     setValue(e.currentTarget.value)
     onChange({customField, value: e.currentTarget.value})
   }
+
+  useEffect(() => {
+    setValue(customField.value)
+  }, [customField.value])
 
   if (!documentID) {
     return <Skeleton height={"20"} />

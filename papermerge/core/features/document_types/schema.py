@@ -17,6 +17,7 @@ class DocumentType(BaseModel):
 
 class CreateDocumentType(BaseModel):
     name: str
+    path_template: str | None = None
     custom_field_ids: list[UUID]
 
     # Config
@@ -25,4 +26,5 @@ class CreateDocumentType(BaseModel):
 
 class UpdateDocumentType(BaseModel):
     name: str | None = None
+    path_template: str | None = None
     custom_field_ids: list[UUID] | None = None

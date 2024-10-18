@@ -32,6 +32,7 @@ def create_document_type(
     name: str,
     user_id: uuid.UUID,
     custom_field_ids: list[uuid.UUID] | None = None,
+    path_template: str | None = None,
 ) -> schemas.DocumentType:
     if custom_field_ids is None:
         cf_ids = []
@@ -44,6 +45,7 @@ def create_document_type(
         id=uuid.uuid4(),
         name=name,
         custom_fields=custom_fields,
+        path_template=path_template,
         user_id=user_id,
     )
     session.add(dtype)
@@ -82,6 +84,8 @@ def update_document_type(
 
     if attrs.custom_field_ids:
         doc_type.custom_fields = custom_fields
+
+    doc_type.path_template = attrs.path_template
 
     session.add(doc_type)
     session.commit()

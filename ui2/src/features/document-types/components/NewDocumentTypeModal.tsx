@@ -9,7 +9,8 @@ import {
   Modal,
   MultiSelect,
   Text,
-  TextInput
+  TextInput,
+  Textarea
 } from "@mantine/core"
 
 interface Args {
@@ -23,11 +24,13 @@ export default function NewDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const [name, setName] = useState<string>("")
+  const [pathTemplate, setPathTemplate] = useState<string>("")
+  const [error, setError] = useState<string>("")
+
   const {data = []} = useGetCustomFieldsQuery()
   const [addDocumentType, {isLoading, isError, isSuccess}] =
     useAddDocumentTypeMutation()
-  const [name, setName] = useState<string>("")
-  const [error, setError] = useState<string>("")
   const [customFieldIDs, setCustomFieldIDs] = useState<string[]>([])
 
   useEffect(() => {
@@ -46,6 +49,7 @@ export default function NewDocumentTypeModal({
   const onLocalSubmit = async () => {
     const newDocumentTypeData = {
       name,
+      path_template: pathTemplate,
       custom_field_ids: customFieldIDs
     }
     try {
@@ -83,6 +87,12 @@ export default function NewDocumentTypeModal({
           return {label: i.name, value: i.id}
         })}
         value={customFieldIDs}
+      />
+      <Textarea
+        label="Path Template"
+        resize="vertical"
+        value={pathTemplate}
+        onChange={event => setPathTemplate(event.currentTarget.value)}
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">

@@ -91,6 +91,7 @@ def create_document_type(
         document_type = db.create_document_type(
             db_session,
             name=dtype.name,
+            path_template=dtype.path_template,
             custom_field_ids=dtype.custom_field_ids,
             user_id=user.id,
         )

@@ -1,6 +1,14 @@
 import CopyButton from "@/components/CopyButton"
-import type {CustomField, DocType} from "@/types"
-import {Box, Fieldset, Skeleton, Table, TextInput} from "@mantine/core"
+import type {CustomField} from "@/types"
+import {
+  Box,
+  Fieldset,
+  Skeleton,
+  Table,
+  TextInput,
+  Textarea
+} from "@mantine/core"
+import type {DocType} from "../types"
 
 type Args = {
   documentType: DocType | null
@@ -29,6 +37,14 @@ export default function DocumentTypeForm({documentType}: Args) {
       {hasCustomFields && (
         <CustomFieldTable cfs={documentType?.custom_fields} />
       )}
+      <Textarea
+        my="md"
+        label="Path Template"
+        resize="vertical"
+        onChange={() => {}}
+        rightSection={<CopyButton value={documentType?.path_template || ""} />}
+        value={documentType?.path_template}
+      />
     </Box>
   )
 }

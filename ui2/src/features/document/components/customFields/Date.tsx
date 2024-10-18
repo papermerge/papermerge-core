@@ -28,7 +28,7 @@ export default function CustomFieldDate({
         setValue(date)
       }
     }
-  }, [])
+  }, [customField.value])
 
   const onLocalChange = (value: DateValue) => {
     if (value) {

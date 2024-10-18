@@ -1,5 +1,11 @@
 from pydantic import BaseModel
 
+from papermerge.core.features.document_types.schema import (
+    CreateDocumentType,
+    DocumentType,
+    UpdateDocumentType,
+)
+
 from .custom_fields import (
     CFV,
     CreateCustomField,
@@ -9,7 +15,6 @@ from .custom_fields import (
     DocumentCFV,
     UpdateCustomField,
 )
-from .document_types import CreateDocumentType, DocumentType, UpdateDocumentType
 from .documents import (
     CreateDocument,
     Document,

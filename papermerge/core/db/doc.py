@@ -18,10 +18,10 @@ from papermerge.core.db.models import (
     Page,
 )
 from papermerge.core.exceptions import InvalidDateFormat
+from papermerge.core.features.document_types.db import document_type_cf_count
 from papermerge.core.types import OrderEnum
 
 from .common import get_ancestors
-from .document_types import document_type_cf_count
 
 
 def str2date(value: str | None) -> Optional[datetime.date]:

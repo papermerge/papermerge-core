@@ -9,6 +9,7 @@ from django.db import models, transaction
 from pikepdf import Pdf
 
 from papermerge.core import constants as const
+from papermerge.core.features.document_types.models import DocumentType
 from papermerge.core.lib.path import DocumentPath, PagePath
 from papermerge.core.lib.storage import copy_file
 from papermerge.core.models import utils
@@ -22,7 +23,6 @@ from papermerge.core.signal_definitions import document_post_upload
 from papermerge.core.storage import abs_path
 from papermerge.core.utils import image as image_utils
 
-from .document_type import DocumentType
 from .document_version import DocumentVersion
 from .node import BaseTreeNode
 from .page import Page

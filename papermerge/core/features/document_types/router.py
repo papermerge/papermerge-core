@@ -7,10 +7,9 @@ from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
-
-from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatorGeneric, paginate
-from .params import CommonQueryParams
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.routers.paginator import PaginatorGeneric, paginate
+from papermerge.core.routers.params import CommonQueryParams
 
 router = APIRouter(
     prefix="/document-types",

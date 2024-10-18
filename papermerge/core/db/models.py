@@ -6,7 +6,12 @@ from uuid import UUID
 from sqlalchemy import Column, ForeignKey, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.features.document_types.db import DocumentType
+
 from .base import Base
+
+__all__ = ["DocumentType"]
+
 
 user_permissions_association = Table(
     "core_user_user_permissions",
@@ -276,15 +281,3 @@ class CustomFieldValue(Base):
 
     def __repr__(self):
         return f"CustomFieldValue(ID={self.id})"
-
-
-class DocumentType(Base):
-    __tablename__ = "document_types"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    custom_fields: Mapped[list["CustomField"]] = relationship(
-        secondary="document_type_custom_field"
-    )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

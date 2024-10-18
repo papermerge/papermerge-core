@@ -4,10 +4,12 @@ import os
 from django.conf import settings
 from fastapi import FastAPI
 
+from papermerge.core.features.document_types.router import (
+    router as document_types_router,
+)
 from papermerge.core.log import log_task_routes
 
 from .custom_fields import router as custom_fields_router
-from .document_types import router as document_types_router
 from .document_version import router as document_versions_router
 from .documents import router as documents_router
 from .folders import router as folders_router

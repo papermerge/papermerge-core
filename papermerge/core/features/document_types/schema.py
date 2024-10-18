@@ -8,6 +8,7 @@ from papermerge.core.schemas.custom_fields import CustomField
 class DocumentType(BaseModel):
     id: UUID
     name: str
+    path_template: str | None = None
     custom_fields: list[CustomField]
 
     # Config

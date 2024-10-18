@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from papermerge.core import db, schemas
 from papermerge.core.auth.scopes import SCOPES
+from papermerge.core.features.document_types.db import create_document_type
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.schemas import CustomFieldType
@@ -91,7 +92,7 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
 
     def _make_document_type(name: str):
-        return db.create_document_type(
+        return create_document_type(
             db_session,
             name=name,
             custom_field_ids=[cf.id],
@@ -107,7 +108,7 @@ def document_type_groceries(db_session: Session, user: User, make_custom_field):
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
 
-    return db.create_document_type(
+    return create_document_type(
         db_session,
         name="Groceries",
         custom_field_ids=[cf1.id, cf2.id, cf3.id],
@@ -135,7 +136,7 @@ def document_type_with_two_integer_cf(
     cf1 = make_custom_field(name="int-name1", type=CustomFieldType.int)
     cf2 = make_custom_field(name="int-name2", type=CustomFieldType.int)
 
-    return db.create_document_type(
+    return create_document_type(
         db_session,
         name="document_type_with_two_integer_cf",
         custom_field_ids=[cf1.id, cf2.id],
@@ -149,7 +150,7 @@ def document_type_with_one_date_cf(  # cf = custom field
 ):
     cf1 = make_custom_field(name="date-name1", type=CustomFieldType.date)
 
-    return db.create_document_type(
+    return create_document_type(
         db_session,
         name="document_type_with_one_date_cf",
         custom_field_ids=[cf1.id],
@@ -163,7 +164,7 @@ def document_type_with_one_string_cf(  # cf = custom field
 ):
     cf1 = make_custom_field(name="string-name1", type=CustomFieldType.text)
 
-    return db.create_document_type(
+    return create_document_type(
         db_session,
         name="document_type_with_one_string_cf",
         custom_field_ids=[cf1.id],

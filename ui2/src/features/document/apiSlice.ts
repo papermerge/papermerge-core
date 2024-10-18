@@ -180,7 +180,6 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, arg) => {
         return [
           {type: "DocumentCustomField", id: arg.documentID},
-          {type: "Document", id: arg.documentID},
           {type: "DocumentCFV", id: arg.documentTypeID}
         ]
       }

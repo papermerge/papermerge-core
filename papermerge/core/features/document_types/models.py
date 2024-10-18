@@ -10,6 +10,7 @@ class DocumentType(models.Model):
     user = models.ForeignKey(
         "User", related_name="document_types", on_delete=models.CASCADE
     )
+    path_template = models.CharField(max_length=2048, null=True)
     created_at = models.DateTimeField(
         "created_at",
         default=timezone.now,

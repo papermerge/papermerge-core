@@ -143,7 +143,7 @@ class Document(Node):
 
     ocr: Mapped[bool]
     ocr_status: Mapped[str]
-    document_type: Mapped["DocumentType"] = relationship(
+    document_type: Mapped["DocumentType"] = relationship(  # noqa: F821
         primaryjoin="DocumentType.id == Document.document_type_id",
     )
     document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))
@@ -276,15 +276,3 @@ class CustomFieldValue(Base):
 
     def __repr__(self):
         return f"CustomFieldValue(ID={self.id})"
-
-
-class DocumentType(Base):
-    __tablename__ = "document_types"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    custom_fields: Mapped[list["CustomField"]] = relationship(
-        secondary="document_type_custom_field"
-    )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

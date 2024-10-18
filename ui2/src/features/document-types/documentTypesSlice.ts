@@ -2,8 +2,9 @@ import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {DocType, Paginated, PaginationType} from "@/types"
+import type {Paginated, PaginationType} from "@/types"
 import {apiSliceWithDocTypes} from "./apiSlice"
+import type {DocType} from "./types"
 
 export type CustomFieldSlice = {
   selectedIds: Array<string>

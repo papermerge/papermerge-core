@@ -5,13 +5,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db import models
+
+from .models import CustomField
 
 logger = logging.getLogger(__name__)
 
 
 def get_custom_fields(session: Session) -> list[schemas.CustomField]:
-    stmt = select(models.CustomField)
+    stmt = select(CustomField)
     db_items = session.scalars(stmt).all()
     result = [schemas.CustomField.model_validate(db_item) for db_item in db_items]
 
@@ -25,7 +26,7 @@ def create_custom_field(
     user_id: uuid.UUID,
     extra_data: str | None = None,
 ) -> schemas.CustomField:
-    cfield = models.CustomField(
+    cfield = CustomField(
         id=uuid.uuid4(),
         name=name,
         type=type,
@@ -42,14 +43,14 @@ def create_custom_field(
 def get_custom_field(
     session: Session, custom_field_id: uuid.UUID
 ) -> schemas.CustomField:
-    stmt = select(models.CustomField).where(models.CustomField.id == custom_field_id)
+    stmt = select(CustomField).where(CustomField.id == custom_field_id)
     db_item = session.scalars(stmt).unique().one()
     result = schemas.CustomField.model_validate(db_item)
     return result
 
 
 def delete_custom_field(session: Session, custom_field_id: uuid.UUID):
-    stmt = select(models.CustomField).where(models.CustomField.id == custom_field_id)
+    stmt = select(CustomField).where(CustomField.id == custom_field_id)
     cfield = session.execute(stmt).scalars().one()
     session.delete(cfield)
     session.commit()
@@ -58,7 +59,7 @@ def delete_custom_field(session: Session, custom_field_id: uuid.UUID):
 def update_custom_field(
     session: Session, custom_field_id: uuid.UUID, attrs: schemas.UpdateCustomField
 ) -> schemas.CustomField:
-    stmt = select(models.CustomField).where(models.CustomField.id == custom_field_id)
+    stmt = select(CustomField).where(CustomField.id == custom_field_id)
     cfield = session.execute(stmt).scalars().one()
     session.add(cfield)
 

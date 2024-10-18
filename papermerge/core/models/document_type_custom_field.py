@@ -1,7 +1,8 @@
 from django.db import models
 
+from papermerge.core.features.document_types.models import DocumentType
+
 from .custom_field import CustomField
-from .document_type import DocumentType
 
 
 class DocumentTypeCustomField(models.Model):

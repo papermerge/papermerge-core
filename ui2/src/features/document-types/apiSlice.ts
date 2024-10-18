@@ -1,11 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
-import type {
-  DocType,
-  DocTypeUpdate,
-  NewDocType,
-  Paginated,
-  PaginatedArgs
-} from "@/types"
+import type {Paginated, PaginatedArgs} from "@/types"
+import type {DocType, DocTypeUpdate, NewDocType} from "./types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 

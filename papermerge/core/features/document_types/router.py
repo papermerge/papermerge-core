@@ -5,12 +5,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import db, schemas, utils
+from papermerge.core import schemas, utils
 from papermerge.core.auth import get_current_user, scopes
-
-from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatorGeneric, paginate
-from .params import CommonQueryParams
+from papermerge.core.db import Session, get_session
+from papermerge.core.features.document_types import db
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.routers.paginator import PaginatorGeneric, paginate
+from papermerge.core.routers.params import CommonQueryParams
 
 router = APIRouter(
     prefix="/document-types",
@@ -26,7 +27,7 @@ def get_document_types_without_pagination(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
     ],
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ):
     """Get all document types without pagination/filtering/sorting
 
@@ -44,7 +45,7 @@ def get_document_types(
         schemas.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: CommonQueryParams = Depends(),
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ):
     """Get all (paginated) document types
 
@@ -60,7 +61,7 @@ def get_document_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
     ],
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ):
     """Get document type
 
@@ -80,7 +81,7 @@ def create_document_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE])
     ],
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ) -> schemas.DocumentType:
     """Creates document type
 
@@ -90,6 +91,7 @@ def create_document_type(
         document_type = db.create_document_type(
             db_session,
             name=dtype.name,
+            path_template=dtype.path_template,
             custom_field_ids=dtype.custom_field_ids,
             user_id=user.id,
         )
@@ -118,7 +120,7 @@ def delete_document_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE])
     ],
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ) -> None:
     """Deletes document type
 
@@ -140,7 +142,7 @@ def update_document_type(
     cur_user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE])
     ],
-    db_session: db.Session = Depends(db.get_session),
+    db_session: Session = Depends(get_session),
 ) -> schemas.DocumentType:
     """Updates document type
 

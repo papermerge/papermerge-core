@@ -3,8 +3,52 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db import models
+from papermerge.core.features.document_types.db import DocumentType
 from papermerge.test.types import AuthTestClient
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_document_type_with_path_template(
+    auth_api_client: AuthTestClient, db_session: Session
+):
+    count_before = db_session.query(func.count(DocumentType.id)).scalar()
+    assert count_before == 0
+
+    response = auth_api_client.post(
+        "/document-types/",
+        json={
+            "name": "Invoice",
+            "path_template": "/home/My ZDF/",
+            "custom_field_ids": [],
+        },
+    )
+
+    assert response.status_code == 201, response.json()
+
+    count_after = db_session.query(func.count(DocumentType.id)).scalar()
+    assert count_after == 1
+
+    document_type = schemas.DocumentType.model_validate(response.json())
+    assert document_type.name == "Invoice"
+    assert document_type.path_template == "/home/My ZDF/"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_update_document_type_with_path_template(
+    make_document_type, auth_api_client: AuthTestClient, db_session: Session
+):
+    doc_type = make_document_type(name="ZDF", path_template="/home/")
+    response = auth_api_client.patch(
+        f"/document-types/{doc_type.id}",
+        json={
+            "name": "Invoice",
+            "path_template": "/home/My ZDF/updated/",
+            "custom_field_ids": [],
+        },
+    )
+
+    document_type = schemas.DocumentType.model_validate(response.json())
+    assert document_type.path_template == "/home/My ZDF/updated/"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -14,7 +58,7 @@ def test_create_document_type(
     cf1: schemas.CustomField = make_custom_field(name="shop", type="text")
     cf2: schemas.CustomField = make_custom_field(name="total", type="monetary")
 
-    count_before = db_session.query(func.count(models.DocumentType.id)).scalar()
+    count_before = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -24,7 +68,7 @@ def test_create_document_type(
 
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(models.DocumentType.id)).scalar()
+    count_after = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_after == 1
 
     document_type = schemas.DocumentType.model_validate(response.json())
@@ -72,11 +116,11 @@ def test_delete_document_type(
     make_document_type,
 ):
     doc_type = make_document_type(name="Invoice")
-    count_before = db_session.query(func.count(models.DocumentType.id)).scalar()
+    count_before = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_before == 1
 
     response = auth_api_client.delete(f"/document-types/{doc_type.id}")
     assert response.status_code == 204, response.json()
-    count_after = db_session.query(func.count(models.DocumentType.id)).scalar()
+    count_after = db_session.query(func.count(DocumentType.id)).scalar()
 
     assert count_after == 0

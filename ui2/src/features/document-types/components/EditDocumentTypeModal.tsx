@@ -6,7 +6,8 @@ import {
   LoadingOverlay,
   Modal,
   MultiSelect,
-  TextInput
+  TextInput,
+  Textarea
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
@@ -28,11 +29,14 @@ export default function EditDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const [name, setName] = useState<string>("")
+  const [pathTemplate, setPathTemplate] = useState<string>("")
+
   const {data: allCustomFields = []} = useGetCustomFieldsQuery()
   const {data, isLoading} = useGetDocumentTypeQuery(documentTypeId)
   const [updateDocumentType, {isLoading: isLoadingGroupUpdate}] =
     useEditDocumentTypeMutation()
-  const [name, setName] = useState<string>("")
+
   const [customFieldIDs, setCustomFieldIDs] = useState<string[]>([])
 
   useEffect(() => {
@@ -42,6 +46,7 @@ export default function EditDocumentTypeModal({
   const formReset = () => {
     if (data) {
       setName(data.name || "")
+      setPathTemplate(data.path_template || "")
       setCustomFieldIDs(data.custom_fields.map(cf => cf.id) || [])
     }
   }
@@ -50,6 +55,7 @@ export default function EditDocumentTypeModal({
     const updatedDocumentType = {
       id: documentTypeId,
       name,
+      path_template: pathTemplate,
       custom_field_ids: customFieldIDs
     }
     try {
@@ -95,7 +101,12 @@ export default function EditDocumentTypeModal({
         })}
         value={customFieldIDs}
       />
-
+      <Textarea
+        label="Path Template"
+        resize="vertical"
+        value={pathTemplate}
+        onChange={event => setPathTemplate(event.currentTarget.value)}
+      />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
           Cancel

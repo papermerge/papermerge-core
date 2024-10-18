@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from papermerge.core import db, schemas
 from papermerge.core.db.doc import str2date
 from papermerge.core.db.models import CustomField, CustomFieldValue
+from papermerge.core.features.document_types import db as db_dtype_api
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.core.types import OrderEnum
@@ -587,7 +588,7 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
         CustomField.name.in_(["Total", "EffectiveDate"])
     )
     custom_field_ids = list([row.id for row in db_session.execute(stmt)])
-    billType = db.create_document_type(
+    billType = db_dtype_api.create_document_type(
         db_session,
         name="Bill",
         custom_field_ids=custom_field_ids,
@@ -754,26 +755,30 @@ def test_document_type_cf_count_1(db_session: Session, user: User, make_custom_f
         name="some-random-cf2", type=schemas.CustomFieldType.boolean
     )
 
-    dtype1 = db.create_document_type(
+    dtype1 = db_dtype_api.create_document_type(
         db_session,
         name="document_type_1",
         custom_field_ids=[cf1.id, cf2.id],
         user_id=user.id,
     )
 
-    assert db.document_type_cf_count(db_session, document_type_id=dtype1.id) == 2
+    assert (
+        db_dtype_api.document_type_cf_count(db_session, document_type_id=dtype1.id) == 2
+    )
 
 
 @pytest.mark.django_db(transaction=True)
 def test_document_type_cf_count_without_cf(db_session: Session, user: User):
     # document type does not have any custom field associated
-    dtype1 = db.create_document_type(
+    dtype1 = db_dtype_api.create_document_type(
         db_session,
         name="document_type_1",
         user_id=user.id,
     )
 
-    actual_cf_count = db.document_type_cf_count(db_session, document_type_id=dtype1.id)
+    actual_cf_count = db_dtype_api.document_type_cf_count(
+        db_session, document_type_id=dtype1.id
+    )
     assert actual_cf_count == 0
 
 
@@ -784,7 +789,7 @@ def test_get_docs_count_by_type(db_session, user: User):
     2. Expected result should be that number of the documents in this
     type is 0
     """
-    dtype1 = db.create_document_type(
+    dtype1 = db_dtype_api.create_document_type(
         db_session,
         name="document_type_1",
         user_id=user.id,
@@ -801,7 +806,7 @@ def test_get_docs_count_by_type_with_two_document(db_session, user: User):
     and validate that `db.get_docs_count_by_type` returns 2
     """
     DOCS_COUNT = 2
-    dtype = db.create_document_type(
+    dtype = db_dtype_api.create_document_type(
         db_session,
         name="document_type_1",
         user_id=user.id,

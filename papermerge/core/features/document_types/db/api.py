@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from papermerge.core import constants as const
 from papermerge.core import schemas
 from papermerge.core.db.models import CustomField
+from papermerge.core.utils.decorators import skip_in_tests
 
 from .orm import DocumentType
 
@@ -101,10 +102,15 @@ def update_document_type(
     if notify_path_tmpl_worker:
         # background task to move all doc_type documents
         # to new target path based on path template evaluation
-        celery_app.send_task(
+        send_task(
             const.PATH_TMPL_MOVE_DOCUMENTS,
             kwargs={"document_type_id": str(document_type_id)},
             route_name="path_tmpl",
         )
 
     return result
+
+
+@skip_in_tests
+def send_task(*args, **kwargs):
+    celery_app.send_task(*args, **kwargs)

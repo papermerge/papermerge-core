@@ -22,7 +22,9 @@ S3_WORKER_REMOVE_DOC_THUMBNAIL = "s3_worker_remove_doc_thumbnail"
 S3_WORKER_REMOVE_PAGE_THUMBNAIL = "s3_worker_remove_page_thumbnail"
 S3_WORKER_GENERATE_PREVIEW = "s3_worker_generate_preview"
 WORKER_OCR_DOCUMENT = "worker_ocr_document"
-# path_tmpl_worker
+# path_tmpl_worker: move one document (based on path template)
 PATH_TMPL_MOVE_DOCUMENT = "path_tmpl_move_document"
+# path_tmpl_worker: move multiple docs (based on path template)
+PATH_TMPL_MOVE_DOCUMENTS = "path_tmpl_move_documents"
 # incoming (from user) date format
 INCOMING_DATE_FORMAT = "%Y-%m-%d"

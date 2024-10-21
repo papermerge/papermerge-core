@@ -1,11 +1,14 @@
 import logging
 import uuid
 
+from celery.app import default_app as celery_app
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from papermerge.core import constants as const
 from papermerge.core import schemas
 from papermerge.core.db.models import CustomField
+from papermerge.core.utils.decorators import skip_in_tests
 
 from .orm import DocumentType
 
@@ -85,10 +88,29 @@ def update_document_type(
     if attrs.custom_field_ids:
         doc_type.custom_fields = custom_fields
 
-    doc_type.path_template = attrs.path_template
+    notify_path_tmpl_worker = False
+
+    if doc_type.path_template != attrs.path_template:
+        doc_type.path_template = attrs.path_template
+        notify_path_tmpl_worker = True
 
     session.add(doc_type)
     session.commit()
+
     result = schemas.DocumentType.model_validate(doc_type)
 
+    if notify_path_tmpl_worker:
+        # background task to move all doc_type documents
+        # to new target path based on path template evaluation
+        send_task(
+            const.PATH_TMPL_MOVE_DOCUMENTS,
+            kwargs={"document_type_id": str(document_type_id)},
+            route_name="path_tmpl",
+        )
+
     return result
+
+
+@skip_in_tests
+def send_task(*args, **kwargs):
+    celery_app.send_task(*args, **kwargs)

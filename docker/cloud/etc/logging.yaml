@@ -31,6 +31,9 @@ loggers:
   i3worker:
     level: INFO
     handlers: [console]
+  path_tmpl_worker:
+    level: DEBUG
+    handlers: [ console ]
   papermerge.search.tasks:
     level: INFO
     handlers: [console]

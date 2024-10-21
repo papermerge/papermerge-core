@@ -40,6 +40,8 @@ export default function DocumentTypeForm({documentType}: Args) {
       <Textarea
         my="md"
         label="Path Template"
+        autosize
+        minRows={6}
         resize="vertical"
         onChange={() => {}}
         rightSection={<CopyButton value={documentType?.path_template || ""} />}

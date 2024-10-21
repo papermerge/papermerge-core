@@ -104,6 +104,8 @@ export default function EditDocumentTypeModal({
       <Textarea
         label="Path Template"
         resize="vertical"
+        autosize
+        minRows={6}
         value={pathTemplate}
         onChange={event => setPathTemplate(event.currentTarget.value)}
       />

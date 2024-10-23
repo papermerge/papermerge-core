@@ -127,6 +127,7 @@ export type NodeType = NType & {
   ocr: boolean
   thumbnail_url: string | null
   breadcrumb: Array<[string, string]>
+  document_type_id?: string
 }
 
 export type EntityWithTags = {
@@ -458,3 +459,23 @@ export type CurrencyType =
   | "RON"
   | "RUB"
   | "SEK"
+
+export type ServerNotifType = "document_moved" | "documents_moved"
+export type ServerNotifDocumentsMoved = {
+  document_id: string
+  source_folder_ids: Array<string>
+  target_folder_ids: Array<string>
+  document_type_id: string
+  document_type_name: string
+  count: number
+}
+export type ServerNotifDocumentMoved = {
+  source_folder_id: string
+  target_folder_id: string
+  document_id: string
+  old_document_title: string
+  new_document_title: string
+}
+export type ServerNotifPayload =
+  | ServerNotifDocumentMoved
+  | ServerNotifDocumentsMoved

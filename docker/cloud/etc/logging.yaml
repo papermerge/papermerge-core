@@ -31,6 +31,9 @@ loggers:
   i3worker:
     level: INFO
     handlers: [console]
+  papermerge.core.features.router:
+    level: DEBUG
+    handlers: [ console ]
   path_tmpl_worker:
     level: DEBUG
     handlers: [ console ]

@@ -33,6 +33,26 @@ export function getRemoteUser(): string | null {
   return null
 }
 
+export function getRemoteUserID(): string | null {
+  const remote_user = import.meta.env.VITE_REMOTE_USER_ID
+
+  if (remote_user) {
+    return remote_user
+  }
+
+  return null
+}
+
+export function getWSURL(): string | null {
+  const ws_url = import.meta.env.VITE_WS_URL
+
+  if (ws_url) {
+    return ws_url
+  }
+
+  return null
+}
+
 export function getRemoteGroups(): string | null {
   const COOKIE_REMOTE_GROUPS = "remote_groups"
   const remote_groups =

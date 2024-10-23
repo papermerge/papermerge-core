@@ -3,10 +3,24 @@ import type {
   FolderType,
   NodeType,
   Paginated,
+  ServerNotifDocumentMoved,
+  ServerNotifDocumentsMoved,
+  ServerNotifPayload,
+  ServerNotifType,
   SortMenuColumn,
   SortMenuDirection
 } from "@/types"
-import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
+import {
+  getBaseURL,
+  getDefaultHeaders,
+  getRemoteUserID,
+  getWSURL,
+  imageEncode
+} from "@/utils"
+import {
+  documentMovedNotifReceived,
+  documentsMovedNotifReceived
+} from "./nodesSlice"
 
 type CreateFolderType = {
   title: string
@@ -77,7 +91,73 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
     }),
     getFolder: builder.query<FolderType, string>({
       query: folderID => `/folders/${folderID}`,
-      providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}]
+      providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}],
+      async onCacheEntryAdded(arg, lifecycleApi) {
+        let url = getWSURL()
+
+        if (!url) {
+          return
+        }
+
+        if (getRemoteUserID()) {
+          url = `${url}?remote-user-id=${getRemoteUserID()}`
+        }
+        const ws = new WebSocket(url)
+        try {
+          // wait for the initial query to resolve before proceeding
+          await lifecycleApi.cacheDataLoaded
+
+          // when data is received from the socket connection to the server,
+          // update our query result with the received message
+          const listener = (event: MessageEvent<string>) => {
+            const message: {
+              type: ServerNotifType
+              payload: ServerNotifPayload
+            } = JSON.parse(event.data)
+
+            switch (message.type) {
+              case "documents_moved": {
+                const payload = message.payload as ServerNotifDocumentsMoved
+                let invSourceFolderTags = payload.source_folder_ids.map(i => {
+                  return {type: "Folder" as const, id: i}
+                })
+                let invTargetFolderTags = payload.target_folder_ids.map(i => {
+                  return {type: "Folder" as const, id: i}
+                })
+                const invTags = invTargetFolderTags.concat(invSourceFolderTags)
+                lifecycleApi.dispatch(apiSlice.util.invalidateTags(invTags))
+                lifecycleApi.dispatch(documentsMovedNotifReceived(payload))
+                break
+              }
+              case "document_moved": {
+                const payload = message.payload as ServerNotifDocumentMoved
+
+                if (
+                  arg == payload.source_folder_id ||
+                  arg == payload.target_folder_id
+                ) {
+                  lifecycleApi.dispatch(
+                    apiSlice.util.invalidateTags([{type: "Folder", id: arg}])
+                  )
+                  lifecycleApi.dispatch(documentMovedNotifReceived(payload))
+                }
+
+                break
+              }
+
+              default:
+                break
+            }
+          }
+          ws.addEventListener("message", listener)
+        } catch {
+          // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
+          // in which case `cacheDataLoaded` will throw
+        }
+        await lifecycleApi.cacheEntryRemoved
+        // perform cleanup steps once the `cacheEntryRemoved` promise resolves
+        ws.close()
+      }
     }),
     getDocumentThumbnail: builder.query<string, string>({
       //@ts-ignore

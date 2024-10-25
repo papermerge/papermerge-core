@@ -1,7 +1,6 @@
 FROM node:19 as  build
 
 WORKDIR build_ui_app
-COPY ui/package.json ui/package-lock.json ui/tsconfig.json ./
 COPY ui2/ .
 RUN yarn install
 RUN yarn build

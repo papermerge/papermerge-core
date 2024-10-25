@@ -4,7 +4,13 @@ import {
   PAGINATION_DEFAULT_ITEMS_PER_PAGES
 } from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
-import type {DocumentCFV, Paginated} from "@/types"
+import type {
+  DocumentCFV,
+  Paginated,
+  ServerNotifDocumentMoved,
+  ServerNotifPayload,
+  ServerNotifType
+} from "@/types"
 import {
   CFV,
   DocumentType,
@@ -12,7 +18,15 @@ import {
   OrderType,
   TransferStrategyType
 } from "@/types"
-import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
+import {
+  getBaseURL,
+  getDefaultHeaders,
+  getRemoteUserID,
+  getWSURL,
+  imageEncode
+} from "@/utils"
+
+import {documentMovedNotifReceived} from "./documentVersSlice"
 
 type ShortPageType = {
   number: number
@@ -83,7 +97,67 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getDocument: builder.query<DocumentType, string>({
       query: nodeID => `/documents/${nodeID}`,
-      providesTags: (_result, _error, arg) => [{type: "Document", id: arg}]
+      providesTags: (_result, _error, arg) => [{type: "Document", id: arg}],
+      async onCacheEntryAdded(_arg, lifecycleApi) {
+        let url = getWSURL()
+
+        if (!url) {
+          return
+        }
+
+        if (getRemoteUserID()) {
+          url = `${url}?remote-user-id=${getRemoteUserID()}`
+        }
+        const ws = new WebSocket(url)
+        try {
+          // wait for the initial query to resolve before proceeding
+          await lifecycleApi.cacheDataLoaded
+
+          // when data is received from the socket connection to the server,
+          // update our query result with the received message
+          const listener = (event: MessageEvent<string>) => {
+            const message: {
+              type: ServerNotifType
+              payload: ServerNotifPayload
+            } = JSON.parse(event.data)
+            console.log(`${message.type} received`)
+            console.log(message.payload)
+            switch (message.type) {
+              case "document_moved": {
+                const payload = message.payload as ServerNotifDocumentMoved
+                console.log(`Invalidating Document ${payload.document_id}`)
+                lifecycleApi.dispatch(
+                  apiSlice.util.invalidateTags([
+                    {
+                      type: "Document",
+                      id: payload.document_id
+                    },
+                    {
+                      type: "Node",
+                      id: payload.source_folder_id
+                    },
+                    {
+                      type: "Node",
+                      id: payload.target_folder_id
+                    }
+                  ])
+                )
+                lifecycleApi.dispatch(documentMovedNotifReceived(payload))
+                break
+              }
+              default:
+                break
+            }
+          }
+          ws.addEventListener("message", listener)
+        } catch {
+          // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
+          // in which case `cacheDataLoaded` will throw
+        }
+        await lifecycleApi.cacheEntryRemoved
+        // perform cleanup steps once the `cacheEntryRemoved` promise resolves
+        ws.close()
+      }
     }),
     getPageImage: builder.query<string, string>({
       //@ts-ignore

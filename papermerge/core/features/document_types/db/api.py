@@ -74,7 +74,10 @@ def delete_document_type(session: Session, document_type_id: uuid.UUID):
 
 
 def update_document_type(
-    session: Session, document_type_id: uuid.UUID, attrs: schemas.UpdateDocumentType
+    session: Session,
+    document_type_id: uuid.UUID,
+    attrs: schemas.UpdateDocumentType,
+    user_id: uuid.UUID,
 ) -> schemas.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
     doc_type = session.execute(stmt).scalars().one()
@@ -89,7 +92,6 @@ def update_document_type(
         doc_type.custom_fields = custom_fields
 
     notify_path_tmpl_worker = False
-
     if doc_type.path_template != attrs.path_template:
         doc_type.path_template = attrs.path_template
         notify_path_tmpl_worker = True
@@ -104,7 +106,7 @@ def update_document_type(
         # to new target path based on path template evaluation
         send_task(
             const.PATH_TMPL_MOVE_DOCUMENTS,
-            kwargs={"document_type_id": str(document_type_id)},
+            kwargs={"document_type_id": str(document_type_id), "user_id": str(user_id)},
             route_name="path_tmpl",
         )
 
@@ -113,4 +115,5 @@ def update_document_type(
 
 @skip_in_tests
 def send_task(*args, **kwargs):
+    logger.debug(f"Send task {args} {kwargs}")
     celery_app.send_task(*args, **kwargs)

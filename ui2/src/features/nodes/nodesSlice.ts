@@ -1,7 +1,13 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {apiSliceWithSearch} from "@/features/search/apiSlice"
-import type {NodeType, Paginated, ServerErrorType} from "@/types"
+import type {
+  NodeType,
+  Paginated,
+  ServerErrorType,
+  ServerNotifDocumentMoved,
+  ServerNotifDocumentsMoved
+} from "@/types"
 import {notifications} from "@mantine/notifications"
 import {
   PayloadAction,
@@ -17,7 +23,30 @@ const initialState = nodeAdapter.getInitialState()
 const nodesSlice = createSlice({
   name: "nodes",
   initialState,
-  reducers: {},
+  reducers: {
+    documentsMovedNotifReceived: (
+      _state,
+      action: PayloadAction<ServerNotifDocumentsMoved>
+    ) => {
+      const payload = action.payload
+
+      notifications.show({
+        withBorder: true,
+        message: `${payload.count} were documents path was updated based on new ${payload.document_type_name} path template`
+      })
+    },
+    documentMovedNotifReceived: (
+      _state,
+      action: PayloadAction<ServerNotifDocumentMoved>
+    ) => {
+      const payload = action.payload
+
+      notifications.show({
+        withBorder: true,
+        message: `Document ${payload.new_document_title} moved to new folder (based on custom field changes)`
+      })
+    }
+  },
   extraReducers(builder) {
     builder.addMatcher(
       apiSliceWithNodes.endpoints.getPaginatedNodes.matchFulfilled,
@@ -42,6 +71,9 @@ const nodesSlice = createSlice({
     )
   }
 })
+
+export const {documentsMovedNotifReceived, documentMovedNotifReceived} =
+  nodesSlice.actions
 
 export default nodesSlice.reducer
 

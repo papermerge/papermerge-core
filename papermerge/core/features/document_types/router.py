@@ -150,7 +150,10 @@ def update_document_type(
     """
     try:
         dtype: schemas.DocumentType = db.update_document_type(
-            db_session, document_type_id=document_type_id, attrs=attrs
+            db_session,
+            document_type_id=document_type_id,
+            attrs=attrs,
+            user_id=cur_user.id,
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")

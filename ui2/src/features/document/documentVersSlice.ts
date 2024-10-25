@@ -4,10 +4,12 @@ import type {
   ClientDocumentVersion,
   ClientPage,
   DocumentType,
-  DroppedThumbnailPosition
+  DroppedThumbnailPosition,
+  ServerNotifDocumentMoved
 } from "@/types"
 import {PanelMode} from "@/types"
 import {contains_every, reorder} from "@/utils"
+import {notifications} from "@mantine/notifications"
 import {
   PayloadAction,
   createEntityAdapter,
@@ -102,6 +104,15 @@ const docVersSlice = createSlice({
         }
       })
       state.entities[targetDocVerID].pages = newPages
+    },
+    documentMovedNotifReceived(
+      _state,
+      action: PayloadAction<ServerNotifDocumentMoved>
+    ) {
+      notifications.show({
+        withBorder: true,
+        message: `Document title updated to ${action.payload.new_document_title}`
+      })
     }
   },
   extraReducers(builder) {
@@ -134,8 +145,13 @@ const docVersSlice = createSlice({
   }
 })
 
-export const {pagesDroppedInDoc, pagesRotated, pagesReseted, pagesDeleted} =
-  docVersSlice.actions
+export const {
+  pagesDroppedInDoc,
+  pagesRotated,
+  pagesReseted,
+  pagesDeleted,
+  documentMovedNotifReceived
+} = docVersSlice.actions
 export default docVersSlice.reducer
 
 export const {

@@ -98,7 +98,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
     getDocument: builder.query<DocumentType, string>({
       query: nodeID => `/documents/${nodeID}`,
       providesTags: (_result, _error, arg) => [{type: "Document", id: arg}],
-      async onCacheEntryAdded(arg, lifecycleApi) {
+      async onCacheEntryAdded(_arg, lifecycleApi) {
         let url = getWSURL()
 
         if (!url) {

@@ -25,7 +25,7 @@ const nodesSlice = createSlice({
   initialState,
   reducers: {
     documentsMovedNotifReceived: (
-      state,
+      _state,
       action: PayloadAction<ServerNotifDocumentsMoved>
     ) => {
       const payload = action.payload
@@ -36,7 +36,7 @@ const nodesSlice = createSlice({
       })
     },
     documentMovedNotifReceived: (
-      state,
+      _state,
       action: PayloadAction<ServerNotifDocumentMoved>
     ) => {
       const payload = action.payload

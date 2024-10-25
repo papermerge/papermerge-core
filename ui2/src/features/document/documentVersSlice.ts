@@ -106,7 +106,7 @@ const docVersSlice = createSlice({
       state.entities[targetDocVerID].pages = newPages
     },
     documentMovedNotifReceived(
-      state,
+      _state,
       action: PayloadAction<ServerNotifDocumentMoved>
     ) {
       notifications.show({

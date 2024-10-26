@@ -49,6 +49,27 @@ def test_create_monetary_custom_field(
 
 
 @pytest.mark.django_db(transaction=True)
+def test_custom_field_duplicate_name(
+    auth_api_client: AuthTestClient, db_session: Session
+):
+    """Make sure there is an error on custom field duplicate name"""
+    count_before = db_session.query(func.count(models.CustomField.id)).scalar()
+    assert count_before == 0
+
+    response = auth_api_client.post(
+        "/custom-fields/", json={"name": "cf1", "type": "int"}
+    )
+    assert response.status_code == 201, response.json()
+
+    # custom field with same name
+    response = auth_api_client.post(
+        "/custom-fields/", json={"name": "cf1", "type": "text"}
+    )
+    assert response.status_code == 400, response.json()
+    assert response.json() == {"detail": "Duplicate custom field name"}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_update_custom_field(
     auth_api_client: AuthTestClient,
     db_session: Session,

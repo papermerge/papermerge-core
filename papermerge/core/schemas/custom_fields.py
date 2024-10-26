@@ -19,7 +19,12 @@ class CustomField(BaseModel):
     id: UUID
     name: str
     type: CustomFieldType
-    extra_data: str | None
+    # for sqlite database JSON field is stored as string
+    # for pg database JSON field is stored as JSON data
+    # and when fetched - is presented as python dictionary
+    # Basically `extra_data` is either a stringified JSON i.e. json.dumps(...)
+    # or an actually python dict (or None)
+    extra_data: str | dict | None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

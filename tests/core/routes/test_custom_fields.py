@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -19,6 +21,31 @@ def test_create_custom_field(auth_api_client: AuthTestClient, db_session: Sessio
 
     count_after = db_session.query(func.count(models.CustomField.id)).scalar()
     assert count_after == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_monetary_custom_field(
+    auth_api_client: AuthTestClient, db_session: Session
+):
+    count_before = db_session.query(func.count(models.CustomField.id)).scalar()
+    assert count_before == 0
+
+    data = {
+        "name": "Price",
+        "type": "monetary",
+        "extra_data": json.dumps({"currency": "EUR"}),
+    }
+    response = auth_api_client.post(
+        "/custom-fields/",
+        json=data,
+    )
+    assert response.status_code == 201, response.json()
+
+    count_after = db_session.query(func.count(models.CustomField.id)).scalar()
+    assert count_after == 1
+
+    response = auth_api_client.get("/custom-fields/")
+    assert response.status_code == 200, response.json()
 
 
 @pytest.mark.django_db(transaction=True)

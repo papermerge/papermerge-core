@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
@@ -94,11 +94,8 @@ def create_custom_field(
             extra_data=cfield.extra_data,
             user_id=user.id,
         )
-    except Exception as e:
-        error_msg = str(e)
-        if "UNIQUE constraint failed" in error_msg:
-            raise HTTPException(status_code=400, detail="Custom field already exists")
-        raise HTTPException(status_code=400, detail=error_msg)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Duplicate custom field name")
 
     return custom_field
 

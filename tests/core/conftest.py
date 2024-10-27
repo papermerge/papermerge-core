@@ -2,7 +2,6 @@ import pytest
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine
 from papermerge.core.models import Document
 from papermerge.test.baker_recipes import document_recipe, user_recipe
@@ -14,13 +13,6 @@ def document() -> Document:
     doc = document_recipe.make(user=u, parent=u.home_folder)
 
     return doc
-
-
-@pytest.fixture(autouse=True, scope="function")
-def db_schema():
-    Base.metadata.create_all(engine)
-    yield
-    Base.metadata.drop_all(engine)
 
 
 @pytest.fixture()

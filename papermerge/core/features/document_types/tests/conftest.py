@@ -1,23 +1,32 @@
+import uuid
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from papermerge.core import schemas
+from papermerge.core import constants, schemas
 from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import create_custom_field
+from papermerge.core.db import models as orm
+from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine
 from papermerge.core.features.document_types import db
-from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.schemas import CustomFieldType
 from papermerge.core.utils import base64
-from papermerge.test.baker_recipes import user_recipe
 from papermerge.test.types import AuthTestClient
 
 
+@pytest.fixture(autouse=True, scope="function")
+def db_schema():
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
+
+
 @pytest.fixture()
-def auth_api_client(user: User):
+def auth_api_client(user: orm.User):
     app = FastAPI()
     reg_core_routers(app)
 
@@ -37,7 +46,7 @@ def auth_api_client(user: User):
 
 
 @pytest.fixture
-def make_custom_field(db_session: Session, user: User):
+def make_custom_field(db_session: Session, user: orm.User):
     def _make_custom_field(name: str, type: schemas.CustomFieldType):
         return create_custom_field(
             db_session,
@@ -50,7 +59,7 @@ def make_custom_field(db_session: Session, user: User):
 
 
 @pytest.fixture
-def make_document_type(db_session: Session, user: User, make_custom_field):
+def make_document_type(db_session: Session, user: orm.User, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
 
     def _make_document_type(name: str, path_template: str | None = None):
@@ -66,8 +75,49 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
 
 
 @pytest.fixture()
-def user() -> User:
-    return user_recipe.make()
+def user(make_user) -> orm.User:
+    return make_user(username="random")
+
+
+@pytest.fixture()
+def make_user(db_session: Session):
+    def _maker(username: str, is_superuser: bool = True):
+        user_id = uuid.uuid4()
+        home_id = uuid.uuid4()
+        inbox_id = uuid.uuid4()
+
+        db_user = orm.User(
+            id=user_id,
+            username=username,
+            email=f"{username}@mail.com",
+            first_name=f"{username}_first",
+            last_name=f"{username}_last",
+            is_superuser=is_superuser,
+            is_active=True,
+            password="pwd",
+        )
+        db_inbox = orm.Folder(
+            id=inbox_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            lang="de",
+            user_id=user_id,
+        )
+        db_home = orm.Folder(
+            id=home_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            lang="de",
+            user_id=user_id,
+        )
+        db_session.add_all([db_home, db_inbox, db_user])
+        db_user.home_folder_id = db_home.id
+        db_user.inbox_folder_id = db_inbox.id
+        db_session.commit()
+
+        return db_user
+
+    return _maker
 
 
 @pytest.fixture()

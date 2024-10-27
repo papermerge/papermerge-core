@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.models import User
+from papermerge.core.db.models import User
 
 
 class AuthTestClient(BaseModel):
@@ -18,11 +18,7 @@ class AuthTestClient(BaseModel):
         return self.test_client.get(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        return self.test_client.request(
-            "DELETE",
-            *args,
-            **kwargs
-        )
+        return self.test_client.request("DELETE", *args, **kwargs)
 
     def patch(self, *args, **kwargs):
         """

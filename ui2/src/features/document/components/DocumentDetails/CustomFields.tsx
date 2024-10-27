@@ -17,7 +17,14 @@ import {
 } from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import type {CFV, PanelMode} from "@/types"
-import {Button, ComboboxItem, Select, Skeleton, TextInput} from "@mantine/core"
+import {
+  Button,
+  ComboboxItem,
+  Select,
+  Skeleton,
+  Text,
+  TextInput
+} from "@mantine/core"
 
 export default function CustomFields() {
   const mode: PanelMode = useContext(PanelContext)
@@ -35,8 +42,11 @@ export default function CustomFields() {
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
   const [updateDocumentType] = useUpdateDocumentTypeMutation()
-  const {data: documentCustomFields, isSuccess: isSuccessDocumentCustomFields} =
-    useGetDocumentCustomFieldsQuery(docID ?? skipToken)
+  const {
+    data: documentCustomFields,
+    isSuccess: isSuccessDocumentCustomFields,
+    isError: isErrorDocumentCustomFields
+  } = useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
   useEffect(() => {
     if (documentCustomFields && documentCustomFields.length > 0) {
@@ -171,6 +181,9 @@ export default function CustomFields() {
         onClear={onClearDocumentType}
         clearable
       />
+      {isErrorDocumentCustomFields && (
+        <Text c="red">There was server error while fetching custom fields</Text>
+      )}
       {genericCustomFieldsComponents}
       {showSaveButton && <Button onClick={onSave}>Save</Button>}
       {error && (

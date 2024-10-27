@@ -145,6 +145,7 @@ def get_document_custom_field_values(
 
     Required scope: `{scope}`
     """
+    raise HTTPException(status_code=500, detail="Fake error")
     try:
         doc = db.get_doc_cfv(
             db_session,

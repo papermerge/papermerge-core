@@ -55,7 +55,7 @@ fastapi = "^0.112.0"
 uvicorn = "^0.23.1"
 python-multipart = "^0.0.6"
 python-jose = "^3.3.0"
-dj-database-url = "^2.0.0"
+dj-database-url = "^2.3.0"
 dj-config-url = "^0.1.1"
 websockets = "^11.0.3"
 httpx = "^0.24.1"
@@ -88,7 +88,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 django-extensions = "^3.1"
 ipython = "^8.0.1"
-taskipy = "^1.10.2"
+taskipy = "^1.14"
 "pdfminer.six" = "^20220524"
 watchfiles = "^0.19.0"
 
@@ -101,8 +101,14 @@ pytest-django = "^4.4"
 model-bakery = "^1.5.0"
 pytest-asyncio = "^0.21.0"
 
+[tool.taskipy.settings]
+use_vars = true
+
+[tool.taskipy.variables]
+env_vars = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''"
+
 [tool.taskipy.tasks]
-test = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''  pytest"
+test = {cmd = "{env_vars} pytest", cwd = "." }
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/cloud/etc/logging.yaml"

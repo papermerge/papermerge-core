@@ -103,7 +103,7 @@ class Node(Base):
     user: Mapped["User"] = relationship(
         back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id", use_alter=True))
     parent_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_basetreenode.id"), nullable=True
     )

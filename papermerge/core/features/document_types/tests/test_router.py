@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -7,7 +6,6 @@ from papermerge.core.features.document_types.db import DocumentType
 from papermerge.test.types import AuthTestClient
 
 
-@pytest.mark.django_db(transaction=True)
 def test_create_document_type_with_path_template(
     auth_api_client: AuthTestClient, db_session: Session
 ):
@@ -33,7 +31,6 @@ def test_create_document_type_with_path_template(
     assert document_type.path_template == "/home/My ZDF/"
 
 
-@pytest.mark.django_db(transaction=True)
 def test_update_document_type_with_path_template(
     make_document_type, auth_api_client: AuthTestClient, db_session: Session
 ):
@@ -51,7 +48,6 @@ def test_update_document_type_with_path_template(
     assert document_type.path_template == "/home/My ZDF/updated/"
 
 
-@pytest.mark.django_db(transaction=True)
 def test_create_document_type(
     make_custom_field, auth_api_client: AuthTestClient, db_session: Session
 ):
@@ -77,7 +73,6 @@ def test_create_document_type(
     assert set([cf.name for cf in document_type.custom_fields]) == {"shop", "total"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):
     make_document_type(name="Invoice")
     response = auth_api_client.get("/document-types/")
@@ -85,7 +80,6 @@ def test_list_document_types(make_document_type, auth_api_client: AuthTestClient
     assert response.status_code == 200, response.json()
 
 
-@pytest.mark.django_db(transaction=True)
 def test_update_document_type(
     auth_api_client: AuthTestClient,
     db_session: Session,
@@ -109,7 +103,6 @@ def test_update_document_type(
     assert set([cf.name for cf in updated_dtype.custom_fields]) == {"cf1", "cf2"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_delete_document_type(
     auth_api_client: AuthTestClient,
     db_session: Session,

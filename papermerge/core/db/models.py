@@ -104,7 +104,9 @@ class Node(Base):
         back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
-    parent_id: Mapped[UUID] = mapped_column(ForeignKey("core_basetreenode.id"))
+    parent_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_basetreenode.id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
@@ -141,12 +143,14 @@ class Document(Node):
         "basetreenode_ptr_id", ForeignKey("core_basetreenode.id"), primary_key=True
     )
 
-    ocr: Mapped[bool]
-    ocr_status: Mapped[str]
+    ocr: Mapped[bool] = mapped_column(default=False)
+    ocr_status: Mapped[str] = mapped_column(default="UNKNOWN")
     document_type: Mapped["DocumentType"] = relationship(  # noqa: F821
-        primaryjoin="DocumentType.id == Document.document_type_id",
+        primaryjoin="DocumentType.id == Document.document_type_id"
     )
-    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))
+    document_type_id: Mapped[UUID] = mapped_column(
+        ForeignKey("document_types.id"), nullable=True
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "document",
@@ -266,12 +270,12 @@ class CustomFieldValue(Base):
         ForeignKey("core_document.basetreenode_ptr_id")
     )
     field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
-    value_text: Mapped[str]
-    value_boolean: Mapped[bool]
-    value_date: Mapped[datetime]
-    value_int: Mapped[int]
-    value_float: Mapped[float]
-    value_monetary: Mapped[str]
+    value_text: Mapped[str] = mapped_column(nullable=True)
+    value_boolean: Mapped[bool] = mapped_column(nullable=True)
+    value_date: Mapped[datetime] = mapped_column(nullable=True)
+    value_int: Mapped[int] = mapped_column(nullable=True)
+    value_float: Mapped[float] = mapped_column(nullable=True)
+    value_monetary: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     def __repr__(self):

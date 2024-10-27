@@ -12,7 +12,7 @@ class DocumentType(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str]
-    path_template: Mapped[str]
+    path_template: Mapped[str] = mapped_column(nullable=True)
     custom_fields: Mapped[list["CustomField"]] = relationship(  #  noqa: F821
         secondary="document_type_custom_field"
     )

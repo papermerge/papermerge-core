@@ -1,33 +1,72 @@
+import uuid
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from salinic import IndexRW, create_engine
 from sqlalchemy.orm import Session
 
-from papermerge.core import db, schemas
+from papermerge.core import constants, db, schemas
 from papermerge.core.auth.scopes import SCOPES
+from papermerge.core.db import models as orm
 from papermerge.core.features.document_types.db import create_document_type
 from papermerge.core.models import User
 from papermerge.core.routers import register_routers as reg_core_routers
 from papermerge.core.schemas import CustomFieldType
 from papermerge.core.utils import base64
 from papermerge.search.routers import register_routers as reg_search_routers
-from papermerge.test.baker_recipes import document_recipe
 from papermerge.test.types import AuthTestClient
 
 
 @pytest.fixture
-def montaigne():
-    return User.objects.create_user(
-        username="montaigne", email="montaigne@mail.com", is_superuser=True
-    )
+def montaigne(make_user):
+    return make_user(username="montaigne")
 
 
-@pytest.fixture
-def user():
-    return User.objects.create_user(
-        username="user1", email="user1@mail.com", is_superuser=True
-    )
+@pytest.fixture()
+def user(make_user) -> orm.User:
+    return make_user(username="random")
+
+
+@pytest.fixture()
+def make_user(db_session: Session):
+    def _maker(username: str, is_superuser: bool = True):
+        user_id = uuid.uuid4()
+        home_id = uuid.uuid4()
+        inbox_id = uuid.uuid4()
+
+        db_user = orm.User(
+            id=user_id,
+            username=username,
+            email=f"{username}@mail.com",
+            first_name=f"{username}_first",
+            last_name=f"{username}_last",
+            is_superuser=is_superuser,
+            is_active=True,
+            password="pwd",
+        )
+        db_inbox = orm.Folder(
+            id=inbox_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            lang="de",
+            user_id=user_id,
+        )
+        db_home = orm.Folder(
+            id=home_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            lang="de",
+            user_id=user_id,
+        )
+        db_session.add_all([db_home, db_inbox, db_user])
+        db_user.home_folder_id = db_home.id
+        db_user.inbox_folder_id = db_inbox.id
+        db_session.commit()
+
+        return db_user
+
+    return _maker
 
 
 @pytest.fixture()
@@ -117,14 +156,24 @@ def document_type_groceries(db_session: Session, user: User, make_custom_field):
 
 
 @pytest.fixture
-def make_document_receipt(db_session: Session, user: User, document_type_groceries):
+def make_document_receipt(db_session: Session, user: orm.User, document_type_groceries):
     def _make_receipt(title: str):
-        return document_recipe.make(
-            user=user,
+        doc_id = uuid.uuid4()
+        doc = orm.Document(
+            id=doc_id,
+            ctype="document",
             title=title,
-            parent=user.home_folder,
+            user_id=user.id,
             document_type_id=document_type_groceries.id,
+            parent_id=user.home_folder_id,
+            lang="de",
         )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
 
     return _make_receipt
 

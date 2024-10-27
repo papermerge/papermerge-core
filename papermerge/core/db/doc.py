@@ -121,10 +121,10 @@ def get_doc_cfv(session: Session, document_id: UUID) -> list[schemas.CFV]:
             cf.cf_extra_data,
             cfv.id AS cfv_id,
             CASE
-                WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-                WHEN(cf.cf_type = 'text') THEN cfv.value_text
-                WHEN(cf.cf_type = 'date') THEN cfv.value_date
-                WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
+                WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
+                WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
+                WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
+                WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
             END AS cf_value
         FROM core_document AS doc
         JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id

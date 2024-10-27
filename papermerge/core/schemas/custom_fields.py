@@ -1,7 +1,8 @@
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from papermerge.core import types
 
@@ -71,6 +72,14 @@ class CFV(BaseModel):
     custom_field_value_id: UUID | None = None
     # `custom_field_values.value_text` or `custom_field_values.value_int` or ...
     value: types.CFValueType = None
+
+    @field_validator("value", mode="before")
+    @classmethod
+    def convert_value(cld, value, info: ValidationInfo) -> types.CFValueType:
+        if value and info.data["type"] == CustomFieldType.monetary:
+            return float(value)
+
+        return value
 
 
 class DocumentCFV(BaseModel):

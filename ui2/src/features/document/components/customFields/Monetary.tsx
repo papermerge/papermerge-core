@@ -6,15 +6,25 @@ type MonetaryExtraDataType = {
   currency: string
 }
 
-function getCurrency(extraData?: string): string | undefined {
+function getCurrency(
+  extraData?: string | MonetaryExtraDataType
+): string | undefined {
   if (!extraData) {
     return
   }
 
-  const extra_data = JSON.parse(extraData) as MonetaryExtraDataType
+  if (typeof extraData == "string") {
+    const extra_data = JSON.parse(extraData) as MonetaryExtraDataType
 
-  if (extra_data) {
-    return extra_data.currency
+    if (extra_data) {
+      return extra_data.currency
+    }
+
+    return
+  }
+
+  if (extraData.currency) {
+    return extraData.currency
   }
 
   return

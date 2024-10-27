@@ -67,7 +67,7 @@ class CFV(BaseModel):
     # `custom_fields.type`
     type: CustomFieldType
     # `custom_fields.extra_data`
-    extra_data: str | None
+    extra_data: str | dict | None
     # `custom_field_values.id`
     custom_field_value_id: UUID | None = None
     # `custom_field_values.value_text` or `custom_field_values.value_int` or ...

@@ -61,7 +61,7 @@ class User(Base):
         back_populates="user", primaryjoin="User.id == Node.user_id"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
+        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
     )
     home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -69,7 +69,7 @@ class User(Base):
         viewonly=True,
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
+        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
     )
     inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -103,7 +103,11 @@ class Node(Base):
     user: Mapped["User"] = relationship(
         back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id", use_alter=True))
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey(
+            "core_user.id", use_alter=True, name="core_basetreenode_user_id_fkey"
+        )
+    )
     parent_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_basetreenode.id"), nullable=True
     )

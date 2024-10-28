@@ -110,7 +110,10 @@ def make_user(db_session: Session):
             lang="de",
             user_id=user_id,
         )
-        db_session.add_all([db_home, db_inbox, db_user])
+        db_session.add(db_inbox)
+        db_session.add(db_home)
+        db_session.add(db_user)
+        db_session.commit()
         db_user.home_folder_id = db_home.id
         db_user.inbox_folder_id = db_inbox.id
         db_session.commit()

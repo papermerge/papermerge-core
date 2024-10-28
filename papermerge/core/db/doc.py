@@ -263,19 +263,19 @@ SELECT node.title,
     cfv.value_monetary,
     cfv.id AS cfv_id,
     CASE
-        WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-        WHEN(cf.cf_type = 'text') THEN cfv.value_text
-        WHEN(cf.cf_type = 'date') THEN cfv.value_date
-        WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
+        WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
+        WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
+        WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
+        WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
     END AS cf_value
     FROM core_document AS doc
     JOIN (
       SELECT sub2_doc.basetreenode_ptr_id AS doc_id,
       CASE
-        WHEN(sub2_cf.type = 'monetary') THEN sub2_cfv.value_monetary
-        WHEN(sub2_cf.type = 'text') THEN sub2_cfv.value_text
-        WHEN(sub2_cf.type = 'date') THEN sub2_cfv.value_date
-        WHEN(sub2_cf.type = 'boolean') THEN sub2_cfv.value_boolean
+        WHEN sub2_cf.type = 'monetary' THEN CAST(sub2_cfv.value_monetary AS VARCHAR)
+        WHEN sub2_cf.type = 'text' THEN CAST(sub2_cfv.value_text AS VARCHAR)
+        WHEN sub2_cf.type = 'date' THEN CAST(sub2_cfv.value_date AS VARCHAR)
+        WHEN sub2_cf.type = 'boolean' THEN CAST(sub2_cfv.value_boolean AS VARCHAR)
       END AS cf_value
       FROM core_document AS sub2_doc
       JOIN document_type_custom_field AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
@@ -285,7 +285,7 @@ SELECT node.title,
       WHERE sub2_doc.document_type_id = :document_type_id AND sub2_cf.name = :custom_field_name
     ) AS ordered_doc ON ordered_doc.doc_id = doc.basetreenode_ptr_id
     JOIN core_basetreenode AS node
-        ON node.id == doc.basetreenode_ptr_id
+        ON node.id = doc.basetreenode_ptr_id
     JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
@@ -316,14 +316,14 @@ STMT = """
         cf.cf_extra_data,
         cfv.id AS cfv_id,
         CASE
-            WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-            WHEN(cf.cf_type = 'text') THEN cfv.value_text
-            WHEN(cf.cf_type = 'date') THEN cfv.value_date
-            WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
+            WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
+            WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
+            WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
+            WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
         END AS cf_value
     FROM core_document AS doc
     JOIN core_basetreenode AS node
-      ON node.id == doc.basetreenode_ptr_id
+      ON node.id = doc.basetreenode_ptr_id
     JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
@@ -339,7 +339,7 @@ STMT = """
         WHERE sub_dt1.id = :document_type_id
     ) AS cf ON cf.cf_id = dtcf.custom_field_id
     LEFT OUTER JOIN custom_field_values AS cfv
-        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
+        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc.basetreenode_ptr_id
     WHERE doc.document_type_id = :document_type_id
 """
 
@@ -382,7 +382,7 @@ def get_docs_by_type(
         rows = session.execute(text(stmt), params)
 
     for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):
-        items = list(group)
+        items = sorted(list(group), key=lambda x: x.cf_name)
         custom_fields = []
 
         for item in items:
@@ -390,13 +390,27 @@ def get_docs_by_type(
                 value = str2date(item.cf_value)
             else:
                 value = item.cf_value
-            custom_fields.append((item.cf_name, value))
+            custom_fields.append((item.cf_name, value, item.cf_type))
+
+        if isinstance(document_id, uuid.UUID):
+            # postgres
+            doc_id = document_id
+        else:
+            # sqlite
+            doc_id = uuid.UUID(document_id)
+
+        if isinstance(items[0].document_type_id, uuid.UUID):
+            # postgres
+            doc_type_id = items[0].document_type_id
+        else:
+            # sqlite
+            doc_type_id = uuid.UUID(items[0].document_type_id)
 
         results.append(
             schemas.DocumentCFV(
-                id=uuid.UUID(document_id),
+                id=doc_id,
                 title=items[0].title,
-                document_type_id=uuid.UUID(items[0].document_type_id),
+                document_type_id=doc_type_id,
                 custom_fields=custom_fields,
             )
         )

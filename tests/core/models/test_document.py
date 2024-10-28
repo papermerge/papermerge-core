@@ -508,7 +508,7 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
     assert len(items) == 2
 
     for i in range(0, 2):
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         assert cf["EffectiveDate"] is None
         assert cf["Shop"] is None
         assert cf["Total"] is None
@@ -545,7 +545,7 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
 
     # returned items are not sorted i.e. may be in any order
     for i in range(0, 2):
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         if items[i].id == doc_1.id:
             #  receipt_1.pdf has all cf set correctly
             assert cf["EffectiveDate"] == Date(2024, 10, 15)
@@ -669,7 +669,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     results_eff_date_desc = []
     for i in range(0, 3):
         # !!! EffectiveDate !!!
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         results_eff_date_desc.append(cf["EffectiveDate"])
 
     # !!! EffectiveDate DESC !!!
@@ -691,7 +691,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     results_eff_date_asc = []
     for i in range(0, 3):
         #  !!! EffectiveDate !!!
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         results_eff_date_asc.append(cf["EffectiveDate"])
 
     # !!! ASC !!!
@@ -713,7 +713,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     results_total_desc = []
     for i in range(0, 3):
         #  !!! Total !!!
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         results_total_desc.append(cf["Total"])
 
     # !!! DESC !!!
@@ -735,7 +735,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     results_total_asc = []
     for i in range(0, 3):
         #  !!! Total !!!
-        cf = dict(items[i].custom_fields)
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
         results_total_asc.append(cf["Total"])
 
     # !!! ASC !!!

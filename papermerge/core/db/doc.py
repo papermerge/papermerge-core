@@ -392,11 +392,25 @@ def get_docs_by_type(
                 value = item.cf_value
             custom_fields.append((item.cf_name, value, item.cf_type))
 
+        if isinstance(document_id, uuid.UUID):
+            # postgres
+            doc_id = document_id
+        else:
+            # sqlite
+            doc_id = uuid.UUID(document_id)
+
+        if isinstance(items[0].document_type_id, uuid.UUID):
+            # postgres
+            doc_type_id = items[0].document_type_id
+        else:
+            # sqlite
+            doc_type_id = uuid.UUID(items[0].document_type_id)
+
         results.append(
             schemas.DocumentCFV(
-                id=uuid.UUID(document_id),
+                id=doc_id,
                 title=items[0].title,
-                document_type_id=uuid.UUID(items[0].document_type_id),
+                document_type_id=doc_type_id,
                 custom_fields=custom_fields,
             )
         )

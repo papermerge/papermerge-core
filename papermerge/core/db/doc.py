@@ -323,7 +323,7 @@ STMT = """
         END AS cf_value
     FROM core_document AS doc
     JOIN core_basetreenode AS node
-      ON node.id == doc.basetreenode_ptr_id
+      ON node.id = doc.basetreenode_ptr_id
     JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT

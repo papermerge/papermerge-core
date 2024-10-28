@@ -263,19 +263,19 @@ SELECT node.title,
     cfv.value_monetary,
     cfv.id AS cfv_id,
     CASE
-        WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-        WHEN(cf.cf_type = 'text') THEN cfv.value_text
-        WHEN(cf.cf_type = 'date') THEN cfv.value_date
-        WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
+        WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
+        WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
+        WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
+        WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
     END AS cf_value
     FROM core_document AS doc
     JOIN (
       SELECT sub2_doc.basetreenode_ptr_id AS doc_id,
       CASE
-        WHEN(sub2_cf.type = 'monetary') THEN sub2_cfv.value_monetary
-        WHEN(sub2_cf.type = 'text') THEN sub2_cfv.value_text
-        WHEN(sub2_cf.type = 'date') THEN sub2_cfv.value_date
-        WHEN(sub2_cf.type = 'boolean') THEN sub2_cfv.value_boolean
+        WHEN sub2_cf.type = 'monetary' THEN CAST(sub2_cfv.value_monetary AS VARCHAR)
+        WHEN sub2_cf.type = 'text' THEN CAST(sub2_cfv.value_text AS VARCHAR)
+        WHEN sub2_cf.type = 'date' THEN CAST(sub2_cfv.value_date AS VARCHAR)
+        WHEN sub2_cf.type = 'boolean' THEN CAST(sub2_cfv.value_boolean AS VARCHAR)
       END AS cf_value
       FROM core_document AS sub2_doc
       JOIN document_type_custom_field AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
@@ -285,7 +285,7 @@ SELECT node.title,
       WHERE sub2_doc.document_type_id = :document_type_id AND sub2_cf.name = :custom_field_name
     ) AS ordered_doc ON ordered_doc.doc_id = doc.basetreenode_ptr_id
     JOIN core_basetreenode AS node
-        ON node.id == doc.basetreenode_ptr_id
+        ON node.id = doc.basetreenode_ptr_id
     JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT

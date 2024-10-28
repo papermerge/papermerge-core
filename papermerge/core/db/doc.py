@@ -382,7 +382,7 @@ def get_docs_by_type(
         rows = session.execute(text(stmt), params)
 
     for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):
-        items = list(group)
+        items = sorted(list(group), key=lambda x: x.cf_name)
         custom_fields = []
 
         for item in items:

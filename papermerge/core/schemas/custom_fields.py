@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import TypeAlias
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -82,6 +83,11 @@ class CFV(BaseModel):
         return value
 
 
+CustomFieldTupleType: TypeAlias = tuple[
+    types.CFNameType, types.CFValueType, CustomFieldType
+]
+
+
 class DocumentCFV(BaseModel):
     id: UUID
     title: str
@@ -91,4 +97,21 @@ class DocumentCFV(BaseModel):
     # user_id: UUID
     document_type_id: UUID | None = None
     thumbnail_url: str | None = None
-    custom_fields: list[tuple[types.CFNameType, types.CFValueType]]
+    custom_fields: list[CustomFieldTupleType]
+
+    @field_validator("custom_fields", mode="before")
+    @classmethod
+    def convert_value(cld, value, info: ValidationInfo) -> types.CFValueType:
+        if value:
+            new_value: list[CustomFieldTupleType] = []
+            for item in value:
+                if item[2] == CustomFieldType.monetary and item[1]:
+                    new_item: CustomFieldTupleType = (item[0], float(item[1]), item[2])
+                    new_value.append(new_item)
+                else:
+                    new_item: CustomFieldTupleType = (item[0], item[1], item[2])
+                    new_value.append(new_item)
+
+            return new_value
+
+        return value

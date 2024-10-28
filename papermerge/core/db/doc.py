@@ -316,10 +316,10 @@ STMT = """
         cf.cf_extra_data,
         cfv.id AS cfv_id,
         CASE
-            WHEN(cf.cf_type = 'monetary') THEN cfv.value_monetary
-            WHEN(cf.cf_type = 'text') THEN cfv.value_text
-            WHEN(cf.cf_type = 'date') THEN cfv.value_date
-            WHEN(cf.cf_type = 'boolean') THEN cfv.value_boolean
+            WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
+            WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
+            WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
+            WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
         END AS cf_value
     FROM core_document AS doc
     JOIN core_basetreenode AS node
@@ -339,7 +339,7 @@ STMT = """
         WHERE sub_dt1.id = :document_type_id
     ) AS cf ON cf.cf_id = dtcf.custom_field_id
     LEFT OUTER JOIN custom_field_values AS cfv
-        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
+        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc.basetreenode_ptr_id
     WHERE doc.document_type_id = :document_type_id
 """
 
@@ -390,7 +390,7 @@ def get_docs_by_type(
                 value = str2date(item.cf_value)
             else:
                 value = item.cf_value
-            custom_fields.append((item.cf_name, value))
+            custom_fields.append((item.cf_name, value, item.cf_type))
 
         results.append(
             schemas.DocumentCFV(

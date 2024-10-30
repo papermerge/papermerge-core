@@ -3,32 +3,32 @@ import uuid
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
 from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import create_custom_field
 from papermerge.core.db import models as orm
 from papermerge.core.db.base import Base
-from papermerge.core.db.engine import engine
-from papermerge.core.features.document_types import db
-from papermerge.core.routers import register_routers as reg_core_routers
+from papermerge.core.db.engine import Session, engine
+from papermerge.core.features.document_types import db, router
 from papermerge.core.schemas import CustomFieldType
 from papermerge.core.utils import base64
 from papermerge.test.types import AuthTestClient
 
 
-@pytest.fixture(autouse=True, scope="function")
-def db_schema():
+@pytest.fixture(scope="function")
+def db_session():
     Base.metadata.create_all(engine)
-    yield
+    with Session() as session:
+        yield session
+
     Base.metadata.drop_all(engine)
 
 
 @pytest.fixture()
 def auth_api_client(user: orm.User):
     app = FastAPI()
-    reg_core_routers(app)
+    app.include_router(router.router, prefix="")
 
     middle_part = base64.encode(
         {
@@ -121,9 +121,3 @@ def make_user(db_session: Session):
         return db_user
 
     return _maker
-
-
-@pytest.fixture()
-def db_session():
-    with Session(engine) as session:
-        yield session

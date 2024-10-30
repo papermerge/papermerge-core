@@ -20,7 +20,6 @@ def test_create_document_type_with_path_template(
             "custom_field_ids": [],
         },
     )
-
     assert response.status_code == 201, response.json()
 
     count_after = db_session.query(func.count(DocumentType.id)).scalar()

@@ -5,10 +5,10 @@ from uuid import UUID
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Engine, select
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
 
 from papermerge.core import constants, schemas
 from papermerge.core.auth import scopes
+from papermerge.core.db.engine import Session
 from papermerge.core.db.models import Folder, Group, Permission, User
 from papermerge.core.utils.misc import is_valid_uuid
 
@@ -16,14 +16,10 @@ from .exceptions import UserNotFound
 
 logger = logging.getLogger(__name__)
 
-DATETIME_FMT = '%Y-%m-%d %H:%M:%S.%f'
+DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
-def get_user(
-    engine: Engine,
-    user_id_or_username: str
-) -> schemas.User:
-
+def get_user(db_session: Session, user_id_or_username: str) -> schemas.User:
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
     if is_valid_uuid(user_id_or_username):
@@ -33,28 +29,21 @@ def get_user(
         stmt = select(User).where(User.username == user_id_or_username)
         params = {"username": user_id_or_username}
 
-    with Session(engine) as session:
-        try:
-            db_user = session.scalars(stmt, params).one()
-        except NoResultFound:
-            raise UserNotFound()
+    try:
+        db_user = db_session.scalars(stmt, params).one()
+    except NoResultFound:
+        raise UserNotFound()
 
-        if db_user is None:
-            raise UserNotFound(
-                f"User with id/username='{user_id_or_username}' not found"
-            )
+    if db_user is None:
+        raise UserNotFound(f"User with id/username='{user_id_or_username}' not found")
 
-        logger.debug(f"User {db_user} fetched")
-        model_user = schemas.User.model_validate(db_user)
+    logger.debug(f"User {db_user} fetched")
+    model_user = schemas.User.model_validate(db_user)
 
     return model_user
 
 
-def get_user_details(
-    engine: Engine,
-    user_id: UUID
-) -> schemas.UserDetails:
-
+def get_user_details(engine: Engine, user_id: UUID) -> schemas.UserDetails:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
@@ -71,12 +60,8 @@ def get_user_details(
             inbox_folder_id=db_user.inbox_folder_id,
             is_superuser=db_user.is_superuser,
             is_active=db_user.is_active,
-            scopes=list([
-                p.codename for p in db_user.permissions
-            ]),
-            groups=list([
-                {'id': g.id, 'name': g.name} for g in db_user.groups
-            ]),
+            scopes=list([p.codename for p in db_user.permissions]),
+            groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
         )
 
         model_user = schemas.UserDetails.model_validate(result)
@@ -84,21 +69,16 @@ def get_user_details(
     return model_user
 
 
-def get_users(
-    engine: Engine
-) -> list[schemas.User]:
+def get_users(engine: Engine) -> list[schemas.User]:
     with Session(engine) as session:
         db_users = session.scalars(select(User))
-        model_users = [
-            schemas.User.model_validate(db_user)
-            for db_user in db_users
-        ]
+        model_users = [schemas.User.model_validate(db_user) for db_user in db_users]
 
     return model_users
 
 
 def create_user(
-    engine: Engine,
+    db_session: Session,
     username: str,
     email: str,
     password: str,
@@ -106,82 +86,72 @@ def create_user(
     group_ids: list[int] | None = None,
     is_superuser: bool = False,
     is_active: bool = False,
-    user_id: UUID | None = None
+    user_id: UUID | None = None,
 ) -> schemas.User:
-
     if scopes is None:
         scopes = []
 
     if group_ids is None:
         group_ids = []
 
-    with Session(engine) as session:
-        _user_id = user_id or uuid.uuid4()
-        home_folder_id = uuid.uuid4()
-        inbox_folder_id = uuid.uuid4()
+    _user_id = user_id or uuid.uuid4()
+    home_folder_id = uuid.uuid4()
+    inbox_folder_id = uuid.uuid4()
 
-        db_user = User(
-            id=_user_id,
-            username=username,
-            email=email,
-            is_superuser=is_superuser,
-            is_active=is_active,
-            password=pbkdf2_sha256.hash(password),
-        )
-        db_inbox = Folder(
-            id=inbox_folder_id,
-            title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=_user_id,
-            lang='xxx'  # not used
-        )
-        db_home = Folder(
-            id=home_folder_id,
-            title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=_user_id,
-            lang='xxx'  # not used
-        )
-        session.add(db_user)
-        session.add(db_home)
-        session.add(db_inbox)
-        session.commit()
+    db_user = User(
+        id=_user_id,
+        username=username,
+        email=email,
+        is_superuser=is_superuser,
+        is_active=is_active,
+        password=pbkdf2_sha256.hash(password),
+    )
+    db_inbox = Folder(
+        id=inbox_folder_id,
+        title=constants.INBOX_TITLE,
+        ctype=constants.CTYPE_FOLDER,
+        user_id=_user_id,
+        lang="xxx",  # not used
+    )
+    db_home = Folder(
+        id=home_folder_id,
+        title=constants.HOME_TITLE,
+        ctype=constants.CTYPE_FOLDER,
+        user_id=_user_id,
+        lang="xxx",  # not used
+    )
+    db_session.add(db_user)
+    db_session.add(db_home)
+    db_session.add(db_inbox)
 
-        db_user.home_folder_id = db_home.id
-        db_user.inbox_folder_id = db_inbox.id
-        # fetch permissions from the DB
-        stmt = select(Permission).where(
-            Permission.codename.in_(scopes)
-        )
-        db_perms = session.execute(stmt).scalars().all()
-        # fetch groups from the DB
-        stmt = select(Group).where(
-            Group.id.in_(group_ids)
-        )
-        db_groups = session.execute(stmt).scalars().all()
-        db_user.permissions = db_perms
-        db_user.groups = db_groups
-        session.commit()
+    db_user.home_folder_id = db_home.id
+    db_user.inbox_folder_id = db_inbox.id
+    # fetch permissions from the DB
+    db_session.commit()
+    print("Hi 1")
+    stmt = select(Permission).where(Permission.codename.in_(scopes))
+    db_perms = db_session.execute(stmt).scalars().all()
+    # fetch groups from the DB
+    print("Hi 2")
+    stmt = select(Group).where(Group.id.in_(group_ids))
+    db_groups = db_session.execute(stmt).scalars().all()
+    print("Hi 3")
+    db_user.permissions = db_perms
+    db_user.groups = db_groups
 
-        user = schemas.User.model_validate(db_user)
+    user = schemas.User.model_validate(db_user)
 
     return user
 
 
 def update_user(
-    engine: Engine,
-    user_id: UUID,
-    attrs: schemas.UpdateUser
+    engine: Engine, user_id: UUID, attrs: schemas.UpdateUser
 ) -> schemas.UserDetails:
     with Session(engine) as session:
-        stmt = select(Permission).where(
-            Permission.codename.in_(attrs.scopes)
-        )
+        stmt = select(Permission).where(Permission.codename.in_(attrs.scopes))
         perms = session.execute(stmt).scalars().all()
 
-        stmt = select(Group).where(
-            Group.id.in_(attrs.group_ids)
-        )
+        stmt = select(Group).where(Group.id.in_(attrs.group_ids))
         groups = session.execute(stmt).scalars().all()
         user = session.get(User, user_id)
 
@@ -206,12 +176,8 @@ def update_user(
             inbox_folder_id=user.inbox_folder_id,
             is_superuser=user.is_superuser,
             is_active=user.is_active,
-            scopes=list([
-                p.codename for p in user.permissions
-            ]),
-            groups=list([
-                {'id': g.id, 'name': g.name} for g in groups
-            ]),
+            scopes=list([p.codename for p in user.permissions]),
+            groups=list([{"id": g.id, "name": g.name} for g in groups]),
         )
 
         model_user = schemas.UserDetails.model_validate(result)
@@ -220,11 +186,8 @@ def update_user(
 
 
 def get_user_scopes_from_groups(
-    engine: Engine,
-    user_id: UUID,
-    groups: list[str]
+    engine: Engine, user_id: UUID, groups: list[str]
 ) -> list[str]:
-
     with Session(engine) as session:
         db_user = session.get(User, user_id)
 
@@ -232,9 +195,7 @@ def get_user_scopes_from_groups(
             logger.debug(f"User with user_id {user_id} not found")
             return []
 
-        db_groups = session.scalars(
-            select(Group).where(Group.name.in_(groups))
-        ).all()
+        db_groups = session.scalars(select(Group).where(Group.name.in_(groups))).all()
 
         if db_user.is_superuser:
             # superuser has all permissions (permission = scope)
@@ -243,8 +204,6 @@ def get_user_scopes_from_groups(
             # user inherits his/her group associated permissions
             result = set()
             for group in db_groups:
-                result.update(
-                    [p.codename for p in group.permissions]
-                )
+                result.update([p.codename for p in group.permissions])
 
     return list(result)

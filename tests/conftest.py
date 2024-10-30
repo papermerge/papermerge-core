@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from salinic import IndexRW, create_engine
 from sqlalchemy.orm import Session
 
-from papermerge.core import constants, db, schemas
+from papermerge.core import constants
 from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import models as orm
 from papermerge.core.db.base import Base
@@ -124,19 +124,6 @@ def index(tmp_path, request) -> IndexRW:
 
 
 @pytest.fixture
-def make_custom_field(db_session: Session, user: User):
-    def _make_custom_field(name: str, type: schemas.CustomFieldType):
-        return db.create_custom_field(
-            db_session,
-            name=name,
-            type=type,
-            user_id=user.id,
-        )
-
-    return _make_custom_field
-
-
-@pytest.fixture
 def make_document_type(db_session: Session, user: User, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
 
@@ -149,43 +136,6 @@ def make_document_type(db_session: Session, user: User, make_custom_field):
         )
 
     return _make_document_type
-
-
-@pytest.fixture
-def document_type_groceries(db_session: Session, user: User, make_custom_field):
-    cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
-    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
-
-    return create_document_type(
-        db_session,
-        name="Groceries",
-        custom_field_ids=[cf1.id, cf2.id, cf3.id],
-        user_id=user.id,
-    )
-
-
-@pytest.fixture
-def make_document_receipt(db_session: Session, user: orm.User, document_type_groceries):
-    def _make_receipt(title: str):
-        doc_id = uuid.uuid4()
-        doc = orm.Document(
-            id=doc_id,
-            ctype="document",
-            title=title,
-            user_id=user.id,
-            document_type_id=document_type_groceries.id,
-            parent_id=user.home_folder_id,
-            lang="de",
-        )
-
-        db_session.add(doc)
-
-        db_session.commit()
-
-        return doc
-
-    return _make_receipt
 
 
 @pytest.fixture

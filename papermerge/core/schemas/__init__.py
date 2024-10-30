@@ -8,10 +8,6 @@ from papermerge.core.features.document_types.schema import (
 from .documents import (
     CreateDocument,
     Document,
-    DocumentCustomFieldsAdd,
-    DocumentCustomFieldsAddValue,
-    DocumentCustomFieldsUpdate,
-    DocumentCustomFieldsUpdateValue,
     DocumentVersion,
     Page,
 )
@@ -43,10 +39,6 @@ __all__ = [
     "Scopes",
     "CreateDocumentType",
     "UpdateDocumentType",
-    "DocumentCustomFieldsUpdate",
-    "DocumentCustomFieldsUpdateValue",
-    "DocumentCustomFieldsAdd",
-    "DocumentCustomFieldsAddValue",
 ]
 
 

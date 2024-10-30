@@ -2,17 +2,16 @@ import itertools
 import uuid
 from uuid import UUID
 
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
 from papermerge.core.db.models import (
     ColoredTag,
-    Document,
     DocumentVersion,
     Page,
 )
-from papermerge.core.features.custom_fields.db.orm import CustomFieldValue
+from papermerge.core.features.document.db.orm import Document
 from papermerge.core.features.document_types.db import document_type_cf_count
 from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
@@ -66,32 +65,6 @@ def get_doc(
     model_doc = schemas.Document.model_validate(db_doc)
 
     return model_doc
-
-
-def update_doc_type(session: Session, document_id: UUID, document_type_id: UUID | None):
-    stmt = select(Document).where(Document.id == document_id)
-    doc = session.scalars(stmt).one()
-    if doc.document_type_id != document_type_id:
-        # new value for document type
-        doc.document_type_id = document_type_id
-        # -> clear existing CFV
-        del_stmt = delete(CustomFieldValue).where(
-            CustomFieldValue.document_id == document_id
-        )
-        session.execute(del_stmt)
-
-    session.commit()
-
-
-def get_docs_count_by_type(session: Session, type_id: UUID):
-    """Returns number of documents of specific document type"""
-    stmt = (
-        select(func.count())
-        .select_from(Document)
-        .where(Document.document_type_id == type_id)
-    )
-
-    return session.scalars(stmt).one()
 
 
 STMT_WITH_ORDER_BY = """

@@ -1,12 +1,15 @@
 from collections.abc import Sequence
 from datetime import date
 from enum import Enum
-from typing import Generic, TypeAlias, TypeVar
+from typing import Generic, Literal, TypeAlias, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
 DocumentVersion = TypeVar("DocumentVersion")
+
+
+CType = Literal["document", "folder"]
 
 
 class OCRStatusEnum(str, Enum):

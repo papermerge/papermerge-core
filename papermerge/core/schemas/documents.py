@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 
 from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
-from papermerge.core.types import CFNameType, CFValueType, OCRStatusEnum
+from papermerge.core.types import OCRStatusEnum
 
 
 class Tag(BaseModel):
@@ -235,24 +235,3 @@ def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
         url,
         valid_for=600,  # valid for 600 seconds
     )
-
-
-class DocumentCustomFieldsAddValue(BaseModel):
-    custom_field_id: UUID  # custom field ID here, NOT custom field *value* ID!
-    value: str
-
-
-class DocumentCustomFieldsAdd(BaseModel):
-    document_type_id: UUID | None = None
-    custom_fields: list[DocumentCustomFieldsAddValue]
-
-
-class DocumentCustomFieldsUpdateValue(BaseModel):
-    custom_field_value_id: UUID
-    value: str
-
-
-class DocumentCustomFieldsUpdate(BaseModel):
-    custom_field_value_id: UUID | None = None
-    key: CFNameType
-    value: CFValueType

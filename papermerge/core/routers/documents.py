@@ -99,68 +99,6 @@ def get_document_details(
     return doc
 
 
-@router.patch("/{document_id}/custom-fields")
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def update_document_custom_field_values(
-    document_id: uuid.UUID,
-    custom_fields_update: list[schemas.DocumentCustomFieldsUpdate],
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
-    db_session: db.Session = Depends(db.get_session),
-) -> list[schemas.CFV]:
-    """
-    Update document's custom fields
-    Required scope: `{scope}`
-    """
-    custom_fields = {}
-    for cf in custom_fields_update:
-        if cf.value is None and cf.custom_field_value_id is None:
-            continue
-        custom_fields[cf.key] = cf.value
-
-    try:
-        updated_entries = db.update_doc_cfv(
-            db_session,
-            document_id=document_id,
-            custom_fields=custom_fields,
-        )
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document not found")
-
-    celery_app.send_task(
-        const.PATH_TMPL_MOVE_DOCUMENT,
-        kwargs={"document_id": str(document_id), "user_id": str(user.id)},
-        route_name="path_tmpl",
-    )
-
-    return updated_entries
-
-
-@router.get("/{document_id}/custom-fields")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_document_custom_field_values(
-    document_id: uuid.UUID,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-    db_session: db.Session = Depends(db.get_session),
-) -> list[schemas.CFV]:
-    """
-    Get document custom field values
-
-    Required scope: `{scope}`
-    """
-    try:
-        doc = db.get_doc_cfv(
-            db_session,
-            document_id=document_id,
-        )
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document not found")
-    return doc
-
-
 @router.patch("/{document_id}/type")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_type(

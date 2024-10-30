@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from .doc import (
     get_doc,
-    get_docs_by_type,
 )
 from .doc_ver import get_doc_ver, get_last_doc_ver
 from .engine import get_engine
@@ -42,5 +41,4 @@ __all__ = [
     "Session",
     "UserNotFound",
     "get_nodes",
-    "get_docs_by_type",
 ]

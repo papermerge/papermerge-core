@@ -3,8 +3,6 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-from .document import Document
-
 
 class CustomField(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -48,7 +46,7 @@ class CustomFieldValue(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     document = models.ForeignKey(
-        Document,
+        "Document",
         blank=False,
         null=False,
         on_delete=models.CASCADE,
@@ -88,3 +86,17 @@ class CustomFieldValue(models.Model):
                 name="%(app_label)s_%(class)s_unique_document_field",
             ),
         ]
+
+
+class DocumentTypeCustomField(models.Model):
+    document_type = models.ForeignKey(
+        on_delete=models.CASCADE,
+        related_name="custom_fields",
+        to="DocumentType",
+    )
+    custom_field = models.ForeignKey(
+        on_delete=models.CASCADE, related_name="document_types", to=CustomField
+    )
+
+    class Meta:
+        db_table = "document_type_custom_field"

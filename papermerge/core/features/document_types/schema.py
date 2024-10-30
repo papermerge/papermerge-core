@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.schemas.custom_fields import CustomField
+from papermerge.core.features.custom_fields.schema import CustomField
 
 
 class DocumentType(BaseModel):

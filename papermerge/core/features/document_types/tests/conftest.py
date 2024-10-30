@@ -1,16 +1,15 @@
 import pytest
 
-from papermerge.core import schemas
-from papermerge.core.db import create_custom_field
 from papermerge.core.db import models as orm
 from papermerge.core.db.engine import Session
+from papermerge.core.features.custom_fields.db.api import create_custom_field
+from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import db
-from papermerge.core.schemas import CustomFieldType
 
 
 @pytest.fixture
 def make_custom_field(db_session: Session, user: orm.User):
-    def _make_custom_field(name: str, type: schemas.CustomFieldType):
+    def _make_custom_field(name: str, type: CustomFieldType):
         return create_custom_field(
             db_session,
             name=name,

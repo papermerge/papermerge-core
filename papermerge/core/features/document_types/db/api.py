@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants as const
-from papermerge.core import schemas
-from papermerge.core.db.models import CustomField
+from papermerge.core.features.custom_fields.db.orm import CustomField
+from papermerge.core.features.document_types import schema
 from papermerge.core.utils.decorators import skip_in_tests
 
 from .orm import DocumentType
@@ -15,10 +15,10 @@ from .orm import DocumentType
 logger = logging.getLogger(__name__)
 
 
-def get_document_types(session: Session) -> list[schemas.DocumentType]:
+def get_document_types(session: Session) -> list[schema.DocumentType]:
     stmt = select(DocumentType)
     db_items = session.scalars(stmt).all()
-    result = [schemas.DocumentType.model_validate(db_item) for db_item in db_items]
+    result = [schema.DocumentType.model_validate(db_item) for db_item in db_items]
 
     return result
 
@@ -36,7 +36,7 @@ def create_document_type(
     user_id: uuid.UUID,
     custom_field_ids: list[uuid.UUID] | None = None,
     path_template: str | None = None,
-) -> schemas.DocumentType:
+) -> schema.DocumentType:
     if custom_field_ids is None:
         cf_ids = []
     else:
@@ -53,16 +53,16 @@ def create_document_type(
     )
     session.add(dtype)
     session.commit()
-    result = schemas.DocumentType.model_validate(dtype)
+    result = schema.DocumentType.model_validate(dtype)
     return result
 
 
 def get_document_type(
     session: Session, document_type_id: uuid.UUID
-) -> schemas.DocumentType:
+) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
     db_item = session.scalars(stmt).unique().one()
-    result = schemas.DocumentType.model_validate(db_item)
+    result = schema.DocumentType.model_validate(db_item)
     return result
 
 
@@ -76,9 +76,9 @@ def delete_document_type(session: Session, document_type_id: uuid.UUID):
 def update_document_type(
     session: Session,
     document_type_id: uuid.UUID,
-    attrs: schemas.UpdateDocumentType,
+    attrs: schema.UpdateDocumentType,
     user_id: uuid.UUID,
-) -> schemas.DocumentType:
+) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
     doc_type = session.execute(stmt).scalars().one()
 
@@ -99,7 +99,7 @@ def update_document_type(
     session.add(doc_type)
     session.commit()
 
-    result = schemas.DocumentType.model_validate(doc_type)
+    result = schema.DocumentType.model_validate(doc_type)
 
     if notify_path_tmpl_worker:
         # background task to move all doc_type documents

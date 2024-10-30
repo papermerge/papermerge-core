@@ -1,19 +1,10 @@
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from .custom_fields import (
-    create_custom_field,
-    delete_custom_field,
-    get_custom_field,
-    get_custom_fields,
-    update_custom_field,
-)
 from .doc import (
     get_doc,
-    get_doc_cfv,
     get_docs_by_type,
     get_docs_count_by_type,
-    update_doc_cfv,
     update_doc_type,
 )
 from .doc_ver import get_doc_ver, get_last_doc_ver
@@ -53,13 +44,6 @@ __all__ = [
     "Session",
     "UserNotFound",
     "get_nodes",
-    "get_custom_fields",
-    "create_custom_field",
-    "get_custom_field",
-    "delete_custom_field",
-    "update_custom_field",
-    "update_doc_cfv",
-    "get_doc_cfv",
     "update_doc_type",
     "get_docs_by_type",
     "get_docs_count_by_type",

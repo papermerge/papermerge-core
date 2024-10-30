@@ -8,7 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from papermerge.core import schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.db.engine import Session
-from papermerge.core.features.document_types import db
+from papermerge.core.features.document_types import db, schema
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
@@ -21,7 +21,7 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/all", response_model=list[schemas.DocumentType])
+@router.get("/all", response_model=list[schema.DocumentType])
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types_without_pagination(
     user: Annotated[
@@ -38,7 +38,7 @@ def get_document_types_without_pagination(
     return result
 
 
-@router.get("/", response_model=PaginatorGeneric[schemas.DocumentType])
+@router.get("/", response_model=PaginatorGeneric[schema.DocumentType])
 @paginate
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types(
@@ -57,7 +57,7 @@ def get_document_types(
     return result
 
 
-@router.get("/{document_type_id}", response_model=schemas.DocumentType)
+@router.get("/{document_type_id}", response_model=schema.DocumentType)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_type(
     document_type_id: uuid.UUID,
@@ -84,7 +84,7 @@ def create_document_type(
     user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE])
     ],
-) -> schemas.DocumentType:
+) -> schema.DocumentType:
     """Creates document type
 
     Required scope: `{scope}`
@@ -136,7 +136,7 @@ def delete_document_type(
 
 
 @router.patch(
-    "/{document_type_id}", status_code=200, response_model=schemas.DocumentType
+    "/{document_type_id}", status_code=200, response_model=schema.DocumentType
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_UPDATE)
 def update_document_type(
@@ -145,14 +145,14 @@ def update_document_type(
     cur_user: Annotated[
         schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE])
     ],
-) -> schemas.DocumentType:
+) -> schema.DocumentType:
     """Updates document type
 
     Required scope: `{scope}`
     """
     try:
         with Session() as db_session:
-            dtype: schemas.DocumentType = db.update_document_type(
+            dtype: schema.DocumentType = db.update_document_type(
                 db_session,
                 document_type_id=document_type_id,
                 attrs=attrs,

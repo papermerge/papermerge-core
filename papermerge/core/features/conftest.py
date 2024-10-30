@@ -9,6 +9,7 @@ from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import models as orm
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import Session, engine
+from papermerge.core.features.custom_fields import router as cf_router
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.utils import base64
@@ -29,6 +30,7 @@ def auth_api_client(user: orm.User):
     app = FastAPI()
     app.include_router(document_types_router.router, prefix="")
     app.include_router(groups_router.router, prefix="")
+    app.include_router(cf_router.router, prefix="")
 
     middle_part = base64.encode(
         {

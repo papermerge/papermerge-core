@@ -11,7 +11,7 @@ class CustomField(Base):
     __tablename__ = "custom_fields"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     type: Mapped[str]
     extra_data: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from papermerge.core.schemas.custom_fields import CustomField, CustomFieldType
+from papermerge.core.features.custom_fields.schema import CustomField, CustomFieldType
 
 
 def test_custom_field_extra_data_as_str():

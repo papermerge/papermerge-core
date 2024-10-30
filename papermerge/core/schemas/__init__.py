@@ -27,7 +27,6 @@ from .documents import (
 )
 from .folders import CreateFolder, Folder
 from .nodes import Node, OrderBy
-from .perms import Permission
 from .scopes import Scopes
 from .tags import CreateTag, Tag, UpdateTag
 from .users import CreateUser, RemoteUser, UpdateUser, User, UserDetails
@@ -47,7 +46,6 @@ __all__ = [
     "OrderBy",
     "CreateFolder",
     "Page",
-    "Permission",
     "Document",
     "DocumentVersion",
     "CreateDocument",

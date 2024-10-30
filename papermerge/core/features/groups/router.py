@@ -23,10 +23,9 @@ logger = logging.getLogger(__name__)
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups_without_pagination(
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ):
     """Get all groups without pagination/filtering/sorting
 
@@ -41,11 +40,10 @@ def get_groups_without_pagination(
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups(
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
     params: CommonQueryParams = Depends(),
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ):
     """Get all (paginated) groups
 
@@ -60,10 +58,9 @@ def get_groups(
 def get_group(
     group_id: int,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ):
     """Get group details
 
@@ -72,10 +69,7 @@ def get_group(
     try:
         result = db.get_group(db_session, group_id=group_id)
     except NoResultFound:
-        raise HTTPException(
-            status_code=404,
-            detail="Group not found"
-        )
+        raise HTTPException(status_code=404, detail="Group not found")
     return result
 
 
@@ -84,10 +78,9 @@ def get_group(
 def create_group(
     pygroup: schemas.CreateGroup,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_CREATE])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
     ],
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ) -> schemas.Group:
     """Creates group
 
@@ -102,14 +95,8 @@ def create_group(
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
-            raise HTTPException(
-                status_code=400,
-                detail="Group already exists"
-            )
-        raise HTTPException(
-            status_code=400,
-            detail=error_msg
-        )
+            raise HTTPException(status_code=400, detail="Group already exists")
+        raise HTTPException(status_code=400, detail=error_msg)
 
     return group
 
@@ -120,18 +107,17 @@ def create_group(
     responses={
         404: {
             "description": """No group with specified ID found""",
-            "content": OPEN_API_GENERIC_JSON_DETAIL
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
-    }
+    },
 )
 @utils.docstring_parameter(scope=scopes.GROUP_DELETE)
 def delete_group(
     group_id: int,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_DELETE])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ) -> None:
     """Deletes group
 
@@ -140,10 +126,7 @@ def delete_group(
     try:
         db.delete_group(db_session, group_id)
     except NoResultFound:
-        raise HTTPException(
-            status_code=404,
-            detail="Group not found"
-        )
+        raise HTTPException(status_code=404, detail="Group not found")
 
 
 @router.patch("/{group_id}", status_code=200, response_model=schemas.Group)
@@ -152,10 +135,9 @@ def update_group(
     group_id: int,
     attrs: schemas.UpdateGroup,
     cur_user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
+        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ) -> schemas.Group:
     """Updates group
 
@@ -163,14 +145,9 @@ def update_group(
     """
     try:
         group: schemas.Group = db.update_group(
-            db_session,
-            group_id=group_id,
-            attrs=attrs
+            db_session, group_id=group_id, attrs=attrs
         )
     except NoResultFound:
-        raise HTTPException(
-            status_code=404,
-            detail="Group not found"
-        )
+        raise HTTPException(status_code=404, detail="Group not found")
 
     return group

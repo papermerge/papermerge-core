@@ -12,14 +12,10 @@ def test_group_create(db_engine: Engine):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    group = db.create_group(
-        Session(),
-        "G1",
-        scopes=list(scopes)
-    )
+    group = db.create_group(Session(), "G1", scopes=list(scopes))
     group_details = db.get_group(db_session, group_id=group.id)
 
-    assert group_details.name == 'G1'
+    assert group_details.name == "G1"
     assert set(group_details.scopes) == scopes
 
     db.delete_group(db_session, group.id)
@@ -35,11 +31,7 @@ def test_group_create_and_delete(db_engine: Engine):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    group = db.create_group(
-        db_session,
-        "G1",
-        scopes=list(scopes)
-    )
+    group = db.create_group(db_session, "G1", scopes=list(scopes))
     db.delete_group(db_session, group_id=group.id)
 
     with db_session as session:
@@ -61,19 +53,12 @@ def test_update_group_twice(db_engine: Engine):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    group = db.create_group(
-        db_session,
-        "G1",
-        scopes=list(scopes)
-    )
+    group = db.create_group(db_session, "G1", scopes=list(scopes))
     # this method SHOULD NOT raise an exception
     db.update_group(
         db_session,
         group_id=group.id,
-        attrs=schemas.UpdateGroup(
-            name=group.name,
-            scopes=list(scopes)
-        )
+        attrs=schemas.UpdateGroup(name=group.name, scopes=list(scopes)),
     )
 
     db.delete_group(db_session, group_id=group.id)
@@ -89,11 +74,7 @@ def test_remove_permissions_from_group(db_engine: Engine):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    group = db.create_group(
-        db_session,
-        "G1",
-        scopes=list(scopes)
-    )
+    group = db.create_group(db_session, "G1", scopes=list(scopes))
 
     group_details = db.get_group(db_session, group_id=group.id)
     assert set(group_details.scopes) == scopes
@@ -103,8 +84,8 @@ def test_remove_permissions_from_group(db_engine: Engine):
         group_id=group.id,
         attrs=schemas.UpdateGroup(
             name=group.name,
-            scopes=["tag.update"]   # group will have only one perm
-        )
+            scopes=["tag.update"],  # group will have only one perm
+        ),
     )
 
     group_details = db.get_group(db_session, group_id=group.id)

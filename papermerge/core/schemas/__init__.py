@@ -26,7 +26,6 @@ from .documents import (
     Page,
 )
 from .folders import CreateFolder, Folder
-from .groups import CreateGroup, Group, GroupDetails, UpdateGroup
 from .nodes import Node, OrderBy
 from .perms import Permission
 from .scopes import Scopes
@@ -54,10 +53,6 @@ __all__ = [
     "CreateDocument",
     "Version",
     "Scopes",
-    "Group",
-    "GroupDetails",
-    "CreateGroup",
-    "UpdateGroup",
     "CustomField",
     "CreateCustomField",
     "UpdateCustomField",

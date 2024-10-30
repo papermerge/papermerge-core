@@ -3,36 +3,15 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import Column, ForeignKey, String, Table, func
+from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.features.groups.db.orm import (
+    user_groups_association,
+    user_permissions_association,
+)
+
 from .base import Base
-
-user_permissions_association = Table(
-    "core_user_user_permissions",
-    Base.metadata,
-    Column(
-        "user_id",
-        ForeignKey("core_user.id"),
-    ),
-    Column(
-        "permission_id",
-        ForeignKey("auth_permission.id"),
-    ),
-)
-
-user_groups_association = Table(
-    "core_user_groups",
-    Base.metadata,
-    Column(
-        "user_id",
-        ForeignKey("core_user.id"),
-    ),
-    Column(
-        "group_id",
-        ForeignKey("auth_group.id"),
-    ),
-)
 
 
 class DocumentTypeCustomField(Base):
@@ -81,10 +60,10 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
     )
-    permissions: Mapped[list["Permission"]] = relationship(
+    permissions: Mapped[list["Permission"]] = relationship(  # noqa: F821
         secondary=user_permissions_association, back_populates="users"
     )
-    groups: Mapped[list["Group"]] = relationship(
+    groups: Mapped[list["Group"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="users"
     )
 
@@ -202,49 +181,6 @@ class ColoredTag(Base):
     object_id: Mapped[UUID]
     tag_id: Mapped[UUID] = mapped_column(ForeignKey("core_tag.id"))
     tag: Mapped["Tag"] = relationship(primaryjoin="Tag.id == ColoredTag.tag_id")
-
-
-group_permissions_association = Table(
-    "auth_group_permissions",
-    Base.metadata,
-    Column(
-        "group_id",
-        ForeignKey("auth_group.id"),
-    ),
-    Column(
-        "permission_id",
-        ForeignKey("auth_permission.id"),
-    ),
-)
-
-
-class Permission(Base):
-    __tablename__ = "auth_permission"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    codename: Mapped[str]
-    content_type_id: Mapped[int] = mapped_column(ForeignKey("django_content_type.id"))
-    content_type: Mapped["ContentType"] = relationship()
-    groups = relationship(
-        "Group", secondary=group_permissions_association, back_populates="permissions"
-    )
-    users = relationship(
-        "User", secondary=user_permissions_association, back_populates="permissions"
-    )
-
-
-class Group(Base):
-    __tablename__ = "auth_group"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    permissions: Mapped[list["Permission"]] = relationship(
-        secondary=group_permissions_association, back_populates="groups"
-    )
-    users: Mapped[list["User"]] = relationship(
-        secondary=user_groups_association, back_populates="groups"
-    )
 
 
 class ContentType(Base):

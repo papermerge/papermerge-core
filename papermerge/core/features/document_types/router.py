@@ -5,13 +5,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import schemas, utils
+from papermerge.core import utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document_types import db, schema
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
+from papermerge.core.features.users import schema as users_schema
 
 router = APIRouter(
     prefix="/document-types",
@@ -25,7 +26,8 @@ logger = logging.getLogger(__name__)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types_without_pagination(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
 ):
     """Get all document types without pagination/filtering/sorting
@@ -43,7 +45,7 @@ def get_document_types_without_pagination(
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: CommonQueryParams = Depends(),
 ):
@@ -62,7 +64,8 @@ def get_document_types(
 def get_document_type(
     document_type_id: uuid.UUID,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
 ):
     """Get document type
@@ -80,9 +83,10 @@ def get_document_type(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_CREATE)
 def create_document_type(
-    dtype: schemas.CreateDocumentType,
+    dtype: schema.CreateDocumentType,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE])
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE]),
     ],
 ) -> schema.DocumentType:
     """Creates document type
@@ -121,7 +125,8 @@ def create_document_type(
 def delete_document_type(
     document_type_id: uuid.UUID,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE])
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE]),
     ],
 ) -> None:
     """Deletes document type
@@ -141,9 +146,10 @@ def delete_document_type(
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_UPDATE)
 def update_document_type(
     document_type_id: uuid.UUID,
-    attrs: schemas.UpdateDocumentType,
+    attrs: schema.UpdateDocumentType,
     cur_user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE])
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE]),
     ],
 ) -> schema.DocumentType:
     """Updates document type

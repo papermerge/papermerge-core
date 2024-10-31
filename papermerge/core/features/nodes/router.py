@@ -12,10 +12,10 @@ from papermerge.core import utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
-from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.nodes import schema as nodes_schema
+from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
@@ -51,7 +51,8 @@ def get_nodes_details(
 
 
 @router.get(
-    "/{parent_id}", response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
+    "/{parent_id}",
+    response_model=PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]],
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
@@ -87,11 +88,11 @@ def get_node(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
-    pynode: PyCreateFolder | PyCreateDocument,
+    pynode: nodes_schema.CreateFolder | doc_schema.CreateDocument,
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-) -> PyFolder | PyDocument:
+) -> nodes_schema.Folder | doc_schema.Document:
     """Creates a node
 
     Required scope: `{scope}`
@@ -104,7 +105,6 @@ def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
-    breakpoint()
     try:
         if pynode.ctype == "folder":
             attrs = dict(
@@ -146,11 +146,11 @@ def create_node(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
-    node: PyUpdateNode,
+    node: nodes_schema.UpdateNode,
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> PyNode:
+) -> nodes_schema.Node:
     """Updates node
 
     Required scope: `{scope}`
@@ -159,17 +159,12 @@ def update_node(
     should be non empty string (UUID).
     """
 
-    try:
-        old_node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
-    except BaseTreeNode.DoesNotExist:
-        raise HTTPException(status_code=404, detail="Does not exist")
+    with Session() as db_session:
+        updated_node = nodes_dbapi.update_node(
+            db_session, node_id=node_id, user_id=user.id, attrs=node
+        )
 
-    for key, value in node.model_dump().items():
-        if value is not None:
-            setattr(old_node, key, value)
-    old_node.save()
-
-    return PyNode.model_validate(old_node)
+    return updated_node
 
 
 @router.delete("/")
@@ -212,7 +207,7 @@ def delete_nodes(
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
-    params: PyMoveNode,
+    params: nodes_schema.MoveNode,
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
     ],
@@ -256,7 +251,7 @@ def assign_node_tags(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> schemas.Document | schemas.Folder:
+) -> doc_schema.Document | nodes_schema.Folder:
     """
     Assigns given list of tag names to the node.
 
@@ -278,9 +273,9 @@ def assign_node_tags(
     _notify_index(str(node_id))
 
     if node.ctype == "folder":
-        return schemas.Folder.model_validate(node)
+        return nodes_schema.Folder.model_validate(node)
 
-    return schemas.Document.model_validate(node)
+    return doc_schema.Document.model_validate(node)
 
 
 @router.patch("/{node_id}/tags")
@@ -289,9 +284,9 @@ def update_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> PyNode:
+) -> nodes_schema.Node:
     """
     Appends given list of tag names to the node.
 
@@ -323,7 +318,7 @@ def update_node_tags(
     node.tags.add(*tags, tag_kwargs={"user_id": user.id})
     _notify_index(node_id)
 
-    return PyNode.model_validate(node)
+    return nodes_schema.Node.model_validate(node)
 
 
 @router.delete("/{node_id}/tags")
@@ -332,9 +327,9 @@ def delete_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> PyNode:
+) -> nodes_schema.Node:
     """
     Dissociate given tags the node.
 
@@ -349,7 +344,7 @@ def delete_node_tags(
 
     node.tags.remove(*tags)
 
-    return PyNode.model_validate(node)
+    return nodes_schema.Node.model_validate(node)
 
 
 @skip_in_tests

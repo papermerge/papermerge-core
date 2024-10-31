@@ -13,7 +13,7 @@ from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.schemas import User
+from papermerge.core.features.users.schema import User
 
 router = APIRouter(
     prefix="/custom-fields",

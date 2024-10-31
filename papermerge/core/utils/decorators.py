@@ -4,7 +4,6 @@ import os
 def skip_in_tests(orig_func):
     def inner(*args, **kwargs):
         if os.environ.get("PAPERMERGE__REDIS__URL", False):
-            breakpoint()
             orig_func(*args, **kwargs)
 
     return inner

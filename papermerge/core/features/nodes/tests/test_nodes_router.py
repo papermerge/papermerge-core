@@ -2,7 +2,9 @@ import uuid
 
 from sqlalchemy import select
 
+from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.test.types import AuthTestClient
 
@@ -355,13 +357,15 @@ def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
     assert {"folder_a", "folder_b"} == set(folder_tag_names)
 
 
-def test_rename_folder(auth_api_client: AuthTestClient):
+def test_rename_folder(auth_api_client: AuthTestClient, make_folder):
     user = auth_api_client.user
-    folder = folder_recipe.make(title="Old Title", user=user, parent=user.home_folder)
+    folder = make_folder(title="Old Title", user=user, parent=user.home_folder)
 
     response = auth_api_client.patch(f"/nodes/{folder.id}", json={"title": "New Title"})
 
     assert response.status_code == 200, response.content
 
-    renamed_folder: Folder = Folder.objects.get(pk=folder.pk)
+    with Session() as db_session:
+        renamed_folder = nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
+
     assert renamed_folder.title == "New Title"

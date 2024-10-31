@@ -6,9 +6,10 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Engine, select
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import constants, schemas
+from papermerge.core import constants
 from papermerge.core.auth import scopes
 from papermerge.core.db.engine import Session
+from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.groups.db.orm import Group, Permission
 from papermerge.core.features.nodes.db.orm import Folder
 from papermerge.core.features.users.db.orm import User
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
-def get_user(db_session: Session, user_id_or_username: str) -> schemas.User:
+def get_user(db_session: Session, user_id_or_username: str) -> users_schema.User:
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
     if is_valid_uuid(user_id_or_username):
@@ -40,18 +41,18 @@ def get_user(db_session: Session, user_id_or_username: str) -> schemas.User:
         raise UserNotFound(f"User with id/username='{user_id_or_username}' not found")
 
     logger.debug(f"User {db_user} fetched")
-    model_user = schemas.User.model_validate(db_user)
+    model_user = users_schema.User.model_validate(db_user)
 
     return model_user
 
 
-def get_user_details(db_session, user_id: UUID) -> schemas.UserDetails:
+def get_user_details(db_session, user_id: UUID) -> users_schema.UserDetails:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
     db_user = db_session.scalars(stmt, params).one()
 
-    result = schemas.UserDetails(
+    result = users_schema.UserDetails(
         id=db_user.id,
         username=db_user.username,
         email=db_user.email,
@@ -65,15 +66,17 @@ def get_user_details(db_session, user_id: UUID) -> schemas.UserDetails:
         groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
     )
 
-    model_user = schemas.UserDetails.model_validate(result)
+    model_user = users_schema.UserDetails.model_validate(result)
 
     return model_user
 
 
-def get_users(engine: Engine) -> list[schemas.User]:
+def get_users(engine: Engine) -> list[users_schema.User]:
     with Session(engine) as session:
         db_users = session.scalars(select(User))
-        model_users = [schemas.User.model_validate(db_user) for db_user in db_users]
+        model_users = [
+            users_schema.User.model_validate(db_user) for db_user in db_users
+        ]
 
     return model_users
 
@@ -88,7 +91,7 @@ def create_user(
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: UUID | None = None,
-) -> schemas.User:
+) -> users_schema.User:
     if scopes is None:
         scopes = []
 
@@ -141,14 +144,14 @@ def create_user(
     db_user.groups = db_groups
     db_session.commit()
 
-    user = schemas.User.model_validate(db_user)
+    user = users_schema.User.model_validate(db_user)
 
     return user
 
 
 def update_user(
-    db_session, user_id: UUID, attrs: schemas.UpdateUser
-) -> schemas.UserDetails:
+    db_session, user_id: UUID, attrs: users_schema.UpdateUser
+) -> users_schema.UserDetails:
     stmt = select(Permission).where(Permission.codename.in_(attrs.scopes))
     perms = db_session.execute(stmt).scalars().all()
 
@@ -167,7 +170,7 @@ def update_user(
         user.password = pbkdf2_sha256.hash(attrs.password)
 
     db_session.commit()
-    result = schemas.UserDetails(
+    result = users_schema.UserDetails(
         id=user.id,
         username=user.username,
         email=user.email,
@@ -181,7 +184,7 @@ def update_user(
         groups=list([{"id": g.id, "name": g.name} for g in groups]),
     )
 
-    model_user = schemas.UserDetails.model_validate(result)
+    model_user = users_schema.UserDetails.model_validate(result)
 
     return model_user
 

@@ -4,8 +4,9 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 
-from papermerge.core import db, schemas, types
+from papermerge.core import db, types
 from papermerge.core.auth import scopes
+from papermerge.core.features.users import schema as users_schema
 from papermerge.core.auth.remote_scheme import RemoteUserScheme
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.db.engine import Session
@@ -48,9 +49,9 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
 
 def get_current_user(
     security_scopes: SecurityScopes,
-    remote_user: schemas.RemoteUser | None = Depends(remote_user_scheme),
+    remote_user: users_schema.RemoteUser | None = Depends(remote_user_scheme),
     token: str | None = Depends(oauth2_scheme),
-) -> schemas.User:
+) -> users_schema.User:
     user = None
     total_scopes = []
 

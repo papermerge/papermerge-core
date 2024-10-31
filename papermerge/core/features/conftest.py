@@ -21,6 +21,19 @@ from papermerge.core.utils import base64
 from papermerge.test.types import AuthTestClient
 
 
+@pytest.fixture()
+def make_folder(db_session: Session):
+    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
+        folder = nodes_orm.Folder(
+            id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
+        )
+        db_session.add(folder)
+        db_session.commit()
+        return folder
+
+    return _maker
+
+
 @pytest.fixture(scope="function")
 def db_session():
     Base.metadata.create_all(engine)

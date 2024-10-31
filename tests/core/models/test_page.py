@@ -1,18 +1,17 @@
 import io
 
-from papermerge.test import TestCase
-from papermerge.core.models import (User, Document)
+from papermerge.core.models import Document, User
+from papermerge.test.testcases import TestCase
 
 
 class TestDocumentModel(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(username="user1")
         self.doc = Document.objects.create_document(
             title="invoice.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         self.doc_version = self.doc.versions.last()
 
@@ -20,7 +19,7 @@ class TestDocumentModel(TestCase):
         self.doc_version.create_pages(page_count=1)
         page = self.doc_version.pages.first()
 
-        page.update_text_field(io.StringIO(''))
+        page.update_text_field(io.StringIO(""))
 
         self.assertFalse(page.has_text)
 
@@ -28,7 +27,7 @@ class TestDocumentModel(TestCase):
         self.doc_version.create_pages(page_count=1)
         page = self.doc_version.pages.first()
 
-        page.update_text_field(io.StringIO('Hello OCR'))
+        page.update_text_field(io.StringIO("Hello OCR"))
 
         self.assertTrue(page.has_text)
 
@@ -37,8 +36,8 @@ class TestDocumentModel(TestCase):
         page = self.doc_version.pages.first()
 
         # notice left and right white spaces
-        page.update_text_field(io.StringIO(' Hello   '))
-        self.assertEqual(page.stripped_text, 'Hello')
+        page.update_text_field(io.StringIO(" Hello   "))
+        self.assertEqual(page.stripped_text, "Hello")
         self.assertTrue(page.has_text)
 
     def test_page_is_archived(self):

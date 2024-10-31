@@ -1,7 +1,6 @@
 import logging
 import os
 
-from django.conf import settings
 from fastapi import FastAPI
 
 from papermerge.core.features.custom_fields.router import router as custom_fields_router
@@ -24,7 +23,6 @@ from .tasks import router as tasks_router
 from .thumbnails import router as thumbnails_router
 from .users import router as users_router
 from .version import router as version_router
-from .ws import router as ws_router
 
 __all__ = ("register_routers",)
 
@@ -51,10 +49,3 @@ def register_routers(app: FastAPI):
     app.include_router(probe_router, prefix=API_PREFIX)
     app.include_router(custom_fields_router, prefix=API_PREFIX)
     app.include_router(document_types_router, prefix=API_PREFIX)
-
-    # if redis is not provided (i.e. memory backed for notif is used)
-    # then ws_router will block all other http handlers and
-    # application will look like "unresponsive" for REST API endpoints
-    if "memory" not in settings.NOTIFICATION_URL:
-        # Add ws endpoint only if REDIS (non memory backend) is there
-        app.include_router(ws_router, prefix=API_PREFIX)

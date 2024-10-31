@@ -11,6 +11,7 @@ from papermerge.conf import settings
 from papermerge.core import constants as const
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
+from papermerge.core.features.document.schema import DocumentCFV
 from papermerge.core.models import Document
 from papermerge.core.types import OrderEnum, PaginatedResponse
 
@@ -52,7 +53,7 @@ def get_documents_by_type(
     db_session: db.Session = Depends(db.get_session),
     order_by: OrderBy = None,
     order: OrderEnum = OrderEnum.desc,
-) -> PaginatedResponse[schemas.DocumentCFV]:
+) -> PaginatedResponse[DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
 

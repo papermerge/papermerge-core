@@ -9,23 +9,13 @@ from sqlalchemy.orm import Session
 from papermerge.core import constants
 from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import models as orm
-from papermerge.core.db.base import Base
-from papermerge.core.db.engine import engine
+from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types.db import create_document_type
 from papermerge.core.models import User
-from papermerge.core.routers import register_routers as reg_core_routers
-from papermerge.core.schemas import CustomFieldType
+from papermerge.core.routers.router import register_routers as reg_core_routers
 from papermerge.core.utils import base64
 from papermerge.search.routers import register_routers as reg_search_routers
 from papermerge.test.types import AuthTestClient
-
-
-@pytest.fixture(autouse=True, scope="function")
-def db_schema():
-    breakpoint()
-    Base.metadata.create_all(engine)
-    yield
-    Base.metadata.drop_all(engine)
 
 
 @pytest.fixture

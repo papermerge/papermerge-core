@@ -2,13 +2,11 @@ import pytest
 
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import NODE_TYPE_DOCUMENT, NODE_TYPE_FOLDER
-from papermerge.test import TestCase
-from papermerge.test.baker_recipes import (folder_recipe, make_folders,
-                                           user_recipe)
+from papermerge.test.baker_recipes import folder_recipe, make_folders, user_recipe
+from papermerge.test.testcases import TestCase
 
 
 class TestNodeModel(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(username="user1")
 
@@ -18,14 +16,11 @@ class TestNodeModel(TestCase):
         Node instance (BaseTreeNode).
         """
         folder = Folder.objects.create(
-            title='My Documents',
-            user=self.user,
-            parent=self.user.inbox_folder
+            title="My Documents", user=self.user, parent=self.user.inbox_folder
         )
 
         folder.tags.set(  # set tags via Folder instance
-            ['folder_a', 'folder_b'],
-            tag_kwargs={"user": self.user}
+            ["folder_a", "folder_b"], tag_kwargs={"user": self.user}
         )
 
         folder.refresh_from_db()
@@ -45,9 +40,7 @@ class TestNodeModel(TestCase):
         what type is this node - is it a document? is it a folder?
         """
         f1 = Folder.objects.create(
-            title='My Documents',
-            user=self.user,
-            parent=self.user.inbox_folder
+            title="My Documents", user=self.user, parent=self.user.inbox_folder
         )
         node = BaseTreeNode.objects.get(pk=f1.pk)
 
@@ -65,7 +58,7 @@ class TestNodeModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         node = BaseTreeNode.objects.get(pk=doc.pk)
 
@@ -81,12 +74,10 @@ class TestNodeModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         f2 = Folder.objects.create(
-            title='My Documents',
-            user=self.user,
-            parent=self.user.inbox_folder
+            title="My Documents", user=self.user, parent=self.user.inbox_folder
         )
 
         node1 = BaseTreeNode.objects.get(pk=doc1.pk)
@@ -106,12 +97,10 @@ class TestNodeModel(TestCase):
             title="three-pages.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         f2 = Folder.objects.create(
-            title='My Documents',
-            user=self.user,
-            parent=self.user.inbox_folder
+            title="My Documents", user=self.user, parent=self.user.inbox_folder
         )
 
         node1 = BaseTreeNode.objects.get(pk=doc1.pk)
@@ -126,25 +115,13 @@ class TestNodeModel(TestCase):
 @pytest.mark.django_db
 def test_get_descendants():
     user = user_recipe.make()
-    my_docs = folder_recipe.make(
-        user=user,
-        parent=user.inbox_folder
-    )
+    my_docs = folder_recipe.make(user=user, parent=user.inbox_folder)
 
-    sub1 = folder_recipe.make(
-        user=user,
-        parent=my_docs
-    )
+    sub1 = folder_recipe.make(user=user, parent=my_docs)
 
-    sub2 = folder_recipe.make(
-        user=user,
-        parent=sub1
-    )
+    sub2 = folder_recipe.make(user=user, parent=sub1)
 
-    folder_recipe.make(
-        user=user,
-        parent=sub2
-    )
+    folder_recipe.make(user=user, parent=sub2)
 
     descendants = my_docs.get_descendants(include_self=False)
     assert len(descendants) == 3
@@ -156,25 +133,13 @@ def test_get_descendants():
 @pytest.mark.django_db
 def test_get_ancestors():
     user = user_recipe.make()
-    my_docs = folder_recipe.make(
-        user=user,
-        parent=user.inbox_folder
-    )
+    my_docs = folder_recipe.make(user=user, parent=user.inbox_folder)
 
-    sub1 = folder_recipe.make(
-        user=user,
-        parent=my_docs
-    )
+    sub1 = folder_recipe.make(user=user, parent=my_docs)
 
-    sub2 = folder_recipe.make(
-        user=user,
-        parent=sub1
-    )
+    sub2 = folder_recipe.make(user=user, parent=sub1)
 
-    folder_recipe.make(
-        user=user,
-        parent=sub2
-    )
+    folder_recipe.make(user=user, parent=sub2)
 
     descendants = sub2.get_ancestors(include_self=False)
     assert len(descendants) == 3
@@ -202,21 +167,15 @@ def test_get_ancestors_returns_correct_order():
     last one in the list.
     """
     user = user_recipe.make()
-    folder1 = folder_recipe.make(
-        title='folder1',
-        user=user,
-        parent=user.home_folder
-    )
-    folder2 = folder_recipe.make(title='folder2', parent=folder1, user=user)
-    folder3 = folder_recipe.make(title='folder3', parent=folder2, user=user)
+    folder1 = folder_recipe.make(title="folder1", user=user, parent=user.home_folder)
+    folder2 = folder_recipe.make(title="folder2", parent=folder1, user=user)
+    folder3 = folder_recipe.make(title="folder3", parent=folder2, user=user)
 
     actual_titles = list(item.title for item in folder3.get_ancestors())
     # *Order* of list items is important here:
     # .home folder is first and the node whose ancestors are returned
     # has last position
-    expected_titles = [
-        Folder.HOME_TITLE, folder1.title, folder2.title, folder3.title
-    ]
+    expected_titles = [Folder.HOME_TITLE, folder1.title, folder2.title, folder3.title]
     # lists are compared here (as order is important) - not sets!
     assert actual_titles == expected_titles
 
@@ -237,20 +196,14 @@ def test_get_ancestors_returns_correct_order_dont_include_self():
     in the result list.
     """
     user = user_recipe.make()
-    folder1 = folder_recipe.make(
-        title='folder1',
-        user=user,
-        parent=user.home_folder
-    )
-    folder2 = folder_recipe.make(title='folder2', parent=folder1, user=user)
-    folder3 = folder_recipe.make(title='folder3', parent=folder2, user=user)
+    folder1 = folder_recipe.make(title="folder1", user=user, parent=user.home_folder)
+    folder2 = folder_recipe.make(title="folder2", parent=folder1, user=user)
+    folder3 = folder_recipe.make(title="folder3", parent=folder2, user=user)
 
     actual_titles = list(
         item.title for item in folder3.get_ancestors(include_self=False)
     )
-    expected_titles = [
-        Folder.HOME_TITLE, folder1.title, folder2.title
-    ]
+    expected_titles = [Folder.HOME_TITLE, folder1.title, folder2.title]
     assert actual_titles == expected_titles
 
 
@@ -271,11 +224,9 @@ def test_get_by_breadcrumb_with_duplicate_paths(user: User):
 
     folder = Folder.objects.get_by_breadcrumb(".home/A/B", user)
 
-    actual_breadcrumb = '/'.join([
-        title for uuid, title in folder.breadcrumb
-    ])
+    actual_breadcrumb = "/".join([title for uuid, title in folder.breadcrumb])
 
-    assert ".home/A/B/" == actual_breadcrumb + '/'
+    assert ".home/A/B/" == actual_breadcrumb + "/"
     assert "B" == folder.title
 
 
@@ -289,33 +240,27 @@ def test_get_by_breadcrumb_with_same_of_under_multiple_users():
     user_B
         .home/X/Y/Z
     """
-    user_A = user_recipe.make(username='user_A')
-    user_B = user_recipe.make(username='user_B')
+    user_A = user_recipe.make(username="user_A")
+    user_B = user_recipe.make(username="user_B")
     make_folders(".home/X/Y/Z", user=user_A)
     make_folders(".home/X/Y/Z", user=user_B)
 
     # find folder under user B
-    user_B_folder = Folder.objects.get_by_breadcrumb(
-        ".home/X/Y",
-        user=user_B
-    )
+    user_B_folder = Folder.objects.get_by_breadcrumb(".home/X/Y", user=user_B)
 
-    actual_breadcrumb_b = '/'.join([
-        title for uuid, title in user_B_folder.breadcrumb
-    ]) + '/'
+    actual_breadcrumb_b = (
+        "/".join([title for uuid, title in user_B_folder.breadcrumb]) + "/"
+    )
 
     assert ".home/X/Y/" == actual_breadcrumb_b
     assert user_B == user_B_folder.user
 
     # find folder under user A
-    user_A_folder = Folder.objects.get_by_breadcrumb(
-        ".home/X/Y",
-        user=user_A
-    )
+    user_A_folder = Folder.objects.get_by_breadcrumb(".home/X/Y", user=user_A)
 
-    actual_breadcrumb_a = '/'.join([
-        title for uuid, title in user_B_folder.breadcrumb
-    ]) + '/'
+    actual_breadcrumb_a = (
+        "/".join([title for uuid, title in user_B_folder.breadcrumb]) + "/"
+    )
     assert ".home/X/Y/" == actual_breadcrumb_a
     assert user_A == user_A_folder.user
 
@@ -323,13 +268,13 @@ def test_get_by_breadcrumb_with_same_of_under_multiple_users():
 @pytest.mark.django_db
 def test_get_by_breadcrumb_basic(user: User):
     """Test ``node.get_by_breadcrumb`` method"""
-    make_folders('.home/My Documents/X/Y/Z', user)
+    make_folders(".home/My Documents/X/Y/Z", user)
     home = Folder.objects.get(pk=user.home_folder.pk)
 
-    my_documents = Folder.objects.get(title='My Documents', user=user)
+    my_documents = Folder.objects.get(title="My Documents", user=user)
 
     # get_by_breadcrumb method should correctly return 'My Documents' folder
-    my_docs = Folder.objects.get_by_breadcrumb('.home/My Documents/', user)
+    my_docs = Folder.objects.get_by_breadcrumb(".home/My Documents/", user)
 
     expected_result = [
         (home.pk, home.title),
@@ -359,23 +304,15 @@ def test_delete_nodes_recursively_via_basetreenode(user: User):
     "sub-momo" should be deleted as well
     """
     user = user_recipe.make()
-    momo = folder_recipe.make(
-        title='momo',
-        user=user,
-        parent=user.home_folder
-    )
+    momo = folder_recipe.make(title="momo", user=user, parent=user.home_folder)
 
-    folder_recipe.make(
-        title='sub-momo',
-        user=user,
-        parent=momo
-    )
+    folder_recipe.make(title="sub-momo", user=user, parent=momo)
 
     # delete folders via BaseTreeNode
-    node = BaseTreeNode.objects.get(title='momo')
+    node = BaseTreeNode.objects.get(title="momo")
     node.delete()
 
-    sub_momo_qs = BaseTreeNode.objects.filter(title='sub-momo')
+    sub_momo_qs = BaseTreeNode.objects.filter(title="sub-momo")
     assert sub_momo_qs.count() == 0
 
 
@@ -390,21 +327,13 @@ def test_delete_nodes_recursively_via_folder(user: User):
     "sub-momo" should be deleted as well
     """
     user = user_recipe.make()
-    momo = folder_recipe.make(
-        title='momo',
-        user=user,
-        parent=user.home_folder
-    )
+    momo = folder_recipe.make(title="momo", user=user, parent=user.home_folder)
 
-    folder_recipe.make(
-        title='sub-momo',
-        user=user,
-        parent=momo
-    )
+    folder_recipe.make(title="sub-momo", user=user, parent=momo)
 
     # delete folders via Folder model
-    folder = Folder.objects.get(title='momo')
+    folder = Folder.objects.get(title="momo")
     folder.delete()
 
-    sub_momo_qs = BaseTreeNode.objects.filter(title='sub-momo')
+    sub_momo_qs = BaseTreeNode.objects.filter(title="sub-momo")
     assert sub_momo_qs.count() == 0

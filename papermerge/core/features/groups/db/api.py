@@ -100,51 +100,45 @@ def sync_perms(db_session: Session):
     `core.auth.scopes.SCOPES`.
     """
     # A. add missing scopes to perms table
-    with db_session as session:
-        scopes_to_be_added = []
-        db_perms = session.scalars(select(orm.Permission))
-        model_perms = [
-            schema.Permission.model_validate(db_perm) for db_perm in db_perms
-        ]
-        perms_codenames = [perm.codename for perm in model_perms]
 
-        # collect missing scopes
-        for codename, desc in scopes.SCOPES.items():
-            if codename not in perms_codenames:
-                scopes_to_be_added.append((codename, desc))
+    scopes_to_be_added = []
+    db_perms = db_session.scalars(select(orm.Permission))
+    model_perms = [schema.Permission.model_validate(db_perm) for db_perm in db_perms]
+    perms_codenames = [perm.codename for perm in model_perms]
 
-        # content type is not used by the application anymore. It is
-        # a leftover from Django auth system
-        # Here we just add one fake... just to satisfy DB relation integrity
-        try:
-            content_type = session.scalars(
-                select(ContentType).where(
-                    ContentType.app_label == "core",
-                    ContentType.model == "scope",
-                )
-            ).one()
-        except NoResultFound:
-            content_type = None
+    # collect missing scopes
+    for codename, desc in scopes.SCOPES.items():
+        if codename not in perms_codenames:
+            scopes_to_be_added.append((codename, desc))
 
-        if content_type is None:
-            content_type = ContentType(app_label="core", model="scope")
-        # add missing content type (again, it is not used; legacy table layout)
-        session.add(content_type)
-        # add missing scopes
-        for scope in scopes_to_be_added:
-            session.add(
-                orm.Permission(
-                    codename=scope[0], name=scope[1], content_type=content_type
-                )
+    # content type is not used by the application anymore. It is
+    # a leftover from Django auth system
+    # Here we just add one fake... just to satisfy DB relation integrity
+    try:
+        content_type = db_session.scalars(
+            select(ContentType).where(
+                ContentType.app_label == "core",
+                ContentType.model == "scope",
             )
-        session.commit()
+        ).one()
+    except NoResultFound:
+        content_type = None
+
+    if content_type is None:
+        content_type = ContentType(app_label="core", model="scope")
+    # add missing content type (again, it is not used; legacy table layout)
+    db_session.add(content_type)
+    # add missing scopes
+    for scope in scopes_to_be_added:
+        db_session.add(
+            orm.Permission(codename=scope[0], name=scope[1], content_type=content_type)
+        )
+    db_session.commit()
 
     # B. removes permissions not present in scopes
-    with db_session as session:
-        scope_codenames = [scope for scope in scopes.SCOPES.keys()]
 
-        stmt = delete(orm.Permission).where(
-            orm.Permission.codename.notin_(scope_codenames)
-        )
-        session.execute(stmt)
-        session.commit()
+    scope_codenames = [scope for scope in scopes.SCOPES.keys()]
+
+    stmt = delete(orm.Permission).where(orm.Permission.codename.notin_(scope_codenames))
+    db_session.execute(stmt)
+    db_session.commit()

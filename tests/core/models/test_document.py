@@ -13,14 +13,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core import db, schemas
-from papermerge.core.db.doc import str2date
-from papermerge.core.db.models import CustomField
+from papermerge.core.features.custom_fields.models import CustomField
 from papermerge.core.features.document_types import db as db_dtype_api
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
 from papermerge.core.types import OrderEnum
-from papermerge.test import TestCase
+from papermerge.core.utils.misc import str2date
 from papermerge.test.baker_recipes import document_recipe, folder_recipe, user_recipe
+from papermerge.test.testcases import TestCase
 from papermerge.test.utils import breadcrumb_fmt
 
 MODELS_DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))

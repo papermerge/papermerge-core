@@ -1,21 +1,20 @@
 import logging
 import uuid
-from typing import Annotated, List, Union
+from typing import Annotated, Union
 from uuid import UUID
 
 from celery import current_app
 from django.conf import settings
 from django.db.utils import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException, Security, Query
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 
 from papermerge.core import db, schemas, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import INDEX_ADD_NODE
+from papermerge.core.db.engine import Session
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
-from papermerge.core.schemas.documents import \
-    CreateDocument as PyCreateDocument
+from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
 from papermerge.core.schemas.documents import Document as PyDocument
 from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
 from papermerge.core.schemas.folders import Folder as PyFolder
@@ -28,10 +27,7 @@ from .common import OPEN_API_GENERIC_JSON_DETAIL
 from .paginator import PaginatedResponse
 from .params import CommonQueryParams
 
-router = APIRouter(
-    prefix="/nodes",
-    tags=["nodes"]
-)
+router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +36,10 @@ logger = logging.getLogger(__name__)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
     user: Annotated[
-        schemas.User,
-        Security(
-            get_current_user,
-            scopes=[scopes.NODE_VIEW]
-        )
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-    db_session: db.Session = Depends(db.get_session)
+    db_session: db.Session = Depends(db.get_session),
 ) -> list[PyFolder | PyDocument]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
@@ -66,39 +58,37 @@ def get_nodes_details(
 
 
 @router.get(
-    "/{parent_id}",
-    response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
+    "/{parent_id}", response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     params: CommonQueryParams = Depends(),
-    engine: db.Engine = Depends(db.get_engine)
 ):
     """Returns a list nodes of parent_id
 
     Required scope: `{scope}`
     """
-    order_by = ['ctype', 'title', 'created_at', 'updated_at']
+    order_by = ["ctype", "title", "created_at", "updated_at"]
 
     if params.order_by:
-        order_by = [
-            item.strip() for item in params.order_by.split(',')
-        ]
+        order_by = [item.strip() for item in params.order_by.split(",")]
 
-    return db.get_paginated_nodes(
-        engine=engine,
-        parent_id=UUID(parent_id),
-        user_id=user.id,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=order_by,
-        filter=params.filter
-    )
+    with Session() as db_session:
+        results = db.get_paginated_nodes(
+            db_session=db_session,
+            parent_id=UUID(parent_id),
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            order_by=order_by,
+            filter=params.filter,
+        )
+
+    return results
 
 
 @router.post("/", status_code=201)
@@ -106,12 +96,8 @@ def get_node(
 def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
     user: Annotated[
-        schemas.User,
-        Security(
-            get_current_user,
-            scopes=[scopes.NODE_CREATE]
-        )
-    ]
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
+    ],
 ) -> PyFolder | PyDocument:
     """Creates a node
 
@@ -128,12 +114,10 @@ def create_node(
     try:
         if pynode.ctype == "folder":
             attrs = dict(
-                title=pynode.title,
-                user_id=user.id,
-                parent_id=pynode.parent_id
+                title=pynode.title, user_id=user.id, parent_id=pynode.parent_id
             )
             if pynode.id:
-                attrs['id'] = pynode.id
+                attrs["id"] = pynode.id
 
             node = Folder.objects.create(**attrs)
             klass = PyFolder
@@ -151,18 +135,15 @@ def create_node(
                 size=0,
                 page_count=0,
                 ocr=pynode.ocr,
-                file_name=pynode.title
+                file_name=pynode.title,
             )
             if pynode.id:
-                attrs['id'] = pynode.id
+                attrs["id"] = pynode.id
 
             node = Document.objects.create_document(**attrs)
             klass = PyDocument
     except IntegrityError:
-        raise HTTPException(
-            status_code=400,
-            detail="Title already exists"
-        )
+        raise HTTPException(status_code=400, detail="Title already exists")
 
     return klass.model_validate(node)
 
@@ -172,10 +153,7 @@ def create_node(
 def update_node(
     node_id: UUID,
     node: PyUpdateNode,
-    user: Annotated[
-        User,
-        Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ]
+    user: Annotated[User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])],
 ) -> PyNode:
     """Updates node
 
@@ -188,10 +166,7 @@ def update_node(
     try:
         old_node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
     except BaseTreeNode.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Does not exist")
 
     for key, value in node.model_dump().items():
         if value is not None:
@@ -204,12 +179,11 @@ def update_node(
 @router.delete("/")
 @utils.docstring_parameter(scope=scopes.NODE_DELETE)
 def delete_nodes(
-    list_of_uuids: List[UUID],
+    list_of_uuids: list[UUID],
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.NODE_DELETE])
-    ]
-) -> List[UUID]:
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
+    ],
+) -> list[UUID]:
     """Deletes nodes with specified UUIDs
 
     Required scope: `{scope}`
@@ -219,9 +193,7 @@ def delete_nodes(
     were found) - will return an empty list.
     """
     deleted_nodes_uuids = []
-    for node in BaseTreeNode.objects.filter(
-        user_id=user.id, id__in=list_of_uuids
-    ):
+    for node in BaseTreeNode.objects.filter(user_id=user.id, id__in=list_of_uuids):
         deleted_nodes_uuids.append(node.id)
         node.delete()
 
@@ -234,25 +206,21 @@ def delete_nodes(
         432: {
             "description": """Move of mentioned node is not possible due
             to duplicate title on the target""",
-            "content": OPEN_API_GENERIC_JSON_DETAIL
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         },
         404: {
             "description": """No target node with specified UUID found""",
-            "content": OPEN_API_GENERIC_JSON_DETAIL
-        }
-    }
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
     params: PyMoveNode,
     user: Annotated[
-        schemas.User,
-        Security(
-            get_current_user,
-            scopes=[scopes.NODE_MOVE]
-        )
-    ]
-) -> List[UUID]:
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
+    ],
+) -> list[UUID]:
     """Move source nodes into the target node.
 
     Required scope: `{scope}`
@@ -268,10 +236,7 @@ def move_nodes(
         target_model = BaseTreeNode.objects.get(pk=params.target_id)
     except BaseTreeNode.DoesNotExist as exc:
         logger.error(exc, exc_info=True)
-        raise HTTPException(
-            status_code=404,
-            detail="Target not found"
-        )
+        raise HTTPException(status_code=404, detail="Target not found")
 
     for node_model in BaseTreeNode.objects.filter(pk__in=params.source_ids):
         try:
@@ -281,7 +246,7 @@ def move_nodes(
             raise HTTPException(
                 status_code=432,
                 detail=f"Move not possible for '{node_model.title}'"
-                " because node with same title already present on the target"
+                " because node with same title already present on the target",
             )
 
     return params.source_ids
@@ -291,14 +256,10 @@ def move_nodes(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def assign_node_tags(
     node_id: UUID,
-    tags: List[str],
+    tags: list[str],
     user: Annotated[
-        schemas.User,
-        Security(
-            get_current_user,
-            scopes=[scopes.NODE_UPDATE]
-        )
-    ]
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
 ) -> schemas.Document | schemas.Folder:
     """
     Assigns given list of tag names to the node.
@@ -315,10 +276,7 @@ def assign_node_tags(
     try:
         node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
     except BaseTreeNode.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Does not exist")
 
     node.tags.set(tags, tag_kwargs={"user_id": user.id})
     _notify_index(str(node_id))
@@ -333,14 +291,10 @@ def assign_node_tags(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node_tags(
     node_id: UUID,
-    tags: List[str],
+    tags: list[str],
     user: Annotated[
-        schemas.User,
-        Security(
-            get_current_user,
-            scopes=[scopes.NODE_UPDATE]
-        )
-    ]
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
 ) -> PyNode:
     """
     Appends given list of tag names to the node.
@@ -368,10 +322,7 @@ def update_node_tags(
     try:
         node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
     except BaseTreeNode.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Does not exist")
 
     node.tags.add(*tags, tag_kwargs={"user_id": user.id})
     _notify_index(node_id)
@@ -383,14 +334,10 @@ def update_node_tags(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def delete_node_tags(
     node_id: UUID,
-    tags: List[str],
-        user: Annotated[
-            schemas.User,
-            Security(
-                get_current_user,
-                scopes=[scopes.NODE_UPDATE]
-            )
-        ]
+    tags: list[str],
+    user: Annotated[
+        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
 ) -> PyNode:
     """
     Dissociate given tags the node.
@@ -402,10 +349,7 @@ def delete_node_tags(
     try:
         node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
     except BaseTreeNode.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Does not exist")
 
     node.tags.remove(*tags)
 
@@ -416,7 +360,5 @@ def delete_node_tags(
 def _notify_index(node_id: str):
     id_as_str = str(node_id)  # just in case, make sure it is str
     current_app.send_task(
-        INDEX_ADD_NODE,
-        kwargs={'node_id': id_as_str},
-        route_name='i3'
+        INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3"
     )

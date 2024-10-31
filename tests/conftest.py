@@ -61,12 +61,50 @@ def make_user(db_session: Session):
             lang="de",
             user_id=user_id,
         )
-        db_session.add_all([db_home, db_inbox, db_user])
+        db_session.add(db_inbox)
+        db_session.add(db_home)
+        db_session.add(db_user)
+        db_session.commit()
         db_user.home_folder_id = db_home.id
         db_user.inbox_folder_id = db_inbox.id
         db_session.commit()
 
         return db_user
+
+    return _maker
+
+
+@pytest.fixture()
+def make_folder(db_session: Session):
+    def _maker(title: str, user: orm.User, parent: orm.Folder):
+        folder = orm.Folder(
+            id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
+        )
+        db_session.add(folder)
+        db_session.commit()
+        return folder
+
+    return _maker
+
+
+@pytest.fixture
+def make_document(db_session: Session):
+    def _maker(title: str, user: orm.User, parent: orm.Folder):
+        doc_id = uuid.uuid4()
+        doc = doc_orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=title,
+            user=user,
+            parent_id=parent.id,
+            lang="de",
+        )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
 
     return _maker
 

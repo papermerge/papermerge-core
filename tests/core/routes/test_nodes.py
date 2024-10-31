@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from papermerge.core import schemas
 from papermerge.core.models import User
 from papermerge.core.types import PaginatedResponse
-from papermerge.test.baker_recipes import document_recipe, folder_recipe
 from papermerge.test.types import AuthTestClient
 
 
@@ -21,7 +20,7 @@ def test_initial_users_home_folder_is_empty(montaigne: User, api_client: TestCli
 
 
 @pytest.mark.django_db(transaction=True)
-def test_basic_sorting_by_title(auth_api_client: AuthTestClient):
+def test_basic_sorting_by_title(auth_api_client: AuthTestClient, make_folder):
     """
     Tests very basic sorting. In this test sorting by title:
 
@@ -33,7 +32,7 @@ def test_basic_sorting_by_title(auth_api_client: AuthTestClient):
     """
     home = auth_api_client.user.home_folder
     for title in ("A", "B"):
-        folder_recipe.make(title=title, user=auth_api_client.user, parent=home)
+        make_folder(title=title, user=auth_api_client.user, parent=home)
 
     # Check "ASC" part; first returned item must be A, and second B
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=title")
@@ -51,7 +50,9 @@ def test_basic_sorting_by_title(auth_api_client: AuthTestClient):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_basic_sorting_by_ctype(auth_api_client: AuthTestClient):
+def test_basic_sorting_by_ctype(
+    auth_api_client: AuthTestClient, make_folder, make_document
+):
     """
     Tests very basic sorting. In this test sorting by ctype:
 
@@ -62,8 +63,8 @@ def test_basic_sorting_by_ctype(auth_api_client: AuthTestClient):
     (2) Must return items sorted desc by ctype
     """
     home = auth_api_client.user.home_folder
-    folder_recipe.make(title="A", user=auth_api_client.user, parent=home)
-    document_recipe.make(title="invoice.pdf", user=auth_api_client.user, parent=home)
+    make_folder(title="A", user=auth_api_client.user, parent=home)
+    make_document(title="invoice.pdf", user=auth_api_client.user, parent=home)
 
     # Check "ASC" part; first returned document item, and second the folder
     response = auth_api_client.get(f"/nodes/{home.id}?order_by=ctype")

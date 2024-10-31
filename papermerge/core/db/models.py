@@ -1,38 +1,17 @@
 import uuid
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import Column, ForeignKey, String, Table, func
+from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.features.groups.db.orm import (
+    user_groups_association,
+    user_permissions_association,
+)
+from papermerge.core.types import CType
+
 from .base import Base
-
-user_permissions_association = Table(
-    "core_user_user_permissions",
-    Base.metadata,
-    Column(
-        "user_id",
-        ForeignKey("core_user.id"),
-    ),
-    Column(
-        "permission_id",
-        ForeignKey("auth_permission.id"),
-    ),
-)
-
-user_groups_association = Table(
-    "core_user_groups",
-    Base.metadata,
-    Column(
-        "user_id",
-        ForeignKey("core_user.id"),
-    ),
-    Column(
-        "group_id",
-        ForeignKey("auth_group.id"),
-    ),
-)
 
 
 class DocumentTypeCustomField(Base):
@@ -61,7 +40,7 @@ class User(Base):
         back_populates="user", primaryjoin="User.id == Node.user_id"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
+        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
     )
     home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -69,7 +48,7 @@ class User(Base):
         viewonly=True,
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True)
+        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
     )
     inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -81,15 +60,12 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
     )
-    permissions: Mapped[list["Permission"]] = relationship(
+    permissions: Mapped[list["Permission"]] = relationship(  # noqa: F821
         secondary=user_permissions_association, back_populates="users"
     )
-    groups: Mapped[list["Group"]] = relationship(
+    groups: Mapped[list["Group"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="users"
     )
-
-
-CType = Literal["document", "folder"]
 
 
 class Node(Base):
@@ -103,8 +79,14 @@ class Node(Base):
     user: Mapped["User"] = relationship(
         back_populates="nodes", primaryjoin="User.id == Node.user_id"
     )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
-    parent_id: Mapped[UUID] = mapped_column(ForeignKey("core_basetreenode.id"))
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey(
+            "core_user.id", use_alter=True, name="core_basetreenode_user_id_fkey"
+        )
+    )
+    parent_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_basetreenode.id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
@@ -131,25 +113,6 @@ class Folder(Node):
 
     __mapper_args__ = {
         "polymorphic_identity": "folder",
-    }
-
-
-class Document(Node):
-    __tablename__ = "core_document"
-
-    id: Mapped[UUID] = mapped_column(
-        "basetreenode_ptr_id", ForeignKey("core_basetreenode.id"), primary_key=True
-    )
-
-    ocr: Mapped[bool]
-    ocr_status: Mapped[str]
-    document_type: Mapped["DocumentType"] = relationship(  # noqa: F821
-        primaryjoin="DocumentType.id == Document.document_type_id",
-    )
-    document_type_id: Mapped[UUID] = mapped_column(ForeignKey("document_types.id"))
-
-    __mapper_args__ = {
-        "polymorphic_identity": "document",
     }
 
 
@@ -196,83 +159,9 @@ class ColoredTag(Base):
     tag: Mapped["Tag"] = relationship(primaryjoin="Tag.id == ColoredTag.tag_id")
 
 
-group_permissions_association = Table(
-    "auth_group_permissions",
-    Base.metadata,
-    Column(
-        "group_id",
-        ForeignKey("auth_group.id"),
-    ),
-    Column(
-        "permission_id",
-        ForeignKey("auth_permission.id"),
-    ),
-)
-
-
-class Permission(Base):
-    __tablename__ = "auth_permission"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    codename: Mapped[str]
-    content_type_id: Mapped[int] = mapped_column(ForeignKey("django_content_type.id"))
-    content_type: Mapped["ContentType"] = relationship()
-    groups = relationship(
-        "Group", secondary=group_permissions_association, back_populates="permissions"
-    )
-    users = relationship(
-        "User", secondary=user_permissions_association, back_populates="permissions"
-    )
-
-
-class Group(Base):
-    __tablename__ = "auth_group"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    permissions: Mapped[list["Permission"]] = relationship(
-        secondary=group_permissions_association, back_populates="groups"
-    )
-    users: Mapped[list["User"]] = relationship(
-        secondary=user_groups_association, back_populates="groups"
-    )
-
-
 class ContentType(Base):
     __tablename__ = "django_content_type"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     app_label: Mapped[str]
     model: Mapped[str]
-
-
-class CustomField(Base):
-    __tablename__ = "custom_fields"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    type: Mapped[str]
-    extra_data: Mapped[str] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
-
-
-class CustomFieldValue(Base):
-    __tablename__ = "custom_field_values"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_document.basetreenode_ptr_id")
-    )
-    field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
-    value_text: Mapped[str]
-    value_boolean: Mapped[bool]
-    value_date: Mapped[datetime]
-    value_int: Mapped[int]
-    value_float: Mapped[float]
-    value_monetary: Mapped[str]
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
-
-    def __repr__(self):
-        return f"CustomFieldValue(ID={self.id})"

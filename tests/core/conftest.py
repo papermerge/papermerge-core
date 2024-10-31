@@ -1,16 +1,10 @@
 import pytest
 from sqlalchemy import Engine
-from sqlalchemy.orm import Session
 
 from papermerge.core.db.base import Base
-from papermerge.core.db.engine import engine
-from papermerge.core.models import Document, User
+from papermerge.core.db.engine import Session, engine
+from papermerge.core.models import Document
 from papermerge.test.baker_recipes import document_recipe, user_recipe
-
-
-@pytest.fixture()
-def user() -> User:
-    return user_recipe.make()
 
 
 @pytest.fixture()
@@ -21,23 +15,20 @@ def document() -> Document:
     return doc
 
 
-@pytest.fixture(autouse=True, scope="session")
-def db_schema():
-    Base.metadata.create_all(engine)
-    yield
-    Base.metadata.drop_all(engine)
-
-
 @pytest.fixture()
 def db_connection():
     with engine.connect() as conn:
         yield conn
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def db_session():
-    with Session(engine) as session:
+    Base.metadata.create_all(engine)
+
+    with Session() as session:
         yield session
+
+    Base.metadata.drop_all(engine)
 
 
 @pytest.fixture()

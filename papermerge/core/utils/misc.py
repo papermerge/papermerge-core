@@ -1,4 +1,9 @@
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
+
+from papermerge.core.constants import INCOMING_DATE_FORMAT
+from papermerge.core.exceptions import InvalidDateFormat
 
 
 def is_valid_uuid(uuid_to_test: str) -> bool:
@@ -21,3 +26,25 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
         return False
 
     return str(uuid_obj) == uuid_to_test
+
+
+def str2date(value: str | None) -> Optional[datetime.date]:
+    """Convert incoming user string to datetime.date"""
+    # 10 = 4 Y chars +  1 "-" char + 2 M chars + 1 "-" char + 2 D chars
+    if value is None:
+        return None
+
+    DATE_LEN = 10
+    stripped_value = value.strip()
+    if len(stripped_value) == 0:
+        return None
+
+    if len(stripped_value) < DATE_LEN and len(stripped_value) > 0:
+        raise InvalidDateFormat(
+            f"{stripped_value} expected to have at least {DATE_LEN} characters"
+        )
+
+    return datetime.strptime(
+        value[:DATE_LEN],
+        INCOMING_DATE_FORMAT,
+    ).date()

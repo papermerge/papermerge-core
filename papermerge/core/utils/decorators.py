@@ -1,17 +1,16 @@
-from django.conf import settings
+import os
 
 
 def skip_in_tests(orig_func):
     def inner(*args, **kwargs):
-        # invoke original function only if code is NOT in testing mode
-        if not settings.TESTING:
+        if os.environ.get("PAPERMERGE__REDIS__URL", False):
+            breakpoint()
             orig_func(*args, **kwargs)
 
     return inner
 
 
 def docstring_parameter(**kwargs):
-
     def dec(obj):
         obj.__doc__ = obj.__doc__.format(**kwargs)
         return obj

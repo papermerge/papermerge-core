@@ -4,9 +4,11 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from papermerge.core.models.custom_field import CustomField
+from papermerge.core.features.custom_fields.models import (
+    CustomField,
+    DocumentTypeCustomField,
+)
 from papermerge.core.models.document import Document
-from papermerge.core.models.document_type_custom_field import DocumentTypeCustomField
 from papermerge.core.models.document_version import DocumentVersion
 from papermerge.core.models.folder import Folder
 from papermerge.core.models.node import BaseTreeNode

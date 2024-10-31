@@ -7,16 +7,22 @@ from django.test import override_settings
 from model_bakery import baker
 
 from papermerge.core.models import Page
-from papermerge.core.utils import (PageRecycleMap, collect_text_streams,
-                                   insert_pdf_pages, namespaced,
-                                   remove_pdf_pages, reuse_ocr_data_multi,
-                                   reuse_text_field, reuse_text_field_multi)
-from papermerge.test import TestCase, maker
+from papermerge.core.utils import (
+    PageRecycleMap,
+    collect_text_streams,
+    insert_pdf_pages,
+    namespaced,
+    remove_pdf_pages,
+    reuse_ocr_data_multi,
+    reuse_text_field,
+    reuse_text_field_multi,
+)
+from papermerge.test import maker
+from papermerge.test.testcases import TestCase
 from papermerge.test.utils import pdf_content
 
 
 class TestUtilsNamespaced(TestCase):
-
     def test_namespaced_without_namespace(self):
         assert namespaced("some_text") == "some_text"
         assert namespaced("abc") == "abc"
@@ -33,7 +39,6 @@ class TestUtilsNamespaced(TestCase):
 
 
 class TestPageRecycleMap(TestCase):
-
     def test_page_recycle_map_1(self):
         page_map = PageRecycleMap(total=6, deleted=[1, 2])
 
@@ -42,17 +47,13 @@ class TestPageRecycleMap(TestCase):
         assert result == [(1, 3), (2, 4), (3, 5), (4, 6)]
 
     def test_page_recycle_map_2(self):
-        page_map = PageRecycleMap(
-            total=5, deleted=[1, 5]
-        )
+        page_map = PageRecycleMap(total=5, deleted=[1, 5])
         result = [(item.new_number, item.old_number) for item in page_map]
 
         assert result == [(1, 2), (2, 3), (3, 4)]
 
     def test_page_recycle_map_3(self):
-        page_map = PageRecycleMap(
-            total=5, deleted=[1]
-        )
+        page_map = PageRecycleMap(total=5, deleted=[1])
         result = [(item.new_number, item.old_number) for item in page_map]
 
         assert result == [(1, 2), (2, 3), (3, 4), (4, 5)]
@@ -64,36 +65,24 @@ class TestPageRecycleMap(TestCase):
         will be raised.
         """
         with pytest.raises(ValueError):
-            PageRecycleMap(
-                total=5, deleted=1
-            )
+            PageRecycleMap(total=5, deleted=1)
 
     def test_page_recycle_map_during_document_merge(self):
         """
         Input used during two documents merge
         """
-        page_map = PageRecycleMap(
-            total=5, deleted=[]
-        )
+        page_map = PageRecycleMap(total=5, deleted=[])
         result = [(item.new_number, item.old_number) for item in page_map]
         assert result == [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
 
     def test_different_input_for_second_argument(self):
-        page_map = PageRecycleMap(
-            total=5,
-            deleted=[item for item in (1, 2, 3)]
-        )
+        page_map = PageRecycleMap(total=5, deleted=[item for item in (1, 2, 3)])
         item = next(page_map)
         assert item.new_number == 1
         assert item.old_number == 4
 
     def test_multiple_iterations_over_same_map(self):
-        page_map = list(
-            PageRecycleMap(
-                total=5,
-                deleted=[item for item in (1, 2, 3)]
-            )
-        )
+        page_map = list(PageRecycleMap(total=5, deleted=[item for item in (1, 2, 3)]))
         list_1 = [item.old_number for item in page_map]
         list_2 = [item.old_number for item in page_map]
 
@@ -108,19 +97,13 @@ class TestCollectTextStreams(TestCase):
             "core.Page",
             _quantity=3,
             number=itertools.cycle([1, 2, 3]),
-            text=itertools.cycle(["Page 1", "Page 2", "Page 3"])
+            text=itertools.cycle(["Page 1", "Page 2", "Page 3"]),
         )
-        doc_version = baker.make(
-            "core.DocumentVersion",
-            pages=pages
-        )
+        doc_version = baker.make("core.DocumentVersion", pages=pages)
 
         actual = [
             stream.read()
-            for stream in collect_text_streams(
-                version=doc_version,
-                page_numbers=[2, 3]
-            )
+            for stream in collect_text_streams(version=doc_version, page_numbers=[2, 3])
         ]
 
         expected = ["Page 2", "Page 3"]
@@ -132,19 +115,13 @@ class TestCollectTextStreams(TestCase):
             "core.Page",
             _quantity=2,
             number=itertools.cycle([1, 2]),
-            text=itertools.cycle(["Page 1", "Page 2"])
+            text=itertools.cycle(["Page 1", "Page 2"]),
         )
-        doc_version = baker.make(
-            "core.DocumentVersion",
-            pages=pages
-        )
+        doc_version = baker.make("core.DocumentVersion", pages=pages)
 
         actual = [
             stream.read()
-            for stream in collect_text_streams(
-                version=doc_version,
-                page_numbers=[1, 2]
-            )
+            for stream in collect_text_streams(version=doc_version, page_numbers=[1, 2])
         ]
 
         expected = ["Page 1", "Page 2"]
@@ -174,19 +151,16 @@ class TestReuseOCRDataMulti(TestCase):
                 "old src page 2",
                 "old src page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
-        dst_new_version = maker.document_version(
-            page_count=1,
-            include_ocr_data=True
-        )
+        dst_new_version = maker.document_version(page_count=1, include_ocr_data=True)
 
         #  this is what is tested
         reuse_ocr_data_multi(
             src_old_version=src_old_version,
             dst_old_version=None,
             dst_new_version=dst_new_version,
-            page_numbers=[2]
+            page_numbers=[2],
         )
 
         src_page = src_old_version.pages.all()[1]  # page number 2
@@ -196,15 +170,15 @@ class TestReuseOCRDataMulti(TestCase):
 
     def test_reuse_ocr_data_multi_2(self):
         """
-         In this scenario we reuse ocr data from pages 1 and 3.
-         Pages 1 and 3 were merged to destination (position 0):
+        In this scenario we reuse ocr data from pages 1 and 3.
+        Pages 1 and 3 were merged to destination (position 0):
 
-         src 1/src old  | src 2/dst old |  dst / result
-         -----------------------------------------------
-                1       |     X         |      1
-                2       |     X         |      3
-                3       |     X         |
-         """
+        src 1/src old  | src 2/dst old |  dst / result
+        -----------------------------------------------
+               1       |     X         |      1
+               2       |     X         |      3
+               3       |     X         |
+        """
         src_old_version = maker.document_version(
             page_count=3,
             pages_text=[
@@ -212,29 +186,23 @@ class TestReuseOCRDataMulti(TestCase):
                 "old src page 2",
                 "old src page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
-        dst_new_version = maker.document_version(
-            page_count=2,
-            include_ocr_data=True
-        )
+        dst_new_version = maker.document_version(page_count=2, include_ocr_data=True)
 
         #  this is what is tested
         reuse_ocr_data_multi(
             src_old_version=src_old_version,
             dst_old_version=None,
             dst_new_version=dst_new_version,
-            page_numbers=[1, 3]
+            page_numbers=[1, 3],
         )
 
         for src_index, dst_index in ((0, 0), (2, 1)):
             src_page = src_old_version.pages.all()[src_index]
             dst_page = dst_new_version.pages.all()[dst_index]
 
-            _assert_same_ocr_data(
-                src=src_page,
-                dst=dst_page
-            )
+            _assert_same_ocr_data(src=src_page, dst=dst_page)
 
     def test_reuse_ocr_data_multi_3(self):
         """
@@ -255,7 +223,7 @@ class TestReuseOCRDataMulti(TestCase):
                 "old src page 2",
                 "old src page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
         dst_old_version = maker.document_version(
             page_count=3,
@@ -264,12 +232,9 @@ class TestReuseOCRDataMulti(TestCase):
                 "old dst page 2",
                 "old dst page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
-        dst_new_version = maker.document_version(
-            page_count=4,
-            include_ocr_data=True
-        )
+        dst_new_version = maker.document_version(page_count=4, include_ocr_data=True)
 
         #  this is what is tested
         reuse_ocr_data_multi(
@@ -277,16 +242,14 @@ class TestReuseOCRDataMulti(TestCase):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             page_numbers=[1],
-            position=0
+            position=0,
         )
 
         src_1_page = src_old_version.pages.all()[0]
         dst_page = dst_new_version.pages.all()[0]
 
         _assert_same_ocr_data(
-            src=src_1_page,
-            dst=dst_page,
-            message="src_1_page != dst_page"
+            src=src_1_page, dst=dst_page, message="src_1_page != dst_page"
         )
 
         for index in range(3):
@@ -296,7 +259,7 @@ class TestReuseOCRDataMulti(TestCase):
             _assert_same_ocr_data(
                 src=src_2_page,
                 dst=dst_page,
-                message=f"src_2_page[{index}] != dst_page[{index + 1}]"
+                message=f"src_2_page[{index}] != dst_page[{index + 1}]",
             )
 
     def test_reuse_ocr_data_multi_4(self):
@@ -319,7 +282,7 @@ class TestReuseOCRDataMulti(TestCase):
                 "old src page 2",
                 "old src page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
         dst_old_version = maker.document_version(
             page_count=3,
@@ -328,12 +291,9 @@ class TestReuseOCRDataMulti(TestCase):
                 "old dst page 2",
                 "old dst page 3",
             ],
-            include_ocr_data=True
+            include_ocr_data=True,
         )
-        dst_new_version = maker.document_version(
-            page_count=5,
-            include_ocr_data=True
-        )
+        dst_new_version = maker.document_version(page_count=5, include_ocr_data=True)
 
         #  this is what is tested
         reuse_ocr_data_multi(
@@ -341,52 +301,42 @@ class TestReuseOCRDataMulti(TestCase):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             page_numbers=[1, 2],
-            position=1
+            position=1,
         )
 
         src_2_page = dst_old_version.pages.all()[0]
         dst_page = dst_new_version.pages.all()[0]
 
         _assert_same_ocr_data(
-            src=src_2_page,
-            dst=dst_page,
-            message="src_2_page[0] != dst_page[0]"
+            src=src_2_page, dst=dst_page, message="src_2_page[0] != dst_page[0]"
         )
 
         src_1_page = src_old_version.pages.all()[0]  # page number 1
         dst_page = dst_new_version.pages.all()[1]
 
         _assert_same_ocr_data(
-            src=src_1_page,
-            dst=dst_page,
-            message="src_1_page[0] != dst_page[1]"
+            src=src_1_page, dst=dst_page, message="src_1_page[0] != dst_page[1]"
         )
 
         src_1_page = src_old_version.pages.all()[1]  # page number 2
         dst_page = dst_new_version.pages.all()[2]
 
         _assert_same_ocr_data(
-            src=src_1_page,
-            dst=dst_page,
-            message="src_1_page[1] != dst_page[2]"
+            src=src_1_page, dst=dst_page, message="src_1_page[1] != dst_page[2]"
         )
 
         src_2_page = dst_old_version.pages.all()[1]
         dst_page = dst_new_version.pages.all()[3]
 
         _assert_same_ocr_data(
-            src=src_2_page,
-            dst=dst_page,
-            message="src_2_page[1] != dst_page[3]"
+            src=src_2_page, dst=dst_page, message="src_2_page[1] != dst_page[3]"
         )
 
         src_2_page = dst_old_version.pages.all()[2]
         dst_page = dst_new_version.pages.all()[4]
 
         _assert_same_ocr_data(
-            src=src_2_page,
-            dst=dst_page,
-            message="src_2_page[2] != dst_page[4]"
+            src=src_2_page, dst=dst_page, message="src_2_page[2] != dst_page[4]"
         )
 
 
@@ -406,7 +356,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "old src page 1",
                 "old src page 2",
                 "old src page 3",
-            ]
+            ],
         )
         dst_new_version = maker.document_version(page_count=1)
 
@@ -415,13 +365,11 @@ class TestReuseTextFieldMulti(TestCase):
             src_old_version=src_old_version,
             dst_old_version=None,
             dst_new_version=dst_new_version,
-            page_numbers=[2]
+            page_numbers=[2],
         )
 
         actual = [page.text for page in dst_new_version.pages.all()]
-        expected = [
-            "old src page 2"
-        ]
+        expected = ["old src page 2"]
 
         assert expected == actual
 
@@ -438,7 +386,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "old src page 1",
                 "old src page 2",
                 "old src page 3",
-            ]
+            ],
         )
         dst_new_version = maker.document_version(page_count=2)
 
@@ -447,7 +395,7 @@ class TestReuseTextFieldMulti(TestCase):
             src_old_version=src_old_version,
             dst_old_version=None,
             dst_new_version=dst_new_version,
-            page_numbers=[1, 3]
+            page_numbers=[1, 3],
         )
 
         actual = [page.text for page in dst_new_version.pages.all()]
@@ -465,7 +413,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 1 page 1",
                 "src 1 page 2",
                 "src 1 page 3",
-            ]
+            ],
         )
         src_2_version = maker.document_version(
             page_count=3,
@@ -473,7 +421,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 2 page 1",
                 "src 2 page 2",
                 "src 2 page 3",
-            ]
+            ],
         )
         dst_version = maker.document_version(page_count=4)
 
@@ -483,7 +431,7 @@ class TestReuseTextFieldMulti(TestCase):
             dst_old_version=src_2_version,
             dst_new_version=dst_version,
             page_numbers=[1],
-            position=0
+            position=0,
         )
 
         actual = [page.text for page in dst_version.pages.all()]
@@ -503,7 +451,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 1 page 1",
                 "src 1 page 2",
                 "src 1 page 3",
-            ]
+            ],
         )
         src_2_version = maker.document_version(
             page_count=3,
@@ -511,7 +459,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 2 page 1",
                 "src 2 page 2",
                 "src 2 page 3",
-            ]
+            ],
         )
         dst_version = maker.document_version(page_count=4)
 
@@ -521,7 +469,7 @@ class TestReuseTextFieldMulti(TestCase):
             dst_old_version=src_2_version,
             dst_new_version=dst_version,
             page_numbers=[1],
-            position=1
+            position=1,
         )
 
         actual = [page.text for page in dst_version.pages.all()]
@@ -541,7 +489,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 1 page 1",
                 "src 1 page 2",
                 "src 1 page 3",
-            ]
+            ],
         )
         src_2_version = maker.document_version(
             page_count=3,
@@ -549,7 +497,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 2 page 1",
                 "src 2 page 2",
                 "src 2 page 3",
-            ]
+            ],
         )
         dst_version = maker.document_version(page_count=5)
 
@@ -559,7 +507,7 @@ class TestReuseTextFieldMulti(TestCase):
             dst_old_version=src_2_version,
             dst_new_version=dst_version,
             page_numbers=[2, 3],
-            position=1  # position index starts with 0
+            position=1,  # position index starts with 0
         )
 
         actual = [page.text for page in dst_version.pages.all()]
@@ -583,7 +531,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 1 page 1",
                 "src 1 page 2",
                 "src 1 page 3",
-            ]
+            ],
         )
         src_2_version = maker.document_version(
             page_count=3,
@@ -591,7 +539,7 @@ class TestReuseTextFieldMulti(TestCase):
                 "src 2 page 1",
                 "src 2 page 2",
                 "src 2 page 3",
-            ]
+            ],
         )
         dst_version = maker.document_version(page_count=5)
 
@@ -605,7 +553,7 @@ class TestReuseTextFieldMulti(TestCase):
             # position index starts with 0
             # because dst_old_version has 3 pages, position=3 means
             # merging at the end of document version
-            position=3  # position index starts with 0
+            position=3,  # position index starts with 0
         )
 
         actual = [page.text for page in dst_version.pages.all()]
@@ -646,16 +594,15 @@ class TestReuseTextField(TestCase):
             "core.Page",
             _quantity=3,
             number=itertools.cycle([1, 2, 3]),
-            text=itertools.cycle([
-                "I am content from Page 1",
-                "I am content from Page 2",
-                "And I am content from Page 3"
-            ])
+            text=itertools.cycle(
+                [
+                    "I am content from Page 1",
+                    "I am content from Page 2",
+                    "And I am content from Page 3",
+                ]
+            ),
         )
-        doc_version_old = baker.make(
-            "core.DocumentVersion",
-            pages=pages_old
-        )
+        doc_version_old = baker.make("core.DocumentVersion", pages=pages_old)
         # User deletes one page, which means
         # new document version will have 2 pages
         pages_new = baker.prepare("core.Page", _quantity=2)
@@ -666,14 +613,11 @@ class TestReuseTextField(TestCase):
             old_version=doc_version_old,
             new_version=doc_version_new,
             # TODO: replace list with PageRecycleMap
-            page_map=[(1, 2), (2, 3)]
+            page_map=[(1, 2), (2, 3)],
         )
 
         actual = [page.text for page in doc_version_new.pages.all()]
-        expected = [
-            "I am content from Page 2",
-            "And I am content from Page 3"
-        ]
+        expected = ["I am content from Page 2", "And I am content from Page 3"]
 
         assert expected == actual
 
@@ -681,51 +625,40 @@ class TestReuseTextField(TestCase):
 class TestRemovePdfPages(TestCase):
     """Tests for remove_pdf_pages"""
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_remove_pdf_pages_basic_1(self, _):
         """Remove one page from the document version"""
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
         src_new_version = src_document.version_bump(page_count=2)
 
         remove_pdf_pages(
-            old_version=src_old_version,
-            new_version=src_new_version,
-            page_numbers=[1]
+            old_version=src_old_version, new_version=src_new_version, page_numbers=[1]
         )
 
         content = pdf_content(src_new_version, clean=True)
         assert content == "S2 S3"
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_remove_pdf_pages_basic_2(self, _):
         """Remove last two pages from the document version"""
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
         src_new_version = src_document.version_bump(page_count=2)
 
         remove_pdf_pages(
             old_version=src_old_version,
             new_version=src_new_version,
-            page_numbers=[2, 3]
+            page_numbers=[2, 3],
         )
 
         content = pdf_content(src_new_version, clean=True)
         assert content == "S1"
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_remove_pdf_pages_invalid_input(self, _):
         """Junk page_numbers input"""
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
         src_new_version = src_document.version_bump(page_count=2)
 
@@ -733,21 +666,21 @@ class TestRemovePdfPages(TestCase):
             remove_pdf_pages(
                 old_version=src_old_version,
                 new_version=src_new_version,
-                page_numbers=[]  # invalid, empty list
+                page_numbers=[],  # invalid, empty list
             )
 
         with pytest.raises(ValueError):
             remove_pdf_pages(
                 old_version=src_old_version,
                 new_version=src_new_version,
-                page_numbers=[1, 2, 3, 4, 5, 6, 7]  # invalid, too many values
+                page_numbers=[1, 2, 3, 4, 5, 6, 7],  # invalid, too many values
             )
 
 
 class TestInserPdfPagesUtilityFunction(TestCase):
     """Tests for insert_pdf_pages"""
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_insert_pdf_pages_basic_1(self, _):
         """
         We test moving of one page from source document version to
@@ -760,15 +693,9 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         state is expected:
             destination (latest version): S1, D1, D2, D3
         """
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
-        dst_document = maker.document(
-            "d3.pdf",
-            user=self.user
-        )
+        dst_document = maker.document("d3.pdf", user=self.user)
         dst_new_version = dst_document.version_bump(page_count=4)
         dst_old_version = dst_document.versions.first()
 
@@ -777,13 +704,13 @@ class TestInserPdfPagesUtilityFunction(TestCase):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             src_page_numbers=[1],  # i.e. first page
-            dst_position=0
+            dst_position=0,
         )
 
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "S1 D1 D2 D3" == dst_new_content
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_insert_pdf_pages_basic_2(self, _):
         """
         We test moving of two pages from source document version to
@@ -796,15 +723,9 @@ class TestInserPdfPagesUtilityFunction(TestCase):
         state is expected:
             destination (latest version): D1, S1, S3, D2, D3
         """
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
-        dst_document = maker.document(
-            "d3.pdf",
-            user=self.user
-        )
+        dst_document = maker.document("d3.pdf", user=self.user)
         dst_new_version = dst_document.version_bump(page_count=5)
         dst_old_version = dst_document.versions.first()
 
@@ -813,13 +734,13 @@ class TestInserPdfPagesUtilityFunction(TestCase):
             dst_old_version=dst_old_version,
             dst_new_version=dst_new_version,
             src_page_numbers=[1, 3],
-            dst_position=1
+            dst_position=1,
         )
 
         dst_new_content = pdf_content(dst_new_version, clean=True)
         assert "D1 S1 S3 D2 D3" == dst_new_content
 
-    @patch('papermerge.core.signals.send_ocr_task')
+    @patch("papermerge.core.signals.send_ocr_task")
     def test_insert_pdf_pages_when_dst_old_is_None(self, _):
         """
         We test moving of two pages from source document version to
@@ -834,22 +755,16 @@ class TestInserPdfPagesUtilityFunction(TestCase):
          dst_old_version=None. Following state is expected:
             destination (latest version): S1, S3
         """
-        src_document = maker.document(
-            "s3.pdf",
-            user=self.user
-        )
+        src_document = maker.document("s3.pdf", user=self.user)
         src_old_version = src_document.versions.last()
-        dst_document = maker.document(
-            "d3.pdf",
-            user=self.user
-        )
+        dst_document = maker.document("d3.pdf", user=self.user)
         dst_new_version = dst_document.version_bump(page_count=2)
 
         insert_pdf_pages(
             src_old_version=src_old_version,
             dst_old_version=None,
             dst_new_version=dst_new_version,
-            src_page_numbers=[1, 3]
+            src_page_numbers=[1, 3],
         )
 
         dst_new_content = pdf_content(dst_new_version, clean=True)
@@ -861,17 +776,13 @@ def _get_content(file_path: Path) -> str:
 
     :param relative_url: relative path to the file
     """
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         data = f.read()
 
     return data
 
 
-def _assert_same_ocr_data(
-    src: Page,
-    dst: Page,
-    message: str = None
-) -> None:
+def _assert_same_ocr_data(src: Page, dst: Page, message: str = None) -> None:
     """Asserts that src and dst pages have same OCR data"""
     src_txt = _get_content(src.txt_path)
     src_hocr = _get_content(src.hocr_path)

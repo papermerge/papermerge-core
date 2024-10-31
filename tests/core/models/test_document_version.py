@@ -1,18 +1,18 @@
 import io
 
 from papermerge.core.models import Document, User
-from papermerge.test import TestCase, maker
+from papermerge.test import maker
+from papermerge.test.testcases import TestCase
 
 
 class TestDocumentVersionModel(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(username="user1")
         self.doc = Document.objects.create_document(
             title="invoice.pdf",
             lang="deu",
             user_id=self.user.pk,
-            parent=self.user.home_folder
+            parent=self.user.home_folder,
         )
         self.doc_version = self.doc.versions.last()
 
@@ -25,14 +25,10 @@ class TestDocumentVersionModel(TestCase):
         """
         self.doc_version.create_pages(page_count=3)
 
-        self.doc_version.update_text_field([
-            io.StringIO(''),
-            io.StringIO(''),
-            io.StringIO('')
-        ])
-        self.assertFalse(
-            self.doc_version.has_combined_text
+        self.doc_version.update_text_field(
+            [io.StringIO(""), io.StringIO(""), io.StringIO("")]
         )
+        self.assertFalse(self.doc_version.has_combined_text)
 
     def test_update_text_field_non_empty_strings(self):
         """
@@ -43,14 +39,14 @@ class TestDocumentVersionModel(TestCase):
         """
         self.doc_version.create_pages(page_count=3)
 
-        self.doc_version.update_text_field([
-            io.StringIO('Non empty page 1 text'),
-            io.StringIO('Non empty page 2 text'),
-            io.StringIO('Non empty page 3 text')
-        ])
-        self.assertTrue(
-            self.doc_version.has_combined_text
+        self.doc_version.update_text_field(
+            [
+                io.StringIO("Non empty page 1 text"),
+                io.StringIO("Non empty page 2 text"),
+                io.StringIO("Non empty page 3 text"),
+            ]
         )
+        self.assertTrue(self.doc_version.has_combined_text)
 
     def test_update_text_field_streams_array_items(self):
         """
@@ -64,29 +60,23 @@ class TestDocumentVersionModel(TestCase):
 
         # empty streams list
         self.doc_version.update_text_field([])
-        self.assertFalse(
-            self.doc_version.has_combined_text
-        )
+        self.assertFalse(self.doc_version.has_combined_text)
 
         # less streams than page count ( streams = 1 < page count = 3)
-        self.doc_version.update_text_field([
-            io.StringIO('')
-        ])
-        self.assertFalse(
-            self.doc_version.has_combined_text
-        )
+        self.doc_version.update_text_field([io.StringIO("")])
+        self.assertFalse(self.doc_version.has_combined_text)
 
         # more streams than page count ( streams = 5 > page count = 3)
-        self.doc_version.update_text_field([
-            io.StringIO(''),
-            io.StringIO(''),
-            io.StringIO(''),
-            io.StringIO(''),
-            io.StringIO('')
-        ])
-        self.assertFalse(
-            self.doc_version.has_combined_text
+        self.doc_version.update_text_field(
+            [
+                io.StringIO(""),
+                io.StringIO(""),
+                io.StringIO(""),
+                io.StringIO(""),
+                io.StringIO(""),
+            ]
         )
+        self.assertFalse(self.doc_version.has_combined_text)
 
     def test_update_text_field_one_non_empty_stream(self):
         """
@@ -97,29 +87,27 @@ class TestDocumentVersionModel(TestCase):
         self.doc_version.create_pages(page_count=3)
 
         # streams list
-        self.doc_version.update_text_field([io.StringIO('Hello OCR')])
-        self.assertTrue(
-            self.doc_version.has_combined_text
-        )
+        self.doc_version.update_text_field([io.StringIO("Hello OCR")])
+        self.assertTrue(self.doc_version.has_combined_text)
 
     def test_update_text_field_correct_order(self):
         self.doc_version.create_pages(page_count=3)
 
         streams = [
-            io.StringIO(f' OCRed text from page {page.number}  ')
-            for page in self.doc_version.pages.order_by('number')
+            io.StringIO(f" OCRed text from page {page.number}  ")
+            for page in self.doc_version.pages.order_by("number")
         ]
 
         self.doc_version.update_text_field(streams)
 
-        ordered_pages = self.doc_version.pages.order_by('number')
+        ordered_pages = self.doc_version.pages.order_by("number")
         page_1 = ordered_pages[0]
         page_2 = ordered_pages[1]
         page_3 = ordered_pages[2]
 
-        self.assertEqual(page_1.stripped_text, 'OCRed text from page 1')
-        self.assertEqual(page_2.stripped_text, 'OCRed text from page 2')
-        self.assertEqual(page_3.stripped_text, 'OCRed text from page 3')
+        self.assertEqual(page_1.stripped_text, "OCRed text from page 1")
+        self.assertEqual(page_2.stripped_text, "OCRed text from page 2")
+        self.assertEqual(page_3.stripped_text, "OCRed text from page 3")
 
     def test_update_text_field_concatinates_pages_text(self):
         """
@@ -128,16 +116,13 @@ class TestDocumentVersionModel(TestCase):
         self.doc_version.create_pages(page_count=3)
 
         streams = [
-            io.StringIO(f'Page {page.number}')
-            for page in self.doc_version.pages.order_by('number')
+            io.StringIO(f"Page {page.number}")
+            for page in self.doc_version.pages.order_by("number")
         ]
 
         self.doc_version.update_text_field(streams)
 
-        self.assertEqual(
-            self.doc_version.text,
-            'Page 1 Page 2 Page 3'
-        )
+        self.assertEqual(self.doc_version.text, "Page 1 Page 2 Page 3")
 
     def test_document_version_is_archived(self):
         """
@@ -162,7 +147,7 @@ class TestDocumentVersionModel(TestCase):
                 "Text of page 1",
                 "Text of page 2",
                 "Text of page 3",
-            ]
+            ],
         )
 
         actual = doc_ver.get_ocred_text(page_numbers=[1, 3])
@@ -176,7 +161,7 @@ class TestDocumentVersionModel(TestCase):
                 "Text of page 1",
                 "Text of page 2",
                 "Text of page 3",
-            ]
+            ],
         )
 
         page_1_id = str(doc_ver.pages.all()[0].pk)
@@ -194,7 +179,7 @@ class TestDocumentVersionModel(TestCase):
                 "T2",
                 "T3",
             ],
-            text="T1 T2 T3"
+            text="T1 T2 T3",
         )
 
         actual = doc_ver.get_ocred_text()
@@ -215,7 +200,7 @@ class TestDocumentVersionModel(TestCase):
                 "",  # empty page
                 "T3",
             ],
-            text="T1 T3"
+            text="T1 T3",
         )
         page_2_id = str(doc_ver.pages.all()[1].pk)
 

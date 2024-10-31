@@ -42,6 +42,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.11
@@ -54,7 +56,7 @@ jobs:
           pip install poetry==1.8
           poetry install --with dev,test -E pgsql && poetry run pytest papermerge/core/features/
         env:
-          PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@postgres:5432/test_pmgdb'
+          PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@localhost:5432/test_pmgdb'
 
   django_with_sqlite:
     runs-on: ubuntu-22.04

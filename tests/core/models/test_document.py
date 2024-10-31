@@ -12,8 +12,10 @@ from django.utils.datetime_safe import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from papermerge.core import db, schemas
-from papermerge.core.features.custom_fields.models import CustomField
+from papermerge.core.features.custom_fields import schema as cf_schema
+from papermerge.core.features.custom_fields.db import orm as cf_orm
+from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document_types import db as db_dtype_api
 from papermerge.core.models import Document, User
 from papermerge.core.storage import abs_path
@@ -137,7 +139,6 @@ class TestDocumentModel(TestCase):
             last_version = doc.versions.last()
             assert doc.versions.count() == 1
             assert last_version.size > 0
-
             assert os.path.exists(abs_path(last_version.file_path))
 
     @patch("papermerge.core.signals.send_ocr_task")
@@ -257,8 +258,8 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
 
     # to reproduce the bug bill document type should share at least one
     # custom field with Groceries
-    stmt = select(CustomField.id).where(
-        CustomField.name.in_(["Total", "EffectiveDate"])
+    stmt = select(cf_orm.CustomField.id).where(
+        cf_orm.CustomField.name.in_(["Total", "EffectiveDate"])
     )
     custom_field_ids = list([row.id for row in db_session.execute(stmt)])
     billType = db_dtype_api.create_document_type(
@@ -268,12 +269,12 @@ def test_get_docs_by_type_missmatching_type(db_session: Session, make_document_r
         user_id=user_id,
     )
 
-    billDocs: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    billDocs: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session,
         type_id=billType.id,
         user_id=user_id,
     )
-    groceriesDocs: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    groceriesDocs: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session, type_id=groceries_type_id, user_id=user_id
     )
 
@@ -322,14 +323,14 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
         },
     ]
     for data in input_data:
-        db.update_doc_cfv(
+        doc_dbapi.update_doc_cfv(
             db_session,
             document_id=data["document_id"],
             custom_fields=data["custom_fields"],
         )
 
     # sort data by "EffectiveDate" in descending order
-    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    items: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session,
         type_id=type_id,
         user_id=user_id,
@@ -353,7 +354,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     ]
 
     # sort data by "EffectiveDate" in ASC order
-    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    items: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session,
         type_id=type_id,
         user_id=user_id,
@@ -375,7 +376,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     ]
 
     # sort data by "Total" in DESC order
-    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    items: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session,
         type_id=type_id,
         user_id=user_id,
@@ -397,7 +398,7 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
     ]
 
     # sort data by "Total" in ASC order
-    items: list[schemas.DocumentCFV] = db.get_docs_by_type(
+    items: list[doc_schema.DocumentCFV] = doc_dbapi.get_docs_by_type(
         db_session,
         type_id=type_id,
         user_id=user_id,
@@ -422,10 +423,10 @@ def test_get_docs_by_type_order_by_cfv(db_session: Session, make_document_receip
 @pytest.mark.django_db(transaction=True)
 def test_document_type_cf_count_1(db_session: Session, user: User, make_custom_field):
     cf1 = make_custom_field(
-        name="some-random-cf1", type=schemas.CustomFieldType.boolean
+        name="some-random-cf1", type=cf_schema.CustomFieldType.boolean
     )
     cf2 = make_custom_field(
-        name="some-random-cf2", type=schemas.CustomFieldType.boolean
+        name="some-random-cf2", type=cf_schema.CustomFieldType.boolean
     )
 
     dtype1 = db_dtype_api.create_document_type(
@@ -467,7 +468,7 @@ def test_get_docs_count_by_type(db_session, user: User):
         name="document_type_1",
         user_id=user.id,
     )
-    docs_count = db.get_docs_count_by_type(db_session, type_id=dtype1.id)
+    docs_count = doc_dbapi.get_docs_count_by_type(db_session, type_id=dtype1.id)
     # there are no documents of type "document_type_1" yet
     assert docs_count == 0
 
@@ -492,7 +493,7 @@ def test_get_docs_count_by_type_with_two_document(db_session, user: User):
             document_type_id=dtype.id,
         )
 
-    docs_count = db.get_docs_count_by_type(db_session, type_id=dtype.id)
+    docs_count = doc_dbapi.get_docs_count_by_type(db_session, type_id=dtype.id)
     # there are two documents in this category
     assert docs_count == DOCS_COUNT
 

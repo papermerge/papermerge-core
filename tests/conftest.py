@@ -9,7 +9,9 @@ from sqlalchemy.orm import Session
 from papermerge.core import constants
 from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db import models as orm
+from papermerge.core.features.custom_fields.db.api import create_custom_field
 from papermerge.core.features.custom_fields.schema import CustomFieldType
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.document_types.db import create_document_type
 from papermerge.core.models import User
 from papermerge.core.routers.router import register_routers as reg_core_routers
@@ -169,3 +171,53 @@ def document_type_with_one_string_cf(  # cf = custom field
         custom_field_ids=[cf1.id],
         user_id=user.id,
     )
+
+
+@pytest.fixture
+def make_document_receipt(db_session: Session, user, document_type_groceries):
+    def _make_receipt(title: str):
+        doc_id = uuid.uuid4()
+        doc = doc_orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=title,
+            user_id=user.id,
+            document_type_id=document_type_groceries.id,
+            parent_id=user.home_folder_id,
+            lang="de",
+        )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
+
+    return _make_receipt
+
+
+@pytest.fixture
+def document_type_groceries(db_session: Session, user, make_custom_field):
+    cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
+    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
+    cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
+
+    return create_document_type(
+        db_session,
+        name="Groceries",
+        custom_field_ids=[cf1.id, cf2.id, cf3.id],
+        user_id=user.id,
+    )
+
+
+@pytest.fixture
+def make_custom_field(db_session: Session, user):
+    def _make_custom_field(name: str, type: CustomFieldType):
+        return create_custom_field(
+            db_session,
+            name=name,
+            type=type,
+            user_id=user.id,
+        )
+
+    return _make_custom_field

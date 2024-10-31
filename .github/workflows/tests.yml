@@ -20,6 +20,32 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry==1.8
+          poetry install --with dev,test && poetry run pytest papermerge/core/features/
+        env:
+          PAPERMERGE__DATABASE__URL: 'sqlite:///test.sqlite'
+
+  features_with_postgres:
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
       - name: Install redis
         run: sudo apt-get install -y redis-tools redis-server
       - name: Install tesseract debian packages
@@ -30,6 +56,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry==1.8
           poetry install --with dev,test && poetry run pytest papermerge/core/features/
+        env:
+          PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@localhost:5432/test_pmg'
+
   django_with_sqlite:
     runs-on: ubuntu-22.04
     steps:

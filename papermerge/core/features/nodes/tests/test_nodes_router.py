@@ -45,10 +45,9 @@ def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_sess
         parent_id=str(user.home_folder.id),
     )
 
-    response = auth_api_client.post("/nodes", json=payload)
-
-    assert response.status_code == 201, response.content
-    assert doc_dbapi.count_docs() == 1
+    response = auth_api_client.post("/nodes/", json=payload)
+    assert response.status_code == 201, response.json()
+    assert doc_dbapi.count_docs(db_session) == 1
     doc = db_session.scalars(select(doc_orm.Document.id).limit(1)).one()
     assert doc.id == custom_id
 

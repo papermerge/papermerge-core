@@ -8,12 +8,14 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 
-from papermerge.core import db, schemas, utils
+from papermerge.core import utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
-from papermerge.core.models import BaseTreeNode, Document, Folder, User
-from papermerge.core.models.node import move_node
+from papermerge.core.features.users.db import orm as users_orm
+from papermerge.core.features.users import schema as users_schema
+from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
@@ -35,10 +37,9 @@ logger = logging.getLogger(__name__)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-    db_session: db.Session = Depends(db.get_session),
 ) -> list[PyFolder | PyDocument]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
@@ -63,7 +64,7 @@ def get_nodes_details(
 def get_node(
     parent_id,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     params: CommonQueryParams = Depends(),
 ):
@@ -95,7 +96,7 @@ def get_node(
 def create_node(
     pynode: PyCreateFolder | PyCreateDocument,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
 ) -> PyFolder | PyDocument:
     """Creates a node
@@ -153,7 +154,9 @@ def create_node(
 def update_node(
     node_id: UUID,
     node: PyUpdateNode,
-    user: Annotated[User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])],
+    user: Annotated[
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
 ) -> PyNode:
     """Updates node
 
@@ -181,7 +184,7 @@ def update_node(
 def delete_nodes(
     list_of_uuids: list[UUID],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
 ) -> list[UUID]:
     """Deletes nodes with specified UUIDs
@@ -218,7 +221,7 @@ def delete_nodes(
 def move_nodes(
     params: PyMoveNode,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
     ],
 ) -> list[UUID]:
     """Move source nodes into the target node.
@@ -258,7 +261,7 @@ def assign_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
 ) -> schemas.Document | schemas.Folder:
     """

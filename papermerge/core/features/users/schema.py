@@ -2,8 +2,13 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import (BaseModel, ConfigDict, ValidationInfo, field_serializer,
-                      field_validator)
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    ValidationInfo,
+    field_serializer,
+    field_validator,
+)
 
 
 class Group(BaseModel):
@@ -13,9 +18,10 @@ class Group(BaseModel):
 
 class RemoteUser(BaseModel):
     """User model extracted from PAPERMERGE__AUTH__REMOTE_xyz headers"""
+
     username: str
-    email: str = ''
-    name: str = ''
+    email: str = ""
+    name: str = ""
     groups: list[str] = []
 
 
@@ -31,12 +37,12 @@ class User(BaseModel):
     is_active: bool = False
     scopes: list[str] = []
 
-    @field_validator('scopes')
+    @field_validator("scopes")
     @classmethod
     def sorted_scopes(cls, v: list[str], info: ValidationInfo):
         return sorted(v)
 
-    @field_serializer('scopes', when_used='json')
+    @field_serializer("scopes", when_used="json")
     def serialize_sorted_scopes(v: list[str]):
         return sorted(v)
 
@@ -67,15 +73,10 @@ class UserDetails(BaseModel):
                     "email": "socrates@truth.dom",
                     "home_folder_id": uuid.uuid4(),
                     "inbox_folder_id": uuid.uuid4(),
-                    "scopes": [
-                        "node.create",
-                        "node.view",
-                        "node.delete",
-                        "node.move"
-                    ],
+                    "scopes": ["node.create", "node.view", "node.delete", "node.move"],
                     "groups": [
                         {"id": 1, "name": "Admin"},
-                        {"id": 2, "name": "Archiver"}
+                        {"id": 2, "name": "Archiver"},
                     ],
                     "created_at": "2024-03-15T06:38:58.197883Z",
                     "updated_at": "2024-03-15T06:38:58.210525Z",

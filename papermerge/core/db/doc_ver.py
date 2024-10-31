@@ -4,8 +4,7 @@ from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.models import DocumentVersion
-from papermerge.core.features.document.db.orm import Document
+from papermerge.core.features.document.db.orm import Document, DocumentVersion
 
 
 def get_last_doc_ver(

@@ -4,12 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core import schemas
-from papermerge.core.db.models import (
-    ColoredTag,
-    DocumentVersion,
-    Page,
-)
-from papermerge.core.features.document.db.orm import Document
+from papermerge.core.features.document.db.orm import Document, DocumentVersion, Page
+from papermerge.core.features.nodes.db.orm import ColoredTag
 
 from .common import get_ancestors
 

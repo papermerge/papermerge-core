@@ -3,7 +3,8 @@ from uuid import UUID
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from papermerge.core.db.nodes import Node
+from papermerge.core.db.base import Base
+from papermerge.core.features.nodes.db.orm import Node
 
 
 class Document(Node):
@@ -25,3 +26,28 @@ class Document(Node):
     __mapper_args__ = {
         "polymorphic_identity": "document",
     }
+
+
+class DocumentVersion(Base):
+    __tablename__ = "core_documentversion"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    number: Mapped[int]
+    file_name: Mapped[str]
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_document.basetreenode_ptr_id")
+    )
+    lang: Mapped[str]
+    short_description: Mapped[str]
+
+
+class Page(Base):
+    __tablename__ = "core_page"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    number: Mapped[int]
+    lang: Mapped[str]
+    text: Mapped[str]
+    document_version_id: Mapped[UUID] = mapped_column(
+        ForeignKey("core_documentversion.id")
+    )

@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 
 from papermerge.core import constants
 from papermerge.core.auth.scopes import SCOPES
-from papermerge.core.db import models as orm
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import Session, engine
 from papermerge.core.features.custom_fields import router as cf_router
@@ -15,6 +14,8 @@ from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.groups import router as groups_router
+from papermerge.core.features.nodes.db import orm as nodes_orm
+from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core.utils import base64
 from papermerge.test.types import AuthTestClient
 
@@ -29,7 +30,7 @@ def db_session():
 
 
 @pytest.fixture()
-def auth_api_client(user: orm.User):
+def auth_api_client(user: users_orm.User):
     app = FastAPI()
     app.include_router(document_types_router.router, prefix="")
     app.include_router(groups_router.router, prefix="")
@@ -51,7 +52,7 @@ def auth_api_client(user: orm.User):
 
 
 @pytest.fixture()
-def user(make_user) -> orm.User:
+def user(make_user) -> users_orm.User:
     return make_user(username="random")
 
 
@@ -62,7 +63,7 @@ def make_user(db_session: Session):
         home_id = uuid.uuid4()
         inbox_id = uuid.uuid4()
 
-        db_user = orm.User(
+        db_user = users_orm.User(
             id=user_id,
             username=username,
             email=f"{username}@mail.com",
@@ -72,14 +73,14 @@ def make_user(db_session: Session):
             is_active=True,
             password="pwd",
         )
-        db_inbox = orm.Folder(
+        db_inbox = nodes_orm.Folder(
             id=inbox_id,
             title=constants.INBOX_TITLE,
             ctype=constants.CTYPE_FOLDER,
             lang="de",
             user_id=user_id,
         )
-        db_home = orm.Folder(
+        db_home = nodes_orm.Folder(
             id=home_id,
             title=constants.HOME_TITLE,
             ctype=constants.CTYPE_FOLDER,

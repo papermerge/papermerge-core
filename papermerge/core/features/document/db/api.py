@@ -12,6 +12,12 @@ from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
 
 
+def count_docs(session: Session) -> int:
+    stmt = select(func.count()).select_from(doc_orm.Document)
+
+    return session.scalars(stmt).one()
+
+
 def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
     """
     Fetch document's custom field values for each CF name, even if CFV is NULL

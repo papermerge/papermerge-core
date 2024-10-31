@@ -14,6 +14,9 @@ from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
 from papermerge.core.models import BaseTreeNode, Document, Folder, User
 from papermerge.core.models.node import move_node
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.routers.paginator import PaginatedResponse
+from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
 from papermerge.core.schemas.documents import Document as PyDocument
 from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
@@ -22,10 +25,6 @@ from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
 from papermerge.core.schemas.nodes import Node as PyNode
 from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.utils.decorators import skip_in_tests
-
-from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatedResponse
-from .params import CommonQueryParams
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -111,6 +110,7 @@ def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
+    breakpoint()
     try:
         if pynode.ctype == "folder":
             attrs = dict(

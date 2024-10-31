@@ -9,8 +9,9 @@ from sqlalchemy.exc import NoResultFound
 from papermerge.core import constants, schemas
 from papermerge.core.auth import scopes
 from papermerge.core.db.engine import Session
-from papermerge.core.db.models import Folder, User
 from papermerge.core.features.groups.db.orm import Group, Permission
+from papermerge.core.features.nodes.db.orm import Folder
+from papermerge.core.features.users.db.orm import User
 from papermerge.core.utils.misc import is_valid_uuid
 
 from .exceptions import UserNotFound

@@ -11,11 +11,11 @@ from sqlalchemy.orm import selectin_polymorphic
 from papermerge.core import schemas
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import orm as doc_orm
+from papermerge.core.features.nodes.db.orm import ColoredTag, Folder, Node
 from papermerge.core.schemas.documents import Tag as NodeTag
 from papermerge.core.types import PaginatedResponse
 
 from .common import get_ancestors
-from .models import ColoredTag, Folder, Node
 
 T = TypeVar("T")
 

@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from papermerge.core.db.models import User
 from papermerge.core.features.custom_fields import schema
 from papermerge.core.features.custom_fields.db import api as dbapi
+from papermerge.core.features.users.db.orm import User
 
 
 def test_custom_filed_create(db_session: Session, user: User):

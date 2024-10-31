@@ -186,24 +186,23 @@ def update_user(
 
 
 def get_user_scopes_from_groups(
-    engine: Engine, user_id: UUID, groups: list[str]
+    db_session: Session, user_id: UUID, groups: list[str]
 ) -> list[str]:
-    with Session(engine) as session:
-        db_user = session.get(User, user_id)
+    db_user = db_session.get(User, user_id)
 
-        if db_user is None:
-            logger.debug(f"User with user_id {user_id} not found")
-            return []
+    if db_user is None:
+        logger.debug(f"User with user_id {user_id} not found")
+        return []
 
-        db_groups = session.scalars(select(Group).where(Group.name.in_(groups))).all()
+    db_groups = db_session.scalars(select(Group).where(Group.name.in_(groups))).all()
 
-        if db_user.is_superuser:
-            # superuser has all permissions (permission = scope)
-            result = scopes.SCOPES.keys()
-        else:
-            # user inherits his/her group associated permissions
-            result = set()
-            for group in db_groups:
-                result.update([p.codename for p in group.permissions])
+    if db_user.is_superuser:
+        # superuser has all permissions (permission = scope)
+        result = scopes.SCOPES.keys()
+    else:
+        # user inherits his/her group associated permissions
+        result = set()
+        for group in db_groups:
+            result.update([p.codename for p in group.permissions])
 
     return list(result)

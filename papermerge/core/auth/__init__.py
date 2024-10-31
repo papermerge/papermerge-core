@@ -82,7 +82,7 @@ def get_current_user(
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(token_data.groups) > 0:
-            with Session.begin() as db_session:
+            with Session() as db_session:
                 s = db.get_user_scopes_from_groups(
                     db_session,
                     user_id=UUID(token_data.user_id),

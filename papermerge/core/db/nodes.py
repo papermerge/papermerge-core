@@ -5,10 +5,12 @@ from collections.abc import Sequence
 from typing import TypeVar, Union
 from uuid import UUID
 
-from sqlalchemy import Engine, func, select
-from sqlalchemy.orm import Session, selectin_polymorphic
+from sqlalchemy import func, select
+from sqlalchemy.orm import selectin_polymorphic
 
 from papermerge.core import schemas
+from papermerge.core.db.engine import Session
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.schemas.documents import Tag as NodeTag
 from papermerge.core.types import PaginatedResponse
 
@@ -43,7 +45,7 @@ def str2colexpr(keys: list[str]):
 
 
 def get_paginated_nodes(
-    engine: Engine,
+    db_session: Session,
     parent_id: UUID,
     user_id: UUID,
     page_size: int,
@@ -51,7 +53,7 @@ def get_paginated_nodes(
     order_by: list[str],
     filter: str | None = None,
 ) -> PaginatedResponse[Union[schemas.Document, schemas.Folder]]:
-    loader_opt = selectin_polymorphic(Node, [Folder, "Document"])
+    loader_opt = selectin_polymorphic(Node, [Folder, doc_orm.Document])
 
     if filter:
         query = (
@@ -79,21 +81,20 @@ def get_paginated_nodes(
 
     items = []
 
-    with Session(engine) as session:
-        total_nodes = session.scalar(count_stmt)
-        num_pages = math.ceil(total_nodes / page_size)
-        nodes = session.scalars(stmt).all()
-        colored_tags_stmt = select(ColoredTag).where(
-            ColoredTag.object_id.in_([n.id for n in nodes])
-        )
-        colored_tags = session.scalars(colored_tags_stmt).all()
-        for node in nodes:
-            tags = _get_tags_for(colored_tags, node.id)
-            node.tags = tags
-            if node.ctype == "folder":
-                items.append(schemas.Folder.model_validate(node))
-            else:
-                items.append(schemas.Document.model_validate(node))
+    total_nodes = db_session.scalar(count_stmt)
+    num_pages = math.ceil(total_nodes / page_size)
+    nodes = db_session.scalars(stmt).all()
+    colored_tags_stmt = select(ColoredTag).where(
+        ColoredTag.object_id.in_([n.id for n in nodes])
+    )
+    colored_tags = db_session.scalars(colored_tags_stmt).all()
+    for node in nodes:
+        tags = _get_tags_for(colored_tags, node.id)
+        node.tags = tags
+        if node.ctype == "folder":
+            items.append(schemas.Folder.model_validate(node))
+        else:
+            items.append(schemas.Document.model_validate(node))
 
     return PaginatedResponse[Union[schemas.Document, schemas.Folder]](
         page_size=page_size, page_number=page_number, num_pages=num_pages, items=items

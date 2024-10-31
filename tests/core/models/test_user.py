@@ -2,8 +2,6 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from model_bakery import baker
-from sqlalchemy import Engine
-from sqlalchemy.orm import sessionmaker
 
 from papermerge.core import db, schemas
 from papermerge.core.features.groups.db import api as gr_dbapi
@@ -43,7 +41,6 @@ class TestUserModel(TestCase):
 
 
 def test_get_user_details(db_session):
-    breakpoint()
     gr_dbapi.sync_perms(db_session)
 
     g1 = gr_dbapi.create_group(db_session, "G1", scopes=[])
@@ -74,18 +71,14 @@ def test_get_user_details(db_session):
     gr_dbapi.delete_group(db_session, group_id=g2.id)
 
 
-def test_update_user(db_engine: Engine):
-    Session = sessionmaker(db_engine)
-    db_session = Session()
-
-    with Session() as session:
-        gr_dbapi.sync_perms(session)
+def test_update_user(db_session):
+    gr_dbapi.sync_perms(db_session)
 
     g1 = gr_dbapi.create_group(db_session, "G1", scopes=[])
     g2 = gr_dbapi.create_group(db_session, "G2", scopes=[])
 
     user: schemas.User = db.create_user(
-        db_engine,
+        db_session,
         username="plato",
         email="plato@mail.com",
         password="wisdom71",
@@ -94,7 +87,7 @@ def test_update_user(db_engine: Engine):
     )
 
     db.update_user(
-        db_engine,
+        db_session,
         user_id=user.id,
         attrs=schemas.UpdateUser(
             username="plato",
@@ -108,7 +101,7 @@ def test_update_user(db_engine: Engine):
 
     # fetch user details; here we are interested in
     # user's groups and user's scopes
-    user_details: schemas.UserDetails = db.get_user_details(db_engine, user_id=user.id)
+    user_details: schemas.UserDetails = db.get_user_details(db_session, user_id=user.id)
 
     group_ids = [g.id for g in user_details.groups]
 

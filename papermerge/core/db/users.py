@@ -146,42 +146,41 @@ def create_user(
 
 
 def update_user(
-    engine: Engine, user_id: UUID, attrs: schemas.UpdateUser
+    db_session, user_id: UUID, attrs: schemas.UpdateUser
 ) -> schemas.UserDetails:
-    with Session(engine) as session:
-        stmt = select(Permission).where(Permission.codename.in_(attrs.scopes))
-        perms = session.execute(stmt).scalars().all()
+    stmt = select(Permission).where(Permission.codename.in_(attrs.scopes))
+    perms = db_session.execute(stmt).scalars().all()
 
-        stmt = select(Group).where(Group.id.in_(attrs.group_ids))
-        groups = session.execute(stmt).scalars().all()
-        user = session.get(User, user_id)
+    stmt = select(Group).where(Group.id.in_(attrs.group_ids))
+    groups = db_session.execute(stmt).scalars().all()
+    user = db_session.get(User, user_id)
 
-        user.username = attrs.username
-        user.email = attrs.email
-        user.permissions = perms
-        user.is_superuser = attrs.is_superuser
-        user.is_active = attrs.is_active
+    user.username = attrs.username
+    user.email = attrs.email
+    user.permissions = perms
+    user.is_superuser = attrs.is_superuser
+    user.is_active = attrs.is_active
 
-        user.groups = groups
-        if attrs.password:
-            user.password = pbkdf2_sha256.hash(attrs.password)
+    user.groups = groups
+    if attrs.password:
+        user.password = pbkdf2_sha256.hash(attrs.password)
 
-        session.commit()
-        result = schemas.UserDetails(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            home_folder_id=user.home_folder_id,
-            inbox_folder_id=user.inbox_folder_id,
-            is_superuser=user.is_superuser,
-            is_active=user.is_active,
-            scopes=list([p.codename for p in user.permissions]),
-            groups=list([{"id": g.id, "name": g.name} for g in groups]),
-        )
+    db_session.commit()
+    result = schemas.UserDetails(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        home_folder_id=user.home_folder_id,
+        inbox_folder_id=user.inbox_folder_id,
+        is_superuser=user.is_superuser,
+        is_active=user.is_active,
+        scopes=list([p.codename for p in user.permissions]),
+        groups=list([{"id": g.id, "name": g.name} for g in groups]),
+    )
 
-        model_user = schemas.UserDetails.model_validate(result)
+    model_user = schemas.UserDetails.model_validate(result)
 
     return model_user
 

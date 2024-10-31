@@ -100,7 +100,6 @@ def sync_perms(db_session: Session):
     `core.auth.scopes.SCOPES`.
     """
     # A. add missing scopes to perms table
-
     scopes_to_be_added = []
     db_perms = db_session.scalars(select(orm.Permission))
     model_perms = [schema.Permission.model_validate(db_perm) for db_perm in db_perms]

@@ -3,9 +3,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from papermerge.core import schemas
 from papermerge.core.features.document.db.orm import Document, DocumentVersion, Page
 from papermerge.core.features.nodes.db.orm import ColoredTag
+from papermerge.core.features.document import schema as doc_schema
 
 from .common import get_ancestors
 
@@ -14,7 +14,7 @@ def get_doc(
     session: Session,
     id: UUID,
     user_id: UUID,
-) -> schemas.Document:
+) -> doc_schema.Document:
     stmt_doc = select(Document).where(Document.id == id, Document.user_id == user_id)
     db_doc = session.scalars(stmt_doc).one()
     breadcrumb = get_ancestors(session, id)
@@ -34,7 +34,7 @@ def get_doc(
 
     db_doc.versions = list(
         [
-            schemas.DocumentVersion.model_validate(db_doc_ver)
+            doc_schema.DocumentVersion.model_validate(db_doc_ver)
             for db_doc_ver in db_doc_vers
         ]
     )
@@ -52,7 +52,7 @@ def get_doc(
 
     for version in db_doc.versions:
         pages = get_page(version.id)
-        version.pages = list([schemas.Page.model_validate(page) for page in pages])
-    model_doc = schemas.Document.model_validate(db_doc)
+        version.pages = list([doc_schema.Page.model_validate(page) for page in pages])
+    model_doc = doc_schema.Document.model_validate(db_doc)
 
     return model_doc

@@ -19,13 +19,6 @@ from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
-from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
-from papermerge.core.schemas.folders import Folder as PyFolder
-from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
-from papermerge.core.schemas.nodes import Node as PyNode
-from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
 from papermerge.core.utils.decorators import skip_in_tests
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
@@ -40,7 +33,7 @@ def get_nodes_details(
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-) -> list[PyFolder | PyDocument]:
+) -> list[nodes_schema.Folder | doc_schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
 

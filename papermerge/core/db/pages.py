@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session
 
-from papermerge.core import schemas
+from papermerge.core.features.document import schema
 from papermerge.core.features.document.db.orm import Document, DocumentVersion, Page
 
 from .exceptions import PageNotFound
@@ -12,7 +12,7 @@ from .exceptions import PageNotFound
 def get_first_page(
     db_session: Session,
     doc_ver_id: UUID,
-) -> schemas.Page:
+) -> schema.Page:
     """
     Returns first page of the document version
     identified by doc_ver_id
@@ -34,12 +34,12 @@ def get_first_page(
                 f"DocVerID={doc_ver_id} does not have pages."
                 " Maybe it does not have associated file yet?"
             )
-        model = schemas.Page.model_validate(db_page)
+        model = schema.Page.model_validate(db_page)
 
     return model
 
 
-def get_page(engine: Engine, id: UUID, user_id: UUID) -> schemas.Page:
+def get_page(engine: Engine, id: UUID, user_id: UUID) -> schema.Page:
     with Session(engine) as session:  # noqa
         stmt = (
             select(Page)
@@ -52,12 +52,12 @@ def get_page(engine: Engine, id: UUID, user_id: UUID) -> schemas.Page:
         except exc.NoResultFound:
             session.close()
             raise PageNotFound(f"PageID={id} not found")
-        model = schemas.Page.model_validate(db_page)
+        model = schema.Page.model_validate(db_page)
 
     return model
 
 
-def get_doc_ver_pages(db_session: Session, doc_ver_id: UUID) -> list[schemas.Page]:
+def get_doc_ver_pages(db_session: Session, doc_ver_id: UUID) -> list[schema.Page]:
     with db_session as session:
         stmt = (
             select(Page)
@@ -69,6 +69,6 @@ def get_doc_ver_pages(db_session: Session, doc_ver_id: UUID) -> list[schemas.Pag
         except exc.NoResultFound:
             session.close()
             raise PageNotFound(f"No pages not found for doc_ver_id={doc_ver_id}")
-        models = [schemas.Page.model_validate(db_page) for db_page in db_pages]
+        models = [schema.Page.model_validate(db_page) for db_page in db_pages]
 
     return models

@@ -4,8 +4,6 @@ from typing import Annotated, Union
 from uuid import UUID
 
 from celery import current_app
-from django.conf import settings
-from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 
 from papermerge.core import utils
@@ -14,16 +12,19 @@ from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core import config
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 logger = logging.getLogger(__name__)
+settings = config.get_settings()
 
 
 @router.get("/")
@@ -88,7 +89,7 @@ def get_node(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
-    pynode: nodes_schema.CreateFolder | doc_schema.CreateDocument,
+    pynode: nodes_schema.NewFolder | doc_schema.NewDocument,
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
@@ -105,41 +106,47 @@ def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
-    try:
-        if pynode.ctype == "folder":
-            attrs = dict(
-                title=pynode.title, user_id=user.id, parent_id=pynode.parent_id
-            )
-            if pynode.id:
-                attrs["id"] = pynode.id
 
-            node = Folder.objects.create(**attrs)
-            klass = PyFolder
-        else:
-            # if user does not specify document's language, get that
-            # value from user preferences
-            if pynode.lang is None:
-                pynode.lang = settings.OCR__DEFAULT_LANGUAGE
+    if pynode.ctype == "folder":
+        attrs = dict(title=pynode.title, user_id=user.id, parent_id=pynode.parent_id)
+        if pynode.id:
+            attrs["id"] = pynode.id
+        new_folder = nodes_schema.NewFolder(**attrs)
+        with Session() as db_session:
+            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
 
-            attrs = dict(
-                title=pynode.title,
-                lang=pynode.lang,
-                user_id=user.id,
-                parent_id=pynode.parent_id,
-                size=0,
-                page_count=0,
-                ocr=pynode.ocr,
-                file_name=pynode.title,
-            )
-            if pynode.id:
-                attrs["id"] = pynode.id
+        klass = nodes_schema.Folder
+    else:
+        # if user does not specify document's language, get that
+        # value from user preferences
+        if pynode.lang is None:
+            pynode.lang = settings.papermerge__ocr__default_language
 
-            node = Document.objects.create_document(**attrs)
-            klass = PyDocument
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Title already exists")
+        attrs = dict(
+            title=pynode.title,
+            lang=pynode.lang,
+            user_id=user.id,
+            parent_id=pynode.parent_id,
+            size=0,
+            page_count=0,
+            ocr=pynode.ocr,
+            file_name=pynode.title,
+            ctype="document",
+        )
+        if pynode.id:
+            attrs["id"] = pynode.id
 
-    return klass.model_validate(node)
+        new_document = doc_schema.NewDocument(**attrs)
+
+        with Session() as db_session:
+            created_node, error = doc_dbapi.create_document(db_session, new_document)
+
+        klass = doc_schema.Document
+
+        if error:
+            raise HTTPException(status_code=400, detail=error.model_dump())
+
+    return klass.model_validate(created_node)
 
 
 @router.patch("/{node_id}")

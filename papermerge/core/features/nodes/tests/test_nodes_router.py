@@ -90,13 +90,13 @@ def test_create_document(auth_api_client: AuthTestClient, db_session):
         "ctype": "document",
         # "lang" attribute is not set
         "title": "doc1.pdf",
-        "parent_id": str(user.home_folder.pk),
+        "parent_id": str(user.home_folder.id),
     }
 
     response = auth_api_client.post("/nodes", json=payload)
 
-    assert response.status_code == 201, response.content
-    assert Document.objects.count() == 1
+    assert response.status_code == 201, response.json()
+    assert doc_dbapi.count_docs(db_session) == 1
 
 
 def test_two_folders_with_same_title_under_same_parent(auth_api_client: AuthTestClient):

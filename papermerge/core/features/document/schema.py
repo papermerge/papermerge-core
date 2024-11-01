@@ -194,10 +194,9 @@ class Document(BaseModel):
     title: str
     ctype: Literal["document"]
     tags: list[Tag] = []
-    created_at: datetime
-    updated_at: datetime
+    # created_at: datetime
+    # updated_at: datetime
     parent_id: UUID | None
-    user_id: UUID
     document_type_id: UUID | None = None
     breadcrumb: list[tuple[UUID, str]] = []
     versions: list[DocumentVersion] | None = []
@@ -230,7 +229,7 @@ class Document(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class CreateDocument(BaseModel):
+class NewDocument(BaseModel):
     # UUID may be present to allow custom IDs
     # See https://github.com/papermerge/papermerge-core/issues/325
     id: UUID | None = None
@@ -243,6 +242,8 @@ class CreateDocument(BaseModel):
     # True: means, yes, trigger OCR after upload
     # False: means, skip OCR
     ocr: bool = True
+    size: int = 0
+    page_count: int = 0
 
     model_config = {
         "json_schema_extra": {

@@ -114,35 +114,14 @@ class MoveNode(BaseModel):
     target_id: UUID
 
 
-class Folder(BaseModel):
-    id: UUID
-    title: str
-    ctype: Literal["folder"]
-    tags: List[Tag] = []
-    created_at: datetime
-    updated_at: datetime
-    parent_id: UUID | None
-    user_id: UUID
-    breadcrumb: List[Tuple[UUID, str]] = []
-
-    @field_validator("tags", mode="before")
-    def tags_validator(cls, value):
-        if not isinstance(value, list):
-            return list(value.all())
-
-        return value
-
-    # Configs
-    model_config = ConfigDict(from_attributes=True)
-
-
-class CreateFolder(BaseModel):
+class NewFolder(BaseModel):
     # UUID may be present to allow custom IDs
     # See https://github.com/papermerge/papermerge-core/issues/325
     id: UUID | None = None
     title: str
     ctype: Literal["folder"]
     parent_id: UUID | None
+    user_id: UUID
 
     model_config = {
         "json_schema_extra": {
@@ -155,3 +134,22 @@ class CreateFolder(BaseModel):
             ]
         }
     }
+
+
+class Folder(NewFolder):
+    id: UUID
+    tags: List[Tag] = []
+    created_at: datetime
+    updated_at: datetime
+
+    breadcrumb: List[Tuple[UUID, str]] = []
+
+    @field_validator("tags", mode="before")
+    def tags_validator(cls, value):
+        if not isinstance(value, list):
+            return list(value.all())
+
+        return value
+
+    # Configs
+    model_config = ConfigDict(from_attributes=True)

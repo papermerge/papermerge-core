@@ -1,8 +1,11 @@
 import uuid
+from typing import Tuple
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.db.engine import Session
+from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.nodes.db import orm as nodes_orm
 
@@ -37,10 +40,22 @@ def update_node(
 
 
 def create_folder(
-    db_session: Session, attrs: nodes_schema.NewFolder
-) -> nodes_schema.Folder:
-    folder = nodes_orm.Folder(**attrs.model_dump())
-    db_session.add(folder)
-    db_session.commit()
+    db_session: Session, attrs: nodes_schema.NewFolder, user_id: uuid.UUID
+) -> Tuple[nodes_schema.Folder | None, err_schema.Error | None]:
+    error = None
+    folder_id = attrs.id or uuid.uuid4()
 
-    return folder
+    folder = nodes_orm.Folder(
+        id=folder_id,
+        user_id=user_id,
+        title=attrs.title,
+        parent_id=attrs.parent_id,
+        ctype="folder",
+    )
+    db_session.add(folder)
+    try:
+        db_session.commit()
+    except IntegrityError as e:
+        error = err_schema.Error(messages=[str(e)])
+
+    return folder, error

@@ -16,7 +16,7 @@ class Node(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
-    lang: Mapped[str] = mapped_column(String(8))
+    lang: Mapped[str] = mapped_column(String(8), default="de")
     tags: list[str] = []
     user: Mapped["User"] = relationship(
         back_populates="nodes",

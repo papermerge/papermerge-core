@@ -269,7 +269,9 @@ def test_assign_tags_to_tagged_folder(
     assert db_session.query(stmt).scalar() is True
 
 
-def test_assign_tags_to_document(auth_api_client: AuthTestClient):
+def test_assign_tags_to_document(
+    auth_api_client: AuthTestClient, make_document, db_session
+):
     """
     url:
         POST /api/nodes/{D1}/tags/
@@ -282,20 +284,32 @@ def test_assign_tags_to_document(auth_api_client: AuthTestClient):
         document D1 will have one tag assigned 'xyz'
     """
     u = auth_api_client.user
-    d1 = document_recipe.make(title="invoice.pdf", user=u, parent=u.home_folder)
-    d1.tags.set(["unpaid", "important"], tag_kwargs={"user": u})
+    d1 = make_document(title="invoice.pdf", user=u, parent=u.home_folder)
+
+    with Session() as db_session2:
+        nodes_dbapi.assign_node_tags(
+            db_session2, node_id=d1.id, tags=["important", "unpaid"], user_id=u.id
+        )
+
     payload = ["xyz"]
 
     response = auth_api_client.post(
-        f"/nodes/{d1.pk}/tags",
+        f"/nodes/{d1.id}/tags",
         json=payload,
     )
 
     assert response.status_code == 200
 
-    found_d1 = Document.objects.get(title="invoice.pdf", user=u)
-    assert found_d1.tags.count() == 1
-    all_new_tags = [tag.name for tag in found_d1.tags.all()]
+    found_d1 = db_session.scalars(
+        select(doc_orm.Document).where(
+            doc_orm.Document.title == "invoice.pdf",
+            doc_orm.Document.user == auth_api_client.user,
+        )
+    ).one()
+
+    assert len(found_d1.tags) == 1
+
+    all_new_tags = [tag.name for tag in found_d1.tags]
 
     assert set(all_new_tags) == {"xyz"}
 

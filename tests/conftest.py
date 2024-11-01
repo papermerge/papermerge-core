@@ -74,28 +74,6 @@ def make_user(db_session: Session):
     return _maker
 
 
-@pytest.fixture
-def make_document(db_session: Session):
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
-        doc_id = uuid.uuid4()
-        doc = doc_orm.Document(
-            id=doc_id,
-            ctype="document",
-            title=title,
-            user=user,
-            parent_id=parent.id,
-            lang="de",
-        )
-
-        db_session.add(doc)
-
-        db_session.commit()
-
-        return doc
-
-    return _maker
-
-
 @pytest.fixture()
 def api_client():
     app = FastAPI()

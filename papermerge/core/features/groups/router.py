@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import db, schemas, utils
+from papermerge.core import db, utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.features.groups.db import api as dbapi
@@ -17,6 +17,7 @@ from papermerge.core.features.groups.schema import (
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
+from papermerge.core.features.users import schema as users_schema
 
 router = APIRouter(
     prefix="/groups",
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups_without_pagination(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
 ):
     """Get all groups without pagination/filtering/sorting
@@ -48,7 +49,7 @@ def get_groups_without_pagination(
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
     params: CommonQueryParams = Depends(),
 ):
@@ -67,7 +68,7 @@ def get_groups(
 def get_group(
     group_id: int,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
 ):
     """Get group details
@@ -88,7 +89,7 @@ def get_group(
 def create_group(
     pygroup: CreateGroup,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
     ],
 ) -> Group:
     """Creates group
@@ -125,7 +126,7 @@ def create_group(
 def delete_group(
     group_id: int,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
 ) -> None:
     """Deletes group
@@ -145,7 +146,7 @@ def update_group(
     group_id: int,
     attrs: UpdateGroup,
     cur_user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
     db_session: db.Session = Depends(db.get_session),
 ) -> Group:

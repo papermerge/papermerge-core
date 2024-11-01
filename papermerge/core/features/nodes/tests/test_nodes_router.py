@@ -1,109 +1,39 @@
-import json
 import uuid
 
-import pytest
-from django.urls import reverse
+from sqlalchemy import select
 
-from papermerge.core.models import Document, Folder, Tag
-from papermerge.test.baker_recipes import document_recipe, folder_recipe
-from papermerge.test.testcases import TestCase
+from papermerge.core.db.engine import Session
+from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.test.types import AuthTestClient
 
 
-@pytest.mark.skip()
-class NodesViewTestCase(TestCase):
-    def test_get_inboxcount_when_inbox_is_empty(self):
-        """
-        GET /nodes/inboxcount/ returns number of descendants of user's inbox
-        folder.
+def test_nodes_move():
+    """
+    doc = Document.objects.create(
+        title="doc.pdf", user=self.user, parent=self.user.inbox_folder
+    )
 
-        In this test user's inbox is empty.
-        """
-        response = self.client.get(reverse("inboxcount"))
+    url = reverse("nodes-move")
+    data = {
+        "nodes": [{"id": str(doc.id)}],
+        "target_parent": {"id": str(self.user.home_folder.id)},
+    }
 
-        assert response.status_code == 200
+    response = self.client.post(url, json.dumps(data), content_type="application/json")
 
-        # user's inbox is empty
-        assert response.data == {"count": 0}
-
-    def test_get_inboxcount_with_one_item_in_inbox(self):
-        """
-        GET /nodes/inboxcount/ returns number of descendants of user's inbox
-        folder.
-        In this test user's inbox contains one single item (one folder).
-        """
-        Folder.objects.create(
-            title="I am inside .inbox", user=self.user, parent=self.user.inbox_folder
-        )
-        response = self.client.get(reverse("inboxcount"))
-        assert response.status_code == 200
-
-        # user's inbox contains one item
-        assert response.data == {"count": 1}
-
-    def test_get_inboxcount_containing_recursive_items(self):
-        """
-        Inbox folder contains two folders:
-        - My Documents
-        - My Invoices
-
-        Both My Documents and My Invoices contains another two documents:
-        - My Documents
-            - doc1.pdf
-            - doc2.pdf
-        - My Invoices
-            - invoice1.pdf
-            - invoice2.pdf
-
-        In such case, inbox should show item count = 2, which corresponds to the
-        two direct children of the inbox - 'My Documents' and 'My Invoices'
-        """
-        my_documents = Folder.objects.create(
-            title="My Documents", user=self.user, parent=self.user.inbox_folder
-        )
-        Document.objects.create(title="doc1.pdf", user=self.user, parent=my_documents)
-        Document.objects.create(title="doc2.pdf", user=self.user, parent=my_documents)
-        my_invoices = Folder.objects.create(
-            title="My Invoices", user=self.user, parent=self.user.inbox_folder
-        )
-        Document.objects.create(
-            title="invoice1.pdf", user=self.user, parent=my_invoices
-        )
-        Document.objects.create(
-            title="invoice2.pdf", user=self.user, parent=my_invoices
-        )
-
-        response = self.client.get(reverse("inboxcount"))
-        assert response.status_code == 200
-
-        # user's inbox contains one item
-        assert response.data == {"count": 2}
-
-    def test_nodes_move(self):
-        doc = Document.objects.create(
-            title="doc.pdf", user=self.user, parent=self.user.inbox_folder
-        )
-
-        url = reverse("nodes-move")
-        data = {
-            "nodes": [{"id": str(doc.id)}],
-            "target_parent": {"id": str(self.user.home_folder.id)},
-        }
-
-        response = self.client.post(
-            url, json.dumps(data), content_type="application/json"
-        )
-
-        assert response.status_code == 200, response.data
+    assert response.status_code == 200, response.data
+    """
+    pass
 
 
-@pytest.mark.django_db(transaction=True)
-def test_create_document_with_custom_id(auth_api_client: AuthTestClient):
+def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_session):
     """
     Allow custom ID attribute: if ID attribute is set, then node will set it
     as its ID.
     """
-    assert Document.objects.count() == 0
+    assert doc_dbapi.count_docs(db_session) == 0
 
     user = auth_api_client.user
 
@@ -114,18 +44,16 @@ def test_create_document_with_custom_id(auth_api_client: AuthTestClient):
         ctype="document",
         # "lang" attribute is not set
         title="doc1.pdf",
-        parent_id=str(user.home_folder.pk),
+        parent_id=str(user.home_folder.id),
     )
 
-    response = auth_api_client.post("/nodes", json=payload)
-
-    assert response.status_code == 201, response.content
-    assert Document.objects.count() == 1
-    doc = Document.objects.first()
+    response = auth_api_client.post("/nodes/", json=payload)
+    assert response.status_code == 201, response.json()
+    assert doc_dbapi.count_docs(db_session) == 1
+    doc = db_session.scalars(select(doc_orm.Document.id).limit(1)).one()
     assert doc.id == custom_id
 
 
-@pytest.mark.django_db(transaction=True)
 def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
     """
     Allow custom ID attribute: if ID attribute is set, then node will set it
@@ -149,13 +77,12 @@ def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
     assert folder.id == custom_id
 
 
-@pytest.mark.django_db(transaction=True)
-def test_create_document(auth_api_client: AuthTestClient):
+def test_create_document(auth_api_client: AuthTestClient, db_session):
     """
     When 'lang' attribute is not specified during document creation
     it is set from user preferences['ocr_language']
     """
-    assert Document.objects.count() == 0
+    assert doc_dbapi.count_docs(db_session) == 0
 
     user = auth_api_client.user
 
@@ -163,16 +90,15 @@ def test_create_document(auth_api_client: AuthTestClient):
         "ctype": "document",
         # "lang" attribute is not set
         "title": "doc1.pdf",
-        "parent_id": str(user.home_folder.pk),
+        "parent_id": str(user.home_folder.id),
     }
 
     response = auth_api_client.post("/nodes", json=payload)
 
-    assert response.status_code == 201, response.content
-    assert Document.objects.count() == 1
+    assert response.status_code == 201, response.json()
+    assert doc_dbapi.count_docs(db_session) == 1
 
 
-@pytest.mark.django_db(transaction=True)
 def test_two_folders_with_same_title_under_same_parent(auth_api_client: AuthTestClient):
     """It should not be possible to create two folders with
     same (parent, title) pair i.e. we cannot have folders with same
@@ -195,7 +121,6 @@ def test_two_folders_with_same_title_under_same_parent(auth_api_client: AuthTest
     assert response.json() == {"detail": "Title already exists"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_two_folders_with_same_title_under_different_parents(
     auth_api_client: AuthTestClient,
 ):
@@ -225,7 +150,6 @@ def test_two_folders_with_same_title_under_different_parents(
     assert response.status_code == 201
 
 
-@pytest.mark.django_db(transaction=True)
 def test_two_documents_with_same_title_under_same_parent(
     auth_api_client: AuthTestClient,
 ):
@@ -251,7 +175,6 @@ def test_two_documents_with_same_title_under_same_parent(
     assert response.json() == {"detail": "Title already exists"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
     """
     url:
@@ -279,7 +202,6 @@ def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
     assert folder.tags.count() == 2
 
 
-@pytest.mark.django_db(transaction=True)
 def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
     """
     url:
@@ -316,7 +238,6 @@ def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
     assert Tag.objects.get(name="unpaid")
 
 
-@pytest.mark.django_db(transaction=True)
 def test_assign_tags_to_document(auth_api_client: AuthTestClient):
     """
     url:
@@ -348,7 +269,6 @@ def test_assign_tags_to_document(auth_api_client: AuthTestClient):
     assert set(all_new_tags) == {"xyz"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_append_tags_to_folder(auth_api_client: AuthTestClient):
     """
     url:
@@ -379,7 +299,6 @@ def test_append_tags_to_folder(auth_api_client: AuthTestClient):
     assert set(all_new_tags) == {"paid", "important"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
     """
     url:
@@ -412,7 +331,6 @@ def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
     assert set(all_new_tags) == {"paid", "bakery", "receipt"}
 
 
-@pytest.mark.django_db(transaction=True)
 def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
     """
     Create two tagged nodes (one folder and one document) in user's home.
@@ -439,14 +357,15 @@ def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
     assert {"folder_a", "folder_b"} == set(folder_tag_names)
 
 
-@pytest.mark.django_db(transaction=True)
-def test_rename_folder(auth_api_client: AuthTestClient):
+def test_rename_folder(auth_api_client: AuthTestClient, make_folder):
     user = auth_api_client.user
-    folder = folder_recipe.make(title="Old Title", user=user, parent=user.home_folder)
+    folder = make_folder(title="Old Title", user=user, parent=user.home_folder)
 
     response = auth_api_client.patch(f"/nodes/{folder.id}", json={"title": "New Title"})
 
     assert response.status_code == 200, response.content
 
-    renamed_folder: Folder = Folder.objects.get(pk=folder.pk)
+    with Session() as db_session:
+        renamed_folder = nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
+
     assert renamed_folder.title == "New Title"

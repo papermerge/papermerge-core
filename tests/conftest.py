@@ -74,19 +74,6 @@ def make_user(db_session: Session):
     return _maker
 
 
-@pytest.fixture()
-def make_folder(db_session: Session):
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
-        folder = orm.Folder(
-            id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
-        )
-        db_session.add(folder)
-        db_session.commit()
-        return folder
-
-    return _maker
-
-
 @pytest.fixture
 def make_document(db_session: Session):
     def _maker(title: str, user: orm.User, parent: orm.Folder):

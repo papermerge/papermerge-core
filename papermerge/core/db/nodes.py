@@ -8,14 +8,14 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectin_polymorphic
 
-from papermerge.core import schemas
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.schemas.documents import Tag as NodeTag
+from papermerge.core.features.nodes.db.orm import ColoredTag, Folder, Node
+from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.types import PaginatedResponse
 
 from .common import get_ancestors
-from .models import ColoredTag, Folder, Node
 
 T = TypeVar("T")
 
@@ -52,7 +52,7 @@ def get_paginated_nodes(
     page_number: int,
     order_by: list[str],
     filter: str | None = None,
-) -> PaginatedResponse[Union[schemas.Document, schemas.Folder]]:
+) -> PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]]:
     loader_opt = selectin_polymorphic(Node, [Folder, doc_orm.Document])
 
     if filter:
@@ -92,18 +92,18 @@ def get_paginated_nodes(
         tags = _get_tags_for(colored_tags, node.id)
         node.tags = tags
         if node.ctype == "folder":
-            items.append(schemas.Folder.model_validate(node))
+            items.append(nodes_schema.Folder.model_validate(node))
         else:
-            items.append(schemas.Document.model_validate(node))
+            items.append(doc_schema.Document.model_validate(node))
 
-    return PaginatedResponse[Union[schemas.Document, schemas.Folder]](
+    return PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]](
         page_size=page_size, page_number=page_number, num_pages=num_pages, items=items
     )
 
 
 def get_nodes(
     db_session: Session, node_ids: list[uuid.UUID]
-) -> list[schemas.Document | schemas.Folder]:
+) -> list[doc_schema.Document | nodes_schema.Folder]:
     items = []
     with db_session as session:
         if len(node_ids) > 0:
@@ -123,18 +123,20 @@ def get_nodes(
             node.tags = tags
             node.breadcrumb = ancestors
             if node.ctype == "folder":
-                items.append(schemas.Folder.model_validate(node))
+                items.append(nodes_schema.Folder.model_validate(node))
             else:
-                items.append(schemas.Document.model_validate(node))
+                items.append(doc_schema.Document.model_validate(node))
 
     return items
 
 
-def _get_tags_for(colored_tags: Sequence[ColoredTag], node_id: UUID) -> list[NodeTag]:
+def _get_tags_for(
+    colored_tags: Sequence[ColoredTag], node_id: UUID
+) -> list[doc_schema.Tag]:
     node_tags = []
 
     for color_tag in colored_tags:
         if color_tag.object_id == node_id:
-            node_tags.append(NodeTag.model_validate(color_tag.tag))
+            node_tags.append(doc_schema.Tag.model_validate(color_tag.tag))
 
     return node_tags

@@ -8,12 +8,12 @@ from papermerge.core.features.document_types.router import (
     router as document_types_router,
 )
 from papermerge.core.features.groups.router import router as groups_router
+from papermerge.core.features.nodes.router import router as nodes_router
 from papermerge.core.log import log_task_routes
 
 from .document_version import router as document_versions_router
 from .documents import router as documents_router
 from .folders import router as folders_router
-from .nodes import router as nodes_router
 from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
 from .probe import router as probe_router

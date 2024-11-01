@@ -4,43 +4,37 @@ from typing import Annotated, Union
 from uuid import UUID
 
 from celery import current_app
-from django.conf import settings
-from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 
-from papermerge.core import db, schemas, utils
+from papermerge.core import utils
 from papermerge.core.auth import get_current_user, scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
-from papermerge.core.models import BaseTreeNode, Document, Folder, User
-from papermerge.core.models.node import move_node
-from papermerge.core.schemas.documents import CreateDocument as PyCreateDocument
-from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.schemas.folders import CreateFolder as PyCreateFolder
-from papermerge.core.schemas.folders import Folder as PyFolder
-from papermerge.core.schemas.nodes import MoveNode as PyMoveNode
-from papermerge.core.schemas.nodes import Node as PyNode
-from papermerge.core.schemas.nodes import UpdateNode as PyUpdateNode
+from papermerge.core.features.users import schema as users_schema
+from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.features.nodes import schema as nodes_schema
+from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.routers.paginator import PaginatedResponse
+from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
-
-from .common import OPEN_API_GENERIC_JSON_DETAIL
-from .paginator import PaginatedResponse
-from .params import CommonQueryParams
+from papermerge.core import config
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 logger = logging.getLogger(__name__)
+settings = config.get_settings()
 
 
 @router.get("/")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-    db_session: db.Session = Depends(db.get_session),
-) -> list[PyFolder | PyDocument]:
+) -> list[nodes_schema.Folder | doc_schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
 
@@ -58,13 +52,14 @@ def get_nodes_details(
 
 
 @router.get(
-    "/{parent_id}", response_model=PaginatedResponse[Union[PyDocument, PyFolder]]
+    "/{parent_id}",
+    response_model=PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]],
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     params: CommonQueryParams = Depends(),
 ):
@@ -94,11 +89,11 @@ def get_node(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
-    pynode: PyCreateFolder | PyCreateDocument,
+    pynode: nodes_schema.NewFolder | doc_schema.NewDocument,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-) -> PyFolder | PyDocument:
+) -> nodes_schema.Folder | doc_schema.Document:
     """Creates a node
 
     Required scope: `{scope}`
@@ -111,50 +106,58 @@ def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
-    try:
-        if pynode.ctype == "folder":
-            attrs = dict(
-                title=pynode.title, user_id=user.id, parent_id=pynode.parent_id
-            )
-            if pynode.id:
-                attrs["id"] = pynode.id
 
-            node = Folder.objects.create(**attrs)
-            klass = PyFolder
-        else:
-            # if user does not specify document's language, get that
-            # value from user preferences
-            if pynode.lang is None:
-                pynode.lang = settings.OCR__DEFAULT_LANGUAGE
+    if pynode.ctype == "folder":
+        attrs = dict(title=pynode.title, user_id=user.id, parent_id=pynode.parent_id)
+        if pynode.id:
+            attrs["id"] = pynode.id
+        new_folder = nodes_schema.NewFolder(**attrs)
+        with Session() as db_session:
+            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
 
-            attrs = dict(
-                title=pynode.title,
-                lang=pynode.lang,
-                user_id=user.id,
-                parent_id=pynode.parent_id,
-                size=0,
-                page_count=0,
-                ocr=pynode.ocr,
-                file_name=pynode.title,
-            )
-            if pynode.id:
-                attrs["id"] = pynode.id
+        klass = nodes_schema.Folder
+    else:
+        # if user does not specify document's language, get that
+        # value from user preferences
+        if pynode.lang is None:
+            pynode.lang = settings.papermerge__ocr__default_language
 
-            node = Document.objects.create_document(**attrs)
-            klass = PyDocument
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="Title already exists")
+        attrs = dict(
+            title=pynode.title,
+            lang=pynode.lang,
+            user_id=user.id,
+            parent_id=pynode.parent_id,
+            size=0,
+            page_count=0,
+            ocr=pynode.ocr,
+            file_name=pynode.title,
+            ctype="document",
+        )
+        if pynode.id:
+            attrs["id"] = pynode.id
 
-    return klass.model_validate(node)
+        new_document = doc_schema.NewDocument(**attrs)
+
+        with Session() as db_session:
+            created_node, error = doc_dbapi.create_document(db_session, new_document)
+
+        klass = doc_schema.Document
+
+        if error:
+            raise HTTPException(status_code=400, detail=error.model_dump())
+
+    return klass.model_validate(created_node)
 
 
 @router.patch("/{node_id}")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
-    node: PyUpdateNode,
-    user: Annotated[User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])],
-) -> PyNode:
+    node: nodes_schema.UpdateNode,
+    user: Annotated[
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+    ],
+) -> nodes_schema.Node:
     """Updates node
 
     Required scope: `{scope}`
@@ -163,17 +166,12 @@ def update_node(
     should be non empty string (UUID).
     """
 
-    try:
-        old_node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
-    except BaseTreeNode.DoesNotExist:
-        raise HTTPException(status_code=404, detail="Does not exist")
+    with Session() as db_session:
+        updated_node = nodes_dbapi.update_node(
+            db_session, node_id=node_id, user_id=user.id, attrs=node
+        )
 
-    for key, value in node.model_dump().items():
-        if value is not None:
-            setattr(old_node, key, value)
-    old_node.save()
-
-    return PyNode.model_validate(old_node)
+    return updated_node
 
 
 @router.delete("/")
@@ -181,7 +179,7 @@ def update_node(
 def delete_nodes(
     list_of_uuids: list[UUID],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
 ) -> list[UUID]:
     """Deletes nodes with specified UUIDs
@@ -216,9 +214,9 @@ def delete_nodes(
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
-    params: PyMoveNode,
+    params: nodes_schema.MoveNode,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
     ],
 ) -> list[UUID]:
     """Move source nodes into the target node.
@@ -258,9 +256,9 @@ def assign_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> schemas.Document | schemas.Folder:
+) -> doc_schema.Document | nodes_schema.Folder:
     """
     Assigns given list of tag names to the node.
 
@@ -282,9 +280,9 @@ def assign_node_tags(
     _notify_index(str(node_id))
 
     if node.ctype == "folder":
-        return schemas.Folder.model_validate(node)
+        return nodes_schema.Folder.model_validate(node)
 
-    return schemas.Document.model_validate(node)
+    return doc_schema.Document.model_validate(node)
 
 
 @router.patch("/{node_id}/tags")
@@ -293,9 +291,9 @@ def update_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> PyNode:
+) -> nodes_schema.Node:
     """
     Appends given list of tag names to the node.
 
@@ -327,7 +325,7 @@ def update_node_tags(
     node.tags.add(*tags, tag_kwargs={"user_id": user.id})
     _notify_index(node_id)
 
-    return PyNode.model_validate(node)
+    return nodes_schema.Node.model_validate(node)
 
 
 @router.delete("/{node_id}/tags")
@@ -336,9 +334,9 @@ def delete_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> PyNode:
+) -> nodes_schema.Node:
     """
     Dissociate given tags the node.
 
@@ -353,7 +351,7 @@ def delete_node_tags(
 
     node.tags.remove(*tags)
 
-    return PyNode.model_validate(node)
+    return nodes_schema.Node.model_validate(node)
 
 
 @skip_in_tests

@@ -3,16 +3,15 @@ from uuid import UUID
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
-from papermerge.core import schemas
-from papermerge.core.db.models import DocumentVersion
-from papermerge.core.features.document.db.orm import Document
+from papermerge.core.features.document.db.orm import Document, DocumentVersion
+from papermerge.core.features.document import schema as doc_schema
 
 
 def get_last_doc_ver(
     db_session: Session,
     user_id: UUID,
     doc_id: UUID,  # noqa
-) -> schemas.DocumentVersion:
+) -> doc_schema.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
@@ -26,7 +25,7 @@ def get_last_doc_ver(
             .limit(1)
         )
         db_doc_ver = session.scalars(stmt).one()
-        model_doc_ver = schemas.DocumentVersion.model_validate(db_doc_ver)
+        model_doc_ver = doc_schema.DocumentVersion.model_validate(db_doc_ver)
 
     return model_doc_ver
 
@@ -35,7 +34,7 @@ def get_doc_ver(
     engine: Engine,
     id: UUID,
     user_id: UUID,  # noqa
-) -> schemas.DocumentVersion:
+) -> doc_schema.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
@@ -47,6 +46,6 @@ def get_doc_ver(
             .where(Document.user_id == user_id, DocumentVersion.id == id)
         )
         db_doc_ver = session.scalars(stmt).one()
-        model_doc_ver = schemas.DocumentVersion.model_validate(db_doc_ver)
+        model_doc_ver = doc_schema.DocumentVersion.model_validate(db_doc_ver)
 
     return model_doc_ver

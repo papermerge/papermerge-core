@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.db.models import User
+from papermerge.core.features.users.db.orm import User
 
 
 class AuthTestClient(BaseModel):

@@ -1,15 +1,27 @@
 import itertools
 import uuid
 
+from typing import Tuple
+
+from humanfriendly.terminal import message
 from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.types import OCRStatusEnum
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
+from papermerge.core.schemas import error as err_schema
+
+
+def count_docs(session: Session) -> int:
+    stmt = select(func.count()).select_from(doc_orm.Document)
+
+    return session.scalars(stmt).one()
 
 
 def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
@@ -336,3 +348,50 @@ def get_docs_by_type(
         )
 
     return results
+
+
+def create_document(
+    db_session: Session, attrs: schema.NewDocument
+) -> Tuple[schema.Document | None, err_schema.Error | None]:
+    error = None
+    doc_id = attrs.id or uuid.uuid4()
+    doc = doc_orm.Document(
+        id=doc_id,
+        title=attrs.title,
+        ctype="document",
+        ocr_status=OCRStatusEnum.unknown,
+        parent_id=attrs.parent_id,
+        ocr=attrs.ocr,
+        lang=attrs.lang,
+    )
+    doc_ver = doc_orm.DocumentVersion(
+        document_id=doc_id,
+        number=1,
+        file_name=attrs.file_name,
+        size=0,
+        page_count=0,
+        lang=attrs.lang,
+        short_description="Original",
+    )
+    db_session.add(doc)
+    db_session.add(doc_ver)
+    try:
+        db_session.commit()
+    except IntegrityError as e:
+        stre = str(e)
+        # postgres unique integrity error
+        if "unique" in stre and "title" in stre:
+            attr_err = err_schema.AttrError(
+                name="title", message="Within a folder title must be unique"
+            )
+            error = err_schema.Error(attrs=[attr_err])
+        # sqlite unique integrity error
+        elif "UNIQUE" in stre and ".title" in stre:
+            attr_err = err_schema.AttrError(
+                name="title", message="Within a folder title must be unique"
+            )
+            error = err_schema.Error(attrs=[attr_err])
+        else:
+            error = err_schema.Error(messages=[stre])
+
+    return schema.Document.model_validate(doc), error

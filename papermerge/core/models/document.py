@@ -125,10 +125,6 @@ class DocumentManager(models.Manager):
             short_description="Original",
         )
         document_version.save()
-        # Important! - first document must inherit metakeys from
-        # parent folder
-        # if parent:
-        #    doc.inherit_kv_from(parent)
         return doc
 
     def _get_parent(self, parent_id):

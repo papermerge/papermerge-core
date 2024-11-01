@@ -5,6 +5,7 @@ from sqlalchemy import select
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.test.types import AuthTestClient
 
@@ -50,11 +51,11 @@ def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_sess
     response = auth_api_client.post("/nodes/", json=payload)
     assert response.status_code == 201, response.json()
     assert doc_dbapi.count_docs(db_session) == 1
-    doc = db_session.scalars(select(doc_orm.Document.id).limit(1)).one()
+    doc = db_session.scalars(select(doc_orm.Document).limit(1)).one()
     assert doc.id == custom_id
 
 
-def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
+def test_create_folder_with_custom_id(auth_api_client: AuthTestClient, db_session):
     """
     Allow custom ID attribute: if ID attribute is set, then node will set it
     as its ID.
@@ -67,13 +68,15 @@ def test_create_folder_with_custom_id(auth_api_client: AuthTestClient):
         id=str(custom_id),
         ctype="folder",
         title="My Documents",
-        parent_id=str(user.home_folder.pk),
+        parent_id=str(user.home_folder.id),
     )
 
-    response = auth_api_client.post("/nodes", json=payload)
-    folder = Folder.objects.get(title="My Documents")
+    response = auth_api_client.post("/nodes/", json=payload)
+    folder = db_session.scalars(
+        select(nodes_orm.Folder).where(nodes_orm.Node.title == "My Documents")
+    ).one()
 
-    assert response.status_code == 201, response.content
+    assert response.status_code == 201, response.json()
     assert folder.id == custom_id
 
 

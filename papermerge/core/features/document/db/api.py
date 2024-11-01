@@ -2,6 +2,7 @@ import itertools
 import uuid
 
 from typing import Tuple
+from uuid import uuid4
 
 from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
@@ -350,7 +351,7 @@ def get_docs_by_type(
 
 
 def create_document(
-    db_session: Session, attrs: schema.NewDocument
+    db_session: Session, attrs: schema.NewDocument, user_id: uuid.UUID
 ) -> Tuple[schema.Document | None, err_schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
@@ -362,8 +363,10 @@ def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
+        user_id=user_id,
     )
     doc_ver = doc_orm.DocumentVersion(
+        id=uuid4(),
         document_id=doc_id,
         number=1,
         file_name=attrs.file_name,
@@ -373,11 +376,14 @@ def create_document(
         short_description="Original",
     )
     db_session.add(doc)
-    db_session.add(doc_ver)
+
     try:
+        db_session.commit()
+        db_session.add(doc_ver)
         db_session.commit()
     except IntegrityError as e:
         stre = str(e)
+        breakpoint()
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
             attr_err = err_schema.AttrError(

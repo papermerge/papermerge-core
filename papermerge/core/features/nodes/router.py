@@ -106,14 +106,20 @@ def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
-
     if pynode.ctype == "folder":
-        attrs = dict(title=pynode.title, user_id=user.id, parent_id=pynode.parent_id)
+        attrs = dict(
+            title=pynode.title,
+            ctype="folder",
+            user_id=user.id,
+            parent_id=pynode.parent_id,
+        )
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = nodes_schema.NewFolder(**attrs)
         with Session() as db_session:
-            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
+            created_node, error = nodes_dbapi.create_folder(
+                db_session, new_folder, user_id=user.id
+            )
 
         klass = nodes_schema.Folder
     else:
@@ -139,7 +145,9 @@ def create_node(
         new_document = doc_schema.NewDocument(**attrs)
 
         with Session() as db_session:
-            created_node, error = doc_dbapi.create_document(db_session, new_document)
+            created_node, error = doc_dbapi.create_document(
+                db_session, new_document, user_id=user.id
+            )
 
         klass = doc_schema.Document
 

@@ -121,7 +121,6 @@ class NewFolder(BaseModel):
     title: str
     ctype: Literal["folder"]
     parent_id: UUID | None
-    user_id: UUID
 
     model_config = {
         "json_schema_extra": {

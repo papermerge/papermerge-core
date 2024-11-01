@@ -74,7 +74,7 @@ def get_node(
         order_by = [item.strip() for item in params.order_by.split(",")]
 
     with Session() as db_session:
-        results = db.get_paginated_nodes(
+        results = nodes_dbapi.get_paginated_nodes(
             db_session=db_session,
             parent_id=UUID(parent_id),
             user_id=user.id,
@@ -283,10 +283,11 @@ def assign_node_tags(
             )
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exist")
-    _notify_index(str(node_id))
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
+
+    _notify_index(node_id)
 
     return node
 
@@ -299,7 +300,7 @@ def update_node_tags(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> nodes_schema.Node:
+) -> doc_schema.Document | nodes_schema.Folder:
     """
     Appends given list of tag names to the node.
 
@@ -324,14 +325,19 @@ def update_node_tags(
         are still assigned to N1.
     """
     try:
-        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
-    except BaseTreeNode.DoesNotExist:
+        with Session() as db_session:
+            node, error = nodes_dbapi.update_node_tags(
+                db_session, node_id=node_id, tags=tags, user_id=user.id
+            )
+    except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exist")
 
-    node.tags.add(*tags, tag_kwargs={"user_id": user.id})
-    _notify_index(node_id)
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
 
-    return nodes_schema.Node.model_validate(node)
+    _notify_index(node.id)
+
+    return node
 
 
 @router.delete("/{node_id}/tags")
@@ -361,7 +367,7 @@ def delete_node_tags(
 
 
 @skip_in_tests
-def _notify_index(node_id: str):
+def _notify_index(node_id: uuid.UUID):
     id_as_str = str(node_id)  # just in case, make sure it is str
     current_app.send_task(
         INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3"

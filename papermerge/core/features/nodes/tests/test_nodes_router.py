@@ -314,7 +314,9 @@ def test_assign_tags_to_document(
     assert set(all_new_tags) == {"xyz"}
 
 
-def test_append_tags_to_folder(auth_api_client: AuthTestClient):
+def test_append_tags_to_folder(
+    auth_api_client: AuthTestClient, make_folder, db_session
+):
     """
     url:
         PATCH /api/nodes/{N1}/tags/
@@ -328,18 +330,26 @@ def test_append_tags_to_folder(auth_api_client: AuthTestClient):
         Notice that 'paid' was appended next to 'important'.
     """
     u = auth_api_client.user
-    receipts = Folder.objects.create(title="Receipts", user=u, parent=u.inbox_folder)
-    receipts.tags.set(["important"], tag_kwargs={"user": u})
+    receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
+    with Session() as db_session2:
+        nodes_dbapi.assign_node_tags(
+            db_session2, node_id=receipts.id, tags=["important"], user_id=u.id
+        )
     payload = ["paid"]
     response = auth_api_client.patch(
-        f"/nodes/{receipts.pk}/tags",
+        f"/nodes/{receipts.id}/tags",
         json=payload,
     )
 
     assert response.status_code == 200, response.json()
-    folder = Folder.objects.get(title="Receipts", user=u)
-    assert folder.tags.count() == 2
-    all_new_tags = [tag.name for tag in receipts.tags.all()]
+    folder = db_session.scalars(
+        select(nodes_orm.Folder).where(
+            nodes_orm.Folder.title == "Receipts",
+            nodes_orm.Folder.user == u,
+        )
+    ).one()
+    assert len(folder.tags) == 2
+    all_new_tags = [tag.name for tag in receipts.tags]
 
     assert set(all_new_tags) == {"paid", "important"}
 
@@ -376,20 +386,28 @@ def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
     assert set(all_new_tags) == {"paid", "bakery", "receipt"}
 
 
-def test_home_with_two_tagged_nodes(auth_api_client: AuthTestClient):
+def test_home_with_two_tagged_nodes(
+    auth_api_client: AuthTestClient, make_folder, make_document
+):
     """
     Create two tagged nodes (one folder and one document) in user's home.
     Retrieve user's home content and check that tags
     were included in response as well.
     """
     u = auth_api_client.user
-    folder = Folder.objects.create(title="folder", user=u, parent=u.home_folder)
-    folder.tags.set(["folder_a", "folder_b"], tag_kwargs={"user": u})
-    doc = Document.objects.create(title="doc.pdf", user=u, parent=u.home_folder)
-    doc.tags.set(["doc_a", "doc_b"], tag_kwargs={"user": u})
+    folder = make_folder(title="folder", user=u, parent=u.home_folder)
+    doc = make_document(title="doc.pdf", user=u, parent=u.home_folder)
     home = u.home_folder
 
-    response = auth_api_client.get(f"/nodes/{home.pk}")
+    with Session() as s:
+        nodes_dbapi.assign_node_tags(
+            s, node_id=folder.id, tags=["folder_a", "folder_b"], user_id=u.id
+        )
+        nodes_dbapi.assign_node_tags(
+            s, node_id=doc.id, tags=["doc_a", "doc_b"], user_id=u.id
+        )
+
+    response = auth_api_client.get(f"/nodes/{home.id}")
     assert response.status_code == 200
 
     results = response.json()["items"]

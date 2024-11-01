@@ -1,6 +1,12 @@
-import uuid
-from pyexpat.errors import messages
+import logging
 from typing import Tuple
+import math
+import uuid
+from typing import Union
+from uuid import UUID
+
+from sqlalchemy import func, select
+from sqlalchemy.orm import selectin_polymorphic
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -11,15 +17,95 @@ from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.document import schema as docs_schema
 from papermerge.core.features.nodes.db import orm as nodes_orm
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.tags.db import orm as tags_orm
+from papermerge.core.types import PaginatedResponse
 
 from .orm import Folder
+
+
+logger = logging.getLogger(__name__)
+
+
+def str2colexpr(keys: list[str]):
+    result = []
+    ORDER_BY_MAP = {
+        "ctype": nodes_orm.Node.ctype,
+        "-ctype": nodes_orm.Node.ctype.desc(),
+        "title": nodes_orm.Node.title,
+        "-title": nodes_orm.Node.title.desc(),
+        "created_at": nodes_orm.Node.created_at,
+        "-created_at": nodes_orm.Node.created_at.desc(),
+        "updated_at": nodes_orm.Node.updated_at,
+        "-updated_at": nodes_orm.Node.updated_at.desc(),
+    }
+    logger.debug(f"str2colexpr keys = {keys}")
+
+    for key in keys:
+        item = ORDER_BY_MAP.get(key, nodes_orm.Node.title)
+        result.append(item)
+
+    return result
 
 
 def get_folder_by_id(db_session: Session, id: uuid.UUID) -> nodes_schema.Folder:
     stmt = select(Folder).where(Folder.id == id)
     db_folder = db_session.scalars(stmt).one_or_none()
     return nodes_schema.Folder.model_validate(db_folder)
+
+
+def get_paginated_nodes(
+    db_session: Session,
+    parent_id: UUID,
+    user_id: UUID,
+    page_size: int,
+    page_number: int,
+    order_by: list[str],
+    filter: str | None = None,
+) -> PaginatedResponse[Union[docs_schema.Document, nodes_schema.Folder]]:
+    loader_opt = selectin_polymorphic(nodes_orm.Node, [Folder, doc_orm.Document])
+
+    if filter:
+        query = (
+            select(nodes_orm.Node)
+            .filter(
+                func.lower(nodes_orm.Node.title).contains(
+                    filter.strip().lower(), autoescape=True
+                )
+            )
+            .filter_by(user_id=user_id, parent_id=parent_id)
+        )
+    else:
+        query = (
+            select(nodes_orm.Node)
+            .join(
+                tags_orm.Tag, nodes_orm.Node.id == tags_orm.NodeTagsAssociation.node_id
+            )
+            .filter_by(user_id=user_id, parent_id=parent_id)
+        )
+
+    stmt = (
+        query.offset((page_number - 1) * page_size)
+        .order_by(*str2colexpr(order_by))
+        .limit(page_size)
+        .options(loader_opt)
+    )
+
+    count_stmt = (
+        select(func.count())
+        .select_from(nodes_orm.Node)
+        .where(nodes_orm.Node.user_id == user_id, nodes_orm.Node.parent_id == parent_id)
+    )
+
+    items = []
+
+    total_nodes = db_session.scalar(count_stmt)
+    num_pages = math.ceil(total_nodes / page_size)
+    nodes = db_session.scalars(stmt).all()
+
+    return PaginatedResponse[Union[docs_schema.Document, nodes_schema.Folder]](
+        page_size=page_size, page_number=page_number, num_pages=num_pages, items=items
+    )
 
 
 def update_node(
@@ -88,6 +174,36 @@ def assign_node_tags(
     try:
         db_session.commit()
         node.tags = db_tags
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    if node.ctype == "document":
+        return docs_schema.Document.model_validate(node), error
+
+    return nodes_schema.Folder.model_validate(node), error
+
+
+def update_node_tags(
+    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+) -> Tuple[docs_schema.Document | nodes_schema.Folder | None, err_schema.Error | None]:
+    error = None
+
+    stmt = select(nodes_orm.Node).where(
+        nodes_orm.Node.id == node_id, nodes_orm.Node.user_id == user_id
+    )
+    node = db_session.scalars(stmt).one_or_none()
+
+    if node is None:
+        raise EntityNotFound(f"Node {node_id} not found")
+
+    db_tags = [tags_orm.Tag(name=name, user_id=user_id) for name in tags]
+    db_session.add_all(db_tags)
+
+    try:
+        db_session.commit()
+        node.tags.extend(db_tags)
         db_session.commit()
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])

@@ -57,5 +57,9 @@ def create_folder(
         db_session.commit()
     except IntegrityError as e:
         error = err_schema.Error(messages=[str(e)])
+        folder = None
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        folder = None
 
-    return folder, error
+    return (folder, error)

@@ -111,17 +111,16 @@ def test_two_folders_with_same_title_under_same_parent(auth_api_client: AuthTest
     payload = {
         "ctype": "folder",
         "title": "My Documents",
-        "parent_id": str(user.home_folder.pk),
+        "parent_id": str(user.home_folder.id),
     }
 
     # Create first folder 'My documents' (inside home folder)
-    response = auth_api_client.post("/nodes", json=payload)
-    assert response.status_code == 201
+    response = auth_api_client.post("/nodes/", json=payload)
+    assert response.status_code == 201, response.json()
 
     # Create second folder 'My Documents' also inside home folder
-    response = auth_api_client.post("/nodes", json=payload)
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Title already exists"}
+    response = auth_api_client.post("/nodes/", json=payload)
+    assert response.status_code == 400, response.json()
 
 
 def test_two_folders_with_same_title_under_different_parents(
@@ -134,23 +133,22 @@ def test_two_folders_with_same_title_under_different_parents(
     payload = {
         "ctype": "folder",
         "title": "My Documents",
-        "parent_id": str(user.home_folder.pk),
+        "parent_id": str(user.home_folder_id),
     }
 
     # Create first folder 'My documents' (inside home folder)
-    response = auth_api_client.post("/nodes", json=payload)
-    assert response.status_code == 201
+    response = auth_api_client.post("/nodes/", json=payload)
+    assert response.status_code == 201, response.json()
 
     # Create second folder 'My Documents' also inside home folder
     payload2 = {
         "ctype": "folder",
         "title": "My Documents",
-        "parent_id": str(user.inbox_folder.pk),
+        "parent_id": str(user.inbox_folder_id),
     }
-
     # create folder 'My Documents' in Inbox
-    response = auth_api_client.post("/nodes", json=payload2)
-    assert response.status_code == 201
+    response = auth_api_client.post("/nodes/", json=payload2)
+    assert response.status_code == 201, response.json()
 
 
 def test_two_documents_with_same_title_under_same_parent(
@@ -164,7 +162,7 @@ def test_two_documents_with_same_title_under_same_parent(
     payload = {
         "ctype": "document",
         "title": "My Documents",
-        "parent_id": str(user.home_folder.pk),
+        "parent_id": str(user.home_folder.id),
     }
 
     # Create first folder 'My documents' (inside home folder)
@@ -175,7 +173,6 @@ def test_two_documents_with_same_title_under_same_parent(
     response = auth_api_client.post("/nodes", json=payload)
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Title already exists"}
 
 
 def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):

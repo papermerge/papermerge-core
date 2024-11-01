@@ -93,7 +93,7 @@ def create_node(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-) -> nodes_schema.Folder | doc_schema.Document:
+) -> nodes_schema.Folder | doc_schema.Document | None:
     """Creates a node
 
     Required scope: `{scope}`
@@ -120,8 +120,6 @@ def create_node(
             created_node, error = nodes_dbapi.create_folder(
                 db_session, new_folder, user_id=user.id
             )
-
-        klass = nodes_schema.Folder
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -149,12 +147,10 @@ def create_node(
                 db_session, new_document, user_id=user.id
             )
 
-        klass = doc_schema.Document
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
 
-        if error:
-            raise HTTPException(status_code=400, detail=error.model_dump())
-
-    return klass.model_validate(created_node)
+    return created_node
 
 
 @router.patch("/{node_id}")

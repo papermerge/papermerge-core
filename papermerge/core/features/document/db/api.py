@@ -3,7 +3,6 @@ import uuid
 
 from typing import Tuple
 
-from humanfriendly.terminal import message
 from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, func
+from sqlalchemy import ForeignKey, String, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.features.users.db.orm import User
@@ -40,6 +40,12 @@ class Node(Base):
         "polymorphic_identity": "node",
         "polymorphic_on": "ctype",
     }
+
+    __table_args__ = (
+        UniqueConstraint(
+            "parent_id", "title", "user_id", name="unique title per parent per user"
+        ),
+    )
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.title!r})"

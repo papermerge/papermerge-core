@@ -383,7 +383,6 @@ def create_document(
         db_session.commit()
     except IntegrityError as e:
         stre = str(e)
-        breakpoint()
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
             attr_err = err_schema.AttrError(

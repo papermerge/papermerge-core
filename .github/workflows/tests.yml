@@ -12,7 +12,7 @@ on:
       - '.github/workflows/tests.yml'
 
 jobs:
-  features_dir_with_sqlite:
+  tests_with_sqlite:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +29,7 @@ jobs:
           PAPERMERGE__DATABASE__URL: 'sqlite:///test.sqlite'
           PAPERMERGE__MAIN__API_PREFIX: ''
 
-  features_dir_with_postgres:
+  tests_with_postgres:
     runs-on: ubuntu-22.04
     services:
       postgres:

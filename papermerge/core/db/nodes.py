@@ -10,8 +10,9 @@ from sqlalchemy.orm import selectin_polymorphic
 
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.features.nodes.db.orm import ColoredTag, Folder, Node
+from papermerge.core.features.nodes.db.orm import Folder, Node
 from papermerge.core.features.document import schema as doc_schema
+from papermerge.core.features.tags.db.orm import Tag
 from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.types import PaginatedResponse
 
@@ -84,17 +85,17 @@ def get_paginated_nodes(
     total_nodes = db_session.scalar(count_stmt)
     num_pages = math.ceil(total_nodes / page_size)
     nodes = db_session.scalars(stmt).all()
-    colored_tags_stmt = select(ColoredTag).where(
-        ColoredTag.object_id.in_([n.id for n in nodes])
-    )
-    colored_tags = db_session.scalars(colored_tags_stmt).all()
-    for node in nodes:
-        tags = _get_tags_for(colored_tags, node.id)
-        node.tags = tags
-        if node.ctype == "folder":
-            items.append(nodes_schema.Folder.model_validate(node))
-        else:
-            items.append(doc_schema.Document.model_validate(node))
+    # colored_tags_stmt = select(ColoredTag).where(
+    #    ColoredTag.object_id.in_([n.id for n in nodes])
+    # )
+    # colored_tags = db_session.scalars(colored_tags_stmt).all()
+    # for node in nodes:
+    #    tags = _get_tags_for(colored_tags, node.id)
+    #    node.tags = tags
+    #    if node.ctype == "folder":
+    #        items.append(nodes_schema.Folder.model_validate(node))
+    #    else:
+    #        items.append(doc_schema.Document.model_validate(node))
 
     return PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]](
         page_size=page_size, page_number=page_number, num_pages=num_pages, items=items
@@ -112,27 +113,25 @@ def get_nodes(
             stmt = select(Node)
 
         nodes = session.scalars(stmt).all()
-        colored_tags_stmt = select(ColoredTag).where(
-            ColoredTag.object_id.in_([n.id for n in nodes])
-        )
-        colored_tags = session.scalars(colored_tags_stmt).all()
+        # colored_tags_stmt = select(ColoredTag).where(
+        #    ColoredTag.object_id.in_([n.id for n in nodes])
+        # )
+        # colored_tags = session.scalars(colored_tags_stmt).all()
 
-        for node in nodes:
-            tags = _get_tags_for(colored_tags, node.id)
-            ancestors = get_ancestors(db_session, node.id, include_self=False)
-            node.tags = tags
-            node.breadcrumb = ancestors
-            if node.ctype == "folder":
-                items.append(nodes_schema.Folder.model_validate(node))
-            else:
-                items.append(doc_schema.Document.model_validate(node))
+        # for node in nodes:
+        #    tags = _get_tags_for(colored_tags, node.id)
+        #    ancestors = get_ancestors(db_session, node.id, include_self=False)
+        #    node.tags = tags
+        #    node.breadcrumb = ancestors
+        #    if node.ctype == "folder":
+        #        items.append(nodes_schema.Folder.model_validate(node))
+        #    else:
+        #        items.append(doc_schema.Document.model_validate(node))
 
     return items
 
 
-def _get_tags_for(
-    colored_tags: Sequence[ColoredTag], node_id: UUID
-) -> list[doc_schema.Tag]:
+def _get_tags_for(colored_tags: Sequence[Tag], node_id: UUID) -> list[doc_schema.Tag]:
     node_tags = []
 
     for color_tag in colored_tags:

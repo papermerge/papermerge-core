@@ -39,7 +39,7 @@ class User(Base):
         ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
     )
     inbox_folder: Mapped["Folder"] = relationship(
-        primaryjoin="User.home_folder_id == Folder.id",
+        primaryjoin="User.inbox_folder_id == Folder.id",
         back_populates="user",
         viewonly=True,
     )

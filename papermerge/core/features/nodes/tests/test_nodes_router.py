@@ -133,7 +133,7 @@ def test_two_folders_with_same_title_under_different_parents(
     payload = {
         "ctype": "folder",
         "title": "My Documents",
-        "parent_id": str(user.home_folder_id),
+        "parent_id": str(user.home_folder.id),
     }
 
     # Create first folder 'My documents' (inside home folder)
@@ -144,7 +144,7 @@ def test_two_folders_with_same_title_under_different_parents(
     payload2 = {
         "ctype": "folder",
         "title": "My Documents",
-        "parent_id": str(user.inbox_folder_id),
+        "parent_id": str(user.inbox_folder.id),
     }
     # create folder 'My Documents' in Inbox
     response = auth_api_client.post("/nodes/", json=payload2)

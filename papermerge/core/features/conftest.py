@@ -34,6 +34,12 @@ def make_folder(db_session: Session):
     return _maker
 
 
+@pytest.fixture()
+def my_documents_folder(db_session: Session, user, make_folder):
+    my_docs = make_folder(title="My Documents", user=user, parent=user.home_folder)
+    return my_docs
+
+
 @pytest.fixture(scope="function")
 def db_session():
     Base.metadata.create_all(engine)

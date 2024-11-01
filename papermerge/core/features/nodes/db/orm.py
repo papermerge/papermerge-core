@@ -17,7 +17,6 @@ class Node(Base):
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8), default="de")
-    tags: list[str] = []
     user: Mapped["User"] = relationship(
         back_populates="nodes",
         primaryjoin="User.id == Node.user_id",
@@ -31,6 +30,7 @@ class Node(Base):
     parent_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_basetreenode.id"), nullable=True
     )
+    tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags")
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
@@ -64,21 +64,3 @@ class Folder(Node):
     __mapper_args__ = {
         "polymorphic_identity": "folder",
     }
-
-
-class Tag(Base):
-    __tablename__ = "core_tag"
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    bg_color: Mapped[str]
-    fg_color: Mapped[str]
-    description: Mapped[str]
-    pinned: Mapped[bool]
-
-
-class ColoredTag(Base):
-    __tablename__ = "core_coloredtag"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    object_id: Mapped[UUID]
-    tag_id: Mapped[UUID] = mapped_column(ForeignKey("core_tag.id"))
-    tag: Mapped["Tag"] = relationship(primaryjoin="Tag.id == ColoredTag.tag_id")

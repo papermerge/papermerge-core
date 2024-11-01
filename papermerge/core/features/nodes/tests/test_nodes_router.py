@@ -1,12 +1,13 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.document.db import orm as doc_orm
+from papermerge.core.features.tags.db import orm as tags_orm
 from papermerge.test.types import AuthTestClient
 
 
@@ -175,7 +176,9 @@ def test_two_documents_with_same_title_under_same_parent(
     assert response.status_code == 400
 
 
-def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
+def test_assign_tags_to_non_tagged_folder(
+    auth_api_client: AuthTestClient, make_folder, db_session
+):
     """
     url:
         POST /api/nodes/{node_id}/tags
@@ -187,22 +190,37 @@ def test_assign_tags_to_non_tagged_folder(auth_api_client: AuthTestClient):
     Expected result:
         folder N1 will have two tags assigned: 'paid' and 'important'
     """
-    receipts = folder_recipe.make(
+    receipts = make_folder(
         title="Receipts",
         user=auth_api_client.user,
         parent=auth_api_client.user.inbox_folder,
     )
     payload = ["paid", "important"]
 
-    response = auth_api_client.post(f"/nodes/{receipts.pk}/tags", json=payload)
+    response = auth_api_client.post(f"/nodes/{receipts.id}/tags", json=payload)
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
-    folder = Folder.objects.get(title="Receipts", user=auth_api_client.user)
-    assert folder.tags.count() == 2
+    folder = db_session.scalars(
+        select(nodes_orm.Folder).where(
+            nodes_orm.Folder.title == "Receipts",
+            nodes_orm.Folder.user == auth_api_client.user,
+        )
+    ).one()
+
+    stmt = (
+        select(func.count(tags_orm.Tag.id))
+        .select_from(tags_orm.Tag)
+        .join(tags_orm.NodeTagsAssociation)
+        .where(tags_orm.NodeTagsAssociation.node_id == folder.id)
+    )
+
+    assert db_session.execute(stmt).scalar() == 2
 
 
-def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
+def test_assign_tags_to_tagged_folder(
+    auth_api_client: AuthTestClient, make_folder, db_session
+):
     """
     url:
         POST /api/nodes/{N1}/tags/
@@ -217,25 +235,38 @@ def test_assign_tags_to_tagged_folder(auth_api_client: AuthTestClient):
         Tag 'unpaid' will be dissociated from the folder.
     """
     u = auth_api_client.user
-    receipts = Folder.objects.create(title="Receipts", user=u, parent=u.inbox_folder)
-    receipts.tags.set(["unpaid", "important"], tag_kwargs={"user": u})
-    payload = ["paid", "important"]
+    receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
 
+    with Session() as db_session2:
+        nodes_dbapi.assign_node_tags(
+            db_session2, node_id=receipts.id, tags=["important", "unpaid"], user_id=u.id
+        )
+    payload = ["paid", "important"]
     response = auth_api_client.post(
-        f"/nodes/{receipts.pk}/tags",
+        f"/nodes/{receipts.id}/tags",
         json=payload,
     )
 
     assert response.status_code == 200
 
-    folder = Folder.objects.get(title="Receipts", user=u)
-    assert folder.tags.count() == 2
-    all_new_tags = [tag.name for tag in folder.tags.all()]
+    folder = db_session.scalars(
+        select(nodes_orm.Folder).where(
+            nodes_orm.Folder.title == "Receipts",
+            nodes_orm.Folder.user == auth_api_client.user,
+        )
+    ).one()
+
+    assert len(folder.tags) == 2
+
+    all_new_tags = [tag.name for tag in folder.tags]
     # tag 'unpaid' is not attached to folder anymore
+
     assert set(all_new_tags) == {"paid", "important"}
     # model for tag 'unpaid' still exists, it was just
     # dissociated from folder 'Receipts'
-    assert Tag.objects.get(name="unpaid")
+    stmt = select(tags_orm.Tag).where(tags_orm.Tag.name == "unpaid").exists()
+
+    assert db_session.query(stmt).scalar() is True
 
 
 def test_assign_tags_to_document(auth_api_client: AuthTestClient):

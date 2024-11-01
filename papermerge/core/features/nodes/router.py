@@ -20,6 +20,7 @@ from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core import config
+from papermerge.core.exceptions import EntityNotFound
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -276,17 +277,18 @@ def assign_node_tags(
     existing node tags** with the one from input list.
     """
     try:
-        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
-    except BaseTreeNode.DoesNotExist:
+        with Session() as db_session:
+            node, error = nodes_dbapi.assign_node_tags(
+                db_session, node_id=node_id, tags=tags, user_id=user.id
+            )
+    except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exist")
-
-    node.tags.set(tags, tag_kwargs={"user_id": user.id})
     _notify_index(str(node_id))
 
-    if node.ctype == "folder":
-        return nodes_schema.Folder.model_validate(node)
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
 
-    return doc_schema.Document.model_validate(node)
+    return node
 
 
 @router.patch("/{node_id}/tags")

@@ -15,3 +15,7 @@ class FileTypeNotSupported(Exception):
 
 class InvalidDateFormat(Exception):
     pass
+
+
+class EntityNotFound(Exception):
+    pass

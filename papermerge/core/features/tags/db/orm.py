@@ -19,8 +19,8 @@ class Tag(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     name: Mapped[str]
-    fg_color: Mapped[str] = mapped_column(nullable=True)
-    bg_color: Mapped[str] = mapped_column(nullable=True)
+    fg_color: Mapped[str] = mapped_column(nullable=True, default="#FFFFF")
+    bg_color: Mapped[str] = mapped_column(nullable=True, default="#c41fff")
     pinned: Mapped[bool] = mapped_column(default=False)
     description: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(

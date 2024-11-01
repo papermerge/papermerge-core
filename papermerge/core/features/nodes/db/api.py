@@ -1,13 +1,17 @@
 import uuid
+from pyexpat.errors import messages
 from typing import Tuple
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.engine import Session
 from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.nodes import schema as nodes_schema
+from papermerge.core.features.document import schema as docs_schema
 from papermerge.core.features.nodes.db import orm as nodes_orm
+from papermerge.core.features.tags.db import orm as tags_orm
 
 from .orm import Folder
 
@@ -63,3 +67,33 @@ def create_folder(
         folder = None
 
     return (folder, error)
+
+
+def assign_node_tags(
+    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+) -> Tuple[docs_schema.Document | nodes_schema.Folder | None, err_schema.Error | None]:
+    error = None
+
+    stmt = select(nodes_orm.Node).where(
+        nodes_orm.Node.id == node_id, nodes_orm.Node.user_id == user_id
+    )
+    node = db_session.scalars(stmt).one_or_none()
+
+    if node is None:
+        raise EntityNotFound(f"Node {node_id} not found")
+
+    db_tags = [tags_orm.Tag(name=name, user_id=user_id) for name in tags]
+    db_session.add_all(db_tags)
+
+    try:
+        db_session.commit()
+        node.tags = db_tags
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    if node.ctype == "document":
+        return docs_schema.Document.model_validate(node), error
+
+    return nodes_schema.Folder.model_validate(node), error

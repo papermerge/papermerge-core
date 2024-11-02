@@ -7,7 +7,8 @@ from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 
 from papermerge.core import utils
-from papermerge.core.auth import get_current_user, scopes
+from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.auth import scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
 from papermerge.core.features.users import schema as users_schema

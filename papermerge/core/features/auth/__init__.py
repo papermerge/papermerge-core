@@ -4,10 +4,12 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 
-from papermerge.core import db, types
-from papermerge.core.auth import scopes
+from papermerge.core import types
+
+from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.features.users import schema as users_schema
-from papermerge.core.auth.remote_scheme import RemoteUserScheme
+from papermerge.core.features.auth.remote_scheme import RemoteUserScheme
+from papermerge.core.features.auth import scopes
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.db.engine import Session
 from papermerge.core.utils import base64
@@ -66,11 +68,11 @@ def get_current_user(
         if token_data is not None:
             try:
                 with Session() as db_session:
-                    user = db.get_user(db_session, token_data.username)
+                    user = usr_dbapi.get_user(db_session, token_data.username)
             except db_exc.UserNotFound:
                 # create normal user
                 with Session() as db_session:
-                    user = db.create_user(
+                    user = usr_dbapi.create_user(
                         db_session,
                         username=token_data.username,
                         email=token_data.email,
@@ -84,7 +86,7 @@ def get_current_user(
         # augment user scopes with permissions associated to local groups
         if len(token_data.groups) > 0:
             with Session() as db_session:
-                s = db.get_user_scopes_from_groups(
+                s = usr_dbapi.get_user_scopes_from_groups(
                     db_session,
                     user_id=UUID(token_data.user_id),
                     groups=token_data.groups,
@@ -98,11 +100,11 @@ def get_current_user(
         # (with its home folder ID, inbox folder ID etc)
         try:
             with Session.begin() as db_session:
-                user = db.get_user(db_session, remote_user.username)
+                user = usr_dbapi.get_user(db_session, remote_user.username)
         except db_exc.UserNotFound:
             # create normal user
             with Session.begin() as db_session:
-                user = db.create_user(
+                user = usr_dbapi.create_user(
                     db_session,
                     username=remote_user.username,
                     email=remote_user.email,
@@ -114,7 +116,7 @@ def get_current_user(
         # augment user scopes with permissions associated to local groups
         if len(remote_user.groups) > 0:
             with Session.begin() as db_session:
-                s = db.get_user_scopes_from_groups(
+                s = usr_dbapi.get_user_scopes_from_groups(
                     db_session, user_id=user.id, groups=remote_user.groups
                 )
                 total_scopes.extend(s)

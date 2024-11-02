@@ -8,7 +8,8 @@ from fastapi.responses import FileResponse
 from papermerge.core import db
 from papermerge.core import pathlib as core_pathlib
 from papermerge.core import schemas, utils
-from papermerge.core.auth import get_current_user, scopes
+from core.auth import get_current_user
+from core.features.auth import scopes
 from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.models import BaseTreeNode
@@ -16,10 +17,8 @@ from papermerge.core.page_ops import apply_pages_op
 from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
 from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
-from papermerge.core.schemas.documents import DocumentVersion as PyDocVer
 from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.schemas.pages import (ExtractPagesIn, MovePagesIn,
-                                           PageAndRotOp)
+from papermerge.core.schemas.pages import ExtractPagesIn, MovePagesIn, PageAndRotOp
 from papermerge.core.utils import image
 
 logger = logging.getLogger(__name__)
@@ -31,11 +30,11 @@ router = APIRouter(
 
 
 class SVGFileResponse(FileResponse):
-    media_type = 'application/svg'
+    media_type = "application/svg"
 
 
 class JPEGFileResponse(FileResponse):
-    media_type = 'application/jpeg'
+    media_type = "application/jpeg"
 
 
 @router.get("/{page_id}/svg", response_class=SVGFileResponse)
@@ -43,10 +42,9 @@ class JPEGFileResponse(FileResponse):
 def get_page_svg_url(
     page_id: uuid.UUID,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
-    engine: db.Engine = Depends(db.get_engine)
+    engine: db.Engine = Depends(db.get_engine),
 ):
     """View page as SVG
 
@@ -56,19 +54,13 @@ def get_page_svg_url(
     try:
         page = db.get_page(engine, id=page_id, user_id=user.id)
     except db_exc.PageNotFound:
-        raise HTTPException(
-            status_code=404,
-            detail="Page not found"
-        )
+        raise HTTPException(status_code=404, detail="Page not found")
 
     svg_abs_path = core_pathlib.abs_page_svg_path(str(page.id))
     logger.debug(f"page UUID={page_id} svg abs path={svg_abs_path}")
 
     if not svg_abs_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="File not found"
-        )
+        raise HTTPException(status_code=404, detail="File not found")
 
     return SVGFileResponse(svg_abs_path)
 
@@ -78,14 +70,10 @@ def get_page_svg_url(
 def get_page_jpg_url(
     page_id: uuid.UUID,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
-    size: int = Query(
-        DEFAULT_PAGE_SIZE,
-        description="jpg image width in pixels"
-    ),
-    engine: db.Engine = Depends(db.get_engine)
+    size: int = Query(DEFAULT_PAGE_SIZE, description="jpg image width in pixels"),
+    engine: db.Engine = Depends(db.get_engine),
 ):
     """Returns jpg preview image of the page.
 
@@ -95,20 +83,12 @@ def get_page_jpg_url(
     """
     try:
         page = db.get_page(engine, id=page_id, user_id=user.id)
-        doc_ver = db.get_doc_ver(
-            engine,
-            id=page.document_version_id,
-            user_id=user.id
-        )
+        doc_ver = db.get_doc_ver(engine, id=page.document_version_id, user_id=user.id)
     except db_exc.PageNotFound:
-        raise HTTPException(
-            status_code=404,
-            detail="Page does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Page does not exist")
 
     logger.debug(
-        f"Generating page preview for page.number={page.number}"
-        f" page.id={page.id}"
+        f"Generating page preview for page.number={page.number}" f" page.id={page.id}"
     )
     jpeg_abs_path = core_pathlib.rel2abs(
         core_pathlib.thumbnail_path(page.id, size=size)
@@ -121,7 +101,7 @@ def get_page_jpg_url(
             doc_ver_id=doc_ver.id,
             page_number=page.number,
             file_name=doc_ver.file_name,
-            size=size
+            size=size,
         )
 
     logger.debug(f"jpeg_abs_path={jpeg_abs_path}")
@@ -134,8 +114,7 @@ def get_page_jpg_url(
 def apply_page_operations(
     items: List[PageAndRotOp],
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
+        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
     ],
 ) -> PyDocument:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
@@ -166,10 +145,9 @@ def apply_page_operations(
 @utils.docstring_parameter(scope=scopes.PAGE_MOVE)
 def move_pages(
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.PAGE_MOVE])
+        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_MOVE])
     ],
-    arg: MovePagesIn
+    arg: MovePagesIn,
 ) -> MovePagesOut:
     """Moves pages between documents.
 
@@ -186,7 +164,7 @@ def move_pages(
     [source, target] = api_move_pages(
         source_page_ids=arg.source_page_ids,
         target_page_id=arg.target_page_id,
-        move_strategy=arg.move_strategy
+        move_strategy=arg.move_strategy,
     )
     model = MovePagesOut(source=source, target=target)
 
@@ -197,10 +175,9 @@ def move_pages(
 @utils.docstring_parameter(scope=scopes.PAGE_EXTRACT)
 def extract_pages(
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
+        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
     ],
-    arg: ExtractPagesIn
+    arg: ExtractPagesIn,
 ) -> ExtractPagesOut:
     """Extract pages from one document into a folder.
 
@@ -213,11 +190,9 @@ def extract_pages(
         source_page_ids=arg.source_page_ids,
         target_folder_id=arg.target_folder_id,
         strategy=arg.strategy,
-        title_format=arg.title_format
+        title_format=arg.title_format,
     )
-    target_nodes = BaseTreeNode.objects.filter(
-        pk__in=[doc.id for doc in target_docs]
-    )
+    target_nodes = BaseTreeNode.objects.filter(pk__in=[doc.id for doc in target_docs])
     model = ExtractPagesOut(source=source, target=target_nodes)
 
     return ExtractPagesOut.model_validate(model)

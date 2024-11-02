@@ -6,9 +6,7 @@ from typing import Union
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import selectin_polymorphic
-
-from sqlalchemy import select
+from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
@@ -68,6 +66,7 @@ def get_paginated_nodes(
     if filter:
         query = (
             select(nodes_orm.Node)
+            .options(selectinload(nodes_orm.Node.tags))
             .filter(
                 func.lower(nodes_orm.Node.title).contains(
                     filter.strip().lower(), autoescape=True
@@ -78,9 +77,7 @@ def get_paginated_nodes(
     else:
         query = (
             select(nodes_orm.Node)
-            .join(
-                tags_orm.Tag, nodes_orm.Node.id == tags_orm.NodeTagsAssociation.node_id
-            )
+            .options(selectinload(nodes_orm.Node.tags))
             .filter_by(user_id=user_id, parent_id=parent_id)
         )
 
@@ -98,10 +95,14 @@ def get_paginated_nodes(
     )
 
     items = []
-
     total_nodes = db_session.scalar(count_stmt)
     num_pages = math.ceil(total_nodes / page_size)
     nodes = db_session.scalars(stmt).all()
+    for node in nodes:
+        if node.ctype == "folder":
+            items.append(nodes_schema.Folder.model_validate(node))
+        else:
+            items.append(docs_schema.Document.model_validate(node))
 
     return PaginatedResponse[Union[docs_schema.Document, nodes_schema.Folder]](
         page_size=page_size, page_number=page_number, num_pages=num_pages, items=items
@@ -152,7 +153,10 @@ def create_folder(
         error = err_schema.Error(messages=[str(e)])
         folder = None
 
-    return (folder, error)
+    if folder:
+        return nodes_schema.Folder.model_validate(folder), error
+
+    return None, error
 
 
 def assign_node_tags(
@@ -204,6 +208,37 @@ def update_node_tags(
     try:
         db_session.commit()
         node.tags.extend(db_tags)
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    if node.ctype == "document":
+        return docs_schema.Document.model_validate(node), error
+
+    return nodes_schema.Folder.model_validate(node), error
+
+
+def remove_node_tags(
+    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+) -> Tuple[docs_schema.Document | nodes_schema.Folder | None, err_schema.Error | None]:
+    error = None
+
+    stmt = select(nodes_orm.Node).where(
+        nodes_orm.Node.id == node_id, nodes_orm.Node.user_id == user_id
+    )
+    node = db_session.scalars(stmt).one_or_none()
+
+    if node is None:
+        raise EntityNotFound(f"Node {node_id} not found")
+
+    db_tags = [tags_orm.Tag(name=name, user_id=user_id) for name in tags]
+    db_session.add_all(db_tags)
+
+    try:
+        db_session.commit()
+        new_db_tag_list = [tag for tag in node.tags if tag.name not in tags]
+        node.tags = new_db_tag_list
         db_session.commit()
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])

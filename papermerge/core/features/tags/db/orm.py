@@ -26,3 +26,6 @@ class Tag(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("core_user.id", use_alter=True, name="tag_user_id_fk")
     )
+
+    def __repr__(self):
+        return f"Tag(name={self.name})"

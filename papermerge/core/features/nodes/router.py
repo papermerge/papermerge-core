@@ -342,13 +342,13 @@ def update_node_tags(
 
 @router.delete("/{node_id}/tags")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def delete_node_tags(
+def remove_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> nodes_schema.Node:
+) -> doc_schema.Document | nodes_schema.Folder:
     """
     Dissociate given tags the node.
 
@@ -357,13 +357,18 @@ def delete_node_tags(
     Tags models are not deleted - just dissociated from the node.
     """
     try:
-        node = BaseTreeNode.objects.get(id=node_id, user_id=user.id)
-    except BaseTreeNode.DoesNotExist:
+        with Session() as db_session:
+            node, error = nodes_dbapi.remove_node_tags(
+                db_session, node_id=node_id, tags=tags, user_id=user.id
+            )
+    except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exist")
 
-    node.tags.remove(*tags)
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
 
-    return nodes_schema.Node.model_validate(node)
+    _notify_index(node.id)
+    return node
 
 
 @skip_in_tests

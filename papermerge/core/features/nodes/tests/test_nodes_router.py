@@ -354,7 +354,9 @@ def test_append_tags_to_folder(
     assert set(all_new_tags) == {"paid", "important"}
 
 
-def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
+def test_remove_tags_from_folder(
+    auth_api_client: AuthTestClient, make_folder, db_session
+):
     """
     url:
         DELETE /api/nodes/{N1}/tags/
@@ -368,21 +370,31 @@ def test_remove_tags_from_folder(auth_api_client: AuthTestClient):
         folder N1 will have three tags assigned: 'paid', 'bakery', 'receipt'
     """
     u = auth_api_client.user
-    receipts = Folder.objects.create(title="Receipts", user=u, parent=u.inbox_folder)
-    receipts.tags.set(
-        ["important", "paid", "receipt", "bakery"], tag_kwargs={"user": u}
-    )
+    receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
+    with Session() as s:
+        nodes_dbapi.assign_node_tags(
+            s,
+            node_id=receipts.id,
+            tags=["important", "paid", "receipt", "bakery"],
+            user_id=u.id,
+        )
     payload = ["important"]
     response = auth_api_client.delete(
-        f"/nodes/{receipts.pk}/tags",
+        f"/nodes/{receipts.id}/tags",
         json=payload,
     )
 
     assert response.status_code == 200, response.json()
 
-    folder = Folder.objects.get(title="Receipts", user=u)
-    assert folder.tags.count() == 3
-    all_new_tags = [tag.name for tag in receipts.tags.all()]
+    folder = db_session.scalars(
+        select(nodes_orm.Folder).where(
+            nodes_orm.Folder.title == "Receipts",
+            nodes_orm.Folder.user == u,
+        )
+    ).one()
+
+    assert len(folder.tags) == 3
+    all_new_tags = [tag.name for tag in receipts.tags]
     assert set(all_new_tags) == {"paid", "bakery", "receipt"}
 
 

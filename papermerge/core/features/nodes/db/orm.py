@@ -30,7 +30,7 @@ class Node(Base):
     parent_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_basetreenode.id"), nullable=True
     )
-    tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags")
+    tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()

@@ -325,3 +325,6 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
             assert cf["EffectiveDate"] is None
             assert cf["Shop"] is None
             assert cf["Total"] is None
+
+
+def test_document_version_dump(db_session): ...

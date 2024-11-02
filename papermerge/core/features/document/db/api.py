@@ -399,3 +399,44 @@ def create_document(
             error = err_schema.Error(messages=[stre])
 
     return schema.Document.model_validate(doc), error
+
+
+def get_last_version_info(
+    db_session, doc_id: uuid.UUID
+) -> schema.DocLastVersionInfo: ...
+
+
+def version_bump(
+    db_session: Session,
+    doc_id: uuid.UUID,
+    page_count: int | None = None,
+    short_description: str | None = None,
+) -> schema.DocumentVersion:
+    """Increment document version"""
+
+    last_ver_info = get_last_version_info(doc_id)
+    new_page_count = page_count or last_ver_info.page_count
+    db_new_doc_ver = doc_orm.DocumentVersion(
+        document_id=doc_id,
+        number=last_ver_info.number + 1,
+        file_name=last_ver_info.file_name,
+        size=0,
+        page_count=page_count,
+        short_description=short_description,
+        lang=last_ver_info.lang,
+    )
+
+    db_session.add(db_new_doc_ver)
+
+    for page_number in range(1, new_page_count + 1):
+        db_page = doc_orm.Page(
+            document_version=db_new_doc_ver,
+            number=page_number,
+            page_count=new_page_count,
+            lang=last_ver_info.lang,
+        )
+        db_session.add(db_page)
+
+    db_session.commit()
+
+    return schema.DocumentVersion.model_validate(db_new_doc_ver)

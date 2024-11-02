@@ -332,6 +332,13 @@ class MovePage(BaseModel):
     number: int
 
 
+class DocLastVersionInfo(BaseModel):
+    page_count: int
+    version_number: int
+    lang: str
+    file_name: str
+
+
 class PageAndRotOp(BaseModel):
     page: MovePage
     angle: int = 0  # degrees

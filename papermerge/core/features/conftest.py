@@ -9,6 +9,7 @@ from papermerge.core.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import Session, engine
 from papermerge.core.features.custom_fields import router as cf_router
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
@@ -32,6 +33,34 @@ def make_folder(db_session: Session):
         return folder
 
     return _maker
+
+
+@pytest.fixture
+def make_document(db_session: Session):
+    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
+        doc_id = uuid.uuid4()
+        doc = doc_orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=title,
+            user=user,
+            parent_id=parent.id,
+            lang="de",
+        )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
+
+    return _maker
+
+
+@pytest.fixture()
+def my_documents_folder(db_session: Session, user, make_folder):
+    my_docs = make_folder(title="My Documents", user=user, parent=user.home_folder)
+    return my_docs
 
 
 @pytest.fixture(scope="function")

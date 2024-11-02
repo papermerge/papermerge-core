@@ -8,7 +8,7 @@ from .doc_ver import get_doc_ver, get_last_doc_ver
 from .engine import get_engine
 from .exceptions import UserNotFound
 from .folders import get_folder
-from .nodes import get_nodes, get_paginated_nodes
+from .nodes import get_nodes
 from .pages import get_doc_ver_pages, get_first_page, get_page
 from .session import get_session
 from .users import (
@@ -36,7 +36,6 @@ __all__ = [
     "get_last_doc_ver",
     "get_doc_ver",
     "get_doc",
-    "get_paginated_nodes",
     "Engine",
     "Session",
     "UserNotFound",

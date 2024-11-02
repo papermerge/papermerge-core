@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from papermerge.core.features.document.db.orm import Document, DocumentVersion, Page
-from papermerge.core.features.nodes.db.orm import ColoredTag
+from papermerge.core.features.tags.db.orm import Tag
 from papermerge.core.features.document import schema as doc_schema
 
 from .common import get_ancestors
@@ -38,9 +38,9 @@ def get_doc(
             for db_doc_ver in db_doc_vers
         ]
     )
-    colored_tags_stmt = select(ColoredTag).where(ColoredTag.object_id == id)
-    colored_tags = session.scalars(colored_tags_stmt).all()
-    db_doc.tags = [ct.tag for ct in colored_tags]
+    # colored_tags_stmt = select(Tag).where(Tag.node_id == id)
+    # colored_tags = session.scalars(colored_tags_stmt).all()
+    # db_doc.tags = [ct.tag for ct in colored_tags]
 
     def get_page(doc_ver_id):
         result = []

@@ -7,7 +7,7 @@ from salinic import IndexRW, create_engine
 from sqlalchemy.orm import Session
 
 from papermerge.core import constants
-from papermerge.core.auth.scopes import SCOPES
+from core.auth import SCOPES
 from papermerge.core.db import models as orm
 from papermerge.core.features.custom_fields.db.api import create_custom_field
 from papermerge.core.features.custom_fields.schema import CustomFieldType
@@ -18,11 +18,6 @@ from papermerge.core.routers.router import register_routers as reg_core_routers
 from papermerge.core.utils import base64
 from papermerge.search.routers import register_routers as reg_search_routers
 from papermerge.test.types import AuthTestClient
-
-
-@pytest.fixture
-def montaigne(make_user):
-    return make_user(username="montaigne")
 
 
 @pytest.fixture()
@@ -72,16 +67,6 @@ def make_user(db_session: Session):
         return db_user
 
     return _maker
-
-
-@pytest.fixture()
-def api_client():
-    app = FastAPI()
-
-    reg_core_routers(app)
-    reg_search_routers(app)
-
-    return TestClient(app)
 
 
 @pytest.fixture()

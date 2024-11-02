@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from papermerge.core import db, schemas
-from papermerge.core.auth import scopes
+from core.features.auth import scopes
 from papermerge.core.db import models
 
 app = typer.Typer(help="Groups basic management")

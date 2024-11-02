@@ -4,7 +4,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
-from papermerge.core.auth import scopes
+from core.features.auth import scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.db.models import ContentType
 from papermerge.core.features.groups import schema

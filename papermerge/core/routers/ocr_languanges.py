@@ -5,7 +5,8 @@ from fastapi import APIRouter, Security
 from ocrmypdf.builtin_plugins.tesseract_ocr import TesseractOcrEngine
 
 from papermerge.core import schemas, utils
-from papermerge.core.auth import get_current_user, scopes
+from core.auth import get_current_user
+from core.features.auth import scopes
 
 router = APIRouter(
     prefix="/ocr-languages",
@@ -17,8 +18,7 @@ router = APIRouter(
 @utils.docstring_parameter(scope=scopes.OCRLANG_VIEW)
 def get_ocr_langs(
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.OCRLANG_VIEW])
+        schemas.User, Security(get_current_user, scopes=[scopes.OCRLANG_VIEW])
     ],
 ) -> AbstractSet[str]:
     """Returns list of languages supported by OCR engine

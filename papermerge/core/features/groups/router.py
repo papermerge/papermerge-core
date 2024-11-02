@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import db, utils
-from papermerge.core.auth import get_current_user, scopes
+from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.auth import scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.features.groups.db import api as dbapi
 from papermerge.core.features.groups.schema import (

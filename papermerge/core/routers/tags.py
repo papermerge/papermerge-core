@@ -4,10 +4,10 @@ from uuid import UUID
 
 from django.db.utils import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException, Security
-from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import schemas, utils
-from papermerge.core.auth import get_current_user, scopes
+from core.auth import get_current_user
+from ..features.auth import scopes
 from papermerge.core.models import Tag
 
 from .paginator import PaginatorGeneric, paginate
@@ -24,71 +24,54 @@ logger = logging.getLogger(__name__)
 @router.get("/all", response_model=list[schemas.Tag])
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags_without_pagination(
-    user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ]
+    user: Annotated[schemas.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])]
 ):
     """Retrieves (without pagination) tags of the current user
 
     Required scope: `{scope}`
     """
-    order_by = ['name', ]
+    order_by = [
+        "name",
+    ]
 
-    return Tag.objects.filter(
-        user_id=user.id
-    ).order_by(*order_by)
+    return Tag.objects.filter(user_id=user.id).order_by(*order_by)
 
 
 @router.get("/", response_model=PaginatorGeneric[schemas.Tag])
 @paginate
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags(
-    user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ],
+    user: Annotated[schemas.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])],
     params: CommonQueryParams = Depends(),
 ):
     """Retrieves (paginated) tags of the current user
 
     Required scope: `{scope}`
     """
-    order_by = ['name', ]
+    order_by = [
+        "name",
+    ]
 
     if params.order_by:
-        order_by = [
-            item.strip() for item in params.order_by.split(',')
-        ]
+        order_by = [item.strip() for item in params.order_by.split(",")]
 
-    return Tag.objects.filter(
-        user_id=user.id
-    ).order_by(*order_by)
+    return Tag.objects.filter(user_id=user.id).order_by(*order_by)
 
 
 @router.get("/{tag_id}", response_model=schemas.Tag)
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def get_tag_details(
     tag_id: UUID,
-    user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ]
+    user: Annotated[schemas.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])],
 ):
     """Get tag details
 
     Required scope: `{scope}`
     """
     try:
-        tag = Tag.objects.get(
-            user_id=user.id,
-            id=tag_id
-        )
+        tag = Tag.objects.get(user_id=user.id, id=tag_id)
     except Tag.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exists"
-        )
+        raise HTTPException(status_code=404, detail="Does not exists")
 
     return schemas.Tag.model_validate(tag)
 
@@ -98,8 +81,7 @@ def get_tag_details(
 def create_tag(
     pytag: schemas.CreateTag,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_CREATE])
+        schemas.User, Security(get_current_user, scopes=[scopes.TAG_CREATE])
     ],
 ) -> schemas.Tag:
     """Creates user tag
@@ -110,10 +92,7 @@ def create_tag(
     try:
         tag = Tag.objects.create(user_id=user.id, **pytag.model_dump())
     except IntegrityError:
-        raise HTTPException(
-            status_code=400,
-            detail="Tag already exists"
-        )
+        raise HTTPException(status_code=400, detail="Tag already exists")
 
     return schemas.Tag.model_validate(tag)
 
@@ -123,8 +102,7 @@ def create_tag(
 def delete_tag(
     tag_id: UUID,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_DELETE])
+        schemas.User, Security(get_current_user, scopes=[scopes.TAG_DELETE])
     ],
 ) -> None:
     """Deletes user tag
@@ -134,10 +112,7 @@ def delete_tag(
     try:
         Tag.objects.get(user_id=user.id, id=tag_id).delete()
     except Tag.DoesNotExist:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exists"
-        )
+        raise HTTPException(status_code=404, detail="Does not exists")
 
 
 @router.patch("/{tag_id}", status_code=200)
@@ -146,8 +121,7 @@ def update_tag(
     tag_id: UUID,
     tag: schemas.UpdateTag,
     user: Annotated[
-        schemas.User,
-        Security(get_current_user, scopes=[scopes.TAG_UPDATE])
+        schemas.User, Security(get_current_user, scopes=[scopes.TAG_UPDATE])
     ],
 ) -> schemas.Tag:
     """Updates user tag
@@ -158,10 +132,7 @@ def update_tag(
     qs = Tag.objects.filter(user_id=user.id, id=tag_id)
 
     if qs.count() != 1:
-        raise HTTPException(
-            status_code=404,
-            detail="Does not exists"
-        )
+        raise HTTPException(status_code=404, detail="Does not exists")
 
     qs.update(**tag.model_dump(exclude_unset=True))
 

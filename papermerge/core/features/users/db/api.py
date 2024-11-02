@@ -1,32 +1,34 @@
-import logging
 import uuid
-from uuid import UUID
+import logging
+from typing import Tuple
+from xxlimited_35 import error
 
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Engine, select
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import constants
-from papermerge.core.auth import scopes
+
 from papermerge.core.db.engine import Session
-from papermerge.core.features.users import schema as users_schema
-from papermerge.core.features.groups.db.orm import Group, Permission
-from papermerge.core.features.nodes.db.orm import Folder
-from papermerge.core.features.users.db.orm import User
 from papermerge.core.utils.misc import is_valid_uuid
+from papermerge.core.features.auth import scopes
+from papermerge.core.features.users import schema as usr_schema
+from papermerge.core.features.nodes.db import orm as nodes_orm
+from papermerge.core.features.groups.db import orm as group_orm
+from papermerge.core import constants
+from papermerge.core.schemas import error as err_schema
 
-from .exceptions import UserNotFound
-
-logger = logging.getLogger(__name__)
+from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
+logger = logging.getLogger(__name__)
 
-def get_user(db_session: Session, user_id_or_username: str) -> users_schema.User:
+
+def get_user(db_session: Session, user_id_or_username: str) -> usr_schema.User:
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
     if is_valid_uuid(user_id_or_username):
-        stmt = select(User).where(User.id == UUID(user_id_or_username))
+        stmt = select(User).where(User.id == uuid.UUID(user_id_or_username))
         params = {"id": user_id_or_username}
     else:
         stmt = select(User).where(User.username == user_id_or_username)
@@ -41,18 +43,24 @@ def get_user(db_session: Session, user_id_or_username: str) -> users_schema.User
         raise UserNotFound(f"User with id/username='{user_id_or_username}' not found")
 
     logger.debug(f"User {db_user} fetched")
-    model_user = users_schema.User.model_validate(db_user)
+    model_user = usr_schema.User.model_validate(db_user)
 
     return model_user
 
 
-def get_user_details(db_session, user_id: UUID) -> users_schema.UserDetails:
+def get_user_details(
+    db_session, user_id: uuid.UUID
+) -> [usr_schema.UserDetails | None, err_schema.Error | None]:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
-    db_user = db_session.scalars(stmt, params).one()
+    try:
+        db_user = db_session.scalars(stmt, params).one()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
 
-    result = users_schema.UserDetails(
+    result = usr_schema.UserDetails(
         id=db_user.id,
         username=db_user.username,
         email=db_user.email,
@@ -66,17 +74,15 @@ def get_user_details(db_session, user_id: UUID) -> users_schema.UserDetails:
         groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
     )
 
-    model_user = users_schema.UserDetails.model_validate(result)
+    model_user = usr_schema.UserDetails.model_validate(result)
 
-    return model_user
+    return model_user, None
 
 
-def get_users(engine: Engine) -> list[users_schema.User]:
+def get_users(engine: Engine) -> list[usr_schema.User]:
     with Session(engine) as session:
         db_users = session.scalars(select(User))
-        model_users = [
-            users_schema.User.model_validate(db_user) for db_user in db_users
-        ]
+        model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
 
     return model_users
 
@@ -90,8 +96,8 @@ def create_user(
     group_ids: list[int] | None = None,
     is_superuser: bool = False,
     is_active: bool = False,
-    user_id: UUID | None = None,
-) -> users_schema.User:
+    user_id: uuid.UUID | None = None,
+) -> Tuple[usr_schema.User | None, err_schema.Error | None]:
     if scopes is None:
         scopes = []
 
@@ -110,14 +116,14 @@ def create_user(
         is_active=is_active,
         password=pbkdf2_sha256.hash(password),
     )
-    db_inbox = Folder(
+    db_inbox = nodes_orm.Folder(
         id=inbox_folder_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
         user_id=_user_id,
         lang="xxx",  # not used
     )
-    db_home = Folder(
+    db_home = nodes_orm.Folder(
         id=home_folder_id,
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
@@ -131,31 +137,39 @@ def create_user(
     db_user.home_folder_id = db_home.id
     db_user.inbox_folder_id = db_inbox.id
     # fetch permissions from the DB
-    db_session.commit()
+    try:
+        db_session.commit()
 
-    stmt = select(Permission).where(Permission.codename.in_(scopes))
-    db_perms = db_session.execute(stmt).scalars().all()
-    # fetch groups from the DB
+        stmt = select(group_orm.Permission).where(
+            group_orm.Permission.codename.in_(scopes)
+        )
+        db_perms = db_session.execute(stmt).scalars().all()
+        # fetch groups from the DB
 
-    stmt = select(Group).where(Group.id.in_(group_ids))
-    db_groups = db_session.execute(stmt).scalars().all()
+        stmt = select(group_orm.Group).where(group_orm.Group.id.in_(group_ids))
+        db_groups = db_session.execute(stmt).scalars().all()
 
-    db_user.permissions = db_perms
-    db_user.groups = db_groups
-    db_session.commit()
+        db_user.permissions = db_perms
+        db_user.groups = db_groups
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(2)])
+        return None, error
 
-    user = users_schema.User.model_validate(db_user)
+    user = usr_schema.User.model_validate(db_user)
 
-    return user
+    return user, None
 
 
 def update_user(
-    db_session, user_id: UUID, attrs: users_schema.UpdateUser
-) -> users_schema.UserDetails:
-    stmt = select(Permission).where(Permission.codename.in_(attrs.scopes))
+    db_session, user_id: uuid.UUID, attrs: usr_schema.UpdateUser
+) -> Tuple[usr_schema.UserDetails | None, err_schema.Error | None]:
+    stmt = select(group_orm.Permission).where(
+        group_orm.Permission.codename.in_(attrs.scopes)
+    )
     perms = db_session.execute(stmt).scalars().all()
 
-    stmt = select(Group).where(Group.id.in_(attrs.group_ids))
+    stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
     groups = db_session.execute(stmt).scalars().all()
     user = db_session.get(User, user_id)
 
@@ -169,8 +183,13 @@ def update_user(
     if attrs.password:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
-    db_session.commit()
-    result = users_schema.UserDetails(
+    try:
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    result = usr_schema.UserDetails(
         id=user.id,
         username=user.username,
         email=user.email,
@@ -184,13 +203,13 @@ def update_user(
         groups=list([{"id": g.id, "name": g.name} for g in groups]),
     )
 
-    model_user = users_schema.UserDetails.model_validate(result)
+    model_user = usr_schema.UserDetails.model_validate(result)
 
-    return model_user
+    return model_user, None
 
 
 def get_user_scopes_from_groups(
-    db_session: Session, user_id: UUID, groups: list[str]
+    db_session: Session, user_id: uuid.UUID, groups: list[str]
 ) -> list[str]:
     db_user = db_session.get(User, user_id)
 
@@ -198,7 +217,9 @@ def get_user_scopes_from_groups(
         logger.debug(f"User with user_id {user_id} not found")
         return []
 
-    db_groups = db_session.scalars(select(Group).where(Group.name.in_(groups))).all()
+    db_groups = db_session.scalars(
+        select(group_orm.Group).where(group_orm.Group.name.in_(groups))
+    ).all()
 
     if db_user.is_superuser:
         # superuser has all permissions (permission = scope)

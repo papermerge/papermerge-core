@@ -2,7 +2,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from papermerge.core.auth.scopes import SCOPES
+from core.auth import SCOPES
 
 app = typer.Typer(help="List scopes")
 

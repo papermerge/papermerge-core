@@ -10,7 +10,8 @@ from sqlalchemy.exc import NoResultFound
 from papermerge.conf import settings
 from papermerge.core import constants as const
 from papermerge.core import db, schemas, utils
-from papermerge.core.auth import get_current_user, scopes
+from core.auth import get_current_user
+from core.features.auth import scopes
 from papermerge.core.features.document.schema import DocumentCFV
 from papermerge.core.models import Document
 from papermerge.core.types import OrderEnum, PaginatedResponse

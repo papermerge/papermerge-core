@@ -1,11 +1,13 @@
+import base64
 import uuid
+import json
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from papermerge.core import constants
-from papermerge.core.auth.scopes import SCOPES
+from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import Session, engine
 from papermerge.core.features.custom_fields import router as cf_router
@@ -16,9 +18,10 @@ from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.groups import router as groups_router
+from papermerge.core.features.users import router as usr_router
 from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.users.db import orm as users_orm
-from papermerge.core.utils import base64
+from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
 
 
@@ -73,14 +76,29 @@ def db_session():
 
 
 @pytest.fixture()
+def api_client():
+    """Unauthenticated REST API client"""
+    app = FastAPI()
+
+    app.include_router(document_types_router.router, prefix="")
+    app.include_router(groups_router.router, prefix="")
+    app.include_router(cf_router.router, prefix="")
+    app.include_router(nodes_router.router, prefix="")
+    app.include_router(usr_router.router, prefix="")
+
+    return TestClient(app)
+
+
+@pytest.fixture()
 def auth_api_client(user: users_orm.User):
     app = FastAPI()
     app.include_router(document_types_router.router, prefix="")
     app.include_router(groups_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
+    app.include_router(usr_router.router, prefix="")
 
-    middle_part = base64.encode(
+    middle_part = utils.base64.encode(
         {
             "sub": str(user.id),
             "preferred_username": user.username,
@@ -169,3 +187,21 @@ def make_custom_field(db_session: Session, user):
         )
 
     return _make_custom_field
+
+
+def b64e(s):
+    return base64.b64encode(s.encode()).decode()
+
+
+@pytest.fixture
+def token():
+    data = {
+        "sub": "100",
+        "preferred_username": "montaigne",
+        "email": "montaingne@mail.com",
+    }
+    json_str = json.dumps(data)
+
+    payload = b64e(json_str)
+
+    return f"ignore_me.{payload}.ignore_me_too"

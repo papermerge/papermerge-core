@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: c51a81297ebf
+Revision ID: 0c7831fff06f
 Revises:
-Create Date: 2024-11-03 11:41:34.158809
+Create Date: 2024-11-03 15:29:39.954335
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c51a81297ebf'
+revision: str = '0c7831fff06f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,9 +57,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('folders',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.ForeignKeyConstraint(['id'], ['nodes.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('node_id', sa.Uuid(), nullable=False),
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], ),
+    sa.PrimaryKeyConstraint('node_id')
     )
     op.create_table('groups_permissions',
     sa.Column('group_id', sa.Integer(), nullable=True),
@@ -90,8 +90,8 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('date_joined', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['home_folder_id'], ['folders.id'], deferrable=True),
-    sa.ForeignKeyConstraint(['inbox_folder_id'], ['folders.id'], deferrable=True),
+    sa.ForeignKeyConstraint(['home_folder_id'], ['folders.node_id'], deferrable=True),
+    sa.ForeignKeyConstraint(['inbox_folder_id'], ['folders.node_id'], deferrable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('custom_fields',
@@ -127,13 +127,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], )
     )
     op.create_table('documents',
-    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('node_id', sa.Uuid(), nullable=False),
     sa.Column('ocr', sa.Boolean(), nullable=False),
     sa.Column('ocr_status', sa.String(), nullable=False),
     sa.Column('document_type_id', sa.Uuid(), nullable=True),
     sa.ForeignKeyConstraint(['document_type_id'], ['document_types.id'], ),
-    sa.ForeignKeyConstraint(['id'], ['nodes.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], ),
+    sa.PrimaryKeyConstraint('node_id')
     )
     op.create_table('custom_field_values',
     sa.Column('id', sa.Uuid(), nullable=False),
@@ -146,7 +146,7 @@ def upgrade() -> None:
     sa.Column('value_float', sa.Float(), nullable=True),
     sa.Column('value_monetary', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['document_id'], ['documents.id'], ),
+    sa.ForeignKeyConstraint(['document_id'], ['documents.node_id'], ),
     sa.ForeignKeyConstraint(['field_id'], ['custom_fields.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -160,7 +160,7 @@ def upgrade() -> None:
     sa.Column('size', sa.Integer(), nullable=False),
     sa.Column('page_count', sa.Integer(), nullable=False),
     sa.Column('short_description', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['document_id'], ['documents.id'], ),
+    sa.ForeignKeyConstraint(['document_id'], ['documents.node_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('pages',

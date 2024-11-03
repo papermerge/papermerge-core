@@ -22,7 +22,7 @@ class CustomFieldValue(Base):
     __tablename__ = "custom_field_values"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"))
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.node_id"))
     field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
     value_text: Mapped[str] = mapped_column(nullable=True)
     value_boolean: Mapped[bool] = mapped_column(nullable=True)

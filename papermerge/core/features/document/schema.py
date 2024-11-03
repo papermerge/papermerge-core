@@ -1,12 +1,10 @@
 from enum import Enum
-import os
 from typing import TypeAlias, List
 from uuid import UUID
 
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.types import CFNameType, CFValueType
 
-from datetime import datetime
 from typing import Annotated, Literal
 
 from django.db.models.manager import BaseManager
@@ -23,7 +21,7 @@ settings = config.get_settings()
 
 class CFV(BaseModel):
     # custom field value
-    # `core_documents.id`
+    # `documents.node_id`
     document_id: UUID
     # `core_documents.document_type_id`
     document_type_id: UUID

@@ -51,7 +51,7 @@ class Folder(Node):
     __tablename__ = "folders"
 
     id: Mapped[UUID] = mapped_column(
-        "id",
+        "node_id",
         ForeignKey("nodes.id"),
         primary_key=True,
         insert_default=uuid.uuid4(),

@@ -109,29 +109,9 @@ def sync_perms(db_session: Session):
     for codename, desc in scopes.SCOPES.items():
         if codename not in perms_codenames:
             scopes_to_be_added.append((codename, desc))
-
-    # content type is not used by the application anymore. It is
-    # a leftover from Django auth system
-    # Here we just add one fake... just to satisfy DB relation integrity
-    try:
-        content_type = db_session.scalars(
-            select(ContentType).where(
-                ContentType.app_label == "core",
-                ContentType.model == "scope",
-            )
-        ).one()
-    except NoResultFound:
-        content_type = None
-
-    if content_type is None:
-        content_type = ContentType(app_label="core", model="scope")
-    # add missing content type (again, it is not used; legacy table layout)
-    db_session.add(content_type)
     # add missing scopes
     for scope in scopes_to_be_added:
-        db_session.add(
-            orm.Permission(codename=scope[0], name=scope[1], content_type=content_type)
-        )
+        db_session.add(orm.Permission(codename=scope[0], name=scope[1]))
     db_session.commit()
 
     # B. removes permissions not present in scopes

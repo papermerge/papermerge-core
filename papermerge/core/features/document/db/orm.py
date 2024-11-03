@@ -14,7 +14,7 @@ class Document(Node):
     __tablename__ = "documents"
 
     id: Mapped[UUID] = mapped_column(
-        "id",
+        "node_id",
         ForeignKey("nodes.id"),
         primary_key=True,
         default=uuid.uuid4,
@@ -41,7 +41,7 @@ class DocumentVersion(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int] = mapped_column(default=1)
     file_name: Mapped[str] = mapped_column(nullable=True)
-    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"))
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.node_id"))
     document: Mapped[Document] = relationship(back_populates="versions")
     lang: Mapped[str] = mapped_column(default="deu")
     text: Mapped[str] = mapped_column(nullable=True)

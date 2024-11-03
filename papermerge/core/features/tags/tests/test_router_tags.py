@@ -25,6 +25,7 @@ def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user):
 
     response = auth_api_client.patch(
         f"/tags/{tag.id}",
+        # only `name` attr is being updated
         json={"name": "draft-updated"},
     )
 
@@ -32,6 +33,7 @@ def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     with Session() as s:
         updated_tag = s.get(orm.Tag, tag.id)
 
+    # `name` attribute was updated
     assert updated_tag.name == "draft-updated"
     # other attributes did not change
     assert updated_tag.bg_color == tag.bg_color

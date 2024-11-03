@@ -45,9 +45,11 @@ class DocumentVersion(Base):
     )
     document: Mapped[Document] = relationship(back_populates="versions")
     lang: Mapped[str] = mapped_column(default="deu")
+    text: Mapped[str] = mapped_column(nullable=True)
     size: Mapped[int] = mapped_column(default=0)
     page_count: Mapped[int] = mapped_column(default=0)
     short_description: Mapped[str] = mapped_column(nullable=True)
+    pages: Mapped[list["Page"]] = relationship(back_populates="document_version")
 
     def __repr__(self):
         return f"DocumentVersion(number={self.number})"
@@ -56,10 +58,11 @@ class DocumentVersion(Base):
 class Page(Base):
     __tablename__ = "core_page"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int]
-    lang: Mapped[str]
-    text: Mapped[str]
+    lang: Mapped[str] = mapped_column(default="deu")
+    text: Mapped[str] = mapped_column(nullable=True)
     document_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("core_documentversion.id")
     )
+    document_version: Mapped[DocumentVersion] = relationship(back_populates="pages")

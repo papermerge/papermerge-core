@@ -1,6 +1,7 @@
 import base64
 import uuid
 import json
+import itertools
 
 import pytest
 from fastapi import FastAPI
@@ -11,8 +12,11 @@ from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import Session, engine
 from papermerge.core.features.custom_fields import router as cf_router
+
 from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.document import schema as doc_schema
+
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
@@ -48,6 +52,40 @@ def make_document(db_session: Session):
         )
         doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
         return doc
+
+    return _maker
+
+
+@pytest.fixture()
+def make_document_version(db_session: Session):
+    def _maker(
+        page_count: int, user: users_orm.User, pages_text: list[str] | None = None
+    ):
+        db_pages = []
+        for number in range(1, page_count + 1):
+            if pages_text and len(pages_text) >= number:
+                text = pages_text[number - 1]
+            else:
+                text = None
+
+            db_page = doc_orm.Page(number=number, text=text)
+            db_pages.append(db_page)
+
+        doc_id = uuid.uuid4()
+        db_doc = doc_orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=f"Document {doc_id}",
+            user_id=user.id,
+            parent_id=user.home_folder_id,
+            lang="de",
+        )
+        db_doc_ver = doc_orm.DocumentVersion(pages=db_pages, document=db_doc)
+        db_session.add(db_doc)
+        db_session.add(db_doc_ver)
+        db_session.commit()
+
+        return doc_schema.DocumentVersion.model_validate(db_doc_ver)
 
     return _maker
 

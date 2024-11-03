@@ -1,3 +1,4 @@
+import logging
 import itertools
 import uuid
 
@@ -15,6 +16,9 @@ from papermerge.core.features.document_types.db.api import document_type_cf_coun
 from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
 from papermerge.core.schemas import error as err_schema
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_last_doc_ver(
@@ -481,3 +485,41 @@ def version_bump(
     db_session.commit()
 
     return schema.DocumentVersion.model_validate(db_new_doc_ver)
+
+
+def update_text_field(db_session, document_version_id: uuid.UUID, streams):
+    """Update document versions's text field from IO streams.
+
+    Arguments:
+        ``streams`` - a list of IO text streams
+
+    It will update text field of all associated pages first
+    and then concatinate all text field into doc.text field.
+    """
+    text = []
+
+    stmt = (
+        select(doc_orm.Page.id, doc_orm.Page.text)
+        .where(doc_orm.Page.document_version_id == document_version_id)
+        .order_by(doc_orm.Page.number)
+    )
+
+    pages = [(row.id, row.text) for row in db_session.execute(stmt)]
+    for page, stream in zip(pages, streams):
+        if page[1] is None:  # page.text
+            txt = stream.read()
+            sql = (
+                update(doc_orm.Page).where(doc_orm.Page.id == page[0]).values(text=txt)
+            )
+            db_session.execute(sql)
+            text.append(txt.strip())
+
+    stripped_text = " ".join(text)
+    stripped_text = stripped_text.strip()
+    if stripped_text:
+        sql = (
+            update(doc_orm.DocumentVersion)
+            .where(doc_orm.DocumentVersion.id == document_version_id)
+            .values(text=stripped_text)
+        )
+        db_session.execute(sql)

@@ -114,7 +114,7 @@ class Tag(BaseModel):
 class Page(BaseModel):
     id: UUID
     number: int
-    text: str = ""
+    text: str | None = None
     lang: str
     document_version_id: UUID
     svg_url: Annotated[str | None, Field(validate_default=True)] = None

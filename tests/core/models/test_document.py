@@ -60,33 +60,6 @@ class TestDocumentModel(TestCase):
         # document's version numbering starts with 1
         self.assertEqual(document_version.number, 1)
 
-    def test_version_bump(self):
-        """
-        doc.version_bump provides an easy way to increment document version.
-        """
-        doc = Document.objects.create_document(
-            title="invoice.pdf",
-            lang="deu",
-            user_id=self.user.pk,
-            parent=self.user.home_folder,
-        )
-        self.assertEqual(doc.versions.count(), 1)
-        last_version = doc.versions.last()
-        self.assertEqual(last_version.number, 1)  # versioning starts with 1
-        # Initial document version is created with zero pages
-        # i.e. without page models associated.
-        # Create 3 pages (with page models)
-        last_version.create_pages(page_count=3)
-
-        doc.version_bump()
-        # was document version incremented indeed?
-        self.assertEqual(doc.versions.count(), 2)
-
-        last_doc_version = doc.versions.last()
-        self.assertEqual(last_doc_version.number, 2)
-        # check that associated page models were created as well
-        self.assertEqual(last_doc_version.pages.count(), 3)
-
     def test_idified_title_one_dot_in_title(self):
         doc = Document.objects.create_document(
             title="invoice.pdf",

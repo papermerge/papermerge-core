@@ -1,8 +1,8 @@
+import logging
 import itertools
 import uuid
 
 from typing import Tuple
-from uuid import uuid4
 
 from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
@@ -16,6 +16,56 @@ from papermerge.core.features.document_types.db.api import document_type_cf_coun
 from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
 from papermerge.core.schemas import error as err_schema
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_last_doc_ver(
+    db_session: Session,
+    doc_id: uuid.UUID,  # noqa
+    user_id: uuid.UUID,
+) -> schema.DocumentVersion:
+    """
+    Returns last version of the document
+    identified by doc_id
+    """
+    with db_session as session:  # noqa
+        stmt = (
+            select(doc_orm.DocumentVersion)
+            .join(doc_orm.Document)
+            .where(
+                doc_orm.DocumentVersion.document_id == doc_id,
+                doc_orm.Document.user_id == user_id,
+            )
+            .order_by(doc_orm.DocumentVersion.number.desc())
+            .limit(1)
+        )
+        db_doc_ver = session.scalars(stmt).one()
+        model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
+
+    return model_doc_ver
+
+
+def get_doc_ver(
+    db_session: Session,
+    id: uuid.UUID,
+    user_id: uuid.UUID,  # noqa
+) -> schema.DocumentVersion:
+    """
+    Returns last version of the document
+    identified by doc_id
+    """
+
+    stmt = (
+        select(doc_orm.DocumentVersion)
+        .join(doc_orm.Document)
+        .where(doc_orm.Document.user_id == user_id, doc_orm.DocumentVersion.id == id)
+    )
+    db_doc_ver = db_session.scalars(stmt).one()
+    model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
+
+    return model_doc_ver
 
 
 def count_docs(session: Session) -> int:
@@ -366,7 +416,7 @@ def create_document(
         user_id=user_id,
     )
     doc_ver = doc_orm.DocumentVersion(
-        id=uuid4(),
+        id=uuid.uuid4(),
         document_id=doc_id,
         number=1,
         file_name=attrs.file_name,
@@ -378,7 +428,6 @@ def create_document(
     db_session.add(doc)
 
     try:
-        db_session.commit()
         db_session.add(doc_ver)
         db_session.commit()
     except IntegrityError as e:
@@ -399,3 +448,78 @@ def create_document(
             error = err_schema.Error(messages=[stre])
 
     return schema.Document.model_validate(doc), error
+
+
+def version_bump(
+    db_session: Session,
+    doc_id: uuid.UUID,
+    user_id: uuid.UUID,
+    page_count: int | None = None,
+    short_description: str | None = None,
+) -> schema.DocumentVersion:
+    """Increment document version"""
+
+    last_ver = get_last_doc_ver(db_session, doc_id=doc_id, user_id=user_id)
+    new_page_count = page_count or last_ver.page_count
+    db_new_doc_ver = doc_orm.DocumentVersion(
+        document_id=doc_id,
+        number=last_ver.number + 1,
+        file_name=last_ver.file_name,
+        size=0,
+        page_count=page_count,
+        short_description=short_description,
+        lang=last_ver.lang,
+    )
+
+    db_session.add(db_new_doc_ver)
+
+    for page_number in range(1, new_page_count + 1):
+        db_page = doc_orm.Page(
+            document_version=db_new_doc_ver,
+            number=page_number,
+            page_count=new_page_count,
+            lang=last_ver.lang,
+        )
+        db_session.add(db_page)
+
+    db_session.commit()
+
+    return schema.DocumentVersion.model_validate(db_new_doc_ver)
+
+
+def update_text_field(db_session, document_version_id: uuid.UUID, streams):
+    """Update document versions's text field from IO streams.
+
+    Arguments:
+        ``streams`` - a list of IO text streams
+
+    It will update text field of all associated pages first
+    and then concatinate all text field into doc.text field.
+    """
+    text = []
+
+    stmt = (
+        select(doc_orm.Page.id, doc_orm.Page.text)
+        .where(doc_orm.Page.document_version_id == document_version_id)
+        .order_by(doc_orm.Page.number)
+    )
+
+    pages = [(row.id, row.text) for row in db_session.execute(stmt)]
+    for page, stream in zip(pages, streams):
+        if page[1] is None:  # page.text
+            txt = stream.read()
+            sql = (
+                update(doc_orm.Page).where(doc_orm.Page.id == page[0]).values(text=txt)
+            )
+            db_session.execute(sql)
+            text.append(txt.strip())
+
+    stripped_text = " ".join(text)
+    stripped_text = stripped_text.strip()
+    if stripped_text:
+        sql = (
+            update(doc_orm.DocumentVersion)
+            .where(doc_orm.DocumentVersion.id == document_version_id)
+            .values(text=stripped_text)
+        )
+        db_session.execute(sql)

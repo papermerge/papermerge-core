@@ -7,6 +7,7 @@ from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
+from papermerge.core.features.document.db import orm as docs_orm
 
 
 def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receipt):
@@ -325,3 +326,20 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
             assert cf["EffectiveDate"] is None
             assert cf["Shop"] is None
             assert cf["Total"] is None
+
+
+def test_document_version_dump(db_session, make_document, user):
+    doc: schema.Document = make_document(
+        title="some doc", user=user, parent=user.home_folder
+    )
+    # initially document has only one version
+    assert len(doc.versions) == 1
+
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+
+    new_doc = db_session.get(docs_orm.Document, doc.id)
+
+    # now document has two versions
+    assert len(new_doc.versions) == 2
+    assert new_doc.versions[0].number == 1
+    assert new_doc.versions[1].number == 2

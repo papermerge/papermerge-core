@@ -114,7 +114,7 @@ class Tag(BaseModel):
 class Page(BaseModel):
     id: UUID
     number: int
-    text: str = ""
+    text: str | None = None
     lang: str
     document_version_id: UUID
     svg_url: Annotated[str | None, Field(validate_default=True)] = None
@@ -156,7 +156,7 @@ class DocumentVersion(BaseModel):
     file_name: str | None = None
     size: int = 0
     page_count: int = 0
-    short_description: str
+    short_description: str | None = None
     document_id: UUID
     download_url: DownloadUrl = None
     pages: list[Page] | None = []
@@ -234,7 +234,7 @@ class NewDocument(BaseModel):
     # See https://github.com/papermerge/papermerge-core/issues/325
     id: UUID | None = None
     title: str
-    ctype: Literal["document"]
+    ctype: Literal["document"] = "document"
     parent_id: UUID | None
     lang: str | None = None
     file_name: str | None = None
@@ -330,6 +330,13 @@ def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
 class MovePage(BaseModel):
     id: UUID
     number: int
+
+
+class DocLastVersionInfo(BaseModel):
+    page_count: int
+    version_number: int
+    lang: str
+    file_name: str
 
 
 class PageAndRotOp(BaseModel):

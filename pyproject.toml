@@ -105,17 +105,18 @@ pytest-asyncio = "^0.21.0"
 use_vars = true
 
 [tool.taskipy.variables]
-env_vars = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''"
+env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
 
 [tool.taskipy.tasks]
 test = {cmd = "{env_vars} pytest", cwd = "." }
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
-server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/cloud/etc/logging.yaml"
+server = "fastapi dev papermerge/app.py"
+users = "python papermerge/core/features/users/cli/users.py"
 
 [tool.poetry.scripts]
 token = 'papermerge.core.cli.token:app'
-users = 'papermerge.core.cli.users:app'
+users = 'papermerge.core.features.users.cli.users:app'
 docs = 'papermerge.core.cli.docs:app'
 perms = 'papermerge.core.cli.perms:app'
 groups = 'papermerge.core.cli.groups:app'

@@ -1,10 +1,9 @@
 import uuid
 import logging
 from typing import Tuple
-from xxlimited_35 import error
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import Engine, select
+from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
 
@@ -79,10 +78,9 @@ def get_user_details(
     return model_user, None
 
 
-def get_users(engine: Engine) -> list[usr_schema.User]:
-    with Session(engine) as session:
-        db_users = session.scalars(select(User))
-        model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
+def get_users(db_session: Session) -> list[usr_schema.User]:
+    db_users = db_session.scalars(select(User))
+    model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
 
     return model_users
 

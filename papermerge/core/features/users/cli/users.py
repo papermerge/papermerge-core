@@ -2,21 +2,23 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from papermerge.core import db, schemas
-from papermerge.core.db.users import get_users
+from papermerge.core.db.engine import Session
+from papermerge.core.features.users.db import api as usr_dbapi
+from papermerge.core.features.users import schema as usr_schema
 
 app = typer.Typer(help="List various entities")
-engine = db.get_engine()
 
 
 @app.command()
 def users():
     """List existing users"""
-    users: list[schemas.User] = get_users(engine)
+    with Session() as db_session:
+        users: list[usr_schema.User] = usr_dbapi.get_users(db_session)
+
     print_users(users)
 
 
-def print_users(users: list[schemas.User]):
+def print_users(users: list[usr_schema.User]):
     table = Table(title="Users")
 
     table.add_column("UUID", style="cyan", no_wrap=True)
@@ -29,8 +31,12 @@ def print_users(users: list[schemas.User]):
             str(user.id),
             user.username,
             str(user.home_folder_id),
-            str(user.inbox_folder_id)
+            str(user.inbox_folder_id),
         )
 
     console = Console()
     console.print(table)
+
+
+if __name__ == "__main__":
+    app()

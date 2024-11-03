@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: cf50ce6d8905
+Revision ID: cf928ec3830c
 Revises:
-Create Date: 2024-11-03 16:29:01.550641
+Create Date: 2024-11-03 16:52:51.246016
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cf50ce6d8905'
+revision: str = 'cf928ec3830c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -126,6 +126,14 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], )
     )
+    op.create_table('document_types_custom_fields',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('document_type_id', sa.Uuid(), nullable=False),
+    sa.Column('custom_field_id', sa.Uuid(), nullable=False),
+    sa.ForeignKeyConstraint(['custom_field_id'], ['custom_fields.id'], ),
+    sa.ForeignKeyConstraint(['document_type_id'], ['document_types.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('documents',
     sa.Column('node_id', sa.Uuid(), nullable=False),
     sa.Column('ocr', sa.Boolean(), nullable=False),
@@ -181,6 +189,7 @@ def downgrade() -> None:
     op.drop_table('document_versions')
     op.drop_table('custom_field_values')
     op.drop_table('documents')
+    op.drop_table('document_types_custom_fields')
     op.drop_table('users_permissions')
     op.drop_table('users_groups')
     op.drop_table('document_types')

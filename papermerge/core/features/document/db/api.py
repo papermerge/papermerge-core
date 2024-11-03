@@ -107,7 +107,7 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
                 WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
             END AS cf_value
         FROM documents AS doc
-        JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+        JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
         JOIN(
             SELECT
                 sub_cf1.id AS cf_id,
@@ -115,7 +115,7 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
                 sub_cf1.type AS cf_type,
                 sub_cf1.extra_data AS cf_extra_data
             FROM documents AS sub_doc1
-            JOIN document_type_custom_field AS sub_dtcf1
+            JOIN document_types_custom_fields AS sub_dtcf1
                 ON sub_dtcf1.document_type_id = sub_doc1.document_type_id
             JOIN custom_fields AS sub_cf1
                 ON sub_cf1.id = sub_dtcf1.custom_field_id
@@ -260,7 +260,7 @@ SELECT node.title,
         WHEN sub2_cf.type = 'boolean' THEN CAST(sub2_cfv.value_boolean AS VARCHAR)
       END AS cf_value
       FROM documents AS sub2_doc
-      JOIN document_type_custom_field AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
+      JOIN document_types_custom_fields AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
       JOIN custom_fields AS sub2_cf ON sub2_cf.id = sub2_dtcf.custom_field_id
       LEFT OUTER JOIN custom_field_values AS sub2_cfv
           ON sub2_cfv.field_id = sub2_cf.id AND sub2_cfv.document_id = sub2_doc.node_id
@@ -268,7 +268,7 @@ SELECT node.title,
     ) AS ordered_doc ON ordered_doc.doc_id = doc.node_id
     JOIN nodes AS node
         ON node.id = doc.node_id
-    JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
             sub_cf1.id AS cf_id,
@@ -276,7 +276,7 @@ SELECT node.title,
             sub_cf1.type AS cf_type,
             sub_cf1.extra_data AS cf_extra_data
         FROM document_types AS sub_dt1
-        JOIN document_type_custom_field AS sub_dtcf1
+        JOIN documents_type_custom_fields AS sub_dtcf1
             ON sub_dtcf1.document_type_id = sub_dt1.id
         JOIN custom_fields AS sub_cf1
             ON sub_cf1.id = sub_dtcf1.custom_field_id
@@ -306,7 +306,7 @@ STMT = """
     FROM documents AS doc
     JOIN nodes AS node
       ON node.id = doc.node_id
-    JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
             sub_cf1.id AS cf_id,
@@ -314,7 +314,7 @@ STMT = """
             sub_cf1.type AS cf_type,
             sub_cf1.extra_data AS cf_extra_data
         FROM document_types AS sub_dt1
-        JOIN document_type_custom_field AS sub_dtcf1
+        JOIN document_types_custom_fields AS sub_dtcf1
             ON sub_dtcf1.document_type_id = sub_dt1.id
         JOIN custom_fields AS sub_cf1
             ON sub_cf1.id = sub_dtcf1.custom_field_id

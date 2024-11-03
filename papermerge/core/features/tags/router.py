@@ -16,7 +16,7 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.tags.db import api as tags_dbapi
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
-from search.cli.index import db_session
+
 
 router = APIRouter(
     prefix="/tags",
@@ -144,7 +144,9 @@ def update_tag(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        tag, error = tags_dbapi.update_tag(db_session, attrs=attrs, user_id=user.id)
+        tag, error = tags_dbapi.update_tag(
+            db_session, tag_id=tag_id, attrs=attrs, user_id=user.id
+        )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

@@ -23,6 +23,7 @@ from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.groups import router as groups_router
+from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
 from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.users.db import orm as users_orm
@@ -115,6 +116,7 @@ def api_client():
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
+    app.include_router(tags_router.router, prefix="")
 
     return TestClient(app)
 
@@ -127,6 +129,7 @@ def auth_api_client(user: users_orm.User):
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
+    app.include_router(tags_router.router, prefix="")
 
     middle_part = utils.base64.encode(
         {

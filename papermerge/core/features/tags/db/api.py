@@ -1,7 +1,7 @@
 import uuid
 from typing import Tuple
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
@@ -55,14 +55,19 @@ def create_tag(
 
 
 def update_tag(
-    db_session, attrs: schema.UpdateTag, user_id: uuid.UUID
+    db_session, tag_id: uuid.UUID, attrs: schema.UpdateTag, user_id: uuid.UUID
 ) -> Tuple[schema.Tag | None, err_schema.Error | None]:
 
-    db_tag = orm.Tag(user_id=user_id, **attrs.model_dump())
-    db_session.add(db_tag)
+    stmt = (
+        update(orm.Tag)
+        .where(orm.Tag.id == tag_id, orm.Tag.user_id == user_id)
+        .values(**attrs.model_dump(exclude_unset=True))
+    )
 
     try:
+        db_session.execute(stmt)
         db_session.commit()
+        db_tag = db_session.get(orm.Tag, tag_id)
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error

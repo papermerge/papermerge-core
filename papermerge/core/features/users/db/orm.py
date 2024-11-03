@@ -13,7 +13,7 @@ from papermerge.core.features.groups.db.orm import (
 
 
 class User(Base):
-    __tablename__ = "core_user"
+    __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     username: Mapped[str]
@@ -28,7 +28,7 @@ class User(Base):
         back_populates="user", primaryjoin="User.id == Node.user_id"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
+        ForeignKey("folders.id", deferrable=True), nullable=True
     )
     home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -36,7 +36,7 @@ class User(Base):
         viewonly=True,
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
+        ForeignKey("folders.id", deferrable=True), nullable=True
     )
     inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.inbox_folder_id == Folder.id",

@@ -11,7 +11,7 @@ from papermerge.core.types import CType
 
 
 class Node(Base):
-    __tablename__ = "core_basetreenode"
+    __tablename__ = "nodes"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     title: Mapped[str] = mapped_column(String(200))
@@ -23,13 +23,9 @@ class Node(Base):
         remote_side=User.id,
     )
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey(
-            "core_user.id", use_alter=True, name="core_basetreenode_user_id_fkey"
-        )
+        ForeignKey("users.id", use_alter=True, name="nodes_user_id_fkey")
     )
-    parent_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_basetreenode.id"), nullable=True
-    )
+    parent_id: Mapped[UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
     tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -52,11 +48,11 @@ class Node(Base):
 
 
 class Folder(Node):
-    __tablename__ = "core_folder"
+    __tablename__ = "folders"
 
     id: Mapped[UUID] = mapped_column(
-        "basetreenode_ptr_id",
-        ForeignKey("core_basetreenode.id"),
+        "id",
+        ForeignKey("nodes.id"),
         primary_key=True,
         insert_default=uuid.uuid4(),
     )

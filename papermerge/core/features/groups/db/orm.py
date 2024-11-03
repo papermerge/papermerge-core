@@ -4,54 +4,52 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from papermerge.core.db.base import Base
 
 user_permissions_association = Table(
-    "core_user_user_permissions",
+    "users_permissions",
     Base.metadata,
     Column(
         "user_id",
-        ForeignKey("core_user.id"),
+        ForeignKey("users.id"),
     ),
     Column(
         "permission_id",
-        ForeignKey("auth_permission.id"),
+        ForeignKey("permissions.id"),
     ),
 )
 
 group_permissions_association = Table(
-    "auth_group_permissions",
+    "groups_permissions",
     Base.metadata,
     Column(
         "group_id",
-        ForeignKey("auth_group.id"),
+        ForeignKey("groups.id"),
     ),
     Column(
         "permission_id",
-        ForeignKey("auth_permission.id"),
+        ForeignKey("permissions.id"),
     ),
 )
 
 
 user_groups_association = Table(
-    "core_user_groups",
+    "users_groups",
     Base.metadata,
     Column(
         "user_id",
-        ForeignKey("core_user.id"),
+        ForeignKey("users.id"),
     ),
     Column(
         "group_id",
-        ForeignKey("auth_group.id"),
+        ForeignKey("groups.id"),
     ),
 )
 
 
 class Permission(Base):
-    __tablename__ = "auth_permission"
+    __tablename__ = "permissions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     codename: Mapped[str]
-    content_type_id: Mapped[int] = mapped_column(ForeignKey("django_content_type.id"))
-    content_type: Mapped["ContentType"] = relationship()  # noqa: F821
     groups = relationship(
         "Group", secondary=group_permissions_association, back_populates="permissions"
     )
@@ -61,7 +59,7 @@ class Permission(Base):
 
 
 class Group(Base):
-    __tablename__ = "auth_group"
+    __tablename__ = "groups"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]

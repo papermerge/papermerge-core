@@ -15,16 +15,14 @@ class CustomField(Base):
     type: Mapped[str]
     extra_data: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("core_user.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
 
 
 class CustomFieldValue(Base):
     __tablename__ = "custom_field_values"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_document.basetreenode_ptr_id")
-    )
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"))
     field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
     value_text: Mapped[str] = mapped_column(nullable=True)
     value_boolean: Mapped[bool] = mapped_column(nullable=True)

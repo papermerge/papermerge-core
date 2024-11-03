@@ -44,7 +44,6 @@ redis = "^4.3.3"
 ocrmypdf = "^16.3.1"
 ocrmypdf-papermerge = "^0.6.0"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
-django-taggit = "^5.0.0"
 pyyaml = "^6.0"
 lxml = "^4.9.0"
 django-celery-results = "^2.2"
@@ -75,6 +74,7 @@ boto3 = { version = "^1.34", optional = true }
 cryptography = { version = "^42.0.7", optional = true }
 pytz = "^2024.1"
 pydantic-settings = "^2.6.0"
+alembic = "^1.13.3"
 
 [tool.poetry.extras]
 mysql = ["mysqlclient"]

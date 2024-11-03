@@ -13,7 +13,6 @@ from papermerge.core.models.document_version import DocumentVersion
 from papermerge.core.models.folder import Folder
 from papermerge.core.models.node import BaseTreeNode
 from papermerge.core.models.page import Page
-from papermerge.core.models.tags import Tag
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,6 @@ __all__ = [
     DocumentVersion,
     Page,
     BaseTreeNode,
-    Tag,
     Folder,
     CustomField,
     DocumentTypeCustomField,

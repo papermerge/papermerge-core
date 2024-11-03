@@ -3,8 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.constants import (DEFAULT_TAG_BG_COLOR,
-                                       DEFAULT_TAG_FG_COLOR)
+from papermerge.core.constants import DEFAULT_TAG_BG_COLOR, DEFAULT_TAG_FG_COLOR
 
 
 class Tag(BaseModel):

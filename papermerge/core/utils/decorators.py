@@ -1,9 +1,12 @@
-import os
+from papermerge.core.config import get_settings
+
+
+config = get_settings()
 
 
 def skip_in_tests(orig_func):
     def inner(*args, **kwargs):
-        if os.environ.get("PAPERMERGE__REDIS__URL", False):
+        if config.papermerge__redis__url is not None:
             orig_func(*args, **kwargs)
 
     return inner

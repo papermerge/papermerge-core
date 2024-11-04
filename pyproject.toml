@@ -29,7 +29,6 @@ keywords = [
 ]
 packages = [
     { include = "papermerge/core" },
-    { include = "papermerge/conf" },
     { include = "papermerge/search" },
 ]
 
@@ -38,93 +37,77 @@ Tracker = "https://github.com/ciur/papermerge/issues"
 Source = "https://github.com/papermerge/papermerge-core"
 
 [tool.poetry.dependencies]
-python = ">=3.11, <4.0"
-django = "^4.1"
-redis = "^4.3.3"
-ocrmypdf = "^16.3.1"
-ocrmypdf-papermerge = "^0.6.0"
+python = ">=3.13, <4.0"
+django = "^5.1"
+redis = "^5.2"
+ocrmypdf = "^16"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
-django-taggit = "^5.0.0"
 pyyaml = "^6.0"
-lxml = "^4.9.0"
 django-celery-results = "^2.2"
 python-magic = "^0.4"
 uritemplate = "^4.1.1"
 pdf2image = "^1.16.0"
-fastapi = "^0.112.0"
-uvicorn = "^0.23.1"
-python-multipart = "^0.0.6"
+uvicorn = "^0.32"
 python-jose = "^3.3.0"
 dj-database-url = "^2.3.0"
 dj-config-url = "^0.1.1"
-websockets = "^11.0.3"
-httpx = "^0.24.1"
-configula = "^0.5.4"
 salinic = "^0.6.0"
 img2pdf = "^0.5.1"
 passlib = "^1.7.4"
-sqlalchemy = "^2.0.24"
-typer = "^0.9.0"
-rich = "^13.7.1"
+sqlalchemy = "^2.0"
+typer = "^0.12.0"
+rich = "^13"
 mysqlclient = {version = "^2.2.0", optional = true}
-xapianpy = { version = "^1.4.22.post2305071405", optional = true}
-    psycopg2 = { version = "^2.9.2", optional = true}
+psycopg2 = { version = "^2.9.2", optional = true}
 psycopg2-binary = { version = "^2.9.2", optional = true}
 botocore = { version = "^1.34", optional = true }
 boto3 = { version = "^1.34", optional = true }
-cryptography = { version = "^42.0.7", optional = true }
+cryptography = { version = "^43", optional = true }
 pytz = "^2024.1"
-pydantic-settings = "^2.6.0"
+pydantic-settings = "^2"
+alembic = "^1.13.3"
+fastapi = {extras = ["standard"], version = "^0.115.4"}
 
 [tool.poetry.extras]
 mysql = ["mysqlclient"]
 pgsql = ["psycopg2", "psycopg2-binary"]
 databases = ["mysqlclient", "psycopg2"]
 cloud = ["botocore", "boto3", "cryptography"]
-xapian = ["xapianpy"]
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-django-extensions = "^3.1"
-ipython = "^8.0.1"
 taskipy = "^1.14"
 "pdfminer.six" = "^20220524"
-watchfiles = "^0.19.0"
 
 [tool.poetry.group.test]
 optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1.2"
-pytest-django = "^4.4"
-model-bakery = "^1.5.0"
 pytest-asyncio = "^0.21.0"
 
 [tool.taskipy.settings]
 use_vars = true
 
 [tool.taskipy.variables]
-env_vars = "DJANGO_SETTINGS_MODULE=tests.settings  PAPERMERGE__MAIN__API_PREFIX=''"
+env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
 
 [tool.taskipy.tasks]
 test = {cmd = "{env_vars} pytest", cwd = "." }
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
-server = "uvicorn config.asgi:fastapp --app-dir docker/dev/ --log-config docker/cloud/etc/logging.yaml"
+server = "fastapi dev papermerge/app.py"
+migrate = "alembic upgrade head"
 
 [tool.poetry.scripts]
+paper-cli = "papermerge.cli:app"
 token = 'papermerge.core.cli.token:app'
-users = 'papermerge.core.cli.users:app'
 docs = 'papermerge.core.cli.docs:app'
-perms = 'papermerge.core.cli.perms:app'
-groups = 'papermerge.core.cli.groups:app'
-scopes = 'papermerge.core.cli.scopes:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 index_schema = 'papermerge.search.cli.index_schema:app'
-index = 'papermerge.search.cli.index:app'
-search = 'papermerge.search.cli.search:app'
+
 
 [tool.ruff]
 target-version = "py311"

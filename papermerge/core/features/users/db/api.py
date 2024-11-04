@@ -1,12 +1,10 @@
 import uuid
 import logging
 from typing import Tuple
-from xxlimited_35 import error
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import Engine, select
+from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
-
 
 from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import is_valid_uuid
@@ -79,10 +77,9 @@ def get_user_details(
     return model_user, None
 
 
-def get_users(engine: Engine) -> list[usr_schema.User]:
-    with Session(engine) as session:
-        db_users = session.scalars(select(User))
-        model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
+def get_users(db_session: Session) -> list[usr_schema.User]:
+    db_users = db_session.scalars(select(User))
+    model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
 
     return model_users
 
@@ -133,7 +130,7 @@ def create_user(
     db_session.add(db_user)
     db_session.add(db_home)
     db_session.add(db_inbox)
-
+    db_session.commit()
     db_user.home_folder_id = db_home.id
     db_user.inbox_folder_id = db_inbox.id
     # fetch permissions from the DB
@@ -153,7 +150,7 @@ def create_user(
         db_user.groups = db_groups
         db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(2)])
+        error = err_schema.Error(messages=[str(e)])
         return None, error
 
     user = usr_schema.User.model_validate(db_user)
@@ -164,23 +161,34 @@ def create_user(
 def update_user(
     db_session, user_id: uuid.UUID, attrs: usr_schema.UpdateUser
 ) -> Tuple[usr_schema.UserDetails | None, err_schema.Error | None]:
-    stmt = select(group_orm.Permission).where(
-        group_orm.Permission.codename.in_(attrs.scopes)
-    )
-    perms = db_session.execute(stmt).scalars().all()
-
-    stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
-    groups = db_session.execute(stmt).scalars().all()
+    groups = []
     user = db_session.get(User, user_id)
 
-    user.username = attrs.username
-    user.email = attrs.email
-    user.permissions = perms
-    user.is_superuser = attrs.is_superuser
-    user.is_active = attrs.is_active
+    if attrs.username is not None:
+        user.username = attrs.username
 
-    user.groups = groups
-    if attrs.password:
+    if attrs.email is not None:
+        user.email = attrs.email
+
+    if attrs.scopes is not None:
+        stmt = select(group_orm.Permission).where(
+            group_orm.Permission.codename.in_(attrs.scopes)
+        )
+        perms = db_session.execute(stmt).scalars().all()
+        user.permissions = perms
+
+    if attrs.is_superuser is not None:
+        user.is_superuser = attrs.is_superuser
+
+    if attrs.is_active is not None:
+        user.is_active = attrs.is_active
+
+    if attrs.group_ids is not None:
+        stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
+        groups = db_session.execute(stmt).scalars().all()
+        user.groups = groups
+
+    if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
     try:
@@ -231,3 +239,18 @@ def get_user_scopes_from_groups(
             result.update([p.codename for p in group.permissions])
 
     return list(result)
+
+
+def delete_user(
+    db_session: Session, user_id: uuid.UUID | None = None, username: str | None = None
+):
+    if user_id is not None:
+        stmt = select(User).where(User.id == user_id)
+    elif username is not None:
+        stmt = select(User).where(User.username == username)
+    else:
+        raise ValueError("Either username or user_id parameter must be provided")
+
+    user = db_session.execute(stmt).scalars().one()
+    db_session.delete(user)
+    db_session.commit()

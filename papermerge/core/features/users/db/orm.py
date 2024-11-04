@@ -13,7 +13,7 @@ from papermerge.core.features.groups.db.orm import (
 
 
 class User(Base):
-    __tablename__ = "core_user"
+    __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     username: Mapped[str]
@@ -25,23 +25,27 @@ class User(Base):
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
     nodes: Mapped[list["Node"]] = relationship(
-        back_populates="user", primaryjoin="User.id == Node.user_id"
+        back_populates="user", primaryjoin="User.id == Node.user_id", cascade="delete"
     )
     home_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
+        ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
+        nullable=True,
     )
     home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
         back_populates="user",
         viewonly=True,
+        cascade="delete",
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_folder.basetreenode_ptr_id", deferrable=True), nullable=True
+        ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
+        nullable=True,
     )
     inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.inbox_folder_id == Folder.id",
         back_populates="user",
         viewonly=True,
+        cascade="delete",
     )
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     date_joined: Mapped[datetime] = mapped_column(insert_default=func.now())
@@ -54,3 +58,5 @@ class User(Base):
     groups: Mapped[list["Group"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="users"
     )
+
+    __mapper_args__ = {"confirm_deleted_rows": False}

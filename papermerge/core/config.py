@@ -13,7 +13,7 @@ class FileServer(str, Enum):
 class Settings(BaseSettings):
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
     papermerge__main__media_root: Path = Path(".")
-    papermerge__main__prefix: str | None = None
+    papermerge__main__prefix: str = ''
     papermerge__main__file_server: FileServer = FileServer.LOCAL
     papermerge__main__cf_sign_url_private_key: str | None = None
     papermerge__main__cf_sign_url_key_id: str | None = None
@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_language: str = 'deu'
+    papermerge__search__url: str | None = None
 
 
 @lru_cache()

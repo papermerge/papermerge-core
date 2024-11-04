@@ -2,18 +2,18 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from core.auth import SCOPES
+from papermerge.core.features.auth.scopes import SCOPES
 
-app = typer.Typer(help="List scopes")
+app = typer.Typer(help="Scopes management")
 
 
-@app.command()
+@app.command("ls")
 def scopes_list():
     """List current scopes (as defined in application code)"""
     table = Table(title="Scopes")
 
-    table.add_column("codename", style="green")
-    table.add_column("description", style="magenta")
+    table.add_column("codename")
+    table.add_column("description")
 
     for codename, descr in SCOPES.items():
         table.add_row(codename, descr)

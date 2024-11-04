@@ -6,18 +6,18 @@ from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
-OCR_STATUS_SUCCEEDED = 'SUCCESS'
-OCR_STATUS_RECEIVED = 'RECEIVED'
-OCR_STATUS_STARTED = 'STARTED'
-OCR_STATUS_FAILED = 'FAILED'
-OCR_STATUS_UNKNOWN = 'UNKNOWN'
+OCR_STATUS_SUCCEEDED = "SUCCESS"
+OCR_STATUS_RECEIVED = "RECEIVED"
+OCR_STATUS_STARTED = "STARTED"
+OCR_STATUS_FAILED = "FAILED"
+OCR_STATUS_UNKNOWN = "UNKNOWN"
 
 OCR_STATUS_CHOICES = [
-    ('unknown', _('Unknown')),
-    ('received', _('Received')),
-    ('started', _('Started')),
-    ('succeeded', _('Succeeded')),
-    ('failed', _('Failed')),
+    ("unknown", _("Unknown")),
+    ("received", _("Received")),
+    ("started", _("Started")),
+    ("succeeded", _("Succeeded")),
+    ("failed", _("Failed")),
 ]
 
 
@@ -31,10 +31,10 @@ def uuid2raw_str(value: uuid.UUID) -> str:
     if value is None:
         raise ValueError("Non-empty value expected")
 
-    if value == '':
+    if value == "":
         raise ValueError("Non-empty value expected")
 
-    return str(value).replace('-', '')
+    return str(value).replace("-", "")
 
 
 def get_by_breadcrumb(klass, breadcrumb: str, user):
@@ -51,35 +51,35 @@ def get_by_breadcrumb(klass, breadcrumb: str, user):
     """
     from papermerge.core.models import BaseTreeNode
 
-    if klass.__name__ not in ('Folder', 'Document'):
+    if klass.__name__ not in ("Folder", "Document"):
         raise ValueError("klass should be either Folder or Document")
 
     first_part = PurePath(breadcrumb).parts[0]
     pure_breadcrumb = str(PurePath(breadcrumb))  # strips '/' at the end
-    sql = '''
+    sql = """
      WITH RECURSIVE tree AS (
          SELECT id,
             user_id,
             title,
             CAST(title AS character varying) as breadcrumb
-         FROM core_basetreenode WHERE title = %s
+         FROM nodes WHERE title = %s
          UNION ALL
-         SELECT core_basetreenode.id,
-            core_basetreenode.user_id,
-            core_basetreenode.title,
-            (breadcrumb || '/'  || core_basetreenode.title) as breadcrumb
-         FROM core_basetreenode, tree
-         WHERE core_basetreenode.parent_id = tree.id
+         SELECT nodes.id,
+            nodes.user_id,
+            nodes.title,
+            (breadcrumb || '/'  || nodes.title) as breadcrumb
+         FROM nodes, tree
+         WHERE nodes.parent_id = tree.id
      )
-     '''
-    sql += '''
+     """
+    sql += """
     SELECT id, title FROM tree
     WHERE breadcrumb = %s and user_id = %s LIMIT 1
-    '''
+    """
     user_id = uuid2raw_str(user.pk)
-    result_list = list(BaseTreeNode.objects.raw(
-        sql, [first_part, pure_breadcrumb, user_id]
-    ))
+    result_list = list(
+        BaseTreeNode.objects.raw(sql, [first_part, pure_breadcrumb, user_id])
+    )
 
     if len(result_list) == 0:
         raise klass.DoesNotExist()

@@ -3,42 +3,36 @@ import uuid
 from typing import Optional
 
 import typer
-from rich import print_json
+from rich import print_json, print
 from salinic import IndexRW, create_engine
 from typing_extensions import Annotated
 
 from papermerge.core import db, schemas
 from papermerge.search.schema import FOLDER, PAGE, SearchIndex
 
-app = typer.Typer(help="Index documents")
+app = typer.Typer(help="Index commands")
 
-SEARCH_URL = os.environ.get('PAPERMERGE__SEARCH__URL')
-if not SEARCH_URL:
-    raise ValueError("missing PAPERMERGE__SEARCH__URL")
-
-engine = create_engine(SEARCH_URL)
-index = IndexRW(engine, schema=SearchIndex)
-db_session = db.get_session()
-
-NodeIDsType = Annotated[
-    Optional[list[uuid.UUID]],
-    typer.Argument()
-]
+NodeIDsType = Annotated[Optional[list[uuid.UUID]], typer.Argument()]
 
 
-@app.command()
-def index_cmd(
-    node_ids: NodeIDsType = None,
-    dry_run: bool = False
-):
+@app.callback(name="index", invoke_without_command=True)
+def index_cmd(node_ids: NodeIDsType = None, dry_run: bool = False):
+    SEARCH_URL = os.environ.get("PAPERMERGE__SEARCH__URL")
+    if not SEARCH_URL:
+        print("[red][bold]PAPERMERGE__SEARCH__URL[/bold] is missing[/red]")
+        print("Please set [bold]PAPERMERGE__SEARCH__URL[/bold] environment variable")
+        raise typer.Exit(code=1)
+
+    engine = create_engine(SEARCH_URL)
+    index = IndexRW(engine, schema=SearchIndex)
+    db_session = db.get_session()
+
     nodes = db.get_nodes(db_session, node_ids)
     items = []  # to be added to the index
     for node in nodes:
         if isinstance(node, schemas.Document):
             last_ver = db.get_last_doc_ver(
-                db_session,
-                user_id=node.user_id,
-                doc_id=node.id
+                db_session, user_id=node.user_id, doc_id=node.id
             )
             pages = db.get_doc_ver_pages(db_session, last_ver.id)
             for page in pages:

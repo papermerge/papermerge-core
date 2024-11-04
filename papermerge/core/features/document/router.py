@@ -6,12 +6,12 @@ from fastapi import APIRouter, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import constants as const
-from papermerge.core import schemas, utils
-from core.auth import get_current_user
-from core.features.auth import scopes
+from papermerge.core import utils
+from papermerge.core.features.auth import get_current_user, scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.document.db import api as dbapi
+from papermerge.core.features.users import schema as usr_schema
 
 router = APIRouter(
     prefix="/documents",
@@ -25,7 +25,7 @@ def update_document_custom_field_values(
     document_id: uuid.UUID,
     custom_fields_update: list[doc_schema.DocumentCustomFieldsUpdate],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
 ) -> list[doc_schema.CFV]:
     """
@@ -62,7 +62,7 @@ def update_document_custom_field_values(
 def get_document_custom_field_values(
     document_id: uuid.UUID,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+        usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
 ) -> list[doc_schema.CFV]:
     """

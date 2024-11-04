@@ -1,8 +1,10 @@
+import uuid
+
 from pydantic import BaseModel, ConfigDict
 
 
 class Permission(BaseModel):
-    id: int
+    id: uuid.UUID
     name: str  # e.g. "Can create tags"
     codename: str  # e.g. "tag.create"
     # content_type_id field is not used
@@ -14,7 +16,7 @@ class Permission(BaseModel):
 
 
 class Group(BaseModel):
-    id: int
+    id: uuid.UUID
     name: str
 
     # Config
@@ -22,7 +24,7 @@ class Group(BaseModel):
 
 
 class GroupDetails(BaseModel):
-    id: int
+    id: uuid.UUID
     name: str
     scopes: list[str]
 

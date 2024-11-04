@@ -93,7 +93,7 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
 
     stmt = """
         SELECT
-            doc.basetreenode_ptr_id AS doc_id,
+            doc.node_id AS doc_id,
             doc.document_type_id,
             cf.cf_id AS cf_id,
             cf.cf_name,
@@ -106,25 +106,25 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
                 WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
                 WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
             END AS cf_value
-        FROM core_document AS doc
-        JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+        FROM documents AS doc
+        JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
         JOIN(
             SELECT
                 sub_cf1.id AS cf_id,
                 sub_cf1.name AS cf_name,
                 sub_cf1.type AS cf_type,
                 sub_cf1.extra_data AS cf_extra_data
-            FROM core_document AS sub_doc1
-            JOIN document_type_custom_field AS sub_dtcf1
+            FROM documents AS sub_doc1
+            JOIN document_types_custom_fields AS sub_dtcf1
                 ON sub_dtcf1.document_type_id = sub_doc1.document_type_id
             JOIN custom_fields AS sub_cf1
                 ON sub_cf1.id = sub_dtcf1.custom_field_id
-            WHERE sub_doc1.basetreenode_ptr_id = :document_id
+            WHERE sub_doc1.node_id = :document_id
         ) AS cf ON cf.cf_id = dtcf.custom_field_id
         LEFT OUTER JOIN custom_field_values AS cfv
             ON cfv.field_id = cf.cf_id AND cfv.document_id = :document_id
     WHERE
-        doc.basetreenode_ptr_id = :document_id
+        doc.node_id = :document_id
     """
     result = []
     str_doc_id = str(document_id).replace("-", "")
@@ -236,7 +236,7 @@ def get_docs_count_by_type(session: Session, type_id: uuid.UUID):
 
 STMT_WITH_ORDER_BY = """
 SELECT node.title,
-    doc.basetreenode_ptr_id AS doc_id,
+    doc.node_id AS doc_id,
     doc.document_type_id,
     cf.cf_id AS cf_id,
     cf.cf_name,
@@ -250,25 +250,25 @@ SELECT node.title,
         WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
         WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
     END AS cf_value
-    FROM core_document AS doc
+    FROM documents AS doc
     JOIN (
-      SELECT sub2_doc.basetreenode_ptr_id AS doc_id,
+      SELECT sub2_doc.node_id AS doc_id,
       CASE
         WHEN sub2_cf.type = 'monetary' THEN CAST(sub2_cfv.value_monetary AS VARCHAR)
         WHEN sub2_cf.type = 'text' THEN CAST(sub2_cfv.value_text AS VARCHAR)
         WHEN sub2_cf.type = 'date' THEN CAST(sub2_cfv.value_date AS VARCHAR)
         WHEN sub2_cf.type = 'boolean' THEN CAST(sub2_cfv.value_boolean AS VARCHAR)
       END AS cf_value
-      FROM core_document AS sub2_doc
-      JOIN document_type_custom_field AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
+      FROM documents AS sub2_doc
+      JOIN document_types_custom_fields AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
       JOIN custom_fields AS sub2_cf ON sub2_cf.id = sub2_dtcf.custom_field_id
       LEFT OUTER JOIN custom_field_values AS sub2_cfv
-          ON sub2_cfv.field_id = sub2_cf.id AND sub2_cfv.document_id = sub2_doc.basetreenode_ptr_id
+          ON sub2_cfv.field_id = sub2_cf.id AND sub2_cfv.document_id = sub2_doc.node_id
       WHERE sub2_doc.document_type_id = :document_type_id AND sub2_cf.name = :custom_field_name
-    ) AS ordered_doc ON ordered_doc.doc_id = doc.basetreenode_ptr_id
-    JOIN core_basetreenode AS node
-        ON node.id = doc.basetreenode_ptr_id
-    JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+    ) AS ordered_doc ON ordered_doc.doc_id = doc.node_id
+    JOIN nodes AS node
+        ON node.id = doc.node_id
+    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
             sub_cf1.id AS cf_id,
@@ -276,7 +276,7 @@ SELECT node.title,
             sub_cf1.type AS cf_type,
             sub_cf1.extra_data AS cf_extra_data
         FROM document_types AS sub_dt1
-        JOIN document_type_custom_field AS sub_dtcf1
+        JOIN documents_type_custom_fields AS sub_dtcf1
             ON sub_dtcf1.document_type_id = sub_dt1.id
         JOIN custom_fields AS sub_cf1
             ON sub_cf1.id = sub_dtcf1.custom_field_id
@@ -290,7 +290,7 @@ SELECT node.title,
 
 STMT = """
     SELECT node.title,
-        doc.basetreenode_ptr_id AS doc_id,
+        doc.node_id AS doc_id,
         doc.document_type_id,
         cf.cf_id AS cf_id,
         cf.cf_name,
@@ -303,10 +303,10 @@ STMT = """
             WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
             WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
         END AS cf_value
-    FROM core_document AS doc
-    JOIN core_basetreenode AS node
-      ON node.id = doc.basetreenode_ptr_id
-    JOIN document_type_custom_field AS dtcf ON dtcf.document_type_id = doc.document_type_id
+    FROM documents AS doc
+    JOIN nodes AS node
+      ON node.id = doc.node_id
+    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
     JOIN(
         SELECT
             sub_cf1.id AS cf_id,
@@ -314,14 +314,14 @@ STMT = """
             sub_cf1.type AS cf_type,
             sub_cf1.extra_data AS cf_extra_data
         FROM document_types AS sub_dt1
-        JOIN document_type_custom_field AS sub_dtcf1
+        JOIN document_types_custom_fields AS sub_dtcf1
             ON sub_dtcf1.document_type_id = sub_dt1.id
         JOIN custom_fields AS sub_cf1
             ON sub_cf1.id = sub_dtcf1.custom_field_id
         WHERE sub_dt1.id = :document_type_id
     ) AS cf ON cf.cf_id = dtcf.custom_field_id
     LEFT OUTER JOIN custom_field_values AS cfv
-        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc.basetreenode_ptr_id
+        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc.node_id
     WHERE doc.document_type_id = :document_type_id
 """
 

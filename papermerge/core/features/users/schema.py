@@ -100,10 +100,10 @@ class CreateUser(BaseModel):
 
 
 class UpdateUser(BaseModel):
-    username: str
-    email: str
+    username: str | None = None
+    email: str | None = None
     password: str | None = None
-    is_superuser: bool
-    is_active: bool
-    scopes: list[str] = []
-    group_ids: list[int] = []
+    is_superuser: bool | None = None
+    is_active: bool | None = None
+    scopes: list[str] | None = None
+    group_ids: list[int] | None = None

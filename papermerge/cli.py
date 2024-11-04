@@ -7,7 +7,7 @@ from papermerge.core.features.groups.cli import cli as groups_cli
 from papermerge.search.cli import search
 from papermerge.search.cli import index
 
-app = typer.Typer()
+app = typer.Typer(help="Papermerge DMS command line management tool")
 app.add_typer(usr_cli.app, name="users")
 app.add_typer(groups_cli.app, name="groups")
 app.add_typer(perms_cli.app, name="perms")

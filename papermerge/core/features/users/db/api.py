@@ -131,7 +131,7 @@ def create_user(
     db_session.add(db_user)
     db_session.add(db_home)
     db_session.add(db_inbox)
-
+    db_session.commit()
     db_user.home_folder_id = db_home.id
     db_user.inbox_folder_id = db_inbox.id
     # fetch permissions from the DB
@@ -151,7 +151,7 @@ def create_user(
         db_user.groups = db_groups
         db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(2)])
+        error = err_schema.Error(messages=[str(e)])
         return None, error
 
     user = usr_schema.User.model_validate(db_user)
@@ -229,3 +229,18 @@ def get_user_scopes_from_groups(
             result.update([p.codename for p in group.permissions])
 
     return list(result)
+
+
+def delete_user(
+    db_session: Session, user_id: uuid.UUID | None = None, username: str | None = None
+):
+    if user_id is not None:
+        stmt = select(User).where(User.id == user_id)
+    elif username is not None:
+        stmt = select(User).where(User.username == username)
+    else:
+        raise ValueError("Either username or user_id parameter must be provided")
+
+    user = db_session.execute(stmt).scalars().one()
+    db_session.delete(user)
+    db_session.commit()

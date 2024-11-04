@@ -86,8 +86,6 @@ optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1.2"
-pytest-django = "^4.4"
-model-bakery = "^1.5.0"
 pytest-asyncio = "^0.21.0"
 
 [tool.taskipy.settings]
@@ -107,12 +105,9 @@ migrate = "alembic upgrade head"
 paper-cli = "papermerge.cli:app"
 token = 'papermerge.core.cli.token:app'
 docs = 'papermerge.core.cli.docs:app'
-perms = 'papermerge.core.cli.perms:app'
-scopes = 'papermerge.core.cli.scopes:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 index_schema = 'papermerge.search.cli.index_schema:app'
-index = 'papermerge.search.cli.index:app'
-search = 'papermerge.search.cli.search:app'
+
 
 [tool.ruff]
 target-version = "py311"

@@ -16,7 +16,7 @@ from papermerge.core.config import get_settings
 
 config = get_settings()
 prefix = config.papermerge__main__prefix
-app = FastAPI(title="Papermerge DMS", version=__version__)
+app = FastAPI(title="Papermerge DMS REST API", version=__version__)
 
 app.add_middleware(
     CORSMiddleware,

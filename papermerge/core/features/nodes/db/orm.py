@@ -21,9 +21,12 @@ class Node(Base):
         back_populates="nodes",
         primaryjoin="User.id == Node.user_id",
         remote_side=User.id,
+        cascade="delete",
     )
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", use_alter=True, name="nodes_user_id_fkey")
+        ForeignKey(
+            "users.id", use_alter=True, name="nodes_user_id_fkey", ondelete="CASCADE"
+        )
     )
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
     tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
@@ -35,6 +38,7 @@ class Node(Base):
     __mapper_args__ = {
         "polymorphic_identity": "node",
         "polymorphic_on": "ctype",
+        "confirm_deleted_rows": False,
     }
 
     __table_args__ = (
@@ -52,7 +56,7 @@ class Folder(Node):
 
     id: Mapped[UUID] = mapped_column(
         "node_id",
-        ForeignKey("nodes.id"),
+        ForeignKey("nodes.id", ondelete="CASCADE"),
         primary_key=True,
         insert_default=uuid.uuid4(),
     )

@@ -17,5 +17,6 @@ def test_user_delete(db_session, make_user):
     user: orm.User = make_user("momo")
     dbapi.delete_user(db_session, username=user.username)
 
-    stmt = select(func.count(orm.User.id)).select_from(orm.User)
-    assert db_session.execute(stmt).scalar() == 0
+    stmt = select(func.count(orm.User.id))
+    users_count = db_session.execute(stmt).scalar()
+    assert users_count == 0

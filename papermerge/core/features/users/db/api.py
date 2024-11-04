@@ -6,7 +6,6 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
-
 from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes

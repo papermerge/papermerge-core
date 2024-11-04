@@ -1,6 +1,7 @@
 import typer
 from rich.console import Console
 from rich.table import Table
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.db.engine import Session
 from papermerge.core.features.users.db import api as usr_dbapi
@@ -16,7 +17,10 @@ def list_users():
     with Session() as db_session:
         users: list[usr_schema.User] = usr_dbapi.get_users(db_session)
 
-    print_users(users)
+    if len(users) == 0:
+        console.print("No users found")
+    else:
+        print_users(users)
 
 
 @app.command(name="create")
@@ -46,23 +50,26 @@ def create_user_cmd(
     if error:
         console.print(error, style="red")
     else:
-        console.print("User created")
+        console.print(
+            f"User [bold]{username}[/bold] successfully created", style="green"
+        )
 
 
 @app.command(name="delete")
 def delete_user_cmd(username: str):
     """Deletes user"""
 
-    with Session() as db_session:
-        user, error = usr_dbapi.delete_user(
-            db_session,
-            username=username,
-        )
+    try:
+        with Session() as db_session:
+            usr_dbapi.delete_user(
+                db_session,
+                username=username,
+            )
+    except NoResultFound:
+        console.print(f"User [bold]{username}[/bold] not found", style="red")
+        raise typer.Exit(1)
 
-    if error:
-        console.print(error, style="red")
-    else:
-        console.print("User created")
+    console.print(f"User [bold]{username}[/bold] successfully deleted", style="green")
 
 
 def print_users(users: list[usr_schema.User]):

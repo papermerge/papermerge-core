@@ -161,23 +161,34 @@ def create_user(
 def update_user(
     db_session, user_id: uuid.UUID, attrs: usr_schema.UpdateUser
 ) -> Tuple[usr_schema.UserDetails | None, err_schema.Error | None]:
-    stmt = select(group_orm.Permission).where(
-        group_orm.Permission.codename.in_(attrs.scopes)
-    )
-    perms = db_session.execute(stmt).scalars().all()
-
-    stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
-    groups = db_session.execute(stmt).scalars().all()
+    groups = []
     user = db_session.get(User, user_id)
 
-    user.username = attrs.username
-    user.email = attrs.email
-    user.permissions = perms
-    user.is_superuser = attrs.is_superuser
-    user.is_active = attrs.is_active
+    if attrs.username is not None:
+        user.username = attrs.username
 
-    user.groups = groups
-    if attrs.password:
+    if attrs.email is not None:
+        user.email = attrs.email
+
+    if attrs.scopes is not None:
+        stmt = select(group_orm.Permission).where(
+            group_orm.Permission.codename.in_(attrs.scopes)
+        )
+        perms = db_session.execute(stmt).scalars().all()
+        user.permissions = perms
+
+    if attrs.is_superuser is not None:
+        user.is_superuser = attrs.is_superuser
+
+    if attrs.is_active is not None:
+        user.is_active = attrs.is_active
+
+    if attrs.group_ids is not None:
+        stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
+        groups = db_session.execute(stmt).scalars().all()
+        user.groups = groups
+
+    if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
     try:

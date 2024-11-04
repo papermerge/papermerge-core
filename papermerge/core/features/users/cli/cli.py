@@ -1,9 +1,11 @@
 import typer
 from rich.console import Console
 from rich.table import Table
+from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.db.engine import Session
+from papermerge.core.features.users.db import orm as usr_orm
 from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.features.users import schema as usr_schema
 
@@ -72,18 +74,42 @@ def delete_user_cmd(username: str):
     console.print(f"User [bold]{username}[/bold] successfully deleted", style="green")
 
 
+@app.command(name="update")
+def update_user_cmd(username: str, superuser: bool = False):
+    """Update user"""
+
+    try:
+        with Session() as db_session:
+            stmt = select(usr_orm.User).where(usr_orm.User.username == username)
+            user = db_session.execute(stmt).scalar()
+            attrs = usr_schema.UpdateUser(is_superuser=superuser)
+            usr_dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+    except NoResultFound:
+        console.print(f"User [bold]{username}[/bold] not found", style="red")
+        raise typer.Exit(1)
+
+    console.print(f"User [bold]{username}[/bold] successfully updated", style="green")
+
+
 def print_users(users: list[usr_schema.User]):
     table = Table(title="Users")
 
     table.add_column("ID", no_wrap=True)
     table.add_column("Username")
+    table.add_column("Superuser?")
     table.add_column("Home ID")
     table.add_column("Inbox ID")
 
     for user in users:
+        if user.is_superuser:
+            is_superuser = "yes"
+        else:
+            is_superuser = "no"
+
         table.add_row(
             str(user.id),
             user.username,
+            is_superuser,
             str(user.home_folder_id),
             str(user.inbox_folder_id),
         )

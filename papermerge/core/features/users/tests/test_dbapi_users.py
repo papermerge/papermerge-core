@@ -19,4 +19,5 @@ def test_user_delete(db_session, make_user):
 
     stmt = select(func.count(orm.User.id))
     users_count = db_session.execute(stmt).scalar()
+
     assert users_count == 0

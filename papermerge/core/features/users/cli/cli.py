@@ -9,8 +9,8 @@ from papermerge.core.features.users import schema as usr_schema
 app = typer.Typer(help="List various entities")
 
 
-@app.command()
-def users():
+@app.command(name="list")
+def list_users():
     """List existing users"""
     with Session() as db_session:
         users: list[usr_schema.User] = usr_dbapi.get_users(db_session)

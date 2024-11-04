@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from core.features.auth import scopes
+from papermerge.core.features.auth import scopes
 from papermerge.core.db.engine import Session
 from papermerge.core.features.groups import schema
 from papermerge.core.features.groups.db import orm

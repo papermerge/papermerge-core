@@ -4,12 +4,12 @@ from rich.pretty import pprint
 
 from papermerge.core import db, schemas, utils
 
-app = typer.Typer(help="Basic JWT tokens management")
+app = typer.Typer(help="JWT tokens management")
 engine = db.get_engine()
 
 
-@app.command()
-def encode(username: str, scopes: str = None):
+@app.command(name="encode")
+def encode_cmd(username: str, scopes: str = None):
     """Encodes JWT token payload for given username"""
     try:
         user: schemas.User = db.get_user(engine, username)
@@ -33,8 +33,8 @@ def encode(username: str, scopes: str = None):
     )
 
 
-@app.command()
-def decode(token_payload: str):
+@app.command(name="decode")
+def decode_cmd(token_payload: str):
     """Decode JWT token payload
 
     Note that JWT token has three parts, delimited by dot character.

@@ -2,26 +2,29 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from papermerge.core import db, schemas
+from papermerge.core.db.engine import Session
+from papermerge.core.features.groups.db import api as dbapi
+from papermerge.core.features.groups import schema
 
-app = typer.Typer(help="List various entities")
-db_session = db.get_session()
+app = typer.Typer(help="Permissions management")
 
 
 @app.command("ls")
 def perms_list():
     """List database stored permissions"""
-    perms: list[schemas.Permission] = db.get_perms(db_session)
-    print_perms(perms)
+    with Session() as db_session:
+        perms: list[schema.Permission] = dbapi.get_perms(db_session)
+        print_perms(perms)
 
 
 @app.command("sync")
 def perms_sync():
     """Synchronizes permissions table with current scopes"""
-    db.sync_perms(db_session)
+    with Session() as db_session:
+        dbapi.sync_perms(db_session)
 
 
-def print_perms(perms: list[schemas.Permission]):
+def print_perms(perms: list[schema.Permission]):
     table = Table(title="Permissions")
 
     table.add_column("ID", style="cyan", no_wrap=True)

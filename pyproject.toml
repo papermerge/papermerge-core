@@ -104,11 +104,10 @@ server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
 
 [tool.poetry.scripts]
-users-cli = "papermerge.core.features.users.cli.users:app"
+paper-cli = "papermerge.cli:app"
 token = 'papermerge.core.cli.token:app'
 docs = 'papermerge.core.cli.docs:app'
 perms = 'papermerge.core.cli.perms:app'
-groups = 'papermerge.core.cli.groups:app'
 scopes = 'papermerge.core.cli.scopes:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 index_schema = 'papermerge.search.cli.index_schema:app'

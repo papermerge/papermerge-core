@@ -1,6 +1,9 @@
+import io
 import logging
 import itertools
 import uuid
+import img2pdf
+from pikepdf import Pdf
 
 from typing import Tuple
 
@@ -8,6 +11,7 @@ from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.lib.storage import copy_file
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
@@ -16,6 +20,9 @@ from papermerge.core.features.document_types.db.api import document_type_cf_coun
 from papermerge.core.types import OrderEnum
 from papermerge.core.utils.misc import str2date
 from papermerge.core.schemas import error as err_schema
+from papermerge.core.pathlib import (
+    abs_docver_path,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -523,3 +530,161 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
             .values(text=stripped_text)
         )
         db_session.execute(sql)
+
+
+class UploadStrategy:
+    """
+    Defines how to proceed with uploaded file
+    """
+
+    # INCREMENT - Uploaded file is inserted into the newly created
+    #   document version
+    INCREMENT = 1
+    # MERGE - Uploaded file is merged with last file version
+    #   and inserted into the newly created document version
+    MERGE = 2
+
+
+class UploadContentType:
+    PDF = "application/pdf"
+    JPEG = "image/jpeg"
+    PNG = "image/png"
+    TIFF = "image/tiff"
+
+
+class FileType:
+    PDF = "pdf"
+    JPEG = "jpeg"
+    PNG = "png"
+    TIFF = "tiff"
+
+
+def file_type(content_type: str) -> str:
+    parts = content_type.split("/")
+    if len(parts) == 2:
+        return parts[1]
+
+    raise ValueError(f"Invalid content type {content_type}")
+
+
+def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
+    if isinstance(content, bytes):
+        pdf = Pdf.open(io.BytesIO(content))
+    else:
+        pdf = Pdf.open(content)
+    page_count = len(pdf.pages)
+    pdf.close()
+
+    return page_count
+
+
+def create_next_version(
+    db_session,
+    doc: doc_orm.Document,
+    file_name,
+    file_size,
+    short_description=None,
+) -> doc_orm.DocumentVersion:
+    stmt = (
+        select(doc_orm.DocumentVersion)
+        .where(
+            doc_orm.DocumentVersion.size == 0,
+            doc_orm.DocumentVersion.document_id == doc.id,
+        )
+        .order_by(doc_orm.DocumentVersion.number.desc())
+    )
+    document_version = db_session.execute(stmt).scalar()
+
+    if not document_version:
+        document_version = doc_orm.DocumentVersion(
+            id=uuid.uuid4(),
+            document_id=doc.id,
+            number=len(doc.versions) + 1,
+            lang=doc.lang,
+        )
+
+    document_version.file_name = file_name
+    document_version.size = file_size
+    document_version.page_count = 0
+
+    if short_description:
+        document_version.short_description = short_description
+
+    return document_version
+
+
+def upload(
+    db_session,
+    document_id: uuid.UUID,
+    content: io.BytesIO,
+    size: int,
+    file_name: str,
+    content_type: str | None = None,
+) -> [schema.Document | None, err_schema.Error | None]:
+
+    doc = db_session.get(doc_orm.Document, document_id)
+
+    if content_type != UploadContentType.PDF:
+        with open(f"{file_name}.pdf", "wb") as f:
+            pdf_content = img2pdf.convert(content)
+            f.write(pdf_content)
+
+        orig_ver = create_next_version(
+            db_session, doc=doc, file_name=file_name, file_size=size
+        )
+
+        pdf_ver = create_next_version(
+            db_session,
+            doc=doc,
+            file_name=f"{file_name}.pdf",
+            file_size=len(pdf_content),
+            short_description=f"{file_type(content_type)} -> pdf",
+        )
+
+        copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
+
+        copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+
+        page_count = get_pdf_page_count(pdf_content)
+        orig_ver.page_count = page_count
+        pdf_ver.page_count = page_count
+
+        for page_number in range(1, page_count + 1):
+            db_page_orig = doc_orm.Page(
+                number=page_number,
+                page_count=page_count,
+                lang=pdf_ver.lang,
+                document_version_id=orig_ver.id,
+            )
+            db_page_pdf = doc_orm.Page(
+                number=page_number,
+                page_count=page_count,
+                lang=pdf_ver.lang,
+                document_version_id=pdf_ver.id,
+            )
+            db_session.add_all([db_page_orig, db_page_pdf])
+
+    else:
+        # pdf_ver == orig_ver
+        pdf_ver = create_next_version(
+            db_session, doc=doc, file_name=file_name, file_size=size
+        )
+        copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+
+        page_count = get_pdf_page_count(content)
+        pdf_ver.page_count = page_count
+        for page_number in range(1, page_count + 1):
+            db_page_pdf = doc_orm.Page(
+                number=page_number,
+                page_count=page_count,
+                lang=pdf_ver.lang,
+                document_version_id=pdf_ver.id,
+            )
+            db_session.add(db_page_pdf)
+    try:
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    return schema.Document.model_validate(doc), None

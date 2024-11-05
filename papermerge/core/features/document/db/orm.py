@@ -59,6 +59,7 @@ class Page(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int]
+    page_count: Mapped[int]
     lang: Mapped[str] = mapped_column(default="deu")
     text: Mapped[str] = mapped_column(nullable=True)
     document_version_id: Mapped[UUID] = mapped_column(

@@ -174,21 +174,6 @@ class Document(BaseTreeNode):
 
     objects = CustomDocumentManager()
 
-    @property
-    def idified_title(self):
-        """
-        Returns a title with ID part inserted before extension
-
-        Example:
-            input: title="invoice.pdf", id="233453"
-            output: invoice-233453.pdf
-        """
-        base_title_arr = self.title.split(".")[:-1]
-        base_title = ".".join(base_title_arr)
-        ext = self.title.split(".")[-1]
-
-        return f"{base_title}-{self.id}.{ext}"
-
     class Meta:
         verbose_name = "Document"
         verbose_name_plural = "Documents"

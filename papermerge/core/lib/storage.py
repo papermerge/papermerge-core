@@ -34,25 +34,17 @@ class Storage:
         pass
 
     def delete_user_data(self, user_id: str):
-        folder1_to_delete = os.path.join(
-            self.abspath(AUX_DIR_DOCS),
-            f'user_{user_id}'
-        )
+        folder1_to_delete = os.path.join(self.abspath(AUX_DIR_DOCS), f"user_{user_id}")
         folder2_to_delete = os.path.join(
-            self.abspath(AUX_DIR_SIDECARS),
-            f'user_{user_id}'
+            self.abspath(AUX_DIR_SIDECARS), f"user_{user_id}"
         )
 
         self.safe_delete_folder(folder1_to_delete)
         self.safe_delete_folder(folder2_to_delete)
 
     def safe_delete_folder(self, abs_path_to_folder_to_delete: str):
-        logger.debug(
-            f'Safely deleting content of {abs_path_to_folder_to_delete}'
-        )
-        if safe_to_delete(
-            abs_path_to_folder_to_delete
-        ):
+        logger.debug(f"Safely deleting content of {abs_path_to_folder_to_delete}")
+        if safe_to_delete(abs_path_to_folder_to_delete):
             shutil.rmtree(abs_path_to_folder_to_delete)
             if os.path.exists(abs_path_to_folder_to_delete):
                 os.rmdir(abs_path_to_folder_to_delete)
@@ -60,10 +52,7 @@ class Storage:
     def make_sure_path_exists(self, filepath):
         logger.debug(f"make_sure_path_exists {filepath}")
         dirname = os.path.dirname(filepath)
-        os.makedirs(
-            dirname,
-            exist_ok=True
-        )
+        os.makedirs(dirname, exist_ok=True)
 
     def get_versions(self, doc_path):
         """
@@ -78,14 +67,12 @@ class Storage:
         in specific document folder. Versions are
         stored in subfolders named v1, v2, v3, ...
         """
-        abs_dirname_docs = self.path(
-            doc_path.dirname_docs
-        )
+        abs_dirname_docs = self.path(doc_path.dirname_docs)
         try:
             only_dirs = [
-                fi for fi in listdir(abs_dirname_docs) if isdir(
-                    join(abs_dirname_docs, fi)
-                )
+                fi
+                for fi in listdir(abs_dirname_docs)
+                if isdir(join(abs_dirname_docs, fi))
             ]
         except FileNotFoundError:
             # in tests, document folders are not always created.
@@ -109,24 +96,16 @@ class Storage:
         )
         pages_dir = self.abspath(doc_path_pointing_to_results.pages_dirname())
 
-        only_dirs = [
-            fi for fi in listdir(pages_dir) if isdir(join(pages_dir, fi))
-        ]
+        only_dirs = [fi for fi in listdir(pages_dir) if isdir(join(pages_dir, fi))]
         return len(only_dirs)
 
     def abspath(self, _path):
         if isinstance(_path, DocumentPath):
-            return os.path.join(
-                self.location, _path.url
-            )
+            return os.path.join(self.location, _path.url)
         elif isinstance(_path, PagePath):
-            return os.path.join(
-                self.location, _path.url
-            )
+            return os.path.join(self.location, _path.url)
 
-        return os.path.join(
-            self.location, _path
-        )
+        return os.path.join(self.location, _path)
 
     def path(self, _path):
         return self.abspath(_path)
@@ -150,7 +129,7 @@ class Storage:
             logger.debug(f"{src} is a Path instance")
             shutil.copyfile(src, dst)
         elif isinstance(src, io.BytesIO):
-            with open(dst, 'wb') as f:
+            with open(dst, "wb") as f:
                 f.write(src.getvalue())
         else:
             raise ValueError(
@@ -158,18 +137,14 @@ class Storage:
             )
 
     def exists(self, _path):
-        return os.path.exists(
-            self.path(_path)
-        )
+        return os.path.exists(self.path(_path))
 
     def copy_page_txt(self, src: PagePath, dst: PagePath):
         logger.debug(f"copy_page_txt src={src.txt_url} dst={dst.txt_url}")
         src_txt = self.abspath(src.txt_url)
         dst_txt = self.abspath(dst.txt_url)
 
-        self.make_sure_path_exists(
-            self.abspath(dst.txt_url)
-        )
+        self.make_sure_path_exists(self.abspath(dst.txt_url))
 
         shutil.copy(src_txt, dst_txt)
 
@@ -178,9 +153,7 @@ class Storage:
         src_jpg = self.abspath(src.jpg_url)
         dst_jpg = self.abspath(dst.jpg_url)
 
-        self.make_sure_path_exists(
-            self.abspath(dst.jpg_url)
-        )
+        self.make_sure_path_exists(self.abspath(dst.jpg_url))
         shutil.copy(src_jpg, dst_jpg)
 
     def copy_page_hocr(self, src: PagePath, dst: PagePath):
@@ -188,9 +161,7 @@ class Storage:
         src_hocr = self.abspath(src.hocr_url)
         dst_hocr = self.abspath(dst.hocr_url)
 
-        self.make_sure_path_exists(
-            self.abspath(dst.hocr_url)
-        )
+        self.make_sure_path_exists(self.abspath(dst.hocr_url))
 
         shutil.copy(src_hocr, dst_hocr)
 
@@ -204,9 +175,7 @@ class Storage:
         shutil.copy(src_svg, dst_svg)
 
     def copy_page_preview(self, src: PagePath, dst: PagePath):
-        logger.debug(
-            f"copy_page_preview: src={src.preview_url} dst={dst.preview_url}"
-        )
+        logger.debug(f"copy_page_preview: src={src.preview_url} dst={dst.preview_url}")
         src_preview = self.abspath(src.preview_url)
         dst_preview = self.abspath(dst.preview_url)
 
@@ -253,12 +222,9 @@ class Storage:
         """
         src_doc_path = doc_path
         dst_doc_path = DocumentPath.copy_from(
-            src_doc_path,
-            version=doc_path.version + 1
+            src_doc_path, version=doc_path.version + 1
         )
-        self.make_sure_path_exists(
-            self.abspath(dst_doc_path)
-        )
+        self.make_sure_path_exists(self.abspath(dst_doc_path))
 
         # replace stapler!
         # stapler.reorder_pages(
@@ -270,9 +236,7 @@ class Storage:
         page_count = self.get_pagecount(doc_path)
 
         if len(new_order) > page_count:
-            logger.error(
-                f"deleted_pages({new_order}) > page_count({page_count})"
-            )
+            logger.error(f"deleted_pages({new_order}) > page_count({page_count})")
             return
 
         # steps were removed
@@ -297,12 +261,7 @@ class Storage:
 
         return doc_path.version + 1
 
-    def delete_pages(
-        self,
-        doc_path,
-        page_numbers,
-        skip_migration=False
-    ):
+    def delete_pages(self, doc_path, page_numbers, skip_migration=False):
         """
         Delets pages in the document pointed by doc_path.
         doc_path is an instance of mglib.path.DocumentPath
@@ -316,12 +275,9 @@ class Storage:
 
         src_doc_path = doc_path
         dst_doc_path = DocumentPath.copy_from(
-            src_doc_path,
-            version=doc_path.version + 1
+            src_doc_path, version=doc_path.version + 1
         )
-        self.make_sure_path_exists(
-            self.abspath(dst_doc_path)
-        )
+        self.make_sure_path_exists(self.abspath(dst_doc_path))
 
         if skip_migration:
             return doc_path.version + 1
@@ -329,9 +285,7 @@ class Storage:
         page_count = self.get_pagecount(doc_path)
 
         if len(page_numbers) > page_count:
-            logger.error(
-                f"deleted_pages({page_numbers}) > page_count({page_count})"
-            )
+            logger.error(f"deleted_pages({page_numbers}) > page_count({page_count})")
             return
 
         return doc_path.version + 1
@@ -342,7 +296,7 @@ class Storage:
         data_list,
         dest_doc_is_new=False,
         after_page_number=False,
-        before_page_number=False
+        before_page_number=False,
     ):
         """
         Pastes pages in the document pointed by dest_doc_path
@@ -357,13 +311,8 @@ class Storage:
             # destination document is not new, increment its version
             next_version = dest_doc_path.version + 1
 
-        next_ver_dp = DocumentPath.copy_from(
-            dest_doc_path,
-            version=next_version
-        )
-        self.make_sure_path_exists(
-            self.abspath(next_ver_dp)
-        )
+        next_ver_dp = DocumentPath.copy_from(dest_doc_path, version=next_version)
+        self.make_sure_path_exists(self.abspath(next_ver_dp))
 
         # stapler.paste_pages(
         #    src=self.abspath(dest_doc_path),
@@ -380,11 +329,7 @@ class Storage:
             # created docs)
             pcount = self.get_pagecount(dest_doc_path)
             data_list.insert(
-                0,
-                {
-                    'doc_path': dest_doc_path,
-                    'page_nums': list(range(1, pcount + 1))
-                }
+                0, {"doc_path": dest_doc_path, "page_nums": list(range(1, pcount + 1))}
             )
 
         # dest_page_num = 1
@@ -424,7 +369,6 @@ class FileSystemStorage(Storage):
 def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
     """Copy source file to destination"""
     logger.debug(f"copying {src} to {dst}")
-
     if not dst.parent.exists():
         os.makedirs(dst.parent, exist_ok=True)
 
@@ -432,10 +376,10 @@ def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
         logger.debug(f"{src} is a Path instance")
         shutil.copyfile(src, dst)
     elif isinstance(src, io.BytesIO):
-        with open(dst, 'wb') as f:
+        with open(dst, "wb") as f:
             f.write(src.getvalue())
     elif isinstance(src, bytes):
-        with open(dst, 'wb') as f:
+        with open(dst, "wb") as f:
             f.write(src)
     else:
         raise ValueError(

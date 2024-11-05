@@ -12,7 +12,7 @@ class FileServer(str, Enum):
 
 class Settings(BaseSettings):
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
-    papermerge__main__media_root: Path = Path(".")
+    papermerge__main__media_root: Path = Path("media")
     papermerge__main__prefix: str = ''
     papermerge__main__file_server: FileServer = FileServer.LOCAL
     papermerge__main__cf_sign_url_private_key: str | None = None

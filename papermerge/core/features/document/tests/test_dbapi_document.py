@@ -1,13 +1,19 @@
+import os
+import io
 from datetime import date as Date
-
+from pathlib import Path
 import pytest
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 
 from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
+
+DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
+RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
 
 def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receipt):
@@ -343,3 +349,58 @@ def test_document_version_dump(db_session, make_document, user):
     assert len(new_doc.versions) == 2
     assert new_doc.versions[0].number == 1
     assert new_doc.versions[1].number == 2
+
+
+def test_basic_document_creation(db_session, user):
+    attrs = schema.NewDocument(
+        title="New Document", parent_id=user.home_folder.id, ocr=False, lang="deu"
+    )
+    doc, error = dbapi.create_document(db_session, attrs=attrs, user_id=user.id)
+    doc: schema.Document
+
+    assert error is None
+    assert doc.title == "New Document"
+    assert len(doc.versions) == 1
+    assert doc.versions[0].number == 1
+    assert doc.versions[0].page_count == 0
+    assert doc.versions[0].size == 0
+
+
+def test_document_upload(make_document, user, db_session):
+    """
+    Upon creation document model has associated zero sized document_version
+    i.e. document_version.size == 0.
+
+    Check that uploaded file is associated with already
+    existing document version and document version is NOT
+    incremented.
+    """
+    doc: schema.Document = make_document(
+        title="some doc", user=user, parent=user.home_folder
+    )
+
+    with open(RESOURCES / "three-pages.pdf", "rb") as file:
+        content = file.read()
+        size = os.stat(RESOURCES / "three-pages.pdf").st_size
+        dbapi.upload(
+            db_session,
+            document_id=doc.id,
+            content=io.BytesIO(content),
+            file_name="three-pages.pdf",
+            size=size,
+            content_type="application/pdf",
+        )
+
+    with Session() as s:
+        stmt = (
+            select(docs_orm.Document)
+            .options(selectinload(docs_orm.Document.versions))
+            .where(docs_orm.Document.id == doc.id)
+        )
+        fresh_doc = s.execute(stmt).scalar()
+
+    assert len(fresh_doc.versions) == 1  # document versions was not incremented
+    # uploaded file was associated to existing version (with `size` == 0)
+    assert fresh_doc.versions[0].file_name == "three-pages.pdf"
+    # `size` of the document version is now set to the uploaded file size
+    assert fresh_doc.versions[0].size == size

@@ -18,10 +18,8 @@ from .ocr_languanges import router as ocr_langs_router
 from .pages import router as pages_router
 from .probe import router as probe_router
 from .scopes import router as scopes_router
-from .tags import router as tags_router
 from .tasks import router as tasks_router
 from .thumbnails import router as thumbnails_router
-from .users import router as users_router
 from .version import router as version_router
 
 __all__ = ("register_routers",)
@@ -33,14 +31,12 @@ log_task_routes()
 
 
 def register_routers(app: FastAPI):
-    app.include_router(users_router, prefix=API_PREFIX)
     app.include_router(nodes_router, prefix=API_PREFIX)
     app.include_router(folders_router, prefix=API_PREFIX)
     app.include_router(documents_router, prefix=API_PREFIX)
     app.include_router(document_versions_router, prefix=API_PREFIX)
     app.include_router(pages_router, prefix=API_PREFIX)
     app.include_router(thumbnails_router, prefix=API_PREFIX)
-    app.include_router(tags_router, prefix=API_PREFIX)
     app.include_router(tasks_router, prefix=API_PREFIX)
     app.include_router(ocr_langs_router, prefix=API_PREFIX)
     app.include_router(version_router, prefix=API_PREFIX)

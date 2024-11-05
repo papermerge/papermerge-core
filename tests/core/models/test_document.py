@@ -37,49 +37,6 @@ class TestDocumentModel(TestCase):
         shutil.rmtree(self.media / "docs", ignore_errors=True)
         shutil.rmtree(self.media / "sidecars", ignore_errors=True)
 
-    def test_basic_document_creation(self):
-        """
-        Asserts very basic `Document.objects.create_document method`
-        """
-        doc = Document.objects.create_document(
-            title="invoice.pdf",
-            lang="deu",
-            user_id=self.user.pk,
-            parent=self.user.home_folder,
-        )
-        self.assertTrue(doc)
-
-        self.assertEqual(doc.versions.count(), 1)
-
-        document_version = doc.versions.first()
-        # Before any file upload, document version has
-        # size = 0, page_count = 0 and Falsy file_name
-        self.assertEqual(document_version.size, 0)
-        self.assertEqual(document_version.page_count, 0)
-        self.assertFalse(document_version.file_name)
-        # document's version numbering starts with 1
-        self.assertEqual(document_version.number, 1)
-
-    def test_idified_title_one_dot_in_title(self):
-        doc = Document.objects.create_document(
-            title="invoice.pdf",
-            lang="deu",
-            user_id=self.user.pk,
-            parent=self.user.home_folder,
-        )
-
-        self.assertEqual(f"invoice-{doc.id}.pdf", doc.idified_title)
-
-    def test_idified_title_multiple_dots_in_title(self):
-        doc = Document.objects.create_document(
-            title="in.voi.ce.pdf",
-            lang="deu",
-            user_id=self.user.pk,
-            parent=self.user.home_folder,
-        )
-
-        self.assertEqual(f"in.voi.ce-{doc.id}.pdf", doc.idified_title)
-
     @patch("papermerge.core.signals.send_ocr_task")
     def test_upload_payload_to_zero_sized_document(self, _x):
         """

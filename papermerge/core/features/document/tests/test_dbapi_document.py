@@ -18,6 +18,21 @@ DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
 
+def test_get_doc_last_ver(db_session: Session, make_document, user):
+    doc: schema.Document = make_document(
+        title="some doc", user=user, parent=user.home_folder
+    )
+    assert len(doc.versions) == 1
+
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+
+    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id, user_id=user.id)
+    assert last_ver.number == 5
+
+
 def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receipt):
     """
     In this scenario we have one document of type "Groceries" i.e. a receipt.
@@ -351,6 +366,52 @@ def test_document_version_dump(db_session, make_document, user):
     assert len(new_doc.versions) == 2
     assert new_doc.versions[0].number == 1
     assert new_doc.versions[1].number == 2
+
+
+def test_document_version_bump_from_pages(db_session, make_document, user):
+    src: schema.Document = make_document(
+        title="source.pdf", user=user, parent=user.home_folder
+    )
+    dst: schema.Document = make_document(
+        title="destination.pdf", user=user, parent=user.home_folder
+    )
+
+    with Session() as s:
+        PDF_PATH = RESOURCES / "three-pages.pdf"
+        with open(PDF_PATH, "rb") as file:
+            content = file.read()
+            size = os.stat(PDF_PATH).st_size
+            dbapi.upload(
+                db_session=s,
+                document_id=src.id,
+                content=io.BytesIO(content),
+                file_name="three-pages.pdf",
+                size=size,
+                content_type="application/pdf",
+            )
+
+    src_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+
+    _, error = dbapi.version_bump_from_pages(
+        db_session,
+        pages=src_last_ver.pages,
+        dst_document_id=dst.id,
+    )
+    assert error is None
+
+    stmt = (
+        select(docs_orm.Document)
+        .options(selectinload(docs_orm.Document.versions))
+        .where(docs_orm.Document.id == dst.id)
+    )
+    fresh_dst_doc = db_session.execute(stmt).scalar()
+    fresh_dst_last_ver = dbapi.get_last_doc_ver(
+        db_session, doc_id=dst.id, user_id=user.id
+    )
+
+    assert len(fresh_dst_doc.versions) == 1
+
+    assert len(fresh_dst_last_ver.pages) == 3
 
 
 def test_basic_document_creation(db_session, user):

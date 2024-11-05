@@ -1,6 +1,8 @@
 import io
 import logging
 import itertools
+import os
+from os.path import getsize
 import uuid
 import img2pdf
 from pikepdf import Pdf
@@ -10,7 +12,7 @@ from pathlib import Path
 from typing import Tuple
 
 from sqlalchemy import delete, func, insert, select, text, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.lib.storage import copy_file
@@ -34,26 +36,24 @@ def get_last_doc_ver(
     db_session: Session,
     doc_id: uuid.UUID,  # noqa
     user_id: uuid.UUID,
-) -> schema.DocumentVersion:
+) -> doc_orm.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
     """
-    with db_session as session:  # noqa
-        stmt = (
-            select(doc_orm.DocumentVersion)
-            .join(doc_orm.Document)
-            .where(
-                doc_orm.DocumentVersion.document_id == doc_id,
-                doc_orm.Document.user_id == user_id,
-            )
-            .order_by(doc_orm.DocumentVersion.number.desc())
-            .limit(1)
-        )
-        db_doc_ver = session.scalars(stmt).one()
-        model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
 
-    return model_doc_ver
+    stmt = (
+        select(doc_orm.DocumentVersion)
+        .options(selectinload(doc_orm.DocumentVersion.pages))
+        .join(doc_orm.Document)
+        .where(
+            doc_orm.DocumentVersion.document_id == doc_id,
+            doc_orm.Document.user_id == user_id,
+        )
+        .order_by(doc_orm.DocumentVersion.number.desc())
+        .limit(1)
+    )
+    return db_session.scalar(stmt)
 
 
 def get_doc_ver(
@@ -465,7 +465,7 @@ def version_bump(
     user_id: uuid.UUID,
     page_count: int | None = None,
     short_description: str | None = None,
-) -> schema.DocumentVersion:
+) -> doc_orm.DocumentVersion:
     """Increment document version"""
 
     last_ver = get_last_doc_ver(db_session, doc_id=doc_id, user_id=user_id)
@@ -493,7 +493,78 @@ def version_bump(
 
     db_session.commit()
 
-    return schema.DocumentVersion.model_validate(db_new_doc_ver)
+    return db_new_doc_ver
+
+
+def version_bump_from_pages(
+    db_session: Session,
+    dst_document_id: uuid.UUID,
+    pages: list[doc_orm.Page],
+) -> [doc_orm.Document | None, err_schema.Error | None]:
+    """
+    Creates new version for the document `dst-document-id`
+
+    PDF pages in the newly create document version is copied
+    from ``pages``.
+    """
+    first_page = pages[0]
+    page_count = len(pages)
+    error = None
+    stmt = (
+        select(doc_orm.DocumentVersion)
+        .where(
+            doc_orm.DocumentVersion.document_id == dst_document_id,
+            doc_orm.DocumentVersion.size == 0,
+        )
+        .order_by(doc_orm.DocumentVersion.number.desc())
+    )
+    dst_doc = db_session.get(doc_orm.Document, dst_document_id)
+    dst_document_version = db_session.execute(stmt).scalar()
+
+    if not dst_document_version:
+        dst_document_version = doc_orm.DocumentVersion(
+            document_id=dst_document_id,
+            number=len(dst_doc.versions) + 1,
+            lang=dst_doc.lang,
+        )
+
+    source_pdf = Pdf.open(first_page.document_version.file_path)
+    dst_pdf = Pdf.new()
+
+    for page in pages:
+        pdf_page = source_pdf.pages.p(page.number)
+        dst_pdf.pages.append(pdf_page)
+
+    dst_document_version.file_name = first_page.document_version.file_name
+    dst_document_version.page_count = page_count
+
+    dirname = os.path.dirname(dst_document_version.file_path)
+    os.makedirs(dirname, exist_ok=True)
+
+    dst_pdf.save(dst_document_version.file_path)
+
+    dst_document_version.size = getsize(dst_document_version.file_path)
+
+    for page_number in range(1, page_count + 1):
+        db_page = doc_orm.Page(
+            document_version_id=dst_document_version.id,
+            number=page_number,
+            page_count=page_count,
+            lang=dst_doc.lang,
+        )
+        db_session.add(db_page)
+    try:
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+    finally:
+        source_pdf.close()
+        dst_pdf.close()
+
+    if error:
+        return None, error
+
+    return dst_doc, None
 
 
 def update_text_field(db_session, document_version_id: uuid.UUID, streams):
@@ -604,7 +675,6 @@ def create_next_version(
             number=len(doc.versions) + 1,
             lang=doc.lang,
         )
-        db_session.add(document_version)
 
     document_version.file_name = file_name
     document_version.size = file_size
@@ -612,6 +682,8 @@ def create_next_version(
 
     if short_description:
         document_version.short_description = short_description
+
+    db_session.add(document_version)
 
     return document_version
 
@@ -689,6 +761,8 @@ def upload(
                 document_version_id=pdf_ver.id,
             )
             db_session.add(db_page_pdf)
+        db_session.add(pdf_ver)
+
     try:
         db_session.commit()
     except Exception as e:

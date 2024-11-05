@@ -2,10 +2,9 @@ from argparse import Namespace
 from typing import AbstractSet, Annotated
 
 from fastapi import APIRouter, Security
-from ocrmypdf.builtin_plugins.tesseract_ocr import TesseractOcrEngine
 
 from papermerge.core import schemas, utils
-from core.auth import get_current_user
+from papermerge.core.features.auth import get_current_user
 from core.features.auth import scopes
 
 router = APIRouter(
@@ -27,7 +26,5 @@ def get_ocr_langs(
 
     Languages are given in 3-letter ISO 3166-1 codes
     """
-    engine = TesseractOcrEngine()
-    langs = engine.languages(Namespace())
 
-    return langs
+    return {"deu", "eng", "fra"}

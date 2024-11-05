@@ -12,6 +12,7 @@ from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
 
+
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
@@ -400,7 +401,10 @@ def test_document_upload(make_document, user, db_session):
         fresh_doc = s.execute(stmt).scalar()
 
     assert len(fresh_doc.versions) == 1  # document versions was not incremented
+
+    doc_ver = fresh_doc.versions[0]
     # uploaded file was associated to existing version (with `size` == 0)
-    assert fresh_doc.versions[0].file_name == "three-pages.pdf"
+    assert doc_ver.file_name == "three-pages.pdf"
     # `size` of the document version is now set to the uploaded file size
-    assert fresh_doc.versions[0].size == size
+    assert doc_ver.size == size
+    assert doc_ver.file_path.exists()

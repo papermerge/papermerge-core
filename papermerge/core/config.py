@@ -1,6 +1,5 @@
 from enum import Enum
 
-from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
@@ -24,6 +23,7 @@ class Settings(BaseSettings):
     papermerge__search__url: str | None = None
 
 
-@lru_cache()
+settings = Settings()
+
 def get_settings():
-    return Settings()
+    return settings

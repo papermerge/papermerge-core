@@ -1,5 +1,6 @@
 import uuid
 from uuid import UUID
+from pathlib import Path
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +9,7 @@ from papermerge.core.db.base import Base
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.nodes.db.orm import Node
 from papermerge.core.types import OCRStatusEnum
+from papermerge.core.pathlib import abs_docver_path
 
 
 class Document(Node):
@@ -49,6 +51,10 @@ class DocumentVersion(Base):
     page_count: Mapped[int] = mapped_column(default=0)
     short_description: Mapped[str] = mapped_column(nullable=True)
     pages: Mapped[list["Page"]] = relationship(back_populates="document_version")
+
+    @property
+    def file_path(self) -> Path:
+        return abs_docver_path(self.id, self.file_name)
 
     def __repr__(self):
         return f"DocumentVersion(number={self.number})"

@@ -38,40 +38,6 @@ class TestDocumentModel(TestCase):
         shutil.rmtree(self.media / "sidecars", ignore_errors=True)
 
     @patch("papermerge.core.signals.send_ocr_task")
-    def test_upload_payload_to_zero_sized_document(self, _x):
-        """
-        Upon creation document model has associated zero sized document_version
-        i.e. document_version.size == 0.
-
-        Check that uploaded file is associated with already
-        existing document version and document version is NOT
-        incremented.
-        """
-        doc = Document.objects.create_document(
-            title="three-pages.pdf",
-            lang="deu",
-            user_id=self.user.pk,
-            parent=self.user.home_folder,
-        )
-
-        with open(self.resources / "three-pages.pdf", "rb") as file:
-            content = file.read()
-            size = os.stat(self.resources / "three-pages.pdf").st_size
-
-            last_version = doc.versions.last()
-            assert doc.versions.count() == 1
-            assert last_version.size == 0
-
-            doc.upload(
-                content=io.BytesIO(content), file_name="three-pages.pdf", size=size
-            )
-
-            last_version = doc.versions.last()
-            assert doc.versions.count() == 1
-            assert last_version.size > 0
-            assert os.path.exists(abs_path(last_version.file_path))
-
-    @patch("papermerge.core.signals.send_ocr_task")
     def test_version_bump_from_pages(self, _):
         """
         Move two pages from source document to destination document

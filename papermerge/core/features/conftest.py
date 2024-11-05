@@ -1,7 +1,7 @@
 import base64
 import uuid
 import json
-import itertools
+import tempfile
 
 import pytest
 from fastapi import FastAPI
@@ -29,6 +29,28 @@ from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
+from papermerge.core import config
+
+
+@pytest.fixture(autouse=True)
+def mock_media_root_env(monkeypatch):
+    """Create test's scoped media root folder
+
+    During each test a temporary folder is created and
+    media root configuration value is set to the temporary folder
+
+    After test finishes all content of temporary folder is deleted
+    """
+    settings = config.get_settings()
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+
+        def new_get_settings():
+            return settings
+
+        settings.papermerge__main__media_root = tmpdirname
+        monkeypatch.setattr(config, "get_settings", new_get_settings)
+        yield
 
 
 @pytest.fixture()

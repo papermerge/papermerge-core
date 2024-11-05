@@ -2,6 +2,7 @@ from sqlalchemy import func, select
 
 from papermerge.core.features.users.db import api as dbapi
 from papermerge.core.features.users.db import orm
+from papermerge.core.features.users import schema as usr_schema
 
 
 def test_create_user(db_session):
@@ -21,3 +22,18 @@ def test_user_delete(db_session, make_user):
     users_count = db_session.execute(stmt).scalar()
 
     assert users_count == 0
+
+
+def test_user_update(db_session, make_user):
+    user: orm.User = make_user("momo", is_superuser=False)
+
+    assert user.is_superuser == False
+
+    # update user's `is_superuser` to `True`
+    attrs = usr_schema.UpdateUser(is_superuser=True)
+    dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+
+    stmt = select(orm.User).where(orm.User.id == user.id)
+    updated_user = db_session.execute(stmt).scalar()
+
+    assert updated_user.is_superuser == True

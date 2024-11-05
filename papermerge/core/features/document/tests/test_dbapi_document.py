@@ -469,7 +469,7 @@ def test_document_upload_txt(make_document, user, db_session):
     with open(DUMMY_FILE_PATH, "rb") as file:
         content = file.read()
         size = os.stat(DUMMY_FILE_PATH).st_size
-        _, error = dbapi.upload(
+        fresh_doc, error = dbapi.upload(
             db_session,
             document_id=doc.id,
             content=io.BytesIO(content),
@@ -478,5 +478,6 @@ def test_document_upload_txt(make_document, user, db_session):
             content_type="text/plain",
         )
 
+    assert fresh_doc is None
     error: err_schema.Error
     assert len(error.messages) == 1

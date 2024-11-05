@@ -91,7 +91,7 @@ def make_document_version(db_session: Session):
             else:
                 text = None
 
-            db_page = doc_orm.Page(number=number, text=text)
+            db_page = doc_orm.Page(number=number, text=text, page_count=page_count)
             db_pages.append(db_page)
 
         doc_id = uuid.uuid4()

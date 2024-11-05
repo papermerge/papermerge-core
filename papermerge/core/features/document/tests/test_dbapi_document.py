@@ -367,10 +367,10 @@ def test_basic_document_creation(db_session, user):
     assert doc.versions[0].size == 0
 
 
-def test_document_upload(make_document, user, db_session):
+def test_document_upload_pdf(make_document, user, db_session):
     """
-    Upon creation document model has associated zero sized document_version
-    i.e. document_version.size == 0.
+    Upon creation document model has exactly one document version, and
+    respective document version has attribute `size` set to 0.
 
     Check that uploaded file is associated with already
     existing document version and document version is NOT
@@ -408,3 +408,47 @@ def test_document_upload(make_document, user, db_session):
     # `size` of the document version is now set to the uploaded file size
     assert doc_ver.size == size
     assert doc_ver.file_path.exists()
+
+
+def test_document_upload_png(make_document, user, db_session):
+    """
+    Upon creation document model has exactly one document version, and
+    respective document version has attribute `size` set to 0.
+
+    When uploading png file, the document will end up with two versions:
+     - one document version to hold the original png file
+     - and document version to hold pdf file (png converted to pdf)
+    """
+    doc: schema.Document = make_document(
+        title="some doc", user=user, parent=user.home_folder
+    )
+    IMAGE_PATH = RESOURCES / "one-page.png"
+    with open(IMAGE_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(IMAGE_PATH).st_size
+        _, error = dbapi.upload(
+            db_session,
+            document_id=doc.id,
+            content=io.BytesIO(content),
+            file_name="one-page.png",
+            size=size,
+            content_type="image/png",
+        )
+
+    with Session() as s:
+        stmt = (
+            select(docs_orm.Document)
+            .options(selectinload(docs_orm.Document.versions))
+            .where(docs_orm.Document.id == doc.id)
+        )
+        fresh_doc = s.execute(stmt).scalar()
+
+    assert error is None, error
+    assert len(fresh_doc.versions) == 2
+
+    assert fresh_doc.versions[0].file_name == "one-page.png"
+    assert fresh_doc.versions[0].size == size
+    assert fresh_doc.versions[0].file_path.exists()
+
+    assert fresh_doc.versions[1].file_name == "one-page.png.pdf"
+    assert fresh_doc.versions[1].file_path.exists()

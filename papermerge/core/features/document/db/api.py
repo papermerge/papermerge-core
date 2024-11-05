@@ -602,6 +602,7 @@ def create_next_version(
             number=len(doc.versions) + 1,
             lang=doc.lang,
         )
+        db_session.add(document_version)
 
     document_version.file_name = file_name
     document_version.size = file_size
@@ -640,7 +641,6 @@ def upload(
             file_size=len(pdf_content),
             short_description=f"{file_type(content_type)} -> pdf",
         )
-
         copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
 
         copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))

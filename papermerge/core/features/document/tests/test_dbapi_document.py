@@ -11,6 +11,7 @@ from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
+from papermerge.core.schemas import error as err_schema
 
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -452,3 +453,30 @@ def test_document_upload_png(make_document, user, db_session):
 
     assert fresh_doc.versions[1].file_name == "one-page.png.pdf"
     assert fresh_doc.versions[1].file_path.exists()
+
+
+def test_document_upload_txt(make_document, user, db_session):
+    """Uploading of txt files is not supported
+
+    When uploading txt file `upload` method should return an error
+    """
+
+    doc: schema.Document = make_document(
+        title="some doc", user=user, parent=user.home_folder
+    )
+
+    DUMMY_FILE_PATH = RESOURCES / "dummy.txt"
+    with open(DUMMY_FILE_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(DUMMY_FILE_PATH).st_size
+        _, error = dbapi.upload(
+            db_session,
+            document_id=doc.id,
+            content=io.BytesIO(content),
+            file_name="dummy.txt",
+            size=size,
+            content_type="text/plain",
+        )
+
+    error: err_schema.Error
+    assert len(error.messages) == 1

@@ -4,6 +4,8 @@ import itertools
 import uuid
 import img2pdf
 from pikepdf import Pdf
+import tempfile
+from pathlib import Path
 
 from typing import Tuple
 
@@ -626,9 +628,15 @@ def upload(
     doc = db_session.get(doc_orm.Document, document_id)
 
     if content_type != UploadContentType.PDF:
-        with open(f"{file_name}.pdf", "wb") as f:
-            pdf_content = img2pdf.convert(content)
-            f.write(pdf_content)
+        try:
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                tmp_file_path = Path(tmpdirname) / f"{file_name}.pdf"
+                with open(tmp_file_path, "wb") as f:
+                    pdf_content = img2pdf.convert(content)
+                    f.write(pdf_content)
+        except img2pdf.ImageOpenError as e:
+            error = err_schema.Error(messages=[str(e)])
+            return None, error
 
         orig_ver = create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size

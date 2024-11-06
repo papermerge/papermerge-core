@@ -453,3 +453,62 @@ def test_get_folder_endpoint(auth_api_client: AuthTestClient):
     response = auth_api_client.get(f"/folders/{home.id}")
 
     assert response.status_code == 200, response.json()
+
+
+def test_delete_nodes_one_folder(
+    auth_api_client: AuthTestClient, make_folder, db_session
+):
+    user = auth_api_client.user
+    folder = make_folder(title="My Documents", user=user, parent=user.home_folder)
+
+    response = auth_api_client.delete("/nodes/", json=[str(folder.id)])
+
+    assert response.status_code == 200, response.json()
+
+    stmt = select(nodes_orm.Folder).where(nodes_orm.Folder.id == folder.id)
+    found = db_session.execute(stmt).scalar()
+
+    assert found is None
+
+
+def test_delete_nodes_multiple_nodes(
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
+):
+    user = auth_api_client.user
+    folder = make_folder(title="My Documents", user=user, parent=user.home_folder)
+    doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
+
+    response = auth_api_client.delete("/nodes/", json=[str(folder.id), str(doc.id)])
+
+    assert response.status_code == 200, response.json()
+
+    stmt = select(nodes_orm.Node).where(nodes_orm.Node.id.in_([folder.id, doc.id]))
+    found = db_session.execute(stmt).scalar()
+
+    assert found is None
+
+
+def test_delete_nodes_with_descendants(
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
+):
+    """
+    In this scenario there are couple of nested folders with documents.
+    When deleting top-most folder, its descendants (folders and documents)
+    must be deleted as well
+    """
+    user = auth_api_client.user
+    topmost = make_folder(title="My Documents", user=user, parent=user.home_folder)
+    doc1 = make_document(title="letter.pdf", user=user, parent=topmost)
+    nested_folder = make_folder(title="Nested Folder", user=user, parent=topmost)
+    doc2 = make_document(title="n1.pdf", user=user, parent=nested_folder)
+
+    response = auth_api_client.delete("/nodes/", json=[str(topmost.id)])
+
+    assert response.status_code == 200, response.json()
+
+    stmt = select(nodes_orm.Node).where(
+        nodes_orm.Node.id.in_([doc1.id, doc2.id, nested_folder.id])
+    )
+    found = db_session.execute(stmt).scalar()
+
+    assert found is None

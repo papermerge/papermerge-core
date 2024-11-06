@@ -17,7 +17,7 @@ class Document(Node):
 
     id: Mapped[UUID] = mapped_column(
         "node_id",
-        ForeignKey("nodes.id"),
+        ForeignKey("nodes.id", ondelete="CASCADE"),
         primary_key=True,
         default=uuid.uuid4,
     )
@@ -43,7 +43,9 @@ class DocumentVersion(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int] = mapped_column(default=1)
     file_name: Mapped[str] = mapped_column(nullable=True)
-    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.node_id"))
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("documents.node_id", ondelete="CASCADE")
+    )
     document: Mapped[Document] = relationship(back_populates="versions")
     lang: Mapped[str] = mapped_column(default="deu")
     text: Mapped[str] = mapped_column(nullable=True)
@@ -69,6 +71,6 @@ class Page(Base):
     lang: Mapped[str] = mapped_column(default="deu")
     text: Mapped[str] = mapped_column(nullable=True)
     document_version_id: Mapped[UUID] = mapped_column(
-        ForeignKey("document_versions.id")
+        ForeignKey("document_versions.id", ondelete="CASCADE")
     )
     document_version: Mapped[DocumentVersion] = relationship(back_populates="pages")

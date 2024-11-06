@@ -5,12 +5,12 @@ import uuid
 from typing import Union, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, delete
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
-from papermerge.core.db.common import get_ancestors
+from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core.db.engine import Session
 from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.nodes import schema as nodes_schema
@@ -266,3 +266,27 @@ def get_folder(
         return None, error
 
     return db_model, None
+
+
+def delete_nodes(
+    db_session: Session, node_ids: list[UUID], user_id: UUID
+) -> err_schema.Error | None:
+    all_ids_to_be_deleted = []
+
+    for node_id in node_ids:
+        all_ids_to_be_deleted.extend(
+            [item[0] for item in get_descendants(db_session, node_id=node_id)]
+        )
+
+    stmt = delete(nodes_orm.Node).where(
+        nodes_orm.Node.id.in_(all_ids_to_be_deleted), nodes_orm.Node.user_id == user_id
+    )
+
+    try:
+        db_session.execute(stmt)
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return error
+
+    return None

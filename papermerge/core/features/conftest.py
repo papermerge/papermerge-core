@@ -1,7 +1,7 @@
 import base64
 import uuid
 import json
-import itertools
+import tempfile
 
 import pytest
 from fastapi import FastAPI
@@ -19,6 +19,7 @@ from papermerge.core.features.document import schema as doc_schema
 
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
+from papermerge.core.features.nodes import router_folders as folders_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.document_types.db import api as dt_dbapi
@@ -29,6 +30,28 @@ from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
+from papermerge.core import config
+
+
+@pytest.fixture(autouse=True)
+def mock_media_root_env(monkeypatch):
+    """Create test's scoped media root folder
+
+    During each test a temporary folder is created and
+    media root configuration value is set to the temporary folder
+
+    After test finishes all content of temporary folder is deleted
+    """
+    settings = config.get_settings()
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+
+        def new_get_settings():
+            return settings
+
+        settings.papermerge__main__media_root = tmpdirname
+        monkeypatch.setattr(config, "get_settings", new_get_settings)
+        yield
 
 
 @pytest.fixture()
@@ -69,7 +92,7 @@ def make_document_version(db_session: Session):
             else:
                 text = None
 
-            db_page = doc_orm.Page(number=number, text=text)
+            db_page = doc_orm.Page(number=number, text=text, page_count=page_count)
             db_pages.append(db_page)
 
         doc_id = uuid.uuid4()
@@ -128,6 +151,7 @@ def auth_api_client(user: users_orm.User):
     app.include_router(groups_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
+    app.include_router(folders_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
     app.include_router(tags_router.router, prefix="")
 

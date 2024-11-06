@@ -1,15 +1,16 @@
 import logging
-from typing import Tuple
 import math
 import uuid
-from typing import Union
+
+from typing import Union, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, delete
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
+from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core.db.engine import Session
 from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.nodes import schema as nodes_schema
@@ -248,3 +249,41 @@ def remove_node_tags(
         return docs_schema.Document.model_validate(node), error
 
     return nodes_schema.Folder.model_validate(node), error
+
+
+def get_folder(
+    db_session: Session, folder_id: UUID, user_id: UUID
+) -> Tuple[nodes_orm.Folder | None, err_schema.Error | None]:
+    breadcrumb = get_ancestors(db_session, folder_id)
+    stmt = select(nodes_orm.Folder).where(
+        nodes_orm.Folder.id == folder_id, nodes_orm.Node.user_id == user_id
+    )
+    try:
+        db_model = db_session.scalars(stmt).one()
+        db_model.breadcrumb = breadcrumb
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    return db_model, None
+
+
+def delete_nodes(
+    db_session: Session, node_ids: list[UUID], user_id: UUID
+) -> err_schema.Error | None:
+    all_ids_to_be_deleted = [
+        item[0] for item in get_descendants(db_session, node_ids=node_ids)
+    ]
+
+    stmt = delete(nodes_orm.Node).where(
+        nodes_orm.Node.id.in_(all_ids_to_be_deleted), nodes_orm.Node.user_id == user_id
+    )
+
+    try:
+        db_session.execute(stmt)
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return error
+
+    return None

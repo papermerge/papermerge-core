@@ -7,6 +7,7 @@ from papermerge.core.features.groups.router import router as groups_router
 from papermerge.core.features.document_types.router import router as dt_router
 from papermerge.core.features.custom_fields.router import router as cf_router
 from papermerge.core.features.nodes.router import router as nodes_router
+from papermerge.core.features.nodes.router_folders import router as folders_router
 from papermerge.core.features.document.router import router as document_router
 from papermerge.search.routers.search import router as search_router
 
@@ -15,7 +16,7 @@ from papermerge.core.config import get_settings
 
 
 config = get_settings()
-prefix = config.papermerge__main__prefix
+prefix = config.papermerge__main__api_prefix
 app = FastAPI(title="Papermerge DMS REST API", version=__version__)
 
 app.add_middleware(
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(nodes_router, prefix=prefix)
+app.include_router(folders_router, prefix=prefix)
 app.include_router(document_router, prefix=prefix)
 app.include_router(dt_router, prefix=prefix)
 app.include_router(cf_router, prefix=prefix)

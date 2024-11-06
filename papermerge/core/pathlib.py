@@ -1,9 +1,10 @@
 from pathlib import Path
 from uuid import UUID
 
-from django.conf import settings
-
 from papermerge.core import constants as const
+from papermerge.core.config import get_settings
+
+config = get_settings()
 
 __all__ = [
     'thumbnail_path',
@@ -48,7 +49,7 @@ def abs_thumbnail_path(
     size: int = const.DEFAULT_THUMBNAIL_SIZE
 ) -> Path:
     return Path(
-        settings.MEDIA_ROOT,
+        config.papermerge__main__media_root,
         thumbnail_path(uuid, size)
     )
 
@@ -73,7 +74,7 @@ def abs_docver_path(
     file_name: str
 ):
     return Path(
-        settings.MEDIA_ROOT,
+        config.papermerge__main__media_root,
         docver_path(uuid, file_name)
     )
 
@@ -93,7 +94,7 @@ def page_path(
 
 
 def abs_page_path(uuid: UUID | str) -> Path:
-    return Path(settings.MEDIA_ROOT) / page_path(uuid)
+    return Path(config.papermerge__main__media_root) / page_path(uuid)
 
 
 def page_txt_path(
@@ -123,25 +124,25 @@ def page_hocr_path(
 def abs_page_txt_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.MEDIA_ROOT) / page_txt_path(uuid)
+    return Path(config.papermerge__main__media_root) / page_txt_path(uuid)
 
 
 def abs_page_svg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.MEDIA_ROOT) / page_svg_path(uuid)
+    return Path(config.papermerge__main__media_root) / page_svg_path(uuid)
 
 
 def abs_page_jpg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.MEDIA_ROOT) / page_jpg_path(uuid)
+    return Path(config.papermerge__main__media_root) / page_jpg_path(uuid)
 
 
 def abs_page_hocr_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.MEDIA_ROOT) / page_hocr_path(uuid)
+    return Path(config.papermerge__main__media_root) / page_hocr_path(uuid)
 
 
 def page_file_type_path():

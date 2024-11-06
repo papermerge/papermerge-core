@@ -113,24 +113,6 @@ class TestNodeModel(TestCase):
 
 
 @pytest.mark.django_db
-def test_get_descendants():
-    user = user_recipe.make()
-    my_docs = folder_recipe.make(user=user, parent=user.inbox_folder)
-
-    sub1 = folder_recipe.make(user=user, parent=my_docs)
-
-    sub2 = folder_recipe.make(user=user, parent=sub1)
-
-    folder_recipe.make(user=user, parent=sub2)
-
-    descendants = my_docs.get_descendants(include_self=False)
-    assert len(descendants) == 3
-
-    descendants = my_docs.get_descendants(include_self=True)
-    assert len(descendants) == 4
-
-
-@pytest.mark.django_db
 def test_get_ancestors():
     user = user_recipe.make()
     my_docs = folder_recipe.make(user=user, parent=user.inbox_folder)

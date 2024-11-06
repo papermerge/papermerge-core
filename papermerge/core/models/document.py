@@ -174,85 +174,9 @@ class Document(BaseTreeNode):
 
     objects = CustomDocumentManager()
 
-    @property
-    def idified_title(self):
-        """
-        Returns a title with ID part inserted before extension
-
-        Example:
-            input: title="invoice.pdf", id="233453"
-            output: invoice-233453.pdf
-        """
-        base_title_arr = self.title.split(".")[:-1]
-        base_title = ".".join(base_title_arr)
-        ext = self.title.split(".")[-1]
-
-        return f"{base_title}-{self.id}.{ext}"
-
     class Meta:
         verbose_name = "Document"
         verbose_name_plural = "Documents"
-
-    def upload(
-        self,
-        content: io.BytesIO,
-        size: int,
-        file_name: str,
-        content_type: UploadContentType = UploadContentType.PDF,
-        strategy=UploadStrategy.INCREMENT,
-    ):
-        """
-        Associates payload with specific document version.
-
-        If the document has zero sized document version, it will associate
-        payload with that (existing) version, otherwise it will create
-        new document version and associate it the payload.
-        """
-        logger.info(f"Uploading document {file_name}...")
-        if content_type != UploadContentType.PDF:
-            with open(f"{file_name}.pdf", "wb") as f:
-                pdf_content = img2pdf.convert(content)
-                f.write(pdf_content)
-
-            orig_ver = create_next_version(
-                doc=self, file_name=file_name, file_size=size
-            )
-
-            pdf_ver = create_next_version(
-                doc=self,
-                file_name=f"{file_name}.pdf",
-                file_size=len(pdf_content),
-                short_description=f"{file_type(content_type)} -> pdf",
-            )
-
-            copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
-
-            copy_file(
-                src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name)
-            )
-
-            page_count = get_pdf_page_count(pdf_content)
-            orig_ver.page_count = page_count
-            orig_ver.save()
-            pdf_ver.page_count = page_count
-            pdf_ver.save()
-
-            orig_ver.create_pages()
-            pdf_ver.create_pages()
-        else:
-            # pdf_ver == orig_ver
-            pdf_ver = create_next_version(doc=self, file_name=file_name, file_size=size)
-            copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
-
-            page_count = get_pdf_page_count(content)
-            pdf_ver.page_count = page_count
-            pdf_ver.save()
-
-            pdf_ver.create_pages()
-
-        document_post_upload.send(sender=self.__class__, document_version=pdf_ver)
-
-        return pdf_ver
 
     def version_bump_from_pages(self, pages):
         """
@@ -301,45 +225,6 @@ class Document(BaseTreeNode):
         dst_pdf.close()
 
         return document_version
-
-    def version_bump(self, page_count=None, short_description: str | None = ""):
-        """
-        Increment document's version.
-
-        Creates new document version (old version = old version + 1) and
-        copies all attributes from current document version.
-        If ``page_count`` is not None new document version will
-        have ``page_count`` pages (useful when page was deleted or number of
-        new pages were merged into the document).
-        If ``page_count`` is None new version will have same number of pages as
-        previous document (useful when new document was OCRed or
-        when pages were rotated)
-        """
-        last_doc_version = self.versions.last()
-        new_page_count = last_doc_version.page_count
-        if page_count:
-            new_page_count = page_count
-
-        new_doc_version = DocumentVersion(
-            document=self,
-            number=last_doc_version.number + 1,
-            file_name=last_doc_version.file_name,
-            size=0,  # TODO: set to newly created file size
-            page_count=new_page_count,
-            short_description=short_description,
-            lang=last_doc_version.lang,
-        )
-        new_doc_version.save()
-
-        for page_number in range(1, new_page_count + 1):
-            Page.objects.create(
-                document_version=new_doc_version,
-                number=page_number,
-                page_count=new_page_count,
-                lang=last_doc_version.lang,
-            )
-
-        return new_doc_version
 
     def __repr__(self):
         return f"Document(id={self.pk}, title={self.title})"

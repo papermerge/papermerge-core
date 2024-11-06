@@ -58,7 +58,7 @@ class Folder(Node):
         "node_id",
         ForeignKey("nodes.id", ondelete="CASCADE"),
         primary_key=True,
-        insert_default=uuid.uuid4(),
+        insert_default=uuid.uuid4,
     )
 
     __mapper_args__ = {

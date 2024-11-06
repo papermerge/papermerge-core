@@ -187,7 +187,7 @@ def delete_nodes(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
-) -> list[UUID]:
+):
     """Deletes nodes with specified UUIDs
 
     Required scope: `{scope}`
@@ -196,12 +196,13 @@ def delete_nodes(
     In case nothing was deleted (e.g. no nodes with specified UUIDs
     were found) - will return an empty list.
     """
-    deleted_nodes_uuids = []
-    for node in BaseTreeNode.objects.filter(user_id=user.id, id__in=list_of_uuids):
-        deleted_nodes_uuids.append(node.id)
-        node.delete()
+    with Session() as db_session:
+        error = nodes_dbapi.delete_nodes(
+            db_session, node_ids=list_of_uuids, user_id=user.id
+        )
 
-    return deleted_nodes_uuids
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
 
 
 @router.post(

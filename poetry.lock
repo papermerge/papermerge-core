@@ -2,13 +2,13 @@
 
 [[package]]
 name = "alembic"
-version = "1.13.3"
+version = "1.14.0"
 description = "A database migration tool for SQLAlchemy."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "alembic-1.13.3-py3-none-any.whl", hash = "sha256:908e905976d15235fae59c9ac42c4c5b75cfcefe3d27c0fbf7ae15a37715d80e"},
-    {file = "alembic-1.13.3.tar.gz", hash = "sha256:203503117415561e203aa14541740643a611f641517f0209fcae63e9fa09f1a2"},
+    {file = "alembic-1.14.0-py3-none-any.whl", hash = "sha256:99bd884ca390466db5e27ffccff1d179ec5c05c965cfefc0607e69f9e411cb25"},
+    {file = "alembic-1.14.0.tar.gz", hash = "sha256:b00892b53b3642d0b8dbedba234dbf1924b69be83a9a769d5a624b01094e304b"},
 ]
 
 [package.dependencies]
@@ -560,54 +560,14 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
-name = "deprecation"
-version = "2.1.0"
-description = "A library to handle automated deprecations"
-optional = false
-python-versions = "*"
-files = [
-    {file = "deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a"},
-    {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
-]
-
-[package.dependencies]
-packaging = "*"
-
-[[package]]
-name = "dj-config-url"
-version = "0.1.1"
-description = "Use configuration URLs in your Django Application."
-optional = false
-python-versions = "*"
-files = [
-    {file = "dj-config-url-0.1.1.tar.gz", hash = "sha256:32b87c85f6359a6a772bd8d5e131640529c4addfc2069918f4eaa8de8ecbb548"},
-    {file = "dj_config_url-0.1.1-py2.py3-none-any.whl", hash = "sha256:8c411dca3ead2b64786c9ae735ef3085518ff92a79e98e441953b26c47063e3f"},
-]
-
-[[package]]
-name = "dj-database-url"
-version = "2.3.0"
-description = "Use Database URLs in your Django Application."
-optional = false
-python-versions = "*"
-files = [
-    {file = "dj_database_url-2.3.0-py3-none-any.whl", hash = "sha256:bb0d414ba0ac5cd62773ec7f86f8cc378a9dbb00a80884c2fc08cc570452521e"},
-    {file = "dj_database_url-2.3.0.tar.gz", hash = "sha256:ae52e8e634186b57e5a45e445da5dc407a819c2ceed8a53d1fac004cc5288787"},
-]
-
-[package.dependencies]
-Django = ">=4.2"
-typing_extensions = ">=3.10.0.0"
-
-[[package]]
 name = "django"
-version = "5.1.2"
+version = "5.1.3"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "Django-5.1.2-py3-none-any.whl", hash = "sha256:f11aa87ad8d5617171e3f77e1d5d16f004b79a2cf5d2e1d2b97a6a1f8e9ba5ed"},
-    {file = "Django-5.1.2.tar.gz", hash = "sha256:bd7376f90c99f96b643722eee676498706c9fd7dc759f55ebfaf2c08ebcdf4f0"},
+    {file = "Django-5.1.3-py3-none-any.whl", hash = "sha256:8b38a9a12da3ae00cb0ba72da985ec4b14de6345046b1e174b1fd7254398f818"},
+    {file = "Django-5.1.3.tar.gz", hash = "sha256:c0fa0e619c39325a169208caef234f90baa925227032ad3f44842ba14d75234a"},
 ]
 
 [package.dependencies]
@@ -618,21 +578,6 @@ tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 [package.extras]
 argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
-
-[[package]]
-name = "django-celery-results"
-version = "2.5.1"
-description = "Celery result backends for Django."
-optional = false
-python-versions = "*"
-files = [
-    {file = "django_celery_results-2.5.1-py3-none-any.whl", hash = "sha256:0da4cd5ecc049333e4524a23fcfc3460dfae91aa0a60f1fae4b6b2889c254e01"},
-    {file = "django_celery_results-2.5.1.tar.gz", hash = "sha256:3ecb7147f773f34d0381bac6246337ce4cf88a2ea7b82774ed48e518b67bb8fd"},
-]
-
-[package.dependencies]
-celery = ">=5.2.7,<6.0"
-Django = ">=3.2.18"
 
 [[package]]
 name = "dnspython"
@@ -1434,35 +1379,6 @@ files = [
 ]
 
 [[package]]
-name = "ocrmypdf"
-version = "16.6.0"
-description = "OCRmyPDF adds an OCR text layer to scanned PDF files, allowing them to be searched"
-optional = false
-python-versions = ">=3.10"
-files = [
-    {file = "ocrmypdf-16.6.0-py3-none-any.whl", hash = "sha256:b191911b551979b227a46e6a197e7b467455924b34757f941a209406f320571a"},
-    {file = "ocrmypdf-16.6.0.tar.gz", hash = "sha256:7b29eedf3c4859660b5ac78db8e7383ab1e7752194a7d99ce165e4365bba4232"},
-]
-
-[package.dependencies]
-deprecation = ">=2.1.0"
-img2pdf = ">=0.5"
-packaging = ">=20"
-pdfminer-six = ">=20220319"
-pi-heif = "*"
-pikepdf = ">=8.10.1"
-pillow = ">=10.0.1"
-pluggy = ">=1"
-rich = ">=13"
-
-[package.extras]
-docs = ["sphinx", "sphinx-issues", "sphinx-rtd-theme"]
-extended-test = ["pymupdf (>=1.19.1)"]
-test = ["coverage[toml] (>=6.2)", "hypothesis (>=6.36.0)", "pytest (>=6.2.5)", "pytest-cov (>=3.0.0)", "pytest-xdist (>=2.5.0)", "python-xmp-toolkit (==2.0.1)", "reportlab (>=3.6.8)", "types-humanfriendly", "types-pillow"]
-watcher = ["python-dotenv", "typer-slim[standard]", "watchdog (>=1.0.2)"]
-webservice = ["flask (>=2.0.1)"]
-
-[[package]]
 name = "packaging"
 version = "24.1"
 description = "Core utilities for Python packages"
@@ -1523,68 +1439,6 @@ cryptography = ">=36.0.0"
 dev = ["black", "mypy (==0.931)", "nox", "pytest"]
 docs = ["sphinx", "sphinx-argparse"]
 image = ["Pillow"]
-
-[[package]]
-name = "pi-heif"
-version = "0.20.0"
-description = "Python interface for libheif library"
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "pi_heif-0.20.0-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:1371a3a34bffdc98b5bacf48b01c8bba0fd49183fd425a6f152390fda792e8da"},
-    {file = "pi_heif-0.20.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:397e7839682771a21e7756a4822b4bc45251805d3188bb6275eb51fd63e6c1b2"},
-    {file = "pi_heif-0.20.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ee28de31da7d1a8cc08e4fa1b5a1c095b3e1c8be5edd5cf26c8ac4c365b806b3"},
-    {file = "pi_heif-0.20.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:33cf72ec7d344ae681046455ab7b2d3210e8369ed46f921038fd980ba1b5b27f"},
-    {file = "pi_heif-0.20.0-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:393868800055271ae7ad876055e7b3f2eae5ab2fe1980ebe28a5761725c2c189"},
-    {file = "pi_heif-0.20.0-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:e81e28f0c7330133b5b1ce7e1ad118663eb9eac4cad6638bfca07c0eb761129a"},
-    {file = "pi_heif-0.20.0-cp310-cp310-win_amd64.whl", hash = "sha256:b6bfcc917d3b11f6bcf80db8c64f721ce1ab7335459c0f109e933ca92e6dfb1a"},
-    {file = "pi_heif-0.20.0-cp311-cp311-macosx_12_0_x86_64.whl", hash = "sha256:89c8e89b7615a0aa717f366169c4be31451af72a937314104cc88cbe40e1da11"},
-    {file = "pi_heif-0.20.0-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:2484c8b5f447bc0018d9045faea9880e177c818c89eb333239aa02b9ed4a9ffb"},
-    {file = "pi_heif-0.20.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9050f675bdc43333c1ac6aab734e253a3ba92a0efc8014d3431953add906ead5"},
-    {file = "pi_heif-0.20.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:834b188f4963ac29b2ea92153e7d437993d8dd9e5adbff1640695563832f2157"},
-    {file = "pi_heif-0.20.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:18b8c3269d1e07f85d146217616b117f5f2c8142328c6669a46d8d762699aadb"},
-    {file = "pi_heif-0.20.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:eadcc3cec45d3c021e4c41c5a85e56f4c2b8b8942fa9a1720d9376b29c2e39cb"},
-    {file = "pi_heif-0.20.0-cp311-cp311-win_amd64.whl", hash = "sha256:b23d891b4b788a00fb8e0c170e4744d86708bc682b3bf095143b10074bdd694c"},
-    {file = "pi_heif-0.20.0-cp312-cp312-macosx_12_0_x86_64.whl", hash = "sha256:52436771e1e9198145a3db25885ec9fda4eda11f5753e1317ae9459b190cd6a4"},
-    {file = "pi_heif-0.20.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:1f482ac86090c0d8adf65bd3a6b97f485ceaa0876123225913e3e2ac687e5bfe"},
-    {file = "pi_heif-0.20.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d6a4d350ac12fb5f45bc83eb35747156a4faa12d001dcdd9525a3912ae5b4d7a"},
-    {file = "pi_heif-0.20.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b8cd2a83ee8cc597ddf7e13d2adec60b7206357ff55649c4aea2f4c76bdb11c2"},
-    {file = "pi_heif-0.20.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:6edf3cf270838d26329e1f0d93a3a85963e4f811de8e80173e18a2f137020deb"},
-    {file = "pi_heif-0.20.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:05b938736a4712fbc1224d4207ceb226670568f7db329b61895876c1ae7fe241"},
-    {file = "pi_heif-0.20.0-cp312-cp312-win_amd64.whl", hash = "sha256:f082f12fb3954ac0140e9eead2d3a2be4aa60aa834a3998665175fde67f50793"},
-    {file = "pi_heif-0.20.0-cp313-cp313-macosx_12_0_x86_64.whl", hash = "sha256:81e0f769d62f7af250518a99c75c3cc357147ab78ad673b5c0e96b3c1e3ef21b"},
-    {file = "pi_heif-0.20.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:137af16fc31f8862775a82287e0c1ea0627fb0e9ffa53fccf84cacd1f4e0a90a"},
-    {file = "pi_heif-0.20.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:030df62463a03053d68af01fb3fafb3dae3bc578b8da24280f0787469c22bdd0"},
-    {file = "pi_heif-0.20.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b71571e792389151a679f4cb477a54ee1f3834d4b21c2f9e272068a4166964a"},
-    {file = "pi_heif-0.20.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:5ca9ccfda3b114229c92b5470f8fe451b5d07f4c8677edc3525403ef379b53ba"},
-    {file = "pi_heif-0.20.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:d57f48a08b0cdc492e17fe33312b47356a17fcf6a93c508a9e503e497e03ef4f"},
-    {file = "pi_heif-0.20.0-cp313-cp313-win_amd64.whl", hash = "sha256:086d101461f0580b621de1cf24e6cf9c136015e6ff9408fec7f254c2c4f49243"},
-    {file = "pi_heif-0.20.0-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:2a38a50b33cec5261037e625c35270656ec16c2febdcbbb529a9a96857b16a5b"},
-    {file = "pi_heif-0.20.0-cp39-cp39-macosx_14_0_arm64.whl", hash = "sha256:ff50c2c090c2af6347e9caa8f2e3998c29f9ff8d4fac625bd48e0072f2133464"},
-    {file = "pi_heif-0.20.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:627cc28de13eab9eabef9931c0ae260bdeb61200f6ce3d2cb8444a6979053ef9"},
-    {file = "pi_heif-0.20.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f4b94f5ea91cfe180ead680528a197da8f77ff27b339aceb169bd7e2a51b53b1"},
-    {file = "pi_heif-0.20.0-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:3e00bab005d97e6a60b2a52e9fc14fb8d50d9a7ff290d52b0e6491848e853550"},
-    {file = "pi_heif-0.20.0-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:0305ea6e108979eee370fed0486df8b90ff25c619db9d9d539b00603e139626f"},
-    {file = "pi_heif-0.20.0-cp39-cp39-win_amd64.whl", hash = "sha256:13146a8d4873198cf614c70ea344b69932637c28fb506427caffe9b951cc5694"},
-    {file = "pi_heif-0.20.0-pp310-pypy310_pp73-macosx_12_0_x86_64.whl", hash = "sha256:f3f1e59b802d96c0dcf1b91ed2cc7d196a94b9e3d985ef80a86700e16e45bb28"},
-    {file = "pi_heif-0.20.0-pp310-pypy310_pp73-macosx_14_0_arm64.whl", hash = "sha256:d002ca0b10e39b3f034385f1d453f4effd94bf83bbb4464ee72a386dcdbb1c4c"},
-    {file = "pi_heif-0.20.0-pp310-pypy310_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:33ab67a27bcbe24840bb26bf71a097e66c1ac63e1c5c155456913b8f933c9582"},
-    {file = "pi_heif-0.20.0-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:323b7d1ed4a702fe7b8ca2f959f01f33879e38c413542408d522383b65857492"},
-    {file = "pi_heif-0.20.0-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:d7866ea2735d8cbc7501a98735a940ea22098303e340f2218caad3427f261abb"},
-    {file = "pi_heif-0.20.0-pp39-pypy39_pp73-macosx_12_0_x86_64.whl", hash = "sha256:3bc6d86cdc42c22fe0821db2771eefa7e9651922668dd008c1cf8d786c1b13cc"},
-    {file = "pi_heif-0.20.0-pp39-pypy39_pp73-macosx_14_0_arm64.whl", hash = "sha256:849d6ff186128d563b494cd463abc156a73ad4598b38dcaed0d52c0e78ec8cc4"},
-    {file = "pi_heif-0.20.0-pp39-pypy39_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:90e1e4ccd08e7256d1a19519b546efd7d5baf75337d522cbaa813fd6155675ec"},
-    {file = "pi_heif-0.20.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4908b6e6be10062bf06dd5512184b1ad495291b73aa8f0b82f0fc9d66f2bcc1b"},
-    {file = "pi_heif-0.20.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:695417ff1050cf79bca5c47bead807d7eb30fcf76fd64457f686a6342712284f"},
-    {file = "pi_heif-0.20.0.tar.gz", hash = "sha256:f63b5ab190697c91dec482112bfa90751e48070899f4888317e943075dccf0be"},
-]
-
-[package.dependencies]
-pillow = ">=10.1.0"
-
-[package.extras]
-tests = ["defusedxml", "numpy", "packaging", "pympler", "pytest"]
-tests-min = ["defusedxml", "packaging", "pytest"]
 
 [[package]]
 name = "pikepdf"
@@ -3079,4 +2933,4 @@ pgsql = ["psycopg2", "psycopg2-binary"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.13, <4.0"
-content-hash = "080447749acc0351ffc29a21cfafc6ad149cb7436f5c72dc53e00f472cecf0b4"
+content-hash = "1ae6502b7c1c41f27cf9a81b51325b1b01f1a45eab88a5cd238c716e077e8a9a"

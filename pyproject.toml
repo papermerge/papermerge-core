@@ -99,10 +99,8 @@ migrate = "alembic upgrade head"
 
 [tool.poetry.scripts]
 paper-cli = "papermerge.cli:app"
-token = 'papermerge.core.cli.token:app'
 docs = 'papermerge.core.cli.docs:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
-index_schema = 'papermerge.search.cli.index_schema:app'
 
 
 [tool.ruff]

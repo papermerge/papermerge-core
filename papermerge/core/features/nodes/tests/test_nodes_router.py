@@ -444,3 +444,12 @@ def test_rename_folder(auth_api_client: AuthTestClient, make_folder):
         renamed_folder = nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
 
     assert renamed_folder.title == "New Title"
+
+
+def test_get_folder_endpoint(auth_api_client: AuthTestClient):
+    user = auth_api_client.user
+    home = user.home_folder
+
+    response = auth_api_client.get(f"/folders/{home.id}")
+
+    assert response.status_code == 200, response.json()

@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import List, Tuple, Iterator
 from uuid import UUID
 
@@ -67,12 +68,25 @@ def get_ancestors(
 
 
 def get_descendants(
-    db_session: Session, node_id: UUID, include_self=True
+    db_session: Session, node_ids: list[UUID], include_selfs=True
 ) -> list[Tuple[UUID, str]]:
-    """Returns all ancestors of the node"""
+    """Returns descendants of all `node_ids` nodes
+
+    When user selects documents and folders in UI he/she wants actually
+    to delete selected nodes (documents and folders) we well as their
+    descendants. `node_ids` will be documents and folders' IDs users
+    selected in UI.
+    """
+
+    if not isinstance(node_ids, list):
+        raise ValueError("node_ids argument must be a list")
+
+    if len(node_ids) < 1:
+        raise ValueError("len(node_ids) must be >= 1 ")
+
     nodes_anchor = (
         select(orm.Node.id, orm.Node.title)
-        .where(orm.Node.id == node_id)
+        .where(orm.Node.id.in_(node_ids))
         .cte(recursive=True, name="tree")
     )
     tree = nodes_anchor.union_all(
@@ -83,8 +97,8 @@ def get_descendants(
 
     stmt = select(tree.c.id, tree.c.title).select_from(tree)
 
-    if not include_self:
-        stmt = stmt.where(tree.c.id != node_id)
+    if not include_selfs:
+        stmt = stmt.where(tree.c.id.not_in(node_ids))
 
     result = db_session.execute(stmt)
 

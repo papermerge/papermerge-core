@@ -492,7 +492,7 @@ def test_delete_nodes_with_descendants(
     auth_api_client: AuthTestClient, make_folder, make_document, db_session
 ):
     """
-    In this scenario there are couple of nested folders with documents.
+    In this scenario there are a couple of nested folders with documents.
     When deleting top-most folder, its descendants (folders and documents)
     must be deleted as well
     """

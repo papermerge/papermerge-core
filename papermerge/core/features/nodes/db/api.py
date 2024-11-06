@@ -271,12 +271,9 @@ def get_folder(
 def delete_nodes(
     db_session: Session, node_ids: list[UUID], user_id: UUID
 ) -> err_schema.Error | None:
-    all_ids_to_be_deleted = []
-
-    for node_id in node_ids:
-        all_ids_to_be_deleted.extend(
-            [item[0] for item in get_descendants(db_session, node_id=node_id)]
-        )
+    all_ids_to_be_deleted = [
+        item[0] for item in get_descendants(db_session, node_ids=node_ids)
+    ]
 
     stmt = delete(nodes_orm.Node).where(
         nodes_orm.Node.id.in_(all_ids_to_be_deleted), nodes_orm.Node.user_id == user_id

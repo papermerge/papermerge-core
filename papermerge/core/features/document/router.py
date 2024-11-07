@@ -11,9 +11,8 @@ from papermerge.core import constants as const
 from papermerge.core import utils
 from papermerge.core.features.auth import get_current_user, scopes
 from papermerge.core.db.engine import Session
-from papermerge.core.features.document import schema as doc_schema
+from papermerge.core import schema
 from papermerge.core.features.document.db import api as dbapi
-from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.utils.decorators import skip_in_tests
 
@@ -30,11 +29,11 @@ config = get_settings()
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_custom_field_values(
     document_id: uuid.UUID,
-    custom_fields_update: list[doc_schema.DocumentCustomFieldsUpdate],
+    custom_fields_update: list[schema.DocumentCustomFieldsUpdate],
     user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> list[doc_schema.CFV]:
+) -> list[schema.CFV]:
     """
     Update document's custom fields
     Required scope: `{scope}`
@@ -68,10 +67,8 @@ def update_document_custom_field_values(
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_custom_field_values(
     document_id: uuid.UUID,
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-) -> list[doc_schema.CFV]:
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+) -> list[schema.CFV]:
     """
     Get document custom field values
 
@@ -95,9 +92,9 @@ def upload_file(
     document_id: uuid.UUID,
     file: UploadFile,
     user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_UPLOAD])
+        schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_UPLOAD])
     ],
-) -> doc_schema.Document:
+) -> schema.Document:
     """
     Uploads document's file.
 
@@ -153,3 +150,22 @@ def upload_file(
 def send_task(*args, **kwargs):
     logger.debug(f"Send task {args} {kwargs}")
     celery_app.send_task(*args, **kwargs)
+
+
+@router.get("/{document_id}")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_document_details(
+    document_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+) -> schema.Document:
+    """
+    Get document details
+
+    Required scope: `{scope}`
+    """
+    try:
+        with Session() as db_session:
+            doc = dbapi.get_doc(db_session, id=document_id, user_id=user.id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return doc

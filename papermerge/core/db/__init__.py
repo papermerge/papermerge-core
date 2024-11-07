@@ -1,9 +1,6 @@
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from .doc import (
-    get_doc,
-)
 from .engine import get_engine
 from .exceptions import UserNotFound
 from .nodes import get_nodes
@@ -15,7 +12,6 @@ __all__ = [
     "get_session",
     "get_page",
     "get_doc_ver_pages",
-    "get_doc",
     "Engine",
     "Session",
     "UserNotFound",

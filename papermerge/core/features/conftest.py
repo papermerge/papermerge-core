@@ -17,7 +17,6 @@ from papermerge.core.db.engine import Session, engine
 from papermerge.core.features.custom_fields import router as cf_router
 
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.document import schema as doc_schema
 
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
@@ -121,32 +120,40 @@ def make_document_with_pages(db_session: Session):
 
 @pytest.fixture()
 def make_document_version(db_session: Session):
-    def _maker(page_count: int, user: orm.User, pages_text: list[str] | None = None):
+    def _maker(
+        page_count: int,
+        user: orm.User,
+        lang: str | None = None,
+        pages_text: list[str] | None = None,
+    ):
         db_pages = []
+        if lang is None:
+            lang = "deu"
+
         for number in range(1, page_count + 1):
             if pages_text and len(pages_text) >= number:
                 text = pages_text[number - 1]
             else:
                 text = None
 
-            db_page = doc_orm.Page(number=number, text=text, page_count=page_count)
+            db_page = orm.Page(number=number, text=text, page_count=page_count)
             db_pages.append(db_page)
 
         doc_id = uuid.uuid4()
-        db_doc = doc_orm.Document(
+        db_doc = orm.Document(
             id=doc_id,
             ctype="document",
             title=f"Document {doc_id}",
             user_id=user.id,
             parent_id=user.home_folder_id,
-            lang="de",
+            lang=lang,
         )
-        db_doc_ver = doc_orm.DocumentVersion(pages=db_pages, document=db_doc)
+        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc)
         db_session.add(db_doc_ver)
         db_session.commit()
 
-        return doc_schema.DocumentVersion.model_validate(db_doc_ver)
+        return db_doc_ver
 
     return _maker
 
@@ -156,11 +163,11 @@ def make_page(db_session: Session, user: orm.User):
     def _make():
         db_pages = []
         for number in range(1, 4):
-            db_page = doc_orm.Page(number=number, text="blah", page_count=3)
+            db_page = orm.Page(number=number, text="blah", page_count=3)
             db_pages.append(db_page)
 
         doc_id = uuid.uuid4()
-        db_doc = doc_orm.Document(
+        db_doc = orm.Document(
             id=doc_id,
             ctype="document",
             title=f"Document {doc_id}",
@@ -168,7 +175,7 @@ def make_page(db_session: Session, user: orm.User):
             parent_id=user.home_folder_id,
             lang="de",
         )
-        db_doc_ver = doc_orm.DocumentVersion(pages=db_pages, document=db_doc)
+        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc)
         db_session.add(db_doc)
         db_session.add(db_doc_ver)
         db_session.commit()

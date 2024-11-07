@@ -35,6 +35,7 @@ from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
 from papermerge.core import config
+from papermerge.core.constants import ContentType
 
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -112,7 +113,7 @@ def make_document_with_pages(db_session: Session):
                 content=io.BytesIO(content),
                 file_name="three-pages.pdf",
                 size=size,
-                content_type="application/pdf",
+                content_type=ContentType.APPLICATION_PDF,
             )
         return doc
 

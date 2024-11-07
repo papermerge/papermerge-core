@@ -5,10 +5,11 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 
+from papermerge.core.constants import ContentType
 from papermerge.core import schemas, utils, db
 from papermerge.core.db import exceptions as db_exc
-from core.auth import get_current_user
-from core.features.auth import scopes
+from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.auth import scopes
 from papermerge.core.models import DocumentVersion
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/document-versions", tags=["document-versions"])
 
 
 class PDFFileResponse(FileResponse):
-    media_type = "application/pdf"
+    media_type = ContentType.APPLICATION_PDF
     content_disposition = "attachment"
 
 

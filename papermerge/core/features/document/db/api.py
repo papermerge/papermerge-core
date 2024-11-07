@@ -12,9 +12,10 @@ from pathlib import Path
 from typing import Tuple
 
 from sqlalchemy import delete, func, insert, select, text, update
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.constants import ContentType
 from papermerge.core.lib.storage import copy_file
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.features.custom_fields.db import orm as cf_orm
@@ -640,13 +641,6 @@ class UploadStrategy:
     MERGE = 2
 
 
-class UploadContentType:
-    PDF = "application/pdf"
-    JPEG = "image/jpeg"
-    PNG = "image/png"
-    TIFF = "image/tiff"
-
-
 class FileType:
     PDF = "pdf"
     JPEG = "jpeg"
@@ -721,7 +715,7 @@ def upload(
 
     doc = db_session.get(doc_orm.Document, document_id)
 
-    if content_type != UploadContentType.PDF:
+    if content_type != ContentType.APPLICATION_PDF:
         try:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_file_path = Path(tmpdirname) / f"{file_name}.pdf"

@@ -66,18 +66,24 @@ def retrieve_document_thumbnail(
 
     Required scope: `{scope}`
     """
-    try:
-        with Session() as db_session:
+
+    with Session() as db_session:
+        try:
             doc_ver = dbapi.get_last_doc_ver(
                 db_session, user_id=user.id, doc_id=document_id
             )
-            page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
-    except NoResultFound as e:
-        raise HTTPException(status_code=404, detail=f"DocID={document_id}: {e}")
+        except NoResultFound:
+            raise HTTPException(
+                status_code=404, detail=f"Document with ID={document_id} not found"
+            )
 
-    if page is None:
-        # may happen e.g. when document is still being uploaded
-        raise HTTPException(status_code=309, detail="Not ready for preview yet")
+        try:
+            page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
+        except NoResultFound:
+            raise HTTPException(
+                status_code=309,
+                detail="Not ready for preview yet",
+            )
 
     jpeg_abs_path = rel2abs(thumbnail_path(page.id, size=size))
 

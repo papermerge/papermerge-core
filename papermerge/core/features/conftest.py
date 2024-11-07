@@ -1,7 +1,10 @@
 import base64
+import os
+import io
 import uuid
 import json
 import tempfile
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
@@ -20,6 +23,7 @@ from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.nodes import router_folders as folders_router
+from papermerge.core.features.nodes import router_thumbnails as thumbnails_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.document_types.db import api as dt_dbapi
@@ -31,6 +35,10 @@ from papermerge.core.features.users.db import orm as users_orm
 from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
 from papermerge.core import config
+
+
+DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
+RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
 
 
 @pytest.fixture(autouse=True)
@@ -75,6 +83,37 @@ def make_document(db_session: Session):
             parent_id=parent.id,
         )
         doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        return doc
+
+    return _maker
+
+
+@pytest.fixture
+def make_document_with_pages(db_session: Session):
+    """Creates a document with one version
+
+    Document Version has 3 pages and one associated PDF file (also with 3 pages)
+    """
+
+    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
+        attrs = doc_schema.NewDocument(
+            title=title,
+            parent_id=parent.id,
+        )
+        doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        PDF_PATH = RESOURCES / "three-pages.pdf"
+
+        with open(PDF_PATH, "rb") as file:
+            content = file.read()
+            size = os.stat(PDF_PATH).st_size
+            doc_dbapi.upload(
+                db_session,
+                document_id=doc.id,
+                content=io.BytesIO(content),
+                file_name="three-pages.pdf",
+                size=size,
+                content_type="application/pdf",
+            )
         return doc
 
     return _maker
@@ -152,6 +191,7 @@ def auth_api_client(user: users_orm.User):
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
     app.include_router(folders_router.router, prefix="")
+    app.include_router(thumbnails_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
     app.include_router(tags_router.router, prefix="")
 

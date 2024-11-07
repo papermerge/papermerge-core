@@ -1,5 +1,6 @@
 import logging
 import uuid
+import math
 from typing import Annotated, Union
 from uuid import UUID
 
@@ -75,7 +76,7 @@ def get_node(
         order_by = [item.strip() for item in params.order_by.split(",")]
 
     with Session() as db_session:
-        results = nodes_dbapi.get_paginated_nodes(
+        nodes = nodes_dbapi.get_paginated_nodes(
             db_session=db_session,
             parent_id=UUID(parent_id),
             user_id=user.id,
@@ -85,7 +86,7 @@ def get_node(
             filter=params.filter,
         )
 
-    return results
+    return nodes
 
 
 @router.post("/", status_code=201)

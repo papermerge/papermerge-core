@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.constants import ContentType
 from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
@@ -389,7 +390,7 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
                 content=io.BytesIO(content),
                 file_name="three-pages.pdf",
                 size=size,
-                content_type="application/pdf",
+                content_type=ContentType.APPLICATION_PDF,
             )
 
     src_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
@@ -400,7 +401,6 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
         dst_document_id=dst.id,
     )
     assert error is None
-
     stmt = (
         select(docs_orm.Document)
         .options(selectinload(docs_orm.Document.versions))
@@ -412,7 +412,6 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
     )
 
     assert len(fresh_dst_doc.versions) == 1
-
     assert len(fresh_dst_last_ver.pages) == 3
 
 
@@ -453,7 +452,7 @@ def test_document_upload_pdf(make_document, user, db_session):
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type="application/pdf",
+            content_type=ContentType.APPLICATION_PDF,
         )
 
     with Session() as s:

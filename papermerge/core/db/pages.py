@@ -9,36 +9,6 @@ from papermerge.core.features.document.db.orm import Document, DocumentVersion, 
 from .exceptions import PageNotFound
 
 
-def get_first_page(
-    db_session: Session,
-    doc_ver_id: UUID,
-) -> schema.Page:
-    """
-    Returns first page of the document version
-    identified by doc_ver_id
-    """
-    with db_session as session:  # noqa
-        stmt = (
-            select(Page)
-            .where(
-                Page.document_version_id == doc_ver_id,
-            )
-            .order_by(Page.number.asc())
-            .limit(1)
-        )
-        try:
-            db_page = session.scalars(stmt).one()
-        except exc.NoResultFound:
-            session.close()
-            raise PageNotFound(
-                f"DocVerID={doc_ver_id} does not have pages."
-                " Maybe it does not have associated file yet?"
-            )
-        model = schema.Page.model_validate(db_page)
-
-    return model
-
-
 def get_page(engine: Engine, id: UUID, user_id: UUID) -> schema.Page:
     with Session(engine) as session:  # noqa
         stmt = (

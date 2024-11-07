@@ -8,6 +8,7 @@ from papermerge.core.features.document_types.router import router as dt_router
 from papermerge.core.features.custom_fields.router import router as cf_router
 from papermerge.core.features.nodes.router import router as nodes_router
 from papermerge.core.features.nodes.router_folders import router as folders_router
+from papermerge.core.features.nodes.router_thumbnails import router as thumbnails_router
 from papermerge.core.features.document.router import router as document_router
 from papermerge.search.routers.search import router as search_router
 
@@ -29,11 +30,13 @@ app.add_middleware(
 
 app.include_router(nodes_router, prefix=prefix)
 app.include_router(folders_router, prefix=prefix)
+app.include_router(thumbnails_router, prefix=prefix)
 app.include_router(document_router, prefix=prefix)
 app.include_router(dt_router, prefix=prefix)
 app.include_router(cf_router, prefix=prefix)
 app.include_router(usr_router, prefix=prefix)
 app.include_router(tags_router, prefix=prefix)
 app.include_router(groups_router, prefix=prefix)
+
 if config.papermerge__search__url:
     app.include_router(search_router, prefix=prefix)

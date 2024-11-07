@@ -30,7 +30,9 @@ class Document(Node):
     document_type_id: Mapped[UUID] = mapped_column(
         ForeignKey("document_types.id"), nullable=True
     )
-    versions: Mapped[list["DocumentVersion"]] = relationship(back_populates="document")
+    versions: Mapped[list["DocumentVersion"]] = relationship(
+        back_populates="document", lazy="selectin"
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "document",
@@ -52,14 +54,16 @@ class DocumentVersion(Base):
     size: Mapped[int] = mapped_column(default=0)
     page_count: Mapped[int] = mapped_column(default=0)
     short_description: Mapped[str] = mapped_column(nullable=True)
-    pages: Mapped[list["Page"]] = relationship(back_populates="document_version")
+    pages: Mapped[list["Page"]] = relationship(
+        back_populates="document_version", lazy="select"
+    )
 
     @property
     def file_path(self) -> Path:
         return abs_docver_path(self.id, self.file_name)
 
     def __repr__(self):
-        return f"DocumentVersion(number={self.number})"
+        return f"DocumentVersion(id={self.id}, number={self.number})"
 
 
 class Page(Base):

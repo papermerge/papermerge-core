@@ -3,21 +3,23 @@ import os
 import uuid
 from typing import Annotated
 
+from sqlalchemy.exc import NoResultFound
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from papermerge.core import db
+from papermerge.core.db.engine import Session
 from papermerge.core import pathlib as core_pathlib
-from papermerge.core import schemas, utils
-from core.auth import get_current_user
-from ..features.auth import scopes
+from papermerge.core import utils
+from papermerge.core.features.users import schema as usr_schema
+from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.auth import scopes
+from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
-from papermerge.core.db import exceptions as db_exc
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.utils import image
 
-from .common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 
 router = APIRouter(
     prefix="/thumbnails",
@@ -56,24 +58,32 @@ class JPEGFileResponse(FileResponse):
 def retrieve_document_thumbnail(
     document_id: uuid.UUID,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+        usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
     size: int = DEFAULT_THUMBNAIL_SIZE,
-    db_session: db.Session = Depends(db.get_session),
 ):
     """Retrieves thumbnail of the document last version's first page
 
     Required scope: `{scope}`
     """
-    try:
-        doc_ver = db.get_last_doc_ver(db_session, user_id=user.id, doc_id=document_id)
-        page = db.get_first_page(db_session, doc_ver_id=doc_ver.id)
-    except db_exc.PageNotFound as e:
-        raise HTTPException(status_code=404, detail=f"DocID={document_id}: {e}")
 
-    if page is None:
-        # may happen e.g. when document is still being uploaded
-        raise HTTPException(status_code=309, detail="Not ready for preview yet")
+    with Session() as db_session:
+        try:
+            doc_ver = dbapi.get_last_doc_ver(
+                db_session, user_id=user.id, doc_id=document_id
+            )
+        except NoResultFound:
+            raise HTTPException(
+                status_code=404, detail=f"Document with ID={document_id} not found"
+            )
+
+        try:
+            page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
+        except NoResultFound:
+            raise HTTPException(
+                status_code=309,
+                detail="Not ready for preview yet",
+            )
 
     jpeg_abs_path = rel2abs(thumbnail_path(page.id, size=size))
 

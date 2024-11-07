@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 96a1dbbc9982
+Revision ID: 7e669f69d7d7
 Revises:
-Create Date: 2024-11-04 08:51:37.463898
+Create Date: 2024-11-07 06:34:42.078165
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '96a1dbbc9982'
+revision: str = '7e669f69d7d7'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -140,7 +140,7 @@ def upgrade() -> None:
     sa.Column('ocr_status', sa.String(), nullable=False),
     sa.Column('document_type_id', sa.Uuid(), nullable=True),
     sa.ForeignKeyConstraint(['document_type_id'], ['document_types.id'], ),
-    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], ),
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('node_id')
     )
     op.create_table('custom_field_values',
@@ -168,16 +168,17 @@ def upgrade() -> None:
     sa.Column('size', sa.Integer(), nullable=False),
     sa.Column('page_count', sa.Integer(), nullable=False),
     sa.Column('short_description', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['document_id'], ['documents.node_id'], ),
+    sa.ForeignKeyConstraint(['document_id'], ['documents.node_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('pages',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('number', sa.Integer(), nullable=False),
+    sa.Column('page_count', sa.Integer(), nullable=False),
     sa.Column('lang', sa.String(), nullable=False),
     sa.Column('text', sa.String(), nullable=True),
     sa.Column('document_version_id', sa.Uuid(), nullable=False),
-    sa.ForeignKeyConstraint(['document_version_id'], ['document_versions.id'], ),
+    sa.ForeignKeyConstraint(['document_version_id'], ['document_versions.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

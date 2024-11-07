@@ -12,9 +12,10 @@ from pathlib import Path
 from typing import Tuple
 
 from sqlalchemy import delete, func, insert, select, text, update
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.constants import ContentType
 from papermerge.core.lib.storage import copy_file
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.features.custom_fields.db import orm as cf_orm
@@ -44,7 +45,6 @@ def get_last_doc_ver(
 
     stmt = (
         select(doc_orm.DocumentVersion)
-        .options(selectinload(doc_orm.DocumentVersion.pages))
         .join(doc_orm.Document)
         .where(
             doc_orm.DocumentVersion.document_id == doc_id,
@@ -53,7 +53,30 @@ def get_last_doc_ver(
         .order_by(doc_orm.DocumentVersion.number.desc())
         .limit(1)
     )
-    return db_session.scalar(stmt)
+    return db_session.scalars(stmt).one()
+
+
+def get_first_page(
+    db_session: Session,
+    doc_ver_id: uuid.UUID,
+) -> doc_orm.Page:
+    """
+    Returns first page of the document version
+    identified by doc_ver_id
+    """
+    with db_session as session:  # noqa
+        stmt = (
+            select(doc_orm.Page)
+            .where(
+                doc_orm.Page.document_version_id == doc_ver_id,
+            )
+            .order_by(doc_orm.Page.number.asc())
+            .limit(1)
+        )
+
+        db_page = session.scalars(stmt).one()
+
+    return db_page
 
 
 def get_doc_ver(
@@ -618,13 +641,6 @@ class UploadStrategy:
     MERGE = 2
 
 
-class UploadContentType:
-    PDF = "application/pdf"
-    JPEG = "image/jpeg"
-    PNG = "image/png"
-    TIFF = "image/tiff"
-
-
 class FileType:
     PDF = "pdf"
     JPEG = "jpeg"
@@ -699,7 +715,7 @@ def upload(
 
     doc = db_session.get(doc_orm.Document, document_id)
 
-    if content_type != UploadContentType.PDF:
+    if content_type != ContentType.APPLICATION_PDF:
         try:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_file_path = Path(tmpdirname) / f"{file_name}.pdf"

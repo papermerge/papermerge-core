@@ -1,5 +1,6 @@
 import logging
 import uuid
+import math
 
 from typing import Union, Tuple
 from uuid import UUID
@@ -17,7 +18,7 @@ from papermerge.core.features.document import schema as docs_schema
 from papermerge.core.features.nodes.db import orm as nodes_orm
 from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.tags.db import orm as tags_orm
-
+from papermerge.core.types import PaginatedResponse
 
 from .orm import Folder
 
@@ -60,7 +61,7 @@ def get_paginated_nodes(
     page_number: int,
     order_by: list[str],
     filter: str | None = None,
-) -> Tuple[list[Union[doc_orm.Document, nodes_orm.Folder]], int]:
+) -> PaginatedResponse[Union[docs_schema.Document, nodes_schema.Folder]]:
     loader_opt = selectin_polymorphic(nodes_orm.Node, [Folder, doc_orm.Document])
 
     if filter:
@@ -97,7 +98,21 @@ def get_paginated_nodes(
     total_nodes = db_session.scalar(count_stmt)
     nodes = db_session.scalars(stmt).all()
 
-    return nodes, total_nodes
+    items = []
+    num_pages = math.ceil(total_nodes / page_size)
+
+    for node in nodes:
+        if node.ctype == "folder":
+            items.append(nodes_schema.Folder.model_validate(node))
+        else:
+            items.append(docs_schema.Document.model_validate(node))
+
+    return PaginatedResponse[Union[docs_schema.Document, nodes_schema.Folder]](
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=num_pages,
+        items=items,
+    )
 
 
 def update_node(

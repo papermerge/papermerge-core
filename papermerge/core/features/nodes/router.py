@@ -76,7 +76,7 @@ def get_node(
         order_by = [item.strip() for item in params.order_by.split(",")]
 
     with Session() as db_session:
-        nodes, total_nodes = nodes_dbapi.get_paginated_nodes(
+        nodes = nodes_dbapi.get_paginated_nodes(
             db_session=db_session,
             parent_id=UUID(parent_id),
             user_id=user.id,
@@ -86,21 +86,7 @@ def get_node(
             filter=params.filter,
         )
 
-    items = []
-    num_pages = math.ceil(total_nodes / params.page_size)
-
-    for node in nodes:
-        if node.ctype == "folder":
-            items.append(nodes_schema.Folder.model_validate(node))
-        else:
-            items.append(doc_schema.Document.model_validate(node))
-
-    return PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]](
-        page_size=params.page_size,
-        page_number=params.page_number,
-        num_pages=num_pages,
-        items=items,
-    )
+    return nodes
 
 
 @router.post("/", status_code=201)

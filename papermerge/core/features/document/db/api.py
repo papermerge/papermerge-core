@@ -44,7 +44,6 @@ def get_last_doc_ver(
 
     stmt = (
         select(doc_orm.DocumentVersion)
-        .options(selectinload(doc_orm.DocumentVersion.pages))
         .join(doc_orm.Document)
         .where(
             doc_orm.DocumentVersion.document_id == doc_id,

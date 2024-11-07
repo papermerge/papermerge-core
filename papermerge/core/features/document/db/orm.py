@@ -55,7 +55,7 @@ class DocumentVersion(Base):
     page_count: Mapped[int] = mapped_column(default=0)
     short_description: Mapped[str] = mapped_column(nullable=True)
     pages: Mapped[list["Page"]] = relationship(
-        back_populates="document_version", lazy="selectin"
+        back_populates="document_version", lazy="select"
     )
 
     @property
@@ -63,7 +63,7 @@ class DocumentVersion(Base):
         return abs_docver_path(self.id, self.file_name)
 
     def __repr__(self):
-        return f"DocumentVersion(number={self.number})"
+        return f"DocumentVersion(id={self.id}, number={self.number})"
 
 
 class Page(Base):

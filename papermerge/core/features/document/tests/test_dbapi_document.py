@@ -400,7 +400,6 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
         dst_document_id=dst.id,
     )
     assert error is None
-
     stmt = (
         select(docs_orm.Document)
         .options(selectinload(docs_orm.Document.versions))
@@ -412,7 +411,6 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
     )
 
     assert len(fresh_dst_doc.versions) == 1
-
     assert len(fresh_dst_last_ver.pages) == 3
 
 

@@ -30,8 +30,7 @@ from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
-from papermerge.core.features.nodes.db import orm as nodes_orm
-from papermerge.core.features.users.db import orm as users_orm
+from papermerge.core import orm
 from papermerge.core import utils
 from papermerge.test.types import AuthTestClient
 from papermerge.core import config
@@ -65,8 +64,8 @@ def mock_media_root_env(monkeypatch):
 
 @pytest.fixture()
 def make_folder(db_session: Session):
-    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
-        folder = nodes_orm.Folder(
+    def _maker(title: str, user: orm.User, parent: orm.Folder):
+        folder = orm.Folder(
             id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
         )
         db_session.add(folder)
@@ -78,7 +77,7 @@ def make_folder(db_session: Session):
 
 @pytest.fixture
 def make_document(db_session: Session):
-    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
+    def _maker(title: str, user: orm.User, parent: orm.Folder):
         attrs = doc_schema.NewDocument(
             title=title,
             parent_id=parent.id,
@@ -96,7 +95,7 @@ def make_document_with_pages(db_session: Session):
     Document Version has 3 pages and one associated PDF file (also with 3 pages)
     """
 
-    def _maker(title: str, user: users_orm.User, parent: nodes_orm.Folder):
+    def _maker(title: str, user: orm.User, parent: orm.Folder):
         attrs = doc_schema.NewDocument(
             title=title,
             parent_id=parent.id,
@@ -122,9 +121,7 @@ def make_document_with_pages(db_session: Session):
 
 @pytest.fixture()
 def make_document_version(db_session: Session):
-    def _maker(
-        page_count: int, user: users_orm.User, pages_text: list[str] | None = None
-    ):
+    def _maker(page_count: int, user: orm.User, pages_text: list[str] | None = None):
         db_pages = []
         for number in range(1, page_count + 1):
             if pages_text and len(pages_text) >= number:
@@ -152,6 +149,33 @@ def make_document_version(db_session: Session):
         return doc_schema.DocumentVersion.model_validate(db_doc_ver)
 
     return _maker
+
+
+@pytest.fixture()
+def make_page(db_session: Session, user: orm.User):
+    def _make():
+        db_pages = []
+        for number in range(1, 4):
+            db_page = doc_orm.Page(number=number, text="blah", page_count=3)
+            db_pages.append(db_page)
+
+        doc_id = uuid.uuid4()
+        db_doc = doc_orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=f"Document {doc_id}",
+            user_id=user.id,
+            parent_id=user.home_folder_id,
+            lang="de",
+        )
+        db_doc_ver = doc_orm.DocumentVersion(pages=db_pages, document=db_doc)
+        db_session.add(db_doc)
+        db_session.add(db_doc_ver)
+        db_session.commit()
+
+        return db_pages[0]
+
+    return _make
 
 
 @pytest.fixture()
@@ -193,7 +217,7 @@ def api_client():
 
 
 @pytest.fixture()
-def auth_api_client(user: users_orm.User):
+def auth_api_client(user: orm.User):
     """Authenticated REST API client"""
     app = get_app_with_routes()
 
@@ -213,7 +237,7 @@ def auth_api_client(user: users_orm.User):
 
 
 @pytest.fixture()
-def user(make_user) -> users_orm.User:
+def user(make_user) -> orm.User:
     return make_user(username="random")
 
 
@@ -224,7 +248,7 @@ def make_user(db_session: Session):
         home_id = uuid.uuid4()
         inbox_id = uuid.uuid4()
 
-        db_user = users_orm.User(
+        db_user = orm.User(
             id=user_id,
             username=username,
             email=f"{username}@mail.com",
@@ -234,14 +258,14 @@ def make_user(db_session: Session):
             is_active=True,
             password="pwd",
         )
-        db_inbox = nodes_orm.Folder(
+        db_inbox = orm.Folder(
             id=inbox_id,
             title=constants.INBOX_TITLE,
             ctype=constants.CTYPE_FOLDER,
             lang="de",
             user_id=user_id,
         )
-        db_home = nodes_orm.Folder(
+        db_home = orm.Folder(
             id=home_id,
             title=constants.HOME_TITLE,
             ctype=constants.CTYPE_FOLDER,

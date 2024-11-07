@@ -10,6 +10,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
@@ -76,10 +77,15 @@ def make_folder(db_session: Session):
 
 @pytest.fixture
 def make_document(db_session: Session):
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
+    def _maker(
+        title: str,
+        user: orm.User,
+        parent: orm.Folder,
+        ocr_status: OCRStatusEnum = OCRStatusEnum.unknown,
+        lang: str = "deu",
+    ):
         attrs = doc_schema.NewDocument(
-            title=title,
-            parent_id=parent.id,
+            title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
         doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
         return doc

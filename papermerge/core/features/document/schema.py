@@ -240,6 +240,7 @@ class NewDocument(BaseModel):
     # True: means, yes, trigger OCR after upload
     # False: means, skip OCR
     ocr: bool = True
+    ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     size: int = 0
     page_count: int = 0
 

@@ -441,7 +441,7 @@ def create_document(
         id=doc_id,
         title=attrs.title,
         ctype="document",
-        ocr_status=OCRStatusEnum.unknown,
+        ocr_status=attrs.ocr_status,
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,

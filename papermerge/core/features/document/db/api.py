@@ -17,13 +17,11 @@ from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.constants import ContentType
 from papermerge.core.utils.misc import copy_file
-from papermerge.core.features.custom_fields.db import orm as cf_orm
-from papermerge.core.features.document import schema
-from papermerge.core.features.document.db import orm as doc_orm
+from papermerge.core import schema, orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum
+from papermerge.core.db.common import get_ancestors
 from papermerge.core.utils.misc import str2date
-from papermerge.core.schemas import error as err_schema
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
@@ -36,20 +34,20 @@ def get_last_doc_ver(
     db_session: Session,
     doc_id: uuid.UUID,  # noqa
     user_id: uuid.UUID,
-) -> doc_orm.DocumentVersion:
+) -> orm.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
     """
 
     stmt = (
-        select(doc_orm.DocumentVersion)
-        .join(doc_orm.Document)
+        select(orm.DocumentVersion)
+        .join(orm.Document)
         .where(
-            doc_orm.DocumentVersion.document_id == doc_id,
-            doc_orm.Document.user_id == user_id,
+            orm.DocumentVersion.document_id == doc_id,
+            orm.Document.user_id == user_id,
         )
-        .order_by(doc_orm.DocumentVersion.number.desc())
+        .order_by(orm.DocumentVersion.number.desc())
         .limit(1)
     )
     return db_session.scalars(stmt).one()
@@ -58,18 +56,18 @@ def get_last_doc_ver(
 def get_first_page(
     db_session: Session,
     doc_ver_id: uuid.UUID,
-) -> doc_orm.Page:
+) -> orm.Page:
     """
     Returns first page of the document version
     identified by doc_ver_id
     """
     with db_session as session:  # noqa
         stmt = (
-            select(doc_orm.Page)
+            select(orm.Page)
             .where(
-                doc_orm.Page.document_version_id == doc_ver_id,
+                orm.Page.document_version_id == doc_ver_id,
             )
-            .order_by(doc_orm.Page.number.asc())
+            .order_by(orm.Page.number.asc())
             .limit(1)
         )
 
@@ -89,9 +87,9 @@ def get_doc_ver(
     """
 
     stmt = (
-        select(doc_orm.DocumentVersion)
-        .join(doc_orm.Document)
-        .where(doc_orm.Document.user_id == user_id, doc_orm.DocumentVersion.id == id)
+        select(orm.DocumentVersion)
+        .join(orm.Document)
+        .where(orm.Document.user_id == user_id, orm.DocumentVersion.id == id)
     )
     db_doc_ver = db_session.scalars(stmt).one()
     model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
@@ -100,7 +98,7 @@ def get_doc_ver(
 
 
 def count_docs(session: Session) -> int:
-    stmt = select(func.count()).select_from(doc_orm.Document)
+    stmt = select(func.count()).select_from(orm.Document)
 
     return session.scalars(stmt).one()
 
@@ -194,10 +192,10 @@ def update_doc_cfv(
     update_values = []
 
     stmt = (
-        select(cf_orm.CustomField.name)
-        .select_from(cf_orm.CustomFieldValue)
-        .join(cf_orm.CustomField)
-        .where(cf_orm.CustomFieldValue.document_id == document_id)
+        select(orm.CustomField.name)
+        .select_from(orm.CustomFieldValue)
+        .join(orm.CustomField)
+        .where(orm.CustomFieldValue.document_id == document_id)
     )
     existing_cf_name = [row[0] for row in session.execute(stmt).all()]
 
@@ -227,10 +225,10 @@ def update_doc_cfv(
             update_values.append(v)
 
     if len(insert_values) > 0:
-        session.execute(insert(cf_orm.CustomFieldValue), insert_values)
+        session.execute(insert(orm.CustomFieldValue), insert_values)
 
     if len(update_values) > 0:
-        session.execute(update(cf_orm.CustomFieldValue), update_values)
+        session.execute(update(orm.CustomFieldValue), update_values)
 
     session.commit()
 
@@ -240,14 +238,14 @@ def update_doc_cfv(
 def update_doc_type(
     session: Session, document_id: uuid.UUID, document_type_id: uuid.UUID | None
 ):
-    stmt = select(doc_orm.Document).where(doc_orm.Document.id == document_id)
+    stmt = select(orm.Document).where(orm.Document.id == document_id)
     doc = session.scalars(stmt).one()
     if doc.document_type_id != document_type_id:
         # new value for document type
         doc.document_type_id = document_type_id
         # -> clear existing CFV
-        del_stmt = delete(cf_orm.CustomFieldValue).where(
-            cf_orm.CustomFieldValue.document_id == document_id
+        del_stmt = delete(orm.CustomFieldValue).where(
+            orm.CustomFieldValue.document_id == document_id
         )
         session.execute(del_stmt)
 
@@ -258,8 +256,8 @@ def get_docs_count_by_type(session: Session, type_id: uuid.UUID):
     """Returns number of documents of specific document type"""
     stmt = (
         select(func.count())
-        .select_from(doc_orm.Document)
-        .where(doc_orm.Document.document_type_id == type_id)
+        .select_from(orm.Document)
+        .where(orm.Document.document_type_id == type_id)
     )
 
     return session.scalars(stmt).one()
@@ -433,10 +431,10 @@ def get_docs_by_type(
 
 def create_document(
     db_session: Session, attrs: schema.NewDocument, user_id: uuid.UUID
-) -> Tuple[schema.Document | None, err_schema.Error | None]:
+) -> Tuple[schema.Document | None, schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
-    doc = doc_orm.Document(
+    doc = orm.Document(
         id=doc_id,
         title=attrs.title,
         ctype="document",
@@ -446,7 +444,7 @@ def create_document(
         lang=attrs.lang,
         user_id=user_id,
     )
-    doc_ver = doc_orm.DocumentVersion(
+    doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
         document_id=doc_id,
         number=1,
@@ -465,18 +463,18 @@ def create_document(
         stre = str(e)
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
-            attr_err = err_schema.AttrError(
+            attr_err = schema.AttrError(
                 name="title", message="Within a folder title must be unique"
             )
-            error = err_schema.Error(attrs=[attr_err])
+            error = schema.Error(attrs=[attr_err])
         # sqlite unique integrity error
         elif "UNIQUE" in stre and ".title" in stre:
-            attr_err = err_schema.AttrError(
+            attr_err = schema.AttrError(
                 name="title", message="Within a folder title must be unique"
             )
-            error = err_schema.Error(attrs=[attr_err])
+            error = schema.Error(attrs=[attr_err])
         else:
-            error = err_schema.Error(messages=[stre])
+            error = schema.Error(messages=[stre])
 
     return schema.Document.model_validate(doc), error
 
@@ -487,12 +485,12 @@ def version_bump(
     user_id: uuid.UUID,
     page_count: int | None = None,
     short_description: str | None = None,
-) -> doc_orm.DocumentVersion:
+) -> orm.DocumentVersion:
     """Increment document version"""
 
     last_ver = get_last_doc_ver(db_session, doc_id=doc_id, user_id=user_id)
     new_page_count = page_count or last_ver.page_count
-    db_new_doc_ver = doc_orm.DocumentVersion(
+    db_new_doc_ver = orm.DocumentVersion(
         document_id=doc_id,
         number=last_ver.number + 1,
         file_name=last_ver.file_name,
@@ -505,7 +503,7 @@ def version_bump(
     db_session.add(db_new_doc_ver)
 
     for page_number in range(1, new_page_count + 1):
-        db_page = doc_orm.Page(
+        db_page = orm.Page(
             document_version=db_new_doc_ver,
             number=page_number,
             page_count=new_page_count,
@@ -521,8 +519,8 @@ def version_bump(
 def version_bump_from_pages(
     db_session: Session,
     dst_document_id: uuid.UUID,
-    pages: list[doc_orm.Page],
-) -> [doc_orm.Document | None, err_schema.Error | None]:
+    pages: list[orm.Page],
+) -> [orm.Document | None, schema.Error | None]:
     """
     Creates new version for the document `dst-document-id`
 
@@ -533,18 +531,18 @@ def version_bump_from_pages(
     page_count = len(pages)
     error = None
     stmt = (
-        select(doc_orm.DocumentVersion)
+        select(orm.DocumentVersion)
         .where(
-            doc_orm.DocumentVersion.document_id == dst_document_id,
-            doc_orm.DocumentVersion.size == 0,
+            orm.DocumentVersion.document_id == dst_document_id,
+            orm.DocumentVersion.size == 0,
         )
-        .order_by(doc_orm.DocumentVersion.number.desc())
+        .order_by(orm.DocumentVersion.number.desc())
     )
-    dst_doc = db_session.get(doc_orm.Document, dst_document_id)
+    dst_doc = db_session.get(orm.Document, dst_document_id)
     dst_document_version = db_session.execute(stmt).scalar()
 
     if not dst_document_version:
-        dst_document_version = doc_orm.DocumentVersion(
+        dst_document_version = orm.DocumentVersion(
             document_id=dst_document_id,
             number=len(dst_doc.versions) + 1,
             lang=dst_doc.lang,
@@ -568,7 +566,7 @@ def version_bump_from_pages(
     dst_document_version.size = getsize(dst_document_version.file_path)
 
     for page_number in range(1, page_count + 1):
-        db_page = doc_orm.Page(
+        db_page = orm.Page(
             document_version_id=dst_document_version.id,
             number=page_number,
             page_count=page_count,
@@ -578,7 +576,7 @@ def version_bump_from_pages(
     try:
         db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = schema.Error(messages=[str(e)])
     finally:
         source_pdf.close()
         dst_pdf.close()
@@ -601,18 +599,16 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
     text = []
 
     stmt = (
-        select(doc_orm.Page.id, doc_orm.Page.text)
-        .where(doc_orm.Page.document_version_id == document_version_id)
-        .order_by(doc_orm.Page.number)
+        select(orm.Page.id, orm.Page.text)
+        .where(orm.Page.document_version_id == document_version_id)
+        .order_by(orm.Page.number)
     )
 
     pages = [(row.id, row.text) for row in db_session.execute(stmt)]
     for page, stream in zip(pages, streams):
         if page[1] is None:  # page.text
             txt = stream.read()
-            sql = (
-                update(doc_orm.Page).where(doc_orm.Page.id == page[0]).values(text=txt)
-            )
+            sql = update(orm.Page).where(orm.Page.id == page[0]).values(text=txt)
             db_session.execute(sql)
             text.append(txt.strip())
 
@@ -620,8 +616,8 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
     stripped_text = stripped_text.strip()
     if stripped_text:
         sql = (
-            update(doc_orm.DocumentVersion)
-            .where(doc_orm.DocumentVersion.id == document_version_id)
+            update(orm.DocumentVersion)
+            .where(orm.DocumentVersion.id == document_version_id)
             .values(text=stripped_text)
         )
         db_session.execute(sql)
@@ -668,23 +664,23 @@ def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
 
 def create_next_version(
     db_session,
-    doc: doc_orm.Document,
+    doc: orm.Document,
     file_name,
     file_size,
     short_description=None,
-) -> doc_orm.DocumentVersion:
+) -> orm.DocumentVersion:
     stmt = (
-        select(doc_orm.DocumentVersion)
+        select(orm.DocumentVersion)
         .where(
-            doc_orm.DocumentVersion.size == 0,
-            doc_orm.DocumentVersion.document_id == doc.id,
+            orm.DocumentVersion.size == 0,
+            orm.DocumentVersion.document_id == doc.id,
         )
-        .order_by(doc_orm.DocumentVersion.number.desc())
+        .order_by(orm.DocumentVersion.number.desc())
     )
     document_version = db_session.execute(stmt).scalar()
 
     if not document_version:
-        document_version = doc_orm.DocumentVersion(
+        document_version = orm.DocumentVersion(
             id=uuid.uuid4(),
             document_id=doc.id,
             number=len(doc.versions) + 1,
@@ -710,9 +706,9 @@ def upload(
     size: int,
     file_name: str,
     content_type: str | None = None,
-) -> [schema.Document | None, err_schema.Error | None]:
+) -> [schema.Document | None, schema.Error | None]:
 
-    doc = db_session.get(doc_orm.Document, document_id)
+    doc = db_session.get(orm.Document, document_id)
 
     if content_type != ContentType.APPLICATION_PDF:
         try:
@@ -722,7 +718,7 @@ def upload(
                     pdf_content = img2pdf.convert(content)
                     f.write(pdf_content)
         except img2pdf.ImageOpenError as e:
-            error = err_schema.Error(messages=[str(e)])
+            error = schema.Error(messages=[str(e)])
             return None, error
 
         orig_ver = create_next_version(
@@ -745,13 +741,13 @@ def upload(
         pdf_ver.page_count = page_count
 
         for page_number in range(1, page_count + 1):
-            db_page_orig = doc_orm.Page(
+            db_page_orig = orm.Page(
                 number=page_number,
                 page_count=page_count,
                 lang=pdf_ver.lang,
                 document_version_id=orig_ver.id,
             )
-            db_page_pdf = doc_orm.Page(
+            db_page_pdf = orm.Page(
                 number=page_number,
                 page_count=page_count,
                 lang=pdf_ver.lang,
@@ -769,7 +765,7 @@ def upload(
         page_count = get_pdf_page_count(content)
         pdf_ver.page_count = page_count
         for page_number in range(1, page_count + 1):
-            db_page_pdf = doc_orm.Page(
+            db_page_pdf = orm.Page(
                 number=page_number,
                 page_count=page_count,
                 lang=pdf_ver.lang,
@@ -781,7 +777,57 @@ def upload(
     try:
         db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = schema.Error(messages=[str(e)])
         return None, error
 
     return schema.Document.model_validate(doc), None
+
+
+def get_doc(
+    session: Session,
+    id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> schema.Document:
+    stmt_doc = select(orm.Document).where(
+        orm.Document.id == id, orm.Document.user_id == user_id
+    )
+    db_doc = session.scalars(stmt_doc).one()
+    breadcrumb = get_ancestors(session, id)
+    db_doc.breadcrumb = breadcrumb
+
+    stmt_doc_ver = (
+        select(orm.DocumentVersion)
+        .where(
+            orm.DocumentVersion.document_id == id,
+        )
+        .order_by("number")
+    )
+    db_doc_vers = session.scalars(stmt_doc_ver).all()
+
+    stmt_pages = select(orm.Page).where(orm.Document.id == id)
+    db_pages = session.scalars(stmt_pages).all()
+
+    db_doc.versions = list(
+        [
+            schema.DocumentVersion.model_validate(db_doc_ver)
+            for db_doc_ver in db_doc_vers
+        ]
+    )
+    # colored_tags_stmt = select(Tag).where(Tag.node_id == id)
+    # colored_tags = session.scalars(colored_tags_stmt).all()
+    # db_doc.tags = [ct.tag for ct in colored_tags]
+
+    def get_page(doc_ver_id):
+        result = []
+        for db_page in db_pages:
+            if db_page.document_version_id == doc_ver_id:
+                result.append(db_page)
+
+        return sorted(result, key=lambda x: x.number)
+
+    for version in db_doc.versions:
+        pages = get_page(version.id)
+        version.pages = list([schema.Page.model_validate(page) for page in pages])
+    model_doc = schema.Document.model_validate(db_doc)
+
+    return model_doc

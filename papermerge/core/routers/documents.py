@@ -80,27 +80,6 @@ def get_documents_by_type(
     )
 
 
-@router.get("/{document_id}")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_document_details(
-    document_id: uuid.UUID,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-    db_session: db.Session = Depends(db.get_session),
-) -> schemas.Document:
-    """
-    Get document details
-
-    Required scope: `{scope}`
-    """
-    try:
-        doc = db.get_doc(db_session, id=document_id, user_id=user.id)
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document not found")
-    return doc
-
-
 @router.patch("/{document_id}/type")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_type(

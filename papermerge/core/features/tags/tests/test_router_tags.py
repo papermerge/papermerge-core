@@ -4,6 +4,7 @@ from papermerge.core.db.engine import Session
 from papermerge.core.features.tags.db import orm
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.test.types import AuthTestClient
+from papermerge.core.features.nodes.db import api as dbapi
 
 
 def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):
@@ -48,3 +49,15 @@ def test_get_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     )
 
     assert response.status_code == 200, response.json()
+
+
+def test_delete_tag_route(auth_api_client: AuthTestClient, db_session, make_tag, user):
+    tag: tags_schema.Tag = make_tag(name="draft", bg_color="red", user=user)
+
+    response = auth_api_client.delete(
+        f"/tags/{tag.id}",
+    )
+
+    assert response.status_code == 204
+    tags_count = db_session.query(func.count(orm.Tag.id)).scalar()
+    assert tags_count == 0

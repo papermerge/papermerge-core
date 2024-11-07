@@ -52,7 +52,7 @@ def get_last_doc_ver(
         .order_by(doc_orm.DocumentVersion.number.desc())
         .limit(1)
     )
-    return db_session.scalar(stmt)
+    return db_session.scalars(stmt).one()
 
 
 def get_first_page(

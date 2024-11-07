@@ -168,24 +168,9 @@ def db_session():
     Base.metadata.drop_all(engine)
 
 
-@pytest.fixture()
-def api_client():
-    """Unauthenticated REST API client"""
+def get_app_with_routes():
     app = FastAPI()
 
-    app.include_router(document_types_router.router, prefix="")
-    app.include_router(groups_router.router, prefix="")
-    app.include_router(cf_router.router, prefix="")
-    app.include_router(nodes_router.router, prefix="")
-    app.include_router(usr_router.router, prefix="")
-    app.include_router(tags_router.router, prefix="")
-
-    return TestClient(app)
-
-
-@pytest.fixture()
-def auth_api_client(user: users_orm.User):
-    app = FastAPI()
     app.include_router(document_types_router.router, prefix="")
     app.include_router(groups_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
@@ -194,6 +179,22 @@ def auth_api_client(user: users_orm.User):
     app.include_router(thumbnails_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
     app.include_router(tags_router.router, prefix="")
+
+    return app
+
+
+@pytest.fixture()
+def api_client():
+    """Unauthenticated REST API client"""
+    app = get_app_with_routes()
+
+    return TestClient(app)
+
+
+@pytest.fixture()
+def auth_api_client(user: users_orm.User):
+    """Authenticated REST API client"""
+    app = get_app_with_routes()
 
     middle_part = utils.base64.encode(
         {

@@ -38,3 +38,25 @@ def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     # other attributes did not change
     assert updated_tag.bg_color == tag.bg_color
     assert updated_tag.fg_color == tag.fg_color
+
+
+def test_get_tag_route(auth_api_client: AuthTestClient, make_tag, user):
+    tag: tags_schema.Tag = make_tag(name="draft", bg_color="red", user=user)
+
+    response = auth_api_client.get(
+        f"/tags/{tag.id}",
+    )
+
+    assert response.status_code == 200, response.json()
+
+
+def test_delete_tag_route(auth_api_client: AuthTestClient, db_session, make_tag, user):
+    tag: tags_schema.Tag = make_tag(name="draft", bg_color="red", user=user)
+
+    response = auth_api_client.delete(
+        f"/tags/{tag.id}",
+    )
+
+    assert response.status_code == 204
+    tags_count = db_session.query(func.count(orm.Tag.id)).scalar()
+    assert tags_count == 0

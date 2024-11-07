@@ -2,14 +2,13 @@ import uuid
 from typing import Tuple
 
 from sqlalchemy import select, update
-from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.engine import Session
 
-from papermerge.core.features.tags import schema
-from papermerge.core.features.tags.db import orm
-from papermerge.core.schemas import error as err_schema
+from papermerge.core import schema
+from papermerge.core import orm
 
 
 def get_tags(
@@ -24,15 +23,15 @@ def get_tags(
 
 def get_tag(
     db_session: Session, tag_id: uuid.UUID, user_id: uuid.UUID
-) -> Tuple[schema.Tag | None, err_schema.Error | None]:
+) -> Tuple[schema.Tag | None, schema.Error | None]:
 
-    stmt = select(orm.Tag).where(orm.Tag.user_id == user_id, orm.Tag.id == id)
+    stmt = select(orm.Tag).where(orm.Tag.user_id == user_id, orm.Tag.id == tag_id)
     try:
-        db_item = db_session.execute(stmt)
+        db_item = db_session.scalar(stmt)
     except NoResultFound:
         raise EntityNotFound
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = schema.Error(messages=[str(e)])
         return None, error
 
     return schema.Tag.model_validate(db_item), None
@@ -40,7 +39,7 @@ def get_tag(
 
 def create_tag(
     db_session, attrs: schema.CreateTag, user_id: uuid.UUID
-) -> Tuple[schema.Tag | None, err_schema.Error | None]:
+) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     db_tag = orm.Tag(user_id=user_id, **attrs.model_dump())
     db_session.add(db_tag)
@@ -48,7 +47,7 @@ def create_tag(
     try:
         db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = schema.Error(messages=[str(e)])
         return None, error
 
     return schema.Tag.model_validate(db_tag), None
@@ -56,20 +55,19 @@ def create_tag(
 
 def update_tag(
     db_session, tag_id: uuid.UUID, attrs: schema.UpdateTag, user_id: uuid.UUID
-) -> Tuple[schema.Tag | None, err_schema.Error | None]:
+) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     stmt = (
         update(orm.Tag)
         .where(orm.Tag.id == tag_id, orm.Tag.user_id == user_id)
         .values(**attrs.model_dump(exclude_unset=True))
     )
-
     try:
         db_session.execute(stmt)
         db_session.commit()
         db_tag = db_session.get(orm.Tag, tag_id)
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = schema.Error(messages=[str(e)])
         return None, error
 
     return schema.Tag.model_validate(db_tag), None

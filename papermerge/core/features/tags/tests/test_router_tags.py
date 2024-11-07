@@ -4,7 +4,6 @@ from papermerge.core.db.engine import Session
 from papermerge.core.features.tags.db import orm
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.test.types import AuthTestClient
-from papermerge.core.features.nodes.db import api as dbapi
 
 
 def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):

@@ -56,6 +56,29 @@ def get_last_doc_ver(
     return db_session.scalar(stmt)
 
 
+def get_first_page(
+    db_session: Session,
+    doc_ver_id: uuid.UUID,
+) -> doc_orm.Page:
+    """
+    Returns first page of the document version
+    identified by doc_ver_id
+    """
+    with db_session as session:  # noqa
+        stmt = (
+            select(doc_orm.Page)
+            .where(
+                doc_orm.Page.document_version_id == doc_ver_id,
+            )
+            .order_by(doc_orm.Page.number.asc())
+            .limit(1)
+        )
+
+        db_page = session.scalars(stmt).one()
+
+    return db_page
+
+
 def get_doc_ver(
     db_session: Session,
     id: uuid.UUID,

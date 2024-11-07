@@ -155,4 +155,4 @@ def page_file_type_path():
 
 def rel2abs(rel_path: Path) -> Path:
     """Converts relative path to absolute path"""
-    return Path(settings.MEDIA_ROOT) / rel_path
+    return Path(config.papermerge__main__media_root) / rel_path

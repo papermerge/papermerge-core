@@ -16,7 +16,7 @@ def test_thumbnail_path_1():
         str_uuid[0:2],
         str_uuid[2:4],
         str_uuid,
-        f"{DEFAULT_THUMBNAIL_SIZE}.{JPG}"
+        f"{DEFAULT_THUMBNAIL_SIZE}.{JPG}",
     )
 
     assert actual == expected
@@ -28,12 +28,7 @@ def test_thumbnail_path_2():
     actual = thumbnail_path(uid, size=200)
 
     expected = Path(
-        THUMBNAILS,
-        JPG,
-        str_uuid[0:2],
-        str_uuid[2:4],
-        str_uuid,
-        f"200.{JPG}"
+        THUMBNAILS, JPG, str_uuid[0:2], str_uuid[2:4], str_uuid, f"200.{JPG}"
     )
 
     assert actual == expected

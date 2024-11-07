@@ -16,8 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.constants import ContentType
-from papermerge.core.lib.storage import copy_file
-from papermerge.core.types import OCRStatusEnum
+from papermerge.core.utils.misc import copy_file
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import orm as doc_orm

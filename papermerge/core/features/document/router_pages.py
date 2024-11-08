@@ -2,23 +2,19 @@ import logging
 import uuid
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi import APIRouter, HTTPException, Query, Security
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import db
-from papermerge.core.db.engine import Session
+from papermerge.core import db, utils, schema
 from papermerge.core import pathlib as core_pathlib
-from papermerge.core import utils
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.constants import DEFAULT_PAGE_SIZE
-from papermerge.core.db import exceptions as db_exc
 from papermerge.core.page_ops import apply_pages_op
 from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
-from papermerge.core import schema
 from papermerge.core.utils import image
 
 logger = logging.getLogger(__name__)
@@ -42,7 +38,6 @@ class JPEGFileResponse(FileResponse):
 def get_page_svg_url(
     page_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])],
-    engine: db.Engine = Depends(db.get_engine),
 ):
     """View page as SVG
 
@@ -50,8 +45,9 @@ def get_page_svg_url(
     """
 
     try:
-        page = db.get_page(engine, id=page_id, user_id=user.id)
-    except db_exc.PageNotFound:
+        with db.Session() as db_session:
+            page = db.get_page(db_session, page_id=page_id, user_id=user.id)
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="Page not found")
 
     svg_abs_path = core_pathlib.abs_page_svg_path(str(page.id))
@@ -77,7 +73,7 @@ def get_page_jpg_url(
     Returned jpg image's width is `size` pixels.
     """
     try:
-        with Session() as db_session:
+        with db.Session() as db_session:
             page = doc_dbapi.get_page(db_session, page_id=page_id, user_id=user.id)
             doc_ver = doc_dbapi.get_doc_ver(
                 db_session, id=page.document_version_id, user_id=user.id

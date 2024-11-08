@@ -149,7 +149,6 @@ def update_group(
     cur_user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
-    db_session: db.Session = Depends(db.get_session),
 ) -> Group:
     """Updates group
 

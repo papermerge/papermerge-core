@@ -4,21 +4,21 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.responses import FileResponse
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import db
+from papermerge.core.db.engine import Session
 from papermerge.core import pathlib as core_pathlib
-from papermerge.core import schemas, utils
-from core.auth import get_current_user
-from core.features.auth import scopes
+from papermerge.core import utils
+from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.auth import scopes
+from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.db import exceptions as db_exc
-from papermerge.core.models import BaseTreeNode
 from papermerge.core.page_ops import apply_pages_op
 from papermerge.core.page_ops import extract_pages as api_extract_pages
 from papermerge.core.page_ops import move_pages as api_move_pages
-from papermerge.core.schemas import ExtractPagesOut, MovePagesOut
-from papermerge.core.schemas.documents import Document as PyDocument
-from papermerge.core.schemas.pages import ExtractPagesIn, MovePagesIn, PageAndRotOp
+from papermerge.core import schema
 from papermerge.core.utils import image
 
 logger = logging.getLogger(__name__)
@@ -41,9 +41,7 @@ class JPEGFileResponse(FileResponse):
 @utils.docstring_parameter(scope=scopes.PAGE_VIEW)
 def get_page_svg_url(
     page_id: uuid.UUID,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
-    ],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])],
     engine: db.Engine = Depends(db.get_engine),
 ):
     """View page as SVG
@@ -69,11 +67,8 @@ def get_page_svg_url(
 @utils.docstring_parameter(scope=scopes.PAGE_VIEW)
 def get_page_jpg_url(
     page_id: uuid.UUID,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
-    ],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])],
     size: int = Query(DEFAULT_PAGE_SIZE, description="jpg image width in pixels"),
-    engine: db.Engine = Depends(db.get_engine),
 ):
     """Returns jpg preview image of the page.
 
@@ -82,9 +77,12 @@ def get_page_jpg_url(
     Returned jpg image's width is `size` pixels.
     """
     try:
-        page = db.get_page(engine, id=page_id, user_id=user.id)
-        doc_ver = db.get_doc_ver(engine, id=page.document_version_id, user_id=user.id)
-    except db_exc.PageNotFound:
+        with Session() as db_session:
+            page = doc_dbapi.get_page(db_session, page_id=page_id, user_id=user.id)
+            doc_ver = doc_dbapi.get_doc_ver(
+                db_session, id=page.document_version_id, user_id=user.id
+            )
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="Page does not exist")
 
     logger.debug(
@@ -112,11 +110,11 @@ def get_page_jpg_url(
 @router.post("/")
 @utils.docstring_parameter(scope=scopes.PAGE_UPDATE)
 def apply_page_operations(
-    items: List[PageAndRotOp],
+    items: List[schema.PageAndRotOp],
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
     ],
-) -> PyDocument:
+) -> schema.Document:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
 
     Required scope: `{scope}`
@@ -138,17 +136,15 @@ def apply_page_operations(
     """
     new_doc = apply_pages_op(items)
 
-    return PyDocument.model_validate(new_doc)
+    return schema.Document.model_validate(new_doc)
 
 
 @router.post("/move")
 @utils.docstring_parameter(scope=scopes.PAGE_MOVE)
 def move_pages(
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_MOVE])
-    ],
-    arg: MovePagesIn,
-) -> MovePagesOut:
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_MOVE])],
+    arg: schema.MovePagesIn,
+) -> schema.MovePagesOut:
     """Moves pages between documents.
 
     Required scope: `{scope}`
@@ -166,19 +162,19 @@ def move_pages(
         target_page_id=arg.target_page_id,
         move_strategy=arg.move_strategy,
     )
-    model = MovePagesOut(source=source, target=target)
+    model = schema.MovePagesOut(source=source, target=target)
 
-    return MovePagesOut.model_validate(model)
+    return schema.MovePagesOut.model_validate(model)
 
 
 @router.post("/extract")
 @utils.docstring_parameter(scope=scopes.PAGE_EXTRACT)
 def extract_pages(
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
+        schema.User, Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
     ],
-    arg: ExtractPagesIn,
-) -> ExtractPagesOut:
+    arg: schema.ExtractPagesIn,
+) -> schema.ExtractPagesOut:
     """Extract pages from one document into a folder.
 
     Required scope: `{scope}`
@@ -193,6 +189,6 @@ def extract_pages(
         title_format=arg.title_format,
     )
     target_nodes = BaseTreeNode.objects.filter(pk__in=[doc.id for doc in target_docs])
-    model = ExtractPagesOut(source=source, target=target_nodes)
+    model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
-    return ExtractPagesOut.model_validate(model)
+    return schema.ExtractPagesOut.model_validate(model)

@@ -9,20 +9,15 @@ from celery import current_app
 from pikepdf import Pdf
 
 from papermerge.core import constants as const
-from papermerge.core.models import Document, Folder, Page
-from papermerge.core.models.utils import OCR_STATUS_SUCCEEDED
 from papermerge.core.pathlib import abs_page_path
-from papermerge.core.schemas import Document as PyDocument
-from papermerge.core.schemas import DocumentVersion as PyDocVer
-from papermerge.core.schemas.pages import (ExtractStrategy, MoveStrategy,
-                                           PageAndRotOp)
+from papermerge.core import schema
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.utils.decorators import skip_in_tests
 
 logger = logging.getLogger(__name__)
 
 
-def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocument]:
+def apply_pages_op(items: List[schema.PageAndRotOp]) -> List[schema.Document]:
     pages = Page.objects.filter(
         pk__in=[item.page.id for item in items]
     )
@@ -57,7 +52,7 @@ def apply_pages_op(items: List[PageAndRotOp]) -> List[PyDocument]:
 def copy_pdf_pages(
     src: Path,
     dst: Path,
-    items: List[PageAndRotOp]
+    items: List[schema.PageAndRotOp]
 ):
     src_pdf = Pdf.open(src)
 
@@ -172,8 +167,8 @@ def reuse_ocr_data(
 
 
 def copy_text_field(
-    src: PyDocVer,
-    dst: PyDocVer,
+    src: schema.DocumentVersion,
+    dst: schema.DocumentVersion,
     page_numbers: list[int]
 ) -> None:
     logger.debug(
@@ -191,7 +186,7 @@ def copy_text_field(
 
 
 def collect_text_streams(
-    version: PyDocVer,
+    version: schema.DocumentVersion,
     page_numbers: list[int]
 ) -> list[io.StringIO]:
     """
@@ -212,15 +207,15 @@ def collect_text_streams(
 def move_pages(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
-    move_strategy: MoveStrategy
-) -> [PyDocument | None, PyDocument]:
+    move_strategy: schema.MoveStrategy
+) -> [schema.Document | None, schema.Document]:
     """
     Returns source and destination document.
 
     Returned source may be None - this is the case when all
     pages of the source document are moved out.
     """
-    if move_strategy == MoveStrategy.REPLACE:
+    if move_strategy == schema.MoveStrategy.REPLACE:
         return move_pages_replace(
             source_page_ids=source_page_ids,
             target_page_id=target_page_id
@@ -235,7 +230,7 @@ def move_pages(
 def move_pages_mix(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID
-) -> [PyDocument | None, PyDocument]:
+) -> [schema.Document | None, schema.Document]:
     """Move pages from src to dst using mix strategy
 
     MIX strategy means that source pages on the target will be "mixed"
@@ -321,7 +316,7 @@ def move_pages_mix(
 def move_pages_replace(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID
-) -> [PyDocument | None, PyDocument]:
+) -> [schema.Document | None, schema.Document]:
     """Move pages from src to dst using replace strategy
 
     REPLACE strategy means that source pages on the target will replace
@@ -388,9 +383,9 @@ def move_pages_replace(
 def extract_pages(
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
-    strategy: ExtractStrategy,
+    strategy: schema.ExtractStrategy,
     title_format: str
-) -> [Document | None, List[Document]]:
+) -> [schema.Document | None, List[schema.Document]]:
     """
 
     Returns a tuple where first element
@@ -403,7 +398,7 @@ def extract_pages(
         moved_pages_count
     ] = copy_without_pages(source_page_ids)
 
-    if strategy == ExtractStrategy.ONE_PAGE_PER_DOC:
+    if strategy == schema.ExtractStrategy.ONE_PAGE_PER_DOC:
         new_docs = extract_to_single_paged_docs(
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
@@ -449,7 +444,7 @@ def extract_to_single_paged_docs(
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str
-) -> List[Document]:
+) -> List[schema.Document]:
     """Extracts given pages into separate documents
 
     Each source page will end up in a separate document
@@ -491,7 +486,7 @@ def extract_to_multi_paged_doc(
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str
-) -> Document:
+) -> schema.Document:
     """Extracts given pages into separate documents
 
     All source pages will end up in a single document
@@ -529,7 +524,7 @@ def extract_to_multi_paged_doc(
 
 def copy_without_pages(
     page_ids: List[uuid.UUID]
-) -> [PyDocVer, PyDocVer, int]:
+) -> [schema.DocumentVersion, schema.DocumentVersion, int]:
     """Copy all pages  WHICH ARE NOT in `page_ids` list from src to dst
 
     All pages are assumed to be from same source document version.

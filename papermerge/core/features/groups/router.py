@@ -15,7 +15,6 @@ from papermerge.core.features.groups.schema import (
     UpdateGroup,
 )
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users import schema as users_schema
 
@@ -44,8 +43,7 @@ def get_groups_without_pagination(
     return result
 
 
-@router.get("/", response_model=PaginatorGeneric[Group])
-@paginate
+@router.get("/")
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups(
     user: Annotated[

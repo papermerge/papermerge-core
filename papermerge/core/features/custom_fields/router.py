@@ -12,7 +12,6 @@ from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users.schema import User
 
@@ -41,8 +40,7 @@ def get_custom_fields_without_pagination(
     return result
 
 
-@router.get("/", response_model=PaginatorGeneric[cf_schema.CustomField])
-@paginate
+@router.get("/")
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 def get_custom_fields(
     user: Annotated[

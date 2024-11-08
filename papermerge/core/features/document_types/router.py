@@ -5,13 +5,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import utils
+from papermerge.core import utils, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.db.engine import Session
-from papermerge.core.features.document_types import db, schema
+from papermerge.core.features.document_types import db
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users import schema as users_schema
 
@@ -41,23 +40,27 @@ def get_document_types_without_pagination(
     return result
 
 
-@router.get("/", response_model=PaginatorGeneric[schema.DocumentType])
-@paginate
+@router.get("/")
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: CommonQueryParams = Depends(),
-):
+) -> schema.PaginatedResponse[schema.DocumentType]:
     """Get all (paginated) document types
 
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        result = db.get_document_types(db_session)
+        paginated_response = db.get_document_types(
+            db_session,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+        )
 
-    return result
+    return paginated_response
 
 
 @router.get("/{document_type_id}", response_model=schema.DocumentType)

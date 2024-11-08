@@ -7,7 +7,6 @@ from papermerge.core.types import CFNameType, CFValueType
 
 from typing import Annotated, Literal
 
-from django.db.models.manager import BaseManager
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from papermerge.core.features.nodes.schema import Node
@@ -159,16 +158,6 @@ class DocumentVersion(BaseModel):
     download_url: DownloadUrl = None
     pages: list[Page] | None = []
 
-    @field_validator("pages", mode="before")
-    @classmethod
-    def get_all_from_manager(cls, value, info: ValidationInfo) -> object:
-        if isinstance(value, BaseManager):
-            try:
-                return list(value.all())
-            except ValueError:
-                return []
-        return value
-
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
         if settings.papermerge__main__file_server == config.FileServer.LOCAL.value:
@@ -202,12 +191,6 @@ class Document(BaseModel):
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
 
-    @field_validator("versions", mode="before")
-    def get_all_from_manager(cls, v: object) -> object:
-        if isinstance(v, BaseManager):
-            return list(v.all())
-        return v
-
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
         if settings.papermerge__main__file_server == config.FileServer.LOCAL.value:
@@ -215,13 +198,6 @@ class Document(BaseModel):
 
         # if it is not local, then it is s3 + cloudfront
         return _s3_doc_thumbnail_url(info.data["id"])
-
-    @field_validator("tags", mode="before")
-    def tags_validator(cls, value):
-        if not isinstance(value, list):
-            return list(value.all())
-
-        return value
 
     # Config
     model_config = ConfigDict(from_attributes=True)

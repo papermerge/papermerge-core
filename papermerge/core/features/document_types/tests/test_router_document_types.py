@@ -1,8 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from papermerge.core.features.custom_fields import schema as cf_schema
-from papermerge.core.features.document_types import schema as dt_schema
+from papermerge.core import schema
 from papermerge.core.features.document_types.db import DocumentType
 from papermerge.test.types import AuthTestClient
 
@@ -26,7 +25,7 @@ def test_create_document_type_with_path_template(
     count_after = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_after == 1
 
-    document_type = dt_schema.DocumentType.model_validate(response.json())
+    document_type = schema.DocumentType.model_validate(response.json())
     assert document_type.name == "Invoice"
     assert document_type.path_template == "/home/My ZDF/"
 
@@ -44,15 +43,15 @@ def test_update_document_type_with_path_template(
         },
     )
 
-    document_type = dt_schema.DocumentType.model_validate(response.json())
+    document_type = schema.DocumentType.model_validate(response.json())
     assert document_type.path_template == "/home/My ZDF/updated/"
 
 
 def test_create_document_type(
     make_custom_field, auth_api_client: AuthTestClient, db_session: Session
 ):
-    cf1: cf_schema.CustomField = make_custom_field(name="shop", type="text")
-    cf2: cf_schema.CustomField = make_custom_field(name="total", type="monetary")
+    cf1: schema.CustomField = make_custom_field(name="shop", type="text")
+    cf2: schema.CustomField = make_custom_field(name="total", type="monetary")
 
     count_before = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_before == 0
@@ -67,7 +66,7 @@ def test_create_document_type(
     count_after = db_session.query(func.count(DocumentType.id)).scalar()
     assert count_after == 1
 
-    document_type = dt_schema.DocumentType.model_validate(response.json())
+    document_type = schema.DocumentType.model_validate(response.json())
     assert document_type.name == "Invoice"
     assert len(document_type.custom_fields) == 2
     assert set([cf.name for cf in document_type.custom_fields]) == {"shop", "total"}
@@ -98,7 +97,7 @@ def test_update_document_type(
         },
     )
     assert response.status_code == 200
-    updated_dtype = dt_schema.DocumentType(**response.json())
+    updated_dtype = schema.DocumentType(**response.json())
     assert updated_dtype.name == "Invoice-updated"
     assert set([cf.name for cf in updated_dtype.custom_fields]) == {"cf1", "cf2"}
 
@@ -117,3 +116,66 @@ def test_delete_document_type(
     count_after = db_session.query(func.count(DocumentType.id)).scalar()
 
     assert count_after == 0
+
+
+def test_paginated_result__9_items_first_page(
+    make_document_type, auth_api_client: AuthTestClient
+):
+    total_doc_type_items = 9
+    for _ in range(total_doc_type_items):
+        make_document_type(name="Invoice")
+
+    params = {"page_size": 5, "page_number": 1}
+    response = auth_api_client.get("/document-types/", params=params)
+
+    assert response.status_code == 200, response.json()
+
+    paginated_items = schema.PaginatedResponse[schema.DocumentType](**response.json())
+
+    assert paginated_items.page_size == 5
+    assert paginated_items.page_number == 1
+    assert paginated_items.num_pages == 2
+    assert len(paginated_items.items) == 5
+
+
+def test_paginated_result__9_items_second_page(
+    make_document_type, auth_api_client: AuthTestClient
+):
+    total_doc_type_items = 9
+    for _ in range(total_doc_type_items):
+        make_document_type(name="Invoice")
+
+    params = {"page_size": 5, "page_number": 2}
+    response = auth_api_client.get("/document-types/", params=params)
+
+    assert response.status_code == 200, response.json()
+
+    paginated_items = schema.PaginatedResponse[schema.DocumentType](**response.json())
+
+    assert paginated_items.page_size == 5
+    assert paginated_items.page_number == 2
+    assert paginated_items.num_pages == 2
+    #  total - items_on_first_page
+    #  i.e 10 - 5 = 4
+    assert len(paginated_items.items) == 4
+
+
+def test_paginated_result__9_items_3rd_page(
+    make_document_type, auth_api_client: AuthTestClient
+):
+    total_doc_type_items = 9
+    for _ in range(total_doc_type_items):
+        make_document_type(name="Invoice")
+
+    params = {"page_size": 5, "page_number": 3}
+    response = auth_api_client.get("/document-types/", params=params)
+
+    assert response.status_code == 200, response.json()
+
+    paginated_items = schema.PaginatedResponse[schema.DocumentType](**response.json())
+
+    assert paginated_items.page_size == 5
+    assert paginated_items.page_number == 3
+    assert paginated_items.num_pages == 2
+    #  no items on first page: there are only two pages
+    assert len(paginated_items.items) == 0

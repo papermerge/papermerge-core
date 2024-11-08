@@ -10,7 +10,6 @@ from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 
-from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
 
 from papermerge.core.features.tags.db import api as tags_dbapi
@@ -43,8 +42,7 @@ def retrieve_tags_without_pagination(
     return tags
 
 
-@router.get("/", response_model=PaginatorGeneric[tags_schema.Tag])
-@paginate
+@router.get("/")
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags(
     user: Annotated[

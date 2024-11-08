@@ -4,19 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import utils, db
+from papermerge.core import utils, db, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.groups.db import api as dbapi
-from papermerge.core.features.groups.schema import (
-    CreateGroup,
-    Group,
-    GroupDetails,
-    UpdateGroup,
-)
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.features.users import schema as users_schema
 
 router = APIRouter(
     prefix="/groups",
@@ -26,19 +19,19 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/all", response_model=list[Group])
+@router.get("/all")
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups_without_pagination(
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
-):
+) -> list[schema.Group]:
     """Get all groups without pagination/filtering/sorting
 
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        result = dbapi.get_groups(db_session)
+        result = dbapi.get_groups_without_pagination(db_session)
 
     return result
 
@@ -47,7 +40,7 @@ def get_groups_without_pagination(
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_groups(
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
     params: CommonQueryParams = Depends(),
 ):
@@ -56,17 +49,19 @@ def get_groups(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        result = dbapi.get_groups(db_session)
+        result = dbapi.get_groups(
+            db_session, page_size=params.page_size, page_number=params.page_number
+        )
 
     return result
 
 
-@router.get("/{group_id}", response_model=GroupDetails)
+@router.get("/{group_id}", response_model=schema.GroupDetails)
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 def get_group(
     group_id: int,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
 ):
     """Get group details
@@ -85,11 +80,11 @@ def get_group(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.GROUP_CREATE)
 def create_group(
-    pygroup: CreateGroup,
+    pygroup: schema.CreateGroup,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
     ],
-) -> Group:
+) -> schema.Group:
     """Creates group
 
     Required scope: `{scope}`
@@ -124,7 +119,7 @@ def create_group(
 def delete_group(
     group_id: int,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
 ) -> None:
     """Deletes group
@@ -138,22 +133,22 @@ def delete_group(
             raise HTTPException(status_code=404, detail="Group not found")
 
 
-@router.patch("/{group_id}", status_code=200, response_model=Group)
+@router.patch("/{group_id}", status_code=200, response_model=schema.Group)
 @utils.docstring_parameter(scope=scopes.GROUP_UPDATE)
 def update_group(
     group_id: int,
-    attrs: UpdateGroup,
+    attrs: schema.UpdateGroup,
     cur_user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
-) -> Group:
+) -> schema.Group:
     """Updates group
 
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
         try:
-            group: Group = dbapi.update_group(
+            group: schema.Group = dbapi.update_group(
                 db_session, group_id=group_id, attrs=attrs
             )
         except NoResultFound:

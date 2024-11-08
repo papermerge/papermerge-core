@@ -4,10 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import db, utils
+from papermerge.core import utils, db
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
-from papermerge.core.db.engine import Session
 from papermerge.core.features.groups.db import api as dbapi
 from papermerge.core.features.groups.schema import (
     CreateGroup,
@@ -39,7 +38,7 @@ def get_groups_without_pagination(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         result = dbapi.get_groups(db_session)
 
     return result
@@ -58,7 +57,7 @@ def get_groups(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         result = dbapi.get_groups(db_session)
 
     return result
@@ -76,7 +75,7 @@ def get_group(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             result = dbapi.get_group(db_session, group_id=group_id)
         except NoResultFound:
@@ -97,7 +96,7 @@ def create_group(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             group = dbapi.create_group(
                 db_session,
@@ -134,7 +133,7 @@ def delete_group(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             dbapi.delete_group(db_session, group_id)
         except NoResultFound:
@@ -154,7 +153,7 @@ def update_group(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             group: Group = dbapi.update_group(
                 db_session, group_id=group_id, attrs=attrs

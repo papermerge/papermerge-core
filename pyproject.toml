@@ -38,7 +38,6 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 [tool.poetry.dependencies]
 python = ">=3.13, <4.0"
-django = "^5.1"
 redis = "^5.2"
 celery = {version = "^5.2", extras = ["gevent", "redis"]}
 pyyaml = "^6.0"

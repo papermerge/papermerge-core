@@ -16,7 +16,7 @@ from .features.document.schema import (
     MoveStrategy
 )
 from .features.users.schema import User, CreateUser, UserDetails, UpdateUser
-from .features.custom_fields.schema import CustomField, CustomFieldType, CustomFieldValue
+from .features.custom_fields.schema import CustomField, UpdateCustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGroup, Permission
@@ -41,6 +41,7 @@ __all__ = [
     'Error',
     'AttrError',
     'CustomField',
+    'UpdateCustomField',
     'CustomFieldType',
     'CustomFieldValue',
     'DocumentCFV',

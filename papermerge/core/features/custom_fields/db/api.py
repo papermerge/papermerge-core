@@ -1,21 +1,51 @@
+import math
 import logging
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from papermerge.core.features.custom_fields import schema
-from papermerge.core.features.custom_fields.db import orm
+from papermerge.core import schema, orm
+
 
 logger = logging.getLogger(__name__)
 
 
-def get_custom_fields(session: Session) -> list[schema.CustomField]:
-    stmt = select(orm.CustomField)
-    db_items = session.scalars(stmt).all()
-    result = [schema.CustomField.model_validate(db_item) for db_item in db_items]
+def get_custom_fields(
+    db_session: Session, *, user_id: uuid.UUID, page_size: int, page_number: int
+) -> schema.PaginatedResponse[schema.CustomField]:
+    stmt_total_cf = select(func.count(orm.CustomField.id)).where(
+        orm.CustomField.user_id == user_id
+    )
+    total_cf = db_session.execute(stmt_total_cf).scalar()
 
-    return result
+    offset = page_size * (page_number - 1)
+    stmt = (
+        select(orm.CustomField)
+        .where(orm.CustomField.user_id == user_id)
+        .limit(page_size)
+        .offset(offset)
+    )
+
+    db_cfs = db_session.scalars(stmt).all()
+    items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]
+
+    total_pages = math.ceil(total_cf / page_size)
+
+    return schema.PaginatedResponse[schema.CustomField](
+        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    )
+
+
+def get_custom_fields_without_pagination(
+    db_session: Session, user_id: uuid.UUID
+) -> list[schema.CustomField]:
+    stmt = select(orm.CustomField).where(orm.CustomField.user_id == user_id)
+
+    db_cfs = db_session.scalars(stmt).all()
+    items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]
+
+    return items
 
 
 def create_custom_field(

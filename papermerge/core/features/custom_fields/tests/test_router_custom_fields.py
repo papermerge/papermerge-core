@@ -3,8 +3,7 @@ import json
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from papermerge.core.features.custom_fields import schema
-from papermerge.core.features.custom_fields.db import orm
+from papermerge.core import schema, orm
 from papermerge.test.types import AuthTestClient
 
 
@@ -94,3 +93,39 @@ def test_delete_custom_field(
     assert response.status_code == 204
     count_after = db_session.query(func.count(orm.CustomField.id)).scalar()
     assert count_after == 0
+
+
+def test_custom_fields_paginated_result__8_items_first_page(
+    make_custom_field, auth_api_client: AuthTestClient
+):
+    total_groups = 8
+    for i in range(total_groups):
+        make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+
+    params = {"page_size": 5, "page_number": 1}
+    response = auth_api_client.get("/custom-fields/", params=params)
+
+    assert response.status_code == 200, response.json()
+
+    paginated_items = schema.PaginatedResponse[schema.CustomField](**response.json())
+
+    assert paginated_items.page_size == 5
+    assert paginated_items.page_number == 1
+    assert paginated_items.num_pages == 2
+    assert len(paginated_items.items) == 5
+
+
+def test_custom_fields_without_pagination(
+    make_custom_field, auth_api_client: AuthTestClient
+):
+    total_groups = 8
+    for i in range(total_groups):
+        make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+
+    response = auth_api_client.get("/custom-fields/all")
+
+    assert response.status_code == 200, response.json()
+
+    items = [schema.CustomField(**kw) for kw in response.json()]
+
+    assert len(items) == 8

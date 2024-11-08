@@ -14,7 +14,6 @@ from papermerge.core.tasks import delete_user_data
 from papermerge.core.features.users.db import api as usr_dbapi
 
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.paginator import PaginatorGeneric, paginate
 from papermerge.core.routers.params import CommonQueryParams
 
 router = APIRouter(
@@ -40,8 +39,7 @@ def get_current_user(
     return usr_schema.User.model_validate(user)
 
 
-@router.get("/", response_model=PaginatorGeneric[usr_schema.User])
-@paginate
+@router.get("/")
 @utils.docstring_parameter(scope=scopes.USER_VIEW)
 def get_users(
     user: Annotated[

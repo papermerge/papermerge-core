@@ -18,7 +18,6 @@ from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.paginator import PaginatedResponse
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core import config
@@ -54,10 +53,7 @@ def get_nodes_details(
     return nodes
 
 
-@router.get(
-    "/{parent_id}",
-    response_model=PaginatedResponse[Union[doc_schema.Document, nodes_schema.Folder]],
-)
+@router.get("/{parent_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,

@@ -18,7 +18,9 @@ from .features.document.schema import (
 from .features.users.schema import User
 from .features.custom_fields.schema import CustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
+from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .schemas.error import Error, AttrError
+from .schemas.common import PaginatedResponse
 
 __all__ = [
     'Folder',
@@ -47,4 +49,8 @@ __all__ = [
     'MovePagesOut',
     'ExtractStrategy',
     'MoveStrategy',
+    'PaginatedResponse',
+    'DocumentType',
+    'CreateDocumentType',
+    'UpdateDocumentType'
 ]

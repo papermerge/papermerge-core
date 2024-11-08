@@ -1,13 +1,15 @@
 import logging
 import uuid
+from typing import Tuple
 
 from celery.app import default_app as celery_app
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
+from core.schemas.common import PaginatedResponse
+from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core.features.custom_fields.db.orm import CustomField
-from papermerge.core.features.document_types import schema
 from papermerge.core.utils.decorators import skip_in_tests
 
 from .orm import DocumentType
@@ -15,12 +17,30 @@ from .orm import DocumentType
 logger = logging.getLogger(__name__)
 
 
-def get_document_types(session: Session) -> list[schema.DocumentType]:
-    stmt = select(DocumentType)
-    db_items = session.scalars(stmt).all()
-    result = [schema.DocumentType.model_validate(db_item) for db_item in db_items]
+def get_document_types(
+    session: Session, user_id: uuid.UUID, page_size: int, page_number: int
+) -> schema.PaginatedResponse[schema.DocumentType]:
 
-    return result
+    stmt_total_doc_types = select(func.count(DocumentType.id)).where(
+        DocumentType.user_id == user_id
+    )
+    total_doc_types = session.execute(stmt_total_doc_types).scalar()
+
+    offset = page_size * (page_number - 1)
+    stmt = (
+        select(DocumentType)
+        .where(DocumentType.user_id == user_id)
+        .limit(page_size)
+        .offset(offset)
+    )
+    db_items = session.scalars(stmt).all()
+    items = [schema.DocumentType.model_validate(db_item) for db_item in db_items]
+
+    total_pages = int(total_doc_types / page_size) + 1
+
+    return PaginatedResponse(
+        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    )
 
 
 def document_type_cf_count(session: Session, document_type_id: uuid.UUID):

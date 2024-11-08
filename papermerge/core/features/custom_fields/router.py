@@ -35,7 +35,7 @@ def get_custom_fields_without_pagination(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        result = dbapi.get_custom_fields(db_session)
+        result = dbapi.get_custom_fields_without_pagination(db_session, user_id=user.id)
 
     return result
 
@@ -53,7 +53,12 @@ def get_custom_fields(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        result = dbapi.get_custom_fields(db_session)
+        result = dbapi.get_custom_fields(
+            db_session,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+        )
 
     return result
 

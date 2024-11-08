@@ -1,9 +1,0 @@
-FROM node:18-alpine
-
-WORKDIR /core_ui
-
-COPY ./ui/  /core_ui/
-
-RUN npm i
-
-CMD ["npm", "start"]

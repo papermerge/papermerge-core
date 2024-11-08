@@ -1,12 +1,13 @@
 import logging
+import math
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 from sqlalchemy.orm import joinedload
 
+from papermerge.core import schema, orm
 from papermerge.core.features.auth import scopes
 from papermerge.core.db.engine import Session
-from papermerge.core.features.groups import schema
-from papermerge.core.features.groups.db import orm
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,32 @@ def get_group(db_session: Session, group_id: int) -> schema.GroupDetails:
     return result
 
 
-def get_groups(db_session: Session) -> list[schema.Group]:
-    stmt = select(orm.Group)
-    db_items = db_session.scalars(stmt).all()
-    result = [schema.Group.model_validate(db_item) for db_item in db_items]
+def get_groups(
+    db_session: Session, *, page_size: int, page_number: int
+) -> schema.PaginatedResponse[schema.Group]:
+    stmt_total_users = select(func.count(orm.Group.id))
+    total_groups = db_session.execute(stmt_total_users).scalar()
 
-    return result
+    offset = page_size * (page_number - 1)
+    stmt = select(orm.Group).limit(page_size).offset(offset)
+
+    db_groups = db_session.scalars(stmt).all()
+    items = [schema.Group.model_validate(db_group) for db_group in db_groups]
+
+    total_pages = math.ceil(total_groups / page_size)
+
+    return schema.PaginatedResponse[schema.Group](
+        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    )
+
+
+def get_groups_without_pagination(db_session: Session) -> list[schema.Group]:
+    stmt = select(orm.Group)
+
+    db_groups = db_session.scalars(stmt).all()
+    items = [schema.Group.model_validate(db_group) for db_group in db_groups]
+
+    return items
 
 
 def create_group(

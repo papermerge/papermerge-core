@@ -19,6 +19,7 @@ from .features.users.schema import User, CreateUser, UserDetails, UpdateUser
 from .features.custom_fields.schema import CustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
+from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGroup, Permission
 from .schemas.error import Error, AttrError
 from .schemas.common import PaginatedResponse
 
@@ -55,5 +56,10 @@ __all__ = [
     'PaginatedResponse',
     'DocumentType',
     'CreateDocumentType',
-    'UpdateDocumentType'
+    'UpdateDocumentType',
+    'Group',
+    'CreateGroup',
+    'GroupDetails',
+    'UpdateGroup',
+    'Permission'
 ]

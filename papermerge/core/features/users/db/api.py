@@ -1,17 +1,14 @@
 import uuid
+import math
 import logging
 from typing import Tuple
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy import select, func
 
-from papermerge.core.db.engine import Session
+from papermerge.core import db, orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
-from papermerge.core.features.users import schema as usr_schema
-from papermerge.core.features.nodes.db import orm as nodes_orm
-from papermerge.core.features.groups.db import orm as group_orm
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
 
@@ -22,7 +19,7 @@ DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 logger = logging.getLogger(__name__)
 
 
-def get_user(db_session: Session, user_id_or_username: str) -> usr_schema.User:
+def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
     if is_valid_uuid(user_id_or_username):
@@ -32,23 +29,17 @@ def get_user(db_session: Session, user_id_or_username: str) -> usr_schema.User:
         stmt = select(User).where(User.username == user_id_or_username)
         params = {"username": user_id_or_username}
 
-    try:
-        db_user = db_session.scalars(stmt, params).one()
-    except NoResultFound:
-        raise UserNotFound()
-
-    if db_user is None:
-        raise UserNotFound(f"User with id/username='{user_id_or_username}' not found")
+    db_user = db_session.scalars(stmt, params).one()
 
     logger.debug(f"User {db_user} fetched")
-    model_user = usr_schema.User.model_validate(db_user)
+    model_user = schema.User.model_validate(db_user)
 
     return model_user
 
 
 def get_user_details(
     db_session, user_id: uuid.UUID
-) -> [usr_schema.UserDetails | None, err_schema.Error | None]:
+) -> [schema.UserDetails | None, err_schema.Error | None]:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
@@ -58,7 +49,7 @@ def get_user_details(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
-    result = usr_schema.UserDetails(
+    result = schema.UserDetails(
         id=db_user.id,
         username=db_user.username,
         email=db_user.email,
@@ -72,20 +63,32 @@ def get_user_details(
         groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
     )
 
-    model_user = usr_schema.UserDetails.model_validate(result)
+    model_user = schema.UserDetails.model_validate(result)
 
     return model_user, None
 
 
-def get_users(db_session: Session) -> list[usr_schema.User]:
-    db_users = db_session.scalars(select(User))
-    model_users = [usr_schema.User.model_validate(db_user) for db_user in db_users]
+def get_users(
+    db_session: db.Session, *, page_size: int, page_number: int
+) -> schema.PaginatedResponse[schema.User]:
+    stmt_total_users = select(func.count(orm.User.id))
+    total_users = db_session.execute(stmt_total_users).scalar()
 
-    return model_users
+    offset = page_size * (page_number - 1)
+    stmt = select(orm.User).limit(page_size).offset(offset)
+
+    db_users = db_session.scalars(stmt).all()
+    items = [schema.User.model_validate(db_user) for db_user in db_users]
+
+    total_pages = math.ceil(total_users / page_size)
+
+    return schema.PaginatedResponse[schema.User](
+        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    )
 
 
 def create_user(
-    db_session: Session,
+    db_session: db.Session,
     username: str,
     email: str,
     password: str,
@@ -94,7 +97,7 @@ def create_user(
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
-) -> Tuple[usr_schema.User | None, err_schema.Error | None]:
+) -> Tuple[schema.User | None, err_schema.Error | None]:
     if scopes is None:
         scopes = []
 
@@ -113,14 +116,14 @@ def create_user(
         is_active=is_active,
         password=pbkdf2_sha256.hash(password),
     )
-    db_inbox = nodes_orm.Folder(
+    db_inbox = orm.Folder(
         id=inbox_folder_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
         user_id=_user_id,
         lang="xxx",  # not used
     )
-    db_home = nodes_orm.Folder(
+    db_home = orm.Folder(
         id=home_folder_id,
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
@@ -137,13 +140,11 @@ def create_user(
     try:
         db_session.commit()
 
-        stmt = select(group_orm.Permission).where(
-            group_orm.Permission.codename.in_(scopes)
-        )
+        stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
         db_perms = db_session.execute(stmt).scalars().all()
         # fetch groups from the DB
 
-        stmt = select(group_orm.Group).where(group_orm.Group.id.in_(group_ids))
+        stmt = select(orm.Group).where(orm.Group.id.in_(group_ids))
         db_groups = db_session.execute(stmt).scalars().all()
 
         db_user.permissions = db_perms
@@ -153,14 +154,14 @@ def create_user(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
-    user = usr_schema.User.model_validate(db_user)
+    user = schema.User.model_validate(db_user)
 
     return user, None
 
 
 def update_user(
-    db_session, user_id: uuid.UUID, attrs: usr_schema.UpdateUser
-) -> Tuple[usr_schema.UserDetails | None, err_schema.Error | None]:
+    db_session, user_id: uuid.UUID, attrs: schema.UpdateUser
+) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     groups = []
     user = db_session.get(User, user_id)
 
@@ -171,9 +172,7 @@ def update_user(
         user.email = attrs.email
 
     if attrs.scopes is not None:
-        stmt = select(group_orm.Permission).where(
-            group_orm.Permission.codename.in_(attrs.scopes)
-        )
+        stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
         perms = db_session.execute(stmt).scalars().all()
         user.permissions = perms
 
@@ -184,7 +183,7 @@ def update_user(
         user.is_active = attrs.is_active
 
     if attrs.group_ids is not None:
-        stmt = select(group_orm.Group).where(group_orm.Group.id.in_(attrs.group_ids))
+        stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
         groups = db_session.execute(stmt).scalars().all()
         user.groups = groups
 
@@ -197,7 +196,7 @@ def update_user(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
-    result = usr_schema.UserDetails(
+    result = schema.UserDetails(
         id=user.id,
         username=user.username,
         email=user.email,
@@ -211,13 +210,13 @@ def update_user(
         groups=list([{"id": g.id, "name": g.name} for g in groups]),
     )
 
-    model_user = usr_schema.UserDetails.model_validate(result)
+    model_user = schema.UserDetails.model_validate(result)
 
     return model_user, None
 
 
 def get_user_scopes_from_groups(
-    db_session: Session, user_id: uuid.UUID, groups: list[str]
+    db_session: db.Session, user_id: uuid.UUID, groups: list[str]
 ) -> list[str]:
     db_user = db_session.get(User, user_id)
 
@@ -226,7 +225,7 @@ def get_user_scopes_from_groups(
         return []
 
     db_groups = db_session.scalars(
-        select(group_orm.Group).where(group_orm.Group.name.in_(groups))
+        select(orm.Group).where(orm.Group.name.in_(groups))
     ).all()
 
     if db_user.is_superuser:
@@ -242,7 +241,9 @@ def get_user_scopes_from_groups(
 
 
 def delete_user(
-    db_session: Session, user_id: uuid.UUID | None = None, username: str | None = None
+    db_session: db.Session,
+    user_id: uuid.UUID | None = None,
+    username: str | None = None,
 ):
     if user_id is not None:
         stmt = select(User).where(User.id == user_id)

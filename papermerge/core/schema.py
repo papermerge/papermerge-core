@@ -15,7 +15,7 @@ from .features.document.schema import (
     ExtractStrategy,
     MoveStrategy
 )
-from .features.users.schema import User
+from .features.users.schema import User, CreateUser, UserDetails, UpdateUser
 from .features.custom_fields.schema import CustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
@@ -31,6 +31,9 @@ __all__ = [
     'DocumentVersion',
     'Page',
     'User',
+    'CreateUser',
+    'UpdateUser',
+    'UserDetails',
     'Tag',
     'UpdateTag',
     'CreateTag',

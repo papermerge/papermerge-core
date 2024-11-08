@@ -1,19 +1,6 @@
-from sqlalchemy import Engine
-from sqlalchemy.orm import Session
+from .engine import Session
+from .base import Base
 
-from .engine import get_engine
-from .exceptions import UserNotFound
-from .nodes import get_nodes
-from .pages import get_doc_ver_pages, get_page
-from .session import get_session
+from papermerge.core.features.document.db.api import get_page
 
-__all__ = [
-    "get_engine",
-    "get_session",
-    "get_page",
-    "get_doc_ver_pages",
-    "Engine",
-    "Session",
-    "UserNotFound",
-    "get_nodes",
-]
+__all__ = ["Session", "get_page"]

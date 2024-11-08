@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import Tuple
 
 from sqlalchemy import delete, func, insert, select, text, update
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.db.engine import Session
 from papermerge.core.constants import ContentType
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm
@@ -801,3 +801,33 @@ def get_doc(
     model_doc = schema.Document.model_validate(db_doc)
 
     return model_doc
+
+
+def get_page(
+    db_session: Session, page_id: uuid.UUID, user_id: uuid.UUID
+) -> schema.Page:
+
+    stmt = (
+        select(orm.Page)
+        .join(orm.DocumentVersion)
+        .join(orm.Document)
+        .where(orm.Page.id == page_id, orm.Document.user_id == user_id)
+    )
+
+    db_page = db_session.execute(stmt).scalar()
+    model = schema.Page.model_validate(db_page)
+
+    return model
+
+
+def get_doc_ver_pages(db_session: Session, doc_ver_id: uuid.UUID) -> list[schema.Page]:
+    stmt = (
+        select(orm.Page)
+        .where(orm.Page.document_version_id == doc_ver_id)
+        .order_by("number")
+    )
+
+    db_pages = db_session.scalars(stmt).all()
+    models = [schema.Page.model_validate(db_page) for db_page in db_pages]
+
+    return models

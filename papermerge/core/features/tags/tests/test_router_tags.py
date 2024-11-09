@@ -93,3 +93,37 @@ def test_get_all_tags_no_pagination(make_tag, auth_api_client: AuthTestClient, u
     items = [schema.Tag(**item) for item in response.json()]
 
     assert len(items) == 8
+
+
+def test_get_all_tags_no_pagination_per_user(make_tag, make_api_client):
+    """
+    User A has 5 tags.
+    User B has 8 tags.
+
+    Then, by default, user A will get only his/her tags (and user B, his/her)
+    """
+    client_a: AuthTestClient = make_api_client(username="user A")
+    client_b: AuthTestClient = make_api_client(username="user B")
+
+    user_a_tags_count = 5
+    for i in range(user_a_tags_count):
+        make_tag(name=f"Tag {i}", user=client_a.user)
+
+    user_b_tags_count = 8
+    for i in range(user_b_tags_count):
+        make_tag(name=f"Tag {i}", user=client_b.user)
+
+    # Client B / User B
+    response = client_a.get("/tags/all")
+
+    assert response.status_code == 200, response.json()
+    items_user_a = [schema.Tag(**item) for item in response.json()]
+
+    assert len(items_user_a) == user_a_tags_count
+
+    # Client B / User B
+    response = client_b.get("/tags/all")
+    assert response.status_code == 200, response.json()
+    items_user_b = [schema.Tag(**item) for item in response.json()]
+
+    assert len(items_user_b) == user_b_tags_count

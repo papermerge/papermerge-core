@@ -254,6 +254,33 @@ def auth_api_client(user: orm.User):
 
 
 @pytest.fixture()
+def make_api_client(make_user):
+    """Builds an authenticated client
+    i.e. an instance of AuthTestClient with associated (and authenticated) user
+    """
+
+    def _make(username: str):
+        user = make_user(username=username)
+        app = get_app_with_routes()
+
+        middle_part = utils.base64.encode(
+            {
+                "sub": str(user.id),
+                "preferred_username": user.username,
+                "email": user.email,
+                "scopes": list(SCOPES.keys()),
+            }
+        )
+        token = f"abc.{middle_part}.xyz"
+
+        test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
+
+        return AuthTestClient(test_client=test_client, user=user)
+
+    return _make
+
+
+@pytest.fixture()
 def user(make_user) -> orm.User:
     return make_user(username="random")
 

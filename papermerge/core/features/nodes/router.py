@@ -1,7 +1,6 @@
 import logging
 import uuid
-import math
-from typing import Annotated, Union
+from typing import Annotated
 from uuid import UUID
 
 from celery import current_app

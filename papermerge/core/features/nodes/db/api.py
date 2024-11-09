@@ -5,7 +5,7 @@ import math
 from typing import Union, Tuple
 from uuid import UUID
 
-from sqlalchemy import func, select, delete
+from sqlalchemy import func, select, delete, update
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
@@ -292,3 +292,15 @@ def delete_nodes(
         return error
 
     return None
+
+
+def move_nodes(
+    db_session: Session, source_ids: list[UUID], target_id: UUID, user_id: UUID
+):
+    stmt = (
+        update(nodes_orm.Node)
+        .where(nodes_orm.Node.id.in_(source_ids))
+        .values(parent_id=target_id)
+    )
+    db_session.execute(stmt)
+    db_session.commit()

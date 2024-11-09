@@ -6,6 +6,7 @@ from uuid import UUID
 
 from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import utils
 from papermerge.core.features.auth import get_current_user
@@ -22,6 +23,7 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core import config
 from papermerge.core.exceptions import EntityNotFound
+
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -235,21 +237,16 @@ def move_nodes(
     Returns UUIDs of successfully moved nodes.
     """
     try:
-        target_model = BaseTreeNode.objects.get(pk=params.target_id)
-    except BaseTreeNode.DoesNotExist as exc:
+        with Session() as db_session:
+            nodes_dbapi.move_nodes(
+                db_session,
+                source_ids=params.source_ids,
+                target_id=params.target_id,
+                user_id=user.id,
+            )
+    except NoResultFound as exc:
         logger.error(exc, exc_info=True)
         raise HTTPException(status_code=404, detail="Target not found")
-
-    for node_model in BaseTreeNode.objects.filter(pk__in=params.source_ids):
-        try:
-            move_node(node_model, target_model)
-        except IntegrityError as exc:
-            logger.error(exc, exc_info=True)
-            raise HTTPException(
-                status_code=432,
-                detail=f"Move not possible for '{node_model.title}'"
-                " because node with same title already present on the target",
-            )
 
     return params.source_ids
 

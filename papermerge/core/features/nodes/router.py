@@ -6,7 +6,7 @@ from uuid import UUID
 
 from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core import utils
 from papermerge.core.features.auth import get_current_user
@@ -23,36 +23,13 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core import config
 from papermerge.core.exceptions import EntityNotFound
+from papermerge.core import schema
 
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 logger = logging.getLogger(__name__)
 settings = config.get_settings()
-
-
-@router.get("/")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_nodes_details(
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-    node_ids: list[uuid.UUID] | None = Query(default=None),
-) -> list[nodes_schema.Folder | doc_schema.Document]:
-    """Returns detailed information about queried nodes
-    (breadcrumb, tags)
-
-    Required scope: `{scope}`
-    """
-    if node_ids is None:
-        return []
-
-    if len(node_ids) == 0:
-        return []
-
-    nodes = db.get_nodes(db_session, node_ids)
-
-    return nodes
 
 
 @router.get("/{parent_id}")
@@ -212,8 +189,16 @@ def delete_nodes(
             to duplicate title on the target""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         },
-        404: {
+        400: {
             "description": """No target node with specified UUID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        419: {
+            "description": """No nodes were updated""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        420: {
+            "description": """Not all nodes were updated""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         },
     },
@@ -238,7 +223,7 @@ def move_nodes(
     """
     try:
         with Session() as db_session:
-            nodes_dbapi.move_nodes(
+            affected_row_count = nodes_dbapi.move_nodes(
                 db_session,
                 source_ids=params.source_ids,
                 target_id=params.target_id,
@@ -246,7 +231,32 @@ def move_nodes(
             )
     except NoResultFound as exc:
         logger.error(exc, exc_info=True)
-        raise HTTPException(status_code=404, detail="Target not found")
+        error = schema.Error(
+            messages=["No results found. Please check that all source nodes exists"]
+        )
+        raise HTTPException(status_code=404, detail=error.model_dump())
+    except IntegrityError as exc:
+        logger.debug(exc, exc_info=True)
+        error = schema.Error(
+            messages=["Integrity error. Please check that target exists"]
+        )
+        raise HTTPException(status_code=400, detail=error.model_dump())
+
+    if affected_row_count == 0:
+        error = schema.Error(
+            messages=["No nodes were updated. Please check that source nodes exists"]
+        )
+        raise HTTPException(status_code=419, detail=error.model_dump())
+
+    if affected_row_count != len(params.source_ids):
+        error = schema.Error(
+            messages=[
+                "Not all nodes were updated"
+                f"(only {affected_row_count} out of {len(params.source_ids)})."
+                " Please check that all source nodes exists"
+            ]
+        )
+        raise HTTPException(status_code=420, detail=error.model_dump())
 
     return params.source_ids
 
@@ -286,6 +296,30 @@ def assign_node_tags(
     _notify_index(node_id)
 
     return node
+
+
+@router.get("/")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_nodes_details(
+    user: Annotated[
+        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
+    ],
+    node_ids: list[uuid.UUID] | None = Query(default=None),
+) -> list[nodes_schema.Folder | doc_schema.Document]:
+    """Returns detailed information about queried nodes
+    (breadcrumb, tags)
+
+    Required scope: `{scope}`
+    """
+    if node_ids is None:
+        return []
+
+    if len(node_ids) == 0:
+        return []
+
+    nodes = db.get_nodes(db_session, node_ids)
+
+    return nodes
 
 
 @router.patch("/{node_id}/tags")

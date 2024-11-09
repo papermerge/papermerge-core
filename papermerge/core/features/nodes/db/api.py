@@ -296,11 +296,13 @@ def delete_nodes(
 
 def move_nodes(
     db_session: Session, source_ids: list[UUID], target_id: UUID, user_id: UUID
-):
+) -> int:
     stmt = (
         update(nodes_orm.Node)
         .where(nodes_orm.Node.id.in_(source_ids))
         .values(parent_id=target_id)
     )
-    db_session.execute(stmt)
+    result = db_session.execute(stmt)
     db_session.commit()
+
+    return result.rowcount

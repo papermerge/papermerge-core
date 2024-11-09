@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import select, func
 
+from core.features.conftest import make_document
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
@@ -9,9 +10,14 @@ from papermerge.core import orm
 from papermerge.test.types import AuthTestClient
 
 
-def test_nodes_move(
+def test_nodes_move_basic(
     auth_api_client: AuthTestClient, make_folder, make_document, db_session
 ):
+    """
+    Given document "letter.pdf", located in user's home folder, and target
+    folder "Target Folder", the move endpoint must move document "letter.pdf"
+    from user's home folder into the "Target Folder".
+    """
     user = auth_api_client.user
     target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
     doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
@@ -25,6 +31,61 @@ def test_nodes_move(
     stmt = select(orm.Document.parent_id).where(orm.Document.title == "letter.pdf")
     new_parent_id = db_session.execute(stmt).scalar()
     assert new_parent_id == target.id
+
+
+def test_nodes_move_when_target_id_does_not_exist(
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
+):
+    """Test move_endpoint when target ID is UUID of non-existing node"""
+    user = auth_api_client.user
+    doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
+
+    params = {"source_ids": [str(doc.id)], "target_id": str(uuid.uuid4())}
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    assert response.status_code == 400, response.json()
+
+    stmt = select(orm.Document.parent_id).where(orm.Document.title == "letter.pdf")
+    # doc.parent id should not change i.e. "letter.pdf" is still in home folder
+    current_parent_id = db_session.execute(stmt).scalar()
+    assert current_parent_id == user.home_folder.id
+
+
+def test_nodes_move_when_source_id_does_not_exist(
+    auth_api_client: AuthTestClient, db_session, make_folder
+):
+    """Test move_endpoint when source ID is UUID of non-existing node"""
+    user = auth_api_client.user
+    target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
+
+    params = {"source_ids": [str(uuid.uuid4())], "target_id": str(target.id)}
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    assert response.status_code == 419, response.json()
+
+
+def test_nodes_move_when_some_source_id_does_not_exist(
+    auth_api_client: AuthTestClient, make_folder, make_document
+):
+    """Test move_endpoint when some source ID don't exist"""
+    user = auth_api_client.user
+    doc1 = make_document(title="doc1", user=user, parent=user.home_folder)
+    doc2 = make_document(title="doc2", user=user, parent=user.home_folder)
+    target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
+
+    source_ids = [str(uuid.uuid4()), str(doc1.id), str(doc2.id)]
+    params = {
+        "source_ids": source_ids,  # note that source_ids[0] does not exit
+        "target_id": str(target.id),
+    }
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    # code 420 means that only some nodes where moved, situation which
+    # may happen when some source IDs are invalid (non-existing nodes)
+    assert response.status_code == 420, response.json()
 
 
 def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_session):

@@ -1,7 +1,8 @@
 import uuid
+import math
 from typing import Tuple
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.exceptions import EntityNotFound
@@ -12,13 +13,27 @@ from papermerge.core import orm
 
 
 def get_tags(
-    db_session: Session, user_id: uuid.UUID, order_by: list[str]
-) -> list[schema.Tag]:
-    stmt = select(orm.Tag).where(orm.Tag.user_id == user_id).order_by(*order_by)
-    db_items = db_session.scalars(stmt).all()
-    result = [schema.Tag.model_validate(db_item) for db_item in db_items]
+    db_session: Session, *, user_id: uuid.UUID, page_size: int, page_number: int
+) -> schema.PaginatedResponse[schema.Tag]:
+    stmt_total_tags = select(func.count(orm.Tag.id)).where(orm.Tag.user_id == user_id)
+    total_tags = db_session.execute(stmt_total_tags).scalar()
 
-    return result
+    offset = page_size * (page_number - 1)
+    stmt = (
+        select(orm.Tag)
+        .where(orm.Tag.user_id == user_id)
+        .limit(page_size)
+        .offset(offset)
+    )
+
+    db_tags = db_session.scalars(stmt).all()
+    items = [schema.Tag.model_validate(db_tag) for db_tag in db_tags]
+
+    total_pages = math.ceil(total_tags / page_size)
+
+    return schema.PaginatedResponse[schema.Tag](
+        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    )
 
 
 def get_tag(

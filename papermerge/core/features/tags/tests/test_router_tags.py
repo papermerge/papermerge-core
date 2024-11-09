@@ -97,8 +97,14 @@ def test_get_all_tags_no_pagination(make_tag, auth_api_client: AuthTestClient, u
 
 def test_get_all_tags_no_pagination_per_user(make_tag, make_api_client):
     """
-    User A has 5 tags.
-    User B has 8 tags.
+    Tags are per user. In other words, each user can create and thus
+    own his/her tags. By default, i.e. without explicit sharing,
+    each user will be able to list/view only his/her tags.
+
+    In this scenario:
+
+        * User A has 5 tags
+        * User B has 8 tags
 
     Then, by default, user A will get only his/her tags (and user B, his/her)
     """

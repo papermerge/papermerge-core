@@ -1,27 +1,24 @@
 import logging
 import uuid
-import math
-from typing import Annotated, Union
+from typing import Annotated
 from uuid import UUID
 
 from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from papermerge.core import utils
+from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
-from papermerge.core.features.users import schema as users_schema
-from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
-from papermerge.core import config
 from papermerge.core.exceptions import EntityNotFound
+
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -29,37 +26,11 @@ logger = logging.getLogger(__name__)
 settings = config.get_settings()
 
 
-@router.get("/")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_nodes_details(
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-    node_ids: list[uuid.UUID] | None = Query(default=None),
-) -> list[nodes_schema.Folder | doc_schema.Document]:
-    """Returns detailed information about queried nodes
-    (breadcrumb, tags)
-
-    Required scope: `{scope}`
-    """
-    if node_ids is None:
-        return []
-
-    if len(node_ids) == 0:
-        return []
-
-    nodes = db.get_nodes(db_session, node_ids)
-
-    return nodes
-
-
 @router.get("/{parent_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
 ):
     """Returns a list nodes of parent_id
@@ -88,11 +59,11 @@ def get_node(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
-    pynode: nodes_schema.NewFolder | doc_schema.NewDocument,
+    pynode: schema.NewFolder | schema.NewDocument,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-) -> nodes_schema.Folder | doc_schema.Document | None:
+) -> schema.Folder | schema.Document | None:
     """Creates a node
 
     Required scope: `{scope}`
@@ -114,7 +85,7 @@ def create_node(
         )
         if pynode.id:
             attrs["id"] = pynode.id
-        new_folder = nodes_schema.NewFolder(**attrs)
+        new_folder = schema.NewFolder(**attrs)
         with Session() as db_session:
             created_node, error = nodes_dbapi.create_folder(
                 db_session, new_folder, user_id=user.id
@@ -139,7 +110,7 @@ def create_node(
         if pynode.id:
             attrs["id"] = pynode.id
 
-        new_document = doc_schema.NewDocument(**attrs)
+        new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
             created_node, error = doc_dbapi.create_document(
@@ -156,11 +127,11 @@ def create_node(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
-    node: nodes_schema.UpdateNode,
+    node: schema.UpdateNode,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> nodes_schema.Node:
+) -> schema.Node:
     """Updates node
 
     Required scope: `{scope}`
@@ -182,7 +153,7 @@ def update_node(
 def delete_nodes(
     list_of_uuids: list[UUID],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
 ):
     """Deletes nodes with specified UUIDs
@@ -210,18 +181,24 @@ def delete_nodes(
             to duplicate title on the target""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         },
-        404: {
+        400: {
             "description": """No target node with specified UUID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        419: {
+            "description": """No nodes were updated""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        420: {
+            "description": """Not all nodes were updated""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         },
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
-    params: nodes_schema.MoveNode,
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
-    ],
+    params: schema.MoveNode,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])],
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
@@ -235,21 +212,41 @@ def move_nodes(
     Returns UUIDs of successfully moved nodes.
     """
     try:
-        target_model = BaseTreeNode.objects.get(pk=params.target_id)
-    except BaseTreeNode.DoesNotExist as exc:
-        logger.error(exc, exc_info=True)
-        raise HTTPException(status_code=404, detail="Target not found")
-
-    for node_model in BaseTreeNode.objects.filter(pk__in=params.source_ids):
-        try:
-            move_node(node_model, target_model)
-        except IntegrityError as exc:
-            logger.error(exc, exc_info=True)
-            raise HTTPException(
-                status_code=432,
-                detail=f"Move not possible for '{node_model.title}'"
-                " because node with same title already present on the target",
+        with Session() as db_session:
+            affected_row_count = nodes_dbapi.move_nodes(
+                db_session,
+                source_ids=params.source_ids,
+                target_id=params.target_id,
+                user_id=user.id,
             )
+    except NoResultFound as exc:
+        logger.error(exc, exc_info=True)
+        error = schema.Error(
+            messages=["No results found. Please check that all source nodes exists"]
+        )
+        raise HTTPException(status_code=404, detail=error.model_dump())
+    except (IntegrityError, EntityNotFound) as exc:
+        logger.debug(exc, exc_info=True)
+        error = schema.Error(
+            messages=["Integrity error. Please check that target exists"]
+        )
+        raise HTTPException(status_code=400, detail=error.model_dump())
+
+    if affected_row_count == 0:
+        error = schema.Error(
+            messages=["No nodes were updated. Please check that source nodes exists"]
+        )
+        raise HTTPException(status_code=419, detail=error.model_dump())
+
+    if affected_row_count != len(params.source_ids):
+        error = schema.Error(
+            messages=[
+                "Not all nodes were updated"
+                f"(only {affected_row_count} out of {len(params.source_ids)})."
+                " Please check that all source nodes exists"
+            ]
+        )
+        raise HTTPException(status_code=420, detail=error.model_dump())
 
     return params.source_ids
 
@@ -260,9 +257,9 @@ def assign_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Assigns given list of tag names to the node.
 
@@ -291,15 +288,37 @@ def assign_node_tags(
     return node
 
 
+@router.get("/")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_nodes_details(
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    node_ids: list[uuid.UUID] | None = Query(default=None),
+) -> list[schema.Folder | schema.Document]:
+    """Returns detailed information about queried nodes
+    (breadcrumb, tags)
+
+    Required scope: `{scope}`
+    """
+    if node_ids is None:
+        return []
+
+    if len(node_ids) == 0:
+        return []
+
+    nodes = db.get_nodes(db_session, node_ids)
+
+    return nodes
+
+
 @router.patch("/{node_id}/tags")
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Appends given list of tag names to the node.
 
@@ -345,9 +364,9 @@ def remove_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Dissociate given tags the node.
 

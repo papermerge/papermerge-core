@@ -1,7 +1,7 @@
 from .features.users.db.orm import User
 from .features.document.db.orm import Document, DocumentVersion, Page
-from .features.nodes.db.orm import Folder
-from .features.tags.db.orm import Tag
+from .features.nodes.db.orm import Folder, Node
+from .features.tags.db.orm import Tag, NodeTagsAssociation
 from .features.custom_fields.db.orm import CustomField, CustomFieldValue
 from .features.groups.db.orm import Group, Permission
 
@@ -11,7 +11,9 @@ __all__ = [
     'DocumentVersion',
     'Page',
     'Folder',
+    'Node',
     'Tag',
+    'NodeTagsAssociation',
     'CustomField',
     'CustomFieldValue',
     'Group',

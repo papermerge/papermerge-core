@@ -2,32 +2,90 @@ import uuid
 
 from sqlalchemy import select, func
 
+from core.features.conftest import make_document
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
-from papermerge.core.features.nodes.db import orm as nodes_orm
-from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.features.tags.db import orm as tags_orm
+from papermerge.core import orm
 from papermerge.test.types import AuthTestClient
 
 
-def test_nodes_move():
+def test_nodes_move_basic(
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
+):
     """
-    doc = Document.objects.create(
-        title="doc.pdf", user=self.user, parent=self.user.inbox_folder
-    )
+    Given document "letter.pdf", located in user's home folder, and target
+    folder "Target Folder", the move endpoint must move document "letter.pdf"
+    from user's home folder into the "Target Folder".
+    """
+    user = auth_api_client.user
+    target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
+    doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
 
-    url = reverse("nodes-move")
-    data = {
-        "nodes": [{"id": str(doc.id)}],
-        "target_parent": {"id": str(self.user.home_folder.id)},
+    params = {"source_ids": [str(doc.id)], "target_id": str(target.id)}
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    assert response.status_code == 200, response.json()
+
+    stmt = select(orm.Document.parent_id).where(orm.Document.title == "letter.pdf")
+    new_parent_id = db_session.execute(stmt).scalar()
+    assert new_parent_id == target.id
+
+
+def test_nodes_move_when_target_id_does_not_exist(
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
+):
+    """Test move_endpoint when target ID is UUID of non-existing node"""
+    user = auth_api_client.user
+    doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
+
+    params = {"source_ids": [str(doc.id)], "target_id": str(uuid.uuid4())}
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    assert response.status_code == 400, response.json()
+
+    stmt = select(orm.Document.parent_id).where(orm.Document.title == "letter.pdf")
+    # doc.parent id should not change i.e. "letter.pdf" is still in home folder
+    current_parent_id = db_session.execute(stmt).scalar()
+    assert current_parent_id == user.home_folder.id
+
+
+def test_nodes_move_when_source_id_does_not_exist(
+    auth_api_client: AuthTestClient, db_session, make_folder
+):
+    """Test move_endpoint when source ID is UUID of non-existing node"""
+    user = auth_api_client.user
+    target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
+
+    params = {"source_ids": [str(uuid.uuid4())], "target_id": str(target.id)}
+
+    response = auth_api_client.post("/nodes/move", json=params)
+
+    assert response.status_code == 419, response.json()
+
+
+def test_nodes_move_when_some_source_id_does_not_exist(
+    auth_api_client: AuthTestClient, make_folder, make_document
+):
+    """Test move_endpoint when some source ID don't exist"""
+    user = auth_api_client.user
+    doc1 = make_document(title="doc1", user=user, parent=user.home_folder)
+    doc2 = make_document(title="doc2", user=user, parent=user.home_folder)
+    target = make_folder(title="Target Folder", user=user, parent=user.home_folder)
+
+    source_ids = [str(uuid.uuid4()), str(doc1.id), str(doc2.id)]
+    params = {
+        "source_ids": source_ids,  # note that source_ids[0] does not exit
+        "target_id": str(target.id),
     }
 
-    response = self.client.post(url, json.dumps(data), content_type="application/json")
+    response = auth_api_client.post("/nodes/move", json=params)
 
-    assert response.status_code == 200, response.data
-    """
-    pass
+    # code 420 means that only some nodes where moved, situation which
+    # may happen when some source IDs are invalid (non-existing nodes)
+    assert response.status_code == 420, response.json()
 
 
 def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_session):
@@ -52,7 +110,7 @@ def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_sess
     response = auth_api_client.post("/nodes/", json=payload)
     assert response.status_code == 201, response.json()
     assert doc_dbapi.count_docs(db_session) == 1
-    doc = db_session.scalars(select(doc_orm.Document).limit(1)).one()
+    doc = db_session.scalars(select(orm.Document).limit(1)).one()
     assert doc.id == custom_id
 
 
@@ -74,7 +132,7 @@ def test_create_folder_with_custom_id(auth_api_client: AuthTestClient, db_sessio
 
     response = auth_api_client.post("/nodes/", json=payload)
     folder = db_session.scalars(
-        select(nodes_orm.Folder).where(nodes_orm.Node.title == "My Documents")
+        select(orm.Folder).where(orm.Node.title == "My Documents")
     ).one()
 
     assert response.status_code == 201, response.json()
@@ -202,17 +260,17 @@ def test_assign_tags_to_non_tagged_folder(
     assert response.status_code == 200, response.json()
 
     folder = db_session.scalars(
-        select(nodes_orm.Folder).where(
-            nodes_orm.Folder.title == "Receipts",
-            nodes_orm.Folder.user == auth_api_client.user,
+        select(orm.Folder).where(
+            orm.Folder.title == "Receipts",
+            orm.Folder.user == auth_api_client.user,
         )
     ).one()
 
     stmt = (
-        select(func.count(tags_orm.Tag.id))
-        .select_from(tags_orm.Tag)
-        .join(tags_orm.NodeTagsAssociation)
-        .where(tags_orm.NodeTagsAssociation.node_id == folder.id)
+        select(func.count(orm.Tag.id))
+        .select_from(orm.Tag)
+        .join(orm.NodeTagsAssociation)
+        .where(orm.NodeTagsAssociation.node_id == folder.id)
     )
 
     assert db_session.execute(stmt).scalar() == 2
@@ -250,9 +308,9 @@ def test_assign_tags_to_tagged_folder(
     assert response.status_code == 200
 
     folder = db_session.scalars(
-        select(nodes_orm.Folder).where(
-            nodes_orm.Folder.title == "Receipts",
-            nodes_orm.Folder.user == auth_api_client.user,
+        select(orm.Folder).where(
+            orm.Folder.title == "Receipts",
+            orm.Folder.user == auth_api_client.user,
         )
     ).one()
 
@@ -264,7 +322,7 @@ def test_assign_tags_to_tagged_folder(
     assert set(all_new_tags) == {"paid", "important"}
     # model for tag 'unpaid' still exists, it was just
     # dissociated from folder 'Receipts'
-    stmt = select(tags_orm.Tag).where(tags_orm.Tag.name == "unpaid").exists()
+    stmt = select(orm.Tag).where(orm.Tag.name == "unpaid").exists()
 
     assert db_session.query(stmt).scalar() is True
 
@@ -301,9 +359,9 @@ def test_assign_tags_to_document(
     assert response.status_code == 200
 
     found_d1 = db_session.scalars(
-        select(doc_orm.Document).where(
-            doc_orm.Document.title == "invoice.pdf",
-            doc_orm.Document.user == auth_api_client.user,
+        select(orm.Document).where(
+            orm.Document.title == "invoice.pdf",
+            orm.Document.user == auth_api_client.user,
         )
     ).one()
 
@@ -343,9 +401,9 @@ def test_append_tags_to_folder(
 
     assert response.status_code == 200, response.json()
     folder = db_session.scalars(
-        select(nodes_orm.Folder).where(
-            nodes_orm.Folder.title == "Receipts",
-            nodes_orm.Folder.user == u,
+        select(orm.Folder).where(
+            orm.Folder.title == "Receipts",
+            orm.Folder.user == u,
         )
     ).one()
     assert len(folder.tags) == 2
@@ -387,9 +445,9 @@ def test_remove_tags_from_folder(
     assert response.status_code == 200, response.json()
 
     folder = db_session.scalars(
-        select(nodes_orm.Folder).where(
-            nodes_orm.Folder.title == "Receipts",
-            nodes_orm.Folder.user == u,
+        select(orm.Folder).where(
+            orm.Folder.title == "Receipts",
+            orm.Folder.user == u,
         )
     ).one()
 
@@ -465,7 +523,7 @@ def test_delete_nodes_one_folder(
 
     assert response.status_code == 200, response.json()
 
-    stmt = select(nodes_orm.Folder).where(nodes_orm.Folder.id == folder.id)
+    stmt = select(orm.Folder).where(orm.Folder.id == folder.id)
     found = db_session.execute(stmt).scalar()
 
     assert found is None
@@ -482,7 +540,7 @@ def test_delete_nodes_multiple_nodes(
 
     assert response.status_code == 200, response.json()
 
-    stmt = select(nodes_orm.Node).where(nodes_orm.Node.id.in_([folder.id, doc.id]))
+    stmt = select(orm.Node).where(orm.Node.id.in_([folder.id, doc.id]))
     found = db_session.execute(stmt).scalar()
 
     assert found is None
@@ -506,9 +564,7 @@ def test_delete_nodes_with_descendants(
 
     assert response.status_code == 200, response.json()
 
-    stmt = select(nodes_orm.Node).where(
-        nodes_orm.Node.id.in_([doc1.id, doc2.id, nested_folder.id])
-    )
+    stmt = select(orm.Node).where(orm.Node.id.in_([doc1.id, doc2.id, nested_folder.id]))
     found = db_session.execute(stmt).scalar()
 
     assert found is None

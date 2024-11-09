@@ -3,6 +3,8 @@ import io
 import os
 from pathlib import Path
 
+from sqlalchemy import select
+
 from papermerge.core import orm, schema
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
@@ -135,11 +137,12 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(
         )
 
     src_ver = src.versions[0]
-    saved_src_pages_ids = (
-        db_session.query(orm.Page.id)
+    saved_src_pages_ids = db_session.execute(
+        select(orm.Page.id)
         .where(orm.Page.document_version_id == src_ver.id, orm.Page.number <= 2)
         .order_by(orm.Page.number)
-    )
+    ).scalars()
+    saved_src_pages_ids = saved_src_pages_ids.all()
 
     [result_old_doc, result_new_docs] = page_mngm_dbapi.extract_pages(
         db_session,
@@ -150,6 +153,33 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(
         strategy=schema.ExtractStrategy.ALL_PAGES_IN_ONE_DOC,
         title_format="my-new-doc",
     )
+
+    assert result_old_doc
+    assert len(result_old_doc.versions) == 2
+    assert len(result_new_docs) == 1
+    assert result_new_docs[0].parent_id == dst_folder.id
+
+    ver = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=result_new_docs[0].id, user_id=user.id
+    )
+
+    stmt = (
+        select(orm.Page)
+        .join(orm.DocumentVersion)
+        .join(orm.Document)
+        .where(orm.DocumentVersion.id == ver.id)
+        .order_by(orm.Page.number)
+    )
+
+    pages = db_session.execute(stmt).scalars().all()
+
+    p1 = PageDir(pages[0].id, number=1, name="dst newly created doc")
+    p2 = PageDir(saved_src_pages_ids[0], number=1, name="src old")
+    assert p1 == p2
+
+    p1 = PageDir(pages[1].id, number=2, name="dst newly create doc")
+    p2 = PageDir(saved_src_pages_ids[1], number=2, name="src old")
+    assert p1 == p2
 
 
 class PageDir:
@@ -187,6 +217,5 @@ class PageDir:
         return all_equal
 
     def __repr__(self):
-        return (
-            f"PageDir(" f"number={self.number}, name={self.name} id={self.page_id}" ")"
-        )
+        path = abs_page_path(self.page_id)
+        return f"PageDir(number={self.number}, path={path})"

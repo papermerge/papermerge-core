@@ -182,6 +182,69 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(
     assert p1 == p2
 
 
+def test_extract_two_pages_to_folder_each_page_in_separate_doc(
+    make_document, make_folder, user, db_session
+):
+    """Scenario tests extraction of first two pages of source document
+    into destination folder. Each page is extracted into
+    a separate document, as result to new documents are created.
+
+        Each page into one separate doc
+         src   -[S1, S2]->   dst1  ,   dst2
+    old -> new       old -> new   old -> new
+     S1    S3         x     S1     x     S2
+     S2
+     S3
+    """
+    src = make_document(title="thee-pages.pdf", user=user, parent=user.home_folder)
+    dst_folder = make_folder(title="Target folder", user=user, parent=user.home_folder)
+    PDF_PATH = RESOURCES / "three-pages.pdf"
+
+    with open(PDF_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(PDF_PATH).st_size
+        update_src, _ = doc_dbapi.upload(
+            db_session=db_session,
+            document_id=src.id,
+            content=io.BytesIO(content),
+            file_name="three-pages.pdf",
+            size=size,
+            content_type=constants.ContentType.APPLICATION_PDF,
+        )
+
+    src_ver = src.versions[0]
+    src_pages = db_session.execute(
+        select(orm.Page)
+        .where(orm.Page.document_version_id == src_ver.id, orm.Page.number <= 2)
+        .order_by(orm.Page.number)
+    ).scalars()
+    saved_src_pages_ids = [p.id for p in src_pages.all()]
+
+    # add some text to the source version pages
+    for p in src_pages.all():
+        db_session.add(p)
+        p.text = f"I am page number {p.number}!"
+
+    db_session.commit()
+
+    # page extraction / function under test (FUD)
+    [result_old_doc, result_new_docs] = page_mngm_dbapi.extract_pages(  # FUD
+        db_session,
+        user_id=user.id,
+        # we are moving out first two pages of the source doc version
+        source_page_ids=saved_src_pages_ids,
+        target_folder_id=dst_folder.id,
+        strategy=schema.ExtractStrategy.ONE_PAGE_PER_DOC,
+        title_format="my-new-doc",
+    )
+
+    assert result_old_doc
+    assert len(result_old_doc.versions) == 2
+    assert len(result_new_docs) == 2
+    assert result_new_docs[0].parent_id == dst_folder.id
+    assert result_new_docs[1].parent_id == dst_folder.id
+
+
 class PageDir:
     """Helper class to test if content of two dirs is same
 

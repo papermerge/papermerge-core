@@ -354,9 +354,11 @@ def extract_pages(
 
     if strategy == schema.ExtractStrategy.ONE_PAGE_PER_DOC:
         new_docs = extract_to_single_paged_docs(
+            db_session,
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
             title_format=title_format,
+            user_id=user_id,
         )
     else:
         # all pages in a single doc
@@ -393,36 +395,60 @@ def extract_pages(
 
 
 def extract_to_single_paged_docs(
-    source_page_ids: List[uuid.UUID], target_folder_id: uuid.UUID, title_format: str
+    db_session,
+    source_page_ids: List[uuid.UUID],
+    target_folder_id: uuid.UUID,
+    title_format: str,
+    user_id: uuid.UUID,
 ) -> List[schema.Document]:
     """Extracts given pages into separate documents
 
     Each source page will end up in a separate document
     located in target folder.
     """
-    pages = Page.objects.filter(pk__in=source_page_ids)
-    dst_folder = Folder.objects.get(pk=target_folder_id)
+    pages = (
+        db_session.execute(
+            select(orm.Page)
+            .where(orm.Page.id.in_(source_page_ids))
+            .order_by(orm.Page.number)
+        )
+        .scalars()
+        .all()
+    )
+    dst_folder = db_session.execute(
+        select(orm.Folder).where(orm.Folder.id == target_folder_id)
+    ).scalar()
+
     result = []
 
     for page in pages:
         title = f"{title_format}-{uuid.uuid4()}.pdf"
 
-        doc = Document.objects.create_document(
+        attrs = schema.NewDocument(
             title=title,
-            lang=page.lang,
-            user_id=dst_folder.user_id,
-            parent=dst_folder,
-            ocr_status=OCR_STATUS_SUCCEEDED,
+            lang=pages[0].lang,
+            parent_id=dst_folder.id,
+            ocr_status=types.OCRStatusEnum.unknown,
         )
-        result.append(doc)
+        new_doc, error = doc_dbapi.create_document(
+            db_session,
+            attrs=attrs,
+            user_id=dst_folder.user_id,
+        )
+        result.append(new_doc)
         # create new document version with one page
-        doc_version = doc.version_bump_from_pages(pages=[page])
+        dst_doc, error = doc_dbapi.version_bump_from_pages(
+            db_session, dst_document_id=new_doc.id, pages=[page]
+        )
 
-        reuse_ocr_data(source_ids=[page.id], target_ids=[doc_version.pages.first().id])
+        reuse_ocr_data(
+            source_ids=[page.id], target_ids=[dst_doc.versions[0].pages[0].id]
+        )
 
         copy_text_field(
-            src=pages.first().document_version,
-            dst=doc_version,
+            db_session=db_session,
+            src=pages[0].document_version,
+            dst=dst_doc.versions[0],
             page_numbers=[page.number],
         )
 

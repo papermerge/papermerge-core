@@ -37,7 +37,7 @@ def retrieve_tags_without_pagination(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        tags = tags_dbapi.get_tags(db_session, user.id, order_by=["name"])
+        tags = tags_dbapi.get_tags_without_pagination(db_session, user_id=user.id)
 
     return tags
 

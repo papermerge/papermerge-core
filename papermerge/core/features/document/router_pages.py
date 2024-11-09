@@ -12,9 +12,9 @@ from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.constants import DEFAULT_PAGE_SIZE
-from papermerge.core.page_ops import apply_pages_op
-from papermerge.core.page_ops import extract_pages as api_extract_pages
-from papermerge.core.page_ops import move_pages as api_move_pages
+from papermerge.core.features.page_mngm.db.api import apply_pages_op
+from papermerge.core.features.page_mngm.db.api import extract_pages as api_extract_pages
+from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pages
 from papermerge.core.utils import image
 
 logger = logging.getLogger(__name__)
@@ -178,13 +178,17 @@ def extract_pages(
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.
     """
-    [source, target_docs] = api_extract_pages(
-        source_page_ids=arg.source_page_ids,
-        target_folder_id=arg.target_folder_id,
-        strategy=arg.strategy,
-        title_format=arg.title_format,
-    )
-    target_nodes = BaseTreeNode.objects.filter(pk__in=[doc.id for doc in target_docs])
-    model = schema.ExtractPagesOut(source=source, target=target_nodes)
+    with db.Session() as db_session:
+        [source, target_docs] = api_extract_pages(
+            db_session,
+            source_page_ids=arg.source_page_ids,
+            target_folder_id=arg.target_folder_id,
+            strategy=arg.strategy,
+            title_format=arg.title_format,
+        )
+        target_nodes = BaseTreeNode.objects.filter(
+            pk__in=[doc.id for doc in target_docs]
+        )
+        model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
     return schema.ExtractPagesOut.model_validate(model)

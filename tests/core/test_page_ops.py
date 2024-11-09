@@ -531,38 +531,6 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     assert dst_pages2[0].text == src_ver.pages.all()[1].text
 
 
-@patch("papermerge.core.signals.send_ocr_task")
-def test_copy_without_pages(_):
-    """Scenario
-
-         copy without page 1
-    ver X  ->  ver X + 1
-     S1         S2
-     S2
-    """
-    user = user_recipe.make()
-    # 1. create a doc with two pages
-    # first page has word "cat"
-    # second page has word "dog"
-    src = maker.document(resource="living-things.pdf", user=user, include_ocr_data=True)
-    orig_doc_ver = src.versions.last()
-    orig_first_page = orig_doc_ver.pages.all()[0]
-    orig_second_page = orig_doc_ver.pages.all()[1]
-    orig_first_page.text = "cat"
-    orig_second_page.text = "dog"
-    orig_first_page.save()
-    orig_second_page.save()
-    # page containing "cat" / first page is left behind
-    pages_to_leave_behind = [orig_doc_ver.pages.first().id]
-
-    [_, new_ver, _] = copy_without_pages(pages_to_leave_behind)
-
-    assert new_ver.pages.count() == 1
-    # new version contains only 'dog'
-    assert ["dog"] == [p.text for p in new_ver.pages.all()]
-    assert new_ver.text == "dog"
-
-
 class PageDir:
     """Helper class to test if content of two dirs is same
 

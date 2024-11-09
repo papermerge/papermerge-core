@@ -79,3 +79,17 @@ def test_tags_paginated_result__8_items_first_page(
     assert paginated_items.page_number == 1
     assert paginated_items.num_pages == 2
     assert len(paginated_items.items) == 5
+
+
+def test_get_all_tags_no_pagination(make_tag, auth_api_client: AuthTestClient, user):
+    total_tags = 8
+    for i in range(total_tags):
+        make_tag(name=f"Tag {i}", user=user)
+
+    response = auth_api_client.get("/tags/all")
+
+    assert response.status_code == 200, response.json()
+
+    items = [schema.Tag(**item) for item in response.json()]
+
+    assert len(items) == 8

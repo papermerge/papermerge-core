@@ -12,6 +12,16 @@ from papermerge.core import schema
 from papermerge.core import orm
 
 
+def get_tags_without_pagination(
+    db_session: Session, *, user_id: uuid.UUID
+) -> list[schema.Tag]:
+    stmt = select(orm.Tag).where(orm.Tag.user_id == user_id)
+    db_items = db_session.scalars(stmt).all()
+    result = [schema.Tag.model_validate(db_item) for db_item in db_items]
+
+    return result
+
+
 def get_tags(
     db_session: Session, *, user_id: uuid.UUID, page_size: int, page_number: int
 ) -> schema.PaginatedResponse[schema.Tag]:

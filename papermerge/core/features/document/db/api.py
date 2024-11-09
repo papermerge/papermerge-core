@@ -599,12 +599,12 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
     text = []
 
     stmt = (
-        select(orm.Page.id, orm.Page.text)
+        select(orm.Page.id, orm.Page.text, orm.Page.number)
         .where(orm.Page.document_version_id == document_version_id)
         .order_by(orm.Page.number)
     )
 
-    pages = [(row.id, row.text) for row in db_session.execute(stmt)]
+    pages = [(row.id, row.text, row.number) for row in db_session.execute(stmt)]
 
     for page, stream in zip(pages, streams):
         if page[1] is None:  # page.text

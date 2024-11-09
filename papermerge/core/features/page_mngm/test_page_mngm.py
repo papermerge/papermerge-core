@@ -63,31 +63,20 @@ def test_copy_without_pages(user, make_document, db_session):
         )
 
     orig_doc_ver = update_src.versions[0]
-    orig_first_page = orig_doc_ver.pages[0]
-    orig_second_page = orig_doc_ver.pages[1]
-    orig_3rd_page = orig_doc_ver.pages[2]
-
-    db_orig_first_page = (
-        db_session.query(orm.Page).where(orm.Page.id == orig_first_page.id).scalar()
-    )
-    db_orig_second_page = (
-        db_session.query(orm.Page).where(orm.Page.id == orig_second_page.id).scalar()
-    )
-    db_orig_3rd_page = (
-        db_session.query(orm.Page).where(orm.Page.id == orig_3rd_page.id).scalar()
+    orig_pages = (
+        db_session.query(orm.Page)
+        .where(orm.Page.document_version_id == orig_doc_ver.id)
+        .order_by(orm.Page.number)
     )
 
-    db_orig_first_page.text = "cat"
-    db_orig_second_page.text = "dog"
-    db_orig_3rd_page.text = "hamster"
-    db_session.add(db_orig_first_page)
-    db_session.add(db_orig_second_page)
-    db_session.add(db_orig_3rd_page)
+    orig_pages[0].text = "cat"
+    orig_pages[1].text = "dog"
+    orig_pages[2].text = "hamster"
     db_session.commit()
 
     # page containing "cat" / first page is left behind
     # other way to say it: user extract pages 2 and 3 i.e. page "dog" and "hamster"
-    pages_to_leave_behind = [orig_first_page.id]
+    pages_to_leave_behind = [orig_pages[0].id]
 
     #### Act  ######
     [_, new_ver, _] = page_mngm_dbapi.copy_without_pages(

@@ -1,14 +1,31 @@
-import io
+"""Page Management"""
 
-from papermerge.core.db.engine import Session
-from papermerge.core.features.document import schema as doc_schema
+import io
+import logging
+import uuid
+from pathlib import Path
+from typing import List
+
+from celery import current_app
+from pikepdf import Pdf
+from sqlalchemy import select
+
+from papermerge.core import constants as const
+from papermerge.core.pathlib import abs_page_path
+from papermerge.core.storage import get_storage_instance
+from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.db import Session
+from papermerge.core import orm, schema
 from papermerge.core.features.document.db import api as doc_dbapi
+
+
+logger = logging.getLogger(__name__)
 
 
 def copy_text_field(
     db_session: Session,
-    src: doc_schema.DocumentVersion,
-    dst: doc_schema.DocumentVersion,
+    src: schema.DocumentVersion,
+    dst: schema.DocumentVersion,
     page_numbers: list[int],
 ) -> None:
     streams = collect_text_streams(
@@ -21,7 +38,7 @@ def copy_text_field(
 
 
 def collect_text_streams(
-    version: doc_schema.DocumentVersion, page_numbers: list[int]
+    version: schema.DocumentVersion, page_numbers: list[int]
 ) -> list[io.StringIO]:
     """
     Returns list of texts of given page numbers from specified document version
@@ -33,25 +50,6 @@ def collect_text_streams(
     result = [io.StringIO(pages_map[number].text) for number in page_numbers]
 
     return result
-
-
-"""Page Operations"""
-import io
-import logging
-import uuid
-from pathlib import Path
-from typing import List
-
-from celery import current_app
-from pikepdf import Pdf
-
-from papermerge.core import constants as const
-from papermerge.core.pathlib import abs_page_path
-from papermerge.core import schema
-from papermerge.core.storage import get_storage_instance
-from papermerge.core.utils.decorators import skip_in_tests
-
-logger = logging.getLogger(__name__)
 
 
 def apply_pages_op(items: List[schema.PageAndRotOp]) -> List[schema.Document]:
@@ -182,36 +180,6 @@ def reuse_ocr_data(
     return not_copied_ids
 
 
-def copy_text_field(
-    src: schema.DocumentVersion, dst: schema.DocumentVersion, page_numbers: list[int]
-) -> None:
-    logger.debug(
-        f"Reuse text field for page numbers={page_numbers}" f" src={src}" f" dst={dst}"
-    )
-    streams = collect_text_streams(
-        version=src,
-        # list of old_version page numbers
-        page_numbers=page_numbers,
-    )
-    # updates page.text fields and document_version.text field
-    dst.update_text_field(streams)
-
-
-def collect_text_streams(
-    version: schema.DocumentVersion, page_numbers: list[int]
-) -> list[io.StringIO]:
-    """
-    Returns list of texts of given page numbers from specified document version
-
-    Each page's text is wrapped as io.StringIO instance.
-    """
-    pages_map = {page.number: page for page in version.pages.all()}
-
-    result = [io.StringIO(pages_map[number].text) for number in page_numbers]
-
-    return result
-
-
 def move_pages(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
@@ -248,7 +216,7 @@ def move_pages_mix(
     value of the returned tuple.
     """
     [src_old_version, src_new_version, moved_pages_count] = copy_without_pages(
-        source_page_ids
+        source_page_ids, user_id=user_id
     )
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)
@@ -368,6 +336,7 @@ def extract_pages(
     db_session,
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
+    user_id: uuid.UUID,
     strategy: schema.ExtractStrategy,
     title_format: str,
 ) -> [schema.Document | None, List[schema.Document]]:
@@ -376,8 +345,10 @@ def extract_pages(
     is source document and second element is the list
     of newly created documents
     """
+    # source document's source will bumped
+    # source document's new version = old version minus extracted pages
     [old_doc_ver, new_doc_ver, moved_pages_count] = copy_without_pages(
-        db_session, source_page_ids
+        db_session, source_page_ids, user_id=user_id
     )
 
     if strategy == schema.ExtractStrategy.ONE_PAGE_PER_DOC:
@@ -494,8 +465,7 @@ def extract_to_multi_paged_doc(
 
 
 def copy_without_pages(
-    db_session,
-    page_ids: List[uuid.UUID],
+    db_session, page_ids: List[uuid.UUID], user_id: uuid.UUID
 ) -> [schema.DocumentVersion, schema.DocumentVersion, int]:
     """Copy all pages  WHICH ARE NOT in `page_ids` list from src to dst
 
@@ -507,16 +477,24 @@ def copy_without_pages(
     The OCR data/page folder reused.
     Also sends INDEX UPDATE notification.
     """
-    moved_pages = Page.objects.filter(pk__in=page_ids)
+    moved_pages = (
+        db_session.execute(select(orm.Page).where(orm.Page.id.in_(page_ids)))
+        .scalars()
+        .all()
+    )
     moved_page_ids = [page.id for page in moved_pages]
-    src_first_page = moved_pages.first()
+
+    src_first_page = moved_pages[0]
     src_old_version = src_first_page.document_version
     src_old_doc = src_old_version.document
-    moved_pages_count = moved_pages.count()
+    moved_pages_count = len(moved_pages)
 
-    src_new_version = src_old_doc.version_bump(
-        page_count=src_old_version.pages.count() - moved_pages_count,
+    src_new_version = doc_dbapi.version_bump(
+        db_session,
+        doc_id=src_old_doc.id,
+        page_count=len(src_old_version.pages) - moved_pages_count,
         short_description=f"{moved_pages_count} page(s) moved out",
+        user_id=user_id,
     )
 
     copy_pdf(
@@ -525,33 +503,42 @@ def copy_without_pages(
         page_numbers=[page.number for page in moved_pages],
     )
 
+    src_old_version_page_ids = db_session.execute(
+        select(orm.Page.id)
+        .where(orm.Page.document_version_id == src_old_version.id)
+        .order_by("number")
+    ).scalars()
+
     src_keys = [  # IDs of the pages which were not removed
-        page.id
-        for page in src_old_version.pages.order_by("number")
-        if not (page.id in moved_page_ids)  # Notice the negation
+        page_id
+        for page_id in src_old_version_page_ids.all()
+        if not (page_id in moved_page_ids)  # Notice the negation
     ]
 
-    dst_values = [
-        page.id  # IDs of the pages in new version of the source
-        for page in src_new_version.pages.order_by("number")
-    ]
+    dst_values = db_session.execute(
+        select(orm.Page.id)
+        .where(orm.Page.document_version_id == src_new_version.id)
+        .order_by("number")
+    ).scalars()
 
-    if not_copied_ids := reuse_ocr_data(src_keys, dst_values):
+    if not_copied_ids := reuse_ocr_data(src_keys, dst_values.all()):
         logger.info(f"Pages with IDs {not_copied_ids} do not have OCR data")
 
+    page_numbers = [
+        p.number
+        for p in src_old_version.pages
+        if not (p.id in moved_page_ids)  # Notice the negation
+    ]
+
     copy_text_field(
-        src=src_old_version,
-        dst=src_new_version,
-        page_numbers=[
-            p.number
-            for p in src_old_version.pages.all()
-            if not (p.id in moved_page_ids)  # Notice the negation
-        ],
+        db_session, src=src_old_version, dst=src_new_version, page_numbers=page_numbers
     )
 
     notify_version_update(
         remove_ver_id=str(src_old_version.id), add_ver_id=str(src_new_version.id)
     )
+
+    db_session.commit()
 
     return [
         src_old_version,  # orig. ver where pages were copied from

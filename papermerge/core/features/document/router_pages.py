@@ -185,6 +185,7 @@ def extract_pages(
             target_folder_id=arg.target_folder_id,
             strategy=arg.strategy,
             title_format=arg.title_format,
+            user_id=user.id,
         )
         target_nodes = BaseTreeNode.objects.filter(
             pk__in=[doc.id for doc in target_docs]

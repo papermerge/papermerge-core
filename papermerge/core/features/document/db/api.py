@@ -605,6 +605,7 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
     )
 
     pages = [(row.id, row.text) for row in db_session.execute(stmt)]
+
     for page, stream in zip(pages, streams):
         if page[1] is None:  # page.text
             txt = stream.read()
@@ -621,6 +622,7 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
             .values(text=stripped_text)
         )
         db_session.execute(sql)
+    db_session.commit()
 
 
 class UploadStrategy:
@@ -763,6 +765,7 @@ def upload(
         copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(content)
+
         pdf_ver.page_count = page_count
         for page_number in range(1, page_count + 1):
             db_page_pdf = orm.Page(

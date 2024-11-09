@@ -8,7 +8,7 @@ from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from papermerge.core import utils, schema
+from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.constants import INDEX_ADD_NODE
@@ -18,7 +18,6 @@ from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
-from papermerge.core import config
 from papermerge.core.exceptions import EntityNotFound
 
 

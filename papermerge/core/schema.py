@@ -1,4 +1,4 @@
-from .features.nodes.schema import Folder, NewFolder, Node
+from .features.nodes.schema import Folder, NewFolder, Node, UpdateNode, MoveNode
 from .features.document.schema import (
     Document,
     NewDocument,
@@ -27,6 +27,8 @@ __all__ = [
     'Folder',
     'NewFolder',
     'Node',
+    'UpdateNode',
+    'MoveNode',
     'Document',
     'NewDocument',
     'DocumentVersion',

@@ -8,22 +8,18 @@ from celery import current_app
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from papermerge.core import utils
+from papermerge.core import utils, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
-from papermerge.core.features.users import schema as users_schema
-from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.features.nodes import schema as nodes_schema
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core import config
 from papermerge.core.exceptions import EntityNotFound
-from papermerge.core import schema
 
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
@@ -36,9 +32,7 @@ settings = config.get_settings()
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id,
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
 ):
     """Returns a list nodes of parent_id
@@ -67,11 +61,11 @@ def get_node(
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.NODE_CREATE)
 def create_node(
-    pynode: nodes_schema.NewFolder | doc_schema.NewDocument,
+    pynode: schema.NewFolder | schema.NewDocument,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-) -> nodes_schema.Folder | doc_schema.Document | None:
+) -> schema.Folder | schema.Document | None:
     """Creates a node
 
     Required scope: `{scope}`
@@ -93,7 +87,7 @@ def create_node(
         )
         if pynode.id:
             attrs["id"] = pynode.id
-        new_folder = nodes_schema.NewFolder(**attrs)
+        new_folder = schema.NewFolder(**attrs)
         with Session() as db_session:
             created_node, error = nodes_dbapi.create_folder(
                 db_session, new_folder, user_id=user.id
@@ -118,7 +112,7 @@ def create_node(
         if pynode.id:
             attrs["id"] = pynode.id
 
-        new_document = doc_schema.NewDocument(**attrs)
+        new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
             created_node, error = doc_dbapi.create_document(
@@ -135,11 +129,11 @@ def create_node(
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
-    node: nodes_schema.UpdateNode,
+    node: schema.UpdateNode,
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> nodes_schema.Node:
+) -> schema.Node:
     """Updates node
 
     Required scope: `{scope}`
@@ -161,7 +155,7 @@ def update_node(
 def delete_nodes(
     list_of_uuids: list[UUID],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
 ):
     """Deletes nodes with specified UUIDs
@@ -205,10 +199,8 @@ def delete_nodes(
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
 def move_nodes(
-    params: nodes_schema.MoveNode,
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])
-    ],
+    params: schema.MoveNode,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])],
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
@@ -267,9 +259,9 @@ def assign_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Assigns given list of tag names to the node.
 
@@ -301,11 +293,9 @@ def assign_node_tags(
 @router.get("/")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-) -> list[nodes_schema.Folder | doc_schema.Document]:
+) -> list[schema.Folder | schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
 
@@ -328,9 +318,9 @@ def update_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Appends given list of tag names to the node.
 
@@ -376,9 +366,9 @@ def remove_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-) -> doc_schema.Document | nodes_schema.Folder:
+) -> schema.Document | schema.Folder:
     """
     Dissociate given tags the node.
 

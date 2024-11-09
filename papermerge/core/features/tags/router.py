@@ -54,15 +54,13 @@ def retrieve_tags(
 
     Required scope: `{scope}`
     """
-    order_by = [
-        "name",
-    ]
-
-    if params.order_by:
-        order_by = [item.strip() for item in params.order_by.split(",")]
-
     with Session() as db_session:
-        tags = tags_dbapi.get_tags(db_session, user.id, order_by=order_by)
+        tags = tags_dbapi.get_tags(
+            db_session,
+            user_id=user.id,
+            page_number=params.page_number,
+            page_size=params.page_size,
+        )
 
     return tags
 

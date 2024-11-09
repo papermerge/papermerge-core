@@ -11,7 +11,7 @@ from papermerge.core.page_ops import (
     extract_pages,
     move_pages,
 )
-from papermerge.core.pathlib import abs_page_path
+
 from papermerge.core.schemas.pages import ExtractStrategy, MoveStrategy
 from papermerge.core.schemas.pages import Page as PyPage
 from papermerge.core.schemas.pages import PageAndRotOp
@@ -529,43 +529,3 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(_):
     )
     # destination page must be same as second source page
     assert dst_pages2[0].text == src_ver.pages.all()[1].text
-
-
-class PageDir:
-    """Helper class to test if content of two dirs is same
-
-    In order for two dirs to have same content they need to
-    have same files and each corresponding file must have same content.
-
-    The whole point is to test if page content dir was copied
-    correctly
-    """
-
-    def __init__(self, page_id: uuid.UUID, number: int, name: str):
-        """Only page_id is used for comparison, other fields
-        (number, name) are only for easy human reading when
-        assert comparison fails"""
-        self.page_id = str(page_id)
-        self.number = number  # helper for easy human read
-        self.name = name  # helper for easy human read
-
-    @property
-    def files(self):
-        path = abs_page_path(self.page_id)
-        return sorted(path.glob("*"), key=lambda i: i.name)
-
-    def __eq__(self, other):
-        all_equal = True
-
-        for file1, file2 in zip(self.files, other.files):
-            content1 = open(file1).read()
-            content2 = open(file2).read()
-            if content1 != content2:
-                all_equal = False
-
-        return all_equal
-
-    def __repr__(self):
-        return (
-            f"PageDir(" f"number={self.number}, name={self.name} id={self.page_id}" ")"
-        )

@@ -15,7 +15,7 @@ from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.utils.decorators import skip_in_tests
 from papermerge.core.db import Session
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, types
 from papermerge.core.features.document.db import api as doc_dbapi
 
 
@@ -105,8 +105,9 @@ def copy_pdf(src: Path, dst: Path, page_numbers: list[int]):
         raise ValueError("Too many values in page_numbers")
 
     _deleted_count = 0
-    for page_number in page_numbers:
-        pdf.pages.remove(p=page_number - _deleted_count)
+    for page_number in sorted(page_numbers):
+        remove = page_number - _deleted_count
+        pdf.pages.remove(p=remove)
         _deleted_count += 1
 
     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -360,9 +361,11 @@ def extract_pages(
     else:
         # all pages in a single doc
         new_docs = extract_to_multi_paged_doc(
+            db_session,
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
             title_format=title_format,
+            user_id=user_id,
         )
 
     source_doc = new_doc_ver.document
@@ -373,12 +376,12 @@ def extract_pages(
 
     for doc in target_docs:
         logger.debug(f"Notifying index to add doc.title={doc.title} doc.id={doc.id}")
-        logger.debug(f"Doc last version={doc.versions.last()}")
+        logger.debug(f"Doc last version={doc.versions[-1]}")
 
     notify_add_docs([str(doc.id) for doc in target_docs])
     notify_generate_previews(list([str(doc.id) for doc in target_docs]))
 
-    if old_doc_ver.pages.count() == moved_pages_count:
+    if len(old_doc_ver.pages) == moved_pages_count:
         # all source pages were extracted, document should
         # be deleted as its last version does not contain
         # any page
@@ -427,7 +430,11 @@ def extract_to_single_paged_docs(
 
 
 def extract_to_multi_paged_doc(
-    source_page_ids: List[uuid.UUID], target_folder_id: uuid.UUID, title_format: str
+    db_session,
+    source_page_ids: List[uuid.UUID],
+    target_folder_id: uuid.UUID,
+    title_format: str,
+    user_id: uuid.UUID,
 ) -> schema.Document:
     """Extracts given pages into separate documents
 
@@ -436,27 +443,50 @@ def extract_to_multi_paged_doc(
     """
     title = f"{title_format}-{uuid.uuid4()}.pdf"
 
-    pages = Page.objects.filter(pk__in=source_page_ids)
+    pages = (
+        db_session.execute(
+            select(orm.Page)
+            .where(orm.Page.id.in_(source_page_ids))
+            .order_by(orm.Page.number)
+        )
+        .scalars()
+        .all()
+    )
     first_page = pages[0]
-    dst_folder = Folder.objects.get(pk=target_folder_id)
+    dst_folder = db_session.execute(
+        select(orm.Folder).where(orm.Folder.id == target_folder_id)
+    ).scalar()
 
-    new_doc = Document.objects.create_document(
+    attrs = schema.NewDocument(
         title=title,
         lang=first_page.lang,
+        parent_id=dst_folder.id,
+        ocr_status=types.OCRStatusEnum.unknown,
+    )
+    new_doc, error = doc_dbapi.create_document(
+        db_session,
+        attrs=attrs,
         user_id=dst_folder.user_id,
-        parent=dst_folder,
-        ocr_status=OCR_STATUS_SUCCEEDED,
     )
 
-    dst_version = new_doc.version_bump_from_pages(pages=pages)
+    dst_version, error = doc_dbapi.version_bump_from_pages(
+        db_session, dst_document_id=new_doc.id, pages=pages
+    )
+
+    dst_pages = db_session.execute(
+        select(orm.Page)
+        .where(orm.Page.document_version_id == dst_version.id)
+        .order_by(orm.Page.number)
+    ).scalars()
 
     reuse_ocr_data(
-        source_ids=[page.id for page in pages.order_by("number")],
-        target_ids=[page.id for page in dst_version.pages.order_by("number")],
+        source_ids=[page.id for page in pages],
+        target_ids=[page.id for page in dst_pages],
     )
 
     copy_text_field(
-        src=pages.first().document_version,
+        db_session,
+        src=pages[0].document_version,
         dst=dst_version,
         page_numbers=[p.number for p in pages],
     )

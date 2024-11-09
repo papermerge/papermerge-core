@@ -1,11 +1,13 @@
+import uuid
 import io
 import os
 from pathlib import Path
 
-from papermerge.core import orm
+from papermerge.core import orm, schema
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.pathlib import abs_page_path
 
 DIR_ABS_PATH = os.path.abspath(Path(__file__).parent.parent)
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -100,3 +102,91 @@ def test_copy_without_pages(user, make_document, db_session):
     )
 
     assert new_ver_fresh.text == "dog hamster"
+
+
+def test_extract_two_pages_to_folder_all_pages_in_one_doc(
+    make_document, make_folder, user, db_session
+):
+    """Scenario tests extraction of first two pages from
+    source document into destination folder.
+    Both pages are extracted into one single destination document.
+
+        All pages in one doc
+         src   -[S1, S2]->   dst
+    old -> new       old -> new
+     S1    S3         x     S1
+     S2               x     S2
+     S3
+    """
+    src = make_document(title="thee-pages.pdf", user=user, parent=user.home_folder)
+    dst_folder = make_folder(title="Target folder", user=user, parent=user.home_folder)
+    PDF_PATH = RESOURCES / "three-pages.pdf"
+
+    with open(PDF_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(PDF_PATH).st_size
+        update_src, _ = doc_dbapi.upload(
+            db_session=db_session,
+            document_id=src.id,
+            content=io.BytesIO(content),
+            file_name="three-pages.pdf",
+            size=size,
+            content_type=constants.ContentType.APPLICATION_PDF,
+        )
+
+    src_ver = src.versions[0]
+    saved_src_pages_ids = (
+        db_session.query(orm.Page.id)
+        .where(orm.Page.document_version_id == src_ver.id, orm.Page.number <= 2)
+        .order_by(orm.Page.number)
+    )
+
+    [result_old_doc, result_new_docs] = page_mngm_dbapi.extract_pages(
+        db_session,
+        user_id=user.id,
+        # we are moving out all pages of the source doc version
+        source_page_ids=saved_src_pages_ids,
+        target_folder_id=dst_folder.id,
+        strategy=schema.ExtractStrategy.ALL_PAGES_IN_ONE_DOC,
+        title_format="my-new-doc",
+    )
+
+
+class PageDir:
+    """Helper class to test if content of two dirs is same
+
+    In order for two dirs to have same content they need to
+    have same files and each corresponding file must have same content.
+
+    The whole point is to test if page content dir was copied
+    correctly
+    """
+
+    def __init__(self, page_id: uuid.UUID, number: int, name: str):
+        """Only page_id is used for comparison, other fields
+        (number, name) are only for easy human reading when
+        assert comparison fails"""
+        self.page_id = str(page_id)
+        self.number = number  # helper for easy human read
+        self.name = name  # helper for easy human read
+
+    @property
+    def files(self):
+        path = abs_page_path(self.page_id)
+        return sorted(path.glob("*"), key=lambda i: i.name)
+
+    def __eq__(self, other):
+        all_equal = True
+
+        for file1, file2 in zip(self.files, other.files):
+            content1 = open(file1).read()
+            content2 = open(file2).read()
+            if content1 != content2:
+                all_equal = False
+
+        return all_equal
+
+    def __repr__(self):
+        return (
+            f"PageDir(" f"number={self.number}, name={self.name} id={self.page_id}" ")"
+        )

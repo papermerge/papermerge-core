@@ -11,7 +11,7 @@ from pathlib import Path
 
 from typing import Tuple
 
-from sqlalchemy import delete, func, insert, select, text, update
+from sqlalchemy import delete, func, insert, select, text, update, Select
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.db.engine import Session
@@ -28,73 +28,6 @@ from papermerge.core.pathlib import (
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_last_doc_ver(
-    db_session: Session,
-    doc_id: uuid.UUID,  # noqa
-    user_id: uuid.UUID,
-) -> orm.DocumentVersion:
-    """
-    Returns last version of the document
-    identified by doc_id
-    """
-
-    stmt = (
-        select(orm.DocumentVersion)
-        .join(orm.Document)
-        .where(
-            orm.DocumentVersion.document_id == doc_id,
-            orm.Document.user_id == user_id,
-        )
-        .order_by(orm.DocumentVersion.number.desc())
-        .limit(1)
-    )
-    return db_session.scalars(stmt).one()
-
-
-def get_first_page(
-    db_session: Session,
-    doc_ver_id: uuid.UUID,
-) -> orm.Page:
-    """
-    Returns first page of the document version
-    identified by doc_ver_id
-    """
-    with db_session as session:  # noqa
-        stmt = (
-            select(orm.Page)
-            .where(
-                orm.Page.document_version_id == doc_ver_id,
-            )
-            .order_by(orm.Page.number.asc())
-            .limit(1)
-        )
-
-        db_page = session.scalars(stmt).one()
-
-    return db_page
-
-
-def get_doc_ver(
-    db_session: Session,
-    id: uuid.UUID,
-    user_id: uuid.UUID,  # noqa
-) -> schema.DocumentVersion:
-    """
-    Returns last version of the document
-    identified by doc_id
-    """
-
-    stmt = (
-        select(orm.DocumentVersion)
-        .join(orm.Document)
-        .where(orm.Document.user_id == user_id, orm.DocumentVersion.id == id)
-    )
-    db_doc_ver = db_session.scalars(stmt).one()
-    model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
-
-    return model_doc_ver
 
 
 def count_docs(session: Session) -> int:
@@ -834,3 +767,101 @@ def get_doc_ver_pages(db_session: Session, doc_ver_id: uuid.UUID) -> list[schema
     models = [schema.Page.model_validate(db_page) for db_page in db_pages]
 
     return models
+
+
+def get_last_doc_ver(
+    db_session: Session,
+    doc_id: uuid.UUID,  # noqa
+    user_id: uuid.UUID,
+) -> orm.DocumentVersion:
+    """
+    Returns last version of the document
+    identified by doc_id
+    """
+
+    stmt = (
+        select(orm.DocumentVersion)
+        .join(orm.Document)
+        .where(
+            orm.DocumentVersion.document_id == doc_id,
+            orm.Document.user_id == user_id,
+        )
+        .order_by(orm.DocumentVersion.number.desc())
+        .limit(1)
+    )
+    return db_session.scalars(stmt).one()
+
+
+def get_first_page(
+    db_session: Session,
+    doc_ver_id: uuid.UUID,
+) -> orm.Page:
+    """
+    Returns first page of the document version
+    identified by doc_ver_id
+    """
+    with db_session as session:  # noqa
+        stmt = (
+            select(orm.Page)
+            .where(
+                orm.Page.document_version_id == doc_ver_id,
+            )
+            .order_by(orm.Page.number.asc())
+            .limit(1)
+        )
+
+        db_page = session.scalars(stmt).one()
+
+    return db_page
+
+
+def get_doc_ver(
+    db_session: Session,
+    id: uuid.UUID,
+    user_id: uuid.UUID,  # noqa
+) -> schema.DocumentVersion:
+    """
+    Returns last version of the document
+    identified by doc_id
+    """
+
+    stmt = (
+        select(orm.DocumentVersion)
+        .join(orm.Document)
+        .where(orm.Document.user_id == user_id, orm.DocumentVersion.id == id)
+    )
+    db_doc_ver = db_session.scalars(stmt).one()
+    model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
+
+    return model_doc_ver
+
+
+def select_last_doc_ver(document_id: uuid.UUID, user_id: uuid.UUID) -> Select:
+    """Returns a selectable for the last version of the document"""
+    stmt = (
+        select(orm.DocumentVersion.id)
+        .join(orm.Document)
+        .where(
+            orm.DocumentVersion.document_id == document_id,
+            orm.Document.user_id == user_id,
+        )
+        .order_by(orm.DocumentVersion.number.desc())
+        .limit(1)
+    )
+
+    return stmt
+
+
+def get_last_ver_pages(
+    db_session: Session, document_id: uuid.UUID, user_id: uuid.UUID
+) -> list[orm.Page]:
+    """Returns all pages of the last version of the document"""
+    subq = select_last_doc_ver(document_id=document_id, user_id=user_id).subquery()
+
+    stmt = (
+        select(orm.Page)
+        .where(orm.Page.document_version_id == subq.c.id)
+        .order_by(orm.Page.number)
+    )
+
+    return db_session.execute(stmt).scalars().all()

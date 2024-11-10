@@ -8,7 +8,7 @@ from typing import List
 
 from celery import current_app
 from pikepdf import Pdf
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from papermerge.core import constants as const
 from papermerge.core.pathlib import abs_page_path
@@ -52,17 +52,60 @@ def collect_text_streams(
     return result
 
 
-def apply_pages_op(items: List[schema.PageAndRotOp]) -> List[schema.Document]:
-    pages = Page.objects.filter(pk__in=[item.page.id for item in items])
-    old_version = pages.first().document_version
+def apply_pages_op(
+    db_session, items: List[schema.PageAndRotOp], user_id: uuid.UUID
+) -> List[schema.Document]:
+    """Apply operations (operation = transformation) on the document
+
+    It is assumed that all pages are part of the same document version.
+    Apply operation means following:
+        - create new document version
+        - copy to new document version only selected pages (i.e. the pages
+        identified by `List[schema.PageAndRotOp]`)
+        - The input list (the `items: List[schema.PageAndRotOp]`) may also
+        have angle != 0 - in such case page is also rotated
+
+    Note that "copy to new document version" has to parts:
+        - recreate the 'page' models (and copy text from old one to new ones)
+        - recreate pdf file (and copy its pages from old one to new ones)
+
+    `ValueError` exception will be raised if input pages do not belong
+    to the same document.
+    """
+    # input validation, check if all pages belong to the same document
+    stmt = select(func.count(orm.DocumentVersion.id)).where(
+        orm.Page.id.in_(p.page.id for p in items),
+        orm.Page.document_version_id == orm.DocumentVersion.id,
+    )
+    doc_ver_count = db_session.execute(stmt).scalar()
+
+    if doc_ver_count > 1:
+        raise ValueError("Apply pages op: input pages belong to multiple documents")
+
+    pages = db_session.execute(
+        select(orm.Page).where(orm.Page.id.in_(item.page.id for item in items))
+    ).scalars()
+
+    pages = pages.all()
+
+    old_version = db_session.execute(
+        select(orm.DocumentVersion)
+        .where(orm.DocumentVersion.id == pages[0].document_version_id)
+        .limit(1)
+    ).scalar()
 
     doc = old_version.document
-    new_version = doc.version_bump(page_count=len(items))
+    new_version = doc_dbapi.version_bump(
+        db_session, doc_id=doc.id, user_id=user_id, page_count=len(items)
+    )
 
     copy_pdf_pages(src=old_version.file_path, dst=new_version.file_path, items=items)
 
     copy_text_field(
-        src=old_version, dst=new_version, page_numbers=[p.number for p in pages]
+        db_session,
+        src=old_version,
+        dst=new_version,
+        page_numbers=[p.number for p in pages],
     )
 
     notify_version_update(

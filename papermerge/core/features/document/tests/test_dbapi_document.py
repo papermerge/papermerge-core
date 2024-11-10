@@ -543,3 +543,70 @@ def test_document_upload_txt(make_document, user, db_session):
     assert fresh_doc is None
     error: err_schema.Error
     assert len(error.messages) == 1
+
+
+def test_get_last_ver_pages(db_session, make_document, user):
+    ### Arrange ###
+
+    # version numbering starts with 1
+    # doc has only one version - "version.number = 1"
+    doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
+
+    # now doc has two versions
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
+    # now doc has three versions
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
+    # now doc has four versions
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
+
+    ### Act ###
+    pages = dbapi.get_last_ver_pages(db_session, document_id=doc.id, user_id=user.id)
+
+    ### Assert
+    stmt = select(docs_orm.DocumentVersion).where(
+        docs_orm.DocumentVersion.document_id == doc.id,
+        # get document last version; last doc ver has number 4
+        docs_orm.DocumentVersion.number == 4,
+    )
+
+    last_ver = db_session.execute(stmt).scalar()
+
+    assert len(pages) == 3
+    assert last_ver.number == 4
+    assert pages[0].number == 1
+    assert pages[1].number == 2
+    assert pages[2].number == 3
+    assert pages[0].document_version_id == last_ver.id
+
+
+def test_subsequent_updates_over_pages_returned_by_get_last_ver_pages(
+    db_session, make_document, user
+):
+    """
+    === SqlAlchemy learning playground ===
+
+    Scenario in this test is not for testing a function. It is just
+    for me to validated my knowledge on how db_session works!
+
+    question: if I update ORM object (orm.Page) by attribute assignement
+    will this change reflected in subsequence db_session queries?
+    In other words, does change from (1) will be seen in (2)?
+
+    As this tests assert - the answer is Yes.
+    Note the tricky part - `dbapi.get_last_ver_pages` returns a list
+    of pages. Updating any member of this will be reflected in
+    page retrieved via same db_session!
+    """
+    doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
+
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
+    pages = dbapi.get_last_ver_pages(db_session, document_id=doc.id, user_id=user.id)
+
+    pages[0].text = "coco"  # (1)
+
+    stmt = select(docs_orm.Page).where(docs_orm.Page.id == pages[0].id)
+
+    fresh_page = db_session.execute(stmt).scalar()  # (2)
+
+    # Does (2) contain change from (1)?
+    assert fresh_page.text == "coco"

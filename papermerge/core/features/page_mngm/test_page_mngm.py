@@ -3,7 +3,8 @@ import io
 import os
 from pathlib import Path
 
-from sqlalchemy import select
+import pytest
+from sqlalchemy import select, func
 
 from papermerge.core import orm, schema
 from papermerge.core import constants
@@ -30,7 +31,70 @@ def test_copy_text_field(db_session, make_document_version, user):
     assert doc_ver.pages[0].text == "body"
 
 
-def test_apply_pages_op(): ...
+def test_apply_pages_op(three_pages_pdf: schema.Document, db_session):
+    doc = db_session.execute(
+        select(orm.Document).where(orm.Document.id == three_pages_pdf.id)
+    ).scalar()
+    user = doc.user
+
+    orinal_pages = doc_dbapi.get_last_ver_pages(
+        db_session, document_id=doc.id, user_id=user.id
+    )
+    orinal_pages[0].text = "cat"
+    orinal_pages[1].text = "doc"
+
+    page = schema.MovePage(id=orinal_pages[0].id, number=orinal_pages[0].number)
+    items = [schema.PageAndRotOp(page=page, angle=0)]
+
+    page_mngm_dbapi.apply_pages_op(db_session, items, user_id=user.id)
+
+    new_version_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == doc.id
+        )
+    ).scalar()
+
+    newly_created_last_ver = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=doc.id, user_id=user.id
+    )
+    newly_created_pages = doc_dbapi.get_doc_ver_pages(
+        db_session, doc_ver_id=newly_created_last_ver.id
+    )
+
+    # now document has two version
+    assert new_version_count == 2
+    # newly created version has only one page
+    assert len(newly_created_last_ver.pages) == 1
+    # and last page (and the only page) of the newly
+    # created document has word "cat"
+    assert newly_created_pages[0].text == "cat"
+    # and it different page from the original one
+    assert newly_created_pages[0].id != orinal_pages[0].id
+
+
+def test_apply_pages_op_invalid_input(make_document_with_pages, db_session, user):
+    doc1 = make_document_with_pages(
+        title="doc1.pdf", user=user, parent=user.home_folder
+    )
+    doc2 = make_document_with_pages(
+        title="doc2.pdf", user=user, parent=user.home_folder
+    )
+
+    orinal_pages1 = doc_dbapi.get_last_ver_pages(
+        db_session, document_id=doc1.id, user_id=user.id
+    )
+    orinal_pages2 = doc_dbapi.get_last_ver_pages(
+        db_session, document_id=doc2.id, user_id=user.id
+    )
+
+    page1 = schema.MovePage(id=orinal_pages1[0].id, number=orinal_pages1[0].number)
+    page2 = schema.MovePage(id=orinal_pages2[0].id, number=orinal_pages2[0].number)
+    items = [
+        schema.PageAndRotOp(page=page1, angle=0),
+        schema.PageAndRotOp(page=page2, angle=0),
+    ]
+    with pytest.raises(ValueError):
+        page_mngm_dbapi.apply_pages_op(db_session, items, user_id=user.id)
 
 
 def test_copy_without_pages(user, make_document, db_session):

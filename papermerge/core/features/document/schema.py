@@ -108,6 +108,11 @@ class Tag(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MicroPage(BaseModel):
+    id: UUID
+    number: int
+
+
 class Page(BaseModel):
     id: UUID
     number: int

@@ -20,44 +20,6 @@ from papermerge.test.baker_recipes import folder_recipe, user_recipe
 
 pytestmark = pytest.mark.django_db
 
-
-@patch("papermerge.core.signals.send_ocr_task")
-def test_apply_pages_op(_):
-    """This test checks if `apply_pages_op` correctly copies
-    page text data"""
-    user = user_recipe.make()
-    # 1. create a doc with two pages
-    # first page has word "cat"
-    # second page has word "dog"
-    src = maker.document(resource="living-things.pdf", user=user, include_ocr_data=True)
-    orig_first_page = src.versions.last().pages.all()[0]
-    orig_second_page = src.versions.last().pages.all()[1]
-    orig_first_page.text = "cat"
-    orig_second_page.text = "dog"
-    orig_first_page.save()
-    orig_second_page.save()
-
-    assert src.versions.last().pages.count() == 2
-
-    page = src.versions.last().pages.first()
-    pypage = PyPage(id=page.pk, number=page.number)
-    items = [PageAndRotOp(page=pypage, angle=0)]
-
-    # It should copy only first page which contains word "cat"
-    new_doc = apply_pages_op(items)
-
-    # now there one more version (originally was only one doc ver)
-    assert new_doc.versions.count() == 2
-    newly_created_version = new_doc.versions.last()
-
-    # newly create version should have only one page
-    assert newly_created_version.pages.count() == 1
-    first_page = newly_created_version.pages.first()
-    # and that page should have word "cat"
-    assert first_page.text == "cat"
-    assert first_page.id != orig_first_page.id
-
-
 @patch("papermerge.core.signals.send_ocr_task")
 def test_move_pages_one_single_page_strategy_mix(_):
     """Scenario tests moving of one page from

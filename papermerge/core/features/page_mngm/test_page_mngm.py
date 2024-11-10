@@ -11,7 +11,6 @@ from papermerge.core.tests.types import ResourceFile
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.pathlib import abs_page_path
 
 DIR_ABS_PATH = os.path.abspath(Path(__file__).parent.parent)
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"

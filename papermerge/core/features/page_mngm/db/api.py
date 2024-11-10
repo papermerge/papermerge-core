@@ -271,16 +271,30 @@ def move_pages_mix(
     [src_old_version, src_new_version, moved_pages_count] = copy_without_pages(
         db_session, source_page_ids, user_id=user_id
     )
-
-    moved_pages = Page.objects.filter(pk__in=source_page_ids)
+    moved_pages = db_session.execute(
+        select(orm.Page)
+        .where(orm.Page.id.in_(source_page_ids))
+        .order_by(orm.Page.number)
+    ).scalars()
+    moved_pages = moved_pages.all()
     moved_page_ids = [page.id for page in moved_pages]
 
-    dst_page = Page.objects.get(pk=target_page_id)
-    dst_old_version = dst_page.document_version
+    dst_page = db_session.execute(
+        select(orm.Page).where(orm.Page.id == target_page_id)
+    ).scalar()
+
+    dst_old_version = db_session.query(orm.DocumentVersion).where(
+        orm.DocumentVersion.id == dst_page.document_version_id
+    )
+    dst_old_version = dst_old_version.one()
+
     dst_old_doc = dst_old_version.document
 
-    dst_new_version = dst_old_doc.version_bump(
-        page_count=dst_old_version.pages.count() + moved_pages_count,
+    dst_new_version = doc_dbapi.version_bump(
+        db_session,
+        doc_id=dst_old_doc.id,
+        user_id=user_id,
+        page_count=len(dst_old_version.pages) + moved_pages_count,
         short_description=f"{moved_pages_count} page(s) moved in",
     )
 
@@ -288,20 +302,21 @@ def move_pages_mix(
         src_old=src_old_version.file_path,
         dst_old=dst_old_version.file_path,
         dst_new=dst_new_version.file_path,
-        src_page_numbers=[p.number for p in moved_pages.order_by("number")],
+        src_page_numbers=[p.number for p in moved_pages],
         dst_position=dst_page.number,
     )
-
     src_keys_1 = moved_page_ids
     dst_values_1 = [
         page.id  # IDs of the pages in new version of the source
-        for page in dst_new_version.pages.order_by("number")
+        for page in sorted(dst_new_version.pages, key=lambda x: x.number)
         if page.number <= len(moved_page_ids)
     ]
-    src_keys_2 = [page.id for page in dst_old_version.pages.order_by("number")]
+    src_keys_2 = [
+        page.id for page in sorted(dst_old_version.pages, key=lambda x: x.number)
+    ]
     dst_values_2 = [
         page.id  # IDs of the pages in new version of the source
-        for page in dst_new_version.pages.order_by("number")
+        for page in sorted(dst_new_version.pages, key=lambda x: x.number)
         if page.number > len(moved_page_ids)
     ]
     if not_copied_ids := reuse_ocr_data(
@@ -309,10 +324,10 @@ def move_pages_mix(
     ):
         logger.info(f"Pages with IDs {not_copied_ids} do not have OCR data")
 
-    if src_old_version.pages.count() == moved_pages_count:
+    if len(src_old_version.pages) == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        src_old_version.document.delete()
+        db_session.delete(src_old_version.document)
         _dst_doc = dst_new_version.document
         notify_generate_previews(str(_dst_doc.id))
         return [None, _dst_doc]

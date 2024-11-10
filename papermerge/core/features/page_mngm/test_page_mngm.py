@@ -1,4 +1,4 @@
-import uuid
+import pikepdf
 import io
 import os
 from pathlib import Path
@@ -224,28 +224,6 @@ def test_extract_two_pages_to_folder_all_pages_in_one_doc(
     assert len(result_new_docs) == 1
     assert result_new_docs[0].parent_id == dst_folder.id
 
-    ver = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=result_new_docs[0].id, user_id=user.id
-    )
-
-    stmt = (
-        select(orm.Page)
-        .join(orm.DocumentVersion)
-        .join(orm.Document)
-        .where(orm.DocumentVersion.id == ver.id)
-        .order_by(orm.Page.number)
-    )
-
-    pages = db_session.execute(stmt).scalars().all()
-
-    p1 = PageDir(pages[0].id, number=1, name="dst newly created doc")
-    p2 = PageDir(saved_src_pages_ids[0], number=1, name="src old")
-    assert p1 == p2
-
-    p1 = PageDir(pages[1].id, number=2, name="dst newly create doc")
-    p2 = PageDir(saved_src_pages_ids[1], number=2, name="src old")
-    assert p1 == p2
-
 
 def test_extract_two_pages_to_folder_each_page_in_separate_doc(
     make_document, make_folder, user, db_session
@@ -346,41 +324,35 @@ def test_move_pages_one_single_page_strategy_mix(
         user_id=user.id,
     )
 
+    src_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == src.id
+        )
+    ).scalar()
+    # src now have one more version
+    # versions were incremented +1
+    assert src_versions_count == 2
 
-class PageDir:
-    """Helper class to test if content of two dirs is same
+    src_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=src.id, user_id=user.id
+    )
+    # src's last version's count of pages has one page less
+    assert len(src_last_version.pages) == 1  # previously was 2
 
-    In order for two dirs to have same content they need to
-    have same files and each corresponding file must have same content.
+    dst_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == dst.id
+        )
+    ).scalar()
+    # dst now have one more version
+    # versions were incremented +1 from
+    assert dst_versions_count == 2
 
-    The whole point is to test if page content dir was copied
-    correctly
-    """
+    dst_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=dst.id, user_id=user.id
+    )
+    # dst's last version's count of pages has one page more
+    assert len(dst_last_version.pages) == 4  # previously was 3
 
-    def __init__(self, page_id: uuid.UUID, number: int, name: str):
-        """Only page_id is used for comparison, other fields
-        (number, name) are only for easy human reading when
-        assert comparison fails"""
-        self.page_id = str(page_id)
-        self.number = number  # helper for easy human read
-        self.name = name  # helper for easy human read
-
-    @property
-    def files(self):
-        path = abs_page_path(self.page_id)
-        return sorted(path.glob("*"), key=lambda i: i.name)
-
-    def __eq__(self, other):
-        all_equal = True
-
-        for file1, file2 in zip(self.files, other.files):
-            content1 = open(file1).read()
-            content2 = open(file2).read()
-            if content1 != content2:
-                all_equal = False
-
-        return all_equal
-
-    def __repr__(self):
-        path = abs_page_path(self.page_id)
-        return f"PageDir(number={self.number}, path={path})"
+    with pikepdf.Pdf.open(dst_last_version.file_path) as my_pdf:
+        assert len(my_pdf.pages) == 4

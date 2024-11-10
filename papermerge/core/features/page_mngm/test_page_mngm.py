@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy import select, func
 
 from papermerge.core import orm, schema
+from papermerge.core.tests.types import ResourceFile
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
@@ -307,6 +308,43 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(
     assert len(result_new_docs) == 2
     assert result_new_docs[0].parent_id == dst_folder.id
     assert result_new_docs[1].parent_id == dst_folder.id
+
+
+def test_move_pages_one_single_page_strategy_mix(
+    make_document_from_resource, db_session, user
+):
+    """Scenario tests moving of one page from
+    src to dst (strategy: mix). Scenario is illustrated
+    in following table:
+
+         src   -[S2]->   dst
+    old -> new       old -> new
+     S1    S1         D1    S2
+     S2               D2    D1
+                      D3    D2
+                           D3
+    """
+    src = make_document_from_resource(
+        resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder
+    )
+    dst = make_document_from_resource(
+        resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
+    )
+
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_page = src_ver.pages[1]
+
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_page = dst_ver.pages[0]
+
+    page_mngm_dbapi.move_pages(
+        db_session,
+        # we are moving out second page of the source document version
+        source_page_ids=[src_page.id],
+        target_page_id=dst_page.id,
+        move_strategy=schema.MoveStrategy.MIX,
+        user_id=user.id,
+    )
 
 
 class PageDir:

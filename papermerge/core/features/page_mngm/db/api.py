@@ -225,9 +225,11 @@ def reuse_ocr_data(
 
 
 def move_pages(
+    db_session,
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     move_strategy: schema.MoveStrategy,
+    user_id: uuid.UUID,
 ) -> [schema.Document | None, schema.Document]:
     """
     Returns source and destination document.
@@ -241,12 +243,19 @@ def move_pages(
         )
 
     return move_pages_mix(
-        source_page_ids=source_page_ids, target_page_id=target_page_id
+        db_session,
+        source_page_ids=source_page_ids,
+        target_page_id=target_page_id,
+        user_id=user_id,
     )
 
 
 def move_pages_mix(
-    source_page_ids: List[uuid.UUID], target_page_id: uuid.UUID
+    db_session,
+    *,
+    source_page_ids: List[uuid.UUID],
+    target_page_id: uuid.UUID,
+    user_id: uuid.UUID,
 ) -> [schema.Document | None, schema.Document]:
     """Move pages from src to dst using mix strategy
 
@@ -260,7 +269,7 @@ def move_pages_mix(
     value of the returned tuple.
     """
     [src_old_version, src_new_version, moved_pages_count] = copy_without_pages(
-        source_page_ids, user_id=user_id
+        db_session, source_page_ids, user_id=user_id
     )
 
     moved_pages = Page.objects.filter(pk__in=source_page_ids)

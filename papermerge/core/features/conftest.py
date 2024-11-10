@@ -1,3 +1,4 @@
+from enum import Enum
 import base64
 import os
 import io
@@ -10,7 +11,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from core.features.document.schema import ExtractPagesIn
+from papermerge.core.tests.types import ResourceFile
 from core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
@@ -120,6 +121,31 @@ def three_pages_pdf(make_document, db_session, user) -> doc_schema.Document:
         )
 
     return doc
+
+
+@pytest.fixture
+def make_document_from_resource(make_document, db_session):
+    def _make(resource: ResourceFile, user, parent):
+        doc: doc_schema.Document = make_document(
+            title=resource, user=user, parent=parent
+        )
+        PDF_PATH = RESOURCES / resource
+
+        with open(PDF_PATH, "rb") as file:
+            content = file.read()
+            size = os.stat(PDF_PATH).st_size
+            doc_dbapi.upload(
+                db_session,
+                document_id=doc.id,
+                content=io.BytesIO(content),
+                file_name=resource,
+                size=size,
+                content_type=ContentType.APPLICATION_PDF,
+            )
+
+        return doc
+
+    return _make
 
 
 @pytest.fixture

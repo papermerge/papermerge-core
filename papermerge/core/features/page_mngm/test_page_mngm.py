@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, func
 
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, db
 from papermerge.core.tests.types import ResourceFile
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
@@ -494,3 +494,136 @@ def test_move_pages_one_single_page_strategy_replace(
     assert len(dst_last_version.pages) == 1  # previously was 3
     with pikepdf.Pdf.open(dst_last_version.file_path) as my_pdf:
         assert len(my_pdf.pages) == 1
+
+
+def test_move_all_pages_of_the_doc_out_mix(
+    make_document_from_resource, db_session, user
+):
+    """Scenario tests moving of ALL page of source document.
+    In this case source document will be entirely deleted:
+
+              Mix strategy
+         src   -[S1, S2]->   dst
+    old -> new       old -> new
+     S1    X          D1    S1
+     S2               D2    S2
+                      D3    D1
+                            D2
+                            D3
+
+    after operation src document is deleted
+    """
+    src = make_document_from_resource(
+        resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder
+    )
+    dst = make_document_from_resource(
+        resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
+    )
+
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    saved_src_pages_ids = list(
+        [page.id for page in sorted(src_ver.pages, key=lambda x: x.number)]
+    )
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_page = dst_ver.pages[0]
+
+    [result_old_doc, result_new_doc] = page_mngm_dbapi.move_pages(
+        db_session,
+        # we are moving out all pages of the source doc version
+        source_page_ids=saved_src_pages_ids,
+        target_page_id=dst_page.id,
+        move_strategy=schema.MoveStrategy.MIX,
+        user_id=user.id,
+    )
+
+    assert result_old_doc is None  # Old doc/Source was deleted
+    assert result_new_doc.id == dst.id
+
+    db_session.commit()
+
+    # Source document was deleted
+
+    newly_fetched_src = db_session.execute(
+        select(orm.Document).where(orm.Document.id == src.id)
+    ).one_or_none()
+
+    dst_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == dst.id
+        )
+    ).scalar()
+    dst_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=dst.id, user_id=user.id
+    )
+
+    assert newly_fetched_src is None
+
+    # Destination document's version was inc + 1
+    assert dst_versions_count == 2
+    # dst's last version's count of pages has one page more
+    assert len(dst_last_version.pages) == 5  # previously was 3
+
+
+def test_move_all_pages_of_the_doc_out_replace_strategy(
+    make_document_from_resource, db_session, user
+):
+    """Scenario tests moving of ALL page of source document.
+    In this case source document will be entirely deleted:
+
+              Replace strategy
+         src   -[S1, S2]->   dst
+    old -> new       old -> new
+     S1    X          D1    S1
+     S2               D2    S2
+                      D3
+
+    after operation src document is deleted
+    """
+    src = make_document_from_resource(
+        resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder
+    )
+    dst = make_document_from_resource(
+        resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
+    )
+
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    saved_src_pages_ids = list(
+        [page.id for page in sorted(src_ver.pages, key=lambda x: x.number)]
+    )
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_page = dst_ver.pages[0]
+
+    [result_old_doc, result_new_doc] = page_mngm_dbapi.move_pages(
+        db_session,
+        # we are moving out all pages of the source doc version
+        source_page_ids=saved_src_pages_ids,
+        target_page_id=dst_page.id,
+        move_strategy=schema.MoveStrategy.REPLACE,
+        user_id=user.id,
+    )
+
+    assert result_old_doc is None  # Old doc/Source was deleted
+    assert result_new_doc.id == dst.id
+
+    db_session.commit()
+
+    # Source document was deleted
+
+    newly_fetched_src = db_session.execute(
+        select(orm.Document).where(orm.Document.id == src.id)
+    ).one_or_none()
+
+    dst_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == dst.id
+        )
+    ).scalar()
+    dst_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=dst.id, user_id=user.id
+    )
+
+    assert newly_fetched_src is None
+
+    # Destination document's version was inc + 1
+    assert dst_versions_count == 2
+    assert len(dst_last_version.pages) == 2

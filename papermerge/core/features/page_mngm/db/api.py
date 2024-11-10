@@ -8,7 +8,7 @@ from typing import List
 
 from celery import current_app
 from pikepdf import Pdf
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 
 from papermerge.core import constants as const
 from papermerge.core.pathlib import abs_page_path
@@ -330,8 +330,12 @@ def move_pages_mix(
     if len(src_old_version.pages) == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        db_session.delete(src_old_version.document)
         _dst_doc = dst_new_version.document
+
+        db_session.execute(
+            delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
+        )
+
         notify_generate_previews(str(_dst_doc.id))
         return [None, _dst_doc]
 
@@ -406,7 +410,9 @@ def move_pages_replace(
     if len(src_old_version.pages) == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        src_old_version.document.delete()
+        db_session.execute(
+            delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
+        )
         _dst_doc = dst_new_version.document
         notify_generate_previews(str(_dst_doc.id))
         return [None, _dst_doc]

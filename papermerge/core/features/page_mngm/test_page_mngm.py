@@ -425,3 +425,72 @@ def test_move_pages_two_pages_strategy_mix(
     assert len(dst_last_version.pages) == 5  # previously was 3
     with pikepdf.Pdf.open(dst_last_version.file_path) as my_pdf:
         assert len(my_pdf.pages) == 5
+
+
+def test_move_pages_one_single_page_strategy_replace(
+    make_document_from_resource, db_session, user
+):
+    """Scenario tests moving of one page from
+    src to dst (strategy: replace). Scenario is illustrated
+    in following table:
+
+         src   -[S2]->   dst
+    old -> new       old -> new   # Replace strategy
+     S1    S1         D1    S2
+     S2               D2
+                      D3
+    """
+    src = make_document_from_resource(
+        resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder
+    )
+    dst = make_document_from_resource(
+        resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
+    )
+
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_page = src_ver.pages[1]
+
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+
+    dst_page = dst_ver.pages[0]
+
+    page_mngm_dbapi.move_pages(
+        db_session,
+        # we are moving out second page of the source document version
+        source_page_ids=[src_page.id],
+        target_page_id=dst_page.id,
+        move_strategy=schema.MoveStrategy.REPLACE,
+        user_id=user.id,
+    )
+
+    src_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == src.id
+        )
+    ).scalar()
+
+    src_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=src.id, user_id=user.id
+    )
+    dst_versions_count = db_session.execute(
+        select(func.count(orm.DocumentVersion.id)).where(
+            orm.DocumentVersion.document_id == dst.id
+        )
+    ).scalar()
+    dst_last_version = doc_dbapi.get_last_doc_ver(
+        db_session, doc_id=dst.id, user_id=user.id
+    )
+
+    # src, dst now have one more version
+    # versions were incremented +1 from (1) and (2)
+    assert src_versions_count == 2
+    # src's last version's count of pages has one page less
+    assert len(src_last_version.pages) == 1  # previously was 2
+    with pikepdf.Pdf.open(src_last_version.file_path) as my_pdf:
+        assert len(my_pdf.pages) == 1
+
+    assert dst_versions_count == 2
+    # dst's last version's count of pages has one page more
+    assert len(dst_last_version.pages) == 1  # previously was 3
+    with pikepdf.Pdf.open(dst_last_version.file_path) as my_pdf:
+        assert len(my_pdf.pages) == 1

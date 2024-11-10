@@ -130,7 +130,8 @@ def apply_page_operations(
     When `angle` > 0 -> the rotation is clockwise.
     When `angle` < 0 -> the rotation is counterclockwise.
     """
-    new_doc = apply_pages_op(items)
+    with db.Session() as db_session:
+        new_doc = apply_pages_op(db_session, items, user_id=user.id)
 
     return schema.Document.model_validate(new_doc)
 

@@ -20,6 +20,7 @@ from papermerge.test.baker_recipes import folder_recipe, user_recipe
 
 pytestmark = pytest.mark.django_db
 
+
 @patch("papermerge.core.signals.send_ocr_task")
 def test_move_pages_one_single_page_strategy_mix(_):
     """Scenario tests moving of one page from

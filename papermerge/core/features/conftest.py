@@ -1,3 +1,4 @@
+from enum import Enum
 import base64
 import os
 import io
@@ -10,6 +11,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from papermerge.core.tests.types import ResourceFile
 from core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
@@ -85,14 +87,65 @@ def make_document(db_session: Session):
         parent: orm.Folder,
         ocr_status: OCRStatusEnum = OCRStatusEnum.unknown,
         lang: str = "deu",
-    ):
+    ) -> doc_schema.Document:
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
         doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+
+        if doc is None:
+            raise Exception("Document was not created")
+
         return doc
 
     return _maker
+
+
+@pytest.fixture
+def three_pages_pdf(make_document, db_session, user) -> doc_schema.Document:
+    doc: doc_schema.Document = make_document(
+        title="thee-pages.pdf", user=user, parent=user.home_folder
+    )
+    PDF_PATH = RESOURCES / "three-pages.pdf"
+
+    with open(PDF_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(PDF_PATH).st_size
+        doc_dbapi.upload(
+            db_session,
+            document_id=doc.id,
+            content=io.BytesIO(content),
+            file_name="three-pages.pdf",
+            size=size,
+            content_type=ContentType.APPLICATION_PDF,
+        )
+
+    return doc
+
+
+@pytest.fixture
+def make_document_from_resource(make_document, db_session):
+    def _make(resource: ResourceFile, user, parent):
+        doc: doc_schema.Document = make_document(
+            title=resource, user=user, parent=parent
+        )
+        PDF_PATH = RESOURCES / resource
+
+        with open(PDF_PATH, "rb") as file:
+            content = file.read()
+            size = os.stat(PDF_PATH).st_size
+            doc_dbapi.upload(
+                db_session,
+                document_id=doc.id,
+                content=io.BytesIO(content),
+                file_name=resource,
+                size=size,
+                content_type=ContentType.APPLICATION_PDF,
+            )
+
+        return doc
+
+    return _make
 
 
 @pytest.fixture

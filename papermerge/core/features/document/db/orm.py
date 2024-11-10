@@ -78,3 +78,6 @@ class Page(Base):
         ForeignKey("document_versions.id", ondelete="CASCADE")
     )
     document_version: Mapped[DocumentVersion] = relationship(back_populates="pages")
+
+    def __repr__(self):
+        return f"Page(id={self.id}, number={self.number})"

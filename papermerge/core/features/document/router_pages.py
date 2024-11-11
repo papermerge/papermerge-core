@@ -77,7 +77,9 @@ def get_page_jpg_url(
         with db.Session() as db_session:
             page = doc_dbapi.get_page(db_session, page_id=page_id, user_id=user.id)
             doc_ver = doc_dbapi.get_doc_ver(
-                db_session, id=page.document_version_id, user_id=user.id
+                db_session,
+                document_version_id=page.document_version_id,
+                user_id=user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Page does not exist")

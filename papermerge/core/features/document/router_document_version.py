@@ -2,15 +2,16 @@ import logging
 import uuid
 from typing import Annotated
 
+from sqlalchemy.exc import NoResultFound
+
 from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import ContentType
-from papermerge.core import schemas, utils, db
+from papermerge.core import schema, utils, db, dbapi, orm
 from papermerge.core.db import exceptions as db_exc
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
-from papermerge.core.models import DocumentVersion
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class PDFFileResponse(FileResponse):
 def download_document_version(
     document_version_id: uuid.UUID,
     user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
+        schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
     ],
 ):
     """Downloads given document version
@@ -35,14 +36,19 @@ def download_document_version(
     Required scope: `{scope}`
     """
     try:
-        doc_ver = DocumentVersion.objects.get(
-            id=document_version_id, document__user=user.id
-        )
-    except DocumentVersion.DoesNotExist:
-        raise HTTPException(status_code=404, detail="Document version not found")
+        with db.Session() as db_session:
+            doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+                db_session,
+                document_version_id=document_version_id,
+                user_id=user.id,
+            )
+    except NoResultFound:
+        error = schema.Error(messages=["Document version not found"])
+        raise HTTPException(status_code=404, detail=error.model_dump())
 
     if not doc_ver.file_path.exists():
-        raise HTTPException(status_code=404, detail="Document version file not found")
+        error = schema.Error(messages=["Document version file not found"])
+        raise HTTPException(status_code=404, detail=error.model_dump())
 
     return PDFFileResponse(
         doc_ver.file_path,
@@ -51,22 +57,23 @@ def download_document_version(
     )
 
 
-@router.get("/{document_version_id}", response_model=schemas.DocumentVersion)
+@router.get("/{document_version_id}", response_model=schema.DocumentVersion)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def document_version_details(
     document_version_id: uuid.UUID,
-    user: Annotated[
-        schemas.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
-    engine: db.Engine = Depends(db.get_engine),
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
 ):
     """Get document version details
 
     Required scope: `{scope}`
     """
     try:
-        doc_ver = db.get_doc_ver(engine, id=document_version_id, user_id=user.id)
-    except db_exc.PageNotFound:
-        raise HTTPException(status_code=404, detail="Page not found")
+        with db.Session() as db_session:
+            doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+                db_session, document_version_id=document_version_id, user_id=user.id
+            )
+    except NoResultFound:
+        error = schema.Error(messages=["Page not found"])
+        raise HTTPException(status_code=404, detail=error.model_dump())
 
-    return doc_ver
+    return schema.DocumentVersion.model_validate(doc_ver)

@@ -13,6 +13,7 @@ from typing import Tuple
 
 from sqlalchemy import delete, func, insert, select, text, update, Select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from papermerge.core.db.engine import Session
 from papermerge.core.constants import ContentType
@@ -817,9 +818,10 @@ def get_first_page(
 
 def get_doc_ver(
     db_session: Session,
-    id: uuid.UUID,
-    user_id: uuid.UUID,  # noqa
-) -> schema.DocumentVersion:
+    *,
+    document_version_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> orm.DocumentVersion:
     """
     Returns last version of the document
     identified by doc_id
@@ -828,12 +830,15 @@ def get_doc_ver(
     stmt = (
         select(orm.DocumentVersion)
         .join(orm.Document)
-        .where(orm.Document.user_id == user_id, orm.DocumentVersion.id == id)
+        .options(joinedload(orm.DocumentVersion.pages))
+        .where(
+            orm.Document.user_id == user_id,
+            orm.DocumentVersion.id == document_version_id,
+        )
     )
-    db_doc_ver = db_session.scalars(stmt).one()
-    model_doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
+    db_doc_ver = db_session.scalars(stmt).unique().one()
 
-    return model_doc_ver
+    return db_doc_ver
 
 
 def select_last_doc_ver(document_id: uuid.UUID, user_id: uuid.UUID) -> Select:

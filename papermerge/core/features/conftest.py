@@ -27,6 +27,9 @@ from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.nodes import router_folders as folders_router
 from papermerge.core.features.document import router as docs_router
 from papermerge.core.features.document import router_pages as pages_router
+from papermerge.core.features.document import (
+    router_document_version as document_versions_router,
+)
 from papermerge.core.features.nodes import router_thumbnails as thumbnails_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
@@ -271,6 +274,7 @@ def get_app_with_routes():
     app.include_router(folders_router.router, prefix="")
     app.include_router(docs_router.router, prefix="")
     app.include_router(pages_router.router, prefix="")
+    app.include_router(document_versions_router.router, prefix="")
     app.include_router(thumbnails_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
     app.include_router(tags_router.router, prefix="")

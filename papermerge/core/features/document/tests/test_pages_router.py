@@ -1,4 +1,3 @@
-from pydantic.v1.schema import schema
 from sqlalchemy import select
 
 from papermerge.core import orm, schema, dbapi

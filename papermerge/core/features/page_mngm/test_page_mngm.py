@@ -26,7 +26,9 @@ def test_copy_text_field(db_session, make_document_version, user):
         db_session, src=doc_ver_x, dst=doc_ver_y, page_numbers=[2]
     )
 
-    doc_ver = doc_dbapi.get_doc_ver(db_session, id=doc_ver_y.id, user_id=user.id)
+    doc_ver = doc_dbapi.get_doc_ver(
+        db_session, document_version_id=doc_ver_y.id, user_id=user.id
+    )
 
     assert doc_ver.pages[0].text == "body"
 

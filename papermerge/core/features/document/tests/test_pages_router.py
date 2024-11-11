@@ -1,38 +1,17 @@
-import io
-import os
-from pathlib import Path
-
 from pydantic.v1.schema import schema
 from sqlalchemy import select
 
 from papermerge.core import orm, schema, dbapi
-from papermerge.core.constants import ContentType
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core.tests.resource_file import ResourceFile
 
 
-DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
-RESOURCES = Path(DIR_ABS_PATH) / "resources"
-
-
 def test_get_document_details(
-    auth_api_client: AuthTestClient, make_document, user, db_session
+    auth_api_client: AuthTestClient, make_document_from_resource, user, db_session
 ):
-    doc = make_document(title="invoice.pdf", user=user, parent=user.home_folder)
-
-    PDF_PATH = RESOURCES / "three-pages.pdf"
-
-    with open(PDF_PATH, "rb") as file:
-        content = file.read()
-        size = os.stat(PDF_PATH).st_size
-        dbapi.upload(
-            db_session=db_session,
-            document_id=doc.id,
-            content=io.BytesIO(content),
-            file_name="three-pages.pdf",
-            size=size,
-            content_type=ContentType.APPLICATION_PDF,
-        )
+    doc = make_document_from_resource(
+        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
+    )
 
     stmt = (
         select(orm.Page)

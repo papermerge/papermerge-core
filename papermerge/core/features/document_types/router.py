@@ -5,11 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import utils, schema
+from papermerge.core import utils, schema, dbapi, db
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
-from papermerge.core.db.engine import Session
-from papermerge.core.features.document_types import db
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users import schema as users_schema
@@ -34,8 +32,10 @@ def get_document_types_without_pagination(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        result = db.get_document_types_without_pagination(db_session, user_id=user.id)
+    with db.Session() as db_session:
+        result = dbapi.get_document_types_without_pagination(
+            db_session, user_id=user.id
+        )
 
     return result
 
@@ -52,8 +52,8 @@ def get_document_types(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        paginated_response = db.get_document_types(
+    with db.Session() as db_session:
+        paginated_response = dbapi.get_document_types(
             db_session,
             user_id=user.id,
             page_size=params.page_size,
@@ -77,8 +77,10 @@ def get_document_type(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            result = db.get_document_type(db_session, document_type_id=document_type_id)
+        with db.Session() as db_session:
+            result = dbapi.get_document_type(
+                db_session, document_type_id=document_type_id
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
     return result
@@ -98,8 +100,8 @@ def create_document_type(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            document_type = db.create_document_type(
+        with db.Session() as db_session:
+            document_type = dbapi.create_document_type(
                 db_session,
                 name=dtype.name,
                 path_template=dtype.path_template,
@@ -138,8 +140,8 @@ def delete_document_type(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            db.delete_document_type(db_session, document_type_id)
+        with db.Session() as db_session:
+            dbapi.delete_document_type(db_session, document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 
@@ -161,8 +163,8 @@ def update_document_type(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            dtype: schema.DocumentType = db.update_document_type(
+        with db.Session() as db_session:
+            dtype: schema.DocumentType = dbapi.update_document_type(
                 db_session,
                 document_type_id=document_type_id,
                 attrs=attrs,

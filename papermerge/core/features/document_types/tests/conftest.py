@@ -1,16 +1,12 @@
 import pytest
 
-from papermerge.core.db.engine import Session
-from papermerge.core.features.custom_fields.db.api import create_custom_field
-from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.features.document_types import db
-from papermerge.core.features.users.db import orm as users_orm
+from papermerge.core import orm, db, dbapi, schema
 
 
 @pytest.fixture
-def make_custom_field(db_session: Session, user: users_orm.User):
-    def _make_custom_field(name: str, type: CustomFieldType):
-        return create_custom_field(
+def make_custom_field(db_session: db.Session, user: orm.User):
+    def _make_custom_field(name: str, type: schema.CustomFieldType):
+        return dbapi.create_custom_field(
             db_session,
             name=name,
             type=type,
@@ -21,11 +17,11 @@ def make_custom_field(db_session: Session, user: users_orm.User):
 
 
 @pytest.fixture
-def make_document_type(db_session: Session, user: users_orm.User, make_custom_field):
-    cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
+def make_document_type(db_session: db.Session, user: orm.User, make_custom_field):
+    cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
     def _make_document_type(name: str, path_template: str | None = None):
-        return db.create_document_type(
+        return dbapi.create_document_type(
             db_session,
             name=name,
             custom_field_ids=[cf.id],

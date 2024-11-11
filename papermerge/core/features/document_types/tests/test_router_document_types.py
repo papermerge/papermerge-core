@@ -179,3 +179,17 @@ def test_paginated_result__9_items_3rd_page(
     assert paginated_items.num_pages == 2
     #  no items on first page: there are only two pages
     assert len(paginated_items.items) == 0
+
+
+def test_document_types_all_route(make_document_type, auth_api_client: AuthTestClient):
+    total_doc_type_items = 9
+    for _ in range(total_doc_type_items):
+        make_document_type(name="Invoice")
+
+    response = auth_api_client.get("/document-types/all")
+
+    assert response.status_code == 200, response.json()
+
+    items = [schema.DocumentType(**kw) for kw in response.json()]
+
+    assert len(items) == total_doc_type_items

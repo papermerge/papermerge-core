@@ -5,6 +5,7 @@ from .api import (
     get_document_type,
     get_document_types,
     update_document_type,
+    get_document_types_without_pagination,
 )
 from .orm import DocumentType
 
@@ -15,5 +16,6 @@ __all__ = [
     "get_document_type",
     "delete_document_type",
     "update_document_type",
+    "get_document_types_without_pagination",
     "DocumentType",
 ]

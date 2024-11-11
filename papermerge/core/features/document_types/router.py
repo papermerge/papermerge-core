@@ -35,7 +35,7 @@ def get_document_types_without_pagination(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        result = db.get_document_types(db_session)
+        result = db.get_document_types_without_pagination(db_session, user_id=user.id)
 
     return result
 

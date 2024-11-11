@@ -1,12 +1,11 @@
 from sqlalchemy import select
 
 from papermerge.core import orm, schema, dbapi
-from papermerge.core.tests.types import AuthTestClient
 from papermerge.core.tests.resource_file import ResourceFile
 
 
 def test_get_document_details(
-    auth_api_client: AuthTestClient, make_document_from_resource, user, db_session
+    auth_api_client, make_document_from_resource, user, db_session
 ):
     doc = make_document_from_resource(
         resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
@@ -31,7 +30,7 @@ def test_get_document_details(
 
 
 def test_router_move_pages_endpoint_one_single_page_mix(
-    auth_api_client: AuthTestClient, user, db_session, make_document_from_resource
+    auth_api_client, user, db_session, make_document_from_resource
 ):
     src = make_document_from_resource(
         resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder

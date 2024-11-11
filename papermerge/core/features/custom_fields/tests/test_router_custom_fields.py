@@ -4,7 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from papermerge.core import schema, orm
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 def test_create_custom_field(auth_api_client: AuthTestClient, db_session: Session):

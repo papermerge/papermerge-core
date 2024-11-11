@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, func
 
-from papermerge.core import orm, schema, db
-from papermerge.core.tests.types import ResourceFile
+from papermerge.core import orm, schema
+from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
@@ -70,31 +70,6 @@ def test_apply_pages_op(three_pages_pdf: schema.Document, db_session):
     assert newly_created_pages[0].text == "cat"
     # and it different page from the original one
     assert newly_created_pages[0].id != orinal_pages[0].id
-
-
-def test_apply_pages_op_invalid_input(make_document_with_pages, db_session, user):
-    doc1 = make_document_with_pages(
-        title="doc1.pdf", user=user, parent=user.home_folder
-    )
-    doc2 = make_document_with_pages(
-        title="doc2.pdf", user=user, parent=user.home_folder
-    )
-
-    orinal_pages1 = doc_dbapi.get_last_ver_pages(
-        db_session, document_id=doc1.id, user_id=user.id
-    )
-    orinal_pages2 = doc_dbapi.get_last_ver_pages(
-        db_session, document_id=doc2.id, user_id=user.id
-    )
-
-    page1 = schema.MovePage(id=orinal_pages1[0].id, number=orinal_pages1[0].number)
-    page2 = schema.MovePage(id=orinal_pages2[0].id, number=orinal_pages2[0].number)
-    items = [
-        schema.PageAndRotOp(page=page1, angle=0),
-        schema.PageAndRotOp(page=page2, angle=0),
-    ]
-    with pytest.raises(ValueError):
-        page_mngm_dbapi.apply_pages_op(db_session, items, user_id=user.id)
 
 
 def test_copy_without_pages(user, make_document, db_session):

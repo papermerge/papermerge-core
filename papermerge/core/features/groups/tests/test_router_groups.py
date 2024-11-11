@@ -2,7 +2,7 @@ from sqlalchemy import func
 
 from papermerge.core import schema, db
 from papermerge.core.features.groups.db import orm
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Session):

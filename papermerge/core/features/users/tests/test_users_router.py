@@ -1,5 +1,5 @@
 from papermerge.core import schema
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 def test_list_users(make_user, auth_api_client: AuthTestClient):

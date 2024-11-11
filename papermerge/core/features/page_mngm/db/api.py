@@ -68,20 +68,7 @@ def apply_pages_op(
     Note that "copy to new document version" has to parts:
         - recreate the 'page' models (and copy text from old one to new ones)
         - recreate pdf file (and copy its pages from old one to new ones)
-
-    `ValueError` exception will be raised if input pages do not belong
-    to the same document.
     """
-    # input validation, check if all pages belong to the same document
-    stmt = select(func.count(orm.DocumentVersion.id)).where(
-        orm.Page.id.in_(p.page.id for p in items),
-        orm.Page.document_version_id == orm.DocumentVersion.id,
-    )
-    doc_ver_count = db_session.execute(stmt).scalar()
-
-    if doc_ver_count > 1:
-        raise ValueError("Apply pages op: input pages belong to multiple documents")
-
     pages = db_session.execute(
         select(orm.Page).where(orm.Page.id.in_(item.page.id for item in items))
     ).scalars()
@@ -225,7 +212,7 @@ def reuse_ocr_data(
 
 
 def move_pages(
-    db_session,
+    db_session: Session,
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     move_strategy: schema.MoveStrategy,

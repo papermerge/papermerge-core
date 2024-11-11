@@ -11,7 +11,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from papermerge.core.tests.types import ResourceFile
+from papermerge.core.tests.resource_file import ResourceFile
 from core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
@@ -36,7 +36,7 @@ from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
 from papermerge.core import orm
 from papermerge.core import utils
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
 

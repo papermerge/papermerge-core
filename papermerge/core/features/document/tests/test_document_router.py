@@ -5,7 +5,7 @@ from pathlib import Path
 
 from papermerge.core.constants import ContentType
 from papermerge.core.features.document.db import api as dbapi
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"

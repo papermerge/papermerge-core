@@ -1,6 +1,6 @@
 import uuid
 
-from papermerge.test.types import AuthTestClient, TestClient
+from papermerge.core.tests.types import AuthTestClient, TestClient
 
 
 def test_thumbnails_router(

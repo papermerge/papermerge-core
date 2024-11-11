@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from papermerge.core import schema
 from papermerge.core.features.document_types.db import DocumentType
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 def test_create_document_type_with_path_template(

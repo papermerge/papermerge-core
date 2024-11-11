@@ -7,8 +7,8 @@ from sqlalchemy import select
 
 from papermerge.core import orm, schema, dbapi
 from papermerge.core.constants import ContentType
-from papermerge.test.types import AuthTestClient
-from papermerge.core.tests.types import ResourceFile
+from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.tests.resource_file import ResourceFile
 
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))

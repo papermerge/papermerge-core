@@ -2,7 +2,7 @@ from sqlalchemy import func
 
 from papermerge.core.db.engine import Session
 from papermerge.core import orm, schema
-from papermerge.test.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):

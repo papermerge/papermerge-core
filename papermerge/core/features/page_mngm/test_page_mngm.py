@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import select, func
 
 from papermerge.core import orm, schema
-from papermerge.core.tests.types import ResourceFile
+from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi

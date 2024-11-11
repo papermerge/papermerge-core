@@ -34,7 +34,9 @@ def test_get_doc_last_ver(db_session: Session, make_document, user):
     assert last_ver.number == 5
 
 
-def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receipt):
+def test_get_doc_cfv_only_empty_values(
+    db_session: Session, make_document_receipt, user
+):
     """
     In this scenario we have one document of type "Groceries" i.e. a receipt.
     Groceries document type has following custom fields:
@@ -47,7 +49,7 @@ def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receip
     set to None. In other words, document custom fields are returned in
     regardless if custom field has set a value or no
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
     items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     assert len(items) == 3
     # with just value set to None it is ambiguous:
@@ -66,14 +68,12 @@ def test_get_doc_cfv_only_empty_values(db_session: Session, make_document_receip
     ["2024-10-28", "2024-10-28 00:00:00", "2024-10-28 00", "2024-10-28 anything here"],
 )
 def test_document_add_valid_date_cfv(
-    effective_date_input,
-    db_session: Session,
-    make_document_receipt,
+    effective_date_input, db_session: Session, make_document_receipt, user
 ):
     """
     Custom field of type `date` is set to string "2024-10-28"
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
     # key = custom field name
     # value = custom field value
     cf = {"EffectiveDate": effective_date_input}
@@ -87,10 +87,9 @@ def test_document_add_valid_date_cfv(
 
 
 def test_document_update_custom_field_of_type_date(
-    db_session: Session,
-    make_document_receipt,
+    db_session: Session, make_document_receipt, user
 ):
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
     dbapi.update_doc_cfv(
@@ -113,16 +112,13 @@ def test_document_update_custom_field_of_type_date(
     assert eff_date_cf.value == Date(2024, 9, 27)
 
 
-def test_document_add_multiple_CFVs(
-    db_session: Session,
-    make_document_receipt,
-):
+def test_document_add_multiple_CFVs(db_session: Session, make_document_receipt, user):
     """
     In this scenario we pass multiple custom field values to
     `db.update_doc_cfv` function
     Initial document does NOT have custom field values before the update.
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
@@ -143,15 +139,14 @@ def test_document_add_multiple_CFVs(
 
 
 def test_document_update_multiple_CFVs(
-    db_session: Session,
-    make_document_receipt,
+    db_session: Session, make_document_receipt, user
 ):
     """
     In this scenario we pass multiple custom field values to
     `db.update_doc_cfv` function.
     Initial document does have custom field values before the update.
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
@@ -180,8 +175,7 @@ def test_document_update_multiple_CFVs(
 
 
 def test_document_without_cfv_update_document_type_to_none(
-    db_session: Session,
-    make_document_receipt,
+    db_session: Session, make_document_receipt, user
 ):
     """
     In this scenario we have a document of specific document type (groceries)
@@ -191,12 +185,14 @@ def test_document_without_cfv_update_document_type_to_none(
 
     In this scenario document does not have associated CFV
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
 
-    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
+    dbapi.update_doc_type(
+        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
+    )
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
@@ -209,8 +205,7 @@ def test_document_without_cfv_update_document_type_to_none(
 
 
 def test_document_with_cfv_update_document_type_to_none(
-    db_session: Session,
-    make_document_receipt,
+    db_session: Session, make_document_receipt, user
 ):
     """
     In this scenario we have a document of specific document type (groceries)
@@ -220,7 +215,7 @@ def test_document_with_cfv_update_document_type_to_none(
 
     In this scenario document has associated CFV
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
     # add some cfv
     dbapi.update_doc_cfv(
         db_session,
@@ -237,7 +232,9 @@ def test_document_with_cfv_update_document_type_to_none(
     assert db_session.execute(stmt).scalar() == 1
 
     # set document type to None
-    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
+    dbapi.update_doc_type(
+        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
+    )
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
@@ -252,14 +249,13 @@ def test_document_with_cfv_update_document_type_to_none(
 
 
 def test_document_update_string_custom_field_value_multiple_times(
-    db_session: Session,
-    make_document_receipt,
+    db_session: Session, make_document_receipt, user
 ):
     """
     Every time custom field value is updated the retrieved value
     is the latest one
     """
-    receipt = make_document_receipt(title="receipt-1.pdf")
+    receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
     dbapi.update_doc_cfv(
@@ -282,7 +278,7 @@ def test_document_update_string_custom_field_value_multiple_times(
 
 
 @pytest.mark.skip("Will be restored soon")
-def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
+def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user):
     """
     `db.get_docs_by_type` must return all documents of specific type
     regardless if they (documents) have or no associated custom field values.
@@ -292,8 +288,8 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
     And number of returned items must be equal to the number of documents
     of type "Grocery"
     """
-    doc_1 = make_document_receipt(title="receipt_1.pdf")
-    make_document_receipt(title="receipt_2.pdf")
+    doc_1 = make_document_receipt(title="receipt_1.pdf", user=user)
+    make_document_receipt(title="receipt_2.pdf", user=user)
     user_id = doc_1.user.id
     type_id = doc_1.document_type.id
 
@@ -312,7 +308,7 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt):
 
 @pytest.mark.skip("will be restored soon")
 def test_get_docs_by_type_one_doc_with_nonempty_cfv(
-    db_session: Session, make_document_receipt
+    db_session: Session, make_document_receipt, user
 ):
     """
     `db.get_docs_by_type` must return all documents of specific type
@@ -321,8 +317,8 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     In this scenario one of the returned documents has all CFVs set to
     non empty values and the other one - to all values empty
     """
-    doc_1 = make_document_receipt(title="receipt_1.pdf")
-    make_document_receipt(title="receipt_2.pdf")
+    doc_1 = make_document_receipt(title="receipt_1.pdf", user=user)
+    make_document_receipt(title="receipt_2.pdf", user=user)
     user_id = doc_1.user.id
     type_id = doc_1.document_type.id
 

@@ -4,6 +4,7 @@ from .features.nodes.db.orm import Folder, Node
 from .features.tags.db.orm import Tag, NodeTagsAssociation
 from .features.custom_fields.db.orm import CustomField, CustomFieldValue
 from .features.groups.db.orm import Group, Permission
+from .features.document_types.db.orm import DocumentType
 
 __all__ = [
     'User',
@@ -17,5 +18,6 @@ __all__ = [
     'CustomField',
     'CustomFieldValue',
     'Group',
-    'Permission'
+    'Permission',
+    'DocumentType'
 ]

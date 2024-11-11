@@ -1,15 +1,14 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from papermerge.core import schema
-from papermerge.core.features.document_types.db import DocumentType
+from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
 
 
 def test_create_document_type_with_path_template(
     auth_api_client: AuthTestClient, db_session: Session
 ):
-    count_before = db_session.query(func.count(DocumentType.id)).scalar()
+    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -22,7 +21,7 @@ def test_create_document_type_with_path_template(
     )
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(DocumentType.id)).scalar()
+    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
     assert count_after == 1
 
     document_type = schema.DocumentType.model_validate(response.json())
@@ -53,7 +52,7 @@ def test_create_document_type(
     cf1: schema.CustomField = make_custom_field(name="shop", type="text")
     cf2: schema.CustomField = make_custom_field(name="total", type="monetary")
 
-    count_before = db_session.query(func.count(DocumentType.id)).scalar()
+    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -63,7 +62,7 @@ def test_create_document_type(
 
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(DocumentType.id)).scalar()
+    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
     assert count_after == 1
 
     document_type = schema.DocumentType.model_validate(response.json())
@@ -108,12 +107,12 @@ def test_delete_document_type(
     make_document_type,
 ):
     doc_type = make_document_type(name="Invoice")
-    count_before = db_session.query(func.count(DocumentType.id)).scalar()
+    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
     assert count_before == 1
 
     response = auth_api_client.delete(f"/document-types/{doc_type.id}")
     assert response.status_code == 204, response.json()
-    count_after = db_session.query(func.count(DocumentType.id)).scalar()
+    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
 
     assert count_after == 0
 
@@ -179,3 +178,17 @@ def test_paginated_result__9_items_3rd_page(
     assert paginated_items.num_pages == 2
     #  no items on first page: there are only two pages
     assert len(paginated_items.items) == 0
+
+
+def test_document_types_all_route(make_document_type, auth_api_client: AuthTestClient):
+    total_doc_type_items = 9
+    for _ in range(total_doc_type_items):
+        make_document_type(name="Invoice")
+
+    response = auth_api_client.get("/document-types/all")
+
+    assert response.status_code == 200, response.json()
+
+    items = [schema.DocumentType(**kw) for kw in response.json()]
+
+    assert len(items) == total_doc_type_items

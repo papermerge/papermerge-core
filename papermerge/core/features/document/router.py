@@ -8,13 +8,18 @@ from fastapi import APIRouter, HTTPException, Security, UploadFile
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import constants as const
-from papermerge.core import utils
+from papermerge.core import utils, db, dbapi, schema
 from papermerge.core.features.auth import get_current_user, scopes
-from papermerge.core.db.engine import Session
-from papermerge.core import schema
-from papermerge.core.features.document.db import api as dbapi
+from papermerge.core.features.document.schema import (
+    DocumentTypeArg,
+    PageNumber,
+    PageSize,
+    OrderBy,
+)
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.types import OrderEnum, PaginatedResponse
+
 
 router = APIRouter(
     prefix="/documents",
@@ -44,7 +49,7 @@ def update_document_custom_field_values(
             continue
         custom_fields[cf.key] = cf.value
 
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             updated_entries = dbapi.update_doc_cfv(
                 db_session,
@@ -74,7 +79,7 @@ def get_document_custom_field_values(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             doc = dbapi.get_doc_cfv(
                 db_session,
@@ -121,7 +126,7 @@ def upload_file(
     Obviously you can upload files directly via swagger UI.
     """
     content = file.file.read()
-    with Session() as db_session:
+    with db.Session() as db_session:
         doc, error = dbapi.upload(
             db_session,
             document_id=document_id,
@@ -164,8 +169,67 @@ def get_document_details(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
+        with db.Session() as db_session:
             doc = dbapi.get_doc(db_session, id=document_id, user_id=user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc
+
+
+@router.patch("/{document_id}/type")
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
+def update_document_type(
+    document_id: uuid.UUID,
+    document_type: DocumentTypeArg,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+):
+    """
+    Updates document type
+
+    Required scope: `{scope}`
+    """
+    try:
+        with db.Session() as db_session:
+            dbapi.update_doc_type(
+                db_session,
+                document_id=document_id,
+                document_type_id=document_type.document_type_id,
+                user_id=user.id,
+            )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+
+@router.get("/type/{document_type_id}")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_documents_by_type(
+    document_type_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    page_size: PageSize = 5,
+    page_number: PageNumber = 1,
+    order_by: OrderBy = None,
+    order: OrderEnum = OrderEnum.desc,
+) -> PaginatedResponse[schema.DocumentCFV]:
+    """
+    Get all documents of specific type with all custom field values
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        items = dbapi.get_docs_by_type(
+            db_session,
+            type_id=document_type_id,
+            user_id=user.id,
+            order_by=order_by,
+            order=order,
+            page_number=page_number,
+            page_size=page_size,
+        )
+        total_count = dbapi.get_docs_count_by_type(db_session, type_id=document_type_id)
+
+    return PaginatedResponse(
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=int(total_count / page_size) + 1,
+        items=items,
+    )

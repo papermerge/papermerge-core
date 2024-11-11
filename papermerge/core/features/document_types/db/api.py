@@ -1,6 +1,5 @@
 import logging
 import uuid
-from typing import Tuple
 
 from celery.app import default_app as celery_app
 from sqlalchemy import select, func
@@ -9,12 +8,26 @@ from sqlalchemy.orm import Session
 from core.schemas.common import PaginatedResponse
 from papermerge.core import schema
 from papermerge.core import constants as const
-from papermerge.core.features.custom_fields.db.orm import CustomField
+from papermerge.core import orm
 from papermerge.core.utils.decorators import skip_in_tests
 
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
+
+
+def get_document_types_without_pagination(
+    db_session: Session, user_id: uuid.UUID
+) -> list[schema.DocumentType]:
+    stmt = select(orm.DocumentType).where(orm.DocumentType.user_id == user_id)
+
+    db_document_types = db_session.scalars(stmt).all()
+    items = [
+        schema.DocumentType.model_validate(db_document_type)
+        for db_document_type in db_document_types
+    ]
+
+    return items
 
 
 def get_document_types(
@@ -56,13 +69,13 @@ def create_document_type(
     user_id: uuid.UUID,
     custom_field_ids: list[uuid.UUID] | None = None,
     path_template: str | None = None,
-) -> schema.DocumentType:
+) -> orm.DocumentType:
     if custom_field_ids is None:
         cf_ids = []
     else:
         cf_ids = custom_field_ids
 
-    stmt = select(CustomField).where(CustomField.id.in_(cf_ids))
+    stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
     custom_fields = session.execute(stmt).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
@@ -73,8 +86,8 @@ def create_document_type(
     )
     session.add(dtype)
     session.commit()
-    result = schema.DocumentType.model_validate(dtype)
-    return result
+
+    return dtype
 
 
 def get_document_type(
@@ -102,7 +115,7 @@ def update_document_type(
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
     doc_type = session.execute(stmt).scalars().one()
 
-    stmt = select(CustomField).where(CustomField.id.in_(attrs.custom_field_ids))
+    stmt = select(orm.CustomField).where(orm.CustomField.id.in_(attrs.custom_field_ids))
     custom_fields = session.execute(stmt).scalars().all()
 
     if attrs.name:

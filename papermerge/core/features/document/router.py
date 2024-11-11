@@ -8,10 +8,8 @@ from fastapi import APIRouter, HTTPException, Security, UploadFile
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import constants as const
-from papermerge.core import utils, db, dbapi
+from papermerge.core import utils, db, dbapi, schema
 from papermerge.core.features.auth import get_current_user, scopes
-from papermerge.core.db.engine import Session
-from papermerge.core import schema
 from papermerge.core.features.document.schema import (
     DocumentTypeArg,
     PageNumber,
@@ -51,7 +49,7 @@ def update_document_custom_field_values(
             continue
         custom_fields[cf.key] = cf.value
 
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             updated_entries = dbapi.update_doc_cfv(
                 db_session,
@@ -81,7 +79,7 @@ def get_document_custom_field_values(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
+    with db.Session() as db_session:
         try:
             doc = dbapi.get_doc_cfv(
                 db_session,
@@ -128,7 +126,7 @@ def upload_file(
     Obviously you can upload files directly via swagger UI.
     """
     content = file.file.read()
-    with Session() as db_session:
+    with db.Session() as db_session:
         doc, error = dbapi.upload(
             db_session,
             document_id=document_id,
@@ -171,7 +169,7 @@ def get_document_details(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
+        with db.Session() as db_session:
             doc = dbapi.get_doc(db_session, id=document_id, user_id=user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")

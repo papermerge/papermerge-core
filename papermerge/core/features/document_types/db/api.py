@@ -69,7 +69,7 @@ def create_document_type(
     user_id: uuid.UUID,
     custom_field_ids: list[uuid.UUID] | None = None,
     path_template: str | None = None,
-) -> schema.DocumentType:
+) -> orm.DocumentType:
     if custom_field_ids is None:
         cf_ids = []
     else:
@@ -86,8 +86,8 @@ def create_document_type(
     )
     session.add(dtype)
     session.commit()
-    result = schema.DocumentType.model_validate(dtype)
-    return result
+
+    return dtype
 
 
 def get_document_type(

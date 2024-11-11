@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
+from fastapi import Query
 
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.types import CFNameType, CFValueType
@@ -370,3 +371,24 @@ class ExtractPagesOut(BaseModel):
 class MovePagesOut(BaseModel):
     source: Document | None
     target: Document
+
+
+class DocumentTypeArg(BaseModel):
+    document_type_id: UUID | None = None
+
+
+OrderBy = Annotated[
+    str | None,
+    Query(
+        description="""
+    Name of custom field e.g. 'Total EUR' (without quotes). Note that
+    custom field name is case sensitive and may include spaces
+"""
+    ),
+]
+
+PageSize = Annotated[int, Query(ge=1, lt=100, description="Number of items per page")]
+PageNumber = Annotated[
+    int,
+    Query(ge=1, description="Page number. It is first, second etc. page?"),
+]

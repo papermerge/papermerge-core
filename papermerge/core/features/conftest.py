@@ -36,7 +36,7 @@ from papermerge.core.features.document_types import router as document_types_rou
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
-from papermerge.core import orm, dbapi
+from papermerge.core import orm, dbapi, schema
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
@@ -428,3 +428,19 @@ def token():
     payload = b64e(json_str)
 
     return f"ignore_me.{payload}.ignore_me_too"
+
+
+@pytest.fixture
+def make_document_type(db_session, user: orm.User, make_custom_field):
+    cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
+
+    def _make_document_type(name: str, path_template: str | None = None):
+        return dbapi.create_document_type(
+            db_session,
+            name=name,
+            custom_field_ids=[cf.id],
+            path_template=path_template,
+            user_id=user.id,
+        )
+
+    return _make_document_type

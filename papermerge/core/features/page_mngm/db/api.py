@@ -225,7 +225,7 @@ def reuse_ocr_data(
 
 
 def move_pages(
-    db_session,
+    db_session: Session,
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     move_strategy: schema.MoveStrategy,

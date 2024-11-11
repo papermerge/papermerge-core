@@ -17,6 +17,7 @@ from papermerge.core.features.page_mngm.db.api import extract_pages as api_extra
 from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pages
 from papermerge.core.utils import image
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -154,12 +155,15 @@ def move_pages(
     moves all it's pages into the target, the returned source will
     be None.
     """
-    [source, target] = api_move_pages(
-        source_page_ids=arg.source_page_ids,
-        target_page_id=arg.target_page_id,
-        move_strategy=arg.move_strategy,
-    )
-    model = schema.MovePagesOut(source=source, target=target)
+    with db.Session() as db_session:
+        [source, target] = api_move_pages(
+            db_session,
+            source_page_ids=arg.source_page_ids,
+            target_page_id=arg.target_page_id,
+            move_strategy=arg.move_strategy,
+            user_id=user.id,
+        )
+        model = schema.MovePagesOut(source=source, target=target)
 
     return schema.MovePagesOut.model_validate(model)
 

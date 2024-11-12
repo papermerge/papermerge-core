@@ -61,7 +61,11 @@ def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
     dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
 
-    stmt = selectors.select_doc_type_cfv(doc1.document_type_id, cf_name="EffectiveDate")
+    stmt = selectors.select_doc_type_cfv(
+        doc1.document_type_id,
+        cf_name="EffectiveDate",
+        cfv_column_name=selectors.CFVValueColumn.DATE,
+    )
     results = [(row.doc_id, row.cf_value) for row in db_session.execute(stmt)]
 
     assert len(results) == 2

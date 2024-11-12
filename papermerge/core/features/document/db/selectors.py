@@ -1,10 +1,17 @@
 import uuid
+from enum import Enum
 
 from sqlalchemy import select, Select, case, func, VARCHAR
 from sqlalchemy.orm import aliased
 
 from papermerge.core import orm
 
+
+class CFVValueColumn(str, Enum):
+    TEXT = 'value_text'
+    DATE = 'value_date'
+    MONETARY = 'value_monetary'
+    BOOLEAN = 'value_boolean'
 
 # len(2024-11-02) + 1
 DATE_LEN = 11
@@ -62,7 +69,7 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
     return stmt
 
 
-def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str) -> Select:
+def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str, cfv_column_name: CFVValueColumn) -> Select:
     """Returns SqlAlchemy selector for document custom field values for
     specific document type and custom field name"""
     cfv = aliased(orm.CustomFieldValue, name="cfv")
@@ -72,12 +79,7 @@ def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str) -> Select:
 
     stmt = select(
         doc.id.label("doc_id"),
-        case(
-            (cf.type == 'monetary', cfv.value_monetary),
-            (cf.type == 'text', cfv.value_text),
-            (cf.type == 'date', cfv.value_date),
-            (cf.type == 'boolean', cfv.value_boolean),
-        ).label("cf_value")
+        getattr(cfv, cfv_column_name).label("cf_value")
     ).select_from(doc).join(
         assoc,
         assoc.document_type_id == doc.document_type_id
@@ -86,7 +88,7 @@ def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str) -> Select:
         cf.id == assoc.custom_field_id
     ).join(
         cfv,
-        cfv.field_id == cf.id and cfv.document_id == doc.id,
+        cfv.document_id == doc.id,
         isouter=True
     ).where(doc.document_type_id == document_type_id, cf.name == cf_name)
 

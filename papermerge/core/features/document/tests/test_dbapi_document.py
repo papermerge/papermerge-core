@@ -1,6 +1,7 @@
 import os
 import io
 from datetime import date as Date
+from datetime import datetime
 from pathlib import Path
 import pytest
 from sqlalchemy import func, select
@@ -606,3 +607,39 @@ def test_subsequent_updates_over_pages_returned_by_get_last_ver_pages(
 
     # Does (2) contain change from (1)?
     assert fresh_page.text == "coco"
+
+
+def test_update_doc_cfv_on_two_documents(make_document_receipt, user, db_session):
+    """ "
+    There are two receipts doc1, doc2.
+
+    Set EffectiveDate custom field value on first document to "2024-11-21"
+    and on second document to "2024-11-23" and change that custom field
+    values are set correctly for each individual document
+    """
+    # Arrange
+    doc1: docs_orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
+    doc2: docs_orm.Document = make_document_receipt(title="receipt2.pdf", user=user)
+
+    cf1 = {"EffectiveDate": "2024-11-16"}  # value for doc 1
+    cf2 = {"EffectiveDate": "2024-11-28"}  # value for doc 2
+
+    # Act
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+
+    # Assert
+    cf_value_doc1 = db_session.execute(
+        select(cf_orm.CustomFieldValue.value_date).where(
+            cf_orm.CustomFieldValue.document_id == doc1.id
+        )
+    ).scalar()
+
+    cf_value_doc2 = db_session.execute(
+        select(cf_orm.CustomFieldValue.value_date).where(
+            cf_orm.CustomFieldValue.document_id == doc2.id
+        )
+    ).scalar()
+
+    assert cf_value_doc1 == datetime(2024, 11, 16, 0, 0)
+    assert cf_value_doc2 == datetime(2024, 11, 28, 0, 0)

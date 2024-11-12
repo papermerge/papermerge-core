@@ -5,6 +5,10 @@ from sqlalchemy.orm import aliased
 
 from papermerge.core import orm
 
+
+# len(2024-11-02) + 1
+DATE_LEN = 11
+
 def select_doc_cf(document_id: uuid.UUID) -> Select:
     """Returns SqlAlchemy selector for document custom fields"""
     stmt = (
@@ -40,7 +44,7 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
         case(
             (cf.c.type == 'monetary', func.cast(cfv.value_monetary, VARCHAR)),
             (cf.c.type == 'text', func.cast(cfv.value_text, VARCHAR)),
-            (cf.c.type == 'date', func.substr(func.cast(cfv.value_date, VARCHAR), 0, 11)),
+            (cf.c.type == 'date', func.substr(func.cast(cfv.value_date, VARCHAR), 0, DATE_LEN)),
             (cf.c.type == 'boolean', func.cast(cfv.value_boolean, VARCHAR)),
         ).label("cf_value")
     ).select_from(doc).join(
@@ -54,5 +58,36 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
         cfv.field_id == cf.c.id and cfv.document_id == document_id,
         isouter=True
     )
+
+    return stmt
+
+
+def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str) -> Select:
+    """Returns SqlAlchemy selector for document custom field values for
+    specific document type and custom field name"""
+    cfv = aliased(orm.CustomFieldValue, name="cfv")
+    cf = aliased(orm.CustomField, name="cf")
+    assoc = aliased(orm.DocumentTypeCustomField, name="assoc")
+    doc = aliased(orm.Document, name="doc")
+
+    stmt = select(
+        doc.id.label("doc_id"),
+        case(
+            (cf.type == 'monetary', cfv.value_monetary),
+            (cf.type == 'text', cfv.value_text),
+            (cf.type == 'date', cfv.value_date),
+            (cf.type == 'boolean', cfv.value_boolean),
+        ).label("cf_value")
+    ).select_from(doc).join(
+        assoc,
+        assoc.document_type_id == doc.document_type_id
+    ).join(
+        cf,
+        cf.id == assoc.custom_field_id
+    ).join(
+        cfv,
+        cfv.field_id == cf.id and cfv.document_id == doc.id,
+        isouter=True
+    ).where(doc.document_type_id == document_type_id, cf.name == cf_name)
 
     return stmt

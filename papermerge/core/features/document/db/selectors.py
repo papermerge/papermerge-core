@@ -62,7 +62,7 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
         cf.c.id == assoc.custom_field_id
     ).join(
         cfv,
-        cfv.field_id == cf.c.id,
+        (cfv.field_id == cf.c.id) & (cfv.document_id == document_id),
         isouter=True
     ).where(doc.id == document_id)
 

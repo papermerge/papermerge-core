@@ -644,3 +644,56 @@ def test_update_doc_cfv_on_two_documents(make_document_receipt, user, db_session
 
     assert cf_value_doc1 == datetime(2024, 11, 16, 0, 0)
     assert cf_value_doc2 == datetime(2024, 11, 28, 0, 0)
+
+
+def test_get_doc_cfv_when_multiple_documents_present(
+    make_document_receipt, user, db_session
+):
+    doc1: docs_orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
+    doc2: docs_orm.Document = make_document_receipt(title="receipt2.pdf", user=user)
+    doc3: docs_orm.Document = make_document_receipt(title="receipt3.pdf", user=user)
+
+    cf1 = {"EffectiveDate": "2024-11-16", "Shop": "lidl"}  # value for doc 1
+    cf2 = {"EffectiveDate": "2024-11-28"}  # value for doc 2
+    cf3 = {"EffectiveDate": "2024-05-14"}  # value for doc 3
+
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+    dbapi.update_doc_cfv(db_session, document_id=doc3.id, custom_fields=cf3)
+
+    items1 = dbapi.get_doc_cfv(db_session, document_id=doc1.id)
+    items2 = dbapi.get_doc_cfv(db_session, document_id=doc2.id)
+    items3 = dbapi.get_doc_cfv(db_session, document_id=doc3.id)
+
+    doc_ids1 = {i.document_id for i in items1}
+    result1 = {(i.name, i.value) for i in items1}
+
+    doc_ids2 = {i.document_id for i in items2}
+    result2 = {(i.name, i.value) for i in items2}
+
+    doc_ids3 = {i.document_id for i in items3}
+    result3 = {(i.name, i.value) for i in items3}
+
+    assert len(items1) == 3
+    assert len(doc_ids1) == 1
+    assert {
+        ("EffectiveDate", Date(2024, 11, 16)),
+        ("Shop", "lidl"),
+        ("Total", None),
+    } == result1
+
+    assert len(items2) == 3
+    assert len(doc_ids2) == 1
+    assert {
+        ("EffectiveDate", Date(2024, 11, 28)),
+        ("Shop", None),
+        ("Total", None),
+    } == result2
+
+    assert len(items3) == 3
+    assert len(doc_ids3) == 1
+    assert {
+        ("EffectiveDate", Date(2024, 5, 14)),
+        ("Shop", None),
+        ("Total", None),
+    } == result3

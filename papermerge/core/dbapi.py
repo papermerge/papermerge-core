@@ -7,6 +7,7 @@ from .features.document.db.api import (
     get_docs_by_type,
     get_docs_count_by_type,
     update_doc_type,
+    update_doc_cfv,
     get_doc_cfv
 )
 from .features.document_types.db.api import (
@@ -27,6 +28,7 @@ __all__ = [
     "get_doc_cfv",
     "get_docs_by_type",
     "update_doc_type",
+    "update_doc_cfv",
     "get_docs_count_by_type",
     "upload",
     "create_document_type",

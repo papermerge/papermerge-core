@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from papermerge.core.features.document.db import selectors
@@ -55,7 +57,7 @@ def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     doc1: orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
     doc2 = make_document_receipt(title="receipt2.pdf", user=user)
 
-    cf1 = {"EffectiveDate": "2024-11-21"}
+    cf1 = {"EffectiveDate": "2024-11-16"}
     cf2 = {"EffectiveDate": "2024-11-23"}
 
     dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
@@ -69,3 +71,9 @@ def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     results = [(row.doc_id, row.cf_value) for row in db_session.execute(stmt)]
 
     assert len(results) == 2
+    expected_results = {
+        (doc1.id, datetime(2024, 11, 16, 0, 0)),
+        (doc2.id, datetime(2024, 11, 23, 0, 0)),
+    }
+
+    assert set(results) == expected_results

@@ -99,7 +99,6 @@ def update_doc_cfv(
         .where(orm.CustomFieldValue.document_id == document_id)
     )
     existing_cf_name = [row[0] for row in session.execute(stmt).all()]
-
     for item in items:
         if item.name not in custom_fields.keys():
             continue
@@ -108,7 +107,7 @@ def update_doc_cfv(
             # prepare insert values
             v = dict(
                 id=uuid.uuid4(),
-                document_id=item.document_id,
+                document_id=document_id,
                 field_id=item.custom_field_id,
             )
             if item.type.value == "date":

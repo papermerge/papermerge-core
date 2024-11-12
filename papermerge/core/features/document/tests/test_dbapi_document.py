@@ -625,6 +625,7 @@ def test_update_doc_cfv_on_two_documents(make_document_receipt, user, db_session
     cf2 = {"EffectiveDate": "2024-11-28"}  # value for doc 2
 
     # Act
+
     dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
     dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
 

@@ -32,3 +32,13 @@ def test_update_document_type(
     ).scalar()
 
     assert fresh_doc.document_type == dt1
+
+
+def test_get_document_custom_fields_values(
+    auth_api_client, make_document_receipt, user
+):
+    doc = make_document_receipt(title="document.pdf", user=user)
+
+    response = auth_api_client.get(f"/documents/{doc.id}/custom-fields")
+
+    assert response.status_code == 200, response.json()

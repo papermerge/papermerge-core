@@ -15,6 +15,7 @@ from sqlalchemy import delete, func, insert, select, text, update, Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
+
 from papermerge.core.db.engine import Session
 from papermerge.core.constants import ContentType
 from papermerge.core.utils.misc import copy_file
@@ -26,6 +27,7 @@ from papermerge.core.utils.misc import str2date
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
+from .selectors import select_doc_cfv
 
 
 logger = logging.getLogger(__name__)
@@ -54,44 +56,9 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
     that there is no value for it in `custom_field_values` table.
     """
 
-    stmt = """
-        SELECT
-            doc.node_id AS doc_id,
-            doc.document_type_id,
-            cf.cf_id AS cf_id,
-            cf.cf_name,
-            cf.cf_type AS cf_type,
-            cf.cf_extra_data,
-            cfv.id AS cfv_id,
-            CASE
-                WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
-                WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
-                WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
-                WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
-            END AS cf_value
-        FROM documents AS doc
-        JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
-        JOIN(
-            SELECT
-                sub_cf1.id AS cf_id,
-                sub_cf1.name AS cf_name,
-                sub_cf1.type AS cf_type,
-                sub_cf1.extra_data AS cf_extra_data
-            FROM documents AS sub_doc1
-            JOIN document_types_custom_fields AS sub_dtcf1
-                ON sub_dtcf1.document_type_id = sub_doc1.document_type_id
-            JOIN custom_fields AS sub_cf1
-                ON sub_cf1.id = sub_dtcf1.custom_field_id
-            WHERE sub_doc1.node_id = :document_id
-        ) AS cf ON cf.cf_id = dtcf.custom_field_id
-        LEFT OUTER JOIN custom_field_values AS cfv
-            ON cfv.field_id = cf.cf_id AND cfv.document_id = :document_id
-    WHERE
-        doc.node_id = :document_id
-    """
+    stmt = select_doc_cfv(document_id)
     result = []
-    str_doc_id = str(document_id).replace("-", "")
-    for row in session.execute(text(stmt), {"document_id": str_doc_id}):
+    for row in session.execute(stmt):
         if row.cf_type == "date":
             value = str2date(row.cf_value)
         else:

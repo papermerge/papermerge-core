@@ -35,6 +35,41 @@ def test_select_cf_by_document_id_when_multiple_documents_present(
     assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
 
 
+def test_select_cf_by_document_type_when_one_document_present(
+    make_document_receipt, user, db_session
+):
+    """This scenario tests when there is only one document"""
+    doc = make_document_receipt(title="receipt.pdf", user=user)
+
+    selector = selectors.select_cf_by_document_type(
+        document_type_id=doc.document_type_id
+    )
+    rows = db_session.execute(selector)
+    cf_names = list(row.name for row in rows)
+
+    assert len(cf_names) == 3
+    assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
+
+
+def test_select_cf_by_document_type_when_multiple_documents_present(
+    make_document_receipt, make_document_zdf, user, db_session
+):
+    """This scenario tests when there are multiple documents (of different type)"""
+    doc1 = make_document_receipt(title="receipt1.pdf", user=user)
+    make_document_receipt(title="receipt2.pdf", user=user)
+    make_document_zdf(title="zdf1.pdf", user=user)
+    make_document_zdf(title="zdf2.pdf", user=user)
+
+    selector = selectors.select_cf_by_document_type(
+        document_type_id=doc1.document_type_id
+    )
+    rows = db_session.execute(selector)
+    cf_names = list(row.name for row in rows)
+
+    assert len(cf_names) == 3
+    assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
+
+
 def test_select_doc_cfv_only_empty_values(make_document_receipt, user, db_session):
     doc = make_document_receipt(title="receipt.pdf", user=user)
 
@@ -155,6 +190,42 @@ def test_select_docs_by_type_with_one_doc_full_cfv(
         (doc2.id, "EffectiveDate", None),
         (doc2.id, "Shop", None),
         (doc2.id, "Total", None),
+    }
+
+    assert set(results) == expected_results
+
+
+def test_select_docs_by_type_with_partially_filled_cfv(
+    make_document_receipt, user, db_session
+):
+    """In this scenario one document has all custom fields values"""
+    # arrange
+    doc1: orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
+    doc2: orm.Document = make_document_receipt(title="receipt2.pdf", user=user)
+
+    cf1 = {"EffectiveDate": "2024-11-16", "Shop": "lidl"}
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+
+    cf2 = {"Shop": "rewe", "Total": "9.99"}
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+
+    # act
+    stmt = selectors.select_docs_by_type(
+        document_type_id=doc1.document_type_id,
+        user_id=user.id,
+    )
+
+    # assert
+    results = [
+        (row.doc_id, row.cf_name, row.cf_value) for row in db_session.execute(stmt)
+    ]
+    expected_results = {
+        (doc1.id, "EffectiveDate", "2024-11-16"),
+        (doc1.id, "Shop", "lidl"),
+        (doc1.id, "Total", None),
+        (doc2.id, "EffectiveDate", None),
+        (doc2.id, "Shop", "rewe"),
+        (doc2.id, "Total", "9.99"),
     }
 
     assert set(results) == expected_results

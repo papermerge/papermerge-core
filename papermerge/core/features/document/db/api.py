@@ -10,7 +10,7 @@ from pathlib import Path
 
 from typing import Tuple
 
-from sqlalchemy import delete, func, insert, select, text, update, Select
+from sqlalchemy import delete, func, insert, select, update, Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -20,7 +20,7 @@ from papermerge.core.constants import ContentType
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
-from papermerge.core.types import OrderEnum
+from papermerge.core.types import OrderEnum, CFVValueColumn
 from papermerge.core.db.common import get_ancestors
 from papermerge.core.utils.misc import str2date
 from papermerge.core.pathlib import (
@@ -172,62 +172,26 @@ def get_docs_count_by_type(session: Session, type_id: uuid.UUID):
     return session.scalars(stmt).one()
 
 
-STMT_WITH_ORDER_BY = """
-SELECT node.title,
-    doc.node_id AS doc_id,
-    doc.document_type_id,
-    cf.cf_id AS cf_id,
-    cf.cf_name,
-    cf.cf_type AS cf_type,
-    cf.cf_extra_data,
-    cfv.value_monetary,
-    cfv.id AS cfv_id,
-    CASE
-        WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
-        WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
-        WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
-        WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
-    END AS cf_value
-    FROM documents AS doc
-    JOIN (
-      SELECT sub2_doc.node_id AS doc_id,
-      CASE
-        WHEN sub2_cf.type = 'monetary' THEN CAST(sub2_cfv.value_monetary AS VARCHAR)
-        WHEN sub2_cf.type = 'text' THEN CAST(sub2_cfv.value_text AS VARCHAR)
-        WHEN sub2_cf.type = 'date' THEN CAST(sub2_cfv.value_date AS VARCHAR)
-        WHEN sub2_cf.type = 'boolean' THEN CAST(sub2_cfv.value_boolean AS VARCHAR)
-      END AS cf_value
-      FROM documents AS sub2_doc
-      JOIN document_types_custom_fields AS sub2_dtcf ON sub2_dtcf.document_type_id = sub2_doc.document_type_id
-      JOIN custom_fields AS sub2_cf ON sub2_cf.id = sub2_dtcf.custom_field_id
-      LEFT OUTER JOIN custom_field_values AS sub2_cfv
-          ON sub2_cfv.field_id = sub2_cf.id AND sub2_cfv.document_id = sub2_doc.node_id
-      WHERE sub2_doc.document_type_id = :document_type_id AND sub2_cf.name = :custom_field_name
-    ) AS ordered_doc ON ordered_doc.doc_id = doc.node_id
-    JOIN nodes AS node
-        ON node.id = doc.node_id
-    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
-    JOIN(
-        SELECT
-            sub_cf1.id AS cf_id,
-            sub_cf1.name AS cf_name,
-            sub_cf1.type AS cf_type,
-            sub_cf1.extra_data AS cf_extra_data
-        FROM document_types AS sub_dt1
-        JOIN documents_type_custom_fields AS sub_dtcf1
-            ON sub_dtcf1.document_type_id = sub_dt1.id
-        JOIN custom_fields AS sub_cf1
-            ON sub_cf1.id = sub_dtcf1.custom_field_id
-        WHERE sub_dt1.id = :document_type_id
-    ) AS cf ON cf.cf_id = dtcf.custom_field_id
-    LEFT OUTER JOIN custom_field_values AS cfv
-        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc_id
-    WHERE doc.document_type_id = :document_type_id
-    ORDER BY ordered_doc.cf_value {order}
-"""
+def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
+    value = db_session.execute(
+        select(orm.CustomField.type).where(
+            orm.CustomField.name == cf_name
+        )
+    ).scalar()
 
+    match value:
+        case "text":
+            ret = CFVValueColumn.TEXT
+        case "monetary":
+            ret = CFVValueColumn.MONETARY
+        case "date":
+            ret = CFVValueColumn.DATE
+        case "boolean":
+            ret = CFVValueColumn.BOOLEAN
+        case _:
+            raise ValueError("Unexpected custom field type")
 
-PAGINATION = " LIMIT {limit} OFFSET {offset} "
+    return ret
 
 
 def get_docs_by_type(
@@ -248,8 +212,6 @@ def get_docs_by_type(
     if page_size < 1:
         raise ValueError(f"page_size must be >= 1; got value={page_size}")
 
-    str_type_id = str(type_id).replace("-", "")
-    results = []
     cf_count = document_type_cf_count(session, document_type_id=type_id)
 
     if order_by is None:
@@ -259,14 +221,18 @@ def get_docs_by_type(
             limit=cf_count * page_size,
             offset=cf_count * (page_number - 1) * page_size
         )
-        rows = session.execute(stmt)
     else:
-        stmt = STMT_WITH_ORDER_BY.format(order=order.value) + PAGINATION.format(
-            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        cfv_column_name = get_cfv_column_name(session, order_by)
+        stmt = select_docs_by_type(
+            document_type_id=type_id,
+            user_id=user_id,
+            order_by=order_by,
+            cfv_column_name=cfv_column_name,
+            limit=cf_count * page_size,
+            offset=cf_count * (page_number - 1) * page_size
         )
-        params = {"document_type_id": str_type_id, "custom_field_name": order_by}
-        rows = session.execute(text(stmt), params)
 
+    rows = session.execute(stmt)
     ordered_doc_cfvs = OrderedDocumentCFV()
     for row in rows:
         entry = DocumentCFVRow(

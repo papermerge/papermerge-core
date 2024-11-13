@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID
+from decimal import Decimal
 
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -29,7 +30,7 @@ class CustomFieldValue(Base):
     value_date: Mapped[datetime] = mapped_column(nullable=True)
     value_int: Mapped[int] = mapped_column(nullable=True)
     value_float: Mapped[float] = mapped_column(nullable=True)
-    value_monetary: Mapped[float] = mapped_column(nullable=True)
+    value_monetary: Mapped[Decimal] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     def __repr__(self):

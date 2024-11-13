@@ -27,7 +27,9 @@ from papermerge.core.utils.misc import str2date
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
-from .selectors import select_doc_cfv
+from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
+from .selectors import select_doc_cfv, select_docs_by_type
+
 
 
 logger = logging.getLogger(__name__)
@@ -223,42 +225,6 @@ SELECT node.title,
     ORDER BY ordered_doc.cf_value {order}
 """
 
-STMT = """
-    SELECT node.title,
-        doc.node_id AS doc_id,
-        doc.document_type_id,
-        cf.cf_id AS cf_id,
-        cf.cf_name,
-        cf.cf_type AS cf_type,
-        cf.cf_extra_data,
-        cfv.id AS cfv_id,
-        CASE
-            WHEN cf.cf_type = 'monetary' THEN CAST(cfv.value_monetary AS VARCHAR)
-            WHEN cf.cf_type = 'text' THEN CAST(cfv.value_text AS VARCHAR)
-            WHEN cf.cf_type = 'date' THEN CAST(cfv.value_date AS VARCHAR)
-            WHEN cf.cf_type = 'boolean' THEN CAST(cfv.value_boolean AS VARCHAR)
-        END AS cf_value
-    FROM documents AS doc
-    JOIN nodes AS node
-      ON node.id = doc.node_id
-    JOIN document_types_custom_fields AS dtcf ON dtcf.document_type_id = doc.document_type_id
-    JOIN(
-        SELECT
-            sub_cf1.id AS cf_id,
-            sub_cf1.name AS cf_name,
-            sub_cf1.type AS cf_type,
-            sub_cf1.extra_data AS cf_extra_data
-        FROM document_types AS sub_dt1
-        JOIN document_types_custom_fields AS sub_dtcf1
-            ON sub_dtcf1.document_type_id = sub_dt1.id
-        JOIN custom_fields AS sub_cf1
-            ON sub_cf1.id = sub_dtcf1.custom_field_id
-        WHERE sub_dt1.id = :document_type_id
-    ) AS cf ON cf.cf_id = dtcf.custom_field_id
-    LEFT OUTER JOIN custom_field_values AS cfv
-        ON cfv.field_id = cf.cf_id AND cfv.document_id = doc.node_id
-    WHERE doc.document_type_id = :document_type_id
-"""
 
 PAGINATION = " LIMIT {limit} OFFSET {offset} "
 
@@ -286,11 +252,13 @@ def get_docs_by_type(
     cf_count = document_type_cf_count(session, document_type_id=type_id)
 
     if order_by is None:
-        stmt = STMT + PAGINATION.format(
-            limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
+        stmt = select_docs_by_type(
+            document_type_id=type_id,
+            user_id=user_id,
+            limit=cf_count * page_size,
+            offset=cf_count * (page_number - 1) * page_size
         )
-        params = {"document_type_id": str_type_id}
-        rows = session.execute(text(stmt), params)
+        rows = session.execute(stmt)
     else:
         stmt = STMT_WITH_ORDER_BY.format(order=order.value) + PAGINATION.format(
             limit=cf_count * page_size, offset=cf_count * (page_number - 1) * page_size
@@ -298,41 +266,18 @@ def get_docs_by_type(
         params = {"document_type_id": str_type_id, "custom_field_name": order_by}
         rows = session.execute(text(stmt), params)
 
-    for document_id, group in itertools.groupby(rows, lambda r: r.doc_id):
-        items = sorted(list(group), key=lambda x: x.cf_name)
-        custom_fields = []
-
-        for item in items:
-            if item.cf_type == "date":
-                value = str2date(item.cf_value)
-            else:
-                value = item.cf_value
-            custom_fields.append((item.cf_name, value, item.cf_type))
-
-        if isinstance(document_id, uuid.UUID):
-            # postgres
-            doc_id = document_id
-        else:
-            # sqlite
-            doc_id = uuid.UUID(document_id)
-
-        if isinstance(items[0].document_type_id, uuid.UUID):
-            # postgres
-            doc_type_id = items[0].document_type_id
-        else:
-            # sqlite
-            doc_type_id = uuid.UUID(items[0].document_type_id)
-
-        results.append(
-            schema.DocumentCFV(
-                id=doc_id,
-                title=items[0].title,
-                document_type_id=doc_type_id,
-                custom_fields=custom_fields,
-            )
+    ordered_doc_cfvs = OrderedDocumentCFV()
+    for row in rows:
+        ordered_doc_cfvs.add(
+            title=row.title,
+            doc_id=row.doc_id,
+            document_type_id=row.document_type_id,
+            cf_name=row.cf_name,
+            cf_type=row.cf_type,
+            cf_value=row.cf_value
         )
 
-    return results
+    return list(ordered_doc_cfvs)
 
 
 def create_document(

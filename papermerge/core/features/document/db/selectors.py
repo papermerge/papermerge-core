@@ -132,8 +132,11 @@ def select_docs_by_type(
     cfv = aliased(orm.CustomFieldValue, name="cfv")
 
     base_stmt = select(
+        doc.title,
         doc.id.label("doc_id"),
+        doc.document_type_id.label("document_type_id"),
         cf.c.name.label("cf_name"),
+        cf.c.type.label("cf_type"),
         case(
             (cf.c.type == 'monetary', func.cast(cfv.value_monetary, VARCHAR)),
             (cf.c.type == 'text', func.cast(cfv.value_text, VARCHAR)),

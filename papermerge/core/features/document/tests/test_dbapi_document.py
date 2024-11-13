@@ -307,7 +307,6 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user
         assert cf["Total"] is None
 
 
-@pytest.mark.skip("will be restored soon")
 def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     db_session: Session, make_document_receipt, user
 ):

@@ -29,7 +29,7 @@ class CustomFieldValue(Base):
     value_date: Mapped[datetime] = mapped_column(nullable=True)
     value_int: Mapped[int] = mapped_column(nullable=True)
     value_float: Mapped[float] = mapped_column(nullable=True)
-    value_monetary: Mapped[str] = mapped_column(nullable=True)
+    value_monetary: Mapped[float] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     def __repr__(self):

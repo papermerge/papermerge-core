@@ -400,6 +400,20 @@ def document_type_groceries(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
+def document_type_zdf(db_session: Session, user, make_custom_field):
+    cf1 = make_custom_field(name="Start Date", type=CustomFieldType.date)
+    cf2 = make_custom_field(name="End Date", type=CustomFieldType.date)
+    cf3 = make_custom_field(name="Total Due", type=CustomFieldType.monetary)
+
+    return dbapi.create_document_type(
+        db_session,
+        name="ZDF",
+        custom_field_ids=[cf1.id, cf2.id, cf3.id],
+        user_id=user.id,
+    )
+
+
+@pytest.fixture
 def make_custom_field(db_session: Session, user):
     def _make_custom_field(name: str, type: CustomFieldType):
         return cf_dbapi.create_custom_field(

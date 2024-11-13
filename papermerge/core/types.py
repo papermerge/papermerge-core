@@ -44,3 +44,9 @@ CFNameType: TypeAlias = str
 class OrderEnum(str, Enum):
     asc = "asc"
     desc = "desc"
+
+class CFVValueColumn(str, Enum):
+    TEXT = 'value_text'
+    DATE = 'value_date'
+    MONETARY = 'value_monetary'
+    BOOLEAN = 'value_boolean'

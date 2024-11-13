@@ -5,7 +5,7 @@ from sqlalchemy import select, Select, case, func, VARCHAR
 from sqlalchemy.orm import aliased
 
 from papermerge.core import orm
-
+from papermerge.core.types import OrderEnum
 
 class CFVValueColumn(str, Enum):
     TEXT = 'value_text'
@@ -16,7 +16,7 @@ class CFVValueColumn(str, Enum):
 # len(2024-11-02) + 1
 DATE_LEN = 11
 
-def select_doc_cf(document_id: uuid.UUID) -> Select:
+def _select_cf() -> Select:
     """Returns SqlAlchemy selector for document custom fields"""
     stmt = (
         select(
@@ -27,7 +27,30 @@ def select_doc_cf(document_id: uuid.UUID) -> Select:
         .select_from(orm.Document)
         .join(orm.DocumentTypeCustomField, orm.DocumentTypeCustomField.document_type_id == orm.Document.document_type_id)
         .join(orm.CustomField, orm.CustomField.id == orm.DocumentTypeCustomField.custom_field_id)
-        .where(orm.Document.id == document_id)
+    )
+
+    return stmt
+
+
+def select_cf_by_document_id(document_id: uuid.UUID) -> Select:
+    """Returns SqlAlchemy selector for document custom fields"""
+    stmt = (
+        _select_cf()
+        .where(
+            orm.Document.id == document_id
+        ).distinct(orm.CustomField.id)
+    )
+
+    return stmt
+
+
+def select_cf_by_document_type(document_type_id: uuid.UUID) -> Select:
+    """Returns SqlAlchemy selector for document custom fields"""
+    stmt = (
+        _select_cf()
+        .where(
+            orm.Document.document_type_id == document_type_id
+        ).distinct(orm.CustomField.id)
     )
 
     return stmt
@@ -35,7 +58,7 @@ def select_doc_cf(document_id: uuid.UUID) -> Select:
 
 def select_doc_cfv(document_id: uuid.UUID) -> Select:
     """Returns SqlAlchemy selector for document custom field values"""
-    cf = select_doc_cf(document_id).subquery("cf")
+    cf = select_cf_by_document_id(document_id).subquery("cf")
     cfv = aliased(orm.CustomFieldValue, name="cfv")
     assoc = aliased(orm.DocumentTypeCustomField, name="assoc")
     doc = aliased(orm.Document, name="doc")
@@ -91,5 +114,41 @@ def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str, cfv_column_na
         cfv.document_id == doc.id,
         isouter=True
     ).where(doc.document_type_id == document_type_id, cf.name == cf_name)
+
+    return stmt
+
+
+def select_docs_by_type(
+    document_type_id: uuid.UUID,
+    user_id: uuid.UUID,
+    oder_by: str | None = None,
+    order: OrderEnum = OrderEnum.desc,
+) -> Select:
+    assoc = aliased(orm.DocumentTypeCustomField, name="assoc")
+    doc = aliased(orm.Document, name="doc")
+    cf = select_cf_by_document_type(document_type_id).subquery("cf")
+    cfv = aliased(orm.CustomFieldValue, name="cfv")
+
+    stmt = select(
+        doc.id.label("doc_id"),
+        cf.c.name.label("cf_name"),
+        case(
+            (cf.c.type == 'monetary', func.cast(cfv.value_monetary, VARCHAR)),
+            (cf.c.type == 'text', func.cast(cfv.value_text, VARCHAR)),
+            (cf.c.type == 'date',
+             func.substr(func.cast(cfv.value_date, VARCHAR), 0, DATE_LEN)),
+            (cf.c.type == 'boolean', func.cast(cfv.value_boolean, VARCHAR)),
+        ).label("cf_value")
+    ).select_from(
+        doc
+    ).join(
+        assoc, assoc.document_type_id == doc.document_type_id
+    ).join(
+        cf, cf.c.id == assoc.custom_field_id
+    ).join(
+        cfv,
+        (cfv.field_id == cf.c.id) & (cfv.document_id == doc.id),
+        isouter=True
+    ).where(doc.document_type_id == document_type_id, doc.user_id == user_id)
 
     return stmt

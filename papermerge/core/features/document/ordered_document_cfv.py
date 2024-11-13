@@ -1,25 +1,12 @@
 import uuid
 from typing import Dict, Iterator
-from pydantic import BaseModel
 
 from papermerge.core.utils.misc import str2date
-from papermerge.core.features.document.schema import DocumentCFV
-from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.types import CFNameType, CFValueType
-
-
-class DocumentCFVWithIndex(BaseModel):
-    dcfv: DocumentCFV
-    index: int
-
-
-class DocumentCFVRow(BaseModel):
-    title: str
-    doc_id: uuid.UUID
-    document_type_id: uuid.UUID
-    cf_name: CFNameType
-    cf_type: CustomFieldType
-    cf_value: CFValueType
+from papermerge.core.features.document.schema import (
+    DocumentCFV,
+    DocumentCFVWithIndex,
+    DocumentCFVRow,
+)
 
 
 class OrderedDocumentCFV:
@@ -35,21 +22,24 @@ class OrderedDocumentCFV:
         result = {}
         i = 0
         for item in self.rows:
+            if item.cf_type == "date":
+                value = str2date(item.cf_value)
+            elif item.cf_type == "monetary" and item.cf_value is not None:
+                value = float(item.cf_value)
+            else:
+                value = item.cf_value
+
             if item.doc_id in result:
-                if item.cf_type == "date":
-                    value = str2date(item.cf_value)
-                else:
-                    value = item.cf_value
                 result[item.doc_id].dcfv.custom_fields.append(
                     (item.cf_name, value, item.cf_type)
                 )
             else:
                 result[item.doc_id] = DocumentCFVWithIndex(
                     dcfv=DocumentCFV(
-                        id=item.id,
+                        id=item.doc_id,
                         title=item.title,
                         document_type_id=item.document_type_id,
-                        custom_fields=[],
+                        custom_fields=[(item.cf_name, value, item.cf_type)],
                     ),
                     index=i,  # so that we later sort/order
                 )

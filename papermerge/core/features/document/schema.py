@@ -392,3 +392,17 @@ PageNumber = Annotated[
     int,
     Query(ge=1, description="Page number. It is first, second etc. page?"),
 ]
+
+
+class DocumentCFVWithIndex(BaseModel):
+    dcfv: DocumentCFV
+    index: int
+
+
+class DocumentCFVRow(BaseModel):
+    title: str
+    doc_id: UUID
+    document_type_id: UUID
+    cf_name: CFNameType
+    cf_type: CustomFieldType
+    cf_value: CFValueType

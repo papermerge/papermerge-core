@@ -1,6 +1,5 @@
 import io
 import logging
-import itertools
 import os
 from os.path import getsize
 import uuid
@@ -27,7 +26,9 @@ from papermerge.core.utils.misc import str2date
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
+from papermerge.core.features.document.schema import DocumentCFVRow
 from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
+
 from .selectors import select_doc_cfv, select_docs_by_type
 
 
@@ -268,7 +269,7 @@ def get_docs_by_type(
 
     ordered_doc_cfvs = OrderedDocumentCFV()
     for row in rows:
-        ordered_doc_cfvs.add(
+        entry = DocumentCFVRow(
             title=row.title,
             doc_id=row.doc_id,
             document_type_id=row.document_type_id,
@@ -276,6 +277,7 @@ def get_docs_by_type(
             cf_type=row.cf_type,
             cf_value=row.cf_value
         )
+        ordered_doc_cfvs.add(entry)
 
     return list(ordered_doc_cfvs)
 

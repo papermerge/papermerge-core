@@ -5,7 +5,7 @@ from celery.app import default_app as celery_app
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from core.schemas.common import PaginatedResponse
+from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core import orm

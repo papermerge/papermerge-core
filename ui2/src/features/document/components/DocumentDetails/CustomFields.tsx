@@ -45,7 +45,8 @@ export default function CustomFields() {
   const {
     data: documentCustomFields,
     isSuccess: isSuccessDocumentCustomFields,
-    isError: isErrorGetDocCF
+    isError: isErrorGetDocCF,
+    refetch: refetchCustomFields
   } = useGetDocumentCustomFieldsQuery(docID ?? skipToken)
 
   useEffect(() => {
@@ -133,6 +134,7 @@ export default function CustomFields() {
     setDocumentTypeID(option)
     setCustomFieldValues([])
     setShowSaveButton(false)
+    refetchCustomFields()
   }
 
   const onClearDocumentType = () => {

@@ -17,7 +17,7 @@ from papermerge.core.features.document.schema import (
     OrderBy,
 )
 from papermerge.core.config import get_settings, FileServer
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.types import OrderEnum, PaginatedResponse
 
 
@@ -151,7 +151,7 @@ def upload_file(
     return doc
 
 
-@skip_in_tests
+@if_redis_present
 def send_task(*args, **kwargs):
     logger.debug(f"Send task {args} {kwargs}")
     celery_app.send_task(*args, **kwargs)

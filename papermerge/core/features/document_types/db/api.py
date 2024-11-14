@@ -9,7 +9,7 @@ from core.schemas.common import PaginatedResponse
 from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core import orm
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 
 from .orm import DocumentType
 
@@ -146,7 +146,7 @@ def update_document_type(
     return result
 
 
-@skip_in_tests
+@if_redis_present
 def send_task(*args, **kwargs):
     logger.debug(f"Send task {args} {kwargs}")
     celery_app.send_task(*args, **kwargs)

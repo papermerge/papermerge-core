@@ -16,7 +16,7 @@ from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.exceptions import EntityNotFound
 
 
@@ -389,7 +389,7 @@ def remove_node_tags(
     return node
 
 
-@skip_in_tests
+@if_redis_present
 def _notify_index(node_id: uuid.UUID):
     id_as_str = str(node_id)  # just in case, make sure it is str
     current_app.send_task(

@@ -6,7 +6,7 @@ from django.db import models
 from papermerge.core import constants as const
 from papermerge.core.models import utils
 from papermerge.core.models.node import BaseTreeNode
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 
 
 class FolderManager(models.Manager):
@@ -35,19 +35,15 @@ class FolderQuerySet(models.QuerySet):
 
             self.publish_post_delete_task(deleted_node_ids)
 
-    @skip_in_tests
+    @if_redis_present
     def publish_post_delete_task(self, node_ids: List[str]):
         current_app.send_task(
-            const.INDEX_REMOVE_NODE,
-            kwargs={'item_ids': node_ids},
-            route_name='i3'
+            const.INDEX_REMOVE_NODE, kwargs={"item_ids": node_ids}, route_name="i3"
         )
 
     def get_by_breadcrumb(
-        self,
-        breadcrumb: str,  # should this be pathlib.PurePath ?
-        user
-    ) -> 'Folder':
+        self, breadcrumb: str, user  # should this be pathlib.PurePath ?
+    ) -> "Folder":
         """
         Returns ``Folder`` instance of the node defined by given
         breadcrumb path of specific ``User``.
@@ -57,11 +53,7 @@ class FolderQuerySet(models.QuerySet):
         folder = Folder.objects.get_by_breadcrumb('.home/My Documents', user)
         assert folder.title == 'My Documents'
         """
-        return utils.get_by_breadcrumb(
-            Folder,
-            breadcrumb,
-            user
-        )
+        return utils.get_by_breadcrumb(Folder, breadcrumb, user)
 
 
 CustomFolderManager = FolderManager.from_queryset(FolderQuerySet)
@@ -91,7 +83,7 @@ class Folder(BaseTreeNode):
         super().save(*args, **kwargs)
         self.publish_post_save_task()
 
-    @skip_in_tests  # skip this method when running tests
+    @if_redis_present  # skip this method when running tests
     def publish_post_save_task(self):
         """Send task to worker to add folder changes to search index
 
@@ -99,9 +91,7 @@ class Folder(BaseTreeNode):
         """
         id_as_str = str(self.pk)
         current_app.send_task(
-            const.INDEX_ADD_NODE,
-            kwargs={'node_id': id_as_str},
-            route_name='i3'
+            const.INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3"
         )
 
     class Meta:
@@ -121,9 +111,6 @@ def get_inbox_children(user):
     Returns a ``QuerySet`` containing the immediate children nodes
     of given user's inbox folder
     """
-    inbox_node = BaseTreeNode.objects.get(
-        title=Folder.INBOX_TITLE,
-        user=user
-    )
+    inbox_node = BaseTreeNode.objects.get(title=Folder.INBOX_TITLE, user=user)
 
     return inbox_node.get_children()

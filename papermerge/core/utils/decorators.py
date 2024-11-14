@@ -4,7 +4,7 @@ from papermerge.core.config import get_settings
 config = get_settings()
 
 
-def skip_in_tests(orig_func):
+def if_redis_present(orig_func):
     """Skip decorated function when `config.papermerge__redis__url` is None"""
 
     def inner(*args, **kwargs):

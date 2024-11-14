@@ -13,7 +13,7 @@ from sqlalchemy import select, func, delete
 from papermerge.core import constants as const
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import get_storage_instance
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.db import Session
 from papermerge.core import orm, schema, types
 from papermerge.core.features.document.db import api as doc_dbapi
@@ -683,7 +683,7 @@ def copy_without_pages(
     ]
 
 
-@skip_in_tests
+@if_redis_present
 def notify_version_update(add_ver_id: str, remove_ver_id: str):
     # Send tasks to the index to remove/add pages
     current_app.send_task(const.INDEX_UPDATE, (add_ver_id, remove_ver_id))
@@ -700,7 +700,7 @@ def notify_version_update(add_ver_id: str, remove_ver_id: str):
     )
 
 
-@skip_in_tests
+@if_redis_present
 def notify_add_docs(add_doc_ids: List[str]):
     # send task to index
     logger.debug(f"Sending task {const.INDEX_ADD_DOCS} with {add_doc_ids}")
@@ -718,7 +718,7 @@ def notify_add_docs(add_doc_ids: List[str]):
     )
 
 
-@skip_in_tests
+@if_redis_present
 def notify_generate_previews(doc_id: list[str] | str):
     if isinstance(doc_id, str):
         current_app.send_task(

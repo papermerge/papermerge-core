@@ -256,11 +256,11 @@ def my_documents_folder(db_session: Session, user, make_folder):
 
 @pytest.fixture(scope="function")
 def db_session():
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine, checkfirst=False)
     with Session() as session:
         yield session
 
-    Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine, checkfirst=False)
 
 
 def get_app_with_routes():
@@ -462,7 +462,12 @@ def make_document_type(db_session, user: orm.User, make_custom_field):
 
 @pytest.fixture
 def make_document_receipt(db_session: Session, document_type_groceries):
-    def _make_receipt(title: str, user: orm.User):
+    def _make_receipt(title: str, user: orm.User, parent=None):
+        if parent is None:
+            parent_id = user.home_folder_id
+        else:
+            parent_id = parent.id
+
         doc_id = uuid.uuid4()
         doc = orm.Document(
             id=doc_id,
@@ -470,8 +475,8 @@ def make_document_receipt(db_session: Session, document_type_groceries):
             title=title,
             user=user,
             document_type_id=document_type_groceries.id,
-            parent_id=user.home_folder_id,
-            lang="de",
+            parent_id=parent_id,
+            lang="deu",
         )
 
         db_session.add(doc)

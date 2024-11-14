@@ -5,7 +5,7 @@ config = get_settings()
 
 
 def if_redis_present(orig_func):
-    """Skip decorated function when `config.papermerge__redis__url` is None"""
+    """Execute decorated function only if `papermerge__redis__url` is defined"""
 
     def inner(*args, **kwargs):
         if config.papermerge__redis__url is not None:

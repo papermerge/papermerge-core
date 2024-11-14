@@ -271,8 +271,17 @@ def delete_nodes(
         orm.Node.id.in_(all_ids_to_be_deleted), orm.Node.user_id == user_id
     )
 
+    # This second delete statement - is extra hack for Sqlite DB
+    # For some reason, the (Polymorphic?) cascading does not work
+    # in Sqlite, so here it is required to manually delete associated
+    # custom fields
+    sqlite_hack_stmt = delete(orm.CustomFieldValue).where(
+        orm.CustomFieldValue.document_id.in_(all_ids_to_be_deleted)
+    )
+
     try:
         db_session.execute(stmt)
+        db_session.execute(sqlite_hack_stmt)
         db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])

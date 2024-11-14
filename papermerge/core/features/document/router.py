@@ -59,7 +59,7 @@ def update_document_custom_field_values(
         except NoResultFound:
             raise HTTPException(status_code=404, detail="Document not found")
 
-    celery_app.send_task(
+    send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,
         kwargs={"document_id": str(document_id), "user_id": str(user.id)},
         route_name="path_tmpl",

@@ -5,6 +5,8 @@ config = get_settings()
 
 
 def skip_in_tests(orig_func):
+    """Skip decorated function when `config.papermerge__redis__url` is None"""
+
     def inner(*args, **kwargs):
         if config.papermerge__redis__url is not None:
             orig_func(*args, **kwargs)

@@ -17,7 +17,7 @@ from papermerge.core.features.document.schema import (
     OrderBy,
 )
 from papermerge.core.config import get_settings, FileServer
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.types import OrderEnum, PaginatedResponse
 
 
@@ -59,7 +59,7 @@ def update_document_custom_field_values(
         except NoResultFound:
             raise HTTPException(status_code=404, detail="Document not found")
 
-    celery_app.send_task(
+    send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,
         kwargs={"document_id": str(document_id), "user_id": str(user.id)},
         route_name="path_tmpl",
@@ -151,7 +151,7 @@ def upload_file(
     return doc
 
 
-@skip_in_tests
+@if_redis_present
 def send_task(*args, **kwargs):
     logger.debug(f"Send task {args} {kwargs}")
     celery_app.send_task(*args, **kwargs)

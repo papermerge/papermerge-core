@@ -10,12 +10,12 @@ from papermerge.core import validators
 from papermerge.core.constants import INDEX_ADD_NODE, INDEX_REMOVE_NODE
 from papermerge.core.models.tags import ColoredTag
 from papermerge.core.signal_definitions import node_post_move
-from papermerge.core.utils.decorators import skip_in_tests
+from papermerge.core.utils.decorators import if_redis_present
 
 from .utils import uuid2raw_str
 
-NODE_TYPE_FOLDER = 'folder'
-NODE_TYPE_DOCUMENT = 'document'
+NODE_TYPE_FOLDER = "folder"
+NODE_TYPE_DOCUMENT = "document"
 
 
 def move_node(source_node, target_node):
@@ -30,9 +30,7 @@ def move_node(source_node, target_node):
     source_node.parent = target_node
     source_node.save()
     node_post_move.send(
-        sender=BaseTreeNode,
-        instance=source_node,
-        new_parent=target_node
+        sender=BaseTreeNode, instance=source_node, new_parent=target_node
     )
 
 
@@ -70,12 +68,13 @@ class PolymorphicTagManager(_TaggableManager):
     instance - in this case `BaseTreeNode`; because tags were added via Folder
     - they won't be found when looked up via `BaseTreeNode` (and vice versa).
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Instead of Document or Folder instances/models
         # always use associated BaseTreeNode instances/model
-        if hasattr(self.instance, 'basetreenode_ptr'):  # Document or Folder
+        if hasattr(self.instance, "basetreenode_ptr"):  # Document or Folder
             self.model = self.instance.basetreenode_ptr.__class__
             self.instance = self.instance.basetreenode_ptr
 
@@ -116,12 +115,10 @@ class NodeQuerySet(models.QuerySet):
 
         self.publish_post_delete_task(deleted_item_ids)
 
-    @skip_in_tests
+    @if_redis_present
     def publish_post_delete_task(self, node_ids: List[str]):
         current_app.send_task(
-            INDEX_REMOVE_NODE,
-            kwargs={'item_ids': node_ids},
-            route_name='i3'
+            INDEX_REMOVE_NODE, kwargs={"item_ids": node_ids}, route_name="i3"
         )
 
 
@@ -132,12 +129,12 @@ class BaseTreeNode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     parent = models.ForeignKey(
-        'self',
+        "self",
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name='children',
-        verbose_name='parent'
+        related_name="children",
+        verbose_name="parent",
     )
     # shortcut - helps to figure out if node is either folder or document
     # without performing extra joins. This field may be empty. In such
@@ -150,50 +147,30 @@ class BaseTreeNode(models.Model):
             (NODE_TYPE_DOCUMENT, NODE_TYPE_DOCUMENT),
         ),
         blank=True,
-        null=True
+        null=True,
     )
 
     title = models.CharField(
-        "Title",
-        max_length=200,
-        validators=[validators.safe_character_validator]
+        "Title", max_length=200, validators=[validators.safe_character_validator]
     )
 
     lang = models.CharField(
-        'Language',
-        max_length=8,
-        blank=False,
-        null=False,
-        default='deu'
+        "Language", max_length=8, blank=False, null=False, default="deu"
     )
 
-    user = models.ForeignKey(
-        'User',
-        related_name='nodes',
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey("User", related_name="nodes", on_delete=models.CASCADE)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    tags = TaggableManager(
-        through=ColoredTag,
-        manager=PolymorphicTagManager
-    )
+    tags = TaggableManager(through=ColoredTag, manager=PolymorphicTagManager)
 
     # custom Manager + custom QuerySet
     objects = CustomNodeManager()
 
     @property
     def breadcrumb(self) -> List[Tuple[uuid.UUID, str]]:
-        return [
-            (item.id, item.title)
-            for item in self.get_ancestors()
-        ]
+        return [(item.id, item.title) for item in self.get_ancestors()]
 
     @property
     def idified_title(self):
@@ -205,7 +182,7 @@ class BaseTreeNode(models.Model):
             output: "My Invoices-233453"
         """
 
-        return f'{self.title}-{self.id}'
+        return f"{self.title}-{self.id}"
 
     @property
     def _type(self) -> str:
@@ -247,7 +224,7 @@ class BaseTreeNode(models.Model):
 
     def get_ancestors(self, include_self=True):
         """Returns all ancestors of the node"""
-        sql = '''
+        sql = """
         WITH RECURSIVE tree AS (
             SELECT *, 0 as level FROM core_basetreenode WHERE id = %s
             UNION ALL
@@ -255,32 +232,32 @@ class BaseTreeNode(models.Model):
             FROM core_basetreenode, tree
             WHERE core_basetreenode.id = tree.parent_id
         )
-        '''
+        """
         node_id = uuid2raw_str(self.pk)
         if include_self:
-            sql += 'SELECT * FROM tree ORDER BY level DESC'
+            sql += "SELECT * FROM tree ORDER BY level DESC"
             return BaseTreeNode.objects.raw(sql, [node_id])
 
-        sql += 'SELECT * FROM tree WHERE NOT id = %s ORDER BY level DESC'
+        sql += "SELECT * FROM tree WHERE NOT id = %s ORDER BY level DESC"
 
         return BaseTreeNode.objects.raw(sql, [node_id, node_id])
 
     def get_descendants(self, include_self=True):
         """Returns all descendants of the node"""
-        sql = '''
+        sql = """
         WITH RECURSIVE tree AS (
             SELECT * FROM core_basetreenode WHERE id = %s
             UNION ALL
             SELECT core_basetreenode.* FROM core_basetreenode, tree
               WHERE core_basetreenode.parent_id = tree.id
         )
-        '''
+        """
         node_id = uuid2raw_str(self.pk)
         if include_self:
-            sql += 'SELECT * FROM tree'
+            sql += "SELECT * FROM tree"
             return BaseTreeNode.objects.raw(sql, [node_id])
 
-        sql += 'SELECT * FROM tree WHERE NOT id = %s'
+        sql += "SELECT * FROM tree WHERE NOT id = %s"
         return BaseTreeNode.objects.raw(sql, [node_id, node_id])
 
     def save(self, *args, **kwargs):
@@ -290,13 +267,11 @@ class BaseTreeNode(models.Model):
         super().save(*args, **kwargs)
         self.publish_post_save_task()
 
-    @skip_in_tests
+    @if_redis_present
     def publish_post_save_task(self):
         id_as_str = str(self.pk)
         current_app.send_task(
-            INDEX_ADD_NODE,
-            kwargs={'node_id': id_as_str},
-            route_name='i3'
+            INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3"
         )
 
     def delete(self, *args, **kwargs):
@@ -333,12 +308,10 @@ class BaseTreeNode(models.Model):
 
         self.publish_post_delete_task(deleted_item_ids)
 
-    @skip_in_tests
+    @if_redis_present
     def publish_post_delete_task(self, node_ids: List[str]):
         current_app.send_task(
-            INDEX_REMOVE_NODE,
-            kwargs={'item_ids': node_ids},
-            route_name='i3'
+            INDEX_REMOVE_NODE, kwargs={"item_ids": node_ids}, route_name="i3"
         )
 
     class Meta:
@@ -348,30 +321,27 @@ class BaseTreeNode(models.Model):
         # of view of users, the BaseNodeTree are just a list of documents.
         verbose_name = "Documents"
         verbose_name_plural = "Documents"
-        _icon_name = 'basetreenode'
+        _icon_name = "basetreenode"
 
         constraints = [
             models.UniqueConstraint(
-                name='unique title per parent per user',
-                fields=('parent', 'title', 'user_id')
+                name="unique title per parent per user",
+                fields=("parent", "title", "user_id"),
             ),
             # Prohibit `title` duplicates when `parent_id` is NULL
             models.UniqueConstraint(
-                name='title_uniq_when_parent_is_null_per_user',
-                fields=('title', 'user_id'),
-                condition=Q(parent__isnull=True)
-            )
+                name="title_uniq_when_parent_is_null_per_user",
+                fields=("title", "user_id"),
+                condition=Q(parent__isnull=True),
+            ),
         ]
 
     def __repr__(self):
         class_name = type(self).__name__
-        return '{}({!r}, {!r})'.format(class_name, self.pk, self.title)
+        return "{}({!r}, {!r})".format(class_name, self.pk, self.title)
 
     def __str__(self):
         class_name = type(self).__name__
         return "{}(pk={}, title='{}', ctype='{}')".format(
-            class_name,
-            self.pk,
-            self.title,
-            self.ctype
+            class_name, self.pk, self.title, self.ctype
         )

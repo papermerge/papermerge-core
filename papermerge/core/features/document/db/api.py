@@ -227,6 +227,7 @@ def get_docs_by_type(
             document_type_id=type_id,
             user_id=user_id,
             order_by=order_by,
+            order=order,
             cfv_column_name=cfv_column_name,
             limit=cf_count * page_size,
             offset=cf_count * (page_number - 1) * page_size

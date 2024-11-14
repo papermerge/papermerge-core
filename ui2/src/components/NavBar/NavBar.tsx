@@ -1,4 +1,10 @@
-import {selectNavBarCollapsed} from "@/features/ui/uiSlice"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import PanelContext from "@/contexts/PanelContext"
+import {
+  commanderViewOptionUpdated,
+  selectCommanderViewOption,
+  selectNavBarCollapsed
+} from "@/features/ui/uiSlice"
 import {
   selectCurrentUser,
   selectCurrentUserError,
@@ -14,15 +20,33 @@ import {
   IconUsers,
   IconUsersGroup
 } from "@tabler/icons-react"
+import {useContext} from "react"
 import {useSelector} from "react-redux"
 import {NavLink} from "react-router-dom"
 
 import type {User} from "@/types.ts"
 
 function NavBarFull() {
+  const mode = useContext(PanelContext)
+  const dispatch = useAppDispatch()
+  const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
+
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+
+  const onClick = () => {
+    if (viewOption == "document-type") {
+      /*
+        Handle situation when user is in "document-type" view mode in commander
+        and he/she clicks on "home" or "inbox" folders. In such case
+        it is obvious that user intends to switch to "tiles" view
+
+        TODO: instead of switching to tiles, switch to last view options mode
+      */
+      dispatch(commanderViewOptionUpdated({mode, viewOption: "tile"}))
+    }
+  }
 
   if (status == "loading") {
     return <>Loading...</>
@@ -35,10 +59,10 @@ function NavBarFull() {
   return (
     <>
       <div className="navbar">
-        <NavLink to={`/home/${user.home_folder_id}`}>
+        <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
           {NavLinkWithFeedback("Home", <IconHome />)}
         </NavLink>
-        <NavLink to={`/inbox/${user.inbox_folder_id}`}>
+        <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
           {NavLinkWithFeedback("Inbox", <IconInbox />)}
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedback("Tags", <IconTag />)}</NavLink>
@@ -60,9 +84,25 @@ function NavBarFull() {
 }
 
 function NavBarCollapsed() {
+  const mode = useContext(PanelContext)
+  const dispatch = useAppDispatch()
+  const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+
+  const onClick = () => {
+    if (viewOption == "document-type") {
+      /*
+        Handle situation when user is in "document-type" view mode in commander
+        and he/she clicks on "home" or "inbox" folders. In such case
+        it is obvious that user intends to switch to "tiles" view
+
+        TODO: instead of switching to tiles, switch to last view options mode
+      */
+      dispatch(commanderViewOptionUpdated({mode, viewOption: "tile"}))
+    }
+  }
 
   if (status == "loading") {
     return <>Loading...</>
@@ -75,10 +115,10 @@ function NavBarCollapsed() {
   return (
     <>
       <div className="navbar">
-        <NavLink to={`/home/${user.home_folder_id}`}>
+        <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
           {NavLinkWithFeedbackShort(<IconHome />)}
         </NavLink>
-        <NavLink to={`/inbox/${user.inbox_folder_id}`}>
+        <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
           {NavLinkWithFeedbackShort(<IconInbox />)}
         </NavLink>
         <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>

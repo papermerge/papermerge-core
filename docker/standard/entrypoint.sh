@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 CMD="$1"
 
@@ -10,22 +10,16 @@ if [ -z $CMD ]; then
 fi
 
 exec_migrate() {
-  # run migrations
-  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py migrate --no-input
+  cd /core_app && poetry run task migrate
 }
 
 exec_perms_sync() {
-  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run perms sync
+  cd /core_app && poetry run paper-cli perms sync
 }
 
 
 exec_createsuperuser() {
-  VIRTUAL_ENV=/auth_server_app/.venv && cd /auth_server_app/ && poetry install && poetry run create_user || true
-}
-
-exec_worker() {
-  exec /core_app/.venv/bin/celery --app config worker \
-   -n "worker-node-${HOSTNAME}@papermerge" ${PAPERMERGE__WORKER__ARGS}
+  cd /auth_server_app && poetry run auth-cli users create --superuser
 }
 
 exec_index_schema_apply() {
@@ -33,12 +27,9 @@ exec_index_schema_apply() {
 }
 
 exec_init() {
-  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry install
   exec_migrate
   exec_perms_sync
-  if [[ ! -z "${PAPERMERGE__AUTH__USERNAME}" && ! -z "${PAPERMERGE__AUTH__PASSWORD}" ]]; then
-    exec_createsuperuser
-  fi
+  exec_createsuperuser
 }
 
 rm -f /etc/nginx/nginx.conf
@@ -64,20 +55,9 @@ case $CMD in
     ;;
   server)
     exec_init
-    VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py index_schema apply
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     roco > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
-    ;;
-  worker)
-    exec_init
-    exec_worker
-    ;;
-  backup.sh)
-    exec backup.sh "$2"
-    ;;
-  restore.sh)
-    exec restore.sh "$2"
     ;;
   create_token.sh)
     exec create_token.sh "$2"

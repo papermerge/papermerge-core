@@ -1,4 +1,3 @@
-from enum import Enum
 import base64
 import os
 import io

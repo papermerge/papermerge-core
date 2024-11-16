@@ -23,7 +23,8 @@ RUN apk update && apk add linux-headers python3-dev \
     supervisor \
     imagemagick \
     nginx \
-    libpq-dev
+    libpq-dev \
+    poppler-utils
 
 RUN pip install --upgrade poetry roco==0.4.2
 

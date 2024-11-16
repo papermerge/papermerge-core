@@ -30,24 +30,25 @@ RUN pip install --upgrade poetry roco==0.4.2
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
 
 WORKDIR ${CORE_APP}
-RUN poetry install --no-root -vvv
+RUN poetry install --no-root -E pg -vvv
 
-COPY docker/standard/run.bash /run.bash
+COPY docker/standard/entrypoint.sh /entrypoint.sh
 COPY docker/standard/bundles/supervisor/* /etc/papermerge/
 COPY docker/standard/bundles/nginx/* /etc/nginx/
 COPY docker/standard/logging.yaml /etc/papermerge/
 COPY ./papermerge ${CORE_APP}/papermerge/
+COPY alembic.ini ${CORE_APP}/
 
 
 COPY ./docker/standard/scripts/ /usr/bin/
 RUN chmod +x /usr/bin/*.sh
-RUN chmod +x /run.bash
+RUN chmod +x /entrypoint.sh
 
-COPY --from=auth_server /auth_server_app/ /auth_server_app
+COPY --from=auth_server /app/auth_server/ /auth_server_app
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
 COPY --from=build /build_ui_app/dist/ /usr/share/nginx/html/ui
 
 EXPOSE 80
 
-ENTRYPOINT ["/run.bash"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["server"]

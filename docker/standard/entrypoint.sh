@@ -10,7 +10,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_migrate() {
-  poetry run task migrate
+  cd /core_app && poetry run task migrate
 }
 
 exec_perms_sync() {
@@ -19,7 +19,7 @@ exec_perms_sync() {
 
 
 exec_createsuperuser() {
-  VIRTUAL_ENV=/auth_server_app/.venv && cd /auth_server_app/ && poetry install && poetry run create_user || true
+  cd /core_app && poetry run paper-cli users create user --superuser
 }
 
 exec_index_schema_apply() {
@@ -27,12 +27,10 @@ exec_index_schema_apply() {
 }
 
 exec_init() {
-  cd /core_app && poetry install
+  cd /core_app/ && poetry install -E pg
   exec_migrate
   exec_perms_sync
-  if [[ ! -z "${PAPERMERGE__AUTH__USERNAME}" && ! -z "${PAPERMERGE__AUTH__PASSWORD}" ]]; then
-    exec_createsuperuser
-  fi
+  exec_createsuperuser
 }
 
 rm -f /etc/nginx/nginx.conf
@@ -58,7 +56,6 @@ case $CMD in
     ;;
   server)
     exec_init
-    VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py index_schema apply
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     roco > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf

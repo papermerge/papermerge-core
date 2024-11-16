@@ -13,9 +13,5 @@ export default defineConfig({
         additionalData: `@import "./src/_mantine";`
       }
     }
-  },
-  base: "/app/",
-  build: {
-    outDir: "./dist/app"
   }
 })

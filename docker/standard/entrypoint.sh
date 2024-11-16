@@ -19,7 +19,7 @@ exec_perms_sync() {
 
 
 exec_createsuperuser() {
-  cd /core_app && poetry run paper-cli users create user --superuser
+  cd /auth_server_app && poetry run auth-cli users create --superuser
 }
 
 exec_index_schema_apply() {
@@ -27,7 +27,6 @@ exec_index_schema_apply() {
 }
 
 exec_init() {
-  cd /core_app/ && poetry install -E pg
   exec_migrate
   exec_perms_sync
   exec_createsuperuser

@@ -1,5 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-VIRTUAL_ENV=/auth_server_app/.venv
-cd /auth_server_app
-poetry run create_token "$@"
+cd /auth_server_app && poetry run task auth-cli "$@"

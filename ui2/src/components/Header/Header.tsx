@@ -3,9 +3,9 @@ import {Group, useMantineTheme} from "@mantine/core"
 import {ColorSchemeToggle} from "@/components/ColorSchemeToggle/ColorSchemeToggle"
 import classes from "./Header.module.css"
 
+import Search from "./Search"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
-import Search from "./Search"
 
 function Header() {
   const theme = useMantineTheme()
@@ -21,7 +21,7 @@ function Header() {
       <div className={classes.inner}>
         <Group>
           <SidebarToggle />
-          Papermerge DMS
+          <img src="/public/logo_transparent_bg.svg" width={"30px"} />
         </Group>
         <Group grow className={classes.search}>
           <Search />

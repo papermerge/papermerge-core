@@ -3,10 +3,10 @@ import logging
 import uuid
 from typing import Annotated
 
-from celery.app import default_app as celery_app
 from fastapi import APIRouter, HTTPException, Security, UploadFile
 from sqlalchemy.exc import NoResultFound
 
+from papermerge.celery_app import app as celery_app
 from papermerge.core import constants as const
 from papermerge.core import utils, db, dbapi, schema
 from papermerge.core.features.auth import get_current_user, scopes

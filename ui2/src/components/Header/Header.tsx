@@ -21,7 +21,7 @@ function Header() {
       <div className={classes.inner}>
         <Group>
           <SidebarToggle />
-          <img src="/public/logo_transparent_bg.svg" width={"30px"} />
+          <img src="/public/logo_transparent_bg.png" width={"30px"} />
         </Group>
         <Group grow className={classes.search}>
           <Search />

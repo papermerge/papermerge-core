@@ -3,10 +3,11 @@ import uuid
 from typing import Annotated
 from uuid import UUID
 
-from celery import current_app
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
+from papermerge.celery_app import app as current_app
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes

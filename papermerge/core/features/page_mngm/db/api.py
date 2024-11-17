@@ -6,10 +6,11 @@ import uuid
 from pathlib import Path
 from typing import List
 
-from celery import current_app
-from pikepdf import Pdf
-from sqlalchemy import select, func, delete
 
+from pikepdf import Pdf
+from sqlalchemy import select, delete
+
+from papermerge.celery_app import app as current_app
 from papermerge.core import constants as const
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import get_storage_instance

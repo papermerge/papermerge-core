@@ -3,7 +3,7 @@
 <h1 align="center">Papermerge DMS</h1>
 
 <p align="center">
-<img src="./artwork/logo2.png" />
+<img src="./artwork/logo.png" />
 </p>
 
 Papermerge DMS or simply Papermerge is a open source document management system

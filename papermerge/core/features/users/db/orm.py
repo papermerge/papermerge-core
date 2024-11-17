@@ -16,9 +16,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
-    username: Mapped[str]
-    email: Mapped[str]
-    password: Mapped[str]
+    username: Mapped[str] = mapped_column(unique=True)
+    email: Mapped[str] = mapped_column(unique=True)
+    password: Mapped[str] = mapped_column(nullable=False)
     first_name: Mapped[str] = mapped_column(default=" ")
     last_name: Mapped[str] = mapped_column(default=" ")
     is_superuser: Mapped[bool] = mapped_column(default=False)

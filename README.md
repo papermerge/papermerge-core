@@ -1,10 +1,10 @@
 [![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
-<h1 align="center">Papermerge DMS</h1>
 
 <p align="center">
 <img src="./artwork/logo-w160px.png" />
 </p>
+<h1 align="center">Papermerge DMS</h1>
 
 Papermerge DMS or simply Papermerge is a open source document management system
 designed to work with scanned documents (also called digital archives). It

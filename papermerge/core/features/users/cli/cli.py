@@ -1,5 +1,7 @@
 from typing import Sequence
 
+from prompt_toolkit import prompt
+from typing_extensions import Annotated
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -28,20 +30,25 @@ def list_users(page_size: int = 10, page_number: int = 1):
         print_users(users.items)
 
 
+Username = Annotated[
+    str, typer.Option(prompt=True, envvar="PAPERMERGE__AUTH__USERNAME")
+]
+Email = Annotated[str, typer.Option(envvar="PAPERMERGE__AUTH__EMAIL")]
+Password = Annotated[
+    str, typer.Option(prompt=True, envvar="PAPERMERGE__AUTH__PASSWORD")
+]
+
+
 @app.command(name="create")
 def create_user_cmd(
-    username: str,
+    username: Username,
+    password: Password,
+    email: Email = None,
     superuser: bool = False,
-    password: str | None = None,
-    email: str | None = None,
 ):
     """Create user"""
-
-    if password is None:
-        password = username
-
     if email is None:
-        email = f"{username}@papermerge.com"
+        email = f"{username}@example.com"
 
     with db.Session() as db_session:
         user, error = usr_dbapi.create_user(

@@ -93,7 +93,19 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
 
 def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str, cfv_column_name: CFVValueColumn) -> Select:
     """Returns SqlAlchemy selector for document custom field values for
-    specific document type and custom field name"""
+    specific document type and custom field name
+
+    The point of this select is to use it as an extra JOIN for ordering
+    by specific custom field column. In order to be able to sort
+    by specific custom field column one need to have a "table" (subquery)
+    with - doc_id - custom field value - entries i.e. custom
+    field value for each document of specific type. Thus, this select
+    "returns tuples" for doc-id, cfv for all document of specific
+    type (even if that cfv is empty).
+
+    Mind duplicates - this selector (and subquery created from it) must
+    NOT return duplicated rows!
+    """
     cfv = aliased(orm.CustomFieldValue, name="cfv")
     cf = aliased(orm.CustomField, name="cf")
     assoc = aliased(orm.DocumentTypeCustomField, name="assoc")
@@ -104,13 +116,13 @@ def select_doc_type_cfv(document_type_id: uuid.UUID, cf_name: str, cfv_column_na
         getattr(cfv, cfv_column_name).label("cf_value")
     ).select_from(doc).join(
         assoc,
-        assoc.document_type_id == doc.document_type_id
+        (assoc.document_type_id == doc.document_type_id) & (doc.document_type_id == document_type_id)
     ).join(
         cf,
-        cf.id == assoc.custom_field_id
+        (cf.id == assoc.custom_field_id) & (cf.name == cf.name)
     ).join(
         cfv,
-        cfv.document_id == doc.id,
+        (cfv.document_id == doc.id) & (cfv.field_id == cf.id),
         isouter=True
     ).where(doc.document_type_id == document_type_id, cf.name == cf_name)
 

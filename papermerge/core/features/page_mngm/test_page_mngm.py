@@ -275,6 +275,10 @@ def test_extract_all_pages_to_folder_each_page_in_separate_doc(
         resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
     )
     dst_folder = make_folder(title="Target folder", user=user, parent=user.home_folder)
+    old_doc_count = db_session.execute(
+        select(func.count(orm.Document.id)).where(orm.Document.id == src.id)
+    ).scalar()
+    assert old_doc_count == 1
 
     src_ver = src.versions[0]
     src_all_pages = db_session.execute(

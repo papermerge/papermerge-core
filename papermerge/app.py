@@ -1,3 +1,7 @@
+import os
+import yaml
+from pathlib import Path
+from logging.config import dictConfig
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -46,3 +50,12 @@ app.include_router(groups_router, prefix=prefix)
 
 if config.papermerge__search__url:
     app.include_router(search_router, prefix=prefix)
+
+logging_config_path = Path(
+    os.environ.get("PAPERMERGE__MAIN__LOGGING_CFG", "/etc/papermerge/logging.yaml")
+)
+if logging_config_path.exists() and logging_config_path.is_file():
+    with open(logging_config_path, "r") as stream:
+        config = yaml.load(stream, Loader=yaml.FullLoader)
+
+    dictConfig(config)

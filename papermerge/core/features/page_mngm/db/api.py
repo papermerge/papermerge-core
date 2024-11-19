@@ -464,13 +464,20 @@ def extract_pages(
     notify_add_docs(db_session, [doc.id for doc in target_docs])
     notify_generate_previews(list([str(doc.id) for doc in target_docs]))
 
+    logger.debug(
+        "len(old_doc_ver.pages) == moved_pages_count: "
+        f"{len(old_doc_ver.pages)} == {moved_pages_count}"
+    )
     if len(old_doc_ver.pages) == moved_pages_count:
         # all source pages were extracted, document should
         # be deleted as its last version does not contain
         # any page
-        db_session.execute(
-            delete(orm.Document).where(orm.Document.id == old_doc_ver.document.id)
+        delete_stmt = delete(orm.Node).where(orm.Node.id == old_doc_ver.document.id)
+        logger.debug(
+            f"DELETING source node: {delete_stmt}; document.id={old_doc_ver.document.id}"
         )
+        db_session.execute(delete_stmt)
+        db_session.commit()
         return [None, target_docs]
 
     notify_generate_previews(str(source_doc.id))

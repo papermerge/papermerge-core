@@ -1,6 +1,6 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Table
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from papermerge.core.db.base import Base
 
@@ -25,6 +25,10 @@ class Tag(Base):
     description: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", use_alter=True, name="tag_user_id_fk")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("name", "user_id", name="unique tag name per user"),
     )
 
     def __repr__(self):

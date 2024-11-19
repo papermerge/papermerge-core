@@ -161,6 +161,11 @@ def create_folder(
 def assign_node_tags(
     db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
+    """Will assign tags with given name to the node
+
+    Currently associated node tags not mentioned in the `tags` list will
+    be disassociated (but tags won't be deleted).
+    """
     error = None
 
     stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
@@ -169,12 +174,24 @@ def assign_node_tags(
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
-    db_session.add_all(db_tags)
+    existing_db_tags = db_session.execute(
+        select(orm.Tag).where(orm.Tag.name.in_(tags))
+    ).scalars()
+    existing_db_tags_names = [t.name for t in existing_db_tags.all()]
+    # create new tags if they don't exist
+    new_db_tags = [
+        orm.Tag(name=name, user_id=user_id)
+        for name in tags
+        if name not in existing_db_tags_names
+    ]
+    db_session.add_all(new_db_tags)
+    db_session.commit()
+    db_tags = db_session.execute(
+        select(orm.Tag).where(orm.Tag.name.in_(tags))
+    ).scalars()
 
     try:
-        db_session.commit()
-        node.tags = db_tags
+        node.tags = db_tags.all()
         db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
@@ -217,6 +234,7 @@ def update_node_tags(
 def remove_node_tags(
     db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
+    """Disassociates node tags"""
     error = None
 
     stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
@@ -225,13 +243,14 @@ def remove_node_tags(
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
-    db_session.add_all(db_tags)
+    tag_ids = select(orm.Tag.id).where(orm.Tag.name.in_(tags))
+    delete_stmt = delete(orm.NodeTagsAssociation).where(
+        orm.NodeTagsAssociation.tag_id.in_(tag_ids),
+        orm.NodeTagsAssociation.node_id == node_id,
+    )
 
     try:
-        db_session.commit()
-        new_db_tag_list = [tag for tag in node.tags if tag.name not in tags]
-        node.tags = new_db_tag_list
+        db_session.execute(delete_stmt)
         db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])

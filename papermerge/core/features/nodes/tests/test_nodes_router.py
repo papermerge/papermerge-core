@@ -304,8 +304,7 @@ def test_assign_tags_to_tagged_folder(
         f"/nodes/{receipts.id}/tags",
         json=payload,
     )
-
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
 
     folder = db_session.scalars(
         select(orm.Folder).where(

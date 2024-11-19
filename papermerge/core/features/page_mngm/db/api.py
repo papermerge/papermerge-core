@@ -461,14 +461,23 @@ def extract_pages(
         logger.debug(f"Notifying index to add doc.title={doc.title} doc.id={doc.id}")
         logger.debug(f"Doc last version={doc.versions[-1]}")
 
-    notify_add_docs([str(doc.id) for doc in target_docs])
+    notify_add_docs(db_session, [doc.id for doc in target_docs])
     notify_generate_previews(list([str(doc.id) for doc in target_docs]))
 
+    logger.debug(
+        "len(old_doc_ver.pages) == moved_pages_count: "
+        f"{len(old_doc_ver.pages)} == {moved_pages_count}"
+    )
     if len(old_doc_ver.pages) == moved_pages_count:
         # all source pages were extracted, document should
         # be deleted as its last version does not contain
         # any page
-        old_doc_ver.document.delete()
+        delete_stmt = delete(orm.Node).where(orm.Node.id == old_doc_ver.document.id)
+        logger.debug(
+            f"DELETING source node: {delete_stmt}; document.id={old_doc_ver.document.id}"
+        )
+        db_session.execute(delete_stmt)
+        db_session.commit()
         return [None, target_docs]
 
     notify_generate_previews(str(source_doc.id))
@@ -684,6 +693,16 @@ def copy_without_pages(
     ]
 
 
+def get_docver_ids(db_session, document_ids: list[uuid.UUID]) -> list[uuid.UUID]:
+    """Returns list of all document version IDs belonging to
+    documents identified by IDs=document_ids
+    """
+    stmt = select(orm.DocumentVersion.id).where(
+        orm.DocumentVersion.document_id.in_(document_ids)
+    )
+    return db_session.execute(stmt).scalars()
+
+
 @if_redis_present
 def notify_version_update(add_ver_id: str, remove_ver_id: str):
     # Send tasks to the index to remove/add pages
@@ -702,15 +721,14 @@ def notify_version_update(add_ver_id: str, remove_ver_id: str):
 
 
 @if_redis_present
-def notify_add_docs(add_doc_ids: List[str]):
+def notify_add_docs(db_session, add_doc_ids: List[uuid.UUID]):
     # send task to index
     logger.debug(f"Sending task {const.INDEX_ADD_DOCS} with {add_doc_ids}")
     current_app.send_task(const.INDEX_ADD_DOCS, (add_doc_ids,))
 
-    ids = []
-    for doc in Document.objects.filter(id__in=add_doc_ids):
-        for doc_ver in doc.versions.all():
-            ids.append(str(doc_ver.id))
+    ids = [
+        str(doc_id) for doc_id in get_docver_ids(db_session, document_ids=add_doc_ids)
+    ]
 
     current_app.send_task(
         const.S3_WORKER_ADD_DOC_VER,

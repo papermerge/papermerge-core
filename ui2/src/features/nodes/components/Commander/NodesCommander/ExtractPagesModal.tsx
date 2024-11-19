@@ -6,6 +6,7 @@ import {
 } from "@/features/document/apiSlice"
 import type {
   ClientPage,
+  ExtractPagesResponse,
   ExtractStrategyType,
   FolderType,
   ServerErrorType
@@ -29,7 +30,7 @@ type ExtractPagesModalArgs = {
   sourceDocParentID: string
   targetFolder: FolderType
   opened: boolean
-  onSubmit: () => void
+  onSubmit: (resp?: ExtractPagesResponse) => void
   onCancel: () => void
 }
 
@@ -81,8 +82,8 @@ export default function ExtractPagesModal({
       sourceDocParentID: sourceDocParentID
     }
     try {
-      await extractPages(data)
-      onSubmit()
+      const resp = await extractPages(data)
+      onSubmit(resp.data)
     } catch (e: unknown) {
       const err = e as ServerErrorType
       setErrorMessage(err.data.detail)

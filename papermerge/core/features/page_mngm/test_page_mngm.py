@@ -3,9 +3,9 @@ import io
 import os
 from pathlib import Path
 
-import pytest
 from sqlalchemy import select, func
 
+from core.features.conftest import make_document_from_resource
 from papermerge.core import orm, schema
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core import constants
@@ -262,6 +262,60 @@ def test_extract_two_pages_to_folder_each_page_in_separate_doc(
     assert len(result_new_docs) == 2
     assert result_new_docs[0].parent_id == dst_folder.id
     assert result_new_docs[1].parent_id == dst_folder.id
+
+
+def test_extract_all_pages_to_folder_each_page_in_separate_doc(
+    make_document_from_resource, make_folder, user, db_session
+):
+    """Scenario tests extraction of ALL pages of source document
+    into destination folder. Each page is extracted into
+    a separate document.
+    """
+    src = make_document_from_resource(
+        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
+    )
+    dst_folder = make_folder(title="Target folder", user=user, parent=user.home_folder)
+    old_doc_count = db_session.execute(
+        select(func.count(orm.Document.id)).where(orm.Document.id == src.id)
+    ).scalar()
+    assert old_doc_count == 1
+
+    src_ver = src.versions[0]
+    src_all_pages = db_session.execute(
+        select(orm.Page)
+        .where(orm.Page.document_version_id == src_ver.id)
+        .order_by(orm.Page.number)
+    ).scalars()
+    saved_src_pages_ids = [p.id for p in src_all_pages.all()]
+
+    # add some text to the source version pages
+    for p in src_all_pages.all():
+        db_session.add(p)
+        p.text = f"I am page number {p.number}!"
+
+    db_session.commit()
+
+    # page extraction / function under test (FUD)
+    [result_old_doc, result_new_docs] = page_mngm_dbapi.extract_pages(  # FUD
+        db_session,
+        user_id=user.id,
+        # we are moving out ALL pages of the source doc version
+        source_page_ids=saved_src_pages_ids,
+        target_folder_id=dst_folder.id,
+        strategy=schema.ExtractStrategy.ONE_PAGE_PER_DOC,
+        title_format="my-new-doc",
+    )
+
+    assert result_old_doc is None  # all document must be deleted
+    assert len(result_new_docs) == 3
+    assert result_new_docs[0].parent_id == dst_folder.id
+    assert result_new_docs[1].parent_id == dst_folder.id
+    assert result_new_docs[2].parent_id == dst_folder.id
+
+    old_doc_count = db_session.execute(
+        select(func.count(orm.Document.id)).where(orm.Document.id == src.id)
+    ).scalar()
+    assert old_doc_count == 0
 
 
 def test_move_pages_one_single_page_strategy_mix(
@@ -604,3 +658,15 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(
     # Destination document's version was inc + 1
     assert dst_versions_count == 2
     assert len(dst_last_version.pages) == 2
+
+
+def test_get_docver_ids(db_session, make_document_version, user):
+    doc_ver_x = make_document_version(
+        page_count=2, pages_text=["some", "body"], user=user
+    )
+    doc_ver_y = make_document_version(page_count=1, user=user)
+    doc_ids = [doc_ver_x.document_id, doc_ver_y.document_id]
+
+    docver_ids = page_mngm_dbapi.get_docver_ids(db_session, document_ids=doc_ids)
+
+    assert set(docver_ids) == {doc_ver_x.id, doc_ver_y.id}

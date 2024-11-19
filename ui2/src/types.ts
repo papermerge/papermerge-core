@@ -408,6 +408,11 @@ export interface ServerErrorType {
   }
 }
 
+export interface ExtractPagesResponse {
+  source: null | NodeType
+  target: Array<NodeType>
+}
+
 export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
 export type SortMenuDirection = "az" | "za"
 export type ViewOption = "tile" | "list" | "document-type"

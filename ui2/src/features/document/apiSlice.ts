@@ -6,6 +6,7 @@ import {
 import {apiSlice} from "@/features/api/slice"
 import type {
   DocumentCFV,
+  ExtractPagesResponse,
   Paginated,
   ServerNotifDocumentMoved,
   ServerNotifPayload,
@@ -228,7 +229,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "Node", id: arg.sourceDocParentID}
       ]
     }),
-    extractPages: builder.mutation<void, ExtractPagesType>({
+    extractPages: builder.mutation<ExtractPagesResponse, ExtractPagesType>({
       query: data => ({
         url: "/pages/extract",
         method: "POST",

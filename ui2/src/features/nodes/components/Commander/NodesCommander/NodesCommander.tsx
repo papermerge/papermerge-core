@@ -24,6 +24,7 @@ import {
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
+  secondaryPanelClosed,
   selectCommanderSortMenuColumn,
   selectCommanderSortMenuDir,
   selectContentHeight,
@@ -32,7 +33,7 @@ import {
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
-import type {NType, NodeType, PanelMode} from "@/types"
+import type {ExtractPagesResponse, NType, NodeType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
 import DraggingIcon from "./DraggingIcon"
@@ -189,11 +190,33 @@ export default function Commander() {
     }
   }
 
-  const onPagesExtracted = () => {
+  const onPagesExtracted = (resp?: ExtractPagesResponse) => {
     extractPagesClose()
     // Fetch again (bypassing cache) nodes of current folder.
     // Current folder has now newly extracted docs.
     refetch()
+    if (resp && resp.source == null) {
+      // source document was deleted because there are no more pages left
+      if (mode == "secondary") {
+        // pages were extract (dropped) into secondary panel
+        let parent_id
+        // get pages document parent_id (i.e. ID of the folder where dropped)
+        for (let i = 0; i < resp.target.length; i++) {
+          parent_id = resp.target[i].parent_id
+        }
+        if (parent_id) {
+          // switch parent_id as node of the main panel
+          dispatch(
+            currentNodeChanged({
+              id: parent_id,
+              ctype: "folder",
+              panel: "main"
+            })
+          )
+        }
+      }
+      dispatch(secondaryPanelClosed())
+    }
   }
 
   const onNodeDrag = () => {}

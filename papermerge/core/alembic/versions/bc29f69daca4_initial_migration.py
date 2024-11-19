@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 74a3ec08d4e0
+Revision ID: bc29f69daca4
 Revises:
-Create Date: 2024-11-19 09:49:31.706007
+Create Date: 2024-11-19 11:01:46.706986
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '74a3ec08d4e0'
+revision: str = 'bc29f69daca4'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -55,7 +55,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='tag_user_id_fk', use_alter=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.UniqueConstraint('name', 'user_id', name='unique tag name per user')
     )
     op.create_table('folders',
     sa.Column('node_id', sa.Uuid(), nullable=False),

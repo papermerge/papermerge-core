@@ -5,8 +5,9 @@ from typing import Annotated, List
 from fastapi import APIRouter, HTTPException, Query, Security
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy import select
 
-from papermerge.core import db, utils, schema
+from papermerge.core import db, utils, schema, orm
 from papermerge.core import pathlib as core_pathlib
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -194,9 +195,10 @@ def extract_pages(
             title_format=arg.title_format,
             user_id=user.id,
         )
-        target_nodes = BaseTreeNode.objects.filter(
-            pk__in=[doc.id for doc in target_docs]
+        stmt = select(orm.Document).where(
+            orm.Document.id.in_([doc.id for doc in target_docs])
         )
+        target_nodes = db_session.execute(stmt).scalars()
         model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
     return schema.ExtractPagesOut.model_validate(model)

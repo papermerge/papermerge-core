@@ -18,7 +18,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     fg_color: Mapped[str] = mapped_column(nullable=True, default="#FFFFF")
     bg_color: Mapped[str] = mapped_column(nullable=True, default="#c41fff")
     pinned: Mapped[bool] = mapped_column(default=False)

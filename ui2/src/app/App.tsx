@@ -31,6 +31,9 @@ function App() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    console.log(
+      `location.pathname=${location.pathname} user=${user} status=${status}`
+    )
     /* notice *EXACT match* of the root route.
       Without it, user will always be redirected to home folder,
       even when he/she opens a document via direct url pasting in browser */
@@ -41,6 +44,12 @@ function App() {
       Without any code change - the app shell will be render an empty outlet!!!
       What we need though is to render "home" folder by default.
     */
+      navigate(`/home/${user.home_folder_id}`)
+    }
+    if (status == "succeeded" && user && location.pathname == "/home") {
+      navigate(`/home/${user.home_folder_id}`)
+    }
+    if (status == "succeeded" && user && location.pathname == "/home/") {
       navigate(`/home/${user.home_folder_id}`)
     }
   }, [status])

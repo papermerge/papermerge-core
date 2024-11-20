@@ -2,7 +2,7 @@ import logging
 import uuid
 import math
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Iterable
 from uuid import UUID
 
 from sqlalchemy import func, select, delete, update
@@ -229,6 +229,24 @@ def update_node_tags(
         return schema.Document.model_validate(node), error
 
     return schema.Folder.model_validate(node), error
+
+
+def get_node_tags(
+    db_session: Session, node_id: uuid.UUID, user_id: uuid.UUID
+) -> [Iterable[schema.Tag] | None, schema.Error | None]:
+    subq = select(orm.NodeTagsAssociation.tag_id).where(
+        orm.NodeTagsAssociation.node_id == node_id
+    )
+
+    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq), orm.Tag.user_id == user_id)
+
+    try:
+        tags = db_session.execute(stmt).scalars()
+    except Exception as e:
+        error = schema.Error(messages=[str(e)])
+        return None, error
+
+    return [schema.Tag.model_validate(t) for t in tags], None
 
 
 def remove_node_tags(

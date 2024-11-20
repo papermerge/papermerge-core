@@ -45,6 +45,7 @@ export const apiSlice = createApi({
     "User",
     "Tag",
     "Node",
+    "NodeTag", // tags fetched per node
     "Folder",
     "Document",
     "CustomField", // CRUD custom field

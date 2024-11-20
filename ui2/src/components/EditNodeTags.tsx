@@ -20,7 +20,6 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   /*
   Edit Tags Modal
   */
-  // const state = store.getState()
   const {data, isLoading: isLoadingTags} = useGetNodeTagsQuery(node.id)
   const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()
   const {data: allTagsData, isLoading: isLoadingAllTagsData} = useGetTagsQuery()
@@ -33,7 +32,6 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
     // "success" status from the mutation
     if (isSuccess) {
       onSubmit()
-      reset()
     }
   }, [isSuccess])
 
@@ -64,7 +62,6 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   }
 
   const reset = () => {
-    setTags(node.tags.map(t => t.name))
     setError("")
   }
 

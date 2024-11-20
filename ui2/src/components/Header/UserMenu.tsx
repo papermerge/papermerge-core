@@ -1,24 +1,31 @@
-import {useSelector} from "react-redux"
+import type {User} from "@/types.ts"
 import {Group, Menu, UnstyledButton} from "@mantine/core"
 import {
-  IconChevronRight,
-  IconUser,
   IconApi,
-  IconInfoSquareRounded,
-  IconLogout
+  IconChevronRight,
+  IconLogout,
+  IconUser
 } from "@tabler/icons-react"
-import type {User} from "@/types.ts"
+import Cookies from "js-cookie"
+import {useSelector} from "react-redux"
 
 import {
   selectCurrentUser,
-  selectCurrentUserStatus,
-  selectCurrentUserError
+  selectCurrentUserError,
+  selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
 
 export default function UserMenu() {
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
   const user = useSelector(selectCurrentUser) as User
+
+  const onSignOutClicked = () => {
+    Cookies.remove("access_token")
+    let a = document.createElement("a")
+    a.href = "/login"
+    a.click()
+  }
 
   if (status == "loading") {
     return <>Loading...</>
@@ -43,20 +50,14 @@ export default function UserMenu() {
         <Menu.Item>
           <Group>
             <IconApi />
-            REST API
-          </Group>
-        </Menu.Item>
-        <Menu.Item>
-          <Group>
-            <IconInfoSquareRounded />
-            About
+            <a href="/docs">REST API</a>
           </Group>
         </Menu.Item>
         <Menu.Divider />
         <Menu.Item>
           <Group>
             <IconLogout />
-            Sign Out
+            <a onClick={onSignOutClicked}>Sign Out</a>
           </Group>
         </Menu.Item>
       </Menu.Dropdown>

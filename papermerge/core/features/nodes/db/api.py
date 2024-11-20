@@ -234,6 +234,8 @@ def update_node_tags(
 def get_node_tags(
     db_session: Session, node_id: uuid.UUID, user_id: uuid.UUID
 ) -> [Iterable[schema.Tag] | None, schema.Error | None]:
+    """Retrieves all node's tags"""
+
     subq = select(orm.NodeTagsAssociation.tag_id).where(
         orm.NodeTagsAssociation.node_id == node_id
     )

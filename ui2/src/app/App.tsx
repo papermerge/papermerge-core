@@ -31,14 +31,12 @@ function App() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    console.log(
-      `location.pathname=${location.pathname} user=${user} status=${status}`
-    )
     /* notice *EXACT match* of the root route.
       Without it, user will always be redirected to home folder,
       even when he/she opens a document via direct url pasting in browser */
     if (status == "succeeded" && user && location.pathname == "/") {
       /*
+      (1)
       This code addresses following problem: what happens when user lands
       on root route (i.e. "/")?
       Without any code change - the app shell will be render an empty outlet!!!
@@ -47,9 +45,11 @@ function App() {
       navigate(`/home/${user.home_folder_id}`)
     }
     if (status == "succeeded" && user && location.pathname == "/home") {
+      // see (1)
       navigate(`/home/${user.home_folder_id}`)
     }
     if (status == "succeeded" && user && location.pathname == "/home/") {
+      // see (2)
       navigate(`/home/${user.home_folder_id}`)
     }
   }, [status])

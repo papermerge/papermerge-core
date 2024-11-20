@@ -2,7 +2,11 @@ import {Button, Group, Loader, Modal, TagsInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 
 import Error from "@/components/Error"
-import {useUpdateNodeTagsMutation} from "@/features/nodes/apiSlice"
+import {
+  useGetNodeTagsQuery,
+  useUpdateNodeTagsMutation
+} from "@/features/nodes/apiSlice"
+import {useGetTagsQuery} from "@/features/tags/apiSlice"
 import type {EntityWithTags} from "@/types"
 
 interface Args {
@@ -13,9 +17,13 @@ interface Args {
 }
 
 export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
-  // const state = store.getState()
+  /*
+  Edit Tags Modal
+  */
+  const {data, isLoading: isLoadingTags} = useGetNodeTagsQuery(node.id)
   const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()
-  const allTagNames: string[] = [] //Object.values(state.tags.entities).map(t => t.name)
+  const {data: allTagsData, isLoading: isLoadingAllTagsData} = useGetTagsQuery()
+  const [allTagNames, setAllTagNames] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))
   const [error, setError] = useState("")
 
@@ -24,15 +32,20 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
     // "success" status from the mutation
     if (isSuccess) {
       onSubmit()
-      reset()
     }
   }, [isSuccess])
 
   useEffect(() => {
-    if (node) {
-      setTags(node.tags.map(t => t.name))
+    if (data) {
+      setTags(data.map(t => t.name))
     }
-  }, [node])
+  }, [data, isLoadingTags])
+
+  useEffect(() => {
+    if (allTagsData) {
+      setAllTagNames(allTagsData.map(t => t.name))
+    }
+  }, [allTagsData, isLoadingAllTagsData])
 
   const onLocalSubmit = async () => {
     try {
@@ -49,7 +62,6 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   }
 
   const reset = () => {
-    setTags(node.tags.map(t => t.name))
     setError("")
   }
 

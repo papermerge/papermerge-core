@@ -6,7 +6,7 @@ from core.features.conftest import make_document
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
-from papermerge.core import orm
+from papermerge.core import orm, schema
 from papermerge.core.tests.types import AuthTestClient
 
 
@@ -567,3 +567,43 @@ def test_delete_nodes_with_descendants(
     found = db_session.execute(stmt).scalar()
 
     assert found is None
+
+
+def test_get_node_tags_router_when_node_is_folder(
+    make_folder, db_session, user, auth_api_client
+):
+    folder = make_folder(title="My Folder", user=user, parent=user.home_folder)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=folder.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+
+    response = auth_api_client.get(f"/nodes/{folder.id}/tags")
+
+    assert response.status_code == 200, response.json()
+    tag_names = {schema.Tag.model_validate(t).name for t in response.json()}
+
+    assert tag_names == {"tag1", "tag2"}
+
+
+def test_get_node_tags_router_when_node_is_document(
+    make_document, db_session, user, auth_api_client
+):
+    node = make_document(title="doc.pdf", user=user, parent=user.home_folder)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=node.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+
+    response = auth_api_client.get(f"/nodes/{node.id}/tags")
+
+    assert response.status_code == 200, response.json()
+    tag_names = {schema.Tag.model_validate(t).name for t in response.json()}
+
+    assert tag_names == {"tag1", "tag2"}

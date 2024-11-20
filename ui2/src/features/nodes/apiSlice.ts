@@ -1,5 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
 import type {
+  ColoredTag,
   FolderType,
   NodeType,
   Paginated,
@@ -235,8 +236,13 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, input) => [
         "Node",
         "Tag",
-        {type: "Document", id: input.id}
+        {type: "Document", id: input.id},
+        {type: "NodeTag", id: input.id}
       ]
+    }),
+    getNodeTags: builder.query<ColoredTag[], string>({
+      query: nodeID => `/nodes/${nodeID}/tags`,
+      providesTags: (_result, _error, arg) => [{type: "NodeTag", id: arg}]
     }),
     deleteNodes: builder.mutation<void, string[]>({
       query: nodeIDs => ({
@@ -282,6 +288,7 @@ export const {
   useAddNewFolderMutation,
   useRenameFolderMutation,
   useUpdateNodeTagsMutation,
+  useGetNodeTagsQuery,
   useDeleteNodesMutation,
   useGetDocumentThumbnailQuery,
   useMoveNodesMutation

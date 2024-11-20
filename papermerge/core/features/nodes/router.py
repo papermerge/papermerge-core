@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Annotated
+from typing import Annotated, Iterable
 from uuid import UUID
 
 
@@ -357,6 +357,31 @@ def update_node_tags(
     _notify_index(node.id)
 
     return node
+
+
+@router.get("/{node_id}/tags")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_node_tags(
+    node_id: UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+) -> Iterable[schema.Tag]:
+    """
+    Retrieves nodes tags
+
+    Required scope: `{scope}`
+    """
+    try:
+        with Session() as db_session:
+            tags, error = nodes_dbapi.get_node_tags(
+                db_session, node_id=node_id, user_id=user.id
+            )
+    except EntityNotFound:
+        raise HTTPException(status_code=404, detail="Does not exist")
+
+    if error:
+        raise HTTPException(status_code=400, detail=error.model_dump())
+
+    return tags
 
 
 @router.delete("/{node_id}/tags")

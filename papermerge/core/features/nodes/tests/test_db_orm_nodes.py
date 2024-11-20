@@ -241,3 +241,41 @@ def test_delete_folder_recursively_with_its_content(
     ).scalar()
 
     assert doc_count_after == 0
+
+
+def test_get_node_tags_node_is_a_document(db_session, make_document, user):
+    """test for `get_node_tags`"""
+    # arrange
+    doc = make_document(title="some.pdf", user=user, parent=user.home_folder)
+
+    dbapi.assign_node_tags(
+        db_session,
+        node_id=doc.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+    # act
+    tags, error = dbapi.get_node_tags(db_session, node_id=doc.id, user_id=user.id)
+
+    # assert
+    assert error is None
+    assert {"tag1", "tag2"} == {t.name for t in tags}
+
+
+def test_get_node_tags_node_is_a_folder(db_session, make_folder, user):
+    """test for `get_node_tags`"""
+    # arrange
+    folder = make_folder(title="My Folder", user=user, parent=user.home_folder)
+
+    dbapi.assign_node_tags(
+        db_session,
+        node_id=folder.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+    # act
+    tags, error = dbapi.get_node_tags(db_session, node_id=folder.id, user_id=user.id)
+
+    # assert
+    assert error is None
+    assert {"tag1", "tag2"} == {t.name for t in tags}

@@ -199,6 +199,12 @@ def update_document_type(
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
 
+    send_task(
+        const.PATH_TMPL_MOVE_DOCUMENT,
+        kwargs={"document_id": str(document_id), "user_id": str(user.id)},
+        route_name="path_tmpl",
+    )
+
 
 @router.get("/type/{document_type_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)

@@ -1,10 +1,11 @@
 import logging
 import uuid
 
-from celery.app import default_app as celery_app
+
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
+from papermerge.celery_app import app as celery_app
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
 from papermerge.core import constants as const

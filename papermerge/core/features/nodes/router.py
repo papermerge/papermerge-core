@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from papermerge.celery_app import app as current_app
+from papermerge.celery_app import app as celery_app
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -418,6 +418,4 @@ def remove_node_tags(
 @if_redis_present
 def _notify_index(node_id: uuid.UUID):
     id_as_str = str(node_id)  # just in case, make sure it is str
-    current_app.send_task(
-        INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3"
-    )
+    celery_app.send_task(INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3")

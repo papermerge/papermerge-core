@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.base import Base
@@ -28,3 +28,7 @@ class DocumentType(Base):
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("name", "user_id", name="unique document type per user"),
+    )

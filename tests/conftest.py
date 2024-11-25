@@ -104,10 +104,13 @@ def index(tmp_path, request) -> IndexRW:
 
 
 @pytest.fixture
-def make_document_type(db_session: Session, user: User, make_custom_field):
+def make_document_type(db_session: Session, make_user, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=CustomFieldType.boolean)
 
-    def _make_document_type(name: str):
+    def _make_document_type(name: str, user: orm.User | None = None):
+        if user is None:
+            user = make_user("john")
+
         return create_document_type(
             db_session,
             name=name,

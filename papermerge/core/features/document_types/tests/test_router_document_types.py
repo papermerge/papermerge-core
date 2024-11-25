@@ -118,11 +118,11 @@ def test_delete_document_type(
 
 
 def test_paginated_result__9_items_first_page(
-    make_document_type, auth_api_client: AuthTestClient
+    make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
-    for _ in range(total_doc_type_items):
-        make_document_type(name="Invoice")
+    for i in range(total_doc_type_items):
+        make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 1}
     response = auth_api_client.get("/document-types/", params=params)
@@ -138,11 +138,11 @@ def test_paginated_result__9_items_first_page(
 
 
 def test_paginated_result__9_items_second_page(
-    make_document_type, auth_api_client: AuthTestClient
+    make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
-    for _ in range(total_doc_type_items):
-        make_document_type(name="Invoice")
+    for i in range(total_doc_type_items):
+        make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 2}
     response = auth_api_client.get("/document-types/", params=params)
@@ -160,11 +160,11 @@ def test_paginated_result__9_items_second_page(
 
 
 def test_paginated_result__9_items_3rd_page(
-    make_document_type, auth_api_client: AuthTestClient
+    make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
-    for _ in range(total_doc_type_items):
-        make_document_type(name="Invoice")
+    for i in range(total_doc_type_items):
+        make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 3}
     response = auth_api_client.get("/document-types/", params=params)
@@ -180,10 +180,12 @@ def test_paginated_result__9_items_3rd_page(
     assert len(paginated_items.items) == 0
 
 
-def test_document_types_all_route(make_document_type, auth_api_client: AuthTestClient):
+def test_document_types_all_route(
+    make_document_type, auth_api_client: AuthTestClient, user
+):
     total_doc_type_items = 9
-    for _ in range(total_doc_type_items):
-        make_document_type(name="Invoice")
+    for i in range(total_doc_type_items):
+        make_document_type(name=f"Invoice {i}", user=user)
 
     response = auth_api_client.get("/document-types/all")
 

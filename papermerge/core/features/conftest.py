@@ -444,10 +444,14 @@ def token():
 
 
 @pytest.fixture
-def make_document_type(db_session, user: orm.User, make_custom_field):
+def make_document_type(db_session, make_user, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
-    def _make_document_type(name: str, path_template: str | None = None):
+    def _make_document_type(
+        name: str, user: orm.User | None = None, path_template: str | None = None
+    ):
+        if user is None:
+            user = make_user("john")
         return dbapi.create_document_type(
             db_session,
             name=name,

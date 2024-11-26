@@ -34,17 +34,18 @@ export default function CustomFieldMonetary({
   customField,
   onChange
 }: CustomFieldArgs) {
-  const [value, setValue] = useState<string | number>(customField.value)
+  const [value, setValue] = useState<string | number>(
+    customField.value.toString()
+  )
   const currency = getCurrency(customField.extra_data)
 
   const onLocalChange = (v: number | string) => {
     setValue(v)
     onChange({customField, value: v.toString()})
   }
-  console.log(`Monetary state=${value} CFV=${customField.value}`)
 
   useEffect(() => {
-    setValue(customField.value)
+    setValue(customField.value.toString())
   }, [customField.value])
 
   return (

@@ -44,6 +44,13 @@ class CFV(BaseModel):
         if value and info.data["type"] == CustomFieldType.monetary:
             return float(value)
 
+        if value and info.data["type"] == CustomFieldType.boolean:
+            if value.lower() == "f":
+                return False
+
+            if value.lower() == "false":
+                return False
+
         return value
 
 

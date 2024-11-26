@@ -72,7 +72,7 @@ type UpdateDocumentCustomFields = {
   body: Array<{
     custom_field_value_id?: string
     key: string
-    value: string
+    value: string | boolean
   }>
 }
 

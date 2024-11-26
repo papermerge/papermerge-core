@@ -440,7 +440,7 @@ export type CFV = {
   name: string
   type: string
   extra_data?: string
-  value: string
+  value: string | boolean
 }
 
 export type DocumentCFV = {

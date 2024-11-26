@@ -15,8 +15,8 @@ export default function CustomFieldDate({
   )
 
   useEffect(() => {
-    if (customField.value && customField.value.length > 0) {
-      const parts = customField.value.split("-")
+    if (customField.value && customField.value.toString().length > 0) {
+      const parts = customField.value.toString().split("-")
       if (parts.length < 3) {
         setValue(null)
       } else {

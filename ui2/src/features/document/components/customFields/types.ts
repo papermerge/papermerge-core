@@ -2,7 +2,7 @@ import type {CFV} from "@/types"
 
 export type onChangeArgs = {
   customField: CFV
-  value: string
+  value: string | boolean
 }
 
 export type onChangeType = ({customField, value}: onChangeArgs) => void

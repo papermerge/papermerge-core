@@ -22,9 +22,11 @@ import {
   ComboboxItem,
   Select,
   Skeleton,
+  Stack,
   Text,
   TextInput
 } from "@mantine/core"
+import CustomFieldBoolean from "../customFields/Boolean"
 
 export default function CustomFields() {
   const mode: PanelMode = useContext(PanelContext)
@@ -93,7 +95,7 @@ export default function CustomFields() {
     value
   }: {
     customField: CFV
-    value: string
+    value: string | boolean
   }) => {
     const newCustomFieldValues = customFieldValues.map(cf => {
       if (cf.name == customField.name) {
@@ -183,7 +185,7 @@ export default function CustomFields() {
         onClear={onClearDocumentType}
         clearable
       />
-      {genericCustomFieldsComponents}
+      <Stack>{genericCustomFieldsComponents}</Stack>
       {isErrorGetDocCF && (
         <Text c="red">
           Error while fetching custom fields. Error code cf98g62m.
@@ -203,7 +205,13 @@ export default function CustomFields() {
 interface GenericCustomFieldArg {
   customField: CFV
   documentID?: string
-  onChange: ({customField, value}: {customField: CFV; value: string}) => void
+  onChange: ({
+    customField,
+    value
+  }: {
+    customField: CFV
+    value: string | boolean
+  }) => void
 }
 
 function GenericCustomField({
@@ -211,7 +219,7 @@ function GenericCustomField({
   documentID,
   onChange
 }: GenericCustomFieldArg) {
-  const [value, setValue] = useState<string>(customField.value)
+  const [value, setValue] = useState<string | boolean>(customField.value)
 
   const onLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.currentTarget.value)
@@ -234,10 +242,14 @@ function GenericCustomField({
     return <CustomFieldMonetary customField={customField} onChange={onChange} />
   }
 
+  if (customField.type == "boolean") {
+    return <CustomFieldBoolean customField={customField} onChange={onChange} />
+  }
+
   return (
     <TextInput
       label={customField.name}
-      value={value}
+      value={value ? value.toString() : ""}
       onChange={onLocalChange}
     />
   )

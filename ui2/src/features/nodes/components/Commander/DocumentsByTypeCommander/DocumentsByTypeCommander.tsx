@@ -4,6 +4,7 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
 import {
   commanderLastPageSizeUpdated,
+  documentsByTypeCommanderColumnsUpdated,
   selectCommanderDocumentTypeID,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
@@ -21,7 +22,7 @@ import {
 } from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
-import {useContext, useState} from "react"
+import {useContext, useEffect, useState} from "react"
 import classes from "./TableSort.module.css"
 
 import ActionButtons from "./ActionButtons"
@@ -71,6 +72,18 @@ export default function DocumentsByCategoryCommander() {
       dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
     }
   }
+
+  useEffect(() => {
+    if (data && data?.items.length > 0 && currentDocumentTypeID) {
+      dispatch(
+        documentsByTypeCommanderColumnsUpdated({
+          mode: mode,
+          document_type_id: currentDocumentTypeID,
+          columns: data.items[0].custom_fields.map(cf => cf[0])
+        })
+      )
+    }
+  }, [data?.items.length, currentDocumentTypeID, mode])
 
   if (!data || (data && data.items.length == 0)) {
     return (

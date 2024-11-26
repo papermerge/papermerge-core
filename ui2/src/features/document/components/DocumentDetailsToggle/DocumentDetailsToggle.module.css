@@ -1,22 +1,11 @@
 .documentDetailsToggleOpened {
-  background-color: #666;
-  color: #dadada;
   button:focus {
     outline: none;
   }
-  align-self: flex-start;
-  margin-top: -1rem;
-  margin-left: -3.5rem;
-  position: absolute;
 }
 
 .documentDetailsToggleClosed {
-  background-color: #666;
-  color: #dadada;
   button:focus {
     outline: none;
   }
-  align-self: flex-start;
-  margin-left: -2.5rem;
-  position: absolute;
 }

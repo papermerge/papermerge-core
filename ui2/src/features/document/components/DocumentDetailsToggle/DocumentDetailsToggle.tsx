@@ -7,8 +7,8 @@ import {
 import {PanelMode} from "@/types"
 import {Flex, UnstyledButton} from "@mantine/core"
 import {
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand
+  IconLayoutSidebarRight,
+  IconLayoutSidebarRightFilled
 } from "@tabler/icons-react"
 import {useContext} from "react"
 import classes from "./DocumentDetailsToggle.module.css"
@@ -24,11 +24,7 @@ export default function DocumentDetailssToggle() {
 
   const toggleElement = (
     <UnstyledButton onClick={() => onClick()}>
-      {isOpen ? (
-        <IconLayoutSidebarLeftExpand />
-      ) : (
-        <IconLayoutSidebarLeftCollapse />
-      )}
+      {isOpen ? <IconLayoutSidebarRightFilled /> : <IconLayoutSidebarRight />}
     </UnstyledButton>
   )
 

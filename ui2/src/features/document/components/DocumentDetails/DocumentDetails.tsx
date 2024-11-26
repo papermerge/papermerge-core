@@ -51,7 +51,6 @@ export default function DocumentDetails() {
   if (documentDetailsIsOpen) {
     return (
       <Group align="flex-start" className={classes.documentDetailsOpened}>
-        <DocumentDetailsToggle />
         <Stack className={classes.documentDetailsContent} justify="flex-start">
           <TextInput label="ID" readOnly value={docID} />
           <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
@@ -72,11 +71,7 @@ export default function DocumentDetails() {
     )
   }
 
-  return (
-    <Group className={classes.documentDetailsClosed}>
-      <DocumentDetailsToggle />
-    </Group>
-  )
+  return <></>
 }
 
 function EditTagsButton() {

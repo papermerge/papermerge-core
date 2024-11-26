@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {Flex} from "@mantine/core"
+import {Flex, Group} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -23,6 +23,7 @@ import {useDisclosure} from "@mantine/hooks"
 import ActionButtons from "./ActionButtons"
 import ContextMenu from "./Contextmenu"
 import DocumentDetails from "./DocumentDetails/DocumentDetails"
+import DocumentDetailsToggle from "./DocumentDetailsToggle"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import Pages from "./Pages"
 import Thumbnails from "./Thumbnails"
@@ -132,7 +133,10 @@ export default function Viewer() {
   return (
     <div>
       <ActionButtons />
-      <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+      <Group justify="space-between">
+        <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+        <DocumentDetailsToggle />
+      </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails />
         <ThumbnailsToggle />

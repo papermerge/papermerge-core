@@ -72,9 +72,9 @@ body {
 
 a {
   text-decoration: none;
-  color: var(--mantine-color-pmg-8);
+  color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));
 }
 
 a:hover {
-  color: var(--mantine-color-pmg-6);
+  color: light-dark(var(--mantine-color-pmg-6), var(--mantine-color-pmg-4));
 }

@@ -4,7 +4,9 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
 import {
   commanderLastPageSizeUpdated,
+  documentsByTypeCommanderColumnsUpdated,
   selectCommanderDocumentTypeID,
+  selectDocumentsByTypeCommanderVisibleColumns,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
@@ -21,7 +23,7 @@ import {
 } from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
-import {useContext, useState} from "react"
+import {useContext, useEffect, useState} from "react"
 import classes from "./TableSort.module.css"
 
 import ActionButtons from "./ActionButtons"
@@ -35,6 +37,9 @@ export default function DocumentsByCategoryCommander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
+  const visibleColumns = useAppSelector(s =>
+    selectDocumentsByTypeCommanderVisibleColumns(s, mode)
+  )
 
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
@@ -72,6 +77,18 @@ export default function DocumentsByCategoryCommander() {
     }
   }
 
+  useEffect(() => {
+    if (data && data?.items.length > 0 && currentDocumentTypeID) {
+      dispatch(
+        documentsByTypeCommanderColumnsUpdated({
+          mode: mode,
+          document_type_id: currentDocumentTypeID,
+          columns: data.items[0].custom_fields.map(cf => cf[0])
+        })
+      )
+    }
+  }, [data?.items.length, currentDocumentTypeID, mode])
+
   if (!data || (data && data.items.length == 0)) {
     return (
       <Box>
@@ -84,7 +101,10 @@ export default function DocumentsByCategoryCommander() {
   }
 
   const rows = data.items.map(n => <DocumentRow key={n.id} doc={n} />)
-  const customFieldsHeaderColumns = data.items[0].custom_fields.map(cf => (
+  const visibleCustomFields = data.items[0].custom_fields.filter(cf =>
+    visibleColumns.includes(cf[0])
+  )
+  const customFieldsHeaderColumns = visibleCustomFields.map(cf => (
     <Th
       sorted={orderBy === cf[0]}
       reversed={reverseOrderDirection}

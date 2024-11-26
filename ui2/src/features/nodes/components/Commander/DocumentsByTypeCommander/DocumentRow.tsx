@@ -1,9 +1,14 @@
-import {useAppDispatch} from "@/app/hooks"
-import {currentNodeChanged} from "@/features/ui/uiSlice"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import PanelContext from "@/contexts/PanelContext"
+import {
+  currentNodeChanged,
+  selectDocumentsByTypeCommanderVisibleColumns
+} from "@/features/ui/uiSlice"
 import {Checkbox, Table} from "@mantine/core"
+import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 
-import type {DocumentCFV} from "@/types"
+import type {DocumentCFV, PanelMode} from "@/types"
 
 type Args = {
   doc: DocumentCFV
@@ -12,8 +17,14 @@ type Args = {
 export default function DocumentRow({doc}: Args) {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-
-  const customFieldsDataColumns = doc.custom_fields.map(cf => (
+  const mode: PanelMode = useContext(PanelContext)
+  const visibleColumns = useAppSelector(s =>
+    selectDocumentsByTypeCommanderVisibleColumns(s, mode)
+  )
+  const visibleCustomFields = doc.custom_fields.filter(cf =>
+    visibleColumns.includes(cf[0])
+  )
+  const customFieldsDataColumns = visibleCustomFields.map(cf => (
     <Table.Td key={cf[0]}>{cf[1]}</Table.Td>
   ))
 

@@ -6,6 +6,7 @@ import {
   commanderLastPageSizeUpdated,
   documentsByTypeCommanderColumnsUpdated,
   selectCommanderDocumentTypeID,
+  selectDocumentsByTypeCommanderVisibleColumns,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
@@ -36,6 +37,9 @@ export default function DocumentsByCategoryCommander() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
+  const visibleColumns = useAppSelector(s =>
+    selectDocumentsByTypeCommanderVisibleColumns(s, mode)
+  )
 
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
@@ -97,7 +101,10 @@ export default function DocumentsByCategoryCommander() {
   }
 
   const rows = data.items.map(n => <DocumentRow key={n.id} doc={n} />)
-  const customFieldsHeaderColumns = data.items[0].custom_fields.map(cf => (
+  const visibleCustomFields = data.items[0].custom_fields.filter(cf =>
+    visibleColumns.includes(cf[0])
+  )
+  const customFieldsHeaderColumns = visibleCustomFields.map(cf => (
     <Th
       sorted={orderBy === cf[0]}
       reversed={reverseOrderDirection}

@@ -191,6 +191,12 @@ interface DocumentsByTypeColumnsArg {
   columns: Array<string>
 }
 
+interface DocumentsByTypeCommanderColumnToggledArg {
+  mode: PanelMode
+  name: string
+  visibility: boolean
+}
+
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
@@ -587,6 +593,51 @@ const uiSlice = createSlice({
           })
       }
     },
+    documentsByTypeCommanderColumnVisibilityToggled(
+      state,
+      action: PayloadAction<DocumentsByTypeCommanderColumnToggledArg>
+    ) {
+      const mode = action.payload.mode
+      const name = action.payload.name
+      const visibility = action.payload.visibility
+
+      if (mode == "main") {
+        const document_type_id = state.mainCommanderDocumentTypeID
+        if (!document_type_id) {
+          return
+        }
+        if (!state.mainDocumentsByTypeCommanderColumns) {
+          return
+        }
+        const curState =
+          state.mainDocumentsByTypeCommanderColumns[document_type_id]
+        const newState = curState.map(col => {
+          if (col.name == name) {
+            return {name, visible: visibility}
+          }
+          return col
+        })
+        state.mainDocumentsByTypeCommanderColumns[document_type_id] = newState
+      } else {
+        const document_type_id = state.secondaryCommanderDocumentTypeID
+        if (!document_type_id) {
+          return
+        }
+        if (!state.secondaryDocumentsByTypeCommanderColumns) {
+          return
+        }
+        const curState =
+          state.secondaryDocumentsByTypeCommanderColumns[document_type_id]
+        const newState = curState.map(col => {
+          if (col.name == name) {
+            return {name, visible: visibility}
+          }
+          return col
+        })
+        state.secondaryDocumentsByTypeCommanderColumns[document_type_id] =
+          newState
+      }
+    },
     viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
       const mode = action.payload
 
@@ -817,7 +868,8 @@ export const {
   dragPagesStarted,
   dragNodesStarted,
   dragEnded,
-  documentsByTypeCommanderColumnsUpdated
+  documentsByTypeCommanderColumnsUpdated,
+  documentsByTypeCommanderColumnVisibilityToggled
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1079,6 +1131,37 @@ export const selectDocumentCurrentPage = (
 
   return state.ui.secondaryViewerCurrentPageNumber
 }
+
+export const selectDocumentsByTypeCommanderColumns = (
+  state: RootState,
+  mode: PanelMode
+): Array<CategoryColumn> => {
+  if (mode == "main") {
+    const document_type_id = state.ui.mainCommanderDocumentTypeID
+    if (state.ui.mainDocumentsByTypeCommanderColumns && document_type_id) {
+      return (
+        state.ui.mainDocumentsByTypeCommanderColumns[document_type_id] || []
+      )
+    }
+
+    return []
+  }
+
+  const document_type_id = state.ui.secondaryCommanderDocumentTypeID
+  if (state.ui.mainDocumentsByTypeCommanderColumns && document_type_id) {
+    return state.ui.mainDocumentsByTypeCommanderColumns[document_type_id] || []
+  }
+
+  return []
+}
+
+export const selectDocumentsByTypeCommanderVisibleColumns = createSelector(
+  selectDocumentsByTypeCommanderColumns,
+  columns => {
+    const visibleColumnNames = columns.filter(c => c.visible).map(c => c.name)
+    return visibleColumnNames
+  }
+)
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

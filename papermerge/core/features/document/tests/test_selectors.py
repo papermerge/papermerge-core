@@ -127,7 +127,7 @@ def test_select_doc_cfv_with_yearmonth_non_empty(
     assert len(cf_names) == 3
     assert {
         ("Company", None),
-        ("Month", "2024-10"),
+        ("Month", "2024.1"),
         ("Total", None),
     } == set(cf_names)
 

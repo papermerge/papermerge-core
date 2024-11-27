@@ -1,3 +1,4 @@
+import decimal
 import io
 import logging
 import os
@@ -6,8 +7,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+from decimal import Decimal
 
-from papermerge.core.constants import INCOMING_DATE_FORMAT
+from papermerge.core import constants
 from papermerge.core.exceptions import InvalidDateFormat
 
 
@@ -54,8 +56,40 @@ def str2date(value: str | None) -> Optional[datetime.date]:
 
     return datetime.strptime(
         value[:DATE_LEN],
-        INCOMING_DATE_FORMAT,
+        constants.INCOMING_DATE_FORMAT,
     ).date()
+
+
+def str2float(value: str | None) -> Optional[float]:
+    """Convert incoming user string to float
+
+    2023-11 -> 2023.11
+    2022-02 -> 2022.02
+    2018-09 -> 2018.09
+    2024-12 -> 2024.12
+    """
+    # 7 = 4 Y chars +  1 "-" char + 2 M chars
+    if value is None:
+        return None
+
+    DATE_LEN = 7
+    stripped_value = value.strip()
+    if len(stripped_value) == 0:
+        return None
+
+    if len(stripped_value) < DATE_LEN and len(stripped_value) > 0:
+        raise InvalidDateFormat(
+            f"{stripped_value} expected to have at least {DATE_LEN} characters"
+        )
+
+    dt = datetime.strptime(
+        value[:DATE_LEN],
+        constants.INCOMING_YEARMONTH_FORMAT,
+    )
+    year = dt.year
+    month = dt.month
+
+    return year + month / 100
 
 
 def copy_file(src: Path | io.BytesIO | bytes, dst: Path):

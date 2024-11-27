@@ -22,7 +22,7 @@ from papermerge.core import schema, orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum, CFVValueColumn
 from papermerge.core.db.common import get_ancestors
-from papermerge.core.utils.misc import str2date
+from papermerge.core.utils.misc import str2date, str2float
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
@@ -115,6 +115,8 @@ def update_doc_cfv(
             )
             if item.type.value == "date":
                 v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
+            elif item.type.value == "yearmonth":
+                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
             else:
                 v[f"value_{item.type.value}"] = custom_fields[item.name]
             insert_values.append(v)
@@ -123,6 +125,8 @@ def update_doc_cfv(
             v = dict(id=item.custom_field_value_id)
             if item.type == "date":
                 v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
+            elif item.type.value == "yearmonth":
+                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
             else:
                 v[f"value_{item.type.value}"] = custom_fields[item.name]
             update_values.append(v)

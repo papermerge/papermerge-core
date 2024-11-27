@@ -140,7 +140,7 @@ def test_select_doc_type_cfv_by_salary_custom_field(
     doc2 = make_document_salary(title="salary2.pdf", user=user)
 
     cf1 = {"Month": "2024-11"}
-    cf2 = {"Month": "2024-11"}
+    cf2 = {"Month": "2024-03"}
 
     dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
     dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
@@ -148,14 +148,14 @@ def test_select_doc_type_cfv_by_salary_custom_field(
     stmt = selectors.select_doc_type_cfv(
         doc1.document_type_id,
         cf_name="Month",
-        cfv_column_name=selectors.CFVValueColumn.DATE,
+        cfv_column_name=selectors.CFVValueColumn.YEARMONTH,
     )
     results = [(row.doc_id, row.cf_value) for row in db_session.execute(stmt)]
 
     assert len(results) == 2
     expected_results = {
-        (doc1.id, datetime(2024, 11, 16, 0, 0)),
-        (doc2.id, datetime(2024, 11, 23, 0, 0)),
+        (doc1.id, 2024.11),
+        (doc2.id, 2024.03),
     }
 
     assert set(results) == expected_results

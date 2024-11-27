@@ -5,7 +5,8 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
   CustomFieldDate,
-  CustomFieldMonetary
+  CustomFieldMonetary,
+  CustomFieldYearMonth
 } from "@/features/document/components/customFields"
 import {skipToken} from "@reduxjs/toolkit/query"
 
@@ -244,6 +245,12 @@ function GenericCustomField({
 
   if (customField.type == "boolean") {
     return <CustomFieldBoolean customField={customField} onChange={onChange} />
+  }
+
+  if (customField.type == "yearmonth") {
+    return (
+      <CustomFieldYearMonth customField={customField} onChange={onChange} />
+    )
   }
 
   return (

@@ -22,7 +22,7 @@ from papermerge.core import schema, orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum, CFVValueColumn
 from papermerge.core.db.common import get_ancestors
-from papermerge.core.utils.misc import str2date
+from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
@@ -64,6 +64,8 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
     for row in session.execute(stmt):
         if row.cf_type == "date":
             value = str2date(row.cf_value)
+        elif row.cf_type == "yearmonth":
+            value = float2str(row.cf_value)
         else:
             value = row.cf_value
 
@@ -115,6 +117,8 @@ def update_doc_cfv(
             )
             if item.type.value == "date":
                 v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
+            elif item.type.value == "yearmonth":
+                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
             else:
                 v[f"value_{item.type.value}"] = custom_fields[item.name]
             insert_values.append(v)
@@ -123,6 +127,8 @@ def update_doc_cfv(
             v = dict(id=item.custom_field_value_id)
             if item.type == "date":
                 v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
+            elif item.type.value == "yearmonth":
+                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
             else:
                 v[f"value_{item.type.value}"] = custom_fields[item.name]
             update_values.append(v)
@@ -188,6 +194,12 @@ def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
             ret = CFVValueColumn.DATE
         case "boolean":
             ret = CFVValueColumn.BOOLEAN
+        case "yearmonth":
+            ret = CFVValueColumn.YEARMONTH
+        case "int":
+            ret = CFVValueColumn.INT
+        case "float":
+            ret = CFVValueColumn.FLOAT
         case _:
             raise ValueError("Unexpected custom field type")
 

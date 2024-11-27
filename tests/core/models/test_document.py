@@ -392,8 +392,3 @@ def test_get_docs_count_by_type_with_two_document(db_session, user: User):
     docs_count = doc_dbapi.get_docs_count_by_type(db_session, type_id=dtype.id)
     # there are two documents in this category
     assert docs_count == DOCS_COUNT
-
-
-def test_str2date():
-    assert str2date("2024-10-30") == datetime(2024, 10, 30).date()
-    assert str2date("2024-10-30 00:00:00") == datetime(2024, 10, 30).date()

@@ -216,6 +216,7 @@ export type CustomFieldDataType =
   | "int"
   | "float"
   | "monetary"
+  | "yearmonth"
 
 export type NewCustomField = {
   name: string

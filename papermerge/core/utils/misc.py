@@ -1,5 +1,6 @@
 import io
 import logging
+import math
 import os
 import shutil
 from pathlib import Path
@@ -7,7 +8,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from papermerge.core.constants import INCOMING_DATE_FORMAT
+
+from papermerge.core import constants
 from papermerge.core.exceptions import InvalidDateFormat
 
 
@@ -54,8 +56,59 @@ def str2date(value: str | None) -> Optional[datetime.date]:
 
     return datetime.strptime(
         value[:DATE_LEN],
-        INCOMING_DATE_FORMAT,
+        constants.INCOMING_DATE_FORMAT,
     ).date()
+
+
+def str2float(value: str | None) -> Optional[float]:
+    """Convert incoming user string to float
+
+    2023-11 -> 2023.11
+    2022-02 -> 2022.02
+    2018-09 -> 2018.09
+    2024-12 -> 2024.12
+    """
+    # 7 = 4 Y chars +  1 "-" char + 2 M chars
+    if value is None:
+        return None
+
+    DATE_LEN = 7
+    stripped_value = value.strip()
+    if len(stripped_value) == 0:
+        return None
+
+    if len(stripped_value) < DATE_LEN and len(stripped_value) > 0:
+        raise InvalidDateFormat(
+            f"{stripped_value} expected to have at least {DATE_LEN} characters"
+        )
+
+    dt = datetime.strptime(
+        value[:DATE_LEN],
+        constants.INCOMING_YEARMONTH_FORMAT,
+    )
+    year = dt.year
+    month = dt.month
+
+    return year + month / 100
+
+
+def float2str(value: float | str | None) -> Optional[str]:
+    """
+    2024.01 -> "2024-01"
+    2018.09 -> "2018-09"
+    """
+    if value is None:
+        return None
+
+    value = float(value)
+    year = int(value)
+    fraction = value - year
+    if fraction in (0.1, 0.11, 0.12):
+        month = math.ceil(fraction * 10)
+    else:
+        month = math.ceil(fraction * 100)
+
+    return f"{year}-{month:02d}"
 
 
 def copy_file(src: Path | io.BytesIO | bytes, dst: Path):

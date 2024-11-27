@@ -107,6 +107,31 @@ def test_select_doc_cfv_with_date_non_empty(
     } == set(cf_names)
 
 
+@pytest.mark.parametrize(
+    "salary_month_input",
+    ["2024-10-28", "2024-10-28 00:00:00", "2024-10-28 00", "2024-10-28 anything here"],
+)
+def test_select_doc_cfv_with_yearmonth_non_empty(
+    salary_month_input, make_document_salary, user, db_session
+):
+    doc = make_document_salary(title="salary.pdf", user=user)
+
+    selector = selectors.select_doc_cfv(document_id=doc.id)
+    cf = {"Month": salary_month_input}
+
+    dbapi.update_doc_cfv(db_session, document_id=doc.id, custom_fields=cf)
+
+    rows = db_session.execute(selector)
+    cf_names = list((row.cf_name, row.cf_value) for row in rows)
+
+    assert len(cf_names) == 3
+    assert {
+        ("Company", None),
+        ("Month", "2024-10"),
+        ("Total", None),
+    } == set(cf_names)
+
+
 def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     doc1: orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
     doc2 = make_document_receipt(title="receipt2.pdf", user=user)

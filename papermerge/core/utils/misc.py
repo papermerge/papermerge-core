@@ -1,13 +1,13 @@
-import decimal
 import io
 import logging
+import math
 import os
 import shutil
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from decimal import Decimal
+
 
 from papermerge.core import constants
 from papermerge.core.exceptions import InvalidDateFormat
@@ -90,6 +90,25 @@ def str2float(value: str | None) -> Optional[float]:
     month = dt.month
 
     return year + month / 100
+
+
+def float2str(value: float | str | None) -> Optional[str]:
+    """
+    2024.01 -> "2024-01"
+    2018.09 -> "2018-09"
+    """
+    if value is None:
+        return None
+
+    value = float(value)
+    year = int(value)
+    fraction = value - year
+    if fraction in (0.1, 0.11, 0.12):
+        month = math.ceil(fraction * 10)
+    else:
+        month = math.ceil(fraction * 100)
+
+    return f"{year}-{month:02d}"
 
 
 def copy_file(src: Path | io.BytesIO | bytes, dst: Path):

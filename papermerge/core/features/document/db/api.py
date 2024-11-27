@@ -22,7 +22,7 @@ from papermerge.core import schema, orm
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum, CFVValueColumn
 from papermerge.core.db.common import get_ancestors
-from papermerge.core.utils.misc import str2date, str2float
+from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
@@ -64,6 +64,8 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
     for row in session.execute(stmt):
         if row.cf_type == "date":
             value = str2date(row.cf_value)
+        elif row.cf_type == "yearmonth":
+            value = float2str(row.cf_value)
         else:
             value = row.cf_value
 

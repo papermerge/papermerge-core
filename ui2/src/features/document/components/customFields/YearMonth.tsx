@@ -29,6 +29,8 @@ export default function CustomFieldYearMonth({
     }
   }, [customField.value])
 
+  console.log(`customField.value=${customField.value}`)
+
   const onLocalChange = (value: DateValue) => {
     if (value) {
       const d = dayjs(value)

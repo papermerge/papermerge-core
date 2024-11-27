@@ -58,7 +58,9 @@ export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
   "boolean",
   "int",
   "float",
-  "monetary"
+  "monetary",
+  "yearmonth",
+  "year"
 ]
 
 export const CURRENCIES = [

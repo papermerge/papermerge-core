@@ -217,7 +217,6 @@ export type CustomFieldDataType =
   | "float"
   | "monetary"
   | "yearmonth"
-  | "year"
 
 export type NewCustomField = {
   name: string

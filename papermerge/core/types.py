@@ -51,4 +51,3 @@ class CFVValueColumn(str, Enum):
     MONETARY = 'value_monetary'
     BOOLEAN = 'value_boolean'
     YEARMONTH = 'value_yearmonth'
-    YEAR = 'value_year'

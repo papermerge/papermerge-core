@@ -34,7 +34,6 @@ class CustomFieldValue(Base):
     value_float: Mapped[float] = mapped_column(nullable=True)
     value_monetary: Mapped[Decimal] = mapped_column(nullable=True)
     value_yearmonth: Mapped[float] = mapped_column(nullable=True)
-    value_year: Mapped[int] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     def __repr__(self):

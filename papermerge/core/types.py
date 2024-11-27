@@ -47,6 +47,8 @@ class OrderEnum(str, Enum):
 
 class CFVValueColumn(str, Enum):
     TEXT = 'value_text'
+    INT = 'value_int'
+    FLOAT = 'value_float'
     DATE = 'value_date'
     MONETARY = 'value_monetary'
     BOOLEAN = 'value_boolean'

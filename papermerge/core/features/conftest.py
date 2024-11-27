@@ -427,6 +427,18 @@ def document_type_salary(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
+def document_type_tax(db_session: Session, user, make_custom_field):
+    cf = make_custom_field(name="Year", type=CustomFieldType.int)
+
+    return dbapi.create_document_type(
+        db_session,
+        name="Tax",
+        custom_field_ids=[cf.id],
+        user_id=user.id,
+    )
+
+
+@pytest.fixture
 def make_custom_field(db_session: Session, user):
     def _make_custom_field(name: str, type: CustomFieldType):
         return cf_dbapi.create_custom_field(
@@ -531,3 +543,31 @@ def make_document_salary(db_session: Session, document_type_salary):
         return doc
 
     return _make_salary
+
+
+@pytest.fixture
+def make_document_tax(db_session: Session, document_type_tax):
+    def _make_tax(title: str, user: orm.User, parent=None):
+        if parent is None:
+            parent_id = user.home_folder_id
+        else:
+            parent_id = parent.id
+
+        doc_id = uuid.uuid4()
+        doc = orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=title,
+            user=user,
+            document_type_id=document_type_tax.id,
+            parent_id=parent_id,
+            lang="deu",
+        )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
+
+    return _make_tax

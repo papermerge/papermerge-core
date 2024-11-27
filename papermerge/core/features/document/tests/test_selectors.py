@@ -132,6 +132,23 @@ def test_select_doc_cfv_with_yearmonth_non_empty(
     } == set(cf_names)
 
 
+def test_select_doc_cfv_with_tax_year_non_empty(make_document_tax, user, db_session):
+    doc = make_document_tax(title="tax2020.pdf", user=user)
+
+    selector = selectors.select_doc_cfv(document_id=doc.id)
+    cf = {"Year": 2020}
+
+    dbapi.update_doc_cfv(db_session, document_id=doc.id, custom_fields=cf)
+
+    rows = db_session.execute(selector)
+    cf_names = list((row.cf_name, row.cf_value) for row in rows)
+
+    assert len(cf_names) == 1
+    assert {
+        ("Year", "2020"),
+    } == set(cf_names)
+
+
 def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     doc1: orm.Document = make_document_receipt(title="receipt1.pdf", user=user)
     doc2 = make_document_receipt(title="receipt2.pdf", user=user)
@@ -181,6 +198,34 @@ def test_select_doc_type_cfv_by_salary_custom_field(
     expected_results = {
         (doc1.id, 2024.11),
         (doc2.id, 2024.03),
+    }
+
+    assert set(results) == expected_results
+
+
+def test_select_doc_type_cfv_by_tax_year_custom_field(
+    make_document_tax, user, db_session
+):
+    doc1: orm.Document = make_document_tax(title="tax1.pdf", user=user)
+    doc2 = make_document_tax(title="tax2.pdf", user=user)
+
+    cf1 = {"Year": 2024}
+    cf2 = {"Year": 2023}
+
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+
+    stmt = selectors.select_doc_type_cfv(
+        doc1.document_type_id,
+        cf_name="Year",
+        cfv_column_name=selectors.CFVValueColumn.INT,
+    )
+    results = [(row.doc_id, row.cf_value) for row in db_session.execute(stmt)]
+
+    assert len(results) == 2
+    expected_results = {
+        (doc1.id, 2024),
+        (doc2.id, 2023),
     }
 
     assert set(results) == expected_results
@@ -493,4 +538,43 @@ def test_select_docs_by_type_ordered_monetary_desc(
         (doc2.id, "Shop", None),
         (doc2.id, "Total", "2"),
     ]
+    assert results == expected_results
+
+
+def test_select_docs_by_type_ordered_year_asc(make_document_tax, user, db_session):
+    # arrange
+    doc1: orm.Document = make_document_tax(title="tax1.pdf", user=user)
+    doc2: orm.Document = make_document_tax(title="tax2.pdf", user=user)
+    doc3: orm.Document = make_document_tax(title="tax3.pdf", user=user)
+
+    cf1 = {"Year": 2022}
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+
+    cf2 = {"Year": 2023}
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+
+    cf3 = {"Year": 2021}
+    dbapi.update_doc_cfv(db_session, document_id=doc3.id, custom_fields=cf3)
+
+    # act
+    stmt = selectors.select_docs_by_type(
+        document_type_id=doc1.document_type_id,
+        user_id=user.id,
+        order_by="Year",
+        cfv_column_name=CFVValueColumn.INT,
+        order=OrderEnum.asc,
+        offset=0,
+        limit=99,
+    )
+
+    # assert
+    results = [
+        (row.doc_id, row.cf_name, row.cf_value) for row in db_session.execute(stmt)
+    ]
+    expected_results = [
+        (doc3.id, "Year", "2021"),
+        (doc1.id, "Year", "2022"),
+        (doc2.id, "Year", "2023"),
+    ]
+
     assert results == expected_results

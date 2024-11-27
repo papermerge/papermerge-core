@@ -196,6 +196,10 @@ def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
             ret = CFVValueColumn.BOOLEAN
         case "yearmonth":
             ret = CFVValueColumn.YEARMONTH
+        case "int":
+            ret = CFVValueColumn.INT
+        case "float":
+            ret = CFVValueColumn.FLOAT
         case _:
             raise ValueError("Unexpected custom field type")
 

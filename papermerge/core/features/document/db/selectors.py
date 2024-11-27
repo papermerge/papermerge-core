@@ -73,6 +73,8 @@ def select_doc_cfv(document_id: uuid.UUID) -> Select:
         case(
             (cf.c.type == 'monetary', func.cast(cfv.value_monetary, VARCHAR)),
             (cf.c.type == 'text', func.cast(cfv.value_text, VARCHAR)),
+            (cf.c.type == 'int', func.cast(cfv.value_int, VARCHAR)),
+            (cf.c.type == 'float', func.cast(cfv.value_float, VARCHAR)),
             (cf.c.type == 'date', func.substr(func.cast(cfv.value_date, VARCHAR), 0, DATE_LEN)),
             (cf.c.type == 'boolean', func.cast(cfv.value_boolean, VARCHAR)),
             (cf.c.type == 'yearmonth', func.cast(cfv.value_yearmonth, VARCHAR)),
@@ -157,6 +159,7 @@ def select_docs_by_type(
              func.substr(func.cast(cfv.value_date, VARCHAR), 0, DATE_LEN)),
             (cf.c.type == 'boolean', func.cast(cfv.value_boolean, VARCHAR)),
             (cf.c.type == 'float', func.cast(cfv.value_float, VARCHAR)),
+            (cf.c.type == 'int', func.cast(cfv.value_int, VARCHAR)),
             (cf.c.type == 'yearmonth', func.cast(cfv.value_yearmonth, VARCHAR)),
         ).label("cf_value")
     ).select_from(

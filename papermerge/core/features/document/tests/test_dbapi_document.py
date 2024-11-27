@@ -349,6 +349,78 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
             assert cf["Total"] is None
 
 
+def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
+    db_session: Session, make_document_tax, user
+):
+    """
+    `db.get_docs_by_type` must return all documents of specific type
+    regardless if they (documents) have or no associated custom field values.
+
+    In this scenario one of the returned documents has all CFVs set to
+    non empty values and the other one - to all values empty
+
+    This scenario tests documents of type "Tax" which have one custom
+    field of type 'int' (cf.name = 'Year', cf.type = 'int')
+    """
+    doc_1 = make_document_tax(title="tax_1.pdf", user=user)
+    make_document_tax(title="tax_2.pdf", user=user)
+    user_id = doc_1.user.id
+    type_id = doc_1.document_type.id
+
+    # tax_1.pdf has non-empty year values
+    dbapi.update_doc_cfv(
+        db_session,
+        document_id=doc_1.id,
+        custom_fields={"Year": 2020},
+    )
+
+    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+        db_session, type_id=type_id, user_id=user_id
+    )
+
+    assert len(items) == 2
+
+    # returned items are not sorted i.e. may be in any order
+    for i in range(0, 2):
+        cf = dict([(y[0], y[1]) for y in items[i].custom_fields])
+        if items[i].id == doc_1.id:
+            #  tax_1.pdf has all cf set correctly
+            assert cf["Year"] == "2020"
+        else:
+            # tax_2.pdf has all cf set to None
+            assert cf["Year"] is None
+
+
+def test_get_docs_by_type_one_tax_doc_ordered_asc(
+    db_session: Session, make_document_tax, user
+):
+    """
+    This scenario catches a bug.
+    The problem was that if you use orders by custom field of type
+    `int` (in this scenario tax document has one cf - `Year` of type `int`)
+    then there is an exception.
+    Exception should not happen.
+    """
+    doc_1 = make_document_tax(title="tax_1.pdf", user=user)
+    user_id = doc_1.user.id
+    type_id = doc_1.document_type.id
+
+    # tax_1.pdf has non-empty year values
+    dbapi.update_doc_cfv(
+        db_session,
+        document_id=doc_1.id,
+        custom_fields={"Year": 2020},
+    )
+
+    # asserts that there is no exception when ordered by
+    # (int) field "Year"
+    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+        db_session, type_id=type_id, user_id=user_id, order_by="Year"
+    )
+
+    assert len(items) == 1
+
+
 def test_document_version_dump(db_session, make_document, user):
     doc: schema.Document = make_document(
         title="some doc", user=user, parent=user.home_folder

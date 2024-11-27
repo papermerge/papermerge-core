@@ -11,6 +11,10 @@ class CustomFieldType(str, Enum):
     int = "int"
     float = "float"
     monetary = "monetary"
+    # for salaries: e.g. "February, 2023"
+    yearmonth = "yearmonth"
+    # for tax declarations: e.g. 2023
+    year = "year"
 
 
 class CustomField(BaseModel):

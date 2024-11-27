@@ -133,6 +133,34 @@ def test_select_doc_type_cfv(make_document_receipt, user, db_session):
     assert set(results) == expected_results
 
 
+def test_select_doc_type_cfv_by_salary_custom_field(
+    make_document_salary, user, db_session
+):
+    doc1: orm.Document = make_document_salary(title="salary1.pdf", user=user)
+    doc2 = make_document_salary(title="salary2.pdf", user=user)
+
+    cf1 = {"Month": "2024-11"}
+    cf2 = {"Month": "2024-11"}
+
+    dbapi.update_doc_cfv(db_session, document_id=doc1.id, custom_fields=cf1)
+    dbapi.update_doc_cfv(db_session, document_id=doc2.id, custom_fields=cf2)
+
+    stmt = selectors.select_doc_type_cfv(
+        doc1.document_type_id,
+        cf_name="Month",
+        cfv_column_name=selectors.CFVValueColumn.DATE,
+    )
+    results = [(row.doc_id, row.cf_value) for row in db_session.execute(stmt)]
+
+    assert len(results) == 2
+    expected_results = {
+        (doc1.id, datetime(2024, 11, 16, 0, 0)),
+        (doc2.id, datetime(2024, 11, 23, 0, 0)),
+    }
+
+    assert set(results) == expected_results
+
+
 def test_select_docs_by_type_no_cfv(make_document_receipt, user, db_session):
     """
     In this scenario no document have any custom field values associated

@@ -50,3 +50,5 @@ class CFVValueColumn(str, Enum):
     DATE = 'value_date'
     MONETARY = 'value_monetary'
     BOOLEAN = 'value_boolean'
+    YEARMONTH = 'value_yearmonth'
+    YEAR = 'value_year'

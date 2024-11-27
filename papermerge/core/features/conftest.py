@@ -413,6 +413,20 @@ def document_type_zdf(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
+def document_type_salary(db_session: Session, user, make_custom_field):
+    cf1 = make_custom_field(name="Month", type=CustomFieldType.yearmonth)
+    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
+    cf3 = make_custom_field(name="Company", type=CustomFieldType.date)
+
+    return dbapi.create_document_type(
+        db_session,
+        name="Salary",
+        custom_field_ids=[cf1.id, cf2.id, cf3.id],
+        user_id=user.id,
+    )
+
+
+@pytest.fixture
 def make_custom_field(db_session: Session, user):
     def _make_custom_field(name: str, type: CustomFieldType):
         return cf_dbapi.create_custom_field(
@@ -489,3 +503,31 @@ def make_document_receipt(db_session: Session, document_type_groceries):
         return doc
 
     return _make_receipt
+
+
+@pytest.fixture
+def make_document_salary(db_session: Session, document_type_salary):
+    def _make_salary(title: str, user: orm.User, parent=None):
+        if parent is None:
+            parent_id = user.home_folder_id
+        else:
+            parent_id = parent.id
+
+        doc_id = uuid.uuid4()
+        doc = orm.Document(
+            id=doc_id,
+            ctype="document",
+            title=title,
+            user=user,
+            document_type_id=document_type_salary.id,
+            parent_id=parent_id,
+            lang="deu",
+        )
+
+        db_session.add(doc)
+
+        db_session.commit()
+
+        return doc
+
+    return _make_salary

@@ -1,5 +1,13 @@
 import {useDeleteDocumentTypeMutation} from "@/features/document-types/apiSlice"
-import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
+import {
+  Button,
+  Container,
+  Group,
+  Loader,
+  Modal,
+  Space,
+  Text
+} from "@mantine/core"
 import {useState} from "react"
 
 interface RemoveDocumentTypesModalArgs {
@@ -30,9 +38,10 @@ export function RemoveDocumentTypesModal({
   }
 
   return (
-    <Modal title="Delete Custom Fields" opened={opened} onClose={handleCancel}>
+    <Modal title="Delete Document Type" opened={opened} onClose={handleCancel}>
       <Container>
         <p>Are you sure you want to delete selected document types?</p>
+        <Text size="sm">This won't affect associated documents</Text>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
@@ -80,9 +89,10 @@ export function RemoveDocumentTypeModal({
   }
 
   return (
-    <Modal title="Delete Custom Field" opened={opened} onClose={handleCancel}>
+    <Modal title="Delete Document Type" opened={opened} onClose={handleCancel}>
       <Container>
         <p>Are you sure you want to delete this document type?</p>
+        <Text size="sm">This won't affect associated documents</Text>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">

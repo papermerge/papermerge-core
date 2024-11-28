@@ -28,7 +28,7 @@ class Document(Node):
         primaryjoin="DocumentType.id == Document.document_type_id"
     )
     document_type_id: Mapped[UUID] = mapped_column(
-        ForeignKey("document_types.id"), nullable=True
+        ForeignKey("document_types.id", name="documents_document_type_id_fkey", ondelete="SET NULL"), nullable=True
     )
     versions: Mapped[list["DocumentVersion"]] = relationship(
         back_populates="document", lazy="selectin"

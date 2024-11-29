@@ -3,7 +3,7 @@ import pytest
 
 from sqlalchemy import select, func
 
-from papermerge.core import orm
+from papermerge.core import orm, schema
 from papermerge.core.features.nodes.db import api as dbapi
 from papermerge.core.features.document.db import api as docs_dbapi
 
@@ -279,3 +279,59 @@ def test_get_node_tags_node_is_a_folder(db_session, make_folder, user):
     # assert
     assert error is None
     assert {"tag1", "tag2"} == {t.name for t in tags}
+
+
+def test_prepare_documents_s3_data_deletion_one_doc(
+    db_session, make_document_with_pages, user
+):
+    # Arrange
+    doc1: schema.Document = make_document_with_pages(
+        title="doc1.pdf", user=user, parent=user.home_folder
+    )
+    make_document_with_pages(title="doc2.pdf", user=user, parent=user.home_folder)
+
+    # Act
+    data = dbapi.prepare_documents_s3_data_deletion(db_session, [doc1.id])
+
+    # Assert
+    doc1_ver_id = doc1.versions[0].id
+    doc1_page_ids = db_session.execute(
+        select(orm.Page.id).where(orm.Page.document_version_id == doc1_ver_id)
+    ).scalars()
+
+    assert data.document_ids == [doc1.id]
+    assert data.document_version_ids == [doc1_ver_id]
+    assert set(data.page_ids) == set(doc1_page_ids)
+
+
+def test_prepare_documents_s3_data_deletion_multiple_docs(
+    db_session, make_document_with_pages, user, make_folder
+):
+    # Arrange
+    folder = make_folder(title="My Docs", user=user, parent=user.home_folder)
+    doc1: schema.Document = make_document_with_pages(
+        title="doc1.pdf", user=user, parent=folder
+    )
+    doc2: schema.Document = make_document_with_pages(
+        title="doc2.pdf", user=user, parent=folder
+    )
+
+    # Act
+    data = dbapi.prepare_documents_s3_data_deletion(
+        db_session, [folder.id, doc1.id, doc2.id]
+    )
+
+    # Assert
+    doc1_ver_id = doc1.versions[0].id
+    doc1_page_ids = db_session.execute(
+        select(orm.Page.id).where(orm.Page.document_version_id == doc1_ver_id)
+    ).scalars()
+
+    doc2_ver_id = doc2.versions[0].id
+    doc2_page_ids = db_session.execute(
+        select(orm.Page.id).where(orm.Page.document_version_id == doc2_ver_id)
+    ).scalars()
+
+    assert set(data.document_ids) == {doc1.id, doc2.id}
+    assert set(data.document_version_ids) == {doc1_ver_id, doc2_ver_id}
+    assert set(data.page_ids) == set().union(doc1_page_ids, doc2_page_ids)

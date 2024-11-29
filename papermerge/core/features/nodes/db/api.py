@@ -360,20 +360,16 @@ def move_nodes(
 def prepare_documents_s3_data_deletion(
     db_session: Session, node_ids: list[UUID]
 ) -> DeleteDocumentsData:
-    """Extract information from list of node_ids about to be deleted.
+    """Extract information from the list of `node_ids` about to be deleted
 
-    All nodes from `node_ids` are about to be deleted (outside this function)
-    This function performs following:
+    Note: all nodes from `node_ids` are about to be deleted
 
-    Extracts list of document_ids from `node_ids` i.e.
-    filter out which from those list are NOT documents.
-    In other words creates a list of documents which are about to be
-    deleted.
+    Extracts a list of document IDs which are about to be deleted.
 
-    Extracts list of document version IDs belonging to the document
+    Extracts a list of document version IDs belonging to the document
     IDs which are about to be deleted.
 
-    Extracts list of page IDs belonging to the document versions
+    Extracts a list of page IDs belonging to the document versions
     which are about to be deleted
     """
     stmt = (
@@ -383,15 +379,17 @@ def prepare_documents_s3_data_deletion(
         .join(orm.Page)
         .where(orm.Document.id.in_(node_ids))
     )
-    doc_ids = []
-    page_ids = []
-    doc_ver_ids = []
+    doc_ids = set()
+    page_ids = set()
+    doc_ver_ids = set()
 
     for row in db_session.execute(stmt):
-        doc_ids.append(row[0])
-        doc_ver_ids.append(row[1])
-        page_ids.append(row[2])
+        doc_ids.add(row[0])
+        doc_ver_ids.add(row[1])
+        page_ids.add(row[2])
 
     return DeleteDocumentsData(
-        document_ids=doc_ids, page_ids=page_ids, document_version_ids=doc_ver_ids
+        document_ids=list(doc_ids),
+        page_ids=list(page_ids),
+        document_version_ids=list(doc_ver_ids),
     )

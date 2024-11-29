@@ -152,3 +152,9 @@ class Folder(NewFolder):
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
+
+
+class DeleteDocumentsData(BaseModel):
+    document_ids: list[UUID]
+    document_version_ids: list[UUID]
+    page_ids: list[UUID]

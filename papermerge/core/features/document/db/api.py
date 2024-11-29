@@ -16,9 +16,8 @@ from sqlalchemy.orm import joinedload
 
 
 from papermerge.core.db.engine import Session
-from papermerge.core.constants import ContentType
 from papermerge.core.utils.misc import copy_file
-from papermerge.core import schema, orm
+from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum, CFVValueColumn
 from papermerge.core.db.common import get_ancestors
@@ -544,7 +543,7 @@ def upload(
 
     doc = db_session.get(orm.Document, document_id)
 
-    if content_type != ContentType.APPLICATION_PDF:
+    if content_type != constants.ContentType.APPLICATION_PDF:
         try:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_file_path = Path(tmpdirname) / f"{file_name}.pdf"
@@ -615,7 +614,15 @@ def upload(
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    return schema.Document.model_validate(doc), None
+    validated_model = schema.Document.model_validate(doc)
+
+    tasks.send_task(
+        constants.S3_WORKER_ADD_DOC_VER,
+        kwargs={"doc_ver_ids": [str(pdf_ver.id)]},
+        route_name="s3",
+    )
+
+    return validated_model, None
 
 
 def get_doc(

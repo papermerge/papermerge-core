@@ -14,6 +14,8 @@ from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core.db.engine import Session
 from papermerge.core import schema, orm
 from papermerge.core.types import PaginatedResponse
+from papermerge.core.features.nodes import events
+from papermerge.core.features.nodes.schema import DeleteDocumentsData
 
 from .orm import Folder
 
@@ -306,6 +308,10 @@ def delete_nodes(
         item[0] for item in get_descendants(db_session, node_ids=node_ids)
     ]
 
+    delete_details = prepare_documents_s3_data_deletion(
+        db_session, all_ids_to_be_deleted
+    )
+
     stmt = delete(orm.Node).where(
         orm.Node.id.in_(all_ids_to_be_deleted), orm.Node.user_id == user_id
     )
@@ -326,6 +332,7 @@ def delete_nodes(
         error = schema.Error(messages=[str(e)])
         return error
 
+    events.delete_documents_s3_data(delete_details)
     return None
 
 
@@ -348,3 +355,43 @@ def move_nodes(
     db_session.commit()
 
     return result.rowcount
+
+
+def prepare_documents_s3_data_deletion(
+    db_session: Session, node_ids: list[UUID]
+) -> DeleteDocumentsData:
+    """Extract information from list of node_ids about to be deleted.
+
+    All nodes from `node_ids` are about to be deleted (outside this function)
+    This function performs following:
+
+    Extracts list of document_ids from `node_ids` i.e.
+    filter out which from those list are NOT documents.
+    In other words creates a list of documents which are about to be
+    deleted.
+
+    Extracts list of document version IDs belonging to the document
+    IDs which are about to be deleted.
+
+    Extracts list of page IDs belonging to the document versions
+    which are about to be deleted
+    """
+    stmt = (
+        select(orm.Document.id, orm.DocumentVersion.id, orm.Page.id)
+        .select_from(orm.Document)
+        .join(orm.DocumentVersion)
+        .join(orm.Page)
+        .where(orm.Document.id.in_(node_ids))
+    )
+    doc_ids = []
+    page_ids = []
+    doc_ver_ids = []
+
+    for row in db_session.execute(stmt):
+        doc_ids.append(row[0])
+        doc_ver_ids.append(row[1])
+        page_ids.append(row[2])
+
+    return DeleteDocumentsData(
+        document_ids=doc_ids, page_ids=page_ids, document_version_ids=doc_ver_ids
+    )

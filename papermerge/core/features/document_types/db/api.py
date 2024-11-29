@@ -5,12 +5,11 @@ import uuid
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from papermerge.celery_app import app as celery_app
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core import orm
-from papermerge.core.utils.decorators import if_redis_present
+from papermerge.core.tasks import send_task
 
 from .orm import DocumentType
 
@@ -145,9 +144,3 @@ def update_document_type(
         )
 
     return result
-
-
-@if_redis_present
-def send_task(*args, **kwargs):
-    logger.debug(f"Send task {args} {kwargs}")
-    celery_app.send_task(*args, **kwargs)

@@ -19,6 +19,8 @@ INDEX_UPDATE = "index_update"
 S3_WORKER_ADD_DOC_VER = "s3_worker_add_doc_vers"
 S3_WORKER_REMOVE_DOC_VER = "s3_worker_remove_doc_vers"
 S3_WORKER_REMOVE_DOC_THUMBNAIL = "s3_worker_remove_doc_thumbnail"
+# bulk remove of docs thumbnails
+S3_WORKER_REMOVE_DOCS_THUMBNAIL = "s3_worker_remove_docs_thumbnail"
 S3_WORKER_REMOVE_PAGE_THUMBNAIL = "s3_worker_remove_page_thumbnail"
 S3_WORKER_GENERATE_PREVIEW = "s3_worker_generate_preview"
 WORKER_OCR_DOCUMENT = "worker_ocr_document"

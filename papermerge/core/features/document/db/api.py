@@ -542,6 +542,7 @@ def upload(
 ) -> [schema.Document | None, schema.Error | None]:
 
     doc = db_session.get(orm.Document, document_id)
+    orig_ver = None
 
     if content_type != constants.ContentType.APPLICATION_PDF:
         try:
@@ -589,7 +590,6 @@ def upload(
             db_session.add_all([db_page_orig, db_page_pdf])
 
     else:
-        # pdf_ver == orig_ver
         pdf_ver = create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
@@ -616,11 +616,24 @@ def upload(
 
     validated_model = schema.Document.model_validate(doc)
 
+
+    if orig_ver:
+        # non PDF document
+        # here `orig_ver` means - version which is not a PDF
+        # may be Jpg, PNG or TIFF
+        tasks.send_task(
+            constants.S3_WORKER_ADD_DOC_VER,
+            kwargs={"doc_ver_ids": [str(orig_ver.id)]},
+            route_name="s3",
+        )
+
+    # PDF document
     tasks.send_task(
         constants.S3_WORKER_ADD_DOC_VER,
         kwargs={"doc_ver_ids": [str(pdf_ver.id)]},
         route_name="s3",
     )
+
 
     return validated_model, None
 

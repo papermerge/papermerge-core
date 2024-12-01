@@ -35,6 +35,7 @@ from papermerge.core.features.document_types import router as document_types_rou
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
+from papermerge.core.features.liveness_probe import router as probe_router
 from papermerge.core import orm, dbapi, schema
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
@@ -276,6 +277,7 @@ def get_app_with_routes():
     app.include_router(thumbnails_router.router, prefix="")
     app.include_router(usr_router.router, prefix="")
     app.include_router(tags_router.router, prefix="")
+    app.include_router(probe_router.router, prefix="")
 
     return app
 

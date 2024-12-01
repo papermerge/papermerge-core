@@ -18,6 +18,7 @@ from papermerge.core.features.document.router_pages import router as pages_route
 from papermerge.core.features.document.router_document_version import (
     router as document_versions_router,
 )
+from papermerge.core.features.liveness_probe.router import router as probe_router
 from papermerge.search.routers.search import router as search_router
 
 from papermerge.core.version import __version__
@@ -47,6 +48,7 @@ app.include_router(cf_router, prefix=prefix)
 app.include_router(usr_router, prefix=prefix)
 app.include_router(tags_router, prefix=prefix)
 app.include_router(groups_router, prefix=prefix)
+app.include_router(probe_router, prefix=prefix)
 
 if config.papermerge__search__url:
     app.include_router(search_router, prefix=prefix)

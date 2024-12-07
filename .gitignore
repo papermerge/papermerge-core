@@ -38,3 +38,5 @@ simplest.yml
 ui/public/runtime/config.js
 .ruff_cache/
 .pytest_cache/
+ui2/public/papermerge-runtime-config.js
+.enwardrc

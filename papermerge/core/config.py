@@ -20,6 +20,14 @@ class Settings(BaseSettings):
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_language: str = 'deu'
+    # When is OCR triggered ?
+    # `ocr__automatic` = True means that OCR will be performed without
+    #   end user intervention i.e. via background scheduler like celery scheduler
+    # `ocr__automatic` = False means that OCR will be performed only
+    #   if requested by end user. In this case user can choose to
+    #   start schedule OCR on upload; also in this case use can choose to
+    #   scheduler OCR later on any document.
+    papermerge__ocr__automatic: bool = False
     papermerge__search__url: str | None = None
 
 

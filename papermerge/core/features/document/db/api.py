@@ -27,10 +27,11 @@ from papermerge.core.pathlib import (
 )
 from papermerge.core.features.document.schema import DocumentCFVRow
 from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
+from papermerge.core import config
 
 from .selectors import select_doc_cfv, select_docs_by_type
 
-
+settings = config.get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -634,6 +635,17 @@ def upload(
         route_name="s3",
     )
 
+    if not settings.papermerge__ocr__automatic:
+        if doc.ocr is True:
+            # user chose "schedule OCR" when uploading document
+            tasks.send_task(
+                constants.WORKER_OCR_DOCUMENT,
+                kwargs={
+                    "document_id": str(doc.id),
+                    "lang": doc.lang,
+                },
+                route_name="ocr",
+            )
 
     return validated_model, None
 

@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit"
 
 import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
-import type {FolderType, NodeType} from "@/types"
+import type {FolderType, NodeType, OCRCode} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import axios from "axios"
 
@@ -9,13 +9,15 @@ type UploadFileInput = {
   file: File
   refreshTarget: boolean
   target: FolderType
-  skipOCR: boolean
+  ocr: boolean
+  lang: OCRCode
 }
 
 type CreateDocumentType = {
   title: string
   parent_id: string
   ctype: "document"
+  lang: string
   ocr: boolean
 }
 
@@ -38,7 +40,8 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       title: args.file.name,
       parent_id: args.target.id,
       ctype: "document",
-      ocr: !args.skipOCR
+      lang: args.lang,
+      ocr: args.ocr
     }
 
     thunkApi.dispatch(

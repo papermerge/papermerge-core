@@ -14,11 +14,14 @@ ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3
 ENV PAPERMERGE__AUTH__USERNAME=admin
 ENV PAPERMERGE__AUTH__EMAIL=admin@example.com
-ENV PAPERMERGE__OCR__DEFAULT_LANGUAGE=deu
 ENV PAPERMERGE__MAIN__API_PREFIX=""
+ENV PAPERMERGE__OCR__LANG_CODES="deu,eng,ron"
+ENV PAPERMERGE__OCR__DEFAULT_LANG_CODE="deu"
+ENV PAPERMERGE__OCR__AUTOMATIC="false"
 
 RUN apk update && apk add linux-headers python3-dev \
     gcc \
+    curl \
     libc-dev \
     supervisor \
     imagemagick \
@@ -27,6 +30,7 @@ RUN apk update && apk add linux-headers python3-dev \
     poppler-utils
 
 RUN pip install --upgrade poetry roco==0.4.2
+RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.2/env2js.amd64
 
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
 
@@ -37,6 +41,7 @@ COPY docker/standard/entrypoint.sh /entrypoint.sh
 COPY docker/standard/bundles/supervisor/* /etc/papermerge/
 COPY docker/standard/bundles/nginx/* /etc/nginx/
 COPY docker/standard/logging.yaml /etc/papermerge/
+COPY docker/standard/core.js.tmpl /${CORE_APP}/core.js.tmpl
 COPY ./papermerge ${CORE_APP}/papermerge/
 COPY alembic.ini ${CORE_APP}/
 

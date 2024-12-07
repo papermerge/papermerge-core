@@ -1,12 +1,4 @@
-import {
-  Button,
-  Checkbox,
-  Container,
-  Group,
-  Loader,
-  Modal,
-  Text
-} from "@mantine/core"
+import {Button, Container, Group, Loader, Modal, Text} from "@mantine/core"
 import {useState} from "react"
 
 import {useAppDispatch} from "@/app/hooks"
@@ -14,7 +6,9 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/nodes/uploadFile"
 
 import Error from "@/components/Error"
-import type {FolderType} from "@/types"
+import ScheduleOCRProcessCheckbox from "@/components/ScheduleOCRProcessCheckbox/ScheduleOCRProcessCheckbox"
+import {useRuntimeConfig} from "@/hooks/runtime_config"
+import type {FolderType, OCRCode} from "@/types"
 
 type Args = {
   opened: boolean
@@ -34,10 +28,21 @@ export const DropFilesModal = ({
   if (!source_files) {
     return
   }
+  const runtimeConfig = useRuntimeConfig()
   const dispatch = useAppDispatch()
   const [error, setError] = useState("")
+  const [scheduleOCR, setScheduleOCR] = useState<boolean>(false)
+  const [lang, setLang] = useState<OCRCode>("deu")
   const source_titles = [...source_files].map(n => n.name).join(", ")
   const target_title = target.title
+
+  const onLangChange = (newLang: OCRCode) => {
+    setLang(newLang)
+  }
+
+  const onCheckboxChange = (newValue: boolean) => {
+    setScheduleOCR(newValue)
+  }
 
   const localSubmit = async () => {
     for (let i = 0; i < source_files.length; i++) {
@@ -45,7 +50,8 @@ export const DropFilesModal = ({
         uploadFile({
           file: source_files[i],
           refreshTarget: true,
-          skipOCR: false,
+          ocr: scheduleOCR,
+          lang: lang,
           target
         })
       ).then(() => {
@@ -74,7 +80,14 @@ export const DropFilesModal = ({
           {` ${target_title}`}
         </Text>
         ?
-        <Checkbox mt="md" mb="md" label="Skip OCR" />
+        {!runtimeConfig.ocr__automatic && (
+          <ScheduleOCRProcessCheckbox
+            initialCheckboxValue={false}
+            defaultLang={runtimeConfig.ocr__default_lang_code}
+            onCheckboxChange={onCheckboxChange}
+            onLangChange={onLangChange}
+          />
+        )}
         {error && <Error message={error} />}
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localSubmit}>

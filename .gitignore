@@ -38,3 +38,4 @@ simplest.yml
 ui/public/runtime/config.js
 .ruff_cache/
 .pytest_cache/
+.enwardrc

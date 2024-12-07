@@ -17,3 +17,4 @@ ui2/.vscode
 ui2/.pnp.cjs
 ui2/.pnp.loader.mjs
 ui2/.env.development.local
+ui2/public/papermerge-runtime-config.js

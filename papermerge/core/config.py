@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     papermerge__main__cf_domain: str | None = None
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
-    papermerge__ocr__default_language: str = 'deu'
+    papermerge__ocr__default_lang_code: str = 'deu'
     # When is OCR triggered ?
     # `ocr__automatic` = True means that OCR will be performed without
     #   end user intervention i.e. via background scheduler like celery scheduler

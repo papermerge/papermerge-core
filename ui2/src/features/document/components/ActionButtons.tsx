@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
 import {updateActionPanel} from "@/features/ui/uiSlice"
+import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
@@ -14,6 +15,7 @@ import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
+import RunOCRButton from "./RunOCRButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()
@@ -21,6 +23,7 @@ export default function ActionButtons() {
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const runtimeConfig = useRuntimeConfig()
 
   useEffect(() => {
     if (ref?.current) {
@@ -40,6 +43,7 @@ export default function ActionButtons() {
       <Group>
         <EditTitleButton />
         <DownloadButton />
+        {!runtimeConfig.ocr__automatic && <RunOCRButton />}
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
         {selectedPages.length > 0 && <DeletePagesButton />}

@@ -57,13 +57,17 @@ case $CMD in
     exec_init
     # TODO: replace roco with env2js
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
+    # Once user options endpoint is implemented, following two lines will removed
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
+    sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
     ;;
   server_without_init)
     # TODO: replace roco with env2js
     roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
+    # Once user options endpoint is implemented, following two lines will removed
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
+    sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
     ;;
   create_token.sh)

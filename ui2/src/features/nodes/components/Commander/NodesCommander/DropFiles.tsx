@@ -97,7 +97,6 @@ export const DropFilesModal = ({
             leftSection={false && <Loader size={"sm"} />}
             onClick={localSubmit}
             disabled={false}
-            color={"red"}
           >
             Upload
           </Button>

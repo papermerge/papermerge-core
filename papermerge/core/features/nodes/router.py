@@ -95,7 +95,7 @@ def create_node(
         # if user does not specify document's language, get that
         # value from user preferences
         if pynode.lang is None:
-            pynode.lang = settings.papermerge__ocr__default_language
+            pynode.lang = settings.papermerge__ocr__default_lang_code
 
         attrs = dict(
             title=pynode.title,

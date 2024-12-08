@@ -1,7 +1,7 @@
-import {OCR_LANG} from "@/cconstants"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {OCRCode} from "@/types/ocr"
-import {Checkbox, ComboboxData, Select, Stack} from "@mantine/core"
+import {langCodes2ComboboxData} from "@/utils"
+import {Checkbox, Select, Stack} from "@mantine/core"
 import {useState} from "react"
 
 interface Args {
@@ -54,32 +54,4 @@ export default function ScheduleOCRProcessCheckbox({
       )}
     </Stack>
   )
-}
-
-function langCodes2ComboboxData(langCodes: string): ComboboxData {
-  /*
-  Input/Output examples:
-  example 1:
-
-      input:  "deu,eng,ron"
-      output: [
-        {value: "deu", label: "Deutsch"},
-        {value: "eng", label: "English"},
-        {value: "ron", label: "Română"}
-      ]
-
-  example 2:
-
-    input:  "fra,spa"
-    output: [
-      {value: "fra", label: "Français"},
-      {value: "spa", label: "Español"},
-    ]
-  */
-  return langCodes
-    .split(",")
-    .map(v => v.trim())
-    .map(v => {
-      return {value: v, label: OCR_LANG[v] || "Unknown Code"}
-    })
 }

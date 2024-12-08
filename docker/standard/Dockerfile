@@ -31,6 +31,7 @@ RUN apk update && apk add linux-headers python3-dev \
 
 RUN pip install --upgrade poetry roco==0.4.2
 RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.2/env2js.amd64
+RUN chmod +x /bin/env2js
 
 COPY poetry.lock pyproject.toml README.md LICENSE ${CORE_APP}/
 

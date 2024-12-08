@@ -1,6 +1,8 @@
 import {store} from "@/app/store"
 import {SliceState} from "@/types"
+import {ComboboxData} from "@mantine/core"
 import Cookies from "js-cookie"
+import {OCR_LANG} from "./cconstants"
 
 import type {PanelMode, User} from "@/types"
 
@@ -324,11 +326,40 @@ function otherPanel(mode: PanelMode): PanelMode {
   return "main"
 }
 
+function langCodes2ComboboxData(langCodes: string): ComboboxData {
+  /*
+  Input/Output examples:
+  example 1:
+
+      input:  "deu,eng,ron"
+      output: [
+        {value: "deu", label: "Deutsch"},
+        {value: "eng", label: "English"},
+        {value: "ron", label: "Română"}
+      ]
+
+  example 2:
+
+    input:  "fra,spa"
+    output: [
+      {value: "fra", label: "Français"},
+      {value: "spa", label: "Español"},
+    ]
+  */
+  return langCodes
+    .split(",")
+    .map(v => v.trim())
+    .map(v => {
+      return {value: v, label: OCR_LANG[v] || "Unknown Code"}
+    })
+}
+
 export {
   contains_every,
   drop_extension,
   getCurrentUser,
   imageEncode,
+  langCodes2ComboboxData,
   otherPanel,
   reorder
 }

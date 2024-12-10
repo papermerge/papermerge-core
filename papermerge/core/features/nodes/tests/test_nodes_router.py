@@ -10,6 +10,18 @@ from papermerge.core import orm, schema
 from papermerge.core.tests.types import AuthTestClient
 
 
+def test_get_node_details(auth_api_client: AuthTestClient, make_document, db_session):
+    # Arrange
+    user = auth_api_client.user
+    doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
+
+    # Act
+    response = auth_api_client.get(f"/nodes/?node_ids={doc.id}")
+
+    # Assert
+    assert response.status_code == 200
+
+
 def test_nodes_move_basic(
     auth_api_client: AuthTestClient, make_folder, make_document, db_session
 ):

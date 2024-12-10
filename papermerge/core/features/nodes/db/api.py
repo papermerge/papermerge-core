@@ -44,6 +44,37 @@ def str2colexpr(keys: list[str]):
     return result
 
 
+def get_nodes(
+    db_session: Session, user_id: UUID, node_ids: list[UUID] | None = None
+) -> list[schema.Document | schema.Folder]:
+    items = []
+    if node_ids is None:
+        node_ids = []
+
+    if len(node_ids) > 0:
+        stmt = (
+            select(orm.Node)
+            .options(selectinload(orm.Node.tags))
+            .filter(orm.Node.id.in_(node_ids), orm.Node.user_id == user_id)
+        )
+    else:
+        stmt = (
+            select(orm.Node)
+            .options(selectinload(orm.Node.tags))
+            .filter(orm.Node.user_id == user_id)
+        )
+
+    nodes = db_session.scalars(stmt).all()
+
+    for node in nodes:
+        if node.ctype == "folder":
+            items.append(schema.Folder.model_validate(node))
+        else:
+            items.append(schema.Document.model_validate(node))
+
+    return items
+
+
 def get_folder_by_id(db_session: Session, id: uuid.UUID) -> schema.Folder:
     stmt = select(Folder).where(Folder.id == id)
     db_folder = db_session.scalars(stmt).one_or_none()

@@ -306,7 +306,8 @@ def get_nodes_details(
     if len(node_ids) == 0:
         return []
 
-    nodes = db.get_nodes(db_session, node_ids)
+    with Session() as db_session:
+        nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes
 

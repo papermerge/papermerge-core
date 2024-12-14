@@ -8,7 +8,7 @@ from papermerge.search.schema import SearchIndex
 
 app = typer.Typer(help="Index Schema Management")
 
-SEARCH_URL = os.environ.get('PAPERMERGE__SEARCH__URL')
+SEARCH_URL = os.environ.get("PAPERMERGE__SEARCH__URL")
 if not SEARCH_URL:
     raise ValueError("missing PAPERMERGE__SEARCH__URL")
 

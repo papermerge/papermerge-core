@@ -7,6 +7,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
+from core.constants import INDEX_REMOVE_NODE
+from core.tasks import send_task
 from papermerge.celery_app import app as celery_app
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import get_current_user
@@ -121,6 +123,7 @@ def create_node(
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
+    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(created_node.id)}, route_name="i3")
     return created_node
 
 
@@ -146,6 +149,7 @@ def update_node(
             db_session, node_id=node_id, user_id=user.id, attrs=node
         )
 
+    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
     return updated_node
 
 
@@ -172,6 +176,12 @@ def delete_nodes(
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
+
+    send_task(
+        INDEX_REMOVE_NODE,
+        kwargs={"item_ids": [str(i) for i in list_of_uuids]},
+        route_name="i3",
+    )
 
 
 @router.post(
@@ -284,7 +294,7 @@ def assign_node_tags(
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
-    _notify_index(node_id)
+    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
 
     return node
 
@@ -355,7 +365,7 @@ def update_node_tags(
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
-    _notify_index(node.id)
+    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
 
     return node
 
@@ -412,11 +422,6 @@ def remove_node_tags(
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
-    _notify_index(node.id)
+    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
+
     return node
-
-
-@if_redis_present
-def _notify_index(node_id: uuid.UUID):
-    id_as_str = str(node_id)  # just in case, make sure it is str
-    celery_app.send_task(INDEX_ADD_NODE, kwargs={"node_id": id_as_str}, route_name="i3")

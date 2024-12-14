@@ -23,13 +23,18 @@ exec_createsuperuser() {
 }
 
 exec_index_schema_apply() {
-  VIRTUAL_ENV=/core_app/.venv && cd /core_app && poetry run ./manage.py index_schema apply
+  echo "RUNNING: exec_index_schema_apply"
+  if [[ -z "${PAPERMERGE__SEARCH__URL}" ]]; then
+    echo "env var PAPERMERGE__SEARCH__URL is NON-EMPTY... running..."
+    cd /core_app && poetry run paper-cli index-schema apply
+  fi
 }
 
 exec_init() {
   exec_migrate
   exec_perms_sync
   exec_createsuperuser
+  exec_index_schema_apply
 }
 
 rm -f /etc/nginx/nginx.conf

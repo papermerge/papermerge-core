@@ -7,19 +7,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from core.constants import INDEX_REMOVE_NODE
-from core.tasks import send_task
-from papermerge.celery_app import app as celery_app
+from papermerge.core.constants import INDEX_REMOVE_NODE
+from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
-from papermerge.core.features.auth import get_current_user
-from papermerge.core.features.auth import scopes
+from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.exceptions import EntityNotFound
 
 

@@ -45,7 +45,7 @@ def str2colexpr(keys: list[str]):
 
 
 def get_nodes(
-    db_session: Session, user_id: UUID, node_ids: list[UUID] | None = None
+    db_session: Session, user_id: UUID | None = None, node_ids: list[UUID] | None = None
 ) -> list[schema.Document | schema.Folder]:
     items = []
     if node_ids is None:
@@ -55,18 +55,19 @@ def get_nodes(
         stmt = (
             select(orm.Node)
             .options(selectinload(orm.Node.tags))
-            .filter(orm.Node.id.in_(node_ids), orm.Node.user_id == user_id)
+            .filter(orm.Node.id.in_(node_ids))
         )
     else:
-        stmt = (
-            select(orm.Node)
-            .options(selectinload(orm.Node.tags))
-            .filter(orm.Node.user_id == user_id)
-        )
+        stmt = select(orm.Node).options(selectinload(orm.Node.tags))
+
+    if user_id is not None:
+        stmt = stmt.filter(orm.Node.user_id == user_id)
 
     nodes = db_session.scalars(stmt).all()
 
     for node in nodes:
+        breadcrumb = get_ancestors(db_session, node.id, include_self=False)
+        node.breadcrumb = breadcrumb
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
         else:

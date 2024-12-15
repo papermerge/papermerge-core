@@ -23,9 +23,11 @@ exec_createsuperuser() {
 }
 
 exec_index_schema_apply() {
-  echo "RUNNING: exec_index_schema_apply"
-  if [[ -z "${PAPERMERGE__SEARCH__URL}" ]]; then
-    echo "env var PAPERMERGE__SEARCH__URL is NON-EMPTY... running..."
+  echo "exec_index_schema_apply"
+  if [ -n "${PAPERMERGE__SEARCH__URL}" ]; then
+    # PAPERMERGE__SEARCH__URL has non-empty value
+    echo "PAPERMERGE__SEARCH__URL=${PAPERMERGE__SEARCH__URL}"
+    echo "Applying index schema..."
     cd /core_app && poetry run paper-cli index-schema apply
   fi
 }

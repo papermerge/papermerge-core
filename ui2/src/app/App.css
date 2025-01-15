@@ -1,6 +1,12 @@
 #root {
   margin: 0;
   padding: 0;
+  width: 100%;
+}
+
+.mantine-Modal-inner {
+  left: 0;
+  right: 0;
 }
 
 main {

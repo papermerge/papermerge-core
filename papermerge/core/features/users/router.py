@@ -101,7 +101,7 @@ def create_user(
 
 @router.get(
     "/{user_id}",
-    status_code=201,
+    status_code=200,
     responses={
         404: {
             "description": """No user with specified UUID found""",
@@ -157,18 +157,20 @@ def delete_user(
 
     Required scope: `{scope}`
     """
-    if User.objects.count() == 1:
-        raise HTTPException(
-            status_code=432, detail="Deletion not possible. Only one user left."
-        )
+    with db.Session() as db_session:
+        if usr_dbapi.get_users_count(db_session) == 1:
+            raise HTTPException(
+                status_code=432, detail="Deletion not possible. Only one user left."
+            )
 
     try:
         if os.environ.get("PAPERMERGE__REDIS__URL"):
             delete_user_data.apply_async(kwargs={"user_id": str(user_id)})
         else:
-            delete_user_data(user_id)
-    except User.DoesNotExist:
-        raise HTTPException(status_code=404, detail="Does not exists")
+            usr_dbapi.delete_user(db_session, user_id=user_id)
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=469, detail=str(e))
 
 
 @router.patch("/{user_id}", status_code=200, response_model=schema.UserDetails)
@@ -189,5 +191,31 @@ def update_user(
 
     if error:
         raise HTTPException(status_code=404, detail=error.model_dump())
+
+    return user
+
+
+@router.post("/{user_id}/change-password", status_code=200, response_model=schema.UserDetails)
+@utils.docstring_parameter(scope=scopes.USER_UPDATE)
+def change_user_password(
+    user_id: UUID,
+    attrs: schema.ChangeUserPassword,
+    cur_user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
+    ],
+) -> schema.UserDetails:
+    """Change user password
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        user, error = usr_dbapi.change_password(
+            db_session,
+            user_id=UUID(attrs.userId),
+            password=attrs.password
+        )
+
+    if error:
+        raise HTTPException(status_code=469, detail=error.model_dump())
 
     return user

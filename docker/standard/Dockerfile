@@ -19,7 +19,7 @@ ENV PAPERMERGE__OCR__LANG_CODES="deu,eng,ron"
 ENV PAPERMERGE__OCR__DEFAULT_LANG_CODE="deu"
 ENV PAPERMERGE__OCR__AUTOMATIC="false"
 
-RUN apk add linux-headers python3-dev \
+RUN apk update && apk add linux-headers python3-dev \
     gcc \
     curl \
     libc-dev \

@@ -584,3 +584,12 @@ def make_group(db_session):
         return group
 
     return _maker
+
+
+@pytest.fixture()
+def random_string():
+    from random import choice
+    from string import ascii_uppercase
+
+    ret = "".join(choice(ascii_uppercase) for i in range(12))
+    return ret

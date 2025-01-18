@@ -3,13 +3,13 @@ import {apiSlice} from "@/features/api/slice"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 import type {
-  User,
-  CreateUser,
-  UserUpdate,
-  UserDetails,
   ChangePassword,
+  CreateUser,
   Paginated,
-  PaginatedArgs
+  PaginatedArgs,
+  User,
+  UserDetails,
+  UserUpdate
 } from "@/types"
 
 export const apiSliceWithUsers = apiSlice.injectEndpoints({
@@ -65,7 +65,7 @@ export const apiSliceWithUsers = apiSlice.injectEndpoints({
     }),
     changePassword: builder.mutation<void, ChangePassword>({
       query: chPwd => ({
-        url: `/users/${chPwd.userId}/change-password/`,
+        url: `/users/${chPwd.userId}/change-password`,
         method: "POST",
         body: chPwd
       })

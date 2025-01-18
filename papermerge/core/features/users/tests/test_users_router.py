@@ -1,10 +1,11 @@
-import uuid
-from passlib.hash import pbkdf2_sha256
+from papermerge.core.db.engine import Session
+
 from sqlalchemy import select
 
 from papermerge.core import schema, dbapi, orm
 from papermerge.core.tests.types import AuthTestClient
 
+from .utils import verify_password
 
 
 def test_list_users(make_user, auth_api_client: AuthTestClient):
@@ -25,7 +26,7 @@ def test_create_user(make_group, auth_api_client: AuthTestClient):
         "scopes": [],
         "is_active": True,
         "is_superuser": False,
-        "password": "blah"
+        "password": "blah",
     }
     response = auth_api_client.post("/users/", json=data)
 
@@ -33,10 +34,7 @@ def test_create_user(make_group, auth_api_client: AuthTestClient):
 
 
 def test_get_user_details(
-    make_user,
-    make_group,
-    auth_api_client: AuthTestClient,
-    db_session
+    make_user, make_group, auth_api_client: AuthTestClient, db_session
 ):
     """In this scenario user belongs to one group"""
     user = make_user(username="Karl")
@@ -51,10 +49,7 @@ def test_get_user_details(
 
 
 def test_delete_user(
-    make_user,
-    make_group,
-    auth_api_client: AuthTestClient,
-    db_session
+    make_user, make_group, auth_api_client: AuthTestClient, db_session
 ):
     user = make_user(username="Karl")
     group = make_group(name="demo")
@@ -68,25 +63,20 @@ def test_delete_user(
 
 
 def test_change_user_password(
-    make_user,
-    auth_api_client: AuthTestClient,
-    db_session
+    make_user, auth_api_client: AuthTestClient, random_string
 ):
     user = make_user(username="Karl")
 
-    data = {
-        "userId": str(user.id),
-        "password": "secret"
-    }
+    data = {"userId": str(user.id), "password": random_string}
 
     response = auth_api_client.post(f"/users/{user.id}/change-password", json=data)
 
     assert response.status_code == 200, response.text
     stmt = select(orm.User).where(orm.User.id == user.id)
+    with Session() as s:
+        db_user = s.execute(stmt).scalar()
 
-    db_user = db_session.execute(stmt).scalar()
-
-    assert pbkdf2_sha256.verify("secret", db_user.password)
+    assert verify_password(random_string, db_user.password)
 
 
 def test_users_paginated_result__9_items_first_page(

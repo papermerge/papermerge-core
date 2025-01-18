@@ -263,9 +263,7 @@ def get_users_count(db_session: db.Session) -> int:
 
 
 def change_password(
-    db_session: db.Session,
-    user_id: uuid.UUID,
-    password: str
+    db_session: db.Session, user_id: uuid.UUID, password: str
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
     db_user = db_session.get(User, user_id)
 

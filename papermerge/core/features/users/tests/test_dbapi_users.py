@@ -37,3 +37,16 @@ def test_user_update(db_session, make_user):
     updated_user = db_session.execute(stmt).scalar()
 
     assert updated_user.is_superuser == True
+
+
+def test_change_password(db_session, make_user):
+    user: orm.User = make_user("momo", is_superuser=False)
+
+    initial_password = user.password
+
+    dbapi.change_password(db_session, user_id=user.id, password="updatedpass")
+
+    stmt = select(orm.User).where(orm.User.id == user.id)
+    updated_user = db_session.execute(stmt).scalar()
+
+    assert updated_user.password != initial_password

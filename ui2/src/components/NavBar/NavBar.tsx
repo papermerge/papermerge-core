@@ -6,6 +6,14 @@ import {
   selectNavBarCollapsed
 } from "@/features/ui/uiSlice"
 import {
+  CUSTOM_FIELD_VIEW,
+  DOCUMENT_TYPE_VIEW,
+  GROUP_VIEW,
+  NODE_VIEW,
+  TAG_VIEW,
+  USER_VIEW
+} from "@/scopes"
+import {
   selectCurrentUser,
   selectCurrentUserError,
   selectCurrentUserStatus
@@ -59,25 +67,41 @@ function NavBarFull() {
   return (
     <>
       <div className="navbar">
-        <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
-          {NavLinkWithFeedback("Home", <IconHome />)}
-        </NavLink>
-        <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
-          {NavLinkWithFeedback("Inbox", <IconInbox />)}
-        </NavLink>
-        <NavLink to="/tags">{NavLinkWithFeedback("Tags", <IconTag />)}</NavLink>
-        <NavLink to="/custom-fields">
-          {NavLinkWithFeedback("Custom Fields", <IconAlignJustified />)}
-        </NavLink>
-        <NavLink to="/document-types">
-          {NavLinkWithFeedback("Document Types", <IconFile3d />)}
-        </NavLink>
-        <NavLink to="/users">
-          {NavLinkWithFeedback("Users", <IconUsers />)}
-        </NavLink>
-        <NavLink to="/groups">
-          {NavLinkWithFeedback("Groups", <IconUsersGroup />)}
-        </NavLink>
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
+            {NavLinkWithFeedback("Home", <IconHome />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
+            {NavLinkWithFeedback("Inbox", <IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(TAG_VIEW) && (
+          <NavLink to="/tags">
+            {NavLinkWithFeedback("Tags", <IconTag />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(CUSTOM_FIELD_VIEW) && (
+          <NavLink to="/custom-fields">
+            {NavLinkWithFeedback("Custom Fields", <IconAlignJustified />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
+          <NavLink to="/document-types">
+            {NavLinkWithFeedback("Document Types", <IconFile3d />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(USER_VIEW) && (
+          <NavLink to="/users">
+            {NavLinkWithFeedback("Users", <IconUsers />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(GROUP_VIEW) && (
+          <NavLink to="/groups">
+            {NavLinkWithFeedback("Groups", <IconUsersGroup />)}
+          </NavLink>
+        )}
       </div>
     </>
   )
@@ -115,23 +139,39 @@ function NavBarCollapsed() {
   return (
     <>
       <div className="navbar">
-        <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
-          {NavLinkWithFeedbackShort(<IconHome />)}
-        </NavLink>
-        <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
-          {NavLinkWithFeedbackShort(<IconInbox />)}
-        </NavLink>
-        <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
-        <NavLink to="/custom-fields">
-          {NavLinkWithFeedbackShort(<IconAlignJustified />)}
-        </NavLink>
-        <NavLink to="/document-types">
-          {NavLinkWithFeedbackShort(<IconFile3d />)}
-        </NavLink>
-        <NavLink to="/users">{NavLinkWithFeedbackShort(<IconUsers />)}</NavLink>
-        <NavLink to="/groups">
-          {NavLinkWithFeedbackShort(<IconUsersGroup />)}
-        </NavLink>
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconHome />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(TAG_VIEW) && (
+          <NavLink to="/tags">{NavLinkWithFeedbackShort(<IconTag />)}</NavLink>
+        )}
+        {user.scopes.includes(CUSTOM_FIELD_VIEW) && (
+          <NavLink to="/custom-fields">
+            {NavLinkWithFeedbackShort(<IconAlignJustified />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
+          <NavLink to="/document-types">
+            {NavLinkWithFeedbackShort(<IconFile3d />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(USER_VIEW) && (
+          <NavLink to="/users">
+            {NavLinkWithFeedbackShort(<IconUsers />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(GROUP_VIEW) && (
+          <NavLink to="/groups">
+            {NavLinkWithFeedbackShort(<IconUsersGroup />)}
+          </NavLink>
+        )}
       </div>
     </>
   )

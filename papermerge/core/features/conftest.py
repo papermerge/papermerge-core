@@ -573,3 +573,23 @@ def make_document_tax(db_session: Session, document_type_tax):
         return doc
 
     return _make_tax
+
+
+@pytest.fixture()
+def make_group(db_session):
+    def _maker(name: str):
+        group = orm.Group(name=name)
+        db_session.add(group)
+        db_session.commit()
+        return group
+
+    return _maker
+
+
+@pytest.fixture()
+def random_string():
+    from random import choice
+    from string import ascii_uppercase
+
+    ret = "".join(choice(ascii_uppercase) for i in range(12))
+    return ret

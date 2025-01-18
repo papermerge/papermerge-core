@@ -92,7 +92,7 @@ export const NewFolderModal = ({
   }
 
   return (
-    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={"New Folder"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}

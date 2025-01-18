@@ -16,6 +16,41 @@ import {
   useGetGroupQuery
 } from "@/features/groups/apiSlice"
 
+import {
+  ALL_PERMS,
+  CUSTOM_FIELD_CREATE,
+  CUSTOM_FIELD_DELETE,
+  CUSTOM_FIELD_UPDATE,
+  CUSTOM_FIELD_VIEW,
+  DOCUMENT_DOWNLOAD,
+  DOCUMENT_TYPE_CREATE,
+  DOCUMENT_TYPE_DELETE,
+  DOCUMENT_TYPE_UPDATE,
+  DOCUMENT_TYPE_VIEW,
+  DOCUMENT_UPLOAD,
+  GROUP_CREATE,
+  GROUP_DELETE,
+  GROUP_UPDATE,
+  GROUP_VIEW,
+  NODE_CREATE,
+  NODE_DELETE,
+  NODE_MOVE,
+  NODE_UPDATE,
+  PAGE_DELETE,
+  PAGE_EXTRACT,
+  PAGE_MOVE,
+  PAGE_UPDATE,
+  TAG_CREATE,
+  TAG_DELETE,
+  TAG_UPDATE,
+  TAG_VIEW,
+  TASK_OCR,
+  USER_CREATE,
+  USER_DELETE,
+  USER_UPDATE,
+  USER_VIEW
+} from "@/scopes"
+
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {
     "user.me": true,
@@ -752,69 +787,3 @@ function equalSets(x: Set<string>, y: Set<string>): boolean {
 
   return true
 }
-
-const DOCUMENT_DOWNLOAD = "document.download"
-const DOCUMENT_UPLOAD = "document.upload"
-const PAGE_VIEW = "page.view"
-const PAGE_MOVE = "page.move"
-const PAGE_UPDATE = "page.update"
-const PAGE_DELETE = "page.delete"
-const PAGE_EXTRACT = "page.extract"
-const USER_VIEW = "user.view"
-const USER_CREATE = "user.create"
-const USER_UPDATE = "user.update"
-const USER_DELETE = "user.delete"
-const USER_ME = "user.me"
-const GROUP_VIEW = "group.view"
-const GROUP_CREATE = "group.create"
-const GROUP_UPDATE = "group.update"
-const GROUP_DELETE = "group.delete"
-const TAG_VIEW = "tag.view"
-const TAG_CREATE = "tag.create"
-const TAG_UPDATE = "tag.update"
-const TAG_DELETE = "tag.delete"
-const CUSTOM_FIELD_VIEW = "custom_field.view"
-const CUSTOM_FIELD_CREATE = "custom_field.create"
-const CUSTOM_FIELD_UPDATE = "custom_field.update"
-const CUSTOM_FIELD_DELETE = "custom_field.delete"
-const DOCUMENT_TYPE_VIEW = "document_type.view"
-const DOCUMENT_TYPE_CREATE = "document_type.create"
-const DOCUMENT_TYPE_UPDATE = "document_type.update"
-const DOCUMENT_TYPE_DELETE = "document_type.delete"
-const NODE_VIEW = "node.view"
-const NODE_CREATE = "node.create"
-const NODE_UPDATE = "node.update"
-const NODE_DELETE = "node.delete"
-const NODE_MOVE = "node.move"
-const TASK_OCR = "task.ocr"
-const OCRLANG_VIEW = "ocrlang.view"
-
-const ALL_PERMS = [
-  DOCUMENT_DOWNLOAD,
-  DOCUMENT_UPLOAD,
-  PAGE_VIEW,
-  PAGE_MOVE,
-  PAGE_UPDATE,
-  PAGE_DELETE,
-  PAGE_EXTRACT,
-  USER_VIEW,
-  USER_CREATE,
-  USER_UPDATE,
-  USER_DELETE,
-  USER_ME,
-  GROUP_VIEW,
-  GROUP_CREATE,
-  GROUP_UPDATE,
-  GROUP_DELETE,
-  TAG_VIEW,
-  TAG_CREATE,
-  TAG_UPDATE,
-  TAG_DELETE,
-  NODE_VIEW,
-  NODE_MOVE,
-  NODE_CREATE,
-  NODE_UPDATE,
-  NODE_DELETE,
-  TASK_OCR,
-  OCRLANG_VIEW
-]

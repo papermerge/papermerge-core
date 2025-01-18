@@ -1,4 +1,5 @@
 from .features.page_mngm.db.api import move_pages
+from .features.users.db.api import update_user, get_users_count, change_password, get_user
 from .features.document.db.api import (
     get_last_doc_ver,
     upload,
@@ -12,6 +13,7 @@ from .features.document.db.api import (
     get_doc_ver_pages
 )
 from .features.nodes.db.api import get_nodes
+from .features.groups.db.api import get_group, sync_perms
 from .features.document_types.db.api import (
     create_document_type,
     get_document_types,
@@ -41,5 +43,13 @@ __all__ = [
     "get_document_types_without_pagination",
     "delete_document_type",
     "update_document_type",
-    "create_custom_field"
+    "create_custom_field",
+    # users
+    "update_user",
+    "get_user",
+    "change_password",
+    "get_users_count",
+    # groups
+    "get_group",
+    "sync_perms"
 ]

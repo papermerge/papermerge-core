@@ -255,3 +255,26 @@ def delete_user(
     user = db_session.execute(stmt).scalars().one()
     db_session.delete(user)
     db_session.commit()
+
+
+def get_users_count(db_session: db.Session) -> int:
+    stmt = select(func.count(orm.User.id))
+    return db_session.execute(stmt).scalar()
+
+
+def change_password(
+    db_session: db.Session, user_id: uuid.UUID, password: str
+) -> Tuple[schema.User | None, err_schema.Error | None]:
+    db_user = db_session.get(User, user_id)
+
+    db_user.password = pbkdf2_sha256.hash(password)
+
+    try:
+        db_session.commit()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    user = schema.User.model_validate(db_user)
+
+    return user, None

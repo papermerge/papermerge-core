@@ -1,6 +1,7 @@
 from sqlalchemy import func
 
-from papermerge.core import schema, db
+from papermerge.core.db.engine import Session
+from papermerge.core import schema, db, dbapi
 from papermerge.core.features.groups.db import orm
 from papermerge.core.tests.types import AuthTestClient
 
@@ -17,6 +18,32 @@ def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Sess
     assert response.status_code == 201, response.json()
     count_after = db_session.query(func.count(orm.Group.id)).scalar()
     assert count_after == 1
+
+
+def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_session):
+    group = make_group(name="demo")
+
+    dbapi.sync_perms(db_session)
+    response = auth_api_client.patch(
+        f"/groups/{group.id}",
+        json={"name": "Admin", "scopes": ["user.view", "custom_field.view"]},
+    )
+
+    assert response.status_code == 200, response.json()
+
+    updated_group = dbapi.get_group(db_session, group_id=group.id)
+
+    assert set(updated_group.scopes) == {"user.view", "custom_field.view"}
+
+
+def test_get_group_details(
+    make_group, auth_api_client: AuthTestClient, db_session: db.Session
+):
+    group = make_group(name="demo")
+
+    response = auth_api_client.get(f"/groups/{group.id}")
+
+    assert response.status_code == 200, response.json()
 
 
 def test_pagination_group_route_basic(auth_api_client: AuthTestClient):

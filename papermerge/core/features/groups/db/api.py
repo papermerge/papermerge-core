@@ -1,5 +1,6 @@
 import logging
 import math
+import uuid
 
 from sqlalchemy import delete, select, func
 from sqlalchemy.orm import joinedload
@@ -12,7 +13,7 @@ from papermerge.core.db.engine import Session
 logger = logging.getLogger(__name__)
 
 
-def get_group(db_session: Session, group_id: int) -> schema.GroupDetails:
+def get_group(db_session: Session, group_id: uuid.UUID) -> schema.GroupDetails:
     stmt = (
         select(orm.Group)
         .options(joinedload(orm.Group.permissions))
@@ -74,7 +75,7 @@ def create_group(
 
 
 def update_group(
-    db_session: Session, group_id: int, attrs: schema.UpdateGroup
+    db_session: Session, group_id: uuid.UUID, attrs: schema.UpdateGroup
 ) -> schema.Group:
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
     perms = db_session.execute(stmt).scalars().all()

@@ -12,7 +12,7 @@ from pydantic import (
 
 
 class Group(BaseModel):
-    id: int
+    id: UUID
     name: str
 
 
@@ -22,7 +22,7 @@ class RemoteUser(BaseModel):
     username: str
     email: str = ""
     name: str = ""
-    groups: list[str] = []
+    groups: list[str] | None = None
 
 
 class User(BaseModel):
@@ -93,7 +93,7 @@ class CreateUser(BaseModel):
     is_superuser: bool
     is_active: bool
     scopes: list[str]  # list of scope names e.g. "user.create", "user.delete"
-    group_ids: list[int]  # list of group IDs e.g. 65, 72
+    group_ids: list[UUID]
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -106,4 +106,9 @@ class UpdateUser(BaseModel):
     is_superuser: bool | None = None
     is_active: bool | None = None
     scopes: list[str] | None = None
-    group_ids: list[int] | None = None
+    group_ids: list[UUID] | None = None
+
+
+class ChangeUserPassword(BaseModel):
+    userId: str
+    password: str

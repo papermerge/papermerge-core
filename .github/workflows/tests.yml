@@ -10,6 +10,7 @@ on:
       - 'ui/**'
       - 'pyproject.toml'
       - '.github/workflows/tests.yml'
+      - 'docker/standard/**'
 
 jobs:
   tests_with_sqlite:

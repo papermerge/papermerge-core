@@ -55,7 +55,7 @@ For more info about various docker compose scenarios check [documentation page](
 
 ## Demo Page
 
-Online demo is available at: https://papermerge.com/demo
+Online demo is available at: https://demo.papermerge.com
 
 ```
 Username: demo

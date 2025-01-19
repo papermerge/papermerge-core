@@ -2,8 +2,16 @@
 
 <!-- towncrier release notes start -->
 
+## [3.3.1] - 2025-01-19
 
-## [3.3] - 2024-11-yy
+### Changes
+
+- Fixes [Web UI popup mislocated in v3.3](https://github.com/ciur/papermerge/issues/643)
+    also problem is mentioned here https://github.com/papermerge/papermerge-core/issues/574
+- Fixes problem that was not possible to update password of a user due to a bug
+- Fixes problem that was not possible to update group permissions due to a bug
+
+## [3.3] - 2024-12-21
 
 ### Changes
 

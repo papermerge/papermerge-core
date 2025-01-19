@@ -18,7 +18,7 @@ It supports PDF, TIFF, JPEG and PNG document file formats.
 Papermerge is perfect tool for long term storage of your documents.
 
 <p align="center">
-<img src="./artwork/papermerge3.png" />
+<img src="./artwork/papermerge3-3.png" />
 </p>
 
 ## Features Highlights

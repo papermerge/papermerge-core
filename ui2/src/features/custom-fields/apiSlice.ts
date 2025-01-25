@@ -1,5 +1,11 @@
 import {apiSlice} from "@/features/api/slice"
-import type {CustomField, Paginated, PaginatedArgs} from "@/types"
+import type {
+  CustomField,
+  CustomFieldUpdate,
+  NewCustomField,
+  Paginated,
+  PaginatedArgs
+} from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 

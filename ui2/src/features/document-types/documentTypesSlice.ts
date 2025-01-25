@@ -30,7 +30,7 @@ export const initialState: CustomFieldSlice = {
 }
 
 const documentTypesSlice = createSlice({
-  name: "customFields",
+  name: "documentType",
   initialState,
   reducers: {
     selectionAdd: (state, action: PayloadAction<string>) => {

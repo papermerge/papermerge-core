@@ -26,7 +26,7 @@ export const initialState: CustomFieldSlice = {
   }
 }
 
-const groupsSlice = createSlice({
+const customFieldsSlice = createSlice({
   name: "customFields",
   initialState,
   reducers: {
@@ -98,8 +98,8 @@ export const {
   lastPageSizeUpdate,
   sortByUpdated,
   filterUpdated
-} = groupsSlice.actions
-export default groupsSlice.reducer
+} = customFieldsSlice.actions
+export default customFieldsSlice.reducer
 
 export const selectCustomFieldsResult =
   apiSliceWithCustomFields.endpoints.getCustomFields.select()

@@ -2,6 +2,7 @@ import Th from "@/components/TableSort/Th"
 import {useGetPaginatedTagsQuery} from "@/features/tags/apiSlice"
 import {
   clearSelection,
+  filterUpdated,
   lastPageSizeUpdate,
   selectLastPageSize,
   selectReverseSortedByDescription,
@@ -82,10 +83,23 @@ export default function TagsList() {
     dispatch(sortByUpdated(columnName))
   }
 
+  const onQuickFilterChange = (value: string) => {
+    dispatch(filterUpdated(value))
+    setPage(1)
+  }
+
+  const onQuickFilterClear = () => {
+    dispatch(filterUpdated(undefined))
+    setPage(1)
+  }
+
   if (isLoading || !data) {
     return (
       <Stack>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Center>
           <Loader type="bars" />
         </Center>
@@ -96,7 +110,10 @@ export default function TagsList() {
   if (data.items.length == 0) {
     return (
       <div>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Empty />
       </div>
     )
@@ -106,7 +123,11 @@ export default function TagsList() {
 
   return (
     <Stack>
-      <ActionButtons /> {isFetching && <Loader size={"sm"} />}
+      <ActionButtons
+        isFetching={isFetching}
+        onQuickFilterChange={onQuickFilterChange}
+        onQuickFilterClear={onQuickFilterClear}
+      />
       <Table>
         <Table.Thead>
           <Table.Tr>

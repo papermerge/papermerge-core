@@ -86,6 +86,9 @@ const tagsSlice = createSlice({
       else {
         state.listTableSort.sortBy = columnName
       }
+    },
+    filterUpdated: (state, action: PayloadAction<string | undefined>) => {
+      state.listTableSort.filter = action.payload
     }
   }
 })
@@ -96,7 +99,8 @@ export const {
   selectionRemove,
   clearSelection,
   lastPageSizeUpdate,
-  sortByUpdated
+  sortByUpdated,
+  filterUpdated
 } = tagsSlice.actions
 export default tagsSlice.reducer
 

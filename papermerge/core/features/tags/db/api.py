@@ -49,8 +49,6 @@ def get_tags(
             or_(
                 orm.Tag.name.icontains(filter),
                 orm.Tag.description.icontains(filter),
-                orm.Tag.id.icontains(filter),
-                orm.Tag.pinned.icontains(filter),
             )
         )
 
@@ -71,8 +69,6 @@ def get_tags(
             or_(
                 orm.Tag.name.icontains(filter),
                 orm.Tag.description.icontains(filter),
-                orm.Tag.id.icontains(filter),
-                orm.Tag.pinned.icontains(filter),
             )
         )
 

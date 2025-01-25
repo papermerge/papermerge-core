@@ -1,8 +1,15 @@
+import {AppStartListening} from "@/app/listenerMiddleware"
+import {notifications} from "@mantine/notifications"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {CustomField, Paginated, PaginationType} from "@/types"
+import type {
+  CustomField,
+  Paginated,
+  PaginationType,
+  ServerErrorType
+} from "@/types"
 import {apiSliceWithCustomFields} from "./apiSlice"
 
 import type {CustomFieldListColumnName, CustomFieldSortByInput} from "./types"
@@ -174,4 +181,83 @@ export const selectReverseSortedByType = (state: RootState) => {
 
 export const selectFilterText = (state: RootState) => {
   return state.customFields.listTableSort.filter
+}
+
+export const customFieldCRUDListeners = (
+  startAppListening: AppStartListening
+) => {
+  // Create positive
+  startAppListening({
+    matcher:
+      apiSliceWithCustomFields.endpoints.addNewCustomField.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Custom Field successfully created"
+      })
+    }
+  })
+  // Create negative
+  startAppListening({
+    matcher: apiSliceWithCustomFields.endpoints.addNewCustomField.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Update positive
+  startAppListening({
+    matcher: apiSliceWithCustomFields.endpoints.editCustomField.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Custom Field successfully updated"
+      })
+    }
+  })
+  // Update negative
+  startAppListening({
+    matcher: apiSliceWithCustomFields.endpoints.editCustomField.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Delete positive
+  startAppListening({
+    matcher:
+      apiSliceWithCustomFields.endpoints.deleteCustomField.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Custom Field successfully deleted"
+      })
+    }
+  })
+  // Delete negative
+  startAppListening({
+    matcher: apiSliceWithCustomFields.endpoints.deleteCustomField.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
 }

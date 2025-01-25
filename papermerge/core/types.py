@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from datetime import date
 from enum import Enum
 from typing import Generic, Literal, TypeAlias, TypeVar
+from fastapi import Query
 
 from pydantic import BaseModel, ConfigDict
 
@@ -53,3 +54,11 @@ class CFVValueColumn(str, Enum):
     MONETARY = 'value_monetary'
     BOOLEAN = 'value_boolean'
     YEARMONTH = 'value_yearmonth'
+
+
+class PaginatedQueryParams(BaseModel):
+    page_size: int = Query(5, ge=1, description="Number of items per page")
+    page_number: int = Query(
+        1, ge=1, description="Page number. It is first, second etc. page?"
+    )
+    filter: str | None = None

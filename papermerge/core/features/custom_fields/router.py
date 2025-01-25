@@ -12,8 +12,9 @@ from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users.schema import User
+
+from .types import PaginatedQueryParams
 
 router = APIRouter(
     prefix="/custom-fields",
@@ -46,9 +47,9 @@ def get_custom_fields(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
-    params: CommonQueryParams = Depends(),
+    params: PaginatedQueryParams = Depends(),
 ):
-    """Get all (paginated) custom fields
+    """Get paginated list of custom fields
 
     Required scope: `{scope}`
     """
@@ -58,6 +59,8 @@ def get_custom_fields(
             user_id=user.id,
             page_size=params.page_size,
             page_number=params.page_number,
+            order_by=params.order_by,
+            filter=params.filter,
         )
 
     return result

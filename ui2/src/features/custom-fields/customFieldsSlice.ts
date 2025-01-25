@@ -5,19 +5,28 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import type {CustomField, Paginated, PaginationType} from "@/types"
 import {apiSliceWithCustomFields} from "./apiSlice"
 
+import type {CustomFieldListColumnName, CustomFieldSortByInput} from "./types"
+
 export type CustomFieldSlice = {
   selectedIds: Array<string>
   pagination: PaginationType | null
   lastPageSize: number
+  listTableSort: {
+    sortBy: CustomFieldSortByInput
+    filter?: string
+  }
 }
 
 export const initialState: CustomFieldSlice = {
   selectedIds: [],
   pagination: null,
-  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
+  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+  listTableSort: {
+    sortBy: "name"
+  }
 }
 
-const groupsSlice = createSlice({
+const customFieldsSlice = createSlice({
   name: "customFields",
   initialState,
   reducers: {
@@ -36,6 +45,32 @@ const groupsSlice = createSlice({
     },
     lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
       state.lastPageSize = action.payload
+    },
+    sortByUpdated: (
+      state,
+      action: PayloadAction<CustomFieldListColumnName>
+    ) => {
+      const columnName = action.payload
+      if (columnName == "name" && state.listTableSort.sortBy == "name") {
+        state.listTableSort.sortBy = "-name"
+      } else if (
+        columnName == "name" &&
+        state.listTableSort.sortBy == "-name"
+      ) {
+        state.listTableSort.sortBy = "name"
+      } else if (columnName == "type" && state.listTableSort.sortBy == "type") {
+        state.listTableSort.sortBy = "-type"
+      } else if (
+        columnName == "type" &&
+        state.listTableSort.sortBy == "-type"
+      ) {
+        state.listTableSort.sortBy = "type"
+      } else {
+        state.listTableSort.sortBy = columnName
+      }
+    },
+    filterUpdated: (state, action: PayloadAction<string | undefined>) => {
+      state.listTableSort.filter = action.payload
     }
   },
   extraReducers(builder) {
@@ -60,9 +95,11 @@ export const {
   selectionAddMany,
   selectionRemove,
   clearSelection,
-  lastPageSizeUpdate
-} = groupsSlice.actions
-export default groupsSlice.reducer
+  lastPageSizeUpdate,
+  sortByUpdated,
+  filterUpdated
+} = customFieldsSlice.actions
+export default customFieldsSlice.reducer
 
 export const selectCustomFieldsResult =
   apiSliceWithCustomFields.endpoints.getCustomFields.select()
@@ -92,4 +129,49 @@ export const selectPagination = (state: RootState): PaginationType | null => {
 
 export const selectLastPageSize = (state: RootState): number => {
   return state.customFields.lastPageSize
+}
+
+export const selectTableSortColumns = (state: RootState) =>
+  state.customFields.listTableSort
+
+export const selectSortedByName = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "name") {
+    return true
+  }
+  if (state.customFields.listTableSort.sortBy == "-name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByName = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "-name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByType = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "type") {
+    return true
+  }
+  if (state.customFields.listTableSort.sortBy == "-type") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByType = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "-type") {
+    return true
+  }
+
+  return false
+}
+
+export const selectFilterText = (state: RootState) => {
+  return state.customFields.listTableSort.filter
 }

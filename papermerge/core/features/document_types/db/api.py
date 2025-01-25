@@ -30,22 +30,43 @@ def get_document_types_without_pagination(
     return items
 
 
+ORDER_BY_MAP = {
+    "name": orm.DocumentType.name.asc(),
+    "-name": orm.DocumentType.name.desc(),
+}
+
+
 def get_document_types(
-    session: Session, user_id: uuid.UUID, page_size: int, page_number: int
+    session: Session,
+    user_id: uuid.UUID,
+    page_size: int,
+    page_number: int,
+    filter: str | None = None,
+    order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.DocumentType]:
 
     stmt_total_doc_types = select(func.count(DocumentType.id)).where(
         DocumentType.user_id == user_id
     )
+    if filter:
+        stmt_total_doc_types = stmt_total_doc_types.where(
+            orm.DocumentType.name.icontains(filter)
+        )
     total_doc_types = session.execute(stmt_total_doc_types).scalar()
+    order_by_value = ORDER_BY_MAP.get(order_by, orm.DocumentType.name.asc())
 
     offset = page_size * (page_number - 1)
+
     stmt = (
         select(DocumentType)
         .where(DocumentType.user_id == user_id)
         .limit(page_size)
         .offset(offset)
+        .order_by(order_by_value)
     )
+    if filter:
+        stmt = stmt.where(orm.DocumentType.name.icontains(filter))
+
     db_items = session.scalars(stmt).all()
     items = [schema.DocumentType.model_validate(db_item) for db_item in db_items]
 

@@ -29,7 +29,7 @@ RUN apk update && apk add linux-headers python3-dev \
     libpq-dev \
     poppler-utils
 
-RUN pip install --upgrade poetry==1.8.2 roco==0.4.2
+RUN pip install --upgrade poetry==2.0.1 roco==0.4.2
 RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.2/env2js.amd64
 RUN chmod +x /bin/env2js
 

@@ -17,9 +17,23 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
     >({
       query: ({
         page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: PaginatedArgs) =>
-        `/custom-fields/?page_number=${page_number}&page_size=${page_size}`,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+        sort_by = "name",
+        filter = undefined
+      }: PaginatedArgs) => {
+        let ret
+
+        if (filter) {
+          ret = `/custom-fields/?page_number=${page_number}`
+          ret += `&page_size=${page_size}&order_by=${sort_by}`
+          ret += `&filter=${filter}`
+        } else {
+          ret = `/custom-fields/?page_number=${page_number}`
+          ret += `&page_size=${page_size}&order_by=${sort_by}`
+        }
+
+        return ret
+      },
       providesTags: (
         result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
         _error,

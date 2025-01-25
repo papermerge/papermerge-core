@@ -1,9 +1,13 @@
-[tool.poetry]
-name = "papermerge-core"
-version = "3.3"
+[project]
+name = "papermerge"
+version = "3.4"
 description = "Open source document management system for digital archives"
-authors = ["Eugen Ciur <eugen@papermerge.com>"]
-maintainers = ["Eugen Ciur <eugen@papermerge.com>"]
+authors = [
+    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+]
+maintainers = [
+    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+]
 license = "Apache 2.0"
 readme = "README.md"
 homepage = "https://www.papermerge.com/"
@@ -29,43 +33,39 @@ packages = [
     { include = "papermerge/core" },
     { include = "papermerge/search" },
 ]
+requires-python = ">=3.13,<4"
+dependencies = [
+    "redis (>=5.2, <6)",
+    "celery[gevent,redis] (>=5.2)",
+    "pyyaml (>=6.0)",
+    "python-magic  (>=0.4)",
+    "uritemplate (>=4.1.1)",
+    "pdf2image (>=1.16.0)",
+    "uvicorn (>=0.32)",
+    "python-jose (>=3.3.0)",
+    "salinic (>=0.6.0)",
+    "img2pdf >=0.5.1",
+    "passlib >=1.7.4",
+    "sqlalchemy >=2.0",
+    "typer >=0.13",
+    "rich >=13",
+    "pytz >=2024.1",
+    "pydantic-settings >=2",
+    "alembic >=1.13.3",
+    "fastapi[standard] >=0.115",
+    "taskipy >=1.14"
+]
 
 [project.urls]
 Tracker = "https://github.com/ciur/papermerge/issues"
 Source = "https://github.com/papermerge/papermerge-core"
 
-[tool.poetry.dependencies]
-python = ">=3.13, <4.0"
-redis = "^5.2"
-celery = {version = "^5.2", extras = ["gevent", "redis"]}
-pyyaml = "^6.0"
-python-magic = "^0.4"
-uritemplate = "^4.1.1"
-pdf2image = "^1.16.0"
-uvicorn = "^0.32"
-python-jose = "^3.3.0"
-salinic = "^0.6.0"
-img2pdf = "^0.5.1"
-passlib = "^1.7.4"
-sqlalchemy = "^2.0"
-typer = "^0.13"
-rich = "^13"
-pytz = "^2024.1"
-pydantic-settings = "^2"
-alembic = "^1.13.3"
-fastapi = {extras = ["standard"], version = "^0.115"}
-psycopg2 = { version = "^2.9.2", optional = true}
-botocore = { version = "^1.35", optional = true }
-boto3 = { version = "^1.35", optional = true }
-mysqlclient = {version = "^2.2", optional = true}
-cryptography = { version = "^43", optional = true }
-taskipy = "^1.14"
 
-[tool.poetry.extras]
-mysql = ["mysqlclient"]
-pg = ["psycopg2"]
+[project.optional-dependencies]
+mysql = ["mysqlclient (>=2.2)"]
+pg = ["psycopg2 (>=2.9.2)"]
 databases = ["mysqlclient", "psycopg2"]
-cloud = ["botocore", "boto3", "cryptography"]
+cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
 
 [tool.poetry.group.test]
 optional = true
@@ -87,7 +87,7 @@ worker = "celery -A config worker -c 5"
 server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
 
-[tool.poetry.scripts]
+[project.scripts]
 paper-cli = "papermerge.cli:app"
 docs = 'papermerge.core.cli.docs:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'

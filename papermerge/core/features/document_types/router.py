@@ -9,8 +9,8 @@ from papermerge.core import utils, schema, dbapi, db
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.users import schema as users_schema
+from .types import PaginatedQueryParams
 
 router = APIRouter(
     prefix="/document-types",
@@ -46,7 +46,7 @@ def get_document_types(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
-    params: CommonQueryParams = Depends(),
+    params: PaginatedQueryParams = Depends(),
 ) -> schema.PaginatedResponse[schema.DocumentType]:
     """Get all (paginated) document types
 
@@ -58,6 +58,8 @@ def get_document_types(
             user_id=user.id,
             page_size=params.page_size,
             page_number=params.page_number,
+            order_by=params.order_by,
+            filter=params.filter,
         )
 
     return paginated_response

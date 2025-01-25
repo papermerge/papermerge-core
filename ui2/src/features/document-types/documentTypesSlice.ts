@@ -1,8 +1,11 @@
+import {AppStartListening} from "@/app/listenerMiddleware"
+import {notifications} from "@mantine/notifications"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {Paginated, PaginationType} from "@/types"
+import type {Paginated, PaginationType, ServerErrorType} from "@/types"
+
 import {apiSliceWithDocTypes} from "./apiSlice"
 import type {
   DocType,
@@ -152,4 +155,81 @@ export const selectTableSortColumns = (state: RootState) =>
 
 export const selectFilterText = (state: RootState) => {
   return state.customFields.listTableSort.filter
+}
+
+export const documentTypeCRUDListeners = (
+  startAppListening: AppStartListening
+) => {
+  // Create positive
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.addDocumentType.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Document Type successfully created"
+      })
+    }
+  })
+  // Create negative
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.addDocumentType.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Update positive
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.editDocumentType.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Document Type successfully updated"
+      })
+    }
+  })
+  // Update negative
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.editDocumentType.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Delete positive
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.deleteDocumentType.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Document Type successfully deleted"
+      })
+    }
+  })
+  // Delete negative
+  startAppListening({
+    matcher: apiSliceWithDocTypes.endpoints.deleteDocumentType.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
 }

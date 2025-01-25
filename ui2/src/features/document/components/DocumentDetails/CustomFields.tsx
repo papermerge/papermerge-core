@@ -185,6 +185,7 @@ export default function CustomFields() {
         onChange={onDocumentTypeChange}
         onClear={onClearDocumentType}
         clearable
+        searchable
       />
       <Stack>{genericCustomFieldsComponents}</Stack>
       {isErrorGetDocCF && (

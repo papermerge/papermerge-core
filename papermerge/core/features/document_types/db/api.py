@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 def get_document_types_without_pagination(
     db_session: Session, user_id: uuid.UUID
 ) -> list[schema.DocumentType]:
-    stmt = select(orm.DocumentType).where(orm.DocumentType.user_id == user_id)
+    stmt = (
+        select(orm.DocumentType)
+        .order_by(orm.DocumentType.name.asc())
+        .where(orm.DocumentType.user_id == user_id)
+    )
 
     db_document_types = db_session.scalars(stmt).all()
     items = [

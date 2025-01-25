@@ -2,6 +2,12 @@
 
 <!-- towncrier release notes start -->
 
+## [3.4] - Soon
+
+### Changes
+
+- pyproject.toml updated for poetry 2.0
+
 ## [3.3.1] - 2025-01-19
 
 ### Changes

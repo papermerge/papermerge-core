@@ -1,12 +1,17 @@
 import Pagination from "@/components/Pagination"
+import Th from "@/components/TableSort/Th"
 import {useGetPaginatedDocumentTypesQuery} from "@/features/document-types/apiSlice"
 import {
   clearSelection,
   lastPageSizeUpdate,
   selectLastPageSize,
+  selectReverseSortedByName,
   selectSelectedIds,
-  selectionAddMany
+  selectSortedByName,
+  selectionAddMany,
+  sortByUpdated
 } from "@/features/document-types/documentTypesSlice"
+import type {DocumentTypeListColumnName} from "@/features/document-types/types"
 import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
@@ -17,6 +22,8 @@ export default function DocumentTypesList() {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
+  const sortedByName = useSelector(selectSortedByName)
+  const reverseSortedByName = useSelector(selectReverseSortedByName)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const {data, isLoading, isFetching} = useGetPaginatedDocumentTypesQuery({
@@ -50,6 +57,10 @@ export default function DocumentTypesList() {
       dispatch(lastPageSizeUpdate(pageSize))
       setPageSize(pageSize)
     }
+  }
+
+  const onSortBy = (columnName: DocumentTypeListColumnName) => {
+    dispatch(sortByUpdated(columnName))
   }
 
   if (isLoading || !data) {
@@ -89,7 +100,13 @@ export default function DocumentTypesList() {
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
-            <Table.Th>Name</Table.Th>
+            <Th
+              sorted={sortedByName}
+              reversed={reverseSortedByName}
+              onSort={() => onSortBy("name")}
+            >
+              Name
+            </Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{documentTypeRows}</Table.Tbody>

@@ -18,3 +18,6 @@ export type DocTypeUpdate = {
   name: string
   custom_field_ids: Array<string>
 }
+
+export type DocumentTypeListColumnName = "name"
+export type DocumentTypeSortByInput = "name" | "-name"

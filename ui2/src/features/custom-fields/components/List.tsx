@@ -1,27 +1,43 @@
 import Pagination from "@/components/Pagination"
+import Th from "@/components/TableSort/Th"
 import {useGetPaginatedCustomFieldsQuery} from "@/features/custom-fields/apiSlice"
 import {
   clearSelection,
+  filterUpdated,
   lastPageSizeUpdate,
   selectLastPageSize,
+  selectReverseSortedByName,
+  selectReverseSortedByType,
   selectSelectedIds,
-  selectionAddMany
+  selectSortedByName,
+  selectSortedByType,
+  selectTableSortColumns,
+  selectionAddMany,
+  sortByUpdated
 } from "@/features/custom-fields/customFieldsSlice"
-import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
+import {Center, Checkbox, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
+import type {CustomFieldListColumnName} from "../types"
 import ActionButtons from "./ActionButtons"
 import CustomFieldRow from "./CustomFieldRow"
 
 export default function CustomFieldsList() {
   const selectedIds = useSelector(selectSelectedIds)
+  const tablerSortCols = useSelector(selectTableSortColumns)
+  const sortedByName = useSelector(selectSortedByName)
+  const sortedByType = useSelector(selectSortedByType)
+  const reverseSortedByName = useSelector(selectReverseSortedByName)
+  const reverseSortedByType = useSelector(selectReverseSortedByType)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const {data, isLoading, isFetching} = useGetPaginatedCustomFieldsQuery({
     page_number: page,
-    page_size: pageSize
+    page_size: pageSize,
+    sort_by: tablerSortCols.sortBy,
+    filter: tablerSortCols.filter
   })
 
   const onCheckAll = (checked: boolean) => {
@@ -43,6 +59,10 @@ export default function CustomFieldsList() {
     setPage(page)
   }
 
+  const onSortBy = (columnName: CustomFieldListColumnName) => {
+    dispatch(sortByUpdated(columnName))
+  }
+
   const onPageSizeChange = (value: string | null) => {
     if (value) {
       const pageSize = parseInt(value)
@@ -52,10 +72,23 @@ export default function CustomFieldsList() {
     }
   }
 
+  const onQuickFilterChange = (value: string) => {
+    dispatch(filterUpdated(value))
+    setPage(1)
+  }
+
+  const onQuickFilterClear = () => {
+    dispatch(filterUpdated(undefined))
+    setPage(1)
+  }
+
   if (isLoading || !data) {
     return (
       <Stack>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Center>
           <Loader type="bars" />
         </Center>
@@ -66,7 +99,10 @@ export default function CustomFieldsList() {
   if (data.items.length == 0) {
     return (
       <div>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Empty />
       </div>
     )
@@ -77,9 +113,11 @@ export default function CustomFieldsList() {
 
   return (
     <Stack>
-      <Group>
-        <ActionButtons /> {isFetching && <Loader size={"sm"} />}
-      </Group>
+      <ActionButtons
+        isFetching={isFetching}
+        onQuickFilterChange={onQuickFilterChange}
+        onQuickFilterClear={onQuickFilterClear}
+      />
       <Table>
         <Table.Thead>
           <Table.Tr>
@@ -89,8 +127,20 @@ export default function CustomFieldsList() {
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Type</Table.Th>
+            <Th
+              sorted={sortedByName}
+              reversed={reverseSortedByName}
+              onSort={() => onSortBy("name")}
+            >
+              Name
+            </Th>
+            <Th
+              sorted={sortedByType}
+              reversed={reverseSortedByType}
+              onSort={() => onSortBy("type")}
+            >
+              Type
+            </Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{customFieldRows}</Table.Tbody>

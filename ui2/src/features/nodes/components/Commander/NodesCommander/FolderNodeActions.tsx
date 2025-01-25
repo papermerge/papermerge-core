@@ -5,7 +5,7 @@ import {
 } from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
-import {useContext, useEffect, useRef} from "react"
+import {useContext, useEffect, useRef, useState} from "react"
 
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import type {PanelMode} from "@/types"
@@ -13,21 +13,33 @@ import type {PanelMode} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import QuickFilter from "@/components/QuickFilter"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
+import {filterUpdated} from "@/features/ui/uiSlice"
 import DeleteButton from "./DeleteButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
 import NewFolderButton from "./NewFolderButton"
-import QuickFilter from "./QuickFilter"
 import SortMenu from "./SortMenu"
 import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
+  const [filterText, selectFilterText] = useState<string>()
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const selectedCount = useAppSelector(s => selectSelectedNodesCount(s, mode))
+
+  const onQuickFilterClear = () => {
+    selectFilterText(undefined)
+    dispatch(filterUpdated({mode, filter: undefined}))
+  }
+
+  const onQuickFilterChange = (value: string) => {
+    selectFilterText(value)
+    dispatch(filterUpdated({mode, filter: value}))
+  }
 
   useEffect(() => {
     if (ref?.current) {
@@ -54,7 +66,11 @@ export default function FolderNodeActions() {
       <Group>
         <ViewOptionsMenu />
         <SortMenu />
-        <QuickFilter />
+        <QuickFilter
+          onChange={onQuickFilterChange}
+          onClear={onQuickFilterClear}
+          filterText={filterText}
+        />
         <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>

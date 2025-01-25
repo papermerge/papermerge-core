@@ -2,8 +2,9 @@ import math
 import logging
 import uuid
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session
+
 
 from papermerge.core import schema, orm
 
@@ -11,13 +12,36 @@ from papermerge.core import schema, orm
 logger = logging.getLogger(__name__)
 
 
+ORDER_BY_MAP = {
+    "type": orm.CustomField.type.asc(),
+    "-type": orm.CustomField.type.desc(),
+    "name": orm.CustomField.name.asc(),
+    "-name": orm.CustomField.name.desc(),
+}
+
+
 def get_custom_fields(
-    db_session: Session, *, user_id: uuid.UUID, page_size: int, page_number: int
+    db_session: Session,
+    *,
+    user_id: uuid.UUID,
+    page_size: int,
+    page_number: int,
+    order_by: str,
+    filter: str,
 ) -> schema.PaginatedResponse[schema.CustomField]:
     stmt_total_cf = select(func.count(orm.CustomField.id)).where(
         orm.CustomField.user_id == user_id
     )
+    if filter:
+        stmt_total_cf = stmt_total_cf.where(
+            or_(
+                orm.CustomField.name.icontains(filter),
+                orm.CustomField.type.icontains(filter),
+            )
+        )
+
     total_cf = db_session.execute(stmt_total_cf).scalar()
+    order_by_value = ORDER_BY_MAP.get(order_by, orm.CustomField.name.asc())
 
     offset = page_size * (page_number - 1)
     stmt = (
@@ -25,7 +49,16 @@ def get_custom_fields(
         .where(orm.CustomField.user_id == user_id)
         .limit(page_size)
         .offset(offset)
+        .order_by(order_by_value)
     )
+
+    if filter:
+        stmt = stmt.where(
+            or_(
+                orm.CustomField.name.icontains(filter),
+                orm.CustomField.type.icontains(filter),
+            )
+        )
 
     db_cfs = db_session.scalars(stmt).all()
     items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]

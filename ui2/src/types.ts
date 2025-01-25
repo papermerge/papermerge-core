@@ -391,6 +391,8 @@ export type BooleanString = "true" | "false"
 export type PaginatedArgs = {
   page_number?: number
   page_size?: number
+  sort_by?: string
+  filter?: string
 }
 
 export type Coord = {

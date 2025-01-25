@@ -64,6 +64,9 @@ const documentTypesSlice = createSlice({
       } else {
         state.listTableSort.sortBy = columnName
       }
+    },
+    filterUpdated: (state, action: PayloadAction<string | undefined>) => {
+      state.listTableSort.filter = action.payload
     }
   },
   extraReducers(builder) {
@@ -88,7 +91,8 @@ export const {
   selectionRemove,
   clearSelection,
   lastPageSizeUpdate,
-  sortByUpdated
+  sortByUpdated,
+  filterUpdated
 } = documentTypesSlice.actions
 export default documentTypesSlice.reducer
 
@@ -141,4 +145,11 @@ export const selectReverseSortedByName = (state: RootState) => {
   }
 
   return false
+}
+
+export const selectTableSortColumns = (state: RootState) =>
+  state.documentTypes.listTableSort
+
+export const selectFilterText = (state: RootState) => {
+  return state.customFields.listTableSort.filter
 }

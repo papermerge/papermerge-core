@@ -26,8 +26,8 @@ def get_custom_fields(
     user_id: uuid.UUID,
     page_size: int,
     page_number: int,
-    order_by: str,
     filter: str,
+    order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.CustomField]:
     stmt_total_cf = select(func.count(orm.CustomField.id)).where(
         orm.CustomField.user_id == user_id

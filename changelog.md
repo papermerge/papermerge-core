@@ -6,7 +6,13 @@
 
 ### Changes
 
-- pyproject.toml updated for poetry 2.0
+- pyproject.toml upgraded for poetry 2.0
+
+### Adds
+
+- Column sorting and filtering in Document Type list view
+- Column sorting and filtering in Custom Field list view
+
 
 ## [3.3.1] - 2025-01-19
 

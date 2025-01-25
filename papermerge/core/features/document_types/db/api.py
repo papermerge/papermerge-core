@@ -53,7 +53,7 @@ def get_document_types(
             orm.DocumentType.name.icontains(filter)
         )
     total_doc_types = session.execute(stmt_total_doc_types).scalar()
-    order_by_value = ORDER_BY_MAP.get(order_by, orm.CustomField.name.asc())
+    order_by_value = ORDER_BY_MAP.get(order_by, orm.DocumentType.name.asc())
 
     offset = page_size * (page_number - 1)
 

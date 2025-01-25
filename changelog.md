@@ -7,6 +7,8 @@
 ### Changes
 
 - pyproject.toml upgraded for poetry 2.0
+- in document details view, values of document type dropdown are sorted alphabetically and autocomplete
+- in "new document type" modal dialog, custom field dropdown is sorted alphabetically
 
 ### Adds
 

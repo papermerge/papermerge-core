@@ -1,8 +1,8 @@
 import {apiSlice} from "@/features/api/slice"
 import type {
   ColoredTag,
-  NewColoredTag,
   ColoredTagUpdate,
+  NewColoredTag,
   Paginated,
   PaginatedArgs
 } from "@/types"
@@ -17,9 +17,21 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
     >({
       query: ({
         page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: PaginatedArgs) =>
-        `/tags/?page_number=${page_number}&page_size=${page_size}`,
+        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+        sort_by = "name",
+        filter = undefined
+      }: PaginatedArgs) => {
+        let ret
+
+        if (filter) {
+          ret = `/tags/?page_number=${page_number}&page_size=${page_size}&order_by=${sort_by}`
+          ret += `&filter=${filter}`
+        } else {
+          ret = `/tags/?page_number=${page_number}&page_size=${page_size}&order_by=${sort_by}`
+        }
+
+        return ret
+      },
       providesTags: (
         result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
         _error,

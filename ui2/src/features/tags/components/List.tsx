@@ -1,30 +1,56 @@
-import {useState} from "react"
-import {Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import {
-  selectionAddMany,
-  selectSelectedIds,
-  clearSelection,
-  selectLastPageSize,
-  lastPageSizeUpdate
-} from "@/features/tags/tagsSlice"
+import Th from "@/components/TableSort/Th"
 import {useGetPaginatedTagsQuery} from "@/features/tags/apiSlice"
+import {
+  clearSelection,
+  filterUpdated,
+  lastPageSizeUpdate,
+  selectLastPageSize,
+  selectReverseSortedByDescription,
+  selectReverseSortedByID,
+  selectReverseSortedByName,
+  selectReverseSortedByPinned,
+  selectSelectedIds,
+  selectSortedByDescription,
+  selectSortedByID,
+  selectSortedByName,
+  selectSortedByPinned,
+  selectTableSortColumns,
+  selectionAddMany,
+  sortByUpdated
+} from "@/features/tags/tagsSlice"
+import {Center, Checkbox, Loader, Stack, Table} from "@mantine/core"
+import {useState} from "react"
+import {useDispatch, useSelector} from "react-redux"
 
 import Pagination from "@/components/Pagination"
-import TagRow from "./TagRow"
+import type {TagsListColumnName} from "../types"
 import ActionButtons from "./ActionButtons"
+import TagRow from "./TagRow"
 
 export default function TagsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
+  const tableSortCols = useSelector(selectTableSortColumns)
   const lastPageSize = useSelector(selectLastPageSize)
+  const sortedByName = useSelector(selectSortedByName)
+  const sortedByPinned = useSelector(selectSortedByPinned)
+  const sortedByDescription = useSelector(selectSortedByDescription)
+  const sortedByID = useSelector(selectSortedByID)
+  const reverseSortedByName = useSelector(selectReverseSortedByName)
+  const reverseSortedByPinned = useSelector(selectReverseSortedByPinned)
+  const reverseSortedByDescription = useSelector(
+    selectReverseSortedByDescription
+  )
+  const reverseSortedByID = useSelector(selectReverseSortedByID)
 
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
   const {data, isLoading, isFetching} = useGetPaginatedTagsQuery({
     page_number: page,
-    page_size: pageSize
+    page_size: pageSize,
+    sort_by: tableSortCols.sortBy,
+    filter: tableSortCols.filter
   })
 
   const onCheckAll = (checked: boolean) => {
@@ -53,10 +79,27 @@ export default function TagsList() {
     }
   }
 
+  const onSortBy = (columnName: TagsListColumnName) => {
+    dispatch(sortByUpdated(columnName))
+  }
+
+  const onQuickFilterChange = (value: string) => {
+    dispatch(filterUpdated(value))
+    setPage(1)
+  }
+
+  const onQuickFilterClear = () => {
+    dispatch(filterUpdated(undefined))
+    setPage(1)
+  }
+
   if (isLoading || !data) {
     return (
       <Stack>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Center>
           <Loader type="bars" />
         </Center>
@@ -67,7 +110,10 @@ export default function TagsList() {
   if (data.items.length == 0) {
     return (
       <div>
-        <ActionButtons />
+        <ActionButtons
+          onQuickFilterChange={onQuickFilterChange}
+          onQuickFilterClear={onQuickFilterClear}
+        />
         <Empty />
       </div>
     )
@@ -77,7 +123,11 @@ export default function TagsList() {
 
   return (
     <Stack>
-      <ActionButtons /> {isFetching && <Loader size={"sm"} />}
+      <ActionButtons
+        isFetching={isFetching}
+        onQuickFilterChange={onQuickFilterChange}
+        onQuickFilterClear={onQuickFilterClear}
+      />
       <Table>
         <Table.Thead>
           <Table.Tr>
@@ -87,10 +137,34 @@ export default function TagsList() {
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Pinned?</Table.Th>
-            <Table.Th>Description</Table.Th>
-            <Table.Th>ID</Table.Th>
+            <Th
+              sorted={sortedByName}
+              reversed={reverseSortedByName}
+              onSort={() => onSortBy("name")}
+            >
+              Name
+            </Th>
+            <Th
+              sorted={sortedByPinned}
+              reversed={reverseSortedByPinned}
+              onSort={() => onSortBy("pinned")}
+            >
+              Pinned?
+            </Th>
+            <Th
+              sorted={sortedByDescription}
+              reversed={reverseSortedByDescription}
+              onSort={() => onSortBy("description")}
+            >
+              Description
+            </Th>
+            <Th
+              sorted={sortedByID}
+              reversed={reverseSortedByID}
+              onSort={() => onSortBy("ID")}
+            >
+              ID
+            </Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{tagRows}</Table.Tbody>

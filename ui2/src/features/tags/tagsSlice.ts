@@ -1,20 +1,28 @@
-import {createSlice, PayloadAction, createSelector} from "@reduxjs/toolkit"
+import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
-import type {PaginationType} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import type {PaginationType} from "@/types"
 import {apiSliceWithTags} from "./apiSlice"
+import type {TagsListColumnName, TagsSortByInput} from "./types"
 
 export type TagSlice = {
   selectedIds: Array<string>
   pagination: PaginationType | null
   lastPageSize: number
+  listTableSort: {
+    sortBy: TagsSortByInput
+    filter?: string
+  }
 }
 
 const initialState: TagSlice = {
   selectedIds: [],
   pagination: null,
-  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
+  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+  listTableSort: {
+    sortBy: "name"
+  }
 }
 const tagsSlice = createSlice({
   name: "tags",
@@ -35,6 +43,49 @@ const tagsSlice = createSlice({
     },
     lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
       state.lastPageSize = action.payload
+    },
+    sortByUpdated: (state, action: PayloadAction<TagsListColumnName>) => {
+      const columnName = action.payload
+      if (columnName == "name" && state.listTableSort.sortBy == "name") {
+        state.listTableSort.sortBy = "-name"
+      } else if (
+        columnName == "name" &&
+        state.listTableSort.sortBy == "-name"
+      ) {
+        state.listTableSort.sortBy = "name"
+      }
+      //
+      else if (
+        columnName == "pinned" &&
+        state.listTableSort.sortBy == "pinned"
+      ) {
+        state.listTableSort.sortBy = "-pinned"
+      } else if (
+        columnName == "pinned" &&
+        state.listTableSort.sortBy == "-pinned"
+      ) {
+        state.listTableSort.sortBy = "pinned"
+      }
+      //
+      else if (
+        columnName == "description" &&
+        state.listTableSort.sortBy == "description"
+      ) {
+        state.listTableSort.sortBy = "-description"
+      } else if (
+        columnName == "description" &&
+        state.listTableSort.sortBy == "-description"
+      ) {
+        state.listTableSort.sortBy = "description"
+      } else if (columnName == "ID" && state.listTableSort.sortBy == "ID") {
+        state.listTableSort.sortBy = "-ID"
+      } else if (columnName == "ID" && state.listTableSort.sortBy == "-ID") {
+        state.listTableSort.sortBy = "ID"
+      }
+      //
+      else {
+        state.listTableSort.sortBy = columnName
+      }
     }
   }
 })
@@ -44,7 +95,8 @@ export const {
   selectionAddMany,
   selectionRemove,
   clearSelection,
-  lastPageSizeUpdate
+  lastPageSizeUpdate,
+  sortByUpdated
 } = tagsSlice.actions
 export default tagsSlice.reducer
 
@@ -67,4 +119,87 @@ export const selectItemIds = (state: RootState, itemIds: string[]) => itemIds
 
 export const selectLastPageSize = (state: RootState): number => {
   return state.tags.lastPageSize
+}
+
+export const selectTableSortColumns = (state: RootState) =>
+  state.tags.listTableSort
+
+export const selectSortedByName = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "name") {
+    return true
+  }
+  if (state.tags.listTableSort.sortBy == "-name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByName = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "-name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByPinned = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "pinned") {
+    return true
+  }
+  if (state.tags.listTableSort.sortBy == "-pinned") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByPinned = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "-pinned") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByDescription = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "description") {
+    return true
+  }
+  if (state.tags.listTableSort.sortBy == "-description") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByDescription = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "-description") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByID = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "ID") {
+    return true
+  }
+  if (state.tags.listTableSort.sortBy == "-ID") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByID = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "-ID") {
+    return true
+  }
+
+  return false
+}
+
+export const selectFilterText = (state: RootState) => {
+  return state.tags.listTableSort.filter
 }

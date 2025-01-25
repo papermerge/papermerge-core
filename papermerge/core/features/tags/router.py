@@ -15,7 +15,7 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.tags.db import api as tags_dbapi
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
-
+from .types import PaginatedQueryParams
 
 router = APIRouter(
     prefix="/tags",
@@ -48,7 +48,7 @@ def retrieve_tags(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
-    params: CommonQueryParams = Depends(),
+    params: PaginatedQueryParams = Depends(),
 ):
     """Retrieves (paginated) tags of the current user
 
@@ -60,6 +60,8 @@ def retrieve_tags(
             user_id=user.id,
             page_number=params.page_number,
             page_size=params.page_size,
+            order_by=params.order_by,
+            filter=params.filter,
         )
 
     return tags

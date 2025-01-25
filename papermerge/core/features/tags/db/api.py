@@ -2,7 +2,7 @@ import uuid
 import math
 from typing import Tuple
 
-from sqlalchemy import select, update, func
+from sqlalchemy import select, update, func, or_
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.exceptions import EntityNotFound
@@ -10,6 +10,17 @@ from papermerge.core.db.engine import Session
 
 from papermerge.core import schema
 from papermerge.core import orm
+
+ORDER_BY_MAP = {
+    "name": orm.Tag.name.asc(),
+    "-name": orm.Tag.name.desc(),
+    "pinned": orm.Tag.pinned.asc(),
+    "-pinned": orm.Tag.pinned.desc(),
+    "description": orm.Tag.id.asc(),
+    "-description": orm.Tag.id.desc(),
+    "ID": orm.Tag.id.asc(),
+    "-ID": orm.Tag.id.desc(),
+}
 
 
 def get_tags_without_pagination(
@@ -23,10 +34,28 @@ def get_tags_without_pagination(
 
 
 def get_tags(
-    db_session: Session, *, user_id: uuid.UUID, page_size: int, page_number: int
+    db_session: Session,
+    *,
+    user_id: uuid.UUID,
+    page_size: int,
+    page_number: int,
+    filter: str | None = None,
+    order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.Tag]:
     stmt_total_tags = select(func.count(orm.Tag.id)).where(orm.Tag.user_id == user_id)
+
+    if filter:
+        stmt_total_tags = stmt_total_tags.where(
+            or_(
+                orm.Tag.name.icontains(filter),
+                orm.Tag.description.icontains(filter),
+                orm.Tag.id.icontains(filter),
+                orm.Tag.pinned.icontains(filter),
+            )
+        )
+
     total_tags = db_session.execute(stmt_total_tags).scalar()
+    order_by_value = ORDER_BY_MAP.get(order_by, orm.Tag.name.asc())
 
     offset = page_size * (page_number - 1)
     stmt = (
@@ -34,7 +63,18 @@ def get_tags(
         .where(orm.Tag.user_id == user_id)
         .limit(page_size)
         .offset(offset)
+        .order_by(order_by_value)
     )
+
+    if filter:
+        stmt = stmt.where(
+            or_(
+                orm.Tag.name.icontains(filter),
+                orm.Tag.description.icontains(filter),
+                orm.Tag.id.icontains(filter),
+                orm.Tag.pinned.icontains(filter),
+            )
+        )
 
     db_tags = db_session.scalars(stmt).all()
     items = [schema.Tag.model_validate(db_tag) for db_tag in db_tags]

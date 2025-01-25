@@ -12,11 +12,15 @@ import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {selectDocumentVersionOCRLang} from "@/features/document/documentVersSlice"
+import {
+  selectDocumentVersionID,
+  selectDocumentVersionOCRLang
+} from "@/features/document/documentVersSlice"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconEdit} from "@tabler/icons-react"
 import classes from "./DocumentDetails.module.css"
 
+import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import {
   selectCurrentNodeID,
@@ -34,6 +38,7 @@ export default function DocumentDetails() {
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
+  const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
 
   if (!ocrLang || !docID || isLoading) {
     return (
@@ -52,7 +57,18 @@ export default function DocumentDetails() {
     return (
       <Group align="flex-start" className={classes.documentDetailsOpened}>
         <Stack className={classes.documentDetailsContent} justify="flex-start">
-          <TextInput label="ID" readOnly value={docID} />
+          <TextInput
+            label="ID"
+            readOnly
+            value={docID}
+            rightSection={<CopyButton value={docID || ""} />}
+          />
+          <TextInput
+            label="Version ID"
+            readOnly
+            value={docVerID}
+            rightSection={<CopyButton value={docVerID || ""} />}
+          />
           <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
           <Group>
             <TagsInput

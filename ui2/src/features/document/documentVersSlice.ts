@@ -214,6 +214,16 @@ export const selectDocumentVersionOCRLang = (
   }
 }
 
+export const selectDocumentVersionID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainViewerCurrentDocVerID
+  }
+
+  if (mode == "secondary") {
+    return state.ui.secondaryViewerCurrentDocVerID
+  }
+}
+
 export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.ui.mainViewerSelectedIDs

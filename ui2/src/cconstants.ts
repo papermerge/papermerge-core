@@ -53,12 +53,12 @@ export const ONE_DAY_IN_SECONDS = 86400
 export const DRAGGED = "dragged"
 
 export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
-  "text",
-  "date",
   "boolean",
-  "int",
+  "date",
   "float",
+  "int",
   "monetary",
+  "text",
   "yearmonth"
 ]
 

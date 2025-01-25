@@ -73,7 +73,11 @@ def get_custom_fields(
 def get_custom_fields_without_pagination(
     db_session: Session, user_id: uuid.UUID
 ) -> list[schema.CustomField]:
-    stmt = select(orm.CustomField).where(orm.CustomField.user_id == user_id)
+    stmt = (
+        select(orm.CustomField)
+        .order_by(orm.CustomField.name.asc())
+        .where(orm.CustomField.user_id == user_id)
+    )
 
     db_cfs = db_session.scalars(stmt).all()
     items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]

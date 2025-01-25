@@ -10,8 +10,9 @@
 
 ### Adds
 
-- Column sorting and filtering in Document Type list view
-- Column sorting and filtering in Custom Field list view
+- Column sorting and filtering in document type list view
+- Column sorting and filtering in custom field list view
+- Column sorting and filtering in tags list view
 
 
 ## [3.3.1] - 2025-01-19

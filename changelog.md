@@ -15,6 +15,8 @@
 - Column sorting and filtering in document type list view
 - Column sorting and filtering in custom field list view
 - Column sorting and filtering in tags list view
+- Minor UX improvements: notification messages on custom field and document type CRUD
+  operations
 
 
 ## [3.3.1] - 2025-01-19

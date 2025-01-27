@@ -29,7 +29,7 @@ from papermerge.core.features.document.schema import DocumentCFVRow
 from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
 from papermerge.core import config
 
-from .selectors import select_doc_cfv, select_docs_by_type
+from .selectors import select_doc_cfv, select_docs_by_type, select_docs_by_type2
 
 settings = config.get_settings()
 
@@ -226,24 +226,24 @@ def get_docs_by_type(
 
     cf_count = document_type_cf_count(session, document_type_id=type_id)
 
-    if order_by is None:
-        stmt = select_docs_by_type(
-            document_type_id=type_id,
-            user_id=user_id,
-            limit=cf_count * page_size,
-            offset=cf_count * (page_number - 1) * page_size
-        )
-    else:
-        cfv_column_name = get_cfv_column_name(session, order_by)
-        stmt = select_docs_by_type(
-            document_type_id=type_id,
-            user_id=user_id,
-            order_by=order_by,
-            order=order,
-            cfv_column_name=cfv_column_name,
-            limit=cf_count * page_size,
-            offset=cf_count * (page_number - 1) * page_size
-        )
+    #if order_by is None:
+    stmt = select_docs_by_type2(
+        document_type_id=type_id,
+        user_id=user_id,
+        limit=cf_count * page_size,
+        offset=cf_count * (page_number - 1) * page_size
+    )
+    #else:
+    #    cfv_column_name = get_cfv_column_name(session, order_by)
+    #    stmt = select_docs_by_type(
+    #        document_type_id=type_id,
+    #        user_id=user_id,
+    #        order_by=order_by,
+    #        order=order,
+    #        cfv_column_name=cfv_column_name,
+    #        limit=cf_count * page_size,
+    #        offset=cf_count * (page_number - 1) * page_size
+    #    )
 
     rows = session.execute(stmt)
     ordered_doc_cfvs = OrderedDocumentCFV()
@@ -256,6 +256,7 @@ def get_docs_by_type(
             cf_type=row.cf_type,
             cf_value=row.cf_value
         )
+
         ordered_doc_cfvs.add(entry)
 
     return list(ordered_doc_cfvs)

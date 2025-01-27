@@ -578,3 +578,23 @@ def test_select_docs_by_type_ordered_year_asc(make_document_tax, user, db_sessio
     ]
 
     assert results == expected_results
+
+
+def test_select_document_type_cfs(make_document_receipt, user, db_session):
+    doc = make_document_receipt(title="receipt.pdf", user=user)
+    stmt = selectors.select_document_type_cfs(doc.document_type_id, doc.user_id)
+
+    rows = [row for row in db_session.execute(stmt)]
+    # receipt document type has 3 custom fields
+    assert len(rows) == 3
+
+
+def test_select_docs_by_type_without_ordering(make_document_receipt, user, db_session):
+    doc = make_document_receipt(title="receipt.pdf", user=user)
+    stmt = selectors.select_docs_by_type_without_ordering(
+        doc.document_type_id, doc.user_id
+    )
+
+    rows = [row for row in db_session.execute(stmt)]
+
+    assert len(rows) == 3

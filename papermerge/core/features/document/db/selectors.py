@@ -239,8 +239,7 @@ def select_document_type_cfs(
     ).join(
         cf, cf.id == assoc.custom_field_id
     ).where(
-        doc.document_type_id == document_type_id,
-        doc.user_id == user_id
+        doc.document_type_id == document_type_id
     ).group_by(cf.id)
 
     return stmt
@@ -300,9 +299,9 @@ def select_docs_by_type_without_ordering(
         LEFT JOIN custom_field_values AS cfv
              ON cfv.document_id = all_documents.id  AND cfv.field_id = cf.id
     """
-    subq_1 = aliased(select_document_type_cfs(document_type_id, user_id).cte(), name="cf")
-    subq_2 = aliased(select(orm.Document).cte(), name="all_documents")
-    cfv = aliased(orm.CustomFieldValue, name="cfv")
+    subq_1 = aliased(select_document_type_cfs(document_type_id, user_id).cte())
+    subq_2 = aliased(select(orm.Document).cte())
+    cfv = aliased(orm.CustomFieldValue)
 
     stmt = select(
         subq_2.c.title.label('title'),
@@ -332,6 +331,176 @@ def select_docs_by_type_without_ordering(
 
     return stmt
 
+def select_docs_by_type_with_ordering(
+    document_type_id: uuid.UUID,
+    user_id: uuid.UUID,
+    cfv_column_name: CFVValueColumn,
+    order: OrderEnum = OrderEnum.desc,
+):
+    """
+    Trying to generate something like:
+
+    WITH dt_custom_fields(id, name, type, extra_data) AS (
+        SELECT
+            custom_fields.id AS id, custom_fields.name AS name,
+            custom_fields.type AS type,
+            custom_fields.extra_data AS extra_data
+        FROM nodes
+        JOIN documents doc ON nodes.id = doc.node_id
+        JOIN document_types_custom_fields ON document_types_custom_fields.document_type_id = doc.document_type_id
+        JOIN custom_fields ON custom_fields.id = document_types_custom_fields.custom_field_id
+        WHERE doc.document_type_id = 'b88b030b-c8ef-472a-a9cf-393251226dbf'
+        GROUP BY custom_fields.id
+    ),
+    all_documents(id, title, ctype, lang, user_id, parent_id, created_at, updated_at,document_type_id) AS (
+        SELECT
+                nodes.id AS id,
+                nodes.title AS title,
+                nodes.ctype AS ctype,
+                nodes.lang AS lang,
+                nodes.user_id AS user_id,
+                nodes.parent_id AS parent_id,
+                nodes.created_at AS created_at,
+                nodes.updated_at AS updated_at,
+                documents.document_type_id AS document_type_id
+            FROM nodes JOIN documents ON nodes.id = documents.node_id
+    ),
+    unordered_documents_with_cf AS (
+        SELECT
+            docs.id AS doc_id,
+            docs.title AS doc_title,
+            cf.id AS cf_id,
+            cf.name AS cf_name,
+            cfv.id AS cfv_id,
+            CASE
+                WHEN (cf.type = 'monetary') THEN CAST(cfv.value_monetary AS VARCHAR)
+                WHEN (cf.type = 'text') THEN CAST(cfv.value_text AS VARCHAR)
+                WHEN (cf.type = 'date') THEN substr(CAST(cfv.value_date AS VARCHAR), 0, 11)
+                WHEN (cf.type = 'boolean') THEN CAST(cfv.value_boolean AS VARCHAR)
+                WHEN (cf.type = 'float') THEN CAST(cfv.value_float AS VARCHAR)
+                WHEN (cf.type = 'int') THEN CAST(cfv.value_int AS VARCHAR)
+                WHEN (cf.type = 'yearmonth') THEN CAST(cfv.value_yearmonth AS VARCHAR)
+            END AS cfv_value
+        FROM dt_custom_fields cf
+        JOIN all_documents docs ON docs.document_type_id = 'b88b030b-c8ef-472a-a9cf-393251226dbf'
+        LEFT JOIN custom_field_values AS cfv
+             ON cfv.document_id = docs.id  AND cfv.field_id = cf.id
+    ),
+    ordered_documents_by_cf AS(
+        SELECT
+            cfv2.document_id AS doc_id,
+            cfv2.value_monetary AS cf_typed_value
+        FROM dt_custom_fields cf2
+        JOIN all_documents docs2 ON docs2.document_type_id = 'b88b030b-c8ef-472a-a9cf-393251226dbf'
+        LEFT JOIN custom_field_values AS cfv2
+             ON cfv2.document_id = docs2.id  AND cfv2.field_id = cf2.id
+        WHERE cf2.name = 'Gesamtbetrag'
+    )
+    SELECT  -- FINAL SELECT, based on W1 and W2
+        ucf.doc_id,
+        ucf.doc_title,
+        ucf.cf_name,
+        ucf.cfv_value
+    FROM unordered_documents_with_cf ucf
+    LEFT OUTER JOIN ordered_documents_by_cf ocf ON ocf.doc_id = ucf.doc_id
+    ORDER BY ocf.cf_typed_value
+    """
+    subq_1 = aliased(
+        select_document_type_cfs(document_type_id, user_id).cte("dt_custom_fields"),
+    )
+    subq_2 = aliased(
+        select(orm.Document).cte("all_documents"),
+    )
+    cfv = aliased(
+        orm.CustomFieldValue,
+        name="cfv"
+    )
+
+    subq_3_stmt = select(
+        subq_2.c.title.label('title'),
+        subq_2.c.id.label('doc_id'),
+        subq_2.c.document_type_id.label('document_type_id'),
+        subq_1.c.id.label('cf_id'),
+        subq_1.c.name.label('cf_name'),
+        subq_1.c.type.label('cf_type'),
+        case(
+            (subq_1.c.type == 'monetary',
+             func.cast(cfv.value_monetary, VARCHAR)),
+            (subq_1.c.type == 'text', func.cast(cfv.value_text, VARCHAR)),
+            (subq_1.c.type == 'date',
+             func.substr(func.cast(cfv.value_date, VARCHAR), 0, DATE_LEN)),
+            (subq_1.c.type == 'boolean', func.cast(cfv.value_boolean, VARCHAR)),
+            (subq_1.c.type == 'float', func.cast(cfv.value_float, VARCHAR)),
+            (subq_1.c.type == 'int', func.cast(cfv.value_int, VARCHAR)),
+            (subq_1.c.type == 'yearmonth',
+             func.cast(cfv.value_yearmonth, VARCHAR)),
+        ).label("cf_value")
+
+    ).select_from(subq_1).join(
+        subq_2, subq_2.c.document_type_id == document_type_id
+    ).join(
+        cfv,
+        (cfv.field_id == subq_1.c.id) & (cfv.document_id == subq_2.c.id),
+        isouter=True
+    ).order_by(subq_2.c.id)
+
+    subq_unordered_docs = aliased(subq_3_stmt.cte("unordered_docs"))
+
+    entities = [
+        cfv.document_id.label('doc_id'),
+    ]
+
+    match cfv_column_name:
+        case CFVValueColumn.TEXT:
+            entities.append(cfv.value_text.label('cf_typed_value'))
+        case CFVValueColumn.DATE:
+            entities.append(cfv.value_date.label('cf_typed_value'))
+        case CFVValueColumn.BOOLEAN:
+            entities.append(cfv.value_boolean.label('cf_typed_value'))
+        case CFVValueColumn.INT:
+            entities.append(cfv.value_int.label('cf_typed_value'))
+        case CFVValueColumn.MONETARY:
+            entities.append(cfv.value_monetary.label('cf_typed_value'))
+        case CFVValueColumn.YEARMONTH:
+            entities.append(cfv.value_yearmonth.label('cf_typed_value'))
+        case CFVValueColumn.FLOAT:
+            entities.append(cfv.value_float.label('cf_typed_value'))
+        case _:
+            raise ValueError(f"Invalid value for cfv_column_name: {cfv_column_name}")
+
+    subq_4 = select(*entities).select_from(subq_1).join(
+        subq_2, subq_2.c.document_type_id == document_type_id
+    ).join(
+        cfv,
+        (cfv.field_id == subq_1.c.id) & (cfv.document_id == subq_2.c.id),
+        isouter=True
+    ).where(
+        subq_1.c.name==cfv_column_name
+    )
+
+    subq_ordered_docs = aliased(subq_4.cte("ordered_docs"))
+
+    if order == OrderEnum.asc:
+        order_entity = subq_ordered_docs.c.cf_typed_value.asc()
+    else:
+        order_entity = subq_ordered_docs.c.cf_typed_value.desc()
+
+    stmt = select(
+        subq_unordered_docs.c.title,
+        subq_unordered_docs.c.doc_id,
+        subq_unordered_docs.c.document_type_id,
+        subq_unordered_docs.c.cf_id,
+        subq_unordered_docs.c.cf_name,
+        subq_unordered_docs.c.cf_type,
+        subq_unordered_docs.c.cf_value,
+        subq_ordered_docs.c.cf_typed_value
+    ).select_from(subq_unordered_docs).join(
+        subq_ordered_docs,
+        subq_ordered_docs.c.doc_id == subq_unordered_docs.c.doc_id,
+        isouter=True
+    ).order_by(order_entity)
+
+    return stmt
 
 
 def select_docs_by_type2(
@@ -344,6 +513,16 @@ def select_docs_by_type2(
     order: OrderEnum = OrderEnum.desc,
 ) -> Select:
 
-    stmt = select_docs_by_type_without_ordering(document_type_id, user_id)
+    if order_by is None:
+        stmt = select_docs_by_type_without_ordering(document_type_id, user_id)
+    else:
+        stmt = select_docs_by_type_with_ordering(
+            document_type_id,
+            user_id,
+            order=order,
+            cfv_column_name=cfv_column_name
+        )
 
-    return stmt.limit(limit).offset(offset)
+    stmt = stmt.limit(limit).offset(offset)
+
+    return stmt

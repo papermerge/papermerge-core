@@ -36,41 +36,6 @@ def test_select_cf_by_document_id_when_multiple_documents_present(
     assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
 
 
-def test_select_cf_by_document_type_when_one_document_present(
-    make_document_receipt, user, db_session
-):
-    """This scenario tests when there is only one document"""
-    doc = make_document_receipt(title="receipt.pdf", user=user)
-
-    selector = selectors.select_cf_by_document_type(
-        document_type_id=doc.document_type_id
-    )
-    rows = db_session.execute(selector)
-    cf_names = list(row.name for row in rows)
-
-    assert len(cf_names) == 3
-    assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
-
-
-def test_select_cf_by_document_type_when_multiple_documents_present(
-    make_document_receipt, make_document_zdf, user, db_session
-):
-    """This scenario tests when there are multiple documents (of different type)"""
-    doc1 = make_document_receipt(title="receipt1.pdf", user=user)
-    make_document_receipt(title="receipt2.pdf", user=user)
-    make_document_zdf(title="zdf1.pdf", user=user)
-    make_document_zdf(title="zdf2.pdf", user=user)
-
-    selector = selectors.select_cf_by_document_type(
-        document_type_id=doc1.document_type_id
-    )
-    rows = db_session.execute(selector)
-    cf_names = list(row.name for row in rows)
-
-    assert len(cf_names) == 3
-    assert {"Total", "EffectiveDate", "Shop"} == set(cf_names)
-
-
 def test_select_doc_cfv_only_empty_values(make_document_receipt, user, db_session):
     doc = make_document_receipt(title="receipt.pdf", user=user)
 

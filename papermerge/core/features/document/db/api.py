@@ -29,7 +29,7 @@ from papermerge.core.features.document.schema import DocumentCFVRow
 from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
 from papermerge.core import config
 
-from .selectors import select_doc_cfv, select_docs_by_type, select_docs_by_type2
+from .selectors import select_doc_cfv, select_docs_by_type
 
 settings = config.get_settings()
 
@@ -231,7 +231,7 @@ def get_docs_by_type(
     if order_by is not None:
         cfv_column_name = get_cfv_column_name(session, order_by)
 
-    stmt = select_docs_by_type2(
+    stmt = select_docs_by_type(
         document_type_id=type_id,
         user_id=user_id,
         order_by=order_by,

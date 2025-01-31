@@ -421,7 +421,7 @@ def select_docs_by_type_with_ordering(
         subq_ordered_docs,
         subq_ordered_docs.c.doc_id == subq_unordered_docs.c.doc_id,
         isouter=True
-    ).order_by(order_entity)
+    ).order_by(order_entity, subq_unordered_docs.c.cf_name.asc())
 
     return stmt
 

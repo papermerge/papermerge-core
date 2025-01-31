@@ -114,19 +114,19 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.36.9"
+version = "1.36.10"
 description = "The AWS SDK for Python"
 optional = true
 python-versions = ">=3.8"
 groups = ["main"]
 markers = "extra == \"cloud\""
 files = [
-    {file = "boto3-1.36.9-py3-none-any.whl", hash = "sha256:440d0b70990efb732f63b40fa16c663c86fee80347eb4bf3bcc08b593e8ac77f"},
-    {file = "boto3-1.36.9.tar.gz", hash = "sha256:035ed3868ff3b9afe05a49d0bde35582315bc438e60b5e76727a00b107567bfb"},
+    {file = "boto3-1.36.10-py3-none-any.whl", hash = "sha256:5f8d5c2024a2d1411d3d67abb7357ec7d4c6162e3f1c396dc9b79d042cfd0a80"},
+    {file = "boto3-1.36.10.tar.gz", hash = "sha256:d2f1010db699326b26fbd465d91c4b49177c9d995d7e72c0f31335f139efa0d2"},
 ]
 
 [package.dependencies]
-botocore = ">=1.36.9,<1.37.0"
+botocore = ">=1.36.10,<1.37.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.11.0,<0.12.0"
 
@@ -135,15 +135,15 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.36.9"
+version = "1.36.10"
 description = "Low-level, data-driven core of boto 3."
 optional = true
 python-versions = ">=3.8"
 groups = ["main"]
 markers = "extra == \"cloud\""
 files = [
-    {file = "botocore-1.36.9-py3-none-any.whl", hash = "sha256:e31d206c7708300c541d0799df73b576bbe7d8bed011687d96323ed48763ffd2"},
-    {file = "botocore-1.36.9.tar.gz", hash = "sha256:cb3baefdb8326fdfae0750015e5868330e18d3a088a31da658df2cc8cba7ac73"},
+    {file = "botocore-1.36.10-py3-none-any.whl", hash = "sha256:45c8a6e01dc18d44a13ba688f1d60ad562db8154b08c46b412387ea040a741c2"},
+    {file = "botocore-1.36.10.tar.gz", hash = "sha256:d27bb73f0ea81395527a6298ac0a7ea5b2958094169f7cf7d48e3f4e4bc21b65"},
 ]
 
 [package.dependencies]
@@ -152,7 +152,7 @@ python-dateutil = ">=2.1,<3.0.0"
 urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""}
 
 [package.extras]
-crt = ["awscrt (==0.23.4)"]
+crt = ["awscrt (==0.23.8)"]
 
 [[package]]
 name = "celery"
@@ -215,14 +215,14 @@ zstd = ["zstandard (==0.22.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.12.14"
+version = "2025.1.31"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
-    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
+    {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
+    {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
 ]
 
 [[package]]
@@ -632,14 +632,14 @@ boltons = ">=20.0.0"
 
 [[package]]
 name = "fastapi"
-version = "0.115.7"
+version = "0.115.8"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "fastapi-0.115.7-py3-none-any.whl", hash = "sha256:eb6a8c8bf7f26009e8147111ff15b5177a0e19bb4a45bc3486ab14804539d21e"},
-    {file = "fastapi-0.115.7.tar.gz", hash = "sha256:0f106da6c01d88a6786b3248fb4d7a940d071f6f488488898ad5d354b25ed015"},
+    {file = "fastapi-0.115.8-py3-none-any.whl", hash = "sha256:753a96dd7e036b34eeef8babdfcfe3f28ff79648f86551eb36bfc1b0bf4a8cbf"},
+    {file = "fastapi-0.115.8.tar.gz", hash = "sha256:0ce9111231720190473e222cdf0f07f7206ad7e53ea02beb1d2dc36e2f0741e9"},
 ]
 
 [package.dependencies]
@@ -1978,14 +1978,14 @@ files = [
 
 [[package]]
 name = "pytz"
-version = "2024.2"
+version = "2025.1"
 description = "World timezone definitions, modern and historical"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "pytz-2024.2-py2.py3-none-any.whl", hash = "sha256:31c7c1817eb7fae7ca4b8c7ee50c72f93aa2dd863de768e1ef4245d426aa0725"},
-    {file = "pytz-2024.2.tar.gz", hash = "sha256:2aa355083c50a0f93fa581709deac0c9ad65cca8a9e9beac660adcbd493c798a"},
+    {file = "pytz-2025.1-py2.py3-none-any.whl", hash = "sha256:89dd22dca55b46eac6eda23b2d72721bf1bdfef212645d81513ef5d03038de57"},
+    {file = "pytz-2025.1.tar.gz", hash = "sha256:c2db42be2a2518b28e65f9207c4d05e6ff547d1efa4086469ef855e4ab70178e"},
 ]
 
 [[package]]

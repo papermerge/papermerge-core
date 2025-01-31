@@ -16,7 +16,7 @@ app = typer.Typer(help="Index commands")
 NodeIDsType = Annotated[Optional[list[uuid.UUID]], typer.Argument()]
 
 
-@app.callback(name="index", invoke_without_command=True)
+@app.command("index")
 def index_cmd(node_ids: NodeIDsType = None, dry_run: bool = False):
     SEARCH_URL = os.environ.get("PAPERMERGE__SEARCH__URL")
     if not SEARCH_URL:

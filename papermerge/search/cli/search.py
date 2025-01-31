@@ -9,7 +9,7 @@ from papermerge.search.schema import SearchIndex as Index
 app = typer.Typer(help="Search command")
 
 
-@app.callback(name="search", invoke_without_command=True)
+@app.command("search")
 def search_cmd(
     query: str, user_id: uuid.UUID, page_number: int = 1, page_size: int = 10
 ):

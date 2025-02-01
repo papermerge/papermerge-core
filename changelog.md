@@ -11,6 +11,8 @@
 - in "new document type" modal dialog, custom field dropdown is sorted alphabetically
 - Fixes blocking bug in "view by document type" which resulted values displayed in wrong columns
 - Fixes "No Visual Feedback on Wrong Credentials" [Issue#579](https://github.com/papermerge/papermerge-core/issues/579)
+- Fix following problem: it is not possible to delete a tag if it was attached to a node
+- Fix following problem: it is not possible to delete node if it has attached tag
 
 ### Adds
 

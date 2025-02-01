@@ -226,28 +226,24 @@ def get_docs_by_type(
 
     cf_count = document_type_cf_count(session, document_type_id=type_id)
 
-    if order_by is None:
-        stmt = select_docs_by_type(
-            document_type_id=type_id,
-            user_id=user_id,
-            limit=cf_count * page_size,
-            offset=cf_count * (page_number - 1) * page_size
-        )
-    else:
-        cfv_column_name = get_cfv_column_name(session, order_by)
-        stmt = select_docs_by_type(
-            document_type_id=type_id,
-            user_id=user_id,
-            order_by=order_by,
-            order=order,
-            cfv_column_name=cfv_column_name,
-            limit=cf_count * page_size,
-            offset=cf_count * (page_number - 1) * page_size
-        )
+    cfv_column_name = None
 
-    rows = session.execute(stmt)
+    if order_by is not None:
+        cfv_column_name = get_cfv_column_name(session, order_by)
+
+    stmt = select_docs_by_type(
+        document_type_id=type_id,
+        user_id=user_id,
+        order_by=order_by,
+        order=order,
+        cfv_column_name=cfv_column_name,
+        limit=cf_count * page_size,
+        offset=cf_count * (page_number - 1) * page_size
+    )
+
     ordered_doc_cfvs = OrderedDocumentCFV()
-    for row in rows:
+    for row in session.execute(stmt).all():
+        print(row.title)
         entry = DocumentCFVRow(
             title=row.title,
             doc_id=row.doc_id,
@@ -256,6 +252,7 @@ def get_docs_by_type(
             cf_type=row.cf_type,
             cf_value=row.cf_value
         )
+
         ordered_doc_cfvs.add(entry)
 
     return list(ordered_doc_cfvs)

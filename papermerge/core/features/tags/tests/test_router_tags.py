@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import func
 
 from papermerge.core.db.engine import Session
@@ -48,6 +50,19 @@ def test_get_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     )
 
     assert response.status_code == 200, response.json()
+
+
+def test_get_non_existing_tag(auth_api_client: AuthTestClient, make_tag, user):
+    """
+    In this use case valid UUID is passed - however there is no tag
+    with such UUID
+    """
+
+    response = auth_api_client.get(
+        f"/tags/{uuid.uuid4()}",
+    )
+
+    assert response.status_code == 404, response.json()
 
 
 def test_delete_tag_route(auth_api_client: AuthTestClient, db_session, make_tag, user):

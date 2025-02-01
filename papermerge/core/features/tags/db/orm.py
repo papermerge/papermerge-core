@@ -12,7 +12,7 @@ class NodeTagsAssociation(Base):
         ForeignKey("nodes.id", ondelete="CASCADE")
     )
     tag_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("tags.id"),
+        ForeignKey("tags.id", ondelete="CASCADE"),
     )
 
 

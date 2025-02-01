@@ -10,6 +10,7 @@
 - in document details view, values of document type dropdown are sorted alphabetically and autocomplete
 - in "new document type" modal dialog, custom field dropdown is sorted alphabetically
 - Fixes blocking bug in "view by document type" which resulted values displayed in wrong columns
+- Fixes "No Visual Feedback on Wrong Credentials" [Issue#579](https://github.com/papermerge/papermerge-core/issues/579)
 
 ### Adds
 

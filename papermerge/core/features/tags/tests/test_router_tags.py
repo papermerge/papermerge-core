@@ -1,8 +1,11 @@
+import uuid
+
 from sqlalchemy import func
 
 from papermerge.core.db.engine import Session
 from papermerge.core import orm, schema
 from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.features.nodes.db import api as nodes_dbapi
 
 
 def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):
@@ -47,6 +50,19 @@ def test_get_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     )
 
     assert response.status_code == 200, response.json()
+
+
+def test_get_non_existing_tag(auth_api_client: AuthTestClient, make_tag, user):
+    """
+    In this use case valid UUID is passed - however there is no tag
+    with such UUID
+    """
+
+    response = auth_api_client.get(
+        f"/tags/{uuid.uuid4()}",
+    )
+
+    assert response.status_code == 404, response.json()
 
 
 def test_delete_tag_route(auth_api_client: AuthTestClient, db_session, make_tag, user):
@@ -133,3 +149,57 @@ def test_get_all_tags_no_pagination_per_user(make_tag, make_api_client):
     items_user_b = [schema.Tag(**item) for item in response.json()]
 
     assert len(items_user_b) == user_b_tags_count
+
+
+def test_delete_tag_which_has_associated_folder(
+    make_folder, make_tag, db_session, user, auth_api_client
+):
+    folder = make_folder(title="My Documents", user=user, parent=user.home_folder)
+    tag = make_tag(name="important", user=user)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=folder.id,
+        tags=["important"],
+        user_id=user.id,
+    )
+
+    # delete tagged folder
+    response = auth_api_client.delete(f"/tags/{tag.id}")
+
+    assert response.status_code == 204
+
+    # folder still exists
+    q = db_session.query(orm.Folder).filter(orm.Folder.id == folder.id)
+    assert db_session.query(q.exists()).scalar() is True
+
+    # but tag was deleted
+    q_tag = db_session.query(orm.Tag).filter(orm.Tag.name == "important")
+    assert db_session.query(q_tag.exists()).scalar() is False
+
+
+def test_delete_tag_which_has_associated_document(
+    make_document, make_tag, db_session, user, auth_api_client
+):
+    doc = make_document(title="My Contract", user=user, parent=user.home_folder)
+    tag = make_tag(name="important", user=user)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=doc.id,
+        tags=["important"],
+        user_id=user.id,
+    )
+
+    # delete tagged folder
+    response = auth_api_client.delete(f"/tags/{tag.id}")
+
+    assert response.status_code == 204
+
+    # document still exists
+    q = db_session.query(orm.Document).filter(orm.Document.id == doc.id)
+    assert db_session.query(q.exists()).scalar() is True
+
+    # but tag was deleted
+    q_tag = db_session.query(orm.Tag).filter(orm.Tag.name == "important")
+    assert db_session.query(q_tag.exists()).scalar() is False

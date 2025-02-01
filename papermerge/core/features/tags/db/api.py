@@ -95,6 +95,9 @@ def get_tag(
         error = schema.Error(messages=[str(e)])
         return None, error
 
+    if db_item is None:
+        raise EntityNotFound
+
     return schema.Tag.model_validate(db_item), None
 
 

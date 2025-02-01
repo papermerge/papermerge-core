@@ -581,6 +581,58 @@ def test_delete_nodes_with_descendants(
     assert found is None
 
 
+def test_delete_tagged_folder(make_folder, db_session, user, auth_api_client):
+    folder = make_folder(title="My Documents", user=user, parent=user.home_folder)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=folder.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+
+    # delete tagged folder
+    response = auth_api_client.delete(f"/nodes/", json=[str(folder.id)])
+
+    assert response.status_code == 200, response.json()
+
+    # folder is not there anymore
+    q = db_session.query(orm.Folder).filter(orm.Folder.id == folder.id)
+    assert db_session.query(q.exists()).scalar() is False
+
+    # but both tags are
+    q_tag1 = db_session.query(orm.Tag).filter(orm.Tag.name == "tag1")
+    q_tag2 = db_session.query(orm.Tag).filter(orm.Tag.name == "tag2")
+    assert db_session.query(q_tag1.exists()).scalar() is True
+    assert db_session.query(q_tag2.exists()).scalar() is True
+
+
+def test_delete_tagged_document(make_document, db_session, user, auth_api_client):
+    doc = make_document(title="My Contract.pdf", user=user, parent=user.home_folder)
+
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=doc.id,
+        tags=["tag1", "tag2"],
+        user_id=user.id,
+    )
+
+    # delete tagged document
+    response = auth_api_client.delete(f"/nodes/", json=[str(doc.id)])
+
+    assert response.status_code == 200, response.json()
+
+    # document is not there anymore
+    q = db_session.query(orm.Document).filter(orm.Document.id == doc.id)
+    assert db_session.query(q.exists()).scalar() is False
+
+    # but both tags are
+    q_tag1 = db_session.query(orm.Tag).filter(orm.Tag.name == "tag1")
+    q_tag2 = db_session.query(orm.Tag).filter(orm.Tag.name == "tag2")
+    assert db_session.query(q_tag1.exists()).scalar() is True
+    assert db_session.query(q_tag2.exists()).scalar() is True
+
+
 def test_get_node_tags_router_when_node_is_folder(
     make_folder, db_session, user, auth_api_client
 ):

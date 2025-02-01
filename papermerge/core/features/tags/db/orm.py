@@ -8,7 +8,9 @@ from papermerge.core.db.base import Base
 class NodeTagsAssociation(Base):
     __tablename__ = "nodes_tags"
     id: Mapped[int] = mapped_column(primary_key=True)
-    node_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id"))
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("nodes.id", ondelete="CASCADE")
+    )
     tag_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("tags.id"),
     )

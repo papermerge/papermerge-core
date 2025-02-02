@@ -2,7 +2,7 @@
 
 <!-- towncrier release notes start -->
 
-## [3.4] - Soon
+## [3.4] - 2025-02-02
 
 ### Changes
 
@@ -21,7 +21,9 @@
 - Column sorting and filtering in tags list view
 - Minor UX improvements: notification messages on custom field and document type CRUD
   operations
-
+- For Macintosh users: when in dual panel mode with one panel command + document type,
+  user can open docs in other panel by pressing Alt key while clicking on the document
+  title (in commander)
 
 ## [3.3.1] - 2025-01-19
 

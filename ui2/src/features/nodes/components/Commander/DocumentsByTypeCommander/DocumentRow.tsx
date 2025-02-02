@@ -30,7 +30,7 @@ export default function DocumentRow({doc}: Args) {
 
   const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.altKey) {
       dispatch(
         currentNodeChanged({id: doc.id, ctype: "document", panel: "secondary"})
       )

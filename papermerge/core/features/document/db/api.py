@@ -242,8 +242,9 @@ def get_docs_by_type(
     )
 
     ordered_doc_cfvs = OrderedDocumentCFV()
+    counter = 0
     for row in session.execute(stmt).all():
-        print(row.title)
+        counter += 1
         entry = DocumentCFVRow(
             title=row.title,
             doc_id=row.doc_id,

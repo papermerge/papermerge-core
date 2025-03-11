@@ -3,6 +3,16 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 
 import type {RootState} from "@/app/types"
 
+const getKeepUnusedDataFor = function () {
+  const keep_unused_data_for = import.meta.env.VITE_KEEP_UNUSED_DATA_FOR
+
+  if (keep_unused_data_for == 0) {
+    return 0
+  }
+  console.log(keep_unused_data_for || 60)
+  return keep_unused_data_for || 60
+}
+
 const baseQuery = fetchBaseQuery({
   baseUrl: `${getBaseURL()}/api`,
   prepareHeaders: (headers, {getState}) => {
@@ -39,7 +49,7 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
-  keepUnusedDataFor: 60,
+  keepUnusedDataFor: getKeepUnusedDataFor(),
   tagTypes: [
     "Group",
     "User",

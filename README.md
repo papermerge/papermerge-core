@@ -1,6 +1,5 @@
 [![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
 
-
 <p align="center">
 <img src="./artwork/logo-w160px.png" />
 </p>
@@ -23,19 +22,19 @@ Papermerge is perfect tool for long term storage of your documents.
 
 ## Features Highlights
 
-* Web UI with desktop like experience
-* OpenAPI compliant REST API
-* Works with PDF, JPEG, PNG and TIFF documents
-* OCR (Optical Character Recognition) of the documents
-* OCRed text overlay (you can download document with OCRed text overlay)
-* Full Text Search of the scanned documents
-* Document Versioning
-* Tags - assign colored tags to documents or folders
-* Documents and Folders - users can organize documents in folders
-* Document Types (i.e. Categories)
-* Custom Fields (metadata) per document type
-* Multi-User
-* Page Management - delete, reorder, cut, move, extract pages
+- Web UI with desktop like experience
+- OpenAPI compliant REST API
+- Works with PDF, JPEG, PNG and TIFF documents
+- OCR (Optical Character Recognition) of the documents
+- OCRed text overlay (you can download document with OCRed text overlay)
+- Full Text Search of the scanned documents
+- Document Versioning
+- Tags - assign colored tags to documents or folders
+- Documents and Folders - users can organize documents in folders
+- Document Types (i.e. Categories)
+- Custom Fields (metadata) per document type
+- Multi-User
+- Page Management - delete, reorder, cut, move, extract pages
 
 ## Documentation
 
@@ -50,9 +49,7 @@ In order to start Papermerge App with the most basic setup use following command
         -e PAPERMERGE__AUTH__PASSWORD=123 \
         papermerge/papermerge:3.4
 
-For more info about various docker compose scenarios check [documentation page]
-(https://docs.papermerge.io/latest/setup/docker-compose/).
-
+For more info about various docker compose scenarios check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).
 
 ## Demo Page
 
@@ -68,7 +65,6 @@ using very basic setup: there is no OCR worker and no full text search engine
 behind. Online instance is reseted every 24 hours (0:00 UTC timezone). Reset
 means that all data is restored to initial state and all documents are deleted.
 
-
 ## Development
 
 ### Backend
@@ -82,9 +78,9 @@ $ poetry install -E pg
 
 Make sure you have the following environment variables set (e.g. with direnv):
 
-export PAPERMERGE__DATABASE__URL=postgresql://coco:***@127.0.0.1:5432/pmgdb
-export PAPERMERGE__MAIN__MEDIA_ROOT=/home/eugen/var/pmgdata
-export PAPERMERGE__MAIN__API_PREFIX='/api'
+export PAPERMERGE**DATABASE**URL=postgresql://coco:\*\*\*@127.0.0.1:5432/pmgdb
+export PAPERMERGE**MAIN**MEDIA_ROOT=/home/eugen/var/pmgdata
+export PAPERMERGE**MAIN**API_PREFIX='/api'
 
 Start BE with following command:
 

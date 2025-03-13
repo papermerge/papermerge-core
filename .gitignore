@@ -3,6 +3,7 @@
 .papermerge.toml
 .env
 .envrc
+.envrc.*
 .env_services
 docker/dev/config/local.py
 build/

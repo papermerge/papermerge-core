@@ -4,6 +4,8 @@ import os
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlalchemy import event
+
 
 SQLALCHEMY_DATABASE_URL = os.environ.get(
     "PAPERMERGE__DATABASE__URL", "sqlite:////db/db.sqlite3"
@@ -24,3 +26,11 @@ Session = sessionmaker(engine, expire_on_commit=False)
 
 def get_engine() -> Engine:
     return engine
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()

@@ -2,6 +2,12 @@
 
 <!-- towncrier release notes start -->
 
+[3.4.1] - Unreleased
+
+### Changes
+
+- Fixes sorting by custom field with empty values issue
+
 ## [3.4] - 2025-02-02
 
 ### Changes

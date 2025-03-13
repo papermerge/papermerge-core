@@ -78,9 +78,11 @@ $ poetry install -E pg
 
 Make sure you have the following environment variables set (e.g. with direnv):
 
-export PAPERMERGE**DATABASE**URL=postgresql://coco:\*\*\*@127.0.0.1:5432/pmgdb
-export PAPERMERGE**MAIN**MEDIA_ROOT=/home/eugen/var/pmgdata
-export PAPERMERGE**MAIN**API_PREFIX='/api'
+```
+export PAPERMERGE__DATABASE__URL=postgresql://coco:\*\*\*@127.0.0.1:5432/pmgdb
+export PAPERMERGE__MAIN__MEDIA_ROOT=/home/eugen/var/pmgdata
+export PAPERMERGE__MAIN__API_PREFIX='/api'
+```
 
 Start BE with following command:
 

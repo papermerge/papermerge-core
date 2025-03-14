@@ -74,5 +74,7 @@ export const CURRENCIES = [
   "USD",
   "RON",
   "RUB",
-  "SEK"
+  "SEK",
+  "THB",
+  "TL"
 ]

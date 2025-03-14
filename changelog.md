@@ -7,6 +7,8 @@
 ### Changes
 
 - Fixes sorting by custom field with empty values issue
+- Fix alembic error when staring app with blank sqlite database
+- Include "BHT" and "TL" currencies for monetary custom field
 
 ## [3.4] - 2025-02-02
 

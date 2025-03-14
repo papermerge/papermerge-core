@@ -467,6 +467,8 @@ export type CurrencyType =
   | "RON"
   | "RUB"
   | "SEK"
+  | "THB"
+  | "TL"
 
 export type ServerNotifType = "document_moved" | "documents_moved"
 export type ServerNotifDocumentsMoved = {

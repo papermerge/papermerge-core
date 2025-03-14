@@ -1,9 +1,9 @@
-import {useEffect} from "react"
-import {useDisclosure} from "@mantine/hooks"
-import {useForm} from "@mantine/form"
-import {PasswordInput, Group, Button, Box, Modal, Loader} from "@mantine/core"
-import {IconPassword} from "@tabler/icons-react"
 import {useChangePasswordMutation} from "@/features/users/apiSlice"
+import {Box, Button, Group, Loader, Modal, PasswordInput} from "@mantine/core"
+import {useForm} from "@mantine/form"
+import {useDisclosure} from "@mantine/hooks"
+import {IconPassword} from "@tabler/icons-react"
+import {useEffect} from "react"
 
 interface ChangePasswordButtonArgs {
   userId?: string
@@ -54,6 +54,11 @@ interface ChangePasswordModalArgs {
   onCancel: () => void
 }
 
+type PasswordWithConfirmation = {
+  password: string
+  confirmPassword: string
+}
+
 function ChangeUserPasswordModal({
   userId,
   onCancel,
@@ -70,9 +75,9 @@ function ChangeUserPasswordModal({
     },
 
     validate: {
-      confirmPassword: (value, values) =>
+      confirmPassword: (value: string, values: PasswordWithConfirmation) =>
         value !== values.password ? "Passwords did not match" : null,
-      password: value =>
+      password: (value: string) =>
         value.length < 1 ? "Password should not be empty" : null
     }
   })

@@ -10,7 +10,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "./src/_mantine";`
+        additionalData: `@import "/src/_mantine";`
       }
     }
   }

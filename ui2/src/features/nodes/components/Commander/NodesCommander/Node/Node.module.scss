@@ -1,6 +1,3 @@
-$node-width: 8rem;
-$node-img-height: 5rem;
-
 %node {
   padding: 0.3rem;
   position: relative;
@@ -13,7 +10,7 @@ $node-img-height: 5rem;
 
   .title {
     text-overflow: ellipsis;
-    width: $node-width;
+    width: 8rem;
     overflow: hidden;
     white-space: nowrap;
   }

@@ -1,4 +1,4 @@
-@import "../Node.module.scss";
+@use "../Node.module.scss";
 
 .folder {
   @extend %node;

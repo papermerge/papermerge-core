@@ -24,7 +24,7 @@ class Group(Base):
     __tablename__ = "groups"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     users: Mapped[list["User"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="groups"
     )

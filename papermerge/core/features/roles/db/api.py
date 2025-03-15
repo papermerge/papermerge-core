@@ -13,15 +13,15 @@ from papermerge.core.db.engine import Session
 logger = logging.getLogger(__name__)
 
 
-def get_role(db_session: Session, role_id: uuid.UUID) -> schema.GroupDetails:
+def get_role(db_session: Session, role_id: uuid.UUID) -> schema.RoleDetails:
     stmt = (
-        select(orm.Group)
-        .options(joinedload(orm.Group.permissions))
+        select(orm.Role)
+        .options(joinedload(orm.Role.permissions))
         .where(orm.Role.id == role_id)
     )
     db_item = db_session.scalars(stmt).unique().one()
     db_item.scopes = [p.codename for p in db_item.permissions]
-    result = schema.GroupDetails.model_validate(db_item)
+    result = schema.RoleDetails.model_validate(db_item)
 
     return result
 

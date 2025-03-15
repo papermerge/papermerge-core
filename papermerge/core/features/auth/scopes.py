@@ -18,6 +18,10 @@ GROUP_CREATE = "group.create"
 GROUP_VIEW = "group.view"
 GROUP_UPDATE = "group.update"
 GROUP_DELETE = "group.delete"
+ROLE_CREATE = "group.create"
+ROLE_VIEW = "group.view"
+ROLE_UPDATE = "group.update"
+ROLE_DELETE = "group.delete"
 TASK_OCR = "task.ocr"
 OCRLANG_VIEW = "ocrlang.view"
 PAGE_VIEW = "page.view"
@@ -56,6 +60,9 @@ SCOPES = {
     GROUP_VIEW: GROUP_VIEW,
     GROUP_UPDATE: GROUP_UPDATE,
     GROUP_DELETE: GROUP_DELETE,
+    ROLE_VIEW: ROLE_VIEW,
+    ROLE_UPDATE: ROLE_UPDATE,
+    ROLE_DELETE: ROLE_DELETE,
     OCRLANG_VIEW: OCRLANG_VIEW,
     PAGE_VIEW: PAGE_VIEW,
     PAGE_UPDATE: PAGE_UPDATE,

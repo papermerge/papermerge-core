@@ -1,5 +1,6 @@
 from sqlalchemy import func
 
+from papermerge.core.db.engine import Session
 from papermerge.core import schema, db, dbapi
 from papermerge.core.features.groups.db import orm
 from papermerge.core.tests.types import AuthTestClient

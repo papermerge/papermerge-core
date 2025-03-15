@@ -1,5 +1,5 @@
-from papermerge.core.features.groups import schema
-from papermerge.core.features.groups.db import api as dbapi
+from papermerge.core import schema
+from papermerge.core import dbapi
 
 
 def test_group_create(db_session):
@@ -46,7 +46,7 @@ def test_update_group_twice(db_session):
     dbapi.update_group(
         db_session,
         group_id=group.id,
-        attrs=schema.UpdateGroup(name=group.name, scopes=list(scopes)),
+        attrs=schema.UpdateGroup(name=group.name),
     )
 
     dbapi.delete_group(db_session, group_id=group.id)
@@ -68,7 +68,6 @@ def test_remove_permissions_from_group(db_session):
         group_id=group.id,
         attrs=schema.UpdateGroup(
             name=group.name,
-            scopes=["tag.update"],  # group will have only one perm
         ),
     )
 

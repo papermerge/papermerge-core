@@ -118,7 +118,7 @@ def create_group(
 )
 @utils.docstring_parameter(scope=scopes.GROUP_DELETE)
 def delete_group(
-    group_id: int,
+    group_id: uuid.UUID,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],

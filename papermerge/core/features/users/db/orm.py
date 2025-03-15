@@ -6,10 +6,8 @@ from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.base import Base
-from papermerge.core.features.groups.db.orm import (
-    user_groups_association,
-    user_permissions_association,
-)
+from papermerge.core.features.groups.db.orm import user_groups_association
+from papermerge.core.features.roles.db.orm import users_roles_association
 
 
 class User(Base):
@@ -52,8 +50,8 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()
     )
-    permissions: Mapped[list["Permission"]] = relationship(  # noqa: F821
-        secondary=user_permissions_association, back_populates="users"
+    roles: Mapped[list["Role"]] = relationship(  # noqa: F821
+        secondary=users_roles_association, back_populates="users"
     )
     groups: Mapped[list["Group"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="users"

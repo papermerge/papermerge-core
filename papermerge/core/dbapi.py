@@ -13,7 +13,19 @@ from .features.document.db.api import (
     get_doc_ver_pages
 )
 from .features.nodes.db.api import get_nodes
-from .features.groups.db.api import get_group, sync_perms
+from .features.roles.db.api import (
+    get_role,
+    delete_role,
+    create_role,
+    get_perms,
+    sync_perms
+)
+from .features.groups.db.api import (
+    get_group,
+    delete_group,
+    create_group,
+    update_group
+)
 from .features.document_types.db.api import (
     create_document_type,
     get_document_types,
@@ -51,5 +63,13 @@ __all__ = [
     "get_users_count",
     # groups
     "get_group",
-    "sync_perms"
+    "delete_group",
+    "create_group",
+    "update_group",
+    # roles
+    "get_role",
+    "delete_role",
+    "create_role",
+    "sync_perms",
+    "get_perms"
 ]

@@ -9,6 +9,8 @@
 - Fixes sorting by custom field with empty values issue
 - Fix alembic error when staring app with blank sqlite database
 - Include "BHT" and "TL" currencies for monetary custom field
+- Update frontend dependencies (react 19, mantine, redux etc)
+- Update python dependencies
 
 ## [3.4] - 2025-02-02
 

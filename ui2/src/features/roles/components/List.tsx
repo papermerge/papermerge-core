@@ -1,20 +1,20 @@
-import {useGetPaginatedGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetPaginatedRolesQuery} from "@/features/roles/apiSlice"
 import {
   clearSelection,
   lastPageSizeUpdate,
   selectionAddMany,
   selectLastPageSize,
   selectSelectedIds
-} from "@/features/groups/groupsSlice"
+} from "@/features/roles/rolesSlice"
 import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
 
 import Pagination from "@/components/Pagination"
 import ActionButtons from "./ActionButtons"
-import GroupRow from "./RoleRow"
+import RoleRow from "./RoleRow"
 
-export default function GroupsList() {
+export default function RolesList() {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
@@ -22,7 +22,7 @@ export default function GroupsList() {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetPaginatedGroupsQuery({
+  const {data, isLoading, isFetching} = useGetPaginatedRolesQuery({
     page_number: page,
     page_size: pageSize
   })
@@ -34,10 +34,10 @@ export default function GroupsList() {
     }
 
     if (checked) {
-      // check all/select all group items
+      // check all/select all role items
       dispatch(selectionAddMany(data.items.map(i => i.id)))
     } else {
-      // uncheck all/unselect all group items
+      // uncheck all/unselect all role items
       dispatch(clearSelection())
     }
   }
@@ -75,7 +75,7 @@ export default function GroupsList() {
     )
   }
 
-  const groupRows = data.items.map(g => <GroupRow key={g.id} group={g} />)
+  const roleRows = data.items.map(g => <RoleRow key={g.id} role={g} />)
 
   return (
     <Stack>
@@ -94,7 +94,7 @@ export default function GroupsList() {
             <Table.Th>Name</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{groupRows}</Table.Tbody>
+        <Table.Tbody>{roleRows}</Table.Tbody>
       </Table>
       <Pagination
         pagination={{
@@ -114,7 +114,7 @@ function Empty() {
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no groups</div>
+        <div>Currently there are no roles</div>
       </Stack>
     </Center>
   )

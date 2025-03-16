@@ -112,7 +112,7 @@ def create_role(
 )
 @utils.docstring_parameter(scope=scopes.ROLE_DELETE)
 def delete_role(
-    role_id: int,
+    role_id: uuid.UUID,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_DELETE])
     ],

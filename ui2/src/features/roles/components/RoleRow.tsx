@@ -1,39 +1,36 @@
-import {Link} from "react-router-dom"
-import {useDispatch, useSelector} from "react-redux"
-import {Table, Checkbox} from "@mantine/core"
 import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
-} from "@/features/groups/groupsSlice"
-import type {Group} from "@/types"
+} from "@/features/roles/rolesSlice"
+import type {Role} from "@/types"
+import {Checkbox, Table} from "@mantine/core"
+import {useDispatch, useSelector} from "react-redux"
+import {Link} from "react-router-dom"
 
 type Args = {
-  group: Group
+  role: Role
 }
 
-export default function GroupRow({group}: Args) {
+export default function RoleRow({role}: Args) {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(selectionAdd(group.id))
+      dispatch(selectionAdd(role.id))
     } else {
-      dispatch(selectionRemove(group.id))
+      dispatch(selectionRemove(role.id))
     }
   }
 
   return (
     <Table.Tr>
       <Table.Td>
-        <Checkbox
-          checked={selectedIds.includes(group.id)}
-          onChange={onChange}
-        />
+        <Checkbox checked={selectedIds.includes(role.id)} onChange={onChange} />
       </Table.Td>
       <Table.Td>
-        <Link to={`/groups/${group.id}`}>{group.name}</Link>
+        <Link to={`/roles/${role.id}`}>{role.name}</Link>
       </Table.Td>
     </Table.Tr>
   )

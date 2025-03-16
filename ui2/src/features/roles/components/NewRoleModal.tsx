@@ -11,7 +11,7 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
+import {useAddNewRoleMutation} from "@/features/roles/apiSlice"
 import {
   ALL_PERMS,
   CUSTOM_FIELD_CREATE,
@@ -60,9 +60,8 @@ interface Args {
   onCancel: () => void
 }
 
-export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
-  const [addNewGroup, {isLoading, isError, isSuccess}] =
-    useAddNewGroupMutation()
+export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
+  const [addNewRole, {isLoading, isError, isSuccess}] = useAddNewRoleMutation()
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [scopes, setScopes] = useState<Record<string, boolean>>(INITIAL_SCOPES)
@@ -87,7 +86,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       name: name!
     }
     try {
-      await addNewGroup(updatedData).unwrap()
+      await addNewRole(updatedData).unwrap()
     } catch (err: unknown) {
       // @ts-ignore
       setError(err.data.detail)
@@ -153,17 +152,12 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
   }
 
   return (
-    <Modal
-      title={"New Group"}
-      opened={opened}
-      size="lg"
-      onClose={onLocalCancel}
-    >
+    <Modal title={"New Role"} opened={opened} size="lg" onClose={onLocalCancel}>
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
         label="Name"
-        placeholder="Group name"
+        placeholder="Role name"
       />
       <Table>
         <Table.Thead>

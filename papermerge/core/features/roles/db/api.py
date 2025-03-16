@@ -56,22 +56,43 @@ def get_roles_without_pagination(db_session: Session) -> list[schema.Role]:
 
 def create_role(
     db_session: Session, name: str, scopes: list[str], exists_ok: bool = False
-) -> schema.Role:
+) -> [schema.Role | None, schema.Error | None]:
+    """Creates a role with given scopes"""
+    stmt_total_permissions = select(func.count(orm.Permission.id))
+    perms_count = db_session.execute(stmt_total_permissions).scalar()
+    if perms_count == 0:
+        error = (
+            "There are no permissions in the system."
+            " Did you forget to run `paper-cli perms sync`?"
+        )
+        return None, schema.Error(messages=[error])
+
     if exists_ok:
         stmt = select(orm.Role).where(orm.Role.name == name)
         result = db_session.execute(stmt).scalars().all()
         if len(result) >= 1:
             logger.info(f"Role {name} already exists")
-            return schema.Role.model_validate(result[0])
+            return schema.Role.model_validate(result[0]), None
 
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
     perms = db_session.execute(stmt).scalars().all()
+
+    if len(perms) != len(scopes):
+        error = f"Some of the permissions did not match scopes. {perms=} {scopes=}"
+        return None, schema.Error(messages=[error])
+
     role = orm.Role(name=name, permissions=perms)
     db_session.add(role)
-    db_session.commit()
+    try:
+        db_session.commit()
+    except Exception as e:
+        error_msg = str(e)
+        if "UNIQUE constraint failed" in error_msg:
+            return None, "Role already exists"
+
     result = schema.Role.model_validate(role)
 
-    return result
+    return result, None
 
 
 def update_role(

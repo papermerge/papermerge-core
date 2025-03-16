@@ -59,7 +59,7 @@ def get_user_details(
         inbox_folder_id=db_user.inbox_folder_id,
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
-        scopes=list([p.codename for p in db_user.permissions]),
+        scopes=list([p.codename for p in db_user.roles]),
         groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
     )
 
@@ -206,7 +206,7 @@ def update_user(
         inbox_folder_id=user.inbox_folder_id,
         is_superuser=user.is_superuser,
         is_active=user.is_active,
-        scopes=list([p.codename for p in user.permissions]),
+        scopes=list([p.codename for p in user.roles]),
         groups=list([{"id": g.id, "name": g.name} for g in groups]),
     )
 

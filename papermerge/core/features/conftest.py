@@ -33,6 +33,7 @@ from papermerge.core.features.nodes import router_thumbnails as thumbnails_route
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.features.document_types import router as document_types_router
 from papermerge.core.features.groups import router as groups_router
+from papermerge.core.features.roles import router as roles_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
 from papermerge.core.features.liveness_probe import router as probe_router
@@ -268,6 +269,7 @@ def get_app_with_routes():
 
     app.include_router(document_types_router.router, prefix="")
     app.include_router(groups_router.router, prefix="")
+    app.include_router(roles_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
     app.include_router(folders_router.router, prefix="")
@@ -582,6 +584,17 @@ def make_group(db_session):
         db_session.add(group)
         db_session.commit()
         return group
+
+    return _maker
+
+
+@pytest.fixture()
+def make_role(db_session):
+    def _maker(name: str):
+        role = orm.Role(name=name)
+        db_session.add(role)
+        db_session.commit()
+        return role
 
     return _maker
 

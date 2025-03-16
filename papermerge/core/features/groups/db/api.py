@@ -50,7 +50,7 @@ def get_groups_without_pagination(db_session: Session) -> list[schema.Group]:
 
 
 def create_group(
-    db_session: Session, name: str, scopes: list[str], exists_ok: bool = False
+    db_session: Session, name: str, exists_ok: bool = False
 ) -> schema.Group:
     if exists_ok:
         stmt = select(orm.Group).where(orm.Group.name == name)

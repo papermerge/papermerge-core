@@ -95,7 +95,6 @@ def create_group(
             group = dbapi.create_group(
                 db_session,
                 name=pygroup.name,
-                scopes=pygroup.scopes,
             )
         except Exception as e:
             error_msg = str(e)

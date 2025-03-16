@@ -1,4 +1,4 @@
-import {selectSelectedIds} from "@/features/groups/groupsSlice"
+import {selectSelectedIds} from "@/features/roles/rolesSlice"
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import {DeleteRolesButton} from "./DeleteButton"

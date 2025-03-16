@@ -1,7 +1,6 @@
 from sqlalchemy import func
 
-from papermerge.core.db.engine import Session
-from papermerge.core import schema, db, dbapi
+from papermerge.core import schema, db
 from papermerge.core.features.groups.db import orm
 from papermerge.core.tests.types import AuthTestClient
 
@@ -12,7 +11,7 @@ def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Sess
 
     response = auth_api_client.post(
         "/groups/",
-        json={"name": "Admin", "scopes": []},
+        json={"name": "Admin"},
     )
 
     assert response.status_code == 201, response.json()
@@ -23,17 +22,12 @@ def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Sess
 def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_session):
     group = make_group(name="demo")
 
-    dbapi.sync_perms(db_session)
     response = auth_api_client.patch(
         f"/groups/{group.id}",
-        json={"name": "Admin", "scopes": ["user.view", "custom_field.view"]},
+        json={"name": "Admin"},
     )
 
     assert response.status_code == 200, response.json()
-
-    updated_group = dbapi.get_group(db_session, group_id=group.id)
-
-    assert set(updated_group.scopes) == {"user.view", "custom_field.view"}
 
 
 def test_get_group_details(

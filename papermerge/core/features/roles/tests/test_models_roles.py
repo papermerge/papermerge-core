@@ -7,7 +7,7 @@ def test_role_create(db_session):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    role = dbapi.create_role(db_session, "G1", scopes=list(scopes))
+    role, _ = dbapi.create_role(db_session, "G1", scopes=list(scopes))
     role_details = dbapi.get_role(db_session, role_id=role.id)
 
     assert role_details.name == "G1"
@@ -23,7 +23,7 @@ def test_role_create_and_delete(db_session):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    role = dbapi.create_role(db_session, "G1", scopes=list(scopes))
+    role, _ = dbapi.create_role(db_session, "G1", scopes=list(scopes))
     dbapi.delete_role(db_session, role_id=role.id)
 
     perms_count = len(dbapi.get_perms(db_session))
@@ -41,7 +41,7 @@ def test_update_role_twice(db_session):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    role = dbapi.create_role(db_session, "G1", scopes=list(scopes))
+    role, _ = dbapi.create_role(db_session, "G1", scopes=list(scopes))
     # this method SHOULD NOT raise an exception
     dbapi.update_role(
         db_session,
@@ -58,7 +58,7 @@ def test_remove_permissions_from_role(db_session):
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
-    role = dbapi.create_role(db_session, "G1", scopes=list(scopes))
+    role, _ = dbapi.create_role(db_session, "G1", scopes=list(scopes))
 
     role_details = dbapi.get_role(db_session, role_id=role.id)
     assert set(role_details.scopes) == scopes

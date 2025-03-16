@@ -6,6 +6,7 @@ import docVersReducer from "@/features/document/documentVersSlice"
 import pagesReducer from "@/features/document/pagesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
+import rolesReducer from "@/features/roles/rolesSlice"
 import searchReducer from "@/features/search/searchSlice"
 import tagsReducer from "@/features/tags/tagsSlice"
 import uiReducer from "@/features/ui/uiSlice"
@@ -20,6 +21,7 @@ export const store = configureStore({
     currentUser: currentUserReducer,
     tags: tagsReducer,
     groups: groupsReducer,
+    roles: rolesReducer,
     customFields: customFieldsReducer,
     documentTypes: documentTypesReducer,
     users: usersReducer,

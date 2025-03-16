@@ -51,6 +51,7 @@ export const apiSlice = createApi({
   baseQuery: baseQuery,
   keepUnusedDataFor: getKeepUnusedDataFor(),
   tagTypes: [
+    "Role",
     "Group",
     "User",
     "Tag",

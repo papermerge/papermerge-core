@@ -10,6 +10,7 @@ import {
   DOCUMENT_TYPE_VIEW,
   GROUP_VIEW,
   NODE_VIEW,
+  ROLE_VIEW,
   TAG_VIEW,
   USER_VIEW
 } from "@/scopes"
@@ -24,6 +25,7 @@ import {
   IconFile3d,
   IconHome,
   IconInbox,
+  IconMasksTheater,
   IconTag,
   IconUsers,
   IconUsersGroup
@@ -102,6 +104,11 @@ function NavBarFull() {
             {NavLinkWithFeedback("Groups", <IconUsersGroup />)}
           </NavLink>
         )}
+        {user.scopes.includes(ROLE_VIEW) && (
+          <NavLink to="/roles">
+            {NavLinkWithFeedback("Roles", <IconMasksTheater />)}
+          </NavLink>
+        )}
       </div>
     </>
   )
@@ -170,6 +177,11 @@ function NavBarCollapsed() {
         {user.scopes.includes(GROUP_VIEW) && (
           <NavLink to="/groups">
             {NavLinkWithFeedbackShort(<IconUsersGroup />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(ROLE_VIEW) && (
+          <NavLink to="/roles">
+            {NavLinkWithFeedbackShort(<IconMasksTheater />)}
           </NavLink>
         )}
       </div>

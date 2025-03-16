@@ -5,7 +5,22 @@ from papermerge.core.features.roles.db import orm
 from papermerge.core.tests.types import AuthTestClient
 
 
+def test_creating_role_when_no_perms_are_in_sys(
+    auth_api_client: AuthTestClient, db_session: db.Session
+):
+    """If user attempts to create a role when there are
+    no permissions in the system (e.g. permissions were not synced),
+    then role creation should fail"""
+    response = auth_api_client.post(
+        "/roles/",
+        json={"name": "Admin", "scopes": []},
+    )
+
+    assert response.status_code == 500, response.json()
+
+
 def test_create_role_route(auth_api_client: AuthTestClient, db_session: db.Session):
+    dbapi.sync_perms(db_session)
     count_before = db_session.query(func.count(orm.Role.id)).scalar()
     assert count_before == 0
 

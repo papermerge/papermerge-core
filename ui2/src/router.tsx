@@ -14,6 +14,7 @@ import {
   DocumentTypesList
 } from "@/features/document-types/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
+import {RoleDetails, RolesList} from "@/features/roles/pages"
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
@@ -83,6 +84,14 @@ const router = createBrowserRouter([
       {
         path: "/groups/:groupId",
         element: <GroupDetails />
+      },
+      {
+        path: "/roles",
+        element: <RolesList />
+      },
+      {
+        path: "/roles/:roleId",
+        element: <RoleDetails />
       },
       {
         path: "/users",

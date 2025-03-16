@@ -85,17 +85,13 @@ def create_role(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        try:
-            role = dbapi.create_role(
-                db_session,
-                name=pyrole.name,
-                scopes=pyrole.scopes,
-            )
-        except Exception as e:
-            error_msg = str(e)
-            if "UNIQUE constraint failed" in error_msg:
-                raise HTTPException(status_code=400, detail="Role already exists")
-            raise HTTPException(status_code=400, detail=error_msg)
+        role, error = dbapi.create_role(
+            db_session,
+            name=pyrole.name,
+            scopes=pyrole.scopes,
+        )
+        if error:
+            raise HTTPException(status_code=500, detail=error)
 
     return role
 
@@ -112,7 +108,7 @@ def create_role(
 )
 @utils.docstring_parameter(scope=scopes.ROLE_DELETE)
 def delete_role(
-    role_id: int,
+    role_id: uuid.UUID,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_DELETE])
     ],

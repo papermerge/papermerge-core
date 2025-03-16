@@ -204,10 +204,26 @@ export type Group = NewGroup & {
 export type GroupDetails = {
   id: string
   name: string
+}
+
+export type GroupUpdate = Pick<Group, "id" | "name">
+
+export type NewRole = {
+  name: string
   scopes: Array<string>
 }
 
-export type GroupUpdate = Pick<Group, "id" | "name" | "scopes">
+export type Role = NewRole & {
+  id: string
+}
+
+export type RoleDetails = {
+  id: string
+  name: string
+  scopes: Array<string>
+}
+
+export type RoleUpdate = Pick<Role, "id" | "name" | "scopes">
 
 export type CustomFieldDataType =
   | "text"

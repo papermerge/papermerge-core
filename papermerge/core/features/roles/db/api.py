@@ -56,7 +56,7 @@ def get_roles_without_pagination(db_session: Session) -> list[schema.Role]:
 
 def create_role(
     db_session: Session, name: str, scopes: list[str], exists_ok: bool = False
-) -> [schema.Role | None, schema.Error | None]:
+) -> [schema.Role | None, str | None]:
     """Creates a role with given scopes"""
     stmt_total_permissions = select(func.count(orm.Permission.id))
     perms_count = db_session.execute(stmt_total_permissions).scalar()
@@ -65,7 +65,7 @@ def create_role(
             "There are no permissions in the system."
             " Did you forget to run `paper-cli perms sync`?"
         )
-        return None, schema.Error(messages=[error])
+        return None, error
 
     if exists_ok:
         stmt = select(orm.Role).where(orm.Role.name == name)
@@ -79,7 +79,7 @@ def create_role(
 
     if len(perms) != len(scopes):
         error = f"Some of the permissions did not match scopes. {perms=} {scopes=}"
-        return None, schema.Error(messages=[error])
+        return None, error
 
     role = orm.Role(name=name, permissions=perms)
     db_session.add(role)

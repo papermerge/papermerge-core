@@ -91,7 +91,7 @@ def create_role(
             scopes=pyrole.scopes,
         )
         if error:
-            raise HTTPException(status_code=500, detail=error.model_dump())
+            raise HTTPException(status_code=500, detail=error)
 
     return role
 

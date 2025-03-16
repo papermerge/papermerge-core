@@ -1,8 +1,9 @@
-import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
-
+import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {Paginated, PaginationType, Role} from "@/types"
+import type {Paginated, PaginationType, Role, ServerErrorType} from "@/types"
+import {notifications} from "@mantine/notifications"
+import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {apiSliceWithRoles} from "./apiSlice"
 
 export type RoleSlice = {
@@ -89,4 +90,80 @@ export const selectPagination = (state: RootState): PaginationType | null => {
 
 export const selectLastPageSize = (state: RootState): number => {
   return state.roles.lastPageSize
+}
+
+export const roleCRUDListeners = (startAppListening: AppStartListening) => {
+  //create positive
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.addNewRole.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Role successfully created"
+      })
+    }
+  })
+
+  //create negative
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.addNewRole.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Update positive
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.editRole.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Role successfully updated"
+      })
+    }
+  })
+  // Update negative
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.editRole.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
+  // Delete positive
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.deleteRole.matchFulfilled,
+    effect: async () => {
+      notifications.show({
+        withBorder: true,
+        message: "Role successfully deleted"
+      })
+    }
+  })
+  // Delete negative
+  startAppListening({
+    matcher: apiSliceWithRoles.endpoints.deleteRole.matchRejected,
+    effect: async action => {
+      const error = action.payload as ServerErrorType
+      notifications.show({
+        autoClose: false,
+        withBorder: true,
+        color: "red",
+        title: "Error",
+        message: error.data.detail
+      })
+    }
+  })
 }

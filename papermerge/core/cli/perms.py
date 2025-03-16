@@ -3,8 +3,8 @@ from rich.console import Console
 from rich.table import Table
 
 from papermerge.core.db.engine import Session
-from papermerge.core.features.groups.db import api as dbapi
-from papermerge.core.features.groups import schema
+from papermerge.core import dbapi
+from papermerge.core import schema
 
 app = typer.Typer(help="Permissions management")
 

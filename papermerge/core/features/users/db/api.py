@@ -37,6 +37,31 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
     return model_user
 
 
+def get_user_group_homes(
+    db_session: db.Session, user_id: uuid.UUID
+) -> [schema.UserHomes | None, str | None]:
+    """Gets user group homes
+
+    SELECT g.name, g.home_folder_id
+    FROM groups g
+    JOIN users_groups ug ON ug.group_id = g.id
+    WHERE ug.user_id = '1bcb3491-b161-4225-bddc-2f4bc5f9b30e'
+    """
+    query = (
+        db_session.query(orm.Group.name, orm.Group.home_folder_id)
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
+        .filter(orm.UserGroup.user_id == user_id)
+    )
+    results = query.all()
+
+    models = []
+    for name, home_folder_id in results:
+        home = schema.UserHome(group_name=name, home_id=home_folder_id)
+        models.append(schema.UserHome.model_validate(home))
+
+    return models, None
+
+
 def get_user_details(
     db_session, user_id: uuid.UUID
 ) -> [schema.UserDetails | None, err_schema.Error | None]:

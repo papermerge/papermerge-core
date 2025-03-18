@@ -144,6 +144,32 @@ def update_group(
 ) -> schema.Group:
     """Updates group
 
+    `with_special_folders` flag expresses user intention regarding special folders:
+    does he/she want to keep, or create, special folders of this group
+    or he/she intends to remove them. Special folders clean up is performed
+    as background task.
+
+    `with_special_folders` flag behaviour is as follows:
+
+    There two cases:
+
+    Case 1: group does NOT have special folders (home and inbox).
+        In such case, if `with_special_folders` is True, then special folders for this group
+        will be created.
+        If `with_special_folders` is False, then nothing with happen in
+        respect to special folders.
+
+    Case 2: group does have special folders.
+        In such case, if `with_special_folders` is True, then nothing
+        will happen in respect to special folders.
+        If `with_special_folders` is False, then database field
+        `group.delete_special_folders` will be set to True to indicate
+         to user that deletion of special folder is desired. Background task
+        will be scheduled to delete special folders. Note that
+        it is background task to set `home_folder_id` and `inbox_folder_id` to
+        NULL. In other words, it may take a while until group's special folders
+        are cleanup and set to NULL.
+
     Required scope: `{scope}`
     """
     with db.Session() as db_session:

@@ -1,12 +1,13 @@
-import {Link} from "react-router-dom"
-import {useDispatch, useSelector} from "react-redux"
-import {Table, Checkbox} from "@mantine/core"
+import Check from "@/components/Check"
 import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
 } from "@/features/groups/groupsSlice"
-import type {Group} from "@/types"
+import type {Group} from "@/types.d/groups"
+import {Checkbox, Table} from "@mantine/core"
+import {useDispatch, useSelector} from "react-redux"
+import {Link} from "react-router-dom"
 
 type Args = {
   group: Group
@@ -34,6 +35,9 @@ export default function GroupRow({group}: Args) {
       </Table.Td>
       <Table.Td>
         <Link to={`/groups/${group.id}`}>{group.name}</Link>
+      </Table.Td>
+      <Table.Td>
+        <Check check={Boolean(group.home_folder_id && group.inbox_folder_id)} />
       </Table.Td>
     </Table.Tr>
   )

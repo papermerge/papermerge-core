@@ -1,3 +1,9 @@
+import type {
+  Group,
+  GroupDetails,
+  GroupDetailsPostData,
+  NewGroup
+} from "@/types.d/groups"
 import type {BreadcrumbType} from "./breadcrumb"
 import type {OcrStatusEnum} from "./ocr"
 
@@ -152,21 +158,6 @@ export type OCRLangType = {
 
 export type PanelMode = "main" | "secondary"
 
-export type NewGroup = {
-  name: string
-  scopes: Array<string>
-}
-
-export type Group = NewGroup & {
-  id: number
-}
-
-export type GroupDetails = {
-  id: number
-  name: string
-  scopes: Array<string>
-}
-
 export type FileItemStatus = "uploading" | "success" | "failure"
 
 export type FileItemType = {
@@ -176,3 +167,5 @@ export type FileItemType = {
   source: NodeType | null
   target: FolderType
 }
+
+export {GroupDetails, GroupDetailsPostData, NewGroup}

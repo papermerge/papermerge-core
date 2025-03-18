@@ -112,3 +112,23 @@ class UpdateUser(BaseModel):
 class ChangeUserPassword(BaseModel):
     userId: str
     password: str
+
+
+class UserHome(BaseModel):
+    group_name: str
+    group_id: uuid.UUID
+    home_id: uuid.UUID
+
+
+class UserHomes(BaseModel):
+    homes: list[UserHome]
+
+
+class UserInbox(BaseModel):
+    group_name: str
+    group_id: uuid.UUID
+    home_id: uuid.UUID
+
+
+class UserInboxes(BaseModel):
+    inboxes: list[UserInbox]

@@ -1,11 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
-import type {
-  Group,
-  GroupUpdate,
-  Paginated,
-  NewGroup,
-  PaginatedArgs
-} from "@/types"
+import type {Paginated, PaginatedArgs} from "@/types"
+import type {Group, GroupUpdate, NewGroup} from "@/types.d/groups"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 

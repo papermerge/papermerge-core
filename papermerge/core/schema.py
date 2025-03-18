@@ -16,7 +16,7 @@ from .features.document.schema import (
     ExtractStrategy,
     MoveStrategy
 )
-from .features.users.schema import User, CreateUser, UserDetails, UpdateUser, ChangeUserPassword
+from .features.users.schema import User, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import CustomField, UpdateCustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
@@ -41,6 +41,10 @@ __all__ = [
     'UpdateUser',
     'UserDetails',
     'ChangeUserPassword',
+    'UserHomes',
+    'UserHome',
+    'UserInboxes',
+    'UserInbox',
     'Tag',
     'UpdateTag',
     'CreateTag',

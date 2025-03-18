@@ -1,3 +1,5 @@
+import type {Group} from "@/types.d/groups"
+
 export type State<T> = {
   is_loading: boolean
   error: string | null
@@ -191,22 +193,6 @@ export type OCRLangType = {
 
 export type PanelMode = "main" | "secondary"
 export type PanelType = "main" | "secondary"
-
-export type NewGroup = {
-  name: string
-  scopes: Array<string>
-}
-
-export type Group = NewGroup & {
-  id: string
-}
-
-export type GroupDetails = {
-  id: string
-  name: string
-}
-
-export type GroupUpdate = Pick<Group, "id" | "name">
 
 export type NewRole = {
   name: string

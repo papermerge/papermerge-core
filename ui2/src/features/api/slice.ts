@@ -53,6 +53,7 @@ export const apiSlice = createApi({
   tagTypes: [
     "Role",
     "Group",
+    "GroupHome",
     "User",
     "Tag",
     "Node",

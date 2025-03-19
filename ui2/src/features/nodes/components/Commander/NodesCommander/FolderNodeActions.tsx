@@ -19,6 +19,7 @@ import {filterUpdated} from "@/features/ui/uiSlice"
 import DeleteButton from "./DeleteButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
+import HomeSelect from "./HomeSelect"
 import NewFolderButton from "./NewFolderButton"
 import SortMenu from "./SortMenu"
 import UploadButton from "./UploadButton"
@@ -63,7 +64,8 @@ export default function FolderNodeActions() {
         {selectedCount == 1 && <EditNodeTagsButton />}
         {selectedCount > 0 && <DeleteButton />}
       </Group>
-      <Group>
+      <Group grow preventGrowOverflow={false} wrap="nowrap">
+        <HomeSelect />
         <ViewOptionsMenu />
         <SortMenu />
         <QuickFilter

@@ -1,4 +1,3 @@
-from papermerge.core import schema
 from papermerge.core import dbapi
 
 

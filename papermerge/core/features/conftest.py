@@ -579,10 +579,19 @@ def make_document_tax(db_session: Session, document_type_tax):
 
 @pytest.fixture()
 def make_group(db_session):
-    def _maker(name: str):
-        group = orm.Group(name=name)
-        db_session.add(group)
-        db_session.commit()
+    def _maker(name: str, with_special_folders=False):
+        if with_special_folders:
+            group = orm.Group(name=name)
+            uid = uuid.uuid4()
+            db_session.add(group)
+            folder = orm.Folder(id=uid, title="home", group=group, lang="de")
+            db_session.add(folder)
+            group.home_folder_id = uid
+            db_session.commit()
+        else:
+            group = orm.Group(name=name)
+            db_session.add(group)
+            db_session.commit()
         return group
 
     return _maker

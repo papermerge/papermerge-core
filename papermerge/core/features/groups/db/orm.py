@@ -21,13 +21,6 @@ user_groups_association = Table(
 )
 
 
-class UserGroup(Base):
-    __tablename__ = "users_groups"
-
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
-    group_id: Mapped[UUID] = mapped_column(ForeignKey("groups.id"))
-
-
 class Group(Base):
     __tablename__ = "groups"
 

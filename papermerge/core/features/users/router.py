@@ -23,6 +23,26 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
+@router.get("/group-homes")
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_user_group_homes(
+    user: Annotated[
+        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+    ]
+) -> list[schema.UserHome]:
+    """Get all user group homes
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        result, error = usr_dbapi.get_user_group_homes(db_session, user_id=user.id)
+
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    return result
+
+
 @router.get("/me")
 @utils.docstring_parameter(scope=scopes.USER_ME)
 def get_current_user(
@@ -195,7 +215,9 @@ def update_user(
     return user
 
 
-@router.post("/{user_id}/change-password", status_code=200, response_model=schema.UserDetails)
+@router.post(
+    "/{user_id}/change-password", status_code=200, response_model=schema.UserDetails
+)
 @utils.docstring_parameter(scope=scopes.USER_UPDATE)
 def change_user_password(
     user_id: UUID,
@@ -210,9 +232,7 @@ def change_user_password(
     """
     with db.Session() as db_session:
         user, error = usr_dbapi.change_password(
-            db_session,
-            user_id=UUID(attrs.userId),
-            password=attrs.password
+            db_session, user_id=UUID(attrs.userId), password=attrs.password
         )
 
     if error:

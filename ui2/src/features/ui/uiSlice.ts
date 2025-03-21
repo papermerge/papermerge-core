@@ -150,6 +150,8 @@ interface CurrentPageUpdatedArgs {
 interface CurrentNode {
   id: string
   ctype: CType
+  user_id: string
+  group_id: string
 }
 
 interface ViewerState {
@@ -197,6 +199,29 @@ interface DocumentsByTypeCommanderColumnToggledArg {
   visibility: boolean
 }
 
+export type LastHome = {
+  label: string
+  home_id: string
+  user_id?: string
+  group_id?: string
+}
+
+export type LastInbox = {
+  label: string
+  inbox_id: string
+  user_id?: string
+  group_id?: string
+}
+
+interface LastHomeArg {
+  mode: PanelMode
+  last_home: LastHome
+}
+interface LastInboxArg {
+  mode: PanelMode
+  last_inbox: LastInbox
+}
+
 interface UIState {
   uploader: UploaderState
   navbar: NavBarState
@@ -215,6 +240,10 @@ interface UIState {
   mainCommanderSortMenuDir?: SortMenuDirection
   mainCommanderViewOption?: ViewOption
   mainCommanderDocumentTypeID?: string
+  /* User may choose between own and group homes
+   this field indicates his/her last selection */
+  mainCommanderLastHome?: LastHome
+  mainCommanderLastInbox?: LastInbox
   mainDocumentsByTypeCommanderColumns?: Record<string, Array<CategoryColumn>>
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
@@ -223,6 +252,10 @@ interface UIState {
   secondaryCommanderSortMenuDir?: SortMenuDirection
   secondaryCommanderViewOption?: ViewOption
   secondaryCommanderDocumentTypeID?: string
+  /* User may choose between own and group homes
+   this field indicates his/her last selection */
+  secondaryCommanderLastHome?: LastHome
+  secondaryCommanderLastInbox?: LastInbox
   secondaryDocumentsByTypeCommanderColumns: Record<
     string,
     Array<CategoryColumn>
@@ -567,6 +600,22 @@ const uiSlice = createSlice({
         state.secondaryCommanderDocumentTypeID = documentTypeID
       }
     },
+    lastHomeUpdated(state, action: PayloadAction<LastHomeArg>) {
+      const {mode, last_home} = action.payload
+      if (mode == "main") {
+        state.mainCommanderLastHome = last_home
+      } else {
+        state.secondaryCommanderLastHome = last_home
+      }
+    },
+    lastInboxUpdated(state, action: PayloadAction<LastInboxArg>) {
+      const {mode, last_inbox} = action.payload
+      if (mode == "main") {
+        state.mainCommanderLastInbox = last_inbox
+      } else {
+        state.secondaryCommanderLastInbox = last_inbox
+      }
+    },
     documentsByTypeCommanderColumnsUpdated(
       state,
       action: PayloadAction<DocumentsByTypeColumnsArg>
@@ -869,7 +918,9 @@ export const {
   dragNodesStarted,
   dragEnded,
   documentsByTypeCommanderColumnsUpdated,
-  documentsByTypeCommanderColumnVisibilityToggled
+  documentsByTypeCommanderColumnVisibilityToggled,
+  lastHomeUpdated,
+  lastInboxUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1162,6 +1213,22 @@ export const selectDocumentsByTypeCommanderVisibleColumns = createSelector(
     return visibleColumnNames
   }
 )
+
+export const selectLastHome = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderLastHome
+  }
+
+  return state.ui.secondaryCommanderLastHome
+}
+
+export const selectLastInbox = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderLastInbox
+  }
+
+  return state.ui.secondaryCommanderLastInbox
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

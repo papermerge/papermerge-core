@@ -140,7 +140,6 @@ class Folder(NewFolder):
     tags: List[Tag] = []
     created_at: datetime
     updated_at: datetime
-    user_id: UUID
 
     breadcrumb: List[Tuple[UUID, str]] = []
 

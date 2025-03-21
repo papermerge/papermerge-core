@@ -3,6 +3,8 @@ import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
   selectCommanderViewOption,
+  selectLastHome,
+  selectLastInbox,
   selectNavBarCollapsed
 } from "@/features/ui/uiSlice"
 import {
@@ -40,6 +42,8 @@ function NavBarFull() {
   const mode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
+  const lastHome = useAppSelector(s => selectLastHome(s, "main"))
+  const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
 
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -70,12 +74,18 @@ function NavBarFull() {
     <>
       <div className="navbar">
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
+          <NavLink
+            to={`/home/${lastHome?.home_id || user.home_folder_id}`}
+            onClick={onClick}
+          >
             {NavLinkWithFeedback("Home", <IconHome />)}
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
+          <NavLink
+            to={`/inbox/${lastInbox?.inbox_id || user.inbox_folder_id}`}
+            onClick={onClick}
+          >
             {NavLinkWithFeedback("Inbox", <IconInbox />)}
           </NavLink>
         )}

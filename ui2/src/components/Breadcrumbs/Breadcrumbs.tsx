@@ -19,6 +19,7 @@ import {updateBreadcrumb} from "@/features/ui/uiSlice"
 import type {NType, PanelMode, UserDetails} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
+import {selectLastHome, selectLastInbox} from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
 
@@ -102,19 +103,24 @@ type RootItemArgs = {
 
 function RootItem({itemId, onClick}: RootItemArgs) {
   const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
+  const mode: PanelMode = useContext(PanelContext)
+  const lastHome = useAppSelector(s => selectLastHome(s, mode))
+  const lastInbox = useAppSelector(s => selectLastInbox(s, mode))
 
   const onLocalClick = (id: string) => {
     onClick({id: id, ctype: "folder"})
   }
 
   if (!user) {
-    return <Skeleton>Home</Skeleton>
+    return <Skeleton>XXXX</Skeleton>
   }
 
-  if (equalUUIDs(itemId, user.home_folder_id)) {
+  if (equalUUIDs(itemId, lastHome?.home_id || user.home_folder_id)) {
     return (
       <Group>
-        <Anchor onClick={() => onLocalClick(user.home_folder_id)}>
+        <Anchor
+          onClick={() => onLocalClick(lastHome?.home_id || user.home_folder_id)}
+        >
           <Group>
             <IconHome />
             Home
@@ -127,7 +133,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
-            <MenuItem onClick={() => onLocalClick(user.inbox_folder_id)}>
+            <MenuItem
+              onClick={() =>
+                onLocalClick(lastInbox?.inbox_id || user.inbox_folder_id)
+              }
+            >
               <Group>
                 <IconInbox />
                 Inbox
@@ -141,7 +151,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
 
   return (
     <Group>
-      <Anchor onClick={() => onLocalClick(user.inbox_folder_id)}>
+      <Anchor
+        onClick={() =>
+          onLocalClick(lastInbox?.inbox_id || user.inbox_folder_id)
+        }
+      >
         <Group>
           <IconInbox /> Inbox
         </Group>
@@ -153,7 +167,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
-          <MenuItem onClick={() => onLocalClick(user.home_folder_id)}>
+          <MenuItem
+            onClick={() =>
+              onLocalClick(lastHome?.home_id || user.home_folder_id)
+            }
+          >
             <Group>
               <IconHome />
               Home

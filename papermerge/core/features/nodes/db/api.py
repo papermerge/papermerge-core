@@ -5,8 +5,8 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update
-from sqlalchemy.orm import selectin_polymorphic, selectinload
+from sqlalchemy import func, select, delete, update, exists
+from sqlalchemy.orm import selectin_polymorphic, selectinload, aliased
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
@@ -16,6 +16,7 @@ from papermerge.core import schema, orm
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
+from papermerge.core import orm
 
 from .orm import Folder
 
@@ -92,7 +93,6 @@ def get_paginated_nodes(
     filter: str | None = None,
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
-
     if filter:
         query = (
             select(orm.Node)
@@ -102,13 +102,13 @@ def get_paginated_nodes(
                     filter.strip().lower(), autoescape=True
                 )
             )
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
     else:
         query = (
             select(orm.Node)
             .options(selectinload(orm.Node.tags))
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
 
     stmt = (
@@ -121,7 +121,7 @@ def get_paginated_nodes(
     count_stmt = (
         select(func.count())
         .select_from(orm.Node)
-        .where(orm.Node.user_id == user_id, orm.Node.parent_id == parent_id)
+        .where(orm.Node.parent_id == parent_id)
     )
 
     total_nodes = db_session.scalar(count_stmt)
@@ -317,12 +317,10 @@ def remove_node_tags(
 
 
 def get_folder(
-    db_session: Session, folder_id: UUID, user_id: UUID
+    db_session: Session, folder_id: UUID
 ) -> Tuple[orm.Folder | None, schema.Error | None]:
     breadcrumb = get_ancestors(db_session, folder_id)
-    stmt = select(orm.Folder).where(
-        orm.Folder.id == folder_id, orm.Node.user_id == user_id
-    )
+    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
     try:
         db_model = db_session.scalars(stmt).one()
         db_model.breadcrumb = breadcrumb
@@ -425,3 +423,38 @@ def prepare_documents_s3_data_deletion(
         page_ids=list(page_ids),
         document_version_ids=list(doc_ver_ids),
     )
+
+
+def has_node_perm(db_session: Session, node_id: UUID, user_id: UUID) -> bool:
+    """
+    Is <node_id> is owned by <user_id> or by one of the groups to which
+     <user_id> belongs?
+
+    SELECT EXISTS(
+        SELECT nodes.id
+        FROM nodes
+        WHERE id = <node_id> AND
+        (
+            user_id = <user_id> OR
+            group_id IN (
+                SELECT ug.group_id
+                FROM users_groups ug
+                WHERE ug.user_id =  <user_id>
+            )
+        )
+    )
+    """
+    UserGroupAlias = aliased(orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+    exists_query = exists(
+        select(orm.Node.id).where(
+            (orm.Node.id == node_id)
+            & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(subquery)))
+        )
+    ).select()
+
+    result = db_session.execute(exists_query).scalar()
+
+    return result

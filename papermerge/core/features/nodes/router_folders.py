@@ -29,9 +29,10 @@ def get_node(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        db_folder, error = dbapi.get_folder(
-            db_session, folder_id=UUID(folder_id), user_id=user.id
-        )
+        ok = dbapi.has_node_perm(db_session, node_id=folder_id, user_id=user.id)
+        if not ok:
+            raise HTTPException(status_code=403, detail="Access forbidden")
+        db_folder, error = dbapi.get_folder(db_session, folder_id=UUID(folder_id))
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

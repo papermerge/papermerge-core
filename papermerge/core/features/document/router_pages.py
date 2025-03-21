@@ -16,6 +16,7 @@ from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.features.page_mngm.db.api import apply_pages_op
 from papermerge.core.features.page_mngm.db.api import extract_pages as api_extract_pages
 from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pages
+from papermerge.core.db import common as dbapi_common
 from papermerge.core.utils import image
 
 
@@ -76,11 +77,17 @@ def get_page_jpg_url(
     """
     try:
         with db.Session() as db_session:
-            page = doc_dbapi.get_page(db_session, page_id=page_id, user_id=user.id)
+            document_id = doc_dbapi.get_page_document_id(db_session, page_id=page_id)
+            ok = dbapi_common.has_node_perm(
+                db_session, user_id=user.id, node_id=document_id
+            )
+            if not ok:
+                raise HTTPException(status_code=403, detail="Access Forbidden")
+
+            page = doc_dbapi.get_page(db_session, page_id=page_id)
             doc_ver = doc_dbapi.get_doc_ver(
                 db_session,
                 document_version_id=page.document_version_id,
-                user_id=user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Page does not exist")

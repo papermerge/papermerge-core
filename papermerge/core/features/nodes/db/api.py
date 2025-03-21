@@ -164,14 +164,20 @@ def update_node(
 
 
 def create_folder(
-    db_session: Session, attrs: schema.NewFolder, user_id: uuid.UUID
+    db_session: Session, attrs: schema.NewFolder
 ) -> Tuple[schema.Folder | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
 
+    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
+        orm.Node.id == attrs.parent_id
+    )
+    user_id, group_id = db_session.execute(stmt).fetchone()
+
     folder = orm.Folder(
         id=folder_id,
         user_id=user_id,
+        group_id=group_id,
         title=attrs.title,
         parent_id=attrs.parent_id,
         ctype="folder",
@@ -342,9 +348,7 @@ def delete_nodes(
         db_session, all_ids_to_be_deleted
     )
 
-    stmt = delete(orm.Node).where(
-        orm.Node.id.in_(all_ids_to_be_deleted), orm.Node.user_id == user_id
-    )
+    stmt = delete(orm.Node).where(orm.Node.id.in_(all_ids_to_be_deleted))
 
     # This second delete statement - is extra hack for Sqlite DB
     # For some reason, the (Polymorphic?) cascading does not work
@@ -423,38 +427,3 @@ def prepare_documents_s3_data_deletion(
         page_ids=list(page_ids),
         document_version_ids=list(doc_ver_ids),
     )
-
-
-def has_node_perm(db_session: Session, node_id: UUID, user_id: UUID) -> bool:
-    """
-    Is <node_id> is owned by <user_id> or by one of the groups to which
-     <user_id> belongs?
-
-    SELECT EXISTS(
-        SELECT nodes.id
-        FROM nodes
-        WHERE id = <node_id> AND
-        (
-            user_id = <user_id> OR
-            group_id IN (
-                SELECT ug.group_id
-                FROM users_groups ug
-                WHERE ug.user_id =  <user_id>
-            )
-        )
-    )
-    """
-    UserGroupAlias = aliased(orm.user_groups_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
-    )
-    exists_query = exists(
-        select(orm.Node.id).where(
-            (orm.Node.id == node_id)
-            & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(subquery)))
-        )
-    ).select()
-
-    result = db_session.execute(exists_query).scalar()
-
-    return result

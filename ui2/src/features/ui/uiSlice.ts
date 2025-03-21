@@ -150,8 +150,6 @@ interface CurrentPageUpdatedArgs {
 interface CurrentNode {
   id: string
   ctype: CType
-  user_id: string
-  group_id: string
 }
 
 interface ViewerState {

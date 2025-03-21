@@ -123,7 +123,8 @@ export type NodeType = NType & {
   is_currently_dragged: boolean
   parent_id: string | null
   title: string
-  user_id: string
+  user_id?: string
+  group_id?: string
   update_at: string
   ocr_status: OcrStatusEnum
   ocr: boolean

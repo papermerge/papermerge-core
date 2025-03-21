@@ -140,6 +140,8 @@ class Folder(NewFolder):
     tags: List[Tag] = []
     created_at: datetime
     updated_at: datetime
+    user_id: UUID | None = None
+    group_id: UUID | None = None
 
     breadcrumb: List[Tuple[UUID, str]] = []
 

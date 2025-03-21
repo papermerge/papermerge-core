@@ -71,5 +71,5 @@ __all__ = [
     "delete_role",
     "create_role",
     "sync_perms",
-    "get_perms"
+    "get_perms",
 ]

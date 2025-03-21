@@ -80,16 +80,13 @@ def create_node(
         attrs = dict(
             title=pynode.title,
             ctype="folder",
-            user_id=user.id,
             parent_id=pynode.parent_id,
         )
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = schema.NewFolder(**attrs)
         with Session() as db_session:
-            created_node, error = nodes_dbapi.create_folder(
-                db_session, new_folder, user_id=user.id
-            )
+            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -99,7 +96,6 @@ def create_node(
         attrs = dict(
             title=pynode.title,
             lang=pynode.lang,
-            user_id=user.id,
             parent_id=pynode.parent_id,
             size=0,
             page_count=0,
@@ -113,9 +109,7 @@ def create_node(
         new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
-            created_node, error = doc_dbapi.create_document(
-                db_session, new_document, user_id=user.id
-            )
+            created_node, error = doc_dbapi.create_document(db_session, new_document)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

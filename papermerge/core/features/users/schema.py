@@ -127,7 +127,7 @@ class UserHomes(BaseModel):
 class UserInbox(BaseModel):
     group_name: str
     group_id: uuid.UUID
-    home_id: uuid.UUID
+    inbox_id: uuid.UUID
 
 
 class UserInboxes(BaseModel):

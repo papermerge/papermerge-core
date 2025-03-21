@@ -43,6 +43,26 @@ def get_user_group_homes(
     return result
 
 
+@router.get("/group-inboxes")
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_user_group_homes(
+    user: Annotated[
+        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+    ]
+) -> list[schema.UserInbox]:
+    """Get all user group inboxes
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        result, error = usr_dbapi.get_user_group_inboxes(db_session, user_id=user.id)
+
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    return result
+
+
 @router.get("/me")
 @utils.docstring_parameter(scope=scopes.USER_ME)
 def get_current_user(

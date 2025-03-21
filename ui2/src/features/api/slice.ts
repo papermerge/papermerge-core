@@ -54,6 +54,7 @@ export const apiSlice = createApi({
     "Role",
     "Group",
     "GroupHome",
+    "GroupInbox",
     "User",
     "Tag",
     "Node",

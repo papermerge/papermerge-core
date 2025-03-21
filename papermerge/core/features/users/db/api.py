@@ -46,7 +46,7 @@ def get_user_group_homes(
     SELECT g.name, g.home_folder_id
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
-    WHERE ug.user_id = '1bcb3491-b161-4225-bddc-2f4bc5f9b30e'
+    WHERE ug.user_id = <user_id>
     """
     stmt = (
         select(
@@ -69,6 +69,39 @@ def get_user_group_homes(
             group_name=group_name, group_id=group_id, home_id=home_folder_id
         )
         models.append(schema.UserHome.model_validate(home))
+
+    return models, None
+
+
+def get_user_group_inboxes(
+    db_session: db.Session, user_id: uuid.UUID
+) -> [list[schema.UserHome] | None, str | None]:
+    """Gets user group inboxes
+
+    SELECT g.name, g.inbox_folder_id
+    FROM groups g
+    JOIN users_groups ug ON ug.group_id = g.id
+    WHERE ug.user_id = <user_id>
+    """
+    stmt = (
+        select(orm.Group.name, orm.Group.id, orm.Group.inbox_folder_id)
+        .join(
+            user_groups_association, user_groups_association.c.group_id == orm.Group.id
+        )
+        .where(
+            user_groups_association.c.user_id == user_id,
+            orm.Group.inbox_folder_id != None,
+        )
+    )
+
+    results = db_session.execute(stmt).all()
+
+    models = []
+    for group_name, group_id, inbox_folder_id in results:
+        home = schema.UserInbox(
+            group_name=group_name, group_id=group_id, inbox_id=inbox_folder_id
+        )
+        models.append(schema.UserInbox.model_validate(home))
 
     return models, None
 

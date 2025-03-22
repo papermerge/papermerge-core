@@ -444,13 +444,23 @@ def document_type_tax(db_session: Session, user, make_custom_field):
 
 @pytest.fixture
 def make_custom_field(db_session: Session, user):
-    def _make_custom_field(name: str, type: CustomFieldType):
-        return cf_dbapi.create_custom_field(
-            db_session,
-            name=name,
-            type=type,
-            user_id=user.id,
-        )
+    def _make_custom_field(
+        name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
+    ):
+        if group_id:
+            return cf_dbapi.create_custom_field(
+                db_session,
+                name=name,
+                type=type,
+                group_id=group_id,
+            )
+        else:
+            return cf_dbapi.create_custom_field(
+                db_session,
+                name=name,
+                type=type,
+                user_id=user.id,
+            )
 
     return _make_custom_field
 

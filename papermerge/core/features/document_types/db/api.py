@@ -91,7 +91,8 @@ def document_type_cf_count(session: Session, document_type_id: uuid.UUID):
 def create_document_type(
     session: Session,
     name: str,
-    user_id: uuid.UUID,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
     custom_field_ids: list[uuid.UUID] | None = None,
     path_template: str | None = None,
 ) -> orm.DocumentType:
@@ -108,6 +109,7 @@ def create_document_type(
         custom_fields=custom_fields,
         path_template=path_template,
         user_id=user_id,
+        group_id=group_id,
     )
     session.add(dtype)
     session.commit()
@@ -138,16 +140,26 @@ def update_document_type(
     user_id: uuid.UUID,
 ) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    doc_type = session.execute(stmt).scalars().one()
+    doc_type: DocumentType = session.execute(stmt).scalars().one()
 
-    stmt = select(orm.CustomField).where(orm.CustomField.id.in_(attrs.custom_field_ids))
-    custom_fields = session.execute(stmt).scalars().all()
+    if attrs.custom_field_ids:
+        stmt = select(orm.CustomField).where(
+            orm.CustomField.id.in_(attrs.custom_field_ids)
+        )
+        custom_fields = session.execute(stmt).scalars().all()
+        if attrs.custom_field_ids:
+            doc_type.custom_fields = custom_fields
 
     if attrs.name:
         doc_type.name = attrs.name
 
-    if attrs.custom_field_ids:
-        doc_type.custom_fields = custom_fields
+    if attrs.user_id:
+        doc_type.user_id = attrs.user_id
+        doc_type.group_id = None
+
+    if attrs.group_id:
+        doc_type.user_id = None
+        doc_type.group_id = attrs.group_id
 
     notify_path_tmpl_worker = False
     if doc_type.path_template != attrs.path_template:

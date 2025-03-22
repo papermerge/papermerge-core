@@ -89,20 +89,33 @@ def create_custom_field(
     session: Session,
     name: str,
     type: schema.CustomFieldType,
-    user_id: uuid.UUID,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
     extra_data: str | None = None,
 ) -> schema.CustomField:
-    cfield = orm.CustomField(
-        id=uuid.uuid4(),
-        name=name,
-        type=type,
-        extra_data=extra_data,
-        user_id=user_id,
-    )
+    cfield = None
+
+    if user_id:
+        cfield = orm.CustomField(
+            id=uuid.uuid4(),
+            name=name,
+            type=type,
+            extra_data=extra_data,
+            user_id=user_id,
+        )
+    elif group_id:
+        cfield = orm.CustomField(
+            id=uuid.uuid4(),
+            name=name,
+            type=type,
+            extra_data=extra_data,
+            group_id=group_id,
+        )
+
     session.add(cfield)
     session.commit()
-
     result = schema.CustomField.model_validate(cfield)
+
     return result
 
 

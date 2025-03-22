@@ -99,17 +99,24 @@ def create_document_type(
 ) -> schema.DocumentType:
     """Creates document type
 
+    If attribute `group_id` is present, document type will be owned
+    by respective group, otherwise ownership is set to current user.
+
     Required scope: `{scope}`
     """
+    kwargs = {
+        "name": dtype.name,
+        "path_template": dtype.path_template,
+        "custom_field_ids": dtype.custom_field_ids,
+    }
+    if dtype.group_id:
+        kwargs["group_id"] = dtype.group_id
+    else:
+        kwargs["user_id"] = user.id
+
     try:
         with db.Session() as db_session:
-            document_type = dbapi.create_document_type(
-                db_session,
-                name=dtype.name,
-                path_template=dtype.path_template,
-                custom_field_ids=dtype.custom_field_ids,
-                user_id=user.id,
-            )
+            document_type = dbapi.create_document_type(db_session, **kwargs)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:

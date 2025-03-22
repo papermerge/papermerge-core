@@ -586,6 +586,7 @@ def make_group(db_session):
             db_session.add(group)
             folder = orm.Folder(id=uid, title="home", group=group, lang="de")
             db_session.add(folder)
+            db_session.commit()
             group.home_folder_id = uid
             db_session.commit()
         else:

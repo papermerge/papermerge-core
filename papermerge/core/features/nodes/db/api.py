@@ -5,8 +5,8 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update
-from sqlalchemy.orm import selectin_polymorphic, selectinload
+from sqlalchemy import func, select, delete, update, exists
+from sqlalchemy.orm import selectin_polymorphic, selectinload, aliased
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
@@ -16,6 +16,7 @@ from papermerge.core import schema, orm
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
+from papermerge.core import orm
 
 from .orm import Folder
 
@@ -92,7 +93,6 @@ def get_paginated_nodes(
     filter: str | None = None,
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
-
     if filter:
         query = (
             select(orm.Node)
@@ -102,13 +102,13 @@ def get_paginated_nodes(
                     filter.strip().lower(), autoescape=True
                 )
             )
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
     else:
         query = (
             select(orm.Node)
             .options(selectinload(orm.Node.tags))
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
 
     stmt = (
@@ -121,7 +121,7 @@ def get_paginated_nodes(
     count_stmt = (
         select(func.count())
         .select_from(orm.Node)
-        .where(orm.Node.user_id == user_id, orm.Node.parent_id == parent_id)
+        .where(orm.Node.parent_id == parent_id)
     )
 
     total_nodes = db_session.scalar(count_stmt)
@@ -164,14 +164,20 @@ def update_node(
 
 
 def create_folder(
-    db_session: Session, attrs: schema.NewFolder, user_id: uuid.UUID
+    db_session: Session, attrs: schema.NewFolder
 ) -> Tuple[schema.Folder | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
 
+    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
+        orm.Node.id == attrs.parent_id
+    )
+    user_id, group_id = db_session.execute(stmt).fetchone()
+
     folder = orm.Folder(
         id=folder_id,
         user_id=user_id,
+        group_id=group_id,
         title=attrs.title,
         parent_id=attrs.parent_id,
         ctype="folder",
@@ -317,12 +323,10 @@ def remove_node_tags(
 
 
 def get_folder(
-    db_session: Session, folder_id: UUID, user_id: UUID
+    db_session: Session, folder_id: UUID
 ) -> Tuple[orm.Folder | None, schema.Error | None]:
     breadcrumb = get_ancestors(db_session, folder_id)
-    stmt = select(orm.Folder).where(
-        orm.Folder.id == folder_id, orm.Node.user_id == user_id
-    )
+    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
     try:
         db_model = db_session.scalars(stmt).one()
         db_model.breadcrumb = breadcrumb
@@ -344,9 +348,7 @@ def delete_nodes(
         db_session, all_ids_to_be_deleted
     )
 
-    stmt = delete(orm.Node).where(
-        orm.Node.id.in_(all_ids_to_be_deleted), orm.Node.user_id == user_id
-    )
+    stmt = delete(orm.Node).where(orm.Node.id.in_(all_ids_to_be_deleted))
 
     # This second delete statement - is extra hack for Sqlite DB
     # For some reason, the (Polymorphic?) cascading does not work

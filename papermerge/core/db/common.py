@@ -2,9 +2,11 @@ from collections.abc import Iterable
 from typing import List, Tuple, Iterator
 from uuid import UUID
 
-from sqlalchemy import text, select
+from sqlalchemy import text, select, exists
+from sqlalchemy.orm import aliased
 from papermerge.core.db.engine import Session
 from papermerge.core.features.nodes.db import orm
+from papermerge.core.features.groups.db import orm as groups_orm
 
 
 def get_ancestors(
@@ -103,3 +105,38 @@ def get_descendants(
     result = db_session.execute(stmt)
 
     return [(row.id, row.title) for row in result]
+
+
+def has_node_perm(db_session: Session, node_id: UUID, user_id: UUID) -> bool:
+    """
+    Is <node_id> is owned by <user_id> or by one of the groups to which
+     <user_id> belongs?
+
+    SELECT EXISTS(
+        SELECT nodes.id
+        FROM nodes
+        WHERE id = <node_id> AND
+        (
+            user_id = <user_id> OR
+            group_id IN (
+                SELECT ug.group_id
+                FROM users_groups ug
+                WHERE ug.user_id =  <user_id>
+            )
+        )
+    )
+    """
+    UserGroupAlias = aliased(groups_orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+    exists_query = exists(
+        select(orm.Node.id).where(
+            (orm.Node.id == node_id)
+            & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(subquery)))
+        )
+    ).select()
+
+    result = db_session.execute(exists_query).scalar()
+
+    return result

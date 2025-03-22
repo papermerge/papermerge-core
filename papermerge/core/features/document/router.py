@@ -18,6 +18,7 @@ from papermerge.core.features.document.schema import (
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
 from papermerge.core.types import OrderEnum, PaginatedResponse
+from papermerge.core.db import common as dbapi_common
 
 
 router = APIRouter(
@@ -163,7 +164,12 @@ def get_document_details(
     """
     try:
         with db.Session() as db_session:
-            doc = dbapi.get_doc(db_session, id=document_id, user_id=user.id)
+            ok = dbapi_common.has_node_perm(
+                db_session, node_id=document_id, user_id=user.id
+            )
+            if not ok:
+                raise HTTPException(status_code=403, detail="Access forbidden")
+            doc = dbapi.get_doc(db_session, id=document_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc

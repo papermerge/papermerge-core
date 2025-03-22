@@ -1,4 +1,4 @@
-from .features.users.db.orm import User
+from .features.users.db.orm import User, user_groups_association
 from .features.document.db.orm import Document, DocumentVersion, Page
 from .features.nodes.db.orm import Folder, Node
 from .features.tags.db.orm import Tag, NodeTagsAssociation
@@ -9,6 +9,7 @@ from .features.document_types.db.orm import DocumentType, DocumentTypeCustomFiel
 
 __all__ = [
     'User',
+    'user_groups_association',
     'Document',
     'DocumentVersion',
     'Page',

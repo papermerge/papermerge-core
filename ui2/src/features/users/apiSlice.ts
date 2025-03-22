@@ -11,6 +11,7 @@ import type {
   UserDetails,
   UserUpdate
 } from "@/types"
+import type {GroupHome, GroupInbox} from "@/types.d/groups"
 
 export const apiSliceWithUsers = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -39,6 +40,20 @@ export const apiSliceWithUsers = apiSlice.injectEndpoints({
     getUser: builder.query<UserDetails, string>({
       query: userID => `/users/${userID}`,
       providesTags: (_result, _error, arg) => [{type: "User", id: arg}]
+    }),
+    getUserGroupHomes: builder.query<GroupHome[], void>({
+      query: _groupHomes => "/users/group-homes",
+      providesTags: (result = [], _error, _arg) => [
+        "GroupHome",
+        ...result.map(({group_id}) => ({type: "GroupHome", group_id}) as const)
+      ]
+    }),
+    getUserGroupInboxes: builder.query<GroupInbox[], void>({
+      query: _groupHomes => "/users/group-inboxes",
+      providesTags: (result = [], _error, _arg) => [
+        "GroupInbox",
+        ...result.map(({group_id}) => ({type: "GroupInbox", group_id}) as const)
+      ]
     }),
     addNewUser: builder.mutation<User, CreateUser>({
       query: user => ({
@@ -77,6 +92,8 @@ export const {
   useGetPaginatedUsersQuery,
   useGetUsersQuery,
   useGetUserQuery,
+  useGetUserGroupHomesQuery,
+  useGetUserGroupInboxesQuery,
   useAddNewUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,

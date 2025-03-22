@@ -144,7 +144,6 @@ def test_update_group_id_field_in_document_type(
     auth_api_client: AuthTestClient,
     db_session: Session,
     make_document_type,
-    make_custom_field,
     make_group,
 ):
     """
@@ -152,8 +151,6 @@ def test_update_group_id_field_in_document_type(
     DocumentType is owned by user and user can transfer ownership to
     the group.
     """
-    cf1 = make_custom_field(name="cf1", type="text")
-    cf2 = make_custom_field(name="cf2", type="boolean")
     doc_type = make_document_type(name="Invoice")
     group: orm.Group = make_group("Familly", with_special_folders=True)
 

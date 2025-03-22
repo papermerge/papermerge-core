@@ -39,10 +39,10 @@ def test_router_move_pages_endpoint_one_single_page_mix(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
 
-    src_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page = src_ver.pages[1]
 
-    dst_ver = dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     dst_page = dst_ver.pages[0]
 
     data = {
@@ -64,7 +64,7 @@ def test_router_extract_all_pages(
     )
     folder = make_folder(title="Target folder", user=user, parent=user.home_folder)
 
-    src_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page_ids = [str(p.id) for p in src_ver.pages]
 
     data = {

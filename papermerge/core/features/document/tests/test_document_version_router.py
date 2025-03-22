@@ -17,7 +17,7 @@ def test_download_document_version(
         resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
     )
 
-    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id, user_id=user.id)
+    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
 
     response = auth_api_client.get(f"/document-versions/{last_ver.id}/download")
     assert response.status_code == 200

@@ -62,8 +62,13 @@ class Node(Base):
             "parent_id",
             "title",
             "user_id",
+            name="unique title per parent per user",
+        ),
+        UniqueConstraint(
+            "parent_id",
+            "title",
             "group_id",
-            name="unique title per parent per user/group",
+            name="unique title per parent per group",
         ),
         CheckConstraint(
             "user_id IS NOT NULL OR group_id IS NOT NULL",

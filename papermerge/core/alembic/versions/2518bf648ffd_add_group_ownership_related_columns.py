@@ -39,9 +39,14 @@ def upgrade() -> None:
         "unique document type per user", "document_types", type_="unique"
     )
     op.create_unique_constraint(
-        "unique document type per user/group",
+        "unique document type per user",
         "document_types",
-        ["name", "user_id", "group_id"],
+        ["name", "user_id"],
+    )
+    op.create_unique_constraint(
+        "unique document type per group",
+        "document_types",
+        ["name", "group_id"],
     )
     op.create_foreign_key(
         "document_types_group_id_fkey", "document_types", "groups", ["group_id"], ["id"]
@@ -77,9 +82,14 @@ def upgrade() -> None:
     op.alter_column("nodes", "user_id", existing_type=sa.UUID(), nullable=True)
     op.drop_constraint("unique title per parent per user", "nodes", type_="unique")
     op.create_unique_constraint(
-        "unique title per parent per user/group",
+        "unique title per parent per user",
         "nodes",
-        ["parent_id", "title", "user_id", "group_id"],
+        ["parent_id", "title", "user_id"],
+    )
+    op.create_unique_constraint(
+        "unique title per parent per group",
+        "nodes",
+        ["parent_id", "title", "group_id"],
     )
     op.create_foreign_key(
         "nodes_group_id_fkey",
@@ -100,8 +110,9 @@ def upgrade() -> None:
     op.add_column("tags", sa.Column("group_id", sa.Uuid(), nullable=True))
     op.alter_column("tags", "user_id", existing_type=sa.UUID(), nullable=True)
     op.drop_constraint("unique tag name per user", "tags", type_="unique")
+    op.create_unique_constraint("unique tag name per user", "tags", ["name", "user_id"])
     op.create_unique_constraint(
-        "unique tag name per user/group", "tags", ["name", "user_id", "group_id"]
+        "unique tag name per group", "tags", ["name", "group_id"]
     )
     op.create_foreign_key(None, "tags", "groups", ["group_id"], ["id"])
     op.create_check_constraint(

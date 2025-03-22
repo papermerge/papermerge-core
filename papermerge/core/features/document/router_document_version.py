@@ -40,7 +40,6 @@ def download_document_version(
             doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
                 db_session,
                 document_version_id=document_version_id,
-                user_id=user.id,
             )
     except NoResultFound:
         error = schema.Error(messages=["Document version not found"])
@@ -70,7 +69,7 @@ def document_version_details(
     try:
         with db.Session() as db_session:
             doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
-                db_session, document_version_id=document_version_id, user_id=user.id
+                db_session, document_version_id=document_version_id
             )
     except NoResultFound:
         error = schema.Error(messages=["Page not found"])

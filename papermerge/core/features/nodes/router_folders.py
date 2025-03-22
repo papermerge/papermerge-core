@@ -1,5 +1,6 @@
+import uuid
 from typing import Annotated
-from uuid import UUID
+
 
 from fastapi import APIRouter, Depends, Security, HTTPException
 
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/folders", tags=["folders"])
 @router.get("/{folder_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
-    folder_id,
+    folder_id: uuid.UUID,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
@@ -33,7 +34,7 @@ def get_node(
         ok = dbapi_common.has_node_perm(db_session, node_id=folder_id, user_id=user.id)
         if not ok:
             raise HTTPException(status_code=403, detail="Access forbidden")
-        db_folder, error = dbapi.get_folder(db_session, folder_id=UUID(folder_id))
+        db_folder, error = dbapi.get_folder(db_session, folder_id=folder_id)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

@@ -94,7 +94,7 @@ def make_document(db_session: Session):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        doc, _ = doc_dbapi.create_document(db_session, attrs)
 
         if doc is None:
             raise Exception("Document was not created")
@@ -163,7 +163,7 @@ def make_document_with_pages(db_session: Session):
             title=title,
             parent_id=parent.id,
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        doc, _ = doc_dbapi.create_document(db_session, attrs)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:

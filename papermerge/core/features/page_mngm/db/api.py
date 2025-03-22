@@ -523,7 +523,6 @@ def extract_to_single_paged_docs(
         new_doc, error = doc_dbapi.create_document(
             db_session,
             attrs=attrs,
-            user_id=dst_folder.user_id,
         )
         result.append(new_doc)
         # create new document version with one page
@@ -582,7 +581,6 @@ def extract_to_multi_paged_doc(
     new_doc, error = doc_dbapi.create_document(
         db_session,
         attrs=attrs,
-        user_id=dst_folder.user_id,
     )
 
     dst_version, error = doc_dbapi.version_bump_from_pages(

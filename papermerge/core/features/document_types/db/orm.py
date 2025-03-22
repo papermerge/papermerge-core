@@ -31,9 +31,8 @@ class DocumentType(Base):
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     __table_args__ = (
-        UniqueConstraint(
-            "name", "user_id", "group_id", name="unique document type per user/group"
-        ),
+        UniqueConstraint("name", "user_id", name="unique document type per user"),
+        UniqueConstraint("name", "group_id", name="unique document type per group"),
         CheckConstraint(
             "user_id IS NOT NULL OR group_id IS NOT NULL",
             name="check__user_id_not_null__or__group_id_not_null",

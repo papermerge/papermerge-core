@@ -31,9 +31,8 @@ class Tag(Base):
     group_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("groups.id"), nullable=True)
 
     __table_args__ = (
-        UniqueConstraint(
-            "name", "user_id", "group_id", name="unique tag name per user/group"
-        ),
+        UniqueConstraint("name", "user_id", name="unique tag name per user"),
+        UniqueConstraint("name", "group_id", name="unique tag name per group"),
         CheckConstraint(
             "user_id IS NOT NULL OR group_id IS NOT NULL",
             name="check__user_id_not_null__or__group_id_not_null",

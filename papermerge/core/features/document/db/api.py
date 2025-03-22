@@ -325,7 +325,7 @@ def version_bump(
 ) -> orm.DocumentVersion:
     """Increment document version"""
 
-    last_ver = get_last_doc_ver(db_session, doc_id=doc_id, user_id=user_id)
+    last_ver = get_last_doc_ver(db_session, doc_id=doc_id)
     new_page_count = page_count or last_ver.page_count
     db_new_doc_ver = orm.DocumentVersion(
         document_id=doc_id,

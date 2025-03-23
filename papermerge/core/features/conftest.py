@@ -488,16 +488,28 @@ def make_document_type(db_session, make_user, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
     def _make_document_type(
-        name: str, user: orm.User | None = None, path_template: str | None = None
+        name: str,
+        user: orm.User | None = None,
+        path_template: str | None = None,
+        group_id: uuid.UUID | None = None,
     ):
-        if user is None:
-            user = make_user("john")
+        if group_id is None:
+            if user is None:
+                user = make_user("john")
+            return dbapi.create_document_type(
+                db_session,
+                name=name,
+                custom_field_ids=[cf.id],
+                path_template=path_template,
+                user_id=user.id,
+            )
+        # document_type belongs to group_id
         return dbapi.create_document_type(
             db_session,
             name=name,
             custom_field_ids=[cf.id],
             path_template=path_template,
-            user_id=user.id,
+            group_id=group_id,
         )
 
     return _make_document_type

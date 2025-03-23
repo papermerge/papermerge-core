@@ -17,13 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 def get_document_types_without_pagination(
-    db_session: Session, user_id: uuid.UUID
+    db_session: Session,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
 ) -> list[schema.DocumentType]:
-    stmt = (
-        select(orm.DocumentType)
-        .order_by(orm.DocumentType.name.asc())
-        .where(orm.DocumentType.user_id == user_id)
-    )
+    stmt_base = select(orm.DocumentType).order_by(orm.DocumentType.name.asc())
+
+    if group_id:
+        stmt = stmt_base.where(orm.DocumentType.group_id == group_id)
+    elif user_id:
+        stmt = stmt_base.where(orm.DocumentType.user_id == user_id)
+    else:
+        raise ValueError("Both: group_id and user_id are missing")
 
     db_document_types = db_session.scalars(stmt).all()
     items = [

@@ -93,3 +93,24 @@ def test_change_password(db_session, make_user):
     updated_user = db_session.execute(stmt).scalar()
 
     assert updated_user.password != initial_password
+
+
+def test__positive__user_belongs_to(db_session, make_user, make_group):
+    """In this scenario user belong to one group (familly)"""
+    user: orm.User = make_user("momo", is_superuser=False)
+    group: orm.Group = make_group("familly")
+
+    user.groups.append(group)
+    db_session.add(user)
+    db_session.commit()
+
+    assert dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group.id)
+
+
+def test__negative__user_belongs_to(db_session, make_user, make_group):
+    user: orm.User = make_user("momo", is_superuser=False)
+    group: orm.Group = make_group("research")
+
+    # user momo does not belong to group "research"
+    belongs_to = dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group.id)
+    assert not belongs_to

@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -262,3 +264,52 @@ def test_document_types_all_route(
     items = [schema.DocumentType(**kw) for kw in response.json()]
 
     assert len(items) == total_doc_type_items
+
+
+def test__negative__document_types_all_route_with_group_id_param(
+    make_document_type, auth_api_client: AuthTestClient, user
+):
+    """In this scenario current user does not belong to the
+    group provided as parameter"""
+    total_doc_type_items = 9
+    for i in range(total_doc_type_items):
+        make_document_type(name=f"Invoice {i}", user=user)
+
+    group_id = uuid.uuid4()
+    response = auth_api_client.get(
+        "/document-types/all", params={"group_id": str(group_id)}
+    )
+
+    assert response.status_code == 403, response.json()
+
+
+def test__positive__document_types_all_route_with_group_id_param(
+    db_session, make_document_type, auth_api_client: AuthTestClient, user, make_group
+):
+    """In this scenario current user belongs to the
+    group provided as parameter and there are two document types
+    belonging to that group. In such case endpoint should
+    return only two document types: the both belonging to the group
+    """
+    group: orm.Group = make_group("research")
+
+    total_doc_type_items = 9
+    for i in range(total_doc_type_items):
+        # privately owned document types
+        make_document_type(name=f"Invoice {i}", user=user)
+
+    make_document_type(name=f"Research 1", group_id=group.id)
+    make_document_type(name=f"Research 2", group_id=group.id)
+
+    # user belongs to 'research' group
+    user.groups.append(group)
+    db_session.add(user)
+    db_session.commit()
+
+    response = auth_api_client.get(
+        "/document-types/all", params={"group_id": str(group.id)}
+    )
+
+    assert response.status_code == 200, response.json()
+    dtype_names = {schema.DocumentType(**kw).name for kw in response.json()}
+    assert dtype_names == {"Research 1", "Research 2"}

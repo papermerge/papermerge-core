@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import utils, schema, dbapi, db
@@ -10,6 +10,7 @@ from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users import schema as users_schema
+
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -20,21 +21,48 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/all", response_model=list[schema.DocumentType])
+@router.get(
+    "/all",
+    response_model=list[schema.DocumentType],
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 def get_document_types_without_pagination(
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
+    group_id: uuid.UUID | None = None,
 ):
-    """Get all document types without pagination/filtering/sorting
+    """Get all document types without pagination
+
+    if non-empty `group_id` parameter is supplied it will
+    return all document types belonging to this group if and only
+    if current user belongs to this group.
+    if non-empty `group_id` parameter is provided and current
+    user does not belong to this group - http status code 403 (Forbidden) will
+    be raised.
+    If `group_id` parameter is not provided (empty) then
+    will return all document types of the current user.
 
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
+        if group_id:
+            ok = dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+            if not ok:
+                detail = f"User {user.id=} does not belong to group {group_id=}"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
+                )
+
         result = dbapi.get_document_types_without_pagination(
-            db_session, user_id=user.id
+            db_session, user_id=user.id, group_id=group_id
         )
 
     return result

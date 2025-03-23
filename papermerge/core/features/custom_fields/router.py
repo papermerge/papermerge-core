@@ -65,7 +65,9 @@ def get_custom_fields_without_pagination(
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=detail
                 )
-        result = dbapi.get_custom_fields_without_pagination(db_session, user_id=user.id)
+        result = dbapi.get_custom_fields_without_pagination(
+            db_session, user_id=user.id, group_id=group_id
+        )
 
     return result
 

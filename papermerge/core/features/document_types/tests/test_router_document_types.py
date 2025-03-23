@@ -155,6 +155,10 @@ def test_update_group_id_field_in_document_type(
     """
     doc_type = make_document_type(name="Invoice")
     group: orm.Group = make_group("Familly", with_special_folders=True)
+    user = auth_api_client.user
+
+    user.groups.append(group)
+    db_session.commit()
 
     response = auth_api_client.patch(
         f"/document-types/{doc_type.id}",

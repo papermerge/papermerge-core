@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
     response_model=list[cf_schema.CustomField],
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": """User does not belong to group""",
+            "description": "User does not belong to group",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },

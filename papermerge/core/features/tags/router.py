@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
     response_model=list[tags_schema.Tag],
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": """User does not belong to group""",
+            "description": "User does not belong to group",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
@@ -43,7 +43,17 @@ def retrieve_tags_without_pagination(
     ],
     group_id: UUID | None = None,
 ):
-    """Retrieves (without pagination) tags of the current user
+    """Get all tags without pagination
+
+    If non-empty `group_id` parameter is supplied it will
+    return all tags belonging to this group if and only if current
+    user belongs to this group.
+    If non-empty `group_id` parameter is provided and current
+    user does not belong to this group - http status code 403 (Forbidden) will
+    be raised.
+    If `group_id` parameter is not provided (empty) then
+    will return all tags of the current user.
+
 
     Required scope: `{scope}`
     """

@@ -201,6 +201,18 @@ def update_document_type(
     """
     try:
         with db.Session() as db_session:
+            if attrs.group_id:
+                group_id = attrs.group_id
+                ok = dbapi.user_belongs_to(
+                    db_session, user_id=attrs.id, group_id=group_id
+                )
+                if not ok:
+                    user_id = cur_user.id
+                    detail = f"User {user_id=} does not belong to group {group_id=}"
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=detail
+                    )
+
             dtype: schema.DocumentType = dbapi.update_document_type(
                 db_session,
                 document_type_id=document_type_id,

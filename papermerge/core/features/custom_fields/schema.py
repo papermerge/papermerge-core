@@ -34,6 +34,7 @@ class CreateCustomField(BaseModel):
     name: str
     type: CustomFieldType
     extra_data: str | None = None
+    group_id: UUID | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -43,6 +44,8 @@ class UpdateCustomField(BaseModel):
     name: str | None = None
     type: CustomFieldType | None = None
     extra_data: str | None = None
+    group_id: UUID | None = None
+    user_id: UUID | None = None
 
 
 class CustomFieldValue(CustomField):

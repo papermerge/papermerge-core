@@ -71,13 +71,18 @@ def get_custom_fields(
 
 
 def get_custom_fields_without_pagination(
-    db_session: Session, user_id: uuid.UUID
+    db_session: Session,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
 ) -> list[schema.CustomField]:
-    stmt = (
-        select(orm.CustomField)
-        .order_by(orm.CustomField.name.asc())
-        .where(orm.CustomField.user_id == user_id)
-    )
+    stmt_base = select(orm.CustomField).order_by(orm.CustomField.name.asc())
+
+    if group_id:
+        stmt = stmt_base.where(orm.CustomField.group_id == group_id)
+    elif user_id:
+        stmt = stmt_base.where(orm.CustomField.user_id == user_id)
+    else:
+        raise ValueError("Both: group_id and user_id are missing")
 
     db_cfs = db_session.scalars(stmt).all()
     items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]
@@ -150,6 +155,14 @@ def update_custom_field(
 
     if attrs.extra_data:
         cfield.extra_data = attrs.extra_data
+
+    if attrs.user_id:
+        cfield.user_id = attrs.user_id
+        cfield.group_id = None
+
+    if attrs.group_id:
+        cfield.user_id = None
+        cfield.group_id = attrs.group_id
 
     session.commit()
     result = schema.CustomField.model_validate(cfield)

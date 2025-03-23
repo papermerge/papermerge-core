@@ -203,3 +203,47 @@ def test_delete_tag_which_has_associated_document(
     # but tag was deleted
     q_tag = db_session.query(orm.Tag).filter(orm.Tag.name == "important")
     assert db_session.query(q_tag.exists()).scalar() is False
+
+
+def test__negative__tags_all_route_with_group_id_param(
+    make_tag, auth_api_client: AuthTestClient, user
+):
+    """In this scenario current user does not belong to the
+    group provided as parameter"""
+    user_a_tags_count = 5
+    for i in range(user_a_tags_count):
+        make_tag(name=f"Tag {i}", user=user)
+
+    group_id = uuid.uuid4()
+    response = auth_api_client.get("/tags/all", params={"group_id": str(group_id)})
+
+    assert response.status_code == 403, response.json()
+
+
+def test__positive__tags_all_route_with_group_id_param(
+    db_session, make_tag, auth_api_client: AuthTestClient, user, make_group
+):
+    """In this scenario current user belongs to the
+    group provided as parameter and there are two tags
+    belonging to that group. In such case endpoint should
+    return only two tags: the both belonging to the group
+    """
+    group: orm.Group = make_group("research")
+
+    user_a_tags_count = 5
+    for i in range(user_a_tags_count):
+        make_tag(name=f"Tag {i}", user=user)
+
+    make_tag(name="tag research 1", group_id=group.id)
+    make_tag(name="tag research 2", group_id=group.id)
+
+    # user belongs to 'research' group
+    user.groups.append(group)
+    db_session.add(user)
+    db_session.commit()
+
+    response = auth_api_client.get("/tags/all", params={"group_id": str(group.id)})
+
+    assert response.status_code == 200, response.json()
+    dtype_names = {schema.Tag(**kw).name for kw in response.json()}
+    assert dtype_names == {"tag research 1", "tag research 2"}

@@ -204,7 +204,15 @@ def delete_custom_field(
 
 
 @router.patch(
-    "/{custom_field_id}", status_code=200, response_model=cf_schema.CustomField
+    "/{custom_field_id}",
+    status_code=200,
+    response_model=cf_schema.CustomField,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_UPDATE)
 def update_custom_field(

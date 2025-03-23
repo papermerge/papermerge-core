@@ -26,19 +26,40 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/all", response_model=list[tags_schema.Tag])
+@router.get(
+    "/all",
+    response_model=list[tags_schema.Tag],
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 def retrieve_tags_without_pagination(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ]
+    ],
+    group_id: UUID | None = None,
 ):
     """Retrieves (without pagination) tags of the current user
 
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        tags = tags_dbapi.get_tags_without_pagination(db_session, user_id=user.id)
+        if group_id:
+            ok = users_dbapi.user_belongs_to(
+                db_session, user_id=user.id, group_id=group_id
+            )
+            if not ok:
+                detail = f"User {user.id=} does not belong to group {group_id=}"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
+                )
+        tags = tags_dbapi.get_tags_without_pagination(
+            db_session, user_id=user.id, group_id=group_id
+        )
 
     return tags
 
@@ -157,7 +178,16 @@ def delete_tag(
         raise HTTPException(status_code=404, detail="Does not exists")
 
 
-@router.patch("/{tag_id}", status_code=200)
+@router.patch(
+    "/{tag_id}",
+    status_code=200,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.TAG_UPDATE)
 def update_tag(
     tag_id: UUID,
@@ -171,9 +201,18 @@ def update_tag(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        tag, error = tags_dbapi.update_tag(
-            db_session, tag_id=tag_id, attrs=attrs, user_id=user.id
-        )
+        if attrs.group_id:
+            group_id = attrs.group_id
+            ok = users_dbapi.user_belongs_to(
+                db_session, user_id=attrs.id, group_id=group_id
+            )
+            if not ok:
+                user_id = user.id
+                detail = f"User {user_id=} does not belong to group {group_id=}"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
+                )
+        tag, error = tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

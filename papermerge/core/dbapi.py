@@ -1,5 +1,5 @@
 from .features.page_mngm.db.api import move_pages
-from .features.users.db.api import update_user, get_users_count, change_password, get_user
+from .features.users.db.api import update_user, get_users_count, change_password, get_user, user_belongs_to
 from .features.document.db.api import (
     get_last_doc_ver,
     upload,
@@ -61,6 +61,7 @@ __all__ = [
     "get_user",
     "change_password",
     "get_users_count",
+    "user_belongs_to",
     # groups
     "get_group",
     "delete_group",

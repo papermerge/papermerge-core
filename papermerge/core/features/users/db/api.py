@@ -347,3 +347,19 @@ def change_password(
     user = schema.User.model_validate(db_user)
 
     return user, None
+
+
+def user_belongs_to(
+    db_session: db.Session, group_id: uuid.UUID, user_id: uuid.UUID
+) -> bool:
+    """Does user belong to group?"""
+    stmt = (
+        select(func.count())
+        .select_from(user_groups_association)
+        .where(
+            user_groups_association.c.user_id == user_id,
+            user_groups_association.c.group_id == group_id,
+        )
+    )
+    result = db_session.execute(stmt).scalar()
+    return result > 0

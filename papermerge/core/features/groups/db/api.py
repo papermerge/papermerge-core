@@ -2,11 +2,9 @@ import logging
 import math
 import uuid
 
-from sqlalchemy import delete, select, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select, func
 
 from papermerge.core import schema, orm
-from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.db.engine import Session
 

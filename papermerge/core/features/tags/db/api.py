@@ -102,10 +102,10 @@ def get_tag(
 
 
 def create_tag(
-    db_session, attrs: schema.CreateTag, user_id: uuid.UUID
+    db_session, attrs: schema.CreateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
-    db_tag = orm.Tag(user_id=user_id, **attrs.model_dump())
+    db_tag = orm.Tag(**attrs.model_dump())
     db_session.add(db_tag)
 
     try:

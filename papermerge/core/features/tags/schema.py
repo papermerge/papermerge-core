@@ -24,6 +24,8 @@ class CreateTag(BaseModel):
     fg_color: str = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
+    group_id: UUID | None = None
+    user_id: UUID | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -35,6 +37,8 @@ class UpdateTag(BaseModel):
     fg_color: Optional[str] = None
     description: Optional[str] = None
     pinned: Optional[bool] = False
+    group_id: UUID | None = None
+    user_id: UUID | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

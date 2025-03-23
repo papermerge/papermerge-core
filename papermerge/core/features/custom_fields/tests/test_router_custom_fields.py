@@ -133,7 +133,7 @@ def test_custom_fields_without_pagination(
 
 
 def test__negative__custom_fields_all_route_with_group_id_param(
-    make_custom_field, auth_api_client: AuthTestClient, user
+    make_custom_field, auth_api_client: AuthTestClient
 ):
     """In this scenario current user does not belong to the
     group provided as parameter"""

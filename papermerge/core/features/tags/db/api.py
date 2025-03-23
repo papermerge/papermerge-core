@@ -24,9 +24,18 @@ ORDER_BY_MAP = {
 
 
 def get_tags_without_pagination(
-    db_session: Session, *, user_id: uuid.UUID
+    db_session: Session,
+    *,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
 ) -> list[schema.Tag]:
-    stmt = select(orm.Tag).where(orm.Tag.user_id == user_id)
+    if group_id:
+        stmt = select(orm.Tag).where(orm.Tag.group_id == group_id)
+    elif user_id:
+        stmt = select(orm.Tag).where(orm.Tag.user_id == user_id)
+    else:
+        raise ValueError("Both: group_id and user_id are missing")
+
     db_items = db_session.scalars(stmt).all()
     result = [schema.Tag.model_validate(db_item) for db_item in db_items]
 
@@ -102,10 +111,10 @@ def get_tag(
 
 
 def create_tag(
-    db_session, attrs: schema.CreateTag, user_id: uuid.UUID
+    db_session, attrs: schema.CreateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
-    db_tag = orm.Tag(user_id=user_id, **attrs.model_dump())
+    db_tag = orm.Tag(**attrs.model_dump())
     db_session.add(db_tag)
 
     try:
@@ -118,12 +127,12 @@ def create_tag(
 
 
 def update_tag(
-    db_session, tag_id: uuid.UUID, attrs: schema.UpdateTag, user_id: uuid.UUID
+    db_session, tag_id: uuid.UUID, attrs: schema.UpdateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     stmt = (
         update(orm.Tag)
-        .where(orm.Tag.id == tag_id, orm.Tag.user_id == user_id)
+        .where(orm.Tag.id == tag_id)
         .values(**attrs.model_dump(exclude_unset=True))
     )
     try:

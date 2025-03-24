@@ -228,7 +228,7 @@ def update_custom_field(
         if attrs.group_id:
             group_id = attrs.group_id
             ok = user_dbapi.user_belongs_to(
-                db_session, user_id=attrs.id, group_id=group_id
+                db_session, user_id=cur_user.id, group_id=group_id
             )
             if not ok:
                 user_id = cur_user.id
@@ -236,6 +236,8 @@ def update_custom_field(
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=detail
                 )
+        else:
+            attrs.user_id = cur_user.id
         try:
             cfield: cf_schema.CustomField = dbapi.update_custom_field(
                 db_session, custom_field_id=custom_field_id, attrs=attrs

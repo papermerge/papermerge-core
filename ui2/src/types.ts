@@ -225,6 +225,8 @@ export type NewCustomField = {
   name: string
   type: CustomFieldDataType
   extra_data?: string
+  group_id?: string
+  group_name?: string
 }
 
 export type CustomField = NewCustomField & {

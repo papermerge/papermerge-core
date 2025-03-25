@@ -203,9 +203,13 @@ def update_custom_field(
     if attrs.group_id:
         cfield.user_id = None
         cfield.group_id = attrs.group_id
-    else:
+    elif attrs.user_id:
         cfield.user_id = attrs.user_id
         cfield.group_id = None
+    else:
+        raise ValueError(
+            "Either attrs.user_id or attrs.group_id should be non-empty value"
+        )
 
     session.commit()
     result = schema.CustomField.model_validate(cfield)

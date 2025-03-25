@@ -45,7 +45,7 @@ def test_custom_field_update(db_session: Session, user: User):
     dbapi.update_custom_field(
         db_session,
         custom_field_id=cfield.id,
-        attrs=schema.UpdateCustomField(name="new_cf1_name"),
+        attrs=schema.UpdateCustomField(name="new_cf1_name", user_id=user.id),
     )
 
     updated_cf1 = dbapi.get_custom_field(db_session, cfield.id)

@@ -7,9 +7,11 @@ import {
   lastPageSizeUpdate,
   selectLastPageSize,
   selectReverseSortedByName,
+  selectReverseSortedByOwner,
   selectReverseSortedByType,
   selectSelectedIds,
   selectSortedByName,
+  selectSortedByOwner,
   selectSortedByType,
   selectTableSortColumns,
   selectionAddMany,
@@ -27,8 +29,10 @@ export default function CustomFieldsList() {
   const tablerSortCols = useSelector(selectTableSortColumns)
   const sortedByName = useSelector(selectSortedByName)
   const sortedByType = useSelector(selectSortedByType)
+  const sortedByOwner = useSelector(selectSortedByOwner)
   const reverseSortedByName = useSelector(selectReverseSortedByName)
   const reverseSortedByType = useSelector(selectReverseSortedByType)
+  const reverseSortedByOwner = useSelector(selectReverseSortedByOwner)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
   const [page, setPage] = useState<number>(1)
@@ -140,6 +144,13 @@ export default function CustomFieldsList() {
               onSort={() => onSortBy("type")}
             >
               Type
+            </Th>
+            <Th
+              sorted={sortedByOwner}
+              reversed={reverseSortedByOwner}
+              onSort={() => onSortBy("group_name")}
+            >
+              Owner
             </Th>
           </Table.Tr>
         </Table.Thead>

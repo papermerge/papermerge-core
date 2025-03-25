@@ -25,6 +25,8 @@ class CustomField(BaseModel):
     # Basically `extra_data` is either a stringified JSON i.e. json.dumps(...)
     # or an actually python dict (or None)
     extra_data: str | dict | None
+    group_id: UUID | None = None
+    group_name: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

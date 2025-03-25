@@ -1,6 +1,8 @@
+import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
 import type {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,
+  ComboboxItem,
   Group,
   Loader,
   LoadingOverlay,
@@ -38,6 +40,7 @@ export default function EditGroupModal({
   const [dataType, setDataType] = useState<CustomFieldDataType>(
     data?.type || "text"
   )
+  const [owner, setOwner] = useState<ComboboxItem>({value: "", label: "Me"})
 
   useEffect(() => {
     formReset()
@@ -46,6 +49,11 @@ export default function EditGroupModal({
   const formReset = () => {
     if (data) {
       setName(data.name || "")
+      if (data.group_id && data.group_name) {
+        setOwner({value: data.group_id, label: data.group_name})
+      } else {
+        setOwner({value: "", label: "Me"})
+      }
     }
   }
 
@@ -56,14 +64,22 @@ export default function EditGroupModal({
       extra_data = JSON.stringify({currency: currency})
     }
 
-    let updatedData = {
+    const updatedData = {
       id: customFieldId,
       name: name,
       type: dataType,
       extra_data: extra_data
     }
 
-    await updateCustomField(updatedData)
+    let cfData
+    if (owner.value && owner.value != "") {
+      // @ts-ignore
+      cfData = {...updatedData, group_id: owner.value}
+    } else {
+      cfData = updatedData
+    }
+
+    await updateCustomField(cfData)
     formReset()
     onSubmit()
   }
@@ -75,6 +91,10 @@ export default function EditGroupModal({
 
   const onCurrencyChange = (value: string | null) => {
     setCurrency(value as CurrencyType)
+  }
+
+  const onOwnerChange = (option: ComboboxItem) => {
+    setOwner(option)
   }
 
   return (
@@ -104,6 +124,7 @@ export default function EditGroupModal({
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }
       />
+      <OwnerSelector value={owner} onChange={onOwnerChange} />
       {dataType == "monetary" && (
         <Select
           mt="sm"

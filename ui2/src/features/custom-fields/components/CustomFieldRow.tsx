@@ -38,6 +38,7 @@ export default function CustomFieldRow({customField}: Args) {
       <Table.Td>
         <Link to={`/custom-fields/${customField.id}`}>{customField.type}</Link>
       </Table.Td>
+      <Table.Td>{customField.group_name || "Me"}</Table.Td>
     </Table.Tr>
   )
 }

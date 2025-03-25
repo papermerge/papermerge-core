@@ -72,6 +72,16 @@ const customFieldsSlice = createSlice({
         state.listTableSort.sortBy == "-type"
       ) {
         state.listTableSort.sortBy = "type"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "group_name"
+      ) {
+        state.listTableSort.sortBy = "-group_name"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "-group_name"
+      ) {
+        state.listTableSort.sortBy = "group_name"
       } else {
         state.listTableSort.sortBy = columnName
       }
@@ -173,6 +183,25 @@ export const selectSortedByType = (state: RootState) => {
 
 export const selectReverseSortedByType = (state: RootState) => {
   if (state.customFields.listTableSort.sortBy == "-type") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByOwner = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "group_name") {
+    return true
+  }
+  if (state.customFields.listTableSort.sortBy == "-group_name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByOwner = (state: RootState) => {
+  if (state.customFields.listTableSort.sortBy == "-group_name") {
     return true
   }
 

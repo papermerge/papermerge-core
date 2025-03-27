@@ -1,18 +1,21 @@
-import {useState, useEffect} from "react"
+import {useEffect, useState} from "react"
 
-import {
-  Text,
-  Loader,
-  Checkbox,
-  Group,
-  Button,
-  Modal,
-  TextInput,
-  ColorInput,
-  Pill,
-  Box
-} from "@mantine/core"
+import {OWNER_ME} from "@/cconstants"
+import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
 import {useAddNewTagMutation} from "@/features/tags/apiSlice"
+import {
+  Box,
+  Button,
+  Checkbox,
+  ColorInput,
+  ComboboxItem,
+  Group,
+  Loader,
+  Modal,
+  Pill,
+  Text,
+  TextInput
+} from "@mantine/core"
 
 interface Args {
   opened: boolean
@@ -28,6 +31,7 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
   const [bgColor, setBgColor] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
+  const [owner, setOwner] = useState<ComboboxItem>({label: OWNER_ME, value: ""})
 
   useEffect(() => {
     // close dialog as soon as we have
@@ -50,6 +54,11 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
     setFgColor(value)
   }
 
+  const onOwnerChange = (option: ComboboxItem) => {
+    setOwner(option)
+    console.log(option)
+  }
+
   const onLocalSubmit = async () => {
     const newTagData = {
       name,
@@ -58,8 +67,16 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
       bg_color: bgColor,
       fg_color: fgColor
     }
+    let tagData
+
+    if (owner.value && owner.value != "") {
+      tagData = {...newTagData, group_id: owner.value}
+    } else {
+      tagData = newTagData
+    }
+
     try {
-      await addNewTag(newTagData).unwrap()
+      await addNewTag(tagData).unwrap()
     } catch (err: unknown) {
       // @ts-ignore
       setError(err.data.detail)
@@ -114,6 +131,7 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
           {name || ""}
         </Pill>
       </Box>
+      <OwnerSelector value={owner} onChange={onOwnerChange} />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>

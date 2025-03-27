@@ -11,13 +11,6 @@ import {useEffect, useState} from "react"
 
 import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
 
-const INITIAL_SCOPES = {
-  "user.me": true,
-  "page.view": true,
-  "node.view": true,
-  "ocrlang.view": true
-}
-
 interface Args {
   opened: boolean
   onSubmit: () => void

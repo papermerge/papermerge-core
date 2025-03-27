@@ -1,8 +1,9 @@
-import {createSlice, createSelector, PayloadAction} from "@reduxjs/toolkit"
+import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 
 import {RootState} from "@/app/types"
-import type {Group, Paginated, PaginationType} from "@/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import type {Paginated, PaginationType} from "@/types"
+import type {Group} from "@/types.d/groups"
 import {apiSliceWithGroups} from "./apiSlice"
 
 export type GroupSlice = {

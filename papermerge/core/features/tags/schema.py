@@ -13,6 +13,8 @@ class Tag(BaseModel):
     fg_color: str | None = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
+    group_id: UUID | None = None
+    group_name: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

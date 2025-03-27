@@ -8,11 +8,13 @@ import {
   selectReverseSortedByDescription,
   selectReverseSortedByID,
   selectReverseSortedByName,
+  selectReverseSortedByOwner,
   selectReverseSortedByPinned,
   selectSelectedIds,
   selectSortedByDescription,
   selectSortedByID,
   selectSortedByName,
+  selectSortedByOwner,
   selectSortedByPinned,
   selectTableSortColumns,
   selectionAddMany,
@@ -36,12 +38,14 @@ export default function TagsList() {
   const sortedByPinned = useSelector(selectSortedByPinned)
   const sortedByDescription = useSelector(selectSortedByDescription)
   const sortedByID = useSelector(selectSortedByID)
+  const sortedByOwner = useSelector(selectSortedByOwner)
   const reverseSortedByName = useSelector(selectReverseSortedByName)
   const reverseSortedByPinned = useSelector(selectReverseSortedByPinned)
   const reverseSortedByDescription = useSelector(
     selectReverseSortedByDescription
   )
   const reverseSortedByID = useSelector(selectReverseSortedByID)
+  const reverseSortedByOwner = useSelector(selectReverseSortedByOwner)
 
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
@@ -157,6 +161,13 @@ export default function TagsList() {
               onSort={() => onSortBy("description")}
             >
               Description
+            </Th>
+            <Th
+              sorted={sortedByOwner}
+              reversed={reverseSortedByOwner}
+              onSort={() => onSortBy("group_name")}
+            >
+              Owner
             </Th>
             <Th
               sorted={sortedByID}

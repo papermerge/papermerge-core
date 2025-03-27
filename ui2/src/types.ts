@@ -90,11 +90,19 @@ export type NewColoredTag = {
   fg_color: string
   pinned: boolean
   description: string
+  group_id?: string
+  group_name?: string
 }
 
 export type ColoredTagUpdate = Pick<
   ColoredTag,
-  "id" | "name" | "bg_color" | "fg_color" | "description" | "pinned"
+  | "id"
+  | "name"
+  | "bg_color"
+  | "fg_color"
+  | "description"
+  | "pinned"
+  | "group_id"
 >
 
 export type ColoredTag = NewColoredTag & {
@@ -108,6 +116,8 @@ export type ColoredTagType = {
   fg_color: string
   pinned: boolean
   description: string
+  group_id?: string
+  group_name?: string
 }
 
 export type NType = {

@@ -78,3 +78,5 @@ export const CURRENCIES = [
   "THB",
   "TL"
 ]
+
+export const OWNER_ME = "Me"

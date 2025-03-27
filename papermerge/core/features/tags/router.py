@@ -82,7 +82,7 @@ def retrieve_tags(
     ],
     params: PaginatedQueryParams = Depends(),
 ):
-    """Retrieves (paginated) tags of the current user
+    """Retrieves (paginated) list of tags
 
     Required scope: `{scope}`
     """
@@ -113,7 +113,7 @@ def get_tag_details(
     """
     try:
         with Session() as db_session:
-            tag, error = tags_dbapi.get_tag(db_session, tag_id=tag_id, user_id=user.id)
+            tag, error = tags_dbapi.get_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -183,7 +183,7 @@ def delete_tag(
     """
     try:
         with Session() as db_session:
-            tags_dbapi.delete_tag(db_session, tag_id=tag_id, user_id=user.id)
+            tags_dbapi.delete_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -214,7 +214,7 @@ def update_tag(
         if attrs.group_id:
             group_id = attrs.group_id
             ok = users_dbapi.user_belongs_to(
-                db_session, user_id=attrs.id, group_id=group_id
+                db_session, user_id=user.id, group_id=group_id
             )
             if not ok:
                 user_id = user.id
@@ -222,6 +222,8 @@ def update_tag(
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=detail
                 )
+        else:
+            attrs.user_id = user.id
         tag, error = tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
 
     if error:

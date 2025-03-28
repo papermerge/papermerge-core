@@ -4,6 +4,7 @@ export type NewDocType = {
   name: string
   path_template?: string
   custom_field_ids: Array<string>
+  group_id?: string
 }
 
 export type DocType = {

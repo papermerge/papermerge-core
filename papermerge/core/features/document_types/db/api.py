@@ -2,8 +2,8 @@ import logging
 import uuid
 
 
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
+from sqlalchemy import select, func, or_
+from sqlalchemy.orm import Session, aliased
 
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
@@ -46,7 +46,7 @@ ORDER_BY_MAP = {
 
 
 def get_document_types(
-    session: Session,
+    db_session: Session,
     user_id: uuid.UUID,
     page_size: int,
     page_number: int,
@@ -54,21 +54,38 @@ def get_document_types(
     order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.DocumentType]:
 
+    UserGroupAlias = aliased(orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+
     stmt_total_doc_types = select(func.count(DocumentType.id)).where(
-        DocumentType.user_id == user_id
+        or_(
+            orm.DocumentType.user_id == user_id, orm.DocumentType.group_id.in_(subquery)
+        )
     )
     if filter:
         stmt_total_doc_types = stmt_total_doc_types.where(
             orm.DocumentType.name.icontains(filter)
         )
-    total_doc_types = session.execute(stmt_total_doc_types).scalar()
+    total_doc_types = db_session.execute(stmt_total_doc_types).scalar()
     order_by_value = ORDER_BY_MAP.get(order_by, orm.DocumentType.name.asc())
 
     offset = page_size * (page_number - 1)
 
     stmt = (
-        select(DocumentType)
-        .where(DocumentType.user_id == user_id)
+        select(
+            orm.DocumentType,
+            orm.Group.name.label("group_name"),
+            orm.Group.id.label("group_id"),
+        )
+        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        .where(
+            or_(
+                orm.DocumentType.user_id == user_id,
+                orm.DocumentType.group_id.in_(subquery),
+            )
+        )
         .limit(page_size)
         .offset(offset)
         .order_by(order_by_value)
@@ -76,8 +93,20 @@ def get_document_types(
     if filter:
         stmt = stmt.where(orm.DocumentType.name.icontains(filter))
 
-    db_items = session.scalars(stmt).all()
-    items = [schema.DocumentType.model_validate(db_item) for db_item in db_items]
+    items = []
+
+    for row in db_session.execute(stmt):
+        kwargs = {
+            "id": row.DocumentType.id,
+            "name": row.DocumentType.name,
+            "path_template": row.DocumentType.path_template,
+            "custom_fields": row.DocumentType.custom_fields,
+        }
+        if row.group_name and row.group_id:
+            kwargs["group_id"] = row.group_id
+            kwargs["group_name"] = row.group_name
+
+        items.append(schema.DocumentType(**kwargs))
 
     total_pages = int(total_doc_types / page_size) + 1
 

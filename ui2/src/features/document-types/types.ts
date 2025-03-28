@@ -12,6 +12,8 @@ export type DocType = {
   name: string
   path_template?: string
   custom_fields: Array<CustomField>
+  group_name?: string
+  group_id?: string
 }
 
 export type DocTypeUpdate = {
@@ -20,5 +22,9 @@ export type DocTypeUpdate = {
   custom_field_ids: Array<string>
 }
 
-export type DocumentTypeListColumnName = "name"
-export type DocumentTypeSortByInput = "name" | "-name"
+export type DocumentTypeListColumnName = "name" | "group_name"
+export type DocumentTypeSortByInput =
+  | "name"
+  | "-name"
+  | "group_name"
+  | "-group_name"

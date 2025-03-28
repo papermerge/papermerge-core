@@ -42,6 +42,8 @@ def get_document_types_without_pagination(
 ORDER_BY_MAP = {
     "name": orm.DocumentType.name.asc(),
     "-name": orm.DocumentType.name.desc(),
+    "group_name": orm.Group.name.asc().nullsfirst(),
+    "-group_name": orm.Group.name.desc().nullslast(),
 }
 
 
@@ -154,9 +156,23 @@ def create_document_type(
 def get_document_type(
     session: Session, document_type_id: uuid.UUID
 ) -> schema.DocumentType:
-    stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    db_item = session.scalars(stmt).unique().one()
-    result = schema.DocumentType.model_validate(db_item)
+    stmt = (
+        select(orm.DocumentType, orm.Group)
+        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        .where(DocumentType.id == document_type_id)
+    )
+    row = session.execute(stmt).unique().one()
+    kwargs = {
+        "id": row.DocumentType.id,
+        "name": row.DocumentType.name,
+        "path_template": row.DocumentType.path_template,
+        "custom_fields": row.DocumentType.custom_fields,
+    }
+    if row.Group and row.Group.id:
+        kwargs["group_id"] = row.Group.id
+        kwargs["group_name"] = row.Group.name
+
+    result = schema.DocumentType(**kwargs)
     return result
 
 

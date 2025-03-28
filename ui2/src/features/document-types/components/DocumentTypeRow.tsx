@@ -1,3 +1,4 @@
+import {OWNER_ME} from "@/cconstants"
 import {
   selectSelectedIds,
   selectionAdd,
@@ -37,6 +38,7 @@ export default function DocumentTypeRow({documentType}: Args) {
           {documentType.name}
         </Link>
       </Table.Td>
+      <Table.Td>{documentType.group_name || OWNER_ME}</Table.Td>
     </Table.Tr>
   )
 }

@@ -1,3 +1,4 @@
+import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import type {CustomField} from "@/types"
 import {
@@ -46,6 +47,15 @@ export default function DocumentTypeForm({documentType}: Args) {
         onChange={() => {}}
         rightSection={<CopyButton value={documentType?.path_template || ""} />}
         value={documentType?.path_template}
+      />
+      <TextInput
+        my="md"
+        label="Owner"
+        value={documentType?.group_name || OWNER_ME}
+        onChange={() => {}}
+        rightSection={
+          <CopyButton value={documentType?.group_name || OWNER_ME} />
+        }
       />
     </Box>
   )

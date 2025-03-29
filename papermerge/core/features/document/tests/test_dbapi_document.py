@@ -191,9 +191,7 @@ def test_document_without_cfv_update_document_type_to_none(
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
 
-    dbapi.update_doc_type(
-        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
-    )
+    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
@@ -233,9 +231,7 @@ def test_document_with_cfv_update_document_type_to_none(
     assert db_session.execute(stmt).scalar() == 1
 
     # set document type to None
-    dbapi.update_doc_type(
-        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
-    )
+    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields

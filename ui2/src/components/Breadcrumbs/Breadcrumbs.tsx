@@ -106,6 +106,8 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   const mode: PanelMode = useContext(PanelContext)
   const lastHome = useAppSelector(s => selectLastHome(s, mode))
   const lastInbox = useAppSelector(s => selectLastInbox(s, mode))
+  let homeLabel = "Home"
+  let inboxLabel = "Inbox"
 
   const onLocalClick = (id: string) => {
     onClick({id: id, ctype: "folder"})
@@ -116,6 +118,26 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   }
 
   if (equalUUIDs(itemId, lastHome?.home_id || user.home_folder_id)) {
+    if (lastHome?.home_id == user.home_folder_id) {
+      homeLabel = "My Home"
+    } else if (itemId == user.home_folder_id) {
+      homeLabel = "My Home"
+    } else if (lastHome?.label) {
+      homeLabel = `${lastHome?.label} Home`
+    }
+  }
+
+  if (equalUUIDs(itemId, lastInbox?.inbox_id || user.inbox_folder_id)) {
+    if (lastInbox?.inbox_id == user.inbox_folder_id) {
+      inboxLabel = "My Inbox"
+    } else if (itemId == user.inbox_folder_id) {
+      inboxLabel = "My Inbox"
+    } else if (lastInbox?.label) {
+      inboxLabel = `${lastInbox?.label} Inbox`
+    }
+  }
+
+  if (equalUUIDs(itemId, lastHome?.home_id || user.home_folder_id)) {
     return (
       <Group>
         <Anchor
@@ -123,7 +145,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
         >
           <Group>
             <IconHome />
-            Home
+            {homeLabel}
           </Group>
         </Anchor>
         <Menu shadow="md">
@@ -140,7 +162,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
             >
               <Group>
                 <IconInbox />
-                Inbox
+                {inboxLabel}
               </Group>
             </MenuItem>
           </Menu.Dropdown>
@@ -157,7 +179,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
         }
       >
         <Group>
-          <IconInbox /> Inbox
+          <IconInbox /> {inboxLabel}
         </Group>
       </Anchor>
       <Menu shadow="md">
@@ -174,7 +196,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
           >
             <Group>
               <IconHome />
-              Home
+              {homeLabel}
             </Group>
           </MenuItem>
         </Menu.Dropdown>

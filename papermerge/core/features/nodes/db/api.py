@@ -150,8 +150,8 @@ def update_node(
     user_id: uuid.UUID,
     attrs: schema.UpdateNode,
 ) -> schema.Node:
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
-    node = db_session.scalars(stmt).one_or_none()
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
+    node = db_session.scalars(stmt).one()
     if attrs.title is not None:
         node.title = attrs.title
 
@@ -208,7 +208,7 @@ def assign_node_tags(
     """
     error = None
 
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = db_session.scalars(stmt).one_or_none()
 
     if node is None:
@@ -220,7 +220,7 @@ def assign_node_tags(
     existing_db_tags_names = [t.name for t in existing_db_tags.all()]
     # create new tags if they don't exist
     new_db_tags = [
-        orm.Tag(name=name, user_id=user_id)
+        orm.Tag(name=name, user_id=node.user_id, group_id=node.group_id)
         for name in tags
         if name not in existing_db_tags_names
     ]
@@ -248,13 +248,13 @@ def update_node_tags(
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
     error = None
 
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = db_session.scalars(stmt).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
+    db_tags = [orm.Tag(name=name) for name in tags]
     db_session.add_all(db_tags)
 
     try:
@@ -280,7 +280,7 @@ def get_node_tags(
         orm.NodeTagsAssociation.node_id == node_id
     )
 
-    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq), orm.Tag.user_id == user_id)
+    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq))
 
     try:
         tags = db_session.execute(stmt).scalars()

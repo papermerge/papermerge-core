@@ -114,7 +114,8 @@ export const {
 } = tagsSlice.actions
 export default tagsSlice.reducer
 
-export const selectTagsResult = apiSliceWithTags.endpoints.getTags.select()
+export const selectTagsResult =
+  apiSliceWithTags.endpoints.getTags.select(undefined)
 export const selectItems = (_: RootState, items: string[]) => items
 
 export const selectTagsByName = createSelector(

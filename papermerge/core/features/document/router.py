@@ -193,7 +193,6 @@ def update_document_type(
                 db_session,
                 document_id=document_id,
                 document_type_id=document_type.document_type_id,
-                user_id=user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")

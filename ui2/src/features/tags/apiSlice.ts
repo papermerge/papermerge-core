@@ -38,8 +38,13 @@ export const apiSliceWithTags = apiSlice.injectEndpoints({
         _arg
       ) => ["Tag", ...result.items.map(({id}) => ({type: "Tag", id}) as const)]
     }),
-    getTags: builder.query<ColoredTag[], void>({
-      query: _tags => "/tags/all",
+    getTags: builder.query<ColoredTag[], string | undefined>({
+      query: (group_id: string | undefined) => {
+        if (group_id && group_id?.length > 0) {
+          return `/tags/all?group_id=${group_id}`
+        }
+        return "/tags/all"
+      },
       providesTags: (result = [], _error, _arg) => [
         "Tag",
         ...result.map(({id}) => ({type: "Tag", id}) as const)

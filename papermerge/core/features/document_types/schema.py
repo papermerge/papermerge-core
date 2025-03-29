@@ -10,6 +10,8 @@ class DocumentType(BaseModel):
     name: str
     path_template: str | None = None
     custom_fields: list[CustomField]
+    group_id: UUID | None = None
+    group_name: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

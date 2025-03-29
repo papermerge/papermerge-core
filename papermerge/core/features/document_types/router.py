@@ -184,7 +184,15 @@ def delete_document_type(
 
 
 @router.patch(
-    "/{document_type_id}", status_code=200, response_model=schema.DocumentType
+    "/{document_type_id}",
+    status_code=200,
+    response_model=schema.DocumentType,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_UPDATE)
 def update_document_type(
@@ -212,12 +220,13 @@ def update_document_type(
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN, detail=detail
                     )
+            else:
+                attrs.user_id = cur_user.id
 
             dtype: schema.DocumentType = dbapi.update_document_type(
                 db_session,
                 document_type_id=document_type_id,
                 attrs=attrs,
-                user_id=cur_user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")

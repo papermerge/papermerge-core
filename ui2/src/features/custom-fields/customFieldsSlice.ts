@@ -119,7 +119,7 @@ export const {
 export default customFieldsSlice.reducer
 
 export const selectCustomFieldsResult =
-  apiSliceWithCustomFields.endpoints.getCustomFields.select()
+  apiSliceWithCustomFields.endpoints.getCustomFields.select(undefined)
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 

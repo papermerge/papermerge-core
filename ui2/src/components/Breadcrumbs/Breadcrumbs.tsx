@@ -19,7 +19,11 @@ import {updateBreadcrumb} from "@/features/ui/uiSlice"
 import type {NType, PanelMode, UserDetails} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {selectLastHome, selectLastInbox} from "@/features/ui/uiSlice"
+import {lastHomeUpdated, lastInboxUpdated} from "@/features/ui/uiSlice"
+import {
+  useGetUserGroupHomesQuery,
+  useGetUserGroupInboxesQuery
+} from "@/features/users/apiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
 
@@ -101,51 +105,130 @@ type RootItemArgs = {
   onClick: (n: NType) => void
 }
 
+type RootType = "home" | "inbox"
+
 function RootItem({itemId, onClick}: RootItemArgs) {
   const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
   const mode: PanelMode = useContext(PanelContext)
-  const lastHome = useAppSelector(s => selectLastHome(s, mode))
-  const lastInbox = useAppSelector(s => selectLastInbox(s, mode))
-  let homeLabel = "Home"
-  let inboxLabel = "Inbox"
+  const dispatch = useAppDispatch()
 
-  const onLocalClick = (id: string) => {
+  const {data: inboxes, isLoading: inboxesAreLoading} =
+    useGetUserGroupInboxesQuery()
+  const {data: homes, isLoading: homesAreLoading} = useGetUserGroupHomesQuery()
+  let root_type: RootType = "home"
+  let currentID = itemId
+  let currentLabel = "My"
+
+  const onLocalClick = (id: string, label: string, root_type: RootType) => {
     onClick({id: id, ctype: "folder"})
+    if (root_type == "inbox") {
+      dispatch(
+        lastInboxUpdated({
+          mode: mode,
+          last_inbox: {
+            label: label,
+            inbox_id: id
+          }
+        })
+      )
+    } else {
+      dispatch(
+        lastHomeUpdated({
+          mode: mode,
+          last_home: {
+            label: label,
+            home_id: id
+          }
+        })
+      )
+    }
   }
 
-  if (!user) {
+  if (!user || inboxesAreLoading || homesAreLoading || !homes || !inboxes) {
     return <Skeleton>XXXX</Skeleton>
   }
 
-  if (equalUUIDs(itemId, lastHome?.home_id || user.home_folder_id)) {
-    if (lastHome?.home_id == user.home_folder_id) {
-      homeLabel = "My Home"
-    } else if (itemId == user.home_folder_id) {
-      homeLabel = "My Home"
-    } else if (lastHome?.label) {
-      homeLabel = `${lastHome?.label} Home`
+  if (equalUUIDs(itemId, user.home_folder_id)) {
+    root_type = "home"
+    currentLabel = "My Home"
+    currentID = user.home_folder_id
+  } else if (equalUUIDs(itemId, user.inbox_folder_id)) {
+    root_type = "inbox"
+    currentLabel = "My Inbox"
+    currentID = user.inbox_folder_id
+  } else if (homes.find(i => equalUUIDs(i.home_id, itemId))) {
+    const ho = homes.find(i => equalUUIDs(i.home_id, itemId))
+    root_type = "home"
+    if (ho) {
+      currentLabel = `${ho?.group_name} Home`
+      currentID = ho.home_id
+    }
+  } else if (inboxes.find(i => equalUUIDs(i.inbox_id, itemId))) {
+    const inb = inboxes.find(i => equalUUIDs(i.inbox_id, itemId))
+    root_type = "inbox"
+    if (inb) {
+      currentLabel = `${inb?.group_name} Inbox`
+      currentID = inb.inbox_id
     }
   }
 
-  if (equalUUIDs(itemId, lastInbox?.inbox_id || user.inbox_folder_id)) {
-    if (lastInbox?.inbox_id == user.inbox_folder_id) {
-      inboxLabel = "My Inbox"
-    } else if (itemId == user.inbox_folder_id) {
-      inboxLabel = "My Inbox"
-    } else if (lastInbox?.label) {
-      inboxLabel = `${lastInbox?.label} Inbox`
-    }
-  }
+  const homes_components = homes.map(i => (
+    <MenuItem
+      onClick={() => onLocalClick(i.home_id, `${i.group_name} Home`, root_type)}
+    >
+      <Group>
+        <IconHome /> {i.group_name}
+      </Group>
+    </MenuItem>
+  ))
+  const inbox_components = inboxes.map(i => (
+    <MenuItem
+      onClick={() =>
+        onLocalClick(i.inbox_id, `${i.group_name} Inbox`, root_type)
+      }
+    >
+      <Group>
+        <IconInbox />
+        {i.group_name}
+      </Group>
+    </MenuItem>
+  ))
+  const homes_and_inboxes_dropdown_component = [
+    <Menu.Label>
+      <Group>Home</Group>
+    </Menu.Label>,
+    <MenuItem
+      onClick={() => onLocalClick(user.home_folder_id, "My", root_type)}
+    >
+      <Group>
+        <IconHome />
+        My
+      </Group>
+    </MenuItem>,
+    ...homes_components,
+    <Menu.Divider />,
+    <Menu.Label>
+      <Group>Inbox</Group>
+    </Menu.Label>,
+    <MenuItem
+      onClick={() => onLocalClick(user.inbox_folder_id, "My Inbox", root_type)}
+    >
+      <Group>
+        <IconInbox /> My
+      </Group>
+    </MenuItem>,
+    ...inbox_components
+  ]
 
-  if (equalUUIDs(itemId, lastHome?.home_id || user.home_folder_id)) {
+  if (root_type == "home") {
     return (
       <Group>
         <Anchor
-          onClick={() => onLocalClick(lastHome?.home_id || user.home_folder_id)}
+          onClick={() => onLocalClick(currentID, currentLabel, root_type)}
         >
           <Group>
             <IconHome />
-            {homeLabel}
+            {currentLabel}
           </Group>
         </Anchor>
         <Menu shadow="md">
@@ -154,18 +237,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
               <IconChevronDown />
             </ActionIcon>
           </Menu.Target>
-          <Menu.Dropdown>
-            <MenuItem
-              onClick={() =>
-                onLocalClick(lastInbox?.inbox_id || user.inbox_folder_id)
-              }
-            >
-              <Group>
-                <IconInbox />
-                {inboxLabel}
-              </Group>
-            </MenuItem>
-          </Menu.Dropdown>
+          <Menu.Dropdown>{homes_and_inboxes_dropdown_component}</Menu.Dropdown>
         </Menu>
       </Group>
     )
@@ -173,13 +245,9 @@ function RootItem({itemId, onClick}: RootItemArgs) {
 
   return (
     <Group>
-      <Anchor
-        onClick={() =>
-          onLocalClick(lastInbox?.inbox_id || user.inbox_folder_id)
-        }
-      >
+      <Anchor onClick={() => onLocalClick(currentID, currentLabel, root_type)}>
         <Group>
-          <IconInbox /> {inboxLabel}
+          <IconInbox /> {currentLabel}
         </Group>
       </Anchor>
       <Menu shadow="md">
@@ -188,18 +256,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
             <IconChevronDown />
           </ActionIcon>
         </Menu.Target>
-        <Menu.Dropdown>
-          <MenuItem
-            onClick={() =>
-              onLocalClick(lastHome?.home_id || user.home_folder_id)
-            }
-          >
-            <Group>
-              <IconHome />
-              {homeLabel}
-            </Group>
-          </MenuItem>
-        </Menu.Dropdown>
+        <Menu.Dropdown>{homes_and_inboxes_dropdown_component}</Menu.Dropdown>
       </Menu>
     </Group>
   )

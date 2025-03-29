@@ -254,7 +254,11 @@ def update_node_tags(
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    db_tags = [orm.Tag(name=name) for name in tags]
+    if node.group_id:
+        db_tags = [orm.Tag(name=name, group_id=node.group_id) for name in tags]
+    else:
+        db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
+
     db_session.add_all(db_tags)
 
     try:

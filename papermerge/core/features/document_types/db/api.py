@@ -228,7 +228,7 @@ def update_document_type(
         # to new target path based on path template evaluation
         send_task(
             const.PATH_TMPL_MOVE_DOCUMENTS,
-            kwargs={"document_type_id": str(document_type_id), "user_id": str(user_id)},
+            kwargs={"document_type_id": str(document_type_id)},
             route_name="path_tmpl",
         )
 

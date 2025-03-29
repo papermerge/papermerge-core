@@ -109,7 +109,7 @@ export default function Folder({
         <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
         <a onClick={() => onClick(node)}>
           <div className={classes.folderIcon}></div>
-          <Tags names={tagNames} />
+          <Tags names={tagNames} node={node} />
           <div className={classes.title}>{node.title}</div>
         </a>
       </Stack>

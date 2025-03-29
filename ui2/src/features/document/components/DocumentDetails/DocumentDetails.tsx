@@ -79,7 +79,6 @@ export default function DocumentDetails() {
             value={groupData?.name || OWNER_ME}
             rightSection={<CopyButton value={groupData?.name || OWNER_ME} />}
           />
-          <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
           <Group>
             <TagsInput
               rightSection={<EditTagsButton />}
@@ -92,6 +91,7 @@ export default function DocumentDetails() {
           <Group>
             <CustomFields />
           </Group>
+          <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
         </Stack>
       </Group>
     )

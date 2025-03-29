@@ -148,11 +148,10 @@ def update_doc_type(
     session: Session,
     *,
     document_id: uuid.UUID,
-    user_id: uuid.UUID,
     document_type_id: uuid.UUID | None,
 ):
     stmt = select(orm.Document).where(
-        orm.Document.id == document_id, orm.Document.user_id == user_id
+        orm.Document.id == document_id
     )
     doc = session.scalars(stmt).one()
     if doc.document_type_id != document_type_id:

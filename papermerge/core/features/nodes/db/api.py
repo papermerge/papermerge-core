@@ -150,8 +150,8 @@ def update_node(
     user_id: uuid.UUID,
     attrs: schema.UpdateNode,
 ) -> schema.Node:
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
-    node = db_session.scalars(stmt).one_or_none()
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
+    node = db_session.scalars(stmt).one()
     if attrs.title is not None:
         node.title = attrs.title
 

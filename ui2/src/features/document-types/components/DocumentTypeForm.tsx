@@ -66,7 +66,7 @@ function CustomFieldTable({cfs}: {cfs?: Array<CustomField>}) {
     return <Skeleton />
   }
 
-  const customFieldRows = cfs.map(i => <CustomFieldRow cf={i} />)
+  const customFieldRows = cfs.map(i => <CustomFieldRow key={i.id} cf={i} />)
 
   return (
     <Fieldset legend="Custom Fields">

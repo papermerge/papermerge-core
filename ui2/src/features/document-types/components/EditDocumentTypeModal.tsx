@@ -52,11 +52,19 @@ export default function EditDocumentTypeModal({
       setName(data.name || "")
       setPathTemplate(data.path_template || "")
       setCustomFieldIDs(data.custom_fields.map(cf => cf.id) || [])
+      if (data.group_name && data.group_id) {
+        setOwner({label: data.group_name, value: data.group_id})
+      } else {
+        setOwner({label: OWNER_ME, value: ""})
+      }
+    } else {
+      setOwner({label: OWNER_ME, value: ""})
     }
   }
 
   const onOwnerChange = (option: ComboboxItem) => {
     setOwner(option)
+    setCustomFieldIDs([])
   }
 
   const onLocalSubmit = async () => {
@@ -66,8 +74,15 @@ export default function EditDocumentTypeModal({
       path_template: pathTemplate,
       custom_field_ids: customFieldIDs
     }
+    let dtData
+
+    if (owner.value && owner.value != "") {
+      dtData = {...updatedDocumentType, group_id: owner.value}
+    } else {
+      dtData = updatedDocumentType
+    }
     try {
-      await updateDocumentType(updatedDocumentType).unwrap()
+      await updateDocumentType(dtData).unwrap()
     } catch (err: unknown) {
       // @ts-ignore
       setError(err.data.detail)

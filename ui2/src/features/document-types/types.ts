@@ -20,6 +20,7 @@ export type DocTypeUpdate = {
   id: string
   name: string
   custom_field_ids: Array<string>
+  group_id?: string
 }
 
 export type DocumentTypeListColumnName = "name" | "group_name"

@@ -341,7 +341,8 @@ export type DocumentType = {
   document_type_id?: string
   versions: Array<DocumentVersion>
   parent_id: string | null
-  user_id: string
+  user_id?: string
+  group_id?: string
   updated_at: string
 }
 

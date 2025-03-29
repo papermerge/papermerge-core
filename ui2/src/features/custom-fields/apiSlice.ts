@@ -43,8 +43,8 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "CustomField", id}) as const)
       ]
     }),
-    getCustomFields: builder.query<CustomField[], string>({
-      query: (group_id: string) => {
+    getCustomFields: builder.query<CustomField[], string | undefined>({
+      query: (group_id?: string) => {
         if (group_id && group_id.length > 0) {
           return `/custom-fields/all?group_id=${group_id}`
         }

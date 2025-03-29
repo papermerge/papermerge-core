@@ -187,7 +187,6 @@ def update_document_type(
     session: Session,
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
-    user_id: uuid.UUID,
 ) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
     doc_type: DocumentType = session.execute(stmt).scalars().one()
@@ -203,13 +202,16 @@ def update_document_type(
     if attrs.name:
         doc_type.name = attrs.name
 
-    if attrs.user_id:
-        doc_type.user_id = attrs.user_id
-        doc_type.group_id = None
-
     if attrs.group_id:
         doc_type.user_id = None
         doc_type.group_id = attrs.group_id
+    elif attrs.user_id:
+        doc_type.user_id = attrs.user_id
+        doc_type.group_id = None
+    else:
+        raise ValueError(
+            "Either attrs.user_id or attrs.group_id should be non-empty value"
+        )
 
     notify_path_tmpl_worker = False
     if doc_type.path_template != attrs.path_template:

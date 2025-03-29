@@ -110,7 +110,7 @@ export const {
 export default documentTypesSlice.reducer
 
 export const selectDocumentTypesResult =
-  apiSliceWithDocTypes.endpoints.getDocumentTypes.select()
+  apiSliceWithDocTypes.endpoints.getDocumentTypes.select(undefined)
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 

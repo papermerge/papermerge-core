@@ -16,7 +16,7 @@ export default function DocumentTypeFilter() {
     selectCommanderDocumentTypeID(s, mode)
   )
   const dispatch = useAppDispatch()
-  const {data: allDocumentTypes = []} = useGetDocumentTypesQuery()
+  const {data: allDocumentTypes = []} = useGetDocumentTypesQuery(undefined)
   const [currentDocumentTypeID, setCurrentDocumentTypeID] = useState<
     string | undefined
   >(lastDocumentTypeID)

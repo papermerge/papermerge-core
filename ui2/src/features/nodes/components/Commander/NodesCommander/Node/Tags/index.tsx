@@ -6,11 +6,11 @@ import classes from "./Tags.module.css"
 type Args = {
   names: Array<string>
   maxItems?: number
-  node: NodeType
+  node?: NodeType
 }
 
 export default function Tags({maxItems, node, names}: Args) {
-  const {data: allTags, isLoading} = useGetTagsQuery(node.group_id)
+  const {data: allTags, isLoading} = useGetTagsQuery(node?.group_id)
 
   if (!allTags || isLoading) {
     return <Stack></Stack>

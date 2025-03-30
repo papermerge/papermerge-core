@@ -1,10 +1,13 @@
 import DualPanel from "@/components/DualPanel"
+import {
+  commanderViewOptionUpdated,
+  mainPanelComponentUpdated
+} from "@/features/ui/uiSlice"
 import type {User} from "@/types"
 import {getCurrentUser} from "@/utils"
 import {LoaderFunctionArgs} from "react-router"
 
 import {store} from "@/app/store"
-import {currentNodeChanged} from "@/features/ui/uiSlice"
 
 export default function CategoryListView() {
   return <DualPanel />
@@ -21,12 +24,10 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     folderId = user.home_folder_id
   }
 
+  store.dispatch(mainPanelComponentUpdated("commander"))
+
   store.dispatch(
-    currentNodeChanged({
-      id: folderId,
-      ctype: "folder",
-      panel: "main"
-    })
+    commanderViewOptionUpdated({mode: "main", viewOption: "document-type"})
   )
 
   return {folderId, urlParams: url.searchParams}

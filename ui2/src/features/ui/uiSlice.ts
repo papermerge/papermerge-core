@@ -1,5 +1,11 @@
 import type {RootState} from "@/app/types"
-import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {
+  MAX_ZOOM_FACTOR,
+  MIN_ZOOM_FACTOR,
+  PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+  ZOOM_FACTOR_INIT,
+  ZOOM_FACTOR_STEP
+} from "@/cconstants"
 import type {
   BooleanString,
   CType,
@@ -7,15 +13,9 @@ import type {
   PanelMode,
   ViewOption
 } from "@/types"
+import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
-
-import {
-  MAX_ZOOM_FACTOR,
-  MIN_ZOOM_FACTOR,
-  ZOOM_FACTOR_INIT,
-  ZOOM_FACTOR_STEP
-} from "@/cconstants"
 
 import type {
   FileItemStatus,
@@ -182,8 +182,6 @@ interface SearchState {
   clicked item (document or folder) in main panel or in secondary one? */
   openResultItemInOtherPanel: boolean
 }
-
-type PanelComponent = "commander" | "viewer" | "searchResults"
 
 interface DocumentsByTypeColumnsArg {
   mode: PanelMode
@@ -433,6 +431,9 @@ const uiSlice = createSlice({
         /* in which panel will search result item open ? */
         state.search.openResultItemInOtherPanel = action.payload
       }
+    },
+    mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
+      state.mainPanelComponent = action.payload
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
@@ -884,6 +885,7 @@ export const {
   updateSearchActionPanel,
   updateBreadcrumb,
   currentNodeChanged,
+  mainPanelComponentUpdated,
   searchResultsLastPageSizeUpdated,
   /* Main panel switched to show search results.
   This happens when user clicks enter in search field

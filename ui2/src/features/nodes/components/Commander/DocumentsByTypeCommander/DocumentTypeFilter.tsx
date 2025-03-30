@@ -7,6 +7,7 @@ import {
 } from "@/features/ui/uiSlice"
 import {Select} from "@mantine/core"
 import {useContext, useState} from "react"
+import {useNavigate} from "react-router-dom"
 
 import type {PanelMode} from "@/types"
 
@@ -16,6 +17,7 @@ export default function DocumentTypeFilter() {
     selectCommanderDocumentTypeID(s, mode)
   )
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const {data: allDocumentTypes = []} = useGetDocumentTypesQuery(undefined)
   const [currentDocumentTypeID, setCurrentDocumentTypeID] = useState<
     string | undefined
@@ -30,13 +32,13 @@ export default function DocumentTypeFilter() {
     }
 
     setCurrentDocumentTypeID(newValue)
-
     dispatch(
       commanderDocumentTypeIDUpdated({
         mode,
         documentTypeID: newValue
       })
     )
+    navigate(`/category/${newValue}`)
   }
 
   return (

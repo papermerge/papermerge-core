@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
+  selectCommanderDocumentTypeID,
   selectCommanderViewOption,
   selectLastHome,
   selectLastInbox,
@@ -45,6 +46,10 @@ function NavBarFull() {
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const lastHome = useAppSelector(s => selectLastHome(s, "main"))
   const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -91,7 +96,7 @@ function NavBarFull() {
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={"/category"} onClick={onClick}>
+          <NavLink to={categoryURL} onClick={onClick}>
             {NavLinkWithFeedback("By Category", <IconCategory />)}
           </NavLink>
         )}
@@ -137,6 +142,10 @@ function NavBarCollapsed() {
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const onClick = () => {
     if (viewOption == "document-type") {
@@ -173,7 +182,7 @@ function NavBarCollapsed() {
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={"/category"} onClick={onClick}>
+          <NavLink to={categoryURL} onClick={onClick}>
             {NavLinkWithFeedbackShort(<IconCategory />)}
           </NavLink>
         )}

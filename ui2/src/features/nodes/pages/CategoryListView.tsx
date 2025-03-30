@@ -1,10 +1,9 @@
 import DualPanel from "@/components/DualPanel"
 import {
+  commanderDocumentTypeIDUpdated,
   commanderViewOptionUpdated,
   mainPanelComponentUpdated
 } from "@/features/ui/uiSlice"
-import type {User} from "@/types"
-import {getCurrentUser} from "@/utils"
 import {LoaderFunctionArgs} from "react-router"
 
 import {store} from "@/app/store"
@@ -15,13 +14,13 @@ export default function CategoryListView() {
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  const user: User = await getCurrentUser()
-  let folderId
+  let categoryId
 
-  if (params.folderId) {
-    folderId = params.folderId
-  } else {
-    folderId = user.home_folder_id
+  if (params.categoryId) {
+    categoryId = params.categoryId
+    store.dispatch(
+      commanderDocumentTypeIDUpdated({mode: "main", documentTypeID: categoryId})
+    )
   }
 
   store.dispatch(mainPanelComponentUpdated("commander"))
@@ -30,5 +29,5 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     commanderViewOptionUpdated({mode: "main", viewOption: "document-type"})
   )
 
-  return {folderId, urlParams: url.searchParams}
+  return {categoryId, urlParams: url.searchParams}
 }

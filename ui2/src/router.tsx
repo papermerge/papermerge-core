@@ -63,7 +63,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/category/:categoryId",
-        element: <CategoryListView />
+        element: <CategoryListView />,
+        loader: categoryLoader
       },
       {
         path: "/tags",

@@ -14,6 +14,7 @@ import {
   DocumentTypesList
 } from "@/features/document-types/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
+import CategoryListView from "@/features/nodes/pages/CategoryListView"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
         path: "/document/:documentId",
         element: <Document />,
         loader: documentLoader
+      },
+      {
+        path: "/category",
+        element: <CategoryListView />
+      },
+      {
+        path: "/category/:categoryId",
+        element: <CategoryListView />
       },
       {
         path: "/tags",

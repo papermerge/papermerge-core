@@ -24,6 +24,7 @@ import {
 import {Group, Loader} from "@mantine/core"
 import {
   IconAlignJustified,
+  IconCategory,
   IconFile3d,
   IconHome,
   IconInbox,
@@ -87,6 +88,11 @@ function NavBarFull() {
             onClick={onClick}
           >
             {NavLinkWithFeedback("Inbox", <IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={"/category"} onClick={onClick}>
+            {NavLinkWithFeedback("By Category", <IconCategory />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (
@@ -164,6 +170,11 @@ function NavBarCollapsed() {
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
             {NavLinkWithFeedbackShort(<IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={"/category"} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconCategory />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (

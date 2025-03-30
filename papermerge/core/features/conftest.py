@@ -71,10 +71,26 @@ def mock_media_root_env(monkeypatch):
 
 @pytest.fixture()
 def make_folder(db_session: Session):
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
-        folder = orm.Folder(
-            id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
-        )
+    def _maker(
+        title: str,
+        parent: orm.Folder,
+        user: orm.User | None = None,
+        group: orm.Group | None = None,
+    ):
+        kwargs = {
+            "id": uuid.uuid4(),
+            "title": title,
+            "lang": "de",
+            "parent_id": parent.id,
+        }
+        if user:
+            kwargs["user"] = user
+        elif group:
+            kwargs["group"] = group
+        else:
+            raise ValueError("Either user or group argument must be provided")
+
+        folder = orm.Folder(**kwargs)
         db_session.add(folder)
         db_session.commit()
         return folder

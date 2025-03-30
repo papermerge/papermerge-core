@@ -6,6 +6,7 @@ from sqlalchemy import select, func
 from papermerge.core import orm, schema
 from papermerge.core.features.nodes.db import api as dbapi
 from papermerge.core.features.document.db import api as docs_dbapi
+from papermerge.core.db import common as common_dbapi
 
 
 def test_get_descendants(make_folder, make_document, db_session, user):
@@ -335,3 +336,42 @@ def test_prepare_documents_s3_data_deletion_multiple_docs(
     assert set(data.document_ids) == {doc1.id, doc2.id}
     assert set(data.document_version_ids) == {doc1_ver_id, doc2_ver_id}
     assert set(data.page_ids) == set().union(doc1_page_ids, doc2_page_ids)
+
+
+def test_move_nodes(
+    db_session,
+    make_folder,
+    make_document,
+    make_group,
+    user,
+):
+    """
+    Moving nodes to a target which belongs to a group ("family" in this case)
+    should change their (and their descendants) owner: they will
+    belong to the group ("family").
+    """
+    source_folder = make_folder(
+        title="My Documents", parent=user.home_folder, user=user
+    )
+    make_document(title="doc-1.pdf", user=user, parent=source_folder)
+    make_document(title="doc-2.pdf", user=user, parent=source_folder)
+    family = make_group("Family", with_special_folders=True)
+    target_folder = make_folder(
+        title="My Family", parent=family.home_folder, group=family
+    )
+
+    dbapi.move_nodes(
+        db_session, source_ids=[source_folder.id], target_id=target_folder.id
+    )
+    descendants = common_dbapi.get_descendants(
+        db_session, node_ids=[target_folder.id], include_selfs=False
+    )
+    descendants_ids = [item[0] for item in descendants]
+
+    db_session.expire_all()
+
+    assert len(descendants_ids) == 3
+    for descendant_id in descendants_ids:
+        node = db_session.get(orm.Node, descendant_id)
+        assert node.user_id is None
+        assert node.group_id == family.id

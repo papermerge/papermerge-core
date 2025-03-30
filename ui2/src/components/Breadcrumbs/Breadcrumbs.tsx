@@ -9,7 +9,7 @@ import {
   MenuItem,
   Skeleton
 } from "@mantine/core"
-import {useViewportSize} from "@mantine/hooks"
+import {randomId, useViewportSize} from "@mantine/hooks"
 import {IconChevronDown, IconHome, IconInbox} from "@tabler/icons-react"
 import {useContext, useEffect, useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
@@ -174,6 +174,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
 
   const homes_components = homes.map(i => (
     <MenuItem
+      key={i.home_id}
       onClick={() => onLocalClick(i.home_id, `${i.group_name} Home`, root_type)}
     >
       <Group>
@@ -183,6 +184,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   ))
   const inbox_components = inboxes.map(i => (
     <MenuItem
+      key={i.inbox_id}
       onClick={() =>
         onLocalClick(i.inbox_id, `${i.group_name} Inbox`, root_type)
       }
@@ -194,10 +196,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     </MenuItem>
   ))
   const homes_and_inboxes_dropdown_component = [
-    <Menu.Label>
+    <Menu.Label key={randomId()}>
       <Group>Home</Group>
     </Menu.Label>,
     <MenuItem
+      key={randomId()}
       onClick={() => onLocalClick(user.home_folder_id, "My", root_type)}
     >
       <Group>
@@ -206,11 +209,12 @@ function RootItem({itemId, onClick}: RootItemArgs) {
       </Group>
     </MenuItem>,
     ...homes_components,
-    <Menu.Divider />,
-    <Menu.Label>
+    <Menu.Divider key={randomId()} />,
+    <Menu.Label key={randomId()}>
       <Group>Inbox</Group>
     </Menu.Label>,
     <MenuItem
+      key={randomId()}
       onClick={() => onLocalClick(user.inbox_folder_id, "My Inbox", root_type)}
     >
       <Group>

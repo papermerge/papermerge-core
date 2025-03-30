@@ -5,14 +5,14 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update, exists
-from sqlalchemy.orm import selectin_polymorphic, selectinload, aliased
+from sqlalchemy import func, select, delete, update
+from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core.db.engine import Session
-from papermerge.core import schema, orm
+from papermerge.core import schema
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
@@ -374,22 +374,32 @@ def delete_nodes(
     return None
 
 
-def move_nodes(
-    db_session: Session, source_ids: list[UUID], target_id: UUID, user_id: UUID
-) -> int:
+def move_nodes(db_session: Session, source_ids: list[UUID], target_id: UUID) -> int:
 
     # Sqlite does not raise "Integrity Error" during update
     # when target does not exist. Thus, we issue here one more
     # extra sql statement just to check the existence of target_id
-    stmt = select(orm.Node.id).where(orm.Node.id == target_id)
-    target = db_session.execute(stmt).one_or_none()
+    stmt = select(orm.Node).where(orm.Node.id == target_id)
+    target = db_session.execute(stmt).scalar()
+    descendants_ids = [
+        item[0] for item in get_descendants(db_session, node_ids=source_ids)
+    ]
     if target is None:
         raise EntityNotFound("Node target not found")
 
     stmt = (
         update(orm.Node).where(orm.Node.id.in_(source_ids)).values(parent_id=target_id)
     )
+    # Moved nodes will be set to have same
+    # parent as the target
+    stmt_update_owner = (
+        update(orm.Node)
+        .where(orm.Node.id.in_(descendants_ids))
+        .values(user_id=target.user_id, group_id=target.group_id)
+    )
+
     result = db_session.execute(stmt)
+    db_session.execute(stmt_update_owner)
     db_session.commit()
 
     return result.rowcount

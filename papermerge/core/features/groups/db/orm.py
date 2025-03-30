@@ -75,3 +75,9 @@ class Group(Base):
     users: Mapped[list["User"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="groups"
     )
+
+    def __str__(self):
+        return f"Group(name={self.name}, id={self.id})"
+
+    def __repr__(self):
+        return str(self)

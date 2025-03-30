@@ -219,7 +219,6 @@ def move_nodes(
                 db_session,
                 source_ids=params.source_ids,
                 target_id=params.target_id,
-                user_id=user.id,
             )
     except NoResultFound as exc:
         logger.error(exc, exc_info=True)

@@ -16,6 +16,16 @@ export type DocType = {
   group_id?: string
 }
 
+export type DocTypeGroupedItem = {
+  id: string
+  name: string
+}
+
+export type DocTypeGrouped = {
+  name: string
+  items: Array<DocTypeGroupedItem>
+}
+
 export type DocTypeUpdate = {
   id: string
   name: string

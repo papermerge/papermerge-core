@@ -3,7 +3,7 @@ import {ActionIcon} from "@mantine/core"
 import {IconColumns2, IconX} from "@tabler/icons-react"
 import {useContext} from "react"
 
-import type {PanelMode} from "@/types"
+import type {CType, PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {
@@ -14,10 +14,12 @@ import {
   selectCurrentNodeID,
   selectPanelComponent
 } from "@/features/ui/uiSlice"
+import {selectCurrentUser} from "@/slices/currentUser"
 
 export default function ToggleSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
+  const user = useAppSelector(selectCurrentUser)
   const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
   const secondaryPanel = useAppSelector(s =>
@@ -25,9 +27,20 @@ export default function ToggleSecondaryPanel() {
   )
 
   const onClick = () => {
+    let currentNodeID = nodeID
+    let currentCType: CType | undefined = ctype
+
+    if (!nodeID) {
+      currentNodeID = user.home_folder_id
+      currentCType = "folder"
+    }
     dispatch(secondaryPanelOpened(ctype == "folder" ? "commander" : "viewer"))
     dispatch(
-      currentNodeChanged({id: nodeID!, ctype: ctype!, panel: "secondary"})
+      currentNodeChanged({
+        id: currentNodeID!,
+        ctype: currentCType!,
+        panel: "secondary"
+      })
     )
   }
 

@@ -1,12 +1,14 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentTypesQuery} from "@/features/document-types/apiSlice"
+import {useGetDocumentTypesGroupedQuery} from "@/features/document-types/apiSlice"
+import {DocTypeGrouped} from "@/features/document-types/types"
 import {
   commanderDocumentTypeIDUpdated,
   selectCommanderDocumentTypeID
 } from "@/features/ui/uiSlice"
 import {Select} from "@mantine/core"
-import {useContext, useState} from "react"
+import {useContext, useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
 
 import type {PanelMode} from "@/types"
 
@@ -16,12 +18,22 @@ export default function DocumentTypeFilter() {
     selectCommanderDocumentTypeID(s, mode)
   )
   const dispatch = useAppDispatch()
-  const {data: allDocumentTypes = []} = useGetDocumentTypesQuery(undefined)
-  const [currentDocumentTypeID, setCurrentDocumentTypeID] = useState<
+  const navigate = useNavigate()
+  const {data: allDocumentTypes = []} = useGetDocumentTypesGroupedQuery()
+  const [currentDocumentTypeName, setCurrentDocumentTypeName] = useState<
     string | undefined
-  >(lastDocumentTypeID)
+  >()
+
+  useEffect(() => {
+    if (allDocumentTypes && allDocumentTypes.length > 0) {
+      let curName = getDocTypeNameFromID(allDocumentTypes, lastDocumentTypeID)
+      setCurrentDocumentTypeName(curName)
+    }
+  }, [allDocumentTypes.length])
+
   const onDocumentTypeChanged = (value: string | null) => {
     let newValue
+    let document_type_id = getDocTypeIDFromName(allDocumentTypes, value)
 
     if (!value) {
       newValue = undefined
@@ -29,14 +41,14 @@ export default function DocumentTypeFilter() {
       newValue = value
     }
 
-    setCurrentDocumentTypeID(newValue)
-
+    setCurrentDocumentTypeName(newValue)
     dispatch(
       commanderDocumentTypeIDUpdated({
         mode,
-        documentTypeID: newValue
+        documentTypeID: document_type_id
       })
     )
+    navigate(`/category/${document_type_id}`)
   }
 
   return (
@@ -44,10 +56,54 @@ export default function DocumentTypeFilter() {
       searchable
       placeholder="Pick Document Type"
       onChange={onDocumentTypeChanged}
-      data={allDocumentTypes.map(i => {
-        return {value: i.id, label: i.name}
+      data={allDocumentTypes.map(g => {
+        return {group: g.name, items: g.items.map(i => i.name)}
       })}
-      value={currentDocumentTypeID}
+      value={currentDocumentTypeName}
     />
   )
+}
+
+function getDocTypeIDFromName(
+  allDocumentTypes: Array<DocTypeGrouped>,
+  name?: string | null
+): undefined | string {
+  let result: string | undefined
+
+  if (!name) {
+    return undefined
+  }
+
+  for (let i = 0; i < allDocumentTypes.length; i++) {
+    for (let j = 0; j < allDocumentTypes[i].items.length; j++) {
+      if (allDocumentTypes[i].items[j].name == name) {
+        const grouped_item = allDocumentTypes[i].items[j]
+        result = grouped_item.id
+      }
+    }
+  }
+
+  return result
+}
+
+function getDocTypeNameFromID(
+  allDocumentTypes: Array<DocTypeGrouped>,
+  id?: string | null
+): undefined | string {
+  let result: string | undefined
+
+  if (!id) {
+    return undefined
+  }
+
+  for (let i = 0; i < allDocumentTypes.length; i++) {
+    for (let j = 0; j < allDocumentTypes[i].items.length; j++) {
+      if (allDocumentTypes[i].items[j].id == id) {
+        const grouped_item = allDocumentTypes[i].items[j]
+        result = grouped_item.name
+      }
+    }
+  }
+
+  return result
 }

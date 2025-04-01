@@ -33,3 +33,13 @@ class UpdateDocumentType(BaseModel):
     custom_field_ids: list[UUID] | None = None
     group_id: UUID | None = None
     user_id: UUID | None = None
+
+
+class GroupedDocumentTypeItem(BaseModel):
+    id: UUID
+    name: str  # document type name
+
+
+class GroupedDocumentType(BaseModel):
+    name: str  # group name
+    items: list[GroupedDocumentTypeItem]

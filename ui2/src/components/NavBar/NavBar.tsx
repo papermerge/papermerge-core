@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
+  selectCommanderDocumentTypeID,
   selectCommanderViewOption,
   selectLastHome,
   selectLastInbox,
@@ -24,6 +25,7 @@ import {
 import {Group, Loader} from "@mantine/core"
 import {
   IconAlignJustified,
+  IconCategory,
   IconFile3d,
   IconHome,
   IconInbox,
@@ -44,6 +46,10 @@ function NavBarFull() {
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const lastHome = useAppSelector(s => selectLastHome(s, "main"))
   const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -89,6 +95,11 @@ function NavBarFull() {
             {NavLinkWithFeedback("Inbox", <IconInbox />)}
           </NavLink>
         )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={categoryURL} onClick={onClick}>
+            {NavLinkWithFeedback("By Category", <IconCategory />)}
+          </NavLink>
+        )}
         {user.scopes.includes(TAG_VIEW) && (
           <NavLink to="/tags">
             {NavLinkWithFeedback("Tags", <IconTag />)}
@@ -101,7 +112,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback("Document Types", <IconFile3d />)}
+            {NavLinkWithFeedback("Categories", <IconFile3d />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (
@@ -131,6 +142,10 @@ function NavBarCollapsed() {
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const onClick = () => {
     if (viewOption == "document-type") {
@@ -164,6 +179,11 @@ function NavBarCollapsed() {
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
             {NavLinkWithFeedbackShort(<IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={categoryURL} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconCategory />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (

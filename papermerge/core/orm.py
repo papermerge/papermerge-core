@@ -4,8 +4,9 @@ from .features.nodes.db.orm import Folder, Node
 from .features.tags.db.orm import Tag, NodeTagsAssociation
 from .features.custom_fields.db.orm import CustomField, CustomFieldValue
 from .features.groups.db.orm import Group
-from .features.roles.db.orm import Role, Permission
+from .features.roles.db.orm import Role, Permission, roles_permissions_association
 from .features.document_types.db.orm import DocumentType, DocumentTypeCustomField
+from .features.shared_nodes.db.orm import SharedNode
 
 __all__ = [
     'User',
@@ -21,7 +22,9 @@ __all__ = [
     'CustomFieldValue',
     'Group',
     'Role',
+    'roles_permissions_association',
     'Permission',
     'DocumentType',
-    'DocumentTypeCustomField'
+    'DocumentTypeCustomField',
+    'SharedNode'
 ]

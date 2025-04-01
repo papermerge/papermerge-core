@@ -36,6 +36,7 @@ from .features.document_types.db.api import (
     update_document_type
 )
 from .features.custom_fields.db.api import create_custom_field
+from .features.shared_nodes.db.api import get_paginated_shared_nodes
 
 __all__ = [
     "get_nodes",
@@ -75,4 +76,6 @@ __all__ = [
     "create_role",
     "sync_perms",
     "get_perms",
+    # shared_nodes
+    "get_paginated_shared_nodes",
 ]

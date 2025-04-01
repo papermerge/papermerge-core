@@ -112,7 +112,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback("Document Types", <IconFile3d />)}
+            {NavLinkWithFeedback("Categories", <IconFile3d />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (

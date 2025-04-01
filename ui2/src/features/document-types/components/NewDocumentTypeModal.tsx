@@ -87,7 +87,7 @@ export default function NewDocumentTypeModal({
   }
 
   return (
-    <Modal title={"New Document Type"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={"New Category"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         label="Name"
         onChange={e => onNameChange(e.currentTarget.value)}

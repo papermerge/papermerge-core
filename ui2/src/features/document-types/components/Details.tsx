@@ -47,7 +47,7 @@ function Path({documentType}: {documentType: DocType | null}) {
   return (
     <Group>
       <Breadcrumbs>
-        <Link to="/document-types/">Document Types</Link>
+        <Link to="/document-types/">Categories</Link>
         <Link to={`/document-types/${documentType?.id}`}>
           {documentType?.name}
         </Link>

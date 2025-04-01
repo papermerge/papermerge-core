@@ -27,7 +27,7 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
 
   const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()
   const {data: allTagsData, isLoading: isLoadingAllTagsData} = useGetTagsQuery(
-    nodeDetails.group_id
+    nodeDetails?.group_id
   )
   const [allTagNames, setAllTagNames] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))

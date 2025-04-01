@@ -10,6 +10,7 @@ from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users import schema as users_schema
+from papermerge.core.features.document_types import schema as dt_schema
 
 from .types import PaginatedQueryParams
 
@@ -63,6 +64,36 @@ def get_document_types_without_pagination(
 
         result = dbapi.get_document_types_without_pagination(
             db_session, user_id=user.id, group_id=group_id
+        )
+
+    return result
+
+
+@router.get(
+    "/all-grouped",
+    response_model=list[dt_schema.GroupedDocumentType],
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
+def get_document_types_without_pagination(
+    user: Annotated[
+        users_schema.User,
+        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
+    ],
+):
+    """Returns all document types to which user has access to, grouped
+    by owner. Results are not paginated.
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        result = dbapi.get_document_types_grouped_by_owner_without_pagination(
+            db_session, user_id=user.id
         )
 
     return result

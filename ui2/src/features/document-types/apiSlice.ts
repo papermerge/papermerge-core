@@ -1,6 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, PaginatedArgs} from "@/types"
-import type {DocType, DocTypeUpdate, NewDocType} from "./types"
+import type {DocType, DocTypeGrouped, DocTypeUpdate, NewDocType} from "./types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -48,6 +48,9 @@ export const apiSliceWithDocTypes = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "DocumentType", id}) as const)
       ]
     }),
+    getDocumentTypesGrouped: builder.query<DocTypeGrouped[], void>({
+      query: _arg => "/document-types/all-grouped"
+    }),
     getDocumentType: builder.query<DocType, string>({
       query: docTypeID => `/document-types/${docTypeID}`,
       providesTags: (_result, _error, arg) => [{type: "DocumentType", id: arg}]
@@ -83,6 +86,7 @@ export const apiSliceWithDocTypes = apiSlice.injectEndpoints({
 export const {
   useGetPaginatedDocumentTypesQuery,
   useGetDocumentTypesQuery,
+  useGetDocumentTypesGroupedQuery,
   useGetDocumentTypeQuery,
   useEditDocumentTypeMutation,
   useDeleteDocumentTypeMutation,

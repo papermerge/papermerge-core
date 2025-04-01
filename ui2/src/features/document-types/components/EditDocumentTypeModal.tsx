@@ -98,7 +98,7 @@ export default function EditDocumentTypeModal({
 
   return (
     <Modal
-      title={"Edit Document Type"}
+      title={"Edit Category"}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}

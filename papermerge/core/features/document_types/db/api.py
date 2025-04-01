@@ -1,6 +1,6 @@
 import logging
 import uuid
-
+from itertools import groupby
 
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session, aliased
@@ -10,8 +10,11 @@ from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core import orm
 from papermerge.core.tasks import send_task
+from papermerge.core.features.document_types import schema as dt_schema
+
 
 from .orm import DocumentType
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +40,65 @@ def get_document_types_without_pagination(
     ]
 
     return items
+
+
+def get_document_types_grouped_by_owner_without_pagination(
+    db_session: Session,
+    user_id: uuid.UUID,
+) -> list[dt_schema.GroupedDocumentType]:
+    """
+    Returns all document types to which user has access to, grouped
+    by owner. Results are not paginated.
+    """
+    UserGroupAlias = aliased(orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+    stmt_base = (
+        select(
+            orm.DocumentType.id,
+            orm.DocumentType.name,
+            orm.DocumentType.user_id,
+            orm.DocumentType.group_id,
+            orm.Group.name.label("group_name"),
+        )
+        .select_from(orm.DocumentType)
+        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        .order_by(
+            orm.DocumentType.user_id,
+            orm.DocumentType.group_id,
+            orm.DocumentType.name.asc(),
+        )
+    )
+
+    stmt = stmt_base.where(
+        or_(
+            orm.DocumentType.user_id == user_id,
+            orm.DocumentType.group_id.in_(subquery),
+        )
+    )
+
+    db_document_types = db_session.execute(stmt)
+
+    def keyfunc(x):
+        if x.user_id:
+            return "My"
+
+        return x.group_name
+
+    results = []
+    document_types = list(db_document_types)
+
+    for key, group in groupby(document_types, keyfunc):
+        group_items = []
+        for item in group:
+            group_items.append(
+                dt_schema.GroupedDocumentTypeItem(name=item.name, id=item.id)
+            )
+
+        results.append(dt_schema.GroupedDocumentType(name=key, items=group_items))
+
+    return results
 
 
 ORDER_BY_MAP = {

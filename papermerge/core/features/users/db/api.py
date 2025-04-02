@@ -363,3 +363,28 @@ def user_belongs_to(
     )
     result = db_session.execute(stmt).scalar()
     return result > 0
+
+
+def has_node_perms(
+    db_session: db.Session,
+    node_id: uuid.UUID,
+    perms: str,
+    *,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None,
+) -> bool:
+    """
+    Does user or group has given permission `perm` to node `node_id` ?
+
+    Exactly one of `user_id` or `group_id` should be provided (and non-empty)
+    """
+    if user_id and group_id:
+        raise ValueError(
+            "Both user_id and group_id are non-empty." "Only one should be non-empty."
+        )
+    if not user_id and not group_id:
+        raise ValueError(
+            "Both user_id and group_id are empty." "Only one should be empty."
+        )
+
+    return False

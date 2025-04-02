@@ -42,6 +42,7 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
+from papermerge.core.features.shared_nodes.router import router as shared_nodes_router
 
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -288,6 +289,7 @@ def get_app_with_routes():
     app.include_router(roles_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
+    app.include_router(shared_nodes_router, prefix="")
     app.include_router(folders_router.router, prefix="")
     app.include_router(docs_router.router, prefix="")
     app.include_router(pages_router.router, prefix="")

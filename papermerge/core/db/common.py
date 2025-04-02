@@ -117,13 +117,36 @@ def has_node_perm(db_session: Session, node_id: UUID, user_id: UUID) -> bool:
         FROM nodes
         WHERE id = <node_id> AND
         (
-            user_id = <user_id> OR
+            user_id = <user_id>
+            OR
+            sn.group_id = <group_id>
+            OR
             group_id IN (
                 SELECT ug.group_id
                 FROM users_groups ug
                 WHERE ug.user_id =  <user_id>
             )
         )
+        UNION ALL
+        SELECT sn.id
+        FROM shared_nodes sn
+        JOIN nodes n ON n.id = sn.node_id
+        JOIN roles r ON r.id = sn.role_id
+        JOIN roles_permissions rp ON rp.role_id = r.id
+        JOIN permissions p ON p.id = rp.permission_id
+        WHERE (
+            sn.user_id = <user_id>
+            OR
+            sn.group_id = <group_id>
+            OR
+            sn.group_id IN (
+                SELECT ug.group_id
+                FROM users_groups ug
+                WHERE ug.user_id =  <user_id>
+            )
+        )
+        AND p.codename = <perm>
+        AND sn.node_id IN (<node_id> ancestors)
     )
     """
     UserGroupAlias = aliased(groups_orm.user_groups_association)

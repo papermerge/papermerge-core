@@ -205,6 +205,7 @@ class Document(BaseModel):
     thumbnail_url: ThumbnailUrl = None
     user_id: UUID | None = None
     group_id: UUID | None = None
+    perms: list[str] = []
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):

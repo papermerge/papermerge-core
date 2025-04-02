@@ -36,6 +36,7 @@ def get_shared_nodes(
             page_number=params.page_number,
             order_by=order_by,
             filter=params.filter,
+            user_id=user.id,
         )
 
     return nodes

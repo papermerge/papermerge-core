@@ -26,6 +26,8 @@ LangCode = Literal[
     "ron",
     "san",
     "spa",
+    "kaz",
+    "rus",
 ]
 
 

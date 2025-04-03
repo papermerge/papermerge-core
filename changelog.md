@@ -1,6 +1,11 @@
 # Changelog
 
-<!-- towncrier release notes start -->
+## [3.5] - 2025-04-xy
+
+### Adds
+
+- Group Ownership
+- Share Documents and Folders
 
 ## [3.4.1] - 2025-03-15
 

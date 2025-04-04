@@ -1,0 +1,52 @@
+{
+  "new": "Жасау",
+  "tags": {
+    "list": {
+      "empty": "Қазіргі уақытта тегтер жоқ",
+      "table": {
+        "name": "Аты",
+        "pinned": "Белгіленген",
+        "description": "Сипаттама"
+      }
+    }
+  },
+  "document_types": {
+    "list": {
+      "empty": "Қазіргі уақытта Құжаттар жоқ",
+      "table": {
+        "name": "Аты"
+      }
+    }
+  },
+  "roles": {
+    "list": {
+      "empty": "Қазіргі уақытта рөлдер жоқ",
+      "table": {
+        "name": "Аты"
+      }
+    }
+  },
+  "custom_fields": {
+    "list": {
+      "empty": "Қазіргі уақытта өрістер жоқ",
+      "table": {
+        "name": "Аты",
+        "type": "Тип"
+      }
+    }
+  },
+  "left_bar": {
+    "home": "Басты бетке",
+    "inbox": "Пошта",
+    "tags": "Тегтер",
+    "custom_fields": "Өрістер",
+    "document_types": "Құжаттар",
+    "users": "Пайдаланушылар",
+    "roles": "Рөлдер",
+    "groups": "Топтар"
+  },
+  "user_menu": {
+    "rest_api": "REST API",
+    "logout": "Шыгу"
+  }
+}

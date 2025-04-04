@@ -2,7 +2,7 @@ import uuid
 from typing import Annotated
 
 
-from fastapi import APIRouter, Depends, Security, HTTPException
+from fastapi import APIRouter, Security, HTTPException
 
 from papermerge.core.db.engine import Session
 from papermerge.core import utils
@@ -10,6 +10,7 @@ from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.db import common as dbapi_common
+from papermerge.core.exceptions import HTTP403Forbidden
 
 from .schema import Folder
 from .db import api as dbapi
@@ -31,9 +32,11 @@ def get_node(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        ok = dbapi_common.has_node_perm(db_session, node_id=folder_id, user_id=user.id)
+        ok = dbapi_common.has_node_perm(
+            db_session, node_id=folder_id, codename=scopes.NODE_VIEW, user_id=user.id
+        )
         if not ok:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+            raise HTTP403Forbidden
         db_folder, error = dbapi.get_folder(db_session, folder_id=folder_id)
 
     if error:

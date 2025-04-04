@@ -156,6 +156,15 @@ def get_users(
     )
 
 
+def get_users_without_pagination(db_session: db.Session) -> list[schema.User]:
+    stmt = select(orm.User).order_by(orm.User.username.asc())
+    db_users = db_session.scalars(stmt).all()
+
+    items = [schema.User.model_validate(db_user) for db_user in db_users]
+
+    return items
+
+
 def create_user(
     db_session: db.Session,
     username: str,

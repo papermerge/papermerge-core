@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
+from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
 from papermerge.core.constants import INDEX_REMOVE_NODE
 from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
@@ -17,7 +18,6 @@ from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.exceptions import EntityNotFound
 
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
@@ -132,7 +132,7 @@ def update_node(
     Required scope: `{scope}`
 
     parent_id is optional field. However, when present, parent_id
-    should be non empty string (UUID).
+    should be not empty string (UUID).
     """
 
     with Session() as db_session:
@@ -279,7 +279,7 @@ def assign_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -350,7 +350,7 @@ def update_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -377,7 +377,7 @@ def get_node_tags(
                 db_session, node_id=node_id, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -407,7 +407,7 @@ def remove_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

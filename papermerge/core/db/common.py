@@ -81,12 +81,10 @@ def has_node_perm(
     db_session: Session,
     node_id: UUID,
     codename: str,
-    *,
-    user_id: UUID | None = None,
-    group_id: UUID | None = None,
+    user_id: UUID,
 ) -> bool:
     """
-    Does user or group has `codename` permission for `node_id`?
+    Has user `codename` permission for `node_id`?
 
     SELECT EXISTS(
         SELECT nodes.id
@@ -94,8 +92,6 @@ def has_node_perm(
         WHERE id = <node_id> AND
         (
             user_id = <user_id>
-            OR
-            sn.group_id = <group_id>
             OR
             group_id IN (
                 SELECT ug.group_id
@@ -113,8 +109,6 @@ def has_node_perm(
         WHERE (
             sn.user_id = <user_id>
             OR
-            sn.group_id = <group_id>
-            OR
             sn.group_id IN (
                 SELECT ug.group_id
                 FROM users_groups ug
@@ -125,14 +119,6 @@ def has_node_perm(
         AND sn.node_id IN (<node_id> ancestors)
     )
     """
-    if user_id and group_id:
-        raise ValueError(
-            "Both user_id and group_id are non-empty." "Only one should be non-empty."
-        )
-    if not user_id and not group_id:
-        raise ValueError(
-            "Both user_id and group_id are empty." "Only one should be empty."
-        )
 
     ancestor_ids = [item[0] for item in get_ancestors(db_session, node_id)]
 
@@ -140,25 +126,15 @@ def has_node_perm(
     # groups user belongs to
     user_group_ids = select(ug.c.group_id).where(ug.c.user_id == user_id)
 
-    if user_id is not None:
-        user_or_group_ownership = orm.Node.user_id == user_id
-    else:
-        user_or_group_ownership = orm.Node.group_id == group_id
-
     node_access = select(orm.Node.id).where(
         (orm.Node.id == node_id)
-        & (user_or_group_ownership | (orm.Node.group_id.in_(user_group_ids)))
+        & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(user_group_ids)))
     )
     sn = aliased(sn_orm.SharedNode)
     n = aliased(orm.Node)
     r = aliased(roles_orm.Role)
     rp = aliased(roles_orm.roles_permissions_association)
     p = aliased(roles_orm.Permission)
-
-    if user_id is not None:
-        user_or_group_ownership = sn.user_id == user_id
-    else:
-        user_or_group_ownership = sn.group_id == group_id
 
     node_shared_access = (
         select(sn.id)
@@ -170,7 +146,7 @@ def has_node_perm(
         .where(
             (p.codename == codename)
             & (sn.node_id.in_(ancestor_ids))
-            & (user_or_group_ownership | (sn.group_id.in_(user_group_ids)))
+            & ((sn.user_id == user_id) | (sn.group_id.in_(user_group_ids)))
         )
     )
     stmt = exists(node_access.union_all(node_shared_access)).select()

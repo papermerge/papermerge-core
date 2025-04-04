@@ -16,6 +16,7 @@ import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
+import ShareButton from "./ShareButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()
@@ -44,6 +45,7 @@ export default function ActionButtons() {
         <EditTitleButton />
         <DownloadButton />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
+        <ShareButton />
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
         {selectedPages.length > 0 && <DeletePagesButton />}

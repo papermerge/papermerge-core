@@ -1,5 +1,18 @@
 from .features.page_mngm.db.api import move_pages
-from .features.users.db.api import update_user, get_users_count, change_password, get_user, user_belongs_to
+from .features.users.db.api import (
+    create_user,
+    update_user,
+    delete_user,
+    get_users_count,
+    change_password,
+    get_user,
+    get_user_details,
+    get_users,
+    get_users_without_pagination,
+    user_belongs_to,
+    get_user_group_homes,
+    get_user_group_inboxes,
+)
 from .features.document.db.api import (
     get_last_doc_ver,
     upload,
@@ -63,11 +76,18 @@ __all__ = [
     "update_document_type",
     "create_custom_field",
     # users
+    "create_user",
     "update_user",
     "get_user",
+    "get_users",
+    "get_user_details",
+    "delete_user",
+    "get_users_without_pagination",
     "change_password",
     "get_users_count",
     "user_belongs_to",
+    "get_user_group_homes",
+    "get_user_group_inboxes",
     # groups
     "get_group",
     "delete_group",

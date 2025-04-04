@@ -1,3 +1,15 @@
+from fastapi import HTTPException
+
+class HTTP403Forbidden(HTTPException):
+    detail = "Access Forbidden"
+    status_code = 403
+
+
+class HTTP404NotFound(HTTPException):
+    detail = "Not Found"
+    status_code = 404
+
+
 class SuperuserDoesNotExist(Exception):
     """
     Raised when superuser was not found.

@@ -1,0 +1,9 @@
+@use "../Node.module.scss";
+
+.document {
+  @extend %node;
+
+  img {
+    height: 5rem;
+  }
+}

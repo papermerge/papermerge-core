@@ -82,3 +82,4 @@ export const CURRENCIES = [
 ]
 
 export const OWNER_ME = "Me"
+export const SHARED_FOLDER_ROOT_ID = "shared"

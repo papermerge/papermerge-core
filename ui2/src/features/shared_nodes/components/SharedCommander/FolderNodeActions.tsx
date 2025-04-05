@@ -19,6 +19,7 @@ import {filterUpdated} from "@/features/ui/uiSlice"
 
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
+import ShareTypeSwitch from "./ShareTypeSwitch"
 import SortMenu from "./SortMenu"
 
 export default function FolderNodeActions() {
@@ -55,6 +56,7 @@ export default function FolderNodeActions() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
+        <ShareTypeSwitch />
         {selectedCount == 1 && <EditNodeTitleButton />}
         {selectedCount == 1 && <EditNodeTagsButton />}
       </Group>

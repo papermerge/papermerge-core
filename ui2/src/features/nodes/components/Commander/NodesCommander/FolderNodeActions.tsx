@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
+  selectSelectedNodeIds,
   selectSelectedNodesCount,
   updateActionPanel
 } from "@/features/ui/uiSlice"
@@ -14,6 +15,7 @@ import PanelContext from "@/contexts/PanelContext"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import QuickFilter from "@/components/QuickFilter"
+import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {filterUpdated} from "@/features/ui/uiSlice"
 import DeleteButton from "./DeleteButton"
@@ -30,6 +32,9 @@ export default function FolderNodeActions() {
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const selectedCount = useAppSelector(s => selectSelectedNodesCount(s, mode))
+  const selectedNodeIds = useAppSelector(s =>
+    selectSelectedNodeIds(s, mode)
+  ) as string[]
 
   const onQuickFilterClear = () => {
     selectFilterText(undefined)
@@ -61,6 +66,7 @@ export default function FolderNodeActions() {
         {selectedCount == 0 && <NewFolderButton />}
         {selectedCount == 1 && <EditNodeTitleButton />}
         {selectedCount == 1 && <EditNodeTagsButton />}
+        {selectedCount > 0 && <SharedButton node_ids={selectedNodeIds} />}
         {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">

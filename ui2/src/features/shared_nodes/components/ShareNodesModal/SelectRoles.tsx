@@ -3,14 +3,17 @@ import {MultiSelect, Skeleton, Stack} from "@mantine/core"
 import {useState} from "react"
 
 interface Args {
-  onChange: (value: string) => void
+  onChange: (value: string[]) => void
 }
 
 export default function SelectRoles({onChange}: Args) {
   const [roles, setRoles] = useState<string[]>([])
   const {data, isLoading} = useGetRolesQuery()
 
-  const onChangeLocal = (value: string | null) => {}
+  const onChangeLocal = (value: string[]) => {
+    setRoles(value)
+    onChange(value)
+  }
 
   if (isLoading || !data) {
     return (
@@ -27,7 +30,7 @@ export default function SelectRoles({onChange}: Args) {
         label="Roles"
         placeholder="Pick value"
         value={roles}
-        onChange={setRoles}
+        onChange={onChangeLocal}
         data={data.map(g => g.name)}
       />
     </Stack>

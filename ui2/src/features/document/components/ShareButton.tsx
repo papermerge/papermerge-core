@@ -1,20 +1,18 @@
-import PanelContext from "@/contexts/PanelContext"
 import {ActionIcon, Box, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUserShare} from "@tabler/icons-react"
-import {forwardRef, useContext} from "react"
+import {forwardRef} from "react"
 
-import ShareNodesModal from "@/components/ShareNodesModal"
-import type {PanelMode} from "@/types"
+import ShareNodesModal from "@/features/shared_nodes/components/ShareNodesModal"
 
 interface Args {
   hidden?: boolean
+  node_ids: string[]
 }
 
 const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
-  const {hidden} = props
+  const {hidden, node_ids} = props
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
 
   return (
     <Box>
@@ -31,7 +29,7 @@ const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
       </Tooltip>
       <ShareNodesModal
         opened={opened}
-        node_ids={["1", "2"]}
+        node_ids={node_ids}
         onSubmit={close}
         onCancel={close}
       />

@@ -3,14 +3,17 @@ import {MultiSelect, Skeleton, Stack} from "@mantine/core"
 import {useState} from "react"
 
 interface Args {
-  onChange: (value: string) => void
+  onChange: (value: string[]) => void
 }
 
 export default function SelectGroups({onChange}: Args) {
   const [groups, setGroups] = useState<string[]>([])
   const {data, isLoading} = useGetGroupsQuery()
 
-  const onChangeLocal = (value: string | null) => {}
+  const onChangeLocal = (value: string[]) => {
+    setGroups(value)
+    onChange(value)
+  }
 
   if (isLoading || !data) {
     return (
@@ -27,7 +30,7 @@ export default function SelectGroups({onChange}: Args) {
         label="Groups"
         placeholder="Pick value"
         value={groups}
-        onChange={setGroups}
+        onChange={onChangeLocal}
         data={data.map(g => g.name)}
       />
     </Stack>

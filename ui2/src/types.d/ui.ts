@@ -1,1 +1,6 @@
-export type PanelComponent = "commander" | "viewer" | "searchResults"
+export type PanelComponent =
+  | "commander"
+  | "viewer"
+  | "searchResults"
+  | "sharedCommander"
+  | "sharedViewer"

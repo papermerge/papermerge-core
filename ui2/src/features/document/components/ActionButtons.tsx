@@ -10,13 +10,13 @@ import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import ShareButton from "@/components/ShareButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
-import ShareButton from "./ShareButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()

@@ -16,7 +16,7 @@ const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
 
   return (
     <Box>
-      <Tooltip label="Share Document" withArrow>
+      <Tooltip label="Share Documents and Folders" withArrow>
         <ActionIcon
           style={hidden ? {display: "None"} : {}}
           ref={ref}

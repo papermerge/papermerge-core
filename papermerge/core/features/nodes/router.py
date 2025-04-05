@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Annotated, Iterable
+from typing import Annotated, Iterable, Union
 from uuid import UUID
 
 
@@ -18,7 +18,7 @@ from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-
+from papermerge.core.types import PaginatedResponse
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -32,7 +32,7 @@ def get_node(
     parent_id,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-):
+) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list nodes of parent_id
 
     Required scope: `{scope}`

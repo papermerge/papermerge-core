@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Security, Depends, Response, status
 
-from typing import Annotated
+from typing import Annotated, Union
 
 from papermerge.core import utils, schema, dbapi
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.db.engine import Session
+from papermerge.core.types import PaginatedResponse
 
 router = APIRouter(
     prefix="/shared-nodes",
@@ -18,7 +19,7 @@ router = APIRouter(
 def get_shared_nodes(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-):
+) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list of top level nodes shared with current user
 
     Required scope: `{scope}`

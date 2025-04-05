@@ -23,6 +23,20 @@ def test_get_ancestors_include_self_false(make_folder, user, db_session):
     assert set(ancestor_ids) == {f1.id, user.home_folder.id}
 
 
+def test_get_ancestors_root_is_first(make_folder, make_document, user, db_session):
+    my_docs = make_folder("My Documents", user=user, parent=user.home_folder)
+    vertraege = make_folder("Verträge", user=user, parent=my_docs)
+    vz = make_document("vertrag.pdf", user=user, parent=vertraege)
+    make_folder("My Resumes", user=user, parent=user.home_folder)
+
+    actual_titles = [
+        item[1] for item in get_ancestors(db_session, node_id=vz.id, include_self=False)
+    ]
+    expected_titles = ["home", "My Documents", "Verträge"]
+
+    assert actual_titles == expected_titles
+
+
 def test_has_node_perm_basic_negative(make_user, make_folder, db_session):
     """
     John and David are two users that do not have anything in common.

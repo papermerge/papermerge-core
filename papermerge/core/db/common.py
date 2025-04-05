@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from uuid import UUID
 
-from sqlalchemy import select, exists
+from sqlalchemy import select, exists, literal
 from sqlalchemy.orm import aliased
 from papermerge.core.db.engine import Session
 from papermerge.core.features.nodes.db import orm
@@ -13,23 +13,31 @@ from papermerge.core.features.roles.db import orm as roles_orm
 def get_ancestors(
     db_session: Session, node_id: UUID, include_self=True
 ) -> List[Tuple[UUID, str]]:
-    """Returns all ancestors of the node"""
+    """Returns all ancestors of the node
+
+    The most distant ancestor will be the first element in returned list.
+    The most recent ancestor will be the last element in returned list.
+    In other words, "home" or "inbox" folders will be first in returned list
+    """
     nodes_anchor = (
         select(
-            orm.Node.id,
-            orm.Node.title,
-            orm.Node.parent_id,
+            orm.Node.id, orm.Node.title, orm.Node.parent_id, literal(0).label("level")
         )
         .where(orm.Node.id == node_id)
         .cte(recursive=True, name="tree")
     )
     tree = nodes_anchor.union_all(
-        select(orm.Node.id, orm.Node.title, orm.Node.parent_id).where(
-            nodes_anchor.c.parent_id == orm.Node.id
-        )
+        select(
+            orm.Node.id,
+            orm.Node.title,
+            orm.Node.parent_id,
+            (nodes_anchor.c.level + 1).label("level"),
+        ).where(nodes_anchor.c.parent_id == orm.Node.id)
     )
 
-    stmt = select(tree.c.id, tree.c.title).select_from(tree)
+    stmt = (
+        select(tree.c.id, tree.c.title).select_from(tree).order_by(tree.c.level.desc())
+    )
 
     if not include_self:
         stmt = stmt.where(tree.c.id != node_id)

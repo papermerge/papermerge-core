@@ -32,10 +32,12 @@ import {
   NODE_DELETE,
   NODE_MOVE,
   NODE_UPDATE,
+  NODE_VIEW,
   PAGE_DELETE,
   PAGE_EXTRACT,
   PAGE_MOVE,
   PAGE_UPDATE,
+  PAGE_VIEW,
   TAG_CREATE,
   TAG_DELETE,
   TAG_UPDATE,
@@ -152,7 +154,7 @@ export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
   }
 
   return (
-    <Modal title={"New Role"} opened={opened} size="lg" onClose={onLocalCancel}>
+    <Modal title={"New Role"} opened={opened} size="xl" onClose={onLocalCancel}>
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
@@ -170,6 +172,7 @@ export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
                 label="All"
               />
             </Table.Th>
+            <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
@@ -223,6 +226,13 @@ export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
                   )
                 }
                 label="Pages"
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, PAGE_VIEW)}
+                onChange={e => onChangePerm(PAGE_VIEW, e.target.checked)}
+                label="View"
               />
             </Table.Td>
             <Table.Td>
@@ -656,6 +666,13 @@ export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
                 />
               </Table.Td>
             </Tooltip>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, NODE_VIEW)}
+                onChange={e => onChangePerm(NODE_VIEW, e.target.checked)}
+                label="View"
+              />
+            </Table.Td>
             <Tooltip
               label={"Grants permission to create folders"}
               multiline

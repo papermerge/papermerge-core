@@ -19,3 +19,10 @@ Create a migration:
 ```
 $ alembic revision -m "add value_yearmonth column to custom_field_values"
 ```
+
+Navigate back and forth:
+
+```
+ $ alembic downgrade -1
+ $ alembic upgrade +1
+```

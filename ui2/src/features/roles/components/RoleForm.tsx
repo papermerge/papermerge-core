@@ -1,6 +1,7 @@
 import CopyButton from "@/components/CopyButton"
 import {Checkbox, Table, TextInput, Tooltip} from "@mantine/core"
 
+import {NODE_VIEW, PAGE_VIEW} from "@/scopes"
 import type {RoleDetails} from "@/types"
 
 type Args = {
@@ -20,6 +21,7 @@ export default function RoleModal({role}: Args) {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Permissions</Table.Th>
+            <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
@@ -49,6 +51,14 @@ export default function RoleModal({role}: Args) {
           </Table.Tr>
           <Table.Tr key="pages">
             <Table.Td>Pages</Table.Td>
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], PAGE_VIEW)}
+                label="View"
+              />
+            </Table.Td>
             <Table.Td>
               <Checkbox
                 readOnly={role == null}
@@ -382,6 +392,14 @@ export default function RoleModal({role}: Args) {
             >
               <Table.Td>Nodes</Table.Td>
             </Tooltip>
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], NODE_VIEW)}
+                label="View"
+              />
+            </Table.Td>
             <Tooltip
               label={"Grants permission to create folders"}
               multiline

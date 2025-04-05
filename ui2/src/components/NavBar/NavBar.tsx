@@ -14,6 +14,7 @@ import {
   GROUP_VIEW,
   NODE_VIEW,
   ROLE_VIEW,
+  SHARED_NODE_VIEW,
   TAG_VIEW,
   USER_VIEW
 } from "@/scopes"
@@ -32,7 +33,8 @@ import {
   IconMasksTheater,
   IconTag,
   IconUsers,
-  IconUsersGroup
+  IconUsersGroup,
+  IconUserShare
 } from "@tabler/icons-react"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
@@ -98,6 +100,11 @@ function NavBarFull() {
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
             {NavLinkWithFeedback("By Category", <IconCategory />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(SHARED_NODE_VIEW) && (
+          <NavLink to={"/shared"} onClick={onClick}>
+            {NavLinkWithFeedback("Shared", <IconUserShare />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (
@@ -184,6 +191,11 @@ function NavBarCollapsed() {
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
             {NavLinkWithFeedbackShort(<IconCategory />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(SHARED_NODE_VIEW) && (
+          <NavLink to={"/shared"} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconUserShare />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (

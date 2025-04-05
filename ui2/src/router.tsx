@@ -18,6 +18,9 @@ import CategoryListView, {
   loader as categoryLoader
 } from "@/features/nodes/pages/CategoryListView"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
+import SharedNodesListView, {
+  loader as sharedNodesLoader
+} from "@/features/shared_nodes/pages/SharedNodesListView"
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
@@ -65,6 +68,11 @@ const router = createBrowserRouter([
         path: "/category/:categoryId",
         element: <CategoryListView />,
         loader: categoryLoader
+      },
+      {
+        path: "/shared",
+        element: <SharedNodesListView />,
+        loader: sharedNodesLoader
       },
       {
         path: "/tags",

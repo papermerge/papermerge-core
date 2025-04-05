@@ -2,7 +2,7 @@ import uuid
 import math
 from typing import Tuple
 
-from sqlalchemy import select, update, func, or_
+from sqlalchemy import select, func, or_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import aliased
 

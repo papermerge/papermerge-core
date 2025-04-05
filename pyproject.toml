@@ -1,6 +1,6 @@
 [project]
 name = "papermerge"
-version = "3.4.1"
+version = "3.5"
 description = "Open source document management system for digital archives"
 authors = [
     { name = "Eugen Ciur", email = "eugen@papermerge.com"}
@@ -95,8 +95,7 @@ sign_url = 'papermerge.core.cli.cf_sign_url:app'
 
 [tool.ruff]
 target-version = "py311"
-# say hello to balck rigidity
-line-length = 88  # same as black's hardcoded
+line-length = 88
 indent-width = 4
 
 [tool.ruff.lint]
@@ -113,3 +112,10 @@ indent-width = 4
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+# This makes it possible to run pytests from any folder
+# e.g.
+# $ cd papermerge/core/features/nodes/tests
+# $ pytest test_common.py
+[tool.pytest.ini_options]
+testpaths = ["papermerge/core/features/"]

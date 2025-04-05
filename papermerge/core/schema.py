@@ -1,4 +1,5 @@
 from .features.nodes.schema import Folder, NewFolder, Node, UpdateNode, MoveNode
+from .features.shared_nodes.schema import CreateSharedNode, SharedNode
 from .features.document.schema import (
     Document,
     NewDocument,
@@ -77,4 +78,6 @@ __all__ = [
     'RoleDetails',
     'CreateRole',
     'UpdateRole',
+    'CreateSharedNode',
+    'SharedNode'
 ]

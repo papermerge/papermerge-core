@@ -142,6 +142,7 @@ class Folder(NewFolder):
     updated_at: datetime
     user_id: UUID | None = None
     group_id: UUID | None = None
+    perms: list[str] = []
 
     breadcrumb: List[Tuple[UUID, str]] = []
 

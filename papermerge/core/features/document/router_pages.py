@@ -79,7 +79,10 @@ def get_page_jpg_url(
         with db.Session() as db_session:
             document_id = doc_dbapi.get_page_document_id(db_session, page_id=page_id)
             ok = dbapi_common.has_node_perm(
-                db_session, user_id=user.id, node_id=document_id
+                db_session,
+                user_id=user.id,
+                node_id=document_id,
+                codename=scopes.PAGE_VIEW,
             )
             if not ok:
                 raise HTTPException(status_code=403, detail="Access Forbidden")

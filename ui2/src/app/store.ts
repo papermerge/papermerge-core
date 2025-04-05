@@ -8,6 +8,7 @@ import groupsReducer from "@/features/groups/groupsSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import rolesReducer from "@/features/roles/rolesSlice"
 import searchReducer from "@/features/search/searchSlice"
+import sharedNodesReducer from "@/features/shared_nodes/sharedNodesSlice"
 import tagsReducer from "@/features/tags/tagsSlice"
 import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/usersSlice"
@@ -26,6 +27,7 @@ export const store = configureStore({
     documentTypes: documentTypesReducer,
     users: usersReducer,
     nodes: nodesReducer,
+    sharedNodes: sharedNodesReducer,
     search: searchReducer,
     pages: pagesReducer,
     ui: uiReducer,

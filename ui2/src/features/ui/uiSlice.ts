@@ -229,7 +229,7 @@ interface UIState {
   currentNodeSecondary?: CurrentNode
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
-  currentSharedNodeMain?: CurrentNode
+  currentSharedNode?: CurrentNode
   mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
   mainCommanderLastPageSize?: number
@@ -468,18 +468,16 @@ const uiSlice = createSlice({
     }, // end of currentNodeChanged
     currentSharedNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
-      if (payload.panel == "main") {
-        state.currentSharedNodeMain = {
-          id: payload.id,
-          ctype: payload.ctype
-        }
-        if (payload.ctype == "folder") {
-          state.mainPanelComponent = "sharedCommander"
-        }
-        if (payload.ctype == "document") {
-          state.mainPanelComponent = "sharedViewer"
-        }
-        return
+
+      state.currentSharedNode = {
+        id: payload.id,
+        ctype: payload.ctype
+      }
+      if (payload.ctype == "folder") {
+        state.mainPanelComponent = "sharedCommander"
+      }
+      if (payload.ctype == "document") {
+        state.mainPanelComponent = "sharedViewer"
       }
     }, // end of currentSharedNodeChanged
     //------------------------------------------------------------------
@@ -993,6 +991,10 @@ export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.currentNodeSecondary?.id
+}
+
+export const selectCurrentSharedNodeID = (state: RootState) => {
+  return state.ui.currentSharedNode?.id
 }
 
 export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {

@@ -5,6 +5,7 @@ on:
 
   push:
     paths:
+      - 'papermerge/**'
       - 'ui2/**'
       - '.github/workflows/ui2.yml'
 

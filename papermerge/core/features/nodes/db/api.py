@@ -5,7 +5,7 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update
+from sqlalchemy import func, select, delete, update, exists
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
@@ -93,9 +93,10 @@ def get_paginated_nodes(
     filter: str | None = None,
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
+    subq = exists().where(orm.SharedNode.node_id == orm.Node.id)
     if filter:
         query = (
-            select(orm.Node)
+            select(orm.Node, subq.label("is_shared"))
             .options(selectinload(orm.Node.tags))
             .filter(
                 func.lower(orm.Node.title).contains(
@@ -106,7 +107,7 @@ def get_paginated_nodes(
         )
     else:
         query = (
-            select(orm.Node)
+            select(orm.Node, subq.label("is_shared"))
             .options(selectinload(orm.Node.tags))
             .filter_by(parent_id=parent_id)
         )
@@ -125,12 +126,14 @@ def get_paginated_nodes(
     )
 
     total_nodes = db_session.scalar(count_stmt)
-    nodes = db_session.scalars(stmt).all()
+    rows = db_session.execute(stmt).all()
 
     items = []
     num_pages = math.ceil(total_nodes / page_size)
 
-    for node in nodes:
+    for row in rows:
+        node = row.Node
+        node.is_shared = row.is_shared
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
         else:

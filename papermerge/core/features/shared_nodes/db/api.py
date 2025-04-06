@@ -143,3 +143,58 @@ def get_paginated_shared_nodes(
         num_pages=num_pages,
         items=items,
     )
+
+
+def get_shared_node_access_details(
+    db_session: Session, node_id: uuid.UUID
+) -> schema.SharedNodeAccessDetails:
+    results = schema.SharedNodeAccessDetails()
+
+    stmt = (
+        select(
+            orm.SharedNode.user_id,
+            orm.User.username,
+            orm.SharedNode.group_id,
+            orm.Group.name.label("group_name"),
+            orm.SharedNode.role_id,
+            orm.Role.name.label("role_name"),
+        )
+        .join(orm.User, orm.User.id == orm.SharedNode.user_id)
+        .join(orm.Group, orm.Group.id == orm.SharedNode.group_id)
+        .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
+        .where(orm.SharedNode.id == node_id)
+    )
+
+    users = {}
+    groups = {}
+    for row in db_session.execute(stmt):
+        if row.user_id is not None:
+            if (user := users.get(row.user_id)) is not None:
+                user.roles.append(sn_schema.Role(name=row.role_name, id=row.role_id))
+            else:
+                role = sn_schema.Role(name=row.role_name, id=row.role_id)
+                users[row.user_id] = sn_schema.User(
+                    id=row.user_id, username=row.username, roles=[role]
+                )
+        if row.group_id is not None:
+            if (group := groups.get(row.group_id)) is not None:
+                group.roles.append(sn_schema.Role(name=row.role_name, id=row.role_id))
+            else:
+                role = sn_schema.Role(name=row.role_name, id=row.role_id)
+                groups[row.group_id] = sn_schema.Group(
+                    id=row.user_id, name=row.group_name, roles=[role]
+                )
+
+    for user_id, user in users.items():
+        results.users.append(
+            sn_schema.User(
+                id=user_id, username=user.username, roles=list(set(user.roles))
+            )
+        )
+
+    for group_id, group in groups.items():
+        results.groups.append(
+            sn_schema.Group(id=group_id, name=group.name, roles=list(set(group.roles)))
+        )
+
+    return results

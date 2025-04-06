@@ -23,3 +23,30 @@ class CreateSharedNode(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class Role(BaseModel):
+    name: str
+    id: uuid.UUID
+    # Config
+    model_config = ConfigDict(frozen=True)
+
+
+class User(BaseModel):
+    username: str
+    id: uuid.UUID
+    roles: list[Role]
+
+
+class Group(BaseModel):
+    name: str
+    id: uuid.UUID
+    roles: list[Role]
+
+
+class SharedNodeAccessDetails(BaseModel):
+    users: list[User] = []
+    groups: list[Group] = []
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)

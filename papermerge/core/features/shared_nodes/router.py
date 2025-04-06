@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Security, Depends, Response, status
 
 from typing import Annotated, Union
@@ -66,3 +67,24 @@ def create_shared_nodes(
         )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/access/{node_id}")
+@utils.docstring_parameter(scope=scopes.SHARED_NODE_VIEW)
+def get_shared_node_access_details(
+    node_id: uuid.UUID,
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
+    ],
+) -> schema.SharedNodeAccessDetails:
+    """Get shared node access details
+
+    Required scope: `{scope}`
+
+    In other words: gets info about who can access this node
+    and with what roles?
+    """
+    with Session() as db_session:
+        node_access = dbapi.get_shared_node_access_details(db_session, node_id=node_id)
+
+    return node_access

@@ -141,6 +141,7 @@ export type NodeType = NType & {
   thumbnail_url: string | null
   breadcrumb: Array<[string, string]>
   document_type_id?: string
+  is_shared: boolean
 }
 
 export type EntityWithTags = {

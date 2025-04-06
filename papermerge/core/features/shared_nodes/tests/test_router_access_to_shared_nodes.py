@@ -96,6 +96,7 @@ def test_2_retrieve_shared_nodes_with_filter(
     assert len(data["items"]) == 2
 
 
+# Topic: `is_shared` flag
 def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     auth_api_client: AuthTestClient, make_user, make_folder, db_session
 ):
@@ -129,6 +130,7 @@ def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     assert folder.is_shared
 
 
+# Topic: `is_shared` flag
 def test_4_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     auth_api_client: AuthTestClient, make_user, make_folder, db_session
 ):
@@ -146,6 +148,7 @@ def test_4_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     assert folder.is_shared is False
 
 
+# Topic: `is_shared` flag
 def test_5_paginated_for_nodes_shared_multiple_times(
     auth_api_client: AuthTestClient, make_user, make_folder, db_session
 ):

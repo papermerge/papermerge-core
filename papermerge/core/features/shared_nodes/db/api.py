@@ -159,10 +159,10 @@ def get_shared_node_access_details(
             orm.SharedNode.role_id,
             orm.Role.name.label("role_name"),
         )
-        .join(orm.User, orm.User.id == orm.SharedNode.user_id)
-        .join(orm.Group, orm.Group.id == orm.SharedNode.group_id)
+        .join(orm.User, orm.User.id == orm.SharedNode.user_id, isouter=True)
+        .join(orm.Group, orm.Group.id == orm.SharedNode.group_id, isouter=True)
         .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
-        .where(orm.SharedNode.id == node_id)
+        .where(orm.SharedNode.node_id == node_id)
     )
 
     users = {}

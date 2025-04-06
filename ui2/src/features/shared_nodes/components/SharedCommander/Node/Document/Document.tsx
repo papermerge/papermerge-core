@@ -5,7 +5,6 @@ import {useContext} from "react"
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
-  selectCurrentNodeID,
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
@@ -27,7 +26,6 @@ export default function Document({node, onClick, cssClassNames}: Args) {
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
-  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {data} = useGetDocumentThumbnailQuery(node.id)
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)

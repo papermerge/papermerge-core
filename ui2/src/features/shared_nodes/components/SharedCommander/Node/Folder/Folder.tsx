@@ -6,7 +6,6 @@ import {useContext, useState} from "react"
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
-  selectCurrentNodeID,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
   selectSelectedNodeIds
@@ -33,7 +32,6 @@ export default function Folder({node, onClick, cssClassNames}: Args) {
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
-  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
   const draggedNodes = useAppSelector(selectDraggedNodes)

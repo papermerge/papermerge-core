@@ -45,7 +45,7 @@ export default function SharedCommander() {
   const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
   const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
 
-  const {data, isLoading, isFetching, isError, refetch} =
+  const {data, isLoading, isFetching, isError} =
     useGetPaginatedSharedNodesQuery({
       nodeID: currentNodeID || SHARED_FOLDER_ROOT_ID,
       page_number: page,

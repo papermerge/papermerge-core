@@ -5,18 +5,20 @@ export type NewSharedNodes = {
   node_ids: string[]
 }
 
-type Role = {
+export type Role = {
   name: string
   id: string
 }
 
-type User = {
+export type User = {
+  id: string
   username: string
   roles: Array<Role>
 }
 
-type Group = {
+export type Group = {
   name: string
+  id: string
   roles: Array<Role>
 }
 

@@ -46,7 +46,12 @@ export const ManageAccessModal = ({
   }
 
   return (
-    <Modal title="Manage Access" opened={opened} onClose={localCancel}>
+    <Modal
+      title="Manage Access"
+      opened={opened}
+      onClose={localCancel}
+      size={"lg"}
+    >
       <Container>
         <ManageAccessUsers node_id={node_id} />
         <ManageAccessGroups node_id={node_id} />

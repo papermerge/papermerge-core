@@ -45,8 +45,6 @@ class Group(BaseModel):
 
 
 class SharedNodeAccessDetails(BaseModel):
+    id: uuid.UUID  # Node ID
     users: list[User] = []
     groups: list[Group] = []
-
-    # Config
-    model_config = ConfigDict(from_attributes=True)

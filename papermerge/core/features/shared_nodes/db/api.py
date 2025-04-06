@@ -148,7 +148,7 @@ def get_paginated_shared_nodes(
 def get_shared_node_access_details(
     db_session: Session, node_id: uuid.UUID
 ) -> schema.SharedNodeAccessDetails:
-    results = schema.SharedNodeAccessDetails()
+    results = schema.SharedNodeAccessDetails(id=node_id)
 
     stmt = (
         select(

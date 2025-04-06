@@ -10,7 +10,7 @@ import type {
   SortMenuColumn,
   SortMenuDirection
 } from "@/types"
-import {NewSharedNodes} from "@/types.d/shared_nodes"
+import {NewSharedNodes, SharedNodeAccessDetails} from "@/types.d/shared_nodes"
 
 export type PaginatedArgs = {
   nodeID: string
@@ -59,6 +59,12 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
       ]
     }),
+    getSharedNodeAccessDetails: builder.query<SharedNodeAccessDetails, string>({
+      query: nodeID => `/shared-nodes/access/${nodeID}`,
+      providesTags: (_result, _error, arg) => [
+        {type: "SharedNodeAccessDetails", id: arg}
+      ]
+    }),
     addNewSharedNode: builder.mutation<void, NewSharedNodes>({
       query: shared_node => ({
         url: "/shared-nodes/",
@@ -69,5 +75,8 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
   })
 })
 
-export const {useAddNewSharedNodeMutation, useGetPaginatedSharedNodesQuery} =
-  apiSliceWithSharedNodes
+export const {
+  useAddNewSharedNodeMutation,
+  useGetPaginatedSharedNodesQuery,
+  useGetSharedNodeAccessDetailsQuery
+} = apiSliceWithSharedNodes

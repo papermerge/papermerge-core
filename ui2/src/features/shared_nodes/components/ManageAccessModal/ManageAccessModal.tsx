@@ -1,4 +1,7 @@
+import {useGetSharedNodeAccessDetailsQuery} from "@/features/shared_nodes/apiSlice"
 import {Button, Container, Group, Loader, Modal} from "@mantine/core"
+import ManageAccessGroups from "./ManageAccessGroups"
+import ManageAccessUsers from "./ManageAccessUsers"
 
 type Args = {
   opened: boolean
@@ -13,6 +16,8 @@ export const ManageAccessModal = ({
   onCancel,
   opened
 }: Args) => {
+  const {isLoading} = useGetSharedNodeAccessDetailsQuery(node_id)
+
   const localSubmit = async () => {
     onSubmit()
   }
@@ -24,9 +29,27 @@ export const ManageAccessModal = ({
 
   const reset = () => {}
 
+  if (isLoading) {
+    return (
+      <Modal title="Manage Access" opened={opened} onClose={localCancel}>
+        <Container>
+          <Loader />
+          <Group gap="lg" justify="space-between">
+            <Button variant="default" onClick={localCancel}>
+              Cancel
+            </Button>
+            <Button disabled={true}>Save</Button>
+          </Group>
+        </Container>
+      </Modal>
+    )
+  }
+
   return (
     <Modal title="Manage Access" opened={opened} onClose={localCancel}>
       <Container>
+        <ManageAccessUsers node_id={node_id} />
+        <ManageAccessGroups node_id={node_id} />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localSubmit}>
             Cancel

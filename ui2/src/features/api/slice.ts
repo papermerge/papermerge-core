@@ -59,6 +59,7 @@ export const apiSlice = createApi({
     "Tag",
     "Node",
     "SharedNode",
+    "SharedNodeAccessDetails",
     "NodeTag", // tags fetched per node
     "Folder",
     "Document",

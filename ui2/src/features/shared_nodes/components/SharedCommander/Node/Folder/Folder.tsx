@@ -1,14 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Checkbox, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {IconUsers} from "@tabler/icons-react"
 import {useContext, useState} from "react"
 
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
-  dragNodesStarted,
-  selectCurrentNodeID,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
   selectSelectedNodeIds
@@ -24,18 +21,10 @@ import PanelContext from "@/contexts/PanelContext"
 type Args = {
   node: NodeType
   onClick: (node: NodeType) => void
-  onDragStart: (nodeID: string, event: React.DragEvent) => void
-  onDrag: (nodeID: string, event: React.DragEvent) => void
   cssClassNames: string[]
 }
 
-export default function Folder({
-  node,
-  onClick,
-  onDrag,
-  onDragStart,
-  cssClassNames
-}: Args) {
+export default function Folder({node, onClick, cssClassNames}: Args) {
   const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
@@ -43,7 +32,6 @@ export default function Folder({
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
-  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
   const draggedNodes = useAppSelector(selectDraggedNodes)
@@ -57,21 +45,6 @@ export default function Folder({
     } else {
       dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode}))
     }
-  }
-
-  const onDragStartLocal = (e: React.DragEvent) => {
-    const data = {
-      nodes: [node.id, ...selectedIds],
-      sourceFolderID: currentFolderID!
-    }
-    dispatch(dragNodesStarted(data))
-    onDragStart(node.id, e)
-  }
-
-  const onDragEnd = () => {}
-
-  const onDragLocal = (e: React.DragEvent) => {
-    onDrag(node.id, e)
   }
 
   const onLocalDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -99,9 +72,6 @@ export default function Folder({
       <Stack
         className={`${classes.folder} ${cssClassNames.join(" ")} ${dragOver ? classes.acceptFolder : ""}`}
         draggable
-        onDragStart={onDragStartLocal}
-        onDrag={onDragLocal}
-        onDragEnd={onDragEnd}
         onDragOver={onLocalDragOver}
         onDragLeave={onLocalDragLeave}
         onDragEnter={onLocalDragEnter}
@@ -110,7 +80,6 @@ export default function Folder({
         <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
         <a onClick={() => onClick(node)}>
           <div className={classes.folderIcon}></div>
-          {node.is_shared && <IconUsers className={classes.iconUsers} />}
           <Tags names={tagNames} node={node} />
           <div className={classes.title}>{node.title}</div>
         </a>

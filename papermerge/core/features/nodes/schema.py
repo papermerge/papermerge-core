@@ -143,6 +143,7 @@ class Folder(NewFolder):
     user_id: UUID | None = None
     group_id: UUID | None = None
     perms: list[str] = []
+    is_shared: bool = False
 
     breadcrumb: List[Tuple[UUID, str]] = []
 

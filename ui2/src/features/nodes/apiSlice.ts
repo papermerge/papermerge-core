@@ -170,7 +170,8 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
           return "Node ID is empty or null"
         }
 
-        const node = state.nodes.entities[node_id]
+        const node =
+          state.nodes.entities[node_id] || state.sharedNodes.entities[node_id]
 
         if (!node) {
           console.error(

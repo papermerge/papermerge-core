@@ -206,6 +206,7 @@ class Document(BaseModel):
     user_id: UUID | None = None
     group_id: UUID | None = None
     perms: list[str] = []
+    is_shared: bool = False
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):

@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
+  selectOneSelectedSharedNode,
   selectSelectedNodeIds,
   selectSelectedNodesCount,
   updateActionPanel
@@ -14,6 +15,7 @@ import type {PanelMode} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import ManageAccessButton from "@/components/ManageAccessButton"
 import QuickFilter from "@/components/QuickFilter"
 import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
@@ -35,6 +37,9 @@ export default function FolderNodeActions() {
   const selectedNodeIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as string[]
+  const oneSelectedSharedNode = useAppSelector(s =>
+    selectOneSelectedSharedNode(s, mode)
+  )
 
   const onQuickFilterClear = () => {
     selectFilterText(undefined)
@@ -67,6 +72,9 @@ export default function FolderNodeActions() {
         {selectedCount == 1 && <EditNodeTitleButton />}
         {selectedCount == 1 && <EditNodeTagsButton />}
         {selectedCount > 0 && <SharedButton node_ids={selectedNodeIds} />}
+        {oneSelectedSharedNode && (
+          <ManageAccessButton node_id={oneSelectedSharedNode.id} />
+        )}
         {selectedCount > 0 && <DeleteButton />}
       </Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">

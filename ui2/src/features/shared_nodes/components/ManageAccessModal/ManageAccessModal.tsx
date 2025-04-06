@@ -27,8 +27,6 @@ export const ManageAccessModal = ({
     onCancel()
   }
 
-  const reset = () => {}
-
   if (isLoading) {
     return (
       <Modal title="Manage Access" opened={opened} onClose={localCancel}>

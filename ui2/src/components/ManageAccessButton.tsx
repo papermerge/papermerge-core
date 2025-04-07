@@ -1,5 +1,4 @@
-import {Box, Button, Tooltip} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
+import {Box, Button, Tooltip, useModalsStack} from "@mantine/core"
 import {forwardRef} from "react"
 
 import {ManageAccessModal} from "@/features/shared_nodes/components/ManageAccessModal/ManageAccessModal"
@@ -11,7 +10,15 @@ interface Args {
 
 const ManageAccessButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const {hidden, node_id} = props
-  const [opened, {open, close}] = useDisclosure(false)
+  const stack = useModalsStack(["manage-access", "manage-role"])
+
+  const onClick = () => {
+    stack.open("manage-access")
+  }
+
+  const onClose = () => {
+    stack.closeAll()
+  }
 
   return (
     <Box>
@@ -21,17 +28,12 @@ const ManageAccessButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
           ref={ref}
           size={"sm"}
           variant="default"
-          onClick={open}
+          onClick={onClick}
         >
           Manage Access
         </Button>
       </Tooltip>
-      <ManageAccessModal
-        opened={opened}
-        node_id={node_id}
-        onSubmit={close}
-        onCancel={close}
-      />
+      <ManageAccessModal stack={stack} node_id={node_id} onClose={onClose} />
     </Box>
   )
 })

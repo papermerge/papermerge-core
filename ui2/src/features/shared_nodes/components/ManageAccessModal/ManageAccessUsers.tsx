@@ -1,26 +1,26 @@
 import {useGetSharedNodeAccessDetailsQuery} from "@/features/shared_nodes/apiSlice"
 import {Checkbox, Skeleton, Stack, Table} from "@mantine/core"
-import {useState} from "react"
 
 import UserAccessButtons from "./UserAccessButtons"
 import UserRow from "./UserRow"
+import type {IDType} from "./type"
 
 interface Args {
   node_id: string
+  selectedIDs: string[]
+  onSelectionChange: (user_id: string, checked: boolean) => void
+  onClickViewButton: (sel_id: string, idType: IDType) => void
+  onClickDeleteButton: (sel_id: string, idType: IDType) => void
 }
 
-export default function ManageAccessUsers({node_id}: Args) {
-  const [selectedUserIDs, setSelectedUserIDs] = useState<string[]>([])
+export default function ManageAccessUsers({
+  node_id,
+  selectedIDs,
+  onSelectionChange,
+  onClickDeleteButton,
+  onClickViewButton
+}: Args) {
   const {data, isLoading} = useGetSharedNodeAccessDetailsQuery(node_id)
-
-  const onChange = (user_id: string, checked: boolean) => {
-    if (checked) {
-      setSelectedUserIDs([...selectedUserIDs, user_id])
-    } else {
-      const newSelIDs = selectedUserIDs.filter(id => id != user_id)
-      setSelectedUserIDs(newSelIDs)
-    }
-  }
 
   if (isLoading || !data) {
     return <Skeleton height={50} />
@@ -28,16 +28,20 @@ export default function ManageAccessUsers({node_id}: Args) {
 
   const userRows = data.users.map(u => (
     <UserRow
-      selectedIDs={selectedUserIDs}
-      onChange={onChange}
+      selectedIDs={selectedIDs}
+      onChange={onSelectionChange}
       key={u.id}
       user={u}
     />
   ))
 
   return (
-    <Stack>
-      <UserAccessButtons selectedIDs={selectedUserIDs} />
+    <Stack my={"sm"}>
+      <UserAccessButtons
+        selectedIDs={selectedIDs}
+        onClickDeleteButton={onClickDeleteButton}
+        onClickViewButton={onClickViewButton}
+      />
       <Table withTableBorder withColumnBorders my={"sm"}>
         <Table.Thead>
           <Table.Tr>

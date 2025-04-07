@@ -1,11 +1,26 @@
 import {ActionIcon, Group, TextInput} from "@mantine/core"
 import {IconMasksTheater, IconTrash} from "@tabler/icons-react"
+import type {IDType} from "./type"
 
 interface Args {
   selectedIDs: string[]
+  onClickViewButton: (sel_id: string, idType: IDType) => void
+  onClickDeleteButton: (sel_id: string, idType: IDType) => void
 }
 
-export default function UserAccessButtons({selectedIDs}: Args) {
+export default function UserAccessButtons({
+  selectedIDs,
+  onClickDeleteButton,
+  onClickViewButton
+}: Args) {
+  const onLocalClickViewButton = () => {
+    onClickViewButton(selectedIDs[0], "user")
+  }
+
+  const onLocalClickDeleteButton = () => {
+    onClickDeleteButton(selectedIDs[0], "user")
+  }
+
   if (selectedIDs.length == 0) {
     return (
       <Group justify="end">
@@ -18,11 +33,19 @@ export default function UserAccessButtons({selectedIDs}: Args) {
     return (
       <Group justify="space-between">
         <Group>
-          <ActionIcon variant="default" size={"lg"}>
+          <ActionIcon
+            variant="default"
+            size={"lg"}
+            onClick={onLocalClickViewButton}
+          >
             <IconMasksTheater />
           </ActionIcon>
 
-          <ActionIcon color={"red"} size={"lg"}>
+          <ActionIcon
+            color={"red"}
+            size={"lg"}
+            onClick={onLocalClickDeleteButton}
+          >
             <IconTrash />
           </ActionIcon>
         </Group>

@@ -12,6 +12,7 @@ import {
   TextInput,
   Textarea
 } from "@mantine/core"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -24,6 +25,7 @@ export default function NewDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const [name, setName] = useState<string>("")
   const [pathTemplate, setPathTemplate] = useState<string>("")
   const [error, setError] = useState<string>("")
@@ -72,15 +74,19 @@ export default function NewDocumentTypeModal({
   }
 
   return (
-    <Modal title={"New Document Type"} opened={opened} onClose={onLocalCancel}>
+    <Modal
+      title={t("document_types.new.title")}
+      opened={opened}
+      onClose={onLocalCancel}
+    >
       <TextInput
-        label="Name"
+        label={t("document_types.form.name")}
         onChange={e => onNameChange(e.currentTarget.value)}
-        placeholder="Name"
+        placeholder={t("document_types.form.name")}
       />
       <MultiSelect
-        label="Custom Fields"
-        placeholder="Pick value"
+        label={t("document_types.form.custom_fields")}
+        placeholder={t("document_types.form.custom_fields.placeholder")}
         onChange={setCustomFieldIDs}
         searchable
         data={data.map(i => {
@@ -89,7 +95,7 @@ export default function NewDocumentTypeModal({
         value={customFieldIDs}
       />
       <Textarea
-        label="Path Template"
+        label={t("document_types.form.path_template")}
         resize="vertical"
         value={pathTemplate}
         onChange={event => setPathTemplate(event.currentTarget.value)}
@@ -97,12 +103,12 @@ export default function NewDocumentTypeModal({
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

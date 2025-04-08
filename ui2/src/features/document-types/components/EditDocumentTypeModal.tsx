@@ -15,6 +15,7 @@ import {
   useEditDocumentTypeMutation,
   useGetDocumentTypeQuery
 } from "@/features/document-types/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -29,6 +30,7 @@ export default function EditDocumentTypeModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const [name, setName] = useState<string>("")
   const [pathTemplate, setPathTemplate] = useState<string>("")
 
@@ -111,7 +113,7 @@ export default function EditDocumentTypeModal({
       />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}

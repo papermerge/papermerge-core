@@ -19,8 +19,10 @@ import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
 import ActionButtons from "./ActionButtons"
 import DocumentTypeRow from "./DocumentTypeRow"
+import {useTranslation} from "react-i18next"
 
 export default function DocumentTypesList() {
+  const {t} = useTranslation()
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
@@ -129,7 +131,7 @@ export default function DocumentTypesList() {
               reversed={reverseSortedByName}
               onSort={() => onSortBy("name")}
             >
-              Name
+              {t("common.table.columns.name")}
             </Th>
           </Table.Tr>
         </Table.Thead>
@@ -150,10 +152,11 @@ export default function DocumentTypesList() {
 }
 
 function Empty() {
+  const {t} = useTranslation()
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no document types</div>
+        <div>{t("document_types.list.empty")}</div>
       </Stack>
     </Center>
   )

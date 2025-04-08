@@ -1,4 +1,4 @@
-import {CustomFieldDataType, OCRLangType} from "@/types"
+import {CustomFieldDataType, I18nLangType, OCRLangType} from "@/types"
 
 export const DEFAULT_TAG_BG_COLOR = "#c41fff"
 export const DEFAULT_TAG_FG_COLOR = "#ffffff"
@@ -77,4 +77,10 @@ export const CURRENCIES = [
   "SEK",
   "THB",
   "TL"
+]
+
+export const SUPPORTED_LANGS: I18nLangType[] = [
+  {code: "en", name: "English"},
+  {code: "ru", name: "Русский"},
+  {code: "kz", name: "Қазақша"}
 ]

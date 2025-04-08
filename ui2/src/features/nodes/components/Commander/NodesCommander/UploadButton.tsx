@@ -9,6 +9,7 @@ import {useGetFolderQuery} from "../../../apiSlice"
 
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {DropFilesModal} from "./DropFiles"
+import {useTranslation} from "react-i18next"
 
 const MIME_TYPES = [
   "image/png",
@@ -18,6 +19,7 @@ const MIME_TYPES = [
 ].join(",")
 
 export default function UploadButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const [uploadFiles, setUploadFiles] = useState<File[]>()
   const mode: PanelMode = useContext(PanelContext)
@@ -46,7 +48,7 @@ export default function UploadButton() {
     <>
       <FileButton onChange={onUpload} accept={MIME_TYPES} multiple>
         {props => (
-          <Tooltip label="Upload" withArrow>
+          <Tooltip label={t("common.upload")} withArrow>
             <ActionIcon {...props} size="lg" variant="default">
               <IconUpload stroke={1.4} />
             </ActionIcon>

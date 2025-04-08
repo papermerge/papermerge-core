@@ -7,8 +7,10 @@ import {useNavigate} from "react-router-dom"
 import {selectSelectedIds, clearSelection} from "@/features/tags/tagsSlice"
 
 import {DeleteTagModal, DeleteTagsModal} from "./DeleteModal"
+import {useTranslation} from "react-i18next"
 
 export function DeleteTagButton({tagId}: {tagId: string}) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
@@ -19,7 +21,7 @@ export function DeleteTagButton({tagId}: {tagId: string}) {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <DeleteTagModal
         opened={opened}
@@ -32,6 +34,7 @@ export function DeleteTagButton({tagId}: {tagId: string}) {
 }
 
 export function DeleteTagsButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
@@ -49,7 +52,7 @@ export function DeleteTagsButton() {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <DeleteTagsModal
         opened={opened}

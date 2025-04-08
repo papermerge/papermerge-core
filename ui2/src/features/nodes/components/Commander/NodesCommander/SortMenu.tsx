@@ -10,8 +10,10 @@ import type {SortMenuColumn, SortMenuDirection} from "@/types"
 import {ActionIcon, Menu} from "@mantine/core"
 import {IconCheck, IconSortAscendingLetters} from "@tabler/icons-react"
 import {useContext} from "react"
+import {useTranslation} from "react-i18next"
 
 export default function SortMenu() {
+  const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode = useContext(PanelContext)
   const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
@@ -37,25 +39,25 @@ export default function SortMenu() {
           onClick={() => onSortColumnChanged("title")}
           rightSection={sortColumn == "title" && <IconCheck />}
         >
-          Title
+          {t("common.sort.title")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("ctype")}
           rightSection={sortColumn == "ctype" && <IconCheck />}
         >
-          Type
+          {t("common.sort.type")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("updated_at")}
           rightSection={sortColumn == "updated_at" && <IconCheck />}
         >
-          Modified
+          {t("common.sort.modified")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("created_at")}
           rightSection={sortColumn == "created_at" && <IconCheck />}
         >
-          Created
+          {t("common.sort.created")}
         </Menu.Item>
         <Menu.Divider />
         <Menu.Item

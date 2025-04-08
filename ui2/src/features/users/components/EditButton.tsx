@@ -3,14 +3,16 @@ import {Button} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
 import EditUserModal from "./EditUserModal"
+import {useTranslation} from "react-i18next"
 
 export default function EditButton({userId}: {userId?: string}) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   if (!userId) {
     return (
       <Button leftSection={<IconEdit />} variant={"default"} disabled={true}>
-        Edit
+        {t("common.edit")}
       </Button>
     )
   }
@@ -18,7 +20,7 @@ export default function EditButton({userId}: {userId?: string}) {
   return (
     <>
       <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        Edit
+        {t("common.edit")}
       </Button>
       <EditUserModal
         opened={opened}

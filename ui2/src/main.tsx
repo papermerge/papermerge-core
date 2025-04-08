@@ -13,10 +13,13 @@ import "@mantine/notifications/styles.css"
 
 import theme from "@/themes"
 import router from "./router"
+import {initializeI18n} from "./initializeI18n"
 
-function start_app() {
+async function start_app() {
   store.dispatch(cookieLoaded())
   store.dispatch(fetchCurrentUser())
+
+  await initializeI18n()
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

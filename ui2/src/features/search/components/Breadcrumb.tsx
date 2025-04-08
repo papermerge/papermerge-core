@@ -5,6 +5,7 @@ import {IconHome, IconInbox} from "@tabler/icons-react"
 import {useSelector} from "react-redux"
 
 import type {NType, UserDetails} from "@/types"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   items?: Array<[string, string]> | null
@@ -50,6 +51,7 @@ type RootItemArgs = {
 }
 
 function RootItem({itemId, onClick}: RootItemArgs) {
+  const {t} = useTranslation()
   const user = useSelector(selectCurrentUser) as UserDetails | undefined
 
   const onLocalClick = (id: string) => {
@@ -57,7 +59,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   }
 
   if (!user) {
-    return <Skeleton>Home</Skeleton>
+    return <Skeleton>{t("home.name")}</Skeleton>
   }
 
   if (equalUUIDs(itemId, user.home_folder_id)) {
@@ -65,7 +67,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
       <Anchor onClick={() => onLocalClick(user.home_folder_id)}>
         <Group>
           <IconHome />
-          Home
+          {t("home.name")}
         </Group>
       </Anchor>
     )
@@ -75,7 +77,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     <Anchor onClick={() => onLocalClick(user.inbox_folder_id)}>
       <Group>
         <IconInbox />
-        Inbox
+        {t("inbox.name")}
       </Group>
     </Anchor>
   )

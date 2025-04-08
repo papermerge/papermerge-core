@@ -4,6 +4,7 @@ import {Button, ComboboxItem, Group, Loader, Modal, Select} from "@mantine/core"
 import {useState} from "react"
 
 import type {DocumentType, ServerErrorType, TransferStrategyType} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   sourceDocID: string
@@ -26,6 +27,7 @@ export default function TransferPagesModal({
   targetPageID,
   sourcePageIDs
 }: Args) {
+  const {t} = useTranslation()
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
   const [movePages, {isLoading}] = useMovePagesMutation()
@@ -72,7 +74,7 @@ export default function TransferPagesModal({
       {error && <Error message={error} />}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}

@@ -8,8 +8,10 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {DocumentVersion} from "@/types"
+import {useTranslation} from "react-i18next"
 
 export default function DownloadButton() {
+  const {t} = useTranslation()
   const mode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {
@@ -50,7 +52,7 @@ export default function DownloadButton() {
   return (
     <Menu>
       <Menu.Target>
-        <Tooltip label="Download" withArrow>
+        <Tooltip label={t("common.download")} withArrow>
           <ActionIcon size={"lg"} variant="default">
             <IconDownload stroke={1.4} />
           </ActionIcon>
@@ -62,12 +64,13 @@ export default function DownloadButton() {
 }
 
 function ActionButtonSkeleton() {
+  const {t} = useTranslation()
   return (
     <div>
       <Skeleton>
         <Menu>
           <Menu.Target>
-            <Tooltip label="Download" withArrow>
+            <Tooltip label={t("common.download")} withArrow>
               <ActionIcon size={"lg"} variant="default">
                 <IconDownload stroke={1.4} />
               </ActionIcon>

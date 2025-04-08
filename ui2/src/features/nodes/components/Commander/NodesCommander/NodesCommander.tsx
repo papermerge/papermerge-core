@@ -42,8 +42,10 @@ import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import Node from "./Node"
+import {useTranslation} from "react-i18next"
 
 export default function Commander() {
+  const {t} = useTranslation()
   // dialog for dropped files from local file system (i.e. from outside of browser)
   const [dropFilesOpened, {open: dropFilesOpen, close: dropFilesClose}] =
     useDisclosure(false)
@@ -262,7 +264,7 @@ export default function Commander() {
       </>
     )
   } else {
-    commanderContent = <Group>Empty</Group>
+    commanderContent = <Group>{t("common.empty")}</Group>
   }
 
   return (

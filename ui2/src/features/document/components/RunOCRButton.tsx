@@ -9,12 +9,14 @@ import {forwardRef, useContext} from "react"
 
 import type {PanelMode} from "@/types"
 import {RunOCRModal} from "./RunOCRModal"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   hidden?: boolean
 }
 
 const RunOCRButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const {t} = useTranslation()
   const {hidden} = props
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
@@ -22,7 +24,7 @@ const RunOCRButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
 
   return (
     <Box>
-      <Tooltip label="Run OCR" withArrow>
+      <Tooltip label={t("common.run_ocr")} withArrow>
         <ActionIcon
           style={hidden ? {display: "None"} : {}}
           ref={ref}

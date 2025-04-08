@@ -1,6 +1,7 @@
 import {useState} from "react"
 import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
 import {useDeleteGroupMutation} from "@/features/groups/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface RemoveGroupsModalArgs {
   groupIds: string[]
@@ -16,6 +17,7 @@ export function RemoveGroupsModal({
   onSubmit,
   onCancel
 }: RemoveGroupsModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedGroup, {isLoading}] = useDeleteGroupMutation()
 
@@ -30,14 +32,18 @@ export function RemoveGroupsModal({
   }
 
   return (
-    <Modal title="Delete Groups" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("groups.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete selected groups?</p>
+        <p>{t("groups.delete.many.title")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -45,7 +51,7 @@ export function RemoveGroupsModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -67,6 +73,7 @@ export function RemoveGroupModal({
   onCancel,
   opened
 }: RemoveGroupModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedGroup, {isLoading}] = useDeleteGroupMutation()
 
@@ -80,14 +87,18 @@ export function RemoveGroupModal({
   }
 
   return (
-    <Modal title="Delete Group" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("groups.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete this group?</p>
+        <p>{t("groups.delete.one.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -95,7 +106,7 @@ export function RemoveGroupModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

@@ -16,6 +16,7 @@ import {UserEditableFields} from "@/types"
 import {useGetUserQuery, useEditUserMutation} from "@/features/users/apiSlice"
 
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface EditUserModalArgs {
   opened: boolean
@@ -30,6 +31,7 @@ export default function EditUserModal({
   onSubmit,
   opened
 }: EditUserModalArgs) {
+  const {t} = useTranslation()
   const {data: allGroups = []} = useGetGroupsQuery()
   const {data, isLoading, isSuccess} = useGetUserQuery(userId)
   const [updateUser, {isLoading: isLoadingUserUpdate}] = useEditUserMutation()
@@ -85,7 +87,7 @@ export default function EditUserModal({
   }
 
   return (
-    <Modal title={"Edit User"} opened={opened} onClose={onClose}>
+    <Modal title={t("users.edit.title")} opened={opened} onClose={onClose}>
       <LoadingOverlay
         visible={isLoading}
         zIndex={1000}
@@ -93,32 +95,32 @@ export default function EditUserModal({
       />
       <form onSubmit={form.onSubmit(onLocalSubmit)}>
         <TextInput
-          label="Username"
-          placeholder="username"
+          label={t("users.form.username")}
+          placeholder={t("users.form.username")}
           key={form.key("username")}
           {...form.getInputProps("username")}
         />
         <TextInput
           mt="sm"
-          label="Email"
-          placeholder="email"
+          label={t("users.form.email")}
+          placeholder={t("users.form.email")}
           key={form.key("email")}
           {...form.getInputProps("email")}
         />
         <Checkbox
           mt="sm"
-          label="Superuser"
+          label={t("users.form.superuser")}
           key={form.key("is_superuser")}
           {...form.getInputProps("is_superuser", {type: "checkbox"})}
         />
         <Checkbox
           mt="sm"
-          label="Active"
+          label={t("users.form.active")}
           key={form.key("is_active")}
           {...form.getInputProps("is_active", {type: "checkbox"})}
         />
         <MultiSelect
-          label="Groups"
+          label={t("users.form.groups")}
           placeholder="Pick value"
           onChange={setGroups}
           value={groups}
@@ -126,12 +128,12 @@ export default function EditUserModal({
         />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Group>
             {isLoadingUserUpdate && <Loader size="sm" />}
             <Button disabled={isLoadingUserUpdate} type="submit">
-              Submit
+              {t("common.submit")}
             </Button>
           </Group>
         </Group>

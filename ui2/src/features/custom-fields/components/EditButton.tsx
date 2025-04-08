@@ -3,18 +3,20 @@ import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
 import EditCustomFieldModal from "./EditCustomFieldModal"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   customFieldId: string
 }
 
 export default function EditButton({customFieldId}: Args) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   if (!customFieldId) {
     return (
       <Button leftSection={<IconEdit />} variant={"default"} disabled={true}>
-        Edit
+        {t("common.edit")}
       </Button>
     )
   }
@@ -22,7 +24,7 @@ export default function EditButton({customFieldId}: Args) {
   return (
     <>
       <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        Edit
+        {t("common.edit")}
       </Button>
       <EditCustomFieldModal
         opened={opened}

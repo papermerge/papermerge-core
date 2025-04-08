@@ -9,6 +9,7 @@ import {
   Text
 } from "@mantine/core"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 
 interface RemoveDocumentTypesModalArgs {
   documentTypeIds: string[]
@@ -24,6 +25,7 @@ export function RemoveDocumentTypesModal({
   onSubmit,
   onCancel
 }: RemoveDocumentTypesModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deleteDocumentType, {isLoading}] = useDeleteDocumentTypeMutation()
 
@@ -38,15 +40,19 @@ export function RemoveDocumentTypesModal({
   }
 
   return (
-    <Modal title="Delete Document Type" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("document_types.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete selected document types?</p>
-        <Text size="sm">This won't affect associated documents</Text>
+        <p>{t("document_types.delete.many.description")}</p>
+        <Text size="sm">{t("document_types.delete.hint")}</Text>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -54,7 +60,7 @@ export function RemoveDocumentTypesModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -76,6 +82,7 @@ export function RemoveDocumentTypeModal({
   onCancel,
   opened
 }: RemoveDocumentTypeModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deleteCustomField, {isLoading}] = useDeleteDocumentTypeMutation()
 
@@ -89,15 +96,19 @@ export function RemoveDocumentTypeModal({
   }
 
   return (
-    <Modal title="Delete Document Type" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("document_types.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete this document type?</p>
-        <Text size="sm">This won't affect associated documents</Text>
+        <p>{t("document_types.delete.one.description")}</p>
+        <Text size="sm">{t("document_types.delete.hint")}</Text>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -105,7 +116,7 @@ export function RemoveDocumentTypeModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

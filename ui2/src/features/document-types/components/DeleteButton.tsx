@@ -10,12 +10,14 @@ import {
 } from "@/features/document-types/documentTypesSlice"
 
 import {RemoveDocumentTypeModal, RemoveDocumentTypesModal} from "./DeleteModal"
+import {useTranslation} from "react-i18next"
 
 export function DeleteDocumentTypeButton({
   documentTypeId
 }: {
   documentTypeId: string
 }) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
@@ -27,7 +29,7 @@ export function DeleteDocumentTypeButton({
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveDocumentTypeModal
         opened={opened}
@@ -40,6 +42,7 @@ export function DeleteDocumentTypeButton({
 }
 
 export function DeleteDocumentTypesButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
@@ -57,7 +60,7 @@ export function DeleteDocumentTypesButton() {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveDocumentTypesModal
         opened={opened}

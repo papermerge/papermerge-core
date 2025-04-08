@@ -508,3 +508,8 @@ export type ServerNotifDocumentMoved = {
 export type ServerNotifPayload =
   | ServerNotifDocumentMoved
   | ServerNotifDocumentsMoved
+
+export type I18nLangType = {
+  code: string
+  name: string
+}

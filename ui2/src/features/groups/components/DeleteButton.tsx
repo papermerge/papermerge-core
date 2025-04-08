@@ -7,8 +7,10 @@ import {useNavigate} from "react-router-dom"
 import {selectSelectedIds, clearSelection} from "@/features/groups/groupsSlice"
 
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
+import {useTranslation} from "react-i18next"
 
 export function DeleteGroupButton({groupId}: {groupId: string}) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
@@ -20,7 +22,7 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveGroupModal
         opened={opened}
@@ -33,6 +35,7 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
 }
 
 export function DeleteGroupsButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
@@ -50,7 +53,7 @@ export function DeleteGroupsButton() {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveGroupsModal
         opened={opened}

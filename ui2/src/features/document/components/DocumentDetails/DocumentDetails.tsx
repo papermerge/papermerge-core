@@ -31,8 +31,10 @@ import {
 import type {PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
+import {useTranslation} from "react-i18next"
 
 export default function DocumentDetails() {
+  const {t} = useTranslation()
   const mode: PanelMode = useContext(PanelContext)
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
@@ -68,13 +70,13 @@ export default function DocumentDetails() {
             rightSection={<CopyButton value={docID || ""} />}
           />
           <TextInput
-            label="Version ID"
+            label={t("common.version_id")}
             readOnly
             value={docVerID}
             rightSection={<CopyButton value={docVerID || ""} />}
           />
           <TextInput
-            label="Owner"
+            label={t("common.owner")}
             readOnly
             value={groupData?.name || OWNER_ME}
             rightSection={<CopyButton value={groupData?.name || OWNER_ME} />}
@@ -82,7 +84,7 @@ export default function DocumentDetails() {
           <Group>
             <TagsInput
               rightSection={<EditTagsButton />}
-              label="Tags"
+              label={t("common.tags")}
               readOnly
               value={doc?.tags?.map(t => t.name) || []}
               mt="md"

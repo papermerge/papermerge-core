@@ -28,8 +28,10 @@ import classes from "./TableSort.module.css"
 
 import ActionButtons from "./ActionButtons"
 import DocumentRow from "./DocumentRow"
+import {useTranslation} from "react-i18next"
 
 export default function DocumentsByCategoryCommander() {
+  const {t} = useTranslation()
   const [orderBy, setOrderBy] = useState<string | null>(null)
   const [reverseOrderDirection, setReverseOrderDirection] = useState(false)
   const mode: PanelMode = useContext(PanelContext)
@@ -95,7 +97,7 @@ export default function DocumentsByCategoryCommander() {
         <Stack>
           <ActionButtons />
         </Stack>
-        <Stack>Empty</Stack>
+        <Stack>{t("common.empty")}</Stack>
       </Box>
     )
   }

@@ -17,8 +17,10 @@ import {
   commanderSelectionCleared,
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
+import {useTranslation} from "react-i18next"
 
 export default function EditNodeTitleButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector((state: RootState) =>
@@ -52,7 +54,7 @@ export default function EditNodeTitleButton() {
 
   return (
     <>
-      <Tooltip label="Change title" withArrow>
+      <Tooltip label={t("common.change_title")} withArrow>
         <ActionIcon size={"lg"} variant="default" onClick={onClick}>
           <IconEdit stroke={1.4} />
         </ActionIcon>

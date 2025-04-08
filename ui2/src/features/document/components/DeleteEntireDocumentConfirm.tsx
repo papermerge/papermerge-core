@@ -7,6 +7,7 @@ import {Button, Group, Loader, Modal} from "@mantine/core"
 import {useContext, useState} from "react"
 
 import type {PanelMode} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -24,6 +25,7 @@ export default function DeleteWithAllPagesSelected({
   onSubmit,
   text = TEXT
 }: Args) {
+  const {t} = useTranslation()
   const [error, setError] = useState("")
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
@@ -45,17 +47,17 @@ export default function DeleteWithAllPagesSelected({
   }
 
   return (
-    <Modal title={"Delete Document"} opened={opened} onClose={onCancel}>
+    <Modal title={t("documents.delete.one")} opened={opened} onClose={onCancel}>
       {text}
       {error && <Error message={error} />}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onCancel}>
-          No
+          {t("common.yes")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onDeleteDocument} color={"red"}>
-            Yes
+            {t("common.no")}
           </Button>
         </Group>
       </Group>

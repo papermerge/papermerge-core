@@ -26,6 +26,7 @@ import {
 } from "@/features/users/apiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   onClick: (node: NType) => void
@@ -108,6 +109,7 @@ type RootItemArgs = {
 type RootType = "home" | "inbox"
 
 function RootItem({itemId, onClick}: RootItemArgs) {
+  const {t} = useTranslation()
   const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
@@ -145,16 +147,16 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   }
 
   if (!user || inboxesAreLoading || homesAreLoading || !homes || !inboxes) {
-    return <Skeleton>XXXX</Skeleton>
+    return <Skeleton>{t("home.name")}</Skeleton>
   }
 
   if (equalUUIDs(itemId, user.home_folder_id)) {
     root_type = "home"
-    currentLabel = "My Home"
+    currentLabel = t("home.name.my")
     currentID = user.home_folder_id
   } else if (equalUUIDs(itemId, user.inbox_folder_id)) {
     root_type = "inbox"
-    currentLabel = "My Inbox"
+    currentLabel = t("inbox.name.my")
     currentID = user.inbox_folder_id
   } else if (homes.find(i => equalUUIDs(i.home_id, itemId))) {
     const ho = homes.find(i => equalUUIDs(i.home_id, itemId))
@@ -197,7 +199,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   ))
   const homes_and_inboxes_dropdown_component = [
     <Menu.Label key={randomId()}>
-      <Group>Home</Group>
+      <Group>{t("home.name")}</Group>
     </Menu.Label>,
     <MenuItem
       key={randomId()}
@@ -211,7 +213,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     ...homes_components,
     <Menu.Divider key={randomId()} />,
     <Menu.Label key={randomId()}>
-      <Group>Inbox</Group>
+      <Group>{t("inbox.name")}</Group>
     </Menu.Label>,
     <MenuItem
       key={randomId()}

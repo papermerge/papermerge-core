@@ -13,8 +13,10 @@ import {useDispatch, useSelector} from "react-redux"
 import Pagination from "@/components/Pagination"
 import ActionButtons from "./ActionButtons"
 import RoleRow from "./RoleRow"
+import {useTranslation} from "react-i18next"
 
 export default function RolesList() {
+  const {t} = useTranslation()
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
@@ -91,7 +93,7 @@ export default function RolesList() {
                 onChange={e => onCheckAll(e.currentTarget.checked)}
               />
             </Table.Th>
-            <Table.Th>Name</Table.Th>
+            <Table.Th>{t("common.table.columns.name")}</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{roleRows}</Table.Tbody>
@@ -111,10 +113,11 @@ export default function RolesList() {
 }
 
 function Empty() {
+  const {t} = useTranslation()
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no roles</div>
+        <div>{t("roles.list.empty")}</div>
       </Stack>
     </Center>
   )

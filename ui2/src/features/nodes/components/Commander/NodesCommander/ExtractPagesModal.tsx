@@ -23,6 +23,7 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
+import {useTranslation} from "react-i18next"
 
 type ExtractPagesModalArgs = {
   sourcePages: ClientPage[]
@@ -43,6 +44,7 @@ export default function ExtractPagesModal({
   onSubmit,
   onCancel
 }: ExtractPagesModalArgs) {
+  const {t} = useTranslation()
   const [extractPages, {isLoading}] = useExtractPagesMutation()
   const {currentData: doc} = useGetDocumentQuery(sourceDocID)
   const [errorMessage, setErrorMessage] = useState<string>("")
@@ -129,7 +131,7 @@ export default function ExtractPagesModal({
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}

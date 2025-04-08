@@ -2,6 +2,7 @@ import {TextInput} from "@mantine/core"
 import {useThrottledCallback} from "@mantine/hooks"
 import {IconSearch, IconX} from "@tabler/icons-react"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   onChange: (value: string) => void
@@ -10,6 +11,7 @@ interface Args {
 }
 
 export default function QuickFilter({onChange, onClear, filterText}: Args) {
+  const {t} = useTranslation()
   const [localFilterText, setLocalFilterText] = useState<string>()
   const throttledSetValue = useThrottledCallback(
     value => onLocalChange(value),
@@ -36,7 +38,7 @@ export default function QuickFilter({onChange, onClear, filterText}: Args) {
         throttledSetValue(event.currentTarget.value)
         setLocalFilterText(event.currentTarget.value)
       }}
-      placeholder="Quick search"
+      placeholder={t("common.quick_search")}
       value={localFilterText || filterText || ""}
     />
   )

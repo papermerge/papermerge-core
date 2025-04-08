@@ -10,12 +10,14 @@ import {IconEdit} from "@tabler/icons-react"
 import {forwardRef, useContext} from "react"
 
 import type {PanelMode} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   hidden?: boolean
 }
 
 const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const {t} = useTranslation()
   const {hidden} = props
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
@@ -37,7 +39,7 @@ const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
 
   return (
     <Box>
-      <Tooltip label="Change title" withArrow>
+      <Tooltip label={t("common.change_title")} withArrow>
         <ActionIcon
           style={hidden ? {display: "None"} : {}}
           ref={ref}

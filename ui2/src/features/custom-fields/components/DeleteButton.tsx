@@ -10,12 +10,14 @@ import {
 } from "@/features/custom-fields/customFieldsSlice"
 
 import {RemoveCustomFieldModal, RemoveCustomFieldsModal} from "./DeleteModal"
+import {useTranslation} from "react-i18next"
 
 export function DeleteCustomFieldButton({
   customFieldId
 }: {
   customFieldId: string
 }) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
@@ -27,7 +29,7 @@ export function DeleteCustomFieldButton({
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveCustomFieldModal
         opened={opened}
@@ -40,6 +42,7 @@ export function DeleteCustomFieldButton({
 }
 
 export function DeleteCustomFieldsButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
@@ -57,7 +60,7 @@ export function DeleteCustomFieldsButton() {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveCustomFieldsModal
         opened={opened}

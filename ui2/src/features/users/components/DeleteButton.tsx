@@ -7,8 +7,10 @@ import {useNavigate} from "react-router-dom"
 import {selectSelectedIds, clearSelection} from "@/features/users/usersSlice"
 
 import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
+import {useTranslation} from "react-i18next"
 
 export function DeleteUserButton({userId}: {userId: string}) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const navigate = useNavigate()
 
@@ -19,7 +21,7 @@ export function DeleteUserButton({userId}: {userId: string}) {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveUserModal
         opened={opened}
@@ -33,6 +35,7 @@ export function DeleteUserButton({userId}: {userId: string}) {
 
 /* Deletes one or multiple users (with confirmation) */
 export function DeleteUsersButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
   const selectedIds = useSelector(selectSelectedIds)
@@ -50,7 +53,7 @@ export function DeleteUsersButton() {
   return (
     <>
       <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        Delete
+        {t("common.delete")}
       </Button>
       <RemoveUsersModal
         opened={opened}

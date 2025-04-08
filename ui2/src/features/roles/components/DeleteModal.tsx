@@ -1,6 +1,7 @@
 import {useDeleteRoleMutation} from "@/features/roles/apiSlice"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 
 interface RemoveRolesModalArgs {
   roleIds: string[]
@@ -16,6 +17,7 @@ export function RemoveRolesModal({
   onSubmit,
   onCancel
 }: RemoveRolesModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedRole, {isLoading}] = useDeleteRoleMutation()
 
@@ -30,14 +32,18 @@ export function RemoveRolesModal({
   }
 
   return (
-    <Modal title="Delete Roles" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("roles.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete selected roles?</p>
+        <p>{t("roles.delete.many.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -45,7 +51,7 @@ export function RemoveRolesModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -67,6 +73,7 @@ export function RemoveRoleModal({
   onCancel,
   opened
 }: RemoveRoleModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedRole, {isLoading}] = useDeleteRoleMutation()
 
@@ -80,14 +87,18 @@ export function RemoveRoleModal({
   }
 
   return (
-    <Modal title="Delete Role" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("roles.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete this role?</p>
+        <p>{t("roles.delete.one.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -95,7 +106,7 @@ export function RemoveRoleModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

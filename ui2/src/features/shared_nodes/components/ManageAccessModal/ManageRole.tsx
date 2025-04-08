@@ -16,9 +16,10 @@ export default function ManageRole({
   selectedGroupIDs,
   selectedUserIDs,
   users,
-  groups
+  groups,
+  onChange
 }: Args) {
-  const [roles, setRoles] = useState<string[]>([])
+  const [roles, setRoles] = useState<string[]>()
   const {data: allRoles = []} = useGetRolesQuery()
 
   useEffect(() => {
@@ -31,7 +32,18 @@ export default function ManageRole({
     setRoles(roles)
   }, [selectedGroupIDs, selectedUserIDs])
 
-  const onLocalRoleChange = (value: string[]) => {}
+  const onLocalRoleChange = (value: string[]) => {
+    const idType = getIDType({
+      groupIDs: selectedGroupIDs,
+      userIDs: selectedUserIDs
+    })
+    setRoles(value)
+    if (idType == "user") {
+      onChange(selectedUserIDs[0], "user", value)
+    } else if (idType == "group") {
+      onChange(selectedGroupIDs[0], "group", value)
+    }
+  }
 
   return (
     <MultiSelect
@@ -44,7 +56,7 @@ export default function ManageRole({
   )
 }
 
-interface getCurrentRolesArgs {
+interface GetCurrentRolesArgs {
   groupIDs: string[]
   userIDs: string[]
   groups: Group[]
@@ -56,8 +68,10 @@ function getCurrentRoles({
   userIDs,
   users,
   groups
-}: getCurrentRolesArgs): string[] {
-  if (groupIDs && groupIDs.length == 1) {
+}: GetCurrentRolesArgs): string[] {
+  const idType = getIDType({groupIDs, userIDs})
+
+  if (idType == "group") {
     const sel_id = groupIDs[0]
     if (sel_id) {
       const found = groups.find(g => g.id == sel_id)
@@ -66,7 +80,7 @@ function getCurrentRoles({
       }
     }
   }
-  if (userIDs && userIDs.length == 1) {
+  if (idType == "user") {
     const sel_id = userIDs[0]
     if (sel_id) {
       const found = users.find(u => u.id == sel_id)
@@ -77,4 +91,22 @@ function getCurrentRoles({
   }
 
   return []
+}
+
+interface GetIDTypeArgs {
+  groupIDs: string[]
+  userIDs: string[]
+}
+
+function getIDType({groupIDs, userIDs}: GetIDTypeArgs): IDType | undefined {
+  if (groupIDs && groupIDs.length == 1) {
+    return "group"
+  }
+
+  if (userIDs && userIDs.length == 1) {
+    return "user"
+  }
+
+  console.warn("getIDType returns undefined")
+  return undefined
 }

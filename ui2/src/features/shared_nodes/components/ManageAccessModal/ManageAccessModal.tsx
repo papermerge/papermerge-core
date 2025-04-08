@@ -1,11 +1,14 @@
+import {useGetRolesQuery} from "@/features/roles/apiSlice"
 import {useGetSharedNodeAccessDetailsQuery} from "@/features/shared_nodes/apiSlice"
 import type {SharedNodeAccessDetails} from "@/types.d/shared_nodes"
 import {Button, Container, Group, Loader, Modal, Tabs} from "@mantine/core"
 import {IconUsers, IconUsersGroup} from "@tabler/icons-react"
+import {produce} from "immer"
 import {useEffect, useState} from "react"
 import ManageAccessGroups from "./ManageAccessGroups"
 import ManageAccessUsers from "./ManageAccessUsers"
 import ManageRole from "./ManageRole"
+import type {IDType} from "./type"
 
 interface ModalStackReturnType<T extends string> {
   state: Record<T, boolean>
@@ -20,6 +23,12 @@ interface ModalStackReturnType<T extends string> {
   }
 }
 
+type ManagedRole = {
+  idType: IDType
+  selectedID: string
+  roles: string[]
+}
+
 type Args = {
   stack: ModalStackReturnType<"manage-access" | "manage-role">
   node_id: string
@@ -27,16 +36,19 @@ type Args = {
 }
 
 export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
-  const {data, isLoading} = useGetSharedNodeAccessDetailsQuery(node_id)
+  const {data: initialData, isLoading} =
+    useGetSharedNodeAccessDetailsQuery(node_id)
+  const {data: allRoles = []} = useGetRolesQuery()
   const [selectedUserIDs, setSelectedUserIDs] = useState<string[]>([])
   const [selectedGroupIDs, setSelectedGroupIDs] = useState<string[]>([])
   const [access, setAccess] = useState<SharedNodeAccessDetails>()
+  const [managedRoles, setManagedRoles] = useState<ManagedRole>()
 
   useEffect(() => {
-    if (data) {
-      setAccess(data)
+    if (initialData) {
+      setAccess(initialData)
     }
-  }, [data])
+  }, [initialData])
 
   const onUserSelectionChange = (user_id: string, checked: boolean) => {
     if (checked) {
@@ -74,10 +86,67 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
 
   const onSubmitRoleView = () => {
     stack.close("manage-role")
+    /* managedRoles.roles is only a list of strings, we need role IDs as well */
+
+    if (managedRoles && access) {
+      const newRolesWithIDs = allRoles?.filter(r =>
+        managedRoles.roles.includes(r.name)
+      )
+
+      if (managedRoles.idType == "group") {
+        const changedGroup = access.groups.find(
+          g => g.id == managedRoles.selectedID
+        )
+        if (changedGroup) {
+          const nextDataState = produce(access, draft => {
+            const oldGroups = draft.groups.filter(g => g.id != changedGroup.id)
+            draft.groups = [
+              ...oldGroups,
+              {
+                id: changedGroup.id,
+                name: changedGroup.name,
+                roles: newRolesWithIDs
+              }
+            ]
+          })
+          setAccess(nextDataState)
+        }
+      } // update for group
+      if (managedRoles.idType == "user") {
+        const changedUser = access.users.find(
+          u => u.id == managedRoles.selectedID
+        )
+        if (changedUser) {
+          const nextDataState = produce(access, draft => {
+            const oldUsers = access.users.filter(u => u.id != changedUser.id)
+            draft.users = [
+              ...oldUsers,
+              {
+                id: changedUser.id,
+                username: changedUser.username,
+                roles: newRolesWithIDs
+              }
+            ]
+          })
+          setAccess(nextDataState)
+        }
+      } // update for user
+    }
     setSelectedUserIDs([])
+    setManagedRoles(undefined)
   }
 
-  const onRoleChanged = () => {}
+  const onRoleChanged = (
+    selectedID: string,
+    idType: IDType,
+    value: string[]
+  ) => {
+    setManagedRoles({
+      selectedID,
+      idType,
+      roles: value
+    })
+  }
 
   if (isLoading) {
     return (
@@ -124,7 +193,7 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
             </Tabs.List>
             <Tabs.Panel value="users">
               <ManageAccessUsers
-                node_id={node_id}
+                data={access}
                 onSelectionChange={onUserSelectionChange}
                 selectedIDs={selectedUserIDs}
                 onClickViewButton={onClickViewUserRole}

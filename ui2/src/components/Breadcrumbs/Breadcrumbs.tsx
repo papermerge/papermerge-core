@@ -21,6 +21,7 @@ import type {NType, PanelMode, UserDetails} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   onClick: (node: NType) => void
@@ -101,6 +102,7 @@ type RootItemArgs = {
 }
 
 function RootItem({itemId, onClick}: RootItemArgs) {
+  const {t} = useTranslation()
   const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
 
   const onLocalClick = (id: string) => {
@@ -108,7 +110,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   }
 
   if (!user) {
-    return <Skeleton>Home</Skeleton>
+    return <Skeleton>{t("home.name")}</Skeleton>
   }
 
   if (equalUUIDs(itemId, user.home_folder_id)) {
@@ -117,7 +119,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
         <Anchor onClick={() => onLocalClick(user.home_folder_id)}>
           <Group>
             <IconHome />
-            Home
+            {t("home.name")}
           </Group>
         </Anchor>
         <Menu shadow="md">
@@ -130,7 +132,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
             <MenuItem onClick={() => onLocalClick(user.inbox_folder_id)}>
               <Group>
                 <IconInbox />
-                Inbox
+                {t("inbox.name")}
               </Group>
             </MenuItem>
           </Menu.Dropdown>
@@ -143,7 +145,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     <Group>
       <Anchor onClick={() => onLocalClick(user.inbox_folder_id)}>
         <Group>
-          <IconInbox /> Inbox
+          <IconInbox /> {t("inbox.name")}
         </Group>
       </Anchor>
       <Menu shadow="md">
@@ -156,7 +158,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
           <MenuItem onClick={() => onLocalClick(user.home_folder_id)}>
             <Group>
               <IconHome />
-              Home
+              {t("home.name")}
             </Group>
           </MenuItem>
         </Menu.Dropdown>

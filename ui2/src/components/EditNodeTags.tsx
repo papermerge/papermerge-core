@@ -8,6 +8,7 @@ import {
 } from "@/features/nodes/apiSlice"
 import {useGetTagsQuery} from "@/features/tags/apiSlice"
 import type {EntityWithTags} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   node: EntityWithTags
@@ -17,6 +18,7 @@ interface Args {
 }
 
 export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
+  const {t} = useTranslation()
   /*
   Edit Tags Modal
   */
@@ -78,12 +80,12 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
       {error && <Error message={error} />}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

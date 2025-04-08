@@ -35,8 +35,10 @@ import {useSelector} from "react-redux"
 import {NavLink} from "react-router-dom"
 
 import type {User} from "@/types.ts"
+import {useTranslation} from "react-i18next"
 
 function NavBarFull() {
+  const {t} = useTranslation()
   const mode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
@@ -71,42 +73,45 @@ function NavBarFull() {
       <div className="navbar">
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
-            {NavLinkWithFeedback("Home", <IconHome />)}
+            {NavLinkWithFeedback(t("home.name"), <IconHome />)}
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
-            {NavLinkWithFeedback("Inbox", <IconInbox />)}
+            {NavLinkWithFeedback(t("inbox.name"), <IconInbox />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (
           <NavLink to="/tags">
-            {NavLinkWithFeedback("Tags", <IconTag />)}
+            {NavLinkWithFeedback(t("tags.name"), <IconTag />)}
           </NavLink>
         )}
         {user.scopes.includes(CUSTOM_FIELD_VIEW) && (
           <NavLink to="/custom-fields">
-            {NavLinkWithFeedback("Custom Fields", <IconAlignJustified />)}
+            {NavLinkWithFeedback(
+              t("custom_fields.name"),
+              <IconAlignJustified />
+            )}
           </NavLink>
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback("Document Types", <IconFile3d />)}
+            {NavLinkWithFeedback(t("document_types.name"), <IconFile3d />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (
           <NavLink to="/users">
-            {NavLinkWithFeedback("Users", <IconUsers />)}
+            {NavLinkWithFeedback(t("users.name"), <IconUsers />)}
           </NavLink>
         )}
         {user.scopes.includes(GROUP_VIEW) && (
           <NavLink to="/groups">
-            {NavLinkWithFeedback("Groups", <IconUsersGroup />)}
+            {NavLinkWithFeedback(t("groups.name"), <IconUsersGroup />)}
           </NavLink>
         )}
         {user.scopes.includes(ROLE_VIEW) && (
           <NavLink to="/roles">
-            {NavLinkWithFeedback("Roles", <IconMasksTheater />)}
+            {NavLinkWithFeedback(t("roles.name"), <IconMasksTheater />)}
           </NavLink>
         )}
       </div>

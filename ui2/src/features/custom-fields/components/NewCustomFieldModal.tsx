@@ -13,6 +13,7 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -25,6 +26,7 @@ export default function NewCustomFieldModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const [addNewCustomField, {isLoading, isError, isSuccess}] =
     useAddNewCustomFieldMutation()
@@ -81,15 +83,19 @@ export default function NewCustomFieldModal({
   }
 
   return (
-    <Modal title={"New Custom Field"} opened={opened} onClose={onLocalCancel}>
+    <Modal
+      title={t("custom_fields.new.title")}
+      opened={opened}
+      onClose={onLocalCancel}
+    >
       <TextInput
-        label="Name"
+        label={t("custom_fields.form.name")}
         onChange={e => onNameChange(e.currentTarget.value)}
-        placeholder="Name"
+        placeholder={t("custom_fields.form.name")}
       />
       <NativeSelect
         mt="sm"
-        label="Type"
+        label={t("custom_fields.form.type")}
         value={dataType}
         data={CUSTOM_FIELD_DATA_TYPES}
         onChange={e =>
@@ -100,7 +106,7 @@ export default function NewCustomFieldModal({
         <Select
           mt="sm"
           searchable
-          label="Currency"
+          label={t("custom_fields.form.currency")}
           value={currency}
           data={CURRENCIES}
           onChange={onCurrencyChange}
@@ -109,12 +115,12 @@ export default function NewCustomFieldModal({
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

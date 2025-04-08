@@ -21,8 +21,10 @@ import {useDispatch, useSelector} from "react-redux"
 import type {CustomFieldListColumnName} from "../types"
 import ActionButtons from "./ActionButtons"
 import CustomFieldRow from "./CustomFieldRow"
+import {useTranslation} from "react-i18next"
 
 export default function CustomFieldsList() {
+  const {t} = useTranslation()
   const selectedIds = useSelector(selectSelectedIds)
   const tablerSortCols = useSelector(selectTableSortColumns)
   const sortedByName = useSelector(selectSortedByName)
@@ -132,14 +134,14 @@ export default function CustomFieldsList() {
               reversed={reverseSortedByName}
               onSort={() => onSortBy("name")}
             >
-              Name
+              {t("common.table.columns.name")}
             </Th>
             <Th
               sorted={sortedByType}
               reversed={reverseSortedByType}
               onSort={() => onSortBy("type")}
             >
-              Type
+              {t("common.table.columns.type")}
             </Th>
           </Table.Tr>
         </Table.Thead>
@@ -160,10 +162,11 @@ export default function CustomFieldsList() {
 }
 
 function Empty() {
+  const {t} = useTranslation()
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no custom fields</div>
+        <div>{t("custom_fields.list.empty")}</div>
       </Stack>
     </Center>
   )

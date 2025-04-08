@@ -1,62 +1,147 @@
 {
-  "common": {
-    "new": "New",
-    "quick_search": "Quick search",
-    "upload": "Upload",
-    "submit": "Submit",
-    "cancel": "Cancel"
-  },
-  "folder": {
-    "new": "New Folder",
-    "new_title": "Folder Title"
-  },
-  "tags": {
-    "list": {
-      "empty": "There are currently no tags",
-      "table": {
-        "name": "Name",
-        "pinned": "Pinned",
-        "description": "Description"
-      }
-    }
-  },
-  "roles": {
-    "list": {
-      "empty": "There are currently no roles",
-      "table": {
-        "name": "Name"
-      }
-    }
-  },
-  "document_types": {
-    "list": {
-      "empty": "There are currently no document types",
-      "table": {
-        "name": "Name"
-      }
-    }
-  },
-  "custom_fields": {
-    "list": {
-      "empty": "There are currently no fields",
-      "table": {
-        "name": "Name",
-        "type": "Type"
-      }
-    }
-  },
-  "navbar": {
-    "home": "Home",
-    "inbox": "Inbox",
-    "tags": "Tags",
-    "custom_fields": "Fields",
-    "document_types": "Document Types",
-    "users": "Users",
-    "roles": "Roles",
-    "groups": "Groups"
-  },
-  "user_menu": {
-    "rest_api": "REST API",
-    "logout": "Log out"
-  }
+  "common.new": "New",
+  "common.yes": "Yes",
+  "common.no": "No",
+  "common.quick_search": "Quick search",
+  "common.upload": "Upload",
+  "common.submit": "Submit",
+  "common.cancel": "Cancel",
+  "common.delete": "Delete",
+  "common.edit": "Edit",
+  "common.change_password": "Change Password",
+  "common.empty": "Empty",
+  "common.change_title": "Change title",
+  "common.run_ocr": "Run OCR",
+  "common.download": "Download",
+  "common.ocr_language": "Download",
+  "common.version_id": "Version ID",
+  "common.tags": "Tags",
+  "common.document_type": "Document Type",
+  "common.sort.tiles": "Tiles",
+  "common.sort.list": "List",
+  "common.sort.document_type": "Document Type",
+  "common.sort.title": "Title",
+  "common.sort.type": "Type",
+  "common.sort.modified": "Modified",
+  "common.sort.created": "Created",
+  "common.table.columns.name": "Name",
+  "common.table.columns.type": "Type",
+  "common.table.columns.pinned": "Pinned",
+  "common.table.columns.description": "Description",
+
+  "folder.new.title": "New Folder",
+  "folder.form.name": "Folder Title",
+
+  "tags.name": "Tags",
+  "tags.list.empty": "There are currently no tags",
+  "tags.new.title": "New Tag",
+  "tags.edit.title": "Edit Tag",
+  "tags.form.name": "Name",
+  "tags.form.background_color": "Background Color",
+  "tags.form.foreground_color": "Foreground Color",
+  "tags.form.pinned": "Pinned",
+  "tags.form.description": "Description",
+  "tags.form.description.placeholder": "Short description",
+  "tags.delete.one.title": "Delete tag",
+  "tags.delete.one.description": "Are you sure you want to delete tag?",
+  "tags.delete.many.title": "Delete tags",
+  "tags.delete.many.description": "Are you sure you want to delete selected tags?",
+
+  "roles.list.empty": "There are currently no roles",
+
+  "documents.delete.one": "Delete Document",
+
+  "nodes.delete.many.title": "Delete Nodes",
+  "nodes.delete.many.description": "Are you sure you want to delete following nodes",
+
+  "document_types.name": "Document Types",
+  "document_types.new.title": "New Document Type",
+  "document_types.form.name": "Name",
+  "document_types.form.custom_fields": "Custom Fields",
+  "document_types.form.custom_fields.placeholder": "Pick value",
+  "document_types.form.path_template": "Path Template",
+
+  "document_types.delete.hint": "This won't affect associated documents",
+  "document_types.delete.one.title": "Delete Document Type",
+  "document_types.delete.one.description": "Are you sure you want to delete selected document type?",
+  "document_types.delete.many.title": "Delete Document Types",
+  "document_types.delete.many.description": "Are you sure you want to delete selected document types?",
+  "document_types.list.empty": "There are currently no document types",
+
+  "custom_fields.name": "Custom Fields",
+  "custom_fields.new.title": "New Custom Field",
+  "custom_fields.edit.title": "Edit Custom Field",
+  "custom_fields.form.name": "Name",
+  "custom_fields.form.type": "Type",
+  "custom_fields.form.currency": "Currency",
+  "custom_fields.delete.one.title": "Delete Custom Field",
+  "custom_fields.delete.one.description": "Are you sure you want to delete this custom field?",
+  "custom_fields.delete.many.title": "Delete Custom Fields",
+  "custom_fields.delete.many.description": "Are you sure you want to delete selected custom fields?",
+  "custom_fields.list.empty": "There are currently no fields",
+
+  "groups.name": "Groups",
+  "groups.new.title": "New Group",
+  "groups.edit.title": "Edit Group",
+  "groups.form.name": "Name",
+  "groups.form.name.placeholder": "Group Name",
+  "groups.delete.one.title": "Delete Group",
+  "groups.delete.one.description": "Are you sure you want to delete this group?",
+  "groups.delete.many.title": "Delete Groups",
+  "groups.delete.many.description": "Are you sure you want to delete selected groups?",
+
+  "home.name": "Home",
+
+  "inbox.name": "Inbox",
+
+  "users.name": "Users",
+  "users.new.title": "New User",
+  "users.edit.title": "Edit User",
+  "users.form.username": "Username",
+  "users.form.email": "Email",
+  "users.form.superuser": "Superuser",
+  "users.form.active": "Active",
+  "users.form.groups": "Groups",
+  "users.form.password": "Password",
+  "users.form.confirm_password": "Confirm Password",
+  "users.form.groups.placeholder": "Pick value",
+  "users.delete.one.title": "Delete User",
+  "users.delete.one.description": "Are you sure you want to delete user?",
+  "users.delete.many.title": "Delete Users",
+  "users.delete.many.description": "Are you sure you want to delete selected users?",
+
+  "roles.name": "Roles",
+  "roles.new.title": "New Role",
+  "roles.edit.title": "Edit Role",
+  "roles.form.name": "Name",
+  "roles.form.name.placeholder": "Name",
+  "roles.form.permissions": "Permissions",
+  "roles.form.permissions.all": "All",
+  "roles.form.permissions.groups.documents": "Documents",
+  "roles.form.permissions.groups.pages": "Pages",
+  "roles.form.permissions.groups.users": "Users",
+  "roles.form.permissions.groups.groups": "Groups",
+  "roles.form.permissions.groups.tags": "Tags",
+  "roles.form.permissions.groups.custom_fields": "Custom Fields",
+  "roles.form.permissions.groups.document_types": "Document Types",
+  "roles.form.permissions.groups.nodes": "Nodes",
+  "roles.form.permissions.groups.tasks": "Tasks",
+  "roles.form.permissions.groups.roles": "Roles",
+
+  "roles.form.permissions.actions.upload": "Upload",
+  "roles.form.permissions.actions.download": "Download",
+  "roles.form.permissions.actions.move": "Move",
+  "roles.form.permissions.actions.extract": "Extract",
+  "roles.form.permissions.actions.view": "View",
+  "roles.form.permissions.actions.create": "Create",
+  "roles.form.permissions.actions.delete": "Delete",
+  "roles.form.permissions.actions.update": "Update",
+  "roles.form.permissions.actions.ocr": "OCR",
+  "roles.delete.one.title": "Delete Role",
+  "roles.delete.one.description": "Are you sure you want to delete this role?",
+  "roles.delete.many.title": "Delete Roles",
+  "roles.delete.many.description": "Are you sure you want to delete selected roles?",
+
+  "extra.rest_api": "REST API",
+  "extra.logout": "Log out"
 }

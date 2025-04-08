@@ -1,6 +1,7 @@
 import {useState} from "react"
 import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
 import {useDeleteUserMutation} from "@/features/users/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface RemoveUsersModalArgs {
   opened: boolean
@@ -16,6 +17,7 @@ export function RemoveUsersModal({
   onSubmit,
   onCancel
 }: RemoveUsersModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedUser, {isLoading}] = useDeleteUserMutation()
 
@@ -35,14 +37,18 @@ export function RemoveUsersModal({
   }
 
   return (
-    <Modal title="Delete Users" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("users.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete selected users?</p>
+        <p>{t("users.delete.many.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -50,7 +56,7 @@ export function RemoveUsersModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -72,6 +78,7 @@ export function RemoveUserModal({
   onSubmit,
   onCancel
 }: RemoveUserModalArgs) {
+  const {t} = useTranslation()
   const [deletedUser, {isLoading}] = useDeleteUserMutation()
   const [errorMessage, setErrorMessage] = useState("")
 
@@ -91,14 +98,18 @@ export function RemoveUserModal({
   }
 
   return (
-    <Modal title="Delete User" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("users.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete user?</p>
+        <p>{t("users.delete.one.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -106,7 +117,7 @@ export function RemoveUserModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

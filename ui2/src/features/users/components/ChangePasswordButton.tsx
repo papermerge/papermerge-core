@@ -4,6 +4,7 @@ import {useForm} from "@mantine/form"
 import {useDisclosure} from "@mantine/hooks"
 import {IconPassword} from "@tabler/icons-react"
 import {useEffect} from "react"
+import {useTranslation} from "react-i18next"
 
 interface ChangePasswordButtonArgs {
   userId?: string
@@ -12,6 +13,7 @@ interface ChangePasswordButtonArgs {
 export default function ChangePasswordButton({
   userId
 }: ChangePasswordButtonArgs) {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   if (!userId) {
@@ -23,7 +25,7 @@ export default function ChangePasswordButton({
         variant={"default"}
         disabled={true}
       >
-        Change Password
+        {t("common.change_password")}
       </Button>
     )
   }
@@ -35,7 +37,7 @@ export default function ChangePasswordButton({
         onClick={open} // only with userId defined and non-empty
         variant={"default"}
       >
-        Change Password
+        {t("common.change_password")}
       </Button>
       <ChangeUserPasswordModal
         opened={opened}
@@ -65,6 +67,7 @@ function ChangeUserPasswordModal({
   onSubmit,
   opened
 }: ChangePasswordModalArgs) {
+  const {t} = useTranslation()
   const [changePassword, {isLoading, isSuccess}] = useChangePasswordMutation()
 
   const form = useForm({
@@ -95,30 +98,34 @@ function ChangeUserPasswordModal({
   }
 
   return (
-    <Modal title={"Change Password"} opened={opened} onClose={onClose}>
+    <Modal
+      title={t("common.change_password")}
+      opened={opened}
+      onClose={onClose}
+    >
       <Box>
         <form onSubmit={form.onSubmit(onLocalSubmit)}>
           <PasswordInput
-            label="Password"
-            placeholder="Password"
+            label={t("users.form.password")}
+            placeholder={t("users.form.password")}
             key={form.key("password")}
             {...form.getInputProps("password")}
           />
           <PasswordInput
             mt="sm"
-            label="Confirm password"
-            placeholder="Confirm password"
+            label={t("users.form.confirm_password")}
+            placeholder={t("users.form.confirm_password")}
             key={form.key("confirmPassword")}
             {...form.getInputProps("confirmPassword")}
           />
           <Group justify="space-between" mt="md">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Group>
               {isLoading && <Loader size="sm" />}
               <Button disabled={isLoading || isSuccess} type="submit">
-                Submit
+                {t("common.submit")}
               </Button>
             </Group>
           </Group>

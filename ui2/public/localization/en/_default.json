@@ -5,6 +5,7 @@
   "common.quick_search": "Quick search",
   "common.upload": "Upload",
   "common.submit": "Submit",
+  "common.update": "Update",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
   "common.edit": "Edit",
@@ -12,6 +13,8 @@
   "common.empty": "Empty",
   "common.change_title": "Change title",
   "common.run_ocr": "Run OCR",
+  "common.category": "Category",
+  "common.owner": "Owner",
   "common.download": "Download",
   "common.ocr_language": "Download",
   "common.version_id": "Version ID",
@@ -54,8 +57,9 @@
   "nodes.delete.many.title": "Delete Nodes",
   "nodes.delete.many.description": "Are you sure you want to delete following nodes",
 
-  "document_types.name": "Document Types",
-  "document_types.new.title": "New Document Type",
+  "document_types.name": "Categories",
+  "document_types.name.by": "By Categories",
+  "document_types.new.title": "New Category",
   "document_types.form.name": "Name",
   "document_types.form.custom_fields": "Custom Fields",
   "document_types.form.custom_fields.placeholder": "Pick value",
@@ -91,8 +95,11 @@
   "groups.delete.many.description": "Are you sure you want to delete selected groups?",
 
   "home.name": "Home",
+  "home.name.my": "My Home",
 
   "inbox.name": "Inbox",
+  "inbox.name.my": "My Inbox",
+  "shared.name": "Shared",
 
   "users.name": "Users",
   "users.new.title": "New User",

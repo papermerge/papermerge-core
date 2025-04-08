@@ -152,11 +152,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
 
   if (equalUUIDs(itemId, user.home_folder_id)) {
     root_type = "home"
-    currentLabel = "My Home"
+    currentLabel = t("home.name.my")
     currentID = user.home_folder_id
   } else if (equalUUIDs(itemId, user.inbox_folder_id)) {
     root_type = "inbox"
-    currentLabel = "My Inbox"
+    currentLabel = t("inbox.name.my")
     currentID = user.inbox_folder_id
   } else if (homes.find(i => equalUUIDs(i.home_id, itemId))) {
     const ho = homes.find(i => equalUUIDs(i.home_id, itemId))
@@ -199,7 +199,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   ))
   const homes_and_inboxes_dropdown_component = [
     <Menu.Label key={randomId()}>
-      <Group>Home</Group>
+      <Group>{t("home.name")}</Group>
     </Menu.Label>,
     <MenuItem
       key={randomId()}
@@ -213,7 +213,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     ...homes_components,
     <Menu.Divider key={randomId()} />,
     <Menu.Label key={randomId()}>
-      <Group>Inbox</Group>
+      <Group>{t("inbox.name")}</Group>
     </Menu.Label>,
     <MenuItem
       key={randomId()}

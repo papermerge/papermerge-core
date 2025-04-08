@@ -178,7 +178,7 @@ export default function CustomFields() {
   return (
     <>
       <Select
-        label={t("common.document_type")}
+        label={t("common.category")}
         data={allDocumentTypes.map(i => {
           return {label: i.name, value: i.id}
         })}

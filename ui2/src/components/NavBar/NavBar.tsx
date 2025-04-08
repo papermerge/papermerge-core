@@ -88,7 +88,7 @@ function NavBarFull() {
             to={`/home/${lastHome?.home_id || user.home_folder_id}`}
             onClick={onClick}
           >
-            {NavLinkWithFeedback("Home", <IconHome />)}
+            {NavLinkWithFeedback(t("home.name"), <IconHome />)}
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
@@ -96,17 +96,17 @@ function NavBarFull() {
             to={`/inbox/${lastInbox?.inbox_id || user.inbox_folder_id}`}
             onClick={onClick}
           >
-            {NavLinkWithFeedback("Inbox", <IconInbox />)}
+            {NavLinkWithFeedback(t("inbox.name"), <IconInbox />)}
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
-            {NavLinkWithFeedback("By Category", <IconCategory />)}
+            {NavLinkWithFeedback(t("document_types.name"), <IconCategory />)}
           </NavLink>
         )}
         {user.scopes.includes(SHARED_NODE_VIEW) && (
           <NavLink to={"/shared"} onClick={onClick}>
-            {NavLinkWithFeedback("Shared", <IconUserShare />)}
+            {NavLinkWithFeedback(t("shared.name"), <IconUserShare />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (
@@ -124,7 +124,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback("Categories", <IconFile3d />)}
+            {NavLinkWithFeedback(t("document_types.name.by"), <IconFile3d />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (

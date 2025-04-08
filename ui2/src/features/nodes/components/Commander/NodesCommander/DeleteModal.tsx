@@ -4,6 +4,7 @@ import {useDeleteNodesMutation} from "@/features/nodes/apiSlice"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 
 import type {NodeType} from "@/types"
+import {useTranslation} from "react-i18next"
 
 type DeleteNodesModalArgs = {
   nodes: NodeType[]
@@ -19,6 +20,7 @@ export default function DeleteNodesModal({
   onSubmit,
   onCancel
 }: DeleteNodesModalArgs) {
+  const {t} = useTranslation()
   const [deletedNodes, {isLoading}] = useDeleteNodesMutation()
   const [errorMessage, setErrorMessage] = useState("")
   const nodeTitles = nodes.map(g => g.title).join(",")
@@ -34,14 +36,20 @@ export default function DeleteNodesModal({
   }
 
   return (
-    <Modal title="Delete Nodes" opened={opened} onClose={localCancel}>
+    <Modal
+      title={t("nodes.delete.many.title")}
+      opened={opened}
+      onClose={localCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete following nodes: {nodeTitles}?</p>
+        <p>
+          {t("nodes.delete.many.description")}: {nodeTitles}?
+        </p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -49,7 +57,7 @@ export default function DeleteNodesModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

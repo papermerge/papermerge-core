@@ -9,6 +9,7 @@ import Error from "@/components/Error"
 import ScheduleOCRProcessCheckbox from "@/components/ScheduleOCRProcessCheckbox/ScheduleOCRProcessCheckbox"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import type {FolderType, OCRCode} from "@/types"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   opened: boolean
@@ -25,6 +26,7 @@ export const DropFilesModal = ({
   onCancel,
   opened
 }: Args) => {
+  const {t} = useTranslation()
   if (!source_files) {
     return
   }
@@ -91,7 +93,7 @@ export const DropFilesModal = ({
         {error && <Error message={error} />}
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localSubmit}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={false && <Loader size={"sm"} />}

@@ -14,6 +14,7 @@ import {
 
 import {useMoveNodesMutation} from "@/features/nodes/apiSlice"
 import {commanderAllSelectionsCleared, dragEnded} from "@/features/ui/uiSlice"
+import {useTranslation} from "react-i18next"
 
 type DropNodesModalArgs = {
   sourceNodes: NodeType[]
@@ -32,6 +33,7 @@ export default function DropNodesModal({
   onSubmit,
   onCancel
 }: DropNodesModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState<string>("")
   const movedNodesTitles = sourceNodes.map(p => p.title).join(",")
   const [moveNodes, {isLoading}] = useMoveNodesMutation()
@@ -74,7 +76,7 @@ export default function DropNodesModal({
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}

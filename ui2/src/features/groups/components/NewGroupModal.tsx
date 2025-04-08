@@ -1,15 +1,16 @@
-import {Button, Group, Loader, Modal, Text, TextInput} from "@mantine/core"
+import {
+  Button,
+  Checkbox,
+  Group,
+  Loader,
+  Modal,
+  Text,
+  TextInput
+} from "@mantine/core"
 import {useEffect, useState} from "react"
 
 import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
 import {useTranslation} from "react-i18next"
-
-const INITIAL_SCOPES = {
-  "user.me": true,
-  "page.view": true,
-  "node.view": true,
-  "ocrlang.view": true
-}
 
 interface Args {
   opened: boolean
@@ -23,7 +24,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
     useAddNewGroupMutation()
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
-  const [scopes, setScopes] = useState<Record<string, boolean>>(INITIAL_SCOPES)
+  const [withSpecialFolders, setWithSpecialFolders] = useState<boolean>(false)
 
   useEffect(() => {
     // close dialog as soon as we have
@@ -36,13 +37,13 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
   const reset = () => {
     setName("")
     setError("")
-    setScopes(INITIAL_SCOPES)
+    setWithSpecialFolders(false)
   }
 
   const onLocalSubmit = async () => {
     const updatedData = {
-      scopes: Object.keys(scopes),
-      name: name!
+      name: name!,
+      with_special_folders: withSpecialFolders
     }
     try {
       await addNewGroup(updatedData).unwrap()
@@ -74,6 +75,10 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
         onChange={onNameChangeHandler}
         label={t("groups.form.name")}
         placeholder={t("groups.form.name.placeholder")}
+      />
+      <Checkbox
+        my="md"
+        label="For this group create special folders: inbox and home"
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">

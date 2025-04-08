@@ -29,7 +29,9 @@ export const OCR_LANG: OCRLangType = {
   por: "Português",
   ron: "Română",
   san: "संस्कृत",
-  spa: "Español"
+  spa: "Español",
+  kaz: "Қазақша",
+  rus: "Русский"
 }
 
 export const HIDDEN = {
@@ -77,6 +79,13 @@ export const CURRENCIES = [
   "SEK",
   "THB",
   "TL"
+]
+
+export const OWNER_ME = "Me"
+export const SHARED_FOLDER_ROOT_ID = "shared"
+export const SHARED_FOLDER_ROOT_NAME = "Shared"
+export const SHARED_NODES_ROOT_BREADCRUMB = [
+  [SHARED_FOLDER_ROOT_ID, SHARED_FOLDER_ROOT_NAME]
 ]
 
 export const SUPPORTED_LANGS: I18nLangType[] = [

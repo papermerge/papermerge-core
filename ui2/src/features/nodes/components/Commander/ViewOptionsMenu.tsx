@@ -41,12 +41,6 @@ export default function ViewOptionsMenu() {
         >
           {t("common.sort.list")}
         </Menu.Item>
-        <Menu.Item
-          onClick={() => onViewOptionsChanged("document-type")}
-          rightSection={viewOption == "document-type" && <IconCheck />}
-        >
-          {t("common.sort.document_type")}
-        </Menu.Item>
       </Menu.Dropdown>
     </Menu>
   )

@@ -1,12 +1,13 @@
-import {Link} from "react-router-dom"
-import {useDispatch, useSelector} from "react-redux"
-import {Table, Checkbox, Pill} from "@mantine/core"
+import {OWNER_ME} from "@/cconstants"
 import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
 } from "@/features/tags/tagsSlice"
 import type {ColoredTag} from "@/types"
+import {Checkbox, Pill, Table} from "@mantine/core"
+import {useDispatch, useSelector} from "react-redux"
+import {Link} from "react-router-dom"
 
 import Check from "@/components/Check"
 
@@ -42,6 +43,7 @@ export default function TagRow({tag}: Args) {
         <Check check={tag.pinned} />
       </Table.Td>
       <Table.Td>{tag.description}</Table.Td>
+      <Table.Td>{tag.group_name || OWNER_ME}</Table.Td>
       <Table.Td>{tag.id}</Table.Td>
     </Table.Tr>
   )

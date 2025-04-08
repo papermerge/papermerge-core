@@ -1,18 +1,18 @@
-import {useState} from "react"
-import {Group, Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import {
-  selectionAddMany,
-  selectSelectedIds,
-  clearSelection,
-  selectLastPageSize,
-  lastPageSizeUpdate
-} from "@/features/groups/groupsSlice"
 import {useGetPaginatedGroupsQuery} from "@/features/groups/apiSlice"
+import {
+  clearSelection,
+  lastPageSizeUpdate,
+  selectionAddMany,
+  selectLastPageSize,
+  selectSelectedIds
+} from "@/features/groups/groupsSlice"
+import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
+import {useState} from "react"
+import {useDispatch, useSelector} from "react-redux"
 
 import Pagination from "@/components/Pagination"
-import GroupRow from "./GroupRow"
 import ActionButtons from "./ActionButtons"
+import GroupRow from "./GroupRow"
 
 export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
@@ -92,6 +92,7 @@ export default function GroupsList() {
               />
             </Table.Th>
             <Table.Th>Name</Table.Th>
+            <Table.Th>Special Folders</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{groupRows}</Table.Tbody>

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, func, UniqueConstraint
+from sqlalchemy import ForeignKey, String, func, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.features.users.db.orm import User
@@ -26,7 +26,23 @@ class Node(Base):
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey(
             "users.id", use_alter=True, name="nodes_user_id_fkey", ondelete="CASCADE"
-        )
+        ),
+        nullable=True,
+    )
+    group: Mapped["Group"] = relationship(
+        back_populates="nodes",
+        primaryjoin="Group.id == Node.group_id",
+        remote_side="Group.id",
+        cascade="delete",
+    )
+    group_id: Mapped[UUID] = mapped_column(
+        ForeignKey(
+            "groups.id",
+            use_alter=True,
+            name="nodes_group_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=True,
     )
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
     tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
@@ -43,7 +59,20 @@ class Node(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "parent_id", "title", "user_id", name="unique title per parent per user"
+            "parent_id",
+            "title",
+            "user_id",
+            name="unique title per parent per user",
+        ),
+        UniqueConstraint(
+            "parent_id",
+            "title",
+            "group_id",
+            name="unique title per parent per group",
+        ),
+        CheckConstraint(
+            "user_id IS NOT NULL OR group_id IS NOT NULL",
+            name="check__user_id_not_null__or__group_id_not_null",
         ),
     )
 

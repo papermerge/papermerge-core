@@ -16,10 +16,12 @@ import {
   selectDocumentVersionID,
   selectDocumentVersionOCRLang
 } from "@/features/document/documentVersSlice"
+import {useGetGroupQuery} from "@/features/groups/apiSlice"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconEdit} from "@tabler/icons-react"
 import classes from "./DocumentDetails.module.css"
 
+import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import {
@@ -36,13 +38,15 @@ export default function DocumentDetails() {
   const mode: PanelMode = useContext(PanelContext)
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
+  const {currentData: groupData, isLoading: groupDataIsLoading} =
+    useGetGroupQuery(doc?.group_id ?? skipToken)
   const documentDetailsIsOpen = useAppSelector(s =>
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
   const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
 
-  if (!ocrLang || !docID || isLoading) {
+  if (!ocrLang || !docID || isLoading || groupDataIsLoading) {
     return (
       <Group align="flex-start" className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />
@@ -72,10 +76,10 @@ export default function DocumentDetails() {
             rightSection={<CopyButton value={docVerID || ""} />}
           />
           <TextInput
-            label={t("common.ocr_language")}
+            label={t("common.owner")}
             readOnly
-            value={ocrLang}
-            mt="md"
+            value={groupData?.name || OWNER_ME}
+            rightSection={<CopyButton value={groupData?.name || OWNER_ME} />}
           />
           <Group>
             <TagsInput
@@ -89,6 +93,7 @@ export default function DocumentDetails() {
           <Group>
             <CustomFields />
           </Group>
+          <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
         </Stack>
       </Group>
     )

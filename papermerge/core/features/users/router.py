@@ -5,12 +5,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 
-from papermerge.core import db, schema
+from papermerge.core import db, schema, dbapi
 from papermerge.core import utils
 from papermerge.core.features import auth
 from papermerge.core.features.auth import scopes
 from papermerge.core.tasks import delete_user_data
-from papermerge.core.features.users.db import api as usr_dbapi
 
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
@@ -21,6 +20,46 @@ router = APIRouter(
 )
 
 logger = logging.getLogger(__name__)
+
+
+@router.get("/group-homes")
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_user_group_homes(
+    user: Annotated[
+        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+    ]
+) -> list[schema.UserHome]:
+    """Get all user group homes
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        result, error = dbapi.get_user_group_homes(db_session, user_id=user.id)
+
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    return result
+
+
+@router.get("/group-inboxes")
+@utils.docstring_parameter(scope=scopes.USER_VIEW)
+def get_user_group_homes(
+    user: Annotated[
+        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+    ]
+) -> list[schema.UserInbox]:
+    """Get all user group inboxes
+
+    Required scope: `{scope}`
+    """
+    with db.Session() as db_session:
+        result, error = dbapi.get_user_group_inboxes(db_session, user_id=user.id)
+
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    return result
 
 
 @router.get("/me")
@@ -50,7 +89,7 @@ def get_users(
     """
 
     with db.Session() as db_session:
-        paginated_users = usr_dbapi.get_users(
+        paginated_users = dbapi.get_users(
             db_session, page_size=params.page_size, page_number=params.page_number
         )
 
@@ -66,9 +105,10 @@ def get_users_without_pagination(
 
     Required scope: `{scope}`
     """
-    order_by = ["username"]
+    with db.Session() as db_session:
+        result = dbapi.get_users_without_pagination(db_session)
 
-    return User.objects.order_by(*order_by)
+    return result
 
 
 @router.post("/", status_code=201)
@@ -84,7 +124,7 @@ def create_user(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        user, error = usr_dbapi.create_user(
+        user, error = dbapi.create_user(
             db_session,
             username=pyuser.username,
             email=pyuser.email,
@@ -120,7 +160,7 @@ def get_user_details(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        user, error = usr_dbapi.get_user_details(
+        user, error = dbapi.get_user_details(
             db_session,
             user_id=user_id,
         )
@@ -158,7 +198,7 @@ def delete_user(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        if usr_dbapi.get_users_count(db_session) == 1:
+        if dbapi.get_users_count(db_session) == 1:
             raise HTTPException(
                 status_code=432, detail="Deletion not possible. Only one user left."
             )
@@ -167,7 +207,7 @@ def delete_user(
         if os.environ.get("PAPERMERGE__REDIS__URL"):
             delete_user_data.apply_async(kwargs={"user_id": str(user_id)})
         else:
-            usr_dbapi.delete_user(db_session, user_id=user_id)
+            dbapi.delete_user(db_session, user_id=user_id)
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=469, detail=str(e))
@@ -187,7 +227,7 @@ def update_user(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        user, error = usr_dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
+        user, error = dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=404, detail=error.model_dump())
@@ -195,7 +235,9 @@ def update_user(
     return user
 
 
-@router.post("/{user_id}/change-password", status_code=200, response_model=schema.UserDetails)
+@router.post(
+    "/{user_id}/change-password", status_code=200, response_model=schema.UserDetails
+)
 @utils.docstring_parameter(scope=scopes.USER_UPDATE)
 def change_user_password(
     user_id: UUID,
@@ -209,10 +251,8 @@ def change_user_password(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        user, error = usr_dbapi.change_password(
-            db_session,
-            user_id=UUID(attrs.userId),
-            password=attrs.password
+        user, error = dbapi.change_password(
+            db_session, user_id=UUID(attrs.userId), password=attrs.password
         )
 
     if error:

@@ -41,9 +41,9 @@ export default function CustomFields() {
 
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
 
-  const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
-    useGetDocumentTypesQuery()
   const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
+  const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
+    useGetDocumentTypesQuery(doc?.group_id)
   const [updateDocumentCustomFields, {error}] =
     useUpdateDocumentCustomFieldsMutation()
   const [updateDocumentType] = useUpdateDocumentTypeMutation()

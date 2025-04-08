@@ -31,6 +31,13 @@ export default function CustomFieldForm({customField}: Args) {
         data={CUSTOM_FIELD_DATA_TYPES}
         onChange={() => {}}
       />
+      <TextInput
+        my="md"
+        label="Owner"
+        value={customField?.group_name || "Me"}
+        onChange={() => {}}
+        rightSection={<CopyButton value={customField?.group_name || "Me"} />}
+      />
     </Box>
   )
 }

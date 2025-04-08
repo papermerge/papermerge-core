@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Checkbox, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import {IconUsers} from "@tabler/icons-react"
 import {useContext, useState} from "react"
 
 import {
@@ -109,7 +110,8 @@ export default function Folder({
         <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
         <a onClick={() => onClick(node)}>
           <div className={classes.folderIcon}></div>
-          <Tags names={tagNames} />
+          {node.is_shared && <IconUsers className={classes.iconUsers} />}
+          <Tags names={tagNames} node={node} />
           <div className={classes.title}>{node.title}</div>
         </a>
       </Stack>

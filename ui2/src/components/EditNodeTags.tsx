@@ -1,3 +1,4 @@
+import {useAppSelector} from "@/app/hooks"
 import {Button, Group, Loader, Modal, TagsInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 
@@ -6,6 +7,7 @@ import {
   useGetNodeTagsQuery,
   useUpdateNodeTagsMutation
 } from "@/features/nodes/apiSlice"
+import {selectNodeById} from "@/features/nodes/nodesSlice"
 import {useGetTagsQuery} from "@/features/tags/apiSlice"
 import type {EntityWithTags} from "@/types"
 import {useTranslation} from "react-i18next"
@@ -23,8 +25,12 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   Edit Tags Modal
   */
   const {data, isLoading: isLoadingTags} = useGetNodeTagsQuery(node.id)
+  const nodeDetails = useAppSelector(s => selectNodeById(s, node.id))
+
   const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()
-  const {data: allTagsData, isLoading: isLoadingAllTagsData} = useGetTagsQuery()
+  const {data: allTagsData, isLoading: isLoadingAllTagsData} = useGetTagsQuery(
+    nodeDetails?.group_id
+  )
   const [allTagNames, setAllTagNames] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>(node.tags.map(t => t.name))
   const [error, setError] = useState("")

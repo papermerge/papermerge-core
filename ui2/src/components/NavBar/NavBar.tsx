@@ -2,7 +2,10 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
+  selectCommanderDocumentTypeID,
   selectCommanderViewOption,
+  selectLastHome,
+  selectLastInbox,
   selectNavBarCollapsed
 } from "@/features/ui/uiSlice"
 import {
@@ -11,6 +14,7 @@ import {
   GROUP_VIEW,
   NODE_VIEW,
   ROLE_VIEW,
+  SHARED_NODE_VIEW,
   TAG_VIEW,
   USER_VIEW
 } from "@/scopes"
@@ -22,13 +26,15 @@ import {
 import {Group, Loader} from "@mantine/core"
 import {
   IconAlignJustified,
+  IconCategory,
   IconFile3d,
   IconHome,
   IconInbox,
   IconMasksTheater,
   IconTag,
   IconUsers,
-  IconUsersGroup
+  IconUsersGroup,
+  IconUserShare
 } from "@tabler/icons-react"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
@@ -42,6 +48,12 @@ function NavBarFull() {
   const mode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
+  const lastHome = useAppSelector(s => selectLastHome(s, "main"))
+  const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -72,13 +84,29 @@ function NavBarFull() {
     <>
       <div className="navbar">
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={`/home/${user.home_folder_id}`} onClick={onClick}>
-            {NavLinkWithFeedback(t("home.name"), <IconHome />)}
+          <NavLink
+            to={`/home/${lastHome?.home_id || user.home_folder_id}`}
+            onClick={onClick}
+          >
+            {NavLinkWithFeedback("Home", <IconHome />)}
           </NavLink>
         )}
         {user.scopes.includes(NODE_VIEW) && (
-          <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
-            {NavLinkWithFeedback(t("inbox.name"), <IconInbox />)}
+          <NavLink
+            to={`/inbox/${lastInbox?.inbox_id || user.inbox_folder_id}`}
+            onClick={onClick}
+          >
+            {NavLinkWithFeedback("Inbox", <IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={categoryURL} onClick={onClick}>
+            {NavLinkWithFeedback("By Category", <IconCategory />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(SHARED_NODE_VIEW) && (
+          <NavLink to={"/shared"} onClick={onClick}>
+            {NavLinkWithFeedback("Shared", <IconUserShare />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (
@@ -96,7 +124,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback(t("document_types.name"), <IconFile3d />)}
+            {NavLinkWithFeedback("Categories", <IconFile3d />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (
@@ -126,6 +154,10 @@ function NavBarCollapsed() {
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
+  const categoryID = useAppSelector(s =>
+    selectCommanderDocumentTypeID(s, "main")
+  )
+  const categoryURL = categoryID ? `/category/${categoryID}` : "/category"
 
   const onClick = () => {
     if (viewOption == "document-type") {
@@ -159,6 +191,16 @@ function NavBarCollapsed() {
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={`/inbox/${user.inbox_folder_id}`} onClick={onClick}>
             {NavLinkWithFeedbackShort(<IconInbox />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(NODE_VIEW) && (
+          <NavLink to={categoryURL} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconCategory />)}
+          </NavLink>
+        )}
+        {user.scopes.includes(SHARED_NODE_VIEW) && (
+          <NavLink to={"/shared"} onClick={onClick}>
+            {NavLinkWithFeedbackShort(<IconUserShare />)}
           </NavLink>
         )}
         {user.scopes.includes(TAG_VIEW) && (

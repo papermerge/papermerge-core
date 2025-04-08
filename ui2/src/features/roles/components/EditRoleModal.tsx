@@ -29,10 +29,12 @@ import {
   NODE_DELETE,
   NODE_MOVE,
   NODE_UPDATE,
+  NODE_VIEW,
   PAGE_DELETE,
   PAGE_EXTRACT,
   PAGE_MOVE,
   PAGE_UPDATE,
+  PAGE_VIEW,
   ROLE_CREATE,
   ROLE_DELETE,
   ROLE_UPDATE,
@@ -162,7 +164,7 @@ export default function EditRoleModal({
     <Modal
       title={t("roles.edit.title")}
       opened={opened}
-      size="lg"
+      size="xl"
       onClose={onLocalCancel}
     >
       <LoadingOverlay
@@ -187,6 +189,7 @@ export default function EditRoleModal({
                 label={t("roles.form.permissions.all")}
               />
             </Table.Th>
+            <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
@@ -240,6 +243,13 @@ export default function EditRoleModal({
                   )
                 }
                 label={t("roles.form.permissions.groups.pages")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, PAGE_VIEW)}
+                onChange={e => onChangePerm(PAGE_VIEW, e.target.checked)}
+                label="View"
               />
             </Table.Td>
             <Table.Td>
@@ -673,6 +683,13 @@ export default function EditRoleModal({
                 />
               </Table.Td>
             </Tooltip>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, NODE_VIEW)}
+                onChange={e => onChangePerm(NODE_VIEW, e.target.checked)}
+                label="View"
+              />
+            </Table.Td>
             <Tooltip
               label={"Grants permission to create folders"}
               multiline

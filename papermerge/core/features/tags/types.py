@@ -12,6 +12,8 @@ class OrderBy(str, Enum):
     description_desc = "-description"
     id_asc = "ID"
     id_desc = "-ID"
+    owner_asc = "group_name"
+    owner_desc = "-group_name"
 
 
 class PaginatedQueryParams(BaseParams):

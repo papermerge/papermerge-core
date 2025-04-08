@@ -5,17 +5,18 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update
+from sqlalchemy import func, select, delete, update, exists
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core.db.engine import Session
-from papermerge.core import schema, orm
+from papermerge.core import schema
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
+from papermerge.core import orm
 
 from .orm import Folder
 
@@ -92,23 +93,23 @@ def get_paginated_nodes(
     filter: str | None = None,
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
-
+    subq = exists().where(orm.SharedNode.node_id == orm.Node.id)
     if filter:
         query = (
-            select(orm.Node)
+            select(orm.Node, subq.label("is_shared"))
             .options(selectinload(orm.Node.tags))
             .filter(
                 func.lower(orm.Node.title).contains(
                     filter.strip().lower(), autoescape=True
                 )
             )
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
     else:
         query = (
-            select(orm.Node)
+            select(orm.Node, subq.label("is_shared"))
             .options(selectinload(orm.Node.tags))
-            .filter_by(user_id=user_id, parent_id=parent_id)
+            .filter_by(parent_id=parent_id)
         )
 
     stmt = (
@@ -121,16 +122,18 @@ def get_paginated_nodes(
     count_stmt = (
         select(func.count())
         .select_from(orm.Node)
-        .where(orm.Node.user_id == user_id, orm.Node.parent_id == parent_id)
+        .where(orm.Node.parent_id == parent_id)
     )
 
     total_nodes = db_session.scalar(count_stmt)
-    nodes = db_session.scalars(stmt).all()
+    rows = db_session.execute(stmt).all()
 
     items = []
     num_pages = math.ceil(total_nodes / page_size)
 
-    for node in nodes:
+    for row in rows:
+        node = row.Node
+        node.is_shared = row.is_shared
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
         else:
@@ -150,8 +153,8 @@ def update_node(
     user_id: uuid.UUID,
     attrs: schema.UpdateNode,
 ) -> schema.Node:
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
-    node = db_session.scalars(stmt).one_or_none()
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
+    node = db_session.scalars(stmt).one()
     if attrs.title is not None:
         node.title = attrs.title
 
@@ -164,14 +167,20 @@ def update_node(
 
 
 def create_folder(
-    db_session: Session, attrs: schema.NewFolder, user_id: uuid.UUID
+    db_session: Session, attrs: schema.NewFolder
 ) -> Tuple[schema.Folder | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
 
+    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
+        orm.Node.id == attrs.parent_id
+    )
+    user_id, group_id = db_session.execute(stmt).fetchone()
+
     folder = orm.Folder(
         id=folder_id,
         user_id=user_id,
+        group_id=group_id,
         title=attrs.title,
         parent_id=attrs.parent_id,
         ctype="folder",
@@ -202,7 +211,7 @@ def assign_node_tags(
     """
     error = None
 
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = db_session.scalars(stmt).one_or_none()
 
     if node is None:
@@ -214,7 +223,7 @@ def assign_node_tags(
     existing_db_tags_names = [t.name for t in existing_db_tags.all()]
     # create new tags if they don't exist
     new_db_tags = [
-        orm.Tag(name=name, user_id=user_id)
+        orm.Tag(name=name, user_id=node.user_id, group_id=node.group_id)
         for name in tags
         if name not in existing_db_tags_names
     ]
@@ -242,13 +251,17 @@ def update_node_tags(
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
     error = None
 
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = db_session.scalars(stmt).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
+    if node.group_id:
+        db_tags = [orm.Tag(name=name, group_id=node.group_id) for name in tags]
+    else:
+        db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
+
     db_session.add_all(db_tags)
 
     try:
@@ -274,7 +287,7 @@ def get_node_tags(
         orm.NodeTagsAssociation.node_id == node_id
     )
 
-    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq), orm.Tag.user_id == user_id)
+    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq))
 
     try:
         tags = db_session.execute(stmt).scalars()
@@ -317,12 +330,10 @@ def remove_node_tags(
 
 
 def get_folder(
-    db_session: Session, folder_id: UUID, user_id: UUID
+    db_session: Session, folder_id: UUID
 ) -> Tuple[orm.Folder | None, schema.Error | None]:
     breadcrumb = get_ancestors(db_session, folder_id)
-    stmt = select(orm.Folder).where(
-        orm.Folder.id == folder_id, orm.Node.user_id == user_id
-    )
+    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
     try:
         db_model = db_session.scalars(stmt).one()
         db_model.breadcrumb = breadcrumb
@@ -344,9 +355,7 @@ def delete_nodes(
         db_session, all_ids_to_be_deleted
     )
 
-    stmt = delete(orm.Node).where(
-        orm.Node.id.in_(all_ids_to_be_deleted), orm.Node.user_id == user_id
-    )
+    stmt = delete(orm.Node).where(orm.Node.id.in_(all_ids_to_be_deleted))
 
     # This second delete statement - is extra hack for Sqlite DB
     # For some reason, the (Polymorphic?) cascading does not work
@@ -368,22 +377,32 @@ def delete_nodes(
     return None
 
 
-def move_nodes(
-    db_session: Session, source_ids: list[UUID], target_id: UUID, user_id: UUID
-) -> int:
+def move_nodes(db_session: Session, source_ids: list[UUID], target_id: UUID) -> int:
 
     # Sqlite does not raise "Integrity Error" during update
     # when target does not exist. Thus, we issue here one more
     # extra sql statement just to check the existence of target_id
-    stmt = select(orm.Node.id).where(orm.Node.id == target_id)
-    target = db_session.execute(stmt).one_or_none()
+    stmt = select(orm.Node).where(orm.Node.id == target_id)
+    target = db_session.execute(stmt).scalar()
+    descendants_ids = [
+        item[0] for item in get_descendants(db_session, node_ids=source_ids)
+    ]
     if target is None:
         raise EntityNotFound("Node target not found")
 
     stmt = (
         update(orm.Node).where(orm.Node.id.in_(source_ids)).values(parent_id=target_id)
     )
+    # Moved nodes will be set to have same
+    # parent as the target
+    stmt_update_owner = (
+        update(orm.Node)
+        .where(orm.Node.id.in_(descendants_ids))
+        .values(user_id=target.user_id, group_id=target.group_id)
+    )
+
     result = db_session.execute(stmt)
+    db_session.execute(stmt_update_owner)
     db_session.commit()
 
     return result.rowcount

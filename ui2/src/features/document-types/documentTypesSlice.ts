@@ -64,6 +64,16 @@ const documentTypesSlice = createSlice({
         state.listTableSort.sortBy == "-name"
       ) {
         state.listTableSort.sortBy = "name"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "group_name"
+      ) {
+        state.listTableSort.sortBy = "-group_name"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "-group_name"
+      ) {
+        state.listTableSort.sortBy = "group_name"
       } else {
         state.listTableSort.sortBy = columnName
       }
@@ -100,7 +110,7 @@ export const {
 export default documentTypesSlice.reducer
 
 export const selectDocumentTypesResult =
-  apiSliceWithDocTypes.endpoints.getDocumentTypes.select()
+  apiSliceWithDocTypes.endpoints.getDocumentTypes.select(undefined)
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 
@@ -144,6 +154,25 @@ export const selectSortedByName = (state: RootState) => {
 
 export const selectReverseSortedByName = (state: RootState) => {
   if (state.documentTypes.listTableSort.sortBy == "-name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByOwner = (state: RootState) => {
+  if (state.documentTypes.listTableSort.sortBy == "group_name") {
+    return true
+  }
+  if (state.documentTypes.listTableSort.sortBy == "-group_name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByOwner = (state: RootState) => {
+  if (state.documentTypes.listTableSort.sortBy == "-group_name") {
     return true
   }
 

@@ -11,6 +11,7 @@ from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
+from papermerge.core.features.groups.db.orm import user_groups_association
 
 from .orm import User
 
@@ -35,6 +36,74 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
     model_user = schema.User.model_validate(db_user)
 
     return model_user
+
+
+def get_user_group_homes(
+    db_session: db.Session, user_id: uuid.UUID
+) -> [list[schema.UserHome] | None, str | None]:
+    """Gets user group homes
+
+    SELECT g.name, g.home_folder_id
+    FROM groups g
+    JOIN users_groups ug ON ug.group_id = g.id
+    WHERE ug.user_id = <user_id>
+    """
+    stmt = (
+        select(
+            orm.Group.name, orm.Group.id, orm.Group.home_folder_id
+        )  # Selecting only `Group.name` (since `home_folder_id` isn't defined in Group)
+        .join(
+            user_groups_association, user_groups_association.c.group_id == orm.Group.id
+        )
+        .where(
+            user_groups_association.c.user_id == user_id,
+            orm.Group.home_folder_id != None,
+        )
+    )
+
+    results = db_session.execute(stmt).all()
+
+    models = []
+    for group_name, group_id, home_folder_id in results:
+        home = schema.UserHome(
+            group_name=group_name, group_id=group_id, home_id=home_folder_id
+        )
+        models.append(schema.UserHome.model_validate(home))
+
+    return models, None
+
+
+def get_user_group_inboxes(
+    db_session: db.Session, user_id: uuid.UUID
+) -> [list[schema.UserHome] | None, str | None]:
+    """Gets user group inboxes
+
+    SELECT g.name, g.inbox_folder_id
+    FROM groups g
+    JOIN users_groups ug ON ug.group_id = g.id
+    WHERE ug.user_id = <user_id>
+    """
+    stmt = (
+        select(orm.Group.name, orm.Group.id, orm.Group.inbox_folder_id)
+        .join(
+            user_groups_association, user_groups_association.c.group_id == orm.Group.id
+        )
+        .where(
+            user_groups_association.c.user_id == user_id,
+            orm.Group.inbox_folder_id != None,
+        )
+    )
+
+    results = db_session.execute(stmt).all()
+
+    models = []
+    for group_name, group_id, inbox_folder_id in results:
+        home = schema.UserInbox(
+            group_name=group_name, group_id=group_id, inbox_id=inbox_folder_id
+        )
+        models.append(schema.UserInbox.model_validate(home))
+
+    return models, None
 
 
 def get_user_details(
@@ -85,6 +154,15 @@ def get_users(
     return schema.PaginatedResponse[schema.User](
         items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
     )
+
+
+def get_users_without_pagination(db_session: db.Session) -> list[schema.User]:
+    stmt = select(orm.User).order_by(orm.User.username.asc())
+    db_users = db_session.scalars(stmt).all()
+
+    items = [schema.User.model_validate(db_user) for db_user in db_users]
+
+    return items
 
 
 def create_user(
@@ -278,3 +356,19 @@ def change_password(
     user = schema.User.model_validate(db_user)
 
     return user, None
+
+
+def user_belongs_to(
+    db_session: db.Session, group_id: uuid.UUID, user_id: uuid.UUID
+) -> bool:
+    """Does user belong to group?"""
+    stmt = (
+        select(func.count())
+        .select_from(user_groups_association)
+        .where(
+            user_groups_association.c.user_id == user_id,
+            user_groups_association.c.group_id == group_id,
+        )
+    )
+    result = db_session.execute(stmt).scalar()
+    return result > 0

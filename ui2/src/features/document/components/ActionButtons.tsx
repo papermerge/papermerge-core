@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
-import {updateActionPanel} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID, updateActionPanel} from "@/features/ui/uiSlice"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
@@ -10,6 +10,7 @@ import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import ShareButton from "@/components/ShareButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
@@ -24,6 +25,7 @@ export default function ActionButtons() {
   const mode: PanelMode = useContext(PanelContext)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const runtimeConfig = useRuntimeConfig()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
 
   useEffect(() => {
     if (ref?.current) {
@@ -44,6 +46,7 @@ export default function ActionButtons() {
         <EditTitleButton />
         <DownloadButton />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
+        {currentNodeID && <ShareButton node_ids={[currentNodeID]} />}
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
         {selectedPages.length > 0 && <DeletePagesButton />}

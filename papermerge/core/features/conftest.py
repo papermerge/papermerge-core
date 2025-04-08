@@ -42,6 +42,7 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
+from papermerge.core.features.shared_nodes.router import router as shared_nodes_router
 
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -71,10 +72,26 @@ def mock_media_root_env(monkeypatch):
 
 @pytest.fixture()
 def make_folder(db_session: Session):
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
-        folder = orm.Folder(
-            id=uuid.uuid4(), title=title, user=user, parent_id=parent.id, lang="de"
-        )
+    def _maker(
+        title: str,
+        parent: orm.Folder,
+        user: orm.User | None = None,
+        group: orm.Group | None = None,
+    ):
+        kwargs = {
+            "id": uuid.uuid4(),
+            "title": title,
+            "lang": "de",
+            "parent_id": parent.id,
+        }
+        if user:
+            kwargs["user"] = user
+        elif group:
+            kwargs["group"] = group
+        else:
+            raise ValueError("Either user or group argument must be provided")
+
+        folder = orm.Folder(**kwargs)
         db_session.add(folder)
         db_session.commit()
         return folder
@@ -94,7 +111,7 @@ def make_document(db_session: Session):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        doc, _ = doc_dbapi.create_document(db_session, attrs)
 
         if doc is None:
             raise Exception("Document was not created")
@@ -163,7 +180,7 @@ def make_document_with_pages(db_session: Session):
             title=title,
             parent_id=parent.id,
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs, user.id)
+        doc, _ = doc_dbapi.create_document(db_session, attrs)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:
@@ -272,6 +289,7 @@ def get_app_with_routes():
     app.include_router(roles_router.router, prefix="")
     app.include_router(cf_router.router, prefix="")
     app.include_router(nodes_router.router, prefix="")
+    app.include_router(shared_nodes_router, prefix="")
     app.include_router(folders_router.router, prefix="")
     app.include_router(docs_router.router, prefix="")
     app.include_router(pages_router.router, prefix="")
@@ -444,13 +462,23 @@ def document_type_tax(db_session: Session, user, make_custom_field):
 
 @pytest.fixture
 def make_custom_field(db_session: Session, user):
-    def _make_custom_field(name: str, type: CustomFieldType):
-        return cf_dbapi.create_custom_field(
-            db_session,
-            name=name,
-            type=type,
-            user_id=user.id,
-        )
+    def _make_custom_field(
+        name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
+    ):
+        if group_id:
+            return cf_dbapi.create_custom_field(
+                db_session,
+                name=name,
+                type=type,
+                group_id=group_id,
+            )
+        else:
+            return cf_dbapi.create_custom_field(
+                db_session,
+                name=name,
+                type=type,
+                user_id=user.id,
+            )
 
     return _make_custom_field
 
@@ -478,16 +506,28 @@ def make_document_type(db_session, make_user, make_custom_field):
     cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
     def _make_document_type(
-        name: str, user: orm.User | None = None, path_template: str | None = None
+        name: str,
+        user: orm.User | None = None,
+        path_template: str | None = None,
+        group_id: uuid.UUID | None = None,
     ):
-        if user is None:
-            user = make_user("john")
+        if group_id is None:
+            if user is None:
+                user = make_user("john")
+            return dbapi.create_document_type(
+                db_session,
+                name=name,
+                custom_field_ids=[cf.id],
+                path_template=path_template,
+                user_id=user.id,
+            )
+        # document_type belongs to group_id
         return dbapi.create_document_type(
             db_session,
             name=name,
             custom_field_ids=[cf.id],
             path_template=path_template,
-            user_id=user.id,
+            group_id=group_id,
         )
 
     return _make_document_type
@@ -579,10 +619,20 @@ def make_document_tax(db_session: Session, document_type_tax):
 
 @pytest.fixture()
 def make_group(db_session):
-    def _maker(name: str):
-        group = orm.Group(name=name)
-        db_session.add(group)
-        db_session.commit()
+    def _maker(name: str, with_special_folders=False):
+        if with_special_folders:
+            group = orm.Group(name=name)
+            uid = uuid.uuid4()
+            db_session.add(group)
+            folder = orm.Folder(id=uid, title="home", group=group, lang="de")
+            db_session.add(folder)
+            db_session.commit()
+            group.home_folder_id = uid
+            db_session.commit()
+        else:
+            group = orm.Group(name=name)
+            db_session.add(group)
+            db_session.commit()
         return group
 
     return _maker

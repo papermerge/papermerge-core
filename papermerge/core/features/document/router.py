@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Security, UploadFile
 from sqlalchemy.exc import NoResultFound
 
+from papermerge.core.exceptions import HTTP403Forbidden, HTTP404NotFound
 from papermerge.core import constants as const
 from papermerge.core import utils, db, dbapi, schema
 from papermerge.core.features.auth import get_current_user, scopes
@@ -18,6 +19,7 @@ from papermerge.core.features.document.schema import (
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
 from papermerge.core.types import OrderEnum, PaginatedResponse
+from papermerge.core.db import common as dbapi_common
 
 
 router = APIRouter(
@@ -56,7 +58,7 @@ def update_document_custom_field_values(
                 custom_fields=custom_fields,
             )
         except NoResultFound:
-            raise HTTPException(status_code=404, detail="Document not found")
+            raise HTTP404NotFound
 
     send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,
@@ -85,7 +87,7 @@ def get_document_custom_field_values(
                 document_id=document_id,
             )
         except NoResultFound:
-            raise HTTPException(status_code=404, detail="Document not found")
+            raise HTTP404NotFound
 
     return doc
 
@@ -163,7 +165,15 @@ def get_document_details(
     """
     try:
         with db.Session() as db_session:
-            doc = dbapi.get_doc(db_session, id=document_id, user_id=user.id)
+            ok = dbapi_common.has_node_perm(
+                db_session,
+                node_id=document_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            )
+            if not ok:
+                raise HTTP403Forbidden
+            doc = dbapi.get_doc(db_session, id=document_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc
@@ -187,10 +197,9 @@ def update_document_type(
                 db_session,
                 document_id=document_id,
                 document_type_id=document_type.document_type_id,
-                user_id=user.id,
             )
     except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTP404NotFound
 
     send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,

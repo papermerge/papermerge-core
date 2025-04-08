@@ -14,7 +14,19 @@ import {
   DocumentTypesList
 } from "@/features/document-types/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
+import CategoryListView, {
+  loader as categoryLoader
+} from "@/features/nodes/pages/CategoryListView"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
+import SharedDocumentView, {
+  loader as sharedDocumentLoader
+} from "@/features/shared_nodes/pages/SharedDocumentView"
+import SharedFolderView, {
+  loader as sharedFolderLoader
+} from "@/features/shared_nodes/pages/SharedFolderView"
+import SharedNodesListView, {
+  loader as sharedNodesLoader
+} from "@/features/shared_nodes/pages/SharedNodesListView"
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
@@ -52,6 +64,31 @@ const router = createBrowserRouter([
         path: "/document/:documentId",
         element: <Document />,
         loader: documentLoader
+      },
+      {
+        path: "/category",
+        element: <CategoryListView />,
+        loader: categoryLoader
+      },
+      {
+        path: "/category/:categoryId",
+        element: <CategoryListView />,
+        loader: categoryLoader
+      },
+      {
+        path: "/shared",
+        element: <SharedNodesListView />,
+        loader: sharedNodesLoader
+      },
+      {
+        path: "/shared/folder/:folderId",
+        element: <SharedFolderView />,
+        loader: sharedFolderLoader
+      },
+      {
+        path: "/shared/document/:documentId",
+        element: <SharedDocumentView />,
+        loader: sharedDocumentLoader
       },
       {
         path: "/tags",

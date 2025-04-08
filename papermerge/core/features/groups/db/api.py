@@ -2,11 +2,10 @@ import logging
 import math
 import uuid
 
-from sqlalchemy import delete, select, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select, func
 
 from papermerge.core import schema, orm
-from papermerge.core.features.auth import scopes
+from papermerge.core import constants
 from papermerge.core.db.engine import Session
 
 
@@ -71,10 +70,45 @@ def update_group(
     db_session: Session, group_id: uuid.UUID, attrs: schema.UpdateGroup
 ) -> schema.Group:
     stmt = select(orm.Group).where(orm.Group.id == group_id)
-    group = db_session.execute(stmt, params={"id": group_id}).scalars().one()
-    db_session.add(group)
+    group: schema.Group = (
+        db_session.execute(stmt, params={"id": group_id}).scalars().one()
+    )
     group.name = attrs.name
+    if attrs.with_special_folders:
+        group.delete_special_folders = False
+        if group.home_folder_id and group.inbox_folder_id:
+            # nothing to do as both home and inbox are already there
+            pass
+        else:
+            # set home/inbox UUID
+            home_id = uuid.uuid4()
+            inbox_id = uuid.uuid4()
+            db_inbox = orm.Folder(
+                id=inbox_id,
+                title=constants.INBOX_TITLE,
+                ctype=constants.CTYPE_FOLDER,
+                group_id=group_id,  # owned by group
+                lang="xxx",  # not used
+            )
+            db_home = orm.Folder(
+                id=home_id,
+                title=constants.HOME_TITLE,
+                ctype=constants.CTYPE_FOLDER,
+                group_id=group.id,  # owned by group
+                lang="xxx",  # not used
+            )
+            db_session.add(db_home)
+            db_session.add(db_inbox)
+            db_session.commit()
+            group.home_folder_id = home_id
+            group.inbox_folder_id = inbox_id
+            db_session.add(group)
+            db_session.commit()
+    else:
+        group.delete_special_folders = True
+
     db_session.commit()
+
     result = schema.Group(id=group.id, name=group.name)
 
     return result

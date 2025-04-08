@@ -1,70 +1,50 @@
-from collections.abc import Iterable
-from typing import List, Tuple, Iterator
+from typing import List, Tuple
 from uuid import UUID
 
-from sqlalchemy import text, select
+from sqlalchemy import select, exists, literal
+from sqlalchemy.orm import aliased
 from papermerge.core.db.engine import Session
 from papermerge.core.features.nodes.db import orm
+from papermerge.core.features.shared_nodes.db import orm as sn_orm
+from papermerge.core.features.groups.db import orm as groups_orm
+from papermerge.core.features.roles.db import orm as roles_orm
 
 
 def get_ancestors(
     db_session: Session, node_id: UUID, include_self=True
 ) -> List[Tuple[UUID, str]]:
-    """Returns all ancestors of the node"""
-    if include_self:
-        stmt = text(
-            """
-            WITH RECURSIVE tree AS (
-                SELECT nodes.id, nodes.title, nodes.parent_id, 0 as level
-                FROM nodes
-                WHERE id = :node_id
-                UNION ALL
-                SELECT nodes.id, nodes.title, nodes.parent_id, level + 1
-                FROM nodes, tree
-                WHERE nodes.id = tree.parent_id
-            )
-            SELECT id, title
-            FROM tree
-            ORDER BY level DESC
-        """
+    """Returns all ancestors of the node
+
+    The most distant ancestor will be the first element in returned list.
+    The most recent ancestor will be the last element in returned list.
+    In other words, "home" or "inbox" folders will be first in returned list
+    """
+    nodes_anchor = (
+        select(
+            orm.Node.id, orm.Node.title, orm.Node.parent_id, literal(0).label("level")
         )
-    else:
-        stmt = text(
-            """
-            WITH RECURSIVE tree AS (
-                SELECT nodes.id, nodes.title, nodes.parent_id, 0 as level
-                FROM nodes
-                WHERE id = :node_id
-                UNION ALL
-                SELECT nodes.id, nodes.title, nodes.parent_id, level + 1
-                FROM nodes, tree
-                WHERE nodes.id = tree.parent_id
-            )
-            SELECT id, title
-            FROM tree
-            WHERE NOT id = :node_id
-            ORDER BY level DESC
-        """
-        )
+        .where(orm.Node.id == node_id)
+        .cte(recursive=True, name="tree")
+    )
+    tree = nodes_anchor.union_all(
+        select(
+            orm.Node.id,
+            orm.Node.title,
+            orm.Node.parent_id,
+            (nodes_anchor.c.level + 1).label("level"),
+        ).where(nodes_anchor.c.parent_id == orm.Node.id)
+    )
 
-    # Ugly Hack - BEGIN
-    # In case of mysql and sqlite table ID data type is stored
-    # as char(32) without dashes i.e. '54eec77e345448b78af7b0dddd8ff425'.
-    # Plus here sql statement is without ORM, so we need to take
-    # care to convert node_id to spring without dashes
-    engine = db_session.get_bind()
-    if "mysql" in engine.name:
-        node_id = node_id.hex
+    stmt = (
+        select(tree.c.id, tree.c.title).select_from(tree).order_by(tree.c.level.desc())
+    )
 
-    if "sqlite" in engine.name:
-        node_id = node_id.hex
-    # Ugly Hack - END
+    if not include_self:
+        stmt = stmt.where(tree.c.id != node_id)
 
-    result = db_session.execute(stmt, {"node_id": node_id})
+    result = db_session.execute(stmt)
 
-    items = list([(id, title) for id, title in result])
-
-    return items
+    return [(row.id, row.title) for row in result]
 
 
 def get_descendants(
@@ -103,3 +83,82 @@ def get_descendants(
     result = db_session.execute(stmt)
 
     return [(row.id, row.title) for row in result]
+
+
+def has_node_perm(
+    db_session: Session,
+    node_id: UUID,
+    codename: str,
+    user_id: UUID,
+) -> bool:
+    """
+    Has user `codename` permission for `node_id`?
+
+    SELECT EXISTS(
+        SELECT nodes.id
+        FROM nodes
+        WHERE id = <node_id> AND
+        (
+            user_id = <user_id>
+            OR
+            group_id IN (
+                SELECT ug.group_id
+                FROM users_groups ug
+                WHERE ug.user_id =  <user_id>
+            )
+        )
+        UNION ALL
+        SELECT sn.id
+        FROM shared_nodes sn
+        JOIN nodes n ON n.id = sn.node_id
+        JOIN roles r ON r.id = sn.role_id
+        JOIN roles_permissions rp ON rp.role_id = r.id
+        JOIN permissions p ON p.id = rp.permission_id
+        WHERE (
+            sn.user_id = <user_id>
+            OR
+            sn.group_id IN (
+                SELECT ug.group_id
+                FROM users_groups ug
+                WHERE ug.user_id =  <user_id>
+            )
+        )
+        AND p.codename = <perm>
+        AND sn.node_id IN (<node_id> ancestors)
+    )
+    """
+
+    ancestor_ids = [item[0] for item in get_ancestors(db_session, node_id)]
+
+    ug = aliased(groups_orm.user_groups_association)
+    # groups user belongs to
+    user_group_ids = select(ug.c.group_id).where(ug.c.user_id == user_id)
+
+    node_access = select(orm.Node.id).where(
+        (orm.Node.id == node_id)
+        & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(user_group_ids)))
+    )
+    sn = aliased(sn_orm.SharedNode)
+    n = aliased(orm.Node)
+    r = aliased(roles_orm.Role)
+    rp = aliased(roles_orm.roles_permissions_association)
+    p = aliased(roles_orm.Permission)
+
+    node_shared_access = (
+        select(sn.id)
+        .select_from(sn)
+        .join(n, n.id == sn.node_id)
+        .join(r, r.id == sn.role_id)
+        .join(rp, rp.c.role_id == r.id)
+        .join(p, p.id == rp.c.permission_id)
+        .where(
+            (p.codename == codename)
+            & (sn.node_id.in_(ancestor_ids))
+            & ((sn.user_id == user_id) | (sn.group_id.in_(user_group_ids)))
+        )
+    )
+    stmt = exists(node_access.union_all(node_shared_access)).select()
+
+    has_access = db_session.execute(stmt).scalar()
+
+    return has_access

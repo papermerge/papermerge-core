@@ -203,7 +203,10 @@ class Document(BaseModel):
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
-    user_id: UUID
+    user_id: UUID | None = None
+    group_id: UUID | None = None
+    perms: list[str] = []
+    is_shared: bool = False
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):

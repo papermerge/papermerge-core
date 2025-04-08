@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -129,3 +130,56 @@ def test_custom_fields_without_pagination(
     items = [schema.CustomField(**kw) for kw in response.json()]
 
     assert len(items) == 8
+
+
+def test__negative__custom_fields_all_route_with_group_id_param(
+    make_custom_field, auth_api_client: AuthTestClient
+):
+    """In this scenario current user does not belong to the
+    group provided as parameter"""
+    total_groups = 8
+    for i in range(total_groups):
+        make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+
+    group_id = uuid.uuid4()
+    response = auth_api_client.get(
+        "/custom-fields/all", params={"group_id": str(group_id)}
+    )
+
+    assert response.status_code == 403, response.json()
+
+
+def test__positive__custom_fields_all_route_with_group_id_param(
+    db_session, make_custom_field, auth_api_client: AuthTestClient, user, make_group
+):
+    """In this scenario current user belongs to the
+    group provided as parameter and there are two custom fields
+    belonging to that group. In such case endpoint should
+    return only two custom fields: the both belonging to the group
+    """
+    group: orm.Group = make_group("research")
+
+    total_groups = 8
+    for i in range(total_groups):
+        # privately owned custom fields
+        make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+
+    make_custom_field(
+        name=f"CF Research 1", type=schema.CustomFieldType.text, group_id=group.id
+    )
+    make_custom_field(
+        name=f"CF Research 2", type=schema.CustomFieldType.text, group_id=group.id
+    )
+
+    # user belongs to 'research' group
+    user.groups.append(group)
+    db_session.add(user)
+    db_session.commit()
+
+    response = auth_api_client.get(
+        "/custom-fields/all", params={"group_id": str(group.id)}
+    )
+
+    assert response.status_code == 200, response.json()
+    dtype_names = {schema.CustomField(**kw).name for kw in response.json()}
+    assert dtype_names == {"CF Research 1", "CF Research 2"}

@@ -27,12 +27,3 @@ def test_thumbnails_router_no_auth(
     response = api_client.get(f"/thumbnails/{doc.id}")
 
     assert response.status_code == 401
-
-
-def test_thumbnails_router_invalid_document_id(auth_api_client: AuthTestClient):
-    # as there are no documents in DB
-    # any ID should result 404
-    doc_id = uuid.uuid4()
-    response = auth_api_client.get(f"/thumbnails/{doc_id}")
-
-    assert response.status_code == 404

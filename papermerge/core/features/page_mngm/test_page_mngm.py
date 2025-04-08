@@ -26,9 +26,7 @@ def test_copy_text_field(db_session, make_document_version, user):
         db_session, src=doc_ver_x, dst=doc_ver_y, page_numbers=[2]
     )
 
-    doc_ver = doc_dbapi.get_doc_ver(
-        db_session, document_version_id=doc_ver_y.id, user_id=user.id
-    )
+    doc_ver = doc_dbapi.get_doc_ver(db_session, document_version_id=doc_ver_y.id)
 
     assert doc_ver.pages[0].text == "body"
 
@@ -56,9 +54,7 @@ def test_apply_pages_op(three_pages_pdf: schema.Document, db_session):
         )
     ).scalar()
 
-    newly_created_last_ver = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=doc.id, user_id=user.id
-    )
+    newly_created_last_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
     newly_created_pages = doc_dbapi.get_doc_ver_pages(
         db_session, doc_ver_id=newly_created_last_ver.id
     )
@@ -339,10 +335,10 @@ def test_move_pages_one_single_page_strategy_mix(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
 
-    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page = src_ver.pages[1]
 
-    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     dst_page = dst_ver.pages[0]
 
     page_mngm_dbapi.move_pages(
@@ -363,9 +359,7 @@ def test_move_pages_one_single_page_strategy_mix(
     # versions were incremented +1
     assert src_versions_count == 2
 
-    src_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=src.id, user_id=user.id
-    )
+    src_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     # src's last version's count of pages has one page less
     assert len(src_last_version.pages) == 1  # previously was 2
 
@@ -378,9 +372,7 @@ def test_move_pages_one_single_page_strategy_mix(
     # versions were incremented +1 from
     assert dst_versions_count == 2
 
-    dst_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    dst_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     # dst's last version's count of pages has one page more
     assert len(dst_last_version.pages) == 4  # previously was 3
 
@@ -410,11 +402,11 @@ def test_move_pages_two_pages_strategy_mix(
     dst = make_document_from_resource(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
-    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page_1 = src_ver.pages[0]
     src_page_3 = src_ver.pages[2]
 
-    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     dst_page = dst_ver.pages[0]
 
     page_mngm_dbapi.move_pages(
@@ -431,17 +423,13 @@ def test_move_pages_two_pages_strategy_mix(
         )
     ).scalar()
 
-    src_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=src.id, user_id=user.id
-    )
+    src_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     dst_versions_count = db_session.execute(
         select(func.count(orm.DocumentVersion.id)).where(
             orm.DocumentVersion.document_id == dst.id
         )
     ).scalar()
-    dst_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    dst_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     # src, dst now have one more version
     # versions were incremented +1 from (1) and (2)
@@ -478,10 +466,10 @@ def test_move_pages_one_single_page_strategy_replace(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
 
-    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page = src_ver.pages[1]
 
-    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     dst_page = dst_ver.pages[0]
 
@@ -500,17 +488,13 @@ def test_move_pages_one_single_page_strategy_replace(
         )
     ).scalar()
 
-    src_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=src.id, user_id=user.id
-    )
+    src_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     dst_versions_count = db_session.execute(
         select(func.count(orm.DocumentVersion.id)).where(
             orm.DocumentVersion.document_id == dst.id
         )
     ).scalar()
-    dst_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    dst_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     # src, dst now have one more version
     # versions were incremented +1 from (1) and (2)
@@ -551,11 +535,11 @@ def test_move_all_pages_of_the_doc_out_mix(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
 
-    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     saved_src_pages_ids = list(
         [page.id for page in sorted(src_ver.pages, key=lambda x: x.number)]
     )
-    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     dst_page = dst_ver.pages[0]
 
     [result_old_doc, result_new_doc] = page_mngm_dbapi.move_pages(
@@ -583,9 +567,7 @@ def test_move_all_pages_of_the_doc_out_mix(
             orm.DocumentVersion.document_id == dst.id
         )
     ).scalar()
-    dst_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    dst_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     assert newly_fetched_src is None
 
@@ -617,11 +599,11 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(
         resource=ResourceFile.D3_PDF, user=user, parent=user.home_folder
     )
 
-    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     saved_src_pages_ids = list(
         [page.id for page in sorted(src_ver.pages, key=lambda x: x.number)]
     )
-    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id, user_id=user.id)
+    dst_ver = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
     dst_page = dst_ver.pages[0]
 
     [result_old_doc, result_new_doc] = page_mngm_dbapi.move_pages(
@@ -649,9 +631,7 @@ def test_move_all_pages_of_the_doc_out_replace_strategy(
             orm.DocumentVersion.document_id == dst.id
         )
     ).scalar()
-    dst_last_version = doc_dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    dst_last_version = doc_dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     assert newly_fetched_src is None
 

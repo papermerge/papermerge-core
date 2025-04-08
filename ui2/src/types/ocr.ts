@@ -21,6 +21,8 @@ export type OCRCode =
   | "ron"
   | "san"
   | "spa"
+  | "kaz"
+  | "rus"
 
 export type OcrStatusEnum =
   | "UNKNOWN"

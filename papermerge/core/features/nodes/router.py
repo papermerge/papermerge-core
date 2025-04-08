@@ -1,12 +1,13 @@
 import logging
 import uuid
-from typing import Annotated, Iterable
+from typing import Annotated, Iterable, Union
 from uuid import UUID
 
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
+from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
 from papermerge.core.constants import INDEX_REMOVE_NODE
 from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
@@ -17,8 +18,7 @@ from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
-from papermerge.core.exceptions import EntityNotFound
-
+from papermerge.core.types import PaginatedResponse
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -32,7 +32,7 @@ def get_node(
     parent_id,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-):
+) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list nodes of parent_id
 
     Required scope: `{scope}`
@@ -80,16 +80,13 @@ def create_node(
         attrs = dict(
             title=pynode.title,
             ctype="folder",
-            user_id=user.id,
             parent_id=pynode.parent_id,
         )
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = schema.NewFolder(**attrs)
         with Session() as db_session:
-            created_node, error = nodes_dbapi.create_folder(
-                db_session, new_folder, user_id=user.id
-            )
+            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -99,7 +96,6 @@ def create_node(
         attrs = dict(
             title=pynode.title,
             lang=pynode.lang,
-            user_id=user.id,
             parent_id=pynode.parent_id,
             size=0,
             page_count=0,
@@ -113,9 +109,7 @@ def create_node(
         new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
-            created_node, error = doc_dbapi.create_document(
-                db_session, new_document, user_id=user.id
-            )
+            created_node, error = doc_dbapi.create_document(db_session, new_document)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -138,7 +132,7 @@ def update_node(
     Required scope: `{scope}`
 
     parent_id is optional field. However, when present, parent_id
-    should be non empty string (UUID).
+    should be not empty string (UUID).
     """
 
     with Session() as db_session:
@@ -225,7 +219,6 @@ def move_nodes(
                 db_session,
                 source_ids=params.source_ids,
                 target_id=params.target_id,
-                user_id=user.id,
             )
     except NoResultFound as exc:
         logger.error(exc, exc_info=True)
@@ -286,7 +279,7 @@ def assign_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -357,7 +350,7 @@ def update_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -384,7 +377,7 @@ def get_node_tags(
                 db_session, node_id=node_id, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -414,7 +407,7 @@ def remove_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
     except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exist")
+        raise HTTP404NotFound
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

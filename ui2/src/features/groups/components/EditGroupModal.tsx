@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Group,
   Loader,
   LoadingOverlay,
@@ -32,6 +33,7 @@ export default function EditGroupModal({
   const [updateGroup, {isLoading: isLoadingGroupUpdate}] =
     useEditGroupMutation()
   const [name, setName] = useState<string>("")
+  const [withSpecialFolders, setWithSpecialFolders] = useState<boolean>(false)
 
   useEffect(() => {
     formReset()
@@ -40,15 +42,22 @@ export default function EditGroupModal({
   const formReset = () => {
     if (data) {
       setName(data.name)
+      if (data.home_folder_id && data.inbox_folder_id) {
+        setWithSpecialFolders(true)
+      } else {
+        setWithSpecialFolders(false)
+      }
     } else {
       setName("")
+      setWithSpecialFolders(false)
     }
   }
 
   const onLocalSubmit = async () => {
     const updatedData = {
       id: groupId,
-      name: name!
+      name: name!,
+      with_special_folders: withSpecialFolders
     }
     await updateGroup(updatedData)
     formReset()
@@ -78,6 +87,12 @@ export default function EditGroupModal({
         label={t("groups.form.name")}
         placeholder={t("groups.form.name.placeholder")}
       />
+      <Checkbox
+        checked={withSpecialFolders}
+        onChange={e => setWithSpecialFolders(e.currentTarget.checked)}
+        my="md"
+        label="Group with special folders: inbox and home"
+      />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
           {t("common.cancel")}
@@ -85,7 +100,7 @@ export default function EditGroupModal({
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}
           <Button disabled={isLoadingGroupUpdate} onClick={onLocalSubmit}>
-            {t("common.submit")}
+            {t("common.update")}
           </Button>
         </Group>
       </Group>

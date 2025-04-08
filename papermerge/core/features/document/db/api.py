@@ -148,11 +148,10 @@ def update_doc_type(
     session: Session,
     *,
     document_id: uuid.UUID,
-    user_id: uuid.UUID,
     document_type_id: uuid.UUID | None,
 ):
     stmt = select(orm.Document).where(
-        orm.Document.id == document_id, orm.Document.user_id == user_id
+        orm.Document.id == document_id
     )
     doc = session.scalars(stmt).one()
     if doc.document_type_id != document_type_id:
@@ -260,10 +259,16 @@ def get_docs_by_type(
 
 
 def create_document(
-    db_session: Session, attrs: schema.NewDocument, user_id: uuid.UUID
+    db_session: Session, attrs: schema.NewDocument
 ) -> Tuple[schema.Document | None, schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
+
+    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
+        orm.Node.id == attrs.parent_id
+    )
+    user_id, group_id = db_session.execute(stmt).fetchone()
+
     doc = orm.Document(
         id=doc_id,
         title=attrs.title,
@@ -273,6 +278,7 @@ def create_document(
         ocr=attrs.ocr,
         lang=attrs.lang,
         user_id=user_id,
+        group_id=group_id
     )
     doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
@@ -318,7 +324,7 @@ def version_bump(
 ) -> orm.DocumentVersion:
     """Increment document version"""
 
-    last_ver = get_last_doc_ver(db_session, doc_id=doc_id, user_id=user_id)
+    last_ver = get_last_doc_ver(db_session, doc_id=doc_id)
     new_page_count = page_count or last_ver.page_count
     db_new_doc_ver = orm.DocumentVersion(
         document_id=doc_id,
@@ -651,10 +657,9 @@ def upload(
 def get_doc(
     session: Session,
     id: uuid.UUID,
-    user_id: uuid.UUID,
 ) -> schema.Document:
     stmt_doc = select(orm.Document).where(
-        orm.Document.id == id, orm.Document.user_id == user_id
+        orm.Document.id == id
     )
     db_doc = session.scalar(stmt_doc)
     breadcrumb = get_ancestors(session, id)
@@ -668,15 +673,29 @@ def get_doc(
     return model_doc
 
 
+def get_page_document_id(
+    db_session: Session, page_id: uuid.UUID
+) -> uuid.UUID:
+    stmt = (
+        select(orm.Document.id)
+        .join(orm.DocumentVersion)
+        .join(orm.Page)
+        .where(orm.Page.id == page_id)
+    )
+
+    ret_id = db_session.execute(stmt).scalar()
+    return ret_id
+
+
 def get_page(
-    db_session: Session, page_id: uuid.UUID, user_id: uuid.UUID
+    db_session: Session, page_id: uuid.UUID
 ) -> schema.Page:
 
     stmt = (
         select(orm.Page)
         .join(orm.DocumentVersion)
         .join(orm.Document)
-        .where(orm.Page.id == page_id, orm.Document.user_id == user_id)
+        .where(orm.Page.id == page_id)
     )
 
     db_page = db_session.execute(stmt).scalar()
@@ -701,7 +720,6 @@ def get_doc_ver_pages(db_session: Session, doc_ver_id: uuid.UUID) -> list[schema
 def get_last_doc_ver(
     db_session: Session,
     doc_id: uuid.UUID,  # noqa
-    user_id: uuid.UUID,
 ) -> orm.DocumentVersion:
     """
     Returns last version of the document
@@ -713,7 +731,6 @@ def get_last_doc_ver(
         .join(orm.Document)
         .where(
             orm.DocumentVersion.document_id == doc_id,
-            orm.Document.user_id == user_id,
         )
         .order_by(orm.DocumentVersion.number.desc())
         .limit(1)
@@ -747,8 +764,7 @@ def get_first_page(
 def get_doc_ver(
     db_session: Session,
     *,
-    document_version_id: uuid.UUID,
-    user_id: uuid.UUID,
+    document_version_id: uuid.UUID
 ) -> orm.DocumentVersion:
     """
     Returns last version of the document
@@ -760,7 +776,6 @@ def get_doc_ver(
         .join(orm.Document)
         .options(joinedload(orm.DocumentVersion.pages))
         .where(
-            orm.Document.user_id == user_id,
             orm.DocumentVersion.id == document_version_id,
         )
     )

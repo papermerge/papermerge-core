@@ -1,19 +1,22 @@
-import {useState, useEffect} from "react"
+import {useEffect, useState} from "react"
 
 import {
-  Loader,
-  Checkbox,
-  Group,
-  Button,
-  Modal,
-  TextInput,
-  ColorInput,
-  Pill,
   Box,
-  LoadingOverlay
+  Button,
+  Checkbox,
+  ColorInput,
+  ComboboxItem,
+  Group,
+  Loader,
+  LoadingOverlay,
+  Modal,
+  Pill,
+  TextInput
 } from "@mantine/core"
 
-import {useGetTagQuery, useEditTagMutation} from "@/features/tags/apiSlice"
+import {OWNER_ME} from "@/cconstants"
+import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import {useEditTagMutation, useGetTagQuery} from "@/features/tags/apiSlice"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -38,6 +41,7 @@ export default function EditTagModal({
   const [pinned, setPinned] = useState<boolean>(false)
   const [bgColor, setBgColor] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
+  const [owner, setOwner] = useState<ComboboxItem>({label: OWNER_ME, value: ""})
 
   useEffect(() => {
     if (data) {
@@ -66,14 +70,25 @@ export default function EditTagModal({
       bg_color: bgColor,
       fg_color: fgColor
     }
+    let tagData
 
-    await updateTag(updatedTagData)
+    if (owner.value && owner.value != "") {
+      tagData = {...updatedTagData, group_id: owner.value}
+    } else {
+      tagData = updatedTagData
+    }
+
+    await updateTag(tagData)
     formReset()
     onSubmit()
   }
 
   const onLocalCancel = () => {
     onCancel()
+  }
+
+  const onOwnerChange = (option: ComboboxItem) => {
+    setOwner(option)
   }
 
   const formReset = () => {
@@ -83,6 +98,11 @@ export default function EditTagModal({
       setFgColor(data.fg_color || "")
       setDescription(data.description || "")
       setPinned(data.pinned || false)
+      if (data.group_id && data.group_name) {
+        setOwner({value: data.group_id, label: data.group_name})
+      } else {
+        setOwner({value: "", label: OWNER_ME})
+      }
     }
   }
 
@@ -131,6 +151,7 @@ export default function EditTagModal({
             {name || "preview"}
           </Pill>
         </Box>
+        <OwnerSelector value={owner} onChange={onOwnerChange} />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>
             {t("common.cancel")}

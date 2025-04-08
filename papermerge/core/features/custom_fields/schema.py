@@ -25,6 +25,8 @@ class CustomField(BaseModel):
     # Basically `extra_data` is either a stringified JSON i.e. json.dumps(...)
     # or an actually python dict (or None)
     extra_data: str | dict | None
+    group_id: UUID | None = None
+    group_name: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -34,6 +36,7 @@ class CreateCustomField(BaseModel):
     name: str
     type: CustomFieldType
     extra_data: str | None = None
+    group_id: UUID | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -43,6 +46,8 @@ class UpdateCustomField(BaseModel):
     name: str | None = None
     type: CustomFieldType | None = None
     extra_data: str | None = None
+    group_id: UUID | None = None
+    user_id: UUID | None = None
 
 
 class CustomFieldValue(CustomField):

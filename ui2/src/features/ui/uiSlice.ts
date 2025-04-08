@@ -1,5 +1,11 @@
 import type {RootState} from "@/app/types"
-import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {
+  MAX_ZOOM_FACTOR,
+  MIN_ZOOM_FACTOR,
+  PAGINATION_DEFAULT_ITEMS_PER_PAGES,
+  ZOOM_FACTOR_INIT,
+  ZOOM_FACTOR_STEP
+} from "@/cconstants"
 import type {
   BooleanString,
   CType,
@@ -7,15 +13,9 @@ import type {
   PanelMode,
   ViewOption
 } from "@/types"
+import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
-
-import {
-  MAX_ZOOM_FACTOR,
-  MIN_ZOOM_FACTOR,
-  ZOOM_FACTOR_INIT,
-  ZOOM_FACTOR_STEP
-} from "@/cconstants"
 
 import type {
   FileItemStatus,
@@ -183,8 +183,6 @@ interface SearchState {
   openResultItemInOtherPanel: boolean
 }
 
-type PanelComponent = "commander" | "viewer" | "searchResults"
-
 interface DocumentsByTypeColumnsArg {
   mode: PanelMode
   document_type_id: string
@@ -195,6 +193,29 @@ interface DocumentsByTypeCommanderColumnToggledArg {
   mode: PanelMode
   name: string
   visibility: boolean
+}
+
+export type LastHome = {
+  label: string
+  home_id: string
+  user_id?: string
+  group_id?: string
+}
+
+export type LastInbox = {
+  label: string
+  inbox_id: string
+  user_id?: string
+  group_id?: string
+}
+
+interface LastHomeArg {
+  mode: PanelMode
+  last_home: LastHome
+}
+interface LastInboxArg {
+  mode: PanelMode
+  last_inbox: LastInbox
 }
 
 interface UIState {
@@ -208,6 +229,7 @@ interface UIState {
   currentNodeSecondary?: CurrentNode
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
+  currentSharedNode?: CurrentNode
   mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
   mainCommanderLastPageSize?: number
@@ -215,6 +237,10 @@ interface UIState {
   mainCommanderSortMenuDir?: SortMenuDirection
   mainCommanderViewOption?: ViewOption
   mainCommanderDocumentTypeID?: string
+  /* User may choose between own and group homes
+   this field indicates his/her last selection */
+  mainCommanderLastHome?: LastHome
+  mainCommanderLastInbox?: LastInbox
   mainDocumentsByTypeCommanderColumns?: Record<string, Array<CategoryColumn>>
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
@@ -223,6 +249,10 @@ interface UIState {
   secondaryCommanderSortMenuDir?: SortMenuDirection
   secondaryCommanderViewOption?: ViewOption
   secondaryCommanderDocumentTypeID?: string
+  /* User may choose between own and group homes
+   this field indicates his/her last selection */
+  secondaryCommanderLastHome?: LastHome
+  secondaryCommanderLastInbox?: LastInbox
   secondaryDocumentsByTypeCommanderColumns: Record<
     string,
     Array<CategoryColumn>
@@ -403,6 +433,9 @@ const uiSlice = createSlice({
         state.search.openResultItemInOtherPanel = action.payload
       }
     },
+    mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
+      state.mainPanelComponent = action.payload
+    },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
       if (payload.panel == "main") {
@@ -433,6 +466,20 @@ const uiSlice = createSlice({
       }
       state.secondaryCommanderSelectedIDs = []
     }, // end of currentNodeChanged
+    currentSharedNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
+      const payload = action.payload
+
+      state.currentSharedNode = {
+        id: payload.id,
+        ctype: payload.ctype
+      }
+      if (payload.ctype == "folder") {
+        state.mainPanelComponent = "sharedCommander"
+      }
+      if (payload.ctype == "document") {
+        state.mainPanelComponent = "sharedViewer"
+      }
+    }, // end of currentSharedNodeChanged
     //------------------------------------------------------------------
     secondaryPanelOpened(state, action: PayloadAction<PanelComponent>) {
       state.secondaryPanelComponent = action.payload
@@ -565,6 +612,22 @@ const uiSlice = createSlice({
         state.mainCommanderDocumentTypeID = documentTypeID
       } else {
         state.secondaryCommanderDocumentTypeID = documentTypeID
+      }
+    },
+    lastHomeUpdated(state, action: PayloadAction<LastHomeArg>) {
+      const {mode, last_home} = action.payload
+      if (mode == "main") {
+        state.mainCommanderLastHome = last_home
+      } else {
+        state.secondaryCommanderLastHome = last_home
+      }
+    },
+    lastInboxUpdated(state, action: PayloadAction<LastInboxArg>) {
+      const {mode, last_inbox} = action.payload
+      if (mode == "main") {
+        state.mainCommanderLastInbox = last_inbox
+      } else {
+        state.secondaryCommanderLastInbox = last_inbox
       }
     },
     documentsByTypeCommanderColumnsUpdated(
@@ -837,6 +900,8 @@ export const {
   updateSearchActionPanel,
   updateBreadcrumb,
   currentNodeChanged,
+  currentSharedNodeChanged,
+  mainPanelComponentUpdated,
   searchResultsLastPageSizeUpdated,
   /* Main panel switched to show search results.
   This happens when user clicks enter in search field
@@ -869,7 +934,9 @@ export const {
   dragNodesStarted,
   dragEnded,
   documentsByTypeCommanderColumnsUpdated,
-  documentsByTypeCommanderColumnVisibilityToggled
+  documentsByTypeCommanderColumnVisibilityToggled,
+  lastHomeUpdated,
+  lastInboxUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -924,6 +991,10 @@ export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.currentNodeSecondary?.id
+}
+
+export const selectCurrentSharedNodeID = (state: RootState) => {
+  return state.ui.currentSharedNode?.id
 }
 
 export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {
@@ -1162,6 +1233,22 @@ export const selectDocumentsByTypeCommanderVisibleColumns = createSelector(
     return visibleColumnNames
   }
 )
+
+export const selectLastHome = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderLastHome
+  }
+
+  return state.ui.secondaryCommanderLastHome
+}
+
+export const selectLastInbox = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainCommanderLastInbox
+  }
+
+  return state.ui.secondaryCommanderLastInbox
+}
 
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {

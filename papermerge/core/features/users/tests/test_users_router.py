@@ -17,6 +17,15 @@ def test_list_users(make_user, auth_api_client: AuthTestClient):
     assert response.status_code == 200, response.json()
 
 
+def test_list_users_without_pagination(make_user, auth_api_client: AuthTestClient):
+    for i in range(3):
+        make_user(username=f"user {i}")
+
+    response = auth_api_client.get("/users/all")
+
+    assert response.status_code == 200, response.json()
+
+
 def test_create_user(make_group, auth_api_client: AuthTestClient):
     group = make_group(name="demo")
     data = {

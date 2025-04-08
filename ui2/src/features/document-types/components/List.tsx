@@ -5,12 +5,14 @@ import {
   clearSelection,
   filterUpdated,
   lastPageSizeUpdate,
+  selectionAddMany,
   selectLastPageSize,
   selectReverseSortedByName,
+  selectReverseSortedByOwner,
   selectSelectedIds,
   selectSortedByName,
+  selectSortedByOwner,
   selectTableSortColumns,
-  selectionAddMany,
   sortByUpdated
 } from "@/features/document-types/documentTypesSlice"
 import type {DocumentTypeListColumnName} from "@/features/document-types/types"
@@ -29,6 +31,8 @@ export default function DocumentTypesList() {
   const tablerSortCols = useSelector(selectTableSortColumns)
   const sortedByName = useSelector(selectSortedByName)
   const reverseSortedByName = useSelector(selectReverseSortedByName)
+  const sortedByOwner = useSelector(selectSortedByOwner)
+  const reverseSortedByOwner = useSelector(selectReverseSortedByOwner)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const {data, isLoading, isFetching} = useGetPaginatedDocumentTypesQuery({
@@ -132,6 +136,13 @@ export default function DocumentTypesList() {
               onSort={() => onSortBy("name")}
             >
               {t("common.table.columns.name")}
+            </Th>
+            <Th
+              sorted={sortedByOwner}
+              reversed={reverseSortedByOwner}
+              onSort={() => onSortBy("group_name")}
+            >
+              Owner
             </Th>
           </Table.Tr>
         </Table.Thead>

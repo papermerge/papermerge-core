@@ -1,11 +1,11 @@
+import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
 import {useGetGroupQuery} from "@/features/groups/apiSlice"
-import type {GroupDetails} from "@/types"
-import GroupForm from "./GroupForm"
-import EditButton from "./EditButton"
+import type {GroupDetails} from "@/types.d/groups"
 import {DeleteGroupButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import GroupForm from "./GroupForm"
 
 interface GroupDetailsArgs {
   groupId: string

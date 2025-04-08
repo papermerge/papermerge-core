@@ -1,8 +1,9 @@
+import {OWNER_ME} from "@/cconstants"
 import {
   selectSelectedIds,
   selectionAdd,
   selectionRemove
-} from "@/features/custom-fields/customFieldsSlice"
+} from "@/features/document-types/documentTypesSlice"
 import type {DocType} from "@/features/document-types/types"
 import {Checkbox, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
@@ -37,6 +38,7 @@ export default function DocumentTypeRow({documentType}: Args) {
           {documentType.name}
         </Link>
       </Table.Td>
+      <Table.Td>{documentType.group_name || OWNER_ME}</Table.Td>
     </Table.Tr>
   )
 }

@@ -53,9 +53,12 @@ export const apiSlice = createApi({
   tagTypes: [
     "Role",
     "Group",
+    "GroupHome",
+    "GroupInbox",
     "User",
     "Tag",
     "Node",
+    "SharedNode",
     "NodeTag", // tags fetched per node
     "Folder",
     "Document",

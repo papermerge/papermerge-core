@@ -31,7 +31,7 @@ def test_get_doc_last_ver(db_session: Session, make_document, user):
     dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
     dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
 
-    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id, user_id=user.id)
+    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
     assert last_ver.number == 5
 
 
@@ -191,9 +191,7 @@ def test_document_without_cfv_update_document_type_to_none(
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
 
-    dbapi.update_doc_type(
-        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
-    )
+    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
@@ -233,9 +231,7 @@ def test_document_with_cfv_update_document_type_to_none(
     assert db_session.execute(stmt).scalar() == 1
 
     # set document type to None
-    dbapi.update_doc_type(
-        db_session, document_id=receipt.id, document_type_id=None, user_id=user.id
-    )
+    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
     items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
@@ -460,7 +456,7 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
                 content_type=ContentType.APPLICATION_PDF,
             )
 
-    src_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id, user_id=user.id)
+    src_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id)
 
     _, error = dbapi.version_bump_from_pages(
         db_session,
@@ -474,9 +470,7 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
         .where(docs_orm.Document.id == dst.id)
     )
     fresh_dst_doc = db_session.execute(stmt).scalar()
-    fresh_dst_last_ver = dbapi.get_last_doc_ver(
-        db_session, doc_id=dst.id, user_id=user.id
-    )
+    fresh_dst_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=dst.id)
 
     assert len(fresh_dst_doc.versions) == 1
     assert len(fresh_dst_last_ver.pages) == 3
@@ -486,7 +480,7 @@ def test_basic_document_creation(db_session, user):
     attrs = schema.NewDocument(
         title="New Document", parent_id=user.home_folder.id, ocr=False, lang="deu"
     )
-    doc, error = dbapi.create_document(db_session, attrs=attrs, user_id=user.id)
+    doc, error = dbapi.create_document(db_session, attrs=attrs)
     doc: schema.Document
 
     assert error is None

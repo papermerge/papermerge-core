@@ -4,7 +4,7 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -18,6 +18,9 @@ from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.utils import image
+from papermerge.core.db.common import has_node_perm
+from papermerge.core.exceptions import HTTP403Forbidden, HTTP404NotFound
+
 
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 
@@ -68,15 +71,15 @@ def retrieve_document_thumbnail(
     """
 
     with Session() as db_session:
+        ok = has_node_perm(
+            db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
+        )
+        if not ok:
+            raise HTTP403Forbidden
         try:
-            doc_ver = dbapi.get_last_doc_ver(
-                db_session, user_id=user.id, doc_id=document_id
-            )
+            doc_ver = dbapi.get_last_doc_ver(db_session, doc_id=document_id)
         except NoResultFound:
-            raise HTTPException(
-                status_code=404, detail=f"Document with ID={document_id} not found"
-            )
-
+            raise HTTP404NotFound
         try:
             page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
         except NoResultFound:

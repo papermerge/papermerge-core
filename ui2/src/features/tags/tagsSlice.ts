@@ -81,6 +81,16 @@ const tagsSlice = createSlice({
         state.listTableSort.sortBy = "-ID"
       } else if (columnName == "ID" && state.listTableSort.sortBy == "-ID") {
         state.listTableSort.sortBy = "ID"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "group_name"
+      ) {
+        state.listTableSort.sortBy = "-group_name"
+      } else if (
+        columnName == "group_name" &&
+        state.listTableSort.sortBy == "-group_name"
+      ) {
+        state.listTableSort.sortBy = "group_name"
       }
       //
       else {
@@ -104,7 +114,8 @@ export const {
 } = tagsSlice.actions
 export default tagsSlice.reducer
 
-export const selectTagsResult = apiSliceWithTags.endpoints.getTags.select()
+export const selectTagsResult =
+  apiSliceWithTags.endpoints.getTags.select(undefined)
 export const selectItems = (_: RootState, items: string[]) => items
 
 export const selectTagsByName = createSelector(
@@ -198,6 +209,25 @@ export const selectSortedByID = (state: RootState) => {
 
 export const selectReverseSortedByID = (state: RootState) => {
   if (state.tags.listTableSort.sortBy == "-ID") {
+    return true
+  }
+
+  return false
+}
+
+export const selectSortedByOwner = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "group_name") {
+    return true
+  }
+  if (state.tags.listTableSort.sortBy == "-group_name") {
+    return true
+  }
+
+  return false
+}
+
+export const selectReverseSortedByOwner = (state: RootState) => {
+  if (state.tags.listTableSort.sortBy == "-group_name") {
     return true
   }
 

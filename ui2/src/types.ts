@@ -1,3 +1,5 @@
+import type {Group} from "@/types.d/groups"
+
 export type State<T> = {
   is_loading: boolean
   error: string | null
@@ -88,11 +90,19 @@ export type NewColoredTag = {
   fg_color: string
   pinned: boolean
   description: string
+  group_id?: string
+  group_name?: string
 }
 
 export type ColoredTagUpdate = Pick<
   ColoredTag,
-  "id" | "name" | "bg_color" | "fg_color" | "description" | "pinned"
+  | "id"
+  | "name"
+  | "bg_color"
+  | "fg_color"
+  | "description"
+  | "pinned"
+  | "group_id"
 >
 
 export type ColoredTag = NewColoredTag & {
@@ -106,6 +116,8 @@ export type ColoredTagType = {
   fg_color: string
   pinned: boolean
   description: string
+  group_id?: string
+  group_name?: string
 }
 
 export type NType = {
@@ -121,13 +133,15 @@ export type NodeType = NType & {
   is_currently_dragged: boolean
   parent_id: string | null
   title: string
-  user_id: string
+  user_id?: string
+  group_id?: string
   update_at: string
   ocr_status: OcrStatusEnum
   ocr: boolean
   thumbnail_url: string | null
   breadcrumb: Array<[string, string]>
   document_type_id?: string
+  is_shared: boolean
 }
 
 export type EntityWithTags = {
@@ -192,22 +206,6 @@ export type OCRLangType = {
 export type PanelMode = "main" | "secondary"
 export type PanelType = "main" | "secondary"
 
-export type NewGroup = {
-  name: string
-  scopes: Array<string>
-}
-
-export type Group = NewGroup & {
-  id: string
-}
-
-export type GroupDetails = {
-  id: string
-  name: string
-}
-
-export type GroupUpdate = Pick<Group, "id" | "name">
-
 export type NewRole = {
   name: string
   scopes: Array<string>
@@ -238,6 +236,8 @@ export type NewCustomField = {
   name: string
   type: CustomFieldDataType
   extra_data?: string
+  group_id?: string
+  group_name?: string
 }
 
 export type CustomField = NewCustomField & {
@@ -282,6 +282,8 @@ export type OCRCode =
   | "ron"
   | "san"
   | "spa"
+  | "kaz"
+  | "rus"
 
 export type PageType = {
   id: string
@@ -342,7 +344,8 @@ export type DocumentType = {
   document_type_id?: string
   versions: Array<DocumentVersion>
   parent_id: string | null
-  user_id: string
+  user_id?: string
+  group_id?: string
   updated_at: string
 }
 

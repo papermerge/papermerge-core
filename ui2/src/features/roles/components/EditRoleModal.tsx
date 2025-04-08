@@ -47,6 +47,7 @@ import {
   USER_UPDATE,
   USER_VIEW
 } from "@/scopes"
+import {useTranslation} from "react-i18next"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
   let scopes: Record<string, boolean> = {
@@ -73,6 +74,7 @@ export default function EditRoleModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const {data, isLoading} = useGetRoleQuery(roleId)
   const [updateRole, {isLoading: isLoadingRoleUpdate}] = useEditRoleMutation()
   const [name, setName] = useState<string>("")
@@ -158,7 +160,7 @@ export default function EditRoleModal({
 
   return (
     <Modal
-      title={"Edit Role"}
+      title={t("roles.edit.title")}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
@@ -171,18 +173,18 @@ export default function EditRoleModal({
       <TextInput
         value={name}
         onChange={e => setName(e.currentTarget.value)}
-        label="Name"
-        placeholder="Role name"
+        label={t("roles.form.name")}
+        placeholder={t("roles.form.name.placeholder")}
       />
       <Table>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Permissions</Table.Th>
+            <Table.Th>{t("roles.form.permissions")}</Table.Th>
             <Table.Th>
               <Checkbox
                 checked={hasAllPerms(scopes)}
                 onChange={onChangeAll}
-                label="All"
+                label={t("roles.form.permissions.all")}
               />
             </Table.Th>
             <Table.Th></Table.Th>
@@ -201,14 +203,14 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Documents"
+                label={t("roles.form.permissions.groups.documents")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, DOCUMENT_UPLOAD)}
                 onChange={e => onChangePerm(DOCUMENT_UPLOAD, e.target.checked)}
-                label="Upload"
+                label={t("roles.form.permissions.actions.upload")}
               />
             </Table.Td>
 
@@ -218,7 +220,7 @@ export default function EditRoleModal({
                 onChange={e =>
                   onChangePerm(DOCUMENT_DOWNLOAD, e.target.checked)
                 }
-                label="Download"
+                label={t("roles.form.permissions.actions.download")}
               />
             </Table.Td>
           </Table.Tr>
@@ -237,35 +239,35 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Pages"
+                label={t("roles.form.permissions.groups.pages")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, PAGE_MOVE)}
                 onChange={e => onChangePerm(PAGE_MOVE, e.target.checked)}
-                label="Move"
+                label={t("roles.form.permissions.actions.move")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, PAGE_UPDATE)}
                 onChange={e => onChangePerm(PAGE_UPDATE, e.target.checked)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, PAGE_EXTRACT)}
                 onChange={e => onChangePerm(PAGE_EXTRACT, e.target.checked)}
-                label="Extract"
+                label={t("roles.form.permissions.actions.extract")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, PAGE_DELETE)}
                 onChange={e => onChangePerm(PAGE_DELETE, e.target.checked)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
@@ -284,7 +286,7 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Users"
+                label={t("roles.form.permissions.groups.users")}
               />
             </Table.Td>
             <Tooltip
@@ -298,7 +300,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, USER_VIEW)}
                   onChange={e => onChangePerm(USER_VIEW, e.target.checked)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -306,21 +308,21 @@ export default function EditRoleModal({
               <Checkbox
                 checked={hasPerm(scopes, USER_CREATE)}
                 onChange={e => onChangePerm(USER_CREATE, e.target.checked)}
-                label="Create"
+                label={t("roles.form.permissions.actions.create")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, USER_UPDATE)}
                 onChange={e => onChangePerm(USER_UPDATE, e.target.checked)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, USER_DELETE)}
                 onChange={e => onChangePerm(USER_DELETE, e.target.checked)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
@@ -339,7 +341,7 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Roles"
+                label={t("roles.form.permissions.groups.roles")}
               />
             </Table.Td>
             <Tooltip
@@ -353,7 +355,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, ROLE_VIEW)}
                   onChange={e => onChangePerm(ROLE_VIEW, e.target.checked)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -361,21 +363,21 @@ export default function EditRoleModal({
               <Checkbox
                 checked={hasPerm(scopes, ROLE_CREATE)}
                 onChange={e => onChangePerm(ROLE_CREATE, e.target.checked)}
-                label="Create"
+                label={t("roles.form.permissions.actions.create")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, ROLE_UPDATE)}
                 onChange={e => onChangePerm(ROLE_UPDATE, e.target.checked)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, ROLE_DELETE)}
                 onChange={e => onChangePerm(ROLE_DELETE, e.target.checked)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
@@ -394,7 +396,7 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Tags"
+                label={t("roles.form.permissions.groups.tags")}
               />
             </Table.Td>
             <Tooltip
@@ -408,7 +410,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, TAG_VIEW)}
                   onChange={e => onChangePerm(TAG_VIEW, e.target.checked)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -423,7 +425,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, TAG_CREATE)}
                   onChange={e => onChangePerm(TAG_CREATE, e.target.checked)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -438,7 +440,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, TAG_UPDATE)}
                   onChange={e => onChangePerm(TAG_UPDATE, e.target.checked)}
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -456,7 +458,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, TAG_DELETE)}
                   onChange={e => onChangePerm(TAG_DELETE, e.target.checked)}
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
@@ -481,7 +483,7 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Custom Fields"
+                label={t("roles.form.permissions.groups.custom_fields")}
               />
             </Table.Td>
             <Tooltip
@@ -497,7 +499,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(CUSTOM_FIELD_VIEW, e.target.checked)
                   }
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -514,7 +516,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(CUSTOM_FIELD_CREATE, e.target.checked)
                   }
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -531,7 +533,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(CUSTOM_FIELD_UPDATE, e.target.checked)
                   }
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -548,7 +550,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(CUSTOM_FIELD_DELETE, e.target.checked)
                   }
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
@@ -573,7 +575,7 @@ export default function EditRoleModal({
                     e.target.checked
                   )
                 }
-                label="Document Types"
+                label={t("roles.form.permissions.groups.document_types")}
               />
             </Table.Td>
             <Tooltip
@@ -589,7 +591,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(DOCUMENT_TYPE_VIEW, e.target.checked)
                   }
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -606,7 +608,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(DOCUMENT_TYPE_CREATE, e.target.checked)
                   }
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -623,7 +625,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(DOCUMENT_TYPE_UPDATE, e.target.checked)
                   }
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -640,7 +642,7 @@ export default function EditRoleModal({
                   onChange={e =>
                     onChangePerm(DOCUMENT_TYPE_DELETE, e.target.checked)
                   }
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
@@ -667,7 +669,7 @@ export default function EditRoleModal({
                       e.target.checked
                     )
                   }
-                  label="Nodes"
+                  label={t("roles.form.permissions.groups.nodes")}
                 />
               </Table.Td>
             </Tooltip>
@@ -682,7 +684,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, NODE_CREATE)}
                   onChange={e => onChangePerm(NODE_CREATE, e.target.checked)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -690,21 +692,21 @@ export default function EditRoleModal({
               <Checkbox
                 checked={hasPerm(scopes, NODE_UPDATE)}
                 onChange={e => onChangePerm(NODE_UPDATE, e.target.checked)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, NODE_DELETE)}
                 onChange={e => onChangePerm(NODE_DELETE, e.target.checked)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
             <Table.Td>
               <Checkbox
                 checked={hasPerm(scopes, NODE_MOVE)}
                 onChange={e => onChangePerm(NODE_MOVE, e.target.checked)}
-                label="Move"
+                label={t("roles.form.permissions.actions.move")}
               />
             </Table.Td>
           </Table.Tr>
@@ -713,7 +715,7 @@ export default function EditRoleModal({
               <Checkbox
                 checked={hasPerms(scopes, [TASK_OCR])}
                 onChange={e => onChangePerms([TASK_OCR], e.target.checked)}
-                label="Tasks"
+                label={t("roles.form.permissions.groups.tasks")}
               />
             </Table.Td>
             <Tooltip
@@ -727,7 +729,7 @@ export default function EditRoleModal({
                 <Checkbox
                   checked={hasPerm(scopes, TASK_OCR)}
                   onChange={e => onChangePerm(TASK_OCR, e.target.checked)}
-                  label="OCR"
+                  label={t("roles.form.permissions.actions.ocr")}
                 />
               </Table.Td>
             </Tooltip>
@@ -736,7 +738,7 @@ export default function EditRoleModal({
       </Table>
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoadingRoleUpdate && <Loader size="sm" />}

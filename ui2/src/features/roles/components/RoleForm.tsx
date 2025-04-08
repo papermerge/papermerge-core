@@ -2,12 +2,14 @@ import CopyButton from "@/components/CopyButton"
 import {Checkbox, Table, TextInput, Tooltip} from "@mantine/core"
 
 import type {RoleDetails} from "@/types"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   role: RoleDetails | null
 }
 
 export default function RoleModal({role}: Args) {
+  const {t} = useTranslation()
   return (
     <div>
       <TextInput
@@ -19,7 +21,7 @@ export default function RoleModal({role}: Args) {
       <Table>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Permissions</Table.Th>
+            <Table.Th>{t("roles.form.permissions")}</Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
             <Table.Th></Table.Th>
@@ -28,13 +30,13 @@ export default function RoleModal({role}: Args) {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr key="document">
-            <Table.Td>Documents</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.documents")}</Table.Td>
             <Table.Td>
               <Checkbox
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], DOCUMENT_UPLOAD)}
-                label="Upload"
+                label={t("roles.form.permissions.actions.upload")}
               />
             </Table.Td>
 
@@ -43,18 +45,18 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], DOCUMENT_DOWNLOAD)}
-                label="Download"
+                label={t("roles.form.permissions.actions.download")}
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="pages">
-            <Table.Td>Pages</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.pages")}</Table.Td>
             <Table.Td>
               <Checkbox
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], PAGE_MOVE)}
-                label="Move"
+                label={t("roles.form.permissions.actions.move")}
               />
             </Table.Td>
             <Table.Td>
@@ -62,7 +64,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], PAGE_UPDATE)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
@@ -70,7 +72,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], PAGE_EXTRACT)}
-                label="Extract"
+                label={t("roles.form.permissions.actions.extract")}
               />
             </Table.Td>
             <Table.Td>
@@ -78,12 +80,12 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], PAGE_DELETE)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="users">
-            <Table.Td>Users</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.users")}</Table.Td>
             <Tooltip
               label="Grants access to users tab on left side navigation panel"
               multiline
@@ -96,7 +98,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], USER_VIEW)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -105,7 +107,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], USER_CREATE)}
-                label="Create"
+                label={t("roles.form.permissions.actions.create")}
               />
             </Table.Td>
             <Table.Td>
@@ -113,7 +115,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], USER_UPDATE)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
@@ -121,12 +123,12 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], USER_DELETE)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="role">
-            <Table.Td>Roles</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.roles")}</Table.Td>
             <Tooltip
               label="Grants access to roles tab on left side navigation panel"
               multiline
@@ -139,7 +141,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], ROLE_VIEW)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -148,7 +150,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], ROLE_CREATE)}
-                label="Create"
+                label={t("roles.form.permissions.actions.create")}
               />
             </Table.Td>
             <Table.Td>
@@ -156,7 +158,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], ROLE_UPDATE)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
@@ -164,12 +166,12 @@ export default function RoleModal({role}: Args) {
                 checked={hasPerm(role?.scopes || [], ROLE_DELETE)}
                 onChange={() => {}}
                 readOnly={role == null}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="tags">
-            <Table.Td>Tags</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.tags")}</Table.Td>
             <Tooltip
               label="Grants access to tags tab on left side navigation panel"
               multiline
@@ -182,7 +184,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], TAG_VIEW)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -198,7 +200,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], TAG_CREATE)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -214,7 +216,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], TAG_UPDATE)}
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -233,13 +235,15 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], TAG_DELETE)}
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
           </Table.Tr>
           <Table.Tr key="custom-fields">
-            <Table.Td>Custom Fields</Table.Td>
+            <Table.Td>
+              {t("roles.form.permissions.groups.custom_fields")}
+            </Table.Td>
             <Tooltip
               label="Grants access to custom fields tab on left side navigation panel"
               multiline
@@ -252,7 +256,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], CUSTOM_FIELD_VIEW)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -268,7 +272,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], CUSTOM_FIELD_CREATE)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -284,7 +288,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], CUSTOM_FIELD_UPDATE)}
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -300,13 +304,15 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], CUSTOM_FIELD_DELETE)}
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
           </Table.Tr>
           <Table.Tr key="document-types">
-            <Table.Td>Document Types</Table.Td>
+            <Table.Td>
+              {t("roles.form.permissions.groups.document_types")}
+            </Table.Td>
             <Tooltip
               label="Grants access document types tab on left side navigation panel"
               multiline
@@ -319,7 +325,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], DOCUMENT_TYPE_VIEW)}
-                  label="View"
+                  label={t("roles.form.permissions.actions.view")}
                 />
               </Table.Td>
             </Tooltip>
@@ -335,7 +341,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], DOCUMENT_TYPE_CREATE)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -351,7 +357,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], DOCUMENT_TYPE_UPDATE)}
-                  label="Update"
+                  label={t("roles.form.permissions.actions.update")}
                 />
               </Table.Td>
             </Tooltip>
@@ -367,7 +373,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], DOCUMENT_TYPE_DELETE)}
-                  label="Delete"
+                  label={t("roles.form.permissions.actions.delete")}
                 />
               </Table.Td>
             </Tooltip>
@@ -380,7 +386,7 @@ export default function RoleModal({role}: Args) {
               openDelay={2000}
               withArrow
             >
-              <Table.Td>Nodes</Table.Td>
+              <Table.Td>{t("roles.form.permissions.groups.nodes")}</Table.Td>
             </Tooltip>
             <Tooltip
               label={"Grants permission to create folders"}
@@ -394,7 +400,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], NODE_CREATE)}
-                  label="Create"
+                  label={t("roles.form.permissions.actions.create")}
                 />
               </Table.Td>
             </Tooltip>
@@ -403,7 +409,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], NODE_UPDATE)}
-                label="Update"
+                label={t("roles.form.permissions.actions.update")}
               />
             </Table.Td>
             <Table.Td>
@@ -411,7 +417,7 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], NODE_DELETE)}
-                label="Delete"
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
             <Table.Td>
@@ -419,12 +425,12 @@ export default function RoleModal({role}: Args) {
                 readOnly={role == null}
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], NODE_MOVE)}
-                label="Move"
+                label={t("roles.form.permissions.actions.move")}
               />
             </Table.Td>
           </Table.Tr>
           <Table.Tr key="tasks">
-            <Table.Td>Tasks</Table.Td>
+            <Table.Td>{t("roles.form.permissions.groups.tasks")}</Table.Td>
             <Tooltip
               label={"Grants permission to manually trigger OCR"}
               multiline
@@ -437,7 +443,7 @@ export default function RoleModal({role}: Args) {
                   readOnly={role == null}
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], TASK_OCR)}
-                  label="OCR"
+                  label={t("roles.form.permissions.actions.ocr")}
                 />
               </Table.Td>
             </Tooltip>

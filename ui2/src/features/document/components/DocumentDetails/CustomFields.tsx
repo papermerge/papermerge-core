@@ -28,8 +28,10 @@ import {
   TextInput
 } from "@mantine/core"
 import CustomFieldBoolean from "../customFields/Boolean"
+import {useTranslation} from "react-i18next"
 
 export default function CustomFields() {
+  const {t} = useTranslation()
   const mode: PanelMode = useContext(PanelContext)
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
   const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
@@ -176,7 +178,7 @@ export default function CustomFields() {
   return (
     <>
       <Select
-        label="Document Type"
+        label={t("common.document_type")}
         data={allDocumentTypes.map(i => {
           return {label: i.name, value: i.id}
         })}

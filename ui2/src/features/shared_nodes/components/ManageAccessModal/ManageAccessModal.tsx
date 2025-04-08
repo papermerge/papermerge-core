@@ -71,7 +71,29 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
     stack.open("manage-role")
   }
 
-  const onClickDeleteUserRole = () => {}
+  const onClickDeleteUserRole = (selectedIDs: string[], idType: IDType) => {
+    if (idType == "user") {
+      if (access) {
+        const nextDataState = produce(access, draft => {
+          const newUsers = draft.users.filter(u => !selectedIDs.includes(u.id))
+          draft.users = newUsers
+        })
+        setAccess(nextDataState)
+      }
+      setSelectedUserIDs([])
+    } else if (idType == "group") {
+      if (access) {
+        const nextDataState = produce(access, draft => {
+          const newGroups = draft.groups.filter(
+            g => !selectedIDs.includes(g.id)
+          )
+          draft.groups = newGroups
+        })
+        setAccess(nextDataState)
+      }
+      setSelectedGroupIDs([])
+    }
+  }
 
   const onClickViewGroupRole = () => {
     stack.open("manage-role")

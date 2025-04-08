@@ -5,7 +5,7 @@ import type {IDType} from "./type"
 interface Args {
   selectedIDs: string[]
   onClickViewButton: (sel_id: string, idType: IDType) => void
-  onClickDeleteButton: (sel_id: string, idType: IDType) => void
+  onClickDeleteButton: (sel_ids: string[], idType: IDType) => void
 }
 
 export default function UserAccessButtons({
@@ -18,7 +18,7 @@ export default function UserAccessButtons({
   }
 
   const onLocalClickDeleteButton = () => {
-    onClickDeleteButton(selectedIDs[0], "user")
+    onClickDeleteButton(selectedIDs, "user")
   }
 
   if (selectedIDs.length == 0) {
@@ -59,7 +59,11 @@ export default function UserAccessButtons({
   if (selectedIDs.length > 1) {
     return (
       <Group>
-        <ActionIcon color={"red"} size={"lg"}>
+        <ActionIcon
+          color={"red"}
+          size={"lg"}
+          onClick={onLocalClickDeleteButton}
+        >
           <IconTrash />
         </ActionIcon>
       </Group>

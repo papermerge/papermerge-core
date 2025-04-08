@@ -1,6 +1,6 @@
 import type {User} from "@/types.d/shared_nodes"
 import {SharedNodeAccessDetails} from "@/types.d/shared_nodes"
-import {Checkbox, Skeleton, Stack, Table} from "@mantine/core"
+import {Center, Checkbox, Skeleton, Stack, Table} from "@mantine/core"
 import UserAccessButtons from "./UserAccessButtons"
 import UserRow from "./UserRow"
 import type {IDType} from "./type"
@@ -10,7 +10,7 @@ interface Args {
   selectedIDs: string[]
   onSelectionChange: (user_id: string, checked: boolean) => void
   onClickViewButton: (sel_id: string, idType: IDType) => void
-  onClickDeleteButton: (sel_id: string, idType: IDType) => void
+  onClickDeleteButton: (sel_ids: string[], idType: IDType) => void
 }
 
 export default function ManageAccessUsers({
@@ -23,6 +23,12 @@ export default function ManageAccessUsers({
   if (!data) {
     return <Skeleton my={"lg"} height={30}></Skeleton>
   }
+
+  if (data.users.length == 0) {
+    return <Empty />
+  }
+
+  const onLocalSelectAll = () => {}
 
   const userRows = Array.from(data.users)
     .sort(sortPredicate)
@@ -46,7 +52,7 @@ export default function ManageAccessUsers({
         <Table.Thead>
           <Table.Tr>
             <Table.Th>
-              <Checkbox />
+              <Checkbox onClick={onLocalSelectAll} />
             </Table.Th>
             <Table.Th>User</Table.Th>
             <Table.Th>Roles</Table.Th>
@@ -71,4 +77,8 @@ function sortPredicate(u1: User, u2: User) {
 
   // names must be equal
   return 0
+}
+
+function Empty() {
+  return <Center my={"md"}>No users</Center>
 }

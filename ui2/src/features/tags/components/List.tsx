@@ -26,8 +26,10 @@ import Pagination from "@/components/Pagination"
 import type {TagsListColumnName} from "../types"
 import ActionButtons from "./ActionButtons"
 import TagRow from "./TagRow"
+import {useTranslation} from "react-i18next"
 
 export default function TagsList() {
+  const {t} = useTranslation()
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const tableSortCols = useSelector(selectTableSortColumns)
@@ -142,21 +144,21 @@ export default function TagsList() {
               reversed={reverseSortedByName}
               onSort={() => onSortBy("name")}
             >
-              Name
+              {t("common.table.columns.name")}
             </Th>
             <Th
               sorted={sortedByPinned}
               reversed={reverseSortedByPinned}
               onSort={() => onSortBy("pinned")}
             >
-              Pinned?
+              {t("common.table.columns.pinned")}?
             </Th>
             <Th
               sorted={sortedByDescription}
               reversed={reverseSortedByDescription}
               onSort={() => onSortBy("description")}
             >
-              Description
+              {t("common.table.columns.description")}
             </Th>
             <Th
               sorted={sortedByID}
@@ -184,10 +186,11 @@ export default function TagsList() {
 }
 
 function Empty() {
+  const {t} = useTranslation()
   return (
     <Center>
       <Stack align="center">
-        <div>Currently there are no tags</div>
+        <div>{t("tags.list.empty")}</div>
       </Stack>
     </Center>
   )

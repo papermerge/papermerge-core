@@ -14,6 +14,7 @@ import {
 } from "@mantine/core"
 
 import {useGetTagQuery, useEditTagMutation} from "@/features/tags/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   tagId: string
@@ -28,6 +29,7 @@ export default function EditTagModal({
   tagId,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const {data} = useGetTagQuery(tagId)
   const [updateTag, {isLoading: isLoadingTagUpdate}] = useEditTagMutation()
   const [name, setName] = useState<string>("")
@@ -85,7 +87,7 @@ export default function EditTagModal({
   }
 
   return (
-    <Modal title={"Edit Tag"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={t("tags.edit.title")} opened={opened} onClose={onLocalCancel}>
       <Box>
         <LoadingOverlay
           visible={data == null}
@@ -93,35 +95,35 @@ export default function EditTagModal({
           overlayProps={{radius: "sm", blur: 2}}
         />
         <TextInput
-          label="Name"
+          label={t("tags.form.name")}
           value={name}
           onChange={e => onNameChange(e.currentTarget.value)}
-          placeholder="Name"
+          placeholder={t("tags.form.name")}
         />
         <ColorInput
           onChange={onBgColorChange}
-          label="Background color"
+          label={t("tags.form.background_color")}
           value={bgColor}
           withEyeDropper={false}
         />
         <ColorInput
           onChange={onFgColorChange}
-          label="Foreground color"
+          label={t("tags.form.foreground_color")}
           value={fgColor}
           withEyeDropper={false}
         />
         <Checkbox
           onChange={e => setPinned(e.currentTarget.checked)}
           mt="sm"
-          label="Pinned"
+          label={t("tags.form.pinned")}
           checked={pinned}
         />
         <TextInput
           mt="sm"
-          label="Description"
+          label={t("tags.form.description")}
           type="email"
           value={description}
-          placeholder="Short description"
+          placeholder={t("tags.form.description.placeholder")}
           onChange={e => setDescription(e.currentTarget.value)}
         />
         <Box my="md">
@@ -131,12 +133,12 @@ export default function EditTagModal({
         </Box>
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Group>
             {isLoadingTagUpdate && <Loader size="sm" />}
             <Button disabled={isLoadingTagUpdate} onClick={onLocalSubmit}>
-              Submit
+              {t("common.submit")}
             </Button>
           </Group>
         </Group>

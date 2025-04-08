@@ -12,6 +12,7 @@ import {
   useEditGroupMutation,
   useGetGroupQuery
 } from "@/features/groups/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -26,6 +27,7 @@ export default function EditGroupModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const {data, isLoading} = useGetGroupQuery(groupId)
   const [updateGroup, {isLoading: isLoadingGroupUpdate}] =
     useEditGroupMutation()
@@ -60,7 +62,7 @@ export default function EditGroupModal({
 
   return (
     <Modal
-      title={"Edit Group"}
+      title={t("groups.edit.title")}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
@@ -73,17 +75,17 @@ export default function EditGroupModal({
       <TextInput
         value={name}
         onChange={e => setName(e.currentTarget.value)}
-        label="Name"
-        placeholder="Group name"
+        label={t("groups.form.name")}
+        placeholder={t("groups.form.name.placeholder")}
       />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}
           <Button disabled={isLoadingGroupUpdate} onClick={onLocalSubmit}>
-            Update Group
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

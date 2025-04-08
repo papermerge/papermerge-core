@@ -1,0 +1,62 @@
+{
+  "common": {
+    "new": "New",
+    "quick_search": "Quick search",
+    "upload": "Upload",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "folder": {
+    "new": "New Folder",
+    "new_title": "Folder Title"
+  },
+  "tags": {
+    "list": {
+      "empty": "There are currently no tags",
+      "table": {
+        "name": "Name",
+        "pinned": "Pinned",
+        "description": "Description"
+      }
+    }
+  },
+  "roles": {
+    "list": {
+      "empty": "There are currently no roles",
+      "table": {
+        "name": "Name"
+      }
+    }
+  },
+  "document_types": {
+    "list": {
+      "empty": "There are currently no document types",
+      "table": {
+        "name": "Name"
+      }
+    }
+  },
+  "custom_fields": {
+    "list": {
+      "empty": "There are currently no fields",
+      "table": {
+        "name": "Name",
+        "type": "Type"
+      }
+    }
+  },
+  "navbar": {
+    "home": "Home",
+    "inbox": "Inbox",
+    "tags": "Tags",
+    "custom_fields": "Fields",
+    "document_types": "Document Types",
+    "users": "Users",
+    "roles": "Roles",
+    "groups": "Groups"
+  },
+  "user_menu": {
+    "rest_api": "REST API",
+    "logout": "Log out"
+  }
+}

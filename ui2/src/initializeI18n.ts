@@ -30,7 +30,7 @@ export function initializeI18n(): Promise<void> {
         backends: [LocalStorageBackend, XHR],
         backendOptions: [
           {
-            prefix: "i18next_suite",
+            prefix: "i18next_papermerge",
             expirationTime: 5 * 1000,
             store: window.localStorage
           },

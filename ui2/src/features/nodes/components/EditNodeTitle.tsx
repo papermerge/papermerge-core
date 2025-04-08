@@ -4,6 +4,7 @@ import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
 import {ChangeEvent, useEffect, useRef, useState} from "react"
 
 import Error from "@/components/Error"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   node: EditEntityTitle
@@ -18,6 +19,7 @@ export const EditNodeTitleModal = ({
   onCancel,
   opened
 }: Args) => {
+  const {t} = useTranslation()
   const [renameFolder, {isLoading}] = useRenameFolderMutation()
   const ref = useRef<HTMLButtonElement>(null)
   const [title, setTitle] = useState(node.title)
@@ -95,12 +97,12 @@ export const EditNodeTitleModal = ({
 
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button ref={ref} disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

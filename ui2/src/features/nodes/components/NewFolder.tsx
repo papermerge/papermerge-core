@@ -1,6 +1,7 @@
 import {useAddNewFolderMutation} from "@/features/nodes/apiSlice"
 import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
 import {ChangeEvent, useEffect, useRef, useState} from "react"
+import {useTranslation} from "react-i18next"
 
 type CreateFolderType = {
   title: string
@@ -21,6 +22,7 @@ export const NewFolderModal = ({
   onCancel,
   opened
 }: Args) => {
+  const {t} = useTranslation()
   const [addNewFolder, {isLoading, isSuccess}] = useAddNewFolderMutation()
   const [title, setTitle] = useState("")
   const ref = useRef<HTMLButtonElement>(null)
@@ -92,22 +94,26 @@ export const NewFolderModal = ({
   }
 
   return (
-    <Modal title={"New Folder"} opened={opened} onClose={onLocalCancel}>
+    <Modal
+      title={t("folder.new.title")}
+      opened={opened}
+      onClose={onLocalCancel}
+    >
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}
-        label="Folder title"
+        label={t("folder.form.name")}
         placeholder="title"
         mt="md"
       />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button ref={ref} disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

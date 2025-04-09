@@ -2,7 +2,9 @@ from .features.nodes.schema import Folder, NewFolder, Node, UpdateNode, MoveNode
 from .features.shared_nodes.schema import (
     CreateSharedNode,
     SharedNode,
-    SharedNodeAccessDetails
+    SharedNodeAccessDetails,
+    SharedNodeAccessUpdate,
+    SharedNodeAccessUpdateResponse,
 )
 from .features.document.schema import (
     Document,
@@ -84,5 +86,7 @@ __all__ = [
     'UpdateRole',
     'CreateSharedNode',
     'SharedNode',
-    'SharedNodeAccessDetails'
+    'SharedNodeAccessDetails',
+    'SharedNodeAccessUpdate',
+    'SharedNodeAccessUpdateResponse',
 ]

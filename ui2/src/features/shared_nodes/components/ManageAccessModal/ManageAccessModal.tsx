@@ -1,6 +1,14 @@
 import {useGetRolesQuery} from "@/features/roles/apiSlice"
-import {useGetSharedNodeAccessDetailsQuery} from "@/features/shared_nodes/apiSlice"
-import type {SharedNodeAccessDetails} from "@/types.d/shared_nodes"
+import {
+  useGetSharedNodeAccessDetailsQuery,
+  useUpdateSharedNodeAccessMutation
+} from "@/features/shared_nodes/apiSlice"
+import type {
+  GroupUpdate,
+  SharedNodeAccessDetails,
+  SharedNodeAccessUpdate,
+  UserUpdate
+} from "@/types.d/shared_nodes"
 import {Button, Container, Group, Loader, Modal, Tabs} from "@mantine/core"
 import {IconUsers, IconUsersGroup} from "@tabler/icons-react"
 import {produce} from "immer"
@@ -39,6 +47,8 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
   const {data: initialData, isLoading} =
     useGetSharedNodeAccessDetailsQuery(node_id)
   const {data: allRoles = []} = useGetRolesQuery()
+  const [updateAccess, {isLoading: isLoadingUpdateAccess}] =
+    useUpdateSharedNodeAccessMutation()
   const [selectedUserIDs, setSelectedUserIDs] = useState<string[]>([])
   const [selectedGroupIDs, setSelectedGroupIDs] = useState<string[]>([])
   const [access, setAccess] = useState<SharedNodeAccessDetails>()
@@ -59,19 +69,32 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
     }
   }
 
+  const onGroupSelectionChange = (group_id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedGroupIDs([...selectedUserIDs, group_id])
+    } else {
+      const newSelIDs = selectedGroupIDs.filter(id => id != group_id)
+      setSelectedGroupIDs(newSelIDs)
+    }
+  }
+
   const localSubmit = async () => {
+    const accessData = getAccessData4BE({access, node_id})
+    await updateAccess(accessData)
     stack.closeAll()
+    onClose()
   }
 
   const localCancel = () => {
     stack.closeAll()
+    onClose()
   }
 
-  const onClickViewUserRole = () => {
+  const onClickViewRole = () => {
     stack.open("manage-role")
   }
 
-  const onClickDeleteUserRole = (selectedIDs: string[], idType: IDType) => {
+  const onClickDeleteRole = (selectedIDs: string[], idType: IDType) => {
     if (idType == "user") {
       if (access) {
         const nextDataState = produce(access, draft => {
@@ -95,15 +118,10 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
     }
   }
 
-  const onClickViewGroupRole = () => {
-    stack.open("manage-role")
-  }
-
-  const onClickDeleteGroupRole = () => {}
-
   const onCancelRoleView = () => {
     stack.close("manage-role")
     setSelectedUserIDs([])
+    setSelectedGroupIDs([])
   }
 
   const onSubmitRoleView = () => {
@@ -170,6 +188,11 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
     })
   }
 
+  const onClickTab = () => {
+    setSelectedUserIDs([])
+    setSelectedGroupIDs([])
+  }
+
   if (isLoading) {
     return (
       <Modal.Stack>
@@ -203,11 +226,16 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
         <Container>
           <Tabs defaultValue="users">
             <Tabs.List>
-              <Tabs.Tab value="users" leftSection={<IconUsers size={18} />}>
+              <Tabs.Tab
+                value="users"
+                onClick={onClickTab}
+                leftSection={<IconUsers size={18} />}
+              >
                 Users
               </Tabs.Tab>
               <Tabs.Tab
                 value="groups"
+                onClick={onClickTab}
                 leftSection={<IconUsersGroup size={18} />}
               >
                 Groups
@@ -218,15 +246,17 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
                 data={access}
                 onSelectionChange={onUserSelectionChange}
                 selectedIDs={selectedUserIDs}
-                onClickViewButton={onClickViewUserRole}
-                onClickDeleteButton={onClickDeleteUserRole}
+                onClickViewButton={onClickViewRole}
+                onClickDeleteButton={onClickDeleteRole}
               />
             </Tabs.Panel>
             <Tabs.Panel value="groups">
               <ManageAccessGroups
-                node_id={node_id}
-                onClickViewButton={onClickViewGroupRole}
-                onClickDeleteButton={onClickDeleteGroupRole}
+                data={access}
+                onSelectionChange={onGroupSelectionChange}
+                selectedIDs={selectedGroupIDs}
+                onClickViewButton={onClickViewRole}
+                onClickDeleteButton={onClickDeleteRole}
               />
             </Tabs.Panel>
           </Tabs>
@@ -270,4 +300,49 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
       </Modal>
     </Modal.Stack>
   )
+}
+
+interface GetAccessData4BEArgs {
+  access?: SharedNodeAccessDetails
+  node_id: string
+}
+
+function getAccessData4BE({
+  access,
+  node_id
+}: GetAccessData4BEArgs): SharedNodeAccessUpdate {
+  let result = {
+    id: node_id,
+    users: [],
+    groups: []
+  }
+
+  if (!access) {
+    return result
+  }
+
+  let users: UserUpdate[] = []
+  let groups: GroupUpdate[] = []
+
+  for (let i = 0; i < access.users.length; i++) {
+    let user: UserUpdate = {
+      id: access.users[i].id,
+      role_ids: access.users[i].roles.map(r => r.id)
+    }
+    users.push(user)
+  }
+
+  for (let i = 0; i < access.groups.length; i++) {
+    let group: GroupUpdate = {
+      id: access.groups[i].id,
+      role_ids: access.groups[i].roles.map(r => r.id)
+    }
+    groups.push(group)
+  }
+
+  return {
+    id: node_id,
+    users: users,
+    groups: groups
+  }
 }

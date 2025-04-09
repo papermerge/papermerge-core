@@ -1,10 +1,9 @@
 import uuid
 
 from sqlalchemy import ForeignKey, func, CheckConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 
-from papermerge.core.features.users.db.orm import User
 from papermerge.core.db.base import Base
 
 

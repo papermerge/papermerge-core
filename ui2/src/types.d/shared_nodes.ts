@@ -22,8 +22,24 @@ export type Group = {
   roles: Array<Role>
 }
 
+export type UserUpdate = {
+  id: string // user id
+  role_ids: string[]
+}
+
+export type GroupUpdate = {
+  id: string // group id
+  role_ids: string[]
+}
+
 export type SharedNodeAccessDetails = {
   id: string // node ID
   users: Array<User>
   groups: Array<Group>
+}
+
+export type SharedNodeAccessUpdate = {
+  id: string // node ID
+  users: Array<UserUpdate>
+  groups: Array<GroupUpdate>
 }

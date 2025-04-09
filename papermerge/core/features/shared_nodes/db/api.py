@@ -1,11 +1,12 @@
 import uuid
 import math
 from itertools import zip_longest
+from datetime import datetime
 
 
 from typing import Union
 
-from sqlalchemy import select, or_, func
+from sqlalchemy import select, or_, func, delete, tuple_
 from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
 
 from papermerge.core.db.engine import Session
@@ -182,7 +183,7 @@ def get_shared_node_access_details(
             else:
                 role = sn_schema.Role(name=row.role_name, id=row.role_id)
                 groups[row.group_id] = sn_schema.Group(
-                    id=row.user_id, name=row.group_name, roles=[role]
+                    id=row.group_id, name=row.group_name, roles=[role]
                 )
 
     for user_id, user in users.items():
@@ -198,3 +199,84 @@ def get_shared_node_access_details(
         )
 
     return results
+
+
+def update_shared_node_access(
+    db_session: Session,
+    node_id: uuid.UUID,
+    access_update: schema.SharedNodeAccessUpdate,
+    owner_id: uuid.UUID,
+):
+    """
+    Update shared nodes access
+
+    More appropriate name for this would be "sync" - because this is
+    exactly what it does - it actually syncs content in `access_update` for
+    specific node_id to match data in `shared_nodes` table.
+    """
+    new_user_role_pairs = []
+    new_group_role_pairs = []
+    for user in access_update.users:
+        for role_id in user.role_ids:
+            new_user_role_pairs.append((user.id, role_id))
+
+    for group in access_update.users:
+        for role_id in group.role_ids:
+            new_group_role_pairs.append((group.id, role_id))
+
+    existing_user_role_pairs = db_session.execute(
+        select(orm.SharedNode.user_id, orm.SharedNode.role_id).where(
+            orm.SharedNode.node_id == node_id
+        )
+    ).all()
+    existing_group_role_pairs = db_session.execute(
+        select(orm.SharedNode.group_id, orm.SharedNode.role_id).where(
+            orm.SharedNode.node_id == node_id
+        )
+    ).all()
+
+    existing_user_set = set(existing_user_role_pairs)
+    desired_user_set = set(new_user_role_pairs)
+    existing_group_set = set(existing_group_role_pairs)
+    desired_group_set = set(new_group_role_pairs)
+
+    to_add_users = desired_user_set - existing_user_set
+    to_remove_users = existing_user_set - desired_user_set
+    to_add_groups = desired_group_set - existing_group_set
+    to_remove_groups = existing_group_set - desired_group_set
+
+    # Delete removed user pairs
+    if to_remove_users:
+        db_session.execute(
+            delete(orm.SharedNode).where(
+                orm.SharedNode.node_id == node_id,
+                tuple_(orm.SharedNode.user_id, orm.SharedNode.role_id).in_(
+                    to_remove_users
+                ),
+            )
+        )
+
+    # Delete removed group pairs
+    if to_remove_groups:
+        db_session.execute(
+            delete(orm.SharedNode).where(
+                orm.SharedNode.node_id == node_id,
+                tuple_(orm.SharedNode.group_id, orm.SharedNode.role_id).in_(
+                    to_remove_groups
+                ),
+            )
+        )
+
+    for user_id, role_id in to_add_users:
+        shared = orm.SharedNode(
+            node_id=node_id, user_id=user_id, role_id=role_id, owner_id=owner_id
+        )
+        db_session.add(shared)
+
+    for group_id, role_id in to_add_groups:
+        shared = orm.SharedNode(
+            node_id=node_id, group_id=group_id, role_id=role_id, owner_id=owner_id
+        )
+        db_session.add(shared)
+
+    db_session.commit()

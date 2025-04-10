@@ -47,8 +47,7 @@ export const ManageAccessModal = ({node_id, onClose, stack}: Args) => {
   const {data: initialData, isLoading} =
     useGetSharedNodeAccessDetailsQuery(node_id)
   const {data: allRoles = []} = useGetRolesQuery()
-  const [updateAccess, {isLoading: isLoadingUpdateAccess}] =
-    useUpdateSharedNodeAccessMutation()
+  const [updateAccess] = useUpdateSharedNodeAccessMutation()
   const [selectedUserIDs, setSelectedUserIDs] = useState<string[]>([])
   const [selectedGroupIDs, setSelectedGroupIDs] = useState<string[]>([])
   const [access, setAccess] = useState<SharedNodeAccessDetails>()

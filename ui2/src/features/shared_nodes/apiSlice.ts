@@ -74,14 +74,21 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         url: "/shared-nodes/",
         method: "POST",
         body: shared_node
-      })
+      }),
+      invalidatesTags: (_result, _error, input) =>
+        input.node_ids.map(node_id => {
+          return {type: "Node", id: node_id}
+        })
     }),
     updateSharedNodeAccess: builder.mutation<void, SharedNodeAccessUpdate>({
       query: access_update => ({
         url: `/shared-nodes/access/${access_update.id}`,
         method: "PATCH",
         body: access_update
-      })
+      }),
+      invalidatesTags: (_result, _error, input) => [
+        {type: "Node", id: input.id}
+      ]
     })
   })
 })

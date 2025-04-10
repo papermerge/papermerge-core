@@ -52,12 +52,23 @@ def create_shared_nodes(
 
     shared_nodes = []
     for node_id in node_ids:
-        for user_id, group_id in zip_longest(user_ids, group_ids):
+        for user_id in user_ids:
             for role_id in role_ids:
                 shared_nodes.append(
                     sn_orm.SharedNode(
                         node_id=node_id,
                         user_id=user_id,
+                        role_id=role_id,
+                        group_id=None,
+                        owner_id=owner_id,
+                    )
+                )
+        for group_id in group_ids:
+            for role_id in role_ids:
+                shared_nodes.append(
+                    sn_orm.SharedNode(
+                        node_id=node_id,
+                        user_id=None,
                         role_id=role_id,
                         group_id=group_id,
                         owner_id=owner_id,
@@ -214,13 +225,14 @@ def update_shared_node_access(
     exactly what it does - it actually syncs content in `access_update` for
     specific node_id to match data in `shared_nodes` table.
     """
+
     new_user_role_pairs = []
     new_group_role_pairs = []
     for user in access_update.users:
         for role_id in user.role_ids:
             new_user_role_pairs.append((user.id, role_id))
 
-    for group in access_update.users:
+    for group in access_update.groups:
         for role_id in group.role_ids:
             new_group_role_pairs.append((group.id, role_id))
 

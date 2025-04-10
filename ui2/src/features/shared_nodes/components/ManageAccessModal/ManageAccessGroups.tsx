@@ -80,5 +80,5 @@ function sortPredicate(g1: Group, g2: Group) {
 }
 
 function Empty() {
-  return <Center my={"md"}>No users</Center>
+  return <Center my={"md"}>No groups</Center>
 }

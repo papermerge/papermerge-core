@@ -23,3 +23,50 @@ class CreateSharedNode(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class Role(BaseModel):
+    name: str
+    id: uuid.UUID
+    # Config
+    model_config = ConfigDict(frozen=True)
+
+
+class User(BaseModel):
+    username: str
+    id: uuid.UUID
+    roles: list[Role]
+
+
+class Group(BaseModel):
+    name: str
+    id: uuid.UUID
+    roles: list[Role]
+
+
+class UserUpdate(BaseModel):
+    id: uuid.UUID
+    role_ids: list[uuid.UUID]
+
+
+class GroupUpdate(BaseModel):
+    id: uuid.UUID
+    role_ids: list[uuid.UUID]
+
+
+class SharedNodeAccessDetails(BaseModel):
+    id: uuid.UUID  # Node ID
+    users: list[User] = []
+    groups: list[Group] = []
+
+
+class SharedNodeAccessUpdate(BaseModel):
+    id: uuid.UUID  # Node ID
+    users: list[UserUpdate] = []
+    groups: list[GroupUpdate] = []
+
+
+class SharedNodeAccessUpdateResponse(BaseModel):
+    id: uuid.UUID  # Node ID
+    # is node still shared after access update ?
+    is_shared: bool

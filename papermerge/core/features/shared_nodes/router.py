@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Security, Depends, Response, status
 
 from typing import Annotated, Union
@@ -66,3 +67,47 @@ def create_shared_nodes(
         )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/access/{node_id}")
+@utils.docstring_parameter(scope=scopes.SHARED_NODE_VIEW)
+def get_shared_node_access_details(
+    node_id: uuid.UUID,
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
+    ],
+) -> schema.SharedNodeAccessDetails:
+    """Get shared node access details
+
+    Required scope: `{scope}`
+
+    In other words: gets info about who can access this node
+    and with what roles?
+    """
+    with Session() as db_session:
+        node_access = dbapi.get_shared_node_access_details(db_session, node_id=node_id)
+
+    return node_access
+
+
+@router.patch("/access/{node_id}", status_code=status.HTTP_200_OK)
+@utils.docstring_parameter(scope=scopes.SHARED_NODE_UPDATE)
+def update_shared_node_access(
+    node_id: uuid.UUID,
+    access_update: schema.SharedNodeAccessUpdate,
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
+    ],
+):
+    """Update shared nodes access
+
+    Required scope: `{scope}`
+
+    More appropriate name for this would be "sync" - because this is
+    exactly what it does - it actually syncs content in `access_update` for
+    specific node_id to match data in `shared_nodes` table.
+    """
+    with Session() as db_session:
+        dbapi.update_shared_node_access(
+            db_session, node_id=node_id, access_update=access_update, owner_id=user.id
+        )

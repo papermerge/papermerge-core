@@ -11,11 +11,11 @@ import {
   selectFilterText
 } from "@/features/ui/uiSlice"
 
-import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 import {useGetPaginatedSharedNodesQuery} from "@/features/shared_nodes/apiSlice"
+import SharedBreadcrumb from "@/features/shared_nodes/components/SharedBreadcrumb"
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
@@ -137,7 +137,7 @@ export default function SharedCommander() {
     <>
       <Box>
         <FolderNodeActions />
-        <Breadcrumbs
+        <SharedBreadcrumb
           breadcrumb={
             currentFolder?.breadcrumb ||
             (SHARED_NODES_ROOT_BREADCRUMB as BreadcrumbType)

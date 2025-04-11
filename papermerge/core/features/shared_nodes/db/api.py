@@ -97,13 +97,10 @@ def get_paginated_shared_nodes(
     )
 
     base_stmt = (
-        select(orm.Node, orm.Permission.codename)
+        select(orm.Node)
         .select_from(orm.SharedNode)
         .options(selectinload(orm.Node.tags))
         .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
-        .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
-        .join(RolePermissionAlias, RolePermissionAlias.c.role_id == orm.Role.id)
-        .join(orm.Permission, orm.Permission.id == RolePermissionAlias.c.permission_id)
         .where(
             or_(
                 orm.SharedNode.user_id == user_id,
@@ -121,7 +118,9 @@ def get_paginated_shared_nodes(
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total_nodes = db_session.scalar(count_stmt)
+
     num_pages = math.ceil(total_nodes / page_size)
+
     paginated_stmt = (
         stmt.offset((page_number - 1) * page_size)
         .order_by(*str2colexpr(order_by))
@@ -131,21 +130,9 @@ def get_paginated_shared_nodes(
 
     items = []
 
-    def _is_folder(item: orm.Folder, folder_id: uuid.UUID) -> bool:
-        return item.id == folder_id
-
     for row in db_session.execute(paginated_stmt):
-        folder_id = row.Node.id
-        found = next((item for item in items if _is_folder(item, folder_id)), None)
-
-        if found:
-            found.perms.append(row.codename)
-            continue
-
         if row.Node.ctype == "folder":
-            new_item = schema.Folder.model_validate(row.Node)
-            new_item.perms = [row.codename]
-            items.append(new_item)
+            items.append(schema.Folder.model_validate(row.Node))
         else:
             items.append(schema.Document.model_validate(row.Node))
 

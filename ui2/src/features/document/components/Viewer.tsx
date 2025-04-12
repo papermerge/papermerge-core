@@ -10,6 +10,15 @@ import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {useRef, useState} from "react"
 
 import {HIDDEN} from "@/cconstants"
+import ActionButtons from "@/components/document/ActionButtons"
+import ContextMenu from "@/components/document/Contextmenu"
+import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
+import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
+import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
+import Pages from "@/components/document/Pages"
+import Thumbnails from "@/components/document/Thumbnails"
+import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
+import classes from "@/components/document/Viewer.module.css"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
@@ -20,15 +29,6 @@ import {
 } from "@/features/ui/uiSlice"
 import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
-import ActionButtons from "./ActionButtons"
-import ContextMenu from "./Contextmenu"
-import DocumentDetails from "./DocumentDetails/DocumentDetails"
-import DocumentDetailsToggle from "./DocumentDetailsToggle"
-import PagesHaveChangedDialog from "./PageHaveChangedDialog"
-import Pages from "./Pages"
-import Thumbnails from "./Thumbnails"
-import ThumbnailsToggle from "./ThumbnailsToggle"
-import classes from "./Viewer.module.css"
 
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)

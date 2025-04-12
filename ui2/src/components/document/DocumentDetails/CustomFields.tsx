@@ -3,12 +3,12 @@ import {useContext, useEffect, useState} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {
   CustomFieldDate,
   CustomFieldMonetary,
   CustomFieldYearMonth
-} from "@/features/document/components/customFields"
-import {skipToken} from "@reduxjs/toolkit/query"
+} from "../customFields"
 
 import {useGetDocumentTypesQuery} from "@/features/document-types/apiSlice"
 import {

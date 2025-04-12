@@ -124,7 +124,7 @@ export default function SharedViewer() {
 
   return (
     <div>
-      <ActionButtons />
+      <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
       <Group justify="space-between">
         <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
@@ -143,6 +143,8 @@ export default function SharedViewer() {
           docID={currentNodeID}
           opened={opened}
           doc={doc}
+          isFetching={isFetching}
+          isError={isError}
           position={contextMenuPosition}
           onChange={onContextMenuChange}
         />

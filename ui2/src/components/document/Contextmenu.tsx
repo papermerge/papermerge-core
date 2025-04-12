@@ -48,6 +48,8 @@ interface Args {
   position: Coord
   docID?: string
   doc?: DocumentType
+  isFetching: boolean
+  isError: boolean
 }
 
 const ICON_CSS = {width: rem(18), height: rem(18)}
@@ -60,7 +62,9 @@ export default function ContextMenu({
   opened,
   onChange,
   doc,
-  docID
+  docID,
+  isFetching,
+  isError
 }: Args) {
   const dispatch = useAppDispatch()
   const [delDocOpened, {open: delDocOpen, close: delDocClose}] =
@@ -251,7 +255,12 @@ export default function ContextMenu({
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-      <EditTitleButton ref={refEditTitleButton} hidden={true} />
+      <EditTitleButton
+        isFetching={isFetching}
+        isError={isError}
+        ref={refEditTitleButton}
+        hidden={true}
+      />
       <RotateButton ref={refRotateButton} hidden={true} />
       <RotateCCButton ref={refRotateCCButton} hidden={true} />
       <DeletePagesButton ref={refDeletePagesButton} hidden={true} />

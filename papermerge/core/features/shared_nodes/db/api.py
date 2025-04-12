@@ -1,10 +1,8 @@
 import uuid
 import math
-from itertools import zip_longest
-from datetime import datetime
 
 
-from typing import Union
+from typing import Union, Tuple
 
 from sqlalchemy import select, or_, func, delete, tuple_
 from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
@@ -14,6 +12,7 @@ from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.types import PaginatedResponse
 from papermerge.core import orm, schema
+from papermerge.core.db import common as dbapi_common
 
 
 def str2colexpr(keys: list[str]):
@@ -142,6 +141,32 @@ def get_paginated_shared_nodes(
         num_pages=num_pages,
         items=items,
     )
+
+
+def get_shared_node_ids(
+    db_session: Session,
+    user_id: uuid.UUID,
+) -> list[uuid.UUID]:
+    UserGroupAlias = aliased(orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+
+    stmt = (
+        select(orm.Node.id)
+        .select_from(orm.SharedNode)
+        .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
+        .where(
+            or_(
+                orm.SharedNode.user_id == user_id,
+                orm.SharedNode.group_id.in_(subquery),
+            )
+        )
+    )
+
+    ids = db_session.scalars(stmt)
+
+    return ids
 
 
 def get_shared_node_access_details(
@@ -279,3 +304,26 @@ def update_shared_node_access(
         db_session.add(shared)
 
     db_session.commit()
+
+
+def get_shared_folder(
+    db_session: Session, folder_id: uuid.UUID, shared_root_id: uuid.UUID
+) -> Tuple[orm.Folder | None, schema.Error | None]:
+    breadcrumb = dbapi_common.get_ancestors(db_session, folder_id)
+    shorted_breadcrumb = []
+    # user will see path only until its ancestor which is marked as shared root
+    for b in reversed(breadcrumb):
+        shorted_breadcrumb.append(b)
+        if b[0] == shared_root_id:
+            break
+
+    shorted_breadcrumb.reverse()
+    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
+    try:
+        db_model = db_session.scalars(stmt).one()
+        db_model.breadcrumb = shorted_breadcrumb
+    except Exception as e:
+        error = schema.Error(messages=[str(e)])
+        return None, error
+
+    return db_model, None

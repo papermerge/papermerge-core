@@ -1,5 +1,7 @@
+import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
 import type {NType} from "@/types"
 import {Anchor, Breadcrumbs, Group, Loader, Skeleton} from "@mantine/core"
+import {IconUserShare} from "@tabler/icons-react"
 import {useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
 
@@ -26,8 +28,22 @@ export default function SharedBreadcrumb({
     )
   }
 
+  if (breadcrumb.length == 1 && breadcrumb[0][0] == SHARED_FOLDER_ROOT_ID) {
+    return (
+      <Breadcrumbs className={classes.breadcrumbs}>
+        <Anchor
+          onClick={() => onClick({id: SHARED_FOLDER_ROOT_ID, ctype: "folder"})}
+        >
+          <Group>
+            <IconUserShare /> Shared
+          </Group>
+        </Anchor>
+      </Breadcrumbs>
+    )
+  }
+
   const items = breadcrumb
-  const links = items.slice(1, -1).map(i => (
+  const links = items.slice(0, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}
     </Anchor>
@@ -37,6 +53,13 @@ export default function SharedBreadcrumb({
   return (
     <Group ref={ref} my={0} className={className}>
       <Breadcrumbs className={classes.breadcrumbs}>
+        <Anchor
+          onClick={() => onClick({id: SHARED_FOLDER_ROOT_ID, ctype: "folder"})}
+        >
+          <Group>
+            <IconUserShare /> Shared
+          </Group>
+        </Anchor>
         {links}
         <Anchor>{lastOne}</Anchor>
       </Breadcrumbs>

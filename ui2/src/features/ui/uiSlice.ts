@@ -230,6 +230,7 @@ interface UIState {
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
   currentSharedNode?: CurrentNode
+  currentSharedRootID?: string
   mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
   mainCommanderLastPageSize?: number
@@ -480,6 +481,12 @@ const uiSlice = createSlice({
         state.mainPanelComponent = "sharedViewer"
       }
     }, // end of currentSharedNodeChanged
+    currentSharedNodeRootChanged(
+      state,
+      action: PayloadAction<string | undefined>
+    ) {
+      state.currentSharedRootID = action.payload
+    },
     //------------------------------------------------------------------
     secondaryPanelOpened(state, action: PayloadAction<PanelComponent>) {
       state.secondaryPanelComponent = action.payload
@@ -901,6 +908,7 @@ export const {
   updateBreadcrumb,
   currentNodeChanged,
   currentSharedNodeChanged,
+  currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   searchResultsLastPageSizeUpdated,
   /* Main panel switched to show search results.
@@ -995,6 +1003,14 @@ export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {
 
 export const selectCurrentSharedNodeID = (state: RootState) => {
   return state.ui.currentSharedNode?.id
+}
+
+export const selectSharedNode = (state: RootState, nodeID: string) => {
+  return state.sharedNodes.entities[nodeID]
+}
+
+export const selectCurrentSharedRootID = (state: RootState) => {
+  return state.ui.currentSharedRootID
 }
 
 export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {

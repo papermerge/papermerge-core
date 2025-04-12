@@ -1,10 +1,8 @@
 import uuid
 import math
-from itertools import zip_longest
-from datetime import datetime
 
 
-from typing import Union
+from typing import Union, Tuple
 
 from sqlalchemy import select, or_, func, delete, tuple_
 from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
@@ -14,6 +12,7 @@ from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.types import PaginatedResponse
 from papermerge.core import orm, schema
+from papermerge.core.db import common as dbapi_common
 
 
 def str2colexpr(keys: list[str]):
@@ -96,14 +95,26 @@ def get_paginated_shared_nodes(
         UserGroupAlias.c.user_id == user_id
     )
 
-    base_stmt = (
-        select(orm.Node, orm.Permission.codename)
+    perms_query = (
+        select(orm.Node.id.label("node_id"), orm.Permission.codename)
         .select_from(orm.SharedNode)
-        .options(selectinload(orm.Node.tags))
         .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
         .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
         .join(RolePermissionAlias, RolePermissionAlias.c.role_id == orm.Role.id)
         .join(orm.Permission, orm.Permission.id == RolePermissionAlias.c.permission_id)
+        .where(
+            or_(
+                orm.SharedNode.user_id == user_id,
+                orm.SharedNode.group_id.in_(subquery),
+            )
+        )
+    )
+
+    base_stmt = (
+        select(orm.Node)
+        .select_from(orm.SharedNode)
+        .options(selectinload(orm.Node.tags))
+        .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
         .where(
             or_(
                 orm.SharedNode.user_id == user_id,
@@ -121,7 +132,9 @@ def get_paginated_shared_nodes(
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total_nodes = db_session.scalar(count_stmt)
+
     num_pages = math.ceil(total_nodes / page_size)
+
     paginated_stmt = (
         stmt.offset((page_number - 1) * page_size)
         .order_by(*str2colexpr(order_by))
@@ -129,25 +142,24 @@ def get_paginated_shared_nodes(
         .options(loader_opt)
     )
 
+    perms = {}
+    for row in db_session.execute(perms_query):
+
+        if perms.get(row.node_id):
+            perms[row.node_id].append(row.codename)
+        else:
+            perms[row.node_id] = [row.codename]
+
     items = []
 
-    def _is_folder(item: orm.Folder, folder_id: uuid.UUID) -> bool:
-        return item.id == folder_id
-
     for row in db_session.execute(paginated_stmt):
-        folder_id = row.Node.id
-        found = next((item for item in items if _is_folder(item, folder_id)), None)
-
-        if found:
-            found.perms.append(row.codename)
-            continue
-
         if row.Node.ctype == "folder":
             new_item = schema.Folder.model_validate(row.Node)
-            new_item.perms = [row.codename]
-            items.append(new_item)
         else:
-            items.append(schema.Document.model_validate(row.Node))
+            new_item = schema.Document.model_validate(row.Node)
+
+        new_item.perms = perms[row.Node.id]
+        items.append(new_item)
 
     return PaginatedResponse[Union[schema.Document, schema.Folder]](
         page_size=page_size,
@@ -155,6 +167,32 @@ def get_paginated_shared_nodes(
         num_pages=num_pages,
         items=items,
     )
+
+
+def get_shared_node_ids(
+    db_session: Session,
+    user_id: uuid.UUID,
+) -> list[uuid.UUID]:
+    UserGroupAlias = aliased(orm.user_groups_association)
+    subquery = select(UserGroupAlias.c.group_id).where(
+        UserGroupAlias.c.user_id == user_id
+    )
+
+    stmt = (
+        select(orm.Node.id)
+        .select_from(orm.SharedNode)
+        .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
+        .where(
+            or_(
+                orm.SharedNode.user_id == user_id,
+                orm.SharedNode.group_id.in_(subquery),
+            )
+        )
+    )
+
+    ids = db_session.scalars(stmt)
+
+    return ids
 
 
 def get_shared_node_access_details(
@@ -292,3 +330,26 @@ def update_shared_node_access(
         db_session.add(shared)
 
     db_session.commit()
+
+
+def get_shared_folder(
+    db_session: Session, folder_id: uuid.UUID, shared_root_id: uuid.UUID
+) -> Tuple[orm.Folder | None, schema.Error | None]:
+    breadcrumb = dbapi_common.get_ancestors(db_session, folder_id)
+    shorted_breadcrumb = []
+    # user will see path only until its ancestor which is marked as shared root
+    for b in reversed(breadcrumb):
+        shorted_breadcrumb.append(b)
+        if b[0] == shared_root_id:
+            break
+
+    shorted_breadcrumb.reverse()
+    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
+    try:
+        db_model = db_session.scalars(stmt).one()
+        db_model.breadcrumb = shorted_breadcrumb
+    except Exception as e:
+        error = schema.Error(messages=[str(e)])
+        return None, error
+
+    return db_model, None

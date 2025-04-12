@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Security, Depends, Response, status
+from fastapi import APIRouter, Security, Depends, Response, status, HTTPException
 
 from typing import Annotated, Union
 
@@ -8,6 +8,10 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.db.engine import Session
 from papermerge.core.types import PaginatedResponse
+from papermerge.core.features.users import schema as usr_schema
+from papermerge.core.features.nodes.db import api as nodes_api
+from papermerge.core.db import common as dbapi_common
+from papermerge.core.exceptions import HTTP403Forbidden
 
 router = APIRouter(
     prefix="/shared-nodes",
@@ -38,6 +42,36 @@ def get_shared_nodes(
             order_by=order_by,
             filter=params.filter,
             user_id=user.id,
+        )
+
+    return nodes
+
+
+@router.get("/folder/{parent_id}")
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_node(
+    parent_id,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    params: CommonQueryParams = Depends(),
+) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
+    """Returns a list of top level nodes shared with current user
+
+    Required scope: `{scope}`
+    """
+    order_by = ["ctype", "title", "created_at", "updated_at"]
+
+    if params.order_by:
+        order_by = [item.strip() for item in params.order_by.split(",")]
+
+    with Session() as db_session:
+        nodes = nodes_api.get_paginated_nodes(
+            db_session=db_session,
+            parent_id=uuid.UUID(parent_id),
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            order_by=order_by,
+            filter=params.filter,
         )
 
     return nodes

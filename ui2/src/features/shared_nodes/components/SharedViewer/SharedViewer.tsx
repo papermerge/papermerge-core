@@ -7,14 +7,10 @@ import {useNavigate} from "react-router-dom"
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
-import {useRef, useState} from "react"
+import {useRef} from "react"
 
-import {HIDDEN} from "@/cconstants"
-import ActionButtons from "@/components/document/ActionButtons"
-import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
-import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
 import Pages from "@/components/document/Pages"
 import Thumbnails from "@/components/document/Thumbnails"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
@@ -28,13 +24,11 @@ import {
   selectCurrentSharedNodeID,
   selectCurrentSharedRootID
 } from "@/features/ui/uiSlice"
-import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
-import {useDisclosure} from "@mantine/hooks"
+import type {NType, PanelMode, ServerErrorType} from "@/types"
+import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
   const ref = useRef<HTMLDivElement>(null)
-  const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
-  const [opened, {open, close}] = useDisclosure()
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
@@ -58,15 +52,6 @@ export default function SharedViewer() {
     currentSharedRootID: currentSharedRootID
   })
 
-  const onContextMenu = (ev: MouseEvent) => {
-    ev.preventDefault() // prevents default context menu
-
-    let new_y = ev.clientY
-    let new_x = ev.clientX
-    setContextMenuPosition({y: new_y, x: new_x})
-    open()
-  }
-
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
@@ -75,12 +60,6 @@ export default function SharedViewer() {
     } else if (mode == "main" && node.ctype == "folder") {
       dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
       navigate(`/folder/${node.id}`)
-    }
-  }
-
-  const onContextMenuChange = (cmOpened: boolean) => {
-    if (!cmOpened) {
-      close()
     }
   }
 
@@ -109,19 +88,6 @@ export default function SharedViewer() {
     }
   }, [isSuccess, doc])
 
-  useEffect(() => {
-    // detect right click outside
-    if (ref.current) {
-      ref.current.addEventListener("contextmenu", onContextMenu)
-    }
-
-    return () => {
-      if (ref.current) {
-        ref.current.removeEventListener("contextmenu", onContextMenu)
-      }
-    }
-  }, [])
-
   return (
     <div>
       <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
@@ -137,16 +103,6 @@ export default function SharedViewer() {
           doc={doc}
           docID={currentNodeID}
           isLoading={isLoading}
-        />
-        <PagesHaveChangedDialog docID={currentNodeID} />
-        <ContextMenu
-          docID={currentNodeID}
-          opened={opened}
-          doc={doc}
-          isFetching={isFetching}
-          isError={isError}
-          position={contextMenuPosition}
-          onChange={onContextMenuChange}
         />
       </Flex>
     </div>

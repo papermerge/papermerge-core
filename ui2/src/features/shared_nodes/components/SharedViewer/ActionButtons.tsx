@@ -1,21 +1,12 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
+import {useAppDispatch} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {updateActionPanel} from "@/features/ui/uiSlice"
-import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
-import DeletePagesButton from "./DeletePagesButton"
-import EditTitleButton from "./EditTitleButton"
 
-import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
-import {selectSelectedPages} from "@/features/document/documentVersSlice"
+import DownloadButton from "@/components/document/DownloadButton/DownloadButton"
 import type {DocumentType, PanelMode} from "@/types"
-import DownloadButton from "./DownloadButton/DownloadButton"
-import RotateButton from "./RotateButton"
-import RotateCCButton from "./RotateCCButton"
-import RunOCRButton from "./RunOCRButton"
 
 interface Args {
   doc?: DocumentType
@@ -28,8 +19,6 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
-  const runtimeConfig = useRuntimeConfig()
 
   useEffect(() => {
     if (ref?.current) {
@@ -47,17 +36,7 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
         <DownloadButton doc={doc} isFetching={isFetching} isError={isError} />
-        {!runtimeConfig.ocr__automatic && <RunOCRButton />}
-
-        {selectedPages.length > 0 && <RotateButton />}
-        {selectedPages.length > 0 && <RotateCCButton />}
-        {selectedPages.length > 0 && <DeletePagesButton />}
-      </Group>
-      <Group>
-        <DuplicatePanelButton />
-        <ToggleSecondaryPanel />
       </Group>
     </Group>
   )

@@ -50,6 +50,8 @@ export default function SharedViewer() {
     currentData: doc,
     isSuccess,
     isError,
+    isFetching,
+    isLoading,
     error
   } = useGetSharedDocumentQuery({
     nodeID: currentNodeID!,
@@ -128,13 +130,19 @@ export default function SharedViewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails />
+        <Thumbnails isFetching={isFetching} />
         <ThumbnailsToggle />
-        <Pages />
-        <DocumentDetails />
-        <PagesHaveChangedDialog />
+        <Pages isFetching={isFetching} />
+        <DocumentDetails
+          doc={doc}
+          docID={currentNodeID}
+          isLoading={isLoading}
+        />
+        <PagesHaveChangedDialog docID={currentNodeID} />
         <ContextMenu
+          docID={currentNodeID}
           opened={opened}
+          doc={doc}
           position={contextMenuPosition}
           onChange={onContextMenuChange}
         />

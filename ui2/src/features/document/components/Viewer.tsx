@@ -49,6 +49,8 @@ export default function Viewer() {
     currentData: doc,
     isSuccess,
     isError,
+    isFetching,
+    isLoading,
     error
   } = useGetDocumentQuery(currentNodeID!)
 
@@ -138,10 +140,14 @@ export default function Viewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails />
+        <Thumbnails isFetching={isFetching} />
         <ThumbnailsToggle />
-        <Pages />
-        <DocumentDetails />
+        <Pages isFetching={isFetching} />
+        <DocumentDetails
+          doc={doc}
+          docID={currentNodeID}
+          isLoading={isLoading}
+        />
         <PagesHaveChangedDialog />
         <ContextMenu
           opened={opened}

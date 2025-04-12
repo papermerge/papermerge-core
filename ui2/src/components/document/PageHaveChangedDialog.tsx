@@ -9,17 +9,18 @@ import {
   selectPagesHaveChanged
 } from "@/features/document/documentVersSlice"
 
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-
 import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
 import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 
-export default function PagesHaveChangedDialog() {
+interface Args {
+  docID?: string
+}
+
+export default function PagesHaveChangedDialog({docID}: Args) {
   const [dontBotherMe, setDontBotherMe] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()

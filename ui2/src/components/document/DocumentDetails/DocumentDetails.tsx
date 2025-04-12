@@ -28,14 +28,18 @@ import {
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
+import type {DocumentType, PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 
-export default function DocumentDetails() {
+interface Args {
+  doc?: DocumentType
+  docID?: string
+  isLoading: boolean
+}
+
+export default function DocumentDetails({doc, docID, isLoading}: Args) {
   const mode: PanelMode = useContext(PanelContext)
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
   const {currentData: groupData, isLoading: groupDataIsLoading} =
     useGetGroupQuery(doc?.group_id ?? skipToken)
   const documentDetailsIsOpen = useAppSelector(s =>

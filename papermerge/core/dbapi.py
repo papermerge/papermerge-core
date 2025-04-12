@@ -25,7 +25,7 @@ from .features.document.db.api import (
     get_doc_cfv,
     get_doc_ver_pages
 )
-from .features.nodes.db.api import get_nodes
+from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (
     get_role,
     delete_role,
@@ -53,11 +53,14 @@ from .features.shared_nodes.db.api import (
     get_paginated_shared_nodes,
     create_shared_nodes,
     get_shared_node_access_details,
-    update_shared_node_access
+    update_shared_node_access,
+    get_shared_folder
 )
 
 __all__ = [
     "get_nodes",
+    "get_folder",
+    "get_shared_folder",
     "move_pages",
     "get_last_doc_ver",
     "get_doc_ver_pages",

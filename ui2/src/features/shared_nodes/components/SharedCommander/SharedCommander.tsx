@@ -2,20 +2,25 @@ import {Box, Group, Stack} from "@mantine/core"
 import {useContext, useState} from "react"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {BreadcrumbType, NType, NodeType, PanelMode} from "@/types"
+import type {BreadcrumbType, NodeType, NType, PanelMode} from "@/types"
 import {useNavigate} from "react-router-dom"
 
 import {
-  currentNodeChanged,
+  currentSharedNodeChanged,
+  currentSharedNodeRootChanged,
   selectCurrentSharedNodeID,
+  selectCurrentSharedRootID,
   selectFilterText
 } from "@/features/ui/uiSlice"
 
-import Breadcrumbs from "@/components/Breadcrumbs"
+import {store} from "@/app/store"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetFolderQuery} from "@/features/nodes/apiSlice"
-import {useGetPaginatedSharedNodesQuery} from "@/features/shared_nodes/apiSlice"
+import {
+  useGetPaginatedSharedNodesQuery,
+  useGetSharedFolderQuery
+} from "@/features/shared_nodes/apiSlice"
+import SharedBreadcrumb from "@/features/shared_nodes/components/SharedBreadcrumb"
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
@@ -38,6 +43,7 @@ export default function SharedCommander() {
   const navigate = useNavigate()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
+  const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
 
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
@@ -58,8 +64,8 @@ export default function SharedCommander() {
   const skipFolderQuery =
     currentNodeID == SHARED_FOLDER_ROOT_ID || !currentNodeID
 
-  const {data: currentFolder} = useGetFolderQuery(
-    skipFolderQuery ? skipToken : currentNodeID
+  const {data: currentFolder} = useGetSharedFolderQuery(
+    skipFolderQuery ? skipToken : {nodeID: currentNodeID, currentSharedRootID}
   )
 
   if (isLoading && !data) {
@@ -77,14 +83,32 @@ export default function SharedCommander() {
   const onClick = (node: NType) => {
     if (mode == "secondary") {
       return dispatch(
-        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
+        currentSharedNodeChanged({
+          id: node.id,
+          ctype: node.ctype,
+          panel: "secondary"
+        })
       )
     }
+
+    if (node.ctype == "folder") {
+      if (node.id == SHARED_FOLDER_ROOT_ID) {
+        dispatch(currentSharedNodeRootChanged(undefined))
+        navigate(`/shared`)
+        return
+      }
+    }
+
     // mode == "main"
     switch (node.ctype) {
       case "folder":
+        const state = store.getState()
+        const sharedNode = state.sharedNodes.entities[node.id]
+        if (sharedNode.is_shared_root) {
+          dispatch(currentSharedNodeRootChanged(node.id))
+        }
         dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
-        navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
+        navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
         break
       case "document":
         navigate(`/document/${node.id}`)
@@ -137,7 +161,7 @@ export default function SharedCommander() {
     <>
       <Box>
         <FolderNodeActions />
-        <Breadcrumbs
+        <SharedBreadcrumb
           breadcrumb={
             currentFolder?.breadcrumb ||
             (SHARED_NODES_ROOT_BREADCRUMB as BreadcrumbType)

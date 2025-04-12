@@ -5,6 +5,7 @@ import {
   SHARED_FOLDER_ROOT_ID
 } from "@/cconstants"
 import type {
+  FolderType,
   NodeType,
   Paginated,
   SortMenuColumn,
@@ -23,6 +24,11 @@ export type PaginatedArgs = {
   filter?: string | null
   sortDir: SortMenuDirection
   sortColumn: SortMenuColumn
+}
+
+interface GetSharedFolderArgs {
+  nodeID: string
+  currentSharedRootID?: string
 }
 
 export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
@@ -61,7 +67,15 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         {type: "SharedNode", id: arg.nodeID}, // "SharedNode" tag per parent ID
         // "SharedNode" tag per each returned item
         ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
-      ]
+      ],
+      transformResponse(res: Paginated<NodeType>, _, arg) {
+        if (arg.nodeID == SHARED_FOLDER_ROOT_ID) {
+          for (let i = 0; i < res.items.length; i++) {
+            res.items[i].is_shared_root = true
+          }
+        }
+        return res
+      }
     }),
     getSharedNodeAccessDetails: builder.query<SharedNodeAccessDetails, string>({
       query: nodeID => `/shared-nodes/access/${nodeID}`,
@@ -89,6 +103,17 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, input) => [
         {type: "Node", id: input.id}
       ]
+    }),
+    getSharedFolder: builder.query<FolderType, GetSharedFolderArgs>({
+      query: (args: GetSharedFolderArgs) => {
+        if (args.currentSharedRootID) {
+          return `/shared-folders/${args.nodeID}?shared_root_id=${args.currentSharedRootID}`
+        }
+        return `/shared-folders/${args.nodeID}`
+      },
+      providesTags: (_result, _error, arg) => [
+        {type: "SharedFolder", id: arg.nodeID}
+      ]
     })
   })
 })
@@ -97,5 +122,6 @@ export const {
   useAddNewSharedNodeMutation,
   useGetPaginatedSharedNodesQuery,
   useGetSharedNodeAccessDetailsQuery,
-  useUpdateSharedNodeAccessMutation
+  useUpdateSharedNodeAccessMutation,
+  useGetSharedFolderQuery
 } = apiSliceWithSharedNodes

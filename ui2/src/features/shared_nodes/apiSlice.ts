@@ -68,7 +68,7 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         // "SharedNode" tag per each returned item
         ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
       ],
-      transformResponse(res: Paginated<NodeType>, meta, arg) {
+      transformResponse(res: Paginated<NodeType>, _, arg) {
         if (arg.nodeID == SHARED_FOLDER_ROOT_ID) {
           for (let i = 0; i < res.items.length; i++) {
             res.items[i].is_shared_root = true

@@ -4,9 +4,9 @@ import {Flex, Group} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 
-import Breadcrumbs from "@/components/Breadcrumbs"
+import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
 import {useRef, useState} from "react"
 
 import {HIDDEN} from "@/cconstants"
@@ -25,7 +25,8 @@ import {
   secondaryPanelClosed,
   selectContentHeight,
   selectCurrentNodeCType,
-  selectCurrentNodeID
+  selectCurrentSharedNodeID,
+  selectCurrentSharedRootID
 } from "@/features/ui/uiSlice"
 import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
@@ -38,19 +39,22 @@ export default function SharedViewer() {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const secondaryPanelNodeID = useAppSelector(s =>
-    selectCurrentNodeID(s, "secondary")
-  )
+
   const secondaryPanelNodeCType = useAppSelector(s =>
     selectCurrentNodeCType(s, "secondary")
   )
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
+  const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
+
   const {
     currentData: doc,
     isSuccess,
     isError,
     error
-  } = useGetDocumentQuery(currentNodeID!)
+  } = useGetSharedDocumentQuery({
+    nodeID: currentNodeID!,
+    currentSharedRootID: currentSharedRootID
+  })
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -89,20 +93,6 @@ export default function SharedViewer() {
       if (mode == "secondary") {
         // the 404 was in secondary panel. Just close it.
         dispatch(secondaryPanelClosed())
-      } else {
-        if (secondaryPanelNodeID && secondaryPanelNodeCType) {
-          // the 404 is in main panel. In this case, open
-          // in main panel whatever was in secondary
-          dispatch(
-            currentNodeChanged({
-              id: secondaryPanelNodeID,
-              ctype: secondaryPanelNodeCType,
-              panel: "main"
-            })
-          )
-          // and then close secondary panel
-          dispatch(secondaryPanelClosed())
-        }
       }
     }
   }, [isError])
@@ -134,7 +124,7 @@ export default function SharedViewer() {
     <div>
       <ActionButtons />
       <Group justify="space-between">
-        <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+        <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>

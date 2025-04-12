@@ -26,6 +26,10 @@ from papermerge.core.features.shared_nodes.router import router as shared_nodes_
 from papermerge.core.features.shared_nodes.router_folders import (
     router as shared_folder_router,
 )
+from papermerge.core.features.shared_nodes.router_documents import (
+    router as shared_document_router,
+)
+
 
 from papermerge.core.version import __version__
 from papermerge.core.config import get_settings
@@ -47,6 +51,7 @@ app.include_router(nodes_router, prefix=prefix)
 app.include_router(shared_nodes_router, prefix=prefix)
 app.include_router(folders_router, prefix=prefix)
 app.include_router(shared_folder_router, prefix=prefix)
+app.include_router(shared_document_router, prefix=prefix)
 app.include_router(thumbnails_router, prefix=prefix)
 app.include_router(document_router, prefix=prefix)
 app.include_router(document_versions_router, prefix=prefix)

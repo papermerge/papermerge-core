@@ -63,6 +63,7 @@ export const apiSlice = createApi({
     "NodeTag", // tags fetched per node
     "Folder",
     "SharedFolder",
+    "SharedDocument",
     "Document",
     "CustomField", // CRUD custom field
     "DocumentType",

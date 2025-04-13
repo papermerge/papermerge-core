@@ -1,5 +1,6 @@
 import {RootState} from "@/app/types"
 import {apiSliceWithDocuments} from "@/features/document/apiSlice"
+import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
 import type {
   ClientDocumentVersion,
   ClientPage,
@@ -142,6 +143,32 @@ const docVersSlice = createSlice({
         docVerAdapter.addMany(state, all_vers)
       }
     )
+    builder.addMatcher(
+      apiSliceWithSharedNodes.endpoints.getSharedDocument.matchFulfilled,
+      (state, action: PayloadAction<DocumentType>) => {
+        let all_vers: Array<ClientDocumentVersion> = []
+
+        action.payload.versions.forEach(v => {
+          let ver: ClientDocumentVersion = {
+            id: v.id,
+            lang: v.lang,
+            number: v.number,
+            page_count: v.page_count,
+            short_description: v.short_description,
+            size: v.size,
+            pages: v.pages.map(p => {
+              return {id: p.id, number: p.number, angle: 0, text: p.text}
+            }),
+            initial_pages: v.pages.map(p => {
+              return {id: p.id, number: p.number, angle: 0, text: p.text}
+            })
+          }
+          all_vers.push(ver)
+        })
+
+        docVerAdapter.addMany(state, all_vers)
+      }
+    )
   }
 })
 
@@ -173,8 +200,13 @@ export const selectAllPages = (state: RootState, mode: PanelMode) => {
     if (docVerID) {
       const docVer = state.docVers.entities[docVerID]
       if (docVer) {
+        console.log(docVer.pages)
         return docVer.pages
+      } else {
+        console.log(`doc ver undefined`)
       }
+    } else {
+      console.log(`docVerID not undefined`)
     }
   }
 
@@ -250,13 +282,17 @@ export const selectInitialPages = (
   if (mode == "main") {
     const curDocVerID = state.ui.mainViewerCurrentDocVerID
     if (curDocVerID) {
-      return state.docVers.entities[curDocVerID].initial_pages
+      if (state.docVers.entities[curDocVerID]) {
+        return state.docVers.entities[curDocVerID].initial_pages
+      }
     }
   }
   if (mode == "secondary") {
     const curDocVerID = state.ui.secondaryViewerCurrentDocVerID
     if (curDocVerID) {
-      return state.docVers.entities[curDocVerID].initial_pages
+      if (state.docVers.entities[curDocVerID]) {
+        return state.docVers.entities[curDocVerID].initial_pages
+      }
     }
   }
 }

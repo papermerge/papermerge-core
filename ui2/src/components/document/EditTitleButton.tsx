@@ -1,38 +1,33 @@
-import {useAppSelector} from "@/app/hooks"
-
-import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {ActionIcon, Box, Skeleton, Text, Tooltip} from "@mantine/core"
+import {ActionIcon, Box, Skeleton, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
-import {forwardRef, useContext} from "react"
+import {forwardRef} from "react"
 
-import type {PanelMode} from "@/types"
+import type {DocumentType} from "@/types"
 
 interface Args {
   hidden?: boolean
+  doc?: DocumentType
+  nodeID?: string
+  isFetching: boolean
+  isError: boolean
 }
 
 const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
-  const {hidden} = props
+  const {hidden, doc, nodeID, isFetching, isError} = props
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {
-    currentData: doc,
-    isFetching,
-    isError,
-    error
-  } = useGetDocumentQuery(currentNodeID!)
 
   if (isFetching) {
     return <ActionButtonSkeleton />
   }
 
   if (isError) {
-    return <Text>{`${error}`}</Text>
+    return (
+      <ActionIcon>
+        <IconEdit stroke={1.4} color={"red"} />
+      </ActionIcon>
+    )
   }
 
   return (
@@ -50,7 +45,7 @@ const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
       </Tooltip>
       <EditNodeTitleModal
         opened={opened}
-        node={{id: currentNodeID!, title: doc?.title!}}
+        node={{id: nodeID!, title: doc?.title!}}
         onSubmit={close}
         onCancel={close}
       />

@@ -4,24 +4,23 @@ import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   selectCurrentDocVerID,
-  selectCurrentNodeID,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
 
 import {RootState} from "@/app/types"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {selectCurrentPages} from "@/features/document/documentVersSlice"
 import type {PanelMode} from "@/types"
 import Thumbnail from "../Thumbnail"
 import classes from "./Thumbnails.module.css"
 
-export default function Thumbnails() {
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {isFetching} = useGetDocumentQuery(currentNodeID!)
+interface Args {
+  isFetching: boolean
+}
 
+export default function Thumbnails({isFetching}: Args) {
+  const mode: PanelMode = useContext(PanelContext)
   const currDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const thumbnailsIsOpen = useSelector((state: RootState) =>
     selectThumbnailsPanelOpen(state, mode)

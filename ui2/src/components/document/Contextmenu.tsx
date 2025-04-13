@@ -1,9 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {
-  useApplyPageOpChangesMutation,
-  useGetDocumentQuery
-} from "@/features/document/apiSlice"
+import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
 import {
   pagesReseted,
   selectAllPages,
@@ -18,7 +15,7 @@ import {
   selectOtherPanelComponent
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
-import type {Coord, PanelMode} from "@/types"
+import type {Coord, DocumentType, PanelMode} from "@/types"
 import {otherPanel} from "@/utils"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
@@ -49,6 +46,10 @@ interface Args {
   opened: boolean
   onChange: (opened: boolean) => void
   position: Coord
+  docID?: string
+  doc?: DocumentType
+  isFetching: boolean
+  isError: boolean
 }
 
 const ICON_CSS = {width: rem(18), height: rem(18)}
@@ -56,7 +57,15 @@ const ICON_CSS = {width: rem(18), height: rem(18)}
 const DELETE_DOCUMENT_TEXT =
   "Are you sure you want to delete entire document with all its versions?"
 
-export default function ContextMenu({position, opened, onChange}: Args) {
+export default function ContextMenu({
+  position,
+  opened,
+  onChange,
+  doc,
+  docID,
+  isFetching,
+  isError
+}: Args) {
   const dispatch = useAppDispatch()
   const [delDocOpened, {open: delDocOpen, close: delDocClose}] =
     useDisclosure(false)
@@ -82,8 +91,6 @@ export default function ContextMenu({position, opened, onChange}: Args) {
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
   const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc} = useGetDocumentQuery(docID!)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
@@ -248,7 +255,12 @@ export default function ContextMenu({position, opened, onChange}: Args) {
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-      <EditTitleButton ref={refEditTitleButton} hidden={true} />
+      <EditTitleButton
+        isFetching={isFetching}
+        isError={isError}
+        ref={refEditTitleButton}
+        hidden={true}
+      />
       <RotateButton ref={refRotateButton} hidden={true} />
       <RotateCCButton ref={refRotateCCButton} hidden={true} />
       <DeletePagesButton ref={refDeletePagesButton} hidden={true} />

@@ -1,5 +1,6 @@
 import {RootState} from "@/app/types"
 import {apiSliceWithDocuments} from "@/features/document/apiSlice"
+import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
 import type {DocumentType, PageType} from "@/types"
 import {PayloadAction, createEntityAdapter, createSlice} from "@reduxjs/toolkit"
 
@@ -17,6 +18,20 @@ const pagesSlice = createSlice({
   extraReducers(builder) {
     builder.addMatcher(
       apiSliceWithDocuments.endpoints.getDocument.matchFulfilled,
+      (state, action: PayloadAction<DocumentType>) => {
+        let all_pages: Array<PageType> = []
+
+        action.payload.versions.forEach(v => {
+          v.pages.forEach(p => {
+            all_pages.push(p)
+          })
+        })
+
+        pageAdapter.addMany(state, all_pages)
+      }
+    )
+    builder.addMatcher(
+      apiSliceWithSharedNodes.endpoints.getSharedDocument.matchFulfilled,
       (state, action: PayloadAction<DocumentType>) => {
         let all_pages: Array<PageType> = []
 

@@ -15,12 +15,12 @@ import {
 
 import {store} from "@/app/store"
 import Pagination from "@/components/Pagination"
+import SharedBreadcrumb from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 import {
   useGetPaginatedSharedNodesQuery,
   useGetSharedFolderQuery
 } from "@/features/shared_nodes/apiSlice"
-import SharedBreadcrumb from "@/features/shared_nodes/components/SharedBreadcrumb"
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
@@ -111,7 +111,7 @@ export default function SharedCommander() {
         navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
         break
       case "document":
-        navigate(`/document/${node.id}`)
+        navigate(`/shared/document/${node.id}`)
         break
     }
   }

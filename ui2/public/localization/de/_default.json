@@ -13,7 +13,7 @@
   "common.empty": "Leer",
   "common.change_title": "Titel ändern",
   "common.run_ocr": "OCR ausführen",
-  "common.category": "Kategorie",
+  "common.category": "Nach Kategorie",
   "common.owner": "Besitzen",
   "common.download": "Herunterladen",
   "common.ocr_language": "OCR Sprache",
@@ -58,19 +58,19 @@
   "nodes.delete.many.description": "Löschen?",
 
   "document_types.name": "Kategorien",
-  "document_types.name.by": "Nach Kategorien",
+  "document_types.name.by": "Kategorien",
   "document_types.new.title": "Neue Kategorie",
   "document_types.form.name": "Name",
   "document_types.form.custom_fields": "Benutzerdefinierte Felder",
-  "document_types.form.custom_fields.placeholder": "Pick value",
-  "document_types.form.path_template": "Path Template",
+  "document_types.form.custom_fields.placeholder": "Wert auswählen",
+  "document_types.form.path_template": "Pfadvorlage",
 
-  "document_types.delete.hint": "This won't affect associated documents",
-  "document_types.delete.one.title": "Delete Document Type",
-  "document_types.delete.one.description": "Are you sure you want to delete selected document type?",
-  "document_types.delete.many.title": "Delete Document Types",
-  "document_types.delete.many.description": "Are you sure you want to delete selected document types?",
-  "document_types.list.empty": "There are currently no document types",
+  "document_types.delete.hint": "Dies hat keine Auswirkungen auf die zugehörigen Dokumente",
+  "document_types.delete.one.title": "Kategorie löschen",
+  "document_types.delete.one.description": "Kategorie löschen?",
+  "document_types.delete.many.title": "Kategorie löschen",
+  "document_types.delete.many.description": "Kategorien löschen",
+  "document_types.list.empty": "Derzeit gibt es keine Kategorien",
 
   "custom_fields.name": "BD Felder",
   "custom_fields.new.title": "New Custom Field",
@@ -94,8 +94,8 @@
   "groups.delete.many.title": "Delete Groups",
   "groups.delete.many.description": "Are you sure you want to delete selected groups?",
 
-  "home.name": "Home",
-  "home.name.my": "My Home",
+  "home.name": "Startseite",
+  "home.name.my": "Meine Stertseite",
 
   "inbox.name": "Eingang",
   "inbox.name.my": "My Inbox",
@@ -150,5 +150,6 @@
   "roles.delete.many.description": "Are you sure you want to delete selected roles?",
 
   "extra.rest_api": "REST API",
-  "extra.logout": "Abmelden"
+  "extra.logout": "Abmelden",
+  "by_document_type.name": "Nach Kategorie"
 }

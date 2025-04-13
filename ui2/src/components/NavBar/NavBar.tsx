@@ -101,7 +101,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
-            {NavLinkWithFeedback(t("document_types.name"), <IconCategory />)}
+            {NavLinkWithFeedback(t("by_document_type.name"), <IconCategory />)}
           </NavLink>
         )}
         {user.scopes.includes(SHARED_NODE_VIEW) && (

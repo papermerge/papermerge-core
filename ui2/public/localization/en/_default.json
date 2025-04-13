@@ -58,7 +58,7 @@
   "nodes.delete.many.description": "Are you sure you want to delete following nodes",
 
   "document_types.name": "Categories",
-  "document_types.name.by": "By Categories",
+  "document_types.name.by": "Categories",
   "document_types.new.title": "New Category",
   "document_types.form.name": "Name",
   "document_types.form.custom_fields": "Custom Fields",
@@ -150,5 +150,6 @@
   "roles.delete.many.description": "Are you sure you want to delete selected roles?",
 
   "extra.rest_api": "REST API",
-  "extra.logout": "Log out"
+  "extra.logout": "Log out",
+  "by_document_type.name": "By Category"
 }

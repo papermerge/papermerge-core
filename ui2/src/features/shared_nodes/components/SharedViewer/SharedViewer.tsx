@@ -8,7 +8,6 @@ import {
   currentDocVerUpdated,
   currentSharedNodeRootChanged,
   selectContentHeight,
-  selectCurrentNodeCType,
   selectCurrentSharedNodeID,
   selectCurrentSharedRootID,
   selectLastPageSize
@@ -38,9 +37,6 @@ export default function SharedViewer() {
   const dispatch = useAppDispatch()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
 
-  const secondaryPanelNodeCType = useAppSelector(s =>
-    selectCurrentNodeCType(s, "secondary")
-  )
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
   const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
 

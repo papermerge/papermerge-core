@@ -6,6 +6,7 @@
 
 - Group Ownership
 - Share Documents and Folders
+- i18n - thank you to [bl1nkker](https://github.com/bl1nkker) for adding this feature
 
 ## [3.4.1] - 2025-03-15
 

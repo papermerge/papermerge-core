@@ -5,6 +5,7 @@ import {
   SHARED_FOLDER_ROOT_ID
 } from "@/cconstants"
 import type {
+  DocumentType,
   FolderType,
   NodeType,
   Paginated,
@@ -26,7 +27,7 @@ export type PaginatedArgs = {
   sortColumn: SortMenuColumn
 }
 
-interface GetSharedFolderArgs {
+interface GetSharedNodeArgs {
   nodeID: string
   currentSharedRootID?: string
 }
@@ -104,8 +105,8 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         {type: "Node", id: input.id}
       ]
     }),
-    getSharedFolder: builder.query<FolderType, GetSharedFolderArgs>({
-      query: (args: GetSharedFolderArgs) => {
+    getSharedFolder: builder.query<FolderType, GetSharedNodeArgs>({
+      query: (args: GetSharedNodeArgs) => {
         if (args.currentSharedRootID) {
           return `/shared-folders/${args.nodeID}?shared_root_id=${args.currentSharedRootID}`
         }
@@ -113,6 +114,18 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
       },
       providesTags: (_result, _error, arg) => [
         {type: "SharedFolder", id: arg.nodeID}
+      ]
+    }),
+    getSharedDocument: builder.query<DocumentType, GetSharedNodeArgs>({
+      query: (args: GetSharedNodeArgs) => {
+        if (args.currentSharedRootID) {
+          return `/shared-documents/${args.nodeID}?shared_root_id=${args.currentSharedRootID}`
+        }
+
+        return `/shared-documents/${args.nodeID}`
+      },
+      providesTags: (_result, _error, arg) => [
+        {type: "SharedDocument", id: arg.nodeID}
       ]
     })
   })
@@ -123,5 +136,6 @@ export const {
   useGetPaginatedSharedNodesQuery,
   useGetSharedNodeAccessDetailsQuery,
   useUpdateSharedNodeAccessMutation,
-  useGetSharedFolderQuery
+  useGetSharedFolderQuery,
+  useGetSharedDocumentQuery
 } = apiSliceWithSharedNodes

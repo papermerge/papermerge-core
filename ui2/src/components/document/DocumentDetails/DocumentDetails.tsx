@@ -28,16 +28,21 @@ import {
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
+import type {DocumentType, PanelMode} from "@/types"
+import {useTranslation} from "react-i18next"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
-import {useTranslation} from "react-i18next"
 
-export default function DocumentDetails() {
+interface Args {
+  doc?: DocumentType
+  docID?: string
+  isLoading: boolean
+}
+
+export default function DocumentDetails({doc, docID, isLoading}: Args) {
   const {t} = useTranslation()
+
   const mode: PanelMode = useContext(PanelContext)
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
   const {currentData: groupData, isLoading: groupDataIsLoading} =
     useGetGroupQuery(doc?.group_id ?? skipToken)
   const documentDetailsIsOpen = useAppSelector(s =>
@@ -91,7 +96,7 @@ export default function DocumentDetails() {
             />
           </Group>
           <Group>
-            <CustomFields />
+            <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
           </Group>
           <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
         </Stack>

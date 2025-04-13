@@ -1,25 +1,19 @@
-import {useAppSelector} from "@/app/hooks"
 import {download_file} from "@/httpClient"
-import {ActionIcon, Menu, Skeleton, Text, Tooltip} from "@mantine/core"
+import {ActionIcon, Menu, Skeleton, Tooltip} from "@mantine/core"
 import {IconDownload} from "@tabler/icons-react"
-import {useContext, useMemo} from "react"
+import {useMemo} from "react"
 
-import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {DocumentVersion} from "@/types"
+import {DocumentType, DocumentVersion} from "@/types"
 import {useTranslation} from "react-i18next"
 
-export default function DownloadButton() {
+interface Args {
+  doc?: DocumentType
+  isFetching: boolean
+  isError: boolean
+}
+
+export default function DownloadButton({doc, isFetching, isError}: Args) {
   const {t} = useTranslation()
-  const mode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {
-    currentData: doc,
-    isFetching,
-    isError,
-    error
-  } = useGetDocumentQuery(currentNodeID!)
   const versionComponents = useMemo(() => {
     return doc?.versions?.map(v => {
       if (v.short_description) {
@@ -46,7 +40,11 @@ export default function DownloadButton() {
   }
 
   if (isError) {
-    return <Text>{`${error}`}</Text>
+    return (
+      <ActionIcon size={"lg"} variant="default" color={"red"}>
+        <IconDownload stroke={1.4} />
+      </ActionIcon>
+    )
   }
 
   return (

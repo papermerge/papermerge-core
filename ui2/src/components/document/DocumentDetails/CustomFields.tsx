@@ -1,14 +1,11 @@
-import {useAppSelector} from "@/app/hooks"
-import {useContext, useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 
-import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {
   CustomFieldDate,
   CustomFieldMonetary,
   CustomFieldYearMonth
-} from "@/features/document/components/customFields"
-import {skipToken} from "@reduxjs/toolkit/query"
+} from "../customFields"
 
 import {useGetDocumentTypesQuery} from "@/features/document-types/apiSlice"
 import {
@@ -16,8 +13,7 @@ import {
   useUpdateDocumentCustomFieldsMutation,
   useUpdateDocumentTypeMutation
 } from "@/features/document/apiSlice"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import type {CFV, PanelMode} from "@/types"
+import type {CFV, DocumentType} from "@/types"
 import {
   Button,
   ComboboxItem,
@@ -27,21 +23,22 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
-import CustomFieldBoolean from "../customFields/Boolean"
 import {useTranslation} from "react-i18next"
+import CustomFieldBoolean from "../customFields/Boolean"
 
-export default function CustomFields() {
+interface Args {
+  doc?: DocumentType
+  docID?: string
+  isLoading: boolean
+}
+
+export default function CustomFields({doc, docID, isLoading}: Args) {
   const {t} = useTranslation()
-  const mode: PanelMode = useContext(PanelContext)
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
   const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [documentTypeID, setDocumentTypeID] = useState<ComboboxItem | null>(
     null
   )
-
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-
-  const {currentData: doc, isLoading} = useGetDocumentQuery(docID ?? skipToken)
   const {data: allDocumentTypes = [], isSuccess: isSuccessAllDocumentTypes} =
     useGetDocumentTypesQuery(doc?.group_id)
   const [updateDocumentCustomFields, {error}] =

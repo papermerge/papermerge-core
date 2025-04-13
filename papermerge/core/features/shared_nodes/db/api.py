@@ -190,7 +190,7 @@ def get_shared_node_ids(
         )
     )
 
-    ids = db_session.scalars(stmt)
+    ids = db_session.scalars(stmt).all()
 
     return ids
 
@@ -353,3 +353,35 @@ def get_shared_folder(
         return None, error
 
     return db_model, None
+
+
+def get_shared_doc(
+    db_session: Session,
+    document_id: uuid.UUID,
+    user_id: uuid.UUID,
+    shared_root_id: uuid.UUID | None = None,
+) -> schema.Document:
+    stmt_doc = select(orm.Document).where(orm.Document.id == document_id)
+    db_doc = db_session.scalar(stmt_doc)
+    breadcrumb = dbapi_common.get_ancestors(db_session, document_id)
+    root_shared_node_ids = get_shared_node_ids(db_session, user_id=user_id)
+    shorted_breadcrumb = []
+    # user will see path only until its ancestor which is marked as shared root
+
+    for b in reversed(breadcrumb):
+        shorted_breadcrumb.append(b)
+        if shared_root_id and b[0] == shared_root_id:
+            break
+        if shared_root_id is None and b[0] in root_shared_node_ids:
+            break
+
+    shorted_breadcrumb.reverse()
+
+    db_doc.breadcrumb = shorted_breadcrumb
+
+    # colored_tags = session.scalars(colored_tags_stmt).all()
+    # db_doc.tags = [ct.tag for ct in colored_tags]
+
+    model_doc = schema.Document.model_validate(db_doc)
+
+    return model_doc

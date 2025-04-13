@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
-import {selectCurrentNodeID, updateActionPanel} from "@/features/ui/uiSlice"
+import {updateActionPanel} from "@/features/ui/uiSlice"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
@@ -10,22 +10,26 @@ import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
-import ShareButton from "@/components/ShareButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
-import type {PanelMode} from "@/types"
+import type {DocumentType, PanelMode} from "@/types"
 import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
 
-export default function ActionButtons() {
+interface Args {
+  doc?: DocumentType
+  isFetching: boolean
+  isError: boolean
+}
+
+export default function ActionButtons({doc, isFetching, isError}: Args) {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const runtimeConfig = useRuntimeConfig()
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
 
   useEffect(() => {
     if (ref?.current) {
@@ -43,10 +47,10 @@ export default function ActionButtons() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <EditTitleButton />
-        <DownloadButton />
+        <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
+        <DownloadButton doc={doc} isFetching={isFetching} isError={isError} />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
-        {currentNodeID && <ShareButton node_ids={[currentNodeID]} />}
+
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
         {selectedPages.length > 0 && <DeletePagesButton />}

@@ -16,6 +16,7 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -24,6 +25,7 @@ interface Args {
 }
 
 export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
+  const {t} = useTranslation()
   const [addNewTag, {isLoading, isError, isSuccess}] = useAddNewTagMutation()
   const [name, setName] = useState<string>("")
   const [description, setDescription] = useState<string>("")
@@ -98,32 +100,32 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
   }
 
   return (
-    <Modal title={"New Tag"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={t("tags.new.title")} opened={opened} onClose={onLocalCancel}>
       <TextInput
-        label="Name"
+        label={t("tags.form.name")}
         onChange={e => onNameChange(e.currentTarget.value)}
-        placeholder="Name"
+        placeholder={t("tags.form.name")}
       />
       <ColorInput
         onChange={onBgColorChange}
-        label="Background color"
+        label={t("tags.form.background_color")}
         withEyeDropper={false}
       />
       <ColorInput
         onChange={onFgColorChange}
-        label="Foreground color"
+        label={t("tags.form.foreground_color")}
         withEyeDropper={false}
       />
       <Checkbox
         onChange={e => setPinned(e.currentTarget.checked)}
         mt="sm"
-        label="Pinned"
+        label={t("tags.form.pinned")}
       />
       <TextInput
         mt="sm"
-        label="Description"
+        label={t("tags.form.description")}
         type="email"
-        placeholder="Short description"
+        placeholder={t("tags.form.description.placeholder")}
         onChange={e => setDescription(e.currentTarget.value)}
       />
       <Box my="md">
@@ -135,12 +137,12 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

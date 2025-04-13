@@ -4,6 +4,7 @@ import {IconDownload} from "@tabler/icons-react"
 import {useMemo} from "react"
 
 import {DocumentType, DocumentVersion} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   doc?: DocumentType
@@ -12,6 +13,7 @@ interface Args {
 }
 
 export default function DownloadButton({doc, isFetching, isError}: Args) {
+  const {t} = useTranslation()
   const versionComponents = useMemo(() => {
     return doc?.versions?.map(v => {
       if (v.short_description) {
@@ -48,7 +50,7 @@ export default function DownloadButton({doc, isFetching, isError}: Args) {
   return (
     <Menu>
       <Menu.Target>
-        <Tooltip label="Download" withArrow>
+        <Tooltip label={t("common.download")} withArrow>
           <ActionIcon size={"lg"} variant="default">
             <IconDownload stroke={1.4} />
           </ActionIcon>
@@ -60,12 +62,13 @@ export default function DownloadButton({doc, isFetching, isError}: Args) {
 }
 
 function ActionButtonSkeleton() {
+  const {t} = useTranslation()
   return (
     <div>
       <Skeleton>
         <Menu>
           <Menu.Target>
-            <Tooltip label="Download" withArrow>
+            <Tooltip label={t("common.download")} withArrow>
               <ActionIcon size={"lg"} variant="default">
                 <IconDownload stroke={1.4} />
               </ActionIcon>

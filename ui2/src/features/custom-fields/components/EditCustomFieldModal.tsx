@@ -18,6 +18,7 @@ import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
 } from "@/features/custom-fields/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -32,6 +33,7 @@ export default function EditGroupModal({
   onCancel,
   opened
 }: Args) {
+  const {t} = useTranslation()
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const {data, isLoading} = useGetCustomFieldQuery(customFieldId)
   const [updateCustomField, {isLoading: isLoadingGroupUpdate}] =
@@ -99,7 +101,7 @@ export default function EditGroupModal({
 
   return (
     <Modal
-      title={"Edit Custom Field"}
+      title={t("custom_fields.edit.title")}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
@@ -112,8 +114,8 @@ export default function EditGroupModal({
       <TextInput
         value={name}
         onChange={e => setName(e.currentTarget.value)}
-        label="Name"
-        placeholder="name"
+        label={t("custom_fields.form.name")}
+        placeholder={t("custom_fields.form.type")}
       />
       <NativeSelect
         mt="sm"
@@ -138,7 +140,7 @@ export default function EditGroupModal({
 
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}

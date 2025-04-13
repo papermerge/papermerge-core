@@ -14,11 +14,13 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
+import {useTranslation} from "react-i18next"
 
 export default function UserMenu() {
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
   const user = useSelector(selectCurrentUser) as User
+  const {t} = useTranslation()
 
   const onSignOutClicked = () => {
     Cookies.remove("access_token")
@@ -26,7 +28,6 @@ export default function UserMenu() {
     a.href = "/login"
     a.click()
   }
-
   if (status == "loading") {
     return <>Loading...</>
   }
@@ -50,14 +51,14 @@ export default function UserMenu() {
         <Menu.Item>
           <Group>
             <IconApi />
-            <a href="/docs">REST API</a>
+            <a href="/docs">{t("extra.rest_api")}</a>
           </Group>
         </Menu.Item>
         <Menu.Divider />
         <Menu.Item>
           <Group>
             <IconLogout />
-            <a onClick={onSignOutClicked}>Sign Out</a>
+            <a onClick={onSignOutClicked}>{t("extra.logout")}</a>
           </Group>
         </Menu.Item>
       </Menu.Dropdown>

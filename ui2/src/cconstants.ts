@@ -1,4 +1,4 @@
-import {CustomFieldDataType, OCRLangType} from "@/types"
+import {CustomFieldDataType, I18nLangType, OCRLangType} from "@/types"
 
 export const DEFAULT_TAG_BG_COLOR = "#c41fff"
 export const DEFAULT_TAG_FG_COLOR = "#ffffff"
@@ -86,4 +86,10 @@ export const SHARED_FOLDER_ROOT_ID = "shared"
 export const SHARED_FOLDER_ROOT_NAME = "Shared"
 export const SHARED_NODES_ROOT_BREADCRUMB = [
   [SHARED_FOLDER_ROOT_ID, SHARED_FOLDER_ROOT_NAME]
+]
+
+export const SUPPORTED_LANGS: I18nLangType[] = [
+  {code: "en", name: "English"},
+  {code: "ru", name: "Русский"},
+  {code: "kz", name: "Қазақша"}
 ]

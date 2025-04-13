@@ -9,15 +9,17 @@ import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {NewFolderModal} from "../../NewFolder"
+import {useTranslation} from "react-i18next"
 
 export default function NewFolderButton() {
+  const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const mode: PanelMode = useContext(PanelContext)
   const currentFolderId = useAppSelector(s => selectCurrentNodeID(s, mode))
 
   return (
     <>
-      <Tooltip label="New Folder" withArrow>
+      <Tooltip label={t("folder.new.title")} withArrow>
         <ActionIcon size={"lg"} variant="default" onClick={open}>
           <IconFolderPlus stroke={1.4} />
         </ActionIcon>

@@ -23,6 +23,7 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
+import {useTranslation} from "react-i18next"
 import CustomFieldBoolean from "../customFields/Boolean"
 
 interface Args {
@@ -32,6 +33,7 @@ interface Args {
 }
 
 export default function CustomFields({doc, docID, isLoading}: Args) {
+  const {t} = useTranslation()
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
   const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [documentTypeID, setDocumentTypeID] = useState<ComboboxItem | null>(
@@ -173,7 +175,7 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
   return (
     <>
       <Select
-        label="Category"
+        label={t("common.category")}
         data={allDocumentTypes.map(i => {
           return {label: i.name, value: i.id}
         })}

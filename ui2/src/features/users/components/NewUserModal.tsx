@@ -18,6 +18,7 @@ import {makeRandomString} from "@/utils"
 import {emailValidator, usernameValidator} from "./validators"
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
 import {useAddNewUserMutation} from "@/features/users/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface NewUserModalArgs {
   opened: boolean
@@ -30,6 +31,7 @@ export default function NewUserModal({
   onSubmit,
   opened
 }: NewUserModalArgs) {
+  const {t} = useTranslation()
   const {data = []} = useGetGroupsQuery()
   const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
 
@@ -73,7 +75,7 @@ export default function NewUserModal({
   }
 
   return (
-    <Modal title={"New User"} opened={opened} onClose={onLocalCancel}>
+    <Modal title={t("users.new.title")} opened={opened} onClose={onLocalCancel}>
       <LoadingOverlay
         visible={false}
         zIndex={1000}
@@ -81,46 +83,46 @@ export default function NewUserModal({
       />
       <form onSubmit={form.onSubmit(onLocalSubmit)}>
         <TextInput
-          label="Username"
-          placeholder="username"
+          label={t("users.form.username")}
+          placeholder={t("users.form.username")}
           key={form.key("username")}
           {...form.getInputProps("username")}
         />
         <TextInput
           mt="sm"
-          label="Email"
+          label={t("users.form.email")}
           type="email"
-          placeholder="email"
+          placeholder={t("users.form.email")}
           key={form.key("email")}
           {...form.getInputProps("email")}
         />
         <Checkbox
           mt="sm"
-          label="Superuser"
+          label={t("users.form.superuser")}
           key={form.key("is_superuser")}
           {...form.getInputProps("is_superuser", {type: "checkbox"})}
         />
         <Checkbox
           mt="sm"
-          label="Active"
+          label={t("users.form.active")}
           key={form.key("is_active")}
           {...form.getInputProps("is_active", {type: "checkbox"})}
         />
         <MultiSelect
-          label="Groups"
-          placeholder="Pick value"
+          label={t("users.form.groups")}
+          placeholder={t("users.form.groups.placeholder")}
           onChange={setGroups}
           value={groups}
           data={data.map(g => g.name) || []}
         />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Group>
             {isLoading && <Loader size="sm" />}
             <Button disabled={isLoading || isSuccess} type="submit">
-              Submit
+              {t("common.submit")}
             </Button>
           </Group>
         </Group>

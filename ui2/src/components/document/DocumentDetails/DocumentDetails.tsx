@@ -29,6 +29,7 @@ import {
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
 import type {DocumentType, PanelMode} from "@/types"
+import {useTranslation} from "react-i18next"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 
@@ -39,6 +40,8 @@ interface Args {
 }
 
 export default function DocumentDetails({doc, docID, isLoading}: Args) {
+  const {t} = useTranslation()
+
   const mode: PanelMode = useContext(PanelContext)
   const {currentData: groupData, isLoading: groupDataIsLoading} =
     useGetGroupQuery(doc?.group_id ?? skipToken)
@@ -72,13 +75,13 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
             rightSection={<CopyButton value={docID || ""} />}
           />
           <TextInput
-            label="Version ID"
+            label={t("common.version_id")}
             readOnly
             value={docVerID}
             rightSection={<CopyButton value={docVerID || ""} />}
           />
           <TextInput
-            label="Owner"
+            label={t("common.owner")}
             readOnly
             value={groupData?.name || OWNER_ME}
             rightSection={<CopyButton value={groupData?.name || OWNER_ME} />}
@@ -86,7 +89,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
           <Group>
             <TagsInput
               rightSection={<EditTagsButton />}
-              label="Tags"
+              label={t("common.tags")}
               readOnly
               value={doc?.tags?.map(t => t.name) || []}
               mt="md"

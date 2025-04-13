@@ -1,6 +1,7 @@
 import {useDeleteCustomFieldMutation} from "@/features/custom-fields/apiSlice"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 
 interface RemoveCustomFieldsModalArgs {
   customFieldIds: string[]
@@ -16,6 +17,7 @@ export function RemoveCustomFieldsModal({
   onSubmit,
   onCancel
 }: RemoveCustomFieldsModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deleteCustomField, {isLoading}] = useDeleteCustomFieldMutation()
 
@@ -30,14 +32,18 @@ export function RemoveCustomFieldsModal({
   }
 
   return (
-    <Modal title="Delete Custom Fields" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("custom_fields.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete selected custom fields?</p>
+        <p>{t("custom_fields.delete.many.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -45,7 +51,7 @@ export function RemoveCustomFieldsModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -67,6 +73,7 @@ export function RemoveCustomFieldModal({
   onCancel,
   opened
 }: RemoveCustomFieldModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deleteCustomField, {isLoading}] = useDeleteCustomFieldMutation()
 
@@ -80,14 +87,18 @@ export function RemoveCustomFieldModal({
   }
 
   return (
-    <Modal title="Delete Custom Field" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("custom_fields.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete this custom field?</p>
+        <p>{t("custom_fields.delete.one.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -95,7 +106,7 @@ export function RemoveCustomFieldModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

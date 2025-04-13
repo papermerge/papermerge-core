@@ -10,6 +10,7 @@ import {
 import {useEffect, useState} from "react"
 
 import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean
@@ -18,6 +19,7 @@ interface Args {
 }
 
 export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
+  const {t} = useTranslation()
   const [addNewGroup, {isLoading, isError, isSuccess}] =
     useAddNewGroupMutation()
   const [name, setName] = useState<string>("")
@@ -63,7 +65,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
 
   return (
     <Modal
-      title={"New Group"}
+      title={t("groups.new.title")}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
@@ -71,8 +73,8 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
-        label="Name"
-        placeholder="Group name"
+        label={t("groups.form.name")}
+        placeholder={t("groups.form.name.placeholder")}
       />
       <Checkbox
         my="md"
@@ -81,12 +83,12 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            Submit
+            {t("common.submit")}
           </Button>
         </Group>
       </Group>

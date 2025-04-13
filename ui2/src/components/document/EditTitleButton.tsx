@@ -5,6 +5,7 @@ import {IconEdit} from "@tabler/icons-react"
 import {forwardRef} from "react"
 
 import type {DocumentType} from "@/types"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   hidden?: boolean
@@ -15,6 +16,8 @@ interface Args {
 }
 
 const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const {t} = useTranslation()
+
   const {hidden, doc, nodeID, isFetching, isError} = props
   const [opened, {open, close}] = useDisclosure(false)
 
@@ -32,7 +35,7 @@ const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
 
   return (
     <Box>
-      <Tooltip label="Change title" withArrow>
+      <Tooltip label={t("common.change_title")} withArrow>
         <ActionIcon
           style={hidden ? {display: "None"} : {}}
           ref={ref}

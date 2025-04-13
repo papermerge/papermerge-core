@@ -7,6 +7,7 @@ import ScheduleOCRProcess from "@/components/ScheduleOCRProcess"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import type {OCRCode} from "@/types"
 import {notifications} from "@mantine/notifications"
+import {useTranslation} from "react-i18next"
 
 type Args = {
   opened: boolean
@@ -16,6 +17,7 @@ type Args = {
 }
 
 export const RunOCRModal = ({node_id, onSubmit, onCancel, opened}: Args) => {
+  const {t} = useTranslation()
   const runtimeConfig = useRuntimeConfig()
   const [lang, setLang] = useState<OCRCode>("deu")
   const [scheduleOCRProcess] = useScheduleOCRProcessMutation()
@@ -54,7 +56,7 @@ export const RunOCRModal = ({node_id, onSubmit, onCancel, opened}: Args) => {
         />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={localSubmit}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={false && <Loader size={"sm"} />}

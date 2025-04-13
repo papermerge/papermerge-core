@@ -1,6 +1,7 @@
 import {useState} from "react"
 import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
 import {useDeleteTagMutation} from "@/features/tags/apiSlice"
+import {useTranslation} from "react-i18next"
 
 type RemoveTagsModalArgs = {
   tagIds: string[]
@@ -16,6 +17,7 @@ export function DeleteTagsModal({
   onCancel,
   opened
 }: RemoveTagsModalArgs) {
+  const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedTag, {isLoading}] = useDeleteTagMutation()
 
@@ -30,14 +32,18 @@ export function DeleteTagsModal({
   }
 
   return (
-    <Modal title="Delete tags" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("tags.delete.many.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete following selected tags?</p>
+        <p>{t("tags.delete.many.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -45,7 +51,7 @@ export function DeleteTagsModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>
@@ -67,6 +73,7 @@ export function DeleteTagModal({
   onCancel,
   opened
 }: DeleteTagModalArgs) {
+  const {t} = useTranslation()
   const [deletedTag, {isLoading}] = useDeleteTagMutation()
   const [errorMessage, setErrorMessage] = useState("")
 
@@ -80,14 +87,18 @@ export function DeleteTagModal({
   }
 
   return (
-    <Modal title="Delete Groups" opened={opened} onClose={handleCancel}>
+    <Modal
+      title={t("tags.delete.one.title")}
+      opened={opened}
+      onClose={handleCancel}
+    >
       <Container>
-        <p>Are you sure you want to delete tag?</p>
+        <p>{t("tags.delete.one.description")}</p>
         {errorMessage}
         <Space h="md" />
         <Group gap="lg" justify="space-between">
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             leftSection={isLoading && <Loader size={"sm"} />}
@@ -95,7 +106,7 @@ export function DeleteTagModal({
             disabled={isLoading}
             color={"red"}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </Group>
       </Container>

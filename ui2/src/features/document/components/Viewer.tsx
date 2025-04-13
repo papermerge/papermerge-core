@@ -134,7 +134,7 @@ export default function Viewer() {
 
   return (
     <div>
-      <ActionButtons />
+      <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
       <Group justify="space-between">
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
@@ -150,6 +150,8 @@ export default function Viewer() {
         />
         <PagesHaveChangedDialog />
         <ContextMenu
+          isFetching={isFetching}
+          isError={isError}
           opened={opened}
           position={contextMenuPosition}
           onChange={onContextMenuChange}

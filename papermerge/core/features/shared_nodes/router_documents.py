@@ -23,8 +23,8 @@ router = APIRouter(prefix="/shared-documents", tags=["shared-documents"])
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_shared_document_details(
     document_id: uuid.UUID,
-    shared_root_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    shared_root_id: uuid.UUID | None = None,
 ) -> schema.Document:
     """
     Get shared document details
@@ -41,8 +41,12 @@ def get_shared_document_details(
             )
             if not ok:
                 raise HTTP403Forbidden
+
             doc = dbapi.get_shared_doc(
-                db_session, document_id=document_id, shared_root_id=shared_root_id
+                db_session,
+                document_id=document_id,
+                shared_root_id=shared_root_id,
+                user_id=user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")

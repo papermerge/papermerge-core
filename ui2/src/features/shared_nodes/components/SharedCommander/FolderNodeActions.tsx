@@ -7,19 +7,16 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef, useState} from "react"
 
-import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 
-import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import QuickFilter from "@/components/QuickFilter"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {filterUpdated} from "@/features/ui/uiSlice"
 
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
-import ShareTypeSwitch from "./ShareTypeSwitch"
 import SortMenu from "./SortMenu"
 
 export default function FolderNodeActions() {
@@ -56,7 +53,6 @@ export default function FolderNodeActions() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <ShareTypeSwitch />
         {selectedCount == 1 && <EditNodeTitleButton />}
         {selectedCount == 1 && <EditNodeTagsButton />}
       </Group>
@@ -68,8 +64,6 @@ export default function FolderNodeActions() {
           onClear={onQuickFilterClear}
           filterText={filterText}
         />
-        <DuplicatePanelButton />
-        <ToggleSecondaryPanel />
       </Group>
     </Group>
   )

@@ -1,30 +1,33 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {Flex, Group} from "@mantine/core"
-import {useContext, useEffect} from "react"
+import {useContext, useEffect, useRef} from "react"
 import {useNavigate} from "react-router-dom"
+
+import {
+  currentDocVerUpdated,
+  currentSharedNodeRootChanged,
+  selectContentHeight,
+  selectCurrentNodeCType,
+  selectCurrentSharedNodeID,
+  selectCurrentSharedRootID,
+  selectLastPageSize
+} from "@/features/ui/uiSlice"
 
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
-import {useRef} from "react"
 
+import {store} from "@/app/store"
+import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import Pages from "@/components/document/Pages"
 import Thumbnails from "@/components/document/Thumbnails"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import {
-  currentDocVerUpdated,
-  currentNodeChanged,
-  secondaryPanelClosed,
-  selectContentHeight,
-  selectCurrentNodeCType,
-  selectCurrentSharedNodeID,
-  selectCurrentSharedRootID
-} from "@/features/ui/uiSlice"
-import type {NType, PanelMode, ServerErrorType} from "@/types"
+
+import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
@@ -33,6 +36,7 @@ export default function SharedViewer() {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
 
   const secondaryPanelNodeCType = useAppSelector(s =>
     selectCurrentNodeCType(s, "secondary")
@@ -45,38 +49,31 @@ export default function SharedViewer() {
     isSuccess,
     isError,
     isFetching,
-    isLoading,
-    error
+    isLoading
   } = useGetSharedDocumentQuery({
     nodeID: currentNodeID!,
     currentSharedRootID: currentSharedRootID
   })
 
   const onClick = (node: NType) => {
-    if (mode == "secondary" && node.ctype == "folder") {
-      dispatch(
-        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
-      )
-    } else if (mode == "main" && node.ctype == "folder") {
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
-      navigate(`/folder/${node.id}`)
-    }
-  }
-
-  useEffect(() => {
-    /* In case user decides to transfer all source pages,
-    the source document will vanish as server will remove it.
-    The outcome is that `useGetDocumentQuery` will result in
-    error with HTTP status 404. In this case we close
-    panel of the delete document.
-    */
-    if (isError && error && (error as ServerErrorType).status == 404) {
-      if (mode == "secondary") {
-        // the 404 was in secondary panel. Just close it.
-        dispatch(secondaryPanelClosed())
+    if (node.ctype == "folder") {
+      if (node.id == SHARED_FOLDER_ROOT_ID) {
+        dispatch(currentSharedNodeRootChanged(undefined))
+        navigate(`/shared`)
+        return
       }
     }
-  }, [isError])
+
+    if (mode == "main" && node.ctype == "folder") {
+      const state = store.getState()
+      const sharedNode = state.sharedNodes.entities[node.id]
+      if (sharedNode.is_shared_root) {
+        dispatch(currentSharedNodeRootChanged(node.id))
+      }
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
+      navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
+    }
+  }
 
   useEffect(() => {
     if (doc) {

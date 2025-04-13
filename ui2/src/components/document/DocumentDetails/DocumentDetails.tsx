@@ -93,7 +93,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
             />
           </Group>
           <Group>
-            <CustomFields />
+            <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
           </Group>
           <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
         </Stack>

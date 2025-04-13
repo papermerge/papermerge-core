@@ -1,3 +1,5 @@
+import {useAppDispatch} from "@/app/hooks"
+import {commanderAllSelectionsCleared} from "@/features/ui/uiSlice"
 import {ActionIcon, Box, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUserShare} from "@tabler/icons-react"
@@ -11,8 +13,14 @@ interface Args {
 }
 
 const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
+  const dispatch = useAppDispatch()
   const {hidden, node_ids} = props
   const [opened, {open, close}] = useDisclosure(false)
+
+  const onLocalClose = () => {
+    dispatch(commanderAllSelectionsCleared())
+    close()
+  }
 
   return (
     <Box>
@@ -30,8 +38,8 @@ const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
       <ShareNodesModal
         opened={opened}
         node_ids={node_ids}
-        onSubmit={close}
-        onCancel={close}
+        onSubmit={onLocalClose}
+        onCancel={onLocalClose}
       />
     </Box>
   )

@@ -6,8 +6,7 @@ on:
   push:
     paths:
       - 'papermerge/**'
-      - 'tests/**'
-      - 'ui/**'
+      - 'ui2/**'
       - 'pyproject.toml'
       - '.github/workflows/tests.yml'
       - 'docker/standard/**'

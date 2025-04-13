@@ -10,7 +10,11 @@ import type {
   SortMenuColumn,
   SortMenuDirection
 } from "@/types"
-import {NewSharedNodes} from "@/types.d/shared_nodes"
+import {
+  NewSharedNodes,
+  SharedNodeAccessDetails,
+  SharedNodeAccessUpdate
+} from "@/types.d/shared_nodes"
 
 export type PaginatedArgs = {
   nodeID: string
@@ -59,15 +63,39 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
       ]
     }),
+    getSharedNodeAccessDetails: builder.query<SharedNodeAccessDetails, string>({
+      query: nodeID => `/shared-nodes/access/${nodeID}`,
+      providesTags: (_result, _error, arg) => [
+        {type: "SharedNodeAccessDetails", id: arg}
+      ]
+    }),
     addNewSharedNode: builder.mutation<void, NewSharedNodes>({
       query: shared_node => ({
         url: "/shared-nodes/",
         method: "POST",
         body: shared_node
-      })
+      }),
+      invalidatesTags: (_result, _error, input) =>
+        input.node_ids.map(node_id => {
+          return {type: "Node", id: node_id}
+        })
+    }),
+    updateSharedNodeAccess: builder.mutation<void, SharedNodeAccessUpdate>({
+      query: access_update => ({
+        url: `/shared-nodes/access/${access_update.id}`,
+        method: "PATCH",
+        body: access_update
+      }),
+      invalidatesTags: (_result, _error, input) => [
+        {type: "Node", id: input.id}
+      ]
     })
   })
 })
 
-export const {useAddNewSharedNodeMutation, useGetPaginatedSharedNodesQuery} =
-  apiSliceWithSharedNodes
+export const {
+  useAddNewSharedNodeMutation,
+  useGetPaginatedSharedNodesQuery,
+  useGetSharedNodeAccessDetailsQuery,
+  useUpdateSharedNodeAccessMutation
+} = apiSliceWithSharedNodes

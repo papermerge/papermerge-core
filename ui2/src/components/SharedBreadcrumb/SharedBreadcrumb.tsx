@@ -3,6 +3,7 @@ import type {NType} from "@/types"
 import {Anchor, Breadcrumbs, Group, Loader, Skeleton} from "@mantine/core"
 import {IconUserShare} from "@tabler/icons-react"
 import {useRef} from "react"
+import {useTranslation} from "react-i18next"
 import classes from "./Breadcrumbs.module.css"
 
 interface Args {
@@ -18,6 +19,7 @@ export default function SharedBreadcrumb({
   isFetching,
   onClick
 }: Args) {
+  const {t} = useTranslation()
   const ref = useRef<HTMLDivElement>(null)
 
   if (!breadcrumb) {
@@ -35,7 +37,7 @@ export default function SharedBreadcrumb({
           onClick={() => onClick({id: SHARED_FOLDER_ROOT_ID, ctype: "folder"})}
         >
           <Group>
-            <IconUserShare /> Shared
+            <IconUserShare /> {t("shared.name")}
           </Group>
         </Anchor>
       </Breadcrumbs>
@@ -57,7 +59,7 @@ export default function SharedBreadcrumb({
           onClick={() => onClick({id: SHARED_FOLDER_ROOT_ID, ctype: "folder"})}
         >
           <Group>
-            <IconUserShare /> Shared
+            <IconUserShare /> {t("shared.name")}
           </Group>
         </Anchor>
         {links}

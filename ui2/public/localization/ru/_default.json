@@ -1,9 +1,10 @@
 {
+  "common.pick_value": "Выберите значение",
   "common.cancel": "Отмена",
   "common.change_password": "Изменить пароль",
   "common.change_title": "Изменить название",
   "common.delete": "Удалить",
-  "common.document_type": "Құжат түрі",
+  "common.document_type": "Категория",
   "common.download": "Скачать",
   "common.edit": "Редактировать",
   "common.empty": "Пустой",

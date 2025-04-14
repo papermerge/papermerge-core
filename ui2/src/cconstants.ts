@@ -81,7 +81,7 @@ export const CURRENCIES = [
   "TL"
 ]
 
-export const OWNER_ME = "Me"
+export const OWNER_ME = "me"
 export const SHARED_FOLDER_ROOT_ID = "shared"
 export const SHARED_FOLDER_ROOT_NAME = "Shared"
 export const SHARED_NODES_ROOT_BREADCRUMB = [
@@ -90,6 +90,7 @@ export const SHARED_NODES_ROOT_BREADCRUMB = [
 
 export const SUPPORTED_LANGS: I18nLangType[] = [
   {code: "en", name: "English"},
+  {code: "de", name: "Deutsch"},
   {code: "ru", name: "Русский"},
   {code: "kz", name: "Қазақша"}
 ]

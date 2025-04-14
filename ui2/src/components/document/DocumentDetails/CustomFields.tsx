@@ -180,7 +180,7 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
           return {label: i.name, value: i.id}
         })}
         value={documentTypeID ? documentTypeID.value : null}
-        placeholder="Pick Value"
+        placeholder={t("common.pick_value")}
         onChange={onDocumentTypeChange}
         onClear={onClearDocumentType}
         clearable

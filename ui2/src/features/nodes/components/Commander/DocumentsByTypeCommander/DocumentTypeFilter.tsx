@@ -8,11 +8,13 @@ import {
 } from "@/features/ui/uiSlice"
 import {Select} from "@mantine/core"
 import {useContext, useEffect, useState} from "react"
+import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
 
 import type {PanelMode} from "@/types"
 
 export default function DocumentTypeFilter() {
+  const {t} = useTranslation()
   const mode: PanelMode = useContext(PanelContext)
   const lastDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
@@ -54,7 +56,7 @@ export default function DocumentTypeFilter() {
   return (
     <Select
       searchable
-      placeholder="Pick Document Type"
+      placeholder={t("common.pick_value")}
       onChange={onDocumentTypeChanged}
       data={allDocumentTypes.map(g => {
         return {group: g.name, items: g.items.map(i => i.name)}

@@ -119,7 +119,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
   const {data: homes, isLoading: homesAreLoading} = useGetUserGroupHomesQuery()
   let root_type: RootType = "home"
   let currentID = itemId
-  let currentLabel = "My"
+  let currentLabel = t("my")
 
   const onLocalClick = (id: string, label: string, root_type: RootType) => {
     onClick({id: id, ctype: "folder"})
@@ -203,11 +203,11 @@ function RootItem({itemId, onClick}: RootItemArgs) {
     </Menu.Label>,
     <MenuItem
       key={randomId()}
-      onClick={() => onLocalClick(user.home_folder_id, "My", root_type)}
+      onClick={() => onLocalClick(user.home_folder_id, "my", root_type)}
     >
       <Group>
         <IconHome />
-        My
+        {t("my")}
       </Group>
     </MenuItem>,
     ...homes_components,
@@ -220,7 +220,7 @@ function RootItem({itemId, onClick}: RootItemArgs) {
       onClick={() => onLocalClick(user.inbox_folder_id, "My Inbox", root_type)}
     >
       <Group>
-        <IconInbox /> My
+        <IconInbox /> {t("my")}
       </Group>
     </MenuItem>,
     ...inbox_components

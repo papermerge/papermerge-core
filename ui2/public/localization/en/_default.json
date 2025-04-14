@@ -1,4 +1,5 @@
 {
+  "me": "Me",
   "common.pick_value": "Pick value",
   "common.new": "New",
   "common.yes": "Yes",
@@ -20,10 +21,10 @@
   "common.ocr_language": "Download",
   "common.version_id": "Version ID",
   "common.tags": "Tags",
-  "common.document_type": "Document Type",
+  "common.document_type": "Category",
   "common.sort.tiles": "Tiles",
   "common.sort.list": "List",
-  "common.sort.document_type": "Document Type",
+  "common.sort.document_type": "Category",
   "common.sort.title": "Title",
   "common.sort.type": "Type",
   "common.sort.modified": "Modified",

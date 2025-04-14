@@ -9,6 +9,7 @@ import {
 } from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
+import {useTranslation} from "react-i18next"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
@@ -29,7 +30,6 @@ import {
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
 import type {DocumentType, PanelMode} from "@/types"
-import {useTranslation} from "react-i18next"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 
@@ -83,8 +83,8 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
           <TextInput
             label={t("common.owner")}
             readOnly
-            value={groupData?.name || OWNER_ME}
-            rightSection={<CopyButton value={groupData?.name || OWNER_ME} />}
+            value={groupData?.name || t(OWNER_ME)}
+            rightSection={<CopyButton value={groupData?.name || t(OWNER_ME)} />}
           />
           <Group>
             <TagsInput
@@ -98,7 +98,12 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
           <Group>
             <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
           </Group>
-          <TextInput label="OCR Language" readOnly value={ocrLang} mt="md" />
+          <TextInput
+            label={t("common.ocr_language")}
+            readOnly
+            value={ocrLang}
+            mt="md"
+          />
         </Stack>
       </Group>
     )

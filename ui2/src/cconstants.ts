@@ -81,7 +81,7 @@ export const CURRENCIES = [
   "TL"
 ]
 
-export const OWNER_ME = "Me"
+export const OWNER_ME = "me"
 export const SHARED_FOLDER_ROOT_ID = "shared"
 export const SHARED_FOLDER_ROOT_NAME = "Shared"
 export const SHARED_NODES_ROOT_BREADCRUMB = [

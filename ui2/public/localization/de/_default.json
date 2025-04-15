@@ -154,5 +154,12 @@
 
   "extra.rest_api": "REST API",
   "extra.logout": "Abmelden",
-  "by_document_type.name": "Nach Kategorie"
+  "by_document_type.name": "Nach Kategorie",
+
+  "pages.error.access_forbidden.title": "Zugriff verboten",
+  "pages.error.access_forbidden.message": "Du hast nicht genügend Berechtigungen für den Zugriff auf die Ressource",
+  "pages.error.not_found.title": "Nichts gefunden",
+  "pages.error.not_found.message": "Die Ressource kann nicht gefunden werden",
+  "pages.error.unprocessable_content.title": "Unverarbeitbare Inhalte",
+  "pages.error.unprocessable_content.message": "Hat die URL vielleicht ein falsches Format (z. B. fehlen einige Zeichen in der UUID)?"
 }

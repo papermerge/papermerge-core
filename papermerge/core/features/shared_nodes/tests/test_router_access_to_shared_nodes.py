@@ -98,7 +98,7 @@ def test_2_retrieve_shared_nodes_with_filter(
 
 # Topic: `is_shared` flag
 def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
-    auth_api_client: AuthTestClient, make_user, make_folder, db_session
+    make_user, make_folder, db_session, login_as
 ):
     """
     If node is shared with somebody, then paginated nodes are returned
@@ -106,7 +106,7 @@ def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     """
     dbapi.sync_perms(db_session)
     john = make_user("john", is_superuser=False)
-    david = auth_api_client.user
+    david = make_user("david", is_superuser=False)
     receipts = make_folder("John's Receipts", user=john, parent=john.home_folder)
     role, err = dbapi.create_role(
         db_session, "ViewDelete Node Role", scopes=[NODE_VIEW, NODE_DELETE]
@@ -122,8 +122,9 @@ def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
         role_ids=[role.id],
         owner_id=john.id,
     )
-
-    response = auth_api_client.get(f"/nodes/{john.home_folder.id}")
+    api_client = login_as(john)
+    response = api_client.get(f"/nodes/{john.home_folder.id}")
+    assert response.status_code == 200
 
     data = response.json()
     folder = schema.Folder(**data["items"][0])
@@ -132,7 +133,7 @@ def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
 
 # Topic: `is_shared` flag
 def test_4_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
-    auth_api_client: AuthTestClient, make_user, make_folder, db_session
+    login_as, make_user, make_folder
 ):
     """
     In this scenario node is not shared -> "is_shared" flag is
@@ -141,7 +142,10 @@ def test_4_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     john = make_user("john", is_superuser=False)
     make_folder("John's Receipts", user=john, parent=john.home_folder)
 
-    response = auth_api_client.get(f"/nodes/{john.home_folder.id}")
+    api_client = login_as(john)
+    response = api_client.get(f"/nodes/{john.home_folder.id}")
+
+    assert response.status_code == 200
 
     data = response.json()
     folder = schema.Folder(**data["items"][0])
@@ -150,7 +154,7 @@ def test_4_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
 
 # Topic: `is_shared` flag
 def test_5_paginated_for_nodes_shared_multiple_times(
-    auth_api_client: AuthTestClient, make_user, make_folder, db_session
+    login_as, make_user, make_folder, db_session
 ):
     """
     In this scenario the same node is shared multiple times: this should
@@ -190,7 +194,9 @@ def test_5_paginated_for_nodes_shared_multiple_times(
         owner_id=john.id,
     )
 
-    response = auth_api_client.get(f"/nodes/{john.home_folder.id}")
+    api_client = login_as(john)
+    response = api_client.get(f"/nodes/{john.home_folder.id}")
+    assert response.status_code == 200
 
     data = response.json()
 

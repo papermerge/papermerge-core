@@ -19,6 +19,8 @@ from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.types import PaginatedResponse
+from papermerge.core.db import common as dbapi_common
+from papermerge.core import exceptions as exc
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -43,6 +45,14 @@ def get_node(
         order_by = [item.strip() for item in params.order_by.split(",")]
 
     with Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=parent_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         nodes = nodes_dbapi.get_paginated_nodes(
             db_session=db_session,
             parent_id=UUID(parent_id),

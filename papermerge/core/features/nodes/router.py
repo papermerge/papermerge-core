@@ -31,7 +31,7 @@ settings = config.get_settings()
 @router.get("/{parent_id}")
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
-    parent_id,
+    parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
@@ -55,7 +55,7 @@ def get_node(
 
         nodes = nodes_dbapi.get_paginated_nodes(
             db_session=db_session,
-            parent_id=UUID(parent_id),
+            parent_id=parent_id,
             user_id=user.id,
             page_size=params.page_size,
             page_number=params.page_number,

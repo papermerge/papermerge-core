@@ -4,7 +4,7 @@ from typing import Annotated, Iterable, Union
 from uuid import UUID
 
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
@@ -28,14 +28,22 @@ logger = logging.getLogger(__name__)
 settings = config.get_settings()
 
 
-@router.get("/{parent_id}")
+@router.get(
+    "/{parent_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User does not have permissions to access this node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
-    """Returns a list nodes of parent_id
+    """Returns list of *paginated* direct descendants of `parent_id` node
 
     Required scope: `{scope}`
     """

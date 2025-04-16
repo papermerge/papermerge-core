@@ -74,8 +74,20 @@ def get_node(
     return nodes
 
 
-@router.post("/", status_code=201)
-@utils.docstring_parameter(scope=scopes.NODE_CREATE)
+@router.post(
+    "/",
+    status_code=201,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User does not have permissions to create "
+            "node inside `parent_id`",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(
+    scope=scopes.NODE_CREATE,
+)
 def create_node(
     pynode: schema.NewFolder | schema.NewDocument,
     user: Annotated[
@@ -127,6 +139,14 @@ def create_node(
         new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=pynode.parent_id,
+                codename=scopes.NODE_CREATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             created_node, error = doc_dbapi.create_document(db_session, new_document)
 
     if error:

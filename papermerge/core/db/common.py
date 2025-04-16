@@ -127,7 +127,6 @@ def has_node_perm(
         AND sn.node_id IN (<node_id> ancestors)
     )
     """
-
     ancestor_ids = [item[0] for item in get_ancestors(db_session, node_id)]
 
     ug = aliased(groups_orm.user_groups_association)

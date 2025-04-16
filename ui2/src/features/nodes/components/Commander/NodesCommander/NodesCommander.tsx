@@ -14,6 +14,18 @@ import {
   selectFilterText
 } from "@/features/ui/uiSlice"
 
+import {
+  isHTTP403Forbidden,
+  isHTTP404NotFound,
+  isHTTP422UnprocessableContent
+} from "@/services/helpers"
+
+import {
+  ERRORS_403_ACCESS_FORBIDDEN,
+  ERRORS_404_RESOURCE_NOT_FOUND,
+  ERRORS_422_UNPROCESSABLE_CONTENT
+} from "@/cconstants"
+
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
@@ -36,13 +48,13 @@ import {
 import type {ExtractPagesResponse, NType, NodeType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
+import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
 import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import Node from "./Node"
-import {useTranslation} from "react-i18next"
 
 export default function Commander() {
   const {t} = useTranslation()
@@ -79,7 +91,7 @@ export default function Commander() {
   const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
   const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
 
-  const {data, isLoading, isFetching, isError, refetch} =
+  const {data, isLoading, isFetching, isError, refetch, error} =
     useGetPaginatedNodesQuery({
       nodeID: currentNodeID!,
       page_number: page,
@@ -98,6 +110,18 @@ export default function Commander() {
 
   if (isLoading && !data) {
     return <div>Loading...</div>
+  }
+
+  if (isError && isHTTP422UnprocessableContent(error)) {
+    navigate(ERRORS_422_UNPROCESSABLE_CONTENT)
+  }
+
+  if (isError && isHTTP404NotFound(error)) {
+    navigate(ERRORS_404_RESOURCE_NOT_FOUND)
+  }
+
+  if (isError && isHTTP403Forbidden(error)) {
+    navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
   if (isError) {

@@ -154,5 +154,12 @@
 
   "extra.rest_api": "REST API",
   "extra.logout": "Log out",
-  "by_document_type.name": "By Category"
+  "by_document_type.name": "By Category",
+
+  "pages.error.access_forbidden.title": "Access Forbidden",
+  "pages.error.access_forbidden.message": "You don't have enough permissions to access the resource",
+  "pages.error.not_found.title": "Not Found",
+  "pages.error.not_found.message": "Resource not found",
+  "pages.error.unprocessable_content.title": "Unprocessable Content",
+  "pages.error.unprocessable_content.message": "Maybe URL has wrong format (e.g. missing some characters in UUID)?"
 }

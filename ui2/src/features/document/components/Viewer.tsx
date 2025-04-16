@@ -1,5 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
+import {
+  isHTTP403Forbidden,
+  isHTTP404NotFound,
+  isHTTP422UnprocessableContent
+} from "@/services/helpers"
 import {Flex, Group} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
@@ -9,7 +14,12 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {useRef, useState} from "react"
 
-import {HIDDEN} from "@/cconstants"
+import {
+  ERRORS_403_ACCESS_FORBIDDEN,
+  ERRORS_404_RESOURCE_NOT_FOUND,
+  ERRORS_422_UNPROCESSABLE_CONTENT,
+  HIDDEN
+} from "@/cconstants"
 import ActionButtons from "@/components/document/ActionButtons"
 import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
@@ -78,6 +88,18 @@ export default function Viewer() {
     if (!cmOpened) {
       close()
     }
+  }
+
+  if (isError && isHTTP422UnprocessableContent(error)) {
+    navigate(ERRORS_422_UNPROCESSABLE_CONTENT)
+  }
+
+  if (isError && isHTTP404NotFound(error)) {
+    navigate(ERRORS_404_RESOURCE_NOT_FOUND)
+  }
+
+  if (isError && isHTTP403Forbidden(error)) {
+    navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
   useEffect(() => {

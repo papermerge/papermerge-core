@@ -1,13 +1,14 @@
 from fastapi import HTTPException
 
+
 class HTTP403Forbidden(HTTPException):
-    detail = "Access Forbidden"
-    status_code = 403
+    def __init__(self, detail: str = "Access Forbidden"):
+        super().__init__(status_code=403, detail=detail)
 
 
 class HTTP404NotFound(HTTPException):
-    detail = "Not Found"
-    status_code = 404
+    def __init__(self, detail: str = "Not Found"):
+        super().__init__(status_code=404, detail=detail)
 
 
 class SuperuserDoesNotExist(Exception):

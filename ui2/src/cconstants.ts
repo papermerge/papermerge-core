@@ -94,3 +94,7 @@ export const SUPPORTED_LANGS: I18nLangType[] = [
   {code: "ru", name: "Русский"},
   {code: "kz", name: "Қазақша"}
 ]
+
+export const ERRORS_422_UNPROCESSABLE_CONTENT = "/errors/unprocessable-content"
+export const ERRORS_404_RESOURCE_NOT_FOUND = "/errors/resource-not-found"
+export const ERRORS_403_ACCESS_FORBIDDEN = "/errors/access-forbidden"

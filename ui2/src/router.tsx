@@ -31,9 +31,16 @@ import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
 
+import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
+
 import {loader as documentLoader} from "@/pages/Document"
 
 import ErrorPage from "@/pages/Error.tsx"
+import {
+  ERRORS_403_ACCESS_FORBIDDEN,
+  ERRORS_404_RESOURCE_NOT_FOUND,
+  ERRORS_422_UNPROCESSABLE_CONTENT
+} from "./cconstants"
 
 const router = createBrowserRouter([
   {
@@ -137,6 +144,18 @@ const router = createBrowserRouter([
       {
         path: "/users/:userId",
         element: <UserDetails />
+      },
+      {
+        path: ERRORS_403_ACCESS_FORBIDDEN,
+        element: <AccessForbidden />
+      },
+      {
+        path: ERRORS_404_RESOURCE_NOT_FOUND,
+        element: <NotFound />
+      },
+      {
+        path: ERRORS_422_UNPROCESSABLE_CONTENT,
+        element: <UnprocessableContent />
       }
     ]
   }

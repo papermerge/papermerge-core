@@ -161,3 +161,16 @@ def has_node_perm(
     has_access = db_session.execute(stmt).scalar()
 
     return has_access
+
+
+def has_nodes_perm(
+    db_session: Session,
+    node_ids: list[UUID],
+    codename: str,
+    user_id: UUID,
+) -> bool:
+    """
+    Has user `codename` permission for `node_ids`?
+    """
+
+    return False

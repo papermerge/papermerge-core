@@ -156,7 +156,15 @@ def create_node(
     return created_node
 
 
-@router.patch("/{node_id}")
+@router.patch(
+    "/{node_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User does not have permissions to update specified node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
@@ -174,6 +182,14 @@ def update_node(
     """
 
     with Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         updated_node = nodes_dbapi.update_node(
             db_session, node_id=node_id, user_id=user.id, attrs=node
         )
@@ -182,7 +198,16 @@ def update_node(
     return updated_node
 
 
-@router.delete("/")
+@router.delete(
+    "/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User does not have permissions to delete "
+            "at least one of the specified nodes",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_DELETE)
 def delete_nodes(
     list_of_uuids: list[UUID],
@@ -199,6 +224,15 @@ def delete_nodes(
     were found) - will return an empty list.
     """
     with Session() as db_session:
+        for node_id in list_of_uuids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_DELETE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
         error = nodes_dbapi.delete_nodes(
             db_session, node_ids=list_of_uuids, user_id=user.id
         )

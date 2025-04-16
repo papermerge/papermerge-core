@@ -361,7 +361,16 @@ def assign_node_tags(
     return node
 
 
-@router.get("/")
+@router.get(
+    "/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "User does not have permissions to view "
+            "at least one of the specified nodes",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
@@ -369,6 +378,9 @@ def get_nodes_details(
 ) -> list[schema.Folder | schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
+
+    Dev note: this API endpoint is used by UI to fetch tags and breadcrumbs
+    for the *search results*, as search index does not store these attributes.
 
     Required scope: `{scope}`
     """
@@ -379,6 +391,15 @@ def get_nodes_details(
         return []
 
     with Session() as db_session:
+        for node_id in node_ids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
         nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes

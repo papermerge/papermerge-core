@@ -94,3 +94,26 @@ def test_delete_node(login_as, make_user, make_folder):
     )
 
     assert response.status_code == 403
+
+
+def test_get_node_details(login_as, make_user, make_folder):
+    """
+    User B should not be able to retrieve details of User A's private nodes
+    """
+
+    user_a = make_user("user_a", is_superuser=True)
+    user_b = make_user("user_b", is_superuser=True)
+    user_a_private_folder_1 = make_folder(
+        "folder_a_1", parent=user_a.home_folder, user=user_a
+    )
+    user_a_private_folder_2 = make_folder(
+        "folder_a_2", parent=user_a.home_folder, user=user_a
+    )
+
+    user_b_api_client = login_as(user_b)
+
+    response = user_b_api_client.get(
+        f"/nodes/?node_ids={user_a_private_folder_1.id}&node_ids={user_a_private_folder_2.id}",
+    )
+
+    assert response.status_code == 403

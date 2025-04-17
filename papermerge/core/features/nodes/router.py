@@ -32,7 +32,7 @@ settings = config.get_settings()
     "/{parent_id}",
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": "User does not have permissions to access this node",
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
@@ -79,8 +79,7 @@ def get_node(
     status_code=201,
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": "User does not have permissions to create "
-            "node inside `parent_id`",
+            "description": f"No `{scopes.NODE_CREATE}` permission on the parent node",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
@@ -160,7 +159,7 @@ def create_node(
     "/{node_id}",
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": "User does not have permissions to update specified node",
+            "description": f"No `{scopes.NODE_UPDATE}` permission on the node",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
@@ -202,7 +201,7 @@ def update_node(
     "/",
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": "User does not have permissions to delete "
+            "description": f"No `{scopes.NODE_DELETE}` permission on some of the nodes"
             "at least one of the specified nodes",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
@@ -250,6 +249,11 @@ def delete_nodes(
 @router.post(
     "/move",
     responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"Check user has `{scopes.NODE_MOVE}` on all source nodes "
+            f" and `{scopes.NODE_UPDATE}` on the target node.",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
         432: {
             "description": """Move of mentioned node is not possible due
             to duplicate title on the target""",
@@ -346,7 +350,15 @@ def move_nodes(
     return params.source_ids
 
 
-@router.post("/{node_id}/tags")
+@router.post(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def assign_node_tags(
     node_id: UUID,
@@ -369,6 +381,14 @@ def assign_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             node, error = nodes_dbapi.assign_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
@@ -387,8 +407,8 @@ def assign_node_tags(
     "/",
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": "User does not have permissions to view "
-            "at least one of the specified nodes",
+            "description": f"User does not have `{scopes.NODE_VIEW}` permission on "
+            "some of the nodes",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },

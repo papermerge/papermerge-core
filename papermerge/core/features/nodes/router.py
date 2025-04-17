@@ -511,7 +511,15 @@ def update_node_tags(
     return node
 
 
-@router.get("/{node_id}/tags")
+@router.get(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node_tags(
     node_id: UUID,
@@ -524,6 +532,14 @@ def get_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             tags, error = nodes_dbapi.get_node_tags(
                 db_session, node_id=node_id, user_id=user.id
             )

@@ -192,3 +192,24 @@ def test_update_node_tags(login_as, make_user, make_folder):
     )
 
     assert response.status_code == 403, response.json()
+
+
+def test_get_node_tags(login_as, make_user, make_folder):
+    """
+    User B should not be able to get tags associated to the User A's private
+    nodes
+    """
+
+    user_a = make_user("user_a", is_superuser=True)
+    user_b = make_user("user_b", is_superuser=True)
+    user_a_private_folder = make_folder(
+        "folder", parent=user_a.home_folder, user=user_a
+    )
+
+    user_b_api_client = login_as(user_b)
+
+    response = user_b_api_client.get(
+        f"/nodes/{user_a_private_folder.id}/tags",
+    )
+
+    assert response.status_code == 403, response.json()

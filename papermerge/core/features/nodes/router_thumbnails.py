@@ -75,7 +75,8 @@ def retrieve_document_thumbnail(
             db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
         )
         if not ok:
-            raise HTTP403Forbidden
+            raise HTTP403Forbidden()
+
         try:
             doc_ver = dbapi.get_last_doc_ver(db_session, doc_id=document_id)
         except NoResultFound:

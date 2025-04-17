@@ -4,7 +4,7 @@ from typing import Annotated, Iterable, Union
 from uuid import UUID
 
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
@@ -28,14 +28,22 @@ logger = logging.getLogger(__name__)
 settings = config.get_settings()
 
 
-@router.get("/{parent_id}")
+@router.get(
+    "/{parent_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
-    """Returns a list nodes of parent_id
+    """Returns list of *paginated* direct descendants of `parent_id` node
 
     Required scope: `{scope}`
     """
@@ -66,8 +74,19 @@ def get_node(
     return nodes
 
 
-@router.post("/", status_code=201)
-@utils.docstring_parameter(scope=scopes.NODE_CREATE)
+@router.post(
+    "/",
+    status_code=201,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_CREATE}` permission on the parent node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(
+    scope=scopes.NODE_CREATE,
+)
 def create_node(
     pynode: schema.NewFolder | schema.NewDocument,
     user: Annotated[
@@ -119,6 +138,14 @@ def create_node(
         new_document = schema.NewDocument(**attrs)
 
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=pynode.parent_id,
+                codename=scopes.NODE_CREATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             created_node, error = doc_dbapi.create_document(db_session, new_document)
 
     if error:
@@ -128,7 +155,15 @@ def create_node(
     return created_node
 
 
-@router.patch("/{node_id}")
+@router.patch(
+    "/{node_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node(
     node_id: UUID,
@@ -146,6 +181,14 @@ def update_node(
     """
 
     with Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         updated_node = nodes_dbapi.update_node(
             db_session, node_id=node_id, user_id=user.id, attrs=node
         )
@@ -154,7 +197,16 @@ def update_node(
     return updated_node
 
 
-@router.delete("/")
+@router.delete(
+    "/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_DELETE}` permission on some of the nodes"
+            "at least one of the specified nodes",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_DELETE)
 def delete_nodes(
     list_of_uuids: list[UUID],
@@ -171,6 +223,15 @@ def delete_nodes(
     were found) - will return an empty list.
     """
     with Session() as db_session:
+        for node_id in list_of_uuids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_DELETE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
         error = nodes_dbapi.delete_nodes(
             db_session, node_ids=list_of_uuids, user_id=user.id
         )
@@ -188,6 +249,11 @@ def delete_nodes(
 @router.post(
     "/move",
     responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"Check user has `{scopes.NODE_MOVE}` on all source nodes "
+            f" and `{scopes.NODE_UPDATE}` on the target node.",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
         432: {
             "description": """Move of mentioned node is not possible due
             to duplicate title on the target""",
@@ -214,6 +280,11 @@ def move_nodes(
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
+    User should have
+
+        * `node.update` permission for the target node
+        * `node.move` permission for each source node
+
     Required scope: `{scope}`
 
     In other words, after successful completion of this action
@@ -225,18 +296,35 @@ def move_nodes(
     """
     try:
         with Session() as db_session:
+            for source_id in params.source_ids:
+                if not dbapi_common.has_node_perm(
+                    db_session,
+                    node_id=source_id,
+                    codename=scopes.NODE_MOVE,
+                    user_id=user.id,
+                ):
+                    raise exc.HTTP403Forbidden()
+
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=params.target_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             affected_row_count = nodes_dbapi.move_nodes(
                 db_session,
                 source_ids=params.source_ids,
                 target_id=params.target_id,
             )
-    except NoResultFound as exc:
-        logger.error(exc, exc_info=True)
+    except NoResultFound as e:
+        logger.error(e, exc_info=True)
         error = schema.Error(
             messages=["No results found. Please check that all source nodes exists"]
         )
         raise HTTPException(status_code=404, detail=error.model_dump())
-    except (IntegrityError, EntityNotFound) as exc:
+    except (IntegrityError, EntityNotFound) as e:
         logger.debug(exc, exc_info=True)
         error = schema.Error(
             messages=["Integrity error. Please check that target exists"]
@@ -262,7 +350,15 @@ def move_nodes(
     return params.source_ids
 
 
-@router.post("/{node_id}/tags")
+@router.post(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def assign_node_tags(
     node_id: UUID,
@@ -285,6 +381,14 @@ def assign_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             node, error = nodes_dbapi.assign_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
@@ -299,7 +403,16 @@ def assign_node_tags(
     return node
 
 
-@router.get("/")
+@router.get(
+    "/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_VIEW}` permission on "
+            "some of the nodes",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_nodes_details(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
@@ -307,6 +420,9 @@ def get_nodes_details(
 ) -> list[schema.Folder | schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
+
+    Dev note: this API endpoint is used by UI to fetch tags and breadcrumbs
+    for the *search results*, as search index does not store these attributes.
 
     Required scope: `{scope}`
     """
@@ -317,12 +433,29 @@ def get_nodes_details(
         return []
 
     with Session() as db_session:
+        for node_id in node_ids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
         nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes
 
 
-@router.patch("/{node_id}/tags")
+@router.patch(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_node_tags(
     node_id: UUID,
@@ -356,6 +489,14 @@ def update_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             node, error = nodes_dbapi.update_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )
@@ -370,7 +511,15 @@ def update_node_tags(
     return node
 
 
-@router.get("/{node_id}/tags")
+@router.get(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_node_tags(
     node_id: UUID,
@@ -383,6 +532,14 @@ def get_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             tags, error = nodes_dbapi.get_node_tags(
                 db_session, node_id=node_id, user_id=user.id
             )
@@ -395,7 +552,15 @@ def get_node_tags(
     return tags
 
 
-@router.delete("/{node_id}/tags")
+@router.delete(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def remove_node_tags(
     node_id: UUID,
@@ -413,6 +578,14 @@ def remove_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             node, error = nodes_dbapi.remove_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )

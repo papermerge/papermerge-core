@@ -56,7 +56,7 @@ def test_nodes_move_when_target_id_does_not_exist(
 
     response = auth_api_client.post("/nodes/move", json=params)
 
-    assert response.status_code == 400, response.json()
+    assert response.status_code == 403, response.json()
 
     stmt = select(orm.Document.parent_id).where(orm.Document.title == "letter.pdf")
     # doc.parent id should not change i.e. "letter.pdf" is still in home folder
@@ -75,7 +75,7 @@ def test_nodes_move_when_source_id_does_not_exist(
 
     response = auth_api_client.post("/nodes/move", json=params)
 
-    assert response.status_code == 419, response.json()
+    assert response.status_code == 403, response.json()
 
 
 def test_nodes_move_when_some_source_id_does_not_exist(
@@ -95,9 +95,7 @@ def test_nodes_move_when_some_source_id_does_not_exist(
 
     response = auth_api_client.post("/nodes/move", json=params)
 
-    # code 420 means that only some nodes where moved, situation which
-    # may happen when some source IDs are invalid (non-existing nodes)
-    assert response.status_code == 420, response.json()
+    assert response.status_code == 403, response.json()
 
 
 def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_session):

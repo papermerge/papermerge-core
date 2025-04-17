@@ -3,7 +3,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Security, UploadFile
+from fastapi import APIRouter, HTTPException, Security, UploadFile, status
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import exceptions as exc
@@ -20,6 +20,7 @@ from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
 from papermerge.core.types import OrderEnum, PaginatedResponse
 from papermerge.core.db import common as dbapi_common
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 
 
 router = APIRouter(
@@ -31,7 +32,15 @@ logger = logging.getLogger(__name__)
 config = get_settings()
 
 
-@router.patch("/{document_id}/custom-fields")
+@router.patch(
+    "/{document_id}/custom-fields",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_custom_field_values(
     document_id: uuid.UUID,
@@ -51,6 +60,14 @@ def update_document_custom_field_values(
         custom_fields[cf.key] = cf.value
 
     with db.Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         try:
             updated_entries = dbapi.update_doc_cfv(
                 db_session,
@@ -69,7 +86,15 @@ def update_document_custom_field_values(
     return updated_entries
 
 
-@router.get("/{document_id}/custom-fields")
+@router.get(
+    "/{document_id}/custom-fields",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_custom_field_values(
     document_id: uuid.UUID,
@@ -81,6 +106,14 @@ def get_document_custom_field_values(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         try:
             doc = dbapi.get_doc_cfv(
                 db_session,

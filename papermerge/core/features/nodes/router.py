@@ -276,6 +276,11 @@ def move_nodes(
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
+    User should have
+
+        * `node.update` permission for the target node
+        * `node.move` permission for each source node
+
     Required scope: `{scope}`
 
     In other words, after successful completion of this action
@@ -287,18 +292,35 @@ def move_nodes(
     """
     try:
         with Session() as db_session:
+            for source_id in params.source_ids:
+                if not dbapi_common.has_node_perm(
+                    db_session,
+                    node_id=source_id,
+                    codename=scopes.NODE_MOVE,
+                    user_id=user.id,
+                ):
+                    raise exc.HTTP403Forbidden()
+
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=params.target_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             affected_row_count = nodes_dbapi.move_nodes(
                 db_session,
                 source_ids=params.source_ids,
                 target_id=params.target_id,
             )
-    except NoResultFound as exc:
-        logger.error(exc, exc_info=True)
+    except NoResultFound as e:
+        logger.error(e, exc_info=True)
         error = schema.Error(
             messages=["No results found. Please check that all source nodes exists"]
         )
         raise HTTPException(status_code=404, detail=error.model_dump())
-    except (IntegrityError, EntityNotFound) as exc:
+    except (IntegrityError, EntityNotFound) as e:
         logger.debug(exc, exc_info=True)
         error = schema.Error(
             messages=["Integrity error. Please check that target exists"]

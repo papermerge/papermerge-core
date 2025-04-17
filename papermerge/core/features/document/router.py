@@ -125,7 +125,15 @@ def get_document_custom_field_values(
     return doc
 
 
-@router.post("/{document_id}/upload")
+@router.post(
+    "/{document_id}/upload",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.DOCUMENT_UPLOAD}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_UPLOAD)
 def upload_file(
     document_id: uuid.UUID,
@@ -161,6 +169,14 @@ def upload_file(
     """
     content = file.file.read()
     with db.Session() as db_session:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.DOCUMENT_UPLOAD,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         doc, error = dbapi.upload(
             db_session,
             document_id=document_id,
@@ -185,7 +201,15 @@ def upload_file(
     return doc
 
 
-@router.get("/{document_id}")
+@router.get(
+    "/{document_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_details(
     document_id: uuid.UUID,
@@ -212,7 +236,15 @@ def get_document_details(
     return doc
 
 
-@router.patch("/{document_id}/type")
+@router.patch(
+    "/{document_id}/type",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def update_document_type(
     document_id: uuid.UUID,
@@ -226,6 +258,14 @@ def update_document_type(
     """
     try:
         with db.Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=document_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             dbapi.update_doc_type(
                 db_session,
                 document_id=document_id,

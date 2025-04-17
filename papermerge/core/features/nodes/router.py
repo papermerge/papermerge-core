@@ -552,7 +552,15 @@ def get_node_tags(
     return tags
 
 
-@router.delete("/{node_id}/tags")
+@router.delete(
+    "/{node_id}/tags",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"User does not have `{scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+    },
+)
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 def remove_node_tags(
     node_id: UUID,
@@ -570,6 +578,14 @@ def remove_node_tags(
     """
     try:
         with Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=node_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
             node, error = nodes_dbapi.remove_node_tags(
                 db_session, node_id=node_id, tags=tags, user_id=user.id
             )

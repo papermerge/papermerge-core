@@ -38,6 +38,10 @@ import {
   PAGE_MOVE,
   PAGE_UPDATE,
   PAGE_VIEW,
+  ROLE_CREATE,
+  ROLE_DELETE,
+  ROLE_UPDATE,
+  ROLE_VIEW,
   TAG_CREATE,
   TAG_DELETE,
   TAG_UPDATE,
@@ -377,6 +381,61 @@ export default function NewRoleModal({onCancel, onSubmit, opened}: Args) {
               <Checkbox
                 checked={hasPerm(scopes, GROUP_DELETE)}
                 onChange={e => onChangePerm(GROUP_DELETE, e.target.checked)}
+                label={t("roles.form.permissions.actions.delete")}
+              />
+            </Table.Td>
+          </Table.Tr>
+          <Table.Tr key="roles">
+            <Table.Td>
+              <Checkbox
+                checked={hasPerms(scopes, [
+                  ROLE_VIEW,
+                  ROLE_CREATE,
+                  ROLE_UPDATE,
+                  ROLE_DELETE
+                ])}
+                onChange={e =>
+                  onChangePerms(
+                    [ROLE_VIEW, ROLE_CREATE, ROLE_UPDATE, ROLE_DELETE],
+                    e.target.checked
+                  )
+                }
+                label={t("roles.form.permissions.groups.roles")}
+              />
+            </Table.Td>
+            <Tooltip
+              label="Grants access to groups tab on left side navigation panel"
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, ROLE_VIEW)}
+                  onChange={e => onChangePerm(ROLE_VIEW, e.target.checked)}
+                  label={t("roles.form.permissions.actions.view")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, ROLE_CREATE)}
+                onChange={e => onChangePerm(ROLE_CREATE, e.target.checked)}
+                label={t("roles.form.permissions.actions.create")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, ROLE_UPDATE)}
+                onChange={e => onChangePerm(ROLE_UPDATE, e.target.checked)}
+                label={t("roles.form.permissions.actions.update")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, ROLE_DELETE)}
+                onChange={e => onChangePerm(ROLE_DELETE, e.target.checked)}
                 label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>

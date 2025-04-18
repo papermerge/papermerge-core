@@ -1,24 +1,25 @@
 import {useState} from "react"
 
-import {useForm} from "@mantine/form"
 import {
-  Loader,
-  MultiSelect,
+  Button,
   Checkbox,
   Group,
-  Button,
+  Loader,
+  LoadingOverlay,
   Modal,
-  TextInput,
-  LoadingOverlay
+  MultiSelect,
+  TextInput
 } from "@mantine/core"
+import {useForm} from "@mantine/form"
 
 import {UserEditableFields} from "@/types"
 
-import {makeRandomString} from "@/utils"
-import {emailValidator, usernameValidator} from "./validators"
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/apiSlice"
 import {useAddNewUserMutation} from "@/features/users/apiSlice"
+import {makeRandomString} from "@/utils"
 import {useTranslation} from "react-i18next"
+import {emailValidator, usernameValidator} from "./validators"
 
 interface NewUserModalArgs {
   opened: boolean
@@ -32,10 +33,12 @@ export default function NewUserModal({
   opened
 }: NewUserModalArgs) {
   const {t} = useTranslation()
-  const {data = []} = useGetGroupsQuery()
+  const {data: groupsData = []} = useGetGroupsQuery()
+  const {data: rolesData = []} = useGetRolesQuery()
   const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
 
   const [groups, setGroups] = useState<string[]>([])
+  const [roles, setRoles] = useState<string[]>([])
 
   const form = useForm<UserEditableFields>({
     mode: "uncontrolled",
@@ -46,7 +49,9 @@ export default function NewUserModal({
   })
 
   const onLocalSubmit = async (userFields: UserEditableFields) => {
-    const group_ids = data.filter(g => groups.includes(g.name)).map(g => g.id)
+    const group_ids = groupsData
+      .filter(g => groups.includes(g.name))
+      .map(g => g.id)
     const newUserData = {
       username: userFields.username,
       email: userFields.email,
@@ -67,6 +72,7 @@ export default function NewUserModal({
   const reset = () => {
     form.reset()
     setGroups([])
+    setRoles([])
   }
 
   const onLocalCancel = () => {
@@ -109,11 +115,20 @@ export default function NewUserModal({
           {...form.getInputProps("is_active", {type: "checkbox"})}
         />
         <MultiSelect
+          mt="sm"
           label={t("users.form.groups")}
           placeholder={t("users.form.groups.placeholder")}
           onChange={setGroups}
           value={groups}
-          data={data.map(g => g.name) || []}
+          data={groupsData.map(g => g.name) || []}
+        />
+        <MultiSelect
+          mt="sm"
+          label={t("users.form.roles")}
+          placeholder={t("users.form.roles.placeholder")}
+          onChange={setRoles}
+          value={roles}
+          data={rolesData.map(r => r.name) || []}
         />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>

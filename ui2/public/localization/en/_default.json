@@ -9,6 +9,7 @@
   "common.upload": "Upload",
   "common.submit": "Submit",
   "common.update": "Update",
+  "common.save": "Save",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
   "common.edit": "Edit",
@@ -163,5 +164,10 @@
   "pages.error.not_found.title": "Not Found",
   "pages.error.not_found.message": "Resource not found",
   "pages.error.unprocessable_content.title": "Unprocessable Content",
-  "pages.error.unprocessable_content.message": "Maybe URL has wrong format (e.g. missing some characters in UUID)?"
+  "pages.error.unprocessable_content.message": "Maybe URL has wrong format (e.g. missing some characters in UUID)?",
+
+  "notifications.common.error": "Error",
+  "notifications.role.updated.success": "Role successfully updated",
+  "notifications.role.created.success": "Role successfully created",
+  "notifications.role.deleted.success": "Role successfully deleted"
 }

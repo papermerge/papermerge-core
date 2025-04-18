@@ -819,7 +819,7 @@ export default function EditRoleModal({
         <Group>
           {isLoadingRoleUpdate && <Loader size="sm" />}
           <Button disabled={isLoadingRoleUpdate} onClick={onLocalSubmit}>
-            Update Role
+            {t("common.save")}
           </Button>
         </Group>
       </Group>

@@ -116,7 +116,6 @@ def get_current_user(
         if user.is_superuser:
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local roles
-        print(f"{remote_user.roles=}")
         if len(remote_user.roles) > 0:
             with Session.begin() as db_session:
                 s = usr_dbapi.get_user_scopes_from_roles(

@@ -325,7 +325,7 @@ def get_user_scopes_from_roles(
     db_roles = db_session.scalars(
         select(orm.Role).where(func.lower(orm.Role.name).in_(lowercase_roles))
     ).all()
-    print(f"{db_roles=} {roles=}")
+
     if db_user.is_superuser:
         # superuser has all permissions (permission = scope)
         result = scopes.SCOPES.keys()

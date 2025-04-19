@@ -141,6 +141,8 @@
   "roles.form.permissions.groups.tasks": "Tasks",
   "roles.form.permissions.groups.roles": "Roles",
 
+  "roles.form.permissions.actions.me.label": "Me/Current User",
+  "roles.form.permissions.actions.me.tooltip": "Grants access to retrieve current user's details",
   "roles.form.permissions.actions.upload": "Upload",
   "roles.form.permissions.actions.download": "Download",
   "roles.form.permissions.actions.move": "Move",

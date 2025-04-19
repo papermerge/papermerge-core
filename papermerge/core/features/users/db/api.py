@@ -311,8 +311,8 @@ def update_user(
     return model_user, None
 
 
-def get_user_scopes_from_groups(
-    db_session: db.Session, user_id: uuid.UUID, groups: list[str]
+def get_user_scopes_from_roles(
+    db_session: db.Session, user_id: uuid.UUID, roles: list[str]
 ) -> list[str]:
     db_user = db_session.get(User, user_id)
 
@@ -320,18 +320,20 @@ def get_user_scopes_from_groups(
         logger.debug(f"User with user_id {user_id} not found")
         return []
 
-    db_groups = db_session.scalars(
-        select(orm.Group).where(orm.Group.name.in_(groups))
-    ).all()
+    lowercase_roles = [role.lower() for role in roles]
 
+    db_roles = db_session.scalars(
+        select(orm.Role).where(func.lower(orm.Role.name).in_(lowercase_roles))
+    ).all()
+    print(f"{db_roles=} {roles=}")
     if db_user.is_superuser:
         # superuser has all permissions (permission = scope)
         result = scopes.SCOPES.keys()
     else:
         # user inherits his/her group associated permissions
         result = set()
-        for group in db_groups:
-            result.update([p.codename for p in group.permissions])
+        for role in db_roles:
+            result.update([p.codename for p in role.permissions])
 
     return list(result)
 

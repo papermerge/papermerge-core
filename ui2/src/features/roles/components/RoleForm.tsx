@@ -97,6 +97,22 @@ export default function RoleModal({role}: Args) {
           <Table.Tr key="users">
             <Table.Td>{t("roles.form.permissions.groups.users")}</Table.Td>
             <Tooltip
+              label={t("roles.form.permissions.actions.me.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  readOnly={role == null}
+                  onChange={() => {}}
+                  checked={hasPerm(role?.scopes || [], USER_ME)}
+                  label={t("roles.form.permissions.actions.me.label")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
               label="Grants access to users tab on left side navigation panel"
               multiline
               w={300}
@@ -112,6 +128,7 @@ export default function RoleModal({role}: Args) {
                 />
               </Table.Td>
             </Tooltip>
+
             <Table.Td>
               <Checkbox
                 readOnly={role == null}
@@ -525,6 +542,7 @@ const PAGE_MOVE = "page.move"
 const PAGE_UPDATE = "page.update"
 const PAGE_DELETE = "page.delete"
 const PAGE_EXTRACT = "page.extract"
+const USER_ME = "user.me"
 const USER_VIEW = "user.view"
 const USER_CREATE = "user.create"
 const USER_UPDATE = "user.update"

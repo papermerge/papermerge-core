@@ -141,6 +141,8 @@
   "roles.form.permissions.groups.tasks": "Aufgaben",
   "roles.form.permissions.groups.roles": "Rollen",
 
+  "roles.form.permissions.actions.me.label": "Ich/Aktuelle Benutzer",
+  "roles.form.permissions.actions.me.tooltip": "Erlaubt den Zugriff auf die Details des aktuellen Benutzers",
   "roles.form.permissions.actions.upload": "Hochladen",
   "roles.form.permissions.actions.download": "Herunterladen",
   "roles.form.permissions.actions.move": "Verschieben",

@@ -20,6 +20,7 @@ const baseQuery = fetchBaseQuery({
     const token = state.auth.token
     const remote_user = state.auth.remote_user
     const remote_groups = state.auth.remote_groups
+    const remote_roles = state.auth.remote_roles
     const remote_name = state.auth.remote_name
     const remote_email = state.auth.remote_email
 
@@ -32,6 +33,9 @@ const baseQuery = fetchBaseQuery({
     }
     if (remote_groups) {
       headers.set("Remote-Groups", remote_groups)
+    }
+    if (remote_roles) {
+      headers.set("Remote-Roles", remote_roles)
     }
     if (remote_name) {
       headers.set("Remote-Name", remote_name)

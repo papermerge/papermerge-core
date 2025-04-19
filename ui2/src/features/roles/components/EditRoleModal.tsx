@@ -50,16 +50,23 @@ import {
   TASK_OCR,
   USER_CREATE,
   USER_DELETE,
+  USER_ME,
   USER_UPDATE,
   USER_VIEW
 } from "@/scopes"
 import {useTranslation} from "react-i18next"
 
 function initialScopesDict(initialScopes: string[]): Record<string, boolean> {
+  /**
+   * This can be replaced with a checkbox labeled "recommended": which
+   * will check "user.me", "node.view", "page.view" and maybe few
+   * other vital permissions
+   */
   let scopes: Record<string, boolean> = {
-    "user.me": true,
+    /* "user.me": true,
     "page.view": true,
     "node.view": true,
+    */
     "ocrlang.view": true
   }
   initialScopes.map(i => (scopes[i] = true))
@@ -292,17 +299,33 @@ export default function EditRoleModal({
                   USER_VIEW,
                   USER_CREATE,
                   USER_UPDATE,
-                  USER_DELETE
+                  USER_DELETE,
+                  USER_ME
                 ])}
                 onChange={e =>
                   onChangePerms(
-                    [USER_VIEW, USER_CREATE, USER_UPDATE, USER_DELETE],
+                    [USER_VIEW, USER_CREATE, USER_UPDATE, USER_DELETE, USER_ME],
                     e.target.checked
                   )
                 }
                 label={t("roles.form.permissions.groups.users")}
               />
             </Table.Td>
+            <Tooltip
+              label={t("roles.form.permissions.actions.me.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, USER_ME)}
+                  onChange={e => onChangePerm(USER_ME, e.target.checked)}
+                  label={t("roles.form.permissions.actions.me.label")}
+                />
+              </Table.Td>
+            </Tooltip>
             <Tooltip
               label="Grants access to users tab on left side navigation panel"
               multiline

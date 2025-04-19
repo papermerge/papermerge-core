@@ -25,7 +25,7 @@ remote_user_scheme = RemoteUserScheme()
 logger = logging.getLogger(__name__)
 
 
-def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
+def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData | None:
     if "." in token:
         _, payload, _ = token.split(".")
         data = base64.decode(payload)
@@ -37,6 +37,7 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
             )
         token_scopes = data.get("scopes", [])
         groups = data.get("groups", [])
+        roles = data.get("roles", [])
         username = data.get("preferred_username", None)
         email = data.get("email", None)
 
@@ -46,6 +47,7 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData:
             username=username,
             email=email,
             groups=groups,
+            roles=roles,
         )
 
 
@@ -113,11 +115,12 @@ def get_current_user(
         # superusers have all privileges
         if user.is_superuser:
             total_scopes.extend(scopes.SCOPES.keys())
-        # augment user scopes with permissions associated to local groups
-        if len(remote_user.groups) > 0:
+        # augment user scopes with permissions associated to local roles
+        print(f"{remote_user.roles=}")
+        if len(remote_user.roles) > 0:
             with Session.begin() as db_session:
-                s = usr_dbapi.get_user_scopes_from_groups(
-                    db_session, user_id=user.id, groups=remote_user.groups
+                s = usr_dbapi.get_user_scopes_from_roles(
+                    db_session, user_id=user.id, roles=remote_user.roles
                 )
                 total_scopes.extend(s)
 

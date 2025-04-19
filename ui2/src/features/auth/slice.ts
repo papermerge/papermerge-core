@@ -1,6 +1,6 @@
-import Cookies from "js-cookie"
-import {createSlice} from "@reduxjs/toolkit"
 import {getDefaultHeaders} from "@/utils"
+import {createSlice} from "@reduxjs/toolkit"
+import Cookies from "js-cookie"
 
 const COOKIE_NAME = "access_token"
 
@@ -8,6 +8,7 @@ interface AuthState {
   token: string | null
   remote_user: string | null
   remote_groups: string | null
+  remote_roles: string | null
   remote_email: string | null
   remote_name: string | null
 }
@@ -16,6 +17,7 @@ const initialState: AuthState = {
   token: null,
   remote_user: null,
   remote_groups: null,
+  remote_roles: null,
   remote_email: null,
   remote_name: null
 }
@@ -35,6 +37,10 @@ const authSlice = createSlice({
 
       if (headers["Remote-Groups"]) {
         state.remote_groups = headers["Remote-Groups"]
+      }
+
+      if (headers["Remote-Roles"]) {
+        state.remote_roles = headers["Remote-Roles"]
       }
 
       if (headers["Remote-Email"]) {

@@ -21,6 +21,7 @@ class RemoteUser(BaseModel):
     email: str = ""
     name: str = ""
     groups: list[str] | None = None
+    roles: list[str] | None = None
 
 
 class User(BaseModel):

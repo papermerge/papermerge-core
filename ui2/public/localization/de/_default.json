@@ -9,6 +9,7 @@
   "common.upload": "Hochladen",
   "common.submit": "Sichern",
   "common.update": "Aktualisieren",
+  "common.save": "Sichern",
   "common.cancel": "Abbrechen",
   "common.delete": "Löschen",
   "common.edit": "Bearbeiten",
@@ -109,12 +110,14 @@
   "users.edit.title": "Benutzer bearbeiten",
   "users.form.username": "Benutzername",
   "users.form.email": "Email",
-  "users.form.superuser": "Hauptbenuzer",
+  "users.form.superuser": "Superuser",
   "users.form.active": "Aktive",
   "users.form.groups": "Gruppen",
+  "users.form.roles": "Rollen",
   "users.form.password": "Passwort",
   "users.form.confirm_password": "Passwort bestätigen",
   "users.form.groups.placeholder": "Wert auswählen",
+  "users.form.roles.placeholder": "Wert auswählen",
   "users.delete.one.title": "Benutzer löschen",
   "users.delete.one.description": "Benutzer löschen?",
   "users.delete.many.title": "Benutzer löschen",
@@ -138,6 +141,8 @@
   "roles.form.permissions.groups.tasks": "Aufgaben",
   "roles.form.permissions.groups.roles": "Rollen",
 
+  "roles.form.permissions.actions.me.label": "Ich/Aktuelle Benutzer",
+  "roles.form.permissions.actions.me.tooltip": "Erlaubt den Zugriff auf die Details des aktuellen Benutzers",
   "roles.form.permissions.actions.upload": "Hochladen",
   "roles.form.permissions.actions.download": "Herunterladen",
   "roles.form.permissions.actions.move": "Verschieben",
@@ -161,5 +166,10 @@
   "pages.error.not_found.title": "Nichts gefunden",
   "pages.error.not_found.message": "Die Ressource kann nicht gefunden werden",
   "pages.error.unprocessable_content.title": "Unverarbeitbare Inhalte",
-  "pages.error.unprocessable_content.message": "Hat die URL vielleicht ein falsches Format (z. B. fehlen einige Zeichen in der UUID)?"
+  "pages.error.unprocessable_content.message": "Hat die URL vielleicht ein falsches Format (z. B. fehlen einige Zeichen in der UUID)?",
+
+  "notifications.common.error": "Fehler",
+  "notifications.role.updated.success": "Rolle wurde aktualisiert",
+  "notifications.role.created.success": "Rolle wurde erstellt",
+  "notifications.role.deleted.success": "Rolle wurde gelöscht"
 }

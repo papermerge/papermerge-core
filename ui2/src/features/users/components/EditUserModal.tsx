@@ -1,21 +1,22 @@
 import {useEffect, useState} from "react"
 
-import {useForm} from "@mantine/form"
 import {
-  Loader,
-  MultiSelect,
+  Button,
   Checkbox,
   Group,
-  Button,
+  Loader,
+  LoadingOverlay,
   Modal,
-  TextInput,
-  LoadingOverlay
+  MultiSelect,
+  TextInput
 } from "@mantine/core"
+import {useForm} from "@mantine/form"
 
+import {useEditUserMutation, useGetUserQuery} from "@/features/users/apiSlice"
 import {UserEditableFields} from "@/types"
-import {useGetUserQuery, useEditUserMutation} from "@/features/users/apiSlice"
 
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/apiSlice"
 import {useTranslation} from "react-i18next"
 
 interface EditUserModalArgs {
@@ -33,11 +34,15 @@ export default function EditUserModal({
 }: EditUserModalArgs) {
   const {t} = useTranslation()
   const {data: allGroups = []} = useGetGroupsQuery()
+  const {data: allRoles = []} = useGetRolesQuery()
   const {data, isLoading, isSuccess} = useGetUserQuery(userId)
   const [updateUser, {isLoading: isLoadingUserUpdate}] = useEditUserMutation()
 
   const [groups, setGroups] = useState<string[]>(
     data?.groups.map(g => g.name) || []
+  )
+  const [roles, setRoles] = useState<string[]>(
+    data?.roles.map(r => r.name) || []
   )
 
   const form = useForm<UserEditableFields>({
@@ -57,24 +62,30 @@ export default function EditUserModal({
         email: data.email,
         is_active: data.is_active,
         is_superuser: data.is_superuser,
-        groups: data.groups.map(g => g.name)
+        groups: data.groups.map(g => g.name),
+        roles: data.roles.map(r => r.name)
       })
     }
 
     setGroups(data?.groups.map(g => g.name) || [])
+    setRoles(data?.roles.map(r => r.name) || [])
   }
 
   const onLocalSubmit = async (userFields: UserEditableFields) => {
     const group_ids = allGroups
       .filter(g => groups.includes(g.name))
       .map(g => g.id)
+
+    const role_ids = allRoles.filter(r => roles.includes(r.name)).map(r => r.id)
+
     const updatedData = {
       id: userId,
       username: userFields.username,
       email: userFields.email,
       is_active: userFields.is_active,
       is_superuser: userFields.is_superuser,
-      group_ids: group_ids
+      group_ids: group_ids,
+      role_ids: role_ids
     }
     try {
       await updateUser(updatedData).unwrap()
@@ -125,6 +136,13 @@ export default function EditUserModal({
           onChange={setGroups}
           value={groups}
           data={allGroups.map(g => g.name) || []}
+        />
+        <MultiSelect
+          label={t("users.form.roles")}
+          placeholder="Pick value"
+          onChange={setRoles}
+          value={roles}
+          data={allRoles.map(r => r.name) || []}
         />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onCancel}>

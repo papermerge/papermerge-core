@@ -4,6 +4,7 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import type {Paginated, PaginationType, Role, ServerErrorType} from "@/types"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
+import {t} from "i18next"
 import {apiSliceWithRoles} from "./apiSlice"
 
 export type RoleSlice = {
@@ -99,7 +100,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: "Role successfully created"
+        message: t("notifications.role.created.success")
       })
     }
   })
@@ -113,7 +114,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
         autoClose: false,
         withBorder: true,
         color: "red",
-        title: "Error",
+        title: t("notifications.common.error"),
         message: error.data.detail
       })
     }
@@ -124,7 +125,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: "Role successfully updated"
+        message: t("notifications.role.updated.success")
       })
     }
   })
@@ -137,7 +138,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
         autoClose: false,
         withBorder: true,
         color: "red",
-        title: "Error",
+        title: t("notifications.common.error"),
         message: error.data.detail
       })
     }
@@ -148,7 +149,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: "Role successfully deleted"
+        message: t("notifications.role.deleted.success")
       })
     }
   })
@@ -161,7 +162,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
         autoClose: false,
         withBorder: true,
         color: "red",
-        title: "Error",
+        title: t("notifications.common.error"),
         message: error.data.detail
       })
     }

@@ -40,7 +40,7 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
 
 def get_user_group_homes(
     db_session: db.Session, user_id: uuid.UUID
-) -> [list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group homes
 
     SELECT g.name, g.home_folder_id
@@ -75,7 +75,7 @@ def get_user_group_homes(
 
 def get_user_group_inboxes(
     db_session: db.Session, user_id: uuid.UUID
-) -> [list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group inboxes
 
     SELECT g.name, g.inbox_folder_id
@@ -108,7 +108,7 @@ def get_user_group_inboxes(
 
 def get_user_details(
     db_session, user_id: uuid.UUID
-) -> [schema.UserDetails | None, err_schema.Error | None]:
+) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
@@ -117,6 +117,11 @@ def get_user_details(
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
+
+    scopes = set()
+    for role in db_user.roles:
+        for perm in role.permissions:
+            scopes.add(perm.codename)
 
     result = schema.UserDetails(
         id=db_user.id,
@@ -128,8 +133,9 @@ def get_user_details(
         inbox_folder_id=db_user.inbox_folder_id,
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
-        scopes=list([p.codename for p in db_user.roles]),
-        groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
+        scopes=sorted(scopes),
+        groups=db_user.groups,
+        roles=db_user.roles,
     )
 
     model_user = schema.UserDetails.model_validate(result)
@@ -241,6 +247,8 @@ def update_user(
     db_session, user_id: uuid.UUID, attrs: schema.UpdateUser
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     groups = []
+    roles = []
+    scopes = set()
     user = db_session.get(User, user_id)
 
     if attrs.username is not None:
@@ -265,6 +273,11 @@ def update_user(
         groups = db_session.execute(stmt).scalars().all()
         user.groups = groups
 
+    if attrs.role_ids is not None:
+        stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
+        roles = db_session.execute(stmt).scalars().all()
+        user.roles = roles
+
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
@@ -273,6 +286,10 @@ def update_user(
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
+
+    for role in user.roles:
+        for perm in role.permissions:
+            scopes.add(perm.codename)
 
     result = schema.UserDetails(
         id=user.id,
@@ -284,8 +301,9 @@ def update_user(
         inbox_folder_id=user.inbox_folder_id,
         is_superuser=user.is_superuser,
         is_active=user.is_active,
-        scopes=list([p.codename for p in user.roles]),
-        groups=list([{"id": g.id, "name": g.name} for g in groups]),
+        scopes=sorted(scopes),
+        groups=groups,
+        roles=roles,
     )
 
     model_user = schema.UserDetails.model_validate(result)
@@ -293,8 +311,8 @@ def update_user(
     return model_user, None
 
 
-def get_user_scopes_from_groups(
-    db_session: db.Session, user_id: uuid.UUID, groups: list[str]
+def get_user_scopes_from_roles(
+    db_session: db.Session, user_id: uuid.UUID, roles: list[str]
 ) -> list[str]:
     db_user = db_session.get(User, user_id)
 
@@ -302,18 +320,20 @@ def get_user_scopes_from_groups(
         logger.debug(f"User with user_id {user_id} not found")
         return []
 
-    db_groups = db_session.scalars(
-        select(orm.Group).where(orm.Group.name.in_(groups))
-    ).all()
+    lowercase_roles = [role.lower() for role in roles]
 
+    db_roles = db_session.scalars(
+        select(orm.Role).where(func.lower(orm.Role.name).in_(lowercase_roles))
+    ).all()
+    print(f"{db_roles=} {roles=}")
     if db_user.is_superuser:
         # superuser has all permissions (permission = scope)
         result = scopes.SCOPES.keys()
     else:
         # user inherits his/her group associated permissions
         result = set()
-        for group in db_groups:
-            result.update([p.codename for p in group.permissions])
+        for role in db_roles:
+            result.update([p.codename for p in role.permissions])
 
     return list(result)
 

@@ -14,6 +14,9 @@ class RemoteUserScheme:
         groups_header_name = os.environ.get(
             "PAPERMERGE__AUTH__REMOTE_GROUPS_HEADER", "Remote-Groups"
         )
+        roles_header_name = os.environ.get(
+            "PAPERMERGE__AUTH__REMOTE_ROLES_HEADER", "Remote-Roles"
+        )
         name_header_name = os.environ.get(
             "PAPERMERGE__AUTH__REMOTE_NAME_HEADER", "Remote-Name"
         )
@@ -22,6 +25,7 @@ class RemoteUserScheme:
         )
         username = request.headers.get(user_header_name)
         groups = request.headers.get(groups_header_name, "")
+        roles = request.headers.get(roles_header_name, "")
         name = request.headers.get(name_header_name, "")
         email = request.headers.get(email_header_name, "")
 
@@ -29,5 +33,9 @@ class RemoteUserScheme:
             return None
 
         return schema.RemoteUser(
-            username=username, groups=groups.split(","), name=name, email=email
+            username=username,
+            groups=groups.split(","),
+            roles=roles.split(","),
+            name=name,
+            email=email,
         )

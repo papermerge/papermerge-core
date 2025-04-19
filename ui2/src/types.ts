@@ -44,6 +44,7 @@ export type User = NewUser & {
 
 export type UserDetails = User & {
   groups: Group[]
+  roles: Role[]
   scopes: string[]
   is_superuser: boolean
   is_active: boolean
@@ -55,6 +56,7 @@ export type UserEditableFields = {
   is_superuser: boolean
   is_active: boolean
   groups: string[]
+  roles: string[]
 }
 
 export type UserUpdate = {
@@ -64,6 +66,7 @@ export type UserUpdate = {
   is_superuser: boolean
   is_active: boolean
   group_ids: string[]
+  role_ids: string[]
 }
 
 export type ChangePassword = {

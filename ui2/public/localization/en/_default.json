@@ -9,6 +9,7 @@
   "common.upload": "Upload",
   "common.submit": "Submit",
   "common.update": "Update",
+  "common.save": "Save",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
   "common.edit": "Edit",
@@ -112,9 +113,11 @@
   "users.form.superuser": "Superuser",
   "users.form.active": "Active",
   "users.form.groups": "Groups",
+  "users.form.roles": "Roles",
   "users.form.password": "Password",
   "users.form.confirm_password": "Confirm Password",
   "users.form.groups.placeholder": "Pick value",
+  "users.form.roles.placeholder": "Pick value",
   "users.delete.one.title": "Delete User",
   "users.delete.one.description": "Are you sure you want to delete user?",
   "users.delete.many.title": "Delete Users",
@@ -138,6 +141,8 @@
   "roles.form.permissions.groups.tasks": "Tasks",
   "roles.form.permissions.groups.roles": "Roles",
 
+  "roles.form.permissions.actions.me.label": "Me/Current User",
+  "roles.form.permissions.actions.me.tooltip": "Grants access to retrieve current user's details",
   "roles.form.permissions.actions.upload": "Upload",
   "roles.form.permissions.actions.download": "Download",
   "roles.form.permissions.actions.move": "Move",
@@ -161,5 +166,10 @@
   "pages.error.not_found.title": "Not Found",
   "pages.error.not_found.message": "Resource not found",
   "pages.error.unprocessable_content.title": "Unprocessable Content",
-  "pages.error.unprocessable_content.message": "Maybe URL has wrong format (e.g. missing some characters in UUID)?"
+  "pages.error.unprocessable_content.message": "Maybe URL has wrong format (e.g. missing some characters in UUID)?",
+
+  "notifications.common.error": "Error",
+  "notifications.role.updated.success": "Role successfully updated",
+  "notifications.role.created.success": "Role successfully created",
+  "notifications.role.deleted.success": "Role successfully deleted"
 }

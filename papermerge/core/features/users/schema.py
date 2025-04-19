@@ -2,6 +2,9 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
+from papermerge.core.features.groups.schema import Group
+from papermerge.core.features.roles.schema import Role
+
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -11,11 +14,6 @@ from pydantic import (
 )
 
 
-class Group(BaseModel):
-    id: UUID
-    name: str
-
-
 class RemoteUser(BaseModel):
     """User model extracted from PAPERMERGE__AUTH__REMOTE_xyz headers"""
 
@@ -23,6 +21,7 @@ class RemoteUser(BaseModel):
     email: str = ""
     name: str = ""
     groups: list[str] | None = None
+    roles: list[str] | None = None
 
 
 class User(BaseModel):
@@ -62,6 +61,7 @@ class UserDetails(BaseModel):
     is_active: bool
     scopes: list[str] = []
     groups: list[Group] = []
+    roles: list[Role] = []
 
     # Config
     model_config = {
@@ -107,6 +107,7 @@ class UpdateUser(BaseModel):
     is_active: bool | None = None
     scopes: list[str] | None = None
     group_ids: list[UUID] | None = None
+    role_ids: list[UUID] | None = None
 
 
 class ChangeUserPassword(BaseModel):

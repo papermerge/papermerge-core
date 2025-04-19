@@ -67,6 +67,18 @@ export function getRemoteGroups(): string | null {
   return null
 }
 
+export function getRemoteRoles(): string | null {
+  const COOKIE_REMOTE_ROLES = "remote_roles"
+  const remote_roles =
+    import.meta.env.VITE_REMOTE_ROLES || Cookies.get(COOKIE_REMOTE_ROLES)
+
+  if (remote_roles) {
+    return remote_roles
+  }
+
+  return null
+}
+
 export function getRemoteEmail(): string | null {
   const COOKIE_REMOTE_EMAIL = "remote_email"
   const remote_email =
@@ -95,6 +107,7 @@ export function getDefaultHeaders(): Record<string, string> {
   const COOKIE_NAME = "access_token"
   const remote_user = getRemoteUser()
   const remote_groups = getRemoteGroups()
+  const remote_roles = getRemoteRoles()
   const remote_email = getRemoteEmail()
   const remote_name = getRemoteName()
   const token = Cookies.get(COOKIE_NAME)
@@ -105,9 +118,11 @@ export function getDefaultHeaders(): Record<string, string> {
     headers = {
       "Remote-User": remote_user,
       "Remote-Groups": remote_groups || "",
+      "Remote-Roles": remote_roles || "",
       "Remote-Email": remote_email || "",
       "Remote-Name": remote_name || ""
     }
+    console.log(headers)
   }
 
   if (token) {

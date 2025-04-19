@@ -36,6 +36,7 @@ class TokenData(BaseModel):
     email: str
     scopes: list[str] = []
     groups: list[str] = []
+    roles: list[str] = []
 
 
 CFValueType: TypeAlias = str | int | date | bool | float | None

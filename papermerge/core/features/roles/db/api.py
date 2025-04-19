@@ -20,7 +20,7 @@ def get_role(db_session: Session, role_id: uuid.UUID) -> schema.RoleDetails:
         .where(orm.Role.id == role_id)
     )
     db_item = db_session.scalars(stmt).unique().one()
-    db_item.scopes = [p.codename for p in db_item.permissions]
+    db_item.scopes = sorted([p.codename for p in db_item.permissions])
     result = schema.RoleDetails.model_validate(db_item)
 
     return result
@@ -97,7 +97,7 @@ def create_role(
 
 def update_role(
     db_session: Session, role_id: uuid.UUID, attrs: schema.UpdateRole
-) -> schema.Role:
+) -> schema.RoleDetails:
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
     perms = db_session.execute(stmt).scalars().all()
 
@@ -107,7 +107,9 @@ def update_role(
     role.name = attrs.name
     role.permissions = perms
     db_session.commit()
-    result = schema.Role(id=role.id, name=role.name)
+    result = schema.RoleDetails(
+        id=role.id, name=role.name, scopes=[p.codename for p in perms]
+    )
 
     return result
 

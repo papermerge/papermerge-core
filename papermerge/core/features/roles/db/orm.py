@@ -43,6 +43,9 @@ class Permission(Base):
         "Role", secondary=roles_permissions_association, back_populates="permissions"
     )
 
+    def __repr__(self):
+        return f"Permission({self.name=}, {self.codename=})"
+
 
 class Role(Base):
     __tablename__ = "roles"

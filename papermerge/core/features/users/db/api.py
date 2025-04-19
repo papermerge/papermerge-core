@@ -40,7 +40,7 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
 
 def get_user_group_homes(
     db_session: db.Session, user_id: uuid.UUID
-) -> [list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group homes
 
     SELECT g.name, g.home_folder_id
@@ -75,7 +75,7 @@ def get_user_group_homes(
 
 def get_user_group_inboxes(
     db_session: db.Session, user_id: uuid.UUID
-) -> [list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group inboxes
 
     SELECT g.name, g.inbox_folder_id
@@ -108,7 +108,7 @@ def get_user_group_inboxes(
 
 def get_user_details(
     db_session, user_id: uuid.UUID
-) -> [schema.UserDetails | None, err_schema.Error | None]:
+) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     stmt = select(User).where(User.id == user_id)
     params = {"id": user_id}
 
@@ -117,6 +117,11 @@ def get_user_details(
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
+
+    scopes = set()
+    for role in db_user.roles:
+        for perm in role.permissions:
+            scopes.add(perm.codename)
 
     result = schema.UserDetails(
         id=db_user.id,
@@ -128,8 +133,9 @@ def get_user_details(
         inbox_folder_id=db_user.inbox_folder_id,
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
-        scopes=list([p.codename for p in db_user.roles]),
-        groups=list([{"id": g.id, "name": g.name} for g in db_user.groups]),
+        scopes=sorted(scopes),
+        groups=db_user.groups,
+        roles=db_user.roles,
     )
 
     model_user = schema.UserDetails.model_validate(result)

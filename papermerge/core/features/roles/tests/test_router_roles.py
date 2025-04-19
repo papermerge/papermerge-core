@@ -45,6 +45,7 @@ def test_update_role_route(auth_api_client: AuthTestClient, make_role, db_sessio
 
     assert response.status_code == 200, response.json()
 
+    db_session.expire_all()
     updated_role = dbapi.get_role(db_session, role_id=role.id)
 
     assert set(updated_role.scopes) == {"user.view", "custom_field.view"}

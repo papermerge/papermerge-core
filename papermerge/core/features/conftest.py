@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from papermerge.core.tests.resource_file import ResourceFile
 from core.types import OCRStatusEnum
@@ -662,10 +663,16 @@ def make_group(db_session):
 
 @pytest.fixture()
 def make_role(db_session):
-    def _maker(name: str):
-        role = orm.Role(name=name)
+    def _maker(name: str, scopes: list[str] | None = None):
+        if scopes is None:
+            scopes = []
+
+        stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
+        perms = db_session.execute(stmt).scalars().all()
+        role = orm.Role(name=name, permissions=perms)
         db_session.add(role)
         db_session.commit()
+
         return role
 
     return _maker

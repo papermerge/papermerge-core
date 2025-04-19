@@ -132,14 +132,14 @@ def update_role(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_UPDATE])
     ],
-) -> schema.Role:
+) -> schema.RoleDetails:
     """Updates role
 
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
         try:
-            role: schema.Role = dbapi.update_role(
+            role: schema.RoleDetails = dbapi.update_role(
                 db_session, role_id=role_id, attrs=attrs
             )
         except NoResultFound:

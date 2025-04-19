@@ -106,6 +106,7 @@ class UpdateUser(BaseModel):
     is_active: bool | None = None
     scopes: list[str] | None = None
     group_ids: list[UUID] | None = None
+    role_ids: list[UUID] | None = None
 
 
 class ChangeUserPassword(BaseModel):

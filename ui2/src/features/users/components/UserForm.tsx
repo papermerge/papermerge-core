@@ -1,5 +1,5 @@
-import {TextInput, Checkbox, Stack, MultiSelect} from "@mantine/core"
 import CopyButton from "@/components/CopyButton"
+import {Checkbox, MultiSelect, Stack, TextInput} from "@mantine/core"
 
 import {UserDetails} from "@/types"
 import {useTranslation} from "react-i18next"
@@ -44,6 +44,11 @@ export default function UserForm({user}: Args) {
         label={t("users.form.groups")}
         readOnly={true}
         value={user?.groups.map(g => g.name)}
+      />
+      <MultiSelect
+        label={t("users.form.roles")}
+        readOnly={true}
+        value={user?.roles.map(r => r.name)}
       />
     </Stack>
   )

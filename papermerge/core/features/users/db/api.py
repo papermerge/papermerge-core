@@ -247,6 +247,8 @@ def update_user(
     db_session, user_id: uuid.UUID, attrs: schema.UpdateUser
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     groups = []
+    roles = []
+    scopes = set()
     user = db_session.get(User, user_id)
 
     if attrs.username is not None:
@@ -271,6 +273,11 @@ def update_user(
         groups = db_session.execute(stmt).scalars().all()
         user.groups = groups
 
+    if attrs.role_ids is not None:
+        stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
+        roles = db_session.execute(stmt).scalars().all()
+        user.roles = roles
+
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
@@ -279,6 +286,10 @@ def update_user(
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
+
+    for role in user.roles:
+        for perm in role.permissions:
+            scopes.add(perm.codename)
 
     result = schema.UserDetails(
         id=user.id,
@@ -290,8 +301,9 @@ def update_user(
         inbox_folder_id=user.inbox_folder_id,
         is_superuser=user.is_superuser,
         is_active=user.is_active,
-        scopes=list([p.codename for p in user.roles]),
-        groups=list([{"id": g.id, "name": g.name} for g in groups]),
+        scopes=sorted(scopes),
+        groups=groups,
+        roles=roles,
     )
 
     model_user = schema.UserDetails.model_validate(result)

@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/group-homes")
-@utils.docstring_parameter(scope=scopes.USER_VIEW)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_user_group_homes(
     user: Annotated[
-        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+        schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
     ]
 ) -> list[schema.UserHome]:
     """Get all user group homes
@@ -43,10 +43,10 @@ def get_user_group_homes(
 
 
 @router.get("/group-inboxes")
-@utils.docstring_parameter(scope=scopes.USER_VIEW)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_user_group_homes(
     user: Annotated[
-        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_VIEW])
+        schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
     ]
 ) -> list[schema.UserInbox]:
     """Get all user group inboxes

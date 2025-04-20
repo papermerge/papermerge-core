@@ -542,7 +542,7 @@ def upload(
     size: int,
     file_name: str,
     content_type: str | None = None,
-) -> [schema.Document | None, schema.Error | None]:
+) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = db_session.get(orm.Document, document_id)
     orig_ver = None
@@ -617,8 +617,9 @@ def upload(
         error = schema.Error(messages=[str(e)])
         return None, error
 
+    owner = get_node_owner(db_session, node_id=doc.id)
+    doc.owner_name = owner.name
     validated_model = schema.Document.model_validate(doc)
-
 
     if orig_ver:
         # non PDF document

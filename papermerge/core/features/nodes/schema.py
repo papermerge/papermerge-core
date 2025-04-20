@@ -162,3 +162,9 @@ class DeleteDocumentsData(BaseModel):
     document_ids: list[UUID]
     document_version_ids: list[UUID]
     page_ids: list[UUID]
+
+
+class Owner(BaseModel):
+    name: str
+    user_id: UUID | None = None
+    group_id: UUID | None = None

@@ -17,7 +17,6 @@ import {
   selectDocumentVersionID,
   selectDocumentVersionOCRLang
 } from "@/features/document/documentVersSlice"
-import {useGetGroupQuery} from "@/features/groups/apiSlice"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconEdit} from "@tabler/icons-react"
 import classes from "./DocumentDetails.module.css"
@@ -43,15 +42,13 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
   const {t} = useTranslation()
 
   const mode: PanelMode = useContext(PanelContext)
-  const {currentData: groupData, isLoading: groupDataIsLoading} =
-    useGetGroupQuery(doc?.group_id ?? skipToken)
   const documentDetailsIsOpen = useAppSelector(s =>
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
   const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
 
-  if (!ocrLang || !docID || isLoading || groupDataIsLoading) {
+  if (!ocrLang || !docID || isLoading) {
     return (
       <Group align="flex-start" className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />
@@ -83,8 +80,8 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
           <TextInput
             label={t("common.owner")}
             readOnly
-            value={groupData?.name || t(OWNER_ME)}
-            rightSection={<CopyButton value={groupData?.name || t(OWNER_ME)} />}
+            value={doc?.owner_name || t(OWNER_ME)}
+            rightSection={<CopyButton value={doc?.owner_name || t(OWNER_ME)} />}
           />
           <Group>
             <TagsInput

@@ -1,4 +1,6 @@
-from .features.nodes.schema import Folder, NewFolder, Node, UpdateNode, MoveNode
+from .features.nodes.schema import (
+    Folder, NewFolder, Node, UpdateNode, MoveNode, Owner
+)
 from .features.shared_nodes.schema import (
     CreateSharedNode,
     SharedNode,
@@ -36,6 +38,7 @@ __all__ = [
     'Folder',
     'NewFolder',
     'Node',
+    'Owner',
     'UpdateNode',
     'MoveNode',
     'Document',

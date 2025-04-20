@@ -264,10 +264,7 @@ def create_document(
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
-    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
-        orm.Node.id == attrs.parent_id
-    )
-    user_id, group_id = db_session.execute(stmt).fetchone()
+    owner = get_node_owner(db_session, node_id=attrs.parent_id)
 
     doc = orm.Document(
         id=doc_id,
@@ -277,8 +274,8 @@ def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
-        user_id=user_id,
-        group_id=group_id
+        user_id=owner.user_id,
+        group_id=owner.group_id,
     )
     doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
@@ -312,6 +309,7 @@ def create_document(
         else:
             error = schema.Error(messages=[stre])
 
+    doc.owner_name = owner.name
     return schema.Document.model_validate(doc), error
 
 
@@ -544,7 +542,7 @@ def upload(
     size: int,
     file_name: str,
     content_type: str | None = None,
-) -> [schema.Document | None, schema.Error | None]:
+) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = db_session.get(orm.Document, document_id)
     orig_ver = None
@@ -619,8 +617,9 @@ def upload(
         error = schema.Error(messages=[str(e)])
         return None, error
 
+    owner = get_node_owner(db_session, node_id=doc.id)
+    doc.owner_name = owner.name
     validated_model = schema.Document.model_validate(doc)
-
 
     if orig_ver:
         # non PDF document
@@ -661,9 +660,13 @@ def get_doc(
     stmt_doc = select(orm.Document).where(
         orm.Document.id == id
     )
+
     db_doc = session.scalar(stmt_doc)
     breadcrumb = get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
+
+    owner = get_node_owner(session, node_id=id)
+    db_doc.owner_name = owner.name
 
     # colored_tags = session.scalars(colored_tags_stmt).all()
     # db_doc.tags = [ct.tag for ct in colored_tags]
@@ -672,6 +675,34 @@ def get_doc(
 
     return model_doc
 
+
+def get_node_owner(
+    db_session: Session,
+    node_id: uuid.UUID
+) -> schema.Owner:
+    stmt = (select(
+        orm.Node.group_id,
+        orm.Group.name.label('group_name'),
+        orm.Node.user_id,
+        orm.User.username
+    ).select_from(
+        orm.Node
+    ).join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
+     .join(orm.Group, orm.Group.id == orm.Node.group_id, isouter=True)
+     ).where(orm.Node.id == node_id)
+
+    row = db_session.execute(stmt).one()
+
+    if row.user_id is None:
+        owner_name = row.group_name
+    else:
+        owner_name = row.username
+
+    return schema.Owner(
+        name=owner_name,
+        user_id=row.user_id,
+        group_id=row.group_id
+    )
 
 def get_page_document_id(
     db_session: Session, page_id: uuid.UUID

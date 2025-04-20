@@ -205,6 +205,7 @@ class Document(BaseModel):
     thumbnail_url: ThumbnailUrl = None
     user_id: UUID | None = None
     group_id: UUID | None = None
+    owner_name: str | None = None
     perms: list[str] = []
     is_shared: bool = False
 

@@ -104,10 +104,10 @@ def make_folder(db_session: Session):
 def make_document(db_session: Session):
     def _maker(
         title: str,
-        user: orm.User,
         parent: orm.Folder,
         ocr_status: OCRStatusEnum = OCRStatusEnum.unknown,
         lang: str = "deu",
+        user: orm.User | None = None,
     ) -> doc_schema.Document:
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang

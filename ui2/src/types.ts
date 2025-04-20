@@ -354,6 +354,7 @@ export type DocumentType = {
   user_id?: string
   group_id?: string
   updated_at: string
+  owner_name?: string
 }
 
 export interface ClientPage {

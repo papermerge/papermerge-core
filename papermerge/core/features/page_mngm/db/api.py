@@ -4,7 +4,7 @@ import io
 import logging
 import uuid
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 
 from pikepdf import Pdf
@@ -218,7 +218,7 @@ def move_pages(
     target_page_id: uuid.UUID,
     move_strategy: schema.MoveStrategy,
     user_id: uuid.UUID,
-) -> [schema.Document | None, schema.Document]:
+) -> Tuple[schema.Document | None, schema.Document]:
     """
     Returns source and destination document.
 
@@ -247,7 +247,7 @@ def move_pages_mix(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     user_id: uuid.UUID,
-) -> [schema.Document | None, schema.Document]:
+) -> Tuple[schema.Document | None, schema.Document]:
     """Move pages from src to dst using mix strategy
 
     MIX strategy means that source pages on the target will be "mixed"
@@ -325,7 +325,7 @@ def move_pages_mix(
         )
 
         notify_generate_previews(str(_dst_doc.id))
-        return [None, _dst_doc]
+        return None, _dst_doc
 
     notify_version_update(
         add_ver_id=str(dst_new_version.id),
@@ -335,7 +335,7 @@ def move_pages_mix(
     _dst_doc = dst_new_version.document
     notify_generate_previews([str(_src_doc.id), str(_dst_doc.id)])
 
-    return [_src_doc, _dst_doc]
+    return _src_doc, _dst_doc
 
 
 def move_pages_replace(
@@ -344,7 +344,7 @@ def move_pages_replace(
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     user_id: uuid.UUID,
-) -> [schema.Document | None, schema.Document]:
+) -> Tuple[schema.Document | None, schema.Document]:
     """Move pages from src to dst using replace strategy
 
     REPLACE strategy means that source pages on the target will replace

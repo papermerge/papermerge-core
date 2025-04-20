@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from papermerge.core import orm
+from papermerge.core import orm, schema
 
 
 def test_upload_document_to_group_home(db_session, make_user, make_group, login_as):
@@ -30,3 +30,9 @@ def test_upload_document_to_group_home(db_session, make_user, make_group, login_
 
     assert doc.group == group  # owned by group
     assert doc.user is None  # not by user
+
+    response = client.get(f"/documents/{doc.id}")
+    assert response.status_code == 200, response.json()
+
+    returned_doc = schema.Document(**response.json())
+    assert returned_doc.owner_name == "hr"

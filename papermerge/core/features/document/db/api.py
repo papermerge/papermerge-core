@@ -264,10 +264,26 @@ def create_document(
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
-    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
-        orm.Node.id == attrs.parent_id
+    stmt = (
+        select(
+            orm.Node.user_id,
+            orm.User.username,
+            orm.Node.group_id,
+            orm.Group.name.label('group_name')
+        ).select_from(
+            orm.Node
+        ).join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
+        .join(orm.Group, orm.Group.id == orm.Node.group_id, isouter=True)
+        .where(
+            orm.Node.id == attrs.parent_id
+        )
     )
-    user_id, group_id = db_session.execute(stmt).fetchone()
+    row = db_session.execute(stmt).fetchone()
+
+    if row.user_id is None:
+        owner_name = row.group_name
+    else:
+        owner_name = row.username
 
     doc = orm.Document(
         id=doc_id,
@@ -277,8 +293,8 @@ def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
-        user_id=user_id,
-        group_id=group_id
+        user_id=row.user_id,
+        group_id=row.group_id,
     )
     doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
@@ -312,6 +328,7 @@ def create_document(
         else:
             error = schema.Error(messages=[stre])
 
+    doc.owner_name = owner_name
     return schema.Document.model_validate(doc), error
 
 
@@ -661,9 +678,30 @@ def get_doc(
     stmt_doc = select(orm.Document).where(
         orm.Document.id == id
     )
+
     db_doc = session.scalar(stmt_doc)
     breadcrumb = get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
+
+    stmt = (select(
+        orm.Document.group_id,
+        orm.Group.name.label('group_name'),
+        orm.Document.user_id,
+        orm.User.username
+    ).select_from(
+        orm.Document
+    ).join(orm.User, orm.User.id == orm.Document.user_id, isouter=True)
+     .join(orm.Group, orm.Group.id == orm.Document.group_id, isouter=True)
+     ).where(orm.Document.id == id)
+
+    row = session.execute(stmt).one()
+
+    if row.user_id is None:
+        owner_name = row.group_name
+    else:
+        owner_name = row.username
+
+    db_doc.owner_name = owner_name
 
     # colored_tags = session.scalars(colored_tags_stmt).all()
     # db_doc.tags = [ct.tag for ct in colored_tags]

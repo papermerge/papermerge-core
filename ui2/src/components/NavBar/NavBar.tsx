@@ -27,11 +27,11 @@ import {Group, Loader} from "@mantine/core"
 import {
   IconAlignJustified,
   IconCategory,
-  IconFile3d,
   IconHome,
   IconInbox,
   IconMasksTheater,
   IconTag,
+  IconTriangleSquareCircle,
   IconUsers,
   IconUsersGroup,
   IconUserShare
@@ -124,7 +124,10 @@ function NavBarFull() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedback(t("document_types.name.by"), <IconFile3d />)}
+            {NavLinkWithFeedback(
+              t("document_types.name.by"),
+              <IconTriangleSquareCircle />
+            )}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (
@@ -213,7 +216,7 @@ function NavBarCollapsed() {
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/document-types">
-            {NavLinkWithFeedbackShort(<IconFile3d />)}
+            {NavLinkWithFeedbackShort(<IconTriangleSquareCircle />)}
           </NavLink>
         )}
         {user.scopes.includes(USER_VIEW) && (

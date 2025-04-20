@@ -264,26 +264,7 @@ def create_document(
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
-    stmt = (
-        select(
-            orm.Node.user_id,
-            orm.User.username,
-            orm.Node.group_id,
-            orm.Group.name.label('group_name')
-        ).select_from(
-            orm.Node
-        ).join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.Node.group_id, isouter=True)
-        .where(
-            orm.Node.id == attrs.parent_id
-        )
-    )
-    row = db_session.execute(stmt).fetchone()
-
-    if row.user_id is None:
-        owner_name = row.group_name
-    else:
-        owner_name = row.username
+    owner = get_node_owner(db_session, node_id=attrs.parent_id)
 
     doc = orm.Document(
         id=doc_id,
@@ -293,8 +274,8 @@ def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
-        user_id=row.user_id,
-        group_id=row.group_id,
+        user_id=owner.user_id,
+        group_id=owner.group_id,
     )
     doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
@@ -328,7 +309,7 @@ def create_document(
         else:
             error = schema.Error(messages=[stre])
 
-    doc.owner_name = owner_name
+    doc.owner_name = owner.name
     return schema.Document.model_validate(doc), error
 
 
@@ -683,25 +664,8 @@ def get_doc(
     breadcrumb = get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
 
-    stmt = (select(
-        orm.Document.group_id,
-        orm.Group.name.label('group_name'),
-        orm.Document.user_id,
-        orm.User.username
-    ).select_from(
-        orm.Document
-    ).join(orm.User, orm.User.id == orm.Document.user_id, isouter=True)
-     .join(orm.Group, orm.Group.id == orm.Document.group_id, isouter=True)
-     ).where(orm.Document.id == id)
-
-    row = session.execute(stmt).one()
-
-    if row.user_id is None:
-        owner_name = row.group_name
-    else:
-        owner_name = row.username
-
-    db_doc.owner_name = owner_name
+    owner = get_node_owner(session, node_id=id)
+    db_doc.owner_name = owner.name
 
     # colored_tags = session.scalars(colored_tags_stmt).all()
     # db_doc.tags = [ct.tag for ct in colored_tags]
@@ -710,6 +674,34 @@ def get_doc(
 
     return model_doc
 
+
+def get_node_owner(
+    db_session: Session,
+    node_id: uuid.UUID
+) -> schema.Owner:
+    stmt = (select(
+        orm.Node.group_id,
+        orm.Group.name.label('group_name'),
+        orm.Node.user_id,
+        orm.User.username
+    ).select_from(
+        orm.Node
+    ).join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
+     .join(orm.Group, orm.Group.id == orm.Node.group_id, isouter=True)
+     ).where(orm.Node.id == node_id)
+
+    row = db_session.execute(stmt).one()
+
+    if row.user_id is None:
+        owner_name = row.group_name
+    else:
+        owner_name = row.username
+
+    return schema.Owner(
+        name=owner_name,
+        user_id=row.user_id,
+        group_id=row.group_id
+    )
 
 def get_page_document_id(
     db_session: Session, page_id: uuid.UUID

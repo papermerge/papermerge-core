@@ -45,6 +45,10 @@ import {
   ROLE_SELECT,
   ROLE_UPDATE,
   ROLE_VIEW,
+  SHARED_NODE_CREATE,
+  SHARED_NODE_DELETE,
+  SHARED_NODE_UPDATE,
+  SHARED_NODE_VIEW,
   TAG_CREATE,
   TAG_DELETE,
   TAG_UPDATE,
@@ -876,6 +880,70 @@ export default function EditRoleModal({
                 checked={hasPerm(scopes, NODE_MOVE)}
                 onChange={e => onChangePerm(NODE_MOVE, e.target.checked)}
                 label={t("roles.form.permissions.actions.move")}
+              />
+            </Table.Td>
+          </Table.Tr>
+          <Table.Tr key="shared_nodes">
+            <Tooltip
+              label={"Nodes here means both documents and folders"}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerms(scopes, [
+                    SHARED_NODE_CREATE,
+                    SHARED_NODE_DELETE,
+                    SHARED_NODE_VIEW,
+                    SHARED_NODE_UPDATE
+                  ])}
+                  onChange={e =>
+                    onChangePerms(
+                      [
+                        SHARED_NODE_CREATE,
+                        SHARED_NODE_DELETE,
+                        SHARED_NODE_VIEW,
+                        SHARED_NODE_UPDATE
+                      ],
+                      e.target.checked
+                    )
+                  }
+                  label={t("roles.form.permissions.groups.shared_nodes")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, SHARED_NODE_VIEW)}
+                onChange={e => onChangePerm(NODE_VIEW, e.target.checked)}
+                label="View"
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, SHARED_NODE_CREATE)}
+                onChange={e => onChangePerm(NODE_CREATE, e.target.checked)}
+                label={t("roles.form.permissions.actions.create")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, SHARED_NODE_UPDATE)}
+                onChange={e =>
+                  onChangePerm(SHARED_NODE_UPDATE, e.target.checked)
+                }
+                label={t("roles.form.permissions.actions.update")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                checked={hasPerm(scopes, SHARED_NODE_DELETE)}
+                onChange={e =>
+                  onChangePerm(SHARED_NODE_DELETE, e.target.checked)
+                }
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>

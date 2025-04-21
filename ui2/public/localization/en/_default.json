@@ -138,6 +138,7 @@
   "roles.form.permissions.groups.custom_fields": "Custom Fields",
   "roles.form.permissions.groups.document_types": "Document Types",
   "roles.form.permissions.groups.nodes": "Nodes",
+  "roles.form.permissions.groups.shared_nodes": "Shared Nodes",
   "roles.form.permissions.groups.tasks": "Tasks",
   "roles.form.permissions.groups.roles": "Roles",
 

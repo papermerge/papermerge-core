@@ -32,6 +32,10 @@ import {
   ROLE_DELETE,
   ROLE_UPDATE,
   ROLE_VIEW,
+  SHARED_NODE_CREATE,
+  SHARED_NODE_DELETE,
+  SHARED_NODE_UPDATE,
+  SHARED_NODE_VIEW,
   TAG_CREATE,
   TAG_DELETE,
   TAG_UPDATE,
@@ -592,6 +596,44 @@ export default function RoleModal({role}: Args) {
                 onChange={() => {}}
                 checked={hasPerm(role?.scopes || [], NODE_MOVE)}
                 label={t("roles.form.permissions.actions.move")}
+              />
+            </Table.Td>
+          </Table.Tr>
+          <Table.Tr key="shared_nodes">
+            <Table.Td>
+              {t("roles.form.permissions.groups.shared_nodes")}
+            </Table.Td>
+
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], SHARED_NODE_VIEW)}
+                label="View"
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], SHARED_NODE_CREATE)}
+                label={t("roles.form.permissions.actions.create")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], SHARED_NODE_UPDATE)}
+                label={t("roles.form.permissions.actions.update")}
+              />
+            </Table.Td>
+            <Table.Td>
+              <Checkbox
+                readOnly={role == null}
+                onChange={() => {}}
+                checked={hasPerm(role?.scopes || [], SHARED_NODE_DELETE)}
+                label={t("roles.form.permissions.actions.delete")}
               />
             </Table.Td>
           </Table.Tr>

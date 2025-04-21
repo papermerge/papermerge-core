@@ -1,9 +1,49 @@
 import CopyButton from "@/components/CopyButton"
 import {Checkbox, Table, TextInput, Tooltip} from "@mantine/core"
 
-import {NODE_VIEW, PAGE_VIEW} from "@/scopes"
+import {NODE_VIEW, PAGE_VIEW, ROLE_SELECT} from "@/scopes"
 import type {RoleDetails} from "@/types"
 import {useTranslation} from "react-i18next"
+
+import {
+  CUSTOM_FIELD_CREATE,
+  CUSTOM_FIELD_DELETE,
+  CUSTOM_FIELD_UPDATE,
+  CUSTOM_FIELD_VIEW,
+  DOCUMENT_DOWNLOAD,
+  DOCUMENT_TYPE_CREATE,
+  DOCUMENT_TYPE_DELETE,
+  DOCUMENT_TYPE_UPDATE,
+  DOCUMENT_TYPE_VIEW,
+  DOCUMENT_UPLOAD,
+  GROUP_CREATE,
+  GROUP_DELETE,
+  GROUP_SELECT,
+  GROUP_UPDATE,
+  NODE_CREATE,
+  NODE_DELETE,
+  NODE_MOVE,
+  NODE_UPDATE,
+  PAGE_DELETE,
+  PAGE_EXTRACT,
+  PAGE_MOVE,
+  PAGE_UPDATE,
+  ROLE_CREATE,
+  ROLE_DELETE,
+  ROLE_UPDATE,
+  ROLE_VIEW,
+  TAG_CREATE,
+  TAG_DELETE,
+  TAG_UPDATE,
+  TAG_VIEW,
+  TASK_OCR,
+  USER_CREATE,
+  USER_DELETE,
+  USER_ME,
+  USER_SELECT,
+  USER_UPDATE,
+  USER_VIEW
+} from "@/scopes"
 
 type Args = {
   role: RoleDetails | null
@@ -113,6 +153,22 @@ export default function RoleModal({role}: Args) {
               </Table.Td>
             </Tooltip>
             <Tooltip
+              label={t("roles.form.permissions.actions.select_users.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  readOnly={role == null}
+                  onChange={() => {}}
+                  checked={hasPerm(role?.scopes || [], USER_SELECT)}
+                  label={t("roles.form.permissions.actions.select.label")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
               label="Grants access to users tab on left side navigation panel"
               multiline
               w={300}
@@ -167,8 +223,24 @@ export default function RoleModal({role}: Args) {
                 <Checkbox
                   readOnly={role == null}
                   onChange={() => {}}
-                  checked={hasPerm(role?.scopes || [], GROUP_VIEW)}
+                  checked={hasPerm(role?.scopes || [], GROUP_SELECT)}
                   label={t("roles.form.permissions.actions.view")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label={t("roles.form.permissions.actions.select_groups.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  readOnly={role == null}
+                  onChange={() => {}}
+                  checked={hasPerm(role?.scopes || [], GROUP_SELECT)}
+                  label={t("roles.form.permissions.actions.select.label")}
                 />
               </Table.Td>
             </Tooltip>
@@ -212,6 +284,22 @@ export default function RoleModal({role}: Args) {
                   onChange={() => {}}
                   checked={hasPerm(role?.scopes || [], ROLE_VIEW)}
                   label={t("roles.form.permissions.actions.view")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label={t("roles.form.permissions.actions.select_roles.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  readOnly={role == null}
+                  onChange={() => {}}
+                  checked={hasPerm(role?.scopes || [], ROLE_SELECT)}
+                  label={t("roles.form.permissions.actions.select.label")}
                 />
               </Table.Td>
             </Tooltip>
@@ -535,40 +623,3 @@ export default function RoleModal({role}: Args) {
 function hasPerm(scopes: string[], perm: string): boolean {
   return scopes.includes(perm)
 }
-
-const DOCUMENT_DOWNLOAD = "document.download"
-const DOCUMENT_UPLOAD = "document.upload"
-const PAGE_MOVE = "page.move"
-const PAGE_UPDATE = "page.update"
-const PAGE_DELETE = "page.delete"
-const PAGE_EXTRACT = "page.extract"
-const USER_ME = "user.me"
-const USER_VIEW = "user.view"
-const USER_CREATE = "user.create"
-const USER_UPDATE = "user.update"
-const USER_DELETE = "user.delete"
-const GROUP_VIEW = "group.view"
-const GROUP_CREATE = "group.create"
-const GROUP_UPDATE = "group.update"
-const GROUP_DELETE = "group.delete"
-const ROLE_VIEW = "role.view"
-const ROLE_CREATE = "role.create"
-const ROLE_UPDATE = "role.update"
-const ROLE_DELETE = "role.delete"
-const TAG_VIEW = "tag.view"
-const TAG_CREATE = "tag.create"
-const TAG_UPDATE = "tag.update"
-const TAG_DELETE = "tag.delete"
-const CUSTOM_FIELD_VIEW = "custom_field.view"
-const CUSTOM_FIELD_CREATE = "custom_field.create"
-const CUSTOM_FIELD_UPDATE = "custom_field.update"
-const CUSTOM_FIELD_DELETE = "custom_field.delete"
-const DOCUMENT_TYPE_VIEW = "document_type.view"
-const DOCUMENT_TYPE_CREATE = "document_type.create"
-const DOCUMENT_TYPE_UPDATE = "document_type.update"
-const DOCUMENT_TYPE_DELETE = "document_type.delete"
-const NODE_CREATE = "node.create"
-const NODE_UPDATE = "node.update"
-const NODE_DELETE = "node.delete"
-const NODE_MOVE = "node.move"
-const TASK_OCR = "task.ocr"

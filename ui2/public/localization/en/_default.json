@@ -143,6 +143,10 @@
 
   "roles.form.permissions.actions.me.label": "Me/Current User",
   "roles.form.permissions.actions.me.tooltip": "Grants access to retrieve current user's details",
+  "roles.form.permissions.actions.select.label": "Select",
+  "roles.form.permissions.actions.select_users.tooltip": "Grants permission to fetch username and ID of all users",
+  "roles.form.permissions.actions.select_roles.tooltip": "Grants permission to fetch name and ID of all roles",
+  "roles.form.permissions.actions.select_groups.tooltip": "Grants permission to fetch name and ID of all groups",
   "roles.form.permissions.actions.upload": "Upload",
   "roles.form.permissions.actions.download": "Download",
   "roles.form.permissions.actions.move": "Move",

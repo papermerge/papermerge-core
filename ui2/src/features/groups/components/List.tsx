@@ -1,3 +1,4 @@
+import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import {useGetPaginatedGroupsQuery} from "@/features/groups/apiSlice"
 import {
   clearSelection,
@@ -6,9 +7,11 @@ import {
   selectLastPageSize,
   selectSelectedIds
 } from "@/features/groups/groupsSlice"
+import {isHTTP403Forbidden} from "@/services/helpers"
 import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
+import {useNavigate} from "react-router-dom"
 
 import Pagination from "@/components/Pagination"
 import ActionButtons from "./ActionButtons"
@@ -18,14 +21,16 @@ export default function GroupsList() {
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
+  const navigate = useNavigate()
 
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetPaginatedGroupsQuery({
-    page_number: page,
-    page_size: pageSize
-  })
+  const {data, isLoading, isFetching, isError, error} =
+    useGetPaginatedGroupsQuery({
+      page_number: page,
+      page_size: pageSize
+    })
 
   const onCheckAll = (checked: boolean) => {
     if (!data) {
@@ -53,6 +58,10 @@ export default function GroupsList() {
       dispatch(lastPageSizeUpdate(pageSize))
       setPageSize(pageSize)
     }
+  }
+
+  if (isError && isHTTP403Forbidden(error)) {
+    navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
   if (isLoading || !data) {

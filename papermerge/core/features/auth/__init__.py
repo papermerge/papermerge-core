@@ -129,7 +129,7 @@ def get_current_user(
     for scope in security_scopes.scopes:
         if scope not in total_scopes:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions",
                 headers={"WWW-Authenticate": authenticate_value},
             )

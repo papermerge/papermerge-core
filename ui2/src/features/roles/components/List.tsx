@@ -1,3 +1,4 @@
+import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import {useGetPaginatedRolesQuery} from "@/features/roles/apiSlice"
 import {
   clearSelection,
@@ -6,28 +7,32 @@ import {
   selectLastPageSize,
   selectSelectedIds
 } from "@/features/roles/rolesSlice"
+import {isHTTP403Forbidden} from "@/services/helpers"
 import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
 import {useDispatch, useSelector} from "react-redux"
+import {useNavigate} from "react-router-dom"
 
 import Pagination from "@/components/Pagination"
+import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
 import RoleRow from "./RoleRow"
-import {useTranslation} from "react-i18next"
 
 export default function RolesList() {
   const {t} = useTranslation()
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
+  const navigate = useNavigate()
 
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetPaginatedRolesQuery({
-    page_number: page,
-    page_size: pageSize
-  })
+  const {data, isLoading, isFetching, isError, error} =
+    useGetPaginatedRolesQuery({
+      page_number: page,
+      page_size: pageSize
+    })
 
   const onCheckAll = (checked: boolean) => {
     if (!data) {
@@ -55,6 +60,10 @@ export default function RolesList() {
       dispatch(lastPageSizeUpdate(pageSize))
       setPageSize(pageSize)
     }
+  }
+
+  if (isError && isHTTP403Forbidden(error)) {
+    navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
   if (isLoading || !data) {

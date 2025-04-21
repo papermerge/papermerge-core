@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 
+from papermerge.core import exceptions as exc
 from papermerge.core import types
 
 from papermerge.core.features.users.db import api as usr_dbapi
@@ -58,11 +59,6 @@ def get_current_user(
 ) -> users_schema.User:
     user = None
     total_scopes = []
-
-    if security_scopes.scopes:
-        authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
-    else:
-        authenticate_value = "Bearer"
 
     if token:  # token found
         token_data: types.TokenData = extract_token_data(token)
@@ -126,13 +122,14 @@ def get_current_user(
         if user is None:
             raise HTTPException(status_code=401, detail="No credentials provided")
 
+    if user is None:
+        raise exc.HTTP401Unauthorized()
+
+    # User is authenticated.
+    # But does he/she has enough permissions?
     for scope in security_scopes.scopes:
         if scope not in total_scopes:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": authenticate_value},
-            )
+            raise exc.HTTP403Forbidden()
 
     user.scopes = total_scopes  # is this required?
 

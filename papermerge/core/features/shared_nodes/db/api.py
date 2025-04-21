@@ -375,9 +375,11 @@ def get_shared_doc(
         if shared_root_id is None and b[0] in root_shared_node_ids:
             break
 
+    owner = dbapi_common.get_node_owner(db_session, node_id=document_id)
     shorted_breadcrumb.reverse()
 
     db_doc.breadcrumb = shorted_breadcrumb
+    db_doc.owner_name = owner.name
 
     # colored_tags = session.scalars(colored_tags_stmt).all()
     # db_doc.tags = [ct.tag for ct in colored_tags]

@@ -1,32 +1,37 @@
-import {useState} from "react"
-import {Group, Center, Stack, Table, Checkbox, Loader} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import {
-  selectionAddMany,
-  selectSelectedIds,
-  clearSelection,
-  selectLastPageSize,
-  lastPageSizeUpdate
-} from "@/features/users/usersSlice"
+import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import {useGetPaginatedUsersQuery} from "@/features/users/apiSlice"
+import {
+  clearSelection,
+  lastPageSizeUpdate,
+  selectionAddMany,
+  selectLastPageSize,
+  selectSelectedIds
+} from "@/features/users/usersSlice"
+import {isHTTP403Forbidden} from "@/services/helpers"
+import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
+import {useState} from "react"
+import {useDispatch, useSelector} from "react-redux"
+import {useNavigate} from "react-router-dom"
 
 import Pagination from "@/components/Pagination"
 
-import UserRow from "./UserRow"
 import ActionButtons from "./ActionButtons"
+import UserRow from "./UserRow"
 
 export default function UsersList() {
   const selectedIds = useSelector(selectSelectedIds)
   const lastPageSize = useSelector(selectLastPageSize)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(lastPageSize)
 
-  const {data, isLoading, isFetching} = useGetPaginatedUsersQuery({
-    page_number: page,
-    page_size: pageSize
-  })
+  const {data, isLoading, isFetching, isError, error} =
+    useGetPaginatedUsersQuery({
+      page_number: page,
+      page_size: pageSize
+    })
 
   const onCheckAll = (checked: boolean) => {
     if (!data) {
@@ -54,6 +59,10 @@ export default function UsersList() {
       dispatch(lastPageSizeUpdate(pageSize))
       setPageSize(pageSize)
     }
+  }
+
+  if (isError && isHTTP403Forbidden(error)) {
+    navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
   if (isLoading || !data) {

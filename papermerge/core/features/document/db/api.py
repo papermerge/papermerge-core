@@ -20,7 +20,7 @@ from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.document_types.db.api import document_type_cf_count
 from papermerge.core.types import OrderEnum, CFVValueColumn
-from papermerge.core.db.common import get_ancestors
+from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
     abs_docver_path,
@@ -676,33 +676,7 @@ def get_doc(
     return model_doc
 
 
-def get_node_owner(
-    db_session: Session,
-    node_id: uuid.UUID
-) -> schema.Owner:
-    stmt = (select(
-        orm.Node.group_id,
-        orm.Group.name.label('group_name'),
-        orm.Node.user_id,
-        orm.User.username
-    ).select_from(
-        orm.Node
-    ).join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
-     .join(orm.Group, orm.Group.id == orm.Node.group_id, isouter=True)
-     ).where(orm.Node.id == node_id)
 
-    row = db_session.execute(stmt).one()
-
-    if row.user_id is None:
-        owner_name = row.group_name
-    else:
-        owner_name = row.username
-
-    return schema.Owner(
-        name=owner_name,
-        user_id=row.user_id,
-        group_id=row.group_id
-    )
 
 def get_page_document_id(
     db_session: Session, page_id: uuid.UUID

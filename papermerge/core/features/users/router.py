@@ -97,9 +97,11 @@ def get_users(
 
 
 @router.get("/all", response_model=list[schema.User])
-@utils.docstring_parameter(scope=scopes.USER_VIEW)
+@utils.docstring_parameter(scope=scopes.USER_SELECT)
 def get_users_without_pagination(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.USER_VIEW])]
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.USER_SELECT])
+    ]
 ):
     """Get all users without pagination/filtering/sorting
 

@@ -8,6 +8,7 @@ from papermerge.core.features.nodes.db import orm
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.features.groups.db import orm as groups_orm
 from papermerge.core.features.roles.db import orm as roles_orm
+from papermerge.core.features.nodes import schema as nodes_schema
 
 
 def get_ancestors(
@@ -174,3 +175,28 @@ def has_nodes_perm(
     """
 
     return False
+
+
+def get_node_owner(db_session: Session, node_id: UUID) -> nodes_schema.Owner:
+    stmt = (
+        select(
+            orm.Node.group_id,
+            groups_orm.Group.name.label("group_name"),
+            orm.Node.user_id,
+            orm.User.username,
+        )
+        .select_from(orm.Node)
+        .join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
+        .join(groups_orm.Group, groups_orm.Group.id == orm.Node.group_id, isouter=True)
+    ).where(orm.Node.id == node_id)
+
+    row = db_session.execute(stmt).one()
+
+    if row.user_id is None:
+        owner_name = row.group_name
+    else:
+        owner_name = row.username
+
+    return nodes_schema.Owner(
+        name=owner_name, user_id=row.user_id, group_id=row.group_id
+    )

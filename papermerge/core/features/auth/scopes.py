@@ -10,16 +10,25 @@ TAG_VIEW = "tag.view"
 TAG_UPDATE = "tag.update"
 TAG_DELETE = "tag.delete"
 USER_CREATE = "user.create"
+# user can pick up a user from dropdown menu
+# e.g. for sharing folders and documents
+USER_SELECT = "user.select"
 USER_VIEW = "user.view"
 USER_UPDATE = "user.update"
 USER_DELETE = "user.delete"
 USER_ME = "user.me"
 GROUP_CREATE = "group.create"
+# user can pick up a group from dropdown menu
+# e.g. for sharing folders and documents
+GROUP_SELECT = "group.select"
 GROUP_VIEW = "group.view"
 GROUP_UPDATE = "group.update"
 GROUP_DELETE = "group.delete"
 ROLE_CREATE = "role.create"
 ROLE_VIEW = "role.view"
+# user can pick up a role from dropdown menu
+# e.g. for sharing folders and documents
+ROLE_SELECT = "role.select"
 ROLE_UPDATE = "role.update"
 ROLE_DELETE = "role.delete"
 TASK_OCR = "task.ocr"

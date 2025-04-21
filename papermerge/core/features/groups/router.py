@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/all")
-@utils.docstring_parameter(scope=scopes.GROUP_VIEW)
+@utils.docstring_parameter(scope=scopes.GROUP_SELECT)
 def get_groups_without_pagination(
     user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
+        schema.User, Security(get_current_user, scopes=[scopes.GROUP_SELECT])
     ],
 ) -> list[schema.Group]:
     """Get all groups without pagination/filtering/sorting

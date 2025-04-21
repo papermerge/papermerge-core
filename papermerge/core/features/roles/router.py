@@ -21,9 +21,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/all")
-@utils.docstring_parameter(scope=scopes.ROLE_VIEW)
+@utils.docstring_parameter(scope=scopes.ROLE_SELECT)
 def get_roles_without_pagination(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.ROLE_VIEW])],
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.ROLE_SELECT])
+    ],
 ) -> list[schema.Role]:
     """Get all roles without pagination/filtering/sorting
 

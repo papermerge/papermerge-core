@@ -35,10 +35,8 @@
   "common.table.columns.type": "Typ",
   "common.table.columns.pinned": "Angeheftet",
   "common.table.columns.description": "Beschreibung",
-
   "folder.new.title": "Neuer Ordner",
   "folder.form.name": "Ordner Titel",
-
   "tags.name": "Stichwörte",
   "tags.list.empty": "Derzeit gibt es keine Stichwörte vorhanden",
   "tags.new.title": "Neues Stichwort",
@@ -53,14 +51,10 @@
   "tags.delete.one.description": "Stichwort löschen?",
   "tags.delete.many.title": "Stichwörte löschen",
   "tags.delete.many.description": "Stichwörte löschen?",
-
   "roles.list.empty": "Derzeit gibt es keine Rollen",
-
   "documents.delete.one": "Dockument löschen",
-
   "nodes.delete.many.title": "Dockumente und Ordner löschen",
   "nodes.delete.many.description": "Löschen?",
-
   "document_types.name": "Kategorien",
   "document_types.name.by": "Kategorien",
   "document_types.new.title": "Neue Kategorie",
@@ -68,14 +62,12 @@
   "document_types.form.custom_fields": "Benutzerdefinierte Felder",
   "document_types.form.custom_fields.placeholder": "Wert auswählen",
   "document_types.form.path_template": "Pfadvorlage",
-
   "document_types.delete.hint": "Dies hat keine Auswirkungen auf die zugehörigen Dokumente",
   "document_types.delete.one.title": "Kategorie löschen",
   "document_types.delete.one.description": "Kategorie löschen?",
   "document_types.delete.many.title": "Kategorie löschen",
   "document_types.delete.many.description": "Kategorien löschen",
   "document_types.list.empty": "Derzeit gibt es keine Kategorien",
-
   "custom_fields.name": "BD Felder",
   "custom_fields.new.title": "Neue Benutzerdefiniertefeld",
   "custom_fields.edit.title": "Benutzerdefiniertefeld bearbeiten",
@@ -84,10 +76,9 @@
   "custom_fields.form.currency": "Währung",
   "custom_fields.delete.one.title": "Benutzerdefiniertefeld löschen",
   "custom_fields.delete.one.description": "Benutzerdefiniertefeld löschen?",
-  "custom_fields.delete.many.title": "Benutzerdefiniertefelder löschen?",
+  "custom_fields.delete.many.title": "Benutzerdefiniertefelder löschen",
   "custom_fields.delete.many.description": "Benutzerdefiniertefelder löschen?",
   "custom_fields.list.empty": "Derzeit sind keine Benutzerdefiniertefelder vorhanden",
-
   "groups.name": "Gruppen",
   "groups.new.title": "Neue Gruppe",
   "groups.edit.title": "Grupe nearbeiten",
@@ -97,14 +88,11 @@
   "groups.delete.one.description": "Gruppe löschen?",
   "groups.delete.many.title": "Gruppen löschen?",
   "groups.delete.many.description": "Gruppen löschen?",
-
   "home.name": "Startseite",
   "home.name.my": "Meine Stertseite",
-
   "inbox.name": "Eingang",
   "inbox.name.my": "Mein Eingang",
   "shared.name": "Verteilte",
-
   "users.name": "Benutzer",
   "users.new.title": "Neuer Benutzer",
   "users.edit.title": "Benutzer bearbeiten",
@@ -122,7 +110,6 @@
   "users.delete.one.description": "Benutzer löschen?",
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
-
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",
@@ -138,11 +125,16 @@
   "roles.form.permissions.groups.custom_fields": "BD",
   "roles.form.permissions.groups.document_types": "Kategorien",
   "roles.form.permissions.groups.nodes": "Ordner u. Dockumente",
+  "roles.form.permissions.groups.shared_nodes": "Shared Nodes",
   "roles.form.permissions.groups.tasks": "Aufgaben",
   "roles.form.permissions.groups.roles": "Rollen",
-
   "roles.form.permissions.actions.me.label": "Ich/Aktuelle Benutzer",
   "roles.form.permissions.actions.me.tooltip": "Erlaubt den Zugriff auf die Details des aktuellen Benutzers",
+  "roles.form.permissions.actions.select.label": "Select",
+  "roles.form.permissions.actions.select_users.tooltip": "",
+  "roles.form.permissions.actions.select_roles.tooltip": "Grants permission to fetch name and ID of all roles",
+  "roles.form.permissions.actions.select_groups.tooltip": "Grants permission to fetch name and ID of all groups",
+  "roles.form.permissions.actions.select_tags.tooltip": "Grants permission to fetch name and ID of all private and group's tags",
   "roles.form.permissions.actions.upload": "Hochladen",
   "roles.form.permissions.actions.download": "Herunterladen",
   "roles.form.permissions.actions.move": "Verschieben",
@@ -156,18 +148,15 @@
   "roles.delete.one.description": "Rolle löschen?",
   "roles.delete.many.title": "Rolle löschen",
   "roles.delete.many.description": "Rolle löschen?",
-
   "extra.rest_api": "REST API",
   "extra.logout": "Abmelden",
   "by_document_type.name": "Nach Kategorie",
-
   "pages.error.access_forbidden.title": "Zugriff verboten",
   "pages.error.access_forbidden.message": "Du hast nicht genügend Berechtigungen für den Zugriff auf die Ressource",
   "pages.error.not_found.title": "Nichts gefunden",
   "pages.error.not_found.message": "Die Ressource kann nicht gefunden werden",
   "pages.error.unprocessable_content.title": "Unverarbeitbare Inhalte",
   "pages.error.unprocessable_content.message": "Hat die URL vielleicht ein falsches Format (z. B. fehlen einige Zeichen in der UUID)?",
-
   "notifications.common.error": "Fehler",
   "notifications.role.updated.success": "Rolle wurde aktualisiert",
   "notifications.role.created.success": "Rolle wurde erstellt",

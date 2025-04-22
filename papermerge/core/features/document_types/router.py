@@ -54,14 +54,6 @@ def get_document_types_without_pagination(
     Required scope: `{scope}`
     """
     with db.Session() as db_session:
-        if group_id:
-            ok = dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
-            if not ok:
-                detail = f"User {user.id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-
         result = dbapi.get_document_types_without_pagination(
             db_session, user_id=user.id, group_id=group_id
         )

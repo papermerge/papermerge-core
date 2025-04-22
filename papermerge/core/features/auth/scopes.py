@@ -5,6 +5,9 @@ NODE_DELETE = "node.delete"
 NODE_MOVE = "node.move"
 DOCUMENT_UPLOAD = "document.upload"
 DOCUMENT_DOWNLOAD = "document.download"
+# user can pick up a tag from dropdown menu
+# e.g. for sharing folders and documents
+TAG_SELECT = "tag.select"
 TAG_CREATE = "tag.create"
 TAG_VIEW = "tag.view"
 TAG_UPDATE = "tag.update"
@@ -62,6 +65,7 @@ SCOPES = {
     TASK_OCR: TASK_OCR,
     TAG_CREATE: TAG_CREATE,
     TAG_VIEW: TAG_VIEW,
+    TAG_SELECT: TAG_SELECT,
     TAG_UPDATE: TAG_UPDATE,
     TAG_DELETE: TAG_DELETE,
     USER_ME: USER_ME,

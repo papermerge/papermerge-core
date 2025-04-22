@@ -36,10 +36,10 @@ logger = logging.getLogger(__name__)
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.TAG_VIEW)
+@utils.docstring_parameter(scope=scopes.TAG_SELECT)
 def retrieve_tags_without_pagination(
     user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
+        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_SELECT])
     ],
     group_id: UUID | None = None,
 ):
@@ -58,15 +58,6 @@ def retrieve_tags_without_pagination(
     Required scope: `{scope}`
     """
     with Session() as db_session:
-        if group_id:
-            ok = users_dbapi.user_belongs_to(
-                db_session, user_id=user.id, group_id=group_id
-            )
-            if not ok:
-                detail = f"User {user.id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
         tags = tags_dbapi.get_tags_without_pagination(
             db_session, user_id=user.id, group_id=group_id
         )

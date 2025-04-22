@@ -40,4 +40,3 @@ ui/public/runtime/config.js
 .ruff_cache/
 .pytest_cache/
 .envok.yaml
-ui2/crowdin.yml

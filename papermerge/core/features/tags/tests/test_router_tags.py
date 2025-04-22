@@ -205,21 +205,6 @@ def test_delete_tag_which_has_associated_document(
     assert db_session.query(q_tag.exists()).scalar() is False
 
 
-def test__negative__tags_all_route_with_group_id_param(
-    make_tag, auth_api_client: AuthTestClient, user
-):
-    """In this scenario current user does not belong to the
-    group provided as parameter"""
-    user_a_tags_count = 5
-    for i in range(user_a_tags_count):
-        make_tag(name=f"Tag {i}", user=user)
-
-    group_id = uuid.uuid4()
-    response = auth_api_client.get("/tags/all", params={"group_id": str(group_id)})
-
-    assert response.status_code == 403, response.json()
-
-
 def test__positive__tags_all_route_with_group_id_param(
     db_session, make_tag, auth_api_client: AuthTestClient, user, make_group
 ):

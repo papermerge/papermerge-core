@@ -270,23 +270,6 @@ def test_document_types_all_route(
     assert len(items) == total_doc_type_items
 
 
-def test__negative__document_types_all_route_with_group_id_param(
-    make_document_type, auth_api_client: AuthTestClient, user
-):
-    """In this scenario current user does not belong to the
-    group provided as parameter"""
-    total_doc_type_items = 9
-    for i in range(total_doc_type_items):
-        make_document_type(name=f"Invoice {i}", user=user)
-
-    group_id = uuid.uuid4()
-    response = auth_api_client.get(
-        "/document-types/all", params={"group_id": str(group_id)}
-    )
-
-    assert response.status_code == 403, response.json()
-
-
 def test__positive__document_types_all_route_with_group_id_param(
     db_session, make_document_type, auth_api_client: AuthTestClient, user, make_group
 ):

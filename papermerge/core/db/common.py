@@ -164,19 +164,6 @@ def has_node_perm(
     return has_access
 
 
-def has_nodes_perm(
-    db_session: Session,
-    node_ids: list[UUID],
-    codename: str,
-    user_id: UUID,
-) -> bool:
-    """
-    Has user `codename` permission for `node_ids`?
-    """
-
-    return False
-
-
 def get_node_owner(db_session: Session, node_id: UUID) -> nodes_schema.Owner:
     stmt = (
         select(

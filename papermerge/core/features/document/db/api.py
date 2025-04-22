@@ -660,8 +660,7 @@ def get_doc(
     stmt_doc = select(orm.Document).where(
         orm.Document.id == id
     )
-
-    db_doc = session.scalar(stmt_doc)
+    db_doc = session.execute(stmt_doc).scalar_one()
     breadcrumb = get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
 

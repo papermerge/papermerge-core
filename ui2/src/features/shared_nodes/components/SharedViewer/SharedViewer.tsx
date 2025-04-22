@@ -16,6 +16,7 @@ import {
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
+import {skipToken} from "@reduxjs/toolkit/query"
 
 import {store} from "@/app/store"
 import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
@@ -40,16 +41,20 @@ export default function SharedViewer() {
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
   const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
 
+  const queryParams = currentNodeID
+    ? {
+        nodeID: currentNodeID,
+        currentSharedRootID: currentSharedRootID
+      }
+    : skipToken
+
   const {
     currentData: doc,
     isSuccess,
     isError,
     isFetching,
     isLoading
-  } = useGetSharedDocumentQuery({
-    nodeID: currentNodeID!,
-    currentSharedRootID: currentSharedRootID
-  })
+  } = useGetSharedDocumentQuery(queryParams)
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {

@@ -51,6 +51,7 @@ import {
   SHARED_NODE_VIEW,
   TAG_CREATE,
   TAG_DELETE,
+  TAG_SELECT,
   TAG_UPDATE,
   TAG_VIEW,
   TASK_OCR,
@@ -577,6 +578,21 @@ export default function EditRoleModal({
                   checked={hasPerm(scopes, TAG_VIEW)}
                   onChange={e => onChangePerm(TAG_VIEW, e.target.checked)}
                   label={t("roles.form.permissions.actions.view")}
+                />
+              </Table.Td>
+            </Tooltip>
+            <Tooltip
+              label={t("roles.form.permissions.actions.select_tags.tooltip")}
+              multiline
+              w={300}
+              openDelay={2000}
+              withArrow
+            >
+              <Table.Td>
+                <Checkbox
+                  checked={hasPerm(scopes, TAG_SELECT)}
+                  onChange={e => onChangePerm(TAG_SELECT, e.target.checked)}
+                  label={t("roles.form.permissions.actions.select.label")}
                 />
               </Table.Td>
             </Tooltip>

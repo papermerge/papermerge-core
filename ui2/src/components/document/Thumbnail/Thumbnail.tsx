@@ -24,6 +24,7 @@ import {
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
+import {skipToken} from "@reduxjs/toolkit/query"
 
 import {DRAGGED} from "@/cconstants"
 import {
@@ -60,7 +61,7 @@ export default function Thumbnail({page}: Args) {
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc} = useGetDocumentQuery(currentNodeID!)
+  const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 

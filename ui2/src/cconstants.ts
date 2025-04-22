@@ -92,7 +92,7 @@ export const SUPPORTED_LANGS: I18nLangType[] = [
   {code: "en", name: "English"},
   {code: "de", name: "Deutsch"},
   {code: "ru", name: "Русский"},
-  {code: "kz", name: "Қазақша"}
+  {code: "kk", name: "Қазақша"}
 ]
 
 export const ERRORS_422_UNPROCESSABLE_CONTENT = "/errors/unprocessable-content"

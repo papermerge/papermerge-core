@@ -7,7 +7,7 @@ RUN yarn install
 RUN yarn build
 
 
-FROM papermerge/auth-server:1.1.1 as auth_server
+FROM papermerge/auth-server:1.1.2 as auth_server
 FROM python:3.13-alpine as papermerge_core
 
 ENV CORE_APP=/core_app

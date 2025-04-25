@@ -2,6 +2,7 @@ import logging
 import math
 import uuid
 
+from typing import Tuple
 from sqlalchemy import delete, select, func
 from sqlalchemy.orm import joinedload
 
@@ -56,7 +57,7 @@ def get_roles_without_pagination(db_session: Session) -> list[schema.Role]:
 
 def create_role(
     db_session: Session, name: str, scopes: list[str], exists_ok: bool = False
-) -> [schema.Role | None, str | None]:
+) -> Tuple[schema.Role | None, str | None]:
     """Creates a role with given scopes"""
     stmt_total_permissions = select(func.count(orm.Permission.id))
     perms_count = db_session.execute(stmt_total_permissions).scalar()

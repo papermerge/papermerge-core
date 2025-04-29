@@ -274,6 +274,26 @@ def test_document_update_string_custom_field_value_multiple_times(
     assert shop_cf.value == "rewe"
 
 
+def test_get_docs_by_type_without_cf(
+    db_session: Session, make_document, make_document_type_without_cf, user
+):
+    """
+    `db.get_docs_by_type` must return all documents of specific type
+    regardless if they have or no associated custom field.
+    """
+    dtype = make_document_type_without_cf(name="resume")
+    doc_1 = make_document(title="receipt_1.pdf", user=user, parent=user.home_folder)
+    doc_2 = make_document(title="receipt_2.pdf", user=user, parent=user.home_folder)
+    dbapi.update_doc_type(db_session, document_id=doc_1.id, document_type_id=dtype.id)
+    dbapi.update_doc_type(db_session, document_id=doc_2.id, document_type_id=dtype.id)
+
+    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+        db_session, type_id=dtype.id, user_id=user.id
+    )
+
+    assert len(items) == 2
+
+
 def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user):
     """
     `db.get_docs_by_type` must return all documents of specific type

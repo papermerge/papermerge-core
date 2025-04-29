@@ -205,6 +205,37 @@ def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
     return ret
 
 
+def get_docs_by_type_no_cf(
+    session: Session,
+    type_id: uuid.UUID,
+    limit: int,
+    offset: int,
+    order_by: str | None = None,
+    order: OrderEnum = OrderEnum.desc,
+) -> list[schema.DocumentCFV]:
+    """Return all documents of specific type (with their empty custom fields)
+
+    This method works correctly only in case document type does
+    not have custom fields
+    """
+    stmt = select(orm.Document).where(
+        orm.Document.document_type_id == type_id
+    ).limit(limit).offset(offset)
+
+    results = []
+
+    for doc in session.execute(stmt).scalars():
+        item = schema.DocumentCFV(
+            id=doc.id,
+            title=doc.title,
+            document_type_id=type_id,
+            custom_fields=[]
+        )
+        results.append(item)
+
+    return results
+
+
 def get_docs_by_type(
     session: Session,
     type_id: uuid.UUID,
@@ -224,6 +255,16 @@ def get_docs_by_type(
         raise ValueError(f"page_size must be >= 1; got value={page_size}")
 
     cf_count = document_type_cf_count(session, document_type_id=type_id)
+
+    if cf_count == 0:
+        return get_docs_by_type_no_cf(
+            session,
+            type_id=type_id,
+            order_by=order_by,
+            order=order,
+            limit=page_size,
+            offset=(page_number - 1) * page_size
+        )
 
     cfv_column_name = None
 

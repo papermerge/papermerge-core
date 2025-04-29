@@ -444,6 +444,19 @@ def document_type_groceries(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
+def make_document_type_without_cf(db_session: Session, user, make_custom_field):
+    def _make_document_type(name: str):
+        return dbapi.create_document_type(
+            db_session,
+            name=name,
+            custom_field_ids=[],  # no custom fields
+            user_id=user.id,
+        )
+
+    return _make_document_type
+
+
+@pytest.fixture
 def document_type_zdf(db_session: Session, user, make_custom_field):
     cf1 = make_custom_field(name="Start Date", type=CustomFieldType.date)
     cf2 = make_custom_field(name="End Date", type=CustomFieldType.date)

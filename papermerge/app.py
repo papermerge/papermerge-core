@@ -29,6 +29,9 @@ from papermerge.core.features.shared_nodes.router_folders import (
 from papermerge.core.features.shared_nodes.router_documents import (
     router as shared_document_router,
 )
+from papermerge.core.routers.version import (
+    router as version_router,
+)
 
 
 from papermerge.core.version import __version__
@@ -64,6 +67,7 @@ app.include_router(groups_router, prefix=prefix)
 app.include_router(roles_router, prefix=prefix)
 app.include_router(probe_router, prefix=prefix)
 app.include_router(tasks_router, prefix=prefix)
+app.include_router(version_router, prefix=prefix)
 
 if config.papermerge__search__url:
     app.include_router(search_router, prefix=prefix)

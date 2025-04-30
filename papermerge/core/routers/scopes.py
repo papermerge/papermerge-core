@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from papermerge.core import schemas
-from core import auth
+from papermerge.core.features import auth
 from core.features.auth import scopes
 
 router = APIRouter(

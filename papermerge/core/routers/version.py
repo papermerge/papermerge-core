@@ -2,8 +2,8 @@ import importlib
 
 from fastapi import APIRouter, Depends
 
-from papermerge.core import schemas
-from core.auth import get_current_user
+from papermerge.core import schema
+from papermerge.core.features.auth import get_current_user
 
 router = APIRouter(
     prefix="/version",
@@ -13,9 +13,9 @@ router = APIRouter(
 
 @router.get("/")
 async def get_version(
-    user: schemas.User = Depends(get_current_user),
-) -> schemas.Version:
+    user: schema.User = Depends(get_current_user),
+) -> schema.Version:
     """Papermerge REST API version"""
-    version_str = importlib.metadata.version("papermerge-core")
+    version_str = importlib.metadata.version("papermerge")
 
-    return schemas.Version(version=version_str)
+    return schema.Version(version=version_str)

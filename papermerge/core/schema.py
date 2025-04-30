@@ -33,6 +33,7 @@ from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGrou
 from .features.roles.schema import Role, RoleDetails, CreateRole, UpdateRole, Permission
 from .schemas.error import Error, AttrError
 from .schemas.common import PaginatedResponse
+from .schemas.version import Version
 
 __all__ = [
     'Folder',
@@ -92,4 +93,5 @@ __all__ = [
     'SharedNodeAccessDetails',
     'SharedNodeAccessUpdate',
     'SharedNodeAccessUpdateResponse',
+    'Version'
 ]

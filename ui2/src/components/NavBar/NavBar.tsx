@@ -23,7 +23,7 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import {Group, Loader} from "@mantine/core"
+import {Center, Group, Loader, Text} from "@mantine/core"
 import {
   IconAlignJustified,
   IconCategory,
@@ -40,6 +40,7 @@ import {useContext} from "react"
 import {useSelector} from "react-redux"
 import {NavLink} from "react-router-dom"
 
+import {useGetVersionQuery} from "@/features/version/apiSlice"
 import type {User} from "@/types.ts"
 import {useTranslation} from "react-i18next"
 
@@ -47,6 +48,7 @@ function NavBarFull() {
   const {t} = useTranslation()
   const mode = useContext(PanelContext)
   const dispatch = useAppDispatch()
+  const {data, isLoading} = useGetVersionQuery()
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const lastHome = useAppSelector(s => selectLastHome(s, "main"))
   const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
@@ -72,7 +74,7 @@ function NavBarFull() {
     }
   }
 
-  if (status == "loading") {
+  if (status == "loading" || isLoading) {
     return <>Loading...</>
   }
 
@@ -146,6 +148,11 @@ function NavBarFull() {
           </NavLink>
         )}
       </div>
+      <Center className="navbar-bg-color">
+        <Text size="sm" c="dimmed">
+          {t("app.version")} {data && data?.version}
+        </Text>
+      </Center>
     </>
   )
 }
@@ -153,6 +160,7 @@ function NavBarFull() {
 function NavBarCollapsed() {
   const mode = useContext(PanelContext)
   const dispatch = useAppDispatch()
+  const {data, isLoading} = useGetVersionQuery()
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -175,7 +183,7 @@ function NavBarCollapsed() {
     }
   }
 
-  if (status == "loading") {
+  if (status == "loading" || isLoading) {
     return <>Loading...</>
   }
 
@@ -235,6 +243,11 @@ function NavBarCollapsed() {
           </NavLink>
         )}
       </div>
+      <Center className="navbar-bg-color">
+        <Text size="sm" c="dimmed">
+          {data && data?.version}
+        </Text>
+      </Center>
     </>
   )
 }

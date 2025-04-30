@@ -1,4 +1,5 @@
 {
+  "app.version": "Version",
   "me": "Me",
   "my": "My",
   "common.pick_value": "Pick value",

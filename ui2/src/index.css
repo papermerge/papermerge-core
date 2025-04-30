@@ -70,6 +70,10 @@ body {
   flex-grow: 1;
 }
 
+.navbar-bg-color {
+  background-color: light-dark(#f9f9f9, black);
+}
+
 a {
   text-decoration: none;
   color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));

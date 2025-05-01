@@ -36,4 +36,4 @@ jobs:
           push: true
           tags: papermerge/papermerge:${{ github.ref_name }}
           file: docker/standard/Dockerfile
-          platforms: linux/amd64. linux/arm64/v8
+          platforms: linux/amd64, linux/arm64/v8

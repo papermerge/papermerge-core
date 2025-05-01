@@ -25,16 +25,20 @@ Papermerge is perfect tool for long term storage of your documents.
 - Web UI with desktop like experience
 - OpenAPI compliant REST API
 - Works with PDF, JPEG, PNG and TIFF documents
-- OCR (Optical Character Recognition) of the documents
-- OCRed text overlay (you can download document with OCRed text overlay)
-- Full Text Search of the scanned documents
 - Document Versioning
 - Tags - assign colored tags to documents or folders
 - Documents and Folders - users can organize documents in folders
 - Document Types (i.e. Categories)
 - Custom Fields (metadata) per document type
 - Multi-User
+- Group ownership
+- Share documents and folders between users and/or groups of users
+- UI is available in multiple languages
 - Page Management - delete, reorder, cut, move, extract pages
+- OCR (Optical Character Recognition) of the documents
+- OCRed text overlay (you can download document with OCRed text overlay)
+- Full Text Search of the scanned documents
+
 
 ## Documentation
 
@@ -47,7 +51,7 @@ In order to start Papermerge App with the most basic setup use following command
     docker run -p 8000:80 \
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
-        papermerge/papermerge:3.4.1
+        papermerge/papermerge:3.5
 
 For more info about various docker compose scenarios check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).
 

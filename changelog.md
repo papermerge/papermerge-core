@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.1] - 2025-05-05
+
+### Changes
+
+- add "if_not_exists=True" to role creation migration
+
+
 ## [3.5] - 2025-05-01
 
 ### Adds

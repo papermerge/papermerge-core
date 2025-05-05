@@ -43,6 +43,7 @@ def upgrade() -> None:
             ["role_id"],
             ["roles.id"],
         ),
+        if_not_exists=True,
     )
     op.create_table(
         "users_roles",

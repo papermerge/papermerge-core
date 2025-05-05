@@ -29,6 +29,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name"),
+        if_not_exists=True,
     )
     op.create_table(
         "roles_permissions",
@@ -55,9 +56,10 @@ def upgrade() -> None:
             ["user_id"],
             ["users.id"],
         ),
+        if_not_exists=True,
     )
-    op.drop_table("groups_permissions")
-    op.drop_table("users_permissions")
+    op.drop_table("groups_permissions", if_exists=True)
+    op.drop_table("users_permissions", if_exists=True)
     if DATABASE_URL and not DATABASE_URL.startswith("sqlite"):
         op.create_unique_constraint(None, "groups", ["name"])
         op.create_unique_constraint(None, "permissions", ["name"])

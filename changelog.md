@@ -5,7 +5,7 @@
 ### Changes
 
 - add "if_not_exists=True" to role creation migration
-
+- fix access scope for custom field updates
 
 ## [3.5] - 2025-05-01
 

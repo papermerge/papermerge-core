@@ -42,6 +42,28 @@ exec_init() {
 rm -f /etc/nginx/nginx.conf
 rm -f /etc/papermerge/supervisord.conf
 
+if [[ -n "${NODE_NAME}" ]]; then
+  # if NODE_NAME is present it means worker runs inside k8s cluster
+  echo "NODE_NAME is set to ${NODE_NAME}"
+
+  if [[ -z "${PAPERMERGE__MAIN__S3_QUEUE_NAME}" ]]; then
+    echo "PAPERMERGE__MAIN__S3_QUEUE_NAME not set yet"
+    echo "Will set now PAPERMERGE__MAIN__S3_QUEUE_NAME to a value based on"
+    echo " PAPERMERGE__MAIN__PREFIX and node name."
+    export PAPERMERGE__MAIN__S3_QUEUE_NAME="s3_${PAPERMERGE__MAIN__PREFIX}_${NODE_NAME}"
+  fi
+
+  if [[ -z "${PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME}" ]]; then
+    echo "PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME not set yet"
+    echo "$NODE_NAME is non-empty"
+    echo "Will set now PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME to a value based on"
+    echo " PAPERMERGE__MAIN__PREFIX and node name."
+    export PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME="s3preview_${PAPERMERGE__MAIN__PREFIX}_${NODE_NAME}"
+  fi
+  echo "PAPERMERGE__MAIN__S3_QUEUE_NAME queue name set to: $PAPERMERGE__MAIN__S3_QUEUE_NAME"
+  echo "PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME queue name set to: $PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME"
+fi
+
 if [[ -z "${PAPERMERGE__AUTH__REMOTE}" ]]; then
   ln -s /etc/papermerge/supervisord.default.conf /etc/papermerge/supervisord.conf
   ln -s /etc/nginx/nginx.default.conf /etc/nginx/nginx.conf

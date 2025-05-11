@@ -13,10 +13,12 @@ class Settings(BaseSettings):
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
     papermerge__main__media_root: Path = Path("media")
     papermerge__main__api_prefix: str = ''
+    papermerge__main__prefix: str = ''
     papermerge__main__file_server: FileServer = FileServer.LOCAL
     papermerge__main__cf_sign_url_private_key: str | None = None
     papermerge__main__cf_sign_url_key_id: str | None = None
     papermerge__main__cf_domain: str | None = None
+    papermerge__main__timezone: str = 'Europe/Berlin'
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_lang_code: str = 'deu'

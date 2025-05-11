@@ -8,8 +8,8 @@ import {useContext, useState} from "react"
 import {useGetFolderQuery} from "../../../apiSlice"
 
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {DropFilesModal} from "./DropFiles"
 import {useTranslation} from "react-i18next"
+import {DropFilesModal} from "./DropFiles"
 
 const MIME_TYPES = [
   "image/png",
@@ -55,13 +55,15 @@ export default function UploadButton() {
           </Tooltip>
         )}
       </FileButton>
-      <DropFilesModal
-        opened={opened}
-        source_files={uploadFiles!}
-        target={target!}
-        onSubmit={close}
-        onCancel={close}
-      />
+      {uploadFiles && uploadFiles.length > 0 && (
+        <DropFilesModal
+          opened={opened}
+          source_files={uploadFiles}
+          target={target!}
+          onSubmit={close}
+          onCancel={close}
+        />
+      )}
     </>
   )
 }

@@ -262,9 +262,9 @@ def _s3_doc_thumbnail_url(uid: UUID) -> str:
     resource_path = plib.thumbnail_path(uid)
     prefix = settings.papermerge__main__prefix
     if prefix:
-        url = f"https://{settings.CF_DOMAIN}/{prefix}/{resource_path}"
+        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
     else:
-        url = f"https://{settings.CF_DOMAIN}/{resource_path}"
+        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
 
     return sign_url(
         url,

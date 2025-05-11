@@ -27,9 +27,6 @@ export const DropFilesModal = ({
   opened
 }: Args) => {
   const {t} = useTranslation()
-  if (!source_files) {
-    return
-  }
   const runtimeConfig = useRuntimeConfig()
   const dispatch = useAppDispatch()
   const [error, setError] = useState("")

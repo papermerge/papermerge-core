@@ -218,7 +218,9 @@ def delete_custom_field(
 def update_custom_field(
     custom_field_id: uuid.UUID,
     attrs: cf_schema.UpdateCustomField,
-    cur_user: Annotated[User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])],
+    cur_user: Annotated[
+        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_UPDATE])
+    ],
 ) -> cf_schema.CustomField:
     """Updates custom field
 
@@ -243,6 +245,6 @@ def update_custom_field(
                 db_session, custom_field_id=custom_field_id, attrs=attrs
             )
         except NoResultFound:
-            raise HTTPException(status_code=404, detail="Group not found")
+            raise HTTPException(status_code=404, detail="Not found")
 
     return cfield

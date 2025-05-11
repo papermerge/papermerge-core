@@ -29,13 +29,51 @@ def prefixed(name: str) -> str:
     return name
 
 
+def s3_queue_name() -> str:
+    """
+    User can override S3 queue name by setting PAPERMERGE__MAIN__S3_QUEUE_NAME
+
+    Depending on the scenarios, s3 queue name may look like:
+
+    - s3: there is no prefix and no override
+    - demo_s3: there is a prefix
+    - s3_demo_node4: user has overridden PAPERMERGE__MAIN__S3_QUEUE_NAME with
+        queue name specific to the k8s node.
+    """
+    name = os.environ.get("PAPERMERGE__MAIN__S3_QUEUE_NAME", None)
+    if name is not None:
+        return name
+
+    return prefixed("s3")
+
+
+def s3preview_queue_name() -> str:
+    """
+    User can override S3 preview queue name by setting
+    PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME
+
+    Depending on the scenarios, s3 queue name may look like:
+
+    - s3preview: there is no prefix and no override
+    - demo_s3review: there is a prefix
+    - s3preview_demo_node4: user has overridden
+        PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME with queue name specific
+        to the k8s node.
+    """
+    name = os.environ.get("PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME", None)
+    if name is not None:
+        return name
+
+    return prefixed("s3preview")
+
+
 app.conf.task_routes = {
     # `s3_worker`: uploads/downloads of document version files
     # via s3 queue
-    "s3": {"queue": prefixed("s3")},
+    "s3": {"queue": s3_queue_name()},
     # `s3_worker`: generates previews and uploads them to s3 storage
     # via s3preview queue
-    "s3preview": {"queue": prefixed("s3preview")},
+    "s3preview": {"queue": s3preview_queue_name()},
     # index worker - sends index add/remove/updates
     "i3": {"queue": prefixed("i3")},
     "ocr": {"queue": prefixed("ocr")},

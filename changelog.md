@@ -6,6 +6,7 @@
 
 - add "if_not_exists=True" to role creation migration
 - fix access scope for custom field updates
+- fix issue [3.5 - No upload possible](https://github.com/papermerge/papermerge-core/issues/629)
 
 
 ## [3.5] - 2025-05-01

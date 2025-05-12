@@ -189,7 +189,15 @@ def thumbnail_url(value, info):
 ThumbnailUrl = Annotated[str | None, Field(validate_default=True)]
 
 
-class Document(BaseModel):
+class DocumentNode(BaseModel):
+    """Document without versions
+
+    The point of this class is to be used when listing folders/documents in
+    which case info about document versions (and their pages etc) is not
+    required (generating document version info in context of CDN is very
+    slow as for each page of each doc ver signed URL must be computed)
+    """
+
     id: UUID
     title: str
     ctype: Literal["document"]
@@ -199,7 +207,6 @@ class Document(BaseModel):
     parent_id: UUID | None
     document_type_id: UUID | None = None
     breadcrumb: list[tuple[UUID, str]] = []
-    versions: list[DocumentVersion] | None = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
@@ -219,6 +226,10 @@ class Document(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class Document(DocumentNode):
+    versions: list[DocumentVersion] | None = []
 
 
 class NewDocument(BaseModel):

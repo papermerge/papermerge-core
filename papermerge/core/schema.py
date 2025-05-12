@@ -10,6 +10,7 @@ from .features.shared_nodes.schema import (
 )
 from .features.document.schema import (
     Document,
+    DocumentNode,
     NewDocument,
     DocumentVersion,
     Page,
@@ -43,6 +44,7 @@ __all__ = [
     'UpdateNode',
     'MoveNode',
     'Document',
+    'DocumentNode',
     'NewDocument',
     'DocumentVersion',
     'Page',

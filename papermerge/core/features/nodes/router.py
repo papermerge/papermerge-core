@@ -42,7 +42,7 @@ def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
+) -> PaginatedResponse[Union[schema.DocumentNode, schema.Folder]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
 
     Required scope: `{scope}`

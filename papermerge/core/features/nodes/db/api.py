@@ -137,9 +137,9 @@ def get_paginated_nodes(
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
         else:
-            items.append(schema.Document.model_validate(node))
+            items.append(schema.DocumentNode.model_validate(node))
 
-    return PaginatedResponse[Union[schema.Document, schema.Folder]](
+    return PaginatedResponse[Union[schema.DocumentNode, schema.Folder]](
         page_size=page_size,
         page_number=page_number,
         num_pages=num_pages,

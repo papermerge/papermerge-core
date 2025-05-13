@@ -14,7 +14,7 @@ from sqlalchemy import delete, func, insert, select, update, Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-
+from papermerge.core.features.document import s3
 from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
@@ -858,3 +858,34 @@ def get_last_ver_pages(
     )
 
     return db_session.execute(stmt).scalars().all()
+
+
+def get_docs_img_preview_status(
+    db_session: Session,
+    doc_ids: list[uuid.UUID]
+) -> list[schema.DocumentPreviewImageStatus]:
+
+    cdn = settings.papermerge__main__file_server == config.FileServer.S3.value
+
+    stmt = select(
+        orm.Document.id.label("doc_id"),
+        orm.Document.preview_status
+    ).select_from(orm.Document).where(
+        orm.Document.id.in_(doc_ids)
+    )
+
+    items = []
+    for row in db_session.execute(stmt):
+        if cdn and row.preview_status == constants.PREVIEW_IMAGE_READY:
+            url = s3.doc_thumbnail_signed_url(row.doc_id)
+        else:
+            url=f"/api/thumbnails/{row.doc_id}"
+
+        item = schema.DocumentPreviewImageStatus(
+            doc_id=row.doc_id,
+            status=constants.PREVIEW_IMAGE_READY,
+            preview_image_url=url
+        )
+        items.append(item)
+
+    return items

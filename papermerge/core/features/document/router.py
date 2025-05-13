@@ -3,7 +3,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Security, UploadFile, status
+from fastapi import APIRouter, HTTPException, Security, UploadFile, status, Query
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import exceptions as exc
@@ -314,3 +314,42 @@ def get_documents_by_type(
         num_pages=int(total_count / page_size) + 1,
         items=items,
     )
+
+
+@router.get(
+    "/preview-img-status/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on one of the documents",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_document_img_preview_status(
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    doc_ids: list[uuid.UUID] = Query(),
+) -> list[schema.DocumentPreviewImageStatus]:
+    """
+    Get documents image preview status
+
+    Receives as input a list of document IDs (i.e. node IDs)
+
+    Required scope: `{scope}`
+    """
+    try:
+        with db.Session() as db_session:
+            for doc_id in doc_ids:
+                if not dbapi_common.has_node_perm(
+                    db_session,
+                    node_id=doc_id,
+                    codename=scopes.NODE_VIEW,
+                    user_id=user.id,
+                ):
+                    raise exc.HTTP403Forbidden()
+
+            response = dbapi.get_docs_img_preview_status(db_session, doc_ids=doc_ids)
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return response

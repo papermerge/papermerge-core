@@ -24,6 +24,17 @@ class Document(Node):
 
     ocr: Mapped[bool] = mapped_column(default=False)
     ocr_status: Mapped[str] = mapped_column(default=OCRStatusEnum.unknown)
+    # `preview_status`
+    #  NULL   = no preview available -> thumbnail_url will be empty
+    #  Ready  = preview available -> thumbnail_url will point to preview image
+    #  Failed = preview generation failed -> thumbnail_url is empty
+    #        in which case `preview_error` will contain error why preview
+    #        generation failed
+    preview_status: Mapped[str] = mapped_column(nullable=True)
+    # `preview_error`
+    # only for troubleshooting purposes. Relevant only in case
+    # `preview_status` = Failed
+    preview_error: Mapped[str] = mapped_column(nullable=True)
     document_type: Mapped[DocumentType] = relationship(  # noqa: F821
         primaryjoin="DocumentType.id == Document.document_type_id"
     )

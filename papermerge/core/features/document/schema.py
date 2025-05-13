@@ -15,6 +15,7 @@ from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
+from papermerge.core.features.document import s3
 
 settings = config.get_settings()
 
@@ -210,6 +211,7 @@ class DocumentNode(BaseModel):
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
+    preview_status: str | None = None
     user_id: UUID | None = None
     group_id: UUID | None = None
     owner_name: str | None = None
@@ -221,8 +223,15 @@ class DocumentNode(BaseModel):
         if settings.papermerge__main__file_server == config.FileServer.LOCAL.value:
             return f"/api/thumbnails/{info.data['id']}"
 
-        # if it is not local, then it is s3 + cloudfront
-        return _s3_doc_thumbnail_url(info.data["id"])
+        # if it is not local, then it is s3 + CDN/cloudfront
+        if info.data["preview_status"] == const.PREVIEW_IMAGE_READY:
+            # give client back signed URL only in case preview image
+            # was successfully uploaded to S3 backend.
+            # `preview_status` is set to ready/failed by s3 worker
+            # after preview image upload to s3 succeeds/fails
+            return s3.doc_thumbnail_signed_url(info.data["id"])
+
+        return None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -230,6 +239,12 @@ class DocumentNode(BaseModel):
 
 class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
+
+
+class DocumentPreviewImageStatus(BaseModel):
+    doc_id: UUID
+    status: str
+    preview_image_url: str | None = None
 
 
 class NewDocument(BaseModel):
@@ -265,22 +280,6 @@ class NewDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
-
-
-def _s3_doc_thumbnail_url(uid: UUID) -> str:
-    from papermerge.core.cloudfront import sign_url
-
-    resource_path = plib.thumbnail_path(uid)
-    prefix = settings.papermerge__main__prefix
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
-
-    return sign_url(
-        url,
-        valid_for=600,  # valid for 600 seconds
-    )
 
 
 def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:

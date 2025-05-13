@@ -23,7 +23,8 @@ from .features.document.db.api import (
     update_doc_type,
     update_doc_cfv,
     get_doc_cfv,
-    get_doc_ver_pages
+    get_doc_ver_pages,
+    get_docs_img_preview_status
 )
 from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (

@@ -38,3 +38,6 @@ class ContentType:
     IMAGE_JPEG = "image/jpeg"
     IMAGE_PNG = "image/png"
     IMAGE_TIFF = "image/tiff"
+
+PREVIEW_IMAGE_READY = "ready"
+PREVIEW_IMAGE_FAILED = "failed"

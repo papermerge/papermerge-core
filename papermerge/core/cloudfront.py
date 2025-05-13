@@ -7,8 +7,24 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from papermerge.core.config import settings
+from papermerge.core.cache import client as cache
+
+
+PEM_PRIVATE_KEY_STRING = "pem-private-key-string"
+PEM_PRIVATE_KEY_TTL = 600
+
 
 def rsa_signer(message):
+    private_key_string = cache.get(PEM_PRIVATE_KEY_STRING)
+
+    if PEM_PRIVATE_KEY_STRING is not None:
+        private_key = serialization.load_pem_private_key(
+            private_key_string,
+            password=None,
+            backend=default_backend()
+        )
+        return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
+
     _kpath = settings.papermerge__main__cf_sign_url_private_key
     if _kpath is None:
         raise ValueError(
@@ -22,11 +38,18 @@ def rsa_signer(message):
         )
 
     with open(key_path, 'rb') as key_file:
+        private_key_string = key_file.read()
         private_key = serialization.load_pem_private_key(
-            key_file.read(),
+            private_key_string,
             password=None,
             backend=default_backend()
         )
+        cache.set(
+            PEM_PRIVATE_KEY_STRING,
+            private_key_string,
+            ex=PEM_PRIVATE_KEY_TTL
+        )
+
     return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
 

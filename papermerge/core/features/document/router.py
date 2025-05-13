@@ -333,23 +333,21 @@ def get_document_img_preview_status(
     """
     Get documents image preview status
 
-    Receives as input a list of document IDs (i.e. node IDs)
+    Receives as input a list of document IDs (i.e. node IDs).
 
     Required scope: `{scope}`
     """
-    try:
-        with db.Session() as db_session:
-            for doc_id in doc_ids:
-                if not dbapi_common.has_node_perm(
-                    db_session,
-                    node_id=doc_id,
-                    codename=scopes.NODE_VIEW,
-                    user_id=user.id,
-                ):
-                    raise exc.HTTP403Forbidden()
 
-            response = dbapi.get_docs_img_preview_status(db_session, doc_ids=doc_ids)
-    except NoResultFound:
-        raise exc.HTTP404NotFound()
+    with db.Session() as db_session:
+        for doc_id in doc_ids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
+        response = dbapi.get_docs_img_preview_status(db_session, doc_ids=doc_ids)
 
     return response

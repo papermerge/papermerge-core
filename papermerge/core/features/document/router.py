@@ -326,6 +326,10 @@ def get_document_doc_thumbnail_status(
 
     Receives as input a list of document IDs (i.e. node IDs).
 
+    In case of CDN setup, for each document with NULL value in `preview_status`
+    field - one S3worker task will be scheduled for generating respective
+    document thumbnail.
+
     Required scope: `{scope}`
     """
 

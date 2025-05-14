@@ -186,15 +186,6 @@ def upload_file(
             content_type=file.headers.get("content-type"),
         )
 
-    if config.papermerge__main__file_server == FileServer.S3:
-        # generate preview using `s3_worker`
-        # it will, as well, upload previews to s3 storage
-        send_task(
-            const.S3_WORKER_GENERATE_PREVIEW,
-            kwargs={"doc_id": str(doc.id)},
-            route_name="s3preview",
-        )
-
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
@@ -317,7 +308,7 @@ def get_documents_by_type(
 
 
 @router.get(
-    "/preview-img-status/",
+    "/thumbnail-img-status/",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on one of the documents",
@@ -326,18 +317,19 @@ def get_documents_by_type(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_document_img_preview_status(
+def get_document_doc_thumbnail_status(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     doc_ids: list[uuid.UUID] = Query(),
 ) -> list[schema.DocumentPreviewImageStatus]:
     """
-    Get documents image preview status
+    Get documents thumbnail image preview status
 
     Receives as input a list of document IDs (i.e. node IDs).
 
     Required scope: `{scope}`
     """
 
+    doc_ids_not_yet_considered = []
     with db.Session() as db_session:
         for doc_id in doc_ids:
             if not dbapi_common.has_node_perm(
@@ -348,6 +340,18 @@ def get_document_img_preview_status(
             ):
                 raise exc.HTTP403Forbidden()
 
-        response = dbapi.get_docs_img_preview_status(db_session, doc_ids=doc_ids)
+        response, doc_ids_not_yet_considered = dbapi.get_docs_thumbnail_img_status(
+            db_session, doc_ids=doc_ids
+        )
+
+    fserver = config.papermerge__main__file_server
+    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST.value):
+        if len(doc_ids_not_yet_considered) > 0:
+            for doc_id in doc_ids_not_yet_considered:
+                send_task(
+                    const.S3_WORKER_GENERATE_DOC_THUMBNAIL,
+                    kwargs={"doc_id": str(doc_id)},
+                    route_name="s3preview",
+                )
 
     return response

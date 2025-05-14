@@ -860,12 +860,19 @@ def get_last_ver_pages(
     return db_session.execute(stmt).scalars().all()
 
 
-def get_docs_img_preview_status(
+def get_docs_thumbnail_img_status(
     db_session: Session,
     doc_ids: list[uuid.UUID]
-) -> list[schema.DocumentPreviewImageStatus]:
+) -> Tuple[list[schema.DocumentPreviewImageStatus], list[uuid.UUID]]:
+    """Gets image preview statuses for given docIDs
 
-    cdn = settings.papermerge__main__file_server == config.FileServer.S3.value
+    Response is a tuple. First item of the tuple is list of
+    statuses and second item of the tuple is the list of document
+    IDs for which image preview field has value NULL i.e. was not considered yet
+    or maybe was reseted.
+    """
+
+    fserver = settings.papermerge__main__file_server
 
     stmt = select(
         orm.Document.id.label("doc_id"),
@@ -874,18 +881,38 @@ def get_docs_img_preview_status(
         orm.Document.id.in_(doc_ids)
     )
 
+    doc_ids_not_yet_considered_for_preview = []
     items = []
-    for row in db_session.execute(stmt):
-        if cdn and row.preview_status == constants.PREVIEW_IMAGE_READY:
-            url = s3.doc_thumbnail_signed_url(row.doc_id)
-        else:
-            url=f"/api/thumbnails/{row.doc_id}"
+    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST):
+        for row in db_session.execute(stmt):
+            url = None
+            if row.preview_status == constants.ImagePreviewStatus.READY:
+                # image URL is returned if only and only if image
+                # preview is ready (generated and uploaded to S3)
+                if fserver == config.FileServer.S3:
+                    # Real world CDN setup
+                    url = s3.doc_thumbnail_signed_url(row.doc_id)
+                elif config.FileServer.S3_LOCAL_TEST:
+                    # Testing setup for CDN
+                    url = f"/api/thumbnails/{row.doc_id}"
 
-        item = schema.DocumentPreviewImageStatus(
-            doc_id=row.doc_id,
-            status=constants.PREVIEW_IMAGE_READY,
-            preview_image_url=url
-        )
-        items.append(item)
+            if row.preview_status in None:
+                doc_ids_not_yet_considered_for_preview.append(row.doc_id)
 
-    return items
+            item = schema.DocumentPreviewImageStatus(
+                doc_id=row.doc_id,
+                status=row.preview_status,
+                preview_image_url=url
+            )
+            items.append(item)
+    else:
+        # Non-CDN setup
+        for row in db_session.execute(stmt):
+            item = schema.DocumentPreviewImageStatus(
+                doc_id=row.doc_id,
+                status=constants.ImagePreviewStatus.READY.value,
+                preview_image_url=f"/api/thumbnails/{row.doc_id}"
+            )
+            items.append(item)
+
+    return items, doc_ids_not_yet_considered_for_preview

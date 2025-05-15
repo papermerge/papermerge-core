@@ -221,11 +221,14 @@ class DocumentNode(BaseModel):
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
         file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL.value:
+        if file_server == config.FileServer.LOCAL:
             return f"/api/thumbnails/{info.data['id']}"
 
         # if it is not local, then it is s3 + CDN/cloudfront
-        if info.data["preview_status"] == const.ImagePreviewStatus.READY:
+        if (
+            "preview_status" in info.data
+            and info.data["preview_status"] == const.ImagePreviewStatus.READY
+        ):
             if file_server == config.FileServer.S3:
                 # give client back signed URL only in case preview image
                 # was successfully uploaded to S3 backend.

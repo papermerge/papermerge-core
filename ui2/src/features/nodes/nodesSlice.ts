@@ -92,6 +92,24 @@ export const selectNodesByIds = createSelector(
   }
 )
 
+export const selectDocumentThumbnailURL = (
+  state: RootState,
+  nodeID: string
+): null | string => {
+  const node =
+    state.nodes.entities[nodeID] || state.sharedNodes.entities[nodeID]
+
+  if (!node) {
+    return null
+  }
+
+  if (!node.thumbnail_url) {
+    return null
+  }
+
+  return node.thumbnail_url
+}
+
 export const moveNodesListeners = (startAppListening: AppStartListening) => {
   startAppListening({
     matcher: apiSliceWithNodes.endpoints.moveNodes.matchFulfilled,

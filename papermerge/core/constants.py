@@ -46,7 +46,7 @@ class ContentType:
     IMAGE_TIFF = "image/tiff"
 
 
-class ImagePreviewStatus(Enum):
+class ImagePreviewStatus(str, Enum):
     """Image preview status
 
     1. If database field `preview_status` is NULL ->

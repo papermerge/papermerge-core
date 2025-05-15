@@ -910,7 +910,7 @@ def get_docs_thumbnail_img_status(
         for row in db_session.execute(stmt):
             item = schema.DocumentPreviewImageStatus(
                 doc_id=row.doc_id,
-                status=constants.ImagePreviewStatus.READY.value,
+                status=constants.ImagePreviewStatus.READY,
                 preview_image_url=f"/api/thumbnails/{row.doc_id}"
             )
             items.append(item)

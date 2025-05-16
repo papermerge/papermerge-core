@@ -42,9 +42,7 @@ const usePreviewPolling = (
   const [allReady, setAllReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const [previewError, setPreviewError] = useState<Array<DocumentPreviewError>>(
-    []
-  )
+  const [previewError] = useState<Array<DocumentPreviewError>>([])
 
   const retryCount = useRef(0)
   const intervalRef = useRef<number | null>(null)

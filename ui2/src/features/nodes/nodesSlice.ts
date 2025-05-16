@@ -20,10 +20,25 @@ import {apiSliceWithNodes} from "./apiSlice"
 const nodeAdapter = createEntityAdapter<NodeType>()
 const initialState = nodeAdapter.getInitialState()
 
+interface DocumentThumbnailUpdated {
+  document_id: string
+  thumbnail_url: string | null
+}
+
 const nodesSlice = createSlice({
   name: "nodes",
   initialState,
   reducers: {
+    documentThumbnailUpdated: (
+      state,
+      action: PayloadAction<DocumentThumbnailUpdated>
+    ) => {
+      const payload = action.payload
+      const node = state.entities[payload.document_id]
+      if (node && payload.thumbnail_url) {
+        node.thumbnail_url = payload.thumbnail_url
+      }
+    },
     documentsMovedNotifReceived: (
       _state,
       action: PayloadAction<ServerNotifDocumentsMoved>
@@ -72,8 +87,11 @@ const nodesSlice = createSlice({
   }
 })
 
-export const {documentsMovedNotifReceived, documentMovedNotifReceived} =
-  nodesSlice.actions
+export const {
+  documentsMovedNotifReceived,
+  documentMovedNotifReceived,
+  documentThumbnailUpdated
+} = nodesSlice.actions
 
 export default nodesSlice.reducer
 

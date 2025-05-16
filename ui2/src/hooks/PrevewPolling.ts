@@ -1,27 +1,25 @@
+import {getDefaultHeaders} from "@/utils"
 import {useEffect, useRef, useState} from "react"
 
-// Define the shape of each document preview
 interface DocumentPreview {
   status: string
   url: string | null
 }
 
-// Define the response format from your backend
 interface PreviewStatusResponseItem {
   doc_id: string
   status: string
   preview_image_url: string | null
 }
 
-// Hook options
 interface UsePreviewPollingOptions {
   pollIntervalMs?: number
   maxRetries?: number
 }
 
-// Return value of the hook
 interface UsePreviewPollingResult {
   previews: Record<string, DocumentPreview>
+  updatedPreviews: Record<string, DocumentPreview>
   allReady: boolean
   isLoading: boolean
   error: Error | null
@@ -32,12 +30,17 @@ const usePreviewPolling = (
   {pollIntervalMs = 3000, maxRetries = 20}: UsePreviewPollingOptions = {}
 ): UsePreviewPollingResult => {
   const [previews, setPreviews] = useState<Record<string, DocumentPreview>>({})
-  const [allReady, setAllReady] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [updatedPreviews, setUpdatedPreviews] = useState<
+    Record<string, DocumentPreview>
+  >({})
+  const [allReady, setAllReady] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const retryCount = useRef<number>(0)
+  const retryCount = useRef(0)
   const intervalRef = useRef<number | null>(null)
+  const previousPreviewsRef = useRef<Record<string, DocumentPreview>>({})
+  const headers = getDefaultHeaders()
 
   useEffect(() => {
     if (!documentIds || documentIds.length === 0) return
@@ -46,9 +49,9 @@ const usePreviewPolling = (
       try {
         const query = documentIds.map(encodeURIComponent).join(",")
         const res = await fetch(
-          `/api/documents/preview-img-status/?document_ids=${query}`
+          `/api/documents/preview-img-status/?document_ids=${query}`,
+          {headers: headers}
         )
-
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
         const data: PreviewStatusResponseItem[] = await res.json()
@@ -57,20 +60,40 @@ const usePreviewPolling = (
 
         setPreviews(prev => {
           const updated: Record<string, DocumentPreview> = {...prev}
+          const changed: Record<string, DocumentPreview> = {}
+
           let complete = true
 
-          for (const {doc_id, status, preview_image_url} of data) {
-            updated[doc_id] = {
+          data.forEach(({doc_id, status, preview_image_url}) => {
+            const newPreview: DocumentPreview = {
               status,
               url: preview_image_url || null
             }
+
+            const prevPreview = previousPreviewsRef.current[doc_id]
+            updated[doc_id] = newPreview
+
+            const justBecameReady =
+              status === "ready" &&
+              newPreview.url &&
+              (!prevPreview ||
+                prevPreview.status !== "ready" ||
+                !prevPreview.url)
+
+            if (justBecameReady) {
+              changed[doc_id] = newPreview
+            }
+
             if (status !== "ready") {
               complete = false
             }
-          }
+          })
 
+          previousPreviewsRef.current = updated
+          setUpdatedPreviews(changed)
           setAllReady(complete)
-          if (complete && intervalRef.current) {
+
+          if (complete && intervalRef.current !== null) {
             clearInterval(intervalRef.current)
           }
 
@@ -82,21 +105,32 @@ const usePreviewPolling = (
         setError(errorObj)
         retryCount.current += 1
 
-        if (retryCount.current >= maxRetries && intervalRef.current) {
+        if (retryCount.current >= maxRetries && intervalRef.current !== null) {
           clearInterval(intervalRef.current)
         }
       }
     }
 
-    pollPreviewStatuses() // Initial call
-    intervalRef.current = setInterval(pollPreviewStatuses, pollIntervalMs)
+    pollPreviewStatuses() // First run
+    intervalRef.current = window.setInterval(
+      pollPreviewStatuses,
+      pollIntervalMs
+    )
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current)
+      }
     }
   }, [documentIds, pollIntervalMs, maxRetries])
 
-  return {previews, allReady, isLoading, error}
+  return {
+    previews,
+    updatedPreviews,
+    allReady,
+    isLoading,
+    error
+  }
 }
 
 export default usePreviewPolling

@@ -1,9 +1,11 @@
-import {documentThumbnailUpdated} from "@/features/nodes/nodesSlice"
-import {documentThumbnailUpdated as sharedNodesdocumentThumbnailUpdated} from "@/features/shared_nodes/sharedNodesSlice"
 import {NodeType, NType} from "@/types"
 import {useEffect} from "react"
 import Node from "./Node"
 
+import {
+  updateAllThumbnails,
+  updateErrorAllThumbnails
+} from "@/actions/thumbnailActions"
 import {useAppDispatch} from "@/app/hooks"
 import usePreviewPolling from "@/hooks/PrevewPolling"
 
@@ -21,7 +23,7 @@ export default function NodesList({
   onNodeDragStart
 }: Args) {
   const dispatch = useAppDispatch()
-  const {updatedPreviews} = usePreviewPolling(
+  const {updatedPreviews, previewError} = usePreviewPolling(
     items.map(n => n.id),
     {
       pollIntervalMs: 3000,
@@ -31,22 +33,12 @@ export default function NodesList({
 
   useEffect(() => {
     Object.entries(updatedPreviews).forEach(([docId, preview]) => {
-      console.log(`🆕 Preview changed for ${docId}: ${preview.url}`)
-      // e.g., update document state in parent component or make a backend call
-      dispatch(
-        documentThumbnailUpdated({
-          document_id: docId,
-          thumbnail_url: preview.url
-        })
-      )
-      dispatch(
-        sharedNodesdocumentThumbnailUpdated({
-          document_id: docId,
-          thumbnail_url: preview.url
-        })
-      )
+      dispatch(updateAllThumbnails(docId, preview.url))
     })
-  }, [updatedPreviews])
+    previewError.map(pe => {
+      dispatch(updateErrorAllThumbnails(pe.document_id, pe.error))
+    })
+  }, [updatedPreviews, previewError])
 
   return items.map((n: NodeType) => (
     <Node

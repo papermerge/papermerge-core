@@ -9,7 +9,7 @@ interface Args {
 export default function Thumbnail({nodeID}: Args) {
   const {data, isLoading, isError, error} = useDocumentThumbnail({nodeID})
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <Loader />
   }
 
@@ -17,5 +17,9 @@ export default function Thumbnail({nodeID}: Args) {
     return <ThumbnailPlaceholder error={error} />
   }
 
-  return <img src={data} />
+  if (data) {
+    return <img src={data} />
+  }
+
+  return <ThumbnailPlaceholder error={"No data"} />
 }

@@ -1,5 +1,8 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectDocumentThumbnailURL} from "@/features/nodes/nodesSlice"
+import {
+  selectDocumentThumbnailError,
+  selectDocumentThumbnailURL
+} from "@/features/nodes/nodesSlice"
 import {getBaseURL, getDefaultHeaders, imageEncode} from "@/utils"
 import {useEffect, useState} from "react"
 
@@ -24,8 +27,23 @@ export default function useDocumentThumbnail({nodeID}: Args) {
   const thumbnail_url = useAppSelector(s =>
     selectDocumentThumbnailURL(s, nodeID)
   )
+  const thumbnail_error = useAppSelector(s =>
+    selectDocumentThumbnailError(s, nodeID)
+  )
   const headers = getDefaultHeaders()
   let url: string
+
+  useEffect(() => {
+    if (thumbnail_error) {
+      setState({
+        data: null,
+        isLoading: false,
+        isError: true,
+        error: thumbnail_error
+      })
+      return
+    }
+  }, [thumbnail_error])
 
   useEffect(() => {
     let isMounted = true

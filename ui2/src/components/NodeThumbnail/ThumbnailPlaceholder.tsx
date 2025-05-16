@@ -14,7 +14,6 @@ export default function ThumbnailPlaceholder({error}: Args) {
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
       >
-        <rect width="120" height="160" rx="12" fill="#f3f4f6" />
         <path
           d="M20 20h50l30 30v90a10 10 0 0 1-10 10H30a10 10 0 0 1-10-10V30a10 10 0 0 1 10-10z"
           fill="#e5e7eb"

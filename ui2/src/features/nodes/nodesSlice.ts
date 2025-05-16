@@ -25,6 +25,11 @@ interface DocumentThumbnailUpdated {
   thumbnail_url: string | null
 }
 
+interface DocumentThumbnailErrorUpdated {
+  document_id: string
+  error: string
+}
+
 const nodesSlice = createSlice({
   name: "nodes",
   initialState,
@@ -37,6 +42,20 @@ const nodesSlice = createSlice({
       const node = state.entities[payload.document_id]
       if (node && payload.thumbnail_url) {
         node.thumbnail_url = payload.thumbnail_url
+      }
+    },
+    documentThumbnailErrorUpdated: (
+      state,
+      action: PayloadAction<DocumentThumbnailErrorUpdated>
+    ) => {
+      const payload = action.payload
+      const node = state.entities[payload.document_id]
+
+      if (node && payload.error) {
+        console.log(
+          `nodeID=${node.id} thumbnail preview error was set to ${payload.error}`
+        )
+        node.thumbnail_preview_error = payload.error
       }
     },
     documentsMovedNotifReceived: (
@@ -90,7 +109,8 @@ const nodesSlice = createSlice({
 export const {
   documentsMovedNotifReceived,
   documentMovedNotifReceived,
-  documentThumbnailUpdated
+  documentThumbnailUpdated,
+  documentThumbnailErrorUpdated
 } = nodesSlice.actions
 
 export default nodesSlice.reducer
@@ -126,6 +146,20 @@ export const selectDocumentThumbnailURL = (
   }
 
   return node.thumbnail_url
+}
+
+export const selectDocumentThumbnailError = (
+  state: RootState,
+  nodeID: string
+): null | string => {
+  const node =
+    state.nodes.entities[nodeID] || state.sharedNodes.entities[nodeID]
+
+  if (!node) {
+    return null
+  }
+
+  return node.thumbnail_preview_error
 }
 
 export const moveNodesListeners = (startAppListening: AppStartListening) => {

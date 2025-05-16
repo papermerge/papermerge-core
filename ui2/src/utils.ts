@@ -122,7 +122,6 @@ export function getDefaultHeaders(): Record<string, string> {
       "Remote-Email": remote_email || "",
       "Remote-Name": remote_name || ""
     }
-    console.log(headers)
   }
 
   if (token) {

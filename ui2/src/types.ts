@@ -142,6 +142,7 @@ export type NodeType = NType & {
   ocr_status: OcrStatusEnum
   ocr: boolean
   thumbnail_url: string | null
+  thumbnail_preview_error: string | null
   breadcrumb: Array<[string, string]>
   document_type_id?: string
   is_shared: boolean

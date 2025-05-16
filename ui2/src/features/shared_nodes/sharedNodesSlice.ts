@@ -19,6 +19,11 @@ interface DocumentThumbnailUpdated {
   thumbnail_url: string | null
 }
 
+interface DocumentThumbnailErrorUpdated {
+  document_id: string
+  error: string
+}
+
 const sharedNodesAdapter = createEntityAdapter<NodeType>()
 const initialState = sharedNodesAdapter.getInitialState()
 
@@ -34,6 +39,16 @@ const sharedNodesSlice = createSlice({
       const node = state.entities[payload.document_id]
       if (node && payload.thumbnail_url) {
         node.thumbnail_url = payload.thumbnail_url
+      }
+    },
+    documentThumbnailErrorUpdated: (
+      state,
+      action: PayloadAction<DocumentThumbnailErrorUpdated>
+    ) => {
+      const payload = action.payload
+      const node = state.entities[payload.document_id]
+      if (node && payload.error) {
+        node.thumbnail_preview_error = payload.error
       }
     },
     documentsMovedNotifReceived: (
@@ -73,7 +88,8 @@ const sharedNodesSlice = createSlice({
 export const {
   documentsMovedNotifReceived,
   documentMovedNotifReceived,
-  documentThumbnailUpdated
+  documentThumbnailUpdated,
+  documentThumbnailErrorUpdated
 } = sharedNodesSlice.actions
 
 export default sharedNodesSlice.reducer

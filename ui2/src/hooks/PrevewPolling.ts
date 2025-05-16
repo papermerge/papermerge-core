@@ -23,6 +23,12 @@ interface UsePreviewPollingResult {
   allReady: boolean
   isLoading: boolean
   error: Error | null
+  previewError: Array<DocumentPreviewError>
+}
+
+type DocumentPreviewError = {
+  document_id: string
+  error: string
 }
 
 const usePreviewPolling = (
@@ -36,6 +42,9 @@ const usePreviewPolling = (
   const [allReady, setAllReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [previewError, setPreviewError] = useState<Array<DocumentPreviewError>>(
+    []
+  )
 
   const retryCount = useRef(0)
   const intervalRef = useRef<number | null>(null)
@@ -43,7 +52,13 @@ const usePreviewPolling = (
   const headers = getDefaultHeaders()
 
   useEffect(() => {
-    if (!documentIds || documentIds.length === 0) return
+    if (retryCount.current > maxRetries) {
+      return
+    }
+
+    if (!documentIds || documentIds.length === 0) {
+      return
+    }
 
     const pollPreviewStatuses = async () => {
       try {
@@ -104,7 +119,9 @@ const usePreviewPolling = (
         console.error("Polling error:", errorObj)
         setError(errorObj)
         retryCount.current += 1
-
+        console.log(
+          `${retryCount.current} ${maxRetries} ${intervalRef.current !== null}`
+        )
         if (retryCount.current >= maxRetries && intervalRef.current !== null) {
           clearInterval(intervalRef.current)
         }
@@ -119,17 +136,39 @@ const usePreviewPolling = (
 
     return () => {
       if (intervalRef.current !== null) {
+        console.log("CLEARING")
         clearInterval(intervalRef.current)
       }
     }
   }, [documentIds, pollIntervalMs, maxRetries])
+
+  if (retryCount.current > maxRetries) {
+    const errorDocumentIds = documentIds.filter(id => !(id in updatedPreviews))
+    const newPreviewError = errorDocumentIds.map(id => {
+      return {
+        document_id: id,
+        error: `Failed to get thumbnail after ${maxRetries}`
+      }
+    })
+    const newError = new Error(`Failed to get thumbnails after ${maxRetries}`)
+
+    return {
+      previews,
+      updatedPreviews,
+      allReady,
+      isLoading: false,
+      error: newError,
+      previewError: newPreviewError
+    }
+  }
 
   return {
     previews,
     updatedPreviews,
     allReady,
     isLoading,
-    error
+    error,
+    previewError
   }
 }
 

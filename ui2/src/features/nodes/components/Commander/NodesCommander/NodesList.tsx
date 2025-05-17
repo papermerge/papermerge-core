@@ -2,10 +2,7 @@ import {NodeType, NType} from "@/types"
 import {useEffect, useMemo} from "react"
 import Node from "./Node"
 
-import {
-  updateAllThumbnails,
-  updateErrorAllThumbnails
-} from "@/actions/thumbnailActions"
+import {updateAllThumbnails} from "@/actions/thumbnailActions"
 import {useAppDispatch} from "@/app/hooks"
 import usePreviewPolling from "@/hooks/PrevewPolling"
 
@@ -24,7 +21,7 @@ export default function NodesList({
 }: Args) {
   const dispatch = useAppDispatch()
   const documentIds = useMemo(() => items.map(n => n.id), [items])
-  const {previews, previewError} = usePreviewPolling(documentIds, {
+  const {previews} = usePreviewPolling(documentIds, {
     pollIntervalMs: 3000,
     maxRetries: 10
   })
@@ -33,10 +30,7 @@ export default function NodesList({
     Object.entries(previews).forEach(([docId, preview]) => {
       dispatch(updateAllThumbnails(docId, preview.url))
     })
-    previewError.map(pe => {
-      dispatch(updateErrorAllThumbnails(pe.document_id, pe.error))
-    })
-  }, [previews, previewError])
+  }, [previews])
 
   return items.map((n: NodeType) => (
     <Node

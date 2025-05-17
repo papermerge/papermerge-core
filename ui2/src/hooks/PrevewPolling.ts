@@ -22,12 +22,6 @@ interface UsePreviewPollingResult {
   allReady: boolean
   isLoading: boolean
   error: Error | null
-  previewError: Array<DocumentPreviewError>
-}
-
-type DocumentPreviewError = {
-  document_id: string
-  error: string
 }
 
 function toDocIdsQueryParams(docIds: string[]): string {
@@ -44,7 +38,6 @@ const usePreviewPolling = (
   const [allReady, setAllReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const [previewError] = useState<Array<DocumentPreviewError>>([])
 
   const retryCount = useRef(0)
   const intervalRef = useRef<number | null>(null)
@@ -122,13 +115,6 @@ const usePreviewPolling = (
   }, [documentIds, pollIntervalMs, maxRetries])
 
   if (retryCount.current > maxRetries) {
-    const errorDocumentIds = documentIds.filter(id => !(id in updatedPreviews))
-    const newPreviewError = errorDocumentIds.map(id => {
-      return {
-        document_id: id,
-        error: `Failed to get thumbnail after ${maxRetries} retries`
-      }
-    })
     const newError = new Error(
       `Failed to get thumbnails after ${maxRetries} retries`
     )
@@ -137,8 +123,7 @@ const usePreviewPolling = (
       previews,
       allReady,
       isLoading: false,
-      error: newError,
-      previewError: newPreviewError
+      error: newError
     }
   }
 
@@ -146,8 +131,7 @@ const usePreviewPolling = (
     previews,
     allReady,
     isLoading,
-    error,
-    previewError
+    error
   }
 }
 

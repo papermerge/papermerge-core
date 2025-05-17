@@ -17,7 +17,7 @@ PEM_PRIVATE_KEY_TTL = 600
 def rsa_signer(message):
     private_key_string = cache.get(PEM_PRIVATE_KEY_STRING)
 
-    if PEM_PRIVATE_KEY_STRING is not None:
+    if private_key_string is not None:
         private_key = serialization.load_pem_private_key(
             private_key_string,
             password=None,

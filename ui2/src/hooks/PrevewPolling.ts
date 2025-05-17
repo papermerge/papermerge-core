@@ -19,7 +19,6 @@ interface UsePreviewPollingOptions {
 
 interface UsePreviewPollingResult {
   previews: Record<string, DocumentPreview>
-  updatedPreviews: Record<string, DocumentPreview>
   allReady: boolean
   isLoading: boolean
   error: Error | null
@@ -42,9 +41,6 @@ const usePreviewPolling = (
   {pollIntervalMs = 3000, maxRetries = 20}: UsePreviewPollingOptions = {}
 ): UsePreviewPollingResult => {
   const [previews, setPreviews] = useState<Record<string, DocumentPreview>>({})
-  const [updatedPreviews, setUpdatedPreviews] = useState<
-    Record<string, DocumentPreview>
-  >({})
   const [allReady, setAllReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -52,7 +48,6 @@ const usePreviewPolling = (
 
   const retryCount = useRef(0)
   const intervalRef = useRef<number | null>(null)
-  const previousPreviewsRef = useRef<Record<string, DocumentPreview>>({})
   const headers = getDefaultHeaders()
 
   useEffect(() => {
@@ -79,7 +74,6 @@ const usePreviewPolling = (
 
         setPreviews(prev => {
           const updated: Record<string, DocumentPreview> = {...prev}
-          const changed: Record<string, DocumentPreview> = {}
 
           let complete = true
 
@@ -89,27 +83,13 @@ const usePreviewPolling = (
               url: preview_image_url || null
             }
 
-            const prevPreview = previousPreviewsRef.current[doc_id]
             updated[doc_id] = newPreview
-
-            const justBecameReady =
-              status === "ready" &&
-              newPreview.url &&
-              (!prevPreview ||
-                prevPreview.status !== "ready" ||
-                !prevPreview.url)
-
-            if (justBecameReady) {
-              changed[doc_id] = newPreview
-            }
 
             if (status !== "ready") {
               complete = false
             }
           })
 
-          previousPreviewsRef.current = updated
-          setUpdatedPreviews(changed)
           setAllReady(complete)
 
           if (complete && intervalRef.current !== null) {
@@ -136,7 +116,6 @@ const usePreviewPolling = (
 
     return () => {
       if (intervalRef.current !== null) {
-        console.log("CLEARING")
         clearInterval(intervalRef.current)
       }
     }
@@ -156,7 +135,6 @@ const usePreviewPolling = (
 
     return {
       previews,
-      updatedPreviews,
       allReady,
       isLoading: false,
       error: newError,
@@ -166,7 +144,6 @@ const usePreviewPolling = (
 
   return {
     previews,
-    updatedPreviews,
     allReady,
     isLoading,
     error,

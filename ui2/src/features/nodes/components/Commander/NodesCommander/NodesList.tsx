@@ -1,5 +1,5 @@
 import {NodeType, NType} from "@/types"
-import {useEffect} from "react"
+import {useEffect, useMemo} from "react"
 import Node from "./Node"
 
 import {
@@ -23,22 +23,20 @@ export default function NodesList({
   onNodeDragStart
 }: Args) {
   const dispatch = useAppDispatch()
-  const {updatedPreviews, previewError} = usePreviewPolling(
-    items.map(n => n.id),
-    {
-      pollIntervalMs: 3000,
-      maxRetries: 10
-    }
-  )
+  const documentIds = useMemo(() => items.map(n => n.id), [items])
+  const {previews, previewError} = usePreviewPolling(documentIds, {
+    pollIntervalMs: 3000,
+    maxRetries: 10
+  })
 
   useEffect(() => {
-    Object.entries(updatedPreviews).forEach(([docId, preview]) => {
+    Object.entries(previews).forEach(([docId, preview]) => {
       dispatch(updateAllThumbnails(docId, preview.url))
     })
     previewError.map(pe => {
       dispatch(updateErrorAllThumbnails(pe.document_id, pe.error))
     })
-  }, [updatedPreviews, previewError])
+  }, [previews, previewError])
 
   return items.map((n: NodeType) => (
     <Node

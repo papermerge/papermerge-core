@@ -1,5 +1,15 @@
 # Changelog
 
+
+## [3.5.2] - not yet released
+
+All following changes are relevant only for the case when file server is
+S3 bucket/CDN:
+
+- poll nodes of type document for the status of preview thumbnail (only for S3 + CDN setups)
+- adds `/api/documents/thumbnail-img-status/` endpoint
+
+
 ## [3.5.1] - 2025-05-11
 
 ### Changes

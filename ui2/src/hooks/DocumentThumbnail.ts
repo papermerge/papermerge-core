@@ -95,5 +95,14 @@ export default function useDocumentThumbnail({nodeID}: Args) {
     }
   }, [thumbnail_url])
 
+  if (thumbnail_error) {
+    return {
+      data: null,
+      isLoading: false,
+      isError: true,
+      error: thumbnail_error
+    }
+  }
+
   return state
 }

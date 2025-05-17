@@ -250,7 +250,7 @@ class Document(DocumentNode):
 
 class DocumentPreviewImageStatus(BaseModel):
     doc_id: UUID
-    status: str
+    status: str | None
     preview_image_url: str | None = None
 
 

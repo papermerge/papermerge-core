@@ -50,11 +50,7 @@ const nodesSlice = createSlice({
     ) => {
       const payload = action.payload
       const node = state.entities[payload.document_id]
-
       if (node && payload.error) {
-        console.log(
-          `nodeID=${node.id} thumbnail preview error was set to ${payload.error}`
-        )
         node.thumbnail_preview_error = payload.error
       }
     },

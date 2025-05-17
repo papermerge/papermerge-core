@@ -886,6 +886,7 @@ def get_docs_thumbnail_img_status(
     if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST):
         for row in db_session.execute(stmt):
             url = None
+
             if row.preview_status == constants.ImagePreviewStatus.READY:
                 # image URL is returned if only and only if image
                 # preview is ready (generated and uploaded to S3)
@@ -896,7 +897,7 @@ def get_docs_thumbnail_img_status(
                     # Testing setup for CDN
                     url = f"/api/thumbnails/{row.doc_id}"
 
-            if row.preview_status in None:
+            if row.preview_status is None:
                 doc_ids_not_yet_considered_for_preview.append(row.doc_id)
 
             item = schema.DocumentPreviewImageStatus(

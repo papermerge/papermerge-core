@@ -1,4 +1,4 @@
-import {getDefaultHeaders} from "@/utils"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {useEffect, useRef, useState} from "react"
 
 interface DocumentPreview {
@@ -31,6 +31,12 @@ type DocumentPreviewError = {
   error: string
 }
 
+function toDocIdsQueryParams(docIds: string[]): string {
+  const params = new URLSearchParams()
+  docIds.forEach(id => params.append("doc_ids", id))
+  return params.toString()
+}
+
 const usePreviewPolling = (
   documentIds: string[],
   {pollIntervalMs = 3000, maxRetries = 20}: UsePreviewPollingOptions = {}
@@ -60,9 +66,9 @@ const usePreviewPolling = (
 
     const pollPreviewStatuses = async () => {
       try {
-        const query = documentIds.map(encodeURIComponent).join(",")
+        const queryString = toDocIdsQueryParams(documentIds)
         const res = await fetch(
-          `/api/documents/preview-img-status/?document_ids=${query}`,
+          `${getBaseURL()}/api/documents/thumbnail-img-status/?${queryString}`,
           {headers: headers}
         )
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -114,12 +120,8 @@ const usePreviewPolling = (
         })
       } catch (err: unknown) {
         const errorObj = err instanceof Error ? err : new Error("Unknown error")
-        console.error("Polling error:", errorObj)
         setError(errorObj)
         retryCount.current += 1
-        console.log(
-          `${retryCount.current} ${maxRetries} ${intervalRef.current !== null}`
-        )
         if (retryCount.current >= maxRetries && intervalRef.current !== null) {
           clearInterval(intervalRef.current)
         }
@@ -145,10 +147,12 @@ const usePreviewPolling = (
     const newPreviewError = errorDocumentIds.map(id => {
       return {
         document_id: id,
-        error: `Failed to get thumbnail after ${maxRetries}`
+        error: `Failed to get thumbnail after ${maxRetries} retries`
       }
     })
-    const newError = new Error(`Failed to get thumbnails after ${maxRetries}`)
+    const newError = new Error(
+      `Failed to get thumbnails after ${maxRetries} retries`
+    )
 
     return {
       previews,

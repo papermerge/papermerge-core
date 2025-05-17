@@ -349,7 +349,7 @@ def get_document_doc_thumbnail_status(
         )
 
     fserver = config.papermerge__main__file_server
-    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST.value):
+    if fserver in (FileServer.S3.value, FileServer.S3_LOCAL_TEST.value):
         if len(doc_ids_not_yet_considered) > 0:
             for doc_id in doc_ids_not_yet_considered:
                 send_task(

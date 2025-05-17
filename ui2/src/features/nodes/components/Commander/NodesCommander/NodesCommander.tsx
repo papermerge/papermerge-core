@@ -45,7 +45,7 @@ import {
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
-import type {ExtractPagesResponse, NType, NodeType, PanelMode} from "@/types"
+import type {ExtractPagesResponse, NType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
 import {useTranslation} from "react-i18next"
@@ -54,7 +54,7 @@ import {DropFilesModal} from "./DropFiles"
 import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
-import Node from "./Node"
+import NodesList from "./NodesList"
 
 export default function Commander() {
   const {t} = useTranslation()
@@ -259,22 +259,19 @@ export default function Commander() {
     root.render(image)
   }
 
-  const nodes = data.items.map((n: NodeType) => (
-    <Node
-      onClick={onClick}
-      key={n.id}
-      node={n}
-      onDrag={onNodeDrag}
-      onDragStart={onNodeDragStart}
-    />
-  ))
-
   let commanderContent: JSX.Element
 
-  if (nodes.length > 0) {
+  if (data.items.length > 0) {
     commanderContent = (
       <>
-        <Group>{nodes}</Group>
+        <Group>
+          <NodesList
+            items={data.items}
+            onClick={onClick}
+            onNodeDrag={onNodeDrag}
+            onNodeDragStart={onNodeDragStart}
+          />
+        </Group>
         <Pagination
           pagination={{
             pageNumber: page,

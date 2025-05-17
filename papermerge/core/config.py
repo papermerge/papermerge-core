@@ -7,6 +7,9 @@ from pydantic_settings import BaseSettings
 class FileServer(str, Enum):
     LOCAL = 'local'
     S3 = 's3'
+    # Don't use "s3-local-test" in production!
+    # It is meant only for local testing
+    S3_LOCAL_TEST = 's3-local-test'  # used only for testing
 
 
 class Settings(BaseSettings):
@@ -19,6 +22,7 @@ class Settings(BaseSettings):
     papermerge__main__cf_sign_url_key_id: str | None = None
     papermerge__main__cf_domain: str | None = None
     papermerge__main__timezone: str = 'Europe/Berlin'
+    papermerge__main__cache_enabled: bool = False
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_lang_code: str = 'deu'

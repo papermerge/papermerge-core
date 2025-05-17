@@ -11,12 +11,12 @@ import {
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
+import Thumbnail from "@/components/NodeThumbnail/Thumbnail"
 import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.scss"
 
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentThumbnailQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   node: NodeType
@@ -38,7 +38,7 @@ export default function Document({
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
   const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {data} = useGetDocumentThumbnailQuery(node.id)
+
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
@@ -76,7 +76,7 @@ export default function Document({
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
         {node.is_shared && <IconUsers className={classes.iconUsers} />}
-        <img src={data} />
+        <Thumbnail nodeID={node.id} />
         <Tags names={tagNames} />
         <div className={classes.title}>{node.title}</div>
       </a>

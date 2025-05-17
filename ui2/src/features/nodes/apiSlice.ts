@@ -11,13 +11,7 @@ import type {
   SortMenuColumn,
   SortMenuDirection
 } from "@/types"
-import {
-  getBaseURL,
-  getDefaultHeaders,
-  getRemoteUserID,
-  getWSURL,
-  imageEncode
-} from "@/utils"
+import {getRemoteUserID, getWSURL} from "@/utils"
 import {
   documentMovedNotifReceived,
   documentsMovedNotifReceived
@@ -57,7 +51,6 @@ export type PaginatedArgs = {
   sortColumn: SortMenuColumn
 }
 
-import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
@@ -160,55 +153,6 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         ws.close()
       }
     }),
-    getDocumentThumbnail: builder.query<string, string>({
-      //@ts-ignore
-      queryFn: async (node_id, queryApi) => {
-        const state = queryApi.getState() as RootState
-
-        if (!node_id) {
-          console.error("Node ID is empty or null")
-          return "Node ID is empty or null"
-        }
-
-        const node =
-          state.nodes.entities[node_id] || state.sharedNodes.entities[node_id]
-
-        if (!node) {
-          console.error(
-            `Node with ID=${node_id} not found in state.nodes.entities`
-          )
-          return `Node ID = ${node_id} not found`
-        }
-
-        const thumbnails_url = node.thumbnail_url
-        const headers = getDefaultHeaders()
-        let url
-
-        if (thumbnails_url && !thumbnails_url.startsWith("/api/")) {
-          // cloud URL e.g. aws cloudfront URL
-          url = thumbnails_url
-        } else {
-          // use backend server URL (which may differ from frontend's URL)
-          url = `${getBaseURL(true)}${thumbnails_url}`
-        }
-
-        if (!thumbnails_url || !url) {
-          console.error(
-            `Thumbnail URL for Node ID=${node_id} is undefined or null`
-          )
-          return "node does not have thumbnail"
-        }
-
-        try {
-          const response = await fetch(url, {headers: headers})
-          const resp2 = await response.arrayBuffer()
-          const encodedData = imageEncode(resp2, "image/jpeg")
-          return {data: encodedData}
-        } catch (err) {
-          return {err}
-        }
-      }
-    }),
     addNewFolder: builder.mutation<NodeType, CreateFolderType>({
       query: folder => ({
         url: "/nodes/",
@@ -291,6 +235,5 @@ export const {
   useUpdateNodeTagsMutation,
   useGetNodeTagsQuery,
   useDeleteNodesMutation,
-  useGetDocumentThumbnailQuery,
   useMoveNodesMutation
 } = apiSliceWithNodes

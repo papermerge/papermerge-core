@@ -15,6 +15,7 @@ from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
+from papermerge.core.features.document import s3
 
 settings = config.get_settings()
 
@@ -133,7 +134,8 @@ class Page(BaseModel):
     @field_validator("svg_url", mode="before")
     @classmethod
     def svg_url_value(cls, value, info: ValidationInfo) -> str:
-        if settings.papermerge__main__file_server == "local":
+        file_server = settings.papermerge__main__file_server
+        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
             return f"/api/pages/{info.data['id']}/svg"
 
         s3_url = _s3_page_svg_url(info.data["id"])  # UUID of the page here
@@ -142,7 +144,8 @@ class Page(BaseModel):
     @field_validator("jpg_url", mode="before")
     @classmethod
     def jpg_url_value(cls, value, info: ValidationInfo) -> str:
-        if settings.papermerge__main__file_server == "local":
+        file_server = settings.papermerge__main__file_server
+        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
             return f"/api/pages/{info.data['id']}/jpg"
 
         s3_url = _s3_page_thumbnail_url(
@@ -173,7 +176,8 @@ class DocumentVersion(BaseModel):
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
-        if settings.papermerge__main__file_server == config.FileServer.LOCAL.value:
+        file_server = settings.papermerge__main__file_server
+        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
             return f"/api/document-versions/{info.data['id']}/download"
 
         return _s3_docver_download_url(info.data["id"], info.data["file_name"])
@@ -189,7 +193,15 @@ def thumbnail_url(value, info):
 ThumbnailUrl = Annotated[str | None, Field(validate_default=True)]
 
 
-class Document(BaseModel):
+class DocumentNode(BaseModel):
+    """Document without versions
+
+    The point of this class is to be used when listing folders/documents in
+    which case info about document versions (and their pages etc) is not
+    required (generating document version info in context of CDN is very
+    slow as for each page of each doc ver signed URL must be computed)
+    """
+
     id: UUID
     title: str
     ctype: Literal["document"]
@@ -199,10 +211,10 @@ class Document(BaseModel):
     parent_id: UUID | None
     document_type_id: UUID | None = None
     breadcrumb: list[tuple[UUID, str]] = []
-    versions: list[DocumentVersion] | None = []
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
+    preview_status: str | None = None
     user_id: UUID | None = None
     group_id: UUID | None = None
     owner_name: str | None = None
@@ -211,14 +223,38 @@ class Document(BaseModel):
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
-        if settings.papermerge__main__file_server == config.FileServer.LOCAL.value:
+        file_server = settings.papermerge__main__file_server
+        if file_server == config.FileServer.LOCAL:
             return f"/api/thumbnails/{info.data['id']}"
 
-        # if it is not local, then it is s3 + cloudfront
-        return _s3_doc_thumbnail_url(info.data["id"])
+        # if it is not local, then it is s3 + CDN/cloudfront
+        if (
+            "preview_status" in info.data
+            and info.data["preview_status"] == const.ImagePreviewStatus.READY
+        ):
+            if file_server == config.FileServer.S3:
+                # give client back signed URL only in case preview image
+                # was successfully uploaded to S3 backend.
+                # `preview_status` is set to ready/failed by s3 worker
+                # after preview image upload to s3 succeeds/fails
+                return s3.doc_thumbnail_signed_url(info.data["id"])
+            else:
+                return f"/api/thumbnails/{info.data['id']}"
+
+        return None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class Document(DocumentNode):
+    versions: list[DocumentVersion] | None = []
+
+
+class DocumentPreviewImageStatus(BaseModel):
+    doc_id: UUID
+    status: str | None
+    preview_image_url: str | None = None
 
 
 class NewDocument(BaseModel):
@@ -254,22 +290,6 @@ class NewDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
-
-
-def _s3_doc_thumbnail_url(uid: UUID) -> str:
-    from papermerge.core.cloudfront import sign_url
-
-    resource_path = plib.thumbnail_path(uid)
-    prefix = settings.papermerge__main__prefix
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
-
-    return sign_url(
-        url,
-        valid_for=600,  # valid for 600 seconds
-    )
 
 
 def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:

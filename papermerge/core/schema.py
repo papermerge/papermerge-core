@@ -10,6 +10,7 @@ from .features.shared_nodes.schema import (
 )
 from .features.document.schema import (
     Document,
+    DocumentNode,
     NewDocument,
     DocumentVersion,
     Page,
@@ -23,7 +24,8 @@ from .features.document.schema import (
     MovePagesIn,
     MovePagesOut,
     ExtractStrategy,
-    MoveStrategy
+    MoveStrategy,
+    DocumentPreviewImageStatus
 )
 from .features.users.schema import User, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import CustomField, UpdateCustomField, CustomFieldType, CustomFieldValue
@@ -43,8 +45,10 @@ __all__ = [
     'UpdateNode',
     'MoveNode',
     'Document',
+    'DocumentNode',
     'NewDocument',
     'DocumentVersion',
+    'DocumentPreviewImageStatus',
     'Page',
     'MovePage',
     'User',

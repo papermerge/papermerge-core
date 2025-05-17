@@ -3,7 +3,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Security, UploadFile, status
+from fastapi import APIRouter, HTTPException, Security, UploadFile, status, Query
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import exceptions as exc
@@ -186,15 +186,6 @@ def upload_file(
             content_type=file.headers.get("content-type"),
         )
 
-    if config.papermerge__main__file_server == FileServer.S3:
-        # generate preview using `s3_worker`
-        # it will, as well, upload previews to s3 storage
-        send_task(
-            const.S3_WORKER_GENERATE_PREVIEW,
-            kwargs={"doc_id": str(doc.id)},
-            route_name="s3preview",
-        )
-
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
@@ -314,3 +305,57 @@ def get_documents_by_type(
         num_pages=int(total_count / page_size) + 1,
         items=items,
     )
+
+
+@router.get(
+    "/thumbnail-img-status/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on one of the documents",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_document_doc_thumbnail_status(
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    doc_ids: list[uuid.UUID] = Query(),
+) -> list[schema.DocumentPreviewImageStatus]:
+    """
+    Get documents thumbnail image preview status
+
+    Receives as input a list of document IDs (i.e. node IDs).
+
+    In case of CDN setup, for each document with NULL value in `preview_status`
+    field - one `S3worker` task will be scheduled for generating respective
+    document thumbnail.
+
+    Required scope: `{scope}`
+    """
+
+    doc_ids_not_yet_considered = []
+    with db.Session() as db_session:
+        for doc_id in doc_ids:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
+        response, doc_ids_not_yet_considered = dbapi.get_docs_thumbnail_img_status(
+            db_session, doc_ids=doc_ids
+        )
+
+    fserver = config.papermerge__main__file_server
+    if fserver in (FileServer.S3.value, FileServer.S3_LOCAL_TEST.value):
+        if len(doc_ids_not_yet_considered) > 0:
+            for doc_id in doc_ids_not_yet_considered:
+                send_task(
+                    const.S3_WORKER_GENERATE_DOC_THUMBNAIL,
+                    kwargs={"doc_id": str(doc_id)},
+                    route_name="s3preview",
+                )
+
+    return response

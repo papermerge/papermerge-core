@@ -14,6 +14,16 @@ import {
 } from "@reduxjs/toolkit"
 import {apiSliceWithSharedNodes} from "./apiSlice"
 
+interface DocumentThumbnailUpdated {
+  document_id: string
+  thumbnail_url: string | null
+}
+
+interface DocumentThumbnailErrorUpdated {
+  document_id: string
+  error: string
+}
+
 const sharedNodesAdapter = createEntityAdapter<NodeType>()
 const initialState = sharedNodesAdapter.getInitialState()
 
@@ -21,6 +31,26 @@ const sharedNodesSlice = createSlice({
   name: "sharedNode",
   initialState,
   reducers: {
+    documentThumbnailUpdated: (
+      state,
+      action: PayloadAction<DocumentThumbnailUpdated>
+    ) => {
+      const payload = action.payload
+      const node = state.entities[payload.document_id]
+      if (node && payload.thumbnail_url) {
+        node.thumbnail_url = payload.thumbnail_url
+      }
+    },
+    documentThumbnailErrorUpdated: (
+      state,
+      action: PayloadAction<DocumentThumbnailErrorUpdated>
+    ) => {
+      const payload = action.payload
+      const node = state.entities[payload.document_id]
+      if (node && payload.error) {
+        node.thumbnail_preview_error = payload.error
+      }
+    },
     documentsMovedNotifReceived: (
       _state,
       action: PayloadAction<ServerNotifDocumentsMoved>
@@ -55,8 +85,12 @@ const sharedNodesSlice = createSlice({
   }
 })
 
-export const {documentsMovedNotifReceived, documentMovedNotifReceived} =
-  sharedNodesSlice.actions
+export const {
+  documentsMovedNotifReceived,
+  documentMovedNotifReceived,
+  documentThumbnailUpdated,
+  documentThumbnailErrorUpdated
+} = sharedNodesSlice.actions
 
 export default sharedNodesSlice.reducer
 

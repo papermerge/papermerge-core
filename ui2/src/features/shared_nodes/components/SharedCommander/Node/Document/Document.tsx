@@ -12,8 +12,8 @@ import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags
 import type {NodeType, PanelMode} from "@/types"
 import classes from "./Document.module.scss"
 
+import Thumbnail from "@/components/NodeThumbnail/Thumbnail"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentThumbnailQuery} from "@/features/nodes/apiSlice"
 
 type Args = {
   node: NodeType
@@ -26,7 +26,6 @@ export default function Document({node, onClick, cssClassNames}: Args) {
   const selectedIds = useAppSelector(s =>
     selectSelectedNodeIds(s, mode)
   ) as Array<string>
-  const {data} = useGetDocumentThumbnailQuery(node.id)
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
@@ -45,7 +44,7 @@ export default function Document({node, onClick, cssClassNames}: Args) {
     >
       <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
       <a onClick={() => onClick(node)}>
-        <img src={data} />
+        <Thumbnail nodeID={node.id} />
         <Tags names={tagNames} />
         <div className={classes.title}>{node.title}</div>
       </a>

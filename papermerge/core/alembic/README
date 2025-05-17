@@ -26,3 +26,9 @@ Navigate back and forth:
  $ alembic downgrade -1
  $ alembic upgrade +1
 ```
+
+To view migrations in chronological order:
+
+```
+alembic history
+```

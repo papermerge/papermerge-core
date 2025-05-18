@@ -2,15 +2,14 @@ import uuid
 from uuid import UUID
 from pathlib import Path
 
-from sqlalchemy import ForeignKey, Enum
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.base import Base
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.nodes.db.orm import Node
-from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus
+from papermerge.core.types import OCRStatusEnum
 from papermerge.core.pathlib import abs_docver_path
-
 
 
 class Document(Node):
@@ -31,7 +30,7 @@ class Document(Node):
     #  Failed = preview generation failed -> thumbnail_url is empty
     #        in which case `preview_error` will contain error why preview
     #        generation failed
-    preview_status: Mapped[str] = mapped_column(Enum(ImagePreviewStatus, name="preview_status"), nullable=True)
+    preview_status: Mapped[str] = mapped_column(nullable=True)
     # `preview_error`
     # only for troubleshooting purposes. Relevant only in case
     # `preview_status` = Failed

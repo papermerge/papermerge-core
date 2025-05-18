@@ -19,7 +19,12 @@ from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.document_types.db.api import document_type_cf_count
-from papermerge.core.types import OrderEnum, CFVValueColumn
+from papermerge.core.types import (
+    OrderEnum,
+    CFVValueColumn,
+    ImagePreviewStatus,
+    ImagePreviewSize,
+)
 from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
@@ -917,3 +922,82 @@ def get_docs_thumbnail_img_status(
             items.append(item)
 
     return items, doc_ids_not_yet_considered_for_preview
+
+
+def get_pages_preview_img_status(
+    db_session: Session,
+    page_ids: list[uuid.UUID]
+) -> Tuple[list[schema.PagePreviewImageStatus], list[uuid.UUID]]:
+    """Gets image preview statuses for given page IDs
+
+    Response is a tuple. First item of the tuple is list of
+    statuses and second item of the tuple is the list of page
+    IDs for which image preview field has value NULL i.e. was not considered yet
+    or maybe was reseted.
+    """
+
+    fserver = settings.papermerge__main__file_server
+
+    stmt = select(
+        orm.Page.id.label("page_id"),
+        orm.Page.preview_status_sm,
+        orm.Page.preview_status_md,
+        orm.Page.preview_status_lg,
+        orm.Page.preview_status_xl,
+    ).select_from(orm.Page).where(
+        orm.Page.id.in_(page_ids)
+    )
+
+    page_ids_not_yet_considered_for_preview = []
+    items = []
+    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST):
+        for row in db_session.execute(stmt):
+            url = None
+            statuses = []
+            for size in list(ImagePreviewSize):
+                status = getattr(row, f"preview_status_{size}")
+                if status == ImagePreviewStatus.ready:
+                    # image URL is returned if only and only if image
+                    # preview is ready (generated and uploaded to S3)
+                    if fserver == config.FileServer.S3:
+                        # Real world CDN setup
+                        url = s3.page_image_jpg_signed_url(row.page_id, size=getattr(ImagePreviewSize, size))
+                    elif config.FileServer.S3_LOCAL_TEST:
+                        # Testing setup for CDN
+                        url = f"/api/preview-image/jpg/{row.page_id}"
+
+                statuses.append(
+                    schema.StatusForSize(url=url, status=status, size=getattr(ImagePreviewSize, size))
+                )
+
+            preview_status_cols = (
+                row.preview_status_sm, row.preview_status_md,
+                row.preview_status_lg, row.preview_status_xl
+            )
+            if all(value is None for value in preview_status_cols):
+                page_ids_not_yet_considered_for_preview.append(row.page_id)
+
+            item = schema.PagePreviewImageStatus(
+                page_id=row.page_id,
+                status=statuses,
+            )
+            items.append(item)
+    else:
+        # Non-CDN setup
+        for row in db_session.execute(stmt):
+            statuses = []
+            for size in list(ImagePreviewSize):
+                statuses.append(
+                    schema.StatusForSize(
+                        url=f"/api/preview-image/jpg/{row.page_id}",
+                        status=ImagePreviewStatus.ready,
+                        size=getattr(ImagePreviewSize, size)
+                    )
+                )
+            item = schema.PagePreviewImageStatus(
+                page_id=row.page_id,
+                status=statuses
+            )
+            items.append(item)
+
+    return items, page_ids_not_yet_considered_for_preview

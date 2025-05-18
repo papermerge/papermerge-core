@@ -24,7 +24,8 @@ from .features.document.db.api import (
     update_doc_cfv,
     get_doc_cfv,
     get_doc_ver_pages,
-    get_docs_thumbnail_img_status
+    get_docs_thumbnail_img_status,
+    get_pages_preview_img_status
 )
 from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (
@@ -74,6 +75,7 @@ __all__ = [
     "get_docs_count_by_type",
     "upload",
     "get_docs_thumbnail_img_status",
+    "get_pages_preview_img_status",
     "create_document_type",
     "get_document_types",
     "get_document_type",

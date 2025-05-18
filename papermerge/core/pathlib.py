@@ -3,6 +3,7 @@ from uuid import UUID
 
 from papermerge.core import constants as const
 from papermerge.core.config import get_settings
+from papermerge.core.types import ImagePreviewSize
 
 config = get_settings()
 
@@ -12,7 +13,7 @@ __all__ = [
     'page_txt_path',
     'page_path',
     'page_svg_path',
-    'page_jpg_path',
+    'page_preview_jpg_path',
     'page_hocr_path',
     'abs_thumbnail_path',
     'abs_docver_path',
@@ -92,6 +93,19 @@ def page_path(
         uuid_str
     )
 
+def page_preview_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.PREVIEWS,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str
+    )
+
 
 def abs_page_path(uuid: UUID | str) -> Path:
     return Path(config.papermerge__main__media_root) / page_path(uuid)
@@ -109,10 +123,18 @@ def page_svg_path(
     return page_path(uuid) / 'page.svg'
 
 
-def page_jpg_path(
+def page_preview_jpg_path(
     uuid: UUID | str,
+    size
 ) -> Path:
-    return page_path(uuid) / 'page.jpg'
+    return page_preview_path(uuid) / f'{size}.jpg'
+
+
+def abs_page_preview_jpg_path(
+    uuid: UUID | str,
+    size: ImagePreviewSize = ImagePreviewSize.md
+) -> Path:
+    return Path(config.papermerge__main__media_root) / page_preview_jpg_path(uuid, size=size)
 
 
 def page_hocr_path(

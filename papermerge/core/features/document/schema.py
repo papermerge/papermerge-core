@@ -4,7 +4,12 @@ from uuid import UUID
 from fastapi import Query
 
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.types import CFNameType, CFValueType
+from papermerge.core.types import (
+    CFNameType,
+    CFValueType,
+    ImagePreviewStatus,
+    ImagePreviewSize,
+)
 
 from typing import Annotated, Literal
 
@@ -230,7 +235,7 @@ class DocumentNode(BaseModel):
         # if it is not local, then it is s3 + CDN/cloudfront
         if (
             "preview_status" in info.data
-            and info.data["preview_status"] == const.ImagePreviewStatus.READY
+            and info.data["preview_status"] == ImagePreviewStatus.ready
         ):
             if file_server == config.FileServer.S3:
                 # give client back signed URL only in case preview image
@@ -253,8 +258,19 @@ class Document(DocumentNode):
 
 class DocumentPreviewImageStatus(BaseModel):
     doc_id: UUID
-    status: str | None
+    status: ImagePreviewStatus | None
     preview_image_url: str | None = None
+
+
+class StatusForSize(BaseModel):
+    status: ImagePreviewStatus | None
+    url: str | None = None
+    size: ImagePreviewSize
+
+
+class PagePreviewImageStatus(BaseModel):
+    page_id: UUID
+    status: list[StatusForSize]
 
 
 class NewDocument(BaseModel):

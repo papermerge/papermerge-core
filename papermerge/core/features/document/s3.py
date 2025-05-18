@@ -31,7 +31,6 @@ def doc_thumbnail_signed_url(uid: UUID) -> str:
 
 
 def page_image_jpg_signed_url(uid: UUID, size: ImagePreviewSize) -> str:
-
     resource_path = plib.page_preview_jpg_path(uid, size=size)
     prefix = settings.papermerge__main__prefix
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from typing import Tuple
 
-from sqlalchemy import delete, func, insert, select, update, Select
+from sqlalchemy import delete, func, insert, select, update, Select, distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -732,6 +732,21 @@ def get_page_document_id(
         .join(orm.Page)
         .where(orm.Page.id == page_id)
     )
+
+    ret_id = db_session.execute(stmt).scalar()
+    return ret_id
+
+
+def get_pages_document_id(
+    db_session: Session, page_ids: list[uuid.UUID]
+) -> uuid.UUID:
+    """Returns document ID whom all page_ids belong to"""
+    stmt = (
+        select(distinct(orm.Document.id))
+        .join(orm.DocumentVersion)
+        .join(orm.Page)
+        .where(orm.Page.id.in_(page_ids))
+    ).limit(1)
 
     ret_id = db_session.execute(stmt).scalar()
     return ret_id

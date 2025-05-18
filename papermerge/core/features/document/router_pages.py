@@ -70,10 +70,10 @@ def get_page_svg_url(
 
 
 @router.get("/{page_id}/jpg", response_class=JPEGFileResponse)
-@utils.docstring_parameter(scope=scopes.PAGE_VIEW)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_page_jpg_url(
     page_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     size: int = Query(DEFAULT_PAGE_SIZE, description="jpg image width in pixels"),
 ):
     """Returns jpg preview image of the page.
@@ -89,7 +89,7 @@ def get_page_jpg_url(
                 db_session,
                 user_id=user.id,
                 node_id=document_id,
-                codename=scopes.PAGE_VIEW,
+                codename=scopes.NODE_VIEW,
             )
             if not ok:
                 raise HTTPException(status_code=403, detail="Access Forbidden")
@@ -231,12 +231,12 @@ def extract_pages(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW, max_pages=MAX_PAGES)
-def get_pages_preview_image_status(
+def get_pages_preview_images_status(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     page_ids: list[uuid.UUID] = Query(),
 ) -> list[schema.PagePreviewImageStatus]:
     """
-    Get page preview image status
+    Get page(s) preview image(s) status
 
     Receives as input a list of page IDs
 
@@ -257,16 +257,17 @@ def get_pages_preview_image_status(
 
     page_ids_not_yet_considered = []
     with db.Session() as db_session:
-        for page_id in page_ids[:MAX_PAGES]:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=page_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        document_id = doc_dbapi.get_pages_document_id(db_session, page_ids=page_ids)
+        ok = dbapi_common.has_node_perm(
+            db_session,
+            user_id=user.id,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+        )
+        if not ok:
+            raise HTTPException(status_code=403, detail="Access Forbidden")
 
-        response, doc_ids_not_yet_considered = dbapi.get_pages_preview_img_status(
+        response, page_ids_not_yet_considered = dbapi.get_pages_preview_img_status(
             db_session, page_ids=page_ids
         )
 

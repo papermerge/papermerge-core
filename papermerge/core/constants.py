@@ -59,6 +59,6 @@ class ImagePreviewStatus(str, Enum):
         b. preview image was uploaded to S3
     4. "failed" image preview failed
     """
-    READY = "ready"
-    PENDING = "pending"
-    FAILED = "failed"
+    READY = "READY"
+    PENDING = "PENDING"
+    FAILED = "FAILED"

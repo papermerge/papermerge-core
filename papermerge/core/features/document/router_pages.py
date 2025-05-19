@@ -22,7 +22,6 @@ from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pag
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.utils import image
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core import exceptions as exc
 
 
 logger = logging.getLogger(__name__)

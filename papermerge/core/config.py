@@ -36,8 +36,9 @@ class Settings(BaseSettings):
     papermerge__ocr__automatic: bool = False
     papermerge__search__url: str | None = None
 
-
 settings = Settings()
 
 def get_settings():
+    # lazy load setting
+
     return settings

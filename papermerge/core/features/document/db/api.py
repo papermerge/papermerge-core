@@ -37,7 +37,6 @@ from papermerge.core import config
 from .selectors import select_doc_cfv, select_docs_by_type
 
 settings = config.get_settings()
-
 logger = logging.getLogger(__name__)
 
 
@@ -891,7 +890,6 @@ def get_docs_thumbnail_img_status(
     IDs for which image preview field has value NULL i.e. was not considered yet
     or maybe was reseted.
     """
-
     fserver = settings.papermerge__main__file_server
 
     stmt = select(
@@ -950,7 +948,6 @@ def get_pages_preview_img_status(
     IDs for which image preview field has value NULL i.e. was not considered yet
     or maybe was reseted.
     """
-
     fserver = settings.papermerge__main__file_server
 
     stmt = select(
@@ -965,12 +962,13 @@ def get_pages_preview_img_status(
 
     page_ids_not_yet_considered_for_preview = []
     items = []
-    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST):
+
+    if fserver in (config.FileServer.S3, config.FileServer.S3_LOCAL_TEST):
         for row in db_session.execute(stmt):
             url = None
             statuses = []
-            for size in list(ImagePreviewSize):
-                status = getattr(row, f"preview_status_{size}")
+            for size in ImagePreviewSize:
+                status = getattr(row, f"preview_status_{size.value}")
                 if status == ImagePreviewStatus.ready:
                     # image URL is returned if only and only if image
                     # preview is ready (generated and uploaded to S3)

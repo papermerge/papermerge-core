@@ -23,11 +23,11 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     preview_status_enum = sa.Enum(ImagePreviewStatus, name="preview_status")
     preview_status_enum.create(op.get_bind())
-    for size in ("sm", "md", "lg", "xl"):
+    for size in ImagePreviewStatus:
         op.add_column(
             "pages",
             sa.Column(
-                f"preview_status_{size}",
+                f"preview_status_{size.value}",
                 preview_status_enum,
                 nullable=True,
             ),
@@ -35,7 +35,7 @@ def upgrade() -> None:
         op.add_column(
             "pages",
             sa.Column(
-                f"preview_error_{size}",
+                f"preview_error_{size.value}",
                 sa.String(),
                 nullable=True,
             ),
@@ -43,6 +43,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    for size in ("sm", "md", "lg", "xl"):
-        op.drop_column("pages", f"preview_error_{size}")
-        op.drop_column("pages", f"preview_status_{size}")
+    for size in ImagePreviewStatus:
+        op.drop_column("pages", f"preview_error_{size.value}")
+        op.drop_column("pages", f"preview_status_{size.value}")

@@ -905,7 +905,7 @@ def get_docs_thumbnail_img_status(
         for row in db_session.execute(stmt):
             url = None
 
-            if row.preview_status == constants.ImagePreviewStatus.READY:
+            if row.preview_status == ImagePreviewStatus.ready:
                 # image URL is returned if only and only if image
                 # preview is ready (generated and uploaded to S3)
                 if fserver == config.FileServer.S3:
@@ -929,7 +929,7 @@ def get_docs_thumbnail_img_status(
         for row in db_session.execute(stmt):
             item = schema.DocumentPreviewImageStatus(
                 doc_id=row.doc_id,
-                status=constants.ImagePreviewStatus.READY,
+                status=ImagePreviewStatus.ready,
                 preview_image_url=f"/api/thumbnails/{row.doc_id}"
             )
             items.append(item)

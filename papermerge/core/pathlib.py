@@ -125,9 +125,9 @@ def page_svg_path(
 
 def page_preview_jpg_path(
     uuid: UUID | str,
-    size
+    size: ImagePreviewSize
 ) -> Path:
-    return page_preview_path(uuid) / f'{size}.jpg'
+    return page_preview_path(uuid) / f'{size.value}.jpg'
 
 
 def abs_page_preview_jpg_path(

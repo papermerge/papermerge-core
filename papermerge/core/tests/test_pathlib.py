@@ -1,22 +1,23 @@
 import uuid
 from pathlib import Path
 
-from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE, JPG, THUMBNAILS
-from papermerge.core.pathlib import thumbnail_path
+from papermerge.core.types import ImagePreviewSize
+from papermerge.core import constants as const
+from papermerge.core import pathlib as plib
 
 
 def test_thumbnail_path_1():
     uid = uuid.uuid4()
     str_uuid = str(uid)
-    actual = thumbnail_path(uid)
+    actual = plib.thumbnail_path(uid)
 
     expected = Path(
-        THUMBNAILS,
-        JPG,
+        const.THUMBNAILS,
+        const.JPG,
         str_uuid[0:2],
         str_uuid[2:4],
         str_uuid,
-        f"{DEFAULT_THUMBNAIL_SIZE}.{JPG}",
+        f"{const.DEFAULT_THUMBNAIL_SIZE}.{const.JPG}",
     )
 
     assert actual == expected
@@ -25,10 +26,32 @@ def test_thumbnail_path_1():
 def test_thumbnail_path_2():
     uid = uuid.uuid4()
     str_uuid = str(uid)
-    actual = thumbnail_path(uid, size=200)
+    actual = plib.thumbnail_path(uid, size=200)
 
     expected = Path(
-        THUMBNAILS, JPG, str_uuid[0:2], str_uuid[2:4], str_uuid, f"200.{JPG}"
+        const.THUMBNAILS,
+        const.JPG,
+        str_uuid[0:2],
+        str_uuid[2:4],
+        str_uuid,
+        f"200.{const.JPG}",
+    )
+
+    assert actual == expected
+
+
+def test_page_preview_jpg_path():
+    uid = uuid.uuid4()
+    str_uuid = str(uid)
+
+    actual = plib.page_preview_jpg_path(uid, ImagePreviewSize.md)
+    expected = Path(
+        const.PREVIEWS,
+        const.PAGES,
+        str_uuid[0:2],
+        str_uuid[2:4],
+        str_uuid,
+        f"{ImagePreviewSize.md.value}.{const.JPG}",
     )
 
     assert actual == expected

@@ -3,17 +3,6 @@ import {useEffect, useRef, useState} from "react"
 
 type UUID = string
 
-interface PageImagePreview {
-  status_sm: string
-  url_sm: string | null
-  status_md: string
-  url_md: string | null
-  status_lg: string
-  url_lg: string | null
-  status_xl: string
-  url_xl: string | null
-}
-
 type PageImageStatus = "pending" | "ready" | "failed"
 type PageImageSize = "sm" | "md" | "lg" | "xl"
 type PageImageDict = Record<UUID, Array<StatusForSize>>

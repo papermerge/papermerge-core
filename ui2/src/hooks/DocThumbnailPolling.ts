@@ -30,7 +30,7 @@ function toDocIdsQueryParams(docIds: string[]): string {
   return params.toString()
 }
 
-const usePreviewPolling = (
+const useDocThumbnailPolling = (
   documentIds: string[],
   {pollIntervalMs = 3000, maxRetries = 20}: UsePreviewPollingOptions = {}
 ): UsePreviewPollingResult => {
@@ -135,4 +135,4 @@ const usePreviewPolling = (
   }
 }
 
-export default usePreviewPolling
+export default useDocThumbnailPolling

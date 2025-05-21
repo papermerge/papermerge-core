@@ -271,7 +271,7 @@ def get_pages_preview_images_status(
         )
 
     fserver = config.papermerge__main__file_server
-    if fserver in (FileServer.S3.value, FileServer.S3_LOCAL_TEST.value):
+    if fserver == FileServer.S3.value:
         if len(page_ids_not_yet_considered) > 0:
             for page_id in page_ids_not_yet_considered[:MAX_PAGES]:
                 send_task(

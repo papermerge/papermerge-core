@@ -7,10 +7,6 @@ from pydantic_settings import BaseSettings
 class FileServer(str, Enum):
     LOCAL = 'local'
     S3 = 's3'
-    # Don't use "s3-local-test" in production!
-    # It is meant only for local testing
-    S3_LOCAL_TEST = 's3-local-test'  # used only for testing
-
 
 class Settings(BaseSettings):
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")

@@ -901,7 +901,7 @@ def get_docs_thumbnail_img_status(
 
     doc_ids_not_yet_considered_for_preview = []
     items = []
-    if fserver in (config.FileServer.S3.value, config.FileServer.S3_LOCAL_TEST):
+    if fserver == config.FileServer.S3.value:
         for row in db_session.execute(stmt):
             url = None
 
@@ -911,9 +911,6 @@ def get_docs_thumbnail_img_status(
                 if fserver == config.FileServer.S3:
                     # Real world CDN setup
                     url = s3.doc_thumbnail_signed_url(row.doc_id)
-                elif config.FileServer.S3_LOCAL_TEST:
-                    # Testing setup for CDN
-                    url = f"/api/thumbnails/{row.doc_id}"
 
             if row.preview_status is None:
                 doc_ids_not_yet_considered_for_preview.append(row.doc_id)
@@ -963,7 +960,7 @@ def get_pages_preview_img_status(
     page_ids_not_yet_considered_for_preview = []
     items = []
 
-    if fserver in (config.FileServer.S3, config.FileServer.S3_LOCAL_TEST):
+    if fserver == config.FileServer.S3:
         for row in db_session.execute(stmt):
             url = None
             statuses = []
@@ -975,9 +972,6 @@ def get_pages_preview_img_status(
                     if fserver == config.FileServer.S3:
                         # Real world CDN setup
                         url = s3.page_image_jpg_signed_url(row.page_id, size=getattr(ImagePreviewSize, size))
-                    elif config.FileServer.S3_LOCAL_TEST:
-                        # Testing setup for CDN
-                        url = f"/api/preview-image/jpg/{row.page_id}"
 
                 statuses.append(
                     schema.StatusForSize(url=url, status=status, size=getattr(ImagePreviewSize, size))

@@ -140,7 +140,7 @@ class Page(BaseModel):
     @classmethod
     def svg_url_value(cls, value, info: ValidationInfo) -> str:
         file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
+        if file_server == config.FileServer.LOCAL:
             return f"/api/pages/{info.data['id']}/svg"
 
         s3_url = _s3_page_svg_url(info.data["id"])  # UUID of the page here
@@ -150,7 +150,7 @@ class Page(BaseModel):
     @classmethod
     def jpg_url_value(cls, value, info: ValidationInfo) -> str:
         file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
+        if file_server == config.FileServer.LOCAL:
             return f"/api/pages/{info.data['id']}/jpg"
 
         s3_url = _s3_page_thumbnail_url(
@@ -182,7 +182,7 @@ class DocumentVersion(BaseModel):
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
         file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
+        if file_server == config.FileServer.LOCAL:
             return f"/api/document-versions/{info.data['id']}/download"
 
         return _s3_docver_download_url(info.data["id"], info.data["file_name"])

@@ -28,7 +28,7 @@ __all__ = [
 
 def thumbnail_path(
     uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    size: ImagePreviewSize = ImagePreviewSize.sm
 ) -> Path:
     """
     Relative path to the page thumbnail image.
@@ -41,13 +41,13 @@ def thumbnail_path(
         uuid_str[0:2],
         uuid_str[2:4],
         uuid_str,
-        f"{size}.{const.JPG}"
+        f"{size.value}.{const.JPG}"
     )
 
 
 def abs_thumbnail_path(
     uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    size: ImagePreviewSize = ImagePreviewSize.sm
 ) -> Path:
     return Path(
         config.papermerge__main__media_root,

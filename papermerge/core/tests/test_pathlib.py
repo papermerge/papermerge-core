@@ -17,24 +17,7 @@ def test_thumbnail_path_1():
         str_uuid[0:2],
         str_uuid[2:4],
         str_uuid,
-        f"{const.DEFAULT_THUMBNAIL_SIZE}.{const.JPG}",
-    )
-
-    assert actual == expected
-
-
-def test_thumbnail_path_2():
-    uid = uuid.uuid4()
-    str_uuid = str(uid)
-    actual = plib.thumbnail_path(uid, size=200)
-
-    expected = Path(
-        const.THUMBNAILS,
-        const.JPG,
-        str_uuid[0:2],
-        str_uuid[2:4],
-        str_uuid,
-        f"200.{const.JPG}",
+        f"{ImagePreviewSize.sm.value}.{const.JPG}",
     )
 
     assert actual == expected

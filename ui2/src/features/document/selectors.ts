@@ -19,3 +19,11 @@ export const selectBestImageByPageId = (
   const sizes = state.imageObjects[page_id]
   return sizes?.xl || sizes?.lg || sizes?.md || sizes?.sm
 }
+
+export const selectSmallImageByPageId = (
+  state: RootState,
+  page_id: string
+): string | undefined => {
+  const sizes = state.imageObjects[page_id]
+  return sizes?.sm
+}

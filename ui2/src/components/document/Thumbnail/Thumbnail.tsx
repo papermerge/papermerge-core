@@ -4,10 +4,7 @@ import {Checkbox, Skeleton, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useEffect, useRef, useState} from "react"
 
-import {
-  useGetDocumentQuery,
-  useGetPageImageQuery
-} from "@/features/document/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
   selectCurrentPages,
@@ -27,6 +24,7 @@ import {
 import {skipToken} from "@reduxjs/toolkit/query"
 
 import {DRAGGED} from "@/cconstants"
+import {selectSmallImageByPageId} from "@/features/document/selectors"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
@@ -50,11 +48,12 @@ export default function Thumbnail({page}: Args) {
     {open: trPagesDialogOpen, close: trPagesDialogClose}
   ] = useDisclosure(false)
   const dispatch = useAppDispatch()
-  const {data, isFetching} = useGetPageImageQuery(page.id)
+
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const ref = useRef<HTMLDivElement>(null)
+  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page.id))
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedPagesIDs = draggedPages?.map(p => p.id)
@@ -201,7 +200,7 @@ export default function Thumbnail({page}: Args) {
     }
   }
 
-  if (isFetching) {
+  if (!smImageURL) {
     return (
       <Stack justify="center" align="center">
         <Skeleton width={"100%"} height={160} />
@@ -233,7 +232,7 @@ export default function Thumbnail({page}: Args) {
         <img
           style={{transform: `rotate(${page.angle}deg)`}}
           onClick={onClick}
-          src={data}
+          src={smImageURL}
         />
         {page.number}
       </Stack>

@@ -27,8 +27,7 @@ __all__ = [
 
 
 def thumbnail_path(
-    uuid: UUID | str,
-    size: ImagePreviewSize = ImagePreviewSize.sm
+    uuid: UUID | str
 ) -> Path:
     """
     Relative path to the page thumbnail image.
@@ -41,17 +40,16 @@ def thumbnail_path(
         uuid_str[0:2],
         uuid_str[2:4],
         uuid_str,
-        f"{size.value}.{const.JPG}"
+        f"{ImagePreviewSize.sm.value}.{const.JPG}"
     )
 
 
 def abs_thumbnail_path(
-    uuid: UUID | str,
-    size: ImagePreviewSize = ImagePreviewSize.sm
+    uuid: UUID | str
 ) -> Path:
     return Path(
         config.papermerge__main__media_root,
-        thumbnail_path(uuid, size)
+        thumbnail_path(uuid)
     )
 
 
@@ -165,14 +163,6 @@ def abs_page_hocr_path(
     uuid: UUID | str
 ) -> Path:
     return Path(config.papermerge__main__media_root) / page_hocr_path(uuid)
-
-
-def page_file_type_path():
-    """Yields four pages type path functions as tuples"""
-    yield page_txt_path, abs_page_txt_path
-    yield page_svg_path, abs_page_svg_path
-    yield page_hocr_path, abs_page_hocr_path
-    yield page_jpg_path, abs_page_jpg_path
 
 
 def rel2abs(rel_path: Path) -> Path:

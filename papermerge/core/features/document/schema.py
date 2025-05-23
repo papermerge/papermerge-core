@@ -193,7 +193,7 @@ class Page(BaseModel):
 
     @field_validator("preview_image_lg_url", mode="before")
     @classmethod
-    def preview_image_md_url_value(cls, value, info: ValidationInfo):
+    def preview_image_lg_url_value(cls, value, info: ValidationInfo):
         file_server = settings.papermerge__main__file_server
         if file_server == config.FileServer.LOCAL:
             return f"/api/pages/{info.data['id']}/jpg"
@@ -211,7 +211,7 @@ class Page(BaseModel):
 
     @field_validator("preview_image_xl_url", mode="before")
     @classmethod
-    def preview_image_md_url_value(cls, value, info: ValidationInfo):
+    def preview_image_xl_url_value(cls, value, info: ValidationInfo):
         file_server = settings.papermerge__main__file_server
         if file_server == config.FileServer.LOCAL:
             return f"/api/pages/{info.data['id']}/jpg"

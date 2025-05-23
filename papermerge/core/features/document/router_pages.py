@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select
 
+from core.types import ImagePreviewSize
 from papermerge.core.tasks import send_task
 from papermerge.core import constants as const
 from papermerge.core.config import get_settings, FileServer
@@ -73,7 +74,9 @@ def get_page_svg_url(
 def get_page_jpg_url(
     page_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    size: int = Query(DEFAULT_PAGE_SIZE, description="jpg image width in pixels"),
+    size: ImagePreviewSize = Query(
+        ImagePreviewSize.lg, description="jpg image width in pixels"
+    ),
 ):
     """Returns jpg preview image of the page.
 
@@ -105,12 +108,12 @@ def get_page_jpg_url(
         f"Generating page preview for page.number={page.number}" f" page.id={page.id}"
     )
     jpeg_abs_path = core_pathlib.rel2abs(
-        core_pathlib.thumbnail_path(page.id, size=size)
+        core_pathlib.page_preview_jpg_path(page.id, size=size)
     )
 
     if not jpeg_abs_path.exists():
         # generate preview only for this page
-        image.generate_thumbnail(
+        image.gen_page_preview(
             page_id=page.id,
             doc_ver_id=doc_ver.id,
             page_number=page.number,

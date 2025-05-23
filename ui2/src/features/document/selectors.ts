@@ -1,5 +1,5 @@
-import {PanelMode} from "@/types"
 import {RootState} from "@/app/types"
+import {PanelMode} from "@/types"
 
 export const selectCurrentDocumentVersionNumber = (
   state: RootState,
@@ -10,4 +10,12 @@ export const selectCurrentDocumentVersionNumber = (
   }
 
   return state.ui.secondaryViewer?.currentDocumentVersion
+}
+
+export const selectBestImageByPageId = (
+  state: RootState,
+  page_id: string
+): string | undefined => {
+  const sizes = state.imageObjects[page_id]
+  return sizes?.xl || sizes?.lg || sizes?.md || sizes?.sm
 }

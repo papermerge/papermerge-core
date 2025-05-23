@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetPageImageQuery} from "@/features/document/apiSlice"
+import {selectBestImageByPageId} from "@/features/document/selectors"
 import {
   selectDocumentCurrentPage,
   selectZoomFactor
@@ -15,11 +15,11 @@ type Args = {
 }
 
 export default function Page({page}: Args) {
-  const {currentData, data, isFetching} = useGetPageImageQuery(page.id)
   const mode: PanelMode = useContext(PanelContext)
   const currentPage = useAppSelector(s => selectDocumentCurrentPage(s, mode))
   const targetRef = useRef<HTMLImageElement | null>(null)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
+  const bestImageURL = useAppSelector(s => selectBestImageByPageId(s, page.id))
 
   useEffect(() => {
     if (currentPage == page.number) {
@@ -27,9 +27,9 @@ export default function Page({page}: Args) {
         targetRef.current.scrollIntoView(false)
       }
     }
-  }, [currentPage, data, page.number])
+  }, [currentPage, bestImageURL, page.number])
 
-  if (isFetching) {
+  if (!bestImageURL) {
     return (
       <Stack justify="center" align="center">
         <Skeleton width={"80%"} height={800} />
@@ -43,7 +43,7 @@ export default function Page({page}: Args) {
       <img
         style={{transform: `rotate(${page.angle}deg)`, width: `${zoomFactor}%`}}
         ref={targetRef}
-        src={currentData}
+        src={bestImageURL}
       />
       <div>{page.number}</div>
     </Stack>

@@ -1,17 +1,7 @@
+import type {UUID} from "@/types.d/common"
+import type {PageImageDict, StatusForSize} from "@/types.d/page_image"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {useEffect, useRef, useState} from "react"
-
-type UUID = string
-
-type PageImageStatus = "pending" | "ready" | "failed"
-type PageImageSize = "sm" | "md" | "lg" | "xl"
-type PageImageDict = Record<UUID, Array<StatusForSize>>
-
-interface StatusForSize {
-  status: PageImageStatus | null
-  url: string | null
-  size: PageImageSize
-}
 
 interface PageImageStatusResponseItem {
   page_id: string

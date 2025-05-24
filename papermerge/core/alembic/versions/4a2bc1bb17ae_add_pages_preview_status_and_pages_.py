@@ -10,7 +10,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from papermerge.core.types import ImagePreviewStatus
+from papermerge.core.types import ImagePreviewStatus, ImagePreviewSize
 
 
 # revision identifiers, used by Alembic.
@@ -23,7 +23,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     preview_status_enum = sa.Enum(ImagePreviewStatus, name="preview_status")
     preview_status_enum.create(op.get_bind())
-    for size in ImagePreviewStatus:
+    for size in ImagePreviewSize:
         op.add_column(
             "pages",
             sa.Column(
@@ -43,6 +43,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    for size in ImagePreviewStatus:
+    for size in ImagePreviewSize:
         op.drop_column("pages", f"preview_error_{size.value}")
         op.drop_column("pages", f"preview_status_{size.value}")

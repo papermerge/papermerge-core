@@ -16,7 +16,6 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from papermerge.core.features.nodes.schema import Node
-from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config

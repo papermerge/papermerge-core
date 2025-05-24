@@ -2,6 +2,7 @@ import type {
   PageImageSize,
   ProgressiveImageInputType
 } from "@/types.d/page_image"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 interface ImageState {
@@ -26,6 +27,8 @@ export const preloadProgressiveImages = createAsyncThunk<
   ProgressiveImageInputType // 2. Argument passed into the thunk
 >("images/preloadProgressiveImages", async imageWithURLs => {
   const results: PayloadType[] = []
+  const headers = getDefaultHeaders()
+  let url
 
   for (const preview of imageWithURLs.previews) {
     if (!preview.url) {
@@ -36,7 +39,15 @@ export const preloadProgressiveImages = createAsyncThunk<
       continue
     }
 
-    const response = await fetch(preview.url)
+    if (preview.url && !preview.url.startsWith("/api/")) {
+      // cloud URL e.g. aws cloudfront URL
+      url = preview.url
+    } else {
+      // use backend server URL (which may differ from frontend's URL)
+      url = `${getBaseURL(true)}${preview.url}`
+    }
+
+    const response = await fetch(url, {headers: headers})
     const blob = await response.blob()
     const objectURL = URL.createObjectURL(blob)
     const item = {

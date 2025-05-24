@@ -75,7 +75,7 @@ def get_page_jpg_url(
     page_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     size: ImagePreviewSize = Query(
-        ImagePreviewSize.lg, description="jpg image width in pixels"
+        ImagePreviewSize.xl, description="jpg image width in pixels"
     ),
 ):
     """Returns jpg preview image of the page.
@@ -107,6 +107,7 @@ def get_page_jpg_url(
     logger.debug(
         f"Generating page preview for page.number={page.number}" f" page.id={page.id}"
     )
+
     jpeg_abs_path = core_pathlib.rel2abs(
         core_pathlib.page_preview_jpg_path(page.id, size=size)
     )

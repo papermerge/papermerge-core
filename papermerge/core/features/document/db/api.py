@@ -996,7 +996,7 @@ def get_pages_preview_img_status(
             for size in list(ImagePreviewSize):
                 statuses.append(
                     schema.StatusForSize(
-                        url=f"/api/preview-image/jpg/{row.page_id}",
+                        url=f"/api/pages/{row.page_id}/jpg",
                         status=ImagePreviewStatus.ready,
                         size=getattr(ImagePreviewSize, size)
                     )

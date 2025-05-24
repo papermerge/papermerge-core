@@ -8,6 +8,7 @@ S3 bucket/CDN:
 
 - poll nodes of type document for the status of preview thumbnail (only for S3 + CDN setups)
 - adds `/api/documents/thumbnail-img-status/` endpoint
+- adds `/api/pages/preview-img-status/` endpoint
 
 
 ## [3.5.1] - 2025-05-11

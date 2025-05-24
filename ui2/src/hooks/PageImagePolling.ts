@@ -9,8 +9,8 @@ interface PageImageStatusResponseItem {
 }
 
 interface UsePageImagePollingOptions {
-  pollIntervalMs?: number
-  maxRetries?: number
+  pollIntervalMs: number
+  maxRetries: number
 }
 
 interface UsePageImagePollingResult {
@@ -29,7 +29,7 @@ function toPageIdsQueryParams(pageIds: string[]): string {
 
 const usePageImagePolling = (
   pageIds: UUID[],
-  {pollIntervalMs = 3000, maxRetries = 20}: UsePageImagePollingOptions = {}
+  {pollIntervalMs, maxRetries}: UsePageImagePollingOptions
 ): UsePageImagePollingResult => {
   const [previews, setPreviews] = useState<PageImageDict>({})
   const [allReady, setAllReady] = useState(false)
@@ -64,14 +64,28 @@ const usePageImagePolling = (
 
         setPreviews(prev => {
           const updated: PageImageDict = {...prev}
+          /* polling will stop when:
+            - it runs out of number of tries
+            - each page has either medium size or large size available (i.e. status ready)
+          */
           let complete = true
 
           data.forEach(({page_id, status}) => {
             updated[page_id] = status
+            let md_page_is_ready = false
+            let lg_page_is_ready = false
+
             for (const st of status) {
-              if (st.status != "ready") {
-                complete = false
+              if (st.status == "ready" && st.size == "md") {
+                md_page_is_ready = true
               }
+              if (st.status == "ready" && st.size == "lg") {
+                lg_page_is_ready = true
+              }
+            }
+
+            if (md_page_is_ready == false && lg_page_is_ready == false) {
+              complete = false
             }
           })
 

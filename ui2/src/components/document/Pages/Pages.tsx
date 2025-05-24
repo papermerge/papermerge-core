@@ -23,7 +23,7 @@ export default function Pages({isFetching}: Args) {
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
   const pageIDs = useMemo(() => pages.map(p => p.id), [pages])
   const {previews} = usePageImagePolling(pageIDs, {
-    pollIntervalMs: 3000,
+    pollIntervalMs: 4000,
     maxRetries: 10
   })
 

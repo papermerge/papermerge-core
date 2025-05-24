@@ -2,13 +2,13 @@ import uuid
 from uuid import UUID
 from pathlib import Path
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.base import Base
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.nodes.db.orm import Node
-from papermerge.core.types import OCRStatusEnum
+from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus
 from papermerge.core.pathlib import abs_docver_path
 
 

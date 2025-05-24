@@ -4,7 +4,7 @@ import Node from "./Node"
 
 import {updateAllThumbnails} from "@/actions/thumbnailActions"
 import {useAppDispatch} from "@/app/hooks"
-import usePreviewPolling from "@/hooks/PrevewPolling"
+import useDocThumbnailPolling from "@/hooks/DocThumbnailPolling"
 
 interface Args {
   items: NodeType[]
@@ -21,7 +21,7 @@ export default function NodesList({
 }: Args) {
   const dispatch = useAppDispatch()
   const documentIds = useMemo(() => items.map(n => n.id), [items])
-  const {previews} = usePreviewPolling(documentIds, {
+  const {previews} = useDocThumbnailPolling(documentIds, {
     pollIntervalMs: 3000,
     maxRetries: 10
   })

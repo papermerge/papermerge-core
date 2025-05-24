@@ -4,14 +4,18 @@ from uuid import UUID
 from fastapi import Query
 
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.types import CFNameType, CFValueType
+from papermerge.core.types import (
+    CFNameType,
+    CFValueType,
+    ImagePreviewStatus,
+    ImagePreviewSize,
+)
 
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from papermerge.core.features.nodes.schema import Node
-from papermerge.core import constants as const
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
@@ -128,32 +132,99 @@ class Page(BaseModel):
     text: str | None = None
     lang: str
     document_version_id: UUID
-    svg_url: Annotated[str | None, Field(validate_default=True)] = None
-    jpg_url: Annotated[str | None, Field(validate_default=True)] = None
+    preview_image_sm_url: Annotated[str | None, Field(validate_default=True)] = None
+    preview_image_md_url: Annotated[str | None, Field(validate_default=True)] = None
+    preview_image_xl_url: Annotated[str | None, Field(validate_default=True)] = None
+    preview_image_lg_url: Annotated[str | None, Field(validate_default=True)] = None
+    preview_status_sm: Annotated[
+        ImagePreviewStatus | None, Field(validate_default=True)
+    ] = None
+    preview_status_md: Annotated[
+        ImagePreviewStatus | None, Field(validate_default=True)
+    ] = None
+    preview_status_lg: Annotated[
+        ImagePreviewStatus | None, Field(validate_default=True)
+    ] = None
+    preview_status_xl: Annotated[
+        ImagePreviewStatus | None, Field(validate_default=True)
+    ] = None
 
-    @field_validator("svg_url", mode="before")
+    @field_validator("preview_image_sm_url", mode="before")
     @classmethod
-    def svg_url_value(cls, value, info: ValidationInfo) -> str:
+    def preview_image_sm_url_value(cls, value, info: ValidationInfo):
         file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
-            return f"/api/pages/{info.data['id']}/svg"
-
-        s3_url = _s3_page_svg_url(info.data["id"])  # UUID of the page here
-        return s3_url
-
-    @field_validator("jpg_url", mode="before")
-    @classmethod
-    def jpg_url_value(cls, value, info: ValidationInfo) -> str:
-        file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
+        if file_server == config.FileServer.LOCAL:
             return f"/api/pages/{info.data['id']}/jpg"
 
-        s3_url = _s3_page_thumbnail_url(
-            info.data["id"],  # UUID of the page here
-            size=const.DEFAULT_PAGE_SIZE,
-        )
+        # if it is not local, then it is s3 + CDN/cloudfront
+        if (
+            "preview_status_sm" in info.data
+            and info.data["preview_status_sm"] == ImagePreviewStatus.ready
+        ):
+            if file_server == config.FileServer.S3:
+                # give client back signed URL only in case preview image
+                # was successfully uploaded to S3 backend.
+                # `preview_status` is set to ready/failed by s3 worker
+                # after preview image upload to s3 succeeds/fails
+                return s3.page_image_jpg_signed_url(
+                    info.data["id"], size=ImagePreviewSize.sm
+                )
 
-        return s3_url
+        return None
+
+    @field_validator("preview_image_md_url", mode="before")
+    @classmethod
+    def preview_image_md_url_value(cls, value, info: ValidationInfo):
+        file_server = settings.papermerge__main__file_server
+        if file_server == config.FileServer.LOCAL:
+            return f"/api/pages/{info.data['id']}/jpg"
+
+        if (
+            "preview_status_md" in info.data
+            and info.data["preview_status_md"] == ImagePreviewStatus.ready
+        ):
+            if file_server == config.FileServer.S3:
+                return s3.page_image_jpg_signed_url(
+                    info.data["id"], size=ImagePreviewSize.md
+                )
+
+        return None
+
+    @field_validator("preview_image_lg_url", mode="before")
+    @classmethod
+    def preview_image_lg_url_value(cls, value, info: ValidationInfo):
+        file_server = settings.papermerge__main__file_server
+        if file_server == config.FileServer.LOCAL:
+            return f"/api/pages/{info.data['id']}/jpg"
+
+        if (
+            "preview_status_lg" in info.data
+            and info.data["preview_status_lg"] == ImagePreviewStatus.ready
+        ):
+            if file_server == config.FileServer.S3:
+                return s3.page_image_jpg_signed_url(
+                    info.data["id"], size=ImagePreviewSize.lg
+                )
+
+        return None
+
+    @field_validator("preview_image_xl_url", mode="before")
+    @classmethod
+    def preview_image_xl_url_value(cls, value, info: ValidationInfo):
+        file_server = settings.papermerge__main__file_server
+        if file_server == config.FileServer.LOCAL:
+            return f"/api/pages/{info.data['id']}/jpg"
+
+        if (
+            "preview_status_xl" in info.data
+            and info.data["preview_status_xl"] == ImagePreviewStatus.ready
+        ):
+            if file_server == config.FileServer.S3:
+                return s3.page_image_jpg_signed_url(
+                    info.data["id"], size=ImagePreviewSize.xl
+                )
+
+        return None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -177,10 +248,10 @@ class DocumentVersion(BaseModel):
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
         file_server = settings.papermerge__main__file_server
-        if file_server in (config.FileServer.LOCAL, config.FileServer.S3_LOCAL_TEST):
+        if file_server == config.FileServer.LOCAL:
             return f"/api/document-versions/{info.data['id']}/download"
 
-        return _s3_docver_download_url(info.data["id"], info.data["file_name"])
+        return None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -230,7 +301,7 @@ class DocumentNode(BaseModel):
         # if it is not local, then it is s3 + CDN/cloudfront
         if (
             "preview_status" in info.data
-            and info.data["preview_status"] == const.ImagePreviewStatus.READY
+            and info.data["preview_status"] == ImagePreviewStatus.ready
         ):
             if file_server == config.FileServer.S3:
                 # give client back signed URL only in case preview image
@@ -238,8 +309,6 @@ class DocumentNode(BaseModel):
                 # `preview_status` is set to ready/failed by s3 worker
                 # after preview image upload to s3 succeeds/fails
                 return s3.doc_thumbnail_signed_url(info.data["id"])
-            else:
-                return f"/api/thumbnails/{info.data['id']}"
 
         return None
 
@@ -253,8 +322,19 @@ class Document(DocumentNode):
 
 class DocumentPreviewImageStatus(BaseModel):
     doc_id: UUID
-    status: str | None
+    status: ImagePreviewStatus | None
     preview_image_url: str | None = None
+
+
+class StatusForSize(BaseModel):
+    status: ImagePreviewStatus | None
+    url: str | None = None
+    size: ImagePreviewSize
+
+
+class PagePreviewImageStatus(BaseModel):
+    page_id: UUID
+    status: list[StatusForSize]
 
 
 class NewDocument(BaseModel):
@@ -290,22 +370,6 @@ class NewDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
-
-
-def _s3_page_thumbnail_url(uid: UUID, size: int) -> str:
-    from papermerge.core.cloudfront import sign_url
-
-    resource_path = plib.thumbnail_path(uid, size=size)
-    prefix = settings.papermerge__main__prefix
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
-
-    return sign_url(
-        url,
-        valid_for=600,  # valid for 600 seconds
-    )
 
 
 def _s3_page_svg_url(uid: UUID) -> str:

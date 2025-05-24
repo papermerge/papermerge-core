@@ -11,6 +11,7 @@ PAGES = "pages"
 THUMBNAILS = "thumbnails"
 DOCVERS = "docvers"
 OCR = "ocr"
+PREVIEWS = "previews"
 DEFAULT_TAG_BG_COLOR = "#c41fff"
 DEFAULT_TAG_FG_COLOR = "#ffffff"
 INDEX_ADD_NODE = "index_add_node"
@@ -44,21 +45,3 @@ class ContentType:
     IMAGE_JPEG = "image/jpeg"
     IMAGE_PNG = "image/png"
     IMAGE_TIFF = "image/tiff"
-
-
-class ImagePreviewStatus(str, Enum):
-    """Image preview status
-
-    1. If database field `preview_status` is NULL ->
-        image preview was not considered yet i.e. client
-        have not asked for it yet.
-    2. "pending" - image preview was scheduled, as client has asked
-        for it, but has not started yet
-    3. "ready - image preview complete:
-        a. preview image was generated
-        b. preview image was uploaded to S3
-    4. "failed" image preview failed
-    """
-    READY = "ready"
-    PENDING = "pending"
-    FAILED = "failed"

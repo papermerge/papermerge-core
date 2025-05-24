@@ -58,12 +58,11 @@ class JPEGFileResponse(FileResponse):
     },
 )
 @utils.docstring_parameter(scope=scopes.PAGE_VIEW)
-def retrieve_document_thumbnail(
+def get_document_thumbnail(
     document_id: uuid.UUID,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
-    size: int = DEFAULT_THUMBNAIL_SIZE,
 ):
     """Retrieves thumbnail of the document last version's first page
 
@@ -89,14 +88,14 @@ def retrieve_document_thumbnail(
                 detail="Not ready for preview yet",
             )
 
-    jpeg_abs_path = rel2abs(thumbnail_path(page.id, size=size))
+    jpg_abs_path = rel2abs(thumbnail_path(page.id))
 
-    if not os.path.exists(jpeg_abs_path):
-        thb_path = core_pathlib.abs_thumbnail_path(str(page.id), size=size)
-        pdf_path = core_pathlib.abs_docver_path(str(doc_ver.id), str(doc_ver.file_name))
-
-        image.generate_preview(
-            pdf_path=pdf_path, output_folder=thb_path.parent, page_number=1, size=size
+    if not os.path.exists(jpg_abs_path):
+        image.gen_doc_thumbnail(
+            page_id=page.id,
+            doc_ver_id=doc_ver.id,
+            page_number=1,
+            file_name=doc_ver.file_name,
         )
 
-    return JPEGFileResponse(jpeg_abs_path)
+    return JPEGFileResponse(jpg_abs_path)

@@ -3,6 +3,7 @@ import authSliceReducer from "@/features/auth/slice"
 import customFieldsReducer from "@/features/custom-fields/customFieldsSlice"
 import documentTypesReducer from "@/features/document-types/documentTypesSlice"
 import docVersReducer from "@/features/document/documentVersSlice"
+import imageObjects from "@/features/document/imageObjectsSlice"
 import pagesReducer from "@/features/document/pagesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
@@ -30,6 +31,7 @@ export const store = configureStore({
     sharedNodes: sharedNodesReducer,
     search: searchReducer,
     pages: pagesReducer,
+    imageObjects: imageObjects,
     ui: uiReducer,
     docVers: docVersReducer,
     [apiSlice.reducerPath]: apiSlice.reducer

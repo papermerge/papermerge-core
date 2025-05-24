@@ -3,6 +3,7 @@ from uuid import UUID
 
 from papermerge.core import constants as const
 from papermerge.core.config import get_settings
+from papermerge.core.types import ImagePreviewSize
 
 config = get_settings()
 
@@ -12,7 +13,7 @@ __all__ = [
     'page_txt_path',
     'page_path',
     'page_svg_path',
-    'page_jpg_path',
+    'page_preview_jpg_path',
     'page_hocr_path',
     'abs_thumbnail_path',
     'abs_docver_path',
@@ -26,8 +27,7 @@ __all__ = [
 
 
 def thumbnail_path(
-    uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    uuid: UUID | str
 ) -> Path:
     """
     Relative path to the page thumbnail image.
@@ -40,17 +40,16 @@ def thumbnail_path(
         uuid_str[0:2],
         uuid_str[2:4],
         uuid_str,
-        f"{size}.{const.JPG}"
+        f"{ImagePreviewSize.sm.value}.{const.JPG}"
     )
 
 
 def abs_thumbnail_path(
-    uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    uuid: UUID | str
 ) -> Path:
     return Path(
         config.papermerge__main__media_root,
-        thumbnail_path(uuid, size)
+        thumbnail_path(uuid)
     )
 
 
@@ -92,6 +91,19 @@ def page_path(
         uuid_str
     )
 
+def page_preview_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.PREVIEWS,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str
+    )
+
 
 def abs_page_path(uuid: UUID | str) -> Path:
     return Path(config.papermerge__main__media_root) / page_path(uuid)
@@ -109,10 +121,18 @@ def page_svg_path(
     return page_path(uuid) / 'page.svg'
 
 
-def page_jpg_path(
+def page_preview_jpg_path(
     uuid: UUID | str,
+    size: ImagePreviewSize
 ) -> Path:
-    return page_path(uuid) / 'page.jpg'
+    return page_preview_path(uuid) / f'{size.value}.jpg'
+
+
+def abs_page_preview_jpg_path(
+    uuid: UUID | str,
+    size: ImagePreviewSize = ImagePreviewSize.md
+) -> Path:
+    return Path(config.papermerge__main__media_root) / page_preview_jpg_path(uuid, size=size)
 
 
 def page_hocr_path(
@@ -143,14 +163,6 @@ def abs_page_hocr_path(
     uuid: UUID | str
 ) -> Path:
     return Path(config.papermerge__main__media_root) / page_hocr_path(uuid)
-
-
-def page_file_type_path():
-    """Yields four pages type path functions as tuples"""
-    yield page_txt_path, abs_page_txt_path
-    yield page_svg_path, abs_page_svg_path
-    yield page_hocr_path, abs_page_hocr_path
-    yield page_jpg_path, abs_page_jpg_path
 
 
 def rel2abs(rel_path: Path) -> Path:

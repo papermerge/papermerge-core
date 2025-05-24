@@ -7,10 +7,6 @@ from pydantic_settings import BaseSettings
 class FileServer(str, Enum):
     LOCAL = 'local'
     S3 = 's3'
-    # Don't use "s3-local-test" in production!
-    # It is meant only for local testing
-    S3_LOCAL_TEST = 's3-local-test'  # used only for testing
-
 
 class Settings(BaseSettings):
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
@@ -26,6 +22,11 @@ class Settings(BaseSettings):
     papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_lang_code: str = 'deu'
+    papermerge__preview__page_size_sm: int = 200  # pixels
+    papermerge__preview__page_size_md: int = 600  # pixels
+    papermerge__preview__page_size_lg: int = 900  # pixels
+    papermerge__preview__page_size_xl: int = 1600  # pixels
+    papermerge__thumbnail__size: int = 100  # pixels
     # When is OCR triggered ?
     # `ocr__automatic` = True means that OCR will be performed without
     #   end user intervention i.e. via background scheduler like celery scheduler
@@ -36,8 +37,9 @@ class Settings(BaseSettings):
     papermerge__ocr__automatic: bool = False
     papermerge__search__url: str | None = None
 
-
 settings = Settings()
 
 def get_settings():
+    # lazy load setting
+
     return settings

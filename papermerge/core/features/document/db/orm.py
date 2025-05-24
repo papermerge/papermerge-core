@@ -30,7 +30,9 @@ class Document(Node):
     #  Failed = preview generation failed -> thumbnail_url is empty
     #        in which case `preview_error` will contain error why preview
     #        generation failed
-    preview_status: Mapped[str] = mapped_column(nullable=True)
+    preview_status: Mapped[str] = mapped_column(
+        Enum(ImagePreviewStatus, name="preview_status"), nullable=True
+    )
     # `preview_error`
     # only for troubleshooting purposes. Relevant only in case
     # `preview_status` = Failed

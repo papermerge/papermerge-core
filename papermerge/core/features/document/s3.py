@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from core.types import ImagePreviewSize
+from papermerge.core.types import ImagePreviewSize
 from papermerge.core import pathlib as plib
 from papermerge.core import config
 

@@ -26,19 +26,18 @@ def upgrade() -> None:
     with op.batch_alter_table("custom_fields") as batch_op:
         batch_op.alter_column("user_id", existing_type=sa.UUID(), nullable=True)
 
-    if conn.dialect.name != "sqlite":
-        op.create_foreign_key(
-            "custom_fields_group_id_fkey",
-            "custom_fields",
-            "groups",
-            ["group_id"],
-            ["id"],
-        )
-        op.create_check_constraint(
-            constraint_name="check__user_id_not_null__or__group_id_not_null",
-            table_name="custom_fields",
-            condition="user_id IS NOT NULL OR group_id IS NOT NULL",
-        )
+    op.create_foreign_key(
+        "custom_fields_group_id_fkey",
+        "custom_fields",
+        "groups",
+        ["group_id"],
+        ["id"],
+    )
+    op.create_check_constraint(
+        constraint_name="check__user_id_not_null__or__group_id_not_null",
+        table_name="custom_fields",
+        condition="user_id IS NOT NULL OR group_id IS NOT NULL",
+    )
 
     # document types
     op.add_column("document_types", sa.Column("group_id", sa.Uuid(), nullable=True))

@@ -45,7 +45,11 @@ const useDocThumbnailPolling = (
   const headers = getDefaultHeaders()
 
   useEffect(() => {
+    console.log(
+      `${documentIds} retryCount ${retryCount.current} maxRetries = ${maxRetries}`
+    )
     if (retryCount.current > maxRetries) {
+      console.log("quiting as retryCount exausted")
       return
     }
 
@@ -65,6 +69,7 @@ const useDocThumbnailPolling = (
         const data: PreviewStatusResponseItem[] = await res.json()
         setError(null)
         setIsLoading(false)
+        retryCount.current += 1
 
         setPreviews(prev => {
           const updated: Record<string, DocumentPreview> = {...prev}
@@ -90,6 +95,22 @@ const useDocThumbnailPolling = (
             clearInterval(intervalRef.current)
           }
 
+          if (
+            retryCount.current >= maxRetries &&
+            intervalRef.current !== null
+          ) {
+            clearInterval(intervalRef.current)
+            data.forEach(({doc_id}) => {
+              const existing = updated[doc_id]
+              if (existing.status != "ready") {
+                updated[doc_id] = {
+                  status: "failed",
+                  url: null
+                }
+              }
+            })
+          }
+
           return updated
         })
       } catch (err: unknown) {
@@ -103,6 +124,7 @@ const useDocThumbnailPolling = (
     }
 
     pollPreviewStatuses() // First run
+
     intervalRef.current = window.setInterval(
       pollPreviewStatuses,
       pollIntervalMs
@@ -113,7 +135,7 @@ const useDocThumbnailPolling = (
         clearInterval(intervalRef.current)
       }
     }
-  }, [documentIds, pollIntervalMs, maxRetries])
+  }, [pollIntervalMs, maxRetries, documentIds])
 
   if (retryCount.current > maxRetries) {
     const newError = new Error(

@@ -27,7 +27,7 @@ export default function NodesList({
   )
   const {previews} = useDocThumbnailPolling(nodesWithoutThumbnails, {
     pollIntervalMs: 3000,
-    maxRetries: 10
+    maxRetries: 6
   })
 
   useEffect(() => {

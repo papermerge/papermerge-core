@@ -25,12 +25,24 @@ export const loadThumbnail = createAsyncThunk<
   const headers = getDefaultHeaders()
   let url
 
-  if (!item.url) {
-    return {node_id: item.node_id, objectURL: null, error: "Input without url"}
+  if (item.status == "failed") {
+    return {
+      node_id: item.node_id,
+      objectURL: null,
+      error: "Timeout: failed to load thumbnail"
+    }
   }
 
-  if (item.status != "ready") {
-    return {node_id: item.node_id, objectURL: null, error: "Input without url"}
+  if (item.status == "pending") {
+    return {node_id: item.node_id, objectURL: null, error: null}
+  }
+
+  if (!item.status) {
+    return {node_id: item.node_id, objectURL: null, error: null}
+  }
+
+  if (!item.url) {
+    return {node_id: item.node_id, objectURL: null, error: null}
   }
 
   if (item.url && !item.url.startsWith("/api/")) {
@@ -92,6 +104,13 @@ const thumbnailObjectsSlice = createSlice({
         if (!payload.error && newObjectURL) {
           state[node_id] = {
             url: newObjectURL,
+            error: error
+          }
+        }
+
+        if (payload.error) {
+          state[node_id] = {
+            url: null,
             error: error
           }
         }

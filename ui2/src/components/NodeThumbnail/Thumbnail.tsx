@@ -8,15 +8,15 @@ interface Args {
 }
 
 export default function Thumbnail({nodeID}: Args) {
-  const url = useAppSelector(s => selectThumbnailByNodeId(s, nodeID))
+  const objectURLState = useAppSelector(s => selectThumbnailByNodeId(s, nodeID))
 
-  if (!url) {
+  if (!objectURLState) {
     return <Loader />
   }
 
-  if (url) {
-    return <img src={url} />
+  if (objectURLState.url && !objectURLState.error) {
+    return <img src={objectURLState.url} />
   }
 
-  return <ThumbnailPlaceholder error={"No data"} />
+  return <ThumbnailPlaceholder error={"Thumbnail failed to load"} />
 }

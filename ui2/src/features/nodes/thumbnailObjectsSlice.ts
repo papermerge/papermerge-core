@@ -4,29 +4,33 @@ import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 interface ThumbnailState {
-  [node_id: UUID]: string
+  [node_id: UUID]: {
+    url: string | null
+    error: string | null
+  }
 }
 
 const initialState: ThumbnailState = {}
 
 interface PayloadType {
   node_id: UUID
-  objectURL: string
+  objectURL: string | null
+  error: string | null
 }
 
 export const loadThumbnail = createAsyncThunk<
-  PayloadType | null, // 1. Return type of payload (fulfilled result)
+  PayloadType, // 1. Return type of payload (fulfilled result)
   LoadThumbnailInputType // 2. Argument passed into the thunk
->("images/loadThumbnail", async item => {
+>("images/loadNodeThumbnail", async item => {
   const headers = getDefaultHeaders()
   let url
 
   if (!item.url) {
-    return null
+    return {node_id: item.node_id, objectURL: null, error: "Input without url"}
   }
 
   if (item.status != "ready") {
-    return null
+    return {node_id: item.node_id, objectURL: null, error: "Input without url"}
   }
 
   if (item.url && !item.url.startsWith("/api/")) {
@@ -38,14 +42,23 @@ export const loadThumbnail = createAsyncThunk<
   }
 
   const response = await fetch(url, {headers: headers})
-  const blob = await response.blob()
-  const objectURL = URL.createObjectURL(blob)
-  const result = {
-    node_id: item.node_id as UUID,
-    objectURL
+  if (response.ok) {
+    const blob = await response.blob()
+    const objectURL = URL.createObjectURL(blob)
+    const result = {
+      node_id: item.node_id as UUID,
+      objectURL,
+      error: null
+    }
+
+    return result
   }
 
-  return result
+  return {
+    node_id: item.node_id,
+    objectURL: null,
+    error: "There was an error loading thumbnail image"
+  }
 })
 
 const thumbnailObjectsSlice = createSlice({
@@ -53,11 +66,12 @@ const thumbnailObjectsSlice = createSlice({
   initialState,
   reducers: {
     clearImages(state) {
-      for (const sizes of Object.values(state)) {
-        for (const url of Object.values(sizes)) {
-          if (url) URL.revokeObjectURL(url)
+      for (const value of Object.values(state)) {
+        if (value.url) {
+          URL.revokeObjectURL(value.url)
         }
       }
+
       return {}
     }
   },
@@ -68,13 +82,26 @@ const thumbnailObjectsSlice = createSlice({
       if (payload) {
         const node_id = payload.node_id as UUID
         const newObjectURL = payload.objectURL
-        const existingObjectURL = state[node_id]
+        const error = payload.error
+        const existingValue = state[node_id]
 
-        if (existingObjectURL) {
-          URL.revokeObjectURL(existingObjectURL)
+        if (existingValue && existingValue.url) {
+          URL.revokeObjectURL(existingValue.url)
         }
 
-        state[node_id] = newObjectURL
+        if (!payload.error && newObjectURL) {
+          state[node_id] = {
+            url: newObjectURL,
+            error: error
+          }
+        }
+      }
+    })
+    builder.addCase(loadThumbnail.rejected, (state, action) => {
+      const node_id = action.meta.arg.node_id
+      state[node_id] = {
+        url: null,
+        error: "Failed to load thumbnail"
       }
     })
   }

@@ -1,10 +1,11 @@
 import {RootState} from "@/app/types"
+import type {ObjectURLState} from "@/types.d/common"
 import {createSelector} from "@reduxjs/toolkit"
 
 export const selectThumbnailByNodeId = (
   state: RootState,
   node_id: string
-): string | undefined => {
+): ObjectURLState | undefined => {
   return state.thumbnailObjects[node_id]
 }
 

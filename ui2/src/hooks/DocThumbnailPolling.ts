@@ -112,10 +112,6 @@ const useDocThumbnailPolling = (
   }
 
   useEffect(() => {
-    console.log(
-      `${documentIds} retryCount ${retryCount} maxRetries = ${maxRetries}`
-    )
-
     if (!documentIds || documentIds.length === 0) {
       return
     }
@@ -125,10 +121,12 @@ const useDocThumbnailPolling = (
       return
     }
 
-    intervalRef.current = window.setInterval(
-      pollPreviewStatuses,
-      pollIntervalMs
-    )
+    if (intervalRef.current == null) {
+      intervalRef.current = window.setInterval(
+        pollPreviewStatuses,
+        pollIntervalMs
+      )
+    }
 
     return () => {
       if (intervalRef.current !== null) {
@@ -136,7 +134,7 @@ const useDocThumbnailPolling = (
         intervalRef.current = null
       }
     }
-  }, [pollIntervalMs, maxRetries, documentIds])
+  }, [documentIds])
 
   if (retryCount > maxRetries) {
     const newError = new Error(

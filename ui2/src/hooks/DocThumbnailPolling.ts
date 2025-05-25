@@ -1,20 +1,21 @@
+import type {ImageStatus} from "@/types.d/common"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {useEffect, useRef, useState} from "react"
 
 interface DocumentPreview {
-  status: string
+  status: ImageStatus | null
   url: string | null
 }
 
 interface PreviewStatusResponseItem {
   doc_id: string
-  status: string
+  status: ImageStatus
   preview_image_url: string | null
 }
 
 interface UsePreviewPollingOptions {
-  pollIntervalMs?: number
-  maxRetries?: number
+  pollIntervalMs: number
+  maxRetries: number
 }
 
 interface UsePreviewPollingResult {
@@ -32,7 +33,7 @@ function toDocIdsQueryParams(docIds: string[]): string {
 
 const useDocThumbnailPolling = (
   documentIds: string[],
-  {pollIntervalMs = 3000, maxRetries = 20}: UsePreviewPollingOptions = {}
+  {pollIntervalMs, maxRetries}: UsePreviewPollingOptions
 ): UsePreviewPollingResult => {
   const [previews, setPreviews] = useState<Record<string, DocumentPreview>>({})
   const [allReady, setAllReady] = useState(false)

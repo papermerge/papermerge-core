@@ -1,4 +1,5 @@
-import useDocumentThumbnail from "@/hooks/DocumentThumbnail"
+import {useAppSelector} from "@/app/hooks"
+import {selectThumbnailByNodeId} from "@/features/nodes/selectors"
 import {Loader} from "@mantine/core"
 import ThumbnailPlaceholder from "./ThumbnailPlaceholder"
 
@@ -7,18 +8,14 @@ interface Args {
 }
 
 export default function Thumbnail({nodeID}: Args) {
-  const {data, isLoading, isError, error} = useDocumentThumbnail({nodeID})
+  const url = useAppSelector(s => selectThumbnailByNodeId(s, nodeID))
 
-  if (isLoading) {
+  if (!url) {
     return <Loader />
   }
 
-  if (isError) {
-    return <ThumbnailPlaceholder error={error} />
-  }
-
-  if (data) {
-    return <img src={data} />
+  if (url) {
+    return <img src={url} />
   }
 
   return <ThumbnailPlaceholder error={"No data"} />

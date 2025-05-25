@@ -2,8 +2,9 @@ import {NodeType, NType} from "@/types"
 import {useEffect, useMemo} from "react"
 import Node from "./Node"
 
-import {updateAllThumbnails} from "@/actions/thumbnailActions"
-import {useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {selectNodesWithoutExistingThumbnails} from "@/features/nodes/selectors"
+import {loadThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
 import useDocThumbnailPolling from "@/hooks/DocThumbnailPolling"
 
 interface Args {
@@ -20,15 +21,27 @@ export default function NodesList({
   onNodeDragStart
 }: Args) {
   const dispatch = useAppDispatch()
-  const documentIds = useMemo(() => items.map(n => n.id), [items])
-  const {previews} = useDocThumbnailPolling(documentIds, {
+  const documentIds = useMemo(
+    () => items.filter(n => n.ctype == "document").map(n => n.id),
+    [items]
+  )
+  const nodesWithoutThumbnails = useAppSelector(
+    selectNodesWithoutExistingThumbnails(documentIds)
+  )
+  const {previews} = useDocThumbnailPolling(nodesWithoutThumbnails, {
     pollIntervalMs: 3000,
-    maxRetries: 10
+    maxRetries: 6
   })
 
   useEffect(() => {
     Object.entries(previews).forEach(([docId, preview]) => {
-      dispatch(updateAllThumbnails(docId, preview.url))
+      dispatch(
+        loadThumbnail({
+          node_id: docId,
+          status: preview.status,
+          url: preview.url
+        })
+      )
     })
   }, [previews])
 

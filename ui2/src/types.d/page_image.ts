@@ -1,12 +1,11 @@
-import {UUID} from "./common"
+import {ImageStatus, UUID} from "./common"
 
 export interface StatusForSize {
-  status: PageImageStatus | null
+  status: ImageStatus | null
   url: string | null
   size: PageImageSize
 }
 
-export type PageImageStatus = "pending" | "ready" | "failed"
 export type PageImageSize = "sm" | "md" | "lg" | "xl"
 export type PageImageDict = Record<UUID, Array<StatusForSize>>
 

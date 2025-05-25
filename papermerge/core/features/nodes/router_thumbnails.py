@@ -9,13 +9,11 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from papermerge.core.db.engine import Session
-from papermerge.core import pathlib as core_pathlib
 from papermerge.core import utils
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.db import api as dbapi
-from papermerge.core.constants import DEFAULT_THUMBNAIL_SIZE
 from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.utils import image
 from papermerge.core.db.common import has_node_perm

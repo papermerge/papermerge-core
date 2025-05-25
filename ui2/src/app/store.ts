@@ -7,6 +7,7 @@ import imageObjects from "@/features/document/imageObjectsSlice"
 import pagesReducer from "@/features/document/pagesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
+import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
 import rolesReducer from "@/features/roles/rolesSlice"
 import searchReducer from "@/features/search/searchSlice"
 import sharedNodesReducer from "@/features/shared_nodes/sharedNodesSlice"
@@ -32,6 +33,7 @@ export const store = configureStore({
     search: searchReducer,
     pages: pagesReducer,
     imageObjects: imageObjects,
+    thumbnailObjects: thumbnailObjects,
     ui: uiReducer,
     docVers: docVersReducer,
     [apiSlice.reducerPath]: apiSlice.reducer

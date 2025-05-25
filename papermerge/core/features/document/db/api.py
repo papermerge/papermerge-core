@@ -904,7 +904,6 @@ def get_docs_thumbnail_img_status(
     if fserver == config.FileServer.S3.value:
         for row in db_session.execute(stmt):
             url = None
-
             if row.preview_status == ImagePreviewStatus.ready:
                 # image URL is returned if only and only if image
                 # preview is ready (generated and uploaded to S3)

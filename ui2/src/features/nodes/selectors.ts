@@ -14,8 +14,6 @@ export const selectThumbnailObjects = (state: RootState) =>
 
 export const selectNodesWithoutExistingThumbnails = (node_ids: string[]) =>
   createSelector([selectThumbnailObjects], thumbnailObjects => {
-    console.log("node_ids", node_ids)
     const result = node_ids.filter(node_id => !thumbnailObjects[node_id])
-    console.log("filtered", result)
     return result
   })

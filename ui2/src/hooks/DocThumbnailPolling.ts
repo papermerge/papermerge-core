@@ -48,10 +48,6 @@ const useDocThumbnailPolling = (
     console.log(
       `${documentIds} retryCount ${retryCount.current} maxRetries = ${maxRetries}`
     )
-    if (retryCount.current > maxRetries) {
-      console.log("quiting as retryCount exausted")
-      return
-    }
 
     if (!documentIds || documentIds.length === 0) {
       return

@@ -21,7 +21,10 @@ export default function NodesList({
   onNodeDragStart
 }: Args) {
   const dispatch = useAppDispatch()
-  const documentIds = useMemo(() => items.map(n => n.id), [items])
+  const documentIds = useMemo(
+    () => items.filter(n => n.ctype == "document").map(n => n.id),
+    [items]
+  )
   const nodesWithoutThumbnails = useAppSelector(
     selectNodesWithoutExistingThumbnails(documentIds)
   )

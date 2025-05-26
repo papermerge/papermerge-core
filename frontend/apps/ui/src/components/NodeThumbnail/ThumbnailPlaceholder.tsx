@@ -1,4 +1,4 @@
-import {Tooltip} from "@mantine/core"
+import { Tooltip } from "@mantine/core"
 
 interface Args {
   error: string | null
@@ -8,8 +8,8 @@ export default function ThumbnailPlaceholder({error}: Args) {
   return (
     <Tooltip label={error}>
       <svg
-        width="120"
-        height="160"
+        width="96"
+        height="128"
         viewBox="0 0 120 160"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

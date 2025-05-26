@@ -1,7 +1,7 @@
 import { Tooltip } from "@mantine/core"
 
 interface Args {
-  error: string | null
+  error?: string
 }
 
 export default function ThumbnailPlaceholder({error}: Args) {

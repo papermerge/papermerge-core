@@ -1,5 +1,5 @@
 {
-  "name": "ui2",
+  "name": "ui",
   "packageManager": "yarn@4.7.0",
   "version": "0.1.0",
   "type": "module",
@@ -12,10 +12,6 @@
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "preview": "vite preview"
   },
-  "workspaces": [
-    "packages/**/*",
-    "apps/*"
-  ],
   "dependencies": {
     "@mantine/core": "^7.17.2",
     "@mantine/dates": "^7.17.2",

@@ -2860,9 +2860,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ui2@workspace:.":
+"ui@workspace:.":
   version: 0.0.0-use.local
-  resolution: "ui2@workspace:."
+  resolution: "ui@workspace:."
   dependencies:
     "@mantine/core": "npm:^7.17.2"
     "@mantine/dates": "npm:^7.17.2"

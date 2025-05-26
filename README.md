@@ -102,7 +102,7 @@ Access its swagger docs via `http://localhost:8000/docs`
 Switch to UI folder.
 
 ```
-cd ui2
+cd frontend/apps/ui
 ```
 
 Create `.env.development.local` file with following content:

@@ -1,9 +1,19 @@
+## yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+
+# env vars
+
+.envok.yaml
+
+
 *.pid
 .idea/
-.papermerge.toml
-.env
-.envrc
-.envrc.*
 .env_services
 docker/dev/config/local.py
 build/
@@ -35,8 +45,6 @@ media_root/
 index_db/
 index_db_test/
 custom_logging.yml
-simplest.yml
-ui/public/runtime/config.js
+fronttend/apps/ui/public/runtime/config.js
 .ruff_cache/
 .pytest_cache/
-.envok.yaml

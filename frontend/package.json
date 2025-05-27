@@ -1,0 +1,11 @@
+{
+  "name": "Papermerge DMS UI",
+  "packageManager": "yarn@4.7.0",
+  "workspaces": [
+    "packages/**/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

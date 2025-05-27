@@ -1,4 +1,4 @@
-# UI2
+# Frontend
 
 Server's REST API base url is read from `.env.development.local` file:
 

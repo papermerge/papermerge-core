@@ -1,8 +1,8 @@
-FROM node:20.13 as  build
+FROM node:20.13 as  frontend_build
 
-WORKDIR build_ui_app
-COPY ui2/package.json ui2/yarn.lock ui2/tsconfig.json ui2/vite.config.ts ui2/index.html .
-COPY ui2/ .
+WORKDIR build_frontend_app
+COPY frontend/apps/ui/package.json frontend/apps/ui/yarn.lock frontend/apps/ui/tsconfig.json frontend/apps/ui/vite.config.ts frontend/apps/ui/index.html .
+COPY frontend/apps/ui/ .
 RUN yarn install
 RUN yarn build
 
@@ -53,7 +53,7 @@ RUN chmod +x /entrypoint.sh
 
 COPY --from=auth_server /app/ /auth_server_app/
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
-COPY --from=build /build_ui_app/dist/ /usr/share/nginx/html/ui
+COPY --from=frontend_build /build_frontend_app/dist/ /usr/share/nginx/html/ui
 
 RUN cd /auth_server_app/ && poetry install -E pg
 RUN cd /core_app/ && poetry install -E pg -E cloud

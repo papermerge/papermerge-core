@@ -1361,6 +1361,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "Papermerge DMS UI@workspace:."
   dependencies:
+    "@types/react": "npm:^19.0.10"
+    "@types/react-dom": "npm:^19.0.4"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -2400,6 +2404,13 @@ __metadata:
 "hooks@workspace:packages/@papermerge/hooks":
   version: 0.0.0-use.local
   resolution: "hooks@workspace:packages/@papermerge/hooks"
+  dependencies:
+    "@types/react": "npm:^19.0.10"
+    "@types/react-dom": "npm:^19.0.4"
+    react: "npm:^19.0.0"
+    typescript: "npm:^5.8.3"
+  peerDependencies:
+    react: ^19.0.0
   languageName: unknown
   linkType: soft
 

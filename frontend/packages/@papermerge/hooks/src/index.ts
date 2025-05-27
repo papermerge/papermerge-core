@@ -17,7 +17,7 @@ type ImageResourceStatus = {
 interface Args {
   url: string,
   docIDs: string[],
-  pollIntervalSec: number,
+  pollIntervalSeconds: number,
   maxRetries: number,
   headers: Record<string, string>
 }
@@ -29,26 +29,50 @@ function toDocIdsQueryParams(docIds: string[]): string {
 }
 
 export const useDocumentThumbnailPolling = ({
-  url, docIDs, pollIntervalSec, maxRetries, headers
+  url, docIDs, pollIntervalSeconds, maxRetries, headers
 }: Args) => {
-  const [imageResourceStatus, setImageResourceStatus] = useState<ImageResourceStatus[]>()
-  const [retryCount, setRetryCount] = useState<number>(0)
+  const [previews, setPreviews] = useState<ImageResourceStatus[]>()
   const [pollingDocIDs, setPollingDocIDs] = useState<Array<string>>(docIDs)
   const intervalRef = useRef<number | null>(null)
+  const retryCount = useRef<number>(maxRetries)
   const [error, setError] = useState<Error | null>(null)
 
-
   const shouldStopPolling = () => {
-    return retryCount >= maxRetries && intervalRef.current !== null
+    return retryCount.current !== null && retryCount.current >= maxRetries && intervalRef.current !== null
+  }
+
+  const retryCountInc = () => {
+    if (retryCount.current !== null) {
+      retryCount.current += 1
+    }
+    console.log(retryCount.current)
+  }
+
+  const retryCountReset = () => {
+    if (retryCount.current !== null) {
+      retryCount.current = 0
+    }
   }
 
   const stopPolling = () => {
-    clearInterval(intervalRef.current)
-    intervalRef.current = null
-    setRetryCount(0)
+    console.log("stop polling")
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    retryCountReset()
+    setError(null)
   }
 
   const poll = async () => {
+    if (shouldStopPolling()) {
+      stopPolling()
+      setError(new Error(`Failed to get thumbnails after ${maxRetries} retries`))
+      return
+    }
+
+    retryCountInc()
+
     try {
       const queryString = toDocIdsQueryParams(pollingDocIDs)
       const res = await fetch(
@@ -62,7 +86,7 @@ export const useDocumentThumbnailPolling = ({
       const data: PreviewStatusResponseItem[] = await res.json()
       let complete = true
       let newStats: ImageResourceStatus[] = []
-      let newDocIDs: string[] = []
+      let stillPending: string[] = []
 
       data.forEach(({doc_id, status, preview_image_url}) => {
 
@@ -74,7 +98,7 @@ export const useDocumentThumbnailPolling = ({
           })
         } else {
           complete = false
-          newDocIDs.push(doc_id)
+          stillPending.push(doc_id)
         }
 
       })
@@ -84,57 +108,53 @@ export const useDocumentThumbnailPolling = ({
          return
       }
 
-      setRetryCount(retryCount + 1)
-      setPollingDocIDs(newDocIDs)
-      setImageResourceStatus(newStats)
+      setPollingDocIDs(stillPending)
+      setPreviews(newStats)
+
+      if (stillPending.length === 0) {
+        stopPolling()
+      }
 
     } catch (err: unknown) {
       const errorObj = err instanceof Error ? err : new Error("Unknown error")
       setError(errorObj)
-      setRetryCount(retryCount + 1)
-      if (shouldStopPolling()) {
-        stopPolling()
-      }
     }
   }
 
   useEffect(() => {
     if (!docIDs || docIDs.length === 0) {
+      stopPolling()
       return
     }
 
-    if (intervalRef.current != null) {
-      return
-    }
+    setPollingDocIDs(docIDs)
+    retryCountReset()
+    setError(null)
 
-    if (intervalRef.current == null) {
+    poll()
+
+    if (intervalRef.current === null) {
       intervalRef.current = window.setInterval(
         poll,
-        pollIntervalSec
+        pollIntervalSeconds * 1000
       )
     }
 
     return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      stopPolling()
     }
   }, [docIDs])
 
-   if (retryCount > maxRetries) {
+   if (shouldStopPolling()) {
     const newError = new Error(
       `Failed to get thumbnails after ${maxRetries} retries`
     )
 
     return {
-      imageResources: imageResourceStatus,
+      previews,
       error: newError
     }
   }
 
-  return {
-    imageResources: imageResourceStatus,
-    error: error
-  }
+  return {previews, error}
 };

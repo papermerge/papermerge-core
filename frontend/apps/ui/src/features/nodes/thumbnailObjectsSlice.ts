@@ -1,7 +1,7 @@
-import type {UUID} from "@/types.d/common"
-import type {LoadThumbnailInputType} from "@/types.d/node_thumbnail"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
+import type { UUID } from "@/types.d/common"
+import type { LoadThumbnailInputType } from "@/types.d/node_thumbnail"
+import { getBaseURL, getDefaultHeaders } from "@/utils"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 
 interface ThumbnailState {
   [node_id: UUID]: {
@@ -52,7 +52,7 @@ export const loadThumbnail = createAsyncThunk<
     // use backend server URL (which may differ from frontend's URL)
     url = `${getBaseURL(true)}${item.url}`
   }
-
+  console.log(`Loading thumbnail ${url}`)
   const response = await fetch(url, {headers: headers})
   if (response.ok) {
     const blob = await response.blob()

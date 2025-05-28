@@ -1,11 +1,12 @@
-import {NodeType, NType} from "@/types"
-import {useEffect, useMemo} from "react"
+import { NodeType, NType } from "@/types"
+import { useEffect, useMemo } from "react"
 import Node from "./Node"
 
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {selectNodesWithoutExistingThumbnails} from "@/features/nodes/selectors"
-import {loadThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
-import useDocThumbnailPolling from "@/hooks/DocThumbnailPolling"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import { selectNodesWithoutExistingThumbnails } from "@/features/nodes/selectors"
+import { loadThumbnail } from "@/features/nodes/thumbnailObjectsSlice"
+import { getBaseURL, getDefaultHeaders } from "@/utils"
+import { useDocumentThumbnailPolling } from "@papermerge/hooks"
 
 interface Args {
   items: NodeType[]
@@ -25,24 +26,30 @@ export default function NodesList({
     () => items.filter(n => n.ctype == "document").map(n => n.id),
     [items]
   )
-  const nodesWithoutThumbnails = useAppSelector(
-    selectNodesWithoutExistingThumbnails(documentIds)
+  const thumbnailSelector = useMemo(() => selectNodesWithoutExistingThumbnails(documentIds),
+    [documentIds.join(",")]
   )
-  const {previews} = useDocThumbnailPolling(nodesWithoutThumbnails, {
-    pollIntervalMs: 3000,
+  const nodesWithoutThumbnails = useAppSelector(thumbnailSelector)
+  const {previews} = useDocumentThumbnailPolling({
+    url: `${getBaseURL()}/api/documents/thumbnail-img-status/`,
+    docIDs: nodesWithoutThumbnails,
+    headers: getDefaultHeaders(),
+    pollIntervalSeconds: 3,
     maxRetries: 6
   })
 
   useEffect(() => {
-    Object.entries(previews).forEach(([docId, preview]) => {
-      dispatch(
-        loadThumbnail({
-          node_id: docId,
-          status: preview.status,
-          url: preview.url
-        })
-      )
-    })
+    if (previews && previews.length > 0) {
+      previews.forEach(p => {
+        dispatch(
+          loadThumbnail({
+            node_id: p.doc_id,
+            status: p.status,
+            url: p.url
+          })
+        )
+      })
+   }
   }, [previews])
 
   return items.map((n: NodeType) => (

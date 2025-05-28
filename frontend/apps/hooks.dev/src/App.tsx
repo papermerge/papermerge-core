@@ -1,33 +1,50 @@
-import { useHello } from '@papermerge/hooks';
+import { useDocumentThumbnailPolling } from '@papermerge/hooks';
 import { useState } from 'react';
 import './App.css';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [docIDs, setDocIDs] = useState<Array<string>>([])
+  const {previews, error, isPolling, pollingDocIDs} = useDocumentThumbnailPolling({
+    url: "http://localhost:8000/api/previews",
+    docIDs: docIDs,
+    maxRetries: 5,
+    pollIntervalSeconds: 3,
+    headers: {}
+  })
+  const previewComponents = previews?.map(p => <>
+    <div>
+      <span key={p.doc_id}>doc_id: {p.doc_id}</span>
+      <span> status: {p.status} </span>
+      <span> url: {p.url} </span>
+    </div>
+  </>)
+
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>{useHello()}</h1>;
+      <h1>Polling Thumbnail Dev Tool</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button onClick={() => setDocIDs(["d1", "d2", "d3"])}>
+          switch to view with d1, d2, d3
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button onClick={() => setDocIDs(["d4", "d5"])}>
+          switch to view with d4, d5
+        </button>
+        <button onClick={() => setDocIDs([])}>
+          switch to view without docs
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+      <p>
+        {`isPolling=${isPolling}`}
+      </p>
+      <p>
+        {`pollingDocIDs=${pollingDocIDs}`}
+      </p>
+      <p>
+        {`error=${error}`}
+      </p>
+      <p>
+        previewsComponents={previewComponents}
       </p>
     </>
   )

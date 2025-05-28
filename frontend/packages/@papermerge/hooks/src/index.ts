@@ -28,6 +28,33 @@ function toDocIdsQueryParams(docIds: string[]): string {
   return params.toString()
 }
 
+/*
+  Polls given endpoint:
+
+    GET URL?doc_ids=d1&doc_ids=d2&doc_ids=d3
+
+  Responds of the endpoint is expected to be:
+
+    [
+      {
+          "doc_id": "d1",
+          "status": "pending",
+          "preview_image_url": null
+      },
+      {
+          "doc_id": "d2",
+          "status": "pending",
+          "preview_image_url": null
+      },
+      {
+          "doc_id": "d3",
+          "status": "pending",
+          "preview_image_url": null
+      }
+    ]
+
+  Polling stops when response list has all statuses set to "ready".
+*/
 export const useDocumentThumbnailPolling = ({
   url, docIDs, pollIntervalSeconds, maxRetries, headers
 }: Args) => {
@@ -36,6 +63,7 @@ export const useDocumentThumbnailPolling = ({
   const intervalRef = useRef<number | null>(null)
   const retryCount = useRef<number>(maxRetries)
   const [error, setError] = useState<Error | null>(null)
+  const [isPolling, setIsPolling] = useState<boolean>(false)
 
   const shouldStopPolling = () => {
     return retryCount.current !== null && retryCount.current >= maxRetries && intervalRef.current !== null
@@ -55,16 +83,21 @@ export const useDocumentThumbnailPolling = ({
   }
 
   const stopPolling = () => {
-    console.log("stop polling")
     if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
     retryCountReset()
     setError(null)
+    setIsPolling(false)
   }
 
   const poll = async () => {
+    if (!docIDs || docIDs.length === 0) {
+      stopPolling()
+      return
+    }
+
     if (shouldStopPolling()) {
       stopPolling()
       setError(new Error(`Failed to get thumbnails after ${maxRetries} retries`))
@@ -74,7 +107,7 @@ export const useDocumentThumbnailPolling = ({
     retryCountInc()
 
     try {
-      const queryString = toDocIdsQueryParams(pollingDocIDs)
+      const queryString = toDocIdsQueryParams(docIDs)
       const res = await fetch(
         `${url}?${queryString}`,
         {headers: headers}
@@ -89,27 +122,24 @@ export const useDocumentThumbnailPolling = ({
       let stillPending: string[] = []
 
       data.forEach(({doc_id, status, preview_image_url}) => {
-
-        if (status == "ready") {
-          newStats.push({
-            doc_id: doc_id,
-            status: status,
-            url: preview_image_url
-          })
-        } else {
+        newStats.push({
+          doc_id: doc_id,
+          status: status,
+          url: preview_image_url
+        })
+        if (status != "ready") {
           complete = false
           stillPending.push(doc_id)
         }
-
       })
+
+      setPollingDocIDs(stillPending)
+      setPreviews(newStats)
 
       if (complete && intervalRef.current !== null) {
          stopPolling()
          return
       }
-
-      setPollingDocIDs(stillPending)
-      setPreviews(newStats)
 
       if (stillPending.length === 0) {
         stopPolling()
@@ -122,6 +152,10 @@ export const useDocumentThumbnailPolling = ({
   }
 
   useEffect(() => {
+    setPollingDocIDs(docIDs)
+  }, [docIDs])
+
+  useEffect(() => {
     if (!docIDs || docIDs.length === 0) {
       stopPolling()
       return
@@ -130,6 +164,7 @@ export const useDocumentThumbnailPolling = ({
     setPollingDocIDs(docIDs)
     retryCountReset()
     setError(null)
+    setIsPolling(true)
 
     poll()
 
@@ -152,9 +187,11 @@ export const useDocumentThumbnailPolling = ({
 
     return {
       previews,
-      error: newError
+      isPolling: false,
+      error: newError,
+      pollingDocIDs: pollingDocIDs
     }
   }
 
-  return {previews, error}
+  return {previews, error, isPolling, pollingDocIDs}
 };

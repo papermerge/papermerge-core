@@ -7,7 +7,9 @@
     "skipLibCheck": true,
     "composite": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@papermerge/hooks": ["../../packages/@papermerge/hooks/src"],
+      "@/*": ["./src/*"],
+
     },
     /* Bundler mode */
     "moduleResolution": "node",
@@ -24,5 +26,8 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "../../packages/@papermerge/hooks" }
+  ]
 }

@@ -4,17 +4,19 @@ import './App.css';
 
 function App() {
   const [docIDs, setDocIDs] = useState<Array<string>>([])
-  const {previews, error} = useDocumentThumbnailPolling({
+  const {previews, error, isPolling, pollingDocIDs} = useDocumentThumbnailPolling({
     url: "http://localhost:8000/api/previews",
     docIDs: docIDs,
-    maxRetries: 3,
+    maxRetries: 5,
     pollIntervalSeconds: 3,
     headers: {}
   })
   const previewComponents = previews?.map(p => <>
-    <div key={p.doc_id}>{p.doc_id}</div>
-    <div>{p.status}</div>
-    <div>{p.url}</div>
+    <div>
+      <span key={p.doc_id}>doc_id: {p.doc_id}</span>
+      <span> status: {p.status} </span>
+      <span> url: {p.url} </span>
+    </div>
   </>)
 
 
@@ -25,13 +27,24 @@ function App() {
         <button onClick={() => setDocIDs(["d1", "d2", "d3"])}>
           switch to view with d1, d2, d3
         </button>
+        <button onClick={() => setDocIDs(["d4", "d5"])}>
+          switch to view with d4, d5
+        </button>
         <button onClick={() => setDocIDs([])}>
           switch to view without docs
         </button>
       </div>
       <p>
+        {`isPolling=${isPolling}`}
+      </p>
+      <p>
+        {`pollingDocIDs=${pollingDocIDs}`}
+      </p>
+      <p>
         {`error=${error}`}
-        {previewComponents}
+      </p>
+      <p>
+        previewsComponents={previewComponents}
       </p>
     </>
   )

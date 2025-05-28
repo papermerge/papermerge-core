@@ -26,9 +26,10 @@ export default function NodesList({
     () => items.filter(n => n.ctype == "document").map(n => n.id),
     [items]
   )
-  const nodesWithoutThumbnails = useAppSelector(
-    selectNodesWithoutExistingThumbnails(documentIds)
+  const thumbnailSelector = useMemo(() => selectNodesWithoutExistingThumbnails(documentIds),
+    [documentIds.join(",")]
   )
+  const nodesWithoutThumbnails = useAppSelector(thumbnailSelector)
   const {previews} = useDocumentThumbnailPolling({
     url: `${getBaseURL()}/api/documents/thumbnail-img-status/`,
     docIDs: nodesWithoutThumbnails,

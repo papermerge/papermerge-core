@@ -1,20 +1,20 @@
-import type {User} from "@/types.ts"
-import {Group, Menu, UnstyledButton} from "@mantine/core"
+import type { User } from "@/types.ts"
+import { Group, Menu, UnstyledButton } from "@mantine/core"
 import {
   IconApi,
   IconChevronRight,
   IconLogout,
   IconUser
 } from "@tabler/icons-react"
-import Cookies from "js-cookie"
-import {useSelector} from "react-redux"
+import * as Cookies from "js-cookie"
+import { useSelector } from "react-redux"
 
 import {
   selectCurrentUser,
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import {useTranslation} from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 export default function UserMenu() {
   const status = useSelector(selectCurrentUserStatus)

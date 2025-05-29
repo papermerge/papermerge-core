@@ -1,10 +1,10 @@
-import {store} from "@/app/store"
-import {SliceState} from "@/types"
-import {ComboboxData} from "@mantine/core"
-import Cookies from "js-cookie"
-import {OCR_LANG} from "./cconstants"
+import { store } from "@/app/store"
+import { SliceState } from "@/types"
+import { ComboboxData } from "@mantine/core"
+import * as Cookies from "js-cookie"
+import { OCR_LANG } from "./cconstants"
 
-import type {PanelMode, User} from "@/types"
+import type { PanelMode, User } from "@/types"
 
 export function getBaseURL(trimBackslash?: boolean): string {
   const base_url = import.meta.env.VITE_BASE_URL

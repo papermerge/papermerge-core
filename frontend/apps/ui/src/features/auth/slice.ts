@@ -1,10 +1,10 @@
-import {getDefaultHeaders} from "@/utils"
-import {createSlice} from "@reduxjs/toolkit"
-import Cookies from "js-cookie"
+import { getDefaultHeaders } from "@/utils"
+import { createSlice } from "@reduxjs/toolkit"
+import * as Cookies from "js-cookie"
 
 const COOKIE_NAME = "access_token"
 
-interface AuthState {
+export interface AuthState {
   token: string | null
   remote_user: string | null
   remote_groups: string | null

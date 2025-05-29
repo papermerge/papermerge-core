@@ -1,30 +1,13 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "allowSyntheticDefaultImports": true,
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "composite": true,
-    "paths": {
-      "@papermerge/hooks": ["../../packages/@papermerge/hooks/src"],
-      "@/*": ["./src/*"],
-
-    },
-    /* Bundler mode */
-    "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "baseUrl": ".", // relative to apps/ui
     "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "types": ["react"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@papermerge/hooks": ["../../packages/@papermerge/hooks/src"]
+    }
   },
   "include": ["src"],
   "references": [

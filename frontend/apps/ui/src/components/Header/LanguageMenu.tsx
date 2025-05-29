@@ -1,8 +1,8 @@
-import {SUPPORTED_LANGS} from "@/cconstants"
-import {Group, Menu, UnstyledButton} from "@mantine/core"
-import {IconLanguage} from "@tabler/icons-react"
-import React from "react"
-import {useTranslation} from "react-i18next"
+import { SUPPORTED_LANGS } from "@/cconstants"
+import { Group, Menu, UnstyledButton } from "@mantine/core"
+import { IconLanguage } from "@tabler/icons-react"
+import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 const LanguageMenu: React.FC = () => {
   const {i18n} = useTranslation()

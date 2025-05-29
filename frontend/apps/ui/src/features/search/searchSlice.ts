@@ -1,14 +1,14 @@
-import {RootState} from "@/app/types"
-import type {NodeType} from "@/types"
+import { RootState } from "@/app/types"
+import type { NodeType } from "@/types"
 import {
   EntityState,
   PayloadAction,
   createEntityAdapter,
   createSlice
 } from "@reduxjs/toolkit"
-import {apiSliceWithSearch} from "./apiSlice"
+import { apiSliceWithSearch } from "./apiSlice"
 
-interface SearchSlice {
+export interface SearchSlice {
   /* Store here node details. Node details from this slice
   are used to render breadcrumb and colored tags of search results.
   Although it uses same `NodeType` structure as in `nodes` slice,

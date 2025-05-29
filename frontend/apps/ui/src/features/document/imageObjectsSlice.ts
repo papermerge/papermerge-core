@@ -2,10 +2,10 @@ import type {
   PageImageSize,
   ProgressiveImageInputType
 } from "@/types.d/page_image"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
+import { getBaseURL, getDefaultHeaders } from "@/utils"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 
-interface ImageState {
+export interface ImageState {
   [page_id: string]: {
     sm?: string
     md?: string

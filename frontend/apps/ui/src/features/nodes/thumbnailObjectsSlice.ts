@@ -3,7 +3,7 @@ import type { LoadThumbnailInputType } from "@/types.d/node_thumbnail"
 import { getBaseURL, getDefaultHeaders } from "@/utils"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 
-interface ThumbnailState {
+export interface ThumbnailState {
   [node_id: UUID]: {
     url: string | null
     error: string | null

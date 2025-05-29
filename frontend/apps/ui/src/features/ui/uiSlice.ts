@@ -1,4 +1,4 @@
-import type {RootState} from "@/app/types"
+import type { RootState } from "@/app/types"
 import {
   MAX_ZOOM_FACTOR,
   MIN_ZOOM_FACTOR,
@@ -13,9 +13,9 @@ import type {
   PanelMode,
   ViewOption
 } from "@/types"
-import type {PanelComponent} from "@/types.d/ui"
-import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
-import Cookies from "js-cookie"
+import type { PanelComponent } from "@/types.d/ui"
+import { PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit"
+import * as Cookies from "js-cookie"
 
 import type {
   FileItemStatus,
@@ -26,7 +26,7 @@ import type {
   SortMenuDirection
 } from "@/types"
 
-import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
+import type { CategoryColumn } from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
@@ -218,7 +218,7 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
-interface UIState {
+export interface UIState {
   uploader: UploaderState
   navbar: NavBarState
   sizes: SizesState

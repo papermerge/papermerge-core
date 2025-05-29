@@ -1,19 +1,19 @@
-import {MantineProvider} from "@mantine/core"
-import {Notifications} from "@mantine/notifications"
-import React from "react"
-import ReactDOM from "react-dom/client"
-import {Provider} from "react-redux"
-import {RouterProvider} from "react-router-dom"
+import { MantineProvider } from "@mantine/core"
+import { Notifications } from "@mantine/notifications"
+import * as React from "react"
+import * as ReactDOM from "react-dom/client"
+import { Provider } from "react-redux"
+import { RouterProvider } from "react-router-dom"
 
-import {store} from "@/app/store"
-import {cookieLoaded} from "@/features/auth/slice"
+import { store } from "@/app/store"
+import { cookieLoaded } from "@/features/auth/slice"
 import "@/index.css"
-import {fetchCurrentUser} from "@/slices/currentUser"
+import { fetchCurrentUser } from "@/slices/currentUser"
 import "@mantine/notifications/styles.css"
 
 import theme from "@/themes"
+import { initializeI18n } from "./initializeI18n"
 import router from "./router"
-import {initializeI18n} from "./initializeI18n"
 
 async function start_app() {
   store.dispatch(cookieLoaded())

@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { selectNodesWithoutExistingThumbnails } from "@/features/nodes/selectors"
 import { loadThumbnail } from "@/features/nodes/thumbnailObjectsSlice"
 import { getBaseURL, getDefaultHeaders } from "@/utils"
+import type { ImageResourceStatus } from "@papermerge/hooks"
 import { useDocumentThumbnailPolling } from "@papermerge/hooks"
 
 interface Args {
@@ -36,7 +37,7 @@ export default function NodesList({
 
   useEffect(() => {
     if (previews && previews.length > 0) {
-      previews.forEach(p => {
+      previews.forEach((p: ImageResourceStatus) => {
         dispatch(
           loadThumbnail({
             node_id: p.doc_id,

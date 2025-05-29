@@ -762,6 +762,59 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@papermerge/hooks@workspace:packages/@papermerge/hooks":
+  version: 0.0.0-use.local
+  resolution: "@papermerge/hooks@workspace:packages/@papermerge/hooks"
+  dependencies:
+    "@types/react": "npm:^19.0.10"
+    "@types/react-dom": "npm:^19.0.4"
+    react: "npm:^19.0.0"
+    typescript: "npm:^5.8.3"
+  peerDependencies:
+    react: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
+"@papermerge/ui@workspace:apps/ui":
+  version: 0.0.0-use.local
+  resolution: "@papermerge/ui@workspace:apps/ui"
+  dependencies:
+    "@mantine/core": "npm:^7.17.2"
+    "@mantine/dates": "npm:^7.17.2"
+    "@mantine/form": "npm:^7.17.2"
+    "@mantine/hooks": "npm:^7.17.2"
+    "@mantine/notifications": "npm:^7.17.2"
+    "@reduxjs/toolkit": "npm:^2.6.1"
+    "@tabler/icons-react": "npm:^3.31.0"
+    "@types/js-cookie": "npm:^3.0.6"
+    "@types/react": "npm:^19.0.10"
+    "@types/react-dom": "npm:^19.0.4"
+    "@types/react-router-dom": "npm:^5.3.3"
+    "@vitejs/plugin-react": "npm:^4.3.4"
+    axios: "npm:^1.8.3"
+    dayjs: "npm:^1.11.13"
+    i18next: "npm:^24.2.3"
+    i18next-browser-languagedetector: "npm:^8.0.4"
+    i18next-chained-backend: "npm:^4.6.2"
+    i18next-localstorage-backend: "npm:^4.2.0"
+    i18next-xhr-backend: "npm:^3.2.2"
+    immer: "npm:^10.1.1"
+    js-cookie: "npm:^3.0.5"
+    prettier: "npm:^3.5.3"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
+    react-i18next: "npm:^15.4.1"
+    react-redux: "npm:9.2.0"
+    react-router: "npm:^7.3.0"
+    react-router-dom: "npm:^7.3.0"
+    sass: "npm:^1.85.1"
+    typescript: "npm:^5.8.2"
+    use-immer: "npm:^0.11.0"
+    vite: "npm:^6.2.2"
+    vite-tsconfig-paths: "npm:^5.1.4"
+  languageName: unknown
+  linkType: soft
+
 "@parcel/watcher-android-arm64@npm:2.5.1":
   version: 2.5.1
   resolution: "@parcel/watcher-android-arm64@npm:2.5.1"
@@ -2401,19 +2454,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"hooks@workspace:packages/@papermerge/hooks":
-  version: 0.0.0-use.local
-  resolution: "hooks@workspace:packages/@papermerge/hooks"
-  dependencies:
-    "@types/react": "npm:^19.0.10"
-    "@types/react-dom": "npm:^19.0.4"
-    react: "npm:^19.0.0"
-    typescript: "npm:^5.8.3"
-  peerDependencies:
-    react: ^19.0.0
-  languageName: unknown
-  linkType: soft
-
 "html-parse-stringify@npm:^3.0.1":
   version: 3.0.1
   resolution: "html-parse-stringify@npm:3.0.1"
@@ -3812,45 +3852,6 @@ __metadata:
   checksum: 10c0/39117e346ff8ebd87ae1510b3a77d5d92dae5a89bde588c747d25da5c146603a99c8ee588c7ef80faaf123d89ed46f6dbd918d534d641083177d5fac38b8a1cb
   languageName: node
   linkType: hard
-
-"ui@workspace:apps/ui":
-  version: 0.0.0-use.local
-  resolution: "ui@workspace:apps/ui"
-  dependencies:
-    "@mantine/core": "npm:^7.17.2"
-    "@mantine/dates": "npm:^7.17.2"
-    "@mantine/form": "npm:^7.17.2"
-    "@mantine/hooks": "npm:^7.17.2"
-    "@mantine/notifications": "npm:^7.17.2"
-    "@reduxjs/toolkit": "npm:^2.6.1"
-    "@tabler/icons-react": "npm:^3.31.0"
-    "@types/js-cookie": "npm:^3.0.6"
-    "@types/react": "npm:^19.0.10"
-    "@types/react-dom": "npm:^19.0.4"
-    "@types/react-router-dom": "npm:^5.3.3"
-    "@vitejs/plugin-react": "npm:^4.3.4"
-    axios: "npm:^1.8.3"
-    dayjs: "npm:^1.11.13"
-    i18next: "npm:^24.2.3"
-    i18next-browser-languagedetector: "npm:^8.0.4"
-    i18next-chained-backend: "npm:^4.6.2"
-    i18next-localstorage-backend: "npm:^4.2.0"
-    i18next-xhr-backend: "npm:^3.2.2"
-    immer: "npm:^10.1.1"
-    js-cookie: "npm:^3.0.5"
-    prettier: "npm:^3.5.3"
-    react: "npm:^19.0.0"
-    react-dom: "npm:^19.0.0"
-    react-i18next: "npm:^15.4.1"
-    react-redux: "npm:9.2.0"
-    react-router: "npm:^7.3.0"
-    react-router-dom: "npm:^7.3.0"
-    sass: "npm:^1.85.1"
-    typescript: "npm:^5.8.2"
-    use-immer: "npm:^0.11.0"
-    vite: "npm:^6.2.2"
-  languageName: unknown
-  linkType: soft
 
 "unique-filename@npm:^4.0.0":
   version: 4.0.0

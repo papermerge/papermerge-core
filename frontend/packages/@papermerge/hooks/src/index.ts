@@ -8,7 +8,7 @@ interface PreviewStatusResponseItem {
   preview_image_url: string | null
 }
 
-type ImageResourceStatus = {
+export type ImageResourceStatus = {
   doc_id: string
   status: ImageStatus | null
   url: string | null

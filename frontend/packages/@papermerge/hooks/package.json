@@ -1,7 +1,10 @@
 {
-  "name": "hooks",
+  "name": "@papermerge/hooks",
   "peerDependencies": {
     "react": "^19.0.0"
+  },
+  "scripts": {
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",

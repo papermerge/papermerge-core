@@ -115,6 +115,11 @@ VITE_BASE_URL=http://localhost:8000
 VITE_KEEP_UNUSED_DATA_FOR=1
 ```
 
+Another vite variables you may consider:
+
+* VITE_REMOTE_ROLES
+
+
 Of course, you will need to adjust user ID, username to match your BE.
 
 `VITE_KEEP_UNUSED_DATA_FOR` will cache data returned from BE for one second

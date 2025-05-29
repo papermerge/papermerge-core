@@ -1,9 +1,9 @@
-import {Box, Group, Stack} from "@mantine/core"
-import {useContext, useState} from "react"
+import { Box, Group, Stack } from "@mantine/core"
+import { useContext, useState } from "react"
 
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {BreadcrumbType, NodeType, NType, PanelMode} from "@/types"
-import {useNavigate} from "react-router-dom"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import type { BreadcrumbType, NType, PanelMode } from "@/types"
+import { useNavigate } from "react-router-dom"
 
 import {
   currentSharedNodeChanged,
@@ -13,7 +13,7 @@ import {
   selectFilterText
 } from "@/features/ui/uiSlice"
 
-import {store} from "@/app/store"
+import { store } from "@/app/store"
 import Pagination from "@/components/Pagination"
 import SharedBreadcrumb from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
@@ -30,10 +30,10 @@ import {
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
-import Node from "./Node"
+import NodesList from "./NodesList"
 
-import {SHARED_FOLDER_ROOT_ID, SHARED_NODES_ROOT_BREADCRUMB} from "@/cconstants"
-import {skipToken} from "@reduxjs/toolkit/query"
+import { SHARED_FOLDER_ROOT_ID, SHARED_NODES_ROOT_BREADCRUMB } from "@/cconstants"
+import { skipToken } from "@reduxjs/toolkit/query"
 import FolderNodeActions from "./FolderNodeActions"
 
 export default function SharedCommander() {
@@ -131,16 +131,17 @@ export default function SharedCommander() {
     }
   }
 
-  const nodes = data.items.map((n: NodeType) => (
-    <Node onClick={onClick} key={n.id} node={n} />
-  ))
+  let commanderContent;
 
-  let commanderContent: JSX.Element
-
-  if (nodes.length > 0) {
+  if (data.items.length > 0) {
     commanderContent = (
       <>
-        <Group>{nodes}</Group>
+        <Group>
+          <NodesList
+            items={data.items}
+            onClick={onClick}
+          />
+        </Group>
         <Pagination
           pagination={{
             pageNumber: page,

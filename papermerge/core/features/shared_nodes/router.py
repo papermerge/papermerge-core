@@ -8,10 +8,8 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.db.engine import Session
 from papermerge.core.types import PaginatedResponse
-from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.nodes.db import api as nodes_api
-from papermerge.core.db import common as dbapi_common
-from papermerge.core.exceptions import HTTP403Forbidden
+
 
 router = APIRouter(
     prefix="/shared-nodes",

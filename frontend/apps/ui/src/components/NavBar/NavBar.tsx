@@ -1,4 +1,4 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
@@ -23,7 +23,7 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import {Center, Group, Loader, Text} from "@mantine/core"
+import { Center, Group, Loader, Text } from "@mantine/core"
 import {
   IconAlignJustified,
   IconCategory,
@@ -36,13 +36,13 @@ import {
   IconUsersGroup,
   IconUserShare
 } from "@tabler/icons-react"
-import {useContext} from "react"
-import {useSelector} from "react-redux"
-import {NavLink} from "react-router-dom"
+import { useContext } from "react"
+import { useSelector } from "react-redux"
+import { NavLink } from "react-router-dom"
 
-import {useGetVersionQuery} from "@/features/version/apiSlice"
-import type {User} from "@/types.ts"
-import {useTranslation} from "react-i18next"
+import { useGetVersionQuery } from "@/features/version/apiSlice"
+import type { User } from "@/types.ts"
+import { useTranslation } from "react-i18next"
 
 function NavBarFull() {
   const {t} = useTranslation()
@@ -267,9 +267,9 @@ type NavLinkState = {
   isPending: boolean
 }
 
-type ResponsiveLink = ({isActive, isPending}: NavLinkState) => JSX.Element
+type ResponsiveLink = ({isActive, isPending}: NavLinkState) => React.JSX.Element
 
-function NavLinkWithFeedback(text: string, icon: JSX.Element): ResponsiveLink {
+function NavLinkWithFeedback(text: string, icon: React.JSX.Element): ResponsiveLink {
   return ({isActive, isPending}) => {
     if (isActive) {
       return (
@@ -297,7 +297,7 @@ function NavLinkWithFeedback(text: string, icon: JSX.Element): ResponsiveLink {
   }
 }
 
-function NavLinkWithFeedbackShort(icon: JSX.Element): ResponsiveLink {
+function NavLinkWithFeedbackShort(icon: React.JSX.Element): ResponsiveLink {
   return ({isActive, isPending}) => {
     if (isActive) {
       return <Group>{icon}</Group>

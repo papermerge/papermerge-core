@@ -20,3 +20,10 @@ Start in dev mode (on port 5173):
 ```
 yarn dev
 ```
+
+
+## Build Frontend
+
+```
+yarn workspace @papermerge/ui build
+```

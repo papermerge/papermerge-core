@@ -1,8 +1,8 @@
-import {store} from "@/app/store"
+import { store } from "@/app/store"
 import theme from "@/themes"
-import {CType} from "@/types"
-import {MantineProvider, Stack, Text} from "@mantine/core"
-import {IconFile, IconFolder} from "@tabler/icons-react"
+import { CType } from "@/types"
+import { MantineProvider, Stack, Text } from "@mantine/core"
+import { IconFile, IconFolder } from "@tabler/icons-react"
 
 interface Args {
   nodeID: string
@@ -21,7 +21,7 @@ export default function DraggingIcon({nodeID}: Args) {
   const folderOnly = usedCTypes.includes("folder") && usedCTypes.length == 1
   // If only folders are selected - show folder icon. If there are
   // documents as well - show generic file icon
-  const icon: JSX.Element = folderOnly ? <IconFolder /> : <IconFile />
+  const icon: React.JSX.Element = folderOnly ? <IconFolder /> : <IconFile />
 
   return (
     <MantineProvider theme={theme}>

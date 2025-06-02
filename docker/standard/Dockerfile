@@ -53,7 +53,7 @@ RUN chmod +x /entrypoint.sh
 
 COPY --from=auth_server /app/ /auth_server_app/
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
-COPY --from=frontend_build /build_frontend_app/dist/ /usr/share/nginx/html/ui
+COPY --from=frontend_build /build_frontend_app/apps/ui/dist/ /usr/share/nginx/html/ui
 
 RUN cd /auth_server_app/ && poetry install -E pg
 RUN cd /core_app/ && poetry install -E pg -E cloud

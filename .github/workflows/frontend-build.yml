@@ -29,5 +29,7 @@ jobs:
         run: yarn set version stable
       - name: Install Node.js dependencies
         run: yarn install
-      - name: Run yarn build workspace
+      - name: Run yarn build hooks package
+        run: yarn workspace @papermerge/hooks build
+      - name: Run yarn build UI
         run: yarn workspace @papermerge/ui build

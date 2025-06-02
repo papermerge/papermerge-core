@@ -1,10 +1,10 @@
 FROM node:20.13 as  frontend_build
 
 WORKDIR build_frontend_app
-COPY frontend/apps/ui/package.json frontend/apps/ui/yarn.lock frontend/apps/ui/tsconfig.json frontend/apps/ui/vite.config.ts frontend/apps/ui/index.html .
-COPY frontend/apps/ui/ .
+COPY frontend/ .
 RUN yarn install
-RUN yarn build
+RUN yarn workspace @papermerge/hooks build
+RUN yarn workspace @papermerge/ui build
 
 
 FROM papermerge/auth-server:1.1.3 as auth_server

@@ -10,7 +10,7 @@ from papermerge.core import orm, schema
 from papermerge.core.tests.types import AuthTestClient
 
 
-def test_get_node_details(auth_api_client: AuthTestClient, make_document, db_session):
+def test_get_node_details(auth_api_client: AuthTestClient, make_document):
     # Arrange
     user = auth_api_client.user
     doc = make_document(title="letter.pdf", user=user, parent=user.home_folder)
@@ -305,10 +305,9 @@ def test_assign_tags_to_tagged_folder(
     u = auth_api_client.user
     receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
 
-    with Session() as db_session2:
-        nodes_dbapi.assign_node_tags(
-            db_session2, node_id=receipts.id, tags=["important", "unpaid"], user_id=u.id
-        )
+    nodes_dbapi.assign_node_tags(
+        db_session, node_id=receipts.id, tags=["important", "unpaid"], user_id=u.id
+    )
     payload = ["paid", "important"]
     response = auth_api_client.post(
         f"/nodes/{receipts.id}/tags",
@@ -353,10 +352,9 @@ def test_assign_tags_to_document(
     u = auth_api_client.user
     d1 = make_document(title="invoice.pdf", user=u, parent=u.home_folder)
 
-    with Session() as db_session2:
-        nodes_dbapi.assign_node_tags(
-            db_session2, node_id=d1.id, tags=["important", "unpaid"], user_id=u.id
-        )
+    nodes_dbapi.assign_node_tags(
+        db_session, node_id=d1.id, tags=["important", "unpaid"], user_id=u.id
+    )
 
     payload = ["xyz"]
 
@@ -398,10 +396,9 @@ def test_append_tags_to_folder(
     """
     u = auth_api_client.user
     receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
-    with Session() as db_session2:
-        nodes_dbapi.assign_node_tags(
-            db_session2, node_id=receipts.id, tags=["important"], user_id=u.id
-        )
+    nodes_dbapi.assign_node_tags(
+        db_session, node_id=receipts.id, tags=["important"], user_id=u.id
+    )
     payload = ["paid"]
     response = auth_api_client.patch(
         f"/nodes/{receipts.id}/tags",
@@ -438,13 +435,12 @@ def test_remove_tags_from_folder(
     """
     u = auth_api_client.user
     receipts = make_folder(title="Receipts", user=u, parent=u.inbox_folder)
-    with Session() as s:
-        nodes_dbapi.assign_node_tags(
-            s,
-            node_id=receipts.id,
-            tags=["important", "paid", "receipt", "bakery"],
-            user_id=u.id,
-        )
+    nodes_dbapi.assign_node_tags(
+        db_session,
+        node_id=receipts.id,
+        tags=["important", "paid", "receipt", "bakery"],
+        user_id=u.id,
+    )
     payload = ["important"]
     response = auth_api_client.delete(
         f"/nodes/{receipts.id}/tags",
@@ -460,13 +456,14 @@ def test_remove_tags_from_folder(
         )
     ).one()
 
+    db_session.refresh(folder)
     assert len(folder.tags) == 3
     all_new_tags = [tag.name for tag in receipts.tags]
     assert set(all_new_tags) == {"paid", "bakery", "receipt"}
 
 
 def test_home_with_two_tagged_nodes(
-    auth_api_client: AuthTestClient, make_folder, make_document
+    auth_api_client: AuthTestClient, make_folder, make_document, db_session
 ):
     """
     Create two tagged nodes (one folder and one document) in user's home.
@@ -478,13 +475,12 @@ def test_home_with_two_tagged_nodes(
     doc = make_document(title="doc.pdf", user=u, parent=u.home_folder)
     home = u.home_folder
 
-    with Session() as s:
-        nodes_dbapi.assign_node_tags(
-            s, node_id=folder.id, tags=["folder_a", "folder_b"], user_id=u.id
-        )
-        nodes_dbapi.assign_node_tags(
-            s, node_id=doc.id, tags=["doc_a", "doc_b"], user_id=u.id
-        )
+    nodes_dbapi.assign_node_tags(
+        db_session, node_id=folder.id, tags=["folder_a", "folder_b"], user_id=u.id
+    )
+    nodes_dbapi.assign_node_tags(
+        db_session, node_id=doc.id, tags=["doc_a", "doc_b"], user_id=u.id
+    )
 
     response = auth_api_client.get(f"/nodes/{home.id}")
     assert response.status_code == 200
@@ -499,7 +495,7 @@ def test_home_with_two_tagged_nodes(
     assert {"folder_a", "folder_b"} == set(folder_tag_names)
 
 
-def test_rename_folder(auth_api_client: AuthTestClient, make_folder):
+def test_rename_folder(auth_api_client: AuthTestClient, make_folder, db_session):
     user = auth_api_client.user
     folder = make_folder(title="Old Title", user=user, parent=user.home_folder)
 
@@ -507,8 +503,7 @@ def test_rename_folder(auth_api_client: AuthTestClient, make_folder):
 
     assert response.status_code == 200, response.content
 
-    with Session() as db_session:
-        renamed_folder = nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
+    renamed_folder = nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
 
     assert renamed_folder.title == "New Title"
 

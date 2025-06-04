@@ -16,7 +16,7 @@ from core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
-from papermerge.core.db.engine import Session, engine
+from papermerge.core.db.engine import Session, engine, get_db
 from papermerge.core.features.custom_fields import router as cf_router
 
 from papermerge.core.features.document.db import api as doc_dbapi
@@ -273,15 +273,6 @@ def my_documents_folder(db_session: Session, user, make_folder):
     return my_docs
 
 
-@pytest.fixture(scope="function")
-def db_session():
-    Base.metadata.create_all(engine, checkfirst=False)
-    with Session() as session:
-        yield session
-
-    Base.metadata.drop_all(engine, checkfirst=False)
-
-
 def get_app_with_routes():
     app = FastAPI()
 
@@ -303,18 +294,44 @@ def get_app_with_routes():
     return app
 
 
+@pytest.fixture(scope="function")
+def db_session():
+    Base.metadata.create_all(engine)
+    connection = engine.connect()
+    transaction = connection.begin()  # start a transaction
+    session = Session(bind=connection)
+
+    try:
+        yield session
+    finally:
+        session.close()
+        transaction.rollback()  # rollback changes made during the test
+        connection.close()
+
+
 @pytest.fixture()
-def api_client():
+def api_client(db_session):
     """Unauthenticated REST API client"""
     app = get_app_with_routes()
 
-    return TestClient(app)
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture()
-def auth_api_client(user: orm.User):
+def auth_api_client(db_session, user: orm.User):
     """Authenticated REST API client"""
     app = get_app_with_routes()
+
+    def override_get_db():
+        yield db_session
 
     middle_part = utils.base64.encode(
         {
@@ -326,9 +343,11 @@ def auth_api_client(user: orm.User):
     )
     token = f"abc.{middle_part}.xyz"
 
+    app.dependency_overrides[get_db] = override_get_db
     test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
 
-    return AuthTestClient(test_client=test_client, user=user)
+    yield AuthTestClient(test_client=test_client, user=user)
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture()

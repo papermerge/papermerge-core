@@ -726,10 +726,18 @@ def get_document_last_version__paginated(
     doc_id: uuid.UUID,
     page_number: int,
     page_size: int
-) -> list[orm.Page]:
+) -> Tuple[list[orm.Page], int]:
     latest_version_subq = (
         select(func.max(orm.DocumentVersion.number))
         .where(orm.DocumentVersion.document_id == doc_id)
+        .scalar_subquery()
+    )
+    latest_version_id_subq = (
+        select(orm.DocumentVersion.id)
+        .where(
+            orm.DocumentVersion.document_id == doc_id,
+            orm.DocumentVersion.number == latest_version_subq
+        )
         .scalar_subquery()
     )
 
@@ -745,10 +753,15 @@ def get_document_last_version__paginated(
         .order_by(orm.Page.number)
         .limit(page_size).offset(offset)
     )
-
+    count_stmt = (
+        select(func.count())
+        .select_from(orm.Page)
+        .where(orm.Page.document_version_id == latest_version_id_subq)
+    )
+    total_count = db_session.execute(count_stmt).scalar_one()
     pages = db_session.execute(stmt).scalars().all()
 
-    return pages
+    return pages, total_count
 
 
 

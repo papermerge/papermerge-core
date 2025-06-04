@@ -25,11 +25,11 @@
     "noUncheckedSideEffectImports": true,
     "rootDir": "src",
     "paths": {
-      "@papermerge/hooks": ["../../packages/@papermerge/hooks/src"]
+      "@papermerge/hooks": ["../../packages/hooks/src"]
     }
   },
   "references": [
-    { "path": "../../packages/@papermerge/hooks" }
+    { "path": "../../packages/hooks" }
   ],
   "include": ["src"]
 }

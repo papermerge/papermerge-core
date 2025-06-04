@@ -25,5 +25,6 @@ yarn dev
 ## Build Frontend
 
 ```
-yarn workspace @papermerge/ui build
+yarn install
+yarn workspace ui build
 ```

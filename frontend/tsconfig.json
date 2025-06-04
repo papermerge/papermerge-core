@@ -1,7 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/@papermerge/hooks" },
+    { "path": "packages/hooks" },
     { "path": "apps/hooks.dev" }
   ]
 }

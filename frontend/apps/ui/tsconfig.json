@@ -6,12 +6,12 @@
     "types": ["react"],
     "paths": {
       "@/*": ["src/*"],
-      "@papermerge/hooks": ["../../packages/@papermerge/hooks/src"]
+      "@papermerge/hooks": ["../../packages/hooks/src"]
     }
   },
   "include": ["src"],
   "references": [
     { "path": "./tsconfig.node.json" },
-    { "path": "../../packages/@papermerge/hooks" }
+    { "path": "../../packages/hooks" }
   ]
 }

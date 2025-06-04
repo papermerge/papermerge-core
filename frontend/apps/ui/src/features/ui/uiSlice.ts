@@ -15,7 +15,7 @@ import type {
 } from "@/types"
 import type { PanelComponent } from "@/types.d/ui"
 import { PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit"
-import * as Cookies from "js-cookie"
+import Cookies from "js-cookie"
 
 import type {
   FileItemStatus,

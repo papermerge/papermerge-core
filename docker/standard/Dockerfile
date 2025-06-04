@@ -4,7 +4,7 @@ WORKDIR build_frontend_app
 COPY frontend/ .
 RUN yarn install
 RUN yarn workspace @papermerge/hooks build
-RUN yarn workspace @papermerge/ui build
+RUN yarn workspace ui build
 
 
 FROM papermerge/auth-server:1.1.3 as auth_server

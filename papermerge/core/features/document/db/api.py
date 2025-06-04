@@ -716,8 +716,39 @@ def get_doc(
     # db_doc.tags = [ct.tag for ct in colored_tags]
 
     model_doc = schema.Document.model_validate(db_doc)
+    model_doc.versions[-1].pages.sort(key=lambda page: page.number)
 
     return model_doc
+
+
+def get_document_last_version__paginated(
+    db_session: Session,
+    doc_id: uuid.UUID,
+    page_number: int,
+    page_size: int
+) -> list[orm.Page]:
+    latest_version_subq = (
+        select(func.max(orm.DocumentVersion.number))
+        .where(orm.DocumentVersion.document_id == doc_id)
+        .scalar_subquery()
+    )
+
+    offset = page_size * (page_number - 1)
+
+    stmt = (
+        select(orm.Page)
+        .join(orm.DocumentVersion)
+        .where(
+            orm.DocumentVersion.document_id == doc_id,
+            orm.DocumentVersion.number == latest_version_subq,
+        )
+        .order_by(orm.Page.number)
+        .limit(page_size).offset(offset)
+    )
+
+    pages = db_session.execute(stmt).scalars().all()
+
+    return pages
 
 
 

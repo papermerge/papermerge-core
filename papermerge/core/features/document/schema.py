@@ -320,6 +320,17 @@ class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
 
 
+class Pagination(BaseModel):
+    page_size: int
+    page_number: int
+    num_pages: int  # total count of pages
+
+
+class PaginatedDocVer(BaseModel):
+    document_version: DocumentVersion
+    pagination: Pagination
+
+
 class DocumentPreviewImageStatus(BaseModel):
     doc_id: UUID
     status: ImagePreviewStatus | None

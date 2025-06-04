@@ -202,6 +202,49 @@ def upload_file(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_document_last_version__paginated(
+    document_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    page_number: int,
+    page_size: int,
+) -> schema.PaginatedDocVer:
+    """
+    Get last version of the document - paginated
+
+    Required scope: `{scope}`
+    """
+    try:
+        with db.Session() as db_session:
+            if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=document_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+            ):
+                raise exc.HTTP403Forbidden()
+
+            doc_ver = dbapi.get_document_last_version__paginated(
+                db_session,
+                doc_id=document_id,
+                page_number=page_number,
+                page_size=page_size,
+            )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return doc_ver
+
+
+@router.get(
+    "/{document_id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_details(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],

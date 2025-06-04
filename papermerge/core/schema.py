@@ -27,7 +27,9 @@ from .features.document.schema import (
     MoveStrategy,
     DocumentPreviewImageStatus,
     StatusForSize,
-    PagePreviewImageStatus
+    PagePreviewImageStatus,
+    Pagination,
+    PaginatedDocVer
 )
 from .features.users.schema import User, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import CustomField, UpdateCustomField, CustomFieldType, CustomFieldValue
@@ -101,5 +103,7 @@ __all__ = [
     'SharedNodeAccessDetails',
     'SharedNodeAccessUpdate',
     'SharedNodeAccessUpdateResponse',
-    'Version'
+    'Version',
+    'Pagination',
+    'PaginatedDocVer'
 ]

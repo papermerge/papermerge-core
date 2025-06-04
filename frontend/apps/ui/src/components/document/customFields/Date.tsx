@@ -1,7 +1,7 @@
 import { rem } from "@mantine/core"
 import { DatePickerInput, DateValue } from "@mantine/dates"
 import { IconCalendar } from "@tabler/icons-react"
-import * as dayjs from "dayjs"
+import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 import { CustomFieldArgs } from "./types"
 

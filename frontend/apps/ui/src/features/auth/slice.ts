@@ -1,6 +1,6 @@
 import { getDefaultHeaders } from "@/utils"
 import { createSlice } from "@reduxjs/toolkit"
-import * as Cookies from "js-cookie"
+import Cookies from "js-cookie"
 
 const COOKIE_NAME = "access_token"
 

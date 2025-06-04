@@ -32,4 +32,4 @@ jobs:
       - name: Run yarn build hooks package
         run: yarn workspace @papermerge/hooks build
       - name: Run yarn build UI
-        run: yarn workspace @papermerge/ui build
+        run: yarn workspace ui build

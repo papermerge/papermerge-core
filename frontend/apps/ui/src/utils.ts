@@ -1,7 +1,7 @@
 import { store } from "@/app/store"
 import { SliceState } from "@/types"
 import { ComboboxData } from "@mantine/core"
-import * as Cookies from "js-cookie"
+import Cookies from "js-cookie"
 import { OCR_LANG } from "./cconstants"
 
 import type { PanelMode, User } from "@/types"

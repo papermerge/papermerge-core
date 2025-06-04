@@ -21,9 +21,30 @@ Start in dev mode (on port 5173):
 yarn dev
 ```
 
+## List FE Workspaces
+
+```
+yarn workspaces list
+```
+
+To start dev server for specific workspace:
+
+```
+yarn workspace hooks.dev dev
+```
+
+or
+
+```
+yarn workspace ui dev
+```
+
+
+
 
 ## Build Frontend
 
 ```
-yarn workspace @papermerge/ui build
+yarn install
+yarn workspace ui build
 ```

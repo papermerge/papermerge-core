@@ -4,7 +4,7 @@ WORKDIR build_frontend_app
 COPY frontend/ .
 RUN yarn install
 RUN yarn workspace @papermerge/hooks build
-RUN yarn workspace @papermerge/ui build
+RUN yarn workspace ui build
 
 
 FROM papermerge/auth-server:1.1.3 as auth_server
@@ -53,7 +53,7 @@ RUN chmod +x /entrypoint.sh
 
 COPY --from=auth_server /app/ /auth_server_app/
 COPY --from=auth_server /usr/share/nginx/html /usr/share/nginx/html/auth_server
-COPY --from=frontend_build /build_frontend_app/dist/ /usr/share/nginx/html/ui
+COPY --from=frontend_build /build_frontend_app/apps/ui/dist/ /usr/share/nginx/html/ui
 
 RUN cd /auth_server_app/ && poetry install -E pg
 RUN cd /core_app/ && poetry install -E pg -E cloud

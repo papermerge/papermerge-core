@@ -5,6 +5,12 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
+  /** Uncomment this block to disable minification
+  build: {
+    minify: false, // 🔧 Disable minification
+    sourcemap: true // Optional: include source maps for better debugging
+  },
+  */
   resolve: {
     alias: [
       {find: "@", replacement: "/src"},

@@ -9,10 +9,10 @@ from pathlib import Path
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import select, event
 
 from papermerge.core.tests.resource_file import ResourceFile
-from core.types import OCRStatusEnum
+from papermerge.core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
@@ -294,18 +294,22 @@ def get_app_with_routes():
     return app
 
 
+@pytest.fixture(scope="session", autouse=True)
+def setup_database():
+    Base.metadata.create_all(engine)
+
+
 @pytest.fixture(scope="function")
 def db_session():
-    Base.metadata.create_all(engine)
     connection = engine.connect()
-    transaction = connection.begin()  # start a transaction
+    transaction = connection.begin()
     session = Session(bind=connection)
 
     try:
         yield session
     finally:
         session.close()
-        transaction.rollback()  # rollback changes made during the test
+        transaction.rollback()
         connection.close()
 
 

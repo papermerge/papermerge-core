@@ -351,10 +351,13 @@ def auth_api_client(db_session, user: orm.User):
 
 
 @pytest.fixture()
-def make_api_client(make_user):
+def make_api_client(make_user, db_session):
     """Builds an authenticated client
     i.e. an instance of AuthTestClient with associated (and authenticated) user
     """
+
+    def override_get_db():
+        yield db_session
 
     def _make(username: str):
         user = make_user(username=username)
@@ -369,6 +372,7 @@ def make_api_client(make_user):
             }
         )
         token = f"abc.{middle_part}.xyz"
+        app.dependency_overrides[get_db] = override_get_db
 
         test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
 
@@ -378,9 +382,13 @@ def make_api_client(make_user):
 
 
 @pytest.fixture()
-def login_as():
+def login_as(db_session):
+    def override_get_db():
+        yield db_session
+
     def _make(user):
         app = get_app_with_routes()
+        app.dependency_overrides[get_db] = override_get_db
 
         middle_part = utils.base64.encode(
             {

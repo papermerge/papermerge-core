@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 
 from papermerge.core.db.engine import Session
-from papermerge.core import utils
+from papermerge.core import utils, db
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -42,6 +42,7 @@ def retrieve_tags_without_pagination(
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_SELECT])
     ],
     group_id: UUID | None = None,
+    db_session=Depends(db.get_db),
 ):
     """Get all tags without pagination
 
@@ -57,10 +58,9 @@ def retrieve_tags_without_pagination(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        tags = tags_dbapi.get_tags_without_pagination(
-            db_session, user_id=user.id, group_id=group_id
-        )
+    tags = tags_dbapi.get_tags_without_pagination(
+        db_session, user_id=user.id, group_id=group_id
+    )
 
     return tags
 
@@ -72,20 +72,20 @@ def retrieve_tags(
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ):
     """Retrieves (paginated) list of tags
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        tags = tags_dbapi.get_tags(
-            db_session,
-            user_id=user.id,
-            page_number=params.page_number,
-            page_size=params.page_size,
-            order_by=params.order_by,
-            filter=params.filter,
-        )
+    tags = tags_dbapi.get_tags(
+        db_session,
+        user_id=user.id,
+        page_number=params.page_number,
+        page_size=params.page_size,
+        order_by=params.order_by,
+        filter=params.filter,
+    )
 
     return tags
 
@@ -97,14 +97,14 @@ def get_tag_details(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Get tag details
 
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            tag, error = tags_dbapi.get_tag(db_session, tag_id=tag_id)
+        tag, error = tags_dbapi.get_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -127,6 +127,7 @@ def create_tag(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> tags_schema.Tag:
     """Creates tag
 
@@ -141,18 +142,13 @@ def create_tag(
     if not attrs.group_id:
         attrs.user_id = user.id
 
-    with Session() as db_session:
-        if attrs.group_id:
-            group_id = attrs.group_id
-            ok = users_dbapi.user_belongs_to(
-                db_session, user_id=user.id, group_id=group_id
-            )
-            if not ok:
-                detail = f"User {user.id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-        tag, error = tags_dbapi.create_tag(db_session, attrs=attrs)
+    if attrs.group_id:
+        group_id = attrs.group_id
+        ok = users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            detail = f"User {user.id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+    tag, error = tags_dbapi.create_tag(db_session, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -167,14 +163,14 @@ def delete_tag(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_DELETE])
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes user tag
 
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            tags_dbapi.delete_tag(db_session, tag_id=tag_id)
+        tags_dbapi.delete_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -196,26 +192,22 @@ def update_tag(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> tags_schema.Tag:
     """Updates user tag
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        if attrs.group_id:
-            group_id = attrs.group_id
-            ok = users_dbapi.user_belongs_to(
-                db_session, user_id=user.id, group_id=group_id
-            )
-            if not ok:
-                user_id = user.id
-                detail = f"User {user_id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-        else:
-            attrs.user_id = user.id
-        tag, error = tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
+    if attrs.group_id:
+        group_id = attrs.group_id
+        ok = users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            user_id = user.id
+            detail = f"User {user_id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+    else:
+        attrs.user_id = user.id
+    tag, error = tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

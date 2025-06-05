@@ -22,7 +22,7 @@ def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):
     assert count_after == 1
 
 
-def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user):
+def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user, db_session):
     tag: schema.Tag = make_tag(name="draft", bg_color="red", user=user)
 
     response = auth_api_client.patch(
@@ -32,8 +32,7 @@ def test_update_tag_route(auth_api_client: AuthTestClient, make_tag, user):
     )
 
     assert response.status_code == 200, response.json()
-    with Session() as s:
-        updated_tag = s.get(orm.Tag, tag.id)
+    updated_tag = db_session.get(orm.Tag, tag.id)
 
     # `name` attribute was updated
     assert updated_tag.name == "draft-updated"

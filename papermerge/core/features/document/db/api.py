@@ -726,7 +726,7 @@ def get_document_last_version__paginated(
     doc_id: uuid.UUID,
     page_number: int,
     page_size: int
-) -> Tuple[list[orm.Page], int]:
+) -> Tuple[list[schema.Page], int]:
     latest_version_subq = (
         select(func.max(orm.DocumentVersion.number))
         .where(orm.DocumentVersion.document_id == doc_id)
@@ -759,9 +759,11 @@ def get_document_last_version__paginated(
         .where(orm.Page.document_version_id == latest_version_id_subq)
     )
     total_count = db_session.execute(count_stmt).scalar_one()
-    pages = db_session.execute(stmt).scalars().all()
+    db_pages = db_session.execute(stmt).scalars().all()
+    pages = [schema.BasicPage.model_validate(p) for p in db_pages]
+    num_pages = total_count / page_size
 
-    return pages, total_count
+    return pages, num_pages
 
 
 

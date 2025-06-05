@@ -22,6 +22,7 @@ from papermerge.core.features.document.schema import (
     DocumentTypeArg,
     PageNumber,
     PageSize,
+    LimitedPageSize,
     OrderBy,
 )
 from papermerge.core.config import get_settings, FileServer
@@ -202,7 +203,7 @@ def upload_file(
 
 
 @router.get(
-    "/{document_id}",
+    "/{document_id}/last-version/pages/",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on the node",
@@ -214,12 +215,12 @@ def upload_file(
 def get_document_last_version__paginated(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    page_number: int,
-    page_size: int,
+    page_number: PageNumber,
+    page_size: LimitedPageSize,
     db_session=Depends(db.get_db),
 ) -> schema.PaginatedDocVer:
     """
-    Get last version of the document - paginated
+    Returns paginated list of all pages of the last version of the document
 
     Required scope: `{scope}`
     """
@@ -232,7 +233,7 @@ def get_document_last_version__paginated(
         ):
             raise exc.HTTP403Forbidden()
 
-        doc_ver = dbapi.get_document_last_version__paginated(
+        pages, num_pages = dbapi.get_document_last_version__paginated(
             db_session,
             doc_id=document_id,
             page_number=page_number,
@@ -241,7 +242,21 @@ def get_document_last_version__paginated(
     except NoResultFound:
         raise exc.HTTP404NotFound()
 
-    return doc_ver
+    def _get_doc_ver_id() -> uuid.UUID | None:
+        if len(pages) > 0:
+            return pages[0].document_version_id
+
+        return None
+
+    result = schema.PaginatedDocVer(
+        pages=pages,
+        doc_ver_id=_get_doc_ver_id(),
+        page_number=page_number,
+        page_size=page_size,
+        num_pages=num_pages,
+    )
+
+    return result
 
 
 @router.get(

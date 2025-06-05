@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
@@ -126,12 +127,15 @@ class MicroPage(BaseModel):
     number: int
 
 
-class Page(BaseModel):
+class BasicPage(BaseModel):
     id: UUID
     number: int
+    document_version_id: UUID
+
+
+class Page(BasicPage):
     text: str | None = None
     lang: str
-    document_version_id: UUID
     preview_image_sm_url: Annotated[str | None, Field(validate_default=True)] = None
     preview_image_md_url: Annotated[str | None, Field(validate_default=True)] = None
     preview_image_xl_url: Annotated[str | None, Field(validate_default=True)] = None
@@ -327,8 +331,11 @@ class Pagination(BaseModel):
 
 
 class PaginatedDocVer(BaseModel):
-    document_version: DocumentVersion
-    pagination: Pagination
+    doc_ver_id: uuid.UUID
+    pages: list[BasicPage]
+    page_size: int
+    page_number: int
+    num_pages: int
 
 
 class DocumentPreviewImageStatus(BaseModel):
@@ -498,6 +505,9 @@ PageSize = Annotated[int, Query(ge=1, lt=100, description="Number of items per p
 PageNumber = Annotated[
     int,
     Query(ge=1, description="Page number. It is first, second etc. page?"),
+]
+LimitedPageSize = Annotated[
+    int, Query(ge=5, le=15, description="Number of items per page")
 ]
 
 

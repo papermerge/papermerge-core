@@ -2,7 +2,7 @@ import uuid
 from typing import Annotated
 
 
-from fastapi import APIRouter, Security, HTTPException
+from fastapi import APIRouter, Security, HTTPException, Depends
 
 from papermerge.core.db.engine import Session
 from papermerge.core import utils
@@ -25,6 +25,7 @@ def get_shared_document_details(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     shared_root_id: uuid.UUID | None = None,
+    db_session=Depends(db.get_db)
 ) -> schema.Document:
     """
     Get shared document details
@@ -32,22 +33,21 @@ def get_shared_document_details(
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            ok = dbapi_common.has_node_perm(
-                db_session,
-                node_id=document_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            )
-            if not ok:
-                raise HTTP403Forbidden
+        ok = dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        )
+        if not ok:
+            raise HTTP403Forbidden
 
-            doc = dbapi.get_shared_doc(
-                db_session,
-                document_id=document_id,
-                shared_root_id=shared_root_id,
-                user_id=user.id,
-            )
+        doc = dbapi.get_shared_doc(
+            db_session,
+            document_id=document_id,
+            shared_root_id=shared_root_id,
+            user_id=user.id,
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document not found")
     return doc

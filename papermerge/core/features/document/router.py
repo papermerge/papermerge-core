@@ -3,7 +3,15 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Security, UploadFile, status, Query
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Security,
+    UploadFile,
+    status,
+    Query,
+    Depends,
+)
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import exceptions as exc
@@ -48,6 +56,7 @@ def update_document_custom_field_values(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> list[schema.CFV]:
     """
     Update document's custom fields
@@ -59,23 +68,22 @@ def update_document_custom_field_values(
             continue
         custom_fields[cf.key] = cf.value
 
-    with db.Session() as db_session:
-        if not dbapi_common.has_node_perm(
-            db_session,
-            node_id=document_id,
-            codename=scopes.NODE_UPDATE,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
+    if not dbapi_common.has_node_perm(
+        db_session,
+        node_id=document_id,
+        codename=scopes.NODE_UPDATE,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
 
-        try:
-            updated_entries = dbapi.update_doc_cfv(
-                db_session,
-                document_id=document_id,
-                custom_fields=custom_fields,
-            )
-        except NoResultFound:
-            raise exc.HTTP404NotFound()
+    try:
+        updated_entries = dbapi.update_doc_cfv(
+            db_session,
+            document_id=document_id,
+            custom_fields=custom_fields,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
 
     send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,
@@ -99,28 +107,28 @@ def update_document_custom_field_values(
 def get_document_custom_field_values(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(db.get_db),
 ) -> list[schema.CFV]:
     """
     Get document custom field values
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        if not dbapi_common.has_node_perm(
-            db_session,
-            node_id=document_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
+    if not dbapi_common.has_node_perm(
+        db_session,
+        node_id=document_id,
+        codename=scopes.NODE_VIEW,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
 
-        try:
-            doc = dbapi.get_doc_cfv(
-                db_session,
-                document_id=document_id,
-            )
-        except NoResultFound:
-            raise exc.HTTP404NotFound()
+    try:
+        doc = dbapi.get_doc_cfv(
+            db_session,
+            document_id=document_id,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
 
     return doc
 
@@ -141,6 +149,7 @@ def upload_file(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_UPLOAD])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.Document:
     """
     Uploads document's file.
@@ -168,23 +177,23 @@ def upload_file(
     Obviously you can upload files directly via swagger UI.
     """
     content = file.file.read()
-    with db.Session() as db_session:
-        if not dbapi_common.has_node_perm(
-            db_session,
-            node_id=document_id,
-            codename=scopes.DOCUMENT_UPLOAD,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
 
-        doc, error = dbapi.upload(
-            db_session,
-            document_id=document_id,
-            size=file.size,
-            content=io.BytesIO(content),
-            file_name=file.filename,
-            content_type=file.headers.get("content-type"),
-        )
+    if not dbapi_common.has_node_perm(
+        db_session,
+        node_id=document_id,
+        codename=scopes.DOCUMENT_UPLOAD,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
+    doc, error = dbapi.upload(
+        db_session,
+        document_id=document_id,
+        size=file.size,
+        content=io.BytesIO(content),
+        file_name=file.filename,
+        content_type=file.headers.get("content-type"),
+    )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -207,6 +216,7 @@ def get_document_last_version__paginated(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     page_number: int,
     page_size: int,
+    db_session=Depends(db.get_db),
 ) -> schema.PaginatedDocVer:
     """
     Get last version of the document - paginated
@@ -214,21 +224,20 @@ def get_document_last_version__paginated(
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=document_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            doc_ver = dbapi.get_document_last_version__paginated(
-                db_session,
-                doc_id=document_id,
-                page_number=page_number,
-                page_size=page_size,
-            )
+        doc_ver = dbapi.get_document_last_version__paginated(
+            db_session,
+            doc_id=document_id,
+            page_number=page_number,
+            page_size=page_size,
+        )
     except NoResultFound:
         raise exc.HTTP404NotFound()
 
@@ -248,6 +257,7 @@ def get_document_last_version__paginated(
 def get_document_details(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(db.get_db),
 ) -> schema.Document:
     """
     Get document details
@@ -255,16 +265,15 @@ def get_document_details(
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=document_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            doc = dbapi.get_doc(db_session, id=document_id)
+        doc = dbapi.get_doc(db_session, id=document_id)
     except NoResultFound:
         raise exc.HTTP404NotFound()
     return doc
@@ -284,6 +293,7 @@ def update_document_type(
     document_id: uuid.UUID,
     document_type: DocumentTypeArg,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(db.get_db),
 ):
     """
     Updates document type
@@ -291,20 +301,19 @@ def update_document_type(
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=document_id,
-                codename=scopes.NODE_UPDATE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            dbapi.update_doc_type(
-                db_session,
-                document_id=document_id,
-                document_type_id=document_type.document_type_id,
-            )
+        dbapi.update_doc_type(
+            db_session,
+            document_id=document_id,
+            document_type_id=document_type.document_type_id,
+        )
     except NoResultFound:
         raise exc.HTTP404NotFound()
 
@@ -324,23 +333,23 @@ def get_documents_by_type(
     page_number: PageNumber = 1,
     order_by: OrderBy = None,
     order: OrderEnum = OrderEnum.desc,
+    db_session=Depends(db.get_db),
 ) -> PaginatedResponse[schema.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        items = dbapi.get_docs_by_type(
-            db_session,
-            type_id=document_type_id,
-            user_id=user.id,
-            order_by=order_by,
-            order=order,
-            page_number=page_number,
-            page_size=page_size,
-        )
-        total_count = dbapi.get_docs_count_by_type(db_session, type_id=document_type_id)
+    items = dbapi.get_docs_by_type(
+        db_session,
+        type_id=document_type_id,
+        user_id=user.id,
+        order_by=order_by,
+        order=order,
+        page_number=page_number,
+        page_size=page_size,
+    )
+    total_count = dbapi.get_docs_count_by_type(db_session, type_id=document_type_id)
 
     return PaginatedResponse(
         page_size=page_size,
@@ -363,6 +372,7 @@ def get_documents_by_type(
 def get_document_doc_thumbnail_status(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     doc_ids: list[uuid.UUID] = Query(),
+    db_session=Depends(db.get_db),
 ) -> list[schema.DocumentPreviewImageStatus]:
     """
     Get documents thumbnail image preview status
@@ -376,20 +386,18 @@ def get_document_doc_thumbnail_status(
     Required scope: `{scope}`
     """
 
-    doc_ids_not_yet_considered = []
-    with db.Session() as db_session:
-        for doc_id in doc_ids:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=doc_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+    for doc_id in doc_ids:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-        response, doc_ids_not_yet_considered = dbapi.get_docs_thumbnail_img_status(
-            db_session, doc_ids=doc_ids
-        )
+    response, doc_ids_not_yet_considered = dbapi.get_docs_thumbnail_img_status(
+        db_session, doc_ids=doc_ids
+    )
 
     fserver = config.papermerge__main__file_server
     if fserver == FileServer.S3.value:

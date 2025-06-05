@@ -9,7 +9,6 @@ from fastapi.responses import FileResponse
 
 from papermerge.core.constants import ContentType
 from papermerge.core import schema, utils, db, dbapi, orm
-from papermerge.core.db import exceptions as db_exc
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 
@@ -30,17 +29,17 @@ def download_document_version(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Downloads given document version
 
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
-                db_session,
-                document_version_id=document_version_id,
-            )
+        doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+            db_session,
+            document_version_id=document_version_id,
+        )
     except NoResultFound:
         error = schema.Error(messages=["Document version not found"])
         raise HTTPException(status_code=404, detail=error.model_dump())
@@ -61,16 +60,16 @@ def download_document_version(
 def document_version_details(
     document_version_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(db.get_db),
 ):
     """Get document version details
 
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
-                db_session, document_version_id=document_version_id
-            )
+        doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+            db_session, document_version_id=document_version_id
+        )
     except NoResultFound:
         error = schema.Error(messages=["Page not found"])
         raise HTTPException(status_code=404, detail=error.model_dump())

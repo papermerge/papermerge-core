@@ -72,7 +72,7 @@ def test_delete_user(
 
 
 def test_change_user_password(
-    make_user, auth_api_client: AuthTestClient, random_string
+    make_user, auth_api_client: AuthTestClient, random_string, db_session
 ):
     user = make_user(username="Karl")
 
@@ -82,8 +82,7 @@ def test_change_user_password(
 
     assert response.status_code == 200, response.text
     stmt = select(orm.User).where(orm.User.id == user.id)
-    with Session() as s:
-        db_user = s.execute(stmt).scalar()
+    db_user = db_session.execute(stmt).scalar()
 
     assert verify_password(random_string, db_user.password)
 

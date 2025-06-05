@@ -39,6 +39,7 @@ def get_document_types_without_pagination(
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
     group_id: uuid.UUID | None = None,
+    db_session=Depends(db.get_db),
 ):
     """Get all document types without pagination
 
@@ -53,10 +54,9 @@ def get_document_types_without_pagination(
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_document_types_without_pagination(
-            db_session, user_id=user.id, group_id=group_id
-        )
+    result = dbapi.get_document_types_without_pagination(
+        db_session, user_id=user.id, group_id=group_id
+    )
 
     return result
 
@@ -77,16 +77,16 @@ def get_document_types_without_pagination(
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
+    db_session=Depends(db.get_db),
 ):
     """Returns all document types to which user has access to, grouped
     by owner. Results are not paginated.
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_document_types_grouped_by_owner_without_pagination(
-            db_session, user_id=user.id
-        )
+    result = dbapi.get_document_types_grouped_by_owner_without_pagination(
+        db_session, user_id=user.id
+    )
 
     return result
 
@@ -98,20 +98,20 @@ def get_document_types(
         users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ) -> schema.PaginatedResponse[schema.DocumentType]:
     """Get all (paginated) document types
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        paginated_response = dbapi.get_document_types(
-            db_session,
-            user_id=user.id,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            order_by=params.order_by,
-            filter=params.filter,
-        )
+    paginated_response = dbapi.get_document_types(
+        db_session,
+        user_id=user.id,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=params.order_by,
+        filter=params.filter,
+    )
 
     return paginated_response
 
@@ -124,16 +124,14 @@ def get_document_type(
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
+    db_session=Depends(db.get_db),
 ):
     """Get document type
 
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            result = dbapi.get_document_type(
-                db_session, document_type_id=document_type_id
-            )
+        result = dbapi.get_document_type(db_session, document_type_id=document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
     return result
@@ -147,6 +145,7 @@ def create_document_type(
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE]),
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.DocumentType:
     """Creates document type
 
@@ -166,8 +165,7 @@ def create_document_type(
         kwargs["user_id"] = user.id
 
     try:
-        with db.Session() as db_session:
-            document_type = dbapi.create_document_type(db_session, **kwargs)
+        document_type = dbapi.create_document_type(db_session, **kwargs)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
@@ -194,14 +192,14 @@ def delete_document_type(
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE]),
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes document type
 
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            dbapi.delete_document_type(db_session, document_type_id)
+        dbapi.delete_document_type(db_session, document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 
@@ -225,32 +223,32 @@ def update_document_type(
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE]),
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.DocumentType:
     """Updates document type
 
     Required scope: `{scope}`
     """
     try:
-        with db.Session() as db_session:
-            if attrs.group_id:
-                group_id = attrs.group_id
-                ok = dbapi.user_belongs_to(
-                    db_session, user_id=cur_user.id, group_id=group_id
-                )
-                if not ok:
-                    user_id = cur_user.id
-                    detail = f"User {user_id=} does not belong to group {group_id=}"
-                    raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                    )
-            else:
-                attrs.user_id = cur_user.id
-
-            dtype: schema.DocumentType = dbapi.update_document_type(
-                db_session,
-                document_type_id=document_type_id,
-                attrs=attrs,
+        if attrs.group_id:
+            group_id = attrs.group_id
+            ok = dbapi.user_belongs_to(
+                db_session, user_id=cur_user.id, group_id=group_id
             )
+            if not ok:
+                user_id = cur_user.id
+                detail = f"User {user_id=} does not belong to group {group_id=}"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
+                )
+        else:
+            attrs.user_id = cur_user.id
+
+        dtype: schema.DocumentType = dbapi.update_document_type(
+            db_session,
+            document_type_id=document_type_id,
+            attrs=attrs,
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 

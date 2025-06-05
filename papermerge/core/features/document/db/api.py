@@ -1,4 +1,5 @@
 import io
+import math
 import logging
 import os
 from os.path import getsize
@@ -726,7 +727,7 @@ def get_document_last_version__paginated(
     doc_id: uuid.UUID,
     page_number: int,
     page_size: int
-) -> Tuple[list[schema.Page], int]:
+) -> schema.PaginatedDocVer:
     latest_version_subq = (
         select(func.max(orm.DocumentVersion.number))
         .where(orm.DocumentVersion.document_id == doc_id)
@@ -761,9 +762,21 @@ def get_document_last_version__paginated(
     total_count = db_session.execute(count_stmt).scalar_one()
     db_pages = db_session.execute(stmt).scalars().all()
     pages = [schema.BasicPage.model_validate(p) for p in db_pages]
-    num_pages = total_count / page_size
+    num_pages = math.ceil(total_count / page_size)
 
-    return pages, num_pages
+    if len(pages) == 0:
+        raise ValueError("No pages found")
+
+    doc_ver_id = db_pages[0].document_version_id
+
+    return schema.PaginatedDocVer(
+        pages=pages,
+        doc_ver_id=doc_ver_id,
+        page_number=page_number,
+        page_size=page_size,
+        num_pages=num_pages,
+    )
+
 
 
 

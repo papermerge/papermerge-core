@@ -130,7 +130,6 @@ class MicroPage(BaseModel):
 class BasicPage(BaseModel):
     id: UUID
     number: int
-    document_version_id: UUID
 
 
 class Page(BasicPage):

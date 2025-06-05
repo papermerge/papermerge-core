@@ -233,7 +233,7 @@ def get_document_last_version__paginated(
         ):
             raise exc.HTTP403Forbidden()
 
-        pages, num_pages = dbapi.get_document_last_version__paginated(
+        result = dbapi.get_document_last_version__paginated(
             db_session,
             doc_id=document_id,
             page_number=page_number,
@@ -241,20 +241,6 @@ def get_document_last_version__paginated(
         )
     except NoResultFound:
         raise exc.HTTP404NotFound()
-
-    def _get_doc_ver_id() -> uuid.UUID | None:
-        if len(pages) > 0:
-            return pages[0].document_version_id
-
-        return None
-
-    result = schema.PaginatedDocVer(
-        pages=pages,
-        doc_ver_id=_get_doc_ver_id(),
-        page_number=page_number,
-        page_size=page_size,
-        num_pages=num_pages,
-    )
 
     return result
 

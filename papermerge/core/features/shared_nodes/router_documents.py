@@ -25,7 +25,7 @@ def get_shared_document_details(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     shared_root_id: uuid.UUID | None = None,
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ) -> schema.Document:
     """
     Get shared document details

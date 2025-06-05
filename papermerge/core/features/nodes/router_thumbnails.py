@@ -61,7 +61,7 @@ def get_document_thumbnail(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ):
     """Retrieves thumbnail of the document last version's first page
 

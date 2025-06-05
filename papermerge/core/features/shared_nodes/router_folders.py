@@ -26,7 +26,7 @@ def get_shared_folder_details(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ) -> schema.Folder:
     """
     Get shared folder details

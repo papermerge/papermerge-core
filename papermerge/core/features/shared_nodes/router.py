@@ -22,7 +22,7 @@ router = APIRouter(
 def get_shared_nodes(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list of top level nodes shared with current user
 
@@ -51,7 +51,7 @@ def get_node(
     parent_id,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list of top level nodes shared with current user
 
@@ -82,7 +82,7 @@ def create_shared_nodes(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_CREATE])
     ],
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ):
     """Creates shared node
 
@@ -108,7 +108,7 @@ def get_shared_node_access_details(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
     ],
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ) -> schema.SharedNodeAccessDetails:
     """Get shared node access details
 
@@ -130,7 +130,7 @@ def update_shared_node_access(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
     ],
-    db_session=Depends(db.get_db)
+    db_session=Depends(db.get_db),
 ):
     """Update shared nodes access
 

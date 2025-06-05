@@ -203,7 +203,7 @@ def upload_file(
 
 
 @router.get(
-    "/{document_id}/last-version/pages/",
+    "/{doc_id}/last-version/pages/",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on the node",
@@ -213,7 +213,7 @@ def upload_file(
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 def get_document_last_version__paginated(
-    document_id: uuid.UUID,
+    doc_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     page_number: PageNumber,
     page_size: LimitedPageSize,
@@ -222,12 +222,14 @@ def get_document_last_version__paginated(
     """
     Returns paginated list of all pages of the last version of the document
 
+    Returned pages are sorted ascending by page number.
+
     Required scope: `{scope}`
     """
     try:
         if not dbapi_common.has_node_perm(
             db_session,
-            node_id=document_id,
+            node_id=doc_id,
             codename=scopes.NODE_VIEW,
             user_id=user.id,
         ):
@@ -235,7 +237,7 @@ def get_document_last_version__paginated(
 
         result = dbapi.get_document_last_version__paginated(
             db_session,
-            doc_id=document_id,
+            doc_id=doc_id,
             page_number=page_number,
             page_size=page_size,
         )

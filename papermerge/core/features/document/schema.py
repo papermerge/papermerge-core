@@ -134,6 +134,7 @@ class BasicPage(BaseModel):
 
 class Page(BasicPage):
     text: str | None = None
+    document_version_id: UUID
     lang: str
     preview_image_sm_url: Annotated[str | None, Field(validate_default=True)] = None
     preview_image_md_url: Annotated[str | None, Field(validate_default=True)] = None

@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Annotated, List
 
-from fastapi import APIRouter, HTTPException, Query, Security, status
+from fastapi import APIRouter, HTTPException, Query, Security, status, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select
@@ -16,7 +16,6 @@ from papermerge.core import pathlib as core_pathlib
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.constants import DEFAULT_PAGE_SIZE
 from papermerge.core.features.page_mngm.db.api import apply_pages_op
 from papermerge.core.features.page_mngm.db.api import extract_pages as api_extract_pages
 from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pages
@@ -48,6 +47,7 @@ class JPEGFileResponse(FileResponse):
 def get_page_svg_url(
     page_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])],
+    db_session=Depends(db.get_db),
 ):
     """View page as SVG
 
@@ -55,8 +55,7 @@ def get_page_svg_url(
     """
 
     try:
-        with db.Session() as db_session:
-            page = db.get_page(db_session, page_id=page_id, user_id=user.id)
+        page = db.get_page(db_session, page_id=page_id, user_id=user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Page not found")
 
@@ -77,6 +76,7 @@ def get_page_jpg_url(
     size: ImagePreviewSize = Query(
         ImagePreviewSize.xl, description="jpg image width in pixels"
     ),
+    db_session=Depends(db.get_db),
 ):
     """Returns jpg preview image of the page.
 
@@ -85,22 +85,21 @@ def get_page_jpg_url(
     Returned jpg image's width is `size` pixels.
     """
     try:
-        with db.Session() as db_session:
-            document_id = doc_dbapi.get_page_document_id(db_session, page_id=page_id)
-            ok = dbapi_common.has_node_perm(
-                db_session,
-                user_id=user.id,
-                node_id=document_id,
-                codename=scopes.NODE_VIEW,
-            )
-            if not ok:
-                raise HTTPException(status_code=403, detail="Access Forbidden")
+        document_id = doc_dbapi.get_page_document_id(db_session, page_id=page_id)
+        ok = dbapi_common.has_node_perm(
+            db_session,
+            user_id=user.id,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+        )
+        if not ok:
+            raise HTTPException(status_code=403, detail="Access Forbidden")
 
-            page = doc_dbapi.get_page(db_session, page_id=page_id)
-            doc_ver = doc_dbapi.get_doc_ver(
-                db_session,
-                document_version_id=page.document_version_id,
-            )
+        page = doc_dbapi.get_page(db_session, page_id=page_id)
+        doc_ver = doc_dbapi.get_doc_ver(
+            db_session,
+            document_version_id=page.document_version_id,
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Page does not exist")
 
@@ -134,6 +133,7 @@ def apply_page_operations(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.Document:
     """Applies reorder, delete and/or rotate operation(s) on a set of pages.
 
@@ -154,8 +154,7 @@ def apply_page_operations(
     When `angle` > 0 -> the rotation is clockwise.
     When `angle` < 0 -> the rotation is counterclockwise.
     """
-    with db.Session() as db_session:
-        new_doc = apply_pages_op(db_session, items, user_id=user.id)
+    new_doc = apply_pages_op(db_session, items, user_id=user.id)
 
     return schema.Document.model_validate(new_doc)
 
@@ -165,6 +164,7 @@ def apply_page_operations(
 def move_pages(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_MOVE])],
     arg: schema.MovePagesIn,
+    db_session=Depends(db.get_db),
 ) -> schema.MovePagesOut:
     """Moves pages between documents.
 
@@ -178,15 +178,14 @@ def move_pages(
     moves all it's pages into the target, the returned source will
     be None.
     """
-    with db.Session() as db_session:
-        [source, target] = api_move_pages(
-            db_session,
-            source_page_ids=arg.source_page_ids,
-            target_page_id=arg.target_page_id,
-            move_strategy=arg.move_strategy,
-            user_id=user.id,
-        )
-        model = schema.MovePagesOut(source=source, target=target)
+    [source, target] = api_move_pages(
+        db_session,
+        source_page_ids=arg.source_page_ids,
+        target_page_id=arg.target_page_id,
+        move_strategy=arg.move_strategy,
+        user_id=user.id,
+    )
+    model = schema.MovePagesOut(source=source, target=target)
 
     return schema.MovePagesOut.model_validate(model)
 
@@ -198,6 +197,7 @@ def extract_pages(
         schema.User, Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
     ],
     arg: schema.ExtractPagesIn,
+    db_session=Depends(db.get_db),
 ) -> schema.ExtractPagesOut:
     """Extract pages from one document into a folder.
 
@@ -206,20 +206,19 @@ def extract_pages(
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.
     """
-    with db.Session() as db_session:
-        [source, target_docs] = api_extract_pages(
-            db_session,
-            source_page_ids=arg.source_page_ids,
-            target_folder_id=arg.target_folder_id,
-            strategy=arg.strategy,
-            title_format=arg.title_format,
-            user_id=user.id,
-        )
-        stmt = select(orm.Document).where(
-            orm.Document.id.in_([doc.id for doc in target_docs])
-        )
-        target_nodes = db_session.execute(stmt).scalars()
-        model = schema.ExtractPagesOut(source=source, target=target_nodes)
+    [source, target_docs] = api_extract_pages(
+        db_session,
+        source_page_ids=arg.source_page_ids,
+        target_folder_id=arg.target_folder_id,
+        strategy=arg.strategy,
+        title_format=arg.title_format,
+        user_id=user.id,
+    )
+    stmt = select(orm.Document).where(
+        orm.Document.id.in_([doc.id for doc in target_docs])
+    )
+    target_nodes = db_session.execute(stmt).scalars()
+    model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
     return schema.ExtractPagesOut.model_validate(model)
 
@@ -237,6 +236,7 @@ def extract_pages(
 def get_pages_preview_images_status(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     page_ids: list[uuid.UUID] = Query(),
+    db_session=Depends(db.get_db),
 ) -> list[schema.PagePreviewImageStatus]:
     """
     Get page(s) preview image(s) status
@@ -259,20 +259,19 @@ def get_pages_preview_images_status(
     """
 
     page_ids_not_yet_considered = []
-    with db.Session() as db_session:
-        document_id = doc_dbapi.get_pages_document_id(db_session, page_ids=page_ids)
-        ok = dbapi_common.has_node_perm(
-            db_session,
-            user_id=user.id,
-            node_id=document_id,
-            codename=scopes.NODE_VIEW,
-        )
-        if not ok:
-            raise HTTPException(status_code=403, detail="Access Forbidden")
+    document_id = doc_dbapi.get_pages_document_id(db_session, page_ids=page_ids)
+    ok = dbapi_common.has_node_perm(
+        db_session,
+        user_id=user.id,
+        node_id=document_id,
+        codename=scopes.NODE_VIEW,
+    )
+    if not ok:
+        raise HTTPException(status_code=403, detail="Access Forbidden")
 
-        response, page_ids_not_yet_considered = dbapi.get_pages_preview_img_status(
-            db_session, page_ids=page_ids
-        )
+    response, page_ids_not_yet_considered = dbapi.get_pages_preview_img_status(
+        db_session, page_ids=page_ids
+    )
 
     fserver = config.papermerge__main__file_server
     if fserver == FileServer.S3.value:

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from papermerge.core import utils
+from papermerge.core import utils, db
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.db.engine import Session
@@ -41,6 +41,7 @@ def get_custom_fields_without_pagination(
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     group_id: uuid.UUID | None = None,
+    db_session=Depends(db.get_db),
 ):
     """Get all custom fields without pagination
 
@@ -55,19 +56,14 @@ def get_custom_fields_without_pagination(
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        if group_id:
-            ok = user_dbapi.user_belongs_to(
-                db_session, user_id=user.id, group_id=group_id
-            )
-            if not ok:
-                detail = f"User {user.id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-        result = dbapi.get_custom_fields_without_pagination(
-            db_session, user_id=user.id, group_id=group_id
-        )
+    if group_id:
+        ok = user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            detail = f"User {user.id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+    result = dbapi.get_custom_fields_without_pagination(
+        db_session, user_id=user.id, group_id=group_id
+    )
 
     return result
 
@@ -79,20 +75,20 @@ def get_custom_fields(
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ):
     """Get paginated list of custom fields
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        result = dbapi.get_custom_fields(
-            db_session,
-            user_id=user.id,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            order_by=params.order_by,
-            filter=params.filter,
-        )
+    result = dbapi.get_custom_fields(
+        db_session,
+        user_id=user.id,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=params.order_by,
+        filter=params.filter,
+    )
 
     return result
 
@@ -104,16 +100,16 @@ def get_custom_field(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Get custom field
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        try:
-            result = dbapi.get_custom_field(db_session, custom_field_id=custom_field_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Custom field not found")
+    try:
+        result = dbapi.get_custom_field(db_session, custom_field_id=custom_field_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Custom field not found")
 
     return result
 
@@ -134,6 +130,7 @@ def create_custom_field(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> cf_schema.CustomField:
     """Creates custom field
 
@@ -155,22 +152,17 @@ def create_custom_field(
     else:
         kwargs["user_id"] = user.id
 
-    with Session() as db_session:
-        if cfield.group_id:
-            group_id = cfield.group_id
-            ok = user_dbapi.user_belongs_to(
-                db_session, user_id=user.id, group_id=group_id
-            )
-            if not ok:
-                detail = f"User {user.id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
+    if cfield.group_id:
+        group_id = cfield.group_id
+        ok = user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            detail = f"User {user.id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
-        try:
-            custom_field = dbapi.create_custom_field(db_session, **kwargs)
-        except IntegrityError:
-            raise HTTPException(status_code=400, detail="Duplicate custom field name")
+    try:
+        custom_field = dbapi.create_custom_field(db_session, **kwargs)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Duplicate custom field name")
 
     return custom_field
 
@@ -191,16 +183,16 @@ def delete_custom_field(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_DELETE])
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes custom field
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        try:
-            dbapi.delete_custom_field(db_session, custom_field_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Custom field not found")
+    try:
+        dbapi.delete_custom_field(db_session, custom_field_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Custom field not found")
 
 
 @router.patch(
@@ -221,30 +213,28 @@ def update_custom_field(
     cur_user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> cf_schema.CustomField:
     """Updates custom field
 
     Required scope: `{scope}`
     """
-    with Session() as db_session:
-        if attrs.group_id:
-            group_id = attrs.group_id
-            ok = user_dbapi.user_belongs_to(
-                db_session, user_id=cur_user.id, group_id=group_id
-            )
-            if not ok:
-                user_id = cur_user.id
-                detail = f"User {user_id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-        else:
-            attrs.user_id = cur_user.id
-        try:
-            cfield: cf_schema.CustomField = dbapi.update_custom_field(
-                db_session, custom_field_id=custom_field_id, attrs=attrs
-            )
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Not found")
+    if attrs.group_id:
+        group_id = attrs.group_id
+        ok = user_dbapi.user_belongs_to(
+            db_session, user_id=cur_user.id, group_id=group_id
+        )
+        if not ok:
+            user_id = cur_user.id
+            detail = f"User {user_id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+    else:
+        attrs.user_id = cur_user.id
+    try:
+        cfield: cf_schema.CustomField = dbapi.update_custom_field(
+            db_session, custom_field_id=custom_field_id, attrs=attrs
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Not found")
 
     return cfield

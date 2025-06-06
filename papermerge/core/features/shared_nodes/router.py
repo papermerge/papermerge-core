@@ -3,7 +3,7 @@ from fastapi import APIRouter, Security, Depends, Response, status, HTTPExceptio
 
 from typing import Annotated, Union
 
-from papermerge.core import utils, schema, dbapi
+from papermerge.core import utils, schema, dbapi, db
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.db.engine import Session
@@ -22,6 +22,7 @@ router = APIRouter(
 def get_shared_nodes(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list of top level nodes shared with current user
 
@@ -32,15 +33,14 @@ def get_shared_nodes(
     if params.order_by:
         order_by = [item.strip() for item in params.order_by.split(",")]
 
-    with Session() as db_session:
-        nodes = dbapi.get_paginated_shared_nodes(
-            db_session=db_session,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            order_by=order_by,
-            filter=params.filter,
-            user_id=user.id,
-        )
+    nodes = dbapi.get_paginated_shared_nodes(
+        db_session=db_session,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=order_by,
+        filter=params.filter,
+        user_id=user.id,
+    )
 
     return nodes
 
@@ -51,6 +51,7 @@ def get_node(
     parent_id,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
     """Returns a list of top level nodes shared with current user
 
@@ -61,16 +62,15 @@ def get_node(
     if params.order_by:
         order_by = [item.strip() for item in params.order_by.split(",")]
 
-    with Session() as db_session:
-        nodes = nodes_api.get_paginated_nodes(
-            db_session=db_session,
-            parent_id=uuid.UUID(parent_id),
-            user_id=user.id,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            order_by=order_by,
-            filter=params.filter,
-        )
+    nodes = nodes_api.get_paginated_nodes(
+        db_session=db_session,
+        parent_id=uuid.UUID(parent_id),
+        user_id=user.id,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=order_by,
+        filter=params.filter,
+    )
 
     return nodes
 
@@ -82,21 +82,21 @@ def create_shared_nodes(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Creates shared node
 
     Required scope: `{scope}`
     """
 
-    with Session() as db_session:
-        dbapi.create_shared_nodes(
-            db_session=db_session,
-            node_ids=shared_node.node_ids,
-            role_ids=shared_node.role_ids,
-            user_ids=shared_node.user_ids,
-            group_ids=shared_node.group_ids,
-            owner_id=user.id,
-        )
+    dbapi.create_shared_nodes(
+        db_session=db_session,
+        node_ids=shared_node.node_ids,
+        role_ids=shared_node.role_ids,
+        user_ids=shared_node.user_ids,
+        group_ids=shared_node.group_ids,
+        owner_id=user.id,
+    )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -108,6 +108,7 @@ def get_shared_node_access_details(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.SharedNodeAccessDetails:
     """Get shared node access details
 
@@ -116,8 +117,7 @@ def get_shared_node_access_details(
     In other words: gets info about who can access this node
     and with what roles?
     """
-    with Session() as db_session:
-        node_access = dbapi.get_shared_node_access_details(db_session, node_id=node_id)
+    node_access = dbapi.get_shared_node_access_details(db_session, node_id=node_id)
 
     return node_access
 
@@ -130,6 +130,7 @@ def update_shared_node_access(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.SHARED_NODE_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Update shared nodes access
 
@@ -139,7 +140,6 @@ def update_shared_node_access(
     exactly what it does - it actually syncs content in `access_update` for
     specific node_id to match data in `shared_nodes` table.
     """
-    with Session() as db_session:
-        dbapi.update_shared_node_access(
-            db_session, node_id=node_id, access_update=access_update, owner_id=user.id
-        )
+    dbapi.update_shared_node_access(
+        db_session, node_id=node_id, access_update=access_update, owner_id=user.id
+    )

@@ -25,7 +25,8 @@ from .features.document.db.api import (
     get_doc_cfv,
     get_doc_ver_pages,
     get_docs_thumbnail_img_status,
-    get_pages_preview_img_status
+    get_pages_preview_img_status,
+    get_document_last_version__paginated
 )
 from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (
@@ -112,5 +113,6 @@ __all__ = [
     "get_paginated_shared_nodes",
     "create_shared_nodes",
     "get_shared_node_access_details",
-    "update_shared_node_access"
+    "update_shared_node_access",
+    "get_document_last_version__paginated"
 ]

@@ -22,6 +22,13 @@ engine = create_engine(
 
 Session = sessionmaker(engine, expire_on_commit=False)
 
+SessionLocal = Session
+
+
+def get_db():
+    with SessionLocal() as session:
+        yield session
+
 
 def get_engine() -> Engine:
     return engine

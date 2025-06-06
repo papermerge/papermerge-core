@@ -26,13 +26,13 @@ def get_groups_without_pagination(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_SELECT])
     ],
+    db_session=Depends(db.get_db),
 ) -> list[schema.Group]:
     """Get all groups without pagination/filtering/sorting
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_groups_without_pagination(db_session)
+    result = dbapi.get_groups_without_pagination(db_session)
 
     return result
 
@@ -44,15 +44,15 @@ def get_groups(
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ):
     """Get all (paginated) groups
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_groups(
-            db_session, page_size=params.page_size, page_number=params.page_number
-        )
+    result = dbapi.get_groups(
+        db_session, page_size=params.page_size, page_number=params.page_number
+    )
 
     return result
 
@@ -64,16 +64,16 @@ def get_group(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Get group details
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            result = dbapi.get_group(db_session, group_id=group_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Group not found")
+    try:
+        result = dbapi.get_group(db_session, group_id=group_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Group not found")
 
     return result
 
@@ -85,22 +85,22 @@ def create_group(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.Group:
     """Creates group
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            group = dbapi.create_group(
-                db_session,
-                name=pygroup.name,
-            )
-        except Exception as e:
-            error_msg = str(e)
-            if "UNIQUE constraint failed" in error_msg:
-                raise HTTPException(status_code=400, detail="Group already exists")
-            raise HTTPException(status_code=400, detail=error_msg)
+    try:
+        group = dbapi.create_group(
+            db_session,
+            name=pygroup.name,
+        )
+    except Exception as e:
+        error_msg = str(e)
+        if "UNIQUE constraint failed" in error_msg:
+            raise HTTPException(status_code=400, detail="Group already exists")
+        raise HTTPException(status_code=400, detail=error_msg)
 
     return group
 
@@ -121,16 +121,16 @@ def delete_group(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_DELETE])
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes group
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            dbapi.delete_group(db_session, group_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Group not found")
+    try:
+        dbapi.delete_group(db_session, group_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Group not found")
 
 
 @router.patch("/{group_id}", status_code=200, response_model=schema.Group)
@@ -141,6 +141,7 @@ def update_group(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.GROUP_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.Group:
     """Updates group
 
@@ -172,12 +173,11 @@ def update_group(
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            group: schema.Group = dbapi.update_group(
-                db_session, group_id=group_id, attrs=attrs
-            )
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Group not found")
+    try:
+        group: schema.Group = dbapi.update_group(
+            db_session, group_id=group_id, attrs=attrs
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Group not found")
 
     return group

@@ -4,12 +4,12 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
-from fastapi import APIRouter, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from papermerge.core.db.engine import Session
-from papermerge.core import utils
+from papermerge.core import utils, db
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -61,30 +61,30 @@ def get_document_thumbnail(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
+    db_session=Depends(db.get_db),
 ):
     """Retrieves thumbnail of the document last version's first page
 
     Required scope: `{scope}`
     """
 
-    with Session() as db_session:
-        ok = has_node_perm(
-            db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
-        )
-        if not ok:
-            raise HTTP403Forbidden()
+    ok = has_node_perm(
+        db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
+    )
+    if not ok:
+        raise HTTP403Forbidden()
 
-        try:
-            doc_ver = dbapi.get_last_doc_ver(db_session, doc_id=document_id)
-        except NoResultFound:
-            raise HTTP404NotFound
-        try:
-            page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
-        except NoResultFound:
-            raise HTTPException(
-                status_code=309,
-                detail="Not ready for preview yet",
-            )
+    try:
+        doc_ver = dbapi.get_last_doc_ver(db_session, doc_id=document_id)
+    except NoResultFound:
+        raise HTTP404NotFound
+    try:
+        page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
+    except NoResultFound:
+        raise HTTPException(
+            status_code=309,
+            detail="Not ready for preview yet",
+        )
 
     jpg_abs_path = rel2abs(thumbnail_path(page.id))
 

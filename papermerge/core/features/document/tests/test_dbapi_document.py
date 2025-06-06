@@ -462,19 +462,18 @@ def test_document_version_bump_from_pages(db_session, make_document, user):
         title="destination.pdf", user=user, parent=user.home_folder
     )
 
-    with Session() as s:
-        PDF_PATH = RESOURCES / "three-pages.pdf"
-        with open(PDF_PATH, "rb") as file:
-            content = file.read()
-            size = os.stat(PDF_PATH).st_size
-            dbapi.upload(
-                db_session=s,
-                document_id=src.id,
-                content=io.BytesIO(content),
-                file_name="three-pages.pdf",
-                size=size,
-                content_type=ContentType.APPLICATION_PDF,
-            )
+    PDF_PATH = RESOURCES / "three-pages.pdf"
+    with open(PDF_PATH, "rb") as file:
+        content = file.read()
+        size = os.stat(PDF_PATH).st_size
+        dbapi.upload(
+            db_session=db_session,
+            document_id=src.id,
+            content=io.BytesIO(content),
+            file_name="three-pages.pdf",
+            size=size,
+            content_type=ContentType.APPLICATION_PDF,
+        )
 
     src_last_ver = dbapi.get_last_doc_ver(db_session, doc_id=src.id)
 
@@ -536,13 +535,12 @@ def test_document_upload_pdf(make_document, user, db_session):
             content_type=ContentType.APPLICATION_PDF,
         )
 
-    with Session() as s:
-        stmt = (
-            select(docs_orm.Document)
-            .options(selectinload(docs_orm.Document.versions))
-            .where(docs_orm.Document.id == doc.id)
-        )
-        fresh_doc = s.execute(stmt).scalar()
+    stmt = (
+        select(docs_orm.Document)
+        .options(selectinload(docs_orm.Document.versions))
+        .where(docs_orm.Document.id == doc.id)
+    )
+    fresh_doc = db_session.execute(stmt).scalar()
 
     assert len(fresh_doc.versions) == 1  # document versions was not incremented
 
@@ -579,13 +577,12 @@ def test_document_upload_png(make_document, user, db_session):
             content_type="image/png",
         )
 
-    with Session() as s:
-        stmt = (
-            select(docs_orm.Document)
-            .options(selectinload(docs_orm.Document.versions))
-            .where(docs_orm.Document.id == doc.id)
-        )
-        fresh_doc = s.execute(stmt).scalar()
+    stmt = (
+        select(docs_orm.Document)
+        .options(selectinload(docs_orm.Document.versions))
+        .where(docs_orm.Document.id == doc.id)
+    )
+    fresh_doc = db_session.execute(stmt).scalar()
 
     assert error is None, error
     assert len(fresh_doc.versions) == 2

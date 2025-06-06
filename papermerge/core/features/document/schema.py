@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
@@ -126,12 +127,18 @@ class MicroPage(BaseModel):
     number: int
 
 
-class Page(BaseModel):
+class BasicPage(BaseModel):
     id: UUID
     number: int
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Page(BasicPage):
     text: str | None = None
-    lang: str
     document_version_id: UUID
+    lang: str
     preview_image_sm_url: Annotated[str | None, Field(validate_default=True)] = None
     preview_image_md_url: Annotated[str | None, Field(validate_default=True)] = None
     preview_image_xl_url: Annotated[str | None, Field(validate_default=True)] = None
@@ -226,9 +233,6 @@ class Page(BaseModel):
 
         return None
 
-    # Config
-    model_config = ConfigDict(from_attributes=True)
-
 
 DownloadUrl = Annotated[str | None, Field(validate_default=True)]
 
@@ -318,6 +322,20 @@ class DocumentNode(BaseModel):
 
 class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
+
+
+class Pagination(BaseModel):
+    page_size: int
+    page_number: int
+    num_pages: int  # total count of pages
+
+
+class PaginatedDocVer(BaseModel):
+    doc_ver_id: uuid.UUID
+    pages: list[BasicPage]
+    page_size: int
+    page_number: int
+    num_pages: int
 
 
 class DocumentPreviewImageStatus(BaseModel):
@@ -487,6 +505,9 @@ PageSize = Annotated[int, Query(ge=1, lt=100, description="Number of items per p
 PageNumber = Annotated[
     int,
     Query(ge=1, description="Page number. It is first, second etc. page?"),
+]
+LimitedPageSize = Annotated[
+    int, Query(ge=1, le=15, description="Number of items per page")
 ]
 
 

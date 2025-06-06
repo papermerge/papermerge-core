@@ -1,4 +1,5 @@
 import io
+import math
 import logging
 import os
 from os.path import getsize
@@ -716,8 +717,66 @@ def get_doc(
     # db_doc.tags = [ct.tag for ct in colored_tags]
 
     model_doc = schema.Document.model_validate(db_doc)
+    model_doc.versions[-1].pages.sort(key=lambda page: page.number)
 
     return model_doc
+
+
+def get_document_last_version__paginated(
+    db_session: Session,
+    doc_id: uuid.UUID,
+    page_number: int,
+    page_size: int
+) -> schema.PaginatedDocVer:
+    latest_version_subq = (
+        select(func.max(orm.DocumentVersion.number))
+        .where(orm.DocumentVersion.document_id == doc_id)
+        .scalar_subquery()
+    )
+    latest_version_id_subq = (
+        select(orm.DocumentVersion.id)
+        .where(
+            orm.DocumentVersion.document_id == doc_id,
+            orm.DocumentVersion.number == latest_version_subq
+        )
+        .scalar_subquery()
+    )
+
+    offset = page_size * (page_number - 1)
+
+    stmt = (
+        select(orm.Page)
+        .join(orm.DocumentVersion)
+        .where(
+            orm.DocumentVersion.document_id == doc_id,
+            orm.DocumentVersion.number == latest_version_subq,
+        )
+        .order_by(orm.Page.number)
+        .limit(page_size).offset(offset)
+    )
+    count_stmt = (
+        select(func.count())
+        .select_from(orm.Page)
+        .where(orm.Page.document_version_id == latest_version_id_subq)
+    )
+    total_count = db_session.execute(count_stmt).scalar_one()
+    db_pages = db_session.execute(stmt).scalars().all()
+    pages = [schema.BasicPage.model_validate(p) for p in db_pages]
+    num_pages = math.ceil(total_count / page_size)
+
+    if len(pages) == 0:
+        raise ValueError("No pages found")
+
+    doc_ver_id = db_pages[0].document_version_id
+
+    return schema.PaginatedDocVer(
+        pages=pages,
+        doc_ver_id=doc_ver_id,
+        page_number=page_number,
+        page_size=page_size,
+        num_pages=num_pages,
+    )
+
 
 
 

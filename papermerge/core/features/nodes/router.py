@@ -21,6 +21,7 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
+from papermerge.core.db import get_db
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -42,6 +43,7 @@ def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(get_db),
 ) -> PaginatedResponse[Union[schema.DocumentNode, schema.Folder]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
 
@@ -52,24 +54,23 @@ def get_node(
     if params.order_by:
         order_by = [item.strip() for item in params.order_by.split(",")]
 
-    with Session() as db_session:
-        if not dbapi_common.has_node_perm(
-            db_session,
-            node_id=parent_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
+    if not dbapi_common.has_node_perm(
+        db_session,
+        node_id=parent_id,
+        codename=scopes.NODE_VIEW,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
 
-        nodes = nodes_dbapi.get_paginated_nodes(
-            db_session=db_session,
-            parent_id=parent_id,
-            user_id=user.id,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            order_by=order_by,
-            filter=params.filter,
-        )
+    nodes = nodes_dbapi.get_paginated_nodes(
+        db_session=db_session,
+        parent_id=parent_id,
+        user_id=user.id,
+        page_size=params.page_size,
+        page_number=params.page_number,
+        order_by=order_by,
+        filter=params.filter,
+    )
 
     return nodes
 
@@ -92,6 +93,7 @@ def create_node(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
+    db_session=Depends(get_db),
 ) -> schema.Folder | schema.Document | None:
     """Creates a node
 
@@ -114,8 +116,7 @@ def create_node(
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = schema.NewFolder(**attrs)
-        with Session() as db_session:
-            created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
+        created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -137,16 +138,15 @@ def create_node(
 
         new_document = schema.NewDocument(**attrs)
 
-        with Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=pynode.parent_id,
-                codename=scopes.NODE_CREATE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=pynode.parent_id,
+            codename=scopes.NODE_CREATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            created_node, error = doc_dbapi.create_document(db_session, new_document)
+        created_node, error = doc_dbapi.create_document(db_session, new_document)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -171,6 +171,7 @@ def update_node(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
+    db_session=Depends(get_db),
 ) -> schema.Node:
     """Updates node
 
@@ -180,18 +181,17 @@ def update_node(
     should be not empty string (UUID).
     """
 
-    with Session() as db_session:
-        if not dbapi_common.has_node_perm(
-            db_session,
-            node_id=node_id,
-            codename=scopes.NODE_UPDATE,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
+    if not dbapi_common.has_node_perm(
+        db_session,
+        node_id=node_id,
+        codename=scopes.NODE_UPDATE,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
 
-        updated_node = nodes_dbapi.update_node(
-            db_session, node_id=node_id, user_id=user.id, attrs=node
-        )
+    updated_node = nodes_dbapi.update_node(
+        db_session, node_id=node_id, user_id=user.id, attrs=node
+    )
 
     send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
     return updated_node
@@ -213,6 +213,7 @@ def delete_nodes(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
+    db_session=Depends(get_db),
 ):
     """Deletes nodes with specified UUIDs
 
@@ -222,19 +223,18 @@ def delete_nodes(
     In case nothing was deleted (e.g. no nodes with specified UUIDs
     were found) - will return an empty list.
     """
-    with Session() as db_session:
-        for node_id in list_of_uuids:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_DELETE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+    for node_id in list_of_uuids:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_DELETE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-        error = nodes_dbapi.delete_nodes(
-            db_session, node_ids=list_of_uuids, user_id=user.id
-        )
+    error = nodes_dbapi.delete_nodes(
+        db_session, node_ids=list_of_uuids, user_id=user.id
+    )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -277,6 +277,7 @@ def delete_nodes(
 def move_nodes(
     params: schema.MoveNode,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])],
+    db_session=Depends(get_db),
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
@@ -295,29 +296,28 @@ def move_nodes(
     Returns UUIDs of successfully moved nodes.
     """
     try:
-        with Session() as db_session:
-            for source_id in params.source_ids:
-                if not dbapi_common.has_node_perm(
-                    db_session,
-                    node_id=source_id,
-                    codename=scopes.NODE_MOVE,
-                    user_id=user.id,
-                ):
-                    raise exc.HTTP403Forbidden()
-
+        for source_id in params.source_ids:
             if not dbapi_common.has_node_perm(
                 db_session,
-                node_id=params.target_id,
-                codename=scopes.NODE_UPDATE,
+                node_id=source_id,
+                codename=scopes.NODE_MOVE,
                 user_id=user.id,
             ):
                 raise exc.HTTP403Forbidden()
 
-            affected_row_count = nodes_dbapi.move_nodes(
-                db_session,
-                source_ids=params.source_ids,
-                target_id=params.target_id,
-            )
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=params.target_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+        affected_row_count = nodes_dbapi.move_nodes(
+            db_session,
+            source_ids=params.source_ids,
+            target_id=params.target_id,
+        )
     except NoResultFound as e:
         logger.error(e, exc_info=True)
         error = schema.Error(
@@ -366,6 +366,7 @@ def assign_node_tags(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
+    db_session=Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Assigns given list of tag names to the node.
@@ -380,18 +381,17 @@ def assign_node_tags(
     existing node tags** with the one from input list.
     """
     try:
-        with Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_UPDATE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            node, error = nodes_dbapi.assign_node_tags(
-                db_session, node_id=node_id, tags=tags, user_id=user.id
-            )
+        node, error = nodes_dbapi.assign_node_tags(
+            db_session, node_id=node_id, tags=tags, user_id=user.id
+        )
     except EntityNotFound:
         raise HTTP404NotFound
 
@@ -417,6 +417,7 @@ def assign_node_tags(
 def get_nodes_details(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     node_ids: list[uuid.UUID] | None = Query(default=None),
+    db_session=Depends(get_db),
 ) -> list[schema.Folder | schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
@@ -432,17 +433,16 @@ def get_nodes_details(
     if len(node_ids) == 0:
         return []
 
-    with Session() as db_session:
-        for node_id in node_ids:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+    for node_id in node_ids:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-        nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
+    nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes
 
@@ -463,6 +463,7 @@ def update_node_tags(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
+    db_session=Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Appends given list of tag names to the node.
@@ -488,18 +489,17 @@ def update_node_tags(
         are still assigned to N1.
     """
     try:
-        with Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_UPDATE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            node, error = nodes_dbapi.update_node_tags(
-                db_session, node_id=node_id, tags=tags, user_id=user.id
-            )
+        node, error = nodes_dbapi.update_node_tags(
+            db_session, node_id=node_id, tags=tags, user_id=user.id
+        )
     except EntityNotFound:
         raise HTTP404NotFound
 
@@ -524,6 +524,7 @@ def update_node_tags(
 def get_node_tags(
     node_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(get_db),
 ) -> Iterable[schema.Tag]:
     """
     Retrieves nodes tags
@@ -531,18 +532,17 @@ def get_node_tags(
     Required scope: `{scope}`
     """
     try:
-        with Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_VIEW,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            tags, error = nodes_dbapi.get_node_tags(
-                db_session, node_id=node_id, user_id=user.id
-            )
+        tags, error = nodes_dbapi.get_node_tags(
+            db_session, node_id=node_id, user_id=user.id
+        )
     except EntityNotFound:
         raise HTTP404NotFound
 
@@ -568,6 +568,7 @@ def remove_node_tags(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
+    db_session=Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Dissociate given tags the node.
@@ -577,18 +578,17 @@ def remove_node_tags(
     Tags models are not deleted - just dissociated from the node.
     """
     try:
-        with Session() as db_session:
-            if not dbapi_common.has_node_perm(
-                db_session,
-                node_id=node_id,
-                codename=scopes.NODE_UPDATE,
-                user_id=user.id,
-            ):
-                raise exc.HTTP403Forbidden()
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=node_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
 
-            node, error = nodes_dbapi.remove_node_tags(
-                db_session, node_id=node_id, tags=tags, user_id=user.id
-            )
+        node, error = nodes_dbapi.remove_node_tags(
+            db_session, node_id=node_id, tags=tags, user_id=user.id
+        )
     except EntityNotFound:
         raise HTTP404NotFound
 

@@ -26,13 +26,13 @@ def get_roles_without_pagination(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_SELECT])
     ],
+    db_session=Depends(db.get_db),
 ) -> list[schema.Role]:
     """Get all roles without pagination/filtering/sorting
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_roles_without_pagination(db_session)
+    result = dbapi.get_roles_without_pagination(db_session)
 
     return result
 
@@ -42,15 +42,15 @@ def get_roles_without_pagination(
 def get_roles(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.ROLE_VIEW])],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ):
     """Get all (paginated) roles
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_roles(
-            db_session, page_size=params.page_size, page_number=params.page_number
-        )
+    result = dbapi.get_roles(
+        db_session, page_size=params.page_size, page_number=params.page_number
+    )
 
     return result
 
@@ -60,16 +60,16 @@ def get_roles(
 def get_role(
     role_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.ROLE_VIEW])],
+    db_session=Depends(db.get_db),
 ):
     """Get role details
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            result = dbapi.get_role(db_session, role_id=role_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Role not found")
+    try:
+        result = dbapi.get_role(db_session, role_id=role_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Role not found")
 
     return result
 
@@ -81,19 +81,19 @@ def create_role(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.Role:
     """Creates role
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        role, error = dbapi.create_role(
-            db_session,
-            name=pyrole.name,
-            scopes=pyrole.scopes,
-        )
-        if error:
-            raise HTTPException(status_code=500, detail=error)
+    role, error = dbapi.create_role(
+        db_session,
+        name=pyrole.name,
+        scopes=pyrole.scopes,
+    )
+    if error:
+        raise HTTPException(status_code=500, detail=error)
 
     return role
 
@@ -114,16 +114,16 @@ def delete_role(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_DELETE])
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes role
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            dbapi.delete_role(db_session, role_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Role not found")
+    try:
+        dbapi.delete_role(db_session, role_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Role not found")
 
 
 @router.patch("/{role_id}", status_code=200, response_model=schema.Role)
@@ -134,17 +134,17 @@ def update_role(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.RoleDetails:
     """Updates role
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        try:
-            role: schema.RoleDetails = dbapi.update_role(
-                db_session, role_id=role_id, attrs=attrs
-            )
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail="Role not found")
+    try:
+        role: schema.RoleDetails = dbapi.update_role(
+            db_session, role_id=role_id, attrs=attrs
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Role not found")
 
     return role

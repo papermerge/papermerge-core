@@ -27,14 +27,14 @@ logger = logging.getLogger(__name__)
 def get_user_group_homes(
     user: Annotated[
         schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
-    ]
+    ],
+    db_session=Depends(db.get_db),
 ) -> list[schema.UserHome]:
     """Get all user group homes
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result, error = dbapi.get_user_group_homes(db_session, user_id=user.id)
+    result, error = dbapi.get_user_group_homes(db_session, user_id=user.id)
 
     if error:
         raise HTTPException(status_code=400, detail=error)
@@ -47,14 +47,14 @@ def get_user_group_homes(
 def get_user_group_homes(
     user: Annotated[
         schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
-    ]
+    ],
+    db_session=Depends(db.get_db),
 ) -> list[schema.UserInbox]:
     """Get all user group inboxes
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result, error = dbapi.get_user_group_inboxes(db_session, user_id=user.id)
+    result, error = dbapi.get_user_group_inboxes(db_session, user_id=user.id)
 
     if error:
         raise HTTPException(status_code=400, detail=error)
@@ -82,16 +82,16 @@ def get_current_user(
 def get_users(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.USER_VIEW])],
     params: CommonQueryParams = Depends(),
+    db_session=Depends(db.get_db),
 ) -> schema.PaginatedResponse[schema.User]:
     """Get all users
 
     Required scope: `{scope}`
     """
 
-    with db.Session() as db_session:
-        paginated_users = dbapi.get_users(
-            db_session, page_size=params.page_size, page_number=params.page_number
-        )
+    paginated_users = dbapi.get_users(
+        db_session, page_size=params.page_size, page_number=params.page_number
+    )
 
     return paginated_users
 
@@ -101,14 +101,14 @@ def get_users(
 def get_users_without_pagination(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_SELECT])
-    ]
+    ],
+    db_session=Depends(db.get_db),
 ):
     """Get all users without pagination/filtering/sorting
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        result = dbapi.get_users_without_pagination(db_session)
+    result = dbapi.get_users_without_pagination(db_session)
 
     return result
 
@@ -120,20 +120,20 @@ def create_user(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_CREATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.User:
     """Creates user
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        user, error = dbapi.create_user(
-            db_session,
-            username=pyuser.username,
-            email=pyuser.email,
-            password=pyuser.password,
-            scopes=pyuser.scopes,
-            group_ids=pyuser.group_ids,
-        )
+    user, error = dbapi.create_user(
+        db_session,
+        username=pyuser.username,
+        email=pyuser.email,
+        password=pyuser.password,
+        scopes=pyuser.scopes,
+        group_ids=pyuser.group_ids,
+    )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -156,16 +156,16 @@ def create_user(
 def get_user_details(
     user_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.USER_VIEW])],
+    db_session=Depends(db.get_db),
 ):
     """Get user details
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        user, error = dbapi.get_user_details(
-            db_session,
-            user_id=user_id,
-        )
+    user, error = dbapi.get_user_details(
+        db_session,
+        user_id=user_id,
+    )
 
     if error:
         raise HTTPException(status_code=404, detail=error.model_dump())
@@ -194,16 +194,16 @@ def delete_user(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_DELETE])
     ],
+    db_session=Depends(db.get_db),
 ) -> None:
     """Deletes user
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        if dbapi.get_users_count(db_session) == 1:
-            raise HTTPException(
-                status_code=432, detail="Deletion not possible. Only one user left."
-            )
+    if dbapi.get_users_count(db_session) == 1:
+        raise HTTPException(
+            status_code=432, detail="Deletion not possible. Only one user left."
+        )
 
     try:
         if os.environ.get("PAPERMERGE__REDIS__URL"):
@@ -223,13 +223,13 @@ def update_user(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.UserDetails:
     """Updates user
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        user, error = dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
+    user, error = dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=404, detail=error.model_dump())
@@ -247,15 +247,15 @@ def change_user_password(
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
     ],
+    db_session=Depends(db.get_db),
 ) -> schema.UserDetails:
     """Change user password
 
     Required scope: `{scope}`
     """
-    with db.Session() as db_session:
-        user, error = dbapi.change_password(
-            db_session, user_id=UUID(attrs.userId), password=attrs.password
-        )
+    user, error = dbapi.change_password(
+        db_session, user_id=UUID(attrs.userId), password=attrs.password
+    )
 
     if error:
         raise HTTPException(status_code=469, detail=error.model_dump())

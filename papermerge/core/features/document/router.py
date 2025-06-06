@@ -215,8 +215,8 @@ def upload_file(
 def get_document_last_version__paginated(
     doc_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    page_number: PageNumber,
-    page_size: LimitedPageSize,
+    page_number: PageNumber = 1,
+    page_size: LimitedPageSize = 10,
     db_session=Depends(db.get_db),
 ) -> schema.PaginatedDocVer:
     """

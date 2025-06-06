@@ -131,6 +131,9 @@ class BasicPage(BaseModel):
     id: UUID
     number: int
 
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
 
 class Page(BasicPage):
     text: str | None = None
@@ -229,9 +232,6 @@ class Page(BasicPage):
                 )
 
         return None
-
-    # Config
-    model_config = ConfigDict(from_attributes=True)
 
 
 DownloadUrl = Annotated[str | None, Field(validate_default=True)]
@@ -507,7 +507,7 @@ PageNumber = Annotated[
     Query(ge=1, description="Page number. It is first, second etc. page?"),
 ]
 LimitedPageSize = Annotated[
-    int, Query(ge=5, le=15, description="Number of items per page")
+    int, Query(ge=1, le=15, description="Number of items per page")
 ]
 
 

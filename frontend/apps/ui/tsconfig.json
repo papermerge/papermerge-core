@@ -6,12 +6,14 @@
     "types": ["react"],
     "paths": {
       "@/*": ["src/*"],
-      "@papermerge/hooks": ["../../packages/hooks/src"]
+      "@papermerge/hooks": ["../../packages/hooks/src"],
+      "@papermerge/viewer": ["../../packages/viewer/src"]
     }
   },
   "include": ["src"],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "../../packages/hooks" }
+    {"path": "./tsconfig.node.json"},
+    {"path": "../../packages/hooks"},
+    {"path": "../../packages/viewer"}
   ]
 }

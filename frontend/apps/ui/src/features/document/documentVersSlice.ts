@@ -1,6 +1,6 @@
-import {RootState} from "@/app/types"
-import {apiSliceWithDocuments} from "@/features/document/apiSlice"
-import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
+import { RootState } from "@/app/types"
+import { apiSliceWithDocuments } from "@/features/document/apiSlice"
+import { apiSliceWithSharedNodes } from "@/features/shared_nodes/apiSlice"
 import type {
   ClientDocumentVersion,
   ClientPage,
@@ -8,9 +8,9 @@ import type {
   DroppedThumbnailPosition,
   ServerNotifDocumentMoved
 } from "@/types"
-import {PanelMode} from "@/types"
-import {contains_every, reorder} from "@/utils"
-import {notifications} from "@mantine/notifications"
+import { PanelMode } from "@/types"
+import { contains_every, reorder } from "@/utils"
+import { notifications } from "@mantine/notifications"
 import {
   PayloadAction,
   createEntityAdapter,
@@ -200,7 +200,6 @@ export const selectAllPages = (state: RootState, mode: PanelMode) => {
     if (docVerID) {
       const docVer = state.docVers.entities[docVerID]
       if (docVer) {
-        console.log(docVer.pages)
         return docVer.pages
       } else {
         console.log(`doc ver undefined`)

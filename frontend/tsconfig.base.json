@@ -1,9 +1,6 @@
 {
   "files": [],
-  "references": [
-    { "path": "packages/@papermerge/hooks" },
-    { "path": "apps/hooks.dev" }
-  ],
+  "references": [{"path": "packages/hooks"}, {"path": "packages/viewer"}],
   "compilerOptions": {
     "outDir": "dist",
     "allowSyntheticDefaultImports": true,
@@ -24,7 +21,8 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@papermerge/hooks": ["packages/@papermerge/hooks/src"],
+      "@papermerge/hooks": ["packages/hooks/src"],
+      "@papermerge/viewer": ["packages/viewer/src"],
       "@/*": ["apps/ui/src/*"]
     }
   }

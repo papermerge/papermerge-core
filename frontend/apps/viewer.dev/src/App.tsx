@@ -1,6 +1,6 @@
 import {Checkbox, Group, MantineProvider, Stack} from "@mantine/core"
+import {Page} from "@papermerge/viewer"
 import page_a_md from "./assets/pages/page_a/md.jpg"
-import Page from "./components/Page"
 
 function App() {
   return (

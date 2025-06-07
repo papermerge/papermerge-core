@@ -12,19 +12,15 @@ export const Page = forwardRef<HTMLImageElement, PageArgs>(
   ({pageNumber, imageURL, isLoading}, ref) => {
     if (isLoading) {
       return (
-        <Stack justify="center" align="center">
-          <Skeleton width={"80%"} height={800} />
+        <Stack className={classes.page}>
+          <Skeleton height={800} />
           <div>{pageNumber}</div>
         </Stack>
       )
     }
 
     if (!imageURL) {
-      return (
-        <Stack justify="center" align="center">
-          No Image URL
-        </Stack>
-      )
+      return <Stack className={classes.page}>No Image URL</Stack>
     }
 
     return (

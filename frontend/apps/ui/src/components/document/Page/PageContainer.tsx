@@ -2,21 +2,18 @@ import Page from "./Page"
 import usePage from "./usePage"
 
 interface Args {
-  page_number: number
-  page_id: string
+  pageNumber: number
+  pageID: string
 }
 
-export default function PageContainer({page_number, page_id}: Args) {
-  const {ref, isLoading, imageURL} = usePage({
-    pageNumber: page_number,
-    pageID: page_id
-  })
+export default function PageContainer({pageNumber, pageID}: Args) {
+  const {ref, isLoading, imageURL} = usePage({pageNumber, pageID})
 
   return (
     <Page
       ref={ref}
       isLoading={isLoading}
-      pageNumber={page_number}
+      pageNumber={pageNumber}
       imageURL={imageURL}
     />
   )

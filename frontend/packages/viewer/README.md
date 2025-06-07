@@ -1,66 +1,41 @@
-# React + TypeScript + Vite
+# Viewer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Start it
 
-Currently, two official plugins are available:
+To start dev server from monorepo root folder run following command:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname
-    }
-  }
-})
+```
+yarn workspace @papermerge/viewer dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Where it is used?
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x"
-import reactDom from "eslint-plugin-react-dom"
+This package is used by Papermerge UI: `<monorepo-root>/apps/ui`
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules
-  }
-})
+## Requirements
+
+This package code was testwd with:
+
+```
+node --version
+v20.13.1
 ```
 
-## This Package was created as follows
+```
+yarn --version
+4.9.1
+```
+
+## How it was created?
+
+This Package was created as follows
 
 1. cd /path/to/your/monorepo
 2. mkdir -p packages/viewer
 3. cd packages/viewer
 4. yarn init -y // I think this step is redundant
 5. yarn dlx create-vite@latest . --template react-ts
-6. yarn add @mantine/core react react-dom
+6. yarn add @mantine/core @mantine/hooks react react-dom
 7. yarn add -D @types/react @types/react-dom typescript vite
-8. cd ../..
+8. cd /path/to/your/monorepo
    yarn install

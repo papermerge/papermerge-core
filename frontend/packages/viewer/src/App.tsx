@@ -1,5 +1,4 @@
 import {MantineProvider} from "@mantine/core"
-import "./App.css"
 import page_a_md from "./assets/pages/page_a/md.jpg"
 import Page from "./components/Page"
 

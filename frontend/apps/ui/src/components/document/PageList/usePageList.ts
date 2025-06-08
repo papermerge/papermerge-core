@@ -5,7 +5,8 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocLastVersionPaginatedQuery} from "@/features/document/apiSlice"
 import {
   preloadProgressiveImages,
-  selectPageListIDs
+  selectPageListIDs,
+  selectPageListIsLoading
 } from "@/features/document/imageObjectsSlice"
 import {
   selectCurrentNodeCType,
@@ -31,6 +32,8 @@ interface PageListState {
   pageSize: number
   pageNumber: number
   pages: Array<PageStruct>
+  isLoading: boolean
+  isPolling: boolean
 }
 
 function usePollIDs(pages?: BasicPage[]) {
@@ -78,11 +81,12 @@ export default function usePageList(): PageListState {
       : skipToken
   )
   const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
+  const isLoading = useAppSelector(s => selectPageListIsLoading(s, pageIDs))
   const pages = usePageStruct(pageIDs, data?.pages)
 
   const pollPageIDs = usePollIDs(data?.pages)
 
-  const {previews} = usePageImagePolling(pollPageIDs, {
+  const {previews, isLoading: isPolling} = usePageImagePolling(pollPageIDs, {
     pollIntervalMs: 4000,
     maxRetries: 10
   })
@@ -106,6 +110,8 @@ export default function usePageList(): PageListState {
   return {
     pageNumber: 1,
     pageSize: 5,
-    pages: pages
+    pages,
+    isLoading,
+    isPolling
   }
 }

@@ -120,3 +120,16 @@ export const selectPageListIDs = (state: RootState, docVerID?: UUID) => {
     .map(([page_id, _]) => page_id)
   return pageIDs
 }
+
+export const selectPageListIsLoading = (
+  state: RootState,
+  pageIDs?: UUID[]
+): boolean => {
+  if (!pageIDs) {
+    return false
+  }
+
+  return !Object.entries(state.imageObjects)
+    .filter(([page_id, _]) => pageIDs.includes(page_id))
+    .every(([_, value]) => Boolean(value.lg))
+}

@@ -33,23 +33,8 @@ export default function usePageList(): PageListState {
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const currentCType = useAppSelector(s => selectCurrentNodeCType(s, mode))
-  const getDocID = () => {
-    if (!currentNodeID) {
-      return null
-    }
-
-    if (!currentCType) {
-      return null
-    }
-
-    if (currentCType != "document") {
-      return null
-    }
-
-    // i.e. documentID = non empty node ID of ctype 'document'
-    return currentNodeID
-  }
-  const docID = getDocID()
+  const isDocument = currentNodeID && currentCType === "document"
+  const docID = isDocument ? currentNodeID : null
 
   const {data} = useGetDocLastVersionPaginatedQuery(
     docID
@@ -60,27 +45,26 @@ export default function usePageList(): PageListState {
         }
       : skipToken
   )
+  const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
+  const pages = useMemo<PageStruct[]>(() => {
+    if (!data?.pages) return []
+    return data.pages
+      .filter(p => pageIDs.includes(p.id))
+      .map(p => ({
+        pageID: p.id,
+        pageNumber: p.number
+      }))
+  }, [data?.pages, pageIDs])
+
   const pollPageIDs = useMemo(
-    () => (data?.pages ? data.pages.map(p => p.id) : []),
+    () => data?.pages?.map(p => p.id) ?? [],
     [data?.pages]
   )
+
   const {previews} = usePageImagePolling(pollPageIDs, {
     pollIntervalMs: 4000,
     maxRetries: 10
   })
-
-  const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
-  const pages = useMemo(
-    () =>
-      data?.pages
-        ? data.pages
-            .filter(p => pageIDs.includes(p.id))
-            .map(p => {
-              return {pageID: p.id, pageNumber: p.number}
-            })
-        : [],
-    [data?.pages, pageIDs]
-  )
 
   useEffect(() => {
     Object.entries(previews).forEach(([pageID, previews]) => {

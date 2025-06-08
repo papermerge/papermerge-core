@@ -1,28 +1,25 @@
-import { store } from "@/app/store"
-import { SliceState } from "@/types"
-import { ComboboxData } from "@mantine/core"
+import {store} from "@/app/store"
+import {SliceState} from "@/types"
+import {ComboboxData} from "@mantine/core"
 import Cookies from "js-cookie"
-import { OCR_LANG } from "./cconstants"
+import {OCR_LANG} from "./cconstants"
 
-import type { PanelMode, User } from "@/types"
+import type {PanelMode, User} from "@/types"
 
 export function getBaseURL(trimBackslash?: boolean): string {
   const base_url = import.meta.env.VITE_BASE_URL
-  console.log(`etBaseURL: base_url=${base_url}`)
+
   if (base_url) {
     if (trimBackslash) {
-      console.log(`getBaseURL: trimming backslash`)
       // trim backslash if and only if there is a backlash at the end of string
       if (base_url.length > 0 && base_url[base_url.length - 1] == "/") {
-        console.log(`getBaseURL: ending with backslash...`)
         return base_url.substring(0, base_url.length - 1)
       }
     }
-    console.log(`getBaseURL: returned value is base_url=${base_url}`)
+
     return base_url
   }
 
-  console.log(`getBaseURL: returned empty`)
   return ""
 }
 

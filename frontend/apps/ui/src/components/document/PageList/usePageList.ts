@@ -1,5 +1,4 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {Loader, Stack} from "@mantine/core"
 import {useContext, useEffect, useMemo} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
@@ -13,15 +12,19 @@ import usePageImagePolling from "@/hooks/PageImagePolling"
 import type {PanelMode} from "@/types"
 import type {ProgressiveImageInputType} from "@/types.d/page_image"
 import {skipToken} from "@reduxjs/toolkit/query"
-import Page from "../Page"
-import Zoom from "../Zoom"
-import classes from "./Pages.module.css"
 
-interface Args {
-  isFetching: boolean
+type PageStruct = {
+  pageID: string
+  pageNumber: number
 }
 
-export default function Pages({isFetching}: Args) {
+interface PageListState {
+  pageSize: number
+  pageNumber: number
+  pages: Array<PageStruct>
+}
+
+export default function usePageList(): PageListState {
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
@@ -58,17 +61,19 @@ export default function Pages({isFetching}: Args) {
     () => (data?.pages ? data.pages.map(p => p.id) : []),
     [data?.pages]
   )
+  const pages = useMemo(
+    () =>
+      data?.pages
+        ? data.pages.map(p => {
+            return {pageID: p.id, pageNumber: p.number}
+          })
+        : [],
+    [data?.pages]
+  )
   const {previews} = usePageImagePolling(pageIDs, {
     pollIntervalMs: 4000,
     maxRetries: 10
   })
-
-  //const pageComponents = pages.map(p => <Page key={p.id} page_id={p.id} />)
-  const pageComponents = data
-    ? data.pages.map(p => (
-        <Page key={p.id} pageID={p.id} pageNumber={p.number} />
-      ))
-    : []
 
   useEffect(() => {
     Object.entries(previews).forEach(([pageID, previews]) => {
@@ -80,18 +85,9 @@ export default function Pages({isFetching}: Args) {
     })
   }, [previews])
 
-  if (isFetching) {
-    return (
-      <Stack justify="center" align="center" className={classes.loader}>
-        <Loader type="bars" color="white" />
-      </Stack>
-    )
+  return {
+    pageNumber: 1,
+    pageSize: 5,
+    pages: pages
   }
-
-  return (
-    <Stack justify="center" className={classes.pages}>
-      {pageComponents}
-      <Zoom />
-    </Stack>
-  )
 }

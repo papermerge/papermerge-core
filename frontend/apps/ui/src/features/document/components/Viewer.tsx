@@ -25,7 +25,7 @@ import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
-import Pages from "@/components/document/Pages"
+import PageList from "@/components/document/PageList"
 import Thumbnails from "@/components/document/Thumbnails"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
@@ -164,7 +164,7 @@ export default function Viewer() {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails isFetching={isFetching} />
         <ThumbnailsToggle />
-        <Pages isFetching={isFetching} />
+        <PageList />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

@@ -33,22 +33,28 @@ interface PageListState {
   pages: Array<PageStruct>
 }
 
-function usePageStruct(pageIDs: UUID[], pages?: BasicPage[]): PageStruct[] {
-  if (!pages) {
-    return []
-  }
+function usePollIDs(pages?: BasicPage[]) {
+  const pollPageIDs = useMemo(() => {
+    if (!pages) {
+      return []
+    }
+    return pages.map(p => p.id) ?? []
+  }, [pages])
 
+  return pollPageIDs
+}
+
+function usePageStruct(pageIDs: UUID[], pages?: BasicPage[]): PageStruct[] {
   const result = useMemo<PageStruct[]>(() => {
     if (!pages) {
       return []
     }
+    const filteredPages = pages.filter((p: BasicPage) => pageIDs.includes(p.id))
 
-    return pages
-      .filter((p: BasicPage) => pageIDs.includes(p.id))
-      .map((p: BasicPage) => ({
-        pageID: p.id,
-        pageNumber: p.number
-      }))
+    return filteredPages.map((p: BasicPage) => ({
+      pageID: p.id,
+      pageNumber: p.number
+    }))
   }, [pages, pageIDs])
 
   return result
@@ -74,10 +80,7 @@ export default function usePageList(): PageListState {
   const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
   const pages = usePageStruct(pageIDs, data?.pages)
 
-  const pollPageIDs = useMemo(
-    () => data?.pages?.map(p => p.id) ?? [],
-    [data?.pages]
-  )
+  const pollPageIDs = usePollIDs(data?.pages)
 
   const {previews} = usePageImagePolling(pollPageIDs, {
     pollIntervalMs: 4000,

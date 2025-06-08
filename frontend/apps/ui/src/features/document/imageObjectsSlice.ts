@@ -1,9 +1,11 @@
+import {RootState} from "@/app/types"
+import {UUID} from "@/types.d/common"
 import type {
   PageImageSize,
   ProgressiveImageInputType
 } from "@/types.d/page_image"
-import { getBaseURL, getDefaultHeaders } from "@/utils"
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 export interface ImageState {
   [page_id: string]: {
@@ -11,13 +13,17 @@ export interface ImageState {
     md?: string
     lg?: string
     xl?: string
+    docVerID: UUID
+    docID: UUID
   }
 }
 
 const initialState: ImageState = {}
 
 interface PayloadType {
-  page_id: string
+  page_id: UUID
+  docID: UUID
+  docVerID: UUID
   objectURL: string
   size: PageImageSize
 }
@@ -51,7 +57,9 @@ export const preloadProgressiveImages = createAsyncThunk<
     const blob = await response.blob()
     const objectURL = URL.createObjectURL(blob)
     const item = {
-      page_id: imageWithURLs.page_id,
+      page_id: imageWithURLs.page_id as UUID,
+      docID: imageWithURLs.docID,
+      docVerID: imageWithURLs.docVerID,
       size: preview.size,
       objectURL
     }
@@ -77,14 +85,22 @@ const imageObjectsSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(preloadProgressiveImages.fulfilled, (state, action) => {
-      for (const {page_id, size, objectURL} of action.payload) {
+      for (const {
+        page_id,
+        size,
+        objectURL,
+        docID,
+        docVerID
+      } of action.payload) {
         const existing = state[page_id] ?? {}
         const oldUrl = existing[size]
         if (oldUrl) URL.revokeObjectURL(oldUrl)
 
         state[page_id] = {
           ...existing,
-          [size]: objectURL
+          [size]: objectURL,
+          docID: docID,
+          docVerID: docVerID
         }
       }
     })
@@ -93,3 +109,14 @@ const imageObjectsSlice = createSlice({
 
 export const {clearImages} = imageObjectsSlice.actions
 export default imageObjectsSlice.reducer
+
+export const selectPageListIDs = (state: RootState, docVerID?: UUID) => {
+  if (!docVerID) {
+    return []
+  }
+
+  const pageIDs = Object.entries(state.imageObjects)
+    .filter(([_, value]) => value.docVerID === docVerID)
+    .map(([page_id, _]) => page_id)
+  return pageIDs
+}

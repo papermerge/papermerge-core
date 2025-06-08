@@ -6,10 +6,10 @@ export default function Navbar() {
     <nav>
       <Stack>
         <NavLink to="/" end>
-          One Page
+          One &lt;Page /&gt;
         </NavLink>
         <NavLink to="/two-pages" end>
-          Two Pages
+          Two &lt;Page /&gt;
         </NavLink>
       </Stack>
     </nav>

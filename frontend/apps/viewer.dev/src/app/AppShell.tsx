@@ -1,11 +1,8 @@
 import {AppShell} from "@mantine/core"
 
-import {createTheme} from "@mantine/core"
 import "@mantine/core/styles.css"
 import {Outlet} from "react-router"
 import NavBar from "../components/NavBar"
-
-export const theme = createTheme({})
 
 export const metadata = {
   title: "Viewer Dev",
@@ -15,12 +12,12 @@ export const metadata = {
 export default function App() {
   return (
     <AppShell
-      header={{height: 60}}
+      header={{height: 40}}
       navbar={{
-        width: 300,
+        width: 180,
         breakpoint: "sm"
       }}
-      padding="md"
+      p="md"
     >
       <AppShell.Header>Viewer Dev</AppShell.Header>
       <AppShell.Navbar p="md">

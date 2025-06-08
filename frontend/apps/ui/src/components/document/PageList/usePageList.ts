@@ -17,6 +17,11 @@ import type {UUID} from "@/types.d/common"
 import type {ProgressiveImageInputType} from "@/types.d/page_image"
 import {skipToken} from "@reduxjs/toolkit/query"
 
+interface BasicPage {
+  id: string
+  number: number
+}
+
 type PageStruct = {
   pageID: string
   pageNumber: number
@@ -26,6 +31,27 @@ interface PageListState {
   pageSize: number
   pageNumber: number
   pages: Array<PageStruct>
+}
+
+function usePageStruct(pageIDs: UUID[], pages?: BasicPage[]): PageStruct[] {
+  if (!pages) {
+    return []
+  }
+
+  const result = useMemo<PageStruct[]>(() => {
+    if (!pages) {
+      return []
+    }
+
+    return pages
+      .filter((p: BasicPage) => pageIDs.includes(p.id))
+      .map((p: BasicPage) => ({
+        pageID: p.id,
+        pageNumber: p.number
+      }))
+  }, [pages, pageIDs])
+
+  return result
 }
 
 export default function usePageList(): PageListState {
@@ -46,15 +72,7 @@ export default function usePageList(): PageListState {
       : skipToken
   )
   const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
-  const pages = useMemo<PageStruct[]>(() => {
-    if (!data?.pages) return []
-    return data.pages
-      .filter(p => pageIDs.includes(p.id))
-      .map(p => ({
-        pageID: p.id,
-        pageNumber: p.number
-      }))
-  }, [data?.pages, pageIDs])
+  const pages = usePageStruct(pageIDs, data?.pages)
 
   const pollPageIDs = useMemo(
     () => data?.pages?.map(p => p.id) ?? [],
@@ -67,16 +85,18 @@ export default function usePageList(): PageListState {
   })
 
   useEffect(() => {
+    if (!docID || !data?.doc_ver_id) {
+      return
+    }
+
     Object.entries(previews).forEach(([pageID, previews]) => {
-      if (docID && data && data.pages.length > 0) {
-        const entry: ProgressiveImageInputType = {
-          page_id: pageID as UUID,
-          previews: previews,
-          docID: docID,
-          docVerID: data.doc_ver_id
-        }
-        dispatch(preloadProgressiveImages(entry))
+      const entry: ProgressiveImageInputType = {
+        page_id: pageID as UUID,
+        previews: previews,
+        docID: docID,
+        docVerID: data.doc_ver_id
       }
+      dispatch(preloadProgressiveImages(entry))
     })
   }, [previews])
 

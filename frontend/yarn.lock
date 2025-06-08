@@ -653,6 +653,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mantine/core@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@mantine/core@npm:8.0.2"
+  dependencies:
+    "@floating-ui/react": "npm:^0.26.28"
+    clsx: "npm:^2.1.1"
+    react-number-format: "npm:^5.4.3"
+    react-remove-scroll: "npm:^2.6.2"
+    react-textarea-autosize: "npm:8.5.9"
+    type-fest: "npm:^4.27.0"
+  peerDependencies:
+    "@mantine/hooks": 8.0.2
+    react: ^18.x || ^19.x
+    react-dom: ^18.x || ^19.x
+  checksum: 10c0/10ca6258bcc4e475fbb213724ad6e654396434d7345a315c60880c7fc639ffaa5b42b85d3e768364fcb869042357a52cfd6532dfc6daf1b5ba5370a9ca15936d
+  languageName: node
+  linkType: hard
+
 "@mantine/dates@npm:^7.17.2":
   version: 7.17.7
   resolution: "@mantine/dates@npm:7.17.7"
@@ -686,6 +704,15 @@ __metadata:
   peerDependencies:
     react: ^18.x || ^19.x
   checksum: 10c0/f1e13e5a9f009ffc68201f015724520ca221661076a4d08e31339cdbc5a03b206443a3c84e63aaaf16fb916e55b8c4ba5b779f0a741e19193f9a53fb312a26fb
+  languageName: node
+  linkType: hard
+
+"@mantine/hooks@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@mantine/hooks@npm:8.0.2"
+  peerDependencies:
+    react: ^18.x || ^19.x
+  checksum: 10c0/1c68325ee0093923c7bbbde7f1b39600ae72751f254bd336989afe50d08a9c14810465ddfdb62e261e83711d334c292d6ac789a546a8df0e14a2f4f51812efda
   languageName: node
   linkType: hard
 
@@ -772,6 +799,28 @@ __metadata:
     typescript: "npm:^5.8.3"
   peerDependencies:
     react: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
+"@papermerge/viewer@workspace:packages/viewer":
+  version: 0.0.0-use.local
+  resolution: "@papermerge/viewer@workspace:packages/viewer"
+  dependencies:
+    "@eslint/js": "npm:^9.25.0"
+    "@mantine/core": "npm:^8.0.2"
+    "@mantine/hooks": "npm:^8.0.2"
+    "@types/react": "npm:^19.1.6"
+    "@types/react-dom": "npm:^19.1.6"
+    "@vitejs/plugin-react": "npm:^4.4.1"
+    eslint: "npm:^9.25.0"
+    eslint-plugin-react-hooks: "npm:^5.2.0"
+    eslint-plugin-react-refresh: "npm:^0.4.19"
+    globals: "npm:^16.0.0"
+    react: "npm:^19.1.0"
+    react-dom: "npm:^19.1.0"
+    typescript: "npm:^5.8.3"
+    typescript-eslint: "npm:^8.30.1"
+    vite: "npm:^6.3.5"
   languageName: unknown
   linkType: soft
 
@@ -1205,6 +1254,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^19.1.6":
+  version: 19.1.6
+  resolution: "@types/react-dom@npm:19.1.6"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10c0/7ba74eee2919e3f225e898b65fdaa16e54952aaf9e3472a080ddc82ca54585e46e60b3c52018d21d4b7053f09d27b8293e9f468b85f9932ff452cd290cc131e8
+  languageName: node
+  linkType: hard
+
 "@types/react-router-dom@npm:^5.3.3":
   version: 5.3.3
   resolution: "@types/react-router-dom@npm:5.3.3"
@@ -1398,6 +1456,7 @@ __metadata:
   dependencies:
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"
+    prettier: "npm:^3.5.3"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     typescript: "npm:^5.8.3"
@@ -4003,6 +4062,29 @@ __metadata:
   checksum: 10c0/1b8663515c0be34fa653feb724fdcce3984037c78dd4a18f68b2c8be55cc1a1084c578d5b75f158d41b5ddffc2bf5600766d1af3c19c8e329bb20af2ec6f52f4
   languageName: node
   linkType: hard
+
+"viewer.dev@workspace:apps/viewer.dev":
+  version: 0.0.0-use.local
+  resolution: "viewer.dev@workspace:apps/viewer.dev"
+  dependencies:
+    "@eslint/js": "npm:^9.25.0"
+    "@mantine/core": "npm:^8.0.2"
+    "@mantine/hooks": "npm:^8.0.2"
+    "@types/react": "npm:^19.1.6"
+    "@types/react-dom": "npm:^19.1.6"
+    "@vitejs/plugin-react": "npm:^4.4.1"
+    eslint: "npm:^9.25.0"
+    eslint-plugin-react-hooks: "npm:^5.2.0"
+    eslint-plugin-react-refresh: "npm:^0.4.19"
+    globals: "npm:^16.0.0"
+    react: "npm:^19.1.0"
+    react-dom: "npm:^19.1.0"
+    typescript: "npm:^5.8.3"
+    typescript-eslint: "npm:^8.30.1"
+    vite: "npm:^6.3.5"
+    vite-tsconfig-paths: "npm:^5.1.4"
+  languageName: unknown
+  linkType: soft
 
 "vite-tsconfig-paths@npm:^5.1.4":
   version: 5.1.4

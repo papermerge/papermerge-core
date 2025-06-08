@@ -1,19 +1,16 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {Checkbox, Skeleton, Stack} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
-import {useContext, useEffect, useRef, useState} from "react"
+import { Checkbox, Skeleton, Stack } from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
+import { useContext, useEffect, useRef, useState } from "react"
 
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import { useGetDocumentQuery } from "@/features/document/apiSlice"
 import {
-  pagesDroppedInDoc,
   selectCurrentPages,
   selectSelectedPageIDs,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {
-  dragEnded,
-  dragPagesStarted,
   selectCurrentDocVerID,
   selectCurrentNodeID,
   selectDraggedPages,
@@ -21,28 +18,29 @@ import {
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
-import {skipToken} from "@reduxjs/toolkit/query"
+import { skipToken } from "@reduxjs/toolkit/query"
 
-import {DRAGGED} from "@/cconstants"
-import {selectSmallImageByPageId} from "@/features/document/selectors"
+import { DRAGGED } from "@/cconstants"
+import { selectSmallImageByPageId } from "@/features/document/selectors"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
+import type { DroppedThumbnailPosition, PanelMode } from "@/types"
 
-import {contains_every} from "@/utils"
+import { contains_every } from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
 import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
 
-type Args = {
-  page: ClientPage
+interface Args  {
+  page_id: string
+  page_number: number
 }
 
-export default function Thumbnail({page}: Args) {
+export default function Thumbnail({page_id, page_number}: Args) {
   const [
     trPagesDialogOpened,
     {open: trPagesDialogOpen, close: trPagesDialogClose}
@@ -53,7 +51,7 @@ export default function Thumbnail({page}: Args) {
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const ref = useRef<HTMLDivElement>(null)
-  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page.id))
+  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page_id))
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedPagesIDs = draggedPages?.map(p => p.id)
@@ -65,7 +63,7 @@ export default function Thumbnail({page}: Args) {
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
   useEffect(() => {
-    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
+    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page_id)
     if (cur_page_is_being_dragged) {
       if (cssClassNames.indexOf(DRAGGED) < 0) {
         setCssClassNames([...cssClassNames, DRAGGED])
@@ -82,7 +80,7 @@ export default function Thumbnail({page}: Args) {
   const onClick = () => {
     dispatch(
       viewerCurrentPageUpdated({
-        pageNumber: page.number,
+        pageNumber: page_number,
         panel: mode
       })
     )
@@ -128,12 +126,14 @@ export default function Thumbnail({page}: Args) {
   }
 
   const onDragStart = () => {
+    /*
     const data = {
       pages: [page, ...selectedPages],
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
     dispatch(dragPagesStarted(data))
+    */
   }
 
   const onDragEnd = () => {
@@ -170,6 +170,7 @@ export default function Thumbnail({page}: Args) {
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
+       /*
         dispatch(
           pagesDroppedInDoc({
             sources: draggedPages,
@@ -179,6 +180,7 @@ export default function Thumbnail({page}: Args) {
           })
         )
         dispatch(dragEnded())
+        */
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()
@@ -194,9 +196,9 @@ export default function Thumbnail({page}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(viewerSelectionPageAdded({itemID: page.id, mode}))
+      dispatch(viewerSelectionPageAdded({itemID: page_id, mode}))
     } else {
-      dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
+      dispatch(viewerSelectionPageRemoved({itemID: page_id, mode}))
     }
   }
 
@@ -204,7 +206,7 @@ export default function Thumbnail({page}: Args) {
     return (
       <Stack justify="center" align="center">
         <Skeleton width={"100%"} height={160} />
-        <div>{page.number}</div>
+        <div>{page_number}</div>
       </Stack>
     )
   }
@@ -226,15 +228,15 @@ export default function Thumbnail({page}: Args) {
       >
         <Checkbox
           onChange={onCheck}
-          checked={selectedIds ? selectedIds.includes(page.id) : false}
+          checked={selectedIds ? selectedIds.includes(page_id) : false}
           className={classes.checkbox}
         />
         <img
-          style={{transform: `rotate(${page.angle}deg)`}}
+          /* style={{transform: `rotate(${page.angle}deg)`}} */
           onClick={onClick}
           src={smImageURL}
         />
-        {page.number}
+        {page_number}
       </Stack>
       {draggedPagesDocParentID &&
         draggedPagesDocID &&
@@ -245,7 +247,7 @@ export default function Thumbnail({page}: Args) {
             sourceDocID={draggedPagesDocID}
             sourceDocParentID={draggedPagesDocParentID}
             sourcePageIDs={draggedPagesIDs}
-            targetPageID={page.id}
+            targetPageID={page_id}
             opened={trPagesDialogOpened}
             onCancel={trPagesDialogClose}
             onSubmit={trPagesDialogClose}

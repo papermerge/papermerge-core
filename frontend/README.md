@@ -37,10 +37,8 @@ or
 
 ```
 yarn workspace ui dev
+yarn workspace @papermerge/viewer dev
 ```
-
-
-
 
 ## Build Frontend
 

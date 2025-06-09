@@ -1,10 +1,10 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import { Checkbox, Skeleton, Stack } from "@mantine/core"
-import { useDisclosure } from "@mantine/hooks"
-import { useContext, useEffect, useRef, useState } from "react"
+import {useDisclosure} from "@mantine/hooks"
+import {Thumbnail} from "@papermerge/viewer"
+import {useContext, useEffect, useRef, useState} from "react"
 
-import { useGetDocumentQuery } from "@/features/document/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
   selectCurrentPages,
   selectSelectedPageIDs,
@@ -18,35 +18,33 @@ import {
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
-import { skipToken } from "@reduxjs/toolkit/query"
+import {skipToken} from "@reduxjs/toolkit/query"
 
-import { DRAGGED } from "@/cconstants"
-import { selectSmallImageByPageId } from "@/features/document/selectors"
+import {selectSmallImageByPageId} from "@/features/document/selectors"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type { DroppedThumbnailPosition, PanelMode } from "@/types"
+import type {DroppedThumbnailPosition, PanelMode} from "@/types"
 
-import { contains_every } from "@/utils"
+import {contains_every} from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
-import classes from "./Thumbnail.module.scss"
 
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
 
-interface Args  {
+interface Args {
   page_id: string
   page_number: number
 }
 
-export default function Thumbnail({page_id, page_number}: Args) {
+export default function ThumbnailContainer({page_id, page_number}: Args) {
   const [
     trPagesDialogOpened,
     {open: trPagesDialogOpen, close: trPagesDialogClose}
   ] = useDisclosure(false)
   const dispatch = useAppDispatch()
-
+  const [isDragged, setIsDragged] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
@@ -65,15 +63,9 @@ export default function Thumbnail({page_id, page_number}: Args) {
   useEffect(() => {
     const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page_id)
     if (cur_page_is_being_dragged) {
-      if (cssClassNames.indexOf(DRAGGED) < 0) {
-        setCssClassNames([...cssClassNames, DRAGGED])
-      }
+      setIsDragged(true)
     } else {
-      // i.e. is not dragged
-      setCssClassNames(
-        // remove css class
-        cssClassNames.filter(item => item !== DRAGGED)
-      )
+      setIsDragged(false)
     }
   }, [draggedPages?.length])
 
@@ -170,7 +162,7 @@ export default function Thumbnail({page_id, page_number}: Args) {
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
-       /*
+        /*
         dispatch(
           pagesDroppedInDoc({
             sources: draggedPages,
@@ -202,42 +194,23 @@ export default function Thumbnail({page_id, page_number}: Args) {
     }
   }
 
-  if (!smImageURL) {
-    return (
-      <Stack justify="center" align="center">
-        <Skeleton width={"100%"} height={160} />
-        <div>{page_number}</div>
-      </Stack>
-    )
-  }
-
   return (
     <>
-      <Stack
-        ref={ref}
-        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
-        align="center"
-        gap={"xs"}
-        draggable
+      <Thumbnail
+        onChange={onCheck}
+        checked={selectedIds ? selectedIds.includes(page_id) : false}
+        pageNumber={page_number}
+        imageURL={smImageURL}
+        isLoading={false}
+        isDragged={isDragged}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragOver={onLocalDragOver}
         onDragLeave={onLocalDragLeave}
         onDragEnter={onLocalDragEnter}
         onDrop={onLocalDrop}
-      >
-        <Checkbox
-          onChange={onCheck}
-          checked={selectedIds ? selectedIds.includes(page_id) : false}
-          className={classes.checkbox}
-        />
-        <img
-          /* style={{transform: `rotate(${page.angle}deg)`}} */
-          onClick={onClick}
-          src={smImageURL}
-        />
-        {page_number}
-      </Stack>
+      />
+
       {draggedPagesDocParentID &&
         draggedPagesDocID &&
         draggedPagesIDs &&

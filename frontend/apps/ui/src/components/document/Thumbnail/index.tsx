@@ -1,3 +1,3 @@
-import Thumbnail from "./Thumbnail"
+import Thumbnail from "./ThumbnailContainer"
 
 export default Thumbnail

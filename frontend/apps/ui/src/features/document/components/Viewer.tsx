@@ -26,7 +26,7 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
 import PageList from "@/components/document/PageList"
-import Thumbnails from "@/components/document/Thumbnails"
+import ThumbnailList from "@/components/document/ThumbnailList"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import {
@@ -162,7 +162,7 @@ export default function Viewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails isFetching={isFetching} />
+        <ThumbnailList />
         <ThumbnailsToggle />
         <PageList />
         <DocumentDetails

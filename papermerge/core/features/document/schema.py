@@ -336,6 +336,7 @@ class PaginatedDocVer(BaseModel):
     page_size: int
     page_number: int
     num_pages: int
+    total_count: int
 
 
 class DocumentPreviewImageStatus(BaseModel):

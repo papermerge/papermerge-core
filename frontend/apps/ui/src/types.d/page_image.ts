@@ -11,5 +11,8 @@ export type PageImageDict = Record<UUID, Array<StatusForSize>>
 
 export interface ProgressiveImageInputType {
   page_id: UUID
+  docID: UUID
+  docVerID: UUID
   previews: Array<StatusForSize>
+  pageNumber?: number
 }

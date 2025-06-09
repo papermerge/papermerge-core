@@ -23,7 +23,7 @@ import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import Pages from "@/components/document/PageList"
-import Thumbnails from "@/components/document/Thumbnails"
+import Thumbnails from "@/components/document/ThumbnailList"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 

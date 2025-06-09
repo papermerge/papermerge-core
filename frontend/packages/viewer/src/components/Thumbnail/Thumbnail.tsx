@@ -19,7 +19,7 @@ interface ThumbnailArgs {
   onDragStart?: () => void
   onDragEnd?: () => void
   onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void
-  onDragLeave?: () => void
+  onDragLeave?: (event: React.DragEvent<HTMLDivElement>) => void
   onDragEnter?: (event: React.DragEvent<HTMLDivElement>) => void
   onDrop?: (event: React.DragEvent<HTMLDivElement>) => void
   onClick: () => void

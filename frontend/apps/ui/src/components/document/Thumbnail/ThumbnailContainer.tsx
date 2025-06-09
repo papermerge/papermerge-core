@@ -1,60 +1,66 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
-import {useDisclosure} from "@mantine/hooks"
-import {Thumbnail} from "@papermerge/viewer"
-import {useContext, useEffect, useRef, useState} from "react"
 
+import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {
-  pagesDroppedInDoc,
-  selectCurrentPages,
-  selectSelectedPageIDs,
-  selectSelectedPages
-} from "@/features/document/documentVersSlice"
+import {selectCurrentPages} from "@/features/document/documentVersSlice"
 import {
   dragEnded,
-  dragPagesStarted,
   selectCurrentDocVerID,
   selectCurrentNodeID,
-  selectDraggedPages,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
+import type {UUID} from "@/types.d/common"
+import {useDisclosure} from "@mantine/hooks"
+import {Thumbnail} from "@papermerge/viewer"
 import {skipToken} from "@reduxjs/toolkit/query"
+import {useContext} from "react"
 
-import {selectSmallImageByPageId} from "@/features/document/selectors"
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
+import type {DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
+import useThumbnail from "./useThumbnail"
 
-const BORDERLINE_TOP = "borderline-top"
-const BORDERLINE_BOTTOM = "borderline-bottom"
-
+/*
 type Args = {
   page: ClientPage
 }
+*/
 
-export default function ThumbnailContainer({page}: Args) {
+interface Args {
+  pageNumber: number
+  pageID: UUID
+}
+
+export default function ThumbnailContainer({pageNumber, pageID}: Args) {
+  const {
+    ref,
+    imageURL,
+    isLoading,
+    checked,
+    isDragged,
+    withBorderBottom,
+    withBorderTop,
+    draggedPagesIDs,
+    onDragOver,
+    onDragLeave,
+    clearBorderBottom,
+    clearBorderTop
+  } = useThumbnail(pageID)
   const [
     trPagesDialogOpened,
     {open: trPagesDialogOpen, close: trPagesDialogClose}
   ] = useDisclosure(false)
-  const dispatch = useAppDispatch()
-  const [isDragged, setIsDragged] = useState<boolean>(false)
+
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
-  const ref = useRef<HTMLDivElement>(null)
-  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page.id))
-  const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
-  const draggedPages = useAppSelector(selectDraggedPages)
-  const draggedPagesIDs = draggedPages?.map(p => p.id)
+  const dispatch = useAppDispatch()
+
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
@@ -62,57 +68,13 @@ export default function ThumbnailContainer({page}: Args) {
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
-  useEffect(() => {
-    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
-    if (cur_page_is_being_dragged) {
-      setIsDragged(true)
-    } else {
-      setIsDragged(false)
-    }
-  }, [draggedPages?.length])
-
   const onClick = () => {
     dispatch(
       viewerCurrentPageUpdated({
-        pageNumber: page.number,
+        pageNumber: pageNumber,
         panel: mode
       })
     )
-  }
-
-  const onLocalDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    const y = event.clientY
-
-    event.preventDefault()
-
-    if (ref?.current) {
-      const rect = ref?.current.getBoundingClientRect()
-      const half = (rect.bottom - rect.top) / 2
-
-      if (y >= rect.top && y < rect.top + half) {
-        // remove borderline_bottom and add borderline_top
-        const new_array = cssClassNames.filter(i => i != BORDERLINE_BOTTOM)
-
-        if (new_array.indexOf(BORDERLINE_TOP) < 0) {
-          setCssClassNames([...new_array, BORDERLINE_TOP])
-        }
-      } else if (y >= rect.top + half && y < rect.bottom) {
-        // remove borderline_top and add borderline_bottom
-        const new_array = cssClassNames.filter(i => i != BORDERLINE_TOP)
-
-        if (new_array.indexOf(BORDERLINE_BOTTOM) < 0) {
-          setCssClassNames([...new_array, BORDERLINE_BOTTOM])
-        }
-      }
-    } // if (ref?.current)
-  } // end of onLocalDragOver
-
-  const onLocalDragLeave = () => {
-    // remove both borderline_bottom and borderline_top
-    const new_array = cssClassNames.filter(
-      i => i != BORDERLINE_BOTTOM && i != BORDERLINE_TOP
-    )
-    setCssClassNames(new_array)
   }
 
   const onLocalDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
@@ -120,12 +82,14 @@ export default function ThumbnailContainer({page}: Args) {
   }
 
   const onDragStart = () => {
+    /*
     const data = {
       pages: [page, ...selectedPages],
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
     dispatch(dragPagesStarted(data))
+    */
   }
 
   const onDragEnd = () => {
@@ -136,7 +100,7 @@ export default function ThumbnailContainer({page}: Args) {
     let position: DroppedThumbnailPosition = "before"
     const y = event.clientY
 
-    if (!draggedPages) {
+    if (!draggedPagesIDs) {
       console.warn("Dragged pages array is empty")
       return
     }
@@ -156,13 +120,13 @@ export default function ThumbnailContainer({page}: Args) {
       }
 
       const page_ids = docVerPages.map(p => p.id)
-      const source_ids = draggedPages.map(p => p.id)
+      const source_ids = draggedPagesIDs
       if (contains_every({container: page_ids, items: source_ids})) {
         /* Here we deal with page transfer is within the same document
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
-
+        /*
         dispatch(
           pagesDroppedInDoc({
             sources: draggedPages,
@@ -171,25 +135,22 @@ export default function ThumbnailContainer({page}: Args) {
             position: position
           })
         )
+         */
         dispatch(dragEnded())
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()
       }
     } // if (ref?.current)
-
-    // remove both borderline_bottom and borderline_top
-    const new_array = cssClassNames.filter(
-      i => i != BORDERLINE_BOTTOM && i != BORDERLINE_TOP
-    )
-    setCssClassNames(new_array)
+    clearBorderBottom()
+    clearBorderTop()
   }
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(viewerSelectionPageAdded({itemID: page.id, mode}))
+      dispatch(viewerSelectionPageAdded({itemID: pageID, mode}))
     } else {
-      dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
+      dispatch(viewerSelectionPageRemoved({itemID: pageID, mode}))
     }
   }
 
@@ -197,16 +158,18 @@ export default function ThumbnailContainer({page}: Args) {
     <>
       <Thumbnail
         onChange={onCheck}
-        checked={selectedIds ? selectedIds.includes(page.id) : false}
-        pageNumber={page.number}
-        angle={page.angle}
-        imageURL={smImageURL}
-        isLoading={false}
+        checked={checked}
+        pageNumber={pageNumber}
+        angle={0}
+        imageURL={imageURL}
+        isLoading={isLoading}
+        withBorderBottom={withBorderBottom}
+        withBorderTop={withBorderTop}
         isDragged={isDragged}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
-        onDragOver={onLocalDragOver}
-        onDragLeave={onLocalDragLeave}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
         onDragEnter={onLocalDragEnter}
         onDrop={onLocalDrop}
         onClick={onClick}
@@ -221,7 +184,7 @@ export default function ThumbnailContainer({page}: Args) {
             sourceDocID={draggedPagesDocID}
             sourceDocParentID={draggedPagesDocParentID}
             sourcePageIDs={draggedPagesIDs}
-            targetPageID={page.id}
+            targetPageID={pageID}
             opened={trPagesDialogOpened}
             onCancel={trPagesDialogClose}
             onSubmit={trPagesDialogClose}

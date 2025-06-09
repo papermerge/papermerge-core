@@ -374,6 +374,7 @@ export interface ClientDocumentVersion {
   short_description: string
   size: number
   pages: Array<ClientPage>
+  pagination: Pagination
   /* Page array in same order as received from server side.
   Also angle here is set to 0. `initial_pages` attribute
   is used to restore `pages` attribute to their initial value  */

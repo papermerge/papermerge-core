@@ -9,6 +9,7 @@ import type {
   ServerNotifDocumentMoved
 } from "@/types"
 import {PanelMode} from "@/types"
+import {UUID} from "@/types.d/common"
 import {contains_every, reorder} from "@/utils"
 import {notifications} from "@mantine/notifications"
 import {
@@ -17,6 +18,12 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
+
+interface PaginationUpdated {
+  pageNumber: number
+  pageSize: number
+  docVerID: UUID
+}
 
 type PageDroppedArgs = {
   sources: ClientPage[]
@@ -47,6 +54,21 @@ const docVersSlice = createSlice({
   name: "documentVersion",
   initialState,
   reducers: {
+    docVerPaginationUpdated(state, action: PayloadAction<PaginationUpdated>) {
+      const {pageNumber, pageSize, docVerID} = action.payload
+      const docVer = state.entities[docVerID]
+      if (docVer) {
+        if (docVer.pagination) {
+          docVer.pagination.page_number = pageNumber
+          docVer.pagination.per_page = pageSize
+        } else {
+          docVer.pagination = {
+            page_number: pageNumber,
+            per_page: pageSize
+          }
+        }
+      }
+    },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
       const {targetDocVerID, sources, target, position} = action.payload
       const docVer = state.entities[targetDocVerID]
@@ -177,7 +199,8 @@ export const {
   pagesRotated,
   pagesReseted,
   pagesDeleted,
-  documentMovedNotifReceived
+  documentMovedNotifReceived,
+  docVerPaginationUpdated
 } = docVersSlice.actions
 export default docVersSlice.reducer
 
@@ -331,3 +354,14 @@ export const selectPagesHaveChanged = createSelector(
     return false
   }
 )
+
+export const selectDocVerPaginationPageNumber = (
+  state: RootState,
+  docVerID?: UUID
+) => {
+  if (!docVerID) {
+    return 1
+  }
+
+  return state.docVers.entities[docVerID].pagination.page_number
+}

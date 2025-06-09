@@ -7,7 +7,7 @@ import type {
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {createAsyncThunk, createSelector, createSlice} from "@reduxjs/toolkit"
 
-export interface ImageState {
+export type ImageState = {
   [page_id: string]: {
     sm?: string
     md?: string

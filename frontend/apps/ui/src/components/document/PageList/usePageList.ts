@@ -3,12 +3,14 @@ import {useContext, useEffect, useMemo} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocLastVersionPaginatedQuery} from "@/features/document/apiSlice"
+import {docVerPaginationUpdated} from "@/features/document/documentVersSlice"
 import {
   makeSelectPageList,
   preloadProgressiveImages,
   selectShowMorePages
 } from "@/features/document/imageObjectsSlice"
 import {
+  currentDocVerUpdated,
   selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
@@ -38,6 +40,7 @@ interface PageListState {
   pages: Array<PageStruct>
   isLoading: boolean
   showLoadMore: boolean
+  docVerID?: UUID
 }
 
 function usePollIDs(pages?: BasicPage[]) {
@@ -94,6 +97,24 @@ export default function usePageList({
   })
 
   useEffect(() => {
+    if (data?.doc_ver_id) {
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: data?.doc_ver_id}))
+    }
+  }, [data?.doc_ver_id])
+
+  useEffect(() => {
+    if (data?.doc_ver_id) {
+      dispatch(
+        docVerPaginationUpdated({
+          pageNumber,
+          pageSize,
+          docVerID: data.doc_ver_id
+        })
+      )
+    }
+  }, [pageNumber, pageSize, data?.doc_ver_id])
+
+  useEffect(() => {
     if (!docID || !data?.doc_ver_id) {
       return
     }
@@ -114,6 +135,7 @@ export default function usePageList({
     pageCount: data?.num_pages || 1,
     pages,
     isLoading,
-    showLoadMore
+    showLoadMore,
+    docVerID: data?.doc_ver_id
   }
 }

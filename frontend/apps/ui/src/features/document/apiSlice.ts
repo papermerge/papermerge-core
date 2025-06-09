@@ -1,9 +1,9 @@
-import { RootState } from "@/app/types"
+import {RootState} from "@/app/types"
 import {
   ONE_DAY_IN_SECONDS,
   PAGINATION_DEFAULT_ITEMS_PER_PAGES
 } from "@/cconstants"
-import { apiSlice } from "@/features/api/slice"
+import {apiSlice} from "@/features/api/slice"
 import type {
   DocumentCFV,
   ExtractPagesResponse,
@@ -27,7 +27,7 @@ import {
   imageEncode
 } from "@/utils"
 
-import { documentMovedNotifReceived } from "./documentVersSlice"
+import {documentMovedNotifReceived} from "./documentVersSlice"
 
 type ShortPageType = {
   number: number
@@ -105,18 +105,21 @@ interface DLVPaginatedArgsInput {
   page_size: number
 }
 
-
 interface DLVPaginatedArgsOutput {
   doc_ver_id: string
   pages: Array<BasicPage>
   page_size: number
   page_number: number
   num_pages: number
+  total_count: number
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getDocLastVersionPaginated: builder.query<DLVPaginatedArgsOutput, DLVPaginatedArgsInput>({
+    getDocLastVersionPaginated: builder.query<
+      DLVPaginatedArgsOutput,
+      DLVPaginatedArgsInput
+    >({
       query: ({doc_id, page_number, page_size}: DLVPaginatedArgsInput) => {
         return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
       }

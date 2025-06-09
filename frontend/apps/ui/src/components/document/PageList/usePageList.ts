@@ -4,9 +4,9 @@ import {useContext, useEffect, useMemo} from "react"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocLastVersionPaginatedQuery} from "@/features/document/apiSlice"
 import {
+  makeSelectPageList,
   preloadProgressiveImages,
-  selectPageListIDs,
-  selectPageListIsLoading
+  selectShowMorePages
 } from "@/features/document/imageObjectsSlice"
 import {
   selectCurrentNodeCType,
@@ -28,12 +28,16 @@ type PageStruct = {
   pageNumber: number
 }
 
-interface PageListState {
-  pageSize: number
+interface Args {
   pageNumber: number
+  pageSize: number
+}
+
+interface PageListState {
+  pageCount: number
   pages: Array<PageStruct>
   isLoading: boolean
-  isPolling: boolean
+  showLoadMore: boolean
 }
 
 function usePollIDs(pages?: BasicPage[]) {
@@ -47,46 +51,44 @@ function usePollIDs(pages?: BasicPage[]) {
   return pollPageIDs
 }
 
-function usePageStruct(pageIDs: UUID[], pages?: BasicPage[]): PageStruct[] {
-  const result = useMemo<PageStruct[]>(() => {
-    if (!pages) {
-      return []
-    }
-    const filteredPages = pages.filter((p: BasicPage) => pageIDs.includes(p.id))
+function getPageNumber(pages: BasicPage[], pageID: UUID): number | undefined {
+  const found = pages.find(p => p.id == pageID)
 
-    return filteredPages.map((p: BasicPage) => ({
-      pageID: p.id,
-      pageNumber: p.number
-    }))
-  }, [pages, pageIDs])
-
-  return result
+  if (found) {
+    return found.number
+  }
 }
 
-export default function usePageList(): PageListState {
+export default function usePageList({
+  pageNumber,
+  pageSize
+}: Args): PageListState {
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const currentCType = useAppSelector(s => selectCurrentNodeCType(s, mode))
   const isDocument = currentNodeID && currentCType === "document"
   const docID = isDocument ? currentNodeID : null
-
   const {data} = useGetDocLastVersionPaginatedQuery(
     docID
       ? {
           doc_id: docID,
-          page_number: 1,
-          page_size: 5
+          page_number: pageNumber,
+          page_size: pageSize
         }
       : skipToken
   )
-  const pageIDs = useAppSelector(s => selectPageListIDs(s, data?.doc_ver_id))
-  const isLoading = useAppSelector(s => selectPageListIsLoading(s, pageIDs))
-  const pages = usePageStruct(pageIDs, data?.pages)
-
+  const showLoadMore = useAppSelector(s =>
+    selectShowMorePages(s, data?.doc_ver_id, data?.total_count)
+  )
+  const selectPageList = useMemo(
+    () => makeSelectPageList(data?.doc_ver_id),
+    [data?.doc_ver_id]
+  )
+  const pages = useAppSelector(selectPageList)
   const pollPageIDs = usePollIDs(data?.pages)
 
-  const {previews, isLoading: isPolling} = usePageImagePolling(pollPageIDs, {
+  const {previews, isLoading} = usePageImagePolling(pollPageIDs, {
     pollIntervalMs: 4000,
     maxRetries: 10
   })
@@ -100,6 +102,7 @@ export default function usePageList(): PageListState {
       const entry: ProgressiveImageInputType = {
         page_id: pageID as UUID,
         previews: previews,
+        pageNumber: getPageNumber(data.pages, pageID),
         docID: docID,
         docVerID: data.doc_ver_id
       }
@@ -108,10 +111,9 @@ export default function usePageList(): PageListState {
   }, [previews])
 
   return {
-    pageNumber: 1,
-    pageSize: 5,
+    pageCount: data?.num_pages || 1,
     pages,
     isLoading,
-    isPolling
+    showLoadMore
   }
 }

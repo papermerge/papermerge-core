@@ -5,7 +5,7 @@ import type {
   ProgressiveImageInputType
 } from "@/types.d/page_image"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
+import {createAsyncThunk, createSelector, createSlice} from "@reduxjs/toolkit"
 
 export interface ImageState {
   [page_id: string]: {
@@ -15,6 +15,7 @@ export interface ImageState {
     xl?: string
     docVerID: UUID
     docID: UUID
+    pageNumber?: number
   }
 }
 
@@ -22,6 +23,7 @@ const initialState: ImageState = {}
 
 interface PayloadType {
   page_id: UUID
+  pageNumber?: number
   docID: UUID
   docVerID: UUID
   objectURL: string
@@ -58,6 +60,7 @@ export const preloadProgressiveImages = createAsyncThunk<
     const objectURL = URL.createObjectURL(blob)
     const item = {
       page_id: imageWithURLs.page_id as UUID,
+      pageNumber: imageWithURLs.pageNumber,
       docID: imageWithURLs.docID,
       docVerID: imageWithURLs.docVerID,
       size: preview.size,
@@ -74,6 +77,7 @@ const imageObjectsSlice = createSlice({
   name: "imageObjects",
   initialState,
   reducers: {
+    /*
     clearImages(state) {
       for (const sizes of Object.values(state)) {
         for (const url of Object.values(sizes)) {
@@ -82,6 +86,7 @@ const imageObjectsSlice = createSlice({
       }
       return {}
     }
+      */
   },
   extraReducers: builder => {
     builder.addCase(preloadProgressiveImages.fulfilled, (state, action) => {
@@ -90,7 +95,8 @@ const imageObjectsSlice = createSlice({
         size,
         objectURL,
         docID,
-        docVerID
+        docVerID,
+        pageNumber
       } of action.payload) {
         const existing = state[page_id] ?? {}
         const oldUrl = existing[size]
@@ -102,34 +108,42 @@ const imageObjectsSlice = createSlice({
           docID: docID,
           docVerID: docVerID
         }
+        if (pageNumber !== undefined && pageNumber != null) {
+          state[page_id]["pageNumber"] = pageNumber
+        }
       }
     })
   }
 })
 
-export const {clearImages} = imageObjectsSlice.actions
 export default imageObjectsSlice.reducer
+export const selectImageObjects = (state: RootState) => state.imageObjects
 
-export const selectPageListIDs = (state: RootState, docVerID?: UUID) => {
-  if (!docVerID) {
-    return []
-  }
+export const makeSelectPageList = (docVerID?: UUID) =>
+  createSelector([selectImageObjects], imageObjects => {
+    if (!docVerID) return []
 
-  const pageIDs = Object.entries(state.imageObjects)
-    .filter(([_, value]) => value.docVerID === docVerID)
-    .map(([page_id, _]) => page_id)
-  return pageIDs
-}
+    return Object.entries(imageObjects)
+      .filter(([_, value]) => value.docVerID === docVerID)
+      .map(([pageID, value]) => ({
+        pageID,
+        pageNumber: value.pageNumber!
+      }))
+  })
 
-export const selectPageListIsLoading = (
+export const selectShowMorePages = (
   state: RootState,
-  pageIDs?: UUID[]
+  docVerID?: UUID,
+  totalCount?: number
 ): boolean => {
-  if (!pageIDs) {
-    return false
+  /* Are document pages to load? */
+  const localTotalCount = Object.entries(state.imageObjects).filter(
+    ([_, value]) => value.docVerID === docVerID
+  ).length
+
+  if (!totalCount) {
+    return true
   }
 
-  return !Object.entries(state.imageObjects)
-    .filter(([page_id, _]) => pageIDs.includes(page_id))
-    .every(([_, value]) => Boolean(value.lg))
+  return localTotalCount < totalCount
 }

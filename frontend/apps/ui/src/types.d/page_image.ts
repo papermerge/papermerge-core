@@ -14,4 +14,5 @@ export interface ProgressiveImageInputType {
   docID: UUID
   docVerID: UUID
   previews: Array<StatusForSize>
+  pageNumber?: number
 }

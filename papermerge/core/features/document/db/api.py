@@ -775,6 +775,7 @@ def get_document_last_version__paginated(
         page_number=page_number,
         page_size=page_size,
         num_pages=num_pages,
+        total_count=total_count
     )
 
 

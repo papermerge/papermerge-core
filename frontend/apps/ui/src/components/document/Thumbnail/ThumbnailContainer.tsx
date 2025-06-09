@@ -6,11 +6,14 @@ import {useContext, useEffect, useRef, useState} from "react"
 
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
+  pagesDroppedInDoc,
   selectCurrentPages,
   selectSelectedPageIDs,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
 import {
+  dragEnded,
+  dragPagesStarted,
   selectCurrentDocVerID,
   selectCurrentNodeID,
   selectDraggedPages,
@@ -25,7 +28,7 @@ import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type {DroppedThumbnailPosition, PanelMode} from "@/types"
+import type {ClientPage, DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../TransferPagesModal"
@@ -33,12 +36,11 @@ import TransferPagesModal from "../TransferPagesModal"
 const BORDERLINE_TOP = "borderline-top"
 const BORDERLINE_BOTTOM = "borderline-bottom"
 
-interface Args {
-  page_id: string
-  page_number: number
+type Args = {
+  page: ClientPage
 }
 
-export default function ThumbnailContainer({page_id, page_number}: Args) {
+export default function ThumbnailContainer({page}: Args) {
   const [
     trPagesDialogOpened,
     {open: trPagesDialogOpen, close: trPagesDialogClose}
@@ -49,7 +51,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const ref = useRef<HTMLDivElement>(null)
-  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page_id))
+  const smImageURL = useAppSelector(s => selectSmallImageByPageId(s, page.id))
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedPagesIDs = draggedPages?.map(p => p.id)
@@ -61,7 +63,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
 
   useEffect(() => {
-    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page_id)
+    const cur_page_is_being_dragged = draggedPages?.find(p => p.id == page.id)
     if (cur_page_is_being_dragged) {
       setIsDragged(true)
     } else {
@@ -72,7 +74,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
   const onClick = () => {
     dispatch(
       viewerCurrentPageUpdated({
-        pageNumber: page_number,
+        pageNumber: page.number,
         panel: mode
       })
     )
@@ -118,14 +120,12 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
   }
 
   const onDragStart = () => {
-    /*
     const data = {
       pages: [page, ...selectedPages],
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
     dispatch(dragPagesStarted(data))
-    */
   }
 
   const onDragEnd = () => {
@@ -162,7 +162,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
-        /*
+
         dispatch(
           pagesDroppedInDoc({
             sources: draggedPages,
@@ -172,7 +172,6 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
           })
         )
         dispatch(dragEnded())
-        */
       } else {
         // here we deal with pages transfer between documents
         trPagesDialogOpen()
@@ -188,9 +187,9 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(viewerSelectionPageAdded({itemID: page_id, mode}))
+      dispatch(viewerSelectionPageAdded({itemID: page.id, mode}))
     } else {
-      dispatch(viewerSelectionPageRemoved({itemID: page_id, mode}))
+      dispatch(viewerSelectionPageRemoved({itemID: page.id, mode}))
     }
   }
 
@@ -198,8 +197,9 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
     <>
       <Thumbnail
         onChange={onCheck}
-        checked={selectedIds ? selectedIds.includes(page_id) : false}
-        pageNumber={page_number}
+        checked={selectedIds ? selectedIds.includes(page.id) : false}
+        pageNumber={page.number}
+        angle={page.angle}
         imageURL={smImageURL}
         isLoading={false}
         isDragged={isDragged}
@@ -209,6 +209,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
         onDragLeave={onLocalDragLeave}
         onDragEnter={onLocalDragEnter}
         onDrop={onLocalDrop}
+        onClick={onClick}
       />
 
       {draggedPagesDocParentID &&
@@ -220,7 +221,7 @@ export default function ThumbnailContainer({page_id, page_number}: Args) {
             sourceDocID={draggedPagesDocID}
             sourceDocParentID={draggedPagesDocParentID}
             sourcePageIDs={draggedPagesIDs}
-            targetPageID={page_id}
+            targetPageID={page.id}
             opened={trPagesDialogOpened}
             onCancel={trPagesDialogClose}
             onSubmit={trPagesDialogClose}

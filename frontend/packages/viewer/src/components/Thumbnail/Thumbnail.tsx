@@ -22,6 +22,7 @@ interface ThumbnailArgs {
   onDragLeave?: () => void
   onDragEnter?: (event: React.DragEvent<HTMLDivElement>) => void
   onDrop?: (event: React.DragEvent<HTMLDivElement>) => void
+  onClick: () => void
 }
 
 export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
@@ -41,7 +42,8 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
       onDragOver,
       onDragLeave,
       onDragEnter,
-      onDrop
+      onDrop,
+      onClick
     },
     ref
   ) => {
@@ -91,7 +93,11 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
           checked={checked}
           className={classes.checkbox}
         />
-        <img style={{transform: `rotate(${angle}deg)`}} src={imageURL} />
+        <img
+          onClick={onClick}
+          style={{transform: `rotate(${angle}deg)`}}
+          src={imageURL}
+        />
         <div>{pageNumber}</div>
       </Stack>
     )

@@ -1,10 +1,7 @@
 import {Checkbox, Skeleton, Stack} from "@mantine/core"
+import clsx from "clsx"
 import {forwardRef} from "react"
 import classes from "./Thumbnail.module.css"
-
-const DRAGGED = "dragged"
-const BORDERLINE_TOP = "borderline-top"
-const BORDERLINE_BOTTOM = "borderline-bottom"
 
 interface ThumbnailArgs {
   pageNumber: number
@@ -15,6 +12,7 @@ interface ThumbnailArgs {
   withBorderTop?: boolean
   withBorderBottom?: boolean
   angle?: number
+  height?: number
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   onDragStart?: () => void
   onDragEnd?: () => void
@@ -22,7 +20,7 @@ interface ThumbnailArgs {
   onDragLeave?: (event: React.DragEvent<HTMLDivElement>) => void
   onDragEnter?: (event: React.DragEvent<HTMLDivElement>) => void
   onDrop?: (event: React.DragEvent<HTMLDivElement>) => void
-  onClick: () => void
+  onClick?: () => void
 }
 
 export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
@@ -36,6 +34,7 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
       withBorderBottom = false,
       withBorderTop = false,
       angle = 0,
+      height = 160,
       onChange,
       onDragStart,
       onDragEnd,
@@ -47,10 +46,16 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
     },
     ref
   ) => {
+    const className = clsx(classes.thumbnail, classes.checkbox, {
+      [classes.dragged]: isDragged,
+      [classes.borderlineTop]: withBorderTop,
+      [classes.borderlineBottom]: withBorderBottom
+    })
+
     if (isLoading) {
       return (
         <Stack justify="center" align="center">
-          <Skeleton width={"100%"} height={160} />
+          <Skeleton width={"100%"} height={height} />
           <div>{pageNumber}</div>
         </Stack>
       )
@@ -60,23 +65,8 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
       return <Stack className={classes.page}>No Image URL</Stack>
     }
 
-    let cssClassNames = []
-
-    if (isDragged) {
-      cssClassNames.push(DRAGGED)
-    }
-
-    if (withBorderBottom) {
-      cssClassNames.push(BORDERLINE_BOTTOM)
-    }
-
-    if (withBorderTop) {
-      cssClassNames.push(BORDERLINE_TOP)
-    }
-
     return (
       <Stack
-        ref={ref}
         align="center"
         gap={"xs"}
         draggable
@@ -86,7 +76,7 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
         onDragLeave={onDragLeave}
         onDragEnter={onDragEnter}
         onDrop={onDrop}
-        className={`${classes.thumbnail} ${cssClassNames.join(" ")}`}
+        className={className}
       >
         <Checkbox
           onChange={onChange}
@@ -94,9 +84,11 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
           className={classes.checkbox}
         />
         <img
+          ref={ref}
           onClick={onClick}
           style={{transform: `rotate(${angle}deg)`}}
           src={imageURL}
+          alt={`Thumbnail for page ${pageNumber}`}
         />
         <div>{pageNumber}</div>
       </Stack>

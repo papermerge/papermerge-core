@@ -11,6 +11,9 @@ export default function Navbar() {
         <NavLink to="/two-pages" end>
           Two &lt;Page /&gt;
         </NavLink>
+        <NavLink to="/one-thumbnail" end>
+          One &lt;Thumbnail /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

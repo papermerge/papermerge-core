@@ -1,5 +1,21 @@
+.checkbox {
+  align-self: self-start;
+  margin-top: 0.2rem;
+}
+
+.borderlineTop {
+  border-top: 3px solid #7474ff !important;
+}
+
+.borderlineBottom {
+  border-bottom: 3px solid #7474ff !important;
+}
+
+.dragged {
+  opacity: 0.3;
+}
+
 .thumbnail {
-  .checkbox {
-    align-self: self-start;
-  }
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
 }

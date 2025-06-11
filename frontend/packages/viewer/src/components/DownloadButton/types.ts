@@ -4,6 +4,7 @@ export type I18NDownloadButtonText = {
   loadingTooltip: string
   error: string // general error reported by BE
   emptyVersionsArrayError: string
+  versionLabel: string
 }
 
 export type DownloadDocumentVersion = {

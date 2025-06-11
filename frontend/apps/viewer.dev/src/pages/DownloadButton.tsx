@@ -27,7 +27,8 @@ export default function OnePage() {
         downloadTooltip: "Download document",
         loadingTooltip: "Loading...",
         error: "Error: Oops, it didn't work",
-        emptyVersionsArrayError: "Error: empty version list"
+        emptyVersionsArrayError: "Error: empty version list",
+        versionLabel: "Version"
       })
     } else {
       setTxt(undefined)

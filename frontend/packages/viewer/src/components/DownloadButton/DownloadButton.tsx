@@ -43,17 +43,23 @@ export default function DownloadButton({
 
   if (isError) {
     return (
-      <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
-        <Text c="red">{txt?.error || "Failed to load versions"}</Text>
+      <DownloadMenu
+        icon={icon}
+        tooltip={txt?.error || "Error: failed to load versions"}
+      >
+        <Text c="red">{txt?.error || "Error: failed to load versions"}</Text>
       </DownloadMenu>
     )
   }
 
   if (noVersions) {
     return (
-      <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
+      <DownloadMenu
+        icon={icon}
+        tooltip={txt?.emptyVersionsArrayError || "Error: no versions available"}
+      >
         <Text c="red">
-          {txt?.emptyVersionsArrayError || "No versions available"}
+          {txt?.emptyVersionsArrayError || "Error: no versions available"}
         </Text>
       </DownloadMenu>
     )
@@ -61,7 +67,7 @@ export default function DownloadButton({
 
   const versionItems = versions.map(v => (
     <Menu.Item key={v.id} onClick={() => onClick?.(v.id)}>
-      {`Version ${v.number}${v.shortDescription ? ` - ${v.shortDescription}` : ""}`}
+      {`${txt?.versionLabel || "Version"} ${v.number}${v.shortDescription ? ` - ${v.shortDescription}` : ""}`}
     </Menu.Item>
   ))
 

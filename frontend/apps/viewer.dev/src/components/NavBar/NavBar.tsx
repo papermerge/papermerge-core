@@ -14,6 +14,9 @@ export default function Navbar() {
         <NavLink to="/one-thumbnail" end>
           One &lt;Thumbnail /&gt;
         </NavLink>
+        <NavLink to="/download-button" end>
+          &lt;DownloadButton /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

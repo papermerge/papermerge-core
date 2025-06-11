@@ -1,5 +1,6 @@
-import {ActionIcon, Loader, Menu, Tooltip} from "@mantine/core"
+import {ActionIcon, Box, Loader, Menu, Text, Tooltip} from "@mantine/core"
 import {IconDownload} from "@tabler/icons-react"
+import type {ReactNode} from "react"
 import type {DownloadDocumentVersion, I18NDownloadButtonText} from "./types"
 
 interface Args {
@@ -20,92 +21,74 @@ export default function DownloadButton({
   versions
 }: Args) {
   const noVersions = !versions || versions.length == 0
+  const icon = <IconDownload stroke={1.4} />
 
   if (!i18nIsReady) {
     return (
-      <ActionIcon size={"lg"} variant="default">
-        <IconDownload stroke={1.4} />
+      <ActionIcon size="lg" variant="default">
+        {icon}
       </ActionIcon>
     )
   }
 
   if (isLoading) {
     return (
-      <Menu>
-        <Menu.Target>
-          <Tooltip label={txt?.loadingTooltip} withArrow>
-            <ActionIcon size={"lg"} variant="default">
-              <IconDownload stroke={1.4} />
-            </ActionIcon>
-          </Tooltip>
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Loader />
-        </Menu.Dropdown>
-      </Menu>
+      <DownloadMenu icon={icon} tooltip={txt?.loadingTooltip}>
+        <Box p="md" mih={60} display="flex">
+          <Loader size="md" />
+        </Box>
+      </DownloadMenu>
     )
   }
 
   if (isError) {
     return (
-      <Menu>
-        <Menu.Target>
-          <Tooltip label={txt?.downloadTooltip} withArrow>
-            <ActionIcon size={"lg"} variant="default">
-              <IconDownload stroke={1.4} />
-            </ActionIcon>
-          </Tooltip>
-        </Menu.Target>
-        <Menu.Dropdown>{txt?.error}</Menu.Dropdown>
-      </Menu>
+      <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
+        <Text c="red">{txt?.error || "Failed to load versions"}</Text>
+      </DownloadMenu>
     )
   }
 
   if (noVersions) {
     return (
-      <Menu>
-        <Menu.Target>
-          <Tooltip label={txt?.downloadTooltip} withArrow>
-            <ActionIcon size={"lg"} variant="default">
-              <IconDownload stroke={1.4} />
-            </ActionIcon>
-          </Tooltip>
-        </Menu.Target>
-        <Menu.Dropdown>{txt?.emptyVersionsArrayError}</Menu.Dropdown>
-      </Menu>
+      <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
+        <Text c="red">
+          {txt?.emptyVersionsArrayError || "No versions available"}
+        </Text>
+      </DownloadMenu>
     )
   }
 
-  const versComponents = versions.map(v => {
-    let onClickHandler
-    if (onClick) {
-      onClickHandler = () => onClick(v.id)
-    }
+  const versionItems = versions.map(v => (
+    <Menu.Item key={v.id} onClick={() => onClick?.(v.id)}>
+      {`Version ${v.number}${v.shortDescription ? ` - ${v.shortDescription}` : ""}`}
+    </Menu.Item>
+  ))
 
-    if (v.shortDescription) {
-      return (
-        <Menu.Item key={v.id} onClick={onClickHandler}>
-          Version {v.number} - {v.shortDescription}
-        </Menu.Item>
-      )
-    }
-    return (
-      <Menu.Item key={v.id} onClick={onClickHandler}>
-        Version {v.number}
-      </Menu.Item>
-    )
-  })
+  return (
+    <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
+      {versionItems}
+    </DownloadMenu>
+  )
+}
 
+interface DownloadMenuArgs {
+  icon: ReactNode
+  tooltip?: string
+  children?: ReactNode
+}
+
+function DownloadMenu({icon, tooltip, children}: DownloadMenuArgs) {
   return (
     <Menu>
       <Menu.Target>
-        <Tooltip label={txt?.downloadTooltip} withArrow>
-          <ActionIcon size={"lg"} variant="default">
-            <IconDownload stroke={1.4} />
+        <Tooltip label={tooltip} withArrow>
+          <ActionIcon size="lg" variant="default">
+            {icon}
           </ActionIcon>
         </Tooltip>
       </Menu.Target>
-      <Menu.Dropdown>{versComponents}</Menu.Dropdown>
+      <Menu.Dropdown p="sm">{children}</Menu.Dropdown>
     </Menu>
   )
 }

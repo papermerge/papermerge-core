@@ -261,7 +261,7 @@ def get_document_details(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     db_session=Depends(db.get_db),
-) -> schema.Document:
+) -> schema.DocumentWithoutVersions:
     """
     Get document details
 

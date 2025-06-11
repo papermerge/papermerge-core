@@ -716,8 +716,7 @@ def get_doc(
     # colored_tags = session.scalars(colored_tags_stmt).all()
     # db_doc.tags = [ct.tag for ct in colored_tags]
 
-    model_doc = schema.Document.model_validate(db_doc)
-    model_doc.versions[-1].pages.sort(key=lambda page: page.number)
+    model_doc = schema.DocumentWithoutVersions.model_validate(db_doc)
 
     return model_doc
 

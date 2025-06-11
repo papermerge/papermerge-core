@@ -12,7 +12,6 @@ import EditTitleButton from "./EditTitleButton"
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {DocumentType, PanelMode} from "@/types"
-import DownloadButton from "./DownloadButton/DownloadButton"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
@@ -48,7 +47,6 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
     <Group ref={ref} justify="space-between">
       <Group>
         <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
-        <DownloadButton doc={doc} isFetching={isFetching} isError={isError} />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
 
         {selectedPages.length > 0 && <RotateButton />}

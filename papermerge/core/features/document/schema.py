@@ -324,6 +324,9 @@ class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
 
 
+class DocumentWithoutVersions(DocumentNode): ...
+
+
 class Pagination(BaseModel):
     page_size: int
     page_number: int

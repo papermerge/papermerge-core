@@ -1,7 +1,6 @@
 from sqlalchemy import select
 
-
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, dbapi
 from papermerge.core.tests.resource_file import ResourceFile
 
 
@@ -72,3 +71,38 @@ def test_2_get_document_last_version__paginated(
     resp = schema.PaginatedDocVer.model_validate(response.json())
     assert len(resp.pages) == 2, resp
     assert resp.num_pages == 2, resp
+
+
+
+def test_get_doc_versions_list_one_doc(
+    auth_api_client, make_document, user
+):
+    doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
+
+    resp = auth_api_client.get(f"/documents/{doc.id}/versions/")
+    assert resp.status_code == 200, resp.json()
+
+    data = resp.json()
+
+    vers = [schema.DocVerListItem.model_validate(ver) for ver in data]
+
+    assert len(vers) == 1, data
+    assert vers[0].number == 1, data
+
+
+def test_get_doc_versions_list_two_docs(
+    auth_api_client, make_document, user, db_session
+):
+    doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
+    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
+
+    resp = auth_api_client.get(f"/documents/{doc.id}/versions/")
+    assert resp.status_code == 200, resp.json()
+
+    data = resp.json()
+
+    vers = [schema.DocVerListItem.model_validate(ver) for ver in data]
+
+    assert len(vers) == 2, data
+    assert vers[0].number == 2, data
+    assert vers[1].number == 1, data

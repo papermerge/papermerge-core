@@ -31,7 +31,6 @@ from papermerge.core.types import OrderEnum, PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 
-
 router = APIRouter(
     prefix="/documents",
     tags=["documents"],
@@ -263,7 +262,7 @@ def get_doc_versions_list(
     db_session=Depends(db.get_db),
 ) -> list[schema.DocVerListItem]:
     """
-    Returns list versions for given document ID
+    Returns versions list for given document ID
 
     Returned versions are sorted descending by version number.
 

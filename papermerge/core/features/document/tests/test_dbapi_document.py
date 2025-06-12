@@ -3,6 +3,7 @@ import io
 from datetime import date as Date
 from datetime import datetime
 from pathlib import Path
+
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
@@ -14,7 +15,6 @@ from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
 from papermerge.core.schemas import error as err_schema
-
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"

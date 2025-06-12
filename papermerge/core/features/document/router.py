@@ -248,6 +248,47 @@ def get_document_last_version__paginated(
 
 
 @router.get(
+    "/{doc_id}/versions/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+def get_doc_versions_list(
+    doc_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    db_session=Depends(db.get_db),
+) -> list[schema.DocVerListItem]:
+    """
+    Returns list versions for given document ID
+
+    Returned versions are sorted descending by version number.
+
+    Required scope: `{scope}`
+    """
+    try:
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+        result = dbapi.get_doc_versions_list(
+            db_session,
+            doc_id=doc_id,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return result
+
+
+@router.get(
     "/{document_id}",
     responses={
         status.HTTP_403_FORBIDDEN: {

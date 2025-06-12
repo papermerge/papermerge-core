@@ -261,6 +261,12 @@ class DocumentVersion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DocVerListItem(BaseModel):
+    id: UUID
+    number: int
+    short_description: str | None = None
+
+
 def thumbnail_url(value, info):
     return f"/api/thumbnails/{info.data['id']}"
 
@@ -324,7 +330,8 @@ class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
 
 
-class DocumentWithoutVersions(DocumentNode): ...
+class DocumentWithoutVersions(DocumentNode):
+    ...
 
 
 class Pagination(BaseModel):

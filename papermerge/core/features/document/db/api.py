@@ -721,6 +721,31 @@ def get_doc(
     return model_doc
 
 
+def get_doc_versions_list(
+    db_session: Session,
+    doc_id: uuid.UUID,
+) -> list[schema.DocVerListItem]:
+    stmt = select(
+        orm.DocumentVersion.id,
+        orm.DocumentVersion.number,
+        orm.DocumentVersion.short_description
+    ).where(
+        orm.DocumentVersion.document_id == doc_id
+    ).order_by(orm.DocumentVersion.number.desc())
+
+    db_vers = db_session.execute(stmt).all()
+    vers = [
+        schema.DocVerListItem(
+            id=ver[0],
+            number=ver[1],
+            short_description=ver[2]
+        )
+        for ver in db_vers
+    ]
+
+    return vers
+
+
 def get_document_last_version__paginated(
     db_session: Session,
     doc_id: uuid.UUID,

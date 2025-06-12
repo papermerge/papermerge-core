@@ -73,10 +73,7 @@ def test_2_get_document_last_version__paginated(
     assert resp.num_pages == 2, resp
 
 
-
-def test_get_doc_versions_list_one_doc(
-    auth_api_client, make_document, user
-):
+def test_get_doc_versions_list_one_doc(auth_api_client, make_document, user):
     doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
 
     resp = auth_api_client.get(f"/documents/{doc.id}/versions/")

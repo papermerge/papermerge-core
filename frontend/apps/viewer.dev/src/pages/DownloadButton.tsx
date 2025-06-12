@@ -1,4 +1,4 @@
-import {Checkbox, ComboboxItem, Group, Select, Stack} from "@mantine/core"
+import {Box, Checkbox, ComboboxItem, Group, Select, Stack} from "@mantine/core"
 import type {
   DownloadDocumentVersion,
   I18NDownloadButtonText
@@ -19,6 +19,7 @@ export default function OnePage() {
   const [versions, setVersions] = useState<DownloadDocumentVersion[] | null>(
     null
   )
+  const [isOpened, setIsOpened] = useState<boolean>(false)
 
   useEffect(() => {
     if (i18nReady) {
@@ -62,6 +63,14 @@ export default function OnePage() {
     alert(`Clicked on docVerID=${docVerID}`)
   }
 
+  const onOpen = () => {
+    setIsOpened(true)
+  }
+
+  const onClose = () => {
+    setIsOpened(false)
+  }
+
   return (
     <Stack>
       <Group>
@@ -73,6 +82,7 @@ export default function OnePage() {
           data={[NULL_OR_UNDEFINED, EMPTY, ONE_ITEM, TWO_ITEMS]}
           onChange={onSelect}
         />
+        <Box>Opened?: {`${isOpened}`}</Box>
       </Group>
       <DownloadButton
         i18nIsReady={i18nReady}
@@ -80,6 +90,8 @@ export default function OnePage() {
         isLoading={isLoading}
         versions={versions}
         onClick={onClick}
+        onOpen={onOpen}
+        onClose={onClose}
       />
     </Stack>
   )

@@ -28,6 +28,7 @@ import {
 } from "@/utils"
 
 import {documentMovedNotifReceived} from "./documentVersSlice"
+import type {DocVersList} from "./types"
 
 type ShortPageType = {
   number: number
@@ -123,6 +124,10 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       query: ({doc_id, page_number, page_size}: DLVPaginatedArgsInput) => {
         return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
       }
+    }),
+    getDocVersionsList: builder.query<DocVersList, string>({
+      query: nodeID => `/documents/${nodeID}/versions/`,
+      providesTags: (_result, _error, arg) => [{type: "DocVersList", id: arg}]
     }),
     getDocument: builder.query<DocumentType, string>({
       query: nodeID => `/documents/${nodeID}`,
@@ -349,6 +354,7 @@ export const {
   useGetDocLastVersionPaginatedQuery,
   useGetDocumentQuery,
   useGetPageImageQuery,
+  useGetDocVersionsListQuery,
   useApplyPageOpChangesMutation,
   useMovePagesMutation,
   useExtractPagesMutation,

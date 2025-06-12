@@ -9,6 +9,7 @@ import {useContext, useEffect, useRef} from "react"
 import DeletePagesButton from "./DeletePagesButton"
 import EditTitleButton from "./EditTitleButton"
 
+import DownloadButton from "@/components/document/DownloadButton"
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
 import type {DocumentType, PanelMode} from "@/types"
@@ -48,7 +49,7 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
       <Group>
         <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
-
+        <DownloadButton />
         {selectedPages.length > 0 && <RotateButton />}
         {selectedPages.length > 0 && <RotateCCButton />}
         {selectedPages.length > 0 && <DeletePagesButton />}

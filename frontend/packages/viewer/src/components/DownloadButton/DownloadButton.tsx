@@ -10,6 +10,8 @@ interface Args {
   isLoading?: boolean // refers to the loading of the versions
   isError?: boolean
   onClick?: (documentVersionID: string) => void
+  onOpen?: () => void
+  onClose?: () => void
 }
 
 export default function DownloadButton({
@@ -18,6 +20,8 @@ export default function DownloadButton({
   isError = false,
   txt,
   onClick,
+  onOpen,
+  onClose,
   versions
 }: Args) {
   const noVersions = !versions || versions.length == 0
@@ -33,7 +37,12 @@ export default function DownloadButton({
 
   if (isLoading) {
     return (
-      <DownloadMenu icon={icon} tooltip={txt?.loadingTooltip}>
+      <DownloadMenu
+        icon={icon}
+        tooltip={txt?.loadingTooltip || "Is loading..."}
+        onOpen={onOpen}
+        onClose={onClose}
+      >
         <Box p="md" mih={60} display="flex">
           <Loader size="md" />
         </Box>
@@ -45,6 +54,7 @@ export default function DownloadButton({
     return (
       <DownloadMenu
         icon={icon}
+        onOpen={onOpen}
         tooltip={txt?.error || "Error: failed to load versions"}
       >
         <Text c="red">{txt?.error || "Error: failed to load versions"}</Text>
@@ -56,7 +66,9 @@ export default function DownloadButton({
     return (
       <DownloadMenu
         icon={icon}
-        tooltip={txt?.emptyVersionsArrayError || "Error: no versions available"}
+        onOpen={onOpen}
+        onClose={onClose}
+        tooltip={txt?.downloadTooltip || "Download document version"}
       >
         <Text c="red">
           {txt?.emptyVersionsArrayError || "Error: no versions available"}
@@ -72,7 +84,12 @@ export default function DownloadButton({
   ))
 
   return (
-    <DownloadMenu icon={icon} tooltip={txt?.downloadTooltip}>
+    <DownloadMenu
+      icon={icon}
+      tooltip={txt?.downloadTooltip || "Download document version"}
+      onOpen={onOpen}
+      onClose={onClose}
+    >
       {versionItems}
     </DownloadMenu>
   )
@@ -82,11 +99,19 @@ interface DownloadMenuArgs {
   icon: ReactNode
   tooltip?: string
   children?: ReactNode
+  onOpen?: () => void
+  onClose?: () => void
 }
 
-function DownloadMenu({icon, tooltip, children}: DownloadMenuArgs) {
+function DownloadMenu({
+  icon,
+  tooltip,
+  onOpen,
+  onClose,
+  children
+}: DownloadMenuArgs) {
   return (
-    <Menu>
+    <Menu onOpen={onOpen} onClose={onClose}>
       <Menu.Target>
         <Tooltip label={tooltip} withArrow>
           <ActionIcon size="lg" variant="default">

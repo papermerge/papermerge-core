@@ -1,19 +1,17 @@
-import {useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 import {useGetDocVersionsListQuery} from "@/features/document/apiSlice"
 import type {DocVersItem} from "@/features/document/types"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
+import {UUID} from "@/types.d/common"
 import type {
   DownloadDocumentVersion,
   I18NDownloadButtonText
 } from "@papermerge/viewer"
 import {skipToken} from "@reduxjs/toolkit/query"
-import {useContext, useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
 
 interface Args {
   initiateListDownload?: boolean
+  nodeID?: UUID
 }
 
 interface DownloadButtonState {
@@ -25,15 +23,14 @@ interface DownloadButtonState {
 }
 
 export default function useDownloadButton({
-  initiateListDownload = false
+  initiateListDownload = false,
+  nodeID
 }: Args): DownloadButtonState {
   const {t, i18n} = useTranslation()
   const [txt, setTxt] = useState<I18NDownloadButtonText>()
   const [versions, setVersions] = useState<Array<DownloadDocumentVersion>>()
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const apiParam =
-    initiateListDownload && currentNodeID ? currentNodeID : skipToken
+
+  const apiParam = initiateListDownload && nodeID ? nodeID : skipToken
   const {data, isError, isLoading} = useGetDocVersionsListQuery(apiParam)
 
   useEffect(() => {

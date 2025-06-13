@@ -2,6 +2,7 @@ import {apiSlice} from "@/features/api/slice"
 import authSliceReducer from "@/features/auth/slice"
 import customFieldsReducer from "@/features/custom-fields/customFieldsSlice"
 import documentTypesReducer from "@/features/document-types/documentTypesSlice"
+import documentDownloadsReducer from "@/features/document/documentDownloadsSlice"
 import docVersReducer from "@/features/document/documentVersSlice"
 import imageObjects from "@/features/document/imageObjectsSlice"
 import pagesReducer from "@/features/document/pagesSlice"
@@ -34,6 +35,7 @@ export const store = configureStore({
     pages: pagesReducer,
     imageObjects: imageObjects,
     thumbnailObjects: thumbnailObjects,
+    documentDownloads: documentDownloadsReducer,
     ui: uiReducer,
     docVers: docVersReducer,
     [apiSlice.reducerPath]: apiSlice.reducer

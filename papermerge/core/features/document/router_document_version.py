@@ -44,7 +44,7 @@ def download_document_version(
         if not dbapi_common.has_node_perm(
                 db_session,
                 node_id=doc_id,
-                codename=scopes.NODE_VIEW,
+                codename=scopes.DOCUMENT_DOWNLOAD,
                 user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
@@ -68,7 +68,7 @@ def download_document_version(
     )
 
 @router.get(
-    "/{doc_ver_id}/download-url/",
+    "/{doc_ver_id}/download-url",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.DOCUMENT_DOWNLOAD}` permission on the node",
@@ -81,7 +81,7 @@ def get_doc_ver_download_url(
     doc_ver_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])],
     db_session=Depends(db.get_db),
-) -> str:
+) -> schema.DownloadURL:
     """
     Returns URL for downloading given document version
 

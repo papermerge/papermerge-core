@@ -758,10 +758,11 @@ def get_doc_versions_list(
 def get_doc_version_download_url(
     db_session: Session,
     doc_ver_id: uuid.UUID
-) -> str:
+) -> schema.DownloadURL:
     file_server = settings.papermerge__main__file_server
     if file_server == config.FileServer.LOCAL:
-        return f"/api/{doc_ver_id}/download"
+        url = f"/api/document-versions/{doc_ver_id}/download"
+        return schema.DownloadURL(downloadURL=url)
 
     stmt = select(orm.DocumentVersion.file_name).where(
         orm.DocumentVersion.id==doc_ver_id
@@ -769,7 +770,8 @@ def get_doc_version_download_url(
 
     file_name = db_session.execute(stmt).scalar()
 
-    return s3.doc_ver_signed_url(doc_ver_id, file_name)
+    url = s3.doc_ver_signed_url(doc_ver_id, file_name)
+    return schema.DownloadURL(downloadURL=url)
 
 def get_document_last_version__paginated(
     db_session: Session,

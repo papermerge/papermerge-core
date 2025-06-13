@@ -3,14 +3,16 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
-
-from fastapi import APIRouter, HTTPException, Security, Depends
+from fastapi import APIRouter, HTTPException, Security, Depends, status
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import ContentType
 from papermerge.core import schema, utils, db, dbapi, orm
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
+from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.db import common as dbapi_common
+from papermerge.core import exceptions as exc
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,17 @@ def download_document_version(
     Required scope: `{scope}`
     """
     try:
+        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+            db_session, doc_ver_id=document_version_id
+        )
+        if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
         doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
             db_session,
             document_version_id=document_version_id,
@@ -54,6 +67,48 @@ def download_document_version(
         content_disposition_type="attachment",
     )
 
+@router.get(
+    "/{doc_ver_id}/download-url/",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.DOCUMENT_DOWNLOAD}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
+def get_doc_ver_download_url(
+    doc_ver_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])],
+    db_session=Depends(db.get_db),
+) -> str:
+    """
+    Returns URL for downloading given document version
+
+    Required scope: `{scope}`
+    """
+    try:
+        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+            db_session, doc_ver_id=doc_ver_id
+        )
+        if not dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+        result = dbapi.get_doc_version_download_url(
+            db_session,
+            doc_ver_id=doc_ver_id,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return result
+
+
 
 @router.get("/{document_version_id}", response_model=schema.DocumentVersion)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
@@ -67,6 +122,16 @@ def document_version_details(
     Required scope: `{scope}`
     """
     try:
+        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+            db_session, doc_ver_id=document_version_id
+        )
+        if not dbapi_common.has_node_perm(
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
         doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
             db_session, document_version_id=document_version_id
         )

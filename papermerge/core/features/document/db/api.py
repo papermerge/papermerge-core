@@ -4,14 +4,13 @@ import logging
 import os
 from os.path import getsize
 import uuid
-import img2pdf
-from pikepdf import Pdf
 import tempfile
 from pathlib import Path
-
 from typing import Tuple
 
-from sqlalchemy import delete, func, insert, select, update, Select, distinct
+import img2pdf
+from pikepdf import Pdf
+from sqlalchemy import delete, func, insert, select, update, distinct, Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -19,7 +18,8 @@ from papermerge.core.features.document import s3
 from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
-from papermerge.core.features.document_types.db.api import document_type_cf_count
+from papermerge.core.features.document_types.db.api import \
+    document_type_cf_count
 from papermerge.core.types import (
     OrderEnum,
     CFVValueColumn,
@@ -32,9 +32,9 @@ from papermerge.core.pathlib import (
     abs_docver_path,
 )
 from papermerge.core.features.document.schema import DocumentCFVRow
-from papermerge.core.features.document.ordered_document_cfv import OrderedDocumentCFV
+from papermerge.core.features.document.ordered_document_cfv import \
+    OrderedDocumentCFV
 from papermerge.core import config
-
 from .selectors import select_doc_cfv, select_docs_by_type
 
 settings = config.get_settings()
@@ -721,6 +721,16 @@ def get_doc(
     return model_doc
 
 
+def get_doc_id_from_doc_ver_id(
+    db_session: Session,
+    doc_ver_id: uuid.UUID,
+) -> uuid.UUID:
+    stmt = select(orm.DocumentVersion.document_id).where(
+        orm.DocumentVersion.id == doc_ver_id
+    )
+
+    return db_session.execute(stmt).scalar()
+
 def get_doc_versions_list(
     db_session: Session,
     doc_id: uuid.UUID,
@@ -745,6 +755,21 @@ def get_doc_versions_list(
 
     return vers
 
+def get_doc_version_download_url(
+    db_session: Session,
+    doc_ver_id: uuid.UUID
+) -> str:
+    file_server = settings.papermerge__main__file_server
+    if file_server == config.FileServer.LOCAL:
+        return f"/api/{doc_ver_id}/download"
+
+    stmt = select(orm.DocumentVersion.file_name).where(
+        orm.DocumentVersion.id==doc_ver_id
+    )
+
+    file_name = db_session.execute(stmt).scalar()
+
+    return s3.doc_ver_signed_url(doc_ver_id, file_name)
 
 def get_document_last_version__paginated(
     db_session: Session,

@@ -39,10 +39,10 @@ Papermerge is perfect tool for long term storage of your documents.
 - OCRed text overlay (you can download document with OCRed text overlay)
 - Full Text Search of the scanned documents
 
-
 ## Documentation
 
-Papermerge DMS documentation is available at [https://docs.papermerge.io](https://docs.papermerge.io/)
+Papermerge DMS documentation is available
+at [https://docs.papermerge.io](https://docs.papermerge.io/)
 
 ## Start with Docker
 
@@ -53,7 +53,8 @@ In order to start Papermerge App with the most basic setup use following command
         -e PAPERMERGE__AUTH__PASSWORD=123 \
         papermerge/papermerge:3.5
 
-For more info about various docker compose scenarios check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).
+For more info about various docker compose scenarios
+check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).
 
 ## Demo Page
 
@@ -102,10 +103,11 @@ Access its swagger docs via `http://localhost:8000/docs`
 Switch to UI folder.
 
 ```
-cd frontend/apps/ui
+cd frontend/
 ```
 
-Create `.env.development.local` file with following content:
+Make sure following environment variables are defined (
+adjust their values accordingly):
 
 ```
 VITE_REMOTE_USER=admin
@@ -119,7 +121,6 @@ Another vite variables you may consider:
 
 * VITE_REMOTE_ROLES
 
-
 Of course, you will need to adjust user ID, username to match your BE.
 
 `VITE_KEEP_UNUSED_DATA_FOR` will cache data returned from BE for one second
@@ -127,7 +128,14 @@ Of course, you will need to adjust user ID, username to match your BE.
 Start FE:
 
 ```commandline
-yarn dev
+cd frontend
+yarn workspace ui dev
 ```
 
 This command will start FE server on `http://localhost:5173/`
+
+To see all workspaces use:
+
+```commandline
+yarn workspaces list
+```

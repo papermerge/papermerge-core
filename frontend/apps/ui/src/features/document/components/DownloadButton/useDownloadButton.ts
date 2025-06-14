@@ -14,6 +14,11 @@ interface Args {
   nodeID?: UUID
 }
 
+interface UseI18nHookReturn {
+  isInitialized: boolean
+  txt?: I18NDownloadButtonText
+}
+
 interface DownloadButtonState {
   versions?: Array<DownloadDocumentVersion>
   txt?: I18NDownloadButtonText
@@ -26,27 +31,10 @@ export default function useDownloadButton({
   initiateListDownload = false,
   nodeID
 }: Args): DownloadButtonState {
-  const {t, i18n} = useTranslation()
-  const [txt, setTxt] = useState<I18NDownloadButtonText>()
   const [versions, setVersions] = useState<Array<DownloadDocumentVersion>>()
-
+  const {isInitialized, txt} = useI18nText()
   const apiParam = initiateListDownload && nodeID ? nodeID : skipToken
   const {data, isError, isLoading} = useGetDocVersionsListQuery(apiParam)
-
-  useEffect(() => {
-    if (i18n.isInitialized) {
-      setTxt({
-        downloadInProgressTooltip: "Download in progress...",
-        downloadTooltip: "Download document",
-        loadingTooltip: "Loading...",
-        error: "Error: Oops, it didn't work",
-        emptyVersionsArrayError: "Error: empty version list",
-        versionLabel: "Version"
-      })
-    } else {
-      setTxt(undefined)
-    }
-  }, [i18n.isInitialized])
 
   useEffect(() => {
     if (data) {
@@ -62,10 +50,40 @@ export default function useDownloadButton({
   }, [data])
 
   return {
-    i18nIsReady: i18n.isInitialized,
+    i18nIsReady: isInitialized,
     versions,
     txt,
     isLoading,
     isError
+  }
+}
+
+function useI18nText(): UseI18nHookReturn {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NDownloadButtonText>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        downloadInProgressTooltip:
+          t("downloadButton.downloadInProgressTooltip") ||
+          "Download in progress...",
+        downloadTooltip:
+          t("downloadButton.downloadTooltip") || "Download document",
+        loadingTooltip: t("downloadButton.loadingTooltip") || "Loading...",
+        error: t("downloadButton.error") || "Error: Oops, it didn't work",
+        emptyVersionsArrayError:
+          t("downloadButton.emptyVersionsArrayError") ||
+          "Error: empty version list",
+        versionLabel: t("downloadButton.versionLabel") || "Version"
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized])
+
+  return {
+    isInitialized: i18n.isInitialized,
+    txt
   }
 }

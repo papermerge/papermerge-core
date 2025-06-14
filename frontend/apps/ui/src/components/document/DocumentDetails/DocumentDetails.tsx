@@ -48,7 +48,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
   const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
 
-  if (!ocrLang || !docID || isLoading) {
+  if (!docID || isLoading) {
     return (
       <Group align="flex-start" className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />

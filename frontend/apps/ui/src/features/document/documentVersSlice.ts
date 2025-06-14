@@ -1,5 +1,4 @@
 import {RootState} from "@/app/types"
-import {apiSliceWithDocuments} from "@/features/document/apiSlice"
 import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
 import type {
   ClientDocumentVersion,
@@ -139,32 +138,6 @@ const docVersSlice = createSlice({
     }
   },
   extraReducers(builder) {
-    builder.addMatcher(
-      apiSliceWithDocuments.endpoints.getDocument.matchFulfilled,
-      (state, action: PayloadAction<DocumentType>) => {
-        let all_vers: Array<ClientDocumentVersion> = []
-
-        action.payload.versions.forEach(v => {
-          let ver: ClientDocumentVersion = {
-            id: v.id,
-            lang: v.lang,
-            number: v.number,
-            page_count: v.page_count,
-            short_description: v.short_description,
-            size: v.size,
-            pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
-            }),
-            initial_pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
-            })
-          }
-          all_vers.push(ver)
-        })
-
-        docVerAdapter.addMany(state, all_vers)
-      }
-    )
     builder.addMatcher(
       apiSliceWithSharedNodes.endpoints.getSharedDocument.matchFulfilled,
       (state, action: PayloadAction<DocumentType>) => {
@@ -360,6 +333,18 @@ export const selectDocVerPaginationPageNumber = (
   docVerID?: UUID
 ) => {
   if (!docVerID) {
+    return 1
+  }
+
+  const docVer = state.docVers.entities[docVerID]
+
+  if (!docVer) {
+    return 1
+  }
+
+  const pagination = state.docVers.entities[docVerID].pagination
+
+  if (!pagination) {
     return 1
   }
 

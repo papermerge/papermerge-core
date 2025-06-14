@@ -132,16 +132,6 @@ export default function Viewer() {
   }, [isError])
 
   useEffect(() => {
-    if (doc) {
-      const maxVerNum = Math.max(...doc.versions.map(v => v.number))
-      const docVer = doc.versions.find(v => v.number == maxVerNum)
-      if (docVer) {
-        dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
-      }
-    }
-  }, [isSuccess, doc])
-
-  useEffect(() => {
     // detect right click outside
     if (ref.current) {
       ref.current.addEventListener("contextmenu", onContextMenu)

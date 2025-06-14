@@ -26,7 +26,11 @@ from .features.document.db.api import (
     get_doc_ver_pages,
     get_docs_thumbnail_img_status,
     get_pages_preview_img_status,
-    get_document_last_version__paginated
+    get_document_last_version__paginated,
+    get_doc_versions_list,
+    get_doc_version_download_url,
+    get_doc_id_from_doc_ver_id,
+    version_bump
 )
 from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (
@@ -85,6 +89,10 @@ __all__ = [
     "delete_document_type",
     "update_document_type",
     "create_custom_field",
+    "get_doc_versions_list",
+    "get_doc_version_download_url",
+    "get_doc_id_from_doc_ver_id",
+    "version_bump",
     # users
     "create_user",
     "update_user",

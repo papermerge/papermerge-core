@@ -2,7 +2,11 @@ import uuid
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
+from typing import Annotated, Literal
+
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
+    field_validator
 
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.types import (
@@ -11,11 +15,6 @@ from papermerge.core.types import (
     ImagePreviewStatus,
     ImagePreviewSize,
 )
-
-from typing import Annotated, Literal
-
-from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
-
 from papermerge.core.features.nodes.schema import Node
 from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
@@ -261,6 +260,12 @@ class DocumentVersion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DocVerListItem(BaseModel):
+    id: UUID
+    number: int
+    short_description: str | None = None
+
+
 def thumbnail_url(value, info):
     return f"/api/thumbnails/{info.data['id']}"
 
@@ -322,6 +327,10 @@ class DocumentNode(BaseModel):
 
 class Document(DocumentNode):
     versions: list[DocumentVersion] | None = []
+
+
+class DocumentWithoutVersions(DocumentNode):
+    ...
 
 
 class Pagination(BaseModel):
@@ -524,3 +533,7 @@ class DocumentCFVRow(BaseModel):
     cf_name: CFNameType
     cf_type: CustomFieldType
     cf_value: CFValueType
+
+
+class DownloadURL(BaseModel):
+    downloadURL: str

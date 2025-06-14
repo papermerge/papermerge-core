@@ -5,8 +5,8 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
 
-import DownloadButton from "@/components/document/DownloadButton/DownloadButton"
 import type {DocumentType, PanelMode} from "@/types"
+import {DownloadButton} from "@papermerge/viewer"
 
 interface Args {
   doc?: DocumentType
@@ -36,7 +36,7 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <DownloadButton doc={doc} isFetching={isFetching} isError={isError} />
+        <DownloadButton />
       </Group>
     </Group>
   )

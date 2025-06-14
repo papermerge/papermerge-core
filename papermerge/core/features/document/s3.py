@@ -35,3 +35,13 @@ def page_image_jpg_signed_url(uid: UUID, size: ImagePreviewSize) -> str:
     prefix = settings.papermerge__main__prefix
 
     return resource_sign_url(prefix, resource_path)
+
+
+def doc_ver_signed_url(
+    doc_ver_id: UUID,
+    file_name: str
+) -> str:
+    resource_path = plib.docver_path(doc_ver_id, file_name=file_name)
+    prefix = settings.papermerge__main__prefix
+
+    return resource_sign_url(prefix, resource_path)

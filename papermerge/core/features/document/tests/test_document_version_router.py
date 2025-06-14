@@ -2,7 +2,7 @@ import os
 import uuid
 from pathlib import Path
 
-from papermerge.core import dbapi
+from papermerge.core import dbapi, schema
 from papermerge.core.tests.resource_file import ResourceFile
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -48,5 +48,5 @@ def test_get_doc_ver_download_url(
     response = auth_api_client.get(f"/document-versions/{last_ver.id}/download-url")
 
     assert response.status_code == 200
-    download_url = response.json()
-    assert str(last_ver.id) in download_url
+    data = schema.DownloadURL(**response.json())
+    assert str(last_ver.id) in data.downloadURL

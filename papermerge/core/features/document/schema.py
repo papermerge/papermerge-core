@@ -341,6 +341,9 @@ class Pagination(BaseModel):
 
 class PaginatedDocVer(BaseModel):
     doc_ver_id: uuid.UUID
+    lang: str
+    number: int
+    file_name: str
     pages: list[BasicPage]
     page_size: int
     page_number: int

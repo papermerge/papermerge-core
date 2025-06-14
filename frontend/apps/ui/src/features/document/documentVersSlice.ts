@@ -17,6 +17,7 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
+import {DOC_VER_PAGINATION_PAGE_SIZE} from "./constants"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -150,15 +151,17 @@ const docVersSlice = createSlice({
             id: v.id,
             lang: v.lang,
             number: v.number,
-            page_count: v.page_count,
-            short_description: v.short_description,
-            size: v.size,
+            file_name: v.file_name,
             pages: v.pages.map(p => {
               return {id: p.id, number: p.number, angle: 0, text: p.text}
             }),
             initial_pages: v.pages.map(p => {
               return {id: p.id, number: p.number, angle: 0, text: p.text}
-            })
+            }),
+            pagination: {
+              page_number: 1,
+              per_page: DOC_VER_PAGINATION_PAGE_SIZE
+            }
           }
           all_vers.push(ver)
         })

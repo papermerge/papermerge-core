@@ -113,6 +113,9 @@ interface DLVPaginatedArgsInput {
 
 interface DLVPaginatedArgsOutput {
   doc_ver_id: string
+  lang: string
+  number: number
+  file_name: string
   pages: Array<BasicPage>
   page_size: number
   page_number: number
@@ -139,6 +142,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
 
           const transformedVersion = {
             id: data.doc_ver_id,
+            lang: data.lang,
+            number: data.number,
+            file_name: data.file_name,
             pages: data.pages.map(p => ({
               id: p.id,
               number: p.number,

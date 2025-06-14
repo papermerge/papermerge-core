@@ -24,7 +24,7 @@ import {
 import type {DroppedThumbnailPosition, PanelMode} from "@/types"
 
 import {contains_every} from "@/utils"
-import TransferPagesModal from "../TransferPagesModal"
+import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
 
 /*

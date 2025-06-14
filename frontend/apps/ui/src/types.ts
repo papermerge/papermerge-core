@@ -367,6 +367,9 @@ export interface ClientPage {
 
 export interface ClientDocumentVersion {
   id: string
+  lang: string
+  number: number
+  file_name: string
   pages: Array<ClientPage>
   pagination: Pagination
   /* Page array in same order as received from server side.

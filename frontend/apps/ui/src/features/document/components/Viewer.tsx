@@ -25,10 +25,10 @@ import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
-import PageList from "@/components/document/PageList"
-import ThumbnailList from "@/components/document/ThumbnailList"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
+import PageList from "@/features/document/components/PageList"
+import ThumbnailList from "@/features/document/components/ThumbnailList"
 import {
   currentDocVerUpdated,
   currentNodeChanged,

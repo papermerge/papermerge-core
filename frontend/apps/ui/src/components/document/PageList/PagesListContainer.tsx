@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
+import {DOC_VER_PAGINATION_PAGE_SIZE} from "@/features/document/constants"
 import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
@@ -36,7 +37,7 @@ export default function PageListContainer() {
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
-          pageSize: 5,
+          pageSize: DOC_VER_PAGINATION_PAGE_SIZE,
           docVerID: docVerID
         })
       )

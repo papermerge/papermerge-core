@@ -42,7 +42,7 @@ type PageDeletedArgs = {
   targetDocVerID: string
 }
 
-const docVerAdapter = createEntityAdapter<ClientDocumentVersion>()
+export const docVerAdapter = createEntityAdapter<ClientDocumentVersion>()
 const initialState = docVerAdapter.getInitialState()
 
 /**
@@ -67,6 +67,9 @@ const docVersSlice = createSlice({
           }
         }
       }
+    },
+    docVerUpserted(state, action: PayloadAction<ClientDocumentVersion>) {
+      docVerAdapter.upsertOne(state, action.payload)
     },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
       const {targetDocVerID, sources, target, position} = action.payload
@@ -99,8 +102,7 @@ const docVersSlice = createSlice({
             return {
               id: p.id,
               angle: p.angle + angle,
-              number: p.number,
-              text: p.text
+              number: p.number
             }
           }
         }
@@ -173,7 +175,8 @@ export const {
   pagesReseted,
   pagesDeleted,
   documentMovedNotifReceived,
-  docVerPaginationUpdated
+  docVerPaginationUpdated,
+  docVerUpserted
 } = docVersSlice.actions
 export default docVersSlice.reducer
 

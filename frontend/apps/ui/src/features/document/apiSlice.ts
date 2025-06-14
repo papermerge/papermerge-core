@@ -26,8 +26,13 @@ import {
   getWSURL,
   imageEncode
 } from "@/utils"
+import {DOC_VER_PAGINATION_PAGE_SIZE} from "./constants"
 
-import {documentMovedNotifReceived} from "./documentVersSlice"
+import {
+  documentMovedNotifReceived,
+  docVerPaginationUpdated,
+  docVerUpserted
+} from "./documentVersSlice"
 import type {DocVersList} from "./types"
 
 type ShortPageType = {
@@ -123,6 +128,47 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
     >({
       query: ({doc_id, page_number, page_size}: DLVPaginatedArgsInput) => {
         return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
+      },
+
+      async onQueryStarted(
+        {doc_id, page_number, page_size},
+        {dispatch, queryFulfilled}
+      ) {
+        try {
+          const {data} = await queryFulfilled
+
+          const transformedVersion = {
+            id: data.doc_ver_id,
+            pages: data.pages.map(p => ({
+              id: p.id,
+              number: p.number,
+              angle: 0
+            })),
+            initial_pages: data.pages.map(p => ({
+              id: p.id,
+              number: p.number,
+              angle: 0
+            })),
+            pagination: {
+              page_number: 1,
+              per_page: DOC_VER_PAGINATION_PAGE_SIZE
+            }
+          }
+
+          // Save document version to the state
+          dispatch(docVerUpserted(transformedVersion))
+
+          // Save pagination info to the state
+          dispatch(
+            docVerPaginationUpdated({
+              docVerID: transformedVersion.id,
+              pageNumber: page_number,
+              pageSize: page_size
+            })
+          )
+        } catch (error) {
+          console.error("Failed to save paginated doc version to state:", error)
+        }
       }
     }),
     getDocVersionsList: builder.query<DocVersList, string>({

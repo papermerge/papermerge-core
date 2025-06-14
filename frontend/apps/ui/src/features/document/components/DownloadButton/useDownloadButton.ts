@@ -80,7 +80,7 @@ function useI18nText(): UseI18nHookReturn {
     } else {
       setTxt(undefined)
     }
-  }, [i18n.isInitialized])
+  }, [i18n.isInitialized, t])
 
   return {
     isInitialized: i18n.isInitialized,

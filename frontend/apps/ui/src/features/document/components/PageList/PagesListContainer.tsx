@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
+import {DOC_VER_PAGINATION_PAGE_SIZE} from "@/features/document/constants"
 import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
@@ -9,8 +10,8 @@ import type {PanelMode} from "@/types"
 import {Button, Stack} from "@mantine/core"
 import {useContext} from "react"
 import {useTranslation} from "react-i18next"
+import Zoom from "../../../../components/document/Zoom"
 import Page from "../Page"
-import Zoom from "../Zoom"
 import classes from "./PageList.module.css"
 import usePageList from "./usePageList"
 
@@ -36,7 +37,7 @@ export default function PageListContainer() {
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
-          pageSize: 5,
+          pageSize: DOC_VER_PAGINATION_PAGE_SIZE,
           docVerID: docVerID
         })
       )

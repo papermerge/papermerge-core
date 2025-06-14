@@ -54,6 +54,8 @@ def test_1_get_document_last_version__paginated(
     resp = schema.PaginatedDocVer.model_validate(response.json())
     assert response.status_code == 200, resp
     assert len(resp.pages) == 3, resp
+    assert resp.number == 1
+    assert resp.lang == 'deu'
 
 
 def test_2_get_document_last_version__paginated(

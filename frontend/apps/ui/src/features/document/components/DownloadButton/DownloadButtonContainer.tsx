@@ -14,14 +14,6 @@ export default function DownloadButtonContainer() {
     nodeID: currentNodeID
   })
   const dispatch = useAppDispatch()
-  /*
-  const loading = useAppSelector(
-    state => state.documentDownloads.loadingById[docVerId] || false
-  )
-  const error = useAppSelector(
-    state => state.documentDownloads.errorById[docVerId]
-  )
-    */
 
   const onOpen = () => {
     setWasOpened(true)

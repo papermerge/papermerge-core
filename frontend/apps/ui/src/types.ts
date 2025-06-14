@@ -363,16 +363,13 @@ export interface ClientPage {
   angle: number
   /* Page number as it came from the server*/
   number: number
-  text: string
 }
 
 export interface ClientDocumentVersion {
   id: string
-  lang: OCRCode
+  lang: string
   number: number
-  page_count: number
-  short_description: string
-  size: number
+  file_name: string
   pages: Array<ClientPage>
   pagination: Pagination
   /* Page array in same order as received from server side.

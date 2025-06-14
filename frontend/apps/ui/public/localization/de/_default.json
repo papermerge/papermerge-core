@@ -1,4 +1,10 @@
 {
+  "downloadButton.downloadInProgressTooltip": "Datei wird heruntergeladen...",
+  "downloadButton.downloadTooltip": "Dokument herunterladen",
+  "downloadButton.loadingTooltip": "Wird geladen...",
+  "downloadButton.error": "Fehler: es hat nicht geklappt",
+  "downloadButton.emptyVersionsArrayError": "Fehler: leere Versionsliste",
+  "downloadButton.versionLabel": "Version",
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

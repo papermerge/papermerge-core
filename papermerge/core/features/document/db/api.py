@@ -792,6 +792,17 @@ def get_document_last_version__paginated(
         )
         .scalar_subquery()
     )
+    doc_ver_stmt = select(
+        orm.DocumentVersion.id,
+        orm.DocumentVersion.number,
+        orm.DocumentVersion.lang,
+        orm.DocumentVersion.file_name
+    ).where(
+        orm.DocumentVersion.number == latest_version_subq,
+        orm.DocumentVersion.document_id == doc_id
+    )
+
+    db_doc_ver = db_session.execute(doc_ver_stmt).one()
 
     offset = page_size * (page_number - 1)
 
@@ -823,6 +834,9 @@ def get_document_last_version__paginated(
     return schema.PaginatedDocVer(
         pages=pages,
         doc_ver_id=doc_ver_id,
+        number=db_doc_ver[1],
+        lang=db_doc_ver[2],
+        file_name=db_doc_ver[3],
         page_number=page_number,
         page_size=page_size,
         num_pages=num_pages,

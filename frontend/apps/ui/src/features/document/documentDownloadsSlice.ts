@@ -1,4 +1,5 @@
 // src/store/documentSlice.ts
+import {RootState} from "@/app/types"
 import axios from "@/httpClient"
 import {getBaseURL} from "@/utils"
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
@@ -19,7 +20,8 @@ export const fetchAndDownloadDocument = createAsyncThunk<
   {rejectValue: string; state: {documentDownloads: DocumentState}}
 >(
   "document/fetchAndDownloadDocument",
-  async (docVerId, {rejectWithValue}) => {
+  async (docVerId, {rejectWithValue, getState}) => {
+    const state = getState() as RootState
     try {
       const response = await axios.get<{downloadURL: string}>(
         `/api/document-versions/${docVerId}/download-url`
@@ -40,7 +42,14 @@ export const fetchAndDownloadDocument = createAsyncThunk<
         responseType: "blob"
       })
 
-      let filename = `document-${docVerId}.pdf`
+      let filename
+      const docVer = state.docVers.entities[docVerId]
+
+      if (docVer && docVer.file_name) {
+        filename = docVer.file_name
+      } else {
+        filename = `document-${docVerId}.pdf`
+      }
 
       // Third: Create blob URL and trigger download
       const blob = new Blob([fileResponse.data])

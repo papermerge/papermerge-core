@@ -153,11 +153,13 @@ const docVersSlice = createSlice({
             number: v.number,
             file_name: v.file_name,
             pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
+              return {id: p.id, number: p.number, angle: 0}
             }),
-            initial_pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
-            }),
+            initial_pages: v.pages
+              .sort((a, b) => a.number - b.number)
+              .map(p => {
+                return {id: p.id, number: p.number, angle: 0}
+              }),
             pagination: {
               page_number: 1,
               per_page: DOC_VER_PAGINATION_PAGE_SIZE
@@ -183,10 +185,16 @@ export const {
 } = docVersSlice.actions
 export default docVersSlice.reducer
 
-export const {
-  selectEntities: selectDocVerEntities,
-  selectById: selectDocVerByID
-} = docVerAdapter.getSelectors((state: RootState) => state.docVers)
+export const selectDocVerByID = (state: RootState, docVerID?: string) => {
+  if (docVerID) {
+    return state.docVers.entities[docVerID]
+  }
+
+  return null
+}
+
+export const {selectEntities: selectDocVerEntities} =
+  docVerAdapter.getSelectors((state: RootState) => state.docVers)
 
 export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
   if (docVer) {

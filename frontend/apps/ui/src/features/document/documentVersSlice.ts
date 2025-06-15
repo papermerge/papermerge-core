@@ -55,7 +55,6 @@ const docVersSlice = createSlice({
   name: "documentVersion",
   initialState,
   reducers: {
-    /** obsolete? */
     docVerPaginationUpdated(state, action: PayloadAction<PaginationUpdated>) {
       const {pageNumber, pageSize, docVerID} = action.payload
       const docVer = state.entities[docVerID]
@@ -72,11 +71,19 @@ const docVersSlice = createSlice({
       }
     },
     docVerUpserted(state, action: PayloadAction<DLVPaginatedArgsOutput>) {
+      /**
+       * Inserts or Updated document verions pages and initial_pages
+       *
+       * As user paginates through the document pages new pages are inserted
+       * into document versions. Previous ones preserve their order and rotation
+       * angle
+       * */
       const data = action.payload
       let updatedDocVer
       const docVer = state.entities[data.doc_ver_id]
 
       if (!docVer) {
+        /** completely new page */
         updatedDocVer = {
           id: data.doc_ver_id,
           lang: data.lang,
@@ -98,6 +105,12 @@ const docVersSlice = createSlice({
           }
         }
       } else {
+        /* insert incoming pages into already existing document
+        version's pages list (same for initial_pages)
+
+        `initial_pages` are used as reference to know order and rotation
+        of the pages before user applied order/rotation changes
+        */
         const updatedPages = [
           ...docVer.pages,
           ...data.pages.map(p => ({

@@ -7,7 +7,7 @@ import type {UUID} from "@/types.d/common"
 import {RefObject, useEffect, useRef, useState} from "react"
 
 interface ThumbnailState {
-  ref: RefObject<HTMLDivElement | null>
+  ref: RefObject<HTMLImageElement | null>
   imageURL: string | undefined
   isLoading: boolean
   isDragged: boolean
@@ -27,7 +27,7 @@ export default function useThumbnail(pageID: UUID): ThumbnailState {
   const [checked, setChecked] = useState<boolean>(false)
   const [withBorderBottom, setWithBorderBottom] = useState<boolean>(false)
   const [withBorderTop, setWithBorderTop] = useState<boolean>(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLImageElement>(null)
   const draggedPages = useAppSelector(selectDraggedPages)
   const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
   const draggedPagesIDs = draggedPages?.map(p => p.id)

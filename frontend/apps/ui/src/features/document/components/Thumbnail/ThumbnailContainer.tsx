@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {
+  pagesDroppedInDoc,
   selectCurrentPages,
   selectDocVerClientPage,
   selectSelectedPages
@@ -10,6 +11,7 @@ import {
   dragEnded,
   dragPagesStarted,
   selectCurrentDocVerID,
+  selectDraggedPages,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
@@ -66,6 +68,7 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
     clearBorderTop
   } = useThumbnail(pageID)
 
+  const draggedPages = useAppSelector(selectDraggedPages)
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
 
@@ -91,11 +94,19 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
   }
 
   const onDragStart = () => {
+    let pages
+
+    if (page) {
+      pages = [page, ...selectedPages]
+    } else {
+      pages = selectedPages
+    }
     const data = {
-      pages: [page, ...selectedPages],
+      pages: pages,
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
+
     dispatch(dragPagesStarted(data))
   }
 
@@ -129,20 +140,21 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
       const page_ids = docVerPages.map(p => p.id)
       const source_ids = draggedPagesIDs
       if (contains_every({container: page_ids, items: source_ids})) {
-        /* Here we deal with page transfer is within the same document
+        /* Here we deal with page transfer which is within the same document
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
-        /*
-        dispatch(
-          pagesDroppedInDoc({
-            sources: draggedPages,
-            target: page,
-            targetDocVerID: docVerID!,
-            position: position
-          })
-        )
-         */
+        if (draggedPages && page) {
+          dispatch(
+            pagesDroppedInDoc({
+              sources: draggedPages,
+              target: page,
+              targetDocVerID: docVerID!,
+              position: position
+            })
+          )
+        }
+
         dispatch(dragEnded())
       } else {
         // here we deal with pages transfer between documents
@@ -164,6 +176,7 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
   return (
     <>
       <Thumbnail
+        ref={ref}
         onChange={onCheck}
         checked={checked}
         pageNumber={pageNumber}

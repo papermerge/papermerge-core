@@ -375,7 +375,5 @@ export const selectDocVerClientPage = (
     return null
   }
 
-  const page = state.docVers.entities[docVerID].pages.find(p => p.id == pageID)
-
-  return page
+  return state.docVers.entities[docVerID].pages.find(p => p.id == pageID)
 }

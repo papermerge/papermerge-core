@@ -18,6 +18,7 @@ import {
   createSlice
 } from "@reduxjs/toolkit"
 import {DOC_VER_PAGINATION_PAGE_SIZE} from "./constants"
+import {DLVPaginatedArgsOutput} from "./types"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -69,8 +70,79 @@ const docVersSlice = createSlice({
         }
       }
     },
-    docVerUpserted(state, action: PayloadAction<ClientDocumentVersion>) {
-      docVerAdapter.upsertOne(state, action.payload)
+    docVerUpserted(state, action: PayloadAction<DLVPaginatedArgsOutput>) {
+      /**
+       * Inserts or Updated document verions pages and initial_pages
+       *
+       * As user paginates through the document pages new pages are inserted
+       * into document versions. Previous ones preserve their order and rotation
+       * angle
+       * */
+      const data = action.payload
+      let updatedDocVer
+      const docVer = state.entities[data.doc_ver_id]
+
+      if (!docVer) {
+        /** completely new page */
+        updatedDocVer = {
+          id: data.doc_ver_id,
+          lang: data.lang,
+          number: data.number,
+          file_name: data.file_name,
+          pages: data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          })),
+          initial_pages: data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          })),
+          pagination: {
+            page_number: 1,
+            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+          }
+        }
+      } else {
+        /* insert incoming pages into already existing document
+        version's pages list (same for initial_pages)
+
+        `initial_pages` are used as reference to know order and rotation
+        of the pages before user applied order/rotation changes
+        */
+        const updatedPages = [
+          ...docVer.pages,
+          ...data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          }))
+        ]
+
+        const updatedInitialPages = [
+          ...docVer.initial_pages,
+          ...data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          }))
+        ]
+
+        updatedDocVer = {
+          id: data.doc_ver_id,
+          lang: data.lang,
+          number: data.number,
+          file_name: data.file_name,
+          pages: updatedPages,
+          initial_pages: updatedInitialPages,
+          pagination: {
+            page_number: data.page_number,
+            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+          }
+        }
+      }
+      docVerAdapter.upsertOne(state, updatedDocVer)
     },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
       const {targetDocVerID, sources, target, position} = action.payload
@@ -153,11 +225,13 @@ const docVersSlice = createSlice({
             number: v.number,
             file_name: v.file_name,
             pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
+              return {id: p.id, number: p.number, angle: 0}
             }),
-            initial_pages: v.pages.map(p => {
-              return {id: p.id, number: p.number, angle: 0, text: p.text}
-            }),
+            initial_pages: v.pages
+              .sort((a, b) => a.number - b.number)
+              .map(p => {
+                return {id: p.id, number: p.number, angle: 0}
+              }),
             pagination: {
               page_number: 1,
               per_page: DOC_VER_PAGINATION_PAGE_SIZE
@@ -183,10 +257,16 @@ export const {
 } = docVersSlice.actions
 export default docVersSlice.reducer
 
-export const {
-  selectEntities: selectDocVerEntities,
-  selectById: selectDocVerByID
-} = docVerAdapter.getSelectors((state: RootState) => state.docVers)
+export const selectDocVerByID = (state: RootState, docVerID?: string) => {
+  if (docVerID) {
+    return state.docVers.entities[docVerID]
+  }
+
+  return null
+}
+
+export const {selectEntities: selectDocVerEntities} =
+  docVerAdapter.getSelectors((state: RootState) => state.docVers)
 
 export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
   if (docVer) {
@@ -355,4 +435,25 @@ export const selectDocVerPaginationPageNumber = (
   }
 
   return state.docVers.entities[docVerID].pagination.page_number
+}
+
+export const selectDocVerClientPage = (
+  state: RootState,
+  {docVerID, pageID}: {docVerID?: string; pageID?: string}
+) => {
+  if (!docVerID) {
+    return null
+  }
+
+  if (!pageID) {
+    return null
+  }
+
+  const docVer = state.docVers.entities[docVerID]
+
+  if (!docVer) {
+    return null
+  }
+
+  return state.docVers.entities[docVerID].pages.find(p => p.id == pageID)
 }

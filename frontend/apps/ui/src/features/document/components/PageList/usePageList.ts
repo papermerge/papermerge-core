@@ -2,14 +2,17 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useEffect, useMemo} from "react"
 
 import {useGetDocLastVersionPaginatedQuery} from "@/features/document/apiSlice"
-import {docVerPaginationUpdated} from "@/features/document/documentVersSlice"
 import {
-  makeSelectPageList,
+  docVerPaginationUpdated,
+  selectCurrentPages
+} from "@/features/document/documentVersSlice"
+import {
   preloadProgressiveImages,
   selectShowMorePages
 } from "@/features/document/imageObjectsSlice"
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import {useCurrentNode, usePageImagePolling, usePanelMode} from "@/hooks"
+import type {ClientPage} from "@/types"
 import type {UUID} from "@/types.d/common"
 import type {ProgressiveImageInputType} from "@/types.d/page_image"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -19,11 +22,6 @@ interface BasicPage {
   number: number
 }
 
-type PageStruct = {
-  pageID: string
-  pageNumber: number
-}
-
 interface Args {
   pageNumber: number
   pageSize: number
@@ -31,7 +29,7 @@ interface Args {
 
 interface PageListState {
   pageCount: number
-  pages: Array<PageStruct>
+  pages: Array<ClientPage>
   isLoading: boolean
   showLoadMore: boolean
   docVerID?: UUID
@@ -78,11 +76,8 @@ export default function usePageList({
   const showLoadMore = useAppSelector(s =>
     selectShowMorePages(s, data?.doc_ver_id, data?.total_count)
   )
-  const selectPageList = useMemo(
-    () => makeSelectPageList(data?.doc_ver_id),
-    [data?.doc_ver_id]
-  )
-  const pages = useAppSelector(selectPageList)
+
+  const pages = useAppSelector(s => selectCurrentPages(s, data?.doc_ver_id))
   const pollPageIDs = usePollIDs(data?.pages)
 
   const {previews, isLoading} = usePageImagePolling(pollPageIDs, {

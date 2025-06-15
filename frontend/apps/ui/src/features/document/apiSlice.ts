@@ -26,14 +26,9 @@ import {
   getWSURL,
   imageEncode
 } from "@/utils"
-import {DOC_VER_PAGINATION_PAGE_SIZE} from "./constants"
 
-import {
-  documentMovedNotifReceived,
-  docVerPaginationUpdated,
-  docVerUpserted
-} from "./documentVersSlice"
-import type {DocVersList} from "./types"
+import {documentMovedNotifReceived, docVerUpserted} from "./documentVersSlice"
+import type {DLVPaginatedArgsOutput, DocVersList} from "./types"
 
 type ShortPageType = {
   number: number
@@ -100,27 +95,10 @@ interface GetDocsByTypeArgs {
   order?: OrderType
 }
 
-interface BasicPage {
-  id: string
-  number: number
-}
-
 interface DLVPaginatedArgsInput {
   doc_id: string
   page_number: number
   page_size: number
-}
-
-interface DLVPaginatedArgsOutput {
-  doc_ver_id: string
-  lang: string
-  number: number
-  file_name: string
-  pages: Array<BasicPage>
-  page_size: number
-  page_number: number
-  num_pages: number
-  total_count: number
 }
 
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
@@ -133,45 +111,11 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
       },
 
-      async onQueryStarted(
-        {doc_id, page_number, page_size},
-        {dispatch, queryFulfilled}
-      ) {
+      async onQueryStarted(_, {dispatch, queryFulfilled}) {
         try {
           const {data} = await queryFulfilled
 
-          const transformedVersion = {
-            id: data.doc_ver_id,
-            lang: data.lang,
-            number: data.number,
-            file_name: data.file_name,
-            pages: data.pages.map(p => ({
-              id: p.id,
-              number: p.number,
-              angle: 0
-            })),
-            initial_pages: data.pages.map(p => ({
-              id: p.id,
-              number: p.number,
-              angle: 0
-            })),
-            pagination: {
-              page_number: 1,
-              per_page: DOC_VER_PAGINATION_PAGE_SIZE
-            }
-          }
-
-          // Save document version to the state
-          dispatch(docVerUpserted(transformedVersion))
-
-          // Save pagination info to the state
-          dispatch(
-            docVerPaginationUpdated({
-              docVerID: transformedVersion.id,
-              pageNumber: page_number,
-              pageSize: page_size
-            })
-          )
+          dispatch(docVerUpserted(data))
         } catch (error) {
           console.error("Failed to save paginated doc version to state:", error)
         }

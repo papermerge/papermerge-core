@@ -1,12 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
 import {selectCurrentPages} from "@/features/document/documentVersSlice"
 import {
   dragEnded,
   selectCurrentDocVerID,
-  selectCurrentNodeID,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
@@ -15,14 +13,14 @@ import type {UUID} from "@/types.d/common"
 import {useDisclosure} from "@mantine/hooks"
 import {Thumbnail} from "@papermerge/viewer"
 import {skipToken} from "@reduxjs/toolkit/query"
-import {useContext} from "react"
 
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type {DroppedThumbnailPosition, PanelMode} from "@/types"
+import type {DroppedThumbnailPosition} from "@/types"
 
+import {useCurrentNode, usePanelMode} from "@/hooks"
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
@@ -58,12 +56,13 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
     {open: trPagesDialogOpen, close: trPagesDialogClose}
   ] = useDisclosure(false)
 
-  const mode: PanelMode = useContext(PanelContext)
+  const mode = usePanelMode()
+  const {currentNodeID} = useCurrentNode()
   const dispatch = useAppDispatch()
 
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+
   const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))

@@ -1,14 +1,20 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {selectCurrentPages} from "@/features/document/documentVersSlice"
+import {
+  selectCurrentPages,
+  selectDocVerClientPage,
+  selectSelectedPages
+} from "@/features/document/documentVersSlice"
 import {
   dragEnded,
+  dragPagesStarted,
   selectCurrentDocVerID,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
+import {useCurrentNode, usePanelMode} from "@/hooks"
 import type {UUID} from "@/types.d/common"
 import {useDisclosure} from "@mantine/hooks"
 import {Thumbnail} from "@papermerge/viewer"
@@ -20,7 +26,6 @@ import {
 } from "@/features/ui/uiSlice"
 import type {DroppedThumbnailPosition} from "@/types"
 
-import {useCurrentNode, usePanelMode} from "@/hooks"
 import {contains_every} from "@/utils"
 import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
@@ -37,6 +42,15 @@ interface Args {
 }
 
 export default function ThumbnailContainer({pageNumber, pageID}: Args) {
+  const dispatch = useAppDispatch()
+  const mode = usePanelMode()
+  const {currentNodeID} = useCurrentNode()
+
+  const [
+    trPagesDialogOpened,
+    {open: trPagesDialogOpen, close: trPagesDialogClose}
+  ] = useDisclosure(false)
+
   const {
     ref,
     imageURL,
@@ -51,14 +65,6 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
     clearBorderBottom,
     clearBorderTop
   } = useThumbnail(pageID)
-  const [
-    trPagesDialogOpened,
-    {open: trPagesDialogOpen, close: trPagesDialogClose}
-  ] = useDisclosure(false)
-
-  const mode = usePanelMode()
-  const {currentNodeID} = useCurrentNode()
-  const dispatch = useAppDispatch()
 
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
@@ -66,6 +72,10 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
   const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
+  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const page = useAppSelector(s =>
+    selectDocVerClientPage(s, {docVerID, pageID})
+  )
 
   const onClick = () => {
     dispatch(
@@ -81,14 +91,12 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
   }
 
   const onDragStart = () => {
-    /*
     const data = {
       pages: [page, ...selectedPages],
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
     dispatch(dragPagesStarted(data))
-    */
   }
 
   const onDragEnd = () => {

@@ -356,3 +356,26 @@ export const selectDocVerPaginationPageNumber = (
 
   return state.docVers.entities[docVerID].pagination.page_number
 }
+
+export const selectDocVerClientPage = (
+  state: RootState,
+  {docVerID, pageID}: {docVerID?: string; pageID?: string}
+) => {
+  if (!docVerID) {
+    return null
+  }
+
+  if (!pageID) {
+    return null
+  }
+
+  const docVer = state.docVers.entities[docVerID]
+
+  if (!docVer) {
+    return null
+  }
+
+  const page = state.docVers.entities[docVerID].pages.find(p => p.id == pageID)
+
+  return page
+}

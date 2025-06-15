@@ -42,7 +42,7 @@ export default function ThumbnailListContainer() {
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
-          pageSize: 5,
+          pageSize: DOC_VER_PAGINATION_PAGE_SIZE,
           docVerID: docVerID
         })
       )

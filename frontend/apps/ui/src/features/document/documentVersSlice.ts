@@ -18,6 +18,7 @@ import {
   createSlice
 } from "@reduxjs/toolkit"
 import {DOC_VER_PAGINATION_PAGE_SIZE} from "./constants"
+import {DLVPaginatedArgsOutput} from "./types"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -54,6 +55,7 @@ const docVersSlice = createSlice({
   name: "documentVersion",
   initialState,
   reducers: {
+    /** obsolete? */
     docVerPaginationUpdated(state, action: PayloadAction<PaginationUpdated>) {
       const {pageNumber, pageSize, docVerID} = action.payload
       const docVer = state.entities[docVerID]
@@ -69,8 +71,65 @@ const docVersSlice = createSlice({
         }
       }
     },
-    docVerUpserted(state, action: PayloadAction<ClientDocumentVersion>) {
-      docVerAdapter.upsertOne(state, action.payload)
+    docVerUpserted(state, action: PayloadAction<DLVPaginatedArgsOutput>) {
+      const data = action.payload
+      let updatedDocVer
+      const docVer = state.entities[data.doc_ver_id]
+
+      if (!docVer) {
+        updatedDocVer = {
+          id: data.doc_ver_id,
+          lang: data.lang,
+          number: data.number,
+          file_name: data.file_name,
+          pages: data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          })),
+          initial_pages: data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          })),
+          pagination: {
+            page_number: 1,
+            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+          }
+        }
+      } else {
+        const updatedPages = [
+          ...docVer.pages,
+          ...data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          }))
+        ]
+
+        const updatedInitialPages = [
+          ...docVer.initial_pages,
+          ...data.pages.map(p => ({
+            id: p.id,
+            number: p.number,
+            angle: 0
+          }))
+        ]
+
+        updatedDocVer = {
+          id: data.doc_ver_id,
+          lang: data.lang,
+          number: data.number,
+          file_name: data.file_name,
+          pages: updatedPages,
+          initial_pages: updatedInitialPages,
+          pagination: {
+            page_number: data.page_number,
+            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+          }
+        }
+      }
+      docVerAdapter.upsertOne(state, updatedDocVer)
     },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
       const {targetDocVerID, sources, target, position} = action.payload

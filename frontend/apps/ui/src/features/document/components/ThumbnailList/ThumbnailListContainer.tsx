@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button, Stack} from "@mantine/core"
 
 import {RootState} from "@/app/types"
-import PanelContext from "@/contexts/PanelContext"
+import {DOC_VER_PAGINATION_PAGE_SIZE} from "@/features/document/constants"
 import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
@@ -11,8 +11,7 @@ import {
   selectCurrentDocVerID,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
-import {useContext} from "react"
+import usePanelMode from "@/hooks/usePanelMode"
 import {useTranslation} from "react-i18next"
 import {useSelector} from "react-redux"
 import usePageList from "../PageList/usePageList"
@@ -22,14 +21,14 @@ import classes from "./ThumbnailListContainer.module.css"
 export default function ThumbnailListContainer() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
+  const mode = usePanelMode()
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVerID)
   )
   const {pages, showLoadMore} = usePageList({
     pageNumber: pageNumber,
-    pageSize: 5
+    pageSize: DOC_VER_PAGINATION_PAGE_SIZE
   })
   const sortedPages = pages.sort((a, b) => a.pageNumber - b.pageNumber)
   const thumbnailComponents = sortedPages.map(p => (

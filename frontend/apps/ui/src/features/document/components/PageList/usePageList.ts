@@ -1,7 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {useContext, useEffect, useMemo} from "react"
+import {useEffect, useMemo} from "react"
 
-import PanelContext from "@/contexts/PanelContext"
 import {useGetDocLastVersionPaginatedQuery} from "@/features/document/apiSlice"
 import {docVerPaginationUpdated} from "@/features/document/documentVersSlice"
 import {
@@ -9,13 +8,8 @@ import {
   preloadProgressiveImages,
   selectShowMorePages
 } from "@/features/document/imageObjectsSlice"
-import {
-  currentDocVerUpdated,
-  selectCurrentNodeCType,
-  selectCurrentNodeID
-} from "@/features/ui/uiSlice"
-import usePageImagePolling from "@/hooks/PageImagePolling"
-import type {PanelMode} from "@/types"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
+import {useCurrentNode, usePageImagePolling, usePanelMode} from "@/hooks"
 import type {UUID} from "@/types.d/common"
 import type {ProgressiveImageInputType} from "@/types.d/page_image"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -67,9 +61,9 @@ export default function usePageList({
   pageSize
 }: Args): PageListState {
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const currentCType = useAppSelector(s => selectCurrentNodeCType(s, mode))
+  const mode = usePanelMode()
+  const {currentNodeID, currentCType} = useCurrentNode()
+
   const isDocument = currentNodeID && currentCType === "document"
   const docID = isDocument ? currentNodeID : null
   const {data} = useGetDocLastVersionPaginatedQuery(

@@ -25,7 +25,7 @@ export default function PageListContainer() {
   )
   const {pages, isLoading, showLoadMore} = usePageList({
     pageNumber: pageNumber,
-    pageSize: 5
+    pageSize: DOC_VER_PAGINATION_PAGE_SIZE
   })
   const sortedPages = pages.sort((a, b) => a.pageNumber - b.pageNumber)
   const pageComponents = sortedPages.map(p => (

@@ -4,12 +4,14 @@ import classes from "./Page.module.css"
 
 interface PageArgs {
   pageNumber: number
+  angle?: number
+  zoomFactor?: number
   imageURL: string | null | undefined
   isLoading: boolean
 }
 
 export const Page = forwardRef<HTMLImageElement, PageArgs>(
-  ({pageNumber, imageURL, isLoading}, ref) => {
+  ({pageNumber, imageURL, isLoading, angle = 0, zoomFactor = 100}, ref) => {
     if (isLoading) {
       return (
         <Stack className={classes.page}>
@@ -26,7 +28,10 @@ export const Page = forwardRef<HTMLImageElement, PageArgs>(
     return (
       <Stack className={classes.page}>
         <img
-          /* style={{transform: `rotate(${page.angle}deg)`, width: `${zoomFactor}%`}} */
+          style={{
+            transform: `rotate(${angle}deg)`,
+            width: `${zoomFactor}%`
+          }}
           ref={ref}
           src={imageURL}
         />

@@ -31,7 +31,7 @@ export default function ThumbnailListContainer() {
     pageSize: DOC_VER_PAGINATION_PAGE_SIZE
   })
   const thumbnailComponents = pages.map(p => (
-    <Thumbnail key={p.id} pageID={p.id} pageNumber={p.number} />
+    <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
   const thumbnailsIsOpen = useSelector((state: RootState) =>
     selectThumbnailsPanelOpen(state, mode)

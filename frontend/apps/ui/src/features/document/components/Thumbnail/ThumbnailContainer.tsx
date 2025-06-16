@@ -32,18 +32,13 @@ import {contains_every} from "@/utils"
 import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
 
-/*
-type Args = {
-  page: ClientPage
-}
-*/
-
 interface Args {
   pageNumber: number
+  angle: number
   pageID: UUID
 }
 
-export default function ThumbnailContainer({pageNumber, pageID}: Args) {
+export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
   const {currentNodeID} = useCurrentNode()
@@ -180,7 +175,7 @@ export default function ThumbnailContainer({pageNumber, pageID}: Args) {
         onChange={onCheck}
         checked={checked}
         pageNumber={pageNumber}
-        angle={0}
+        angle={angle}
         imageURL={imageURL}
         isLoading={isLoading}
         withBorderBottom={withBorderBottom}

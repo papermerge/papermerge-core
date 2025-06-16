@@ -86,7 +86,9 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
         <img
           ref={ref}
           onClick={onClick}
-          style={{transform: `rotate(${angle}deg)`}}
+          style={{
+            transform: `rotate(${angle}deg)`
+          }}
           src={imageURL}
           alt={`Thumbnail for page ${pageNumber}`}
         />

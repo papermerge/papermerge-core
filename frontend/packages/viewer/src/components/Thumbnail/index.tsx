@@ -1,3 +1,3 @@
-import Thumbnail from "./Thumbnail.tsx"
+import Thumbnail from "./Thumbnail"
 
 export default Thumbnail

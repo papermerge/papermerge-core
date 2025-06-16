@@ -30,9 +30,8 @@ export default function ThumbnailListContainer() {
     pageNumber: pageNumber,
     pageSize: DOC_VER_PAGINATION_PAGE_SIZE
   })
-  const sortedPages = pages.sort((a, b) => a.pageNumber - b.pageNumber)
-  const thumbnailComponents = sortedPages.map(p => (
-    <Thumbnail key={p.pageID} pageID={p.pageID} pageNumber={p.pageNumber} />
+  const thumbnailComponents = pages.map(p => (
+    <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
   const thumbnailsIsOpen = useSelector((state: RootState) =>
     selectThumbnailsPanelOpen(state, mode)
@@ -43,7 +42,7 @@ export default function ThumbnailListContainer() {
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
-          pageSize: 5,
+          pageSize: DOC_VER_PAGINATION_PAGE_SIZE,
           docVerID: docVerID
         })
       )

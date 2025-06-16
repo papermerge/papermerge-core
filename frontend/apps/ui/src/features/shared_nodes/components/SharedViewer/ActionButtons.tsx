@@ -5,16 +5,10 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
 
-import type {DocumentType, PanelMode} from "@/types"
-import {DownloadButton} from "@papermerge/viewer"
+import DownloadButton from "@/features/document/components/DownloadButton"
+import type {PanelMode} from "@/types"
 
-interface Args {
-  doc?: DocumentType
-  isFetching: boolean
-  isError: boolean
-}
-
-export default function ActionButtons({doc, isFetching, isError}: Args) {
+export default function ActionButtons() {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)

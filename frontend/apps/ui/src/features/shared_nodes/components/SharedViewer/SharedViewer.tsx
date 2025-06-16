@@ -51,8 +51,6 @@ export default function SharedViewer() {
   const {
     currentData: doc,
     isSuccess,
-    isError,
-    isFetching,
     isLoading
   } = useGetSharedDocumentQuery(queryParams)
 
@@ -88,15 +86,15 @@ export default function SharedViewer() {
 
   return (
     <div>
-      <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
+      <ActionButtons />
       <Group justify="space-between">
         <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails isFetching={isFetching} />
+        <Thumbnails />
         <ThumbnailsToggle />
-        <Pages isFetching={isFetching} />
+        <Pages />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

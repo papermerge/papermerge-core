@@ -6,7 +6,8 @@ import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
 } from "@/features/document/documentVersSlice"
-import {selectCurrentDocVerID, selectZoomFactor} from "@/features/ui/uiSlice"
+import {useCurrentDocVerID} from "@/features/document/hooks"
+import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
 import {Button, Stack} from "@mantine/core"
 import {useContext} from "react"
@@ -20,7 +21,7 @@ export default function PageListContainer() {
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
-  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const docVerID = useCurrentDocVerID()
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVerID)
   )

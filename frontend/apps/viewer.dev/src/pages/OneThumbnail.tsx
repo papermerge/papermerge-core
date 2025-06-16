@@ -1,4 +1,11 @@
-import {Checkbox, Divider, Group, Stack} from "@mantine/core"
+import {
+  Checkbox,
+  ComboboxItem,
+  Divider,
+  Group,
+  Select,
+  Stack
+} from "@mantine/core"
 import {Thumbnail} from "@papermerge/viewer"
 import {useState} from "react"
 import page_a_sm from "../assets/pages/page_a/sm.jpg"
@@ -7,6 +14,7 @@ export default function OneThumbnail() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isChecked, setIsChecked] = useState<boolean>(false)
   const [isDragged, setIsDragged] = useState<boolean>(false)
+  const [angle, setAngle] = useState<number>(0)
   const [withBorderBottom, setWithBorderBottom] = useState<boolean>(false)
   const [withBorderTop, setWithBorderTop] = useState<boolean>(false)
 
@@ -30,6 +38,12 @@ export default function OneThumbnail() {
     setWithBorderTop(!withBorderTop)
   }
 
+  const onSelect = (_value: string | null, option: ComboboxItem | null) => {
+    if (option?.value) {
+      setAngle(parseInt(option.value))
+    }
+  }
+
   return (
     <Stack>
       <Group>
@@ -37,6 +51,12 @@ export default function OneThumbnail() {
         <Checkbox label="Is Dragged" onClick={toggleIsDragged} />
         <Checkbox label="with Border Bottom" onClick={toggleWithBorderBottom} />
         <Checkbox label="with Border Top" onClick={toggleWithBorderTop} />
+        <Select
+          label="Angle"
+          placeholder="Pick a value"
+          data={["0", "90", "180", "270"]}
+          onChange={onSelect}
+        />
       </Group>
       <Divider />
 
@@ -46,6 +66,7 @@ export default function OneThumbnail() {
         isLoading={isLoading}
         isDragged={isDragged}
         checked={isChecked}
+        angle={angle}
         onChange={toggleIsChecked}
         withBorderBottom={withBorderBottom}
         withBorderTop={withBorderTop}

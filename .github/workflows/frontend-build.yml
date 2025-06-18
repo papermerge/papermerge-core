@@ -24,12 +24,10 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: frontend/yarn.lock
       - name: Install latest Yarn
-        run: corepack prepare yarn@stable --activate
+        run: corepack enable
       - name: Activate latest Yarn
-        run: yarn set version stable
+        run: yarn set version 4.9.2
       - name: Install Node.js dependencies
-        run: yarn install
-      - name: Run yarn build hooks package
-        run: yarn workspace @papermerge/hooks build
+        run: yarn install --immutable
       - name: Run yarn build UI
         run: yarn workspace ui build

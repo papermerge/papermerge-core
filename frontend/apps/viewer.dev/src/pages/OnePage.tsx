@@ -1,6 +1,6 @@
-import {Checkbox, Group, Stack} from "@mantine/core"
-import {Page} from "@papermerge/viewer"
-import {useState} from "react"
+import { Checkbox, Group, Stack } from "@mantine/core"
+import { useState } from "react"
+import { Page } from "viewer"
 import page_a_md from "../assets/pages/page_a/md.jpg"
 
 export default function OnePage() {

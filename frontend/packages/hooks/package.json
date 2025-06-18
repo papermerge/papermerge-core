@@ -1,7 +1,7 @@
 {
-  "name": "@papermerge/hooks",
+  "name": "hooks",
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.1.0"
   },
   "scripts": {
     "build": "tsc"
@@ -9,7 +9,7 @@
   "devDependencies": {
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "typescript": "^5.8.3"
   }
 }

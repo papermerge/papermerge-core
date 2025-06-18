@@ -6,8 +6,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { selectNodesWithoutExistingThumbnails } from "@/features/nodes/selectors"
 import { loadThumbnail } from "@/features/nodes/thumbnailObjectsSlice"
 import { getBaseURL, getDefaultHeaders } from "@/utils"
-import type { ImageResourceStatus } from "@papermerge/hooks"
-import { useDocumentThumbnailPolling } from "@papermerge/hooks"
+import type { ImageResourceStatus } from "hooks"
+import { useDocumentThumbnailPolling } from "hooks"
 
 interface Args {
   items: NodeType[]

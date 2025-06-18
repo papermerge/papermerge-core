@@ -1,11 +1,11 @@
-import {Box, Checkbox, ComboboxItem, Group, Select, Stack} from "@mantine/core"
+import { Box, Checkbox, ComboboxItem, Group, Select, Stack } from "@mantine/core"
 import type {
   DownloadDocumentVersion,
   I18NDownloadButtonText
-} from "@papermerge/viewer"
-import {DownloadButton} from "@papermerge/viewer"
+} from "viewer"
+import { DownloadButton } from "viewer"
 
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 
 const NULL_OR_UNDEFINED = "null or undefined"
 const EMPTY = "empty list"

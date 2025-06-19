@@ -6,8 +6,8 @@ import {
   Select,
   Stack
 } from "@mantine/core"
-import {Thumbnail} from "@papermerge/viewer"
-import {useState} from "react"
+import { useState } from "react"
+import { Thumbnail } from "viewer"
 import page_a_sm from "../assets/pages/page_a/sm.jpg"
 
 export default function OneThumbnail() {

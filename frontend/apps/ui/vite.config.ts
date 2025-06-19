@@ -5,12 +5,20 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  /** Uncomment this block to disable minification
+  /*
   build: {
     minify: false, // 🔧 Disable minification
-    sourcemap: true // Optional: include source maps for better debugging
+    sourcemap: true, // Optional: include source maps for better debugging
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // Disable automatic code splitting
+      }
+    }
   },
   */
+  optimizeDeps: {
+    include: ['viewer']
+  },
   resolve: {
     alias: [
       {find: "@", replacement: "/src"},
@@ -20,8 +28,10 @@ export default defineConfig({
       {
         find: "@tabler/icons-react",
         replacement: "@tabler/icons-react/dist/esm/icons/index.mjs"
-      }
-    ]
+      },
+    ],
+    // Add dedupe to use the versions from apps/ui for workspace packages
+    dedupe: ['@mantine/core', '@mantine/hooks', '@tabler/icons-react', 'clsx', 'react', 'react-dom']
   },
   css: {
     preprocessorOptions: {

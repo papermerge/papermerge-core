@@ -1,18 +1,8 @@
 {
   "name": "Papermerge DMS UI",
-  "packageManager": "yarn@4.9.1",
+  "packageManager": "yarn@4.9.2",
   "workspaces": [
     "packages/*",
     "apps/*"
-  ],
-  "devDependencies": {
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  }
+  ]
 }

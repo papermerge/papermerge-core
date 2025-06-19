@@ -1,4 +1,4 @@
-import {Page} from "@papermerge/viewer"
+import { Page } from "viewer"
 import page_a_md from "../assets/pages/page_a/md.jpg"
 
 type PageStruct = {

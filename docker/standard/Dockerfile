@@ -2,10 +2,11 @@ FROM node:20.13 as  frontend_build
 
 WORKDIR build_frontend_app
 COPY frontend/ .
-RUN yarn install
-RUN yarn workspace @papermerge/hooks build
-RUN yarn workspace ui build
 
+RUN corepack enable
+RUN yarn set version 4.9.2
+RUN yarn install --immutable
+RUN yarn workspace ui build
 
 FROM papermerge/auth-server:1.1.3 as auth_server
 FROM python:3.13-alpine as papermerge_core

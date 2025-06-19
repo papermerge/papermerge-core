@@ -1,6 +1,6 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import { useGetDocumentQuery } from "@/features/document/apiSlice"
 import {
   pagesDroppedInDoc,
   selectCurrentPages,
@@ -16,19 +16,19 @@ import {
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
-import {useCurrentNode, usePanelMode} from "@/hooks"
-import type {UUID} from "@/types.d/common"
-import {useDisclosure} from "@mantine/hooks"
-import {Thumbnail} from "@papermerge/viewer"
-import {skipToken} from "@reduxjs/toolkit/query"
+import { useCurrentNode, usePanelMode } from "@/hooks"
+import type { UUID } from "@/types.d/common"
+import { useDisclosure } from "@mantine/hooks"
+import { skipToken } from "@reduxjs/toolkit/query"
+import { Thumbnail } from "viewer"
 
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type {DroppedThumbnailPosition} from "@/types"
+import type { DroppedThumbnailPosition } from "@/types"
 
-import {contains_every} from "@/utils"
+import { contains_every } from "@/utils"
 import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
 

@@ -1,4 +1,4 @@
-import {Page} from "@papermerge/viewer"
+import { Page } from "viewer"
 import usePage from "./usePage"
 
 interface Args {

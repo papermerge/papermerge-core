@@ -6,8 +6,8 @@
     "types": ["react"],
     "paths": {
       "@/*": ["src/*"],
-      "@papermerge/hooks": ["../../packages/hooks/src"],
-      "@papermerge/viewer": ["../../packages/viewer/src"]
+      "hooks": ["../../packages/hooks/src"],
+      "viewer": ["../../packages/viewer/src"]
     }
   },
   "include": ["src"],

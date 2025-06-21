@@ -1,9 +1,16 @@
-import {createAsyncThunk} from "@reduxjs/toolkit"
+import { uploaderFileItemUpdated } from "@/features/ui/uiSlice";
+import type { FolderType, NodeType, OCRCode } from "@/types";
+import type { UUID } from "@/types.d/common";
+import { getBaseURL, getDefaultHeaders } from "@/utils";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
+import { UploadFileOutput } from "./types";
 
-import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
-import type {FolderType, NodeType, OCRCode} from "@/types"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
-import axios from "axios"
+
+interface UploadedFilesUpdatedType {
+  nodeID: string
+  url: string
+}
 
 type UploadFileInput = {
   file: File
@@ -19,12 +26,6 @@ type CreateDocumentType = {
   ctype: "document"
   lang: string
   ocr: boolean
-}
-
-type UploadFileOutput = {
-  source: NodeType | null
-  target: FolderType
-  file_name: string
 }
 
 export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
@@ -107,6 +108,10 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
     const createdNode = response1.data as NodeType
 
+    thunkApi.dispatch(
+      uploadedFilesUpdated({nodeID: createdNode.id, url: URL.createObjectURL(args.file)})
+    )
+
     const form_data = new FormData()
 
     form_data.append("file", args.file)
@@ -182,3 +187,29 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     }
   }
 )
+
+export interface UploadedFilesState {
+  [node_id: UUID]: {
+    url: string | null
+  }
+}
+
+const initialState: UploadedFilesState = {}
+
+
+export const uploadedFilesSlice = createSlice({
+  name: "uploadedFiles",
+  initialState,
+  reducers: {
+    uploadedFilesUpdated(state, action: PayloadAction<UploadedFilesUpdatedType>) {
+      const payload = action.payload
+
+      state[payload.nodeID] = {
+        url: payload.url
+      }
+    }
+  },
+})
+
+export default uploadedFilesSlice.reducer
+export const { uploadedFilesUpdated } = uploadedFilesSlice.actions

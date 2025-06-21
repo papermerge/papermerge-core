@@ -9,6 +9,7 @@ import { getBaseURL, getDefaultHeaders } from "@/utils"
 import type { ImageResourceStatus } from "hooks"
 import { useDocumentThumbnailPolling } from "hooks"
 
+
 interface Args {
   items: NodeType[]
   onClick: (node: NType) => void
@@ -27,6 +28,7 @@ export default function NodesList({
     [documentIds.join(",")]
   )
   const nodesWithoutThumbnails = useAppSelector(thumbnailSelector)
+
   const {previews} = useDocumentThumbnailPolling({
     url: `${getBaseURL()}/api/documents/thumbnail-img-status/`,
     docIDs: nodesWithoutThumbnails,
@@ -48,6 +50,7 @@ export default function NodesList({
       })
    }
   }, [previews])
+
 
   return items.map((n: NodeType) => (
     <Node

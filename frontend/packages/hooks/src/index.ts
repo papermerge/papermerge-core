@@ -73,7 +73,6 @@ export const useDocumentThumbnailPolling = ({
     if (retryCount.current !== null) {
       retryCount.current += 1
     }
-    console.log(retryCount.current)
   }
 
   const retryCountReset = () => {

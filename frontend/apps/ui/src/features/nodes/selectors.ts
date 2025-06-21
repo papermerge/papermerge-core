@@ -1,6 +1,6 @@
-import {RootState} from "@/app/types"
-import type {ObjectURLState} from "@/types.d/common"
-import {createSelector} from "@reduxjs/toolkit"
+import { RootState } from "@/app/types"
+import type { ObjectURLState } from "@/types.d/common"
+import { createSelector } from "@reduxjs/toolkit"
 
 export const selectThumbnailByNodeId = (
   state: RootState,
@@ -12,8 +12,11 @@ export const selectThumbnailByNodeId = (
 export const selectThumbnailObjects = (state: RootState) =>
   state.thumbnailObjects
 
+export const selectUploadedFiles = (state: RootState) =>
+  state.uploadedFiles
+
 export const selectNodesWithoutExistingThumbnails = (node_ids: string[]) =>
-  createSelector([selectThumbnailObjects], thumbnailObjects => {
-    const result = node_ids.filter(node_id => !thumbnailObjects[node_id])
+  createSelector([selectThumbnailObjects, selectUploadedFiles], (thumbnailObjects, uploadedFiles) => {
+    const result = node_ids.filter(node_id => !thumbnailObjects[node_id] && !uploadedFiles[node_id])
     return result
   })

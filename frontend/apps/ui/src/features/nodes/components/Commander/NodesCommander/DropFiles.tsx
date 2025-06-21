@@ -1,15 +1,17 @@
-import {Button, Container, Group, Loader, Modal, Text} from "@mantine/core"
-import {useState} from "react"
+import { Button, Container, Group, Loader, Modal, Text } from "@mantine/core"
+import { useState } from "react"
 
-import {useAppDispatch} from "@/app/hooks"
-import {apiSlice} from "@/features/api/slice"
-import {uploadFile} from "@/features/nodes/uploadFile"
+import { useAppDispatch } from "@/app/hooks"
+import { apiSlice } from "@/features/api/slice"
+import { uploadFile } from "@/features/files/filesSlice"
 
 import Error from "@/components/Error"
 import ScheduleOCRProcessCheckbox from "@/components/ScheduleOCRProcessCheckbox/ScheduleOCRProcessCheckbox"
-import {useRuntimeConfig} from "@/hooks/runtime_config"
-import type {FolderType, OCRCode} from "@/types"
-import {useTranslation} from "react-i18next"
+import { generateThumbnail } from "@/features/nodes/thumbnailObjectsSlice"
+import type { UploadFileOutput } from "@/features/nodes/types"
+import { useRuntimeConfig } from "@/hooks/runtime_config"
+import type { FolderType, OCRCode } from "@/types"
+import { useTranslation } from "react-i18next"
 
 type Args = {
   opened: boolean
@@ -45,7 +47,7 @@ export const DropFilesModal = ({
 
   const localSubmit = async () => {
     for (let i = 0; i < source_files.length; i++) {
-      dispatch(
+      const result = await dispatch(
         uploadFile({
           file: source_files[i],
           refreshTarget: true,
@@ -53,9 +55,14 @@ export const DropFilesModal = ({
           lang: lang,
           target
         })
-      ).then(() => {
-        dispatch(apiSlice.util.invalidateTags(["Node"]))
-      })
+      )
+      const newlyCreatedNode = result.payload as UploadFileOutput
+
+      if (newlyCreatedNode.source?.id) {
+        const newNodeID = newlyCreatedNode.source?.id
+        dispatch(generateThumbnail({node_id: newNodeID, file: source_files[i]}))
+      }
+      dispatch(apiSlice.util.invalidateTags(["Node"]))
     }
 
     onSubmit()

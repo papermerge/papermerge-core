@@ -1,7 +1,7 @@
-import {getBaseURL} from "@/utils"
-import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
+import { getBaseURL } from "@/utils"
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
-import type {RootState} from "@/app/types"
+import type { RootState } from "@/app/types"
 
 const getKeepUnusedDataFor = function () {
   const keep_unused_data_for = import.meta.env.VITE_KEEP_UNUSED_DATA_FOR
@@ -9,7 +9,6 @@ const getKeepUnusedDataFor = function () {
   if (keep_unused_data_for == 0) {
     return 0
   }
-  console.log(keep_unused_data_for || 60)
   return keep_unused_data_for || 60
 }
 

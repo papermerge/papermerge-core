@@ -30,6 +30,7 @@ export default function NodesList({
     [documentIds.join(",")]
   )
   const nodesWithoutThumbnails = useAppSelector(thumbnailSelector)
+
   const {previews} = useDocumentThumbnailPolling({
     url: `${getBaseURL()}/api/documents/thumbnail-img-status/`,
     docIDs: nodesWithoutThumbnails,
@@ -51,6 +52,7 @@ export default function NodesList({
       })
    }
   }, [previews])
+
 
   return items.map((n: NodeType) => (
     <Node

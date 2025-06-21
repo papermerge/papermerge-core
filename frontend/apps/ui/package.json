@@ -32,6 +32,7 @@
     "i18next-xhr-backend": "^3.2.2",
     "immer": "^10.1.1",
     "js-cookie": "^3.0.5",
+    "pdfjs-dist": "^5.3.31",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-i18next": "^15.4.1",
@@ -51,6 +52,7 @@
     "sass": "^1.85.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.2",
+    "vite-plugin-static-copy": "^3.0.2",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

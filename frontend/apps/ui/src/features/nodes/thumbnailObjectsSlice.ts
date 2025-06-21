@@ -1,7 +1,8 @@
-import type { UUID } from "@/types.d/common"
-import type { LoadThumbnailInputType } from "@/types.d/node_thumbnail"
-import { getBaseURL, getDefaultHeaders } from "@/utils"
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import type { UUID } from "@/types.d/common";
+import type { GenerateThumbnailInputType, LoadThumbnailInputType } from "@/types.d/node_thumbnail";
+import { getBaseURL, getDefaultHeaders } from "@/utils";
+import { generateThumbnail as util_pdf_generateThumbnail } from "@/utils/pdf";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export interface ThumbnailState {
   [node_id: UUID]: {
@@ -17,6 +18,27 @@ interface PayloadType {
   objectURL: string | null
   error: string | null
 }
+
+export const generateThumbnail = createAsyncThunk<
+  PayloadType,
+  GenerateThumbnailInputType
+>("images/generateNodeThumbnail", async item => {
+
+  const objectURL = await util_pdf_generateThumbnail({ file: item.file, width: 300 })
+  if (objectURL) {
+    return {
+      node_id: item.node_id,
+      objectURL: objectURL,
+      error: null
+    }
+  }
+
+  return {
+    node_id: item.node_id,
+    objectURL: null,
+    error: "There was an error generating thumbnail image"
+  }
+})
 
 export const loadThumbnail = createAsyncThunk<
   PayloadType, // 1. Return type of payload (fulfilled result)
@@ -34,15 +56,15 @@ export const loadThumbnail = createAsyncThunk<
   }
 
   if (item.status == "pending") {
-    return {node_id: item.node_id, objectURL: null, error: null}
+    return { node_id: item.node_id, objectURL: null, error: null }
   }
 
   if (!item.status) {
-    return {node_id: item.node_id, objectURL: null, error: null}
+    return { node_id: item.node_id, objectURL: null, error: null }
   }
 
   if (!item.url) {
-    return {node_id: item.node_id, objectURL: null, error: null}
+    return { node_id: item.node_id, objectURL: null, error: null }
   }
 
   if (item.url && !item.url.startsWith("/api/")) {
@@ -52,8 +74,9 @@ export const loadThumbnail = createAsyncThunk<
     // use backend server URL (which may differ from frontend's URL)
     url = `${getBaseURL(true)}${item.url}`
   }
-  console.log(`Loading thumbnail ${url}`)
-  const response = await fetch(url, {headers: headers})
+
+  const response = await fetch(url, { headers: headers })
+
   if (response.ok) {
     const blob = await response.blob()
     const objectURL = URL.createObjectURL(blob)
@@ -88,6 +111,34 @@ const thumbnailObjectsSlice = createSlice({
     }
   },
   extraReducers: builder => {
+    builder.addCase(generateThumbnail.fulfilled, (state, action) => {
+      const payload = action.payload
+
+      if (payload) {
+        const node_id = payload.node_id as UUID
+        const newObjectURL = payload.objectURL
+        const error = payload.error
+        const existingValue = state[node_id]
+
+        if (existingValue && existingValue.url) {
+          URL.revokeObjectURL(existingValue.url)
+        }
+
+        if (!payload.error && newObjectURL) {
+          state[node_id] = {
+            url: newObjectURL,
+            error: error
+          }
+        }
+
+        if (payload.error) {
+          state[node_id] = {
+            url: null,
+            error: error
+          }
+        }
+      }
+    })
     builder.addCase(loadThumbnail.fulfilled, (state, action) => {
       const payload = action.payload
 
@@ -126,5 +177,5 @@ const thumbnailObjectsSlice = createSlice({
   }
 })
 
-export const {clearImages} = thumbnailObjectsSlice.actions
+export const { clearImages } = thumbnailObjectsSlice.actions
 export default thumbnailObjectsSlice.reducer

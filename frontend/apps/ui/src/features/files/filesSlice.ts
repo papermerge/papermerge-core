@@ -1,9 +1,21 @@
-import {createAsyncThunk} from "@reduxjs/toolkit"
+import { uploaderFileItemUpdated } from "@/features/ui/uiSlice";
+import type { FolderType, NodeType, OCRCode } from "@/types";
+import type { UUID } from "@/types.d/common";
+import { getBaseURL, getDefaultHeaders } from "@/utils";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
+import { UploadFileOutput } from "../nodes/types";
+import { fileManager } from "./fileManager";
 
-import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
-import type {FolderType, NodeType, OCRCode} from "@/types"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
-import axios from "axios"
+
+type FilesAddedType = {
+  nodeID: string
+  objectURL: string
+  fileName: string
+  type: string
+  size: number
+}
+
 
 type UploadFileInput = {
   file: File
@@ -19,12 +31,6 @@ type CreateDocumentType = {
   ctype: "document"
   lang: string
   ocr: boolean
-}
-
-type UploadFileOutput = {
-  source: NodeType | null
-  target: FolderType
-  file_name: string
 }
 
 export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
@@ -43,6 +49,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       lang: args.lang,
       ocr: args.ocr
     }
+    const buffer = await args.file.arrayBuffer()
 
     thunkApi.dispatch(
       uploaderFileItemUpdated({
@@ -106,6 +113,21 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     }
 
     const createdNode = response1.data as NodeType
+
+    fileManager.store({
+      nodeID: createdNode.id,
+      buffer: buffer
+    })
+
+    thunkApi.dispatch(
+      filesAdded({
+        nodeID: createdNode.id,
+        objectURL: URL.createObjectURL(args.file),
+        fileName: args.file.name,
+        size: args.file.size,
+        type: args.file.type
+      })
+    )
 
     const form_data = new FormData()
 
@@ -182,3 +204,36 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     }
   }
 )
+
+export type FileItem = {
+  nodeID: UUID
+  fileName: string
+  size: number
+  type: string
+  objectURL?: string
+  docVerID?: UUID
+}
+
+export type FilesState = {
+  files: Array<FileItem>
+}
+
+const initialState: FilesState = {
+  files: []
+}
+
+
+export const filesSlice = createSlice({
+  name: "files",
+  initialState,
+  reducers: {
+    filesAdded(state, action: PayloadAction<FilesAddedType>) {
+      state.files = [
+        ...state.files, action.payload
+      ]
+    }
+  },
+})
+
+export default filesSlice.reducer
+export const { filesAdded } = filesSlice.actions

@@ -4,13 +4,18 @@ import type { UUID } from "@/types.d/common";
 import { getBaseURL, getDefaultHeaders } from "@/utils";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import { UploadFileOutput } from "./types";
+import { UploadFileOutput } from "../nodes/types";
 
 
-interface UploadedFilesUpdatedType {
+type FilesAddedType = {
   nodeID: string
-  url: string
+  objectURL: string
+  buffer: ArrayBuffer
+  fileName: string
+  type: string
+  size: number
 }
+
 
 type UploadFileInput = {
   file: File
@@ -44,6 +49,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       lang: args.lang,
       ocr: args.ocr
     }
+    const buffer = await args.file.arrayBuffer()
 
     thunkApi.dispatch(
       uploaderFileItemUpdated({
@@ -109,7 +115,14 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     const createdNode = response1.data as NodeType
 
     thunkApi.dispatch(
-      uploadedFilesUpdated({nodeID: createdNode.id, url: URL.createObjectURL(args.file)})
+      filesAdded({
+        nodeID: createdNode.id,
+        objectURL: URL.createObjectURL(args.file),
+        fileName: args.file.name,
+        buffer: buffer,
+        size: args.file.size,
+        type: args.file.type
+      })
     )
 
     const form_data = new FormData()
@@ -188,28 +201,36 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
   }
 )
 
-export interface UploadedFilesState {
-  [node_id: UUID]: {
-    url: string | null
-  }
+export type FileItem = {
+  nodeID: UUID
+  buffer: ArrayBuffer
+  fileName: string
+  size: number
+  type: string
+  objectURL?: string
+  docVerID?: UUID
 }
 
-const initialState: UploadedFilesState = {}
+export type FilesState = {
+  files: Array<FileItem>
+}
+
+const initialState: FilesState = {
+  files: []
+}
 
 
-export const uploadedFilesSlice = createSlice({
-  name: "uploadedFiles",
+export const filesSlice = createSlice({
+  name: "files",
   initialState,
   reducers: {
-    uploadedFilesUpdated(state, action: PayloadAction<UploadedFilesUpdatedType>) {
-      const payload = action.payload
-
-      state[payload.nodeID] = {
-        url: payload.url
-      }
+    filesAdded(state, action: PayloadAction<FilesAddedType>) {
+      state.files = [
+        ...state.files, action.payload
+      ]
     }
   },
 })
 
-export default uploadedFilesSlice.reducer
-export const { uploadedFilesUpdated } = uploadedFilesSlice.actions
+export default filesSlice.reducer
+export const { filesAdded } = filesSlice.actions

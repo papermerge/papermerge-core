@@ -5,12 +5,12 @@ import { getBaseURL, getDefaultHeaders } from "@/utils";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { UploadFileOutput } from "../nodes/types";
+import { fileManager } from "./fileManager";
 
 
 type FilesAddedType = {
   nodeID: string
   objectURL: string
-  buffer: ArrayBuffer
   fileName: string
   type: string
   size: number
@@ -114,12 +114,16 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
     const createdNode = response1.data as NodeType
 
+    fileManager.store({
+      nodeID: createdNode.id,
+      buffer: buffer
+    })
+
     thunkApi.dispatch(
       filesAdded({
         nodeID: createdNode.id,
         objectURL: URL.createObjectURL(args.file),
         fileName: args.file.name,
-        buffer: buffer,
         size: args.file.size,
         type: args.file.type
       })
@@ -203,7 +207,6 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
 
 export type FileItem = {
   nodeID: UUID
-  buffer: ArrayBuffer
   fileName: string
   size: number
   type: string

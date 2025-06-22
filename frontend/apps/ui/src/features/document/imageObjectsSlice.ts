@@ -83,7 +83,7 @@ export const generatePreviews = createAsyncThunk<
   }
 
   if (item.size != "sm") {
-    for (let pNum = item.firstPage; pNum < item.lastPage; pNum++) {
+    for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
       const objectURL = await util_pdf_generatePreview(
         { file: file, width: smallWidth, pageNumber: pNum }
       )

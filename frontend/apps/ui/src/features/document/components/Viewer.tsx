@@ -11,8 +11,9 @@ import { useNavigate } from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import { useGetDocumentQuery } from "@/features/document/apiSlice"
-import useDownloadLastDocVer from "@/features/document/hooks/useDownloadLastDocVer"
+import { useGetDocLastVersionQuery, useGetDocumentQuery } from "@/features/document/apiSlice"
+import useDownloadLastDocVerFile from "@/features/document/hooks/useDownloadLastDocVerFile"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import { useRef, useState } from "react"
 
 import {
@@ -149,15 +150,23 @@ export default function Viewer() {
     return <Loader />
   }
 
-  const {isDownloading} = useDownloadLastDocVer(currentNodeID)
+  const {isDownloading} = useDownloadLastDocVerFile(currentNodeID)
+  const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID)
   const docVerID = useCurrentDocVerID()
 
+  if (isFetingLastDocumentVer) {
+    return <Loader />
+  }
+
+  if (!docVer) {
+    return <Loader />
+  }
 
   if (!docVerID || isDownloading) {
     return <Loader />
   }
 
-  const {isGenerating} = useGeneratePreviews(docVerID)
+  const {isGenerating} = useGeneratePreviews(docVer)
 
   if (isGenerating) {
     return <Loader />

@@ -295,12 +295,8 @@ export type OCRCode =
 
 export type PageType = {
   id: string
-  document_version_id: string
-  jpg_url: string | null
-  svg_url: string | null
   lang: string
   number: number
-  text: string
 }
 
 // page and rotation operation

@@ -214,7 +214,7 @@ def get_document_last_version(
     doc_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     db_session=Depends(db.get_db),
-) -> schema.DocVerShort:
+) -> schema.DocumentVersion:
     """
     Returns document's last version
 

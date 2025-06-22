@@ -1,7 +1,7 @@
 import type { UUID } from "@/types.d/common";
 import type { GenerateThumbnailInputType, LoadThumbnailInputType } from "@/types.d/node_thumbnail";
 import { getBaseURL, getDefaultHeaders } from "@/utils";
-import { generateThumbnail as util_pdf_generateThumbnail } from "@/utils/pdf";
+import { generatePreview as util_pdf_generateThumbnail } from "@/utils/pdf";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export interface ThumbnailState {
@@ -24,7 +24,7 @@ export const generateThumbnail = createAsyncThunk<
   GenerateThumbnailInputType
 >("images/generateNodeThumbnail", async item => {
 
-  const objectURL = await util_pdf_generateThumbnail({ file: item.file, width: 300 })
+  const objectURL = await util_pdf_generateThumbnail({ file: item.file, width: 300, pageNumber: 1 })
   if (objectURL) {
     return {
       node_id: item.node_id,

@@ -28,8 +28,8 @@ class FileManager {
     return [...this.files] // Return a copy to prevent external mutations
   }
 
-  getByDocVerID(docVerID: UUID): FileItem[] {
-    return this.files.filter(file => file.docVerID === docVerID)
+  getByDocVerID(docVerID: UUID): FileItem | undefined {
+    return this.files.find(file => file.docVerID === docVerID)
   }
 
   update(nodeID: UUID, updates: Partial<Omit<FileItem, 'nodeID'>>): boolean {

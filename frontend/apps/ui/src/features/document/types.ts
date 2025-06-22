@@ -1,3 +1,6 @@
+import { DocumentVersion } from "@/types"
+import { ImageSize } from "@/types.d/common"
+
 export type BasicPage = {
   id: string
   number: number
@@ -21,4 +24,12 @@ export type DLVPaginatedArgsOutput = {
   page_number: number
   num_pages: number
   total_count: number
+}
+
+
+export interface GeneratePreviewInputType {
+  docVer: DocumentVersion
+  size: ImageSize
+  firstPage: number
+  lastPage: number
 }

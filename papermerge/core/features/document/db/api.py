@@ -775,7 +775,7 @@ def get_doc_version_download_url(
 def get_document_last_version(
     db_session: Session,
     doc_id: uuid.UUID,
-) -> schema.DocVerShort:
+) -> schema.DocumentVersion:
     ...
 
 

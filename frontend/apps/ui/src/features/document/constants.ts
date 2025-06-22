@@ -1,1 +1,1 @@
-export const DOC_VER_PAGINATION_PAGE_SIZE = 5
+export const DOC_VER_PAGINATION_PAGE_SIZE = 15

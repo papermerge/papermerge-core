@@ -2,12 +2,14 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-interface GenerateThumbnailArgs {
+
+interface GeneratePreviewArgs {
   file: File;
   width: number;
+  pageNumber: number
 }
 
-async function generateThumbnail({ file, width }: GenerateThumbnailArgs): Promise<string> {
+async function generatePreview({ file, width, pageNumber }: GeneratePreviewArgs): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
 
@@ -27,7 +29,7 @@ async function generateThumbnail({ file, width }: GenerateThumbnailArgs): Promis
       throw new Error('Could not get canvas 2D context');
     }
 
-    const page = await pdfDocument.getPage(1);
+    const page = await pdfDocument.getPage(pageNumber);
 
     // Get the original viewport to calculate proper scaling
     const originalViewport = page.getViewport({ scale: 1.0 });
@@ -65,9 +67,10 @@ async function generateThumbnail({ file, width }: GenerateThumbnailArgs): Promis
 
     return objectUrl;
   } catch (error) {
-    console.error('Error generating PDF thumbnail:', error);
+    console.error('Error generating PDF preview:', error);
     throw error;
   }
 }
 
-export { generateThumbnail };
+
+export { generatePreview };

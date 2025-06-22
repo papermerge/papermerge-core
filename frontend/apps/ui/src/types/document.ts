@@ -1,13 +1,15 @@
-import type {BreadcrumbType} from "./breadcrumb"
-import type {OCRCode, OcrStatusEnum} from "./ocr"
+import type { BreadcrumbType } from "./breadcrumb"
+import type { OCRCode, OcrStatusEnum } from "./ocr"
 
-export type PageType = {
+
+export type BasicPageType = {
   id: string
-  document_version_id: string
-  jpg_url: string | null
-  svg_url: string | null
-  lang: string
   number: number
+}
+
+export type PageType = BasicPageType & {
+  document_version_id: string
+  lang: string
   text: string
 }
 
@@ -19,7 +21,7 @@ export type DocumentVersion = {
   lang: OCRCode
   number: number
   page_count: number
-  pages: Array<PageType>
+  pages: Array<BasicPageType>
   short_description: string
   size: number
 }

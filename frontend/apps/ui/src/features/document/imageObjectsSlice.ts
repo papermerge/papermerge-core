@@ -133,18 +133,22 @@ const imageObjectsSlice = createSlice({
 export default imageObjectsSlice.reducer
 export const selectImageObjects = (state: RootState) => state.imageObjects
 
-export const makeSelectPageList = (docVerID?: UUID) =>
-  createSelector([selectImageObjects], imageObjects => {
+
+export const selectExistingPreviewsPageNumbers = createSelector(
+  [
+    selectImageObjects,
+    (_: RootState, docVerID?: UUID) => docVerID // Pass docVerID as input
+  ],
+  (imageObjects, docVerID) => {
     if (!docVerID) return []
 
-    return Object.entries(imageObjects)
-      .filter(([_, value]) => value.docVerID === docVerID)
-      .map(([pageID, value]) => ({
-        pageID,
-        pageNumber: value.pageNumber!
-      }))
-  })
+    const pageNumbers = Object.entries(imageObjects)
+      .filter(([_, value]) => value.docVerID === docVerID && value.md && value.sm)
+      .map(([_, value]) => value.pageNumber)
 
+    return pageNumbers
+  }
+)
 export const selectShowMorePages = (
   state: RootState,
   docVerID?: UUID,

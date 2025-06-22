@@ -36,12 +36,12 @@ import {
   currentNodeChanged,
   secondaryPanelClosed,
   selectContentHeight,
+  selectCurrentDocVerID,
   selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
 import type { Coord, NType, PanelMode, ServerErrorType } from "@/types"
 import { useDisclosure } from "@mantine/hooks"
-import { useCurrentDocVerID } from "../hooks"
 
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
@@ -58,6 +58,7 @@ export default function Viewer() {
     selectCurrentNodeCType(s, "secondary")
   )
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const currentDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const {
     currentData: doc,
     isError,
@@ -152,7 +153,13 @@ export default function Viewer() {
 
   const {isDownloading} = useDownloadLastDocVerFile(currentNodeID)
   const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID)
-  const docVerID = useCurrentDocVerID()
+
+  useEffect(() => {
+    if (docVer) {
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
+    }
+  }, [docVer])
+
 
   if (isFetingLastDocumentVer) {
     return <Loader />
@@ -162,11 +169,11 @@ export default function Viewer() {
     return <Loader />
   }
 
-  if (!docVerID || isDownloading) {
+  if (isDownloading) {
     return <Loader />
   }
 
-  const {isGenerating} = useGeneratePreviews(docVer)
+  const {isGenerating} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
 
   if (isGenerating) {
     return <Loader />
@@ -182,7 +189,7 @@ export default function Viewer() {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <ThumbnailList />
         <ThumbnailsToggle />
-        <PageList docVerID={docVerID} />
+        <PageList docVerID={docVer.id} />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

@@ -317,46 +317,6 @@ export type DocVerShort = {
   size: number
 }
 
-export type DocumentVersion = DocVerShort & {
-  pages: Array<PageType>
-}
-
-export type DocumentVersionWithPageRot = {
-  id: string
-  document_id: string
-  download_url: string
-  file_name: string
-  lang: OCRCode
-  number: number
-  page_count: number
-  pages: Array<PageAndRotOp>
-  short_description: string
-  size: number
-}
-
-/* Naming here is unfortunate.
-Correct name of this type would be `Document`; but it
-collides with https://developer.mozilla.org/en-US/docs/Web/API/Document */
-export type DocumentType = {
-  id: string
-  ctype: "document"
-  title: string
-  breadcrumb: BreadcrumbType
-  tags: Array<DocumentTag>
-  ocr: boolean
-  ocr_status: OcrStatusEnum
-  thumbnail_url: string
-  /* Naming here is correct; it refers to specific
-  document type id (i.e. to the "kind" of the document) */
-  document_type_id?: string
-  versions: Array<DocumentVersion>
-  parent_id: string | null
-  user_id?: string
-  group_id?: string
-  updated_at: string
-  owner_name?: string
-}
-
 export interface ClientPage {
   id: string
   angle: number

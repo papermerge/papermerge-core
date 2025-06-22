@@ -1,6 +1,7 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppDispatch } from "@/app/hooks";
+import usePageRangeWithoutPreview from "@/features/document/hooks/usePageRangeWithoutPreviews";
 import { generatePreviews } from "@/features/document/imageObjectsSlice";
-import type { DocumentVersion } from "@/types";
+import type { DocumentVersion } from "@/features/document/types";
 import { useEffect, useState } from "react";
 
 interface State {
@@ -15,14 +16,18 @@ interface Args {
 
 
 export default function useGeneratePreviews({ docVer, pageSize, pageNumber }: Args): State {
-  const [isGenerating, setIsGenerating] = useState<boolean>(true)
   const dispatch = useAppDispatch()
-  const { firstPage, lastPage } = useAppSelector(s => selectPagesWithoutPreviews(s, docVer, pageSize, pageNumber))
+  const [isGenerating, setIsGenerating] = useState<boolean>(true)
+  const { firstPage, lastPage } = usePageRangeWithoutPreview({
+    docVer, pageSize, pageNumber
+  })
 
   useEffect(() => {
     const generate = async () => {
       setIsGenerating(true)
-      await dispatch(generatePreviews({ docVer, size: "md", firstPage, lastPage }))
+      if (firstPage != null && lastPage != null) {
+        await dispatch(generatePreviews({ docVer, size: "md", firstPage, lastPage }))
+      }
       setIsGenerating(false)
     }
 

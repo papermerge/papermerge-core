@@ -59,7 +59,7 @@ async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
   }
 }
 
-export default function useDownloadLastDocVerFile(docID: UUID): State {
+export default function useDownloadLastDocVerFile(docID?: UUID): State {
   const [isDownloading, setIsDownloading] = useState<boolean>(true)
   const [error, setError] = useState<string | undefined>()
 
@@ -85,6 +85,10 @@ export default function useDownloadLastDocVerFile(docID: UUID): State {
       } finally {
         setIsDownloading(false)
       }
+    }
+
+    if (!docID) {
+      return
     }
 
     downloadLastDocVer()

@@ -9,7 +9,7 @@ interface State {
 }
 
 interface Args {
-  docVer: DocumentVersion
+  docVer?: DocumentVersion
   pageNumber: number
   pageSize: number
 }
@@ -25,10 +25,14 @@ export default function useGeneratePreviews({ docVer, pageSize, pageNumber }: Ar
   useEffect(() => {
     const generate = async () => {
       setIsGenerating(true)
-      if (firstPage != null && lastPage != null) {
+      if (firstPage != null && lastPage != null && docVer) {
         await dispatch(generatePreviews({ docVer, size: "md", firstPage, lastPage }))
       }
       setIsGenerating(false)
+    }
+
+    if (!docVer) {
+      return
     }
 
     generate()

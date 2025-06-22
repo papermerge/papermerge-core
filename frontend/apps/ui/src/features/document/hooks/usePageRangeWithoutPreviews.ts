@@ -5,7 +5,7 @@ import { selectExistingPreviewsPageNumbers } from "../imageObjectsSlice"
 
 
 interface Args {
-  docVer: DocumentVersion
+  docVer?: DocumentVersion
   pageNumber: number
   pageSize: number
 }
@@ -17,8 +17,8 @@ interface State {
 
 function getRange(pageNumber: number, pageSize: number, totalPageCount: number): Array<number> {
   const result: Array<number> = []
-  const first = pageSize * (pageNumber - 1);
-  let last = pageSize * pageNumber;
+  const first = pageSize * (pageNumber - 1) + 1;
+  let last = pageSize * pageNumber + 1;
 
   if (last > totalPageCount) {
     last = totalPageCount
@@ -32,18 +32,21 @@ function getRange(pageNumber: number, pageSize: number, totalPageCount: number):
 
 
 export default function usePageRangeWithoutPreviews({ docVer, pageNumber, pageSize }: Args): State {
-  const pageNumbersWithPreviews = useAppSelector(s => selectExistingPreviewsPageNumbers(s, docVer.id))
+  const pageNumbersWithPreviews = useAppSelector(s => selectExistingPreviewsPageNumbers(s, docVer?.id))
   const [firstPage, setFirstPage] = useState<number | null>(null)
   const [lastPage, setLastPage] = useState<number | null>(null)
 
   useEffect(() => {
+    if (!docVer) {
+      return
+    }
     const range = getRange(pageNumber, pageSize, docVer.pages.length)
     let previewsForRangeAvailable = range.every(num => pageNumbersWithPreviews.includes(num))
     if (!previewsForRangeAvailable) {
       setFirstPage(range[0])
       setLastPage(range[range.length - 1])
     }
-  }, [docVer.id, pageNumber, pageSize])
+  }, [docVer?.id, pageNumber, pageSize])
 
 
   return { firstPage, lastPage }

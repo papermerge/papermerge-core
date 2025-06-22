@@ -59,6 +59,11 @@ export default function Viewer() {
   )
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const currentDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID || "", {
+    skip: !currentNodeID
+  })
+  const {isDownloading} = useDownloadLastDocVerFile(currentNodeID)
+
   const {
     currentData: doc,
     isError,
@@ -66,6 +71,8 @@ export default function Viewer() {
     isLoading,
     error
   } = useGetDocumentQuery(currentNodeID!)
+  const {isGenerating} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
+
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -151,9 +158,6 @@ export default function Viewer() {
     return <Loader />
   }
 
-  const {isDownloading} = useDownloadLastDocVerFile(currentNodeID)
-  const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID)
-
   useEffect(() => {
     if (docVer) {
       dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
@@ -165,15 +169,13 @@ export default function Viewer() {
     return <Loader />
   }
 
-  if (!docVer) {
+  if (!docVer || !currentDocVerID) {
     return <Loader />
   }
 
   if (isDownloading) {
     return <Loader />
   }
-
-  const {isGenerating} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
 
   if (isGenerating) {
     return <Loader />
@@ -189,7 +191,7 @@ export default function Viewer() {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <ThumbnailList />
         <ThumbnailsToggle />
-        <PageList docVerID={docVer.id} />
+        <PageList docVerID={currentDocVerID} />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

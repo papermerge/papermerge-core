@@ -1,4 +1,3 @@
-import uuid
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
@@ -236,7 +235,7 @@ class Page(BasicPage):
 DownloadUrl = Annotated[str | None, Field(validate_default=True)]
 
 
-class DocumentVersion(BaseModel):
+class DocVerShort(BaseModel):
     id: UUID
     number: int
     lang: str
@@ -246,7 +245,6 @@ class DocumentVersion(BaseModel):
     short_description: str | None = None
     document_id: UUID
     download_url: DownloadUrl = None
-    pages: list[Page] | None = []
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
@@ -254,10 +252,14 @@ class DocumentVersion(BaseModel):
         if file_server == config.FileServer.LOCAL:
             return f"/api/document-versions/{info.data['id']}/download"
 
-        return None
+        return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentVersion(DocVerShort):
+    pages: list[Page] | None = []
 
 
 class DocVerListItem(BaseModel):
@@ -338,17 +340,6 @@ class Pagination(BaseModel):
     page_number: int
     num_pages: int  # total count of pages
 
-
-class PaginatedDocVer(BaseModel):
-    doc_ver_id: uuid.UUID
-    lang: str
-    number: int
-    file_name: str
-    pages: list[BasicPage]
-    page_size: int
-    page_number: int
-    num_pages: int
-    total_count: int
 
 
 class DocumentPreviewImageStatus(BaseModel):

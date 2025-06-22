@@ -1,18 +1,19 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 
 import {
   isHTTP403Forbidden,
   isHTTP404NotFound,
   isHTTP422UnprocessableContent
 } from "@/services/helpers"
-import {Flex, Group} from "@mantine/core"
-import {useContext, useEffect} from "react"
-import {useNavigate} from "react-router-dom"
+import { Flex, Group, Loader } from "@mantine/core"
+import { useContext, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {useRef, useState} from "react"
+import { useGetDocumentQuery } from "@/features/document/apiSlice"
+import useDownloadLastDocVer from "@/features/document/hooks/useDownloadLastDocVer"
+import { useRef, useState } from "react"
 
 import {
   ERRORS_403_ACCESS_FORBIDDEN,
@@ -37,8 +38,9 @@ import {
   selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
-import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
-import {useDisclosure} from "@mantine/hooks"
+import type { Coord, NType, PanelMode, ServerErrorType } from "@/types"
+import { useDisclosure } from "@mantine/hooks"
+import { useCurrentDocVerID } from "../hooks"
 
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
@@ -143,6 +145,24 @@ export default function Viewer() {
     }
   }, [])
 
+  if (!currentNodeID) {
+    return <Loader />
+  }
+
+  const {isDownloading} = useDownloadLastDocVer(currentNodeID)
+  const docVerID = useCurrentDocVerID()
+
+
+  if (!docVerID || isDownloading) {
+    return <Loader />
+  }
+
+  const {isGenerating} = useGeneratePreviews(docVerID)
+
+  if (isGenerating) {
+    return <Loader />
+  }
+
   return (
     <div>
       <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
@@ -153,7 +173,7 @@ export default function Viewer() {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <ThumbnailList />
         <ThumbnailsToggle />
-        <PageList />
+        <PageList docVerID={docVerID} />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

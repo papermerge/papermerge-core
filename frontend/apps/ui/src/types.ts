@@ -1,4 +1,4 @@
-import type {Group} from "@/types.d/groups"
+import type { Group } from "@/types.d/groups"
 
 export type State<T> = {
   is_loading: boolean
@@ -309,7 +309,7 @@ export type PageAndRotOp = {
   angle: number // rotation degree, can be positive or negative
 }
 
-export type DocumentVersion = {
+export type DocVerShort = {
   id: string
   document_id: string
   download_url: string
@@ -317,9 +317,12 @@ export type DocumentVersion = {
   lang: OCRCode
   number: number
   page_count: number
-  pages: Array<PageType>
   short_description: string
   size: number
+}
+
+export type DocumentVersion = DocVerShort & {
+  pages: Array<PageType>
 }
 
 export type DocumentVersionWithPageRot = {

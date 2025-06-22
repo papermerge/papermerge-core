@@ -1,9 +1,9 @@
-import {RootState} from "@/app/types"
+import { RootState } from "@/app/types"
 import {
   ONE_DAY_IN_SECONDS,
   PAGINATION_DEFAULT_ITEMS_PER_PAGES
 } from "@/cconstants"
-import {apiSlice} from "@/features/api/slice"
+import { apiSlice } from "@/features/api/slice"
 import type {
   DocumentCFV,
   ExtractPagesResponse,
@@ -15,6 +15,7 @@ import type {
 import {
   CFV,
   DocumentType,
+  DocVerShort,
   ExtractStrategyType,
   OrderType,
   TransferStrategyType
@@ -27,8 +28,8 @@ import {
   imageEncode
 } from "@/utils"
 
-import {documentMovedNotifReceived, docVerUpserted} from "./documentVersSlice"
-import type {DLVPaginatedArgsOutput, DocVersList} from "./types"
+import { documentMovedNotifReceived } from "./documentVersSlice"
+import type { DocVersList } from "./types"
 
 type ShortPageType = {
   number: number
@@ -95,31 +96,11 @@ interface GetDocsByTypeArgs {
   order?: OrderType
 }
 
-interface DLVPaginatedArgsInput {
-  doc_id: string
-  page_number: number
-  page_size: number
-}
-
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getDocLastVersionPaginated: builder.query<
-      DLVPaginatedArgsOutput,
-      DLVPaginatedArgsInput
-    >({
-      query: ({doc_id, page_number, page_size}: DLVPaginatedArgsInput) => {
-        return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
-      },
-
-      async onQueryStarted(_, {dispatch, queryFulfilled}) {
-        try {
-          const {data} = await queryFulfilled
-
-          dispatch(docVerUpserted(data))
-        } catch (error) {
-          console.error("Failed to save paginated doc version to state:", error)
-        }
-      }
+    getDocLastVersion: builder.query<DocVerShort, string>({
+      query: nodeID => `/documents/${nodeID}/last-version/`,
+      providesTags: (_result, _error, arg) => [{type: "DocumentVersion", id: arg}]
     }),
     getDocVersionsList: builder.query<DocVersList, string>({
       query: nodeID => `/documents/${nodeID}/versions/`,
@@ -347,9 +328,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
 })
 
 export const {
-  useGetDocLastVersionPaginatedQuery,
   useGetDocumentQuery,
   useGetPageImageQuery,
+  useGetDocLastVersionQuery,
   useGetDocVersionsListQuery,
   useApplyPageOpChangesMutation,
   useMovePagesMutation,

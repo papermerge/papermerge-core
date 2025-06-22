@@ -1,31 +1,36 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import Zoom from "@/components/document/Zoom"
 import PanelContext from "@/contexts/PanelContext"
-import {DOC_VER_PAGINATION_PAGE_SIZE} from "@/features/document/constants"
+import { DOC_VER_PAGINATION_PAGE_SIZE } from "@/features/document/constants"
 import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
 } from "@/features/document/documentVersSlice"
-import {useCurrentDocVerID} from "@/features/document/hooks"
-import {selectZoomFactor} from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
-import {Button, Stack} from "@mantine/core"
-import {useContext} from "react"
-import {useTranslation} from "react-i18next"
+import { selectZoomFactor } from "@/features/ui/uiSlice"
+import type { PanelMode } from "@/types"
+import { UUID } from "@/types.d/common"
+import { Button, Stack } from "@mantine/core"
+import { useContext } from "react"
+import { useTranslation } from "react-i18next"
 import Page from "../Page"
 import classes from "./PageList.module.css"
 import usePageList from "./usePageList"
 
-export default function PageListContainer() {
+interface Args {
+  docVerID: UUID
+}
+
+export default function PageListContainer({docVerID}: Args) {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
-  const docVerID = useCurrentDocVerID()
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVerID)
   )
   const {pages, isLoading, showLoadMore} = usePageList({
+    docVerID,
+    totalCount: 5,
     pageNumber: pageNumber,
     pageSize: DOC_VER_PAGINATION_PAGE_SIZE
   })

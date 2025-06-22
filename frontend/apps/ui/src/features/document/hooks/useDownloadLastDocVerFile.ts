@@ -59,12 +59,28 @@ async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
   }
 }
 
-export default function useDownloadLastDocVerFile(docID?: UUID): State {
+interface Args {
+  docID?: UUID
+  previewsAreAvailable: boolean
+}
+
+export default function useDownloadLastDocVerFile({ docID, previewsAreAvailable }: Args): State {
   const [isDownloading, setIsDownloading] = useState<boolean>(true)
   const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
     const downloadLastDocVer = async () => {
+
+      if (!docID) {
+        setIsDownloading(false)
+        return
+      }
+
+      if (previewsAreAvailable) {
+        setIsDownloading(false)
+        return
+      }
+
       try {
         setIsDownloading(true)
         setError(undefined)
@@ -85,10 +101,6 @@ export default function useDownloadLastDocVerFile(docID?: UUID): State {
       } finally {
         setIsDownloading(false)
       }
-    }
-
-    if (!docID) {
-      return
     }
 
     downloadLastDocVer()

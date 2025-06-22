@@ -62,7 +62,11 @@ export default function Viewer() {
   const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID || "", {
     skip: !currentNodeID
   })
-  const {isDownloading} = useDownloadLastDocVerFile(currentNodeID)
+  const {previewsAreAvailable} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
+
+  const {isDownloading} = useDownloadLastDocVerFile(
+    {docID: currentNodeID,previewsAreAvailable}
+  )
 
   const {
     currentData: doc,
@@ -71,7 +75,6 @@ export default function Viewer() {
     isLoading,
     error
   } = useGetDocumentQuery(currentNodeID!)
-  const {isGenerating} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
 
 
   const onContextMenu = (ev: MouseEvent) => {
@@ -177,7 +180,7 @@ export default function Viewer() {
     return <Loader />
   }
 
-  if (isGenerating) {
+  if (!previewsAreAvailable) {
     return <Loader />
   }
 

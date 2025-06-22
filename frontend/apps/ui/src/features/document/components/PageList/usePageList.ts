@@ -58,7 +58,7 @@ export default function usePageList({
 }: Args): PageListState {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
-  const {currentNodeID, currentCType} = useCurrentNode()
+  const { currentNodeID, currentCType } = useCurrentNode()
 
   const isDocument = currentNodeID && currentCType === "document"
   const docID = isDocument ? currentNodeID : null
@@ -67,7 +67,6 @@ export default function usePageList({
   )
 
   const pages = useAppSelector(s => selectCurrentPages(s, docVerID))
-
 
   useEffect(() => {
     dispatch(

@@ -18,12 +18,12 @@ interface State {
 function getRange(pageNumber: number, pageSize: number, totalPageCount: number): Array<number> {
   const result: Array<number> = []
   const first = pageSize * (pageNumber - 1) + 1;
-  let last = pageSize * pageNumber + 1;
+  let last = pageSize * pageNumber;
 
   if (last > totalPageCount) {
     last = totalPageCount
   }
-  for (let i = first; i < last; i++) {
+  for (let i = first; i <= last; i++) {
     result.push(i)
   }
 

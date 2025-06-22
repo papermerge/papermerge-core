@@ -40,6 +40,7 @@ export const generatePreviews = createAsyncThunk<
   GeneratePreviewInputType
 >("images/generatePreview", async item => {
   const width = getWidth(item.size)
+  const smallWidth = getWidth(item.size)
   const result: ReturnType = {
     items: []
   }
@@ -56,7 +57,7 @@ export const generatePreviews = createAsyncThunk<
     type: "application/pdf"
   });
 
-  for (let pNum = item.firstPage; pNum < item.lastPage; pNum++) {
+  for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
     const objectURL = await util_pdf_generatePreview(
       { file: file, width, pageNumber: pNum }
     )
@@ -81,7 +82,32 @@ export const generatePreviews = createAsyncThunk<
     }
   }
 
+  if (item.size != "sm") {
+    for (let pNum = item.firstPage; pNum < item.lastPage; pNum++) {
+      const objectURL = await util_pdf_generatePreview(
+        { file: file, width: smallWidth, pageNumber: pNum }
+      )
 
+      const page = item.docVer.pages.find(p => p.number == pNum)
+      if (!page) {
+        return {
+          items: [],
+          error: `page number ${pNum} not found in pages`
+        }
+      }
+
+      if (objectURL) {
+        result.items.push({
+          pageID: page.id,
+          docID: item.docVer.document_id,
+          docVerID: item.docVer.id,
+          pageNumber: pNum,
+          objectURL: objectURL,
+          size: "sm",
+        })
+      }
+    }
+  }
 
   return result
 })
@@ -173,12 +199,12 @@ function getWidth(size: ImageSize) {
   }
 
   if (size == "md") {
-    return 600
+    return 800
   }
 
   if (size == "lg") {
-    return 1000
+    return 1200
   }
 
-  return 1200
+  return 1600
 }

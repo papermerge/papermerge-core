@@ -1,14 +1,14 @@
-import {RootState} from "@/app/types"
-import {UUID} from "@/types.d/common"
+import { RootState } from "@/app/types"
+import { fileManager } from "@/features/files/fileManager"
+import { ImageSize, UUID } from "@/types.d/common"
+import { generatePreview as util_pdf_generatePreview } from "@/utils/pdf"
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit"
 import type {
-  PageImageSize,
-  ProgressiveImageInputType
-} from "@/types.d/page_image"
-import {getBaseURL, getDefaultHeaders} from "@/utils"
-import {createAsyncThunk, createSelector, createSlice} from "@reduxjs/toolkit"
+  GeneratePreviewInputType
+} from "./types"
 
 export type ImageState = {
-  [page_id: string]: {
+  [pageID: string]: {
     sm?: string
     md?: string
     lg?: string
@@ -21,57 +21,97 @@ export type ImageState = {
 
 const initialState: ImageState = {}
 
-interface PayloadType {
-  page_id: UUID
-  pageNumber?: number
+type ReturnTypeItem = {
+  pageID: UUID
+  pageNumber: number
   docID: UUID
   docVerID: UUID
-  objectURL: string
-  size: PageImageSize
+  objectURL?: string
+  size: ImageSize
 }
 
-export const preloadProgressiveImages = createAsyncThunk<
-  PayloadType[], // 1. Return type of payload (fulfilled result)
-  ProgressiveImageInputType // 2. Argument passed into the thunk
->("images/preloadProgressiveImages", async imageWithURLs => {
-  const results: PayloadType[] = []
-  const headers = getDefaultHeaders()
-  let url
+type ReturnType = {
+  error?: string
+  items: ReturnTypeItem[]
+}
 
-  for (const preview of imageWithURLs.previews) {
-    if (!preview.url) {
-      continue
+export const generatePreviews = createAsyncThunk<
+  ReturnType,
+  GeneratePreviewInputType
+>("images/generatePreview", async item => {
+  const width = getWidth(item.size)
+  const smallWidth = getWidth(item.size)
+  const result: ReturnType = {
+    items: []
+  }
+  const fileItem = fileManager.getByDocVerID(item.docVer.id)
+
+  if (!fileItem) {
+    return {
+      items: [],
+      error: "There was an error generating thumbnail image"
     }
-
-    if (preview.status != "ready") {
-      continue
-    }
-
-    if (preview.url && !preview.url.startsWith("/api/")) {
-      // cloud URL e.g. aws cloudfront URL
-      url = preview.url
-    } else {
-      // use backend server URL (which may differ from frontend's URL)
-      url = `${getBaseURL(true)}${preview.url}`
-    }
-
-    const response = await fetch(url, {headers: headers})
-    const blob = await response.blob()
-    const objectURL = URL.createObjectURL(blob)
-    const item = {
-      page_id: imageWithURLs.page_id as UUID,
-      pageNumber: imageWithURLs.pageNumber,
-      docID: imageWithURLs.docID,
-      docVerID: imageWithURLs.docVerID,
-      size: preview.size,
-      objectURL
-    }
-
-    results.push(item)
   }
 
-  return results
+  const file = new File([fileItem.buffer], "filename.pdf", {
+    type: "application/pdf"
+  });
+
+  for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
+    const objectURL = await util_pdf_generatePreview(
+      { file: file, width, pageNumber: pNum }
+    )
+
+    const page = item.docVer.pages.find(p => p.number == pNum)
+    if (!page) {
+      return {
+        items: [],
+        error: `page number ${pNum} not found in pages`
+      }
+    }
+
+    if (objectURL) {
+      result.items.push({
+        pageID: page.id,
+        docID: item.docVer.document_id,
+        docVerID: item.docVer.id,
+        pageNumber: pNum,
+        objectURL: objectURL,
+        size: item.size,
+      })
+    }
+  }
+
+  if (item.size != "sm") {
+    for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
+      const objectURL = await util_pdf_generatePreview(
+        { file: file, width: smallWidth, pageNumber: pNum }
+      )
+
+      const page = item.docVer.pages.find(p => p.number == pNum)
+      if (!page) {
+        return {
+          items: [],
+          error: `page number ${pNum} not found in pages`
+        }
+      }
+
+      if (objectURL) {
+        result.items.push({
+          pageID: page.id,
+          docID: item.docVer.document_id,
+          docVerID: item.docVer.id,
+          pageNumber: pNum,
+          objectURL: objectURL,
+          size: "sm",
+        })
+      }
+    }
+  }
+
+  return result
 })
+
 
 const imageObjectsSlice = createSlice({
   name: "imageObjects",
@@ -89,27 +129,27 @@ const imageObjectsSlice = createSlice({
       */
   },
   extraReducers: builder => {
-    builder.addCase(preloadProgressiveImages.fulfilled, (state, action) => {
+    builder.addCase(generatePreviews.fulfilled, (state, action) => {
       for (const {
-        page_id,
+        pageID,
         size,
         objectURL,
         docID,
         docVerID,
         pageNumber
-      } of action.payload) {
-        const existing = state[page_id] ?? {}
+      } of action.payload.items) {
+        const existing = state[pageID] ?? {}
         const oldUrl = existing[size]
         if (oldUrl) URL.revokeObjectURL(oldUrl)
 
-        state[page_id] = {
+        state[pageID] = {
           ...existing,
           [size]: objectURL,
           docID: docID,
           docVerID: docVerID
         }
         if (pageNumber !== undefined && pageNumber != null) {
-          state[page_id]["pageNumber"] = pageNumber
+          state[pageID]["pageNumber"] = pageNumber
         }
       }
     })
@@ -119,18 +159,22 @@ const imageObjectsSlice = createSlice({
 export default imageObjectsSlice.reducer
 export const selectImageObjects = (state: RootState) => state.imageObjects
 
-export const makeSelectPageList = (docVerID?: UUID) =>
-  createSelector([selectImageObjects], imageObjects => {
+
+export const selectExistingPreviewsPageNumbers = createSelector(
+  [
+    selectImageObjects,
+    (_: RootState, docVerID?: UUID) => docVerID // Pass docVerID as input
+  ],
+  (imageObjects, docVerID) => {
     if (!docVerID) return []
 
-    return Object.entries(imageObjects)
-      .filter(([_, value]) => value.docVerID === docVerID)
-      .map(([pageID, value]) => ({
-        pageID,
-        pageNumber: value.pageNumber!
-      }))
-  })
+    const pageNumbers = Object.entries(imageObjects)
+      .filter(([_, value]) => value.docVerID === docVerID && value.md && value.sm)
+      .map(([_, value]) => value.pageNumber)
 
+    return pageNumbers
+  }
+)
 export const selectShowMorePages = (
   state: RootState,
   docVerID?: UUID,
@@ -146,4 +190,21 @@ export const selectShowMorePages = (
   }
 
   return localTotalCount < totalCount
+}
+
+
+function getWidth(size: ImageSize) {
+  if (size == "sm") {
+    return 200
+  }
+
+  if (size == "md") {
+    return 800
+  }
+
+  if (size == "lg") {
+    return 1200
+  }
+
+  return 1600
 }

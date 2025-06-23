@@ -1,9 +1,7 @@
-import {RootState} from "@/app/types"
 import {
-  ONE_DAY_IN_SECONDS,
   PAGINATION_DEFAULT_ITEMS_PER_PAGES
 } from "@/cconstants"
-import {apiSlice} from "@/features/api/slice"
+import { apiSlice } from "@/features/api/slice"
 import type {
   DocumentCFV,
   ExtractPagesResponse,
@@ -14,21 +12,18 @@ import type {
 } from "@/types"
 import {
   CFV,
-  DocumentType,
   ExtractStrategyType,
   OrderType,
   TransferStrategyType
 } from "@/types"
 import {
-  getBaseURL,
-  getDefaultHeaders,
   getRemoteUserID,
-  getWSURL,
-  imageEncode
+  getWSURL
 } from "@/utils"
 
-import {documentMovedNotifReceived, docVerUpserted} from "./documentVersSlice"
-import type {DLVPaginatedArgsOutput, DocVersList} from "./types"
+import { DocumentType, DocumentVersion } from "@/features/document/types"
+import { documentMovedNotifReceived } from "./documentVersSlice"
+import type { DocVersList } from "./types"
 
 type ShortPageType = {
   number: number
@@ -95,39 +90,19 @@ interface GetDocsByTypeArgs {
   order?: OrderType
 }
 
-interface DLVPaginatedArgsInput {
-  doc_id: string
-  page_number: number
-  page_size: number
-}
-
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getDocLastVersionPaginated: builder.query<
-      DLVPaginatedArgsOutput,
-      DLVPaginatedArgsInput
-    >({
-      query: ({doc_id, page_number, page_size}: DLVPaginatedArgsInput) => {
-        return `/documents/${doc_id}/last-version/pages/?page_number=${page_number}&page_size=${page_size}`
-      },
-
-      async onQueryStarted(_, {dispatch, queryFulfilled}) {
-        try {
-          const {data} = await queryFulfilled
-
-          dispatch(docVerUpserted(data))
-        } catch (error) {
-          console.error("Failed to save paginated doc version to state:", error)
-        }
-      }
+    getDocLastVersion: builder.query<DocumentVersion, string>({
+      query: nodeID => `/documents/${nodeID}/last-version/`,
+      providesTags: (_result, _error, arg) => [{ type: "DocumentVersion", id: arg }]
     }),
     getDocVersionsList: builder.query<DocVersList, string>({
       query: nodeID => `/documents/${nodeID}/versions/`,
-      providesTags: (_result, _error, arg) => [{type: "DocVersList", id: arg}]
+      providesTags: (_result, _error, arg) => [{ type: "DocVersList", id: arg }]
     }),
     getDocument: builder.query<DocumentType, string>({
       query: nodeID => `/documents/${nodeID}`,
-      providesTags: (_result, _error, arg) => [{type: "Document", id: arg}],
+      providesTags: (_result, _error, arg) => [{ type: "Document", id: arg }],
       async onCacheEntryAdded(_arg, lifecycleApi) {
         let url = getWSURL()
 
@@ -189,53 +164,6 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         ws.close()
       }
     }),
-    getPageImage: builder.query<string, string>({
-      //@ts-ignore
-      queryFn: async (page_id, queryApi) => {
-        const state = queryApi.getState() as RootState
-
-        if (!page_id) {
-          console.error("Page ID is empty or null")
-          return "Page ID is empty or null"
-        }
-
-        const page = state.pages.entities[page_id]
-
-        if (!page) {
-          console.error(
-            `Page with ID=${page_id} not found in state.pages.entities`
-          )
-          return `Page ID = ${page_id} not found`
-        }
-
-        const page_url = page.jpg_url
-        const headers = getDefaultHeaders()
-        let url
-
-        if (page_url && !page_url.startsWith("/api/")) {
-          // cloud URL e.g. aws cloudfront URL
-          url = page_url
-        } else {
-          // use backend server URL (which may differ from frontend's URL)
-          url = `${getBaseURL(true)}${page_url}`
-        }
-
-        if (!page_url || !url) {
-          console.error(`Page URL for Node ID=${page_id} is undefined or null`)
-          return "page does not have preview :("
-        }
-
-        try {
-          const response = await fetch(url, {headers: headers})
-          const resp2 = await response.arrayBuffer()
-          const encodedData = imageEncode(resp2, "image/jpeg")
-          return {data: encodedData}
-        } catch (err) {
-          return {err}
-        }
-      },
-      keepUnusedDataFor: ONE_DAY_IN_SECONDS
-    }),
     applyPageOpChanges: builder.mutation<void, ApplyPagesType>({
       query: data => ({
         url: "/pages/",
@@ -243,7 +171,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.pages
       }),
       invalidatesTags: (_result, _error, arg) => [
-        {type: "Document", id: arg.documentID}
+        { type: "Document", id: arg.documentID }
       ]
     }),
     movePages: builder.mutation<void, MovePagesType>({
@@ -253,9 +181,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => [
-        {type: "Document", id: arg.targetDocID},
-        {type: "Document", id: arg.sourceDocID},
-        {type: "Node", id: arg.sourceDocParentID}
+        { type: "Document", id: arg.targetDocID },
+        { type: "Document", id: arg.sourceDocID },
+        { type: "Node", id: arg.sourceDocParentID }
       ]
     }),
     extractPages: builder.mutation<ExtractPagesResponse, ExtractPagesType>({
@@ -266,9 +194,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          {type: "Document", id: arg.sourceDocID},
-          {type: "Node", id: arg.sourceDocParentID},
-          {type: "Node", id: arg.body.target_folder_id}
+          { type: "Document", id: arg.sourceDocID },
+          { type: "Node", id: arg.sourceDocParentID },
+          { type: "Node", id: arg.body.target_folder_id }
         ]
       }
     }),
@@ -283,8 +211,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          {type: "DocumentCustomField", id: arg.documentID},
-          {type: "DocumentCFV", id: arg.documentTypeID}
+          { type: "DocumentCustomField", id: arg.documentID },
+          { type: "DocumentCFV", id: arg.documentTypeID }
         ]
       }
     }),
@@ -296,8 +224,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          {type: "Document", id: arg.document_id},
-          {type: "DocumentCFV", id: arg.invalidatesTags.documentTypeID}
+          { type: "Document", id: arg.document_id },
+          { type: "DocumentCFV", id: arg.invalidatesTags.documentTypeID }
         ]
       }
     }),
@@ -306,7 +234,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         url: `/documents/${documentID}/custom-fields`
       }),
       providesTags: (_result, _error, arg) => [
-        {type: "DocumentCustomField", id: arg}
+        { type: "DocumentCustomField", id: arg }
       ]
     }),
     getDocsByType: builder.query<Paginated<DocumentCFV>, GetDocsByTypeArgs>({
@@ -340,16 +268,15 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         }
       },
       providesTags: (_result, _error, args) => [
-        {type: "DocumentCFV", id: args.document_type_id}
+        { type: "DocumentCFV", id: args.document_type_id }
       ]
     })
   })
 })
 
 export const {
-  useGetDocLastVersionPaginatedQuery,
   useGetDocumentQuery,
-  useGetPageImageQuery,
+  useGetDocLastVersionQuery,
   useGetDocVersionsListQuery,
   useApplyPageOpChangesMutation,
   useMovePagesMutation,

@@ -31,7 +31,6 @@ from .features.document.schema import (
     StatusForSize,
     PagePreviewImageStatus,
     Pagination,
-    PaginatedDocVer,
     DocVerListItem,
     DownloadURL
 )
@@ -111,7 +110,6 @@ __all__ = [
     'SharedNodeAccessUpdateResponse',
     'Version',
     'Pagination',
-    'PaginatedDocVer',
     'DocVerListItem',
     'DownloadURL'
 ]

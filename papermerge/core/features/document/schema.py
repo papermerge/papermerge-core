@@ -1,4 +1,3 @@
-import uuid
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
@@ -138,100 +137,6 @@ class Page(BasicPage):
     text: str | None = None
     document_version_id: UUID
     lang: str
-    preview_image_sm_url: Annotated[str | None, Field(validate_default=True)] = None
-    preview_image_md_url: Annotated[str | None, Field(validate_default=True)] = None
-    preview_image_xl_url: Annotated[str | None, Field(validate_default=True)] = None
-    preview_image_lg_url: Annotated[str | None, Field(validate_default=True)] = None
-    preview_status_sm: Annotated[
-        ImagePreviewStatus | None, Field(validate_default=True)
-    ] = None
-    preview_status_md: Annotated[
-        ImagePreviewStatus | None, Field(validate_default=True)
-    ] = None
-    preview_status_lg: Annotated[
-        ImagePreviewStatus | None, Field(validate_default=True)
-    ] = None
-    preview_status_xl: Annotated[
-        ImagePreviewStatus | None, Field(validate_default=True)
-    ] = None
-
-    @field_validator("preview_image_sm_url", mode="before")
-    @classmethod
-    def preview_image_sm_url_value(cls, value, info: ValidationInfo):
-        file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL:
-            return f"/api/pages/{info.data['id']}/jpg"
-
-        # if it is not local, then it is s3 + CDN/cloudfront
-        if (
-            "preview_status_sm" in info.data
-            and info.data["preview_status_sm"] == ImagePreviewStatus.ready
-        ):
-            if file_server == config.FileServer.S3:
-                # give client back signed URL only in case preview image
-                # was successfully uploaded to S3 backend.
-                # `preview_status` is set to ready/failed by s3 worker
-                # after preview image upload to s3 succeeds/fails
-                return s3.page_image_jpg_signed_url(
-                    info.data["id"], size=ImagePreviewSize.sm
-                )
-
-        return None
-
-    @field_validator("preview_image_md_url", mode="before")
-    @classmethod
-    def preview_image_md_url_value(cls, value, info: ValidationInfo):
-        file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL:
-            return f"/api/pages/{info.data['id']}/jpg"
-
-        if (
-            "preview_status_md" in info.data
-            and info.data["preview_status_md"] == ImagePreviewStatus.ready
-        ):
-            if file_server == config.FileServer.S3:
-                return s3.page_image_jpg_signed_url(
-                    info.data["id"], size=ImagePreviewSize.md
-                )
-
-        return None
-
-    @field_validator("preview_image_lg_url", mode="before")
-    @classmethod
-    def preview_image_lg_url_value(cls, value, info: ValidationInfo):
-        file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL:
-            return f"/api/pages/{info.data['id']}/jpg"
-
-        if (
-            "preview_status_lg" in info.data
-            and info.data["preview_status_lg"] == ImagePreviewStatus.ready
-        ):
-            if file_server == config.FileServer.S3:
-                return s3.page_image_jpg_signed_url(
-                    info.data["id"], size=ImagePreviewSize.lg
-                )
-
-        return None
-
-    @field_validator("preview_image_xl_url", mode="before")
-    @classmethod
-    def preview_image_xl_url_value(cls, value, info: ValidationInfo):
-        file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL:
-            return f"/api/pages/{info.data['id']}/jpg"
-
-        if (
-            "preview_status_xl" in info.data
-            and info.data["preview_status_xl"] == ImagePreviewStatus.ready
-        ):
-            if file_server == config.FileServer.S3:
-                return s3.page_image_jpg_signed_url(
-                    info.data["id"], size=ImagePreviewSize.xl
-                )
-
-        return None
-
 
 DownloadUrl = Annotated[str | None, Field(validate_default=True)]
 
@@ -246,7 +151,7 @@ class DocumentVersion(BaseModel):
     short_description: str | None = None
     document_id: UUID
     download_url: DownloadUrl = None
-    pages: list[Page] | None = []
+    pages: list[BasicPage] | None = []
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
@@ -254,10 +159,11 @@ class DocumentVersion(BaseModel):
         if file_server == config.FileServer.LOCAL:
             return f"/api/document-versions/{info.data['id']}/download"
 
-        return None
+        return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
 
 
 class DocVerListItem(BaseModel):
@@ -338,17 +244,6 @@ class Pagination(BaseModel):
     page_number: int
     num_pages: int  # total count of pages
 
-
-class PaginatedDocVer(BaseModel):
-    doc_ver_id: uuid.UUID
-    lang: str
-    number: int
-    file_name: str
-    pages: list[BasicPage]
-    page_size: int
-    page_number: int
-    num_pages: int
-    total_count: int
 
 
 class DocumentPreviewImageStatus(BaseModel):

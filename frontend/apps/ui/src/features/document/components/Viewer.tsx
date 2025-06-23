@@ -1,18 +1,20 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 
 import {
   isHTTP403Forbidden,
   isHTTP404NotFound,
   isHTTP422UnprocessableContent
 } from "@/services/helpers"
-import {Flex, Group} from "@mantine/core"
-import {useContext, useEffect} from "react"
-import {useNavigate} from "react-router-dom"
+import { Flex, Group, Loader } from "@mantine/core"
+import { useContext, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {useRef, useState} from "react"
+import { useGetDocLastVersionQuery, useGetDocumentQuery } from "@/features/document/apiSlice"
+import useDownloadLastDocVerFile from "@/features/document/hooks/useDownloadLastDocVerFile"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
+import { useRef, useState } from "react"
 
 import {
   ERRORS_403_ACCESS_FORBIDDEN,
@@ -34,11 +36,12 @@ import {
   currentNodeChanged,
   secondaryPanelClosed,
   selectContentHeight,
+  selectCurrentDocVerID,
   selectCurrentNodeCType,
   selectCurrentNodeID
 } from "@/features/ui/uiSlice"
-import type {Coord, NType, PanelMode, ServerErrorType} from "@/types"
-import {useDisclosure} from "@mantine/hooks"
+import type { Coord, NType, PanelMode, ServerErrorType } from "@/types"
+import { useDisclosure } from "@mantine/hooks"
 
 export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
@@ -55,6 +58,16 @@ export default function Viewer() {
     selectCurrentNodeCType(s, "secondary")
   )
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const currentDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID || "", {
+    skip: !currentNodeID
+  })
+  const {previewsAreAvailable} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
+
+  const {isDownloading} = useDownloadLastDocVerFile(
+    {docID: currentNodeID,previewsAreAvailable}
+  )
+
   const {
     currentData: doc,
     isError,
@@ -62,6 +75,7 @@ export default function Viewer() {
     isLoading,
     error
   } = useGetDocumentQuery(currentNodeID!)
+
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -143,6 +157,33 @@ export default function Viewer() {
     }
   }, [])
 
+  if (!currentNodeID) {
+    return <Loader />
+  }
+
+  useEffect(() => {
+    if (docVer) {
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
+    }
+  }, [docVer])
+
+
+  if (isFetingLastDocumentVer) {
+    return <Loader />
+  }
+
+  if (!docVer || !currentDocVerID) {
+    return <Loader />
+  }
+
+  if (isDownloading) {
+    return <Loader />
+  }
+
+  if (!previewsAreAvailable) {
+    return <Loader />
+  }
+
   return (
     <div>
       <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
@@ -151,9 +192,9 @@ export default function Viewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <ThumbnailList />
+        <ThumbnailList docVerID={currentDocVerID} />
         <ThumbnailsToggle />
-        <PageList />
+        <PageList docVerID={currentDocVerID} />
         <DocumentDetails
           doc={doc}
           docID={currentNodeID}

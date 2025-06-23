@@ -1,4 +1,4 @@
-import type {Group} from "@/types.d/groups"
+import type { Group } from "@/types.d/groups"
 
 export type State<T> = {
   is_loading: boolean
@@ -295,12 +295,8 @@ export type OCRCode =
 
 export type PageType = {
   id: string
-  document_version_id: string
-  jpg_url: string | null
-  svg_url: string | null
   lang: string
   number: number
-  text: string
 }
 
 // page and rotation operation
@@ -309,7 +305,7 @@ export type PageAndRotOp = {
   angle: number // rotation degree, can be positive or negative
 }
 
-export type DocumentVersion = {
+export type DocVerShort = {
   id: string
   document_id: string
   download_url: string
@@ -317,45 +313,8 @@ export type DocumentVersion = {
   lang: OCRCode
   number: number
   page_count: number
-  pages: Array<PageType>
   short_description: string
   size: number
-}
-
-export type DocumentVersionWithPageRot = {
-  id: string
-  document_id: string
-  download_url: string
-  file_name: string
-  lang: OCRCode
-  number: number
-  page_count: number
-  pages: Array<PageAndRotOp>
-  short_description: string
-  size: number
-}
-
-/* Naming here is unfortunate.
-Correct name of this type would be `Document`; but it
-collides with https://developer.mozilla.org/en-US/docs/Web/API/Document */
-export type DocumentType = {
-  id: string
-  ctype: "document"
-  title: string
-  breadcrumb: BreadcrumbType
-  tags: Array<DocumentTag>
-  ocr: boolean
-  ocr_status: OcrStatusEnum
-  thumbnail_url: string
-  /* Naming here is correct; it refers to specific
-  document type id (i.e. to the "kind" of the document) */
-  document_type_id?: string
-  versions: Array<DocumentVersion>
-  parent_id: string | null
-  user_id?: string
-  group_id?: string
-  updated_at: string
-  owner_name?: string
 }
 
 export interface ClientPage {

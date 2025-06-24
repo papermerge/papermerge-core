@@ -1,9 +1,9 @@
-import { fileManager } from "@/features/files/fileManager";
-import client from "@/httpClient";
-import { DocVerShort } from "@/types";
-import { UUID } from "@/types.d/common";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import {fileManager} from "@/features/files/fileManager"
+import client from "@/httpClient"
+import {DocVerShort} from "@/types"
+import {UUID} from "@/types.d/common"
+import axios from "axios"
+import {useEffect, useState} from "react"
 
 interface State {
   isDownloading: boolean
@@ -23,9 +23,7 @@ interface ClientReturn {
 
 async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
   try {
-    let resp = await client.get(
-      `/api/documents/${docID}/last-version/`
-    )
+    let resp = await client.get(`/api/documents/${docID}/last-version/`)
 
     if (resp.status !== 200) {
       return {
@@ -36,7 +34,7 @@ async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
 
     const docVer: DocVerShort = resp.data
 
-    resp = await client.get(docVer.download_url, { responseType: "blob" })
+    resp = await client.get(docVer.download_url, {responseType: "blob"})
     if (resp.status !== 200) {
       return {
         ok: false,
@@ -44,17 +42,17 @@ async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
       }
     }
 
-    return { ok: true, data: { docVerID: docVer.id, blob: resp.data } }
+    return {ok: true, data: {docVerID: docVer.id, blob: resp.data}}
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return {
         ok: false,
-        error: `Request failed: ${error.response?.status || 'Network error'} - ${error.message}`
+        error: `Request failed: ${error.response?.status || "Network error"} - ${error.message}`
       }
     }
     return {
       ok: false,
-      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      error: `Unexpected error: ${error instanceof Error ? error.message : "Unknown error"}`
     }
   }
 }
@@ -64,13 +62,20 @@ interface Args {
   previewsAreAvailable: boolean
 }
 
-export default function useDownloadLastDocVerFile({ docID, previewsAreAvailable }: Args): State {
-  const [isDownloading, setIsDownloading] = useState<boolean>(true)
+export default function useDownloadLastDocVerFile({
+  docID,
+  previewsAreAvailable
+}: Args): State {
+  const [isDownloading, setIsDownloading] = useState<boolean>(false)
   const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
-    const downloadLastDocVer = async () => {
+    if (previewsAreAvailable) {
+      setIsDownloading(false)
+      return
+    }
 
+    const downloadLastDocVer = async () => {
       if (!docID) {
         setIsDownloading(false)
         return
@@ -84,8 +89,7 @@ export default function useDownloadLastDocVerFile({ docID, previewsAreAvailable 
       try {
         setIsDownloading(true)
         setError(undefined)
-
-        const { ok, data, error: downloadError } = await getDocLastVersion(docID)
+        const {ok, data, error: downloadError} = await getDocLastVersion(docID)
 
         if (ok && data) {
           const arrayBuffer = await data.blob.arrayBuffer()
@@ -94,17 +98,17 @@ export default function useDownloadLastDocVerFile({ docID, previewsAreAvailable 
             docVerID: data.docVerID
           })
         } else {
-          setError(downloadError || 'Unknown download error')
+          setError(downloadError || "Unknown download error")
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
+        setError(err instanceof Error ? err.message : "Unknown error occurred")
       } finally {
         setIsDownloading(false)
       }
     }
 
     downloadLastDocVer()
-  }, [docID]) // Added dependency array
+  }, [docID, previewsAreAvailable]) // Added dependency array
 
-  return { isDownloading, error }
+  return {isDownloading, error}
 }

@@ -1,10 +1,10 @@
-import { Box, Group, Stack } from "@mantine/core"
-import { useDisclosure } from "@mantine/hooks"
-import { useContext, useState } from "react"
-import { createRoot } from "react-dom/client"
+import {Box, Group, Stack} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
+import {useContext, useState} from "react"
+import {createRoot} from "react-dom/client"
 
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { useNavigate } from "react-router-dom"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useNavigate} from "react-router-dom"
 
 import {
   currentNodeChanged,
@@ -45,12 +45,12 @@ import {
   selectDraggedPages,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
-import type { ExtractPagesResponse, NType, PanelMode } from "@/types"
+import type {ExtractPagesResponse, NType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
-import { useTranslation } from "react-i18next"
+import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
-import { DropFilesModal } from "./DropFiles"
+import {DropFilesModal} from "./DropFiles"
 import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
@@ -259,7 +259,7 @@ export default function Commander() {
     root.render(image)
   }
 
-  let commanderContent;
+  let commanderContent
 
   if (data.items.length > 0) {
     commanderContent = (

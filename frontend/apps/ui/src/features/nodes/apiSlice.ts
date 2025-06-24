@@ -84,7 +84,9 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
       ]
     }),
     getFolder: builder.query<FolderType, string>({
-      query: folderID => `/folders/${folderID}`,
+      query: folderID => {
+        return `/folders/${folderID}`
+      },
       providesTags: (_result, _error, arg) => [{type: "Folder", id: arg}],
       async onCacheEntryAdded(arg, lifecycleApi) {
         let url = getWSURL()

@@ -1,49 +1,54 @@
-import { useAppDispatch } from "@/app/hooks";
-import usePageRangeWithoutPreview from "@/features/document/hooks/usePageRangeWithoutPreviews";
-import { generatePreviews } from "@/features/document/imageObjectsSlice";
-import type { DocumentVersion } from "@/features/document/types";
-import { useEffect, useState } from "react";
+import {useAppDispatch} from "@/app/hooks"
+import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
+import {generatePreviews} from "@/features/document/imageObjectsSlice"
+import type {DocumentVersion} from "@/features/document/types"
+import {useEffect, useState} from "react"
 
 interface State {
   previewsAreAvailable: boolean
 }
 
 interface Args {
-  docVer?: DocumentVersion
+  docVer: DocumentVersion
   pageNumber: number
   pageSize: number
 }
 
-
-export default function useGeneratePreviews({ docVer, pageSize, pageNumber }: Args): State {
+export default function useGeneratePreviews({
+  docVer,
+  pageSize,
+  pageNumber
+}: Args): State {
   const dispatch = useAppDispatch()
-  const [previewsAreAvailable, setPreviewsAreAvailable] = useState<boolean>(false)
-  const { firstPage, lastPage } = usePageRangeWithoutPreview({
-    docVer, pageSize, pageNumber
+  const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
+    docVer,
+    pageSize,
+    pageNumber
   })
+  const [previewsAreAvailable, setPreviewsAreAvailable] =
+    useState<boolean>(false)
+
+  const generate = async () => {
+    if (allPreviewsAreAvailable) {
+      setPreviewsAreAvailable(true)
+    } else {
+      setPreviewsAreAvailable(false)
+      await dispatch(
+        generatePreviews({
+          docVer,
+          size: "md",
+          pageSize,
+          pageNumber,
+          pageTotal: docVer.pages.length
+        })
+      )
+      setPreviewsAreAvailable(true)
+    }
+  }
 
   useEffect(() => {
-    const generate = async () => {
-
-      if (firstPage === null && lastPage == null) {
-        setPreviewsAreAvailable(true)
-        return
-      }
-
-      if (firstPage != null && lastPage != null && docVer) {
-        await dispatch(generatePreviews({ docVer, size: "md", firstPage, lastPage }))
-        setPreviewsAreAvailable(true)
-      }
-
-    }
-
-    if (!docVer) {
-      return
-    }
-
     generate()
+  }, [pageSize, pageNumber, docVer.id])
 
-  }, [firstPage, lastPage])
-
-  return { previewsAreAvailable }
+  return {previewsAreAvailable}
 }

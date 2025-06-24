@@ -7,15 +7,16 @@ import {
   selectPagesHaveChanged,
   selectSelectedPages
 } from "@/features/document/documentVersSlice"
+import type {DocumentType} from "@/features/document/types"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 import ExtractPagesModal from "@/features/nodes/components/Commander/NodesCommander/ExtractPagesModal"
 import {
   selectCurrentDocVerID,
-  selectCurrentNodeID,
+  selectCurrentNode,
   selectOtherPanelComponent
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
-import type {Coord, DocumentType, PanelMode} from "@/types"
+import type {Coord, PanelMode} from "@/types"
 import {otherPanel} from "@/utils"
 import {Box, Menu, rem} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
@@ -98,7 +99,10 @@ export default function ContextMenu({
     selectOtherPanelComponent(s, mode)
   )
   const other = otherPanel(mode)
-  const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
+  const targetNode = useAppSelector(s => selectCurrentNode(s, other))
+  const targetFolderID =
+    targetNode?.id && targetNode?.ctype == "folder" ? targetNode.id : undefined
+
   const {data: targetFolder} = useGetFolderQuery(targetFolderID ?? skipToken)
 
   const onChangeTitle = () => {

@@ -38,14 +38,11 @@ export const generatePreviews = createAsyncThunk<
   GeneratePreviewInputType
 >("images/generatePreview", async item => {
   const width = getWidth(item.size)
-  const smallWidth = getWidth(item.size)
+  //const smallWidth = getWidth(item.size)
   const result: ReturnType = {
     items: []
   }
   const fileItem = fileManager.getByDocVerID(item.docVer.id)
-  console.log(
-    `Generating previews for docVer = ${item.docVer.id} page=${item.pageNumber}`
-  )
 
   if (!fileItem) {
     return {
@@ -85,35 +82,6 @@ export const generatePreviews = createAsyncThunk<
         objectURL: objectURL,
         size: item.size
       })
-    }
-  }
-
-  if (item.size != "sm") {
-    for (let pNum = firstPage; pNum <= lastPage; pNum++) {
-      const objectURL = await util_pdf_generatePreview({
-        file: file,
-        width: smallWidth,
-        pageNumber: pNum
-      })
-
-      const page = item.docVer.pages.find(p => p.number == pNum)
-      if (!page) {
-        return {
-          items: [],
-          error: `page number ${pNum} not found in pages`
-        }
-      }
-
-      if (objectURL) {
-        result.items.push({
-          pageID: page.id,
-          docID: item.docVer.document_id,
-          docVerID: item.docVer.id,
-          pageNumber: pNum,
-          objectURL: objectURL,
-          size: "sm"
-        })
-      }
     }
   }
 
@@ -177,8 +145,7 @@ export const selectAreAllPreviewsAvailable = (
           entry !== undefined &&
           entry.pageNumber === number &&
           entry.docVerID === docVerID &&
-          entry.sm &&
-          entry.md
+          entry.sm
         )
       })
     }

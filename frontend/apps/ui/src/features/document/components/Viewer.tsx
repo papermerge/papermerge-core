@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import useDownloadLastDocVerFile from "@/features/document/hooks/useDownloadLastDocVerFile"
+
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import {useRef, useState} from "react"
 
@@ -56,11 +56,6 @@ export default function Viewer({doc, docVer}: Args) {
     pageSize: 10
   })
 
-  useDownloadLastDocVerFile({
-    docID: doc.id,
-    previewsAreAvailable: allPreviewsAreAvailable
-  })
-
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
 
@@ -107,8 +102,7 @@ export default function Viewer({doc, docVer}: Args) {
   }, [docVer])
 
   if (!allPreviewsAreAvailable) {
-    console.log(`Not all previews are available!`)
-    return <Loader type="dots" />
+    return <Loader />
   }
 
   return (

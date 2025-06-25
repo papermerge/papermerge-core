@@ -116,11 +116,9 @@ export default function SinglePanel() {
 
   if (panelComponent == "viewer") {
     if (doc && docVer) {
-      console.log(`Loaded!!!! ${currentDocumentID} mode=${mode}!!!`)
       return <Viewer docVer={docVer} doc={doc} />
     } else {
-      console.log(`Loading ${currentDocumentID} mode=${mode}...`)
-      return <Loader type="dots" />
+      return <Loader />
     }
   }
 

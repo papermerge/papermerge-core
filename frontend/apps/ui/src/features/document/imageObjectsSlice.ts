@@ -45,6 +45,7 @@ export const generatePreviews = createAsyncThunk<
   const fileItem = fileManager.getByDocVerID(item.docVer.id)
 
   if (!fileItem) {
+    console.error(`FileManager: no file found for ${item.docVer.id}`)
     return {
       items: [],
       error: "There was an error generating thumbnail image"

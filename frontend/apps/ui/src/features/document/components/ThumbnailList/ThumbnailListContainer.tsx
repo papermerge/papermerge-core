@@ -1,19 +1,17 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { UUID } from "@/types.d/common"
-import { Button, Stack } from "@mantine/core"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {UUID} from "@/types.d/common"
+import {Button, Stack} from "@mantine/core"
 
-import { RootState } from "@/app/types"
-import { DOC_VER_PAGINATION_PAGE_SIZE } from "@/features/document/constants"
+import {RootState} from "@/app/types"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
 import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
 } from "@/features/document/documentVersSlice"
-import {
-  selectThumbnailsPanelOpen
-} from "@/features/ui/uiSlice"
+import {selectThumbnailsPanelOpen} from "@/features/ui/uiSlice"
 import usePanelMode from "@/hooks/usePanelMode"
-import { useTranslation } from "react-i18next"
-import { useSelector } from "react-redux"
+import {useTranslation} from "react-i18next"
+import {useSelector} from "react-redux"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
 import classes from "./ThumbnailListContainer.module.css"
@@ -33,7 +31,7 @@ export default function ThumbnailListContainer({docVerID}: Args) {
     docVerID,
     totalCount: 5,
     pageNumber: pageNumber,
-    pageSize: DOC_VER_PAGINATION_PAGE_SIZE
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
   })
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
@@ -47,7 +45,7 @@ export default function ThumbnailListContainer({docVerID}: Args) {
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
-          pageSize: DOC_VER_PAGINATION_PAGE_SIZE,
+          pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
           docVerID: docVerID
         })
       )

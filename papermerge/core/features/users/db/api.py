@@ -12,7 +12,6 @@ from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.groups.db.orm import user_groups_association
-
 from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"

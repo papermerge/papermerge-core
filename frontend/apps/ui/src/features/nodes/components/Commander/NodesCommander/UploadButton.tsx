@@ -28,7 +28,6 @@ export default function UploadButton() {
   if (!folderID) {
     return <Loader size={"xs"} />
   }
-
   const {data: target} = useGetFolderQuery(folderID)
 
   const onUpload = (files: File[]) => {

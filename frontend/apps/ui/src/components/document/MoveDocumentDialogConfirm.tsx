@@ -6,7 +6,7 @@ import {
   useGetFolderQuery,
   useMoveNodesMutation
 } from "@/features/nodes/apiSlice"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {selectCurrentNode, selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {otherPanel} from "@/utils"
 import {Button, Group, Loader, Modal, Text} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -39,15 +39,19 @@ export default function MoveDocumentDialogConfirm({
   const {currentData: doc} = useGetDocumentQuery(docID!)
   const other = otherPanel(mode)
   /* in other panel current node is folder */
-  const targetFolderID = useAppSelector(s => selectCurrentNodeID(s, other))
-  const {data: targetFolder} = useGetFolderQuery(targetFolderID ?? skipToken)
+  const currentNode = useAppSelector(s => selectCurrentNode(s, other))
+  const folderID =
+    currentNode?.id && currentNode.ctype == "folder"
+      ? currentNode.id
+      : undefined
+  const {data: targetFolder} = useGetFolderQuery(folderID ?? skipToken)
   const [moveDocument, {isLoading}] = useMoveNodesMutation()
 
   const onMoveDocument = async () => {
     const data = {
       body: {
         source_ids: [docID!],
-        target_id: targetFolderID!
+        target_id: folderID!
       },
       sourceFolderID: doc?.parent_id!
     }

@@ -1,6 +1,6 @@
-import { ImageSize } from "@/types.d/common"
-import type { BreadcrumbType } from "@/types/breadcrumb"
-import type { OCRCode, OcrStatusEnum } from "@/types/ocr"
+import {ImageSize} from "@/types.d/common"
+import type {BreadcrumbType} from "@/types/breadcrumb"
+import type {OCRCode, OcrStatusEnum} from "@/types/ocr"
 
 export type BasicPage = {
   id: string
@@ -27,14 +27,13 @@ export type DLVPaginatedArgsOutput = {
   total_count: number
 }
 
-
 export interface GeneratePreviewInputType {
   docVer: DocumentVersion
   size: ImageSize
-  firstPage: number
-  lastPage: number
+  pageSize: number
+  pageNumber: number
+  pageTotal: number
 }
-
 
 export type BasicPageType = {
   id: string

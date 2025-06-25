@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import select, exists, literal
 from sqlalchemy.orm import aliased
+
 from papermerge.core.db.engine import Session
 from papermerge.core.features.nodes.db import orm
 from papermerge.core.features.shared_nodes.db import orm as sn_orm

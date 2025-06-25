@@ -32,7 +32,7 @@ class FileManager {
     return this.files.find(file => file.docVerID === docVerID)
   }
 
-  update(nodeID: UUID, updates: Partial<Omit<FileItem, 'nodeID'>>): boolean {
+  update(nodeID: UUID, updates: Partial<Omit<FileItem, "nodeID">>): boolean {
     const index = this.files.findIndex(file => file.nodeID === nodeID)
     if (index === -1) return false
 
@@ -74,7 +74,6 @@ class FileManager {
   getTotalSize(): number {
     return this.files.reduce((total, file) => total + file.buffer.byteLength, 0)
   }
-
 }
 
 export const fileManager = new FileManager()

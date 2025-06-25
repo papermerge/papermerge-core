@@ -1,4 +1,4 @@
-import type { RootState } from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
   MAX_ZOOM_FACTOR,
   MIN_ZOOM_FACTOR,
@@ -13,8 +13,8 @@ import type {
   PanelMode,
   ViewOption
 } from "@/types"
-import type { PanelComponent } from "@/types.d/ui"
-import { PayloadAction, createSelector, createSlice } from "@reduxjs/toolkit"
+import type {PanelComponent} from "@/types.d/ui"
+import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
 import type {
@@ -26,7 +26,7 @@ import type {
   SortMenuDirection
 } from "@/types"
 
-import type { CategoryColumn } from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
+import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
@@ -991,6 +991,17 @@ export const selectSearchContentHeight = (state: RootState) => {
   height -= SMALL_BOTTOM_MARGIN
 
   return height
+}
+
+export const selectCurrentNode = (
+  state: RootState,
+  mode: PanelMode
+): CurrentNode | undefined => {
+  if (mode == "main") {
+    return state.ui.currentNodeMain
+  }
+
+  return state.ui.currentNodeSecondary
 }
 
 export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {

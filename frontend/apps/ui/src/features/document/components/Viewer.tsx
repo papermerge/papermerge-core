@@ -1,27 +1,16 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {
-  isHTTP403Forbidden,
-  isHTTP404NotFound,
-  isHTTP422UnprocessableContent
-} from "@/services/helpers"
-import { Flex, Group, Loader } from "@mantine/core"
-import { useContext, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import {Flex, Group, Loader} from "@mantine/core"
+import {useContext, useEffect} from "react"
+import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
-import { useGetDocLastVersionQuery, useGetDocumentQuery } from "@/features/document/apiSlice"
-import useDownloadLastDocVerFile from "@/features/document/hooks/useDownloadLastDocVerFile"
-import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
-import { useRef, useState } from "react"
 
-import {
-  ERRORS_403_ACCESS_FORBIDDEN,
-  ERRORS_404_RESOURCE_NOT_FOUND,
-  ERRORS_422_UNPROCESSABLE_CONTENT,
-  HIDDEN
-} from "@/cconstants"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
+import {useRef, useState} from "react"
+
+import {HIDDEN} from "@/cconstants"
 import ActionButtons from "@/components/document/ActionButtons"
 import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
@@ -31,19 +20,22 @@ import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import PageList from "@/features/document/components/PageList"
 import ThumbnailList from "@/features/document/components/ThumbnailList"
+import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
-  secondaryPanelClosed,
-  selectContentHeight,
-  selectCurrentDocVerID,
-  selectCurrentNodeCType,
-  selectCurrentNodeID
+  selectContentHeight
 } from "@/features/ui/uiSlice"
-import type { Coord, NType, PanelMode, ServerErrorType } from "@/types"
-import { useDisclosure } from "@mantine/hooks"
+import type {Coord, NType, PanelMode} from "@/types"
+import {useDisclosure} from "@mantine/hooks"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 
-export default function Viewer() {
+interface Args {
+  doc: DocumentType
+  docVer: DocumentVersion
+}
+
+export default function Viewer({doc, docVer}: Args) {
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const [opened, {open, close}] = useDisclosure()
@@ -51,31 +43,12 @@ export default function Viewer() {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const secondaryPanelNodeID = useAppSelector(s =>
-    selectCurrentNodeID(s, "secondary")
-  )
-  const secondaryPanelNodeCType = useAppSelector(s =>
-    selectCurrentNodeCType(s, "secondary")
-  )
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const currentDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
-  const {data: docVer, isFetching: isFetingLastDocumentVer} = useGetDocLastVersionQuery(currentNodeID || "", {
-    skip: !currentNodeID
+
+  const allPreviewsAreAvailable = useGeneratePreviews({
+    docVer,
+    pageNumber: 1,
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
   })
-  const {previewsAreAvailable} = useGeneratePreviews({docVer, pageNumber: 1, pageSize: 10})
-
-  const {isDownloading} = useDownloadLastDocVerFile(
-    {docID: currentNodeID,previewsAreAvailable}
-  )
-
-  const {
-    currentData: doc,
-    isError,
-    isFetching,
-    isLoading,
-    error
-  } = useGetDocumentQuery(currentNodeID!)
-
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -103,47 +76,6 @@ export default function Viewer() {
     }
   }
 
-  if (isError && isHTTP422UnprocessableContent(error)) {
-    navigate(ERRORS_422_UNPROCESSABLE_CONTENT)
-  }
-
-  if (isError && isHTTP404NotFound(error)) {
-    navigate(ERRORS_404_RESOURCE_NOT_FOUND)
-  }
-
-  if (isError && isHTTP403Forbidden(error)) {
-    navigate(ERRORS_403_ACCESS_FORBIDDEN)
-  }
-
-  useEffect(() => {
-    /* In case user decides to transfer all source pages,
-    the source document will vanish as server will remove it.
-    The outcome is that `useGetDocumentQuery` will result in
-    error with HTTP status 404. In this case we close
-    panel of the delete document.
-    */
-    if (isError && error && (error as ServerErrorType).status == 404) {
-      if (mode == "secondary") {
-        // the 404 was in secondary panel. Just close it.
-        dispatch(secondaryPanelClosed())
-      } else {
-        if (secondaryPanelNodeID && secondaryPanelNodeCType) {
-          // the 404 is in main panel. In this case, open
-          // in main panel whatever was in secondary
-          dispatch(
-            currentNodeChanged({
-              id: secondaryPanelNodeID,
-              ctype: secondaryPanelNodeCType,
-              panel: "main"
-            })
-          )
-          // and then close secondary panel
-          dispatch(secondaryPanelClosed())
-        }
-      }
-    }
-  }, [isError])
-
   useEffect(() => {
     // detect right click outside
     if (ref.current) {
@@ -157,53 +89,32 @@ export default function Viewer() {
     }
   }, [])
 
-  if (!currentNodeID) {
-    return <Loader />
-  }
-
   useEffect(() => {
     if (docVer) {
       dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
     }
   }, [docVer])
 
-
-  if (isFetingLastDocumentVer) {
-    return <Loader />
-  }
-
-  if (!docVer || !currentDocVerID) {
-    return <Loader />
-  }
-
-  if (isDownloading) {
-    return <Loader />
-  }
-
-  if (!previewsAreAvailable) {
+  if (!allPreviewsAreAvailable) {
     return <Loader />
   }
 
   return (
     <div>
-      <ActionButtons doc={doc} isFetching={isFetching} isError={isError} />
+      <ActionButtons doc={doc} isFetching={false} isError={false} />
       <Group justify="space-between">
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <ThumbnailList docVerID={currentDocVerID} />
+        <ThumbnailList docVerID={docVer.id} />
         <ThumbnailsToggle />
-        <PageList docVerID={currentDocVerID} />
-        <DocumentDetails
-          doc={doc}
-          docID={currentNodeID}
-          isLoading={isLoading}
-        />
+        <PageList docVerID={docVer.id} />
+        <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
         <PagesHaveChangedDialog />
         <ContextMenu
-          isFetching={isFetching}
-          isError={isError}
+          isFetching={false}
+          isError={false}
           opened={opened}
           position={contextMenuPosition}
           onChange={onContextMenuChange}

@@ -1,4 +1,4 @@
-import type {DocumentVersion} from "@/types"
+import type {DocumentVersion} from "@/features/document/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 
 import axios from "axios"

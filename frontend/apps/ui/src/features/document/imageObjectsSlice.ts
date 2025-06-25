@@ -1,11 +1,9 @@
-import { RootState } from "@/app/types"
-import { fileManager } from "@/features/files/fileManager"
-import { ImageSize, UUID } from "@/types.d/common"
-import { generatePreview as util_pdf_generatePreview } from "@/utils/pdf"
-import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit"
-import type {
-  GeneratePreviewInputType
-} from "./types"
+import {RootState} from "@/app/types"
+import {fileManager} from "@/features/files/fileManager"
+import {ImageSize, UUID} from "@/types.d/common"
+import {generatePreview as util_pdf_generatePreview} from "@/utils/pdf"
+import {createAsyncThunk, createSelector, createSlice} from "@reduxjs/toolkit"
+import type {BasicPage, GeneratePreviewInputType} from "./types"
 
 export type ImageState = {
   [pageID: string]: {
@@ -15,7 +13,7 @@ export type ImageState = {
     xl?: string
     docVerID: UUID
     docID: UUID
-    pageNumber?: number
+    pageNumber: number
   }
 }
 
@@ -40,13 +38,14 @@ export const generatePreviews = createAsyncThunk<
   GeneratePreviewInputType
 >("images/generatePreview", async item => {
   const width = getWidth(item.size)
-  const smallWidth = getWidth(item.size)
+  //const smallWidth = getWidth(item.size)
   const result: ReturnType = {
     items: []
   }
   const fileItem = fileManager.getByDocVerID(item.docVer.id)
 
   if (!fileItem) {
+    console.error(`FileManager: no file found for ${item.docVer.id}`)
     return {
       items: [],
       error: "There was an error generating thumbnail image"
@@ -55,12 +54,17 @@ export const generatePreviews = createAsyncThunk<
 
   const file = new File([fileItem.buffer], "filename.pdf", {
     type: "application/pdf"
-  });
+  })
 
-  for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
-    const objectURL = await util_pdf_generatePreview(
-      { file: file, width, pageNumber: pNum }
-    )
+  const firstPage = (item.pageNumber - 1) * item.pageSize + 1
+  const lastPage = Math.min(firstPage + item.pageSize, item.pageTotal)
+
+  for (let pNum = firstPage; pNum <= lastPage; pNum++) {
+    const objectURL = await util_pdf_generatePreview({
+      file: file,
+      width,
+      pageNumber: pNum
+    })
 
     const page = item.docVer.pages.find(p => p.number == pNum)
     if (!page) {
@@ -77,41 +81,13 @@ export const generatePreviews = createAsyncThunk<
         docVerID: item.docVer.id,
         pageNumber: pNum,
         objectURL: objectURL,
-        size: item.size,
+        size: item.size
       })
-    }
-  }
-
-  if (item.size != "sm") {
-    for (let pNum = item.firstPage; pNum <= item.lastPage; pNum++) {
-      const objectURL = await util_pdf_generatePreview(
-        { file: file, width: smallWidth, pageNumber: pNum }
-      )
-
-      const page = item.docVer.pages.find(p => p.number == pNum)
-      if (!page) {
-        return {
-          items: [],
-          error: `page number ${pNum} not found in pages`
-        }
-      }
-
-      if (objectURL) {
-        result.items.push({
-          pageID: page.id,
-          docID: item.docVer.document_id,
-          docVerID: item.docVer.id,
-          pageNumber: pNum,
-          objectURL: objectURL,
-          size: "sm",
-        })
-      }
     }
   }
 
   return result
 })
-
 
 const imageObjectsSlice = createSlice({
   name: "imageObjects",
@@ -146,10 +122,8 @@ const imageObjectsSlice = createSlice({
           ...existing,
           [size]: objectURL,
           docID: docID,
-          docVerID: docVerID
-        }
-        if (pageNumber !== undefined && pageNumber != null) {
-          state[pageID]["pageNumber"] = pageNumber
+          docVerID: docVerID,
+          pageNumber: pageNumber
         }
       }
     })
@@ -159,20 +133,42 @@ const imageObjectsSlice = createSlice({
 export default imageObjectsSlice.reducer
 export const selectImageObjects = (state: RootState) => state.imageObjects
 
+export const selectAreAllPreviewsAvailable = (
+  pagesToCheck: BasicPage[],
+  docVerID: string
+) =>
+  createSelector(
+    (state: RootState) => state.imageObjects,
+    (imageState: ImageState) => {
+      return pagesToCheck.every(({id, number}) => {
+        const entry = imageState[id]
+        return (
+          entry !== undefined &&
+          entry.pageNumber === number &&
+          entry.docVerID === docVerID &&
+          entry.md
+        )
+      })
+    }
+  )
 
-export const selectExistingPreviewsPageNumbers = createSelector(
+export const selectPagesWithPreviews = createSelector(
   [
     selectImageObjects,
-    (_: RootState, docVerID?: UUID) => docVerID // Pass docVerID as input
+    (_: RootState, docVerID: UUID) => docVerID // Pass docVerID as input
   ],
   (imageObjects, docVerID) => {
     if (!docVerID) return []
 
-    const pageNumbers = Object.entries(imageObjects)
-      .filter(([_, value]) => value.docVerID === docVerID && value.md && value.sm)
-      .map(([_, value]) => value.pageNumber)
+    const pages: Array<BasicPage> = Object.entries(imageObjects)
+      .filter(
+        ([_, value]) => value.docVerID === docVerID && value.md && value.sm
+      )
+      .map(([pageID, value]) => {
+        return {id: pageID, number: value.pageNumber}
+      })
 
-    return pageNumbers
+    return pages
   }
 )
 export const selectShowMorePages = (
@@ -191,7 +187,6 @@ export const selectShowMorePages = (
 
   return localTotalCount < totalCount
 }
-
 
 function getWidth(size: ImageSize) {
   if (size == "sm") {

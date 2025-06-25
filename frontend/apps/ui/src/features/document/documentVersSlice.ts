@@ -1,25 +1,25 @@
-import { RootState } from "@/app/types"
-import { apiSliceWithSharedNodes } from "@/features/shared_nodes/apiSlice"
+import {RootState} from "@/app/types"
+import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
 import type {
   ClientDocumentVersion,
   ClientPage,
   DroppedThumbnailPosition,
   ServerNotifDocumentMoved
 } from "@/types"
-import { PanelMode } from "@/types"
-import { UUID } from "@/types.d/common"
-import { contains_every, reorder } from "@/utils"
-import { notifications } from "@mantine/notifications"
+import {PanelMode} from "@/types"
+import {UUID} from "@/types.d/common"
+import {contains_every, reorder} from "@/utils"
+import {notifications} from "@mantine/notifications"
 import {
   PayloadAction,
   createEntityAdapter,
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
-import { apiSliceWithDocuments } from "./apiSlice"
-import { DOC_VER_PAGINATION_PAGE_SIZE } from "./constants"
-import type { DocumentType, DocumentVersion } from "./types"
-import { DLVPaginatedArgsOutput } from "./types"
+import {apiSliceWithDocuments} from "./apiSlice"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "./constants"
+import type {DocumentType, DocumentVersion} from "./types"
+import {DLVPaginatedArgsOutput} from "./types"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -57,7 +57,7 @@ const docVersSlice = createSlice({
   initialState,
   reducers: {
     docVerPaginationUpdated(state, action: PayloadAction<PaginationUpdated>) {
-      const { pageNumber, pageSize, docVerID } = action.payload
+      const {pageNumber, pageSize, docVerID} = action.payload
       const docVer = state.entities[docVerID]
       if (docVer) {
         if (docVer.pagination) {
@@ -102,7 +102,7 @@ const docVersSlice = createSlice({
           })),
           pagination: {
             page_number: 1,
-            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
           }
         }
       } else {
@@ -139,19 +139,19 @@ const docVersSlice = createSlice({
           initial_pages: updatedInitialPages,
           pagination: {
             page_number: data.page_number,
-            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
           }
         }
       }
       docVerAdapter.upsertOne(state, updatedDocVer)
     },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
-      const { targetDocVerID, sources, target, position } = action.payload
+      const {targetDocVerID, sources, target, position} = action.payload
       const docVer = state.entities[targetDocVerID]
       const pages = docVer.pages
       const page_ids = pages.map(p => p.id)
       const source_ids = sources.map(p => p.id)
-      if (contains_every({ container: page_ids, items: source_ids })) {
+      if (contains_every({container: page_ids, items: source_ids})) {
         /* Here we deal with page transfer is within the same document
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
@@ -167,7 +167,7 @@ const docVersSlice = createSlice({
       }
     },
     pagesRotated(state, action: PayloadAction<PageRotatedArgs>) {
-      const { targetDocVerID, sources, angle } = action.payload
+      const {targetDocVerID, sources, angle} = action.payload
       const docVer = state.entities[targetDocVerID]
       const pages = docVer.pages
       const newPages = pages.map(p => {
@@ -190,7 +190,7 @@ const docVersSlice = createSlice({
       state.entities[docVerID].pages = docVer.initial_pages
     },
     pagesDeleted(state, action: PayloadAction<PageDeletedArgs>) {
-      const { sources, targetDocVerID } = action.payload
+      const {sources, targetDocVerID} = action.payload
       const docVer = state.entities[targetDocVerID]
       const pages = docVer.pages
       const pageIDsToBeDeleted = sources.map(i => i.id)
@@ -225,16 +225,16 @@ const docVersSlice = createSlice({
           number: v.number,
           file_name: v.file_name,
           pages: v.pages.map(p => {
-            return { id: p.id, number: p.number, angle: 0 }
+            return {id: p.id, number: p.number, angle: 0}
           }),
           initial_pages: v.pages
             .sort((a, b) => a.number - b.number)
             .map(p => {
-              return { id: p.id, number: p.number, angle: 0 }
+              return {id: p.id, number: p.number, angle: 0}
             }),
           pagination: {
             page_number: 1,
-            per_page: DOC_VER_PAGINATION_PAGE_SIZE
+            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
           }
         }
 
@@ -253,16 +253,16 @@ const docVersSlice = createSlice({
             number: v.number,
             file_name: v.file_name,
             pages: v.pages.map(p => {
-              return { id: p.id, number: p.number, angle: 0 }
+              return {id: p.id, number: p.number, angle: 0}
             }),
             initial_pages: v.pages
               .sort((a, b) => a.number - b.number)
               .map(p => {
-                return { id: p.id, number: p.number, angle: 0 }
+                return {id: p.id, number: p.number, angle: 0}
               }),
             pagination: {
               page_number: 1,
-              per_page: DOC_VER_PAGINATION_PAGE_SIZE
+              per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
             }
           }
           all_vers.push(ver)
@@ -293,7 +293,7 @@ export const selectDocVerByID = (state: RootState, docVerID?: string) => {
   return null
 }
 
-export const { selectEntities: selectDocVerEntities } =
+export const {selectEntities: selectDocVerEntities} =
   docVerAdapter.getSelectors((state: RootState) => state.docVers)
 
 export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
@@ -467,7 +467,7 @@ export const selectDocVerPaginationPageNumber = (
 
 export const selectDocVerClientPage = (
   state: RootState,
-  { docVerID, pageID }: { docVerID?: string; pageID?: string }
+  {docVerID, pageID}: {docVerID?: string; pageID?: string}
 ) => {
   if (!docVerID) {
     return null

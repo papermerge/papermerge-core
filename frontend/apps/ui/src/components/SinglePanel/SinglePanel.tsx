@@ -44,16 +44,18 @@ export default function SinglePanel() {
   const currentNode = useAppSelector(s => selectCurrentNode(s, mode))
 
   const {
-    data: doc,
+    // should be `currentData` here not `data`, otherwise there will
+    // be a flicker previous document when user opens viewer
+    currentData: doc,
     isError: isErrorDoc,
-    error: errorDoc,
-    isLoading: isLoadingDoc
+    error: errorDoc
   } = useGetDocumentQuery(currentDocumentID ?? skipToken)
   const {
-    data: docVer,
+    // should be `currentData` here not `data`, otherwise there will
+    // be a flicker previous document when user opens viewer
+    currentData: docVer,
     isError: isErrorDocVer,
-    error: errorDocVer,
-    isLoading: isLoadingDocVer
+    error: errorDocVer
   } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
   const navigate = useNavigate()
   const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))

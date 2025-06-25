@@ -19,7 +19,7 @@ export default function useGeneratePreviews({
   docVer,
   pageSize,
   pageNumber
-}: Args): void {
+}: Args): boolean {
   const dispatch = useAppDispatch()
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
@@ -61,6 +61,8 @@ export default function useGeneratePreviews({
 
     generate()
   }, [dispatch, docVer, pageSize, pageNumber, allPreviewsAreAvailable])
+
+  return allPreviewsAreAvailable
 }
 
 interface DocData {

@@ -5,6 +5,7 @@ import {
 } from "@/features/document/apiSlice"
 import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {FetchBaseQueryError, skipToken} from "@reduxjs/toolkit/query"
+import {useEffect, useState} from "react"
 
 import {selectCurrentNode} from "@/features/ui/uiSlice"
 
@@ -27,23 +28,52 @@ export default function useCurrentDoc(): State {
       ? currentNode.id
       : undefined
   const {
-    currentData: doc,
+    data: docData,
     isError: isErrorDoc,
     error: errorDoc,
     isLoading: isLoadingDoc
   } = useGetDocumentQuery(currentDocumentID ?? skipToken)
   const {
-    data: docVer,
-    isError: isErorDocVer,
+    data: docVerData,
+    isError: isErrorDocVer,
     error: errorDocVer,
     isLoading: isLoadingDocVer
   } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
+  const [isLoading, setIsLoading] = useState<boolean>(
+    isLoadingDoc || isLoadingDocVer
+  )
+  const [doc, setDoc] = useState<DocumentType | undefined>(docData)
+  const [docVer, setDocVer] = useState<DocumentVersion | undefined>(docVerData)
+  const [isError, setIsError] = useState<boolean>(isErrorDoc || isErrorDocVer)
+  const [error, setError] = useState<
+    FetchBaseQueryError | SerializedError | undefined
+  >(errorDoc || errorDocVer)
 
+  useEffect(() => {
+    setIsLoading(isLoadingDoc || isLoadingDocVer)
+    setDoc(docData)
+    setDocVer(docVerData)
+    setIsError(isErrorDoc || isErrorDocVer)
+    setError(errorDoc || errorDocVer)
+  }, [
+    isLoadingDoc,
+    isLoadingDocVer,
+    docData,
+    docVerData,
+    isErrorDoc,
+    isErrorDocVer,
+    errorDoc,
+    errorDocVer
+  ])
+
+  console.log(
+    `useCurrentDoc doc=${doc} docVer=${docVer} isLoading=${isLoading}`
+  )
   return {
-    isLoading: isLoadingDoc || isLoadingDocVer,
+    isLoading,
     doc,
     docVer,
-    isError: isErrorDoc || isErorDocVer,
-    error: errorDoc || errorDocVer
+    isError,
+    error
   }
 }

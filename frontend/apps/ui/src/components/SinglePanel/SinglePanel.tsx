@@ -1,4 +1,13 @@
 import {useAppSelector} from "@/app/hooks"
+import {
+  useGetDocLastVersionQuery,
+  useGetDocumentQuery
+} from "@/features/document/apiSlice"
+import {Loader} from "@mantine/core"
+import {skipToken} from "@reduxjs/toolkit/query"
+import {useEffect, useState} from "react"
+
+import {selectCurrentNode} from "@/features/ui/uiSlice"
 
 import {
   isHTTP403Forbidden,
@@ -25,13 +34,39 @@ import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
 import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
 
 import {selectPanelComponent} from "@/features/ui/uiSlice"
-import useCurrentDoc from "./useCurrentDoc"
 
 export default function SinglePanel() {
+  const [currentDocumentID, setCurrentDocumentID] = useState<
+    string | undefined
+  >()
   const mode: PanelMode = useContext(PanelContext)
+
+  const currentNode = useAppSelector(s => selectCurrentNode(s, mode))
+
+  const {
+    data: doc,
+    isError: isErrorDoc,
+    error: errorDoc,
+    isLoading: isLoadingDoc
+  } = useGetDocumentQuery(currentDocumentID ?? skipToken)
+  const {
+    data: docVer,
+    isError: isErrorDocVer,
+    error: errorDocVer,
+    isLoading: isLoadingDocVer
+  } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
   const navigate = useNavigate()
   const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
-  const {isLoading, isError, error, doc, docVer} = useCurrentDoc()
+  const isError = isErrorDoc || isErrorDocVer
+  const error = errorDoc || errorDocVer
+
+  useEffect(() => {
+    if (currentNode?.id && currentNode?.ctype == "document") {
+      setCurrentDocumentID(currentNode.id)
+    } else {
+      setCurrentDocumentID(undefined)
+    }
+  }, [currentNode])
 
   if (isError && isHTTP422UnprocessableContent(error)) {
     navigate(ERRORS_422_UNPROCESSABLE_CONTENT)
@@ -80,10 +115,12 @@ export default function SinglePanel() {
   }
 
   if (panelComponent == "viewer") {
-    if (isLoading || !doc || !docVer) {
-      return <div>Loading...</div>
-    } else {
+    if (doc && docVer) {
+      console.log(`Loaded!!!! ${currentDocumentID} mode=${mode}!!!`)
       return <Viewer docVer={docVer} doc={doc} />
+    } else {
+      console.log(`Loading ${currentDocumentID} mode=${mode}...`)
+      return <Loader type="dots" />
     }
   }
 

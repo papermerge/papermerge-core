@@ -20,6 +20,7 @@ import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import PageList from "@/features/document/components/PageList"
 import ThumbnailList from "@/features/document/components/ThumbnailList"
+import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {
   currentDocVerUpdated,
@@ -43,7 +44,13 @@ export default function Viewer({doc, docVer}: Args) {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const {previewsAreAvailable} = useGeneratePreviews({
+  const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
+    docVer,
+    pageNumber: 1,
+    pageSize: 10
+  })
+
+  useGeneratePreviews({
     docVer,
     pageNumber: 1,
     pageSize: 10
@@ -51,7 +58,7 @@ export default function Viewer({doc, docVer}: Args) {
 
   useDownloadLastDocVerFile({
     docID: doc.id,
-    previewsAreAvailable
+    previewsAreAvailable: allPreviewsAreAvailable
   })
 
   const onContextMenu = (ev: MouseEvent) => {
@@ -99,7 +106,8 @@ export default function Viewer({doc, docVer}: Args) {
     }
   }, [docVer])
 
-  if (!previewsAreAvailable) {
+  if (!allPreviewsAreAvailable) {
+    console.log(`Not all previews are available!`)
     return <Loader type="dots" />
   }
 

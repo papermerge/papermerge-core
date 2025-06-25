@@ -2,7 +2,7 @@ import {useAppDispatch} from "@/app/hooks"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import {generatePreviews} from "@/features/document/imageObjectsSlice"
 import type {DocumentVersion} from "@/features/document/types"
-import {useEffect, useState} from "react"
+import {useEffect} from "react"
 
 interface State {
   previewsAreAvailable: boolean
@@ -18,22 +18,18 @@ export default function useGeneratePreviews({
   docVer,
   pageSize,
   pageNumber
-}: Args): State {
+}: Args): void {
   const dispatch = useAppDispatch()
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
     pageSize,
     pageNumber
   })
-  const [previewsAreAvailable, setPreviewsAreAvailable] =
-    useState<boolean>(false)
 
-  const generate = async () => {
-    if (allPreviewsAreAvailable) {
-      setPreviewsAreAvailable(true)
-    } else {
-      setPreviewsAreAvailable(false)
-      await dispatch(
+  useEffect(() => {
+    if (!allPreviewsAreAvailable) {
+      console.log(`Generating previews for ${docVer.id}`)
+      dispatch(
         generatePreviews({
           docVer,
           size: "md",
@@ -42,13 +38,6 @@ export default function useGeneratePreviews({
           pageTotal: docVer.pages.length
         })
       )
-      setPreviewsAreAvailable(true)
     }
-  }
-
-  useEffect(() => {
-    generate()
-  }, [pageSize, pageNumber, docVer.id])
-
-  return {previewsAreAvailable}
+  }, [dispatch, docVer, pageSize, pageNumber, allPreviewsAreAvailable])
 }

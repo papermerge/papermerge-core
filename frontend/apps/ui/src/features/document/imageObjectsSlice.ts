@@ -145,7 +145,7 @@ export const selectAreAllPreviewsAvailable = (
           entry !== undefined &&
           entry.pageNumber === number &&
           entry.docVerID === docVerID &&
-          entry.sm
+          entry.md
         )
       })
     }

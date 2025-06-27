@@ -16,11 +16,6 @@ interface Args {
 export const generateNextPreviews =
   ({docVer, pageNumber}: Args) =>
   async (dispatch: AppDispatch) => {
-    /*
-    console.log(
-      `generateNextPreviews: docVerID=${docVer.id} pageNumber=${pageNumber}`
-    )
-    */
     dispatch(markGeneratingPreviewsBegin(docVer.id))
 
     await dispatch(

@@ -26,7 +26,7 @@ export const Page = forwardRef<HTMLImageElement, PageArgs>(
     }
 
     return (
-      <Stack className={classes.page}>
+      <Stack className={`page ${classes.page}`}>
         <img
           style={{
             transform: `rotate(${angle}deg)`,

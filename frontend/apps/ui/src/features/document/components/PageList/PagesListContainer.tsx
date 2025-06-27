@@ -6,34 +6,40 @@ import {
   docVerPaginationUpdated,
   selectDocVerPaginationPageNumber
 } from "@/features/document/documentVersSlice"
+import {generatePreviews} from "@/features/document/imageObjectsSlice"
+import {Loader} from "@mantine/core"
+
+import {DocumentVersion} from "@/features/document/types"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
-import {UUID} from "@/types.d/common"
-import {Button, Stack} from "@mantine/core"
-import {useContext} from "react"
+import {Stack} from "@mantine/core"
+import {useContext, useEffect, useRef} from "react"
 import {useTranslation} from "react-i18next"
 import Page from "../Page"
 import classes from "./PageList.module.css"
 import usePageList from "./usePageList"
 
 interface Args {
-  docVerID: UUID
+  docVer: DocumentVersion
 }
 
-export default function PageListContainer({docVerID}: Args) {
+export default function PageListContainer({docVer}: Args) {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
   const pageNumber = useAppSelector(s =>
-    selectDocVerPaginationPageNumber(s, docVerID)
+    selectDocVerPaginationPageNumber(s, docVer.id)
   )
-  const {pages, isLoading, showLoadMore} = usePageList({
-    docVerID,
-    totalCount: 5,
-    pageNumber: pageNumber,
-    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
-  })
+  const containerRef = useRef<HTMLDivElement>(null)
+  const {pages, isLoading, loadMore, markLoadingDone, markLoadingStart} =
+    usePageList({
+      docVerID: docVer.id,
+      totalCount: docVer.pages.length,
+      pageNumber: pageNumber,
+      pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+      containerRef: containerRef
+    })
   const pageComponents = pages.map(p => (
     <Page
       key={p.id}
@@ -44,26 +50,33 @@ export default function PageListContainer({docVerID}: Args) {
     />
   ))
 
-  const onLoadMore = () => {
-    if (docVerID) {
+  useEffect(() => {
+    if (loadMore && !isLoading) {
+      markLoadingStart()
+      console.log(`trigger load for pageNumber ${pageNumber + 1}`)
+      dispatch(
+        generatePreviews({
+          docVer,
+          size: "md",
+          pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+          pageNumber,
+          pageTotal: docVer.pages.length
+        })
+      ).then(markLoadingDone)
       dispatch(
         docVerPaginationUpdated({
           pageNumber: pageNumber + 1,
           pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-          docVerID: docVerID
+          docVerID: docVer.id
         })
       )
     }
-  }
+  }, [isLoading, loadMore])
 
   return (
-    <Stack justify="center" className={classes.pages}>
+    <Stack ref={containerRef} justify="center" className={classes.pages}>
       {pageComponents}
-      {showLoadMore && (
-        <Button size={"lg"} disabled={isLoading} onClick={onLoadMore}>
-          {t("load-more")}
-        </Button>
-      )}
+      {isLoading && <Loader c="white" type="bars" />}
       <Zoom />
     </Stack>
   )

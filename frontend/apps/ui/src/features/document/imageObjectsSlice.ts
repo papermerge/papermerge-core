@@ -161,9 +161,7 @@ export const selectPagesWithPreviews = createSelector(
     if (!docVerID) return []
 
     const pages: Array<BasicPage> = Object.entries(imageObjects)
-      .filter(
-        ([_, value]) => value.docVerID === docVerID && value.md && value.sm
-      )
+      .filter(([_, value]) => value.docVerID === docVerID && value.md)
       .map(([pageID, value]) => {
         return {id: pageID, number: value.pageNumber}
       })
@@ -171,6 +169,28 @@ export const selectPagesWithPreviews = createSelector(
     return pages
   }
 )
+
+const selectDocVerByID = (state: RootState, docVerID?: string) => {
+  if (docVerID) {
+    return state.docVers.entities[docVerID]
+  }
+
+  return null
+}
+
+export const selectClientPagesWithPreviews = createSelector(
+  [selectPagesWithPreviews, selectDocVerByID],
+  (basicPages, docVer) => {
+    if (!docVer) {
+      return []
+    }
+
+    const IDSWithPreviews = basicPages.map(bp => bp.id)
+
+    return docVer.pages.filter(p => IDSWithPreviews.includes(p.id))
+  }
+)
+
 export const selectShowMorePages = (
   state: RootState,
   docVerID?: UUID,

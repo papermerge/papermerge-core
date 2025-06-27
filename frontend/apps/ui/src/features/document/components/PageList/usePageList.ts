@@ -1,16 +1,12 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { useEffect, useMemo } from "react"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {RefObject, useEffect, useMemo} from "react"
 
-import {
-  docVerPaginationUpdated,
-  selectCurrentPages
-} from "@/features/document/documentVersSlice"
-import {
-  selectShowMorePages
-} from "@/features/document/imageObjectsSlice"
-import { useCurrentNode, usePanelMode } from "@/hooks"
-import type { ClientPage } from "@/types"
-import type { UUID } from "@/types.d/common"
+import {docVerPaginationUpdated} from "@/features/document/documentVersSlice"
+import usePageLoader from "@/features/document/hooks/usePageLoader"
+import {selectClientPagesWithPreviews} from "@/features/document/imageObjectsSlice"
+import {useCurrentNode, usePanelMode} from "@/hooks"
+import type {ClientPage} from "@/types"
+import type {UUID} from "@/types.d/common"
 
 interface BasicPage {
   id: string
@@ -22,12 +18,15 @@ interface Args {
   totalCount: number
   pageNumber: number
   pageSize: number
+  containerRef: RefObject<HTMLDivElement | null>
 }
 
 interface PageListState {
   pages: Array<ClientPage>
   isLoading: boolean
-  showLoadMore: boolean
+  loadMore: boolean
+  markLoadingDone: () => void
+  markLoadingStart: () => void
   docVerID?: UUID
 }
 
@@ -54,19 +53,24 @@ export default function usePageList({
   docVerID,
   pageNumber,
   pageSize,
-  totalCount
+  totalCount,
+  containerRef
 }: Args): PageListState {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
-  const { currentNodeID, currentCType } = useCurrentNode()
+  const {currentNodeID, currentCType} = useCurrentNode()
 
   const isDocument = currentNodeID && currentCType === "document"
   const docID = isDocument ? currentNodeID : null
+  const {shouldLoadMore, isLoading, markLoadingStart, markLoadingDone} =
+    usePageLoader(totalCount, containerRef)
+  /*
   const showLoadMore = useAppSelector(s =>
     selectShowMorePages(s, docVerID, totalCount)
   )
+  */
 
-  const pages = useAppSelector(s => selectCurrentPages(s, docVerID))
+  const pages = useAppSelector(s => selectClientPagesWithPreviews(s, docVerID))
 
   useEffect(() => {
     dispatch(
@@ -80,8 +84,10 @@ export default function usePageList({
 
   return {
     pages,
-    isLoading: true,
-    showLoadMore,
-    docVerID: docVerID
+    isLoading,
+    loadMore: shouldLoadMore,
+    docVerID: docVerID,
+    markLoadingDone,
+    markLoadingStart
   }
 }

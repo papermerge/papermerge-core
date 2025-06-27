@@ -109,7 +109,7 @@ export default function Viewer({doc, docVer}: Args) {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <ThumbnailList docVerID={docVer.id} />
         <ThumbnailsToggle />
-        <PageList docVerID={docVer.id} />
+        <PageList docVer={docVer} />
         <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
         <PagesHaveChangedDialog />
         <ContextMenu

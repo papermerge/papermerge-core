@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {UUID} from "@/types.d/common"
-import {Button, Stack} from "@mantine/core"
+import {Stack} from "@mantine/core"
+import {useRef} from "react"
 
 import {RootState} from "@/app/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
@@ -27,11 +28,13 @@ export default function ThumbnailListContainer({docVerID}: Args) {
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVerID)
   )
-  const {pages, isLoading, showLoadMore} = usePageList({
+  const containerRef = useRef<HTMLDivElement>(null)
+  const {pages, isLoading, loadMore} = usePageList({
     docVerID,
     totalCount: 5,
     pageNumber: pageNumber,
-    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+    containerRef: containerRef
   })
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
@@ -55,13 +58,12 @@ export default function ThumbnailListContainer({docVerID}: Args) {
   // display: none
   if (thumbnailsIsOpen) {
     return (
-      <Stack className={classes.thumbnails} justify="flex-start">
+      <Stack
+        ref={containerRef}
+        className={classes.thumbnails}
+        justify="flex-start"
+      >
         {thumbnailComponents}
-        {showLoadMore && (
-          <Button size={"sm"} disabled={isLoading} onClick={onLoadMore}>
-            {t("load-more")}
-          </Button>
-        )}
       </Stack>
     )
   }

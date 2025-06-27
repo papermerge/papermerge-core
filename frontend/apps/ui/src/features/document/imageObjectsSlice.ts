@@ -2,10 +2,15 @@ import {RootState} from "@/app/types"
 import {fileManager} from "@/features/files/fileManager"
 import {ImageSize, UUID} from "@/types.d/common"
 import {generatePreview as util_pdf_generatePreview} from "@/utils/pdf"
-import {createAsyncThunk, createSelector, createSlice} from "@reduxjs/toolkit"
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction
+} from "@reduxjs/toolkit"
 import type {BasicPage, GeneratePreviewInputType} from "./types"
 
-export type ImageState = {
+export type PageIDEntitiesState = {
   [pageID: string]: {
     sm?: string
     md?: string
@@ -17,7 +22,21 @@ export type ImageState = {
   }
 }
 
-const initialState: ImageState = {}
+type DocVerIDEntities = {
+  [docVerID: string]: {
+    isGenerating: boolean
+  }
+}
+
+type ImageObjectsState = {
+  pageIDEntities: PageIDEntitiesState
+  docVerIDEntities: DocVerIDEntities
+}
+
+const initialState: ImageObjectsState = {
+  pageIDEntities: {},
+  docVerIDEntities: {}
+}
 
 type ReturnTypeItem = {
   pageID: UUID
@@ -93,16 +112,28 @@ const imageObjectsSlice = createSlice({
   name: "imageObjects",
   initialState,
   reducers: {
-    /*
-    clearImages(state) {
-      for (const sizes of Object.values(state)) {
-        for (const url of Object.values(sizes)) {
-          if (url) URL.revokeObjectURL(url)
+    markGeneratingPreviewsBegin(state, action: PayloadAction<UUID>) {
+      const docVerID = action.payload
+      const entity = state.docVerIDEntities[docVerID]
+      if (entity) {
+        entity.isGenerating = true
+      } else {
+        state.docVerIDEntities[docVerID] = {
+          isGenerating: true
         }
       }
-      return {}
+    },
+    markGeneratingPreviewsEnd(state, action: PayloadAction<UUID>) {
+      const docVerID = action.payload
+      const entity = state.docVerIDEntities[docVerID]
+      if (entity) {
+        entity.isGenerating = false
+      } else {
+        state.docVerIDEntities[docVerID] = {
+          isGenerating: false
+        }
+      }
     }
-      */
   },
   extraReducers: builder => {
     builder.addCase(generatePreviews.fulfilled, (state, action) => {
@@ -114,11 +145,11 @@ const imageObjectsSlice = createSlice({
         docVerID,
         pageNumber
       } of action.payload.items) {
-        const existing = state[pageID] ?? {}
+        const existing = state.pageIDEntities[pageID] ?? {}
         const oldUrl = existing[size]
         if (oldUrl) URL.revokeObjectURL(oldUrl)
 
-        state[pageID] = {
+        state.pageIDEntities[pageID] = {
           ...existing,
           [size]: objectURL,
           docID: docID,
@@ -131,6 +162,10 @@ const imageObjectsSlice = createSlice({
 })
 
 export default imageObjectsSlice.reducer
+
+export const {markGeneratingPreviewsBegin, markGeneratingPreviewsEnd} =
+  imageObjectsSlice.actions
+
 export const selectImageObjects = (state: RootState) => state.imageObjects
 
 export const selectAreAllPreviewsAvailable = (
@@ -139,9 +174,9 @@ export const selectAreAllPreviewsAvailable = (
 ) =>
   createSelector(
     (state: RootState) => state.imageObjects,
-    (imageState: ImageState) => {
+    (imageObjState: ImageObjectsState) => {
       return pagesToCheck.every(({id, number}) => {
-        const entry = imageState[id]
+        const entry = imageObjState.pageIDEntities[id]
         return (
           entry !== undefined &&
           entry.pageNumber === number &&
@@ -160,7 +195,7 @@ export const selectPagesWithPreviews = createSelector(
   (imageObjects, docVerID) => {
     if (!docVerID) return []
 
-    const pages: Array<BasicPage> = Object.entries(imageObjects)
+    const pages: Array<BasicPage> = Object.entries(imageObjects.pageIDEntities)
       .filter(([_, value]) => value.docVerID === docVerID && value.md)
       .map(([pageID, value]) => {
         return {id: pageID, number: value.pageNumber}
@@ -197,15 +232,22 @@ export const selectShowMorePages = (
   totalCount?: number
 ): boolean => {
   /* Are document pages to load? */
-  const localTotalCount = Object.entries(state.imageObjects).filter(
-    ([_, value]) => value.docVerID === docVerID
-  ).length
+  const localTotalCount = Object.entries(
+    state.imageObjects.pageIDEntities
+  ).filter(([_, value]) => value.docVerID === docVerID).length
 
   if (!totalCount) {
     return true
   }
 
   return localTotalCount < totalCount
+}
+
+export const selectIsGeneratingPreviews = (
+  state: RootState,
+  docVerID: UUID
+) => {
+  return state.imageObjects.docVerIDEntities[docVerID]?.isGenerating
 }
 
 function getWidth(size: ImageSize) {

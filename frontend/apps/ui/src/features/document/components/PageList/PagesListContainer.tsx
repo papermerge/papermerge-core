@@ -1,12 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import Zoom from "@/components/document/Zoom"
 import PanelContext from "@/contexts/PanelContext"
-import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
-import {
-  docVerPaginationUpdated,
-  selectDocVerPaginationPageNumber
-} from "@/features/document/documentVersSlice"
-import {generatePreviews} from "@/features/document/imageObjectsSlice"
+import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
+import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
 import {Loader} from "@mantine/core"
 
 import {DocumentVersion} from "@/features/document/types"
@@ -15,6 +11,7 @@ import type {PanelMode} from "@/types"
 import {Stack} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
 import {useTranslation} from "react-i18next"
+import {generateNextPreviews} from "../../actions"
 import Page from "../Page"
 import classes from "./PageList.module.css"
 import usePageList from "./usePageList"
@@ -32,14 +29,14 @@ export default function PageListContainer({docVer}: Args) {
     selectDocVerPaginationPageNumber(s, docVer.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
-  const {pages, isLoading, loadMore, markLoadingDone, markLoadingStart} =
-    usePageList({
-      docVerID: docVer.id,
-      totalCount: docVer.pages.length,
-      pageNumber: pageNumber,
-      pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-      containerRef: containerRef
-    })
+  const isGenerating = useAppSelector(s =>
+    selectIsGeneratingPreviews(s, docVer.id)
+  )
+  const {pages, loadMore} = usePageList({
+    docVerID: docVer.id,
+    totalCount: docVer.pages.length,
+    containerRef: containerRef
+  })
   const pageComponents = pages.map(p => (
     <Page
       key={p.id}
@@ -51,32 +48,15 @@ export default function PageListContainer({docVer}: Args) {
   ))
 
   useEffect(() => {
-    if (loadMore && !isLoading) {
-      markLoadingStart()
-      console.log(`trigger load for pageNumber ${pageNumber + 1}`)
-      dispatch(
-        generatePreviews({
-          docVer,
-          size: "md",
-          pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-          pageNumber,
-          pageTotal: docVer.pages.length
-        })
-      ).then(markLoadingDone)
-      dispatch(
-        docVerPaginationUpdated({
-          pageNumber: pageNumber + 1,
-          pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-          docVerID: docVer.id
-        })
-      )
+    if (loadMore && !isGenerating) {
+      dispatch(generateNextPreviews({docVer, pageNumber: pageNumber + 1}))
     }
-  }, [isLoading, loadMore])
+  }, [loadMore])
 
   return (
     <Stack ref={containerRef} justify="center" className={classes.pages}>
       {pageComponents}
-      {isLoading && <Loader c="white" type="bars" />}
+      {isGenerating && <Loader c="white" type="bars" />}
       <Zoom />
     </Stack>
   )

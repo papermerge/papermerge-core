@@ -1,18 +1,14 @@
 import {useCallback, useEffect, useState} from "react"
 
 interface State {
-  shouldLoadMore: boolean
-  isLoading: boolean
-  markLoadingStart: () => void
-  markLoadingDone: () => void
+  loadMore: boolean
 }
 
 export default function usePageLoader(
   totalPageCount: number,
   containerRef: React.RefObject<HTMLElement | null>
 ): State {
-  const [isLoading, setIsLoading] = useState(false)
-  const [shouldLoadMore, setShouldLoadMore] = useState(false)
+  const [loadMore, setLoadMore] = useState(false)
 
   const checkIfLastElementVisible = useCallback(() => {
     if (!containerRef) {
@@ -39,7 +35,7 @@ export default function usePageLoader(
     */
     const val = isFullyVisible && totalPageCount > pageElements.length
     if (lastChildRect.height > 100) {
-      setShouldLoadMore(val)
+      setLoadMore(val)
     }
   }, [containerRef])
 
@@ -62,14 +58,8 @@ export default function usePageLoader(
     }
   }, [checkIfLastElementVisible])
 
-  const markLoadingDone = () => {
-    setIsLoading(false)
-    checkIfLastElementVisible() // recheck in case layout changed
-  }
-
-  const markLoadingStart = () => {
-    setIsLoading(true)
-  }
-
-  return {shouldLoadMore, isLoading, markLoadingStart, markLoadingDone}
+  /*
+  console.log(`Returning from usePageLoader with isLoading=${isLoading}`)
+  */
+  return {loadMore}
 }

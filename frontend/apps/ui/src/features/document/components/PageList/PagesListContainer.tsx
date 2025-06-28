@@ -1,19 +1,17 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import Zoom from "@/components/document/Zoom"
 import PanelContext from "@/contexts/PanelContext"
 import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
 import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
-import {Loader} from "@mantine/core"
 
+import Zoom from "@/components/document/Zoom"
+import {generateNextPreviews} from "@/features/document/actions"
 import {DocumentVersion} from "@/features/document/types"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
-import {Stack} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
 import {useTranslation} from "react-i18next"
-import {generateNextPreviews} from "../../actions"
+import {PageList} from "viewer"
 import Page from "../Page"
-import classes from "./PageList.module.css"
 import usePageList from "./usePageList"
 
 interface Args {
@@ -54,10 +52,11 @@ export default function PageListContainer({docVer}: Args) {
   }, [loadMore])
 
   return (
-    <Stack ref={containerRef} justify="center" className={classes.pages}>
-      {pageComponents}
-      {isGenerating && <Loader c="white" type="bars" />}
-      <Zoom />
-    </Stack>
+    <PageList
+      ref={containerRef}
+      pageItems={pageComponents}
+      pagesAreLoading={isGenerating}
+      zoom={<Zoom />}
+    />
   )
 }

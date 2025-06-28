@@ -4,12 +4,12 @@ import classes from "./PageList.module.css"
 
 interface Args {
   pageItems: Array<React.ReactNode>
-  pagesAreLoading: boolean
+  paginationInProgress: boolean
   zoom: React.ReactNode
 }
 
 export const PageList = forwardRef<HTMLDivElement, Args>(
-  ({zoom, pageItems, pagesAreLoading}, ref) => {
+  ({zoom, pageItems, paginationInProgress}, ref) => {
     return (
       <Stack
         ref={ref}
@@ -18,7 +18,7 @@ export const PageList = forwardRef<HTMLDivElement, Args>(
       >
         {pageItems}
         {zoom}
-        {pagesAreLoading && (
+        {paginationInProgress && (
           <Loader className={classes.pageListLoader} type="oval" />
         )}
       </Stack>

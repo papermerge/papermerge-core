@@ -53,7 +53,7 @@ export default function PageListContainer({docVer}: Args) {
     <PageList
       ref={containerRef}
       pageItems={pageComponents}
-      pagesAreLoading={isGenerating}
+      paginationInProgress={isGenerating}
       zoom={<Zoom />}
     />
   )

@@ -1,5 +1,5 @@
 import {Group} from "@mantine/core"
-import {IconZoomIn, IconZoomOut} from "@tabler/icons-react"
+import {IconMaximize, IconZoomIn, IconZoomOut} from "@tabler/icons-react"
 import classes from "./Zoom.module.css"
 
 interface Args {
@@ -17,7 +17,7 @@ export default function Zoom({
     <Group justify={"center"} className={classes.zoom}>
       <IconZoomIn onClick={onZoomInClick} />
       <IconZoomOut onClick={onZoomOutClick} />
-      <div onClick={onFitClick}>Fit</div>
+      <IconMaximize onClick={onFitClick} />
     </Group>
   )
 }

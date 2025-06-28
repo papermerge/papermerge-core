@@ -7,6 +7,7 @@ import "./index.css"
 import DownloadButton from "./pages/DownloadButton"
 import OnePage from "./pages/OnePage"
 import OneThumbnail from "./pages/OneThumbnail"
+import PageListPage from "./pages/PageList"
 import TwoPages from "./pages/TwoPages"
 
 createRoot(document.getElementById("root")!).render(
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="two-pages" element={<TwoPages />} />
             <Route path="one-thumbnail" element={<OneThumbnail />} />
             <Route path="download-button" element={<DownloadButton />} />
+            <Route path="page-list" element={<PageListPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

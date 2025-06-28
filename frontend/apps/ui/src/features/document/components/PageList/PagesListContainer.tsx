@@ -9,7 +9,6 @@ import {DocumentVersion} from "@/features/document/types"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
 import {useContext, useEffect, useRef} from "react"
-import {useTranslation} from "react-i18next"
 import {PageList} from "viewer"
 import Page from "../Page"
 import usePageList from "./usePageList"
@@ -19,7 +18,6 @@ interface Args {
 }
 
 export default function PageListContainer({docVer}: Args) {
-  const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))

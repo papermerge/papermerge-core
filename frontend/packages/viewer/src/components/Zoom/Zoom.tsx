@@ -3,9 +3,9 @@ import {IconZoomIn, IconZoomOut} from "@tabler/icons-react"
 import classes from "./Zoom.module.css"
 
 interface Args {
-  onZoomInClick: () => void
-  onZoomOutClick: () => void
-  onFitClick: () => void
+  onZoomInClick?: () => void
+  onZoomOutClick?: () => void
+  onFitClick?: () => void
 }
 
 export default function Zoom({

@@ -17,8 +17,10 @@ export const PageList = forwardRef<HTMLDivElement, Args>(
         className={`${classes.pages} page-list`}
       >
         {pageItems}
-        {pagesAreLoading && <Loader type="oval" />}
         {zoom}
+        {pagesAreLoading && (
+          <Loader className={classes.pageListLoader} type="oval" />
+        )}
       </Stack>
     )
   }

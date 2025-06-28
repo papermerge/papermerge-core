@@ -4,6 +4,8 @@
   width: 40%;
   position: sticky;
   bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 0.5rem;
   margin: auto;
 }

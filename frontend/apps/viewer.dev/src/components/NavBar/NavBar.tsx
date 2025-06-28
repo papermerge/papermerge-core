@@ -17,6 +17,9 @@ export default function Navbar() {
         <NavLink to="/download-button" end>
           &lt;DownloadButton /&gt;
         </NavLink>
+        <NavLink to="/page-list" end>
+          &lt;PageList /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

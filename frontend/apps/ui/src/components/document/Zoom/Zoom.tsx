@@ -5,13 +5,11 @@ import {
   zoomFactorReseted
 } from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
-import {Group} from "@mantine/core"
-import {IconZoomIn, IconZoomOut} from "@tabler/icons-react"
 import {useContext} from "react"
 import {useDispatch} from "react-redux"
-import classes from "./Zoom.module.css"
+import {Zoom} from "viewer"
 
-export default function Zoom() {
+export default function ZoomContainer() {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
 
@@ -27,10 +25,10 @@ export default function Zoom() {
   }
 
   return (
-    <Group justify={"center"} className={classes.zoom}>
-      <IconZoomIn onClick={incZoom} />
-      <IconZoomOut onClick={decZoom} />
-      <div onClick={fitZoom}>Fit</div>
-    </Group>
+    <Zoom
+      onFitClick={fitZoom}
+      onZoomInClick={incZoom}
+      onZoomOutClick={decZoom}
+    />
   )
 }

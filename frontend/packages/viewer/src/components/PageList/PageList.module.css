@@ -13,10 +13,8 @@
   }
 }
 
-.loader {
-  overflow-y: auto;
-  overflow-x: auto;
-  background-color: #666;
-  color: white;
-  width: 100%;
+.pageListLoader {
+  position: sticky;
+  bottom: 1rem;
+  left: 1rem;
 }

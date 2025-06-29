@@ -259,11 +259,6 @@ class StatusForSize(BaseModel):
     size: ImagePreviewSize
 
 
-class PagePreviewImageStatus(BaseModel):
-    page_id: UUID
-    status: list[StatusForSize]
-
-
 class NewDocument(BaseModel):
     # UUID may be present to allow custom IDs
     # See https://github.com/papermerge/papermerge-core/issues/325

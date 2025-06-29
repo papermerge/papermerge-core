@@ -2,27 +2,25 @@ import logging
 import uuid
 from typing import Annotated, List
 
-from fastapi import APIRouter, HTTPException, Query, Security, status, Depends
+from fastapi import APIRouter, HTTPException, Query, Security, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select
 
 from core.types import ImagePreviewSize
-from papermerge.core.tasks import send_task
-from papermerge.core import constants as const
-from papermerge.core.config import get_settings, FileServer
-from papermerge.core import db, utils, schema, orm, dbapi
+from papermerge.core.config import get_settings
+from papermerge.core import db, utils, schema, orm
 from papermerge.core import pathlib as core_pathlib
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.page_mngm.db.api import apply_pages_op
-from papermerge.core.features.page_mngm.db.api import extract_pages as api_extract_pages
-from papermerge.core.features.page_mngm.db.api import move_pages as api_move_pages
+from papermerge.core.features.page_mngm.db.api import \
+    extract_pages as api_extract_pages
+from papermerge.core.features.page_mngm.db.api import \
+    move_pages as api_move_pages
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.utils import image
-from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-
 
 logger = logging.getLogger(__name__)
 config = get_settings()
@@ -221,66 +219,3 @@ def extract_pages(
     model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
     return schema.ExtractPagesOut.model_validate(model)
-
-
-@router.get(
-    "/preview-img-status/",
-    responses={
-        status.HTTP_403_FORBIDDEN: {
-            "description": f"No `{scopes.NODE_VIEW}` permission on one of the documents",
-            "content": OPEN_API_GENERIC_JSON_DETAIL,
-        }
-    },
-)
-@utils.docstring_parameter(scope=scopes.NODE_VIEW, max_pages=MAX_PAGES)
-def get_pages_preview_images_status(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    page_ids: list[uuid.UUID] = Query(),
-    db_session=Depends(db.get_db),
-) -> list[schema.PagePreviewImageStatus]:
-    """
-    Get page(s) preview image(s) status
-
-    Receives as input a list of page IDs
-
-    In case of CDN setup, for each page with NULL values for all `preview_status_sm`,
-    `preview_status_md`, `preview_status_lg`, `preview_status_xl` fields -
-    one `S3worker` task will be scheduled for generating respective
-    page previews.
-
-    Regardless how many page_ids are provided, only `{max_pages}` will be
-    considered. In other words, you should not pass more than `{max_pages}` IDs.
-
-    For Non-CDN setup (i.e. when core REST API is also serving content),
-    the response will always have all statuses marked as `ready` for all
-    image sizes.
-
-    Required scope: `{scope}`
-    """
-
-    page_ids_not_yet_considered = []
-    document_id = doc_dbapi.get_pages_document_id(db_session, page_ids=page_ids)
-    ok = dbapi_common.has_node_perm(
-        db_session,
-        user_id=user.id,
-        node_id=document_id,
-        codename=scopes.NODE_VIEW,
-    )
-    if not ok:
-        raise HTTPException(status_code=403, detail="Access Forbidden")
-
-    response, page_ids_not_yet_considered = dbapi.get_pages_preview_img_status(
-        db_session, page_ids=page_ids
-    )
-
-    fserver = config.papermerge__main__file_server
-    if fserver == FileServer.S3.value:
-        if len(page_ids_not_yet_considered) > 0:
-            for page_id in page_ids_not_yet_considered[:MAX_PAGES]:
-                send_task(
-                    const.S3_WORKER_GENERATE_PAGE_IMAGE,
-                    kwargs={"page_id": str(page_id)},
-                    route_name="s3preview",
-                )
-
-    return response

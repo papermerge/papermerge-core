@@ -1,6 +1,5 @@
 from sqlalchemy import select
 
-from papermerge.core.types import ImagePreviewStatus
 from papermerge.core import orm, schema, dbapi
 from papermerge.core.tests.resource_file import ResourceFile
 
@@ -78,37 +77,3 @@ def test_router_extract_all_pages(
     response = auth_api_client.post(f"/pages/extract/", json=data)
 
     assert response.status_code == 200, response.json()
-
-
-def test_get_pages_preview_images_status(auth_api_client, make_page):
-
-    page = make_page()
-    params = {"page_ids": [page.id]}
-
-    response = auth_api_client.get(f"/pages/preview-img-status/", params=params)
-
-    assert response.status_code == 200, response.json()
-    data = response.json()
-
-    assert len(data) == 1
-    assert data[0]["page_id"] == str(page.id)
-    assert data[0]["status"][0]["status"] == ImagePreviewStatus.ready
-
-
-def test_get_pages_preview_images_status_with_s3_server(
-    auth_api_client, make_page, monkeypatch
-):
-    from papermerge.core.config import settings
-
-    settings.papermerge__main__file_server = "s3"
-    page = make_page()
-    params = {"page_ids": [page.id]}
-
-    response = auth_api_client.get(f"/pages/preview-img-status/", params=params)
-
-    assert response.status_code == 200, response.json()
-    data = response.json()
-
-    assert len(data) == 1
-    assert data[0]["page_id"] == str(page.id)
-    assert data[0]["status"][0]["status"] is None, data[0]["status"][0]

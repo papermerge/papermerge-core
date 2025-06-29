@@ -3,7 +3,7 @@ import {generateNextPreviews} from "@/features/document/actions"
 import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
 import {useEffect, useRef} from "react"
 
-import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
+import {selectDocVerPaginationThumnailPageNumber} from "@/features/document/documentVersSlice"
 import {DocumentVersion} from "@/features/document/types"
 import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
@@ -16,7 +16,7 @@ interface Args {
 export default function ThumbnailListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
   const pageNumber = useAppSelector(s =>
-    selectDocVerPaginationPageNumber(s, docVer.id)
+    selectDocVerPaginationThumnailPageNumber(s, docVer.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
   const {pages, loadMore} = usePageList({

@@ -503,6 +503,29 @@ export const selectDocVerPaginationPageNumber = (
   return state.docVers.entities[docVerID].pagination.page_number
 }
 
+export const selectDocVerPaginationThumnailPageNumber = (
+  state: RootState,
+  docVerID?: UUID
+) => {
+  if (!docVerID) {
+    return 1
+  }
+
+  const docVer = state.docVers.entities[docVerID]
+
+  if (!docVer) {
+    return 1
+  }
+
+  const pagination = state.docVers.entities[docVerID].thumbnailsPagination
+
+  if (!pagination) {
+    return 1
+  }
+
+  return state.docVers.entities[docVerID].thumbnailsPagination.page_number
+}
+
 export const selectDocVerClientPage = (
   state: RootState,
   {docVerID, pageID}: {docVerID?: string; pageID?: string}

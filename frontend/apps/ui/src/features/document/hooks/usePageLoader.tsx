@@ -39,7 +39,7 @@ export default function usePageLoader(
 
     const isFullyVisible = lastChildRect.bottom <= containerRect.bottom
     const val = isFullyVisible && totalPageCount > pageElements.length
-    if (lastChildRect.height > 100) {
+    if (lastChildRect.height > 50) {
       setLoadMore(val)
     }
   }, [containerRef])

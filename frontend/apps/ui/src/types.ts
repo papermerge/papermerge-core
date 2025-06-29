@@ -1,4 +1,4 @@
-import type { Group } from "@/types.d/groups"
+import type {Group} from "@/types.d/groups"
 
 export type State<T> = {
   is_loading: boolean
@@ -331,6 +331,7 @@ export interface ClientDocumentVersion {
   file_name: string
   pages: Array<ClientPage>
   pagination: Pagination
+  thumbnailsPagination: Pagination
   /* Page array in same order as received from server side.
   Also angle here is set to 0. `initial_pages` attribute
   is used to restore `pages` attribute to their initial value  */

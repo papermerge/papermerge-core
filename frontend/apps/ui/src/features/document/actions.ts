@@ -1,6 +1,13 @@
 import {AppDispatch} from "@/app/types"
-import {docVerPaginationUpdated} from "@/features/document/documentVersSlice"
-import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "./constants"
+import {
+  docVerPaginationUpdated,
+  docVerThumbnailsPaginationUpdated
+} from "@/features/document/documentVersSlice"
+import {ImageSize} from "@/types.d/common"
+import {
+  DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+  DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
+} from "./constants"
 import {
   generatePreviews,
   markGeneratingPreviewsBegin,
@@ -11,30 +18,46 @@ import type {DocumentVersion} from "./types"
 interface Args {
   docVer: DocumentVersion
   pageNumber: number
+  size?: ImageSize
 }
 
 export const generateNextPreviews =
-  ({docVer, pageNumber}: Args) =>
+  ({docVer, pageNumber, size = "md"}: Args) =>
   async (dispatch: AppDispatch) => {
-    dispatch(markGeneratingPreviewsBegin(docVer.id))
+    dispatch(markGeneratingPreviewsBegin({docVerID: docVer.id, size}))
+
+    const pageSize =
+      size == "sm"
+        ? DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
+        : DOC_VER_PAGINATION_PAGE_BATCH_SIZE
 
     await dispatch(
       generatePreviews({
         docVer,
-        size: "md",
-        pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+        size,
+        pageSize: pageSize,
         pageNumber,
         pageTotal: docVer.pages.length
       })
     )
 
-    dispatch(markGeneratingPreviewsEnd(docVer.id))
+    dispatch(markGeneratingPreviewsEnd({docVerID: docVer.id, size}))
 
-    dispatch(
-      docVerPaginationUpdated({
-        pageNumber: pageNumber,
-        pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-        docVerID: docVer.id
-      })
-    )
+    if (size == "sm") {
+      dispatch(
+        docVerThumbnailsPaginationUpdated({
+          pageNumber: pageNumber,
+          pageSize: pageSize,
+          docVerID: docVer.id
+        })
+      )
+    } else {
+      dispatch(
+        docVerPaginationUpdated({
+          pageNumber: pageNumber,
+          pageSize: pageSize,
+          docVerID: docVer.id
+        })
+      )
+    }
   }

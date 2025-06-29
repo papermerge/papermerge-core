@@ -107,7 +107,7 @@ export default function Viewer({doc, docVer}: Args) {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <ThumbnailList docVerID={docVer.id} />
+        <ThumbnailList docVer={docVer} />
         <ThumbnailsToggle />
         <PageList docVer={docVer} />
         <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />

@@ -26,7 +26,7 @@ export default function PageListContainer({docVer}: Args) {
   )
   const containerRef = useRef<HTMLDivElement>(null)
   const isGenerating = useAppSelector(s =>
-    selectIsGeneratingPreviews(s, docVer.id)
+    selectIsGeneratingPreviews(s, docVer.id, "md")
   )
   const {pages, loadMore} = usePageList({
     docVerID: docVer.id,

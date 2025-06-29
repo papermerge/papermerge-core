@@ -1,41 +1,39 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {UUID} from "@/types.d/common"
+import {generateNextPreviews} from "@/features/document/actions"
+import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
 import {Stack} from "@mantine/core"
-import {useRef} from "react"
+import {useEffect, useRef} from "react"
 
 import {RootState} from "@/app/types"
-import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
-import {
-  docVerPaginationUpdated,
-  selectDocVerPaginationPageNumber
-} from "@/features/document/documentVersSlice"
+import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
+import {DocumentVersion} from "@/features/document/types"
 import {selectThumbnailsPanelOpen} from "@/features/ui/uiSlice"
 import usePanelMode from "@/hooks/usePanelMode"
-import {useTranslation} from "react-i18next"
 import {useSelector} from "react-redux"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
 import classes from "./ThumbnailListContainer.module.css"
 
 interface Args {
-  docVerID: UUID
+  docVer: DocumentVersion
 }
 
-export default function ThumbnailListContainer({docVerID}: Args) {
-  const {t} = useTranslation()
+export default function ThumbnailListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
   const pageNumber = useAppSelector(s =>
-    selectDocVerPaginationPageNumber(s, docVerID)
+    selectDocVerPaginationPageNumber(s, docVer.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
-  const {pages, isLoading, loadMore} = usePageList({
-    docVerID,
-    totalCount: 5,
-    pageNumber: pageNumber,
-    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+  const {pages, loadMore} = usePageList({
+    docVerID: docVer.id,
+    totalCount: docVer.pages.length,
+    size: "sm",
     containerRef: containerRef
   })
+  const isGenerating = useAppSelector(s =>
+    selectIsGeneratingPreviews(s, docVer.id, "sm")
+  )
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
@@ -43,17 +41,25 @@ export default function ThumbnailListContainer({docVerID}: Args) {
     selectThumbnailsPanelOpen(state, mode)
   )
 
-  const onLoadMore = () => {
-    if (docVerID) {
+  useEffect(() => {
+    console.log(
+      `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
+    )
+    if (pages.length == 0 && thumbnailsIsOpen && !isGenerating) {
+      dispatch(generateNextPreviews({docVer, size: "sm", pageNumber: 1}))
+    }
+  }, [pages.length, thumbnailsIsOpen])
+
+  useEffect(() => {
+    console.log(
+      `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
+    )
+    if (loadMore && !isGenerating) {
       dispatch(
-        docVerPaginationUpdated({
-          pageNumber: pageNumber + 1,
-          pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-          docVerID: docVerID
-        })
+        generateNextPreviews({docVer, size: "sm", pageNumber: pageNumber + 1})
       )
     }
-  }
+  }, [loadMore])
 
   // display: none
   if (thumbnailsIsOpen) {

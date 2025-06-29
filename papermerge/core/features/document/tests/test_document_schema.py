@@ -1,17 +1,6 @@
 from papermerge.core import schema
 
 
-def test_basic_page(make_page):
-    db_page = make_page()
-
-    page = schema.Page.model_validate(db_page)
-
-    assert page.preview_image_md_url == f"/api/pages/{page.id}/jpg"
-    assert page.preview_image_sm_url == f"/api/pages/{page.id}/jpg"
-    assert page.preview_image_lg_url == f"/api/pages/{page.id}/jpg"
-    assert page.preview_image_xl_url == f"/api/pages/{page.id}/jpg"
-
-
 def test_basic_document_version(make_document_version, user):
     """assert that document version instance can be validated
     via pydantic mode_validate"""

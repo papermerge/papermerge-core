@@ -12,6 +12,7 @@ interface Args {
   totalCount: number
   containerRef: RefObject<HTMLDivElement | null>
   size?: ImageSize
+  cssSelector?: string
 }
 
 interface PageListState {
@@ -24,9 +25,10 @@ export default function usePageList({
   docVerID,
   totalCount,
   containerRef,
-  size = "md"
+  size = "md",
+  cssSelector = ".page"
 }: Args): PageListState {
-  const {loadMore} = usePageLoader(totalCount, containerRef)
+  const {loadMore} = usePageLoader(totalCount, containerRef, cssSelector)
 
   const pages = useAppSelector(s =>
     selectClientPagesWithPreviews(s, docVerID, size)

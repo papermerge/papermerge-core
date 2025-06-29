@@ -29,6 +29,7 @@ export default function ThumbnailListContainer({docVer}: Args) {
     docVerID: docVer.id,
     totalCount: docVer.pages.length,
     size: "sm",
+    cssSelector: ".thumbnail",
     containerRef: containerRef
   })
   const isGenerating = useAppSelector(s =>
@@ -42,9 +43,11 @@ export default function ThumbnailListContainer({docVer}: Args) {
   )
 
   useEffect(() => {
+    /*
     console.log(
       `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
     )
+    */
     if (pages.length == 0 && thumbnailsIsOpen && !isGenerating) {
       dispatch(generateNextPreviews({docVer, size: "sm", pageNumber: 1}))
     }

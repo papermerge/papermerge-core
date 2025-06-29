@@ -31,6 +31,7 @@ export default function PageListContainer({docVer}: Args) {
   const {pages, loadMore} = usePageList({
     docVerID: docVer.id,
     totalCount: docVer.pages.length,
+    cssSelector: ".page",
     containerRef: containerRef
   })
   const pageComponents = pages.map(p => (

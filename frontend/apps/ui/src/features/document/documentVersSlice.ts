@@ -17,7 +17,10 @@ import {
   createSlice
 } from "@reduxjs/toolkit"
 import {apiSliceWithDocuments} from "./apiSlice"
-import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "./constants"
+import {
+  DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+  DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
+} from "./constants"
 import type {DocumentType, DocumentVersion} from "./types"
 import {DLVPaginatedArgsOutput} from "./types"
 
@@ -71,6 +74,24 @@ const docVersSlice = createSlice({
         }
       }
     },
+    docVerThumbnailsPaginationUpdated(
+      state,
+      action: PayloadAction<PaginationUpdated>
+    ) {
+      const {pageNumber, pageSize, docVerID} = action.payload
+      const docVer = state.entities[docVerID]
+      if (docVer) {
+        if (docVer.thumbnailsPagination) {
+          docVer.thumbnailsPagination.page_number = pageNumber
+          docVer.thumbnailsPagination.per_page = pageSize
+        } else {
+          docVer.thumbnailsPagination = {
+            page_number: pageNumber,
+            per_page: pageSize
+          }
+        }
+      }
+    },
     docVerUpserted(state, action: PayloadAction<DLVPaginatedArgsOutput>) {
       /**
        * Inserts or Updated document verions pages and initial_pages
@@ -103,6 +124,10 @@ const docVersSlice = createSlice({
           pagination: {
             page_number: 1,
             per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+          },
+          thumbnailsPagination: {
+            page_number: 1,
+            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
           }
         }
       } else {
@@ -140,6 +165,10 @@ const docVersSlice = createSlice({
           pagination: {
             page_number: data.page_number,
             per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+          },
+          thumbnailsPagination: {
+            page_number: data.page_number,
+            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
           }
         }
       }
@@ -235,6 +264,10 @@ const docVersSlice = createSlice({
           pagination: {
             page_number: 1,
             per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+          },
+          thumbnailsPagination: {
+            page_number: 1,
+            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
           }
         }
 
@@ -263,6 +296,10 @@ const docVersSlice = createSlice({
             pagination: {
               page_number: 1,
               per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+            },
+            thumbnailsPagination: {
+              page_number: 1,
+              per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
             }
           }
           all_vers.push(ver)
@@ -281,6 +318,7 @@ export const {
   pagesDeleted,
   documentMovedNotifReceived,
   docVerPaginationUpdated,
+  docVerThumbnailsPaginationUpdated,
   docVerUpserted
 } = docVersSlice.actions
 export default docVersSlice.reducer
@@ -463,6 +501,29 @@ export const selectDocVerPaginationPageNumber = (
   }
 
   return state.docVers.entities[docVerID].pagination.page_number
+}
+
+export const selectDocVerPaginationThumnailPageNumber = (
+  state: RootState,
+  docVerID?: UUID
+) => {
+  if (!docVerID) {
+    return 1
+  }
+
+  const docVer = state.docVers.entities[docVerID]
+
+  if (!docVer) {
+    return 1
+  }
+
+  const pagination = state.docVers.entities[docVerID].thumbnailsPagination
+
+  if (!pagination) {
+    return 1
+  }
+
+  return state.docVers.entities[docVerID].thumbnailsPagination.page_number
 }
 
 export const selectDocVerClientPage = (

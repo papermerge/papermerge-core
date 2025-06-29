@@ -1,4 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
+import type {ImageSize} from "@/types.d/common"
 import {RefObject} from "react"
 
 import usePageLoader from "@/features/document/hooks/usePageLoader"
@@ -10,6 +11,8 @@ interface Args {
   docVerID: UUID
   totalCount: number
   containerRef: RefObject<HTMLDivElement | null>
+  size?: ImageSize
+  cssSelector?: string
 }
 
 interface PageListState {
@@ -21,11 +24,15 @@ interface PageListState {
 export default function usePageList({
   docVerID,
   totalCount,
-  containerRef
+  containerRef,
+  size = "md",
+  cssSelector = ".page"
 }: Args): PageListState {
-  const {loadMore} = usePageLoader(totalCount, containerRef)
+  const {loadMore} = usePageLoader(totalCount, containerRef, cssSelector)
 
-  const pages = useAppSelector(s => selectClientPagesWithPreviews(s, docVerID))
+  const pages = useAppSelector(s =>
+    selectClientPagesWithPreviews(s, docVerID, size)
+  )
 
   return {
     pages,

@@ -24,7 +24,8 @@ import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
-  selectContentHeight
+  selectContentHeight,
+  selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
 import type {Coord, NType, PanelMode} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
@@ -43,6 +44,9 @@ export default function Viewer({doc, docVer}: Args) {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const thumbnailsIsOpen = useAppSelector(s =>
+    selectThumbnailsPanelOpen(s, mode)
+  )
 
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer,
@@ -107,7 +111,7 @@ export default function Viewer({doc, docVer}: Args) {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <ThumbnailList docVerID={docVer.id} />
+        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
         <PageList docVer={docVer} />
         <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />

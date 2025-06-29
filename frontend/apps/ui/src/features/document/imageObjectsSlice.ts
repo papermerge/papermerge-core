@@ -24,7 +24,10 @@ export type PageIDEntitiesState = {
 
 type DocVerIDEntities = {
   [docVerID: string]: {
-    isGenerating: boolean
+    isGeneratingSM: boolean
+    isGeneratingMD: boolean
+    isGeneratingLG: boolean
+    isGeneratingXL: boolean
   }
 }
 
@@ -108,29 +111,70 @@ export const generatePreviews = createAsyncThunk<
   return result
 })
 
+interface MarkGenPayLoad {
+  docVerID: UUID
+  size: ImageSize
+}
+
 const imageObjectsSlice = createSlice({
   name: "imageObjects",
   initialState,
   reducers: {
-    markGeneratingPreviewsBegin(state, action: PayloadAction<UUID>) {
-      const docVerID = action.payload
+    markGeneratingPreviewsBegin(state, action: PayloadAction<MarkGenPayLoad>) {
+      const docVerID = action.payload.docVerID
+      const size = action.payload.size
+
       const entity = state.docVerIDEntities[docVerID]
       if (entity) {
-        entity.isGenerating = true
+        switch (size) {
+          case "sm":
+            entity.isGeneratingSM = true
+            break
+          case "md":
+            entity.isGeneratingMD = true
+            break
+          case "lg":
+            entity.isGeneratingLG = true
+            break
+          case "xl":
+            entity.isGeneratingXL = true
+            break
+        }
       } else {
         state.docVerIDEntities[docVerID] = {
-          isGenerating: true
+          isGeneratingSM: size == "sm",
+          isGeneratingMD: size == "md",
+          isGeneratingLG: size == "lg",
+          isGeneratingXL: size == "xl"
         }
       }
     },
-    markGeneratingPreviewsEnd(state, action: PayloadAction<UUID>) {
-      const docVerID = action.payload
+    markGeneratingPreviewsEnd(state, action: PayloadAction<MarkGenPayLoad>) {
+      const docVerID = action.payload.docVerID
+      const size = action.payload.size
+
       const entity = state.docVerIDEntities[docVerID]
       if (entity) {
-        entity.isGenerating = false
+        switch (size) {
+          case "sm":
+            entity.isGeneratingSM = false
+            break
+          case "md":
+            entity.isGeneratingMD = false
+            break
+          case "lg":
+            entity.isGeneratingLG = false
+            break
+          case "xl":
+            entity.isGeneratingXL = false
+            break
+        }
       } else {
         state.docVerIDEntities[docVerID] = {
-          isGenerating: false
+          isGeneratingSM: false,
+          isGeneratingMD: false,
+          isGeneratingLG: false,
+          isGeneratingXL: false
         }
       }
     }
@@ -190,13 +234,14 @@ export const selectAreAllPreviewsAvailable = (
 export const selectPagesWithPreviews = createSelector(
   [
     selectImageObjects,
-    (_: RootState, docVerID: UUID) => docVerID // Pass docVerID as input
+    (_: RootState, docVerID: UUID, __: ImageSize = "md") => docVerID, // Pass docVerID as input
+    (_: RootState, __: UUID, size: ImageSize = "md") => size
   ],
-  (imageObjects, docVerID) => {
+  (imageObjects, docVerID, size = "md") => {
     if (!docVerID) return []
 
     const pages: Array<BasicPage> = Object.entries(imageObjects.pageIDEntities)
-      .filter(([_, value]) => value.docVerID === docVerID && value.md)
+      .filter(([_, value]) => value.docVerID === docVerID && value[size])
       .map(([pageID, value]) => {
         return {id: pageID, number: value.pageNumber}
       })
@@ -245,9 +290,20 @@ export const selectShowMorePages = (
 
 export const selectIsGeneratingPreviews = (
   state: RootState,
-  docVerID: UUID
+  docVerID: UUID,
+  size: ImageSize
 ) => {
-  return state.imageObjects.docVerIDEntities[docVerID]?.isGenerating
+  if (size == "sm") {
+    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingSM
+  }
+  if (size == "md") {
+    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingMD
+  }
+  if (size == "lg") {
+    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingLG
+  }
+
+  return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingXL
 }
 
 function getWidth(size: ImageSize) {

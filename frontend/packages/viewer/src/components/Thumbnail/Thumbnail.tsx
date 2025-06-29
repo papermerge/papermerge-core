@@ -54,7 +54,7 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
 
     if (isLoading) {
       return (
-        <Stack justify="center" align="center">
+        <Stack justify="center" align="center" className="thumbnail">
           <Skeleton width={"100%"} height={height} />
           <div>{pageNumber}</div>
         </Stack>
@@ -62,7 +62,7 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
     }
 
     if (!imageURL) {
-      return <Stack className={classes.page}>No Image URL</Stack>
+      return <Stack className={`thumbnail ${classes.page}`}>No Image URL</Stack>
     }
 
     return (
@@ -76,7 +76,7 @@ export const Thumbnail = forwardRef<HTMLImageElement, ThumbnailArgs>(
         onDragLeave={onDragLeave}
         onDragEnter={onDragEnter}
         onDrop={onDrop}
-        className={className}
+        className={`thumbnail ${className}`}
       >
         <Checkbox
           onChange={onChange}

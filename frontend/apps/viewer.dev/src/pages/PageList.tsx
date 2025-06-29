@@ -38,7 +38,11 @@ export default function PageListPage() {
           onChange={onSelect}
         />
       </Group>
-      <PageList pageItems={pages} zoom={<Zoom />} pagesAreLoading={isLoading} />
+      <PageList
+        pageItems={pages}
+        zoom={<Zoom />}
+        paginationInProgress={isLoading}
+      />
     </Stack>
   )
 }

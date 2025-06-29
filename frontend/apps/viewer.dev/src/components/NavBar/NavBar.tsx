@@ -20,6 +20,9 @@ export default function Navbar() {
         <NavLink to="/page-list" end>
           &lt;PageList /&gt;
         </NavLink>
+        <NavLink to="/thumbnail-list" end>
+          &lt;ThumbnailList /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

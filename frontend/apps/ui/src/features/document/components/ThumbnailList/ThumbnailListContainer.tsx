@@ -10,9 +10,9 @@ import {DocumentVersion} from "@/features/document/types"
 import {selectThumbnailsPanelOpen} from "@/features/ui/uiSlice"
 import usePanelMode from "@/hooks/usePanelMode"
 import {useSelector} from "react-redux"
+import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
-import classes from "./ThumbnailListContainer.module.css"
 
 interface Args {
   docVer: DocumentVersion
@@ -54,9 +54,11 @@ export default function ThumbnailListContainer({docVer}: Args) {
   }, [pages.length, thumbnailsIsOpen])
 
   useEffect(() => {
+    /*
     console.log(
       `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
     )
+    */
     if (loadMore && !isGenerating) {
       dispatch(
         generateNextPreviews({docVer, size: "sm", pageNumber: pageNumber + 1})
@@ -67,22 +69,16 @@ export default function ThumbnailListContainer({docVer}: Args) {
   // display: none
   if (thumbnailsIsOpen) {
     return (
-      <Stack
-        ref={containerRef}
-        className={classes.thumbnails}
-        justify="flex-start"
-      >
-        {thumbnailComponents}
-      </Stack>
+      <ThumbnailList
+        thumbnailItems={thumbnailComponents}
+        paginationInProgress={isGenerating}
+        paginationFirstPageIsReady={pages.length > 0}
+      />
     )
   }
 
   return (
-    <Stack
-      style={{display: "none"}}
-      className={classes.thumbnails}
-      justify="flex-start"
-    >
+    <Stack style={{display: "none"}} justify="flex-start">
       {thumbnailComponents}
     </Stack>
   )

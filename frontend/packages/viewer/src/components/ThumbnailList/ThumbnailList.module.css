@@ -1,4 +1,4 @@
-.thumbnails {
+.thumbnailList {
   display: block;
   height: 100%;
   min-width: 150px;
@@ -13,17 +13,13 @@
   }
 }
 
-.thumbnails:over {
+.thumbnailList:over {
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.loader {
-  height: 100%;
-  min-width: 150px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background-color: #3d3b3b;
-  color: white;
-  padding: 0.5rem 1rem;
+.thumbnailListLoader {
+  position: sticky;
+  bottom: 0rem;
+  left: 0rem;
 }

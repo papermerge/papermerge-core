@@ -1,15 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {generateNextPreviews} from "@/features/document/actions"
 import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
-import {Stack} from "@mantine/core"
 import {useEffect, useRef} from "react"
 
-import {RootState} from "@/app/types"
 import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
 import {DocumentVersion} from "@/features/document/types"
-import {selectThumbnailsPanelOpen} from "@/features/ui/uiSlice"
-import usePanelMode from "@/hooks/usePanelMode"
-import {useSelector} from "react-redux"
 import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
@@ -20,7 +15,6 @@ interface Args {
 
 export default function ThumbnailListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
-  const mode = usePanelMode()
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVer.id)
   )
@@ -38,9 +32,6 @@ export default function ThumbnailListContainer({docVer}: Args) {
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
-  const thumbnailsIsOpen = useSelector((state: RootState) =>
-    selectThumbnailsPanelOpen(state, mode)
-  )
 
   useEffect(() => {
     /*
@@ -48,10 +39,10 @@ export default function ThumbnailListContainer({docVer}: Args) {
       `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
     )
     */
-    if (pages.length == 0 && thumbnailsIsOpen && !isGenerating) {
+    if (pages.length == 0 && !isGenerating) {
       dispatch(generateNextPreviews({docVer, size: "sm", pageNumber: 1}))
     }
-  }, [pages.length, thumbnailsIsOpen])
+  }, [pages.length])
 
   useEffect(() => {
     /*
@@ -66,20 +57,12 @@ export default function ThumbnailListContainer({docVer}: Args) {
     }
   }, [loadMore])
 
-  // display: none
-  if (thumbnailsIsOpen) {
-    return (
-      <ThumbnailList
-        thumbnailItems={thumbnailComponents}
-        paginationInProgress={isGenerating}
-        paginationFirstPageIsReady={pages.length > 0}
-      />
-    )
-  }
-
   return (
-    <Stack style={{display: "none"}} justify="flex-start">
-      {thumbnailComponents}
-    </Stack>
+    <ThumbnailList
+      ref={containerRef}
+      thumbnailItems={thumbnailComponents}
+      paginationInProgress={isGenerating}
+      paginationFirstPageIsReady={pages.length > 0}
+    />
   )
 }

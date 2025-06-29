@@ -156,10 +156,11 @@ class DocumentVersion(BaseModel):
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
         file_server = settings.papermerge__main__file_server
-        if file_server == config.FileServer.LOCAL:
-            return f"/api/document-versions/{info.data['id']}/download"
+        if file_server == config.FileServer.S3:
+            return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
-        return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
+        return f"/api/document-versions/{info.data['id']}/download"
+
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -256,11 +257,6 @@ class StatusForSize(BaseModel):
     status: ImagePreviewStatus | None
     url: str | None = None
     size: ImagePreviewSize
-
-
-class PagePreviewImageStatus(BaseModel):
-    page_id: UUID
-    status: list[StatusForSize]
 
 
 class NewDocument(BaseModel):

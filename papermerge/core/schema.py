@@ -29,7 +29,6 @@ from .features.document.schema import (
     MoveStrategy,
     DocumentPreviewImageStatus,
     StatusForSize,
-    PagePreviewImageStatus,
     Pagination,
     DocVerListItem,
     DownloadURL
@@ -57,7 +56,6 @@ __all__ = [
     'DocumentVersion',
     'DocumentWithoutVersions',
     'DocumentPreviewImageStatus',
-    'PagePreviewImageStatus',
     'StatusForSize',
     'BasicPage',
     'Page',

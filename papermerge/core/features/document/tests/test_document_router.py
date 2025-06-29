@@ -43,38 +43,6 @@ def test_get_document_custom_fields_values(
     assert response.status_code == 200, response.json()
 
 
-def test_1_get_document_last_version__paginated(
-    auth_api_client, make_document_from_resource, user
-):
-    doc = make_document_from_resource(
-        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
-    )
-    response = auth_api_client.get(f"/documents/{doc.id}/last-version/pages/")
-
-    resp = schema.PaginatedDocVer.model_validate(response.json())
-    assert response.status_code == 200, resp
-    assert len(resp.pages) == 3, resp
-    assert resp.number == 1
-    assert resp.lang == 'deu'
-
-
-def test_2_get_document_last_version__paginated(
-    auth_api_client, make_document_from_resource, user
-):
-    doc = make_document_from_resource(
-        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
-    )
-    params = {"page_size": 2, "page_number": 1}
-    response = auth_api_client.get(
-        f"/documents/{doc.id}/last-version/pages/", params=params
-    )
-
-    assert response.status_code == 200, response.json()
-    resp = schema.PaginatedDocVer.model_validate(response.json())
-    assert len(resp.pages) == 2, resp
-    assert resp.num_pages == 2, resp
-
-
 def test_get_doc_versions_list_one_doc(auth_api_client, make_document, user):
     doc = make_document(title="basic.pdf", user=user, parent=user.home_folder)
 

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from papermerge.core.features.document import schema
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))

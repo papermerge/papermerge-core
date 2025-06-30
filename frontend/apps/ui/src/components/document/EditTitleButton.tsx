@@ -4,7 +4,7 @@ import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 import {forwardRef} from "react"
 
-import type {DocumentType} from "@/types"
+import type {DocumentType} from "@/features/document/types"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -48,7 +48,7 @@ const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
       </Tooltip>
       <EditNodeTitleModal
         opened={opened}
-        node={{id: nodeID!, title: doc?.title!}}
+        node={{id: doc?.id!, title: doc?.title!}}
         onSubmit={close}
         onCancel={close}
       />

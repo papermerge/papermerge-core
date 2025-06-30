@@ -11,8 +11,8 @@ interface I18NPagesHaveChangedDialogText {
 }
 
 interface Args {
-  i18nIsReady: boolean
   txt?: I18NPagesHaveChangedDialogText
+  inProgress: boolean
   opened: boolean
   onSave: () => void
   onReset: () => void

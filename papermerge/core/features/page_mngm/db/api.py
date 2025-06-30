@@ -6,7 +6,6 @@ import uuid
 from pathlib import Path
 from typing import List, Tuple
 
-
 from pikepdf import Pdf
 from sqlalchemy import select, delete
 
@@ -18,7 +17,6 @@ from papermerge.core.utils.decorators import if_redis_present
 from papermerge.core.db import Session
 from papermerge.core import orm, schema, types
 from papermerge.core.features.document.db import api as doc_dbapi
-
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +97,6 @@ def apply_pages_op(
     notify_version_update(
         remove_ver_id=str(old_version.id), add_ver_id=str(new_version.id)
     )
-    notify_generate_previews(str(doc.id))
 
     return doc
 
@@ -324,7 +321,6 @@ def move_pages_mix(
             delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
         )
 
-        notify_generate_previews(str(_dst_doc.id))
         return None, _dst_doc
 
     notify_version_update(
@@ -333,7 +329,6 @@ def move_pages_mix(
     )
     _src_doc = src_new_version.document
     _dst_doc = dst_new_version.document
-    notify_generate_previews([str(_src_doc.id), str(_dst_doc.id)])
 
     return _src_doc, _dst_doc
 
@@ -402,7 +397,6 @@ def move_pages_replace(
             delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
         )
         _dst_doc = dst_new_version.document
-        notify_generate_previews(str(_dst_doc.id))
         return [None, _dst_doc]
 
     notify_version_update(
@@ -410,7 +404,6 @@ def move_pages_replace(
     )
     _src_doc = src_new_version.document
     _dst_doc = dst_new_version.document
-    notify_generate_previews([str(_src_doc.id), str(_dst_doc.id)])
     return [_src_doc, _dst_doc]
 
 
@@ -462,7 +455,6 @@ def extract_pages(
         logger.debug(f"Doc last version={doc.versions[-1]}")
 
     notify_add_docs(db_session, [doc.id for doc in target_docs])
-    notify_generate_previews(list([str(doc.id) for doc in target_docs]))
 
     logger.debug(
         "len(old_doc_ver.pages) == moved_pages_count: "
@@ -480,7 +472,6 @@ def extract_pages(
         db_session.commit()
         return [None, target_docs]
 
-    notify_generate_previews(str(source_doc.id))
     return [source_doc, target_docs]
 
 
@@ -743,23 +734,3 @@ def notify_add_docs(db_session, add_doc_ids: List[uuid.UUID]):
         kwargs={"doc_ver_ids": ids},
         route_name="s3",
     )
-
-
-@if_redis_present
-def notify_generate_previews(doc_id: list[str] | str):
-    if isinstance(doc_id, str):
-        tasks.send_task(
-            const.S3_WORKER_GENERATE_PREVIEW,
-            kwargs={"doc_id": doc_id},
-            route_name="s3preview",
-        )
-        return
-    elif isinstance(doc_id, list):
-        for item in doc_id:
-            tasks.send_task(
-                const.S3_WORKER_GENERATE_PREVIEW,
-                kwargs={"doc_id": item},
-                route_name="s3preview",
-            )
-    else:
-        raise ValueError(f"Unexpected type of doc_id: {type(doc_id)}")

@@ -12,7 +12,7 @@ import EditTitleButton from "./EditTitleButton"
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
 import {selectSelectedPages} from "@/features/document/documentVersSlice"
-import type {DocumentType, PanelMode} from "@/types"
+import type {DocumentType} from "@/features/document/types"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
@@ -27,7 +27,7 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
-  const mode: PanelMode = useContext(PanelContext)
+  const mode = useContext(PanelContext)
   const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
   const runtimeConfig = useRuntimeConfig()
 

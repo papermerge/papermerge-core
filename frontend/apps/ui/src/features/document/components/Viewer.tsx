@@ -15,11 +15,8 @@ import ActionButtons from "@/components/document/ActionButtons"
 import ContextMenu from "@/components/document/Contextmenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
-import PagesHaveChangedDialog from "@/components/document/PageHaveChangedDialog"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import PageList from "@/features/document/components/PageList"
-import ThumbnailList from "@/features/document/components/ThumbnailList"
 import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {
   currentDocVerUpdated,
@@ -30,6 +27,10 @@ import {
 import type {Coord, NType, PanelMode} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
+
+import PagesHaveChangedDialog from "./PageHaveChangedDialog"
+import PageList from "./PageList"
+import ThumbnailList from "./ThumbnailList"
 
 interface Args {
   doc: DocumentType

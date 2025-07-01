@@ -1217,6 +1217,18 @@ export const selectCurrentDocVerID = (state: RootState, mode: PanelMode) => {
   return state.ui.secondaryViewerCurrentDocVerID
 }
 
+export const selectCurrentDocVer = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    if (state.ui.mainViewerCurrentDocVerID) {
+      return state.docVers.entities[state.ui.mainViewerCurrentDocVerID]
+    }
+  }
+
+  if (state.ui.secondaryViewerCurrentDocVerID) {
+    return state.docVers.entities[state.ui.secondaryViewerCurrentDocVerID]
+  }
+}
+
 export const selectDraggedPages = (state: RootState) =>
   state.ui.dragndrop?.pages
 

@@ -177,6 +177,38 @@ const imageObjectsSlice = createSlice({
           isGeneratingXL: false
         }
       }
+    },
+    addImageObjectsFromPrevious: (
+      state,
+      action: PayloadAction<{
+        updates: {
+          newPageID: string
+          oldPageID: string
+          angle: number
+          docVerID: string
+          docID: string
+        }[]
+      }>
+    ) => {
+      action.payload.updates.forEach(
+        ({newPageID, oldPageID, angle, docVerID, docID}) => {
+          const oldImage = state.pageIDEntities[oldPageID]
+          if (!oldImage) return
+          if (angle === 0) {
+            state.pageIDEntities[newPageID] = {
+              pageNumber: oldImage.pageNumber,
+              docVerID,
+              docID,
+              sm: oldImage.sm,
+              md: oldImage.md,
+              lg: oldImage.lg,
+              xl: oldImage.xl
+            }
+          } else {
+            // You can add rotation logic here if needed
+          }
+        }
+      )
     }
   },
   extraReducers: builder => {
@@ -207,8 +239,11 @@ const imageObjectsSlice = createSlice({
 
 export default imageObjectsSlice.reducer
 
-export const {markGeneratingPreviewsBegin, markGeneratingPreviewsEnd} =
-  imageObjectsSlice.actions
+export const {
+  markGeneratingPreviewsBegin,
+  markGeneratingPreviewsEnd,
+  addImageObjectsFromPrevious
+} = imageObjectsSlice.actions
 
 export const selectImageObjects = (state: RootState) => state.imageObjects
 

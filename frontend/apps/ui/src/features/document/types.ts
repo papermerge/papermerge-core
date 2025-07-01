@@ -72,3 +72,13 @@ export type DocumentType = {
   user_id: string
   updated_at: string
 }
+
+export type ShortPageType = {
+  number: number
+  id: string
+}
+
+export type PagesType = {
+  angle: number
+  page: ShortPageType
+}

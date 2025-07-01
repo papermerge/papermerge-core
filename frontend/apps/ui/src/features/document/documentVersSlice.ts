@@ -23,6 +23,7 @@ import {
 } from "./constants"
 import type {DocumentType, DocumentVersion} from "./types"
 import {DLVPaginatedArgsOutput} from "./types"
+import {clientDVFromDV} from "./utils"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -240,36 +241,20 @@ const docVersSlice = createSlice({
         withBorder: true,
         message: `Document title updated to ${action.payload.new_document_title}`
       })
+    },
+    addClientDocVersion: (
+      state,
+      action: PayloadAction<ClientDocumentVersion>
+    ) => {
+      docVerAdapter.addOne(state, action.payload)
     }
   },
   extraReducers(builder) {
     builder.addMatcher(
       apiSliceWithDocuments.endpoints.getDocLastVersion.matchFulfilled,
       (state, action: PayloadAction<DocumentVersion>) => {
-        let v: DocumentVersion = action.payload
-
-        let ver: ClientDocumentVersion = {
-          id: v.id,
-          lang: v.lang,
-          number: v.number,
-          file_name: v.file_name,
-          pages: v.pages.map(p => {
-            return {id: p.id, number: p.number, angle: 0}
-          }),
-          initial_pages: v.pages
-            .sort((a, b) => a.number - b.number)
-            .map(p => {
-              return {id: p.id, number: p.number, angle: 0}
-            }),
-          pagination: {
-            page_number: 1,
-            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
-          },
-          thumbnailsPagination: {
-            page_number: 1,
-            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-          }
-        }
+        const v: DocumentVersion = action.payload
+        const ver = clientDVFromDV(v)
 
         docVerAdapter.addOne(state, ver)
       }
@@ -319,7 +304,8 @@ export const {
   documentMovedNotifReceived,
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated,
-  docVerUpserted
+  docVerUpserted,
+  addClientDocVersion
 } = docVersSlice.actions
 export default docVersSlice.reducer
 

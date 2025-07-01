@@ -1,15 +1,6 @@
 import {Button, Dialog, Group, Text, Tooltip} from "@mantine/core"
 import {SubmitButton} from "kommon"
-
-interface I18NPagesHaveChangedDialogText {
-  pagesHaveChanged: string
-  save: string
-  reset: string
-  dontBotherMe: string
-  saveTooltip: string
-  resetTooltip: string
-  dontBotherMeTooltip: string
-}
+import type {I18NPagesHaveChangedDialogText} from "./types"
 
 interface Args {
   txt?: I18NPagesHaveChangedDialogText

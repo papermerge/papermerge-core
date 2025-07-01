@@ -23,6 +23,9 @@ export default function Navbar() {
         <NavLink to="/thumbnail-list" end>
           &lt;ThumbnailList /&gt;
         </NavLink>
+        <NavLink to="/pages-have-changed-dialog" end>
+          &lt;PagesHaveChangedDialog /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

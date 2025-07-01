@@ -5,8 +5,8 @@ import {Outlet} from "react-router"
 import NavBar from "../components/NavBar"
 
 export const metadata = {
-  title: "Viewer Dev",
-  description: "Viewer Dev"
+  title: "Kommon Dev",
+  description: "Kommon Dev"
 }
 
 export default function App() {
@@ -14,12 +14,12 @@ export default function App() {
     <AppShell
       header={{height: 40}}
       navbar={{
-        width: 250,
+        width: 180,
         breakpoint: "sm"
       }}
       p="md"
     >
-      <AppShell.Header>Viewer Dev</AppShell.Header>
+      <AppShell.Header>Kommon Dev</AppShell.Header>
       <AppShell.Navbar p="md">
         <NavBar />
       </AppShell.Navbar>

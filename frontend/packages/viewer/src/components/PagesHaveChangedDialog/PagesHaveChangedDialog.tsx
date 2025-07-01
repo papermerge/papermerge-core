@@ -1,4 +1,5 @@
 import {Button, Dialog, Group, Text, Tooltip} from "@mantine/core"
+import {SubmitButton} from "kommon"
 
 interface I18NPagesHaveChangedDialogText {
   pagesHaveChanged: string
@@ -14,9 +15,9 @@ interface Args {
   txt?: I18NPagesHaveChangedDialogText
   inProgress: boolean
   opened: boolean
-  onSave: () => void
-  onReset: () => void
-  onClose: () => void
+  onSave?: () => void
+  onReset?: () => void
+  onClose?: () => void
 }
 
 export default function PagesHaveChangedDialog({
@@ -24,6 +25,7 @@ export default function PagesHaveChangedDialog({
   onClose,
   onSave,
   onReset,
+  inProgress,
   txt
 }: Args) {
   return (
@@ -52,7 +54,11 @@ export default function PagesHaveChangedDialog({
             will increase by one`
           }
         >
-          <Button onClick={onSave}>{txt?.save || "Save"}</Button>
+          <SubmitButton
+            inProgress={inProgress}
+            onClick={onSave}
+            text={txt?.save || "Save"}
+          />
         </Tooltip>
         <Tooltip
           openDelay={1000}
@@ -64,7 +70,7 @@ export default function PagesHaveChangedDialog({
             `Discard changes. This will bring pages in their initial state (same as on server)`
           }
         >
-          <Button onClick={onReset} variant="default">
+          <Button disabled={inProgress} onClick={onReset} variant="default">
             {txt?.reset || "Reset"}
           </Button>
         </Tooltip>
@@ -78,7 +84,7 @@ export default function PagesHaveChangedDialog({
             `Close this dialog. You can apply changes later from the context menu`
           }
         >
-          <Button onClick={onClose} variant="default">
+          <Button disabled={inProgress} onClick={onClose} variant="default">
             {txt?.dontBotherMe || `Don't bother me`}
           </Button>
         </Tooltip>

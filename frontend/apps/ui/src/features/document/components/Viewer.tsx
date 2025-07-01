@@ -116,7 +116,7 @@ export default function Viewer({doc, docVer}: Args) {
         <ThumbnailsToggle />
         <PageList docVer={docVer} />
         <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
-        <PagesHaveChangedDialog />
+        <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           isFetching={false}
           isError={false}

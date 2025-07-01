@@ -14,7 +14,7 @@ import {PanelMode} from "@/types"
 import {PagesHaveChangedDialog} from "viewer"
 
 interface Args {
-  docID?: string
+  docID: string
 }
 
 export default function PagesHaveChangedDialogContainer({docID}: Args) {

@@ -46,6 +46,7 @@ export const applyPageChangesThunk = createAsyncThunk<
     const oldInfo = pageData[lastVerPage.number - 1]
     return {
       newPageID: lastVerPage.id,
+      newPageNumber: lastVerPage.number,
       oldPageID: oldInfo.page.id,
       angle: oldInfo.angle,
       docVerID: lastVersion.id,

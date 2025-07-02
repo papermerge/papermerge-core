@@ -183,6 +183,7 @@ const imageObjectsSlice = createSlice({
       action: PayloadAction<{
         updates: {
           newPageID: string
+          newPageNumber: number
           oldPageID: string
           angle: number
           docVerID: string
@@ -191,12 +192,12 @@ const imageObjectsSlice = createSlice({
       }>
     ) => {
       action.payload.updates.forEach(
-        ({newPageID, oldPageID, angle, docVerID, docID}) => {
+        ({newPageID, newPageNumber, oldPageID, angle, docVerID, docID}) => {
           const oldImage = state.pageIDEntities[oldPageID]
           if (!oldImage) return
           if (angle === 0) {
             state.pageIDEntities[newPageID] = {
-              pageNumber: oldImage.pageNumber,
+              pageNumber: newPageNumber,
               docVerID,
               docID,
               sm: oldImage.sm,

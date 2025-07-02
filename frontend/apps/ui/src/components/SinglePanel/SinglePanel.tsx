@@ -118,7 +118,7 @@ export default function SinglePanel() {
 
   if (panelComponent == "viewer") {
     if (doc && docVer) {
-      return <Viewer docVer={docVer} doc={doc} />
+      return <Viewer initialDocVer={docVer} doc={doc} />
     } else {
       return <Loader />
     }

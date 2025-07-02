@@ -9,7 +9,7 @@ import {
   PayloadAction
 } from "@reduxjs/toolkit"
 import type {BasicPage, GeneratePreviewInputType} from "./types"
-import {rotateImageObjectURL} from "./utils"
+import {getDocLastVersion, rotateImageObjectURL} from "./utils"
 
 export type PageIDEntitiesState = {
   [pageID: string]: {
@@ -65,13 +65,29 @@ export const generatePreviews = createAsyncThunk<
   const result: ReturnType = {
     items: []
   }
-  const fileItem = fileManager.getByDocVerID(item.docVer.id)
+  let fileItem = fileManager.getByDocVerID(item.docVer.id)
 
   if (!fileItem) {
-    console.error(`FileManager: no file found for ${item.docVer.id}`)
-    return {
-      items: [],
-      error: "There was an error generating thumbnail image"
+    // file not found in local storage. Download it first
+    const {
+      ok,
+      data,
+      error: downloadError
+    } = await getDocLastVersion(item.docVer.document_id)
+
+    if (ok && data) {
+      const arrayBuffer = await data.blob.arrayBuffer()
+      fileItem = {
+        buffer: arrayBuffer,
+        docVerID: data.docVerID
+      }
+      fileManager.store(fileItem)
+    } else {
+      console.error(downloadError || "Unknown download error")
+      return {
+        items: [],
+        error: "There was an error generating thumbnail image"
+      }
     }
   }
 

@@ -5,6 +5,14 @@
   "downloadButton.error": "Error: Oops, it didn't work",
   "downloadButton.emptyVersionsArrayError": "Error: empty version list",
   "downloadButton.versionLabel": "Version",
+  "documentVersion.was-created": "Document version {{versionNumber}} was created",
+  "pagesHaveChanged": {
+    "mainText": "There are changes, like page order or rotation, which are not yet saved on the server. What would you like to do?",
+    "saveTooltip": "Apply changes to the server. Once applied, document version will increase by one",
+    "resetTooltip": "Discard changes. This will bring pages in their initial state (same as on server)",
+    "dontBotherMe": "Don't bother me",
+    "dontBotherMeTooltip": "Close this dialog. You can apply changes later from the context menu"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",
@@ -18,6 +26,7 @@
   "common.submit": "Submit",
   "common.update": "Update",
   "common.save": "Save",
+  "common.reset": "Reset",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
   "common.edit": "Edit",

@@ -58,23 +58,7 @@ export async function rotateImageObjectURL(
       // Move to center and rotate
       ctx.translate(canvas.width / 2, canvas.height / 2)
       ctx.rotate(radians)
-
-      // Draw the image, adjusting position based on rotation
-      switch (angle) {
-        case 90:
-          ctx.drawImage(img, -img.width / 2, -img.height / 2)
-          break
-        case 180:
-          ctx.drawImage(img, -img.width / 2, -img.height / 2)
-          break
-        case 270:
-          ctx.drawImage(img, -img.width / 2, -img.height / 2)
-          break
-        case 0:
-        default:
-          ctx.drawImage(img, -img.width / 2, -img.height / 2)
-          break
-      }
+      ctx.drawImage(img, -img.width / 2, -img.height / 2)
 
       // Export rotated image as Blob
       canvas.toBlob(blob => {

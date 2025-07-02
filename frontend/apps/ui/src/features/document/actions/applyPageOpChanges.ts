@@ -6,6 +6,8 @@ import {DocumentVersion} from "@/features/document/types"
 import {clientDVFromDV} from "@/features/document/utils"
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import type {ClientPage, PanelMode} from "@/types"
+import {t} from "@/utils/i18nHelper"
+import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
 
 export const applyPageChangesThunk = createAsyncThunk<
@@ -67,6 +69,14 @@ export const applyPageChangesThunk = createAsyncThunk<
       {type: "DocVersList", id: lastVersion.document_id}
     ])
   )
+
+  notifications.show({
+    withBorder: true,
+    message: t("documentVersion.was-created", {
+      versionNumber: lastVersion.number
+    }),
+    autoClose: 7000
+  })
 })
 
 function getLastVersion(docVers: DocumentVersion[]): DocumentVersion {

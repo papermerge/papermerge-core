@@ -125,6 +125,7 @@ export const rotateAndAddImageObjects = createAsyncThunk(
         angle: number
         docVerID: string
         docID: string
+        number: number
       }[]
     },
     {getState}
@@ -135,6 +136,7 @@ export const rotateAndAddImageObjects = createAsyncThunk(
       newPageNumber: number
       docVerID: string
       docID: string
+      number: number
       rotated: {
         sm?: string
         md?: string
@@ -149,7 +151,8 @@ export const rotateAndAddImageObjects = createAsyncThunk(
       oldPageID,
       angle,
       docVerID,
-      docID
+      docID,
+      number
     } of updates) {
       const oldImage = state.imageObjects.pageIDEntities[oldPageID]
       if (!oldImage) continue
@@ -172,6 +175,7 @@ export const rotateAndAddImageObjects = createAsyncThunk(
         newPageNumber,
         docVerID,
         docID,
+        number,
         rotated
       })
     }

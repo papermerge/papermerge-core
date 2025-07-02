@@ -29,6 +29,7 @@ export default function useGeneratePreviews({
 
   useEffect(() => {
     const generate = async () => {
+      console.log(`allPreviewsAreAvailable=${allPreviewsAreAvailable}`)
       if (!allPreviewsAreAvailable) {
         if (!fileManager.getByDocVerID(docVer.id)) {
           const {

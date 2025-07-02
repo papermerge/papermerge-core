@@ -5,7 +5,9 @@ import type {
 import DownloadButton from "./components/DownloadButton/DownloadButton"
 import Page from "./components/Page"
 import PageList from "./components/PageList"
-import PagesHaveChangedDialog from "./components/PagesHaveChangedDialog"
+import PagesHaveChangedDialog, {
+  I18NPagesHaveChangedDialogText
+} from "./components/PagesHaveChangedDialog"
 import Thumbnail from "./components/Thumbnail"
 import ThumbnailList from "./components/ThumbnailList"
 import Zoom from "./components/Zoom"
@@ -19,4 +21,8 @@ export {
   ThumbnailList,
   Zoom
 }
-export type {DownloadDocumentVersion, I18NDownloadButtonText}
+export type {
+  DownloadDocumentVersion,
+  I18NDownloadButtonText,
+  I18NPagesHaveChangedDialogText
+}

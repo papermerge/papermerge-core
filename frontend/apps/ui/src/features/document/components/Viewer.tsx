@@ -28,16 +28,18 @@ import type {Coord, NType, PanelMode} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 
+import useCurrentDocVer from "../hooks/useCurrentDocVer"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
 interface Args {
   doc: DocumentType
-  docVer: DocumentVersion
+  initialDocVer: DocumentVersion
 }
 
-export default function Viewer({doc, docVer}: Args) {
+export default function Viewer({doc, initialDocVer}: Args) {
+  const [docVer, setDocVer] = useState<DocumentVersion>(initialDocVer)
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const [opened, {open, close}] = useDisclosure()
@@ -45,6 +47,7 @@ export default function Viewer({doc, docVer}: Args) {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const currentDocVer = useCurrentDocVer()
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
@@ -80,6 +83,23 @@ export default function Viewer({doc, docVer}: Args) {
       close()
     }
   }
+
+  useEffect(() => {
+    if (currentDocVer) {
+      setDocVer({
+        id: currentDocVer.id,
+        document_id: doc.id,
+        download_url: "irrelevant",
+        file_name: currentDocVer.file_name,
+        lang: "deu",
+        number: currentDocVer.number,
+        page_count: currentDocVer.pages.length,
+        short_description: "bla",
+        size: 999,
+        pages: currentDocVer.pages
+      })
+    }
+  }, [currentDocVer])
 
   useEffect(() => {
     // detect right click outside

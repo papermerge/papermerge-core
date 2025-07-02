@@ -1,19 +1,19 @@
 import {AppDispatch} from "@/app/types"
 import {
+  DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+  DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
+} from "@/features/document/constants"
+import {
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated
 } from "@/features/document/documentVersSlice"
-import {ImageSize} from "@/types.d/common"
-import {
-  DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-  DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-} from "./constants"
 import {
   generatePreviews,
   markGeneratingPreviewsBegin,
   markGeneratingPreviewsEnd
-} from "./imageObjectsSlice"
-import type {DocumentVersion} from "./types"
+} from "@/features/document/imageObjectsSlice"
+import type {DocumentVersion} from "@/features/document/types"
+import {ImageSize} from "@/types.d/common"
 
 interface Args {
   docVer: DocumentVersion

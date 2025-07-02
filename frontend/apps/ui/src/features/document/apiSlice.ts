@@ -1,7 +1,5 @@
-import {
-  PAGINATION_DEFAULT_ITEMS_PER_PAGES
-} from "@/cconstants"
-import { apiSlice } from "@/features/api/slice"
+import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {apiSlice} from "@/features/api/slice"
 import type {
   DocumentCFV,
   ExtractPagesResponse,
@@ -16,24 +14,11 @@ import {
   OrderType,
   TransferStrategyType
 } from "@/types"
-import {
-  getRemoteUserID,
-  getWSURL
-} from "@/utils"
+import {getRemoteUserID, getWSURL} from "@/utils"
 
-import { DocumentType, DocumentVersion } from "@/features/document/types"
-import { documentMovedNotifReceived } from "./documentVersSlice"
-import type { DocVersList } from "./types"
-
-type ShortPageType = {
-  number: number
-  id: string
-}
-
-type PagesType = {
-  angle: number
-  page: ShortPageType
-}
+import {DocumentType, DocumentVersion} from "@/features/document/types"
+import {documentMovedNotifReceived} from "./documentVersSlice"
+import type {DocVersList, PagesType} from "./types"
 
 type ApplyPagesType = {
   documentID: string
@@ -94,15 +79,17 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getDocLastVersion: builder.query<DocumentVersion, string>({
       query: nodeID => `/documents/${nodeID}/last-version/`,
-      providesTags: (_result, _error, arg) => [{ type: "DocumentVersion", id: arg }]
+      providesTags: (_result, _error, arg) => [
+        {type: "DocumentVersion", id: arg}
+      ]
     }),
     getDocVersionsList: builder.query<DocVersList, string>({
       query: nodeID => `/documents/${nodeID}/versions/`,
-      providesTags: (_result, _error, arg) => [{ type: "DocVersList", id: arg }]
+      providesTags: (_result, _error, arg) => [{type: "DocVersList", id: arg}]
     }),
     getDocument: builder.query<DocumentType, string>({
       query: nodeID => `/documents/${nodeID}`,
-      providesTags: (_result, _error, arg) => [{ type: "Document", id: arg }],
+      providesTags: (_result, _error, arg) => [{type: "Document", id: arg}],
       async onCacheEntryAdded(_arg, lifecycleApi) {
         let url = getWSURL()
 
@@ -164,14 +151,14 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         ws.close()
       }
     }),
-    applyPageOpChanges: builder.mutation<void, ApplyPagesType>({
+    applyPageOpChanges: builder.mutation<DocumentType, ApplyPagesType>({
       query: data => ({
         url: "/pages/",
         method: "POST",
         body: data.pages
       }),
       invalidatesTags: (_result, _error, arg) => [
-        { type: "Document", id: arg.documentID }
+        {type: "Document", id: arg.documentID}
       ]
     }),
     movePages: builder.mutation<void, MovePagesType>({
@@ -181,9 +168,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         body: data.body
       }),
       invalidatesTags: (_result, _error, arg) => [
-        { type: "Document", id: arg.targetDocID },
-        { type: "Document", id: arg.sourceDocID },
-        { type: "Node", id: arg.sourceDocParentID }
+        {type: "Document", id: arg.targetDocID},
+        {type: "Document", id: arg.sourceDocID},
+        {type: "Node", id: arg.sourceDocParentID}
       ]
     }),
     extractPages: builder.mutation<ExtractPagesResponse, ExtractPagesType>({
@@ -194,9 +181,9 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          { type: "Document", id: arg.sourceDocID },
-          { type: "Node", id: arg.sourceDocParentID },
-          { type: "Node", id: arg.body.target_folder_id }
+          {type: "Document", id: arg.sourceDocID},
+          {type: "Node", id: arg.sourceDocParentID},
+          {type: "Node", id: arg.body.target_folder_id}
         ]
       }
     }),
@@ -211,8 +198,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          { type: "DocumentCustomField", id: arg.documentID },
-          { type: "DocumentCFV", id: arg.documentTypeID }
+          {type: "DocumentCustomField", id: arg.documentID},
+          {type: "DocumentCFV", id: arg.documentTypeID}
         ]
       }
     }),
@@ -224,8 +211,8 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, arg) => {
         return [
-          { type: "Document", id: arg.document_id },
-          { type: "DocumentCFV", id: arg.invalidatesTags.documentTypeID }
+          {type: "Document", id: arg.document_id},
+          {type: "DocumentCFV", id: arg.invalidatesTags.documentTypeID}
         ]
       }
     }),
@@ -234,7 +221,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         url: `/documents/${documentID}/custom-fields`
       }),
       providesTags: (_result, _error, arg) => [
-        { type: "DocumentCustomField", id: arg }
+        {type: "DocumentCustomField", id: arg}
       ]
     }),
     getDocsByType: builder.query<Paginated<DocumentCFV>, GetDocsByTypeArgs>({
@@ -268,7 +255,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         }
       },
       providesTags: (_result, _error, args) => [
-        { type: "DocumentCFV", id: args.document_type_id }
+        {type: "DocumentCFV", id: args.document_type_id}
       ]
     })
   })

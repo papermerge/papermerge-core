@@ -24,7 +24,7 @@ export default function PagesHaveChangedDialog({
       opened={opened}
       withCloseButton
       onClose={onClose}
-      size="lg"
+      size="xl"
       radius="md"
     >
       <Text size="sm" my="md">

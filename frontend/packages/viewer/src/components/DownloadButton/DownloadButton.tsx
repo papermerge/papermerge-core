@@ -1,6 +1,7 @@
 import {ActionIcon, Box, Loader, Menu, Text, Tooltip} from "@mantine/core"
 import {IconDownload} from "@tabler/icons-react"
 import type {ReactNode} from "react"
+import classes from "./DownloadButton.module.css"
 import type {DownloadDocumentVersion, I18NDownloadButtonText} from "./types"
 
 interface Args {
@@ -119,7 +120,9 @@ function DownloadMenu({
           </ActionIcon>
         </Tooltip>
       </Menu.Target>
-      <Menu.Dropdown p="sm">{children}</Menu.Dropdown>
+      <Menu.Dropdown p="sm" className={classes.menuDropdown}>
+        {children}
+      </Menu.Dropdown>
     </Menu>
   )
 }

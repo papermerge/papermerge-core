@@ -61,6 +61,12 @@ export const applyPageChangesThunk = createAsyncThunk<
 
   dispatch(addClientDocVersion(ver))
   dispatch(currentDocVerUpdated({mode: mode, docVerID: lastVersion.id}))
+
+  dispatch(
+    apiSliceWithDocuments.util.invalidateTags([
+      {type: "DocVersList", id: lastVersion.document_id}
+    ])
+  )
 })
 
 function getLastVersion(docVers: DocumentVersion[]): DocumentVersion {

@@ -1,7 +1,7 @@
 import {RootState} from "@/app/types"
 import {apiSliceWithDocuments} from "@/features/document/apiSlice" // make sure this exports your API slice
 import {addClientDocVersion} from "@/features/document/documentVersSlice"
-import {addImageObjectsFromPrevious} from "@/features/document/imageObjectsSlice"
+import {rotateAndAddImageObjects} from "@/features/document/imageObjectsSlice"
 import {DocumentVersion} from "@/features/document/types"
 import {clientDVFromDV} from "@/features/document/utils"
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
@@ -55,7 +55,7 @@ export const applyPageChangesThunk = createAsyncThunk<
     }
   })
 
-  dispatch(addImageObjectsFromPrevious({updates}))
+  await dispatch(rotateAndAddImageObjects({updates}))
 
   let ver = clientDVFromDV(lastVersion)
 

@@ -9,6 +9,7 @@ import {
   PayloadAction
 } from "@reduxjs/toolkit"
 import type {BasicPage, GeneratePreviewInputType} from "./types"
+import {rotateImageObjectURL} from "./utils"
 
 export type PageIDEntitiesState = {
   [pageID: string]: {
@@ -111,6 +112,74 @@ export const generatePreviews = createAsyncThunk<
   return result
 })
 
+export const rotateAndAddImageObjects = createAsyncThunk(
+  "imageObjects/rotateAndAddImageObjects",
+  async (
+    {
+      updates
+    }: {
+      updates: {
+        newPageID: string
+        newPageNumber: number
+        oldPageID: string
+        angle: number
+        docVerID: string
+        docID: string
+      }[]
+    },
+    {getState}
+  ) => {
+    const state: RootState = getState() as RootState
+    const results: {
+      newPageID: string
+      newPageNumber: number
+      docVerID: string
+      docID: string
+      rotated: {
+        sm?: string
+        md?: string
+        lg?: string
+        xl?: string
+      }
+    }[] = []
+
+    for (const {
+      newPageID,
+      newPageNumber,
+      oldPageID,
+      angle,
+      docVerID,
+      docID
+    } of updates) {
+      const oldImage = state.imageObjects.pageIDEntities[oldPageID]
+      if (!oldImage) continue
+
+      const rotated: any = {}
+
+      const sizes = ["sm", "md", "lg", "xl"] as const
+      for (const size of sizes) {
+        const url = oldImage[size]
+        if (url && angle !== 0) {
+          const blob = await rotateImageObjectURL(url, angle)
+          rotated[size] = URL.createObjectURL(blob)
+        } else {
+          rotated[size] = url
+        }
+      }
+
+      results.push({
+        newPageID,
+        newPageNumber,
+        docVerID,
+        docID,
+        rotated
+      })
+    }
+
+    return results
+  }
+)
+
 interface MarkGenPayLoad {
   docVerID: UUID
   size: ImageSize
@@ -177,39 +246,6 @@ const imageObjectsSlice = createSlice({
           isGeneratingXL: false
         }
       }
-    },
-    addImageObjectsFromPrevious: (
-      state,
-      action: PayloadAction<{
-        updates: {
-          newPageID: string
-          newPageNumber: number
-          oldPageID: string
-          angle: number
-          docVerID: string
-          docID: string
-        }[]
-      }>
-    ) => {
-      action.payload.updates.forEach(
-        ({newPageID, newPageNumber, oldPageID, angle, docVerID, docID}) => {
-          const oldImage = state.pageIDEntities[oldPageID]
-          if (!oldImage) return
-          if (angle === 0) {
-            state.pageIDEntities[newPageID] = {
-              pageNumber: newPageNumber,
-              docVerID,
-              docID,
-              sm: oldImage.sm,
-              md: oldImage.md,
-              lg: oldImage.lg,
-              xl: oldImage.xl
-            }
-          } else {
-            // You can add rotation logic here if needed
-          }
-        }
-      )
     }
   },
   extraReducers: builder => {
@@ -235,16 +271,30 @@ const imageObjectsSlice = createSlice({
         }
       }
     })
+
+    builder.addCase(rotateAndAddImageObjects.fulfilled, (state, action) => {
+      for (const {
+        newPageID,
+        newPageNumber,
+        docVerID,
+        docID,
+        rotated
+      } of action.payload) {
+        state.pageIDEntities[newPageID] = {
+          pageNumber: newPageNumber,
+          docVerID,
+          docID,
+          ...rotated
+        }
+      }
+    })
   }
 })
 
 export default imageObjectsSlice.reducer
 
-export const {
-  markGeneratingPreviewsBegin,
-  markGeneratingPreviewsEnd,
-  addImageObjectsFromPrevious
-} = imageObjectsSlice.actions
+export const {markGeneratingPreviewsBegin, markGeneratingPreviewsEnd} =
+  imageObjectsSlice.actions
 
 export const selectImageObjects = (state: RootState) => state.imageObjects
 

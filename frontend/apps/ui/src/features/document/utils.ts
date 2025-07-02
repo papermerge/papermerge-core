@@ -31,3 +31,59 @@ export function clientDVFromDV(v: DocumentVersion): ClientDocumentVersion {
 
   return ver
 }
+
+export async function rotateImageObjectURL(
+  objectURL: string,
+  angleDegrees: number
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const angle = ((angleDegrees % 360) + 360) % 360
+      const radians = (angle * Math.PI) / 180
+
+      let canvas = document.createElement("canvas")
+      let ctx = canvas.getContext("2d")
+      if (!ctx) return reject(new Error("Failed to get canvas context"))
+
+      // Determine new canvas dimensions
+      if (angle === 90 || angle === 270) {
+        canvas.width = img.height
+        canvas.height = img.width
+      } else {
+        canvas.width = img.width
+        canvas.height = img.height
+      }
+
+      // Move to center and rotate
+      ctx.translate(canvas.width / 2, canvas.height / 2)
+      ctx.rotate(radians)
+
+      // Draw the image, adjusting position based on rotation
+      switch (angle) {
+        case 90:
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          break
+        case 180:
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          break
+        case 270:
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          break
+        case 0:
+        default:
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          break
+      }
+
+      // Export rotated image as Blob
+      canvas.toBlob(blob => {
+        if (!blob) return reject(new Error("Failed to convert canvas to Blob"))
+        resolve(blob)
+      }, "image/png")
+    }
+
+    img.onerror = e => reject(new Error("Image failed to load"))
+    img.src = objectURL
+  })
+}

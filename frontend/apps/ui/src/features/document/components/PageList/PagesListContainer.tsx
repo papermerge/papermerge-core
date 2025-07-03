@@ -36,10 +36,12 @@ export default function PageListContainer({docVer}: Args) {
     cssSelector: ".page",
     containerRef: containerRef
   })
+  const nextPageNumber = pageNumber + 1
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
-    pageNumber
+    pageNumber: nextPageNumber,
+    imageSize: "md"
   })
   const pageComponents = pages.map(p => (
     <Page
@@ -52,12 +54,29 @@ export default function PageListContainer({docVer}: Args) {
   ))
 
   useEffect(() => {
+    /*
+    console.log(
+      `usePageList loadMore=${loadMore} isGenerating=${isGenerating} allPreviewsAreAvailable=${allPreviewsAreAvailable}`
+    )
+    */
     if (loadMore && !isGenerating) {
       if (!allPreviewsAreAvailable) {
-        dispatch(generateNextPreviews({docVer, pageNumber: pageNumber + 1}))
+        /*
+        console.log(
+          `Dispatching generateNextPreviews for pageNumber=${nextPageNumber}`
+        )
+        */
+        dispatch(generateNextPreviews({docVer, pageNumber: nextPageNumber}))
       }
     }
-  }, [loadMore])
+  }, [
+    loadMore,
+    isGenerating,
+    allPreviewsAreAvailable,
+    pageNumber,
+    docVer,
+    dispatch
+  ])
 
   return (
     <PageList

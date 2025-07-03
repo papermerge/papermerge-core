@@ -4,33 +4,39 @@ import {generatePreviews} from "@/features/document/imageObjectsSlice"
 import type {DocumentVersion} from "@/features/document/types"
 import {getDocLastVersion} from "@/features/document/utils"
 import {fileManager} from "@/features/files/fileManager"
+import {ImageSize} from "@/types.d/common"
 import {useEffect} from "react"
 
 interface Args {
   docVer: DocumentVersion
   pageNumber: number
   pageSize: number
+  imageSize: ImageSize
 }
 
 export default function useGeneratePreviews({
   docVer,
   pageSize,
-  pageNumber
+  pageNumber,
+  imageSize
 }: Args): boolean {
   const dispatch = useAppDispatch()
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
     pageSize,
-    pageNumber
+    pageNumber,
+    imageSize
   })
 
   useEffect(() => {
     const generate = async () => {
-      console.log(
-        `allPreviewsAreAvailable=${allPreviewsAreAvailable} pageNumber=${pageNumber}`
-      )
       if (!allPreviewsAreAvailable) {
         if (!fileManager.getByDocVerID(docVer.id)) {
+          /*
+          console.log(
+            `BEFORE WAIT allPreviewsAreAvailable=${allPreviewsAreAvailable} pageNumber=${pageNumber}`
+          )
+          */
           const {
             ok,
             data,
@@ -46,7 +52,17 @@ export default function useGeneratePreviews({
             console.error(downloadError || "Unknown download error")
             return
           }
+          /*
+          console.log(
+            `AFTER WAIT allPreviewsAreAvailable=${allPreviewsAreAvailable} pageNumber=${pageNumber}`
+          )
+          */
         }
+        /*
+        console.log(
+          `Dispatching generate previews for size="md" pageNumber=${pageNumber}`
+        )
+        */
         dispatch(
           generatePreviews({
             docVer,

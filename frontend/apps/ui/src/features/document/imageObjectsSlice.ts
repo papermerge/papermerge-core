@@ -318,6 +318,7 @@ export const {markGeneratingPreviewsBegin, markGeneratingPreviewsEnd} =
 
 export const selectImageObjects = (state: RootState) => state.imageObjects
 
+/*
 export const selectAreAllPreviewsAvailable = (
   pagesToCheck: BasicPage[],
   docVerID: string
@@ -336,6 +337,24 @@ export const selectAreAllPreviewsAvailable = (
       })
     }
   )
+*/
+export const selectAreAllPreviewsAvailable = (
+  state: RootState,
+  pagesToCheck: BasicPage[],
+  docVerID: string,
+  imageSize: ImageSize
+): boolean => {
+  const imageObjState = state.imageObjects
+  return pagesToCheck.every(({id, number}) => {
+    const entry = imageObjState.pageIDEntities[id]
+    return (
+      entry !== undefined &&
+      entry.pageNumber === number &&
+      entry.docVerID === docVerID &&
+      entry[imageSize]
+    )
+  })
+}
 
 export const selectPagesWithPreviews = createSelector(
   [

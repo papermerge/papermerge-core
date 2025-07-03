@@ -33,7 +33,8 @@ export default function ThumbnailListContainer({docVer}: Args) {
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
     pageSize: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE,
-    pageNumber
+    pageNumber: pageNumber + 1,
+    imageSize: "sm"
   })
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />

@@ -55,7 +55,8 @@ export default function Viewer({doc, initialDocVer}: Args) {
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer,
     pageNumber: 1,
-    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+    imageSize: "md"
   })
 
   const onContextMenu = (ev: MouseEvent) => {
@@ -83,9 +84,10 @@ export default function Viewer({doc, initialDocVer}: Args) {
       close()
     }
   }
-
+  /*
   useEffect(() => {
     if (currentDocVer) {
+      console.log(`Updating current docVerID=${currentDocVer.id}`)
       setDocVer({
         id: currentDocVer.id,
         document_id: doc.id,
@@ -100,6 +102,7 @@ export default function Viewer({doc, initialDocVer}: Args) {
       })
     }
   }, [currentDocVer])
+  */
 
   useEffect(() => {
     // detect right click outside

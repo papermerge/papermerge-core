@@ -1,10 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {generateNextPreviews} from "@/features/document/actions"
-import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
-import {useEffect, useRef} from "react"
-
+import {DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE} from "@/features/document/constants"
 import {selectDocVerPaginationThumnailPageNumber} from "@/features/document/documentVersSlice"
+import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
+import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
 import {DocumentVersion} from "@/features/document/types"
+import {useEffect, useRef} from "react"
 import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
@@ -29,6 +30,12 @@ export default function ThumbnailListContainer({docVer}: Args) {
   const isGenerating = useAppSelector(s =>
     selectIsGeneratingPreviews(s, docVer.id, "sm")
   )
+  const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
+    docVer,
+    pageSize: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE,
+    pageNumber: pageNumber + 1,
+    imageSize: "sm"
+  })
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
@@ -51,9 +58,11 @@ export default function ThumbnailListContainer({docVer}: Args) {
     )
     */
     if (loadMore && !isGenerating) {
-      dispatch(
-        generateNextPreviews({docVer, size: "sm", pageNumber: pageNumber + 1})
-      )
+      if (!allPreviewsAreAvailable) {
+        dispatch(
+          generateNextPreviews({docVer, size: "sm", pageNumber: pageNumber + 1})
+        )
+      }
     }
   }, [loadMore])
 

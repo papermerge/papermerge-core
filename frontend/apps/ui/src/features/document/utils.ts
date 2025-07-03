@@ -1,4 +1,7 @@
-import {ClientDocumentVersion} from "@/types"
+import client from "@/httpClient"
+import {ClientDocumentVersion, DocVerShort} from "@/types"
+import {UUID} from "@/types.d/common"
+import axios from "axios"
 import {
   DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
   DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
@@ -70,4 +73,51 @@ export async function rotateImageObjectURL(
     img.onerror = e => reject(new Error("Image failed to load"))
     img.src = objectURL
   })
+}
+
+interface DocData {
+  blob: Blob
+  docVerID: UUID
+}
+
+interface ClientReturn {
+  ok: boolean
+  error?: string
+  data?: DocData
+}
+
+export async function getDocLastVersion(docID: UUID): Promise<ClientReturn> {
+  try {
+    let resp = await client.get(`/api/documents/${docID}/last-version/`)
+
+    if (resp.status !== 200) {
+      return {
+        ok: false,
+        error: `Error downloading URL for ${docID}: ${resp.status}`
+      }
+    }
+
+    const docVer: DocVerShort = resp.data
+
+    resp = await client.get(docVer.download_url, {responseType: "blob"})
+    if (resp.status !== 200) {
+      return {
+        ok: false,
+        error: `Error downloading file from ${docVer.download_url}: ${resp.status}`
+      }
+    }
+
+    return {ok: true, data: {docVerID: docVer.id, blob: resp.data}}
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        ok: false,
+        error: `Request failed: ${error.response?.status || "Network error"} - ${error.message}`
+      }
+    }
+    return {
+      ok: false,
+      error: `Unexpected error: ${error instanceof Error ? error.message : "Unknown error"}`
+    }
+  }
 }

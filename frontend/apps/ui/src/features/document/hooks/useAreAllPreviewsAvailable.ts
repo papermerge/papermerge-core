@@ -1,11 +1,14 @@
 import {useAppSelector} from "@/app/hooks"
+import {selectAreAllPreviewsAvailable} from "@/features/document/imageObjectsSlice"
 import type {BasicPage, DocumentVersion} from "@/features/document/types"
-import {selectAreAllPreviewsAvailable} from "../imageObjectsSlice"
+import {ImageSize} from "@/types.d/common"
+import {useMemo} from "react"
 
 interface Args {
   docVer: DocumentVersion
   pageNumber: number
   pageSize: number
+  imageSize: ImageSize
 }
 
 function getPagesToCheck(
@@ -37,13 +40,15 @@ function getPagesToCheck(
 export default function useAreAllPreviewsAvailable({
   docVer,
   pageNumber,
-  pageSize
+  pageSize,
+  imageSize
 }: Args): boolean {
-  const pagesToCheck = getPagesToCheck(docVer, pageNumber, pageSize)
-
-  const areAllPagesLoaded = useAppSelector(
-    selectAreAllPreviewsAvailable(pagesToCheck, docVer.id)
+  const pagesToCheck = useMemo(
+    () => getPagesToCheck(docVer, pageNumber, pageSize),
+    [docVer, pageNumber, pageSize]
   )
 
-  return areAllPagesLoaded
+  return useAppSelector(state =>
+    selectAreAllPreviewsAvailable(state, pagesToCheck, docVer.id, imageSize)
+  )
 }

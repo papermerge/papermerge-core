@@ -5,6 +5,8 @@ import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
 
 import Zoom from "@/components/document/Zoom"
 import {generateNextPreviews} from "@/features/document/actions"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
+import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import {DocumentVersion} from "@/features/document/types"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
@@ -34,6 +36,13 @@ export default function PageListContainer({docVer}: Args) {
     cssSelector: ".page",
     containerRef: containerRef
   })
+  const nextPageNumber = pageNumber + 1
+  const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
+    docVer,
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+    pageNumber: nextPageNumber,
+    imageSize: "md"
+  })
   const pageComponents = pages.map(p => (
     <Page
       key={p.id}
@@ -46,9 +55,18 @@ export default function PageListContainer({docVer}: Args) {
 
   useEffect(() => {
     if (loadMore && !isGenerating) {
-      dispatch(generateNextPreviews({docVer, pageNumber: pageNumber + 1}))
+      if (!allPreviewsAreAvailable) {
+        dispatch(generateNextPreviews({docVer, pageNumber: nextPageNumber}))
+      }
     }
-  }, [loadMore])
+  }, [
+    loadMore,
+    isGenerating,
+    allPreviewsAreAvailable,
+    pageNumber,
+    docVer,
+    dispatch
+  ])
 
   return (
     <PageList

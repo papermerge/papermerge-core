@@ -32,11 +32,6 @@ export default function useGeneratePreviews({
     const generate = async () => {
       if (!allPreviewsAreAvailable) {
         if (!fileManager.getByDocVerID(docVer.id)) {
-          /*
-          console.log(
-            `BEFORE WAIT allPreviewsAreAvailable=${allPreviewsAreAvailable} pageNumber=${pageNumber}`
-          )
-          */
           const {
             ok,
             data,
@@ -52,17 +47,7 @@ export default function useGeneratePreviews({
             console.error(downloadError || "Unknown download error")
             return
           }
-          /*
-          console.log(
-            `AFTER WAIT allPreviewsAreAvailable=${allPreviewsAreAvailable} pageNumber=${pageNumber}`
-          )
-          */
         }
-        /*
-        console.log(
-          `Dispatching generate previews for size="md" pageNumber=${pageNumber}`
-        )
-        */
         dispatch(
           generatePreviews({
             docVer,

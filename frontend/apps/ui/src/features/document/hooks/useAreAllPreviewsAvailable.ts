@@ -43,15 +43,6 @@ export default function useAreAllPreviewsAvailable({
   pageSize,
   imageSize
 }: Args): boolean {
-  /*
-  const pagesToCheck = getPagesToCheck(docVer, pageNumber, pageSize)
-
-  const areAllPagesLoaded = useAppSelector(
-    selectAreAllPreviewsAvailable(pagesToCheck, docVer.id)
-  )
-
-  return areAllPagesLoaded
-  */
   const pagesToCheck = useMemo(
     () => getPagesToCheck(docVer, pageNumber, pageSize),
     [docVer, pageNumber, pageSize]

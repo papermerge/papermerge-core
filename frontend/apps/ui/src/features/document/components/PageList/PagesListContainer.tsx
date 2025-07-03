@@ -54,18 +54,8 @@ export default function PageListContainer({docVer}: Args) {
   ))
 
   useEffect(() => {
-    /*
-    console.log(
-      `usePageList loadMore=${loadMore} isGenerating=${isGenerating} allPreviewsAreAvailable=${allPreviewsAreAvailable}`
-    )
-    */
     if (loadMore && !isGenerating) {
       if (!allPreviewsAreAvailable) {
-        /*
-        console.log(
-          `Dispatching generateNextPreviews for pageNumber=${nextPageNumber}`
-        )
-        */
         dispatch(generateNextPreviews({docVer, pageNumber: nextPageNumber}))
       }
     }

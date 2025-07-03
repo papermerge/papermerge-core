@@ -24,11 +24,6 @@ interface Args {
 export const generateNextPreviews =
   ({docVer, pageNumber, size = "md"}: Args) =>
   async (dispatch: AppDispatch) => {
-    /*
-    console.log(
-      `generateNextPreviews: mark BRGIN of gen docVerID=${docVer.id} size=${size}`
-    )
-    */
     dispatch(markGeneratingPreviewsBegin({docVerID: docVer.id, size}))
 
     const pageSize =
@@ -36,11 +31,6 @@ export const generateNextPreviews =
         ? DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
         : DOC_VER_PAGINATION_PAGE_BATCH_SIZE
 
-    /*
-    console.log(
-      `generateNextPreviews: gen size=${size} pageNumber=${pageNumber}`
-    )
-    */
     await dispatch(
       generatePreviews({
         docVer,
@@ -50,11 +40,7 @@ export const generateNextPreviews =
         pageTotal: docVer.pages.length
       })
     )
-    /*
-    console.log(
-      `generateNextPreviews: mark END of gen docVerID=${docVer.id} size=${size}`
-    )
-    */
+
     dispatch(markGeneratingPreviewsEnd({docVerID: docVer.id, size}))
 
     if (size == "sm") {

@@ -9,7 +9,12 @@ import {useContext} from "react"
 import {useDispatch} from "react-redux"
 import {Zoom} from "viewer"
 
-export default function ZoomContainer() {
+interface Args {
+  pageNumber: number
+  pageTotal: number
+}
+
+export default function ZoomContainer({pageNumber, pageTotal}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useDispatch()
 
@@ -26,6 +31,8 @@ export default function ZoomContainer() {
 
   return (
     <Zoom
+      pageNumber={pageNumber}
+      pageTotal={pageTotal}
       onFitClick={fitZoom}
       onZoomInClick={incZoom}
       onZoomOutClick={decZoom}

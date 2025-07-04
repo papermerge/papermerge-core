@@ -6,6 +6,7 @@ import usePageLoader from "@/features/document/hooks/usePageLoader"
 import {selectClientPagesWithPreviews} from "@/features/document/imageObjectsSlice"
 import type {ClientPage} from "@/types"
 import type {UUID} from "@/types.d/common"
+import useCurrentPageNumber from "../../hooks/useCurrentPageNumber"
 
 interface Args {
   docVerID?: UUID
@@ -18,6 +19,7 @@ interface Args {
 interface PageListState {
   pages: Array<ClientPage>
   loadMore: boolean
+  currentPageNumber: number
   docVerID?: UUID
 }
 
@@ -33,6 +35,11 @@ export default function usePageList({
     cssSelector,
     totalPageCount: totalCount
   })
+  const {currentPageNumber} = useCurrentPageNumber({
+    containerRef,
+    cssSelector,
+    initialPageNumber: 1
+  })
   const pages = useAppSelector(s =>
     selectClientPagesWithPreviews(s, size, docVerID)
   )
@@ -40,6 +47,7 @@ export default function usePageList({
   return {
     pages,
     loadMore,
-    docVerID: docVerID
+    docVerID: docVerID,
+    currentPageNumber
   }
 }

@@ -27,7 +27,7 @@ export default function PageListContainer() {
   const isGenerating = useAppSelector(s =>
     selectIsGeneratingPreviews(s, "md", docVer?.id)
   )
-  const {pages, loadMore} = usePageList({
+  const {pages, loadMore, currentPageNumber} = usePageList({
     docVerID: docVer?.id,
     totalCount: docVer?.pages.length,
     cssSelector: ".page",
@@ -71,7 +71,12 @@ export default function PageListContainer() {
       ref={containerRef}
       pageItems={pageComponents}
       paginationInProgress={isGenerating}
-      zoom={<Zoom />}
+      zoom={
+        <Zoom
+          pageNumber={currentPageNumber}
+          pageTotal={docVer?.pages.length || 1}
+        />
+      }
     />
   )
 }

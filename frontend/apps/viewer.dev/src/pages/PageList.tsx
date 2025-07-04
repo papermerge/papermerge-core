@@ -40,7 +40,7 @@ export default function PageListPage() {
       </Group>
       <PageList
         pageItems={pages}
-        zoom={<Zoom />}
+        zoom={<Zoom pageNumber={1} pageTotal={10} />}
         paginationInProgress={isLoading}
       />
     </Stack>

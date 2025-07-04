@@ -12,11 +12,12 @@ import {
   markGeneratingPreviewsBegin,
   markGeneratingPreviewsEnd
 } from "@/features/document/imageObjectsSlice"
-import type {DocumentVersion} from "@/features/document/types"
+
+import {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"
 
 interface Args {
-  docVer: DocumentVersion
+  docVer?: ClientDocumentVersion
   pageNumber: number
   size?: ImageSize
 }
@@ -24,6 +25,10 @@ interface Args {
 export const generateNextPreviews =
   ({docVer, pageNumber, size = "md"}: Args) =>
   async (dispatch: AppDispatch) => {
+    if (!docVer) {
+      return
+    }
+
     dispatch(markGeneratingPreviewsBegin({docVerID: docVer.id, size}))
 
     const pageSize =

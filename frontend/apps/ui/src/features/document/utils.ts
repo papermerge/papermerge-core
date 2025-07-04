@@ -13,6 +13,9 @@ export function clientDVFromDV(v: DocumentVersion): ClientDocumentVersion {
     id: v.id,
     lang: v.lang,
     number: v.number,
+    document_id: v.document_id,
+    size: v.size,
+    short_description: v.short_description,
     file_name: v.file_name,
     pages: v.pages.map(p => {
       return {id: p.id, number: p.number, angle: 0}

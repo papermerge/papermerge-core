@@ -28,7 +28,6 @@ import type {Coord, NType, PanelMode} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 
-import useCurrentDocVer from "../hooks/useCurrentDocVer"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
@@ -39,7 +38,6 @@ interface Args {
 }
 
 export default function Viewer({doc, initialDocVer}: Args) {
-  const [docVer, setDocVer] = useState<DocumentVersion>(initialDocVer)
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const [opened, {open, close}] = useDisclosure()
@@ -47,13 +45,13 @@ export default function Viewer({doc, initialDocVer}: Args) {
   const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const currentDocVer = useCurrentDocVer()
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
 
+  /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
-    docVer,
+    docVer: initialDocVer,
     pageNumber: 1,
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
@@ -84,25 +82,6 @@ export default function Viewer({doc, initialDocVer}: Args) {
       close()
     }
   }
-  /*
-  useEffect(() => {
-    if (currentDocVer) {
-      console.log(`Updating current docVerID=${currentDocVer.id}`)
-      setDocVer({
-        id: currentDocVer.id,
-        document_id: doc.id,
-        download_url: "irrelevant",
-        file_name: currentDocVer.file_name,
-        lang: "deu",
-        number: currentDocVer.number,
-        page_count: currentDocVer.pages.length,
-        short_description: "bla",
-        size: 999,
-        pages: currentDocVer.pages
-      })
-    }
-  }, [currentDocVer])
-  */
 
   useEffect(() => {
     // detect right click outside
@@ -118,10 +97,10 @@ export default function Viewer({doc, initialDocVer}: Args) {
   }, [])
 
   useEffect(() => {
-    if (docVer) {
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
+    if (initialDocVer) {
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: initialDocVer.id}))
     }
-  }, [docVer])
+  }, [initialDocVer])
 
   if (!allPreviewsAreAvailable) {
     return <Loader />
@@ -135,9 +114,9 @@ export default function Viewer({doc, initialDocVer}: Args) {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
+        {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
-        <PageList docVer={docVer} />
+        <PageList />
         <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu

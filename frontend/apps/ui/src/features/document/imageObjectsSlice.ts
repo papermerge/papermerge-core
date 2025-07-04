@@ -61,7 +61,7 @@ export const generatePreviews = createAsyncThunk<
   GeneratePreviewInputType
 >("images/generatePreview", async item => {
   const width = getWidth(item.size)
-  //const smallWidth = getWidth(item.size)
+
   const result: ReturnType = {
     items: []
   }
@@ -321,8 +321,8 @@ export const selectImageObjects = (state: RootState) => state.imageObjects
 export const selectAreAllPreviewsAvailable = (
   state: RootState,
   pagesToCheck: BasicPage[],
-  docVerID: string,
-  imageSize: ImageSize
+  imageSize: ImageSize,
+  docVerID?: string
 ): boolean => {
   const imageObjState = state.imageObjects
   return pagesToCheck.every(({id, number}) => {
@@ -339,8 +339,8 @@ export const selectAreAllPreviewsAvailable = (
 export const selectPagesWithPreviews = createSelector(
   [
     selectImageObjects,
-    (_: RootState, docVerID: UUID, __: ImageSize = "md") => docVerID, // Pass docVerID as input
-    (_: RootState, __: UUID, size: ImageSize = "md") => size
+    (_: RootState, __: ImageSize, docVerID?: UUID) => docVerID, // Pass docVerID as input
+    (_: RootState, size: ImageSize, __?: UUID) => size
   ],
   (imageObjects, docVerID, size = "md") => {
     if (!docVerID) return []
@@ -355,7 +355,11 @@ export const selectPagesWithPreviews = createSelector(
   }
 )
 
-const selectDocVerByID = (state: RootState, docVerID?: string) => {
+const selectDocVerByID = (
+  state: RootState,
+  __: ImageSize,
+  docVerID?: string
+) => {
   if (docVerID) {
     return state.docVers.entities[docVerID]
   }
@@ -367,6 +371,7 @@ export const selectClientPagesWithPreviews = createSelector(
   [selectPagesWithPreviews, selectDocVerByID],
   (basicPages, docVer) => {
     if (!docVer) {
+      console.log(`selectClientPagesWithPreviews: docVer not found`)
       return []
     }
 
@@ -395,20 +400,30 @@ export const selectShowMorePages = (
 
 export const selectIsGeneratingPreviews = (
   state: RootState,
-  docVerID: UUID,
-  size: ImageSize
+  size: ImageSize,
+  docVerID?: UUID
 ) => {
-  if (size == "sm") {
-    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingSM
-  }
-  if (size == "md") {
-    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingMD
-  }
-  if (size == "lg") {
-    return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingLG
+  if (!docVerID) {
+    return false
   }
 
-  return state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingXL
+  if (size == "sm") {
+    return Boolean(
+      state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingSM
+    )
+  }
+  if (size == "md") {
+    return Boolean(
+      state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingMD
+    )
+  }
+  if (size == "lg") {
+    return Boolean(
+      state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingLG
+    )
+  }
+
+  return Boolean(state.imageObjects.docVerIDEntities[docVerID]?.isGeneratingXL)
 }
 
 function getWidth(size: ImageSize) {

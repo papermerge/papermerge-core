@@ -66,9 +66,6 @@ export default function useCurrentDoc(): State {
     errorDocVer
   ])
 
-  console.log(
-    `useCurrentDoc doc=${doc} docVer=${docVer} isLoading=${isLoading}`
-  )
   return {
     isLoading,
     doc,

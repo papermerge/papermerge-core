@@ -1,14 +1,15 @@
 import {useAppDispatch} from "@/app/hooks"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import {generatePreviews} from "@/features/document/imageObjectsSlice"
-import type {DocumentVersion} from "@/features/document/types"
 import {getDocLastVersion} from "@/features/document/utils"
 import {fileManager} from "@/features/files/fileManager"
+import {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"
 import {useEffect} from "react"
+import {DocumentVersion} from "../types"
 
 interface Args {
-  docVer: DocumentVersion
+  docVer: ClientDocumentVersion | DocumentVersion
   pageNumber: number
   pageSize: number
   imageSize: ImageSize
@@ -51,7 +52,7 @@ export default function useGeneratePreviews({
         dispatch(
           generatePreviews({
             docVer,
-            size: "md",
+            size: imageSize,
             pageSize,
             pageNumber,
             pageTotal: docVer.pages.length

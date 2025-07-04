@@ -329,6 +329,9 @@ export interface ClientDocumentVersion {
   lang: string
   number: number
   file_name: string
+  document_id: string
+  short_description: string
+  size: number
   pages: Array<ClientPage>
   pagination: Pagination
   thumbnailsPagination: Pagination

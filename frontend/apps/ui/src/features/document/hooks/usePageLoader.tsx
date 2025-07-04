@@ -4,6 +4,12 @@ interface State {
   loadMore: boolean
 }
 
+interface Args {
+  containerRef: React.RefObject<HTMLElement | null>
+  cssSelector: string
+  totalPageCount?: number
+}
+
 /**
  *
  * @param totalPageCount total number of pages in the document version
@@ -15,16 +21,19 @@ interface State {
  * and number of pages present in container is less than the total pages of
  * the document version
  */
-export default function usePageLoader(
-  totalPageCount: number,
-  containerRef: React.RefObject<HTMLElement | null>,
-  cssSelector: string
-): State {
+export default function usePageLoader({
+  containerRef,
+  cssSelector,
+  totalPageCount
+}: Args): State {
   const [loadMore, setLoadMore] = useState(false)
 
   const checkIfLastElementVisible = useCallback(() => {
     /** triggered on scroll and and resize events of the container */
     if (!containerRef) {
+      return
+    }
+    if (!totalPageCount) {
       return
     }
     const container = containerRef.current
@@ -41,12 +50,6 @@ export default function usePageLoader(
 
     const isFullyVisible = lastChildRect.bottom <= containerRect.bottom
     const val = isFullyVisible && totalPageCount > pageElements.length
-
-    /*
-    console.log(
-      `lastChildRect.bottom <= containerRect.bottom: ${lastChildRect.bottom} <= ${containerRect.bottom} (${lastChildRect.bottom <= containerRect.bottom})`
-    )
-    */
 
     if (lastChildRect.height > 50) {
       setLoadMore(val)

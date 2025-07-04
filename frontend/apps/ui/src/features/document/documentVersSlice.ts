@@ -22,7 +22,6 @@ import {
   DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
 } from "./constants"
 import type {DocumentType, DocumentVersion} from "./types"
-import {DLVPaginatedArgsOutput} from "./types"
 import {clientDVFromDV} from "./utils"
 
 interface PaginationUpdated {
@@ -92,88 +91,6 @@ const docVersSlice = createSlice({
           }
         }
       }
-    },
-    docVerUpserted(state, action: PayloadAction<DLVPaginatedArgsOutput>) {
-      /**
-       * Inserts or Updated document verions pages and initial_pages
-       *
-       * As user paginates through the document pages new pages are inserted
-       * into document versions. Previous ones preserve their order and rotation
-       * angle
-       * */
-      const data = action.payload
-      let updatedDocVer
-      const docVer = state.entities[data.doc_ver_id]
-
-      if (!docVer) {
-        /** completely new page */
-        updatedDocVer = {
-          id: data.doc_ver_id,
-          lang: data.lang,
-          number: data.number,
-          file_name: data.file_name,
-          pages: data.pages.map(p => ({
-            id: p.id,
-            number: p.number,
-            angle: 0
-          })),
-          initial_pages: data.pages.map(p => ({
-            id: p.id,
-            number: p.number,
-            angle: 0
-          })),
-          pagination: {
-            page_number: 1,
-            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
-          },
-          thumbnailsPagination: {
-            page_number: 1,
-            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-          }
-        }
-      } else {
-        /* insert incoming pages into already existing document
-        version's pages list (same for initial_pages)
-
-        `initial_pages` are used as reference to know order and rotation
-        of the pages before user applied order/rotation changes
-        */
-        const updatedPages = [
-          ...docVer.pages,
-          ...data.pages.map(p => ({
-            id: p.id,
-            number: p.number,
-            angle: 0
-          }))
-        ]
-
-        const updatedInitialPages = [
-          ...docVer.initial_pages,
-          ...data.pages.map(p => ({
-            id: p.id,
-            number: p.number,
-            angle: 0
-          }))
-        ]
-
-        updatedDocVer = {
-          id: data.doc_ver_id,
-          lang: data.lang,
-          number: data.number,
-          file_name: data.file_name,
-          pages: updatedPages,
-          initial_pages: updatedInitialPages,
-          pagination: {
-            page_number: data.page_number,
-            per_page: DOC_VER_PAGINATION_PAGE_BATCH_SIZE
-          },
-          thumbnailsPagination: {
-            page_number: data.page_number,
-            per_page: DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-          }
-        }
-      }
-      docVerAdapter.upsertOne(state, updatedDocVer)
     },
     pagesDroppedInDoc(state, action: PayloadAction<PageDroppedArgs>) {
       const {targetDocVerID, sources, target, position} = action.payload
@@ -270,6 +187,9 @@ const docVersSlice = createSlice({
             lang: v.lang,
             number: v.number,
             file_name: v.file_name,
+            document_id: v.document_id,
+            size: v.size,
+            short_description: v.short_description,
             pages: v.pages.map(p => {
               return {id: p.id, number: p.number, angle: 0}
             }),
@@ -304,7 +224,6 @@ export const {
   documentMovedNotifReceived,
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated,
-  docVerUpserted,
   addClientDocVersion
 } = docVersSlice.actions
 export default docVersSlice.reducer

@@ -75,7 +75,7 @@ export const applyPageChangesThunk = createAsyncThunk<
     message: t("documentVersion.was-created", {
       versionNumber: lastVersion.number
     }),
-    autoClose: 7000
+    autoClose: 4000
   })
 })
 

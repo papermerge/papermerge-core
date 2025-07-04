@@ -8,8 +8,8 @@ import type {ClientPage} from "@/types"
 import type {UUID} from "@/types.d/common"
 
 interface Args {
-  docVerID: UUID
-  totalCount: number
+  docVerID?: UUID
+  totalCount?: number
   containerRef: RefObject<HTMLDivElement | null>
   size?: ImageSize
   cssSelector?: string
@@ -28,10 +28,13 @@ export default function usePageList({
   size = "md",
   cssSelector = ".page"
 }: Args): PageListState {
-  const {loadMore} = usePageLoader(totalCount, containerRef, cssSelector)
-
+  const {loadMore} = usePageLoader({
+    containerRef,
+    cssSelector,
+    totalPageCount: totalCount
+  })
   const pages = useAppSelector(s =>
-    selectClientPagesWithPreviews(s, docVerID, size)
+    selectClientPagesWithPreviews(s, size, docVerID)
   )
 
   return {

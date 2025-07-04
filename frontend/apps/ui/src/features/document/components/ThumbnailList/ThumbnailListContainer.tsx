@@ -3,32 +3,29 @@ import {generateNextPreviews} from "@/features/document/actions"
 import {DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE} from "@/features/document/constants"
 import {selectDocVerPaginationThumnailPageNumber} from "@/features/document/documentVersSlice"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
+import useCurrentDocVer from "@/features/document/hooks/useCurrentDocVer"
 import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
-import {DocumentVersion} from "@/features/document/types"
 import {useEffect, useRef} from "react"
 import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
 
-interface Args {
-  docVer: DocumentVersion
-}
-
-export default function ThumbnailListContainer({docVer}: Args) {
+export default function ThumbnailListContainer() {
+  const docVer = useCurrentDocVer()
   const dispatch = useAppDispatch()
   const pageNumber = useAppSelector(s =>
-    selectDocVerPaginationThumnailPageNumber(s, docVer.id)
+    selectDocVerPaginationThumnailPageNumber(s, docVer?.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
   const {pages, loadMore} = usePageList({
-    docVerID: docVer.id,
-    totalCount: docVer.pages.length,
+    docVerID: docVer?.id,
+    totalCount: docVer?.pages.length,
     size: "sm",
     cssSelector: ".thumbnail",
     containerRef: containerRef
   })
   const isGenerating = useAppSelector(s =>
-    selectIsGeneratingPreviews(s, docVer.id, "sm")
+    selectIsGeneratingPreviews(s, "sm", docVer?.id)
   )
   const allPreviewsAreAvailable = useAreAllPreviewsAvailable({
     docVer,
@@ -41,22 +38,12 @@ export default function ThumbnailListContainer({docVer}: Args) {
   ))
 
   useEffect(() => {
-    /*
-    console.log(
-      `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
-    )
-    */
     if (pages.length == 0 && !isGenerating) {
       dispatch(generateNextPreviews({docVer, size: "sm", pageNumber: 1}))
     }
   }, [pages.length])
 
   useEffect(() => {
-    /*
-    console.log(
-      `pages.length=${pages.length} loadMore=${loadMore} isGenerating=${isGenerating}`
-    )
-    */
     if (loadMore && !isGenerating) {
       if (!allPreviewsAreAvailable) {
         dispatch(

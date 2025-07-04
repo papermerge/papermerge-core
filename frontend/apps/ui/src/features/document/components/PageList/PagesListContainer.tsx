@@ -7,7 +7,7 @@ import Zoom from "@/components/document/Zoom"
 import {generateNextPreviews} from "@/features/document/actions"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
-import {DocumentVersion} from "@/features/document/types"
+import useCurrentDocVer from "@/features/document/hooks/useCurrentDocVer"
 import {selectZoomFactor} from "@/features/ui/uiSlice"
 import type {PanelMode} from "@/types"
 import {useContext, useEffect, useRef} from "react"
@@ -15,24 +15,21 @@ import {PageList} from "viewer"
 import Page from "../Page"
 import usePageList from "./usePageList"
 
-interface Args {
-  docVer: DocumentVersion
-}
-
-export default function PageListContainer({docVer}: Args) {
+export default function PageListContainer() {
+  const docVer = useCurrentDocVer()
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
   const pageNumber = useAppSelector(s =>
-    selectDocVerPaginationPageNumber(s, docVer.id)
+    selectDocVerPaginationPageNumber(s, docVer?.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
   const isGenerating = useAppSelector(s =>
-    selectIsGeneratingPreviews(s, docVer.id, "md")
+    selectIsGeneratingPreviews(s, "md", docVer?.id)
   )
   const {pages, loadMore} = usePageList({
-    docVerID: docVer.id,
-    totalCount: docVer.pages.length,
+    docVerID: docVer?.id,
+    totalCount: docVer?.pages.length,
     cssSelector: ".page",
     containerRef: containerRef
   })
@@ -43,6 +40,7 @@ export default function PageListContainer({docVer}: Args) {
     pageNumber: nextPageNumber,
     imageSize: "md"
   })
+
   const pageComponents = pages.map(p => (
     <Page
       key={p.id}

@@ -1,3 +1,4 @@
+import type {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"
 import type {BreadcrumbType} from "@/types/breadcrumb"
 import type {OCRCode, OcrStatusEnum} from "@/types/ocr"
@@ -28,7 +29,7 @@ export type DLVPaginatedArgsOutput = {
 }
 
 export interface GeneratePreviewInputType {
-  docVer: DocumentVersion
+  docVer: ClientDocumentVersion | DocumentVersion
   size: ImageSize
   pageSize: number
   pageNumber: number
@@ -49,7 +50,6 @@ export type PageType = BasicPageType & {
 export type DocumentVersion = {
   id: string
   document_id: string
-  download_url: string
   file_name: string
   lang: OCRCode
   number: number
@@ -66,7 +66,6 @@ export type DocumentType = {
   breadcrumb: BreadcrumbType
   ocr: boolean
   ocr_status: OcrStatusEnum
-  thumbnail_url: string
   versions: Array<DocumentVersion>
   parent_id: string | null
   user_id: string

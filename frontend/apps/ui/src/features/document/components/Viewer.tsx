@@ -71,7 +71,6 @@ export default function Viewer({doc, initialDocVer}: Args) {
         currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )
     } else if (mode == "main" && node.ctype == "folder") {
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
       navigate(`/folder/${node.id}`)
     }
   }

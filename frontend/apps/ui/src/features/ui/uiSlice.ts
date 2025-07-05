@@ -856,12 +856,14 @@ const uiSlice = createSlice({
       state.secondaryViewerCurrentPageNumber = pageNumber
     },
     currentDocVerUpdated(state, action: PayloadAction<CurrentDocVerUpdateArg>) {
-      const {mode, docVerID} = action.payload
-      if (mode == "main") {
-        state.mainViewerCurrentDocVerID = docVerID
-      } else {
-        state.secondaryViewerCurrentDocVerID = docVerID
-      }
+      const {docVerID} = action.payload
+      /*
+     As of now user can only see the latest document version in the viewer.
+     As such, it makes no sense to have different versions displayed in
+     different panels => both panels must have same docVerID.
+     */
+      state.mainViewerCurrentDocVerID = docVerID
+      state.secondaryViewerCurrentDocVerID = docVerID
     },
     dragPagesStarted(state, action: PayloadAction<DragPageStartedArg>) {
       const {pages, docID, docParentID} = action.payload

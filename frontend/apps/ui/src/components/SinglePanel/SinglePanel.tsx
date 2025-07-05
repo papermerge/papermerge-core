@@ -7,7 +7,7 @@ import {Loader} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {useEffect, useState} from "react"
 
-import {selectCurrentNode} from "@/features/ui/uiSlice"
+import {selectCurrentDocVer, selectCurrentNode} from "@/features/ui/uiSlice"
 
 import {
   isHTTP403Forbidden,
@@ -42,6 +42,7 @@ export default function SinglePanel() {
   const mode: PanelMode = useContext(PanelContext)
 
   const currentNode = useAppSelector(s => selectCurrentNode(s, mode))
+  const currentDocVer = useAppSelector(s => selectCurrentDocVer(s, mode))
 
   const {
     // should be `currentData` here not `data`, otherwise there will
@@ -118,7 +119,7 @@ export default function SinglePanel() {
 
   if (panelComponent == "viewer") {
     if (doc && docVer) {
-      return <Viewer initialDocVer={docVer} doc={doc} />
+      return <Viewer initialDocVer={currentDocVer || docVer} doc={doc} />
     } else {
       return <Loader />
     }

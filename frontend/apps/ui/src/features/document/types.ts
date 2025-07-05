@@ -59,6 +59,12 @@ export type DocumentVersion = {
   size: number
 }
 
+export type NodeTag = {
+  name: string
+  bg_color: string
+  fg_color: string
+}
+
 export type DocumentType = {
   id: string
   ctype: "document"
@@ -70,6 +76,8 @@ export type DocumentType = {
   parent_id: string | null
   user_id: string
   updated_at: string
+  tags: NodeTag[]
+  owner_name: string
 }
 
 export type ShortPageType = {

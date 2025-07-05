@@ -27,6 +27,7 @@ import type {
 } from "@/types"
 
 import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
+import {DialogVisiblity} from "@/types.d/common"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
@@ -279,6 +280,7 @@ export interface UIState {
   secondaryViewerCurrentDocVerID?: string
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
+  viewerPageHaveChangedDialogVisibility?: DialogVisiblity
 }
 
 const initialState: UIState = {
@@ -894,6 +896,13 @@ const uiSlice = createSlice({
       if (state.dragndrop) {
         state.dragndrop = undefined
       }
+    },
+    viewerPageHaveChangedDialogVisibilityChanged(
+      state,
+      action: PayloadAction<{visibility: DialogVisiblity}>
+    ) {
+      const newVisibility = action.payload.visibility
+      state.viewerPageHaveChangedDialogVisibility = newVisibility
     }
   }
 })
@@ -944,7 +953,8 @@ export const {
   documentsByTypeCommanderColumnsUpdated,
   documentsByTypeCommanderColumnVisibilityToggled,
   lastHomeUpdated,
-  lastInboxUpdated
+  lastInboxUpdated,
+  viewerPageHaveChangedDialogVisibilityChanged
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1324,6 +1334,12 @@ export const selectLastInbox = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryCommanderLastInbox
+}
+
+export const selectViewerPagesHaveChangedDialogVisibility = (
+  state: RootState
+) => {
+  return state.ui.viewerPageHaveChangedDialogVisibility || "closed"
 }
 
 /* Load initial collapse state value from cookie */

@@ -6,3 +6,4 @@ export type ObjectURLState = {
 }
 
 export type ImageSize = "sm" | "md" | "lg" | "xl"
+export type DialogVisiblity = "opened" | "closed"

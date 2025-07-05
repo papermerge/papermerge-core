@@ -58,6 +58,7 @@ export default function SinglePanel() {
     isError: isErrorDocVer,
     error: errorDocVer
   } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
+
   const navigate = useNavigate()
   const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
   const isError = isErrorDoc || isErrorDocVer
@@ -119,7 +120,7 @@ export default function SinglePanel() {
 
   if (panelComponent == "viewer") {
     if (doc && docVer) {
-      return <Viewer initialDocVer={currentDocVer || docVer} doc={doc} />
+      return <Viewer initialDocVer={docVer} doc={doc} />
     } else {
       return <Loader />
     }

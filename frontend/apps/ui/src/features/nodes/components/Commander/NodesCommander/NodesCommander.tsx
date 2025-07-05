@@ -35,6 +35,7 @@ import {
 } from "@/features/nodes/apiSlice"
 import {
   commanderLastPageSizeUpdated,
+  currentDocVerUpdated,
   secondaryPanelClosed,
   selectCommanderSortMenuColumn,
   selectCommanderSortMenuDir,
@@ -140,6 +141,7 @@ export default function Commander() {
     // mode == "main"
     switch (node.ctype) {
       case "folder":
+        dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
         navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
         break
       case "document":

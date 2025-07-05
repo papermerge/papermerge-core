@@ -24,7 +24,7 @@ import {
   selectContentHeight,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {ClientDocumentVersion, Coord, NType, PanelMode} from "@/types"
+import type {Coord, NType, PanelMode} from "@/types"
 import {useDisclosure} from "@mantine/hooks"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 
@@ -34,7 +34,7 @@ import ThumbnailList from "./ThumbnailList"
 
 interface Args {
   doc: DocumentType
-  initialDocVer: DocumentVersion | ClientDocumentVersion
+  initialDocVer: DocumentVersion
 }
 
 export default function Viewer({doc, initialDocVer}: Args) {
@@ -71,6 +71,7 @@ export default function Viewer({doc, initialDocVer}: Args) {
         currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
       )
     } else if (mode == "main" && node.ctype == "folder") {
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
       navigate(`/folder/${node.id}`)
     }
   }

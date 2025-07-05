@@ -54,7 +54,7 @@ export default function usePageLoader({
     if (lastChildRect.height > 50) {
       setLoadMore(val)
     }
-  }, [containerRef])
+  }, [containerRef, totalPageCount])
 
   useEffect(() => {
     if (!containerRef) {

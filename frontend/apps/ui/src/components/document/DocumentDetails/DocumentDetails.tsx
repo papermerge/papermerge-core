@@ -24,11 +24,13 @@ import classes from "./DocumentDetails.module.css"
 import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
+import type {DocumentType} from "@/features/document/types"
 import {
+  selectCurrentDocVer,
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {DocumentType, PanelMode} from "@/types"
+import type {PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 
@@ -47,6 +49,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
   const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
+  const currentDocVer = useAppSelector(s => selectCurrentDocVer(s, mode))
 
   if (!docID || isLoading) {
     return (
@@ -77,6 +80,13 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
             value={docVerID}
             rightSection={<CopyButton value={docVerID || ""} />}
           />
+          <TextInput
+            label={t("common.version_number")}
+            readOnly
+            value={currentDocVer?.number}
+            rightSection={<CopyButton value={docVerID || ""} />}
+          />
+
           <TextInput
             label={t("common.owner")}
             readOnly

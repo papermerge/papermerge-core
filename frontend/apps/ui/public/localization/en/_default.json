@@ -39,6 +39,7 @@
   "common.download": "Download",
   "common.ocr_language": "Download",
   "common.version_id": "Version ID",
+  "common.version_number": "Version Number",
   "common.tags": "Tags",
   "common.document_type": "Category",
   "common.sort.tiles": "Tiles",

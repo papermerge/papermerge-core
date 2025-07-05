@@ -9,7 +9,11 @@ import {
   selectPagesHaveChanged
 } from "@/features/document/documentVersSlice"
 
-import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
+import {
+  selectCurrentDocVerID,
+  selectViewerPagesHaveChangedDialogVisibility,
+  viewerPageHaveChangedDialogVisibilityChanged
+} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 import type {I18NPagesHaveChangedDialogText} from "viewer"
 import {PagesHaveChangedDialog} from "viewer"
@@ -27,8 +31,22 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
-
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const visibility = useAppSelector(
+    selectViewerPagesHaveChangedDialogVisibility
+  )
+  const showDialog = visibility == "opened"
+
+  useEffect(() => {
+    /* Dialog may be part of two panels as two side by side viewers can be
+    opened. To avoid displaying dialog twice, which happens
+    when SAME document is displayed in two panels, this dialog visibility state
+    is stored in UI slice. Dialog state (opened/closed) is independent of the panel */
+    const newVisibility = pagesHaveChanged ? "opened" : "closed"
+    dispatch(
+      viewerPageHaveChangedDialogVisibilityChanged({visibility: newVisibility})
+    )
+  }, [pagesHaveChanged])
 
   const onSave = async () => {
     setInProgress(true)
@@ -47,7 +65,7 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
   return (
     <PagesHaveChangedDialog
       inProgress={inProgress}
-      opened={pagesHaveChanged && !dontBotherMe}
+      opened={showDialog && !dontBotherMe}
       onClose={onClose}
       onReset={onReset}
       onSave={onSave}

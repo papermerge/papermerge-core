@@ -164,6 +164,11 @@ const docVersSlice = createSlice({
       action: PayloadAction<ClientDocumentVersion>
     ) => {
       docVerAdapter.addOne(state, action.payload)
+    },
+    addDocVersion: (state, action: PayloadAction<DocumentVersion>) => {
+      const dv = action.payload
+      const cdv = clientDVFromDV(dv)
+      docVerAdapter.addOne(state, cdv)
     }
   },
   extraReducers(builder) {
@@ -224,7 +229,8 @@ export const {
   documentMovedNotifReceived,
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated,
-  addClientDocVersion
+  addClientDocVersion,
+  addDocVersion
 } = docVersSlice.actions
 export default docVersSlice.reducer
 
@@ -233,7 +239,7 @@ export const selectDocVerByID = (state: RootState, docVerID?: string) => {
     return state.docVers.entities[docVerID]
   }
 
-  return null
+  return undefined
 }
 
 export const {selectEntities: selectDocVerEntities} =

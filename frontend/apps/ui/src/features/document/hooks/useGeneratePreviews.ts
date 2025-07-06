@@ -6,10 +6,9 @@ import {fileManager} from "@/features/files/fileManager"
 import {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"
 import {useEffect} from "react"
-import {DocumentVersion} from "../types"
 
 interface Args {
-  docVer: ClientDocumentVersion | DocumentVersion
+  docVer?: ClientDocumentVersion
   pageNumber: number
   pageSize: number
   imageSize: ImageSize
@@ -31,6 +30,10 @@ export default function useGeneratePreviews({
 
   useEffect(() => {
     const generate = async () => {
+      if (!docVer) {
+        return
+      }
+
       if (!allPreviewsAreAvailable) {
         if (!fileManager.getByDocVerID(docVer.id)) {
           const {

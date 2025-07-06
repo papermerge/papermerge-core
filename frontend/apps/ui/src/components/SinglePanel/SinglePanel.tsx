@@ -1,30 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
-import {
-  useGetDocLastVersionQuery,
-  useGetDocumentQuery
-} from "@/features/document/apiSlice"
-import {Loader} from "@mantine/core"
-import {skipToken} from "@reduxjs/toolkit/query"
-import {useEffect, useState} from "react"
 
-import {selectCurrentDocVer, selectCurrentNode} from "@/features/ui/uiSlice"
-
-import {
-  isHTTP403Forbidden,
-  isHTTP404NotFound,
-  isHTTP422UnprocessableContent
-} from "@/services/helpers"
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 
-import {
-  ERRORS_403_ACCESS_FORBIDDEN,
-  ERRORS_404_RESOURCE_NOT_FOUND,
-  ERRORS_422_UNPROCESSABLE_CONTENT
-} from "@/cconstants"
 import type {PanelMode} from "@/types"
-import {useNavigate} from "react-router-dom"
 
 import Viewer from "@/features/document/components/Viewer"
 
@@ -36,41 +16,10 @@ import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
 import {selectPanelComponent} from "@/features/ui/uiSlice"
 
 export default function SinglePanel() {
-  const [currentDocumentID, setCurrentDocumentID] = useState<
-    string | undefined
-  >()
   const mode: PanelMode = useContext(PanelContext)
-
-  const currentNode = useAppSelector(s => selectCurrentNode(s, mode))
-  const currentDocVer = useAppSelector(s => selectCurrentDocVer(s, mode))
-
-  const {
-    // should be `currentData` here not `data`, otherwise there will
-    // be a flicker previous document when user opens viewer
-    currentData: doc,
-    isError: isErrorDoc,
-    error: errorDoc
-  } = useGetDocumentQuery(currentDocumentID ?? skipToken)
-  const {
-    // should be `currentData` here not `data`, otherwise there will
-    // be a flicker previous document when user opens viewer
-    currentData: docVer,
-    isError: isErrorDocVer,
-    error: errorDocVer
-  } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
-
-  const navigate = useNavigate()
   const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
-  const isError = isErrorDoc || isErrorDocVer
-  const error = errorDoc || errorDocVer
 
-  useEffect(() => {
-    if (currentNode?.id && currentNode?.ctype == "document") {
-      setCurrentDocumentID(currentNode.id)
-    } else {
-      setCurrentDocumentID(undefined)
-    }
-  }, [currentNode])
+  /*
 
   if (isError && isHTTP422UnprocessableContent(error)) {
     navigate(ERRORS_422_UNPROCESSABLE_CONTENT)
@@ -83,6 +32,7 @@ export default function SinglePanel() {
   if (isError && isHTTP403Forbidden(error)) {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
+    */
   /* This code was inside viewer
   useEffect(() => {
     // In case user decides to transfer all source pages,
@@ -119,11 +69,7 @@ export default function SinglePanel() {
   }
 
   if (panelComponent == "viewer") {
-    if (doc && docVer) {
-      return <Viewer initialDocVer={docVer} doc={doc} />
-    } else {
-      return <Loader />
-    }
+    return <Viewer />
   }
 
   if (panelComponent == "searchResults") {

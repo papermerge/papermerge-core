@@ -1,5 +1,42 @@
+/*
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useEffect} from "react"
 
+import {Flex, Group, Loader} from "@mantine/core"
+import {useContext} from "react"
+import {useNavigate} from "react-router-dom"
+
+import Breadcrumbs from "@/components/Breadcrumbs"
+import PanelContext from "@/contexts/PanelContext"
+
+import {useCurrentDoc, useCurrentDocVer} from "@/features/document/hooks"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
+import {useRef, useState} from "react"
+
+import {HIDDEN} from "@/cconstants"
+import ActionButtons from "@/components/document/ActionButtons"
+import ContextMenu from "@/components/document/Contextmenu"
+import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
+import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
+import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
+import classes from "@/components/document/Viewer.module.css"
+import {
+  currentDocVerUpdated,
+  currentNodeChanged,
+  selectContentHeight,
+  selectThumbnailsPanelOpen
+} from "@/features/ui/uiSlice"
+import type {Coord, NType, PanelMode} from "@/types"
+import {useDisclosure} from "@mantine/hooks"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
+
+import PagesHaveChangedDialog from "./PageHaveChangedDialog"
+import PageList from "./PageList"
+import ThumbnailList from "./ThumbnailList"
+*/
+
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useCurrentDoc} from "@/features/document/hooks"
 import {Flex, Group, Loader} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
@@ -17,7 +54,7 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import {DocumentType, DocumentVersion} from "@/features/document/types"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
@@ -32,25 +69,23 @@ import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
-interface Args {
-  doc: DocumentType
-  initialDocVer: DocumentVersion
-}
-
-export default function Viewer({doc, initialDocVer}: Args) {
+export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const [opened, {open, close}] = useDisclosure()
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
+
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
+  const {doc} = useCurrentDoc()
+  const {docVer} = useCurrentDocVer()
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
-    docVer: initialDocVer,
+    docVer: docVer,
     pageNumber: 1,
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
@@ -95,19 +130,17 @@ export default function Viewer({doc, initialDocVer}: Args) {
     }
   }, [])
 
-  useEffect(() => {
-    if (initialDocVer) {
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: initialDocVer.id}))
-    }
-  }, [initialDocVer])
+  if (!doc) {
+    return <Loader />
+  }
+
+  if (!docVer) {
+    return <Loader />
+  }
 
   if (!allPreviewsAreAvailable) {
     return <Loader />
   }
-
-  console.log(
-    `Viewer: initialDocVerID = ${initialDocVer.id} initialDocVerNumber = ${initialDocVer.number}`
-  )
 
   return (
     <div>
@@ -120,7 +153,7 @@ export default function Viewer({doc, initialDocVer}: Args) {
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />
-        <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
+        <DocumentDetails doc={doc} docID={doc?.id} isLoading={false} />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           isFetching={false}

@@ -1,5 +1,7 @@
 import {RootState} from "@/app/types"
+import {apiSliceWithDocuments} from "@/features/document/apiSlice"
 import {PanelMode} from "@/types"
+import type {DocumentType} from "./types"
 
 export const selectCurrentDocumentVersionNumber = (
   state: RootState,
@@ -26,4 +28,22 @@ export const selectSmallImageByPageId = (
 ): string | undefined => {
   const sizes = state.imageObjects.pageIDEntities[page_id]
   return sizes?.sm
+}
+
+export const selectCurrentDoc = (state: RootState, mode: PanelMode) => {
+  let curNode
+  if (mode == "main") {
+    curNode = state.ui.currentNodeMain
+  } else {
+    curNode = state.ui.currentNodeSecondary
+  }
+
+  if (curNode && curNode.ctype == "document") {
+    const docID = curNode.id
+    const result =
+      apiSliceWithDocuments.endpoints.getDocument.select(docID)(state)
+    return result.data as DocumentType
+  }
+
+  return undefined
 }

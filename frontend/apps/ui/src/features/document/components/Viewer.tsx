@@ -48,7 +48,6 @@ export default function Viewer({doc, initialDocVer}: Args) {
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
-
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer: initialDocVer,
@@ -105,6 +104,10 @@ export default function Viewer({doc, initialDocVer}: Args) {
   if (!allPreviewsAreAvailable) {
     return <Loader />
   }
+
+  console.log(
+    `Viewer: initialDocVerID = ${initialDocVer.id} initialDocVerNumber = ${initialDocVer.number}`
+  )
 
   return (
     <div>

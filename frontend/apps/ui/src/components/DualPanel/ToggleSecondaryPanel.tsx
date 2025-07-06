@@ -29,7 +29,6 @@ export default function ToggleSecondaryPanel() {
   const onClick = () => {
     let currentNodeID = nodeID
     let currentCType: CType | undefined = ctype
-
     if (!nodeID) {
       currentNodeID = user.home_folder_id
       currentCType = "folder"

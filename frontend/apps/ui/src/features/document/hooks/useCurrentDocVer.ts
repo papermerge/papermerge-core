@@ -44,7 +44,7 @@ export default function useCurrentDocVer(): ReturnState {
     // be a flicker previous document when user opens viewer
     currentData,
     isFetching,
-    isSuccess = false,
+    isSuccess,
     isError,
     error
   } = useGetDocLastVersionQuery(currentDocumentID ?? skipToken)
@@ -53,11 +53,13 @@ export default function useCurrentDocVer(): ReturnState {
     if (currentData) {
       // set current docVer to the value of docVer
       // return docVer as current one
-      //
-      dispatch(addDocVersion(currentData))
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
+
+      if (!currentDocVerID) {
+        dispatch(addDocVersion(currentData))
+        dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
+      }
     }
-  }, [currentDocVerID, currentDocumentID])
+  }, [currentData, currentDocVerID, currentDocumentID])
 
   const docVer: ClientDocumentVersion | undefined = useMemo(() => {
     if (docVerFromSlice) {
@@ -67,7 +69,7 @@ export default function useCurrentDocVer(): ReturnState {
     } else {
       return undefined
     }
-  }, [isSuccess])
+  }, [currentData, docVerFromSlice, currentDocVerID, currentDocVerID, mode])
 
   return {
     error: undefined,

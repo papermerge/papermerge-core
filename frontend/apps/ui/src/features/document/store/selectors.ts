@@ -1,7 +1,7 @@
 import {RootState} from "@/app/types"
-import {apiSliceWithDocuments} from "@/features/document/apiSlice"
 import {PanelMode} from "@/types"
-import type {DocumentType} from "./types"
+import type {DocumentType} from "../types"
+import {apiSliceWithDocuments} from "./apiSlice"
 
 export const selectCurrentDocumentVersionNumber = (
   state: RootState,

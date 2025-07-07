@@ -1,12 +1,12 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
+import {useApplyPageOpChangesMutation} from "@/features/document/store/apiSlice"
 import {
   pagesReseted,
   selectAllPages,
   selectPagesHaveChanged,
   selectSelectedPages
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 import ExtractPagesModal from "@/features/nodes/components/Commander/NodesCommander/ExtractPagesModal"

@@ -3,7 +3,7 @@ import PanelContext from "@/contexts/PanelContext"
 import {
   selectAllPages,
   selectSelectedPages
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import type {PanelMode} from "@/types"
 import {Button, Group, Modal} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"

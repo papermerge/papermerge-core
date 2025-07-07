@@ -1,13 +1,10 @@
-import { useGetDocVersionsListQuery } from "@/features/document/apiSlice"
-import type { DocVersItem } from "@/features/document/types"
-import { UUID } from "@/types.d/common"
-import { skipToken } from "@reduxjs/toolkit/query"
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import type {
-  DownloadDocumentVersion,
-  I18NDownloadButtonText
-} from "viewer"
+import {useGetDocVersionsListQuery} from "@/features/document/store/apiSlice"
+import type {DocVersItem} from "@/features/document/types"
+import {UUID} from "@/types.d/common"
+import {skipToken} from "@reduxjs/toolkit/query"
+import {useEffect, useState} from "react"
+import {useTranslation} from "react-i18next"
+import type {DownloadDocumentVersion, I18NDownloadButtonText} from "viewer"
 
 interface Args {
   initiateListDownload?: boolean

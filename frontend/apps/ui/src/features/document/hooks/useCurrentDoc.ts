@@ -1,4 +1,4 @@
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {selectCurrentDocumentID} from "@/features/ui/uiSlice"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"
 import {skipToken} from "@reduxjs/toolkit/query"

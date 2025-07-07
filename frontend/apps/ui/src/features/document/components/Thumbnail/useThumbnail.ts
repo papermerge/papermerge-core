@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectSelectedPageIDs} from "@/features/document/documentVersSlice"
-import {selectSmallImageByPageId} from "@/features/document/selectors"
+import {selectSelectedPageIDs} from "@/features/document/store/documentVersSlice"
+import {selectSmallImageByPageId} from "@/features/document/store/selectors"
 import {selectDraggedPages} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import type {UUID} from "@/types.d/common"

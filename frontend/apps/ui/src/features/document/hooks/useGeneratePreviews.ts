@@ -1,6 +1,6 @@
 import {useAppDispatch} from "@/app/hooks"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
-import {generatePreviews} from "@/features/document/imageObjectsSlice"
+import {generatePreviews} from "@/features/document/store/imageObjectsSlice"
 import {getDocLastVersion} from "@/features/document/utils"
 import {fileManager} from "@/features/files/fileManager"
 import {ClientDocumentVersion} from "@/types"

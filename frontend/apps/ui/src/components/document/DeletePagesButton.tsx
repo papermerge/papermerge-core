@@ -11,7 +11,7 @@ import {
   pagesDeleted,
   selectAllPages,
   selectSelectedPages
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import {
   selectCurrentDocVerID,
   viewerSelectionCleared

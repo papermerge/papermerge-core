@@ -11,7 +11,7 @@ import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
-import {selectSelectedPages} from "@/features/document/documentVersSlice"
+import {selectSelectedPages} from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"

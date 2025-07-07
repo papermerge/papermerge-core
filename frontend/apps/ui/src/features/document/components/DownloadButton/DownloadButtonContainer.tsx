@@ -1,9 +1,9 @@
-import { useAppDispatch } from "@/app/hooks"
-import { fetchAndDownloadDocument } from "@/features/document/documentDownloadsSlice"
-import { useCurrentNode } from "@/hooks"
-import { UUID } from "@/types.d/common"
-import { useState } from "react"
-import { DownloadButton } from "viewer"
+import {useAppDispatch} from "@/app/hooks"
+import {fetchAndDownloadDocument} from "@/features/document/store/documentDownloadsSlice"
+import {useCurrentNode} from "@/hooks"
+import {UUID} from "@/types.d/common"
+import {useState} from "react"
+import {DownloadButton} from "viewer"
 import useDownloadButton from "./useDownloadButton"
 
 export default function DownloadButtonContainer() {

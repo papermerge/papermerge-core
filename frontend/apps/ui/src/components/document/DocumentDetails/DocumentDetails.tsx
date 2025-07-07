@@ -12,11 +12,8 @@ import {useContext} from "react"
 import {useTranslation} from "react-i18next"
 
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
-import {
-  selectDocumentVersionID,
-  selectDocumentVersionOCRLang
-} from "@/features/document/documentVersSlice"
+import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
+import {selectDocumentVersionOCRLang} from "@/features/document/store/documentVersSlice"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconEdit} from "@tabler/icons-react"
 import classes from "./DocumentDetails.module.css"
@@ -24,9 +21,9 @@ import classes from "./DocumentDetails.module.css"
 import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import type {DocumentType} from "@/features/document/types"
 import {
-  selectCurrentDocVer,
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
@@ -48,8 +45,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
-  const docVerID = useAppSelector(s => selectDocumentVersionID(s, mode))
-  const currentDocVer = useAppSelector(s => selectCurrentDocVer(s, mode))
+  const {docVer} = useCurrentDocVer()
 
   if (!docID || isLoading) {
     return (
@@ -77,14 +73,14 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
           <TextInput
             label={t("common.version_id")}
             readOnly
-            value={docVerID}
-            rightSection={<CopyButton value={docVerID || ""} />}
+            value={docVer?.id}
+            rightSection={<CopyButton value={docVer?.id || ""} />}
           />
           <TextInput
             label={t("common.version_number")}
             readOnly
-            value={currentDocVer?.number}
-            rightSection={<CopyButton value={docVerID || ""} />}
+            value={docVer?.number}
+            rightSection={<CopyButton value={docVer?.number || ""} />}
           />
 
           <TextInput

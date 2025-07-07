@@ -8,8 +8,8 @@ import {
   createSlice,
   PayloadAction
 } from "@reduxjs/toolkit"
-import type {BasicPage, GeneratePreviewInputType} from "./types"
-import {getDocLastVersion, rotateImageObjectURL} from "./utils"
+import type {BasicPage, GeneratePreviewInputType} from "../types"
+import {getDocLastVersion, rotateImageObjectURL} from "../utils"
 
 export type PageIDEntitiesState = {
   [pageID: string]: {

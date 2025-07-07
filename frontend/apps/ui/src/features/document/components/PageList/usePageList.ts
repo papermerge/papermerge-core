@@ -3,7 +3,7 @@ import type {ImageSize} from "@/types.d/common"
 import {RefObject} from "react"
 
 import usePageLoader from "@/features/document/hooks/usePageLoader"
-import {selectClientPagesWithPreviews} from "@/features/document/imageObjectsSlice"
+import {selectClientPagesWithPreviews} from "@/features/document/store/imageObjectsSlice"
 import type {ClientPage} from "@/types"
 import type {UUID} from "@/types.d/common"
 import useCurrentPageNumber from "../../hooks/useCurrentPageNumber"

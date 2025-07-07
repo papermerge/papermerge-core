@@ -1,13 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {useGetDocLastVersionQuery} from "@/features/document/apiSlice"
+import {useGetDocLastVersionQuery} from "@/features/document/store"
+import {selectLatestDocVerByDocID} from "@/features/document/store/docsSlice"
 import {
   addDocVersion,
   selectDocVerByID
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import {
   currentDocVerUpdated,
-  selectCurrentDocumentID,
-  selectCurrentDocVerID
+  selectCurrentDocumentID
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ClientDocumentVersion} from "@/types"
@@ -35,9 +35,11 @@ export default function useCurrentDocVer(): ReturnState {
   const currentDocumentID = useAppSelector(s =>
     selectCurrentDocumentID(s, mode)
   )
-  const currentDocVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const latestDocVerID = useAppSelector(s =>
+    selectLatestDocVerByDocID(s, currentDocumentID)
+  )
   const docVerFromSlice = useAppSelector(s =>
-    selectDocVerByID(s, currentDocVerID)
+    selectDocVerByID(s, latestDocVerID)
   )
   const {
     // should be `currentData` here not `data`, otherwise there will
@@ -54,12 +56,12 @@ export default function useCurrentDocVer(): ReturnState {
       // set current docVer to the value of docVer
       // return docVer as current one
 
-      if (!currentDocVerID) {
+      if (!latestDocVerID) {
         dispatch(addDocVersion(currentData))
         dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
       }
     }
-  }, [currentData, currentDocVerID, currentDocumentID])
+  }, [currentData, latestDocVerID, currentDocumentID])
 
   const docVer: ClientDocumentVersion | undefined = useMemo(() => {
     if (docVerFromSlice) {
@@ -69,7 +71,7 @@ export default function useCurrentDocVer(): ReturnState {
     } else {
       return undefined
     }
-  }, [currentData, docVerFromSlice, currentDocVerID, currentDocVerID, mode])
+  }, [currentData, docVerFromSlice, latestDocVerID, latestDocVerID, mode])
 
   return {
     error: undefined,

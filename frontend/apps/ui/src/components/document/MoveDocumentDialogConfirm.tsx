@@ -1,7 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import Error from "@/components/Error"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentQuery} from "@/features/document/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {
   useGetFolderQuery,
   useMoveNodesMutation

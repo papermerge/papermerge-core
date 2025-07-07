@@ -12,8 +12,9 @@ import {
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation,
   useUpdateDocumentTypeMutation
-} from "@/features/document/apiSlice"
-import type {CFV, DocumentType} from "@/types"
+} from "@/features/document/store/apiSlice"
+import type {DocumentType} from "@/features/document/types"
+import type {CFV} from "@/types"
 import {
   Button,
   ComboboxItem,

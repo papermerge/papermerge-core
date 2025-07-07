@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocsByTypeQuery} from "@/features/document/apiSlice"
+import {useGetDocsByTypeQuery} from "@/features/document/store/apiSlice"
 import {
   commanderLastPageSizeUpdated,
   documentsByTypeCommanderColumnsUpdated,
@@ -26,9 +26,9 @@ import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
 import {useContext, useEffect, useState} from "react"
 import classes from "./TableSort.module.css"
 
+import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
 import DocumentRow from "./DocumentRow"
-import {useTranslation} from "react-i18next"
 
 export default function DocumentsByCategoryCommander() {
   const {t} = useTranslation()

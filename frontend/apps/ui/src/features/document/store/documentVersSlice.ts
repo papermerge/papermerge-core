@@ -16,13 +16,13 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
-import {apiSliceWithDocuments} from "./apiSlice"
 import {
   DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
   DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-} from "./constants"
-import type {DocumentType, DocumentVersion} from "./types"
-import {clientDVFromDV} from "./utils"
+} from "../constants"
+import type {DocumentType, DocumentVersion} from "../types"
+import {clientDVFromDV} from "../utils"
+import {apiSliceWithDocuments} from "./apiSlice"
 
 interface PaginationUpdated {
   pageNumber: number

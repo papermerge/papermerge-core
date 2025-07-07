@@ -7,7 +7,7 @@ import {
   pagesReseted,
   selectAllPages,
   selectPagesHaveChanged
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 
 import {
   selectCurrentDocVerID,

@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectCurrentDoc} from "@/features/document/selectors"
+import {selectCurrentDoc} from "@/features/document/store/selectors"
 import {DocumentType} from "@/features/document/types"
 
 import {usePanelMode} from "@/hooks"

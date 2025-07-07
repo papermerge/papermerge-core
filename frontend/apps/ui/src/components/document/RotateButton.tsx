@@ -3,7 +3,7 @@ import PanelContext from "@/contexts/PanelContext"
 import {
   pagesRotated,
   selectSelectedPages
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import {selectCurrentDocVerID} from "@/features/ui/uiSlice"
 import {PanelMode} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"

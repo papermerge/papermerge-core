@@ -1,7 +1,8 @@
 import {RootState} from "@/app/types"
-import {apiSliceWithDocuments} from "@/features/document/apiSlice" // make sure this exports your API slice
-import {addClientDocVersion} from "@/features/document/documentVersSlice"
-import {rotateAndAddImageObjects} from "@/features/document/imageObjectsSlice"
+import {apiSliceWithDocuments} from "@/features/document/store/apiSlice" // make sure this exports your API slice
+import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
+import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
+import {rotateAndAddImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {DocumentVersion} from "@/features/document/types"
 import {clientDVFromDV} from "@/features/document/utils"
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
@@ -63,6 +64,14 @@ export const applyPageChangesThunk = createAsyncThunk<
 
   dispatch(addClientDocVersion(ver))
   dispatch(currentDocVerUpdated({mode: mode, docVerID: lastVersion.id}))
+  const docSliceEntity: DocSliceEntity = {
+    id: lastVersion.document_id,
+    latestDocVer: {
+      docVerID: lastVersion.id,
+      number: lastVersion.number
+    }
+  }
+  dispatch(upsertDoc(docSliceEntity))
 
   dispatch(
     apiSliceWithDocuments.util.invalidateTags([

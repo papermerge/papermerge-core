@@ -33,7 +33,7 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
   const pagesHaveChanged = useAppSelector(
     makeSelectPagesHaveChanged(docVer?.id)
   )
-  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const pages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
   const visibility = useAppSelector(
     selectViewerPagesHaveChangedDialogVisibility
   )

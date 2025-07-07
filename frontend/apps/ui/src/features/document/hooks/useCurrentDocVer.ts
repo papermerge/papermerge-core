@@ -58,8 +58,8 @@ export default function useCurrentDocVer(): ReturnState {
 
       if (!latestDocVerID) {
         dispatch(addDocVersion(currentData))
-        dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
       }
+      dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
     }
   }, [currentData, latestDocVerID, currentDocumentID])
 

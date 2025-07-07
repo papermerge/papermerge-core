@@ -2,9 +2,9 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {useApplyPageOpChangesMutation} from "@/features/document/store/apiSlice"
 import {
+  makeSelectPagesHaveChanged,
   pagesReseted,
   selectAllPages,
-  selectPagesHaveChanged,
   selectSelectedPages
 } from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
@@ -91,8 +91,8 @@ export default function ContextMenu({
   const refRotateButton = useRef<HTMLButtonElement>(null)
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
-  const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const pagesHaveChanged = useAppSelector(makeSelectPagesHaveChanged(docVerID))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
   const otherPanelComponent = useAppSelector(s =>

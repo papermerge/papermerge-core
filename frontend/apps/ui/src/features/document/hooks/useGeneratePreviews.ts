@@ -35,7 +35,13 @@ export default function useGeneratePreviews({
       }
 
       if (!allPreviewsAreAvailable) {
+        console.log(
+          `useGeneratePreviews: just before checking with file manager`
+        )
         if (!fileManager.getByDocVerID(docVer.id)) {
+          console.log(
+            `useGeneratePreviews: downloading file for docVer.id=${docVer.id}`
+          )
           const {
             ok,
             data,
@@ -52,6 +58,9 @@ export default function useGeneratePreviews({
             return
           }
         }
+        console.log(
+          `useGeneratePreviews: download docVer.id=${docVer.id} COMEPLETE`
+        )
         dispatch(
           generatePreviews({
             docVer,

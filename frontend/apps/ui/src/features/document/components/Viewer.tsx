@@ -94,15 +94,15 @@ export default function Viewer() {
   }, [])
 
   if (!doc) {
-    return <Loader />
+    return <Loader type="oval" />
   }
 
   if (!docVer) {
-    return <Loader />
+    return <Loader type="dots" />
   }
 
   if (!allPreviewsAreAvailable) {
-    return <Loader />
+    return <Loader type="bars" />
   }
 
   return (

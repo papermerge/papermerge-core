@@ -3,7 +3,7 @@ import {useEffect, useState} from "react"
 import {
   useExtractPagesMutation,
   useGetDocumentQuery
-} from "@/features/document/apiSlice"
+} from "@/features/document/store/apiSlice"
 import type {
   ClientPage,
   ExtractPagesResponse,

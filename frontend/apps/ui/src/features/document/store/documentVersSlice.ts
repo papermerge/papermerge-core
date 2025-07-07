@@ -16,13 +16,13 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
-import {apiSliceWithDocuments} from "./apiSlice"
 import {
   DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
   DOC_VER_PAGINATION_THUMBNAIL_BATCH_SIZE
-} from "./constants"
-import type {DocumentType, DocumentVersion} from "./types"
-import {clientDVFromDV} from "./utils"
+} from "../constants"
+import type {DocumentType, DocumentVersion} from "../types"
+import {clientDVFromDV} from "../utils"
+import {apiSliceWithDocuments} from "./apiSlice"
 
 interface PaginationUpdated {
   pageNumber: number
@@ -164,6 +164,11 @@ const docVersSlice = createSlice({
       action: PayloadAction<ClientDocumentVersion>
     ) => {
       docVerAdapter.addOne(state, action.payload)
+    },
+    addDocVersion: (state, action: PayloadAction<DocumentVersion>) => {
+      const dv = action.payload
+      const cdv = clientDVFromDV(dv)
+      docVerAdapter.addOne(state, cdv)
     }
   },
   extraReducers(builder) {
@@ -224,7 +229,8 @@ export const {
   documentMovedNotifReceived,
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated,
-  addClientDocVersion
+  addClientDocVersion,
+  addDocVersion
 } = docVersSlice.actions
 export default docVersSlice.reducer
 
@@ -233,7 +239,7 @@ export const selectDocVerByID = (state: RootState, docVerID?: string) => {
     return state.docVers.entities[docVerID]
   }
 
-  return null
+  return undefined
 }
 
 export const {selectEntities: selectDocVerEntities} =
@@ -247,30 +253,17 @@ export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
   return []
 })
 
-export const selectAllPages = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    const docVerID = state.ui.mainViewerCurrentDocVerID
-    if (docVerID) {
-      const docVer = state.docVers.entities[docVerID]
-      if (docVer) {
-        return docVer.pages
-      } else {
-        //console.log(`doc ver undefined`)
-      }
-    } else {
-      //console.log(`docVerID not undefined`)
-    }
+export const selectAllPages = (state: RootState, docVerID?: UUID) => {
+  if (!docVerID) {
+    return []
   }
 
-  if (mode == "secondary") {
-    const docVerID = state.ui.secondaryViewerCurrentDocVerID
-    if (docVerID) {
-      const docVer = state.docVers.entities[docVerID]
-      if (docVer) {
-        return docVer.pages
-      }
-    }
+  const docVer = state.docVers.entities[docVerID]
+  if (!docVer) {
+    return []
   }
+
+  return docVer.pages || []
 }
 
 export const selectDocumentVersionOCRLang = (
@@ -318,72 +311,53 @@ export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
   }
 }
 
-export const selectSelectedPages = createSelector(
-  [selectAllPages, selectSelectedPageIDs],
-  (pages, pageIDs) => {
-    if (pages) {
+export const makeSelectSelectedPages = (mode: PanelMode, docVerID?: UUID) =>
+  createSelector(
+    [
+      (state: RootState) => selectAllPages(state, docVerID),
+      (state: RootState) => selectSelectedPageIDs(state, mode)
+    ],
+    (pages, pageIDs) => {
       return pages.filter(p => pageIDs?.includes(p.id))
     }
-  }
-)
+  )
 
 export const selectInitialPages = (
   state: RootState,
-  mode: PanelMode
-): Array<ClientPage> | undefined => {
-  if (mode == "main") {
-    const curDocVerID = state.ui.mainViewerCurrentDocVerID
-    if (curDocVerID) {
-      if (state.docVers.entities[curDocVerID]) {
-        return state.docVers.entities[curDocVerID].initial_pages
-      }
-    }
+  docVerID?: UUID
+): ClientPage[] => {
+  if (!docVerID) {
+    return []
   }
-  if (mode == "secondary") {
-    const curDocVerID = state.ui.secondaryViewerCurrentDocVerID
-    if (curDocVerID) {
-      if (state.docVers.entities[curDocVerID]) {
-        return state.docVers.entities[curDocVerID].initial_pages
-      }
-    }
+
+  if (state.docVers.entities[docVerID]) {
+    return state.docVers.entities[docVerID].initial_pages || []
   }
+
+  return []
 }
 
-export const selectPagesHaveChanged = createSelector(
-  [selectInitialPages, selectAllPages],
-  (
-    initialPages: Array<ClientPage> | undefined,
-    currentPages: Array<ClientPage> | undefined
-  ): boolean => {
-    if (!initialPages) {
+export const makeSelectPagesHaveChanged = (docVerID?: UUID) =>
+  createSelector(
+    [
+      (state: RootState) => selectInitialPages(state, docVerID),
+      (state: RootState) => selectAllPages(state, docVerID)
+    ],
+    (initialPages: ClientPage[], currentPages: ClientPage[]): boolean => {
+      if (initialPages.length !== currentPages.length) return true
+
+      for (let i = 0; i < initialPages.length; i++) {
+        const a = initialPages[i]
+        const b = currentPages[i]
+
+        if (a.id !== b.id || a.number !== b.number || a.angle !== b.angle) {
+          return true
+        }
+      }
+
       return false
     }
-
-    if (!currentPages) {
-      return false
-    }
-
-    if (initialPages?.length != currentPages?.length) {
-      return true
-    }
-
-    for (let i = 0; i < (initialPages?.length || 0); i++) {
-      if (initialPages[i].id != currentPages[i].id) {
-        return true
-      }
-
-      if (initialPages[i].number != currentPages[i].number) {
-        return true
-      }
-
-      if (initialPages[i].angle != currentPages[i].angle) {
-        return true
-      }
-    }
-
-    return false
-  }
-)
+  )
 
 export const selectDocVerPaginationPageNumber = (
   state: RootState,

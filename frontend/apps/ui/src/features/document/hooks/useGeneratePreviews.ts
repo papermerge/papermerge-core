@@ -1,15 +1,14 @@
 import {useAppDispatch} from "@/app/hooks"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
-import {generatePreviews} from "@/features/document/imageObjectsSlice"
+import {generatePreviews} from "@/features/document/store/imageObjectsSlice"
 import {getDocLastVersion} from "@/features/document/utils"
 import {fileManager} from "@/features/files/fileManager"
 import {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"
 import {useEffect} from "react"
-import {DocumentVersion} from "../types"
 
 interface Args {
-  docVer: ClientDocumentVersion | DocumentVersion
+  docVer?: ClientDocumentVersion
   pageNumber: number
   pageSize: number
   imageSize: ImageSize
@@ -31,8 +30,18 @@ export default function useGeneratePreviews({
 
   useEffect(() => {
     const generate = async () => {
+      if (!docVer) {
+        return
+      }
+
       if (!allPreviewsAreAvailable) {
+        console.log(
+          `useGeneratePreviews: just before checking with file manager`
+        )
         if (!fileManager.getByDocVerID(docVer.id)) {
+          console.log(
+            `useGeneratePreviews: downloading file for docVer.id=${docVer.id}`
+          )
           const {
             ok,
             data,
@@ -49,6 +58,9 @@ export default function useGeneratePreviews({
             return
           }
         }
+        console.log(
+          `useGeneratePreviews: download docVer.id=${docVer.id} COMEPLETE`
+        )
         dispatch(
           generatePreviews({
             docVer,

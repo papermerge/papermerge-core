@@ -1042,6 +1042,20 @@ export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {
   return state.ui.currentNodeSecondary?.ctype
 }
 
+export const selectCurrentDocumentID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    const node = state.ui.currentNodeMain
+    if (node?.ctype == "document") {
+      return node.id
+    }
+  }
+
+  const node = state.ui.currentNodeSecondary
+  if (node?.ctype == "document") {
+    return node.id
+  }
+}
+
 export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.ui.mainPanelComponent

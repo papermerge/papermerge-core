@@ -8,8 +8,8 @@ import {IconEye} from "@tabler/icons-react"
 import {forwardRef, useContext} from "react"
 
 import type {PanelMode} from "@/types"
-import {RunOCRModal} from "./RunOCRModal"
 import {useTranslation} from "react-i18next"
+import {RunOCRModal} from "./RunOCRModal"
 
 interface Args {
   hidden?: boolean

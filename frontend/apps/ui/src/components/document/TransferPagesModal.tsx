@@ -1,9 +1,10 @@
 import Error from "@/components/Error"
-import {useMovePagesMutation} from "@/features/document/apiSlice"
+import {useMovePagesMutation} from "@/features/document/store/apiSlice"
 import {Button, ComboboxItem, Group, Loader, Modal, Select} from "@mantine/core"
 import {useState} from "react"
 
-import type {DocumentType, ServerErrorType, TransferStrategyType} from "@/types"
+import type {DocumentType} from "@/features/document/types"
+import type {ServerErrorType, TransferStrategyType} from "@/types"
 import {useTranslation} from "react-i18next"
 
 interface Args {

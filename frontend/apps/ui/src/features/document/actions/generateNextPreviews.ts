@@ -6,12 +6,12 @@ import {
 import {
   docVerPaginationUpdated,
   docVerThumbnailsPaginationUpdated
-} from "@/features/document/documentVersSlice"
+} from "@/features/document/store/documentVersSlice"
 import {
   generatePreviews,
   markGeneratingPreviewsBegin,
   markGeneratingPreviewsEnd
-} from "@/features/document/imageObjectsSlice"
+} from "@/features/document/store/imageObjectsSlice"
 
 import {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"

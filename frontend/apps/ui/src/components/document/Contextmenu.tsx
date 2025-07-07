@@ -1,12 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useApplyPageOpChangesMutation} from "@/features/document/apiSlice"
+import {useCurrentDocVer} from "@/features/document/hooks"
+import {useApplyPageOpChangesMutation} from "@/features/document/store/apiSlice"
 import {
+  makeSelectPagesHaveChanged,
+  makeSelectSelectedPages,
   pagesReseted,
-  selectAllPages,
-  selectPagesHaveChanged,
-  selectSelectedPages
-} from "@/features/document/documentVersSlice"
+  selectAllPages
+} from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
 import ExtractPagesModal from "@/features/nodes/components/Commander/NodesCommander/ExtractPagesModal"
@@ -85,14 +86,16 @@ export default function ContextMenu({
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const {docVer} = useCurrentDocVer()
+  const selectedPages =
+    useAppSelector(makeSelectSelectedPages(mode, docVer?.id)) || []
   const hasSelectedPages = selectedPages && selectedPages.length > 0
   const refEditTitleButton = useRef<HTMLButtonElement>(null)
   const refRotateButton = useRef<HTMLButtonElement>(null)
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
-  const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
+  const pagesHaveChanged = useAppSelector(makeSelectPagesHaveChanged(docVerID))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
   const otherPanelComponent = useAppSelector(s =>

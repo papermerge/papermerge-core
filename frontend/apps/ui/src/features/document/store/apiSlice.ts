@@ -16,9 +16,9 @@ import {
 } from "@/types"
 import {getRemoteUserID, getWSURL} from "@/utils"
 
+import type {DocVersList, PagesType} from "@/features/document/types"
 import {DocumentType, DocumentVersion} from "@/features/document/types"
 import {documentMovedNotifReceived} from "./documentVersSlice"
-import type {DocVersList, PagesType} from "./types"
 
 type ApplyPagesType = {
   documentID: string

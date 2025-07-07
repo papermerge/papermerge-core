@@ -4,13 +4,12 @@ import {useTranslation} from "react-i18next"
 
 import PanelContext from "@/contexts/PanelContext"
 import {
+  makeSelectPagesHaveChanged,
   pagesReseted,
-  selectAllPages,
-  selectPagesHaveChanged
-} from "@/features/document/documentVersSlice"
+  selectAllPages
+} from "@/features/document/store/documentVersSlice"
 
 import {
-  selectCurrentDocVerID,
   selectViewerPagesHaveChangedDialogVisibility,
   viewerPageHaveChangedDialogVisibilityChanged
 } from "@/features/ui/uiSlice"
@@ -18,6 +17,7 @@ import {PanelMode} from "@/types"
 import type {I18NPagesHaveChangedDialogText} from "viewer"
 import {PagesHaveChangedDialog} from "viewer"
 import {applyPageChangesThunk} from "../actions/applyPageOpChanges"
+import {useCurrentDocVer} from "../hooks"
 
 interface Args {
   docID: string
@@ -29,9 +29,11 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
   const [dontBotherMe, setDontBotherMe] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
-  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
-  const pagesHaveChanged = useAppSelector(s => selectPagesHaveChanged(s, mode))
-  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const {docVer} = useCurrentDocVer()
+  const pagesHaveChanged = useAppSelector(
+    makeSelectPagesHaveChanged(docVer?.id)
+  )
+  const pages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
   const visibility = useAppSelector(
     selectViewerPagesHaveChangedDialogVisibility
   )
@@ -55,7 +57,9 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
   }
 
   const onReset = () => {
-    dispatch(pagesReseted(docVerID!))
+    if (docVer) {
+      dispatch(pagesReseted(docVer.id))
+    }
   }
 
   const onClose = () => {

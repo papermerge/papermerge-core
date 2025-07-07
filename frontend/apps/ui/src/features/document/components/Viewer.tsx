@@ -1,5 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-
+import {useCurrentDoc} from "@/features/document/hooks"
 import {Flex, Group, Loader} from "@mantine/core"
 import {useContext, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
@@ -17,7 +17,7 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import {DocumentType, DocumentVersion} from "@/features/document/types"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
@@ -32,25 +32,23 @@ import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
-interface Args {
-  doc: DocumentType
-  initialDocVer: DocumentVersion
-}
-
-export default function Viewer({doc, initialDocVer}: Args) {
+export default function Viewer() {
   const ref = useRef<HTMLDivElement>(null)
   const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
   const [opened, {open, close}] = useDisclosure()
   const mode: PanelMode = useContext(PanelContext)
   const height = useAppSelector(s => selectContentHeight(s, mode))
+
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
+  const {doc} = useCurrentDoc()
+  const {docVer} = useCurrentDocVer()
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
-    docVer: initialDocVer,
+    docVer: docVer,
     pageNumber: 1,
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
@@ -95,19 +93,17 @@ export default function Viewer({doc, initialDocVer}: Args) {
     }
   }, [])
 
-  useEffect(() => {
-    if (initialDocVer) {
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: initialDocVer.id}))
-    }
-  }, [initialDocVer])
-
-  if (!allPreviewsAreAvailable) {
-    return <Loader />
+  if (!doc) {
+    return <Loader type="oval" />
   }
 
-  console.log(
-    `Viewer: initialDocVerID = ${initialDocVer.id} initialDocVerNumber = ${initialDocVer.number}`
-  )
+  if (!docVer) {
+    return <Loader type="dots" />
+  }
+
+  if (!allPreviewsAreAvailable) {
+    return <Loader type="bars" />
+  }
 
   return (
     <div>
@@ -120,7 +116,7 @@ export default function Viewer({doc, initialDocVer}: Args) {
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />
-        <DocumentDetails doc={doc} docID={doc.id} isLoading={false} />
+        <DocumentDetails doc={doc} docID={doc?.id} isLoading={false} />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           isFetching={false}

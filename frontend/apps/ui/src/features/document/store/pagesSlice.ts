@@ -1,6 +1,7 @@
 import {RootState} from "@/app/types"
+import type {DocumentType} from "@/features/document/types"
 import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
-import type {DocumentType, PageType} from "@/types"
+import type {PageType} from "@/types"
 import {PayloadAction, createEntityAdapter, createSlice} from "@reduxjs/toolkit"
 
 const pageAdapter = createEntityAdapter<PageType>()

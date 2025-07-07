@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {selectDocVerPaginationPageNumber} from "@/features/document/documentVersSlice"
-import {selectIsGeneratingPreviews} from "@/features/document/imageObjectsSlice"
+import {selectDocVerPaginationPageNumber} from "@/features/document/store/documentVersSlice"
+import {selectIsGeneratingPreviews} from "@/features/document/store/imageObjectsSlice"
 
 import Zoom from "@/components/document/Zoom"
 import {generateNextPreviews} from "@/features/document/actions"
@@ -16,7 +16,7 @@ import Page from "../Page"
 import usePageList from "./usePageList"
 
 export default function PageListContainer() {
-  const docVer = useCurrentDocVer()
+  const {docVer} = useCurrentDocVer()
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))

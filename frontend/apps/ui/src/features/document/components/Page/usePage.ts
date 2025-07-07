@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {selectBestImageByPageId} from "@/features/document/selectors"
+import {selectBestImageByPageId} from "@/features/document/store/selectors"
 import {
   selectDocumentCurrentPage,
   selectZoomFactor

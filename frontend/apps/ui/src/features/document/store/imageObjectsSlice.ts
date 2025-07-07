@@ -8,8 +8,8 @@ import {
   createSlice,
   PayloadAction
 } from "@reduxjs/toolkit"
-import type {BasicPage, GeneratePreviewInputType} from "./types"
-import {getDocLastVersion, rotateImageObjectURL} from "./utils"
+import type {BasicPage, GeneratePreviewInputType} from "../types"
+import {getDocLastVersion, rotateImageObjectURL} from "../utils"
 
 export type PageIDEntitiesState = {
   [pageID: string]: {
@@ -90,7 +90,7 @@ export const generatePreviews = createAsyncThunk<
       }
     }
   }
-
+  console.log(`generatePreviews: generating previews START`)
   const file = new File([fileItem.buffer], "filename.pdf", {
     type: "application/pdf"
   })
@@ -124,7 +124,7 @@ export const generatePreviews = createAsyncThunk<
       })
     }
   }
-
+  console.log(`generatePreviews: generating previews END`)
   return result
 })
 

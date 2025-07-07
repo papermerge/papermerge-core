@@ -1,9 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {
-  selectAllPages,
-  selectSelectedPages
-} from "@/features/document/documentVersSlice"
+  makeSelectSelectedPages,
+  selectAllPages
+} from "@/features/document/store/documentVersSlice"
 import type {PanelMode} from "@/types"
 import {Button, Group, Modal} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
@@ -16,7 +17,9 @@ export const PageOCRDialog = ({onClose, opened}: Args) => {
   /* Show OCRed text of one or multiple pages */
   const ref = useRef<HTMLButtonElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const {docVer} = useCurrentDocVer()
+  const selectedPages =
+    useAppSelector(makeSelectSelectedPages(mode, docVer?.id)) || []
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
 
   useEffect(() => {

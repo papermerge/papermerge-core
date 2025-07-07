@@ -1,12 +1,12 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import { useGetDocumentQuery } from "@/features/document/apiSlice"
+import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {
+  makeSelectSelectedPages,
   pagesDroppedInDoc,
   selectCurrentPages,
-  selectDocVerClientPage,
-  selectSelectedPages
-} from "@/features/document/documentVersSlice"
+  selectDocVerClientPage
+} from "@/features/document/store/documentVersSlice"
 import {
   dragEnded,
   dragPagesStarted,
@@ -16,19 +16,19 @@ import {
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
-import { useCurrentNode, usePanelMode } from "@/hooks"
-import type { UUID } from "@/types.d/common"
-import { useDisclosure } from "@mantine/hooks"
-import { skipToken } from "@reduxjs/toolkit/query"
-import { Thumbnail } from "viewer"
+import {useCurrentNode, usePanelMode} from "@/hooks"
+import type {UUID} from "@/types.d/common"
+import {useDisclosure} from "@mantine/hooks"
+import {skipToken} from "@reduxjs/toolkit/query"
+import {Thumbnail} from "viewer"
 
 import {
   viewerSelectionPageAdded,
   viewerSelectionPageRemoved
 } from "@/features/ui/uiSlice"
-import type { DroppedThumbnailPosition } from "@/types"
+import type {DroppedThumbnailPosition} from "@/types"
 
-import { contains_every } from "@/utils"
+import {contains_every} from "@/utils"
 import TransferPagesModal from "../../../../components/document/TransferPagesModal"
 import useThumbnail from "./useThumbnail"
 
@@ -70,7 +70,8 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const selectedPages =
+    useAppSelector(makeSelectSelectedPages(mode, docVerID)) || []
   const page = useAppSelector(s =>
     selectDocVerClientPage(s, {docVerID, pageID})
   )

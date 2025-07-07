@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectAreAllPreviewsAvailable} from "@/features/document/imageObjectsSlice"
+import {selectAreAllPreviewsAvailable} from "@/features/document/store/imageObjectsSlice"
 import type {BasicPage, DocumentVersion} from "@/features/document/types"
 import type {ClientDocumentVersion} from "@/types"
 import {ImageSize} from "@/types.d/common"

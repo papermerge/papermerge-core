@@ -11,7 +11,8 @@ import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
-import {selectSelectedPages} from "@/features/document/store/documentVersSlice"
+import {useCurrentDocVer} from "@/features/document/hooks"
+import {makeSelectSelectedPages} from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
@@ -28,7 +29,10 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode = useContext(PanelContext)
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const {docVer} = useCurrentDocVer()
+  const selectedPages = useAppSelector(
+    makeSelectSelectedPages(mode, docVer?.id)
+  )
   const runtimeConfig = useRuntimeConfig()
 
   useEffect(() => {

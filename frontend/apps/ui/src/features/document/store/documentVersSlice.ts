@@ -311,14 +311,16 @@ export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
   }
 }
 
-export const selectSelectedPages = createSelector(
-  [selectAllPages, selectSelectedPageIDs],
-  (pages, pageIDs) => {
-    if (pages) {
+export const makeSelectSelectedPages = (mode: PanelMode, docVerID?: UUID) =>
+  createSelector(
+    [
+      (state: RootState) => selectAllPages(state, docVerID),
+      (state: RootState) => selectSelectedPageIDs(state, mode)
+    ],
+    (pages, pageIDs) => {
       return pages.filter(p => pageIDs?.includes(p.id))
     }
-  }
-)
+  )
 
 export const selectInitialPages = (
   state: RootState,

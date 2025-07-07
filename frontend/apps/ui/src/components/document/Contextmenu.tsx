@@ -1,11 +1,12 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {useApplyPageOpChangesMutation} from "@/features/document/store/apiSlice"
 import {
   makeSelectPagesHaveChanged,
+  makeSelectSelectedPages,
   pagesReseted,
-  selectAllPages,
-  selectSelectedPages
+  selectAllPages
 } from "@/features/document/store/documentVersSlice"
 import type {DocumentType} from "@/features/document/types"
 import {useGetFolderQuery} from "@/features/nodes/apiSlice"
@@ -85,7 +86,9 @@ export default function ContextMenu({
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
-  const selectedPages = useAppSelector(s => selectSelectedPages(s, mode)) || []
+  const {docVer} = useCurrentDocVer()
+  const selectedPages =
+    useAppSelector(makeSelectSelectedPages(mode, docVer?.id)) || []
   const hasSelectedPages = selectedPages && selectedPages.length > 0
   const refEditTitleButton = useRef<HTMLButtonElement>(null)
   const refRotateButton = useRef<HTMLButtonElement>(null)

@@ -90,41 +90,46 @@ export const generatePreviews = createAsyncThunk<
       }
     }
   }
-  console.log(`generatePreviews: generating previews START`)
+
   const file = new File([fileItem.buffer], "filename.pdf", {
     type: "application/pdf"
   })
 
-  const firstPage = (item.pageNumber - 1) * item.pageSize + 1
+  const firstPage = (item.pageNumber - 1) * item.pageSize
   const lastPage = Math.min(firstPage + item.pageSize, item.pageTotal)
+  const sortedPages = item.docVer.pages
+    .slice()
+    .sort((a, b) => a.number - b.number)
 
-  for (let pNum = firstPage; pNum <= lastPage; pNum++) {
+  const sortedPagesTotal = sortedPages.length
+
+  for (let pIndex = firstPage; pIndex < lastPage; pIndex++) {
+    if (pIndex >= sortedPagesTotal) {
+      console.error(`Page index ${pIndex} out of bound: ${sortedPagesTotal}`)
+      return {
+        items: [],
+        error: `Page index ${pIndex} out of bound: ${sortedPagesTotal}`
+      }
+    }
+    const page = sortedPages[pIndex]
     const objectURL = await util_pdf_generatePreview({
       file: file,
       width,
-      pageNumber: pNum
+      pageNumber: page.number
     })
-
-    const page = item.docVer.pages.find(p => p.number == pNum)
-    if (!page) {
-      return {
-        items: [],
-        error: `page number ${pNum} not found in pages`
-      }
-    }
 
     if (objectURL) {
       result.items.push({
         pageID: page.id,
         docID: item.docVer.document_id,
         docVerID: item.docVer.id,
-        pageNumber: pNum,
+        pageNumber: page.number,
         objectURL: objectURL,
         size: item.size
       })
     }
   }
-  console.log(`generatePreviews: generating previews END`)
+
   return result
 })
 

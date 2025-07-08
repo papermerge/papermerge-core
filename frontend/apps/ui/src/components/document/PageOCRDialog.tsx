@@ -1,10 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useCurrentDocVer} from "@/features/document/hooks"
-import {
-  makeSelectSelectedPages,
-  selectAllPages
-} from "@/features/document/store/documentVersSlice"
+import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
+import {selectAllPages} from "@/features/document/store/documentVersSlice"
 import type {PanelMode} from "@/types"
 import {Button, Group, Modal} from "@mantine/core"
 import {useContext, useEffect, useRef} from "react"
@@ -18,8 +15,8 @@ export const PageOCRDialog = ({onClose, opened}: Args) => {
   const ref = useRef<HTMLButtonElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const {docVer} = useCurrentDocVer()
-  const selectedPages =
-    useAppSelector(makeSelectSelectedPages(mode, docVer?.id)) || []
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+
   const pages = useAppSelector(s => selectAllPages(s, mode)) || []
 
   useEffect(() => {

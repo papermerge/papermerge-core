@@ -1,10 +1,7 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAppDispatch} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useCurrentDocVer} from "@/features/document/hooks"
-import {
-  makeSelectSelectedPages,
-  pagesRotated
-} from "@/features/document/store/documentVersSlice"
+import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
+import {pagesRotated} from "@/features/document/store/documentVersSlice"
 import {PanelMode} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconRotate} from "@tabler/icons-react"
@@ -19,9 +16,8 @@ const RotateCCButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const {docVer} = useCurrentDocVer()
-  const selectedPages = useAppSelector(
-    makeSelectSelectedPages(mode, docVer?.id)
-  )
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+
   const onClick = () => {
     dispatch(
       pagesRotated({

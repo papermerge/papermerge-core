@@ -18,10 +18,15 @@ function getPagesToCheck(
   docVer?: ClientDocumentVersion | DocumentVersion
 ): Array<BasicPage> {
   const result: Array<BasicPage> = []
+  const sortedPages = docVer?.pages.slice().sort((a, b) => a.number - b.number)
+  const totalPageCount = docVer?.pages.length
 
   const first = pageSize * (pageNumber - 1) + 1
-  const totalPageCount = docVer?.pages.length
   let last = pageSize * pageNumber
+
+  if (!sortedPages) {
+    return []
+  }
 
   if (!totalPageCount) {
     return []
@@ -36,7 +41,7 @@ function getPagesToCheck(
   }
 
   for (let i = first; i <= last; i++) {
-    result.push(docVer.pages[i - 1])
+    result.push(sortedPages[i - 1])
   }
 
   return result

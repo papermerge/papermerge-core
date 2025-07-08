@@ -8,7 +8,6 @@ import {IconTrash} from "@tabler/icons-react"
 import {useNavigate} from "react-router-dom"
 
 import {
-  makeSelectSelectedPages,
   pagesDeleted,
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
@@ -16,7 +15,7 @@ import {viewerSelectionCleared} from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 
 import PanelContext from "@/contexts/PanelContext"
-import {useCurrentDocVer} from "@/features/document/hooks"
+import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 
 interface Args {
@@ -31,10 +30,8 @@ const DeleteButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const {docVer} = useCurrentDocVer()
-  const selectedPages = useAppSelector(
-    makeSelectSelectedPages(mode, docVer?.id)
-  )
-  const allPages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+  const allPages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
 
   const onClick = () => {
     if (selectedPages.length == allPages.length) {

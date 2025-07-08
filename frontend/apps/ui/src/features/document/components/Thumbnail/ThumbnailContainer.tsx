@@ -1,8 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
+import {useSelectedPages} from "@/features/document/hooks"
 import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {
-  makeSelectSelectedPages,
   pagesDroppedInDoc,
   selectCurrentPages,
   selectDocVerClientPage
@@ -70,8 +70,7 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
-  const selectedPages =
-    useAppSelector(makeSelectSelectedPages(mode, docVerID)) || []
+  const selectedPages = useSelectedPages({mode, docVerID})
   const page = useAppSelector(s =>
     selectDocVerClientPage(s, {docVerID, pageID})
   )

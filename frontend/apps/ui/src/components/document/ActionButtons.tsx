@@ -1,4 +1,4 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAppDispatch} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
 import {updateActionPanel} from "@/features/ui/uiSlice"
@@ -11,8 +11,7 @@ import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
-import {useCurrentDocVer} from "@/features/document/hooks"
-import {makeSelectSelectedPages} from "@/features/document/store/documentVersSlice"
+import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
 import type {DocumentType} from "@/features/document/types"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
@@ -30,9 +29,7 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   const ref = useRef<HTMLDivElement>(null)
   const mode = useContext(PanelContext)
   const {docVer} = useCurrentDocVer()
-  const selectedPages = useAppSelector(
-    makeSelectSelectedPages(mode, docVer?.id)
-  )
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
   const runtimeConfig = useRuntimeConfig()
 
   useEffect(() => {

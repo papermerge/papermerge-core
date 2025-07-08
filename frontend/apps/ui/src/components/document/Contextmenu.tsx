@@ -1,10 +1,12 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useCurrentDocVer} from "@/features/document/hooks"
+import {
+  useCurrentDocVer,
+  usePagesHaveChanged,
+  useSelectedPages
+} from "@/features/document/hooks"
 import {useApplyPageOpChangesMutation} from "@/features/document/store/apiSlice"
 import {
-  makeSelectPagesHaveChanged,
-  makeSelectSelectedPages,
   pagesReseted,
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
@@ -87,17 +89,17 @@ export default function ContextMenu({
   const navigate = useNavigate()
   const user = useAppSelector(selectCurrentUser)
   const {docVer} = useCurrentDocVer()
-  const selectedPages =
-    useAppSelector(makeSelectSelectedPages(mode, docVer?.id)) || []
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+
   const hasSelectedPages = selectedPages && selectedPages.length > 0
   const refEditTitleButton = useRef<HTMLButtonElement>(null)
   const refRotateButton = useRef<HTMLButtonElement>(null)
   const refRotateCCButton = useRef<HTMLButtonElement>(null)
   const refDeletePagesButton = useRef<HTMLButtonElement>(null)
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
-  const pagesHaveChanged = useAppSelector(makeSelectPagesHaveChanged(docVerID))
+  const pagesHaveChanged = usePagesHaveChanged(docVerID)
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
-  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const pages = useAppSelector(s => selectAllPages(s, docVerID)) || []
   const otherPanelComponent = useAppSelector(s =>
     selectOtherPanelComponent(s, mode)
   )

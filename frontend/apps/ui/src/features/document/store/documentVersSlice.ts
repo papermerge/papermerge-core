@@ -24,6 +24,8 @@ import type {DocumentType, DocumentVersion} from "../types"
 import {clientDVFromDV} from "../utils"
 import {apiSliceWithDocuments} from "./apiSlice"
 
+const EMPTY_ARRAY: any[] = []
+
 interface PaginationUpdated {
   pageNumber: number
   pageSize: number
@@ -255,15 +257,12 @@ export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
 
 export const selectAllPages = (state: RootState, docVerID?: UUID) => {
   if (!docVerID) {
-    return []
+    return EMPTY_ARRAY
   }
 
   const docVer = state.docVers.entities[docVerID]
-  if (!docVer) {
-    return []
-  }
 
-  return docVer.pages || []
+  return docVer?.pages ?? EMPTY_ARRAY
 }
 
 export const selectDocumentVersionOCRLang = (
@@ -327,14 +326,14 @@ export const selectInitialPages = (
   docVerID?: UUID
 ): ClientPage[] => {
   if (!docVerID) {
-    return []
+    return EMPTY_ARRAY
   }
 
   if (state.docVers.entities[docVerID]) {
-    return state.docVers.entities[docVerID].initial_pages || []
+    return state.docVers.entities[docVerID].initial_pages || EMPTY_ARRAY
   }
 
-  return []
+  return EMPTY_ARRAY
 }
 
 export const makeSelectPagesHaveChanged = (docVerID?: UUID) =>

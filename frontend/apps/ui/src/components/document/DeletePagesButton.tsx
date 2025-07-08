@@ -31,7 +31,7 @@ const DeleteButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const dispatch = useAppDispatch()
   const {docVer} = useCurrentDocVer()
   const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
-  const allPages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const allPages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
 
   const onClick = () => {
     if (selectedPages.length == allPages.length) {

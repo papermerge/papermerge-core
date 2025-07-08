@@ -96,7 +96,7 @@ export default function ContextMenu({
   const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
   const pagesHaveChanged = useAppSelector(makeSelectPagesHaveChanged(docVerID))
   const [applyPageOpChanges] = useApplyPageOpChangesMutation()
-  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const pages = useAppSelector(s => selectAllPages(s, docVerID)) || []
   const otherPanelComponent = useAppSelector(s =>
     selectOtherPanelComponent(s, mode)
   )

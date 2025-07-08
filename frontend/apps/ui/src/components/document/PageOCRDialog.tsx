@@ -16,8 +16,7 @@ export const PageOCRDialog = ({onClose, opened}: Args) => {
   const mode: PanelMode = useContext(PanelContext)
   const {docVer} = useCurrentDocVer()
   const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
-
-  const pages = useAppSelector(s => selectAllPages(s, mode)) || []
+  const pages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
 
   useEffect(() => {
     // handle "enter" keyboard press

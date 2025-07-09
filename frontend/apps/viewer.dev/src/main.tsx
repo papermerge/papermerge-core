@@ -10,6 +10,7 @@ import OneThumbnail from "./pages/OneThumbnail"
 import PageListPage from "./pages/PageList"
 import PagesHaveChangedDialog from "./pages/PagesHaveChangedDialog"
 import ThumbnailListPage from "./pages/ThumbnailList"
+import TransferPagesModalPage from "./pages/TransferPagesModal"
 import TwoPages from "./pages/TwoPages"
 
 createRoot(document.getElementById("root")!).render(
@@ -27,6 +28,10 @@ createRoot(document.getElementById("root")!).render(
             <Route
               path="pages-have-changed-dialog"
               element={<PagesHaveChangedDialog />}
+            />
+            <Route
+              path="transfer-pages-modal"
+              element={<TransferPagesModalPage />}
             />
           </Route>
         </Routes>

@@ -13,6 +13,14 @@
     "dontBotherMe": "Lass mich in Ruhe",
     "dontBotherMeTooltip": "Diesen Modal schließen. Änderungen kannst du später über das Kontextmenü übernehmen"
   },
+  "transferPagesDialog": {
+    "title": "Ausgewählte Seiten übertragen",
+    "yesTransfer": "Ja, übertrage die Seiten",
+    "mixLabel": "Seiten mischen",
+    "replaceLabel": "Seiten ersetzen",
+    "mainBodyText": "Möchtest du Seiten in das Document {{targetTitle}} übertragen?",
+    "strategyLabel": "Transferstrategie"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

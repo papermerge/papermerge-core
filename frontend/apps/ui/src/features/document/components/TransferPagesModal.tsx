@@ -1,11 +1,11 @@
-import Error from "@/components/Error"
 import {useMovePagesMutation} from "@/features/document/store/apiSlice"
-import {Button, ComboboxItem, Group, Loader, Modal, Select} from "@mantine/core"
-import {useState} from "react"
+import {ComboboxItem} from "@mantine/core"
+import {useEffect, useState} from "react"
 
 import type {DocumentType} from "@/features/document/types"
 import type {ServerErrorType, TransferStrategyType} from "@/types"
 import {useTranslation} from "react-i18next"
+import {TransferPagesModal, type I18NTransferPagesModal} from "viewer"
 
 interface Args {
   sourceDocID: string
@@ -18,7 +18,7 @@ interface Args {
   onSubmit: () => void
 }
 
-export default function TransferPagesModal({
+export default function TransferPagesModalContainer({
   opened,
   onCancel,
   onSubmit,
@@ -28,7 +28,7 @@ export default function TransferPagesModal({
   targetPageID,
   sourcePageIDs
 }: Args) {
-  const {t} = useTranslation()
+  const txt = useI18nText(targetDoc.title)
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
   const [movePages, {isLoading}] = useMovePagesMutation()
@@ -60,30 +60,40 @@ export default function TransferPagesModal({
   }
 
   return (
-    <Modal title={"Transfer Selected Pages"} opened={opened} onClose={onCancel}>
-      Do you want to transfer selected pages to
-      {targetDoc.title}?
-      <Select
-        data={[
-          {value: "mix", label: "Mix"},
-          {value: "replace", label: "Replace"}
-        ]}
-        label="Strategy"
-        value={value ? value.value : "mix"}
-        onChange={(_value, option) => setValue(option)}
-      />
-      {error && <Error message={error} />}
-      <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onCancel}>
-          {t("common.cancel")}
-        </Button>
-        <Group>
-          {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onTransferPages}>
-            Yes, transfer
-          </Button>
-        </Group>
-      </Group>
-    </Modal>
+    <TransferPagesModal
+      txt={txt}
+      opened={opened}
+      value={value}
+      inProgress={isLoading}
+      onTransfer={onTransferPages}
+      error={error}
+      onCancel={onCancel}
+      onChange={(_value, option) => setValue(option)}
+    />
   )
+}
+
+function useI18nText(targetTitle: string): I18NTransferPagesModal | undefined {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NTransferPagesModal>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        title: t("transferPagesDialog.title"),
+        yesTransfer: t("transferPagesDialog.yesTransfer"),
+        cancel: t("common.cancel"),
+        mixLabel: t("transferPagesDialog.mixLabel"),
+        replaceLabel: t("transferPagesDialog.replaceLabel"),
+        mainBodyText: t("transferPagesDialog.mainBodyText", {
+          targetTitle: targetTitle
+        }),
+        strategyLabel: t("transferPagesDialog.strategyLabel")
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized, t])
+
+  return txt
 }

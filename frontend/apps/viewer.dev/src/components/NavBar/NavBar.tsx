@@ -26,6 +26,9 @@ export default function Navbar() {
         <NavLink to="/pages-have-changed-dialog" end>
           &lt;PagesHaveChangedDialog /&gt;
         </NavLink>
+        <NavLink to="/transfer-pages-modal" end>
+          &lt;TransferPagesModal /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

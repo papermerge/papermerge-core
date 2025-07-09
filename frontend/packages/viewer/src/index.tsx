@@ -10,6 +10,8 @@ import PagesHaveChangedDialog, {
 } from "./components/PagesHaveChangedDialog"
 import Thumbnail from "./components/Thumbnail"
 import ThumbnailList from "./components/ThumbnailList"
+import type {I18NTransferPagesModal} from "./components/TransferPagesModal"
+import TransferPagesModal from "./components/TransferPagesModal"
 import Zoom from "./components/Zoom"
 
 export {
@@ -19,10 +21,12 @@ export {
   PagesHaveChangedDialog,
   Thumbnail,
   ThumbnailList,
+  TransferPagesModal,
   Zoom
 }
 export type {
   DownloadDocumentVersion,
   I18NDownloadButtonText,
-  I18NPagesHaveChangedDialogText
+  I18NPagesHaveChangedDialogText,
+  I18NTransferPagesModal
 }

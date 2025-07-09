@@ -13,6 +13,14 @@
     "dontBotherMe": "Don't bother me",
     "dontBotherMeTooltip": "Close this dialog. You can apply changes later from the context menu"
   },
+  "transferPagesDialog": {
+    "title": "Transfer Selected Pages",
+    "yesTransfer": "Yes, transfer",
+    "mixLabel": "Mix",
+    "replaceLabel": "Replace",
+    "mainBodyText": "Do you want to transfer selected pages to {{targetTitle}}?",
+    "strategyLabel": "Strategy"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

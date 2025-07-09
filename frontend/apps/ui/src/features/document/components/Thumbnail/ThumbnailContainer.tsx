@@ -28,7 +28,7 @@ import {
 } from "@/features/ui/uiSlice"
 import type {DroppedThumbnailPosition} from "@/types"
 
-import TransferPagesModal from "@/components/document/TransferPagesModal"
+import TransferPagesModal from "@/features/document/components/TransferPagesModal"
 import {contains_every} from "@/utils"
 import useThumbnail from "./useThumbnail"
 

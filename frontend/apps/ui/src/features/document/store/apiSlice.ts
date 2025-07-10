@@ -3,17 +3,13 @@ import {apiSlice} from "@/features/api/slice"
 import type {
   DocumentCFV,
   ExtractPagesResponse,
+  MovePagesReturnType,
   Paginated,
   ServerNotifDocumentMoved,
   ServerNotifPayload,
   ServerNotifType
 } from "@/types"
-import {
-  CFV,
-  ExtractStrategyType,
-  OrderType,
-  TransferStrategyType
-} from "@/types"
+import {CFV, ExtractStrategyType, MovePagesType, OrderType} from "@/types"
 import {getRemoteUserID, getWSURL} from "@/utils"
 
 import type {DocVersList, PagesType} from "@/features/document/types"
@@ -23,17 +19,6 @@ import {documentMovedNotifReceived} from "./documentVersSlice"
 type ApplyPagesType = {
   documentID: string
   pages: PagesType[]
-}
-
-type MovePagesType = {
-  body: {
-    source_page_ids: string[]
-    target_page_id: string
-    move_strategy: TransferStrategyType
-  }
-  sourceDocID: string
-  targetDocID: string
-  sourceDocParentID: string
 }
 
 type ExtractPagesType = {
@@ -161,7 +146,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         {type: "Document", id: arg.documentID}
       ]
     }),
-    movePages: builder.mutation<void, MovePagesType>({
+    movePages: builder.mutation<MovePagesReturnType, MovePagesType>({
       query: data => ({
         url: "/pages/move",
         method: "POST",

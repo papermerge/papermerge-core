@@ -3,6 +3,7 @@ import {ComboboxItem} from "@mantine/core"
 import {useEffect, useState} from "react"
 
 import type {DocumentType} from "@/features/document/types"
+import {usePanelMode} from "@/hooks"
 import type {ServerErrorType, TransferStrategyType} from "@/types"
 import {useTranslation} from "react-i18next"
 import {TransferPagesModal, type I18NTransferPagesModal} from "viewer"
@@ -29,6 +30,7 @@ export default function TransferPagesModalContainer({
   sourcePageIDs
 }: Args) {
   const txt = useI18nText(targetDoc.title)
+  const mode = usePanelMode()
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
   const [movePages, {isLoading}] = useMovePagesMutation()

@@ -5,17 +5,22 @@ import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {DocumentVersion} from "@/features/document/types"
 import {clientDVFromDV} from "@/features/document/utils"
-import {currentDocVerUpdated} from "@/features/ui/uiSlice"
+import {currentDocVerUpdated, secondaryPanelClosed} from "@/features/ui/uiSlice"
 import type {MovePagesType, PanelMode} from "@/types"
 import {TransferStrategyType} from "@/types"
 import {UUID} from "@/types.d/common"
 import {t} from "@/utils/i18nHelper"
 import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
+import type {NavigateFunction} from "react-router-dom"
 
 export const transferPages = createAsyncThunk<
   void, // return type
-  {movePagesData: MovePagesType; sourceMode: PanelMode}, // argument type
+  {
+    movePagesData: MovePagesType
+    sourceMode: PanelMode
+    navigate: NavigateFunction
+  }, // argument type
   {state: RootState} // thunkAPI config
 >("document/transferPages", async (inputArgs, {dispatch, getState}) => {
   const state = getState()
@@ -89,6 +94,31 @@ export const transferPages = createAsyncThunk<
       }),
       autoClose: 4000
     })
+  } else {
+    // source is None, which means all pages from the
+    // source were transfered
+    if (inputArgs.sourceMode == "main") {
+      // page dropped in "main" panel.
+      // Because in secondary panel there is a document which just got deleted,
+      // thus we just close this panel
+      dispatch(secondaryPanelClosed())
+    } else {
+      // Page dropped in "secondary" panel
+      // In this we change to main panel whatever was in secondary
+      // i.e. document from the secondary panel will be displayed
+      // in main
+      inputArgs.navigate(`/document/${inputArgs.movePagesData.targetDocID}`)
+      // and because secondary panel contains a document which just got deleted,
+      // we close it
+      dispatch(secondaryPanelClosed())
+    }
+    // invalidate
+    dispatch(
+      apiSliceWithDocuments.util.invalidateTags([
+        {type: "Node", id: inputArgs.movePagesData.sourceDocParentID}
+      ])
+    )
+    // ...existing code...
   }
 
   if (!lastVersionTarget?.pages) {

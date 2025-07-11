@@ -319,8 +319,9 @@ def move_pages_mix(
         _dst_doc = dst_new_version.document
 
         db_session.execute(
-            delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
+            delete(orm.Node).where(orm.Node.id == src_old_version.document.id)
         )
+        db_session.commit()
 
         return None, _dst_doc
 

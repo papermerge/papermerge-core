@@ -7,6 +7,7 @@ import type {DocumentType} from "@/features/document/types"
 import {usePanelMode} from "@/hooks"
 import type {ServerErrorType, TransferStrategyType} from "@/types"
 import {useTranslation} from "react-i18next"
+import {useNavigate} from "react-router"
 import {TransferPagesModal, type I18NTransferPagesModal} from "viewer"
 
 interface Args {
@@ -31,6 +32,7 @@ export default function TransferPagesModalContainer({
   sourcePageIDs
 }: Args) {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const txt = useI18nText(targetDoc.title)
   const mode = usePanelMode()
   const [value, setValue] = useState<ComboboxItem | null>(null)
@@ -52,7 +54,9 @@ export default function TransferPagesModalContainer({
 
     try {
       setInProgress(true)
-      await dispatch(transferPages({movePagesData: data, sourceMode: mode}))
+      await dispatch(
+        transferPages({movePagesData: data, sourceMode: mode, navigate})
+      )
       onSubmit()
       reset()
       setInProgress(false)

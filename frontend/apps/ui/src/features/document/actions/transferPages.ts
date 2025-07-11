@@ -19,6 +19,7 @@ export const transferPages = createAsyncThunk<
   {state: RootState} // thunkAPI config
 >("document/transferPages", async (inputArgs, {dispatch, getState}) => {
   const state = getState()
+
   const sourcePageData = getSourceOrderedPageIDs({
     docID: inputArgs.movePagesData.sourceDocID,
     movedOutPageIDs: inputArgs.movePagesData.body.source_page_ids,
@@ -28,6 +29,7 @@ export const transferPages = createAsyncThunk<
     docID: inputArgs.movePagesData.targetDocID,
     movedInPageIDs: inputArgs.movePagesData.body.source_page_ids,
     strategy: inputArgs.movePagesData.body.move_strategy,
+    targetPageID: inputArgs.movePagesData.body.target_page_id,
     state
   })
   const result = await dispatch(
@@ -45,8 +47,6 @@ export const transferPages = createAsyncThunk<
   let {source, target} = result.data
   let lastVersionSource = getLastVersion(source?.versions)
   let lastVersionTarget = getLastVersion(target.versions)
-
-  let dstUpdates = []
 
   if (lastVersionSource) {
     const srcUpdates = lastVersionSource.pages.map(lastVerPage => {
@@ -90,6 +90,52 @@ export const transferPages = createAsyncThunk<
       autoClose: 4000
     })
   }
+
+  if (!lastVersionTarget?.pages) {
+    console.error("transferPages: lastVersionTarget.pages is empty")
+    return
+  }
+
+  const dstUpdates = lastVersionTarget?.pages.map(lastVerPage => {
+    const oldPageID = targetPageData[lastVerPage.number - 1]
+    return {
+      newPageID: lastVerPage.id,
+      newPageNumber: lastVerPage.number,
+      oldPageID: oldPageID,
+      angle: 0,
+      docVerID: lastVersionTarget.id,
+      docID: lastVersionTarget.document_id
+    }
+  })
+  dispatch(addImageObjects({updates: dstUpdates}))
+  let ver = clientDVFromDV(lastVersionTarget)
+  dispatch(addClientDocVersion(ver))
+  dispatch(
+    currentDocVerUpdated({
+      mode: otherMode(inputArgs.sourceMode),
+      docVerID: lastVersionTarget.id
+    })
+  )
+  const docSliceEntity: DocSliceEntity = {
+    id: lastVersionTarget.document_id,
+    latestDocVer: {
+      docVerID: lastVersionTarget.id,
+      number: lastVersionTarget.number
+    }
+  }
+  dispatch(upsertDoc(docSliceEntity))
+  dispatch(
+    apiSliceWithDocuments.util.invalidateTags([
+      {type: "DocVersList", id: lastVersionTarget.document_id}
+    ])
+  )
+  notifications.show({
+    withBorder: true,
+    message: t("documentVersion.was-created", {
+      versionNumber: lastVersionTarget.number
+    }),
+    autoClose: 4000
+  })
 })
 
 function getLastVersion(
@@ -106,6 +152,14 @@ function getLastVersion(
   return docVers.reduce((latest, current) =>
     current.number > latest.number ? current : latest
   )
+}
+
+function otherMode(mode: PanelMode): PanelMode {
+  if (mode == "main") {
+    return "secondary"
+  }
+
+  return "main"
 }
 
 interface GetSourceOldPageID {
@@ -142,6 +196,7 @@ function getSourceOrderedPageIDs({
 interface GetTargetOrderedPageIDs {
   docID: UUID
   movedInPageIDs: UUID[]
+  targetPageID: UUID
   strategy: TransferStrategyType
   state: RootState
 }
@@ -149,6 +204,7 @@ interface GetTargetOrderedPageIDs {
 function getTargetOrderedPageIDs({
   docID,
   movedInPageIDs,
+  targetPageID,
   strategy,
   state
 }: GetTargetOrderedPageIDs): UUID[] {
@@ -170,7 +226,21 @@ function getTargetOrderedPageIDs({
 
   const pagesSortedByNumber = pages.slice().sort((a, b) => a.number - b.number)
   const origPageIDs = pagesSortedByNumber.map(p => p.id)
-  const origPagesPlusMovedInPages = [...movedInPageIDs, ...origPageIDs]
+  let targetPageIndex = pagesSortedByNumber.findIndex(p => p.id == targetPageID)
+
+  if (targetPageIndex < 0) {
+    // fallback
+    targetPageIndex = 0
+    console.warn("getTargetOrderedPageIDs: falling back to targetPageIndex=0")
+  }
+
+  const firstPart = origPageIDs.slice(0, targetPageIndex - 1)
+  const secondPart = origPageIDs.slice(targetPageIndex)
+  const origPagesPlusMovedInPages = [
+    ...firstPart,
+    ...movedInPageIDs,
+    ...secondPart
+  ]
 
   return origPagesPlusMovedInPages
 }

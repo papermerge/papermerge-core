@@ -173,14 +173,15 @@ def insert_pdf_pages(
     if dst_old is None:
         # "replace" strategy
         dst_old_pdf = Pdf.new()
-        dst_position = 0
+        dst_position = 1
     else:
         dst_old_pdf = Pdf.open(dst_old)
 
     _inserted_count = 0
     for page_number in src_page_numbers:
         pdf_page = src_old_pdf.pages.p(page_number)
-        dst_old_pdf.pages.insert(dst_position + _inserted_count, pdf_page)
+        # dst_position starts with 1 while pdf.pages.insert is zero indexed
+        dst_old_pdf.pages.insert(dst_position + _inserted_count - 1, pdf_page)
         _inserted_count += 1
 
     dst_new.parent.mkdir(parents=True, exist_ok=True)

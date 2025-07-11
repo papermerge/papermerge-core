@@ -30,6 +30,7 @@ export default function TransferPagesModal({
   opened,
   onCancel,
   onChange,
+  onTransfer,
   error
 }: Args) {
   return (
@@ -61,6 +62,7 @@ export default function TransferPagesModal({
           <SubmitButton
             inProgress={inProgress}
             text={txt?.yesTransfer || "Yes, transfer"}
+            onClick={onTransfer}
           />
         </Group>
       </Group>

@@ -1,7 +1,8 @@
-import {useMovePagesMutation} from "@/features/document/store/apiSlice"
 import {ComboboxItem} from "@mantine/core"
 import {useEffect, useState} from "react"
 
+import {useAppDispatch} from "@/app/hooks"
+import {transferPages} from "@/features/document/actions/transferPages"
 import type {DocumentType} from "@/features/document/types"
 import {usePanelMode} from "@/hooks"
 import type {ServerErrorType, TransferStrategyType} from "@/types"
@@ -29,11 +30,12 @@ export default function TransferPagesModalContainer({
   targetPageID,
   sourcePageIDs
 }: Args) {
+  const dispatch = useAppDispatch()
   const txt = useI18nText(targetDoc.title)
   const mode = usePanelMode()
   const [value, setValue] = useState<ComboboxItem | null>(null)
   const [error, setError] = useState("")
-  const [movePages, {isLoading}] = useMovePagesMutation()
+  const [inProgress, setInProgress] = useState<boolean>(false)
 
   const onTransferPages = async () => {
     const transferStrategy = (value?.value || "mix") as TransferStrategyType
@@ -47,10 +49,13 @@ export default function TransferPagesModalContainer({
       sourceDocParentID: sourceDocParentID,
       targetDocID: targetDoc.id
     }
+
     try {
-      await movePages(data)
+      setInProgress(true)
+      await dispatch(transferPages({movePagesData: data, sourceMode: mode}))
       onSubmit()
       reset()
+      setInProgress(false)
     } catch (e: unknown) {
       const err = e as ServerErrorType
       setError(err.data.detail)
@@ -66,7 +71,7 @@ export default function TransferPagesModalContainer({
       txt={txt}
       opened={opened}
       value={value}
-      inProgress={isLoading}
+      inProgress={inProgress}
       onTransfer={onTransferPages}
       error={error}
       onCancel={onCancel}

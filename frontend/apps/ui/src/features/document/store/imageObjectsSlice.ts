@@ -56,6 +56,16 @@ type ReturnType = {
   items: ReturnTypeItem[]
 }
 
+interface Updates {
+  updates: {
+    newPageID: string
+    newPageNumber: number
+    oldPageID: string
+    docVerID: string
+    docID: string
+  }[]
+}
+
 export const generatePreviews = createAsyncThunk<
   ReturnType,
   GeneratePreviewInputType
@@ -146,7 +156,6 @@ export const rotateAndAddImageObjects = createAsyncThunk(
         angle: number
         docVerID: string
         docID: string
-        number: number
       }[]
     },
     {getState}
@@ -157,7 +166,6 @@ export const rotateAndAddImageObjects = createAsyncThunk(
       newPageNumber: number
       docVerID: string
       docID: string
-      number: number
       rotated: {
         sm?: string
         md?: string
@@ -172,8 +180,7 @@ export const rotateAndAddImageObjects = createAsyncThunk(
       oldPageID,
       angle,
       docVerID,
-      docID,
-      number
+      docID
     } of updates) {
       const oldImage = state.imageObjects.pageIDEntities[oldPageID]
       if (!oldImage) continue
@@ -196,7 +203,6 @@ export const rotateAndAddImageObjects = createAsyncThunk(
         newPageNumber,
         docVerID,
         docID,
-        number,
         rotated
       })
     }
@@ -271,6 +277,33 @@ const imageObjectsSlice = createSlice({
           isGeneratingXL: false
         }
       }
+    },
+    addImageObjects(state, action: PayloadAction<Updates>) {
+      const updates = action.payload.updates
+      for (const {
+        newPageID,
+        newPageNumber,
+        oldPageID,
+        docVerID,
+        docID
+      } of updates) {
+        const oldImage = state.pageIDEntities[oldPageID]
+        if (!oldImage) continue
+
+        const rotated: any = {}
+
+        const sizes = ["sm", "md", "lg", "xl"] as const
+        for (const size of sizes) {
+          const url = oldImage[size]
+          rotated[size] = url
+        }
+        state.pageIDEntities[newPageID] = {
+          pageNumber: newPageNumber,
+          docVerID,
+          docID,
+          ...rotated
+        }
+      }
     }
   },
   extraReducers: builder => {
@@ -318,8 +351,11 @@ const imageObjectsSlice = createSlice({
 
 export default imageObjectsSlice.reducer
 
-export const {markGeneratingPreviewsBegin, markGeneratingPreviewsEnd} =
-  imageObjectsSlice.actions
+export const {
+  markGeneratingPreviewsBegin,
+  markGeneratingPreviewsEnd,
+  addImageObjects
+} = imageObjectsSlice.actions
 
 export const selectImageObjects = (state: RootState) => state.imageObjects
 

@@ -1,4 +1,5 @@
 import type {Group} from "@/types.d/groups"
+import {DocumentType} from "./features/document/types"
 
 export type State<T> = {
   is_loading: boolean
@@ -482,4 +483,21 @@ export type ServerNotifPayload =
 export type I18nLangType = {
   code: string
   name: string
+}
+/* Used by tranfer pages (from one document
+to another) action */
+export type MovePagesType = {
+  body: {
+    source_page_ids: string[]
+    target_page_id: string
+    move_strategy: TransferStrategyType
+  }
+  sourceDocID: string
+  targetDocID: string
+  sourceDocParentID: string
+}
+
+export type MovePagesReturnType = {
+  source?: DocumentType
+  target: DocumentType
 }

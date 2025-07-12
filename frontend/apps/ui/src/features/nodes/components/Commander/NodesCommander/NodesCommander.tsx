@@ -48,6 +48,10 @@ import {
 import type {ExtractPagesResponse, NType, PanelMode} from "@/types"
 import classes from "./Commander.module.scss"
 
+import {
+  APP_THUMBNAIL_KEY,
+  APP_THUMBNAIL_VALUE
+} from "@/features/document/constants"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
@@ -179,26 +183,15 @@ export default function Commander() {
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    // #1 drop files from local FS into the commander
+    const payloadData = event.dataTransfer.getData(APP_THUMBNAIL_KEY)
+    console.log(`onDrop payloadData${payloadData}`)
+    setDragOver(false)
+
     if (event.dataTransfer.files.length > 0) {
-      // workaround for weird bug BEGIN
-      if (
-        event.dataTransfer.files.length === 1 &&
-        event.dataTransfer.files[0].name === "download.jpg"
-      ) {
-        // bug bug
-        // really weird one - for some unknown to me reason, event.dataTransfer.files
-        // has one entry with (seems to me) completely unrelated file
-        // named 'download.jpg'.
-        // I was able to reproduce this behavior
-        // only in Google Chrome 117.0. For time being let just console
-        // message log that it.
-        // For this weird "file" we of course skip "drop_files" operation
-        console.log("Where is this weird download.jpg is coming from ?")
-        // workaround for weird bug END
-      } else if (event.dataTransfer.files.length > 0) {
+      if (payloadData == APP_THUMBNAIL_VALUE) {
+        // ignore as this is dragging thumbnails from docviewer
+      } else {
         // files dropped from local FS
-        setDragOver(false)
         setUploadFiles(event.dataTransfer.files)
         dropFilesOpen()
         return
@@ -206,12 +199,11 @@ export default function Commander() {
     }
     if (draggedPages && draggedPages?.length > 0) {
       extractPagesOpen()
-      setDragOver(false)
+
       return
     }
     if (draggedNodes && draggedNodes?.length > 0) {
       dropNodesOpen()
-      setDragOver(false)
       return
     }
   }

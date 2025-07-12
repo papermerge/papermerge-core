@@ -40,7 +40,7 @@ export default function ExtractPagesModalContainer({
   const [titleFormat, setTitleFormat] = useState<string>("")
   const [separateDocs, setSeparateDocs] = useState<boolean>(false)
   const [inProgress, setInProgress] = useState<boolean>(false)
-  const txt = useI18nText(targetFolder.title, doc?.title || "")
+  const txt = useI18nText(targetFolder.title, titleFormat)
 
   useEffect(() => {
     if (doc?.title) {
@@ -49,6 +49,7 @@ export default function ExtractPagesModalContainer({
   }, [doc?.title])
 
   const onExtractPages = async () => {
+    debugger
     const multiple_docs: ExtractStrategyType = "one-page-per-doc"
     const one_doc: ExtractStrategyType = "all-pages-in-one-doc"
     const data = {
@@ -98,11 +99,10 @@ export default function ExtractPagesModalContainer({
 
 function useI18nText(
   targetFolderTitle: string,
-  docTitle: string
+  titleFormat: string
 ): I18NExtractPagesModal | undefined {
   const {t, i18n} = useTranslation()
   const [txt, setTxt] = useState<I18NExtractPagesModal>()
-  const docBaseTitle = drop_extension(docTitle)
 
   useEffect(() => {
     if (i18n.isInitialized) {
@@ -115,7 +115,7 @@ function useI18nText(
         }),
         titleFormatLabel: t("extractPagesDialog.titleFormatLabel"),
         titleFormatDescription: t("extractPagesDialog.titleFormatDescription", {
-          docBaseTitle: docBaseTitle
+          docBaseTitle: titleFormat
         }),
         checkboxExtractIntoSeparateDocLabel: t(
           "extractPagesDialog.checkboxExtractIntoSeparateDocLabel"
@@ -124,7 +124,7 @@ function useI18nText(
     } else {
       setTxt(undefined)
     }
-  }, [i18n.isInitialized, t])
+  }, [i18n.isInitialized, t, titleFormat])
 
   return txt
 }

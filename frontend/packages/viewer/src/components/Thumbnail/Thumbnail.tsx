@@ -14,7 +14,7 @@ interface ThumbnailArgs {
   angle?: number
   height?: number
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onDragStart?: () => void
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void
   onDragEnd?: () => void
   onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void
   onDragLeave?: (event: React.DragEvent<HTMLDivElement>) => void

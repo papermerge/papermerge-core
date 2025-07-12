@@ -1,5 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
+import {
+  APP_THUMBNAIL_KEY,
+  APP_THUMBNAIL_VALUE
+} from "@/features/document/constants"
 import {useSelectedPages} from "@/features/document/hooks"
 import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {
@@ -88,7 +92,7 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
     event.preventDefault()
   }
 
-  const onDragStart = () => {
+  const onDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     let pages
 
     if (page) {
@@ -101,12 +105,12 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
       docID: doc!.id,
       docParentID: doc!.parent_id!
     }
-
+    e.dataTransfer.setData(APP_THUMBNAIL_KEY, APP_THUMBNAIL_VALUE)
     dispatch(dragPagesStarted(data))
   }
 
   const onDragEnd = () => {
-    //dispatch(dragPagesEnded())
+    //dispatch(dragEnded())
   }
 
   const onLocalDrop = (event: React.DragEvent<HTMLDivElement>) => {

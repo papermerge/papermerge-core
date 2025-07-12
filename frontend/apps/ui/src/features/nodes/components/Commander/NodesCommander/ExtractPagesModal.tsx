@@ -34,33 +34,19 @@ export default function ExtractPagesModalContainer({
   onSubmit,
   onCancel
 }: ExtractPagesModalArgs) {
-  const {t} = useTranslation()
   const [extractPages, {isLoading}] = useExtractPagesMutation()
   const {currentData: doc} = useGetDocumentQuery(sourceDocID)
   const [errorMessage, setErrorMessage] = useState<string>("")
   const [titleFormat, setTitleFormat] = useState<string>("")
   const [separateDocs, setSeparateDocs] = useState<boolean>(false)
-  const [titleFormatDescription, setTitleFormatDescription] =
-    useState<string>("")
   const [inProgress, setInProgress] = useState<boolean>(false)
-  const txt = useI18nText(doc?.title || "", titleFormatDescription)
+  const txt = useI18nText(targetFolder.title, doc?.title || "")
 
   useEffect(() => {
     if (doc?.title) {
       setTitleFormat(drop_extension(doc.title))
-      setTitleFormatDescription(
-        `Extracted pages will be placed in document(s) with name ${titleFormat}-[ID].pdf`
-      )
     }
   }, [doc?.title])
-
-  useEffect(() => {
-    if (titleFormat) {
-      setTitleFormatDescription(
-        `Extracted pages will be placed in document(s) with title ${titleFormat}-[ID].pdf`
-      )
-    }
-  }, [titleFormat])
 
   const onExtractPages = async () => {
     const multiple_docs: ExtractStrategyType = "one-page-per-doc"
@@ -96,6 +82,10 @@ export default function ExtractPagesModalContainer({
     <ExtractPagesModal
       opened={opened}
       separateDocs={separateDocs}
+      onCheckboxExtractIntoSeparateDocChange={event =>
+        setSeparateDocs(event.currentTarget.checked)
+      }
+      onTitleFormatChange={event => setTitleFormat(event.currentTarget.value)}
       inProgress={inProgress}
       titleFormat={titleFormat}
       txt={txt}
@@ -108,10 +98,11 @@ export default function ExtractPagesModalContainer({
 
 function useI18nText(
   targetFolderTitle: string,
-  pagesTitleFormat: string
+  docTitle: string
 ): I18NExtractPagesModal | undefined {
   const {t, i18n} = useTranslation()
   const [txt, setTxt] = useState<I18NExtractPagesModal>()
+  const docBaseTitle = drop_extension(docTitle)
 
   useEffect(() => {
     if (i18n.isInitialized) {
@@ -120,15 +111,15 @@ function useI18nText(
         yesExtract: t("extractPagesDialog.yesTransfer"),
         cancel: t("common.cancel"),
         mainBodyText: t("extractPagesDialog.mainBodyText", {
-          targetTitle: targetFolderTitle
+          targetFolderTitle: targetFolderTitle
         }),
         titleFormatLabel: t("extractPagesDialog.titleFormatLabel"),
+        titleFormatDescription: t("extractPagesDialog.titleFormatDescription", {
+          docBaseTitle: docBaseTitle
+        }),
         checkboxExtractIntoSeparateDocLabel: t(
           "extractPagesDialog.checkboxExtractIntoSeparateDocLabel"
-        ),
-        titleFormatDescription: t("extractPagesDialog.titleFormatDescription", {
-          titleFormat: pagesTitleFormat
-        })
+        )
       })
     } else {
       setTxt(undefined)

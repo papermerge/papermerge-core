@@ -402,7 +402,7 @@ export interface ServerErrorType {
 }
 
 export interface ExtractPagesResponse {
-  source: null | NodeType
+  source: null | DocumentType
   target: Array<NodeType>
 }
 
@@ -498,6 +498,24 @@ export type MovePagesType = {
 }
 
 export type MovePagesReturnType = {
+  source?: DocumentType
+  target: DocumentType
+}
+
+/* Used by extract pages (from the document
+to commander) action */
+export type ExtractPagesType = {
+  body: {
+    source_page_ids: string[]
+    target_folder_id: string
+    strategy: ExtractStrategyType
+    title_format: string
+  }
+  sourceDocID: string
+  sourceDocParentID: string
+}
+
+export type ExtractPagesReturnType = {
   source?: DocumentType
   target: DocumentType
 }

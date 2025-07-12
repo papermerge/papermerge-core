@@ -12,18 +12,8 @@ import type {
   ServerErrorType
 } from "@/types"
 import {drop_extension} from "@/utils"
-import {
-  Button,
-  Checkbox,
-  Container,
-  Group,
-  Loader,
-  Modal,
-  Space,
-  Text,
-  TextInput
-} from "@mantine/core"
 import {useTranslation} from "react-i18next"
+import {ExtractPagesModal, type I18NExtractPagesModal} from "viewer"
 
 type ExtractPagesModalArgs = {
   sourcePages: ClientPage[]
@@ -35,7 +25,7 @@ type ExtractPagesModalArgs = {
   onCancel: () => void
 }
 
-export default function ExtractPagesModal({
+export default function ExtractPagesModalContainer({
   sourcePages,
   sourceDocID,
   sourceDocParentID,
@@ -44,31 +34,19 @@ export default function ExtractPagesModal({
   onSubmit,
   onCancel
 }: ExtractPagesModalArgs) {
-  const {t} = useTranslation()
   const [extractPages, {isLoading}] = useExtractPagesMutation()
   const {currentData: doc} = useGetDocumentQuery(sourceDocID)
   const [errorMessage, setErrorMessage] = useState<string>("")
   const [titleFormat, setTitleFormat] = useState<string>("")
   const [separateDocs, setSeparateDocs] = useState<boolean>(false)
-  const [titleFormatDescription, setTitleFormatDescription] =
-    useState<string>("")
+  const [inProgress, setInProgress] = useState<boolean>(false)
+  const txt = useI18nText(targetFolder.title, titleFormat)
 
   useEffect(() => {
     if (doc?.title) {
       setTitleFormat(drop_extension(doc.title))
-      setTitleFormatDescription(
-        `Extracted pages will be placed in document(s) with name ${titleFormat}-[ID].pdf`
-      )
     }
   }, [doc?.title])
-
-  useEffect(() => {
-    if (titleFormat) {
-      setTitleFormatDescription(
-        `Extracted pages will be placed in document(s) with title ${titleFormat}-[ID].pdf`
-      )
-    }
-  }, [titleFormat])
 
   const onExtractPages = async () => {
     const multiple_docs: ExtractStrategyType = "one-page-per-doc"
@@ -84,11 +62,14 @@ export default function ExtractPagesModal({
       sourceDocParentID: sourceDocParentID
     }
     try {
+      setInProgress(true)
       const resp = await extractPages(data)
       onSubmit(resp.data)
+      setInProgress(false)
     } catch (e: unknown) {
       const err = e as ServerErrorType
       setErrorMessage(err.data.detail)
+      setInProgress(false)
     }
   }
   const localCancel = () => {
@@ -98,50 +79,51 @@ export default function ExtractPagesModal({
   }
 
   return (
-    <Modal
-      title="Extract Pages"
+    <ExtractPagesModal
       opened={opened}
-      size="lg"
-      onClose={localCancel}
-    >
-      <Container>
-        <Text>
-          Do you want to extract selected pages to folder
-          <Text c="green" px="xs" span>
-            {targetFolder.title}
-          </Text>
-          ?
-        </Text>
-        <TextInput
-          my="md"
-          label="Title Format"
-          rightSectionPointerEvents="none"
-          description={titleFormatDescription}
-          rightSection={".pdf"}
-          value={titleFormat}
-          onChange={event => setTitleFormat(event.currentTarget.value)}
-        />
-        <Checkbox
-          label="Extract each page into separate document"
-          my="md"
-          checked={separateDocs}
-          onChange={event => setSeparateDocs(event.currentTarget.checked)}
-        />
-        {errorMessage}
-        <Space h="md" />
-        <Group gap="lg" justify="space-between">
-          <Button variant="default" onClick={localCancel}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            leftSection={isLoading && <Loader size={"sm"} />}
-            onClick={onExtractPages}
-            disabled={isLoading}
-          >
-            Yes, extract
-          </Button>
-        </Group>
-      </Container>
-    </Modal>
+      separateDocs={separateDocs}
+      onCheckboxExtractIntoSeparateDocChange={event =>
+        setSeparateDocs(event.currentTarget.checked)
+      }
+      onTitleFormatChange={event => setTitleFormat(event.currentTarget.value)}
+      inProgress={inProgress}
+      titleFormat={titleFormat}
+      txt={txt}
+      onCancel={localCancel}
+      onExtract={onExtractPages}
+      error={errorMessage}
+    />
   )
+}
+
+function useI18nText(
+  targetFolderTitle: string,
+  titleFormat: string
+): I18NExtractPagesModal | undefined {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NExtractPagesModal>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        title: t("extractPagesDialog.title"),
+        yesExtract: t("extractPagesDialog.yesTransfer"),
+        cancel: t("common.cancel"),
+        mainBodyText: t("extractPagesDialog.mainBodyText", {
+          targetFolderTitle: targetFolderTitle
+        }),
+        titleFormatLabel: t("extractPagesDialog.titleFormatLabel"),
+        titleFormatDescription: t("extractPagesDialog.titleFormatDescription", {
+          docBaseTitle: titleFormat
+        }),
+        checkboxExtractIntoSeparateDocLabel: t(
+          "extractPagesDialog.checkboxExtractIntoSeparateDocLabel"
+        )
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized, t, titleFormat])
+
+  return txt
 }

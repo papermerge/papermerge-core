@@ -5,6 +5,7 @@ import {BrowserRouter, Route, Routes} from "react-router"
 import AppShell from "./app/AppShell"
 import "./index.css"
 import DownloadButton from "./pages/DownloadButton"
+import ExtractPagesModalPage from "./pages/ExtractPagesModal"
 import OnePage from "./pages/OnePage"
 import OneThumbnail from "./pages/OneThumbnail"
 import PageListPage from "./pages/PageList"
@@ -32,6 +33,10 @@ createRoot(document.getElementById("root")!).render(
             <Route
               path="transfer-pages-modal"
               element={<TransferPagesModalPage />}
+            />
+            <Route
+              path="extract-pages-modal"
+              element={<ExtractPagesModalPage />}
             />
           </Route>
         </Routes>

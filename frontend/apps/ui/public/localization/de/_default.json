@@ -21,6 +21,14 @@
     "mainBodyText": "Möchtest du Seiten in das Document {{targetTitle}} übertragen?",
     "strategyLabel": "Transferstrategie"
   },
+  "extractPagesDialog": {
+    "title": "Seiten extrahieren",
+    "yesTransfer": "Ja, extrahiere die Seiten",
+    "mainBodyText": "Möchtest du die ausgewählten Seiten nach {{targetFolderTitle}} extrahieren?",
+    "titleFormatDescription": "Die extrahierten Seiten werden in Dokument(e) mit dem Titel {{docBaseTitle}}-[ID].pdf gespeichert",
+    "titleFormatLabel": "Titelformat",
+    "checkboxExtractIntoSeparateDocLabel": "Jede Seite in ein separates Dokument extrahieren"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

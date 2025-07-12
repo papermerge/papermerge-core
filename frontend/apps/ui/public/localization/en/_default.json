@@ -21,6 +21,14 @@
     "mainBodyText": "Do you want to transfer selected pages to {{targetTitle}}?",
     "strategyLabel": "Strategy"
   },
+  "extractPagesDialog": {
+    "title": "Extract Selected Pages",
+    "yesTransfer": "Yes, extract",
+    "mainBodyText": "Do you want to extract selected pages to {{targetFolderTitle}}?",
+    "titleFormatDescription": "Extracted pages will be placed in document(s) with name {{docBaseTitle}}-[ID].pdf",
+    "titleFormatLabel": "Title Format",
+    "checkboxExtractIntoSeparateDocLabel": "Extract each page into separate document"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

@@ -3,6 +3,9 @@ import type {
   I18NDownloadButtonText
 } from "./components/DownloadButton"
 import DownloadButton from "./components/DownloadButton/DownloadButton"
+import ExtractPagesModal, {
+  type I18NExtractPagesModal
+} from "./components/ExtractPagesModal"
 import Page from "./components/Page"
 import PageList from "./components/PageList"
 import PagesHaveChangedDialog, {
@@ -16,6 +19,7 @@ import Zoom from "./components/Zoom"
 
 export {
   DownloadButton,
+  ExtractPagesModal,
   Page,
   PageList,
   PagesHaveChangedDialog,
@@ -27,6 +31,7 @@ export {
 export type {
   DownloadDocumentVersion,
   I18NDownloadButtonText,
+  I18NExtractPagesModal,
   I18NPagesHaveChangedDialogText,
   I18NTransferPagesModal
 }

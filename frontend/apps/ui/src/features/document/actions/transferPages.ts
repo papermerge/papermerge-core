@@ -3,7 +3,6 @@ import {apiSliceWithDocuments} from "@/features/document/store/apiSlice" // make
 import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
 import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
-import {DocumentVersion} from "@/features/document/types"
 import {clientDVFromDV} from "@/features/document/utils"
 import {currentDocVerUpdated, secondaryPanelClosed} from "@/features/ui/uiSlice"
 import type {MovePagesType, PanelMode} from "@/types"
@@ -13,6 +12,7 @@ import {t} from "@/utils/i18nHelper"
 import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
 import type {NavigateFunction} from "react-router-dom"
+import {getLastVersion, getSourceOrderedPageIDs} from "./utils"
 
 export const transferPages = createAsyncThunk<
   void, // return type
@@ -112,13 +112,12 @@ export const transferPages = createAsyncThunk<
       // we close it
       dispatch(secondaryPanelClosed())
     }
-    // invalidate
+
     dispatch(
       apiSliceWithDocuments.util.invalidateTags([
         {type: "Node", id: inputArgs.movePagesData.sourceDocParentID}
       ])
     )
-    // ...existing code...
   }
 
   if (!lastVersionTarget?.pages) {
@@ -168,59 +167,12 @@ export const transferPages = createAsyncThunk<
   })
 })
 
-function getLastVersion(
-  docVers?: DocumentVersion[]
-): DocumentVersion | undefined {
-  if (!docVers) {
-    return undefined
-  }
-
-  if (docVers.length === 0) {
-    return undefined
-  }
-
-  return docVers.reduce((latest, current) =>
-    current.number > latest.number ? current : latest
-  )
-}
-
 function otherMode(mode: PanelMode): PanelMode {
   if (mode == "main") {
     return "secondary"
   }
 
   return "main"
-}
-
-interface GetSourceOldPageID {
-  docID: UUID
-  movedOutPageIDs: UUID[]
-  state: RootState
-}
-
-function getSourceOrderedPageIDs({
-  docID,
-  movedOutPageIDs,
-  state
-}: GetSourceOldPageID): UUID[] {
-  const docVerID = state.docs.entities[docID]?.latestDocVer?.docVerID
-  if (!docVerID) {
-    console.error(`getSourcePageID: docVerID=${docVerID}} not found`)
-    return []
-  }
-
-  const pages = state.docVers.entities[docVerID].pages
-  if (!pages) {
-    console.error(`getSourcePageID: empty pages`)
-    return []
-  }
-
-  const pagesSortedByNumber = pages.slice().sort((a, b) => a.number - b.number)
-  const withoutMovedOutPages = pagesSortedByNumber.filter(
-    p => !movedOutPageIDs.includes(p.id)
-  )
-
-  return withoutMovedOutPages.map(p => p.id)
 }
 
 interface GetTargetOrderedPageIDs {

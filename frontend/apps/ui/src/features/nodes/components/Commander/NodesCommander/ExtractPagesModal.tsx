@@ -1,18 +1,17 @@
-import {useEffect, useState} from "react"
-
-import {
-  useExtractPagesMutation,
-  useGetDocumentQuery
-} from "@/features/document/store/apiSlice"
+import {useAppDispatch} from "@/app/hooks"
+import {extractPages} from "@/features/document/actions/extractPages"
+import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
+import {usePanelMode} from "@/hooks"
 import type {
   ClientPage,
-  ExtractPagesResponse,
   ExtractStrategyType,
   FolderType,
   ServerErrorType
 } from "@/types"
 import {drop_extension} from "@/utils"
+import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
+import {useNavigate} from "react-router"
 import {ExtractPagesModal, type I18NExtractPagesModal} from "viewer"
 
 type ExtractPagesModalArgs = {
@@ -21,7 +20,7 @@ type ExtractPagesModalArgs = {
   sourceDocParentID: string
   targetFolder: FolderType
   opened: boolean
-  onSubmit: (resp?: ExtractPagesResponse) => void
+  onSubmit: () => void
   onCancel: () => void
 }
 
@@ -34,7 +33,9 @@ export default function ExtractPagesModalContainer({
   onSubmit,
   onCancel
 }: ExtractPagesModalArgs) {
-  const [extractPages, {isLoading}] = useExtractPagesMutation()
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const mode = usePanelMode()
   const {currentData: doc} = useGetDocumentQuery(sourceDocID)
   const [errorMessage, setErrorMessage] = useState<string>("")
   const [titleFormat, setTitleFormat] = useState<string>("")
@@ -51,6 +52,7 @@ export default function ExtractPagesModalContainer({
   const onExtractPages = async () => {
     const multiple_docs: ExtractStrategyType = "one-page-per-doc"
     const one_doc: ExtractStrategyType = "all-pages-in-one-doc"
+
     const data = {
       body: {
         source_page_ids: sourcePages.map(p => p.id),
@@ -63,8 +65,10 @@ export default function ExtractPagesModalContainer({
     }
     try {
       setInProgress(true)
-      const resp = await extractPages(data)
-      onSubmit(resp.data)
+      await dispatch(
+        extractPages({extractPagesData: data, sourceMode: mode, navigate})
+      )
+      onSubmit()
       setInProgress(false)
     } catch (e: unknown) {
       const err = e as ServerErrorType

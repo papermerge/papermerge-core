@@ -3,9 +3,7 @@ export interface I18NExtractPagesModal {
   titleFormatLabel: string
   yesExtract: string
   cancel: string
-  mixLabel: string
-  replaceLabel: string
   mainBodyText: string
-  strategyLabel: string
   checkboxExtractIntoSeparateDocLabel: string
+  titleFormatDescription: string
 }

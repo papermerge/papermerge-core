@@ -1,15 +1,14 @@
 import {Button, Checkbox, ComboboxItem, Group, Select} from "@mantine/core"
 import {useEffect, useState} from "react"
-import type {I18NTransferPagesModal} from "viewer"
-import {TransferPagesModal} from "viewer"
+import {ExtractPagesModal, type I18NExtractPagesModal} from "viewer"
 
 type Lang = "german" | "english"
 
-export default function TransferPagesModalContainer() {
+export default function ExtractPagesModalContainer() {
   const [inProgress, setInProgress] = useState<boolean>(false)
   const [opened, setOpened] = useState<boolean>(false)
   const [lang, setLang] = useState<Lang>("english")
-  const [txt, setTxt] = useState<I18NTransferPagesModal>()
+  const [txt, setTxt] = useState<I18NExtractPagesModal>()
 
   const InProgressClicked = () => {
     setInProgress(!inProgress)
@@ -24,13 +23,15 @@ export default function TransferPagesModalContainer() {
   useEffect(() => {
     if (lang == "german") {
       setTxt({
-        title: "Ausgewählte Seiten übertragen",
-        yesTransfer: "Ja, übertrage die Seiten",
+        title: "Seiten extrahieren",
+        yesExtract: "Ja, extrahiere die Seiten",
         cancel: "Abrechen",
-        mixLabel: "Seiten mischen",
-        replaceLabel: "Seiten ersetzen",
-        mainBodyText: "Möchtest du Seiten übertragen?",
-        strategyLabel: "Transferstrategie"
+        titleFormatLabel: "Titelformat",
+        mainBodyText: "Möchtest du Seiten extrahiren?",
+        checkboxExtractIntoSeparateDocLabel:
+          "Jede Seite in ein separates Dokument extrahieren",
+        titleFormatDescription:
+          "Die extrahierten Seiten werden in Dokument(e) mit dem Titel mydoc-[ID].pdf gespeichert"
       })
     } else {
       setTxt(undefined)
@@ -39,7 +40,7 @@ export default function TransferPagesModalContainer() {
 
   return (
     <>
-      <Group>Transfer Pages Modal</Group>
+      <Group>Extract Pages Modal</Group>
       <Group>
         <Checkbox label="In Progress" onClick={InProgressClicked} />
         <Button onClick={() => setOpened(true)}>Open</Button>
@@ -51,10 +52,11 @@ export default function TransferPagesModalContainer() {
         />
       </Group>
 
-      <TransferPagesModal
+      <ExtractPagesModal
         opened={opened}
-        value={{value: "mix", label: "Mix"}}
+        separateDocs={true}
         inProgress={inProgress}
+        titleFormat={"mydoc"}
         onCancel={() => setOpened(false)}
         txt={txt}
       />

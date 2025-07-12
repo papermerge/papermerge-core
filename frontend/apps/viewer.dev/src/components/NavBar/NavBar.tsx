@@ -29,6 +29,9 @@ export default function Navbar() {
         <NavLink to="/transfer-pages-modal" end>
           &lt;TransferPagesModal /&gt;
         </NavLink>
+        <NavLink to="/extract-pages-modal" end>
+          &lt;ExtractPagesModal /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

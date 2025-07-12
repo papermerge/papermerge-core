@@ -18,7 +18,6 @@ interface Args {
   inProgress: boolean
   separateDocs: boolean
   titleFormat: string
-  titleFormatDescription: string
   onExtract?: () => void
   onCancel?: () => void
   onTitleFormatChange?: (value: React.ChangeEvent<HTMLInputElement>) => void
@@ -29,14 +28,13 @@ interface Args {
 
 const EmptyFunc = () => {}
 
-export default function TransferPagesModal({
+export default function ExtractPagesModal({
   txt,
   inProgress,
   opened,
   separateDocs,
   onCancel,
   titleFormat,
-  titleFormatDescription,
   onCheckboxExtractIntoSeparateDocChange,
   onTitleFormatChange,
   onExtract,
@@ -57,7 +55,10 @@ export default function TransferPagesModal({
           my="md"
           label={txt?.titleFormatLabel || "Title Format"}
           rightSectionPointerEvents="none"
-          description={titleFormatDescription}
+          description={
+            txt?.titleFormatDescription ||
+            `Extract pages will be extract into ${titleFormat}-[ID].pdf format`
+          }
           rightSection={".pdf"}
           value={titleFormat}
           onChange={onTitleFormatChange}

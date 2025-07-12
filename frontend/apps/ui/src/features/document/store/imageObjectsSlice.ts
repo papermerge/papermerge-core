@@ -473,12 +473,12 @@ function getWidth(size: ImageSize) {
   }
 
   if (size == "md") {
-    return 800
+    return 1300
   }
 
   if (size == "lg") {
-    return 1200
+    return 1600
   }
 
-  return 1600
+  return 1900
 }

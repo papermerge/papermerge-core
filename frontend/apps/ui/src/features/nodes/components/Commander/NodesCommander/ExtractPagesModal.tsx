@@ -49,7 +49,6 @@ export default function ExtractPagesModalContainer({
   }, [doc?.title])
 
   const onExtractPages = async () => {
-    debugger
     const multiple_docs: ExtractStrategyType = "one-page-per-doc"
     const one_doc: ExtractStrategyType = "all-pages-in-one-doc"
     const data = {

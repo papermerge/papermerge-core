@@ -255,15 +255,35 @@ export const selectCurrentPages = createSelector([selectDocVerByID], docVer => {
   return []
 })
 
-export const selectAllPages = (state: RootState, docVerID?: UUID) => {
-  if (!docVerID) {
-    return EMPTY_ARRAY
+export const selectAllPages = createSelector(
+  [
+    (state: RootState) => state.docVers.entities,
+    (_: RootState, docVerID?: UUID) => docVerID
+  ],
+  (entities, docVerID) => {
+    if (!docVerID) return EMPTY_ARRAY
+
+    const pages = entities[docVerID]?.pages
+    if (!pages || pages.length === 0) return EMPTY_ARRAY
+
+    return [...pages].sort((a, b) => a.number - b.number)
   }
+)
 
-  const docVer = state.docVers.entities[docVerID]
+export const selectInitialPages = createSelector(
+  [
+    (state: RootState) => state.docVers.entities,
+    (_: RootState, docVerID?: UUID) => docVerID
+  ],
+  (entities, docVerID): ClientPage[] => {
+    if (!docVerID) return EMPTY_ARRAY
 
-  return docVer?.pages ?? EMPTY_ARRAY
-}
+    const pages = entities[docVerID]?.initial_pages
+    if (!pages || pages.length === 0) return EMPTY_ARRAY
+
+    return [...pages].sort((a, b) => a.number - b.number)
+  }
+)
 
 export const selectDocumentVersionOCRLang = (
   state: RootState,
@@ -321,21 +341,6 @@ export const makeSelectSelectedPages = (mode: PanelMode, docVerID?: UUID) =>
     }
   )
 
-export const selectInitialPages = (
-  state: RootState,
-  docVerID?: UUID
-): ClientPage[] => {
-  if (!docVerID) {
-    return EMPTY_ARRAY
-  }
-
-  if (state.docVers.entities[docVerID]) {
-    return state.docVers.entities[docVerID].initial_pages || EMPTY_ARRAY
-  }
-
-  return EMPTY_ARRAY
-}
-
 export const makeSelectPagesHaveChanged = (docVerID?: UUID) =>
   createSelector(
     [
@@ -348,7 +353,6 @@ export const makeSelectPagesHaveChanged = (docVerID?: UUID) =>
       for (let i = 0; i < initialPages.length; i++) {
         const a = initialPages[i]
         const b = currentPages[i]
-
         if (a.id !== b.id || a.number !== b.number || a.angle !== b.angle) {
           return true
         }

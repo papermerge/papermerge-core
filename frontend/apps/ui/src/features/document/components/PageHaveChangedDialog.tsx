@@ -45,6 +45,7 @@ export default function PagesHaveChangedDialogContainer({docID}: Args) {
     when SAME document is displayed in two panels, this dialog visibility state
     is stored in UI slice. Dialog state (opened/closed) is independent of the panel */
     const newVisibility = pagesHaveChanged ? "opened" : "closed"
+
     dispatch(
       viewerPageHaveChangedDialogVisibilityChanged({visibility: newVisibility})
     )

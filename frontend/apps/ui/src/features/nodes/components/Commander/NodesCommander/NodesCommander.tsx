@@ -51,6 +51,7 @@ import {
   APP_THUMBNAIL_KEY,
   APP_THUMBNAIL_VALUE
 } from "@/features/document/constants"
+import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
@@ -182,13 +183,26 @@ export default function Commander() {
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    const payloadData = event.dataTransfer.getData(APP_THUMBNAIL_KEY)
-    console.log(`onDrop payloadData${payloadData}`)
+    const payloadThumbnailData = event.dataTransfer.getData(APP_THUMBNAIL_KEY)
+    const payloadNodeData = event.dataTransfer.getData(APP_NODE_KEY)
+
     setDragOver(false)
 
     if (event.dataTransfer.files.length > 0) {
-      if (payloadData == APP_THUMBNAIL_VALUE) {
-        // ignore as this is dragging thumbnails from docviewer
+      /** (1)
+       * Why dataTransfer.files.length > 0 When Dragging <img> From the App?
+         When you drag an <img src="..."> element (even inside your own app),
+         the browser (especially Chrome and Firefox) automatically attaches the image file to
+         the DataTransfer object. This happens even if:
+          * The <img> was never selected by the user from the file system.
+          * The image is loaded from a remote URL or a data URL.
+       */
+      if (payloadThumbnailData == APP_THUMBNAIL_VALUE) {
+        // ignore, as this is dragging thumbnails from docviewer
+        // see (1)
+      } else if (payloadNodeData == APP_NODE_VALUE) {
+        // ignore, as this is dragging commander's node
+        // see (1)
       } else {
         // files dropped from local FS
         setUploadFiles(event.dataTransfer.files)
@@ -223,6 +237,7 @@ export default function Commander() {
     ghost.style.position = "absolute"
     document.body.appendChild(ghost)
     event.dataTransfer.setDragImage(ghost, 0, -10)
+    event.dataTransfer.setData(APP_NODE_KEY, APP_NODE_VALUE)
 
     let root = createRoot(ghost)
     root.render(image)

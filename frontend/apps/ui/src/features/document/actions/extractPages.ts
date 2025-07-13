@@ -102,7 +102,7 @@ export const extractPages = createAsyncThunk<
       // i.e. document from the secondary panel will be displayed
       // in main
       inputArgs.navigate(
-        `/folder/${inputArgs.extractPagesData.sourceDocParentID}`
+        `/folder/${inputArgs.extractPagesData.body.target_folder_id}`
       )
       // and because secondary panel contains a document which just got deleted,
       // we close it

@@ -52,7 +52,11 @@ import {
   APP_THUMBNAIL_KEY,
   APP_THUMBNAIL_VALUE
 } from "@/features/document/constants"
-import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
+import {
+  APP_NODE_KEY,
+  APP_NODE_VALUE,
+  SUPPORTED_EXTENSIONS
+} from "@/features/nodes/constants"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
@@ -60,6 +64,7 @@ import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import NodesList from "./NodesList"
+import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 export default function Commander() {
   const {t} = useTranslation()
@@ -214,7 +219,7 @@ export default function Commander() {
         const validFiles = files.filter(isSupportedFile)
 
         if (validFiles.length === 0) {
-          alert("Only PDF, PNG, JPEG, or TIFF files are supported.")
+          supportedFilesInfoOpen()
           return
         }
 
@@ -345,6 +350,13 @@ export default function Commander() {
             onCancel={dropNodesClose}
           />
         )}
+      {supportedFilesInfoOpened && (
+        <SupportedFilesInfoModal
+          opened={supportedFilesInfoOpened}
+          close={supportedFilesInfoClose}
+          supportedExtentions={SUPPORTED_EXTENSIONS}
+        />
+      )}
     </>
   )
 }

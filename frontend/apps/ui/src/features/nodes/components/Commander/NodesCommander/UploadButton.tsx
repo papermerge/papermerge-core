@@ -7,16 +7,15 @@ import {IconUpload} from "@tabler/icons-react"
 import {useContext, useState} from "react"
 import {useGetFolderQuery} from "../../../apiSlice"
 
+import {
+  SUPPORTED_EXTENSIONS,
+  SUPPORTED_MIME_TYPES
+} from "@/features/nodes/constants"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 import {DropFilesModal} from "./DropFiles"
 
-const MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/tif",
-  "application/pdf"
-].join(",")
+const MIME_TYPES = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(",")
 
 export default function UploadButton() {
   const {t} = useTranslation()

@@ -219,7 +219,7 @@ export default function Commander() {
           return
         }
 
-        setUploadFiles(event.dataTransfer.files)
+        setUploadFiles(validFiles)
         dropFilesOpen()
         return
       }

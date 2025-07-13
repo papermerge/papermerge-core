@@ -25,6 +25,7 @@ import {
   ERRORS_404_RESOURCE_NOT_FOUND,
   ERRORS_422_UNPROCESSABLE_CONTENT
 } from "@/cconstants"
+import {isSupportedFile} from "@/features/nodes/utils"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
@@ -59,9 +60,14 @@ import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
 import NodesList from "./NodesList"
+import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 export default function Commander() {
   const {t} = useTranslation()
+  const [
+    supportedFilesInfoOpened,
+    {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
+  ] = useDisclosure(false)
   // dialog for dropped files from local file system (i.e. from outside of browser)
   const [dropFilesOpened, {open: dropFilesOpen, close: dropFilesClose}] =
     useDisclosure(false)
@@ -205,7 +211,15 @@ export default function Commander() {
         // see (1)
       } else {
         // files dropped from local FS
-        setUploadFiles(event.dataTransfer.files)
+        const files = Array.from(event.dataTransfer.files)
+        const validFiles = files.filter(isSupportedFile)
+
+        if (validFiles.length === 0) {
+          supportedFilesInfoOpen()
+          return
+        }
+
+        setUploadFiles(validFiles)
         dropFilesOpen()
         return
       }
@@ -332,6 +346,12 @@ export default function Commander() {
             onCancel={dropNodesClose}
           />
         )}
+      {supportedFilesInfoOpened && (
+        <SupportedFilesInfoModal
+          opened={supportedFilesInfoOpened}
+          onClose={supportedFilesInfoClose}
+        />
+      )}
     </>
   )
 }

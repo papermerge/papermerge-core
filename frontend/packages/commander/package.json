@@ -1,0 +1,19 @@
+{
+  "name": "commander",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "scripts": {
+    "build": "vite build --verbose"
+  },
+  "peerDependencies": {
+    "@mantine/core": "^7.17.2",
+    "@mantine/hooks": "^7.17.2",
+    "@tabler/icons-react": "^3.31.0",
+    "clsx": "^2.1.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

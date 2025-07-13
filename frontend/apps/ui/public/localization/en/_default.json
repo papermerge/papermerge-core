@@ -29,6 +29,12 @@
     "titleFormatLabel": "Title Format",
     "checkboxExtractIntoSeparateDocLabel": "Extract each page into separate document"
   },
+  "supportedFilesInfo": {
+    "title": "Supported Files Info",
+    "supportedFiles": "You can upload PDF, PNG, JPEG, or TIFF files.",
+    "allowedExtentions": "Allowed extensions:",
+    "caseSensitivity": "Uppercase and lowercase letters don't matter."
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",
@@ -40,6 +46,7 @@
   "common.quick_search": "Quick search",
   "common.upload": "Upload",
   "common.submit": "Submit",
+  "common.close": "Close",
   "common.update": "Update",
   "common.save": "Save",
   "common.reset": "Reset",

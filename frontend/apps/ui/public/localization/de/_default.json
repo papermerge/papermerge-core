@@ -29,6 +29,12 @@
     "titleFormatLabel": "Titelformat",
     "checkboxExtractIntoSeparateDocLabel": "Jede Seite in ein separates Dokument extrahieren"
   },
+  "supportedFilesInfo": {
+    "title": "Unterstützte Dateien",
+    "supportedFiles": "Du kannst PDF-, PNG-, JPEG- oder TIFF-Dateien hochladen.",
+    "allowedExtentions": "Erlaubte Dateiendungen:",
+    "caseSensitivity": "Groß- und Kleinschreibung spielt keine Rolle."
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",
@@ -42,6 +48,7 @@
   "common.submit": "Speichern",
   "common.update": "Aktualisieren",
   "common.save": "Speichern",
+  "common.close": "Schließen",
   "common.reset": "Zurücksetzen",
   "common.cancel": "Abbrechen",
   "common.delete": "Löschen",

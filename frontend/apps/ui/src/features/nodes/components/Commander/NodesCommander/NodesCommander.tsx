@@ -52,11 +52,7 @@ import {
   APP_THUMBNAIL_KEY,
   APP_THUMBNAIL_VALUE
 } from "@/features/document/constants"
-import {
-  APP_NODE_KEY,
-  APP_NODE_VALUE,
-  SUPPORTED_EXTENSIONS
-} from "@/features/nodes/constants"
+import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import {DropFilesModal} from "./DropFiles"
@@ -353,8 +349,7 @@ export default function Commander() {
       {supportedFilesInfoOpened && (
         <SupportedFilesInfoModal
           opened={supportedFilesInfoOpened}
-          close={supportedFilesInfoClose}
-          supportedExtentions={SUPPORTED_EXTENSIONS}
+          onClose={supportedFilesInfoClose}
         />
       )}
     </>

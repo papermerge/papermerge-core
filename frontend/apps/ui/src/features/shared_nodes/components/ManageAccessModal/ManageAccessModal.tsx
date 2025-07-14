@@ -2,7 +2,7 @@ import {useGetRolesQuery} from "@/features/roles/apiSlice"
 import {
   useGetSharedNodeAccessDetailsQuery,
   useUpdateSharedNodeAccessMutation
-} from "@/features/shared_nodes/apiSlice"
+} from "@/features/shared_nodes/store/apiSlice"
 import type {
   GroupUpdate,
   SharedNodeAccessDetails,

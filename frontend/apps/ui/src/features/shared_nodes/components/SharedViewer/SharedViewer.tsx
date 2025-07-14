@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {Flex, Group} from "@mantine/core"
-import {useContext, useEffect, useRef} from "react"
+import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -9,14 +9,11 @@ import {
   currentSharedNodeRootChanged,
   selectContentHeight,
   selectCurrentSharedNodeID,
-  selectCurrentSharedRootID,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
-import {skipToken} from "@reduxjs/toolkit/query"
 
 import {store} from "@/app/store"
 import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
@@ -27,7 +24,9 @@ import classes from "@/components/document/Viewer.module.css"
 import Pages from "@/features/document/components/PageList"
 import Thumbnails from "@/features/document/components/ThumbnailList"
 
+import {RootState} from "@/app/types"
 import type {NType, PanelMode} from "@/types"
+import useSharedCurrentDoc from "../../hooks/useCurrentSharedDoc"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
@@ -37,22 +36,8 @@ export default function SharedViewer() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
-
+  const {doc} = useSharedCurrentDoc()
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
-  const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
-
-  const queryParams = currentNodeID
-    ? {
-        nodeID: currentNodeID,
-        currentSharedRootID: currentSharedRootID
-      }
-    : skipToken
-
-  const {
-    currentData: doc,
-    isSuccess,
-    isLoading
-  } = useGetSharedDocumentQuery(queryParams)
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {
@@ -64,7 +49,7 @@ export default function SharedViewer() {
     }
 
     if (mode == "main" && node.ctype == "folder") {
-      const state = store.getState()
+      const state = store.getState() as RootState
       const sharedNode = state.sharedNodes.entities[node.id]
       if (sharedNode.is_shared_root) {
         dispatch(currentSharedNodeRootChanged(node.id))
@@ -73,7 +58,7 @@ export default function SharedViewer() {
       navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
     }
   }
-
+  /*
   useEffect(() => {
     if (doc) {
       const maxVerNum = Math.max(...doc.versions.map(v => v.number))
@@ -83,7 +68,8 @@ export default function SharedViewer() {
       }
     }
   }, [isSuccess, doc])
-
+  console.log(`shared viewer ${doc}`)
+  */
   return (
     <div>
       <ActionButtons />
@@ -95,11 +81,7 @@ export default function SharedViewer() {
         <Thumbnails />
         <ThumbnailsToggle />
         <Pages />
-        <DocumentDetails
-          doc={doc}
-          docID={currentNodeID}
-          isLoading={isLoading}
-        />
+        <DocumentDetails doc={doc} docID={currentNodeID} isLoading={false} />
       </Flex>
     </div>
   )

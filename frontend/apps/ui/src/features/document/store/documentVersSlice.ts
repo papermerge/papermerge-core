@@ -1,5 +1,5 @@
 import {RootState} from "@/app/types"
-import {apiSliceWithSharedNodes} from "@/features/shared_nodes/apiSlice"
+import {apiSliceWithSharedNodes} from "@/features/shared_nodes/store/apiSlice"
 import type {
   ClientDocumentVersion,
   ClientPage,

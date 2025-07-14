@@ -1,6 +1,6 @@
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
 import {useGetRolesQuery} from "@/features/roles/apiSlice"
-import {useAddNewSharedNodeMutation} from "@/features/shared_nodes/apiSlice"
+import {useAddNewSharedNodeMutation} from "@/features/shared_nodes/store/apiSlice"
 import {useGetUsersQuery} from "@/features/users/apiSlice"
 import {Button, Container, Group, Loader, Modal} from "@mantine/core"
 import {useState} from "react"

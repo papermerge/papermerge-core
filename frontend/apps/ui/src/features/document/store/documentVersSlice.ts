@@ -266,7 +266,7 @@ export const selectAllPages = createSelector(
     const pages = entities[docVerID]?.pages
     if (!pages || pages.length === 0) return EMPTY_ARRAY
 
-    return [...pages].sort((a, b) => a.number - b.number)
+    return pages
   }
 )
 

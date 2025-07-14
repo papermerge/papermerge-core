@@ -44,15 +44,15 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
-    "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@types/react-router-dom": "^5.3.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "prettier": "^3.5.3",
-    "sass": "^1.85.1",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.2",
-    "vite-plugin-static-copy": "^3.0.2",
+    "@vitejs/plugin-react": "^4.6.0",
+    "prettier": "^3.6.2",
+    "sass": "^1.89.2",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.4",
+    "vite-plugin-static-copy": "^3.1.1",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

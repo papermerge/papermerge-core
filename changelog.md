@@ -2,11 +2,7 @@
 
 ## [3.5.2] - not yet released
 
-All following changes are relevant only for the case when file server is
-S3 bucket/CDN:
-
--
-Fix [A 50-page pdf file is very slow to open](https://github.com/papermerge/papermerge-core/issues/55)
+- Fix [A 50-page pdf file is very slow to open](https://github.com/papermerge/papermerge-core/issues/55)
 - Frontend refactoring - use monorepo structure
 - Frontend dependencies updates
 

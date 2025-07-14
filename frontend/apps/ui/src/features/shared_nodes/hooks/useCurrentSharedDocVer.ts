@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useGetDocLastVersionQuery} from "@/features/document/store/apiSlice"
 import {selectLatestDocVerByDocID} from "@/features/document/store/docsSlice"
 import {
   addDocVersion,
@@ -44,7 +45,7 @@ export default function useCurrentDocVer(): ReturnState {
     isSuccess,
     isError,
     error
-  } = useGetSharedDocLastVersionQuery(currentNodeID ?? skipToken)
+  } = useGetDocLastVersionQuery(currentNodeID ?? skipToken)
 
   useEffect(() => {
     if (currentData) {

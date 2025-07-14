@@ -21,12 +21,15 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import Pages from "@/features/document/components/PageList"
 import Thumbnails from "@/features/document/components/ThumbnailList"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
+import PageList from "./PageList"
 
 import {RootState} from "@/app/types"
+import useSharedCurrentDoc from "@/features/shared_nodes/hooks/useCurrentSharedDoc"
+import useCurrentSharedDocVer from "@/features/shared_nodes/hooks/useCurrentSharedDocVer"
 import type {NType, PanelMode} from "@/types"
-import useSharedCurrentDoc from "../../hooks/useCurrentSharedDoc"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
@@ -38,6 +41,14 @@ export default function SharedViewer() {
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const {doc} = useSharedCurrentDoc()
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
+  const {docVer} = useCurrentSharedDocVer()
+  /* generate first batch of previews: for pages and for their thumbnails */
+  const allPreviewsAreAvailable = useGeneratePreviews({
+    docVer: docVer,
+    pageNumber: 1,
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+    imageSize: "md"
+  })
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {
@@ -80,7 +91,7 @@ export default function SharedViewer() {
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
         <Thumbnails />
         <ThumbnailsToggle />
-        <Pages />
+        <PageList />
         <DocumentDetails doc={doc} docID={currentNodeID} isLoading={false} />
       </Flex>
     </div>

@@ -17,7 +17,7 @@ import {
   SharedNodeAccessUpdate
 } from "@/types.d/shared_nodes"
 
-import type {DocumentType, DocumentVersion} from "@/features/document/types"
+import type {DocumentType} from "@/features/document/types"
 
 export type PaginatedArgs = {
   nodeID: string
@@ -127,12 +127,6 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
       },
       providesTags: (_result, _error, arg) => [
         {type: "SharedDocument", id: arg.nodeID}
-      ]
-    }),
-    getSharedDocLastVersion: builder.query<DocumentVersion, string>({
-      query: nodeID => `/shared-documents/${nodeID}/last-version/`,
-      providesTags: (_result, _error, arg) => [
-        {type: "DocumentVersion", id: arg}
       ]
     })
   })

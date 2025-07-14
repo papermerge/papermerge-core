@@ -1816,12 +1816,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "commander@workspace:packages/commander"
   peerDependencies:
-    "@mantine/core": ^7.17.2
-    "@mantine/hooks": ^7.17.2
-    "@tabler/icons-react": ^3.31.0
+    "@mantine/core": ^8.1.3
+    "@mantine/hooks": ^8.1.3
+    "@tabler/icons-react": ^3.34.0
     clsx: ^2.1.1
-    react: ^19.0.0
-    react-dom: ^19.0.0
+    react: ^19.1.0
+    react-dom: ^19.1.0
   languageName: unknown
   linkType: soft
 
@@ -4148,6 +4148,7 @@ __metadata:
     i18next-xhr-backend: "npm:^3.2.2"
     immer: "npm:^10.1.1"
     js-cookie: "npm:^3.0.5"
+    kommon: "workspace:*"
     pdfjs-dist: "npm:^5.3.93"
     prettier: "npm:^3.6.2"
     react: "npm:^19.1.0"

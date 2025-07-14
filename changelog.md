@@ -3,6 +3,7 @@
 ## [3.5.2] - not yet released
 
 - Fix [A 50-page pdf file is very slow to open](https://github.com/papermerge/papermerge-core/issues/55)
+- Document previews (thumbnails as well as pages) rendered in frontend
 - Frontend refactoring - use monorepo structure
 - Frontend dependencies updates
 

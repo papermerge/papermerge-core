@@ -22,7 +22,7 @@ interface ReturnState {
   doc: DocumentType | undefined
 }
 
-export default function useSharedCurrentDoc(): ReturnState {
+export default function useCurrentSharedDoc(): ReturnState {
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
   const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
 

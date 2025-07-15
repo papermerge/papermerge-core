@@ -27,13 +27,15 @@ import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
 import {RootState} from "@/app/types"
-import useSharedCurrentDoc from "@/features/shared_nodes/hooks/useCurrentSharedDoc"
-import useCurrentSharedDocVer from "@/features/shared_nodes/hooks/useCurrentSharedDocVer"
+import {
+  useCurrentSharedDoc,
+  useCurrentSharedDocVer
+} from "@/features/shared_nodes/hooks"
 import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
-  const {doc} = useSharedCurrentDoc()
+  const {doc} = useCurrentSharedDoc()
   const {docVer} = useCurrentSharedDocVer()
 
   const ref = useRef<HTMLDivElement>(null)

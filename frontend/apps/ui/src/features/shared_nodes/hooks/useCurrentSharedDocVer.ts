@@ -28,7 +28,7 @@ interface ReturnState {
   docVer: ClientDocumentVersion | undefined
 }
 
-export default function useCurrentDocVer(): ReturnState {
+export default function useSharedCurrentDocVer(): ReturnState {
   const dispatch = useAppDispatch()
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
   const latestDocVerID = useAppSelector(s =>

@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {Flex, Group} from "@mantine/core"
+import {Flex, Group, Loader} from "@mantine/core"
 import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -21,10 +21,10 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import Thumbnails from "@/features/document/components/ThumbnailList"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import PageList from "./PageList"
+import ThumbnailList from "./ThumbnailList"
 
 import {RootState} from "@/app/types"
 import useSharedCurrentDoc from "@/features/shared_nodes/hooks/useCurrentSharedDoc"
@@ -33,15 +33,14 @@ import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
+  const {doc} = useSharedCurrentDoc()
+  const {docVer} = useCurrentSharedDocVer()
+
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
-  const {doc} = useSharedCurrentDoc()
-  const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
-  const {docVer} = useCurrentSharedDocVer()
+  const height = useAppSelector(s => selectContentHeight(s, mode))
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer: docVer,
@@ -49,6 +48,9 @@ export default function SharedViewer() {
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
   })
+
+  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
+  const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {
@@ -81,6 +83,17 @@ export default function SharedViewer() {
   }, [isSuccess, doc])
   console.log(`shared viewer ${doc}`)
   */
+  if (!doc) {
+    return <Loader />
+  }
+
+  if (!docVer) {
+    return <Loader />
+  }
+
+  if (!allPreviewsAreAvailable) {
+    return <Loader />
+  }
   return (
     <div>
       <ActionButtons />
@@ -89,7 +102,7 @@ export default function SharedViewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails />
+        <ThumbnailList />
         <ThumbnailsToggle />
         <PageList />
         <DocumentDetails doc={doc} docID={currentNodeID} isLoading={false} />

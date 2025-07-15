@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {Flex, Group} from "@mantine/core"
-import {useContext, useEffect, useRef} from "react"
+import {Flex, Group, Loader} from "@mantine/core"
+import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -9,14 +9,11 @@ import {
   currentSharedNodeRootChanged,
   selectContentHeight,
   selectCurrentSharedNodeID,
-  selectCurrentSharedRootID,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetSharedDocumentQuery} from "@/features/shared_nodes/apiSlice"
-import {skipToken} from "@reduxjs/toolkit/query"
 
 import {store} from "@/app/store"
 import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
@@ -24,35 +21,38 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import Pages from "@/features/document/components/PageList"
-import Thumbnails from "@/features/document/components/ThumbnailList"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
+import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
+import PageList from "./PageList"
+import ThumbnailList from "./ThumbnailList"
 
+import {RootState} from "@/app/types"
+import {
+  useCurrentSharedDoc,
+  useCurrentSharedDocVer
+} from "@/features/shared_nodes/hooks"
 import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
+  const {doc} = useCurrentSharedDoc()
+  const {docVer} = useCurrentSharedDocVer()
+
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
-  const height = useAppSelector(s => selectContentHeight(s, mode))
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const height = useAppSelector(s => selectContentHeight(s, mode))
+  /* generate first batch of previews: for pages and for their thumbnails */
+  const allPreviewsAreAvailable = useGeneratePreviews({
+    docVer: docVer,
+    pageNumber: 1,
+    pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
+    imageSize: "md"
+  })
+
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
-
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
-  const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
-
-  const queryParams = currentNodeID
-    ? {
-        nodeID: currentNodeID,
-        currentSharedRootID: currentSharedRootID
-      }
-    : skipToken
-
-  const {
-    currentData: doc,
-    isSuccess,
-    isLoading
-  } = useGetSharedDocumentQuery(queryParams)
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {
@@ -64,7 +64,7 @@ export default function SharedViewer() {
     }
 
     if (mode == "main" && node.ctype == "folder") {
-      const state = store.getState()
+      const state = store.getState() as RootState
       const sharedNode = state.sharedNodes.entities[node.id]
       if (sharedNode.is_shared_root) {
         dispatch(currentSharedNodeRootChanged(node.id))
@@ -73,7 +73,7 @@ export default function SharedViewer() {
       navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
     }
   }
-
+  /*
   useEffect(() => {
     if (doc) {
       const maxVerNum = Math.max(...doc.versions.map(v => v.number))
@@ -83,7 +83,19 @@ export default function SharedViewer() {
       }
     }
   }, [isSuccess, doc])
+  console.log(`shared viewer ${doc}`)
+  */
+  if (!doc) {
+    return <Loader />
+  }
 
+  if (!docVer) {
+    return <Loader />
+  }
+
+  if (!allPreviewsAreAvailable) {
+    return <Loader />
+  }
   return (
     <div>
       <ActionButtons />
@@ -92,13 +104,14 @@ export default function SharedViewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
-        <Thumbnails />
+        <ThumbnailList />
         <ThumbnailsToggle />
-        <Pages />
+        <PageList />
         <DocumentDetails
           doc={doc}
+          docVer={docVer}
           docID={currentNodeID}
-          isLoading={isLoading}
+          isLoading={false}
         />
       </Flex>
     </div>

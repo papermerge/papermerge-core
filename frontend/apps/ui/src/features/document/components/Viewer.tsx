@@ -33,19 +33,14 @@ import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
 export default function Viewer() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
-  const [opened, {open, close}] = useDisclosure()
-  const mode: PanelMode = useContext(PanelContext)
-  const height = useAppSelector(s => selectContentHeight(s, mode))
-
-  const navigate = useNavigate()
-  const dispatch = useAppDispatch()
-  const thumbnailsIsOpen = useAppSelector(s =>
-    selectThumbnailsPanelOpen(s, mode)
-  )
   const {doc} = useCurrentDoc()
   const {docVer} = useCurrentDocVer()
+
+  const ref = useRef<HTMLDivElement>(null)
+  const mode: PanelMode = useContext(PanelContext)
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const height = useAppSelector(s => selectContentHeight(s, mode))
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer: docVer,
@@ -53,6 +48,13 @@ export default function Viewer() {
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
   })
+
+  const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
+  const [opened, {open, close}] = useDisclosure()
+
+  const thumbnailsIsOpen = useAppSelector(s =>
+    selectThumbnailsPanelOpen(s, mode)
+  )
 
   const onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault() // prevents default context menu
@@ -116,7 +118,12 @@ export default function Viewer() {
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />
-        <DocumentDetails doc={doc} docID={doc?.id} isLoading={false} />
+        <DocumentDetails
+          docVer={docVer}
+          doc={doc}
+          docID={doc?.id}
+          isLoading={false}
+        />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           isFetching={false}

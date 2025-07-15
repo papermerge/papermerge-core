@@ -5,7 +5,6 @@ import {
   SHARED_FOLDER_ROOT_ID
 } from "@/cconstants"
 import type {
-  DocumentType,
   FolderType,
   NodeType,
   Paginated,
@@ -17,6 +16,8 @@ import {
   SharedNodeAccessDetails,
   SharedNodeAccessUpdate
 } from "@/types.d/shared_nodes"
+
+import type {DocumentType} from "@/features/document/types"
 
 export type PaginatedArgs = {
   nodeID: string

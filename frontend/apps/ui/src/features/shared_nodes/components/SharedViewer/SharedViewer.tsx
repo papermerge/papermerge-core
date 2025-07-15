@@ -105,7 +105,12 @@ export default function SharedViewer() {
         <ThumbnailList />
         <ThumbnailsToggle />
         <PageList />
-        <DocumentDetails doc={doc} docID={currentNodeID} isLoading={false} />
+        <DocumentDetails
+          doc={doc}
+          docVer={docVer}
+          docID={currentNodeID}
+          isLoading={false}
+        />
       </Flex>
     </div>
   )

@@ -5,8 +5,8 @@ import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
 
-import DownloadButton from "@/features/document/components/DownloadButton"
 import type {PanelMode} from "@/types"
+import DownloadButton from "./DownloadButton"
 
 export default function ActionButtons() {
   const {height, width} = useViewportSize()

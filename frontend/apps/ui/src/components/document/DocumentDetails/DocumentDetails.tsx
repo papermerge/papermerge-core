@@ -21,23 +21,23 @@ import classes from "./DocumentDetails.module.css"
 import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
-import {useCurrentDocVer} from "@/features/document/hooks"
 import type {DocumentType} from "@/features/document/types"
 import {
   selectCurrentNodeID,
   selectDocumentDetailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
+import type {ClientDocumentVersion, PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 
 interface Args {
   doc?: DocumentType
   docID?: string
+  docVer?: ClientDocumentVersion
   isLoading: boolean
 }
 
-export default function DocumentDetails({doc, docID, isLoading}: Args) {
+export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
   const {t} = useTranslation()
 
   const mode: PanelMode = useContext(PanelContext)
@@ -45,7 +45,6 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
     selectDocumentDetailsPanelOpen(s, mode)
   )
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
-  const {docVer} = useCurrentDocVer()
 
   if (!docID || isLoading) {
     return (
@@ -80,7 +79,7 @@ export default function DocumentDetails({doc, docID, isLoading}: Args) {
             label={t("common.version_number")}
             readOnly
             value={docVer?.number}
-            rightSection={<CopyButton value={docVer?.number || ""} />}
+            rightSection={<CopyButton value={`${docVer?.number}` || ""} />}
           />
 
           <TextInput

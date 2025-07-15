@@ -118,7 +118,12 @@ export default function Viewer() {
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />
-        <DocumentDetails doc={doc} docID={doc?.id} isLoading={false} />
+        <DocumentDetails
+          docVer={docVer}
+          doc={doc}
+          docID={doc?.id}
+          isLoading={false}
+        />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           isFetching={false}

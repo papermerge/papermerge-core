@@ -15,7 +15,6 @@ import QuickFilter from "@/components/QuickFilter"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {filterUpdated} from "@/features/ui/uiSlice"
 
-import EditNodeTitleButton from "./EditNodeTitleButton"
 import SortMenu from "./SortMenu"
 
 export default function FolderNodeActions() {
@@ -51,7 +50,7 @@ export default function FolderNodeActions() {
 
   return (
     <Group ref={ref} justify="space-between">
-      <Group>{selectedCount == 1 && <EditNodeTitleButton />}</Group>
+      <Group></Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">
         <ViewOptionsMenu />
         <SortMenu />

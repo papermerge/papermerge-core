@@ -86,7 +86,7 @@ def update_document_custom_field_values(
 
     send_task(
         const.PATH_TMPL_MOVE_DOCUMENT,
-        kwargs={"document_id": str(document_id), "user_id": str(user.id)},
+        kwargs={"document_id": str(document_id)},
         route_name="path_tmpl",
     )
 

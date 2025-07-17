@@ -1,5 +1,6 @@
 from uuid import UUID
 from urllib.parse import quote
+from pathlib import Path
 
 from papermerge.core.types import ImagePreviewSize
 from papermerge.core import pathlib as plib
@@ -10,10 +11,10 @@ settings = config.get_settings()
 VALID_FOR_SECONDS = 600
 
 
-def resource_sign_url(prefix, resource_path):
+def resource_sign_url(prefix, resource_path: Path):
     from papermerge.core.cloudfront import sign_url
 
-    encoded_path = quote(resource_path)
+    encoded_path = quote(str(resource_path))
 
     if prefix:
         url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{encoded_path}"

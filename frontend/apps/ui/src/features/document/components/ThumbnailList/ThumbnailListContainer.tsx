@@ -5,6 +5,7 @@ import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPrevi
 import useCurrentDocVer from "@/features/document/hooks/useCurrentDocVer"
 import {selectDocVerPaginationThumnailPageNumber} from "@/features/document/store/documentVersSlice"
 import {selectIsGeneratingPreviews} from "@/features/document/store/imageObjectsSlice"
+import {ClientPage} from "@/types"
 import {useEffect, useRef} from "react"
 import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
@@ -17,7 +18,7 @@ export default function ThumbnailListContainer() {
     selectDocVerPaginationThumnailPageNumber(s, docVer?.id)
   )
   const containerRef = useRef<HTMLDivElement>(null)
-  const {pages, loadMore} = usePageList({
+  const {pages, loadMore, currentPageNumber} = usePageList({
     docVerID: docVer?.id,
     totalCount: docVer?.pages.length,
     size: "sm",
@@ -36,6 +37,9 @@ export default function ThumbnailListContainer() {
   const thumbnailComponents = pages.map(p => (
     <Thumbnail key={p.id} pageID={p.id} angle={p.angle} pageNumber={p.number} />
   ))
+  /* Addresses situation when user deletes N pages. In such case
+  we want to avoid a hole (skipped) of N pages in next batch  */
+  const thumbnailListPageCount = pageCount(pages)
 
   useEffect(() => {
     if (pages.length == 0 && !isGenerating) {
@@ -47,12 +51,18 @@ export default function ThumbnailListContainer() {
     if (loadMore && !isGenerating) {
       if (!allPreviewsAreAvailable) {
         dispatch(
-          generateNextPreviews({docVer, size: "sm", pageNumber: pageNumber + 1})
+          generateNextPreviews({
+            docVer,
+            size: "sm",
+            pageNumber: pageNumber + 1,
+            thumbnailListPageCount
+          })
         )
       }
     }
   }, [loadMore])
 
+  console.log(`thumbnailListPageCount=${thumbnailListPageCount}`)
   return (
     <ThumbnailList
       ref={containerRef}
@@ -61,4 +71,15 @@ export default function ThumbnailListContainer() {
       paginationFirstPageIsReady={pages.length > 0}
     />
   )
+}
+
+function pageCount(pages?: ClientPage[]): number | undefined {
+  if (!pages) {
+    return undefined
+  }
+  if (pages.length == 0) {
+    return undefined
+  }
+
+  return pages.length
 }

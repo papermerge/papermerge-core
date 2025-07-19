@@ -34,6 +34,7 @@ export interface GeneratePreviewInputType {
   pageSize: number
   pageNumber: number
   pageTotal: number
+  thumbnailListPageCount?: number
 }
 
 export type BasicPageType = {

@@ -12,6 +12,7 @@ import {
 import type {ExtractPagesType, PanelMode} from "@/types"
 
 import {t} from "@/utils/i18nHelper"
+import {otherMode} from "@/utils/mode"
 import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
 import type {NavigateFunction} from "react-router-dom"
@@ -123,11 +124,3 @@ export const extractPages = createAsyncThunk<
     )
   }
 })
-
-function otherMode(mode: PanelMode): PanelMode {
-  if (mode == "main") {
-    return "secondary"
-  }
-
-  return "main"
-}

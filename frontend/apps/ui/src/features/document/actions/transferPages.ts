@@ -9,6 +9,7 @@ import type {MovePagesType, PanelMode} from "@/types"
 import {TransferStrategyType} from "@/types"
 import {UUID} from "@/types.d/common"
 import {t} from "@/utils/i18nHelper"
+import {otherMode} from "@/utils/mode"
 import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
 import type {NavigateFunction} from "react-router-dom"
@@ -166,14 +167,6 @@ export const transferPages = createAsyncThunk<
     autoClose: 4000
   })
 })
-
-function otherMode(mode: PanelMode): PanelMode {
-  if (mode == "main") {
-    return "secondary"
-  }
-
-  return "main"
-}
 
 interface GetTargetOrderedPageIDs {
   docID: UUID

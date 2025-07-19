@@ -62,7 +62,6 @@ export default function ThumbnailListContainer() {
     }
   }, [loadMore])
 
-  console.log(`thumbnailListPageCount=${thumbnailListPageCount}`)
   return (
     <ThumbnailList
       ref={containerRef}

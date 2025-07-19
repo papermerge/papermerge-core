@@ -4,8 +4,11 @@ import {
   APP_THUMBNAIL_KEY,
   APP_THUMBNAIL_VALUE
 } from "@/features/document/constants"
-import {useSelectedPages} from "@/features/document/hooks"
-import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
+import {
+  useCurrentDoc,
+  useCurrentDocVer,
+  useSelectedPages
+} from "@/features/document/hooks"
 import {
   pagesDroppedInDoc,
   selectCurrentPages,
@@ -14,16 +17,14 @@ import {
 import {
   dragEnded,
   dragPagesStarted,
-  selectCurrentDocVerID,
   selectDraggedPages,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID,
   viewerCurrentPageUpdated
 } from "@/features/ui/uiSlice"
-import {useCurrentNode, usePanelMode} from "@/hooks"
+import {usePanelMode} from "@/hooks"
 import type {UUID} from "@/types.d/common"
 import {useDisclosure} from "@mantine/hooks"
-import {skipToken} from "@reduxjs/toolkit/query"
 import {Thumbnail} from "viewer"
 
 import {
@@ -45,7 +46,6 @@ interface Args {
 export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
-  const {currentNodeID} = useCurrentNode()
 
   const [
     trPagesDialogOpened,
@@ -71,12 +71,12 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
 
-  const {currentData: doc} = useGetDocumentQuery(currentNodeID ?? skipToken)
-  const docVerID = useAppSelector(s => selectCurrentDocVerID(s, mode))
-  const docVerPages = useAppSelector(s => selectCurrentPages(s, docVerID!))
-  const selectedPages = useSelectedPages({mode, docVerID})
+  const {doc} = useCurrentDoc()
+  const {docVer} = useCurrentDocVer()
+  const docVerPages = useAppSelector(s => selectCurrentPages(s, docVer?.id))
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
   const page = useAppSelector(s =>
-    selectDocVerClientPage(s, {docVerID, pageID})
+    selectDocVerClientPage(s, {docVerID: docVer?.id, pageID})
   )
 
   const onClick = () => {
@@ -143,12 +143,12 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
         i.e we are just reordering. It is so because all source pages (their IDs)
         were found in the target document version.
         */
-        if (draggedPages && page) {
+        if (draggedPages && page && docVer) {
           dispatch(
             pagesDroppedInDoc({
               sources: draggedPages,
               target: page,
-              targetDocVerID: docVerID!,
+              targetDocVerID: docVer.id,
               position: position
             })
           )

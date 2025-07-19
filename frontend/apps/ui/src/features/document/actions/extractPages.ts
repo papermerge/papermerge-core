@@ -4,7 +4,11 @@ import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
 import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {clientDVFromDV} from "@/features/document/utils"
-import {currentDocVerUpdated, secondaryPanelClosed} from "@/features/ui/uiSlice"
+import {
+  currentDocVerUpdated,
+  secondaryPanelClosed,
+  viewerSelectionCleared
+} from "@/features/ui/uiSlice"
 import type {ExtractPagesType, PanelMode} from "@/types"
 
 import {t} from "@/utils/i18nHelper"
@@ -81,6 +85,9 @@ export const extractPages = createAsyncThunk<
         {type: "DocVersList", id: lastVersionSource.document_id}
       ])
     )
+
+    dispatch(viewerSelectionCleared(otherMode(inputArgs.sourceMode)))
+
     notifications.show({
       withBorder: true,
       message: t("documentVersion.was-created", {
@@ -116,3 +123,11 @@ export const extractPages = createAsyncThunk<
     )
   }
 })
+
+function otherMode(mode: PanelMode): PanelMode {
+  if (mode == "main") {
+    return "secondary"
+  }
+
+  return "main"
+}

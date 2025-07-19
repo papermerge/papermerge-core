@@ -20,10 +20,11 @@ interface Args {
   docVer?: ClientDocumentVersion
   pageNumber: number
   size?: ImageSize
+  thumbnailListPageCount?: number
 }
 
 export const generateNextPreviews =
-  ({docVer, pageNumber, size = "md"}: Args) =>
+  ({docVer, pageNumber, size = "md", thumbnailListPageCount}: Args) =>
   async (dispatch: AppDispatch) => {
     if (!docVer) {
       return
@@ -42,6 +43,7 @@ export const generateNextPreviews =
         size,
         pageSize: pageSize,
         pageNumber,
+        thumbnailListPageCount,
         pageTotal: docVer.pages.length
       })
     )

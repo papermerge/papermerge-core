@@ -105,7 +105,18 @@ export const generatePreviews = createAsyncThunk<
     type: "application/pdf"
   })
 
-  const firstPage = (item.pageNumber - 1) * item.pageSize
+  // this number would be correct only if user never deletes
+  // pages from thumbnail panel
+  let firstPage = (item.pageNumber - 1) * item.pageSize
+  if (item.thumbnailListPageCount && item.thumbnailListPageCount > 0) {
+    /* Addresses situation when user deletes N pages. In such case
+      we want to avoid a hole (skipped) of N pages in next batch.
+      `lastPageNumberInThumbnailList` is the max page number from all pages
+      currently found in thumbnail panel. If such number if present, we
+      generate next batch of images based on it.
+  */
+    firstPage = item.thumbnailListPageCount
+  }
   const lastPage = Math.min(firstPage + item.pageSize, item.pageTotal)
   const sortedPages = item.docVer.pages
     .slice()

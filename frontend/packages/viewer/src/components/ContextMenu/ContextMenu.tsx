@@ -2,8 +2,8 @@ import {Box, Menu, rem} from "@mantine/core"
 import {
   IconArrowBackUp,
   IconArrowLeft,
-  IconArrowMoveDown,
   IconArrowRight,
+  IconDeviceFloppy,
   IconEdit,
   IconEye,
   IconRotate,
@@ -143,7 +143,7 @@ export default function ContextMenu({
         {showSaveChangesItem && (
           <Menu.Item
             onClick={onSaveChangesItemClicked}
-            leftSection={<IconArrowMoveDown style={ICON_CSS} />}
+            leftSection={<IconDeviceFloppy style={ICON_CSS} />}
           >
             {txt?.saveChanges || "Save changes"}
           </Menu.Item>

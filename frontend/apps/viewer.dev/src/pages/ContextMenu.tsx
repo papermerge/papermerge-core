@@ -79,61 +79,13 @@ export default function ContextMenuPage() {
     <Stack>
       <Group>
         <Button onClick={() => setOpened(!opened)}>Toggle Visibility</Button>
-        <Select
-          label="Arrow Direction"
-          placeholder="Pick a value"
-          data={["left", "right"]}
-          onChange={onDirectionChange}
-        />
         <Stack>
-          <Checkbox
-            label={"Show Rotate CC/CW Items"}
-            checked={showRotate}
-            onChange={event => setShowRotate(event.currentTarget.checked)}
+          <Select
+            label="Arrow Direction"
+            placeholder="Pick a value"
+            data={["left", "right"]}
+            onChange={onDirectionChange}
           />
-          <Checkbox
-            label={"Show ViewOCRText Item"}
-            checked={showViewOCRText}
-            onChange={event => setShowViewOCRText(event.currentTarget.checked)}
-          />
-          <Checkbox
-            label={"Show MoveDocument Item"}
-            checked={showMoveDocumentChecked}
-            onChange={event =>
-              setShowMoveDocumentChecked(event.currentTarget.checked)
-            }
-          />
-          <Checkbox
-            label={"Show ExtractPages Item"}
-            checked={showExtractPagesChecked}
-            onChange={event =>
-              setShowExtractPagesChecked(event.currentTarget.checked)
-            }
-          />
-          <Checkbox
-            label={"Show Delete Pages Item"}
-            checked={showDeletePages}
-            onChange={event => setShowDeletePages(event.currentTarget.checked)}
-          />
-          <Checkbox
-            label={"Show Delete Document Item"}
-            checked={showDeleteDocument}
-            onChange={event =>
-              setShowDeleteDocument(event.currentTarget.checked)
-            }
-          />
-          <Checkbox
-            label={"Show Reset Changes Item"}
-            checked={showResetChanges}
-            onChange={event => setShowResetChanges(event.currentTarget.checked)}
-          />
-          <Checkbox
-            label={"Show SaveChanges Item"}
-            checked={showSaveChanges}
-            onChange={event => setShowSaveChanges(event.currentTarget.checked)}
-          />
-        </Stack>
-        <Stack>
           <NumberInput
             step={STEP}
             min={MIN}
@@ -149,6 +101,54 @@ export default function ContextMenuPage() {
             defaultValue={INITIAL_POS_Y}
             value={y}
             onChange={setY}
+          />
+        </Stack>
+        <Stack>
+          <Checkbox
+            label={"Rotate CC/CW"}
+            checked={showRotate}
+            onChange={event => setShowRotate(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"ViewOCRText"}
+            checked={showViewOCRText}
+            onChange={event => setShowViewOCRText(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Move Document"}
+            checked={showMoveDocumentChecked}
+            onChange={event =>
+              setShowMoveDocumentChecked(event.currentTarget.checked)
+            }
+          />
+          <Checkbox
+            label={"Extract Pages"}
+            checked={showExtractPagesChecked}
+            onChange={event =>
+              setShowExtractPagesChecked(event.currentTarget.checked)
+            }
+          />
+          <Checkbox
+            label={"Delete Pages"}
+            checked={showDeletePages}
+            onChange={event => setShowDeletePages(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Delete Document"}
+            checked={showDeleteDocument}
+            onChange={event =>
+              setShowDeleteDocument(event.currentTarget.checked)
+            }
+          />
+          <Checkbox
+            label={"Reset Changes"}
+            checked={showResetChanges}
+            onChange={event => setShowResetChanges(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Save Changes"}
+            checked={showSaveChanges}
+            onChange={event => setShowSaveChanges(event.currentTarget.checked)}
           />
         </Stack>
       </Group>

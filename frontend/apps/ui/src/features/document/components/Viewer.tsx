@@ -11,7 +11,6 @@ import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import {useRef} from "react"
 
 import ActionButtons from "@/components/document/ActionButtons"
-import ContextMenu from "@/components/document/ContextMenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
@@ -25,6 +24,7 @@ import {
 } from "@/features/ui/uiSlice"
 import type {NType, PanelMode} from "@/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
+import ContextMenu from "./ContextMenu"
 
 import useContextMenu from "@/features/document/hooks/useContextMenu"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
@@ -104,13 +104,7 @@ export default function Viewer() {
           isLoading={false}
         />
         <PagesHaveChangedDialog docID={doc.id} />
-        <ContextMenu
-          isFetching={false}
-          isError={false}
-          opened={opened}
-          position={position}
-          onChange={onContextMenuChange}
-        />
+        <ContextMenu opened={opened} position={position} />
       </Flex>
     </div>
   )

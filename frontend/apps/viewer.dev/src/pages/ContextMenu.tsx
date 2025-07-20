@@ -11,11 +11,13 @@ import {useEffect, useState} from "react"
 import type {MoveDocumentDirection} from "viewer"
 import {ContextMenu} from "viewer"
 
-const INITIAL_POS_X = 200
-const INITIAL_POS_Y = 200
+const INITIAL_POS_X = 400
+const INITIAL_POS_Y = 400
 const STEP = 30
 const MIN = 100
 const MAX = 2000
+
+type Lang = "german" | "english"
 
 type Coord = {
   x: number
@@ -23,6 +25,7 @@ type Coord = {
 }
 
 export default function ContextMenuPage() {
+  const [lang, setLang] = useState<Lang>("english")
   const [opened, setOpened] = useState<boolean>(false)
   const [showRotate, setShowRotate] = useState<boolean>(false)
   const [showViewOCRText, setShowViewOCRText] = useState<boolean>(false)
@@ -55,6 +58,15 @@ export default function ContextMenuPage() {
     }
   }
 
+  const onLanguageChange = (
+    _value: string | null,
+    option: ComboboxItem | null
+  ) => {
+    if (option?.value) {
+      setLang(option.value as Lang)
+    }
+  }
+
   useEffect(() => {
     setPos({
       x: typeof x === "number" ? x : parseInt(x) || 0,
@@ -80,6 +92,12 @@ export default function ContextMenuPage() {
       <Group>
         <Button onClick={() => setOpened(!opened)}>Toggle Visibility</Button>
         <Stack>
+          <Select
+            label="Language"
+            placeholder="Pick a value"
+            data={["english", "german"]}
+            onChange={onLanguageChange}
+          />
           <Select
             label="Arrow Direction"
             placeholder="Pick a value"

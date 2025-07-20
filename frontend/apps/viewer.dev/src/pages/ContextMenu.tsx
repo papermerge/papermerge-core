@@ -26,6 +26,10 @@ export default function ContextMenuPage() {
   const [opened, setOpened] = useState<boolean>(false)
   const [showRotate, setShowRotate] = useState<boolean>(false)
   const [showViewOCRText, setShowViewOCRText] = useState<boolean>(false)
+  const [showDeletePages, setShowDeletePages] = useState<boolean>(false)
+  const [showDeleteDocument, setShowDeleteDocument] = useState<boolean>(false)
+  const [showResetChanges, setShowResetChanges] = useState<boolean>(false)
+  const [showSaveChanges, setShowSaveChanges] = useState<boolean>(false)
   const [showMoveDocument, setShowMoveDocument] = useState<
     MoveDocumentDirection | undefined
   >()
@@ -76,7 +80,7 @@ export default function ContextMenuPage() {
       <Group>
         <Button onClick={() => setOpened(!opened)}>Toggle Visibility</Button>
         <Select
-          label="Versions"
+          label="Arrow Direction"
           placeholder="Pick a value"
           data={["left", "right"]}
           onChange={onDirectionChange}
@@ -106,6 +110,28 @@ export default function ContextMenuPage() {
               setShowExtractPagesChecked(event.currentTarget.checked)
             }
           />
+          <Checkbox
+            label={"Show Delete Pages Item"}
+            checked={showDeletePages}
+            onChange={event => setShowDeletePages(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Show Delete Document Item"}
+            checked={showDeleteDocument}
+            onChange={event =>
+              setShowDeleteDocument(event.currentTarget.checked)
+            }
+          />
+          <Checkbox
+            label={"Show Reset Changes Item"}
+            checked={showResetChanges}
+            onChange={event => setShowResetChanges(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Show SaveChanges Item"}
+            checked={showSaveChanges}
+            onChange={event => setShowSaveChanges(event.currentTarget.checked)}
+          />
         </Stack>
         <Stack>
           <NumberInput
@@ -134,6 +160,10 @@ export default function ContextMenuPage() {
         showViewOCRedTextItem={showViewOCRText}
         showMoveDocumentItem={showMoveDocument}
         showExtractPagesItem={showExtractPages}
+        showDeletePagesItem={showDeletePages}
+        showDeleteDocumentItem={showDeleteDocument}
+        showResetChangesItem={showResetChanges}
+        showSaveChangesItem={showSaveChanges}
       />
     </Stack>
   )

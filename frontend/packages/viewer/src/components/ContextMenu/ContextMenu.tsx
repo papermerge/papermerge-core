@@ -189,7 +189,9 @@ export default function ContextMenu({
             {txt?.deletePages || "Delete pages"}
           </Menu.Item>
         )}
-        <Menu.Label>{txt?.dangerZone || "Danger zone"}</Menu.Label>
+        {showDeleteDocumentItem && (
+          <Menu.Label>{txt?.dangerZone || "Danger zone"}</Menu.Label>
+        )}
         {showDeleteDocumentItem && (
           <Menu.Item
             onClick={onDeleteDocumentItemClicked}

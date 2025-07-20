@@ -1,18 +1,17 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useCurrentDoc} from "@/features/document/hooks"
 import {Flex, Group, Loader} from "@mantine/core"
-import {useContext, useEffect} from "react"
+import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
-import {useRef, useState} from "react"
+import {useRef} from "react"
 
-import {HIDDEN} from "@/cconstants"
 import ActionButtons from "@/components/document/ActionButtons"
-import ContextMenu from "@/components/document/Contextmenu"
+import ContextMenu from "@/components/document/ContextMenu"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
@@ -24,10 +23,10 @@ import {
   selectContentHeight,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
-import type {Coord, NType, PanelMode} from "@/types"
-import {useDisclosure} from "@mantine/hooks"
+import type {NType, PanelMode} from "@/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 
+import useContextMenu from "@/features/document/hooks/useContextMenu"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
@@ -48,22 +47,15 @@ export default function Viewer() {
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
   })
-
-  const [contextMenuPosition, setContextMenuPosition] = useState<Coord>(HIDDEN)
-  const [opened, {open, close}] = useDisclosure()
+  const {
+    opened,
+    options: {close},
+    position
+  } = useContextMenu({ref})
 
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
   )
-
-  const onContextMenu = (ev: MouseEvent) => {
-    ev.preventDefault() // prevents default context menu
-
-    let new_y = ev.clientY
-    let new_x = ev.clientX
-    setContextMenuPosition({y: new_y, x: new_x})
-    open()
-  }
 
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
@@ -82,19 +74,6 @@ export default function Viewer() {
     }
   }
 
-  useEffect(() => {
-    // detect right click outside
-    if (ref.current) {
-      ref.current.addEventListener("contextmenu", onContextMenu)
-    }
-
-    return () => {
-      if (ref.current) {
-        ref.current.removeEventListener("contextmenu", onContextMenu)
-      }
-    }
-  }, [])
-
   if (!doc) {
     return <Loader />
   }
@@ -108,13 +87,13 @@ export default function Viewer() {
   }
 
   return (
-    <div>
+    <div ref={ref}>
       <ActionButtons doc={doc} isFetching={false} isError={false} />
       <Group justify="space-between">
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
-      <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
+      <Flex className={classes.inner} style={{height: `${height}px`}}>
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />
@@ -129,7 +108,7 @@ export default function Viewer() {
           isFetching={false}
           isError={false}
           opened={opened}
-          position={contextMenuPosition}
+          position={position}
           onChange={onContextMenuChange}
         />
       </Flex>

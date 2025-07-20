@@ -8,7 +8,7 @@ import {
   Stack
 } from "@mantine/core"
 import {useEffect, useState} from "react"
-import type {MoveDocumentDirection} from "viewer"
+import type {I18NViewerContextMenu, MoveDocumentDirection} from "viewer"
 import {ContextMenu} from "viewer"
 
 const INITIAL_POS_X = 400
@@ -48,6 +48,7 @@ export default function ContextMenuPage() {
   const [x, setX] = useState<number | string>(INITIAL_POS_X)
   const [y, setY] = useState<number | string>(INITIAL_POS_Y)
   const [pos, setPos] = useState<Coord>({x: INITIAL_POS_X, y: INITIAL_POS_Y})
+  const [txt, setTxt] = useState<I18NViewerContextMenu>()
 
   const onDirectionChange = (
     _value: string | null,
@@ -73,6 +74,26 @@ export default function ContextMenuPage() {
       y: typeof y === "number" ? y : parseInt(y) || 0
     })
   }, [x, y])
+
+  useEffect(() => {
+    if (lang == "german") {
+      setTxt({
+        changeTitle: "Titel ändern",
+        ocrText: "OCR-Text",
+        rotateClockwise: "Im Uhrzeigersinn drehen",
+        rotateCounterClockwise: "Gegen den Uhrzeigersinn drehen",
+        resetChanges: "Änderungen zurücksetzen",
+        saveChanges: "Änderungen speichern",
+        moveDocument: "Dokument verschieben",
+        extractPages: "Seiten extrahieren",
+        deletePages: "Seiten löschen",
+        deleteDocument: "Dokument löschen",
+        dangerZone: "Gefahrenzone"
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [lang])
 
   useEffect(() => {
     if (showExtractPagesChecked) {
@@ -182,6 +203,7 @@ export default function ContextMenuPage() {
         showDeleteDocumentItem={showDeleteDocument}
         showResetChangesItem={showResetChanges}
         showSaveChangesItem={showSaveChanges}
+        txt={txt}
       />
     </Stack>
   )

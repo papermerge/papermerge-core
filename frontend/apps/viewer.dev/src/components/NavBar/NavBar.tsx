@@ -32,6 +32,9 @@ export default function Navbar() {
         <NavLink to="/extract-pages-modal" end>
           &lt;ExtractPagesModal /&gt;
         </NavLink>
+        <NavLink to="/context-menu" end>
+          &lt;ContextMenu /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

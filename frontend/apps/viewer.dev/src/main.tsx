@@ -4,6 +4,7 @@ import {createRoot} from "react-dom/client"
 import {BrowserRouter, Route, Routes} from "react-router"
 import AppShell from "./app/AppShell"
 import "./index.css"
+import ContextMenuPage from "./pages/ContextMenu"
 import DownloadButton from "./pages/DownloadButton"
 import ExtractPagesModalPage from "./pages/ExtractPagesModal"
 import OnePage from "./pages/OnePage"
@@ -38,6 +39,7 @@ createRoot(document.getElementById("root")!).render(
               path="extract-pages-modal"
               element={<ExtractPagesModalPage />}
             />
+            <Route path="context-menu" element={<ContextMenuPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

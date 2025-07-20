@@ -43,6 +43,7 @@ export default function TransferPagesModalContainer() {
       <Group>
         <Checkbox label="In Progress" onClick={InProgressClicked} />
         <Button onClick={() => setOpened(true)}>Open</Button>
+
         <Select
           label="Versions"
           placeholder="Pick a value"

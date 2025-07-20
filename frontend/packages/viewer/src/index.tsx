@@ -1,4 +1,10 @@
 import type {
+  ExtractPagesDirection,
+  I18NViewerContextMenu,
+  MoveDocumentDirection
+} from "./components/ContextMenu"
+import ContextMenu from "./components/ContextMenu"
+import type {
   DownloadDocumentVersion,
   I18NDownloadButtonText
 } from "./components/DownloadButton"
@@ -18,6 +24,7 @@ import TransferPagesModal from "./components/TransferPagesModal"
 import Zoom from "./components/Zoom"
 
 export {
+  ContextMenu,
   DownloadButton,
   ExtractPagesModal,
   Page,
@@ -30,8 +37,11 @@ export {
 }
 export type {
   DownloadDocumentVersion,
+  ExtractPagesDirection,
   I18NDownloadButtonText,
   I18NExtractPagesModal,
   I18NPagesHaveChangedDialogText,
-  I18NTransferPagesModal
+  I18NTransferPagesModal,
+  I18NViewerContextMenu,
+  MoveDocumentDirection
 }

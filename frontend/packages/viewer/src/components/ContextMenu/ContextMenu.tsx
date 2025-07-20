@@ -75,13 +75,13 @@ export default function ContextMenu({
   showResetChangesItem = true,
   showSaveChangesItem = true,
   showDeletePagesItem = true,
-  showMoveDocumentItem = "left",
-  showExtractPagesItem = "left",
+  showMoveDocumentItem,
+  showExtractPagesItem,
   showDeleteDocumentItem = true
 }: Args) {
   return (
     <Menu
-      key={`${position.x}-${position.y}`} // 👈 force remount on position change
+      key={`${position.x}-${position.y}-${showMoveDocumentItem}-${showExtractPagesItem}`} // 👈 force remount on position etc change
       position="bottom-start"
       opened={opened}
       onChange={onChange}
@@ -148,25 +148,6 @@ export default function ContextMenu({
             {txt?.saveChanges || "Save changes"}
           </Menu.Item>
         )}
-        {showDeletePagesItem && (
-          <Menu.Item
-            onClick={onDeletePagesItemClicked}
-            color="red"
-            leftSection={<IconTrash style={ICON_CSS} />}
-          >
-            {txt?.deletePages || "Delete pages"}
-          </Menu.Item>
-        )}
-        <Menu.Label>{txt?.dangerZone || "Danger zone"}</Menu.Label>
-        {showDeleteDocumentItem && (
-          <Menu.Item
-            onClick={onDeleteDocumentItemClicked}
-            color="red"
-            leftSection={<IconX style={ICON_CSS} />}
-          >
-            {txt?.deleteDocument || "Delete Document"}
-          </Menu.Item>
-        )}
         {showMoveDocumentItem == "left" && (
           <Menu.Item
             onClick={onMoveDocumentItemClicked}
@@ -197,6 +178,25 @@ export default function ContextMenu({
             leftSection={<IconArrowRight style={ICON_CSS} />}
           >
             {txt?.extractPages || "Extract Pages"}
+          </Menu.Item>
+        )}
+        {showDeletePagesItem && (
+          <Menu.Item
+            onClick={onDeletePagesItemClicked}
+            color="red"
+            leftSection={<IconTrash style={ICON_CSS} />}
+          >
+            {txt?.deletePages || "Delete pages"}
+          </Menu.Item>
+        )}
+        <Menu.Label>{txt?.dangerZone || "Danger zone"}</Menu.Label>
+        {showDeleteDocumentItem && (
+          <Menu.Item
+            onClick={onDeleteDocumentItemClicked}
+            color="red"
+            leftSection={<IconX style={ICON_CSS} />}
+          >
+            {txt?.deleteDocument || "Delete Document"}
           </Menu.Item>
         )}
       </Menu.Dropdown>

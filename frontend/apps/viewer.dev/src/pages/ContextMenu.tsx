@@ -1,6 +1,21 @@
-import {Group, NumberInput, Stack} from "@mantine/core"
+import {
+  Button,
+  Checkbox,
+  ComboboxItem,
+  Group,
+  NumberInput,
+  Select,
+  Stack
+} from "@mantine/core"
 import {useEffect, useState} from "react"
+import type {MoveDocumentDirection} from "viewer"
 import {ContextMenu} from "viewer"
+
+const INITIAL_POS_X = 200
+const INITIAL_POS_Y = 200
+const STEP = 30
+const MIN = 100
+const MAX = 2000
 
 type Coord = {
   x: number
@@ -8,9 +23,33 @@ type Coord = {
 }
 
 export default function ContextMenuPage() {
-  const [x, setX] = useState<number | string>(200)
-  const [y, setY] = useState<number | string>(200)
-  const [pos, setPos] = useState<Coord>({x: 200, y: 200})
+  const [opened, setOpened] = useState<boolean>(false)
+  const [showRotate, setShowRotate] = useState<boolean>(false)
+  const [showViewOCRText, setShowViewOCRText] = useState<boolean>(false)
+  const [showMoveDocument, setShowMoveDocument] = useState<
+    MoveDocumentDirection | undefined
+  >()
+  const [showMoveDocumentChecked, setShowMoveDocumentChecked] =
+    useState<boolean>(false)
+  const [showExtractPagesChecked, setShowExtractPagesChecked] =
+    useState<boolean>(false)
+  const [showExtractPages, setShowExtractPages] = useState<
+    MoveDocumentDirection | undefined
+  >()
+  const [direction, setDirection] = useState<MoveDocumentDirection>("left")
+
+  const [x, setX] = useState<number | string>(INITIAL_POS_X)
+  const [y, setY] = useState<number | string>(INITIAL_POS_Y)
+  const [pos, setPos] = useState<Coord>({x: INITIAL_POS_X, y: INITIAL_POS_Y})
+
+  const onDirectionChange = (
+    _value: string | null,
+    option: ComboboxItem | null
+  ) => {
+    if (option?.value) {
+      setDirection(option.value as MoveDocumentDirection)
+    }
+  }
 
   useEffect(() => {
     setPos({
@@ -19,27 +58,83 @@ export default function ContextMenuPage() {
     })
   }, [x, y])
 
+  useEffect(() => {
+    if (showExtractPagesChecked) {
+      setShowExtractPages(direction)
+    } else {
+      setShowExtractPages(undefined)
+    }
+    if (showMoveDocumentChecked) {
+      setShowMoveDocument(direction)
+    } else {
+      setShowMoveDocument(undefined)
+    }
+  }, [direction, showMoveDocumentChecked, showExtractPagesChecked])
+
   return (
     <Stack>
       <Group>
-        <NumberInput
-          step={30}
-          min={100}
-          max={2000}
-          defaultValue={200}
-          value={x}
-          onChange={setX}
+        <Button onClick={() => setOpened(!opened)}>Toggle Visibility</Button>
+        <Select
+          label="Versions"
+          placeholder="Pick a value"
+          data={["left", "right"]}
+          onChange={onDirectionChange}
         />
-        <NumberInput
-          step={30}
-          min={100}
-          max={2000}
-          defaultValue={200}
-          value={y}
-          onChange={setY}
-        />
+        <Stack>
+          <Checkbox
+            label={"Show Rotate CC/CW Items"}
+            checked={showRotate}
+            onChange={event => setShowRotate(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Show ViewOCRText Item"}
+            checked={showViewOCRText}
+            onChange={event => setShowViewOCRText(event.currentTarget.checked)}
+          />
+          <Checkbox
+            label={"Show MoveDocument Item"}
+            checked={showMoveDocumentChecked}
+            onChange={event =>
+              setShowMoveDocumentChecked(event.currentTarget.checked)
+            }
+          />
+          <Checkbox
+            label={"Show ExtractPages Item"}
+            checked={showExtractPagesChecked}
+            onChange={event =>
+              setShowExtractPagesChecked(event.currentTarget.checked)
+            }
+          />
+        </Stack>
+        <Stack>
+          <NumberInput
+            step={STEP}
+            min={MIN}
+            max={MAX}
+            defaultValue={INITIAL_POS_X}
+            value={x}
+            onChange={setX}
+          />
+          <NumberInput
+            step={STEP}
+            min={MIN}
+            max={MAX}
+            defaultValue={INITIAL_POS_Y}
+            value={y}
+            onChange={setY}
+          />
+        </Stack>
       </Group>
-      <ContextMenu position={pos} opened={true} />
+      <ContextMenu
+        position={pos}
+        opened={opened}
+        showRotateCCItem={showRotate}
+        showRotateCWItem={showRotate}
+        showViewOCRedTextItem={showViewOCRText}
+        showMoveDocumentItem={showMoveDocument}
+        showExtractPagesItem={showExtractPages}
+      />
     </Stack>
   )
 }

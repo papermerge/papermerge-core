@@ -1,4 +1,8 @@
-import type {I18NViewerContextMenu} from "./components/ContextMenu"
+import type {
+  ExtractPagesDirection,
+  I18NViewerContextMenu,
+  MoveDocumentDirection
+} from "./components/ContextMenu"
 import ContextMenu from "./components/ContextMenu"
 import type {
   DownloadDocumentVersion,
@@ -33,9 +37,11 @@ export {
 }
 export type {
   DownloadDocumentVersion,
+  ExtractPagesDirection,
   I18NDownloadButtonText,
   I18NExtractPagesModal,
   I18NPagesHaveChangedDialogText,
   I18NTransferPagesModal,
-  I18NViewerContextMenu
+  I18NViewerContextMenu,
+  MoveDocumentDirection
 }

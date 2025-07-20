@@ -12,22 +12,11 @@ import {
   IconX
 } from "@tabler/icons-react"
 
-type MoveDocumentDirection = "left" | "right"
-type ExtractPagesDirection = "left" | "right"
-
-interface I18NViewerContextMenu {
-  changeTitle: string
-  ocrText: string
-  rotateClockwise: string
-  rotateCounterClockwise: string
-  resetChanges: string
-  saveChanges: string
-  deletePages: string
-  moveDocument: string
-  extractPages: string
-  deleteDocument: string
-  dangerZone: string
-}
+import type {
+  ExtractPagesDirection,
+  I18NViewerContextMenu,
+  MoveDocumentDirection
+} from "./types"
 
 interface Args {
   opened: boolean
@@ -92,6 +81,7 @@ export default function ContextMenu({
 }: Args) {
   return (
     <Menu
+      key={`${position.x}-${position.y}`} // 👈 force remount on position change
       position="bottom-start"
       opened={opened}
       onChange={onChange}
@@ -103,7 +93,9 @@ export default function ContextMenu({
           style={{
             position: "absolute",
             top: `${position.y}px`,
-            left: `${position.x}px`
+            left: `${position.x}px`,
+            width: 1,
+            height: 1
           }}
         ></Box>
       </Menu.Target>
@@ -145,7 +137,7 @@ export default function ContextMenu({
             onClick={onResetChangesItemClicked}
             leftSection={<IconArrowBackUp style={ICON_CSS} />}
           >
-            {txt?.resetChanges && "Reset changes"}
+            {txt?.resetChanges || "Reset changes"}
           </Menu.Item>
         )}
         {showSaveChangesItem && (
@@ -162,7 +154,7 @@ export default function ContextMenu({
             color="red"
             leftSection={<IconTrash style={ICON_CSS} />}
           >
-            {txt?.deletePages && "Delete pages"}
+            {txt?.deletePages || "Delete pages"}
           </Menu.Item>
         )}
         <Menu.Label>{txt?.dangerZone || "Danger zone"}</Menu.Label>

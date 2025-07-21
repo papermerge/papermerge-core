@@ -2,9 +2,10 @@ import {useRenameFolderMutation} from "@/features/nodes/apiSlice"
 import type {EditEntityTitle} from "@/types"
 import type {I18NEditNodeTitleModal} from "kommon"
 import {EditNodeTitleModal} from "kommon"
-import {ChangeEvent, useEffect, useRef, useState} from "react"
+import {ChangeEvent, useEffect, useState} from "react"
 
 import {useTranslation} from "react-i18next"
+import {useEnterSubmit} from "./useEnterSubmit"
 
 interface Args {
   node: EditEntityTitle
@@ -21,32 +22,12 @@ export const EditNodeTitleModalContainer = ({
 }: Args) => {
   const txt = useI18nText()
   const [renameFolder, {isLoading}] = useRenameFolderMutation()
-  const ref = useRef<HTMLButtonElement>(null)
   const [title, setTitle] = useState(node.title)
   const [error, setError] = useState("")
-
-  useEffect(() => {
-    // handle "enter" keyboard press
-    document.addEventListener("keydown", handleKeydown, false)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeydown, false)
-    }
-  }, [])
 
   const handleTitleChanged = (event: ChangeEvent<HTMLInputElement>) => {
     let value = event.currentTarget.value
     setTitle(value)
-  }
-
-  const handleKeydown = async (e: KeyboardEvent) => {
-    switch (e.code) {
-      case "Enter":
-        if (ref.current) {
-          ref.current.click()
-        }
-        break
-    }
   }
 
   const onLocalSubmit = async () => {
@@ -60,10 +41,11 @@ export const EditNodeTitleModalContainer = ({
       onSubmit()
       reset() // sets error message back to empty string
     } catch (error: any) {
-      // @ts-ignore
-      setError(err.data.detail)
+      setError(error?.data?.detail ?? "Something went wrong")
     }
   }
+
+  useEnterSubmit(onLocalSubmit)
 
   const onLocalCancel = () => {
     onCancel()
@@ -110,34 +92,3 @@ function useI18nText(): I18NEditNodeTitleModal | undefined {
 }
 
 export default EditNodeTitleModalContainer
-
-/****
- *
- *
- *     <Modal title={"Edit Title"} opened={opened} onClose={onLocalCancel}>
-      <TextInput
-        data-autofocus
-        onChange={handleTitleChanged}
-        value={title}
-        label="New Title"
-        placeholder="title"
-        mt="md"
-      />
-      {error && <Error message={error} />}
-
-      <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onLocalCancel}>
-          {t("common.cancel")}
-        </Button>
-        <Group>
-          {isLoading && <Loader size="sm" />}
-          <Button ref={ref} disabled={isLoading} onClick={onLocalSubmit}>
-            {t("common.submit")}
-          </Button>
-        </Group>
-      </Group>
-    </Modal>
- *
- *
- *
- */

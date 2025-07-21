@@ -26,7 +26,11 @@ export default function EditNodeTitleModal({
   inProgress
 }: Args) {
   return (
-    <Modal title={"Edit Title"} opened={opened} onClose={onCancel || EmptyFunc}>
+    <Modal
+      title={txt?.editTitle || "Edit Title"}
+      opened={opened}
+      onClose={onCancel || EmptyFunc}
+    >
       <TextInput
         data-autofocus
         onChange={onTitleChange}

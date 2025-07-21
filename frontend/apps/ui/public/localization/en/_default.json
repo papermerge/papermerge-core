@@ -35,6 +35,11 @@
     "allowedExtentions": "Allowed extensions:",
     "caseSensitivity": "Uppercase and lowercase letters don't matter."
   },
+  "editNodeTitleModal": {
+    "title": "Edit Title",
+    "newTitleLabel": "New Title",
+    "placeholder": "Title"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

@@ -1,4 +1,4 @@
-import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
+import EditNodeTitleModal from "@/components/EditNodeTitleModal"
 import {ActionIcon, Box, Skeleton, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"

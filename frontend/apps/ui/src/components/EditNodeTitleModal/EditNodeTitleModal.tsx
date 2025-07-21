@@ -1,9 +1,9 @@
 import {useRenameFolderMutation} from "@/features/nodes/apiSlice"
 import type {EditEntityTitle} from "@/types"
-import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
+import type {I18NEditNodeTitleModal} from "kommon"
+import {EditNodeTitleModal} from "kommon"
 import {ChangeEvent, useEffect, useRef, useState} from "react"
 
-import Error from "@/components/Error"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -13,13 +13,13 @@ interface Args {
   onCancel: () => void
 }
 
-export const EditNodeTitleModal = ({
+export const EditNodeTitleModalContainer = ({
   node,
   onSubmit,
   onCancel,
   opened
 }: Args) => {
-  const {t} = useTranslation()
+  const txt = useI18nText()
   const [renameFolder, {isLoading}] = useRenameFolderMutation()
   const ref = useRef<HTMLButtonElement>(null)
   const [title, setTitle] = useState(node.title)
@@ -42,15 +42,6 @@ export const EditNodeTitleModal = ({
   const handleKeydown = async (e: KeyboardEvent) => {
     switch (e.code) {
       case "Enter":
-        /*
-         * The intuitive code here would be:
-         *```
-         * await onLocalSubmit()
-         *```
-         * However, the `await onLocalSubmit()` code will submit only
-         * initial value of the `title` field. Is that because of
-         * useEffect / addEventListener / react magic ?
-         */
         if (ref.current) {
           ref.current.click()
         }
@@ -84,7 +75,46 @@ export const EditNodeTitleModal = ({
   }
 
   return (
-    <Modal title={"Edit Title"} opened={opened} onClose={onLocalCancel}>
+    <EditNodeTitleModal
+      inProgress={isLoading}
+      onCancel={onLocalCancel}
+      onSubmit={onLocalSubmit}
+      onTitleChange={handleTitleChanged}
+      value={title}
+      error={error}
+      opened={opened}
+      txt={txt}
+    />
+  )
+}
+
+function useI18nText(): I18NEditNodeTitleModal | undefined {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NEditNodeTitleModal>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        editTitle: t("editNodeTitleModal.title"),
+        newTitleLabel: t("editNodeTitleModal.newTitleLabel"),
+        placeholder: t("editNodeTitleModal.placeholder"),
+        cancel: t("common.cancel"),
+        submit: t("common.submit")
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized, t])
+
+  return txt
+}
+
+export default EditNodeTitleModalContainer
+
+/****
+ *
+ *
+ *     <Modal title={"Edit Title"} opened={opened} onClose={onLocalCancel}>
       <TextInput
         data-autofocus
         onChange={handleTitleChanged}
@@ -107,5 +137,7 @@ export const EditNodeTitleModal = ({
         </Group>
       </Group>
     </Modal>
-  )
-}
+ *
+ *
+ *
+ */

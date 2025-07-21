@@ -5,7 +5,7 @@ import {useContext} from "react"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {EditNodeTitleModal} from "@/features/nodes/components/EditNodeTitle"
+import EditNodeTitleModal from "@/components/EditNodeTitleModal"
 
 import type {RootState} from "@/app/types"
 

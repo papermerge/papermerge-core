@@ -35,6 +35,11 @@
     "allowedExtentions": "Erlaubte Dateiendungen:",
     "caseSensitivity": "Groß- und Kleinschreibung spielt keine Rolle."
   },
+  "editNodeTitleModal": {
+    "title": "Dokumenttitel bearbeiten",
+    "newTitleLabel": "Neuer Dokumenttitel",
+    "placeholder": "Titel"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

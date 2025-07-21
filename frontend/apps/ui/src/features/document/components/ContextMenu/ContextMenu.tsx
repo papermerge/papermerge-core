@@ -12,12 +12,16 @@ interface Args {
     y: number
   }
   onEditNodeTitleItemClicked: () => void
+  onRotateCWItemClicked: () => void
+  onRotateCCItemClicked: () => void
 }
 
 export default function ContextMenuContainer({
   opened,
   position,
-  onEditNodeTitleItemClicked
+  onEditNodeTitleItemClicked,
+  onRotateCCItemClicked,
+  onRotateCWItemClicked
 }: Args) {
   const [showExtractPagesItem, setShowExtractPagesItem] = useState<
     ExtractPagesDirection | undefined
@@ -66,6 +70,8 @@ export default function ContextMenuContainer({
       showRotateCCItem={hasSelectedPages}
       showRotateCWItem={hasSelectedPages}
       onChangeTitleItemClicked={onEditNodeTitleItemClicked}
+      onRotateCCItemClicked={onRotateCCItemClicked}
+      onRotateCWItemClicked={onRotateCWItemClicked}
     />
   )
 }

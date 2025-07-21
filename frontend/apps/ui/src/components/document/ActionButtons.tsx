@@ -12,23 +12,20 @@ import EditTitleButton from "./EditTitleButton"
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
 import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
-import type {DocumentType} from "@/features/document/types"
 import RotateButton from "./RotateButton"
 import RotateCCButton from "./RotateCCButton"
 import RunOCRButton from "./RunOCRButton"
 
 interface Args {
-  doc?: DocumentType
-  isFetching: boolean
-  isError: boolean
   onEditNodeTitleClicked: () => void
+  onRotateCWClicked: () => void
+  onRotateCCClicked: () => void
 }
 
 export default function ActionButtons({
-  doc,
-  isFetching,
-  isError,
-  onEditNodeTitleClicked
+  onEditNodeTitleClicked,
+  onRotateCWClicked,
+  onRotateCCClicked
 }: Args) {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
@@ -54,15 +51,15 @@ export default function ActionButtons({
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <EditTitleButton
-          onClick={onEditNodeTitleClicked}
-          isFetching={isFetching}
-          isError={isError}
-        />
+        <EditTitleButton onClick={onEditNodeTitleClicked} />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
         <DownloadButton />
-        {selectedPages.length > 0 && <RotateButton />}
-        {selectedPages.length > 0 && <RotateCCButton />}
+        {selectedPages.length > 0 && (
+          <RotateButton onClick={onRotateCWClicked} />
+        )}
+        {selectedPages.length > 0 && (
+          <RotateCCButton onClick={onRotateCCClicked} />
+        )}
         {selectedPages.length > 0 && <DeletePagesButton />}
       </Group>
       <Group>

@@ -18,6 +18,7 @@ import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import {useCurrentDocVer} from "@/features/document/hooks"
+import {pagesRotated} from "@/features/document/store/documentVersSlice"
 import {
   currentDocVerUpdated,
   currentNodeChanged,
@@ -28,6 +29,7 @@ import type {NType, PanelMode} from "@/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 import ContextMenu from "./ContextMenu"
 
+import {useSelectedPages} from "@/features/document/hooks"
 import useContextMenu from "@/features/document/hooks/useContextMenu"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
@@ -49,6 +51,8 @@ export default function Viewer() {
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
   })
+  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+
   const {
     opened,
     options: {close},
@@ -84,6 +88,26 @@ export default function Viewer() {
     openEditNodeTitleModal()
   }
 
+  const onRotateCWItemClicked = () => {
+    dispatch(
+      pagesRotated({
+        sources: selectedPages,
+        angle: 90,
+        targetDocVerID: docVer?.id!
+      })
+    )
+  }
+
+  const onRotateCCItemClicked = () => {
+    dispatch(
+      pagesRotated({
+        sources: selectedPages,
+        angle: -90,
+        targetDocVerID: docVer?.id!
+      })
+    )
+  }
+
   if (!doc) {
     return <Loader />
   }
@@ -99,10 +123,9 @@ export default function Viewer() {
   return (
     <div ref={ref}>
       <ActionButtons
-        doc={doc}
-        isFetching={false}
-        isError={false}
         onEditNodeTitleClicked={onEditNodeTitleItem}
+        onRotateCWClicked={onRotateCWItemClicked}
+        onRotateCCClicked={onRotateCCItemClicked}
       />
       <Group justify="space-between">
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
@@ -123,6 +146,8 @@ export default function Viewer() {
           opened={opened}
           position={position}
           onEditNodeTitleItemClicked={onEditNodeTitleItem}
+          onRotateCCItemClicked={onRotateCCItemClicked}
+          onRotateCWItemClicked={onRotateCWItemClicked}
         />
       </Flex>
       <EditNodeTitleModal

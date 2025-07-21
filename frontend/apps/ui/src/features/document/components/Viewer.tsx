@@ -1,12 +1,14 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useCurrentDoc} from "@/features/document/hooks"
 import {Flex, Group, Loader} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 
+import EditNodeTitleModal from "@/components/EditNodeTitleModal"
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import {useRef} from "react"
 
@@ -52,6 +54,10 @@ export default function Viewer() {
     options: {close},
     position
   } = useContextMenu({ref})
+  const [
+    openedEditNodeTitleModal,
+    {open: openEditNodeTitleModal, close: closeEditNodeTitleModal}
+  ] = useDisclosure(false)
 
   const thumbnailsIsOpen = useAppSelector(s =>
     selectThumbnailsPanelOpen(s, mode)
@@ -74,6 +80,10 @@ export default function Viewer() {
     }
   }
 
+  const onEditNodeTitleItem = () => {
+    openEditNodeTitleModal()
+  }
+
   if (!doc) {
     return <Loader />
   }
@@ -88,7 +98,12 @@ export default function Viewer() {
 
   return (
     <div ref={ref}>
-      <ActionButtons doc={doc} isFetching={false} isError={false} />
+      <ActionButtons
+        doc={doc}
+        isFetching={false}
+        isError={false}
+        onEditNodeTitleClicked={onEditNodeTitleItem}
+      />
       <Group justify="space-between">
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
@@ -104,8 +119,18 @@ export default function Viewer() {
           isLoading={false}
         />
         <PagesHaveChangedDialog docID={doc.id} />
-        <ContextMenu opened={opened} position={position} />
+        <ContextMenu
+          opened={opened}
+          position={position}
+          onEditNodeTitleItemClicked={onEditNodeTitleItem}
+        />
       </Flex>
+      <EditNodeTitleModal
+        opened={openedEditNodeTitleModal}
+        node={{id: doc?.id!, title: doc?.title!}}
+        onSubmit={closeEditNodeTitleModal}
+        onCancel={closeEditNodeTitleModal}
+      />
     </div>
   )
 }

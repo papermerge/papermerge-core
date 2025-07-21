@@ -21,9 +21,15 @@ interface Args {
   doc?: DocumentType
   isFetching: boolean
   isError: boolean
+  onEditNodeTitleClicked: () => void
 }
 
-export default function ActionButtons({doc, isFetching, isError}: Args) {
+export default function ActionButtons({
+  doc,
+  isFetching,
+  isError,
+  onEditNodeTitleClicked
+}: Args) {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
@@ -48,7 +54,11 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
+        <EditTitleButton
+          onClick={onEditNodeTitleClicked}
+          isFetching={isFetching}
+          isError={isError}
+        />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
         <DownloadButton />
         {selectedPages.length > 0 && <RotateButton />}

@@ -1,25 +1,20 @@
-import EditNodeTitleModal from "@/components/EditNodeTitleModal"
 import {ActionIcon, Box, Skeleton, Tooltip} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 import {forwardRef} from "react"
 
-import type {DocumentType} from "@/features/document/types"
 import {useTranslation} from "react-i18next"
 
 interface Args {
   hidden?: boolean
-  doc?: DocumentType
-  nodeID?: string
   isFetching: boolean
   isError: boolean
+  onClick: () => void
 }
 
 const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const {t} = useTranslation()
 
-  const {hidden, doc, nodeID, isFetching, isError} = props
-  const [opened, {open, close}] = useDisclosure(false)
+  const {hidden, isFetching, isError, onClick} = props
 
   if (isFetching) {
     return <ActionButtonSkeleton />
@@ -41,17 +36,11 @@ const EditTitleButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
           ref={ref}
           size={"lg"}
           variant="default"
-          onClick={open}
+          onClick={onClick}
         >
           <IconEdit stroke={1.4} />
         </ActionIcon>
       </Tooltip>
-      <EditNodeTitleModal
-        opened={opened}
-        node={{id: doc?.id!, title: doc?.title!}}
-        onSubmit={close}
-        onCancel={close}
-      />
     </Box>
   )
 })

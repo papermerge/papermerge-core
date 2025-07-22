@@ -38,13 +38,13 @@ import {
 } from "@tabler/icons-react"
 import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
-import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
-import DeletePagesButton from "./DeletePagesButton"
-import EditTitleButton from "./EditTitleButton"
+import DeleteEntireDocumentConfirm from "../../features/document/components/DeleteEntireDocumentConfirm"
+import DeletePagesButton from "../../features/document/components/DeletePagesButton"
+import EditTitleButton from "../../features/document/components/EditTitleButton"
+import PageOCRDialog from "../../features/document/components/PageOCRDialog"
+import RotateButton from "../../features/document/components/RotateButton"
+import RotateCCButton from "../../features/document/components/RotateCCButton"
 import MoveDocumentDialogConfirm from "./MoveDocumentDialogConfirm"
-import PageOCRDialog from "./PageOCRDialog"
-import RotateButton from "./RotateButton"
-import RotateCCButton from "./RotateCCButton"
 
 interface Args {
   opened: boolean

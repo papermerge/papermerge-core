@@ -1,6 +1,9 @@
 import {useAppSelector} from "@/app/hooks"
 import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
-import {selectOtherPanelComponent} from "@/features/ui/uiSlice"
+import {
+  selectOtherPanelComponent,
+  selectViewerPagesHaveChangedDialogVisibility
+} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useEffect, useState} from "react"
 import {ContextMenu, ExtractPagesDirection, MoveDocumentDirection} from "viewer"
@@ -14,6 +17,9 @@ interface Args {
   onEditNodeTitleItemClicked: () => void
   onRotateCWItemClicked: () => void
   onRotateCCItemClicked: () => void
+  onResetChangesItemClicked: () => void
+  onSaveChangesItemClicked: () => void
+  onDeletePagesItemClicked: () => void
 }
 
 export default function ContextMenuContainer({
@@ -21,7 +27,10 @@ export default function ContextMenuContainer({
   position,
   onEditNodeTitleItemClicked,
   onRotateCCItemClicked,
-  onRotateCWItemClicked
+  onRotateCWItemClicked,
+  onResetChangesItemClicked,
+  onSaveChangesItemClicked,
+  onDeletePagesItemClicked
 }: Args) {
   const [showExtractPagesItem, setShowExtractPagesItem] = useState<
     ExtractPagesDirection | undefined
@@ -35,6 +44,10 @@ export default function ContextMenuContainer({
   const otherPanelComponent = useAppSelector(s =>
     selectOtherPanelComponent(s, mode)
   )
+  const visibility = useAppSelector(
+    selectViewerPagesHaveChangedDialogVisibility
+  )
+  const showPagesHaveChangedRelatedItems = visibility == "opened"
 
   const hasSelectedPages = selectedPages && selectedPages.length > 0
 
@@ -69,9 +82,15 @@ export default function ContextMenuContainer({
       showDeletePagesItem={hasSelectedPages}
       showRotateCCItem={hasSelectedPages}
       showRotateCWItem={hasSelectedPages}
+      showResetChangesItem={showPagesHaveChangedRelatedItems}
+      showSaveChangesItem={showPagesHaveChangedRelatedItems}
+      showViewOCRedTextItem={false}
       onChangeTitleItemClicked={onEditNodeTitleItemClicked}
       onRotateCCItemClicked={onRotateCCItemClicked}
       onRotateCWItemClicked={onRotateCWItemClicked}
+      onResetChangesItemClicked={onResetChangesItemClicked}
+      onSaveChangesItemClicked={onSaveChangesItemClicked}
+      onDeletePagesItemClicked={onDeletePagesItemClicked}
     />
   )
 }

@@ -52,12 +52,12 @@ export default function DeleteWithAllPagesSelected({
       {error && <Error message={error} />}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onCancel}>
-          {t("common.yes")}
+          {t("common.no")}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onDeleteDocument} color={"red"}>
-            {t("common.no")}
+            {t("common.yes")}
           </Button>
         </Group>
       </Group>

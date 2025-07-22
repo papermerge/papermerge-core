@@ -40,6 +40,19 @@
     "newTitleLabel": "Neuer Dokumenttitel",
     "placeholder": "Titel"
   },
+  "viewerContextMenu": {
+    "changeTitle": "Titel ändern",
+    "ocrText": "OCR-Text",
+    "rotateClockwise": "Im Uhrzeigersinn drehen",
+    "rotateCounterClockwise": "Gegen den Uhrzeigersinn drehen",
+    "resetChanges": "Änderungen zurücksetzen",
+    "saveChanges": "Änderungen speichern",
+    "moveDocument": "Dokument verschieben",
+    "extractPages": "Seiten extrahieren",
+    "deletePages": "Seiten löschen",
+    "deleteDocument": "Dokument löschen",
+    "dangerZone": "Gefahrenzone"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

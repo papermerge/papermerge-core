@@ -6,6 +6,8 @@ import {
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useEffect, useState} from "react"
+import {useTranslation} from "react-i18next"
+import type {I18NViewerContextMenu} from "viewer"
 import {ContextMenu, ExtractPagesDirection, MoveDocumentDirection} from "viewer"
 
 interface Args {
@@ -34,6 +36,7 @@ export default function ContextMenuContainer({
   onDeletePagesItemClicked,
   onDeleteDocumentItemClicked
 }: Args) {
+  const txt = useI18nText()
   const [showExtractPagesItem, setShowExtractPagesItem] = useState<
     ExtractPagesDirection | undefined
   >()
@@ -77,6 +80,7 @@ export default function ContextMenuContainer({
 
   return (
     <ContextMenu
+      txt={txt}
       opened={opened}
       position={position}
       showExtractPagesItem={showExtractPagesItem}
@@ -96,4 +100,31 @@ export default function ContextMenuContainer({
       onDeleteDocumentItemClicked={onDeleteDocumentItemClicked}
     />
   )
+}
+
+function useI18nText(): I18NViewerContextMenu | undefined {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NViewerContextMenu>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        changeTitle: t("viewerContextMenu.changeTitle"),
+        ocrText: t("viewerContextMenu.ocrText"),
+        rotateClockwise: t("viewerContextMenu.rotateClockwise"),
+        rotateCounterClockwise: t("viewerContextMenu.rotateCounterClockwise"),
+        resetChanges: t("viewerContextMenu.resetChanges"),
+        saveChanges: t("viewerContextMenu.saveChanges"),
+        moveDocument: t("viewerContextMenu.moveDocument"),
+        extractPages: t("viewerContextMenu.extractPages"),
+        deletePages: t("viewerContextMenu.deletePages"),
+        deleteDocument: t("viewerContextMenu.deleteDocument"),
+        dangerZone: t("viewerContextMenu.dangerZone")
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized, t])
+
+  return txt
 }

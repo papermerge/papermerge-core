@@ -40,6 +40,19 @@
     "newTitleLabel": "New Title",
     "placeholder": "Title"
   },
+  "viewerContextMenu": {
+    "changeTitle": "Change Title",
+    "ocrText": "OCR Text",
+    "rotateClockwise": "Rotate clockwise",
+    "rotateCounterClockwise": "Rotate counter-clockwise",
+    "resetChanges": "Reset changes",
+    "saveChanges": "Save changes",
+    "moveDocument": "Move Document",
+    "extractPages": "Extract Pages",
+    "deletePages": "Delete pages",
+    "deleteDocument": "Delete document",
+    "dangerZone": "Danger Zone"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

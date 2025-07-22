@@ -166,6 +166,10 @@ export default function Viewer() {
     }
   }
 
+  const onDeleteDocumentItemClicked = () => {
+    openDeleteEntireDocumentConfirm()
+  }
+
   if (!doc) {
     return <Loader />
   }
@@ -210,6 +214,7 @@ export default function Viewer() {
           onResetChangesItemClicked={onResetChangesItemClicked}
           onSaveChangesItemClicked={onSaveChangesItemClicked}
           onDeletePagesItemClicked={onDeletePagesItemClicked}
+          onDeleteDocumentItemClicked={onDeleteDocumentItemClicked}
         />
       </Flex>
       <EditNodeTitleModal

@@ -20,6 +20,7 @@ interface Args {
   onResetChangesItemClicked: () => void
   onSaveChangesItemClicked: () => void
   onDeletePagesItemClicked: () => void
+  onDeleteDocumentItemClicked: () => void
 }
 
 export default function ContextMenuContainer({
@@ -30,7 +31,8 @@ export default function ContextMenuContainer({
   onRotateCWItemClicked,
   onResetChangesItemClicked,
   onSaveChangesItemClicked,
-  onDeletePagesItemClicked
+  onDeletePagesItemClicked,
+  onDeleteDocumentItemClicked
 }: Args) {
   const [showExtractPagesItem, setShowExtractPagesItem] = useState<
     ExtractPagesDirection | undefined
@@ -91,6 +93,7 @@ export default function ContextMenuContainer({
       onResetChangesItemClicked={onResetChangesItemClicked}
       onSaveChangesItemClicked={onSaveChangesItemClicked}
       onDeletePagesItemClicked={onDeletePagesItemClicked}
+      onDeleteDocumentItemClicked={onDeleteDocumentItemClicked}
     />
   )
 }

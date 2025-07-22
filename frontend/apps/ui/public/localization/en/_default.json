@@ -35,6 +35,29 @@
     "allowedExtentions": "Allowed extensions:",
     "caseSensitivity": "Uppercase and lowercase letters don't matter."
   },
+  "editNodeTitleModal": {
+    "title": "Edit Title",
+    "newTitleLabel": "New Title",
+    "placeholder": "Title"
+  },
+  "viewerContextMenu": {
+    "changeTitle": "Change Title",
+    "ocrText": "OCR Text",
+    "rotateClockwise": "Rotate clockwise",
+    "rotateCounterClockwise": "Rotate counter-clockwise",
+    "resetChanges": "Reset changes",
+    "saveChanges": "Save changes",
+    "moveDocument": "Move Document",
+    "extractPages": "Extract Pages",
+    "deletePages": "Delete pages",
+    "deleteDocument": "Delete document",
+    "dangerZone": "Danger Zone"
+  },
+  "deleteEntireDocumentConfirmDialog": {
+    "title": "Document Delete",
+    "mainMessage": "Do you really want to delete this document?",
+    "confirmButtonText": "Yes, delete this document"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

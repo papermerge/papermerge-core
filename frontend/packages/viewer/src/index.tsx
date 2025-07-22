@@ -4,6 +4,8 @@ import type {
   MoveDocumentDirection
 } from "./components/ContextMenu"
 import ContextMenu from "./components/ContextMenu"
+import type {I18NDeleteEntireDocumentConfirmDialog} from "./components/DeleteEntireDocumentConfirmDialog"
+import DeleteEntireDocumentConfirmDialog from "./components/DeleteEntireDocumentConfirmDialog"
 import type {
   DownloadDocumentVersion,
   I18NDownloadButtonText
@@ -25,6 +27,7 @@ import Zoom from "./components/Zoom"
 
 export {
   ContextMenu,
+  DeleteEntireDocumentConfirmDialog,
   DownloadButton,
   ExtractPagesModal,
   Page,
@@ -38,6 +41,7 @@ export {
 export type {
   DownloadDocumentVersion,
   ExtractPagesDirection,
+  I18NDeleteEntireDocumentConfirmDialog,
   I18NDownloadButtonText,
   I18NExtractPagesModal,
   I18NPagesHaveChangedDialogText,

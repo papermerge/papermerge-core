@@ -35,6 +35,29 @@
     "allowedExtentions": "Erlaubte Dateiendungen:",
     "caseSensitivity": "Groß- und Kleinschreibung spielt keine Rolle."
   },
+  "editNodeTitleModal": {
+    "title": "Dokumenttitel bearbeiten",
+    "newTitleLabel": "Neuer Dokumenttitel",
+    "placeholder": "Titel"
+  },
+  "viewerContextMenu": {
+    "changeTitle": "Titel ändern",
+    "ocrText": "OCR-Text",
+    "rotateClockwise": "Im Uhrzeigersinn drehen",
+    "rotateCounterClockwise": "Gegen den Uhrzeigersinn drehen",
+    "resetChanges": "Änderungen zurücksetzen",
+    "saveChanges": "Änderungen speichern",
+    "moveDocument": "Dokument verschieben",
+    "extractPages": "Seiten extrahieren",
+    "deletePages": "Seiten löschen",
+    "deleteDocument": "Dokument löschen",
+    "dangerZone": "Gefahrenzone"
+  },
+  "deleteEntireDocumentConfirmDialog": {
+    "title": "Dokument löschen",
+    "mainMessage": "Möchtest du dieses Dokument wirklich löschen?",
+    "confirmButtonText": "Ja, lösche diese Dokument"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

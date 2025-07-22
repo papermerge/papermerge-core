@@ -1,29 +1,34 @@
 import {useAppDispatch} from "@/app/hooks"
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
+import DeletePagesButton from "@/features/document/components/DeletePagesButton"
+import EditTitleButton from "@/features/document/components/EditTitleButton"
 import {updateActionPanel} from "@/features/ui/uiSlice"
 import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useViewportSize} from "@mantine/hooks"
 import {useContext, useEffect, useRef} from "react"
-import DeletePagesButton from "./DeletePagesButton"
-import EditTitleButton from "./EditTitleButton"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
 import DownloadButton from "@/features/document/components/DownloadButton"
+import RotateButton from "@/features/document/components/RotateButton"
+import RotateCCButton from "@/features/document/components/RotateCCButton"
+import RunOCRButton from "@/features/document/components/RunOCRButton"
 import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
-import type {DocumentType} from "@/features/document/types"
-import RotateButton from "./RotateButton"
-import RotateCCButton from "./RotateCCButton"
-import RunOCRButton from "./RunOCRButton"
 
 interface Args {
-  doc?: DocumentType
-  isFetching: boolean
-  isError: boolean
+  onEditNodeTitleClicked: () => void
+  onRotateCWClicked: () => void
+  onRotateCCClicked: () => void
+  onDeletePagesClicked: () => void
 }
 
-export default function ActionButtons({doc, isFetching, isError}: Args) {
+export default function ActionButtons({
+  onEditNodeTitleClicked,
+  onRotateCWClicked,
+  onRotateCCClicked,
+  onDeletePagesClicked
+}: Args) {
   const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
@@ -48,12 +53,18 @@ export default function ActionButtons({doc, isFetching, isError}: Args) {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        <EditTitleButton doc={doc} isFetching={isFetching} isError={isError} />
+        <EditTitleButton onClick={onEditNodeTitleClicked} />
         {!runtimeConfig.ocr__automatic && <RunOCRButton />}
         <DownloadButton />
-        {selectedPages.length > 0 && <RotateButton />}
-        {selectedPages.length > 0 && <RotateCCButton />}
-        {selectedPages.length > 0 && <DeletePagesButton />}
+        {selectedPages.length > 0 && (
+          <RotateButton onClick={onRotateCWClicked} />
+        )}
+        {selectedPages.length > 0 && (
+          <RotateCCButton onClick={onRotateCCClicked} />
+        )}
+        {selectedPages.length > 0 && (
+          <DeletePagesButton onClick={onDeletePagesClicked} />
+        )}
       </Group>
       <Group>
         <DuplicatePanelButton />

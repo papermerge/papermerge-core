@@ -1,10 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
-import Error from "@/components/Error"
 import PanelContext from "@/contexts/PanelContext"
 import {useDeleteNodesMutation} from "@/features/nodes/apiSlice"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {Button, Group, Loader, Modal} from "@mantine/core"
-import {useContext, useState} from "react"
+import {useContext, useEffect, useState} from "react"
+import type {I18NDeleteEntireDocumentConfirmDialog} from "viewer"
+import {DeleteEntireDocumentConfirmDialog} from "viewer"
 
 import type {PanelMode} from "@/types"
 import {useTranslation} from "react-i18next"
@@ -16,16 +16,12 @@ interface Args {
   text?: string
 }
 
-const TEXT =
-  "You are about to delete ALL pages. This is same as deleting entire document. Delete entire document?"
-
-export default function DeleteWithAllPagesSelected({
+export default function DeleteEntireDocumentConfirmDialogContainer({
   opened,
-  onCancel,
   onSubmit,
-  text = TEXT
+  onCancel
 }: Args) {
-  const {t} = useTranslation()
+  const txt = useI18nText()
   const [error, setError] = useState("")
   const mode: PanelMode = useContext(PanelContext)
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
@@ -44,23 +40,39 @@ export default function DeleteWithAllPagesSelected({
 
   const reset = () => {
     setError("")
+    onCancel()
   }
 
   return (
-    <Modal title={t("documents.delete.one")} opened={opened} onClose={onCancel}>
-      {text}
-      {error && <Error message={error} />}
-      <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onCancel}>
-          {t("common.no")}
-        </Button>
-        <Group>
-          {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onDeleteDocument} color={"red"}>
-            {t("common.yes")}
-          </Button>
-        </Group>
-      </Group>
-    </Modal>
+    <DeleteEntireDocumentConfirmDialog
+      txt={txt}
+      opened={opened}
+      error={error}
+      inProgress={isLoading}
+      onSubmit={onDeleteDocument}
+      onCancel={reset}
+    />
   )
+}
+
+function useI18nText(): I18NDeleteEntireDocumentConfirmDialog | undefined {
+  const {t, i18n} = useTranslation()
+  const [txt, setTxt] = useState<I18NDeleteEntireDocumentConfirmDialog>()
+
+  useEffect(() => {
+    if (i18n.isInitialized) {
+      setTxt({
+        title: t("deleteEntireDocumentConfirmDialog.title"),
+        mainMessage: t("deleteEntireDocumentConfirmDialog.mainMessage"),
+        cancel: t("common.cancel"),
+        confirmButtonText: t(
+          "deleteEntireDocumentConfirmDialog.confirmButtonText"
+        )
+      })
+    } else {
+      setTxt(undefined)
+    }
+  }, [i18n.isInitialized, t])
+
+  return txt
 }

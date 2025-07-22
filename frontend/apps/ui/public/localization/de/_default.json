@@ -53,6 +53,11 @@
     "deleteDocument": "Dokument löschen",
     "dangerZone": "Gefahrenzone"
   },
+  "deleteEntireDocumentConfirmDialog": {
+    "title": "Dokument löschen",
+    "mainMessage": "Möchtest du dieses Dokument wirklich löschen?",
+    "confirmButtonText": "Ja, lösche diese Dokument"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

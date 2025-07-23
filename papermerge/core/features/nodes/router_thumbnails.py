@@ -8,7 +8,6 @@ from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from papermerge.core.db.engine import Session
 from papermerge.core import utils, db
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
@@ -18,8 +17,6 @@ from papermerge.core.pathlib import rel2abs, thumbnail_path
 from papermerge.core.utils import image
 from papermerge.core.db.common import has_node_perm
 from papermerge.core.exceptions import HTTP403Forbidden, HTTP404NotFound
-
-
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 
 router = APIRouter(

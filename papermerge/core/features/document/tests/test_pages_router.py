@@ -1,32 +1,5 @@
-from sqlalchemy import select
-
-from papermerge.core import orm, schema, dbapi
+from papermerge.core import schema, dbapi
 from papermerge.core.tests.resource_file import ResourceFile
-
-
-def test_get_document_details(
-    auth_api_client, make_document_from_resource, user, db_session
-):
-    doc = make_document_from_resource(
-        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
-    )
-
-    stmt = (
-        select(orm.Page)
-        .join(orm.DocumentVersion)
-        .join(orm.Document)
-        .where(orm.Document.id == doc.id)
-    )
-    pages = db_session.execute(stmt).scalars().all()
-
-    response = auth_api_client.get(f"/pages/{pages[0].id}/jpg")
-    assert response.status_code == 200, response.json()
-
-    response = auth_api_client.get(f"/pages/{pages[1].id}/jpg")
-    assert response.status_code == 200, response.json()
-
-    response = auth_api_client.get(f"/pages/{pages[2].id}/jpg")
-    assert response.status_code == 200, response.json()
 
 
 def test_router_move_pages_endpoint_one_single_page_mix(

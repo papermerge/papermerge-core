@@ -15,7 +15,6 @@ from papermerge.core.types import (
     ImagePreviewSize,
 )
 from papermerge.core.features.nodes.schema import Node
-from papermerge.core import pathlib as plib
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
 from papermerge.core.features.document import s3
@@ -292,38 +291,6 @@ class NewDocument(BaseModel):
 class Thumbnail(BaseModel):
     url: str
     size: int
-
-
-def _s3_page_svg_url(uid: UUID) -> str:
-    from papermerge.core.cloudfront import sign_url
-
-    resource_path = plib.page_svg_path(uid)
-    prefix = settings.papermerge__main__prefix
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
-
-    return sign_url(
-        url,
-        valid_for=600,  # valid for 600 seconds
-    )
-
-
-def _s3_docver_download_url(uid: UUID, file_name: str) -> str:
-    from papermerge.core.cloudfront import sign_url
-
-    resource_path = plib.docver_path(uid, file_name)
-    prefix = settings.papermerge__main__cf_domain
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{resource_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{resource_path}"
-
-    return sign_url(
-        url,
-        valid_for=600,  # valid for 600 seconds
-    )
 
 
 class MovePage(BaseModel):

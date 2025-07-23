@@ -1,12 +1,12 @@
 [project]
 name = "papermerge"
-version = "3.5.1"
+version = "3.5.2"
 description = "Open source document management system for digital archives"
 authors = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 maintainers = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 license = "Apache 2.0"
 readme = "README.md"
@@ -19,15 +19,15 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 keywords = [
-  "PDF",
-  "OCR",
-  "optical character recognition",
-  "PDF/A",
-  "scanning",
-  "dms",
-  "document-management",
-  "paperless",
-  "archives"
+    "PDF",
+    "OCR",
+    "optical character recognition",
+    "PDF/A",
+    "scanning",
+    "dms",
+    "document-management",
+    "paperless",
+    "archives"
 ]
 packages = [
     { include = "papermerge/core" },
@@ -81,7 +81,7 @@ use_vars = true
 env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
 
 [tool.taskipy.tasks]
-test = {cmd = "{env_vars} pytest", cwd = "." }
+test = { cmd = "{env_vars} pytest", cwd = "." }
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "fastapi dev papermerge/app.py"
@@ -100,9 +100,9 @@ indent-width = 4
 
 [tool.ruff.lint]
 "select" = [
-    "F",    # pyflakes
+    "F", # pyflakes
     "I001", # isort
-    "UP",   # pyupgrade
+    "UP", # pyupgrade
 ]
 "ignore" = [
     "UP007"

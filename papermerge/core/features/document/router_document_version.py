@@ -3,16 +3,18 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Security, Depends, status
 from fastapi.responses import FileResponse
 
 from papermerge.core.constants import ContentType
-from papermerge.core import schema, utils, db, dbapi, orm
+from papermerge.core import schema, utils, dbapi, orm
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
+from papermerge.core.db.engine import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +28,22 @@ class PDFFileResponse(FileResponse):
 
 @router.get("/{document_version_id}/download", response_class=PDFFileResponse)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
-def download_document_version(
+async def download_document_version(
     document_version_id: uuid.UUID,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Downloads given document version
 
     Required scope: `{scope}`
     """
     try:
-        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+        doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=document_version_id
         )
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
                 db_session,
                 node_id=doc_id,
                 codename=scopes.DOCUMENT_DOWNLOAD,
@@ -49,7 +51,7 @@ def download_document_version(
         ):
             raise exc.HTTP403Forbidden()
 
-        doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+        doc_ver: orm.DocumentVersion = await dbapi.get_doc_ver(
             db_session,
             document_version_id=document_version_id,
         )
@@ -77,10 +79,10 @@ def download_document_version(
     },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
-def get_doc_ver_download_url(
+async def get_doc_ver_download_url(
     doc_ver_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.DownloadURL:
     """
     Returns URL for downloading given document version
@@ -88,10 +90,10 @@ def get_doc_ver_download_url(
     Required scope: `{scope}`
     """
     try:
-        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+        doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=doc_ver_id
         )
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=doc_id,
             codename=scopes.NODE_VIEW,
@@ -99,7 +101,7 @@ def get_doc_ver_download_url(
         ):
             raise exc.HTTP403Forbidden()
 
-        result = dbapi.get_doc_version_download_url(
+        result = await dbapi.get_doc_version_download_url(
             db_session,
             doc_ver_id=doc_ver_id,
         )
@@ -112,27 +114,27 @@ def get_doc_ver_download_url(
 
 @router.get("/{document_version_id}", response_model=schema.DocumentVersion)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def document_version_details(
+async def document_version_details(
     document_version_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    db_session=Depends(db.get_db),
+    db_session=Depends(get_db),
 ):
     """Get document version details
 
     Required scope: `{scope}`
     """
     try:
-        doc_id = dbapi.get_doc_id_from_doc_ver_id(
+        doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=document_version_id
         )
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
                 db_session,
                 node_id=doc_id,
                 codename=scopes.NODE_VIEW,
                 user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
-        doc_ver: orm.DocumentVersion = dbapi.get_doc_ver(
+        doc_ver: orm.DocumentVersion = await dbapi.get_doc_ver(
             db_session, document_version_id=document_version_id
         )
     except NoResultFound:

@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.constants import ContentType
-from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
@@ -20,23 +20,23 @@ DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
 
-def test_get_doc_last_ver(db_session: Session, make_document, user):
+async def test_get_doc_last_ver(db_session: AsyncSession, make_document, user):
     doc: schema.Document = make_document(
         title="some doc", user=user, parent=user.home_folder
     )
     assert len(doc.versions) == 1
 
-    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
-    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
-    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
-    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
 
     last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
     assert last_ver.number == 5
 
 
-def test_get_doc_cfv_only_empty_values(
-    db_session: Session, make_document_receipt, user
+async def test_get_doc_cfv_only_empty_values(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     In this scenario we have one document of type "Groceries" i.e. a receipt.
@@ -51,7 +51,7 @@ def test_get_doc_cfv_only_empty_values(
     regardless if custom field has set a value or no
     """
     receipt = make_document_receipt(title="receipt-1.pdf", user=user)
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     assert len(items) == 3
     # with just value set to None it is ambiguous:
     # was value was set to None or was value not set at all ?
@@ -68,8 +68,8 @@ def test_get_doc_cfv_only_empty_values(
     "effective_date_input",
     ["2024-10-28", "2024-10-28 00:00:00", "2024-10-28 00", "2024-10-28 anything here"],
 )
-def test_document_add_valid_date_cfv(
-    effective_date_input, db_session: Session, make_document_receipt, user
+async def test_document_add_valid_date_cfv(
+    effective_date_input, db_session: AsyncSession, make_document_receipt, user
 ):
     """
     Custom field of type `date` is set to string "2024-10-28"
@@ -79,41 +79,41 @@ def test_document_add_valid_date_cfv(
     # value = custom field value
     cf = {"EffectiveDate": effective_date_input}
 
-    dbapi.update_doc_cfv(db_session, document_id=receipt.id, custom_fields=cf)
+    await dbapi.update_doc_cfv(db_session, document_id=receipt.id, custom_fields=cf)
 
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
 
     assert eff_date_cf.value == Date(2024, 10, 28)
 
 
-def test_document_update_custom_field_of_type_date(
-    db_session: Session, make_document_receipt, user
+async def test_document_update_custom_field_of_type_date(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-26"},
     )
 
     # update existing value
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
     )
 
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
 
     # notice it is 27, not 26
     assert eff_date_cf.value == Date(2024, 9, 27)
 
 
-def test_document_add_multiple_CFVs(db_session: Session, make_document_receipt, user):
+async def test_document_add_multiple_CFVs(db_session: AsyncSession, make_document_receipt, user):
     """
     In this scenario we pass multiple custom field values to
     `db.update_doc_cfv` function
@@ -123,13 +123,13 @@ def test_document_add_multiple_CFVs(db_session: Session, make_document_receipt, 
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
     shop_cf = next(item for item in items if item.name == "Shop")
     total_cf = next(item for item in items if item.name == "Total")
@@ -139,8 +139,8 @@ def test_document_add_multiple_CFVs(db_session: Session, make_document_receipt, 
     assert total_cf.value == 32.97
 
 
-def test_document_update_multiple_CFVs(
-    db_session: Session, make_document_receipt, user
+async def test_document_update_multiple_CFVs(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     In this scenario we pass multiple custom field values to
@@ -151,7 +151,7 @@ def test_document_update_multiple_CFVs(
 
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -159,13 +159,13 @@ def test_document_update_multiple_CFVs(
 
     # Update all existing CFVs in one shot
     cf = {"EffectiveDate": "2024-09-27", "Shop": "Lidl", "Total": "40.22"}
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
     shop_cf = next(item for item in items if item.name == "Shop")
     total_cf = next(item for item in items if item.name == "Total")
@@ -175,8 +175,8 @@ def test_document_update_multiple_CFVs(
     assert total_cf.value == 40.22
 
 
-def test_document_without_cfv_update_document_type_to_none(
-    db_session: Session, make_document_receipt, user
+async def test_document_without_cfv_update_document_type_to_none(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     In this scenario we have a document of specific document type (groceries)
@@ -187,24 +187,24 @@ def test_document_without_cfv_update_document_type_to_none(
     In this scenario document does not have associated CFV
     """
     receipt = make_document_receipt(title="receipt-1.pdf", user=user)
-    items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
 
-    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
+    await dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
-    items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
     assert len(items) == 0
 
     stmt = select(func.count(cf_orm.CustomFieldValue.id)).where(
         cf_orm.CustomFieldValue.document_id == receipt.id
     )
-    assert db_session.execute(stmt).scalar() == 0
+    assert (await db_session.execute(stmt)).scalar() == 0
 
 
-def test_document_with_cfv_update_document_type_to_none(
-    db_session: Session, make_document_receipt, user
+async def test_document_with_cfv_update_document_type_to_none(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     In this scenario we have a document of specific document type (groceries)
@@ -216,24 +216,24 @@ def test_document_with_cfv_update_document_type_to_none(
     """
     receipt = make_document_receipt(title="receipt-1.pdf", user=user)
     # add some cfv
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
     )
-    items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
     # there is exactly one cfv: one value for EffectiveDate
     stmt = select(func.count(cf_orm.CustomFieldValue.id)).where(
         cf_orm.CustomFieldValue.document_id == receipt.id
     )
-    assert db_session.execute(stmt).scalar() == 1
+    assert (await db_session.execute(stmt)).scalar() == 1
 
     # set document type to None
-    dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
+    await dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
-    items = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     # document does not have any type associated, thus no custom fields
     assert len(items) == 0
 
@@ -242,11 +242,11 @@ def test_document_with_cfv_update_document_type_to_none(
     )
 
     # no more associated CFVs
-    assert db_session.execute(stmt).scalar() == 0
+    assert (await db_session.execute(stmt)).scalar() == 0
 
 
-def test_document_update_string_custom_field_value_multiple_times(
-    db_session: Session, make_document_receipt, user
+async def test_document_update_string_custom_field_value_multiple_times(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     Every time custom field value is updated the retrieved value
@@ -255,27 +255,27 @@ def test_document_update_string_custom_field_value_multiple_times(
     receipt = make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "lidl"},
     )
 
     # update existing value
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "rewe"},
     )
 
-    items: list[schema.CFV] = dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
     shop_cf = next(item for item in items if item.name == "Shop")
 
     assert shop_cf.value == "rewe"
 
 
-def test_get_docs_by_type_without_cf(
-    db_session: Session, make_document, make_document_type_without_cf, user
+async def test_get_docs_by_type_without_cf(
+    db_session: AsyncSession, make_document, make_document_type_without_cf, user
 ):
     """
     `db.get_docs_by_type` must return all documents of specific type
@@ -284,17 +284,17 @@ def test_get_docs_by_type_without_cf(
     dtype = make_document_type_without_cf(name="resume")
     doc_1 = make_document(title="receipt_1.pdf", user=user, parent=user.home_folder)
     doc_2 = make_document(title="receipt_2.pdf", user=user, parent=user.home_folder)
-    dbapi.update_doc_type(db_session, document_id=doc_1.id, document_type_id=dtype.id)
-    dbapi.update_doc_type(db_session, document_id=doc_2.id, document_type_id=dtype.id)
+    await dbapi.update_doc_type(db_session, document_id=doc_1.id, document_type_id=dtype.id)
+    await dbapi.update_doc_type(db_session, document_id=doc_2.id, document_type_id=dtype.id)
 
-    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
         db_session, type_id=dtype.id, user_id=user.id
     )
 
     assert len(items) == 2
 
 
-def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user):
+async def test_get_docs_by_type_basic(db_session: AsyncSession, make_document_receipt, user):
     """
     `db.get_docs_by_type` must return all documents of specific type
     regardless if they (documents) have or no associated custom field values.
@@ -309,7 +309,7 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user
     user_id = doc_1.user.id
     type_id = doc_1.document_type.id
 
-    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
         db_session, type_id=type_id, user_id=user_id
     )
 
@@ -322,8 +322,8 @@ def test_get_docs_by_type_basic(db_session: Session, make_document_receipt, user
         assert cf["Total"] is None
 
 
-def test_get_docs_by_type_one_doc_with_nonempty_cfv(
-    db_session: Session, make_document_receipt, user
+async def test_get_docs_by_type_one_doc_with_nonempty_cfv(
+    db_session: AsyncSession, make_document_receipt, user
 ):
     """
     `db.get_docs_by_type` must return all documents of specific type
@@ -338,13 +338,13 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     type_id = doc_1.document_type.id
 
     # update all CFV of receipt_1.pdf to non-empty values
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=doc_1.id,
         custom_fields={"Shop": "rewe", "EffectiveDate": "2024-10-15", "Total": "15.63"},
     )
 
-    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
         db_session, type_id=type_id, user_id=user_id
     )
 
@@ -365,8 +365,8 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv(
             assert cf["Total"] is None
 
 
-def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
-    db_session: Session, make_document_tax, user
+async def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
+    db_session: AsyncSession, make_document_tax, user
 ):
     """
     `db.get_docs_by_type` must return all documents of specific type
@@ -384,13 +384,13 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
     type_id = doc_1.document_type.id
 
     # tax_1.pdf has non-empty year values
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=doc_1.id,
         custom_fields={"Year": 2020},
     )
 
-    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
         db_session, type_id=type_id, user_id=user_id
     )
 
@@ -407,8 +407,8 @@ def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
             assert cf["Year"] is None
 
 
-def test_get_docs_by_type_one_tax_doc_ordered_asc(
-    db_session: Session, make_document_tax, user
+async def test_get_docs_by_type_one_tax_doc_ordered_asc(
+    db_session: AsyncSession, make_document_tax, user
 ):
     """
     This scenario catches a bug.
@@ -422,7 +422,7 @@ def test_get_docs_by_type_one_tax_doc_ordered_asc(
     type_id = doc_1.document_type.id
 
     # tax_1.pdf has non-empty year values
-    dbapi.update_doc_cfv(
+    await dbapi.update_doc_cfv(
         db_session,
         document_id=doc_1.id,
         custom_fields={"Year": 2020},
@@ -430,23 +430,23 @@ def test_get_docs_by_type_one_tax_doc_ordered_asc(
 
     # asserts that there is no exception when ordered by
     # (int) field "Year"
-    items: list[schema.DocumentCFV] = dbapi.get_docs_by_type(
+    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
         db_session, type_id=type_id, user_id=user_id, order_by="Year"
     )
 
     assert len(items) == 1
 
 
-def test_document_version_dump(db_session, make_document, user):
+async def test_document_version_dump(db_session: AsyncSession, make_document, user):
     doc: schema.Document = make_document(
         title="some doc", user=user, parent=user.home_folder
     )
     # initially document has only one version
     assert len(doc.versions) == 1
 
-    dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
 
-    new_doc = db_session.get(docs_orm.Document, doc.id)
+    new_doc = await db_session.get(docs_orm.Document, doc.id)
 
     # now document has two versions
     assert len(new_doc.versions) == 2

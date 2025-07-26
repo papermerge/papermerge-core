@@ -3,11 +3,10 @@ import logging
 import uuid
 
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import Session, aliased
-
+from sqlalchemy.orm import aliased
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +21,8 @@ ORDER_BY_MAP = {
 }
 
 
-def get_custom_fields(
-    db_session: Session,
+async def get_custom_fields(
+    db_session: AsyncSession,
     *,
     user_id: uuid.UUID,
     page_size: int,
@@ -49,7 +48,7 @@ def get_custom_fields(
             )
         )
 
-    total_cf = db_session.execute(stmt_total_cf).scalar()
+    total_cf = (await db_session.execute(stmt_total_cf)).scalar()
     order_by_value = ORDER_BY_MAP.get(order_by, orm.CustomField.name.asc())
 
     offset = page_size * (page_number - 1)
@@ -80,7 +79,7 @@ def get_custom_fields(
         )
     items = []
 
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         kwargs = {
             "id": row.CustomField.id,
             "name": row.CustomField.name,
@@ -100,8 +99,8 @@ def get_custom_fields(
     )
 
 
-def get_custom_fields_without_pagination(
-    db_session: Session,
+async def get_custom_fields_without_pagination(
+    db_session: AsyncSession,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
 ) -> list[schema.CustomField]:
@@ -114,14 +113,14 @@ def get_custom_fields_without_pagination(
     else:
         raise ValueError("Both: group_id and user_id are missing")
 
-    db_cfs = db_session.scalars(stmt).all()
+    db_cfs = (await db_session.scalars(stmt)).all()
     items = [schema.CustomField.model_validate(db_cf) for db_cf in db_cfs]
 
     return items
 
 
-def create_custom_field(
-    session: Session,
+async def create_custom_field(
+    session: AsyncSession,
     name: str,
     type: schema.CustomFieldType,
     user_id: uuid.UUID | None = None,
@@ -148,21 +147,21 @@ def create_custom_field(
         )
 
     session.add(cfield)
-    session.commit()
+    await session.commit()
     result = schema.CustomField.model_validate(cfield)
 
     return result
 
 
-def get_custom_field(
-    session: Session, custom_field_id: uuid.UUID
+async def get_custom_field(
+    session: AsyncSession, custom_field_id: uuid.UUID
 ) -> schema.CustomField:
     stmt = (
         select(orm.CustomField, orm.Group)
         .join(orm.Group, orm.Group.id == orm.CustomField.group_id, isouter=True)
         .where(orm.CustomField.id == custom_field_id)
     )
-    row = session.execute(stmt).unique().one()
+    row = (await session.execute(stmt)).unique().one()
     kwargs = {
         "id": row.CustomField.id,
         "name": row.CustomField.name,
@@ -177,18 +176,18 @@ def get_custom_field(
     return result
 
 
-def delete_custom_field(session: Session, custom_field_id: uuid.UUID):
+async def delete_custom_field(session: AsyncSession, custom_field_id: uuid.UUID):
     stmt = select(orm.CustomField).where(orm.CustomField.id == custom_field_id)
     cfield = session.execute(stmt).scalars().one()
-    session.delete(cfield)
-    session.commit()
+    await session.delete(cfield)
+    await session.commit()
 
 
-def update_custom_field(
-    session: Session, custom_field_id: uuid.UUID, attrs: schema.UpdateCustomField
+async def update_custom_field(
+    session: AsyncSession, custom_field_id: uuid.UUID, attrs: schema.UpdateCustomField
 ) -> schema.CustomField:
     stmt = select(orm.CustomField).where(orm.CustomField.id == custom_field_id)
-    cfield = session.execute(stmt).scalars().one()
+    cfield = (await session.execute(stmt)).scalars().one()
     session.add(cfield)
 
     if attrs.name:
@@ -211,7 +210,7 @@ def update_custom_field(
             "Either attrs.user_id or attrs.group_id should be non-empty value"
         )
 
-    session.commit()
+    await session.commit()
     result = schema.CustomField.model_validate(cfield)
 
     return result

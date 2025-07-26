@@ -28,7 +28,6 @@ class RemoteUserScheme:
         roles = request.headers.get(roles_header_name, "")
         name = request.headers.get(name_header_name, "")
         email = request.headers.get(email_header_name, "")
-
         if not username:
             return None
 

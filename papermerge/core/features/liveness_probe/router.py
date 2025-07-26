@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Response, Depends
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import db
+from papermerge.core.db.engine import get_db
 
 router = APIRouter(
     prefix="/probe",
@@ -10,8 +11,8 @@ router = APIRouter(
 
 
 @router.get("/")
-def probe_endpoint(db_session=Depends(db.get_db)):
+async def probe_endpoint(db_session: AsyncSession = Depends(get_db)):
     """Liveness probe endpoint"""
-    db_session.execute(text("select 1"))
+    await db_session.execute(text("select 1"))
 
     return Response()

@@ -1,4 +1,5 @@
 import base64
+import asyncio
 import os
 import io
 import uuid
@@ -7,21 +8,21 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from httpx import AsyncClient
+from httpx import ASGITransport
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import select, event
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
-from papermerge.core.db.engine import Session, engine, get_db
+from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.custom_fields import router as cf_router
-
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
-
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.nodes import router_folders as folders_router
@@ -30,9 +31,11 @@ from papermerge.core.features.document import router_pages as pages_router
 from papermerge.core.features.document import (
     router_document_version as document_versions_router,
 )
-from papermerge.core.features.nodes import router_thumbnails as thumbnails_router
+from papermerge.core.features.nodes import \
+    router_thumbnails as thumbnails_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.features.document_types import router as document_types_router
+from papermerge.core.features.document_types import \
+    router as document_types_router
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.features.roles import router as roles_router
 from papermerge.core.features.tags import router as tags_router
@@ -43,11 +46,19 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.features.shared_nodes.router import router as shared_nodes_router
-
+from papermerge.core.features.shared_nodes.router import \
+    router as shared_nodes_router
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(autouse=True)
@@ -72,8 +83,8 @@ def mock_media_root_env(monkeypatch):
 
 
 @pytest.fixture()
-def make_folder(db_session: Session):
-    def _maker(
+def make_folder(db_session: AsyncSession):
+    async def _maker(
         title: str,
         parent: orm.Folder,
         user: orm.User | None = None,
@@ -94,15 +105,17 @@ def make_folder(db_session: Session):
 
         folder = orm.Folder(**kwargs)
         db_session.add(folder)
-        db_session.commit()
+        await db_session.commit()
+        await db_session.refresh(folder)
+
         return folder
 
     return _maker
 
 
 @pytest.fixture
-def make_document(db_session: Session):
-    def _maker(
+def make_document(db_session: AsyncSession):
+    async def _maker(
         title: str,
         parent: orm.Folder,
         ocr_status: OCRStatusEnum = OCRStatusEnum.unknown,
@@ -112,7 +125,7 @@ def make_document(db_session: Session):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs)
 
         if doc is None:
             raise Exception("Document was not created")
@@ -170,7 +183,7 @@ def make_document_from_resource(make_document, db_session):
 
 
 @pytest.fixture
-def make_document_with_pages(db_session: Session):
+def make_document_with_pages(db_session: AsyncSession):
     """Creates a document with one version
 
     Document Version has 3 pages and one associated PDF file (also with 3 pages)
@@ -201,7 +214,7 @@ def make_document_with_pages(db_session: Session):
 
 
 @pytest.fixture()
-def make_document_version(db_session: Session):
+def make_document_version(db_session: AsyncSession):
     def _maker(
         page_count: int,
         user: orm.User,
@@ -241,7 +254,7 @@ def make_document_version(db_session: Session):
 
 
 @pytest.fixture()
-def make_page(db_session: Session, user: orm.User):
+def make_page(db_session: AsyncSession, user: orm.User):
     def _make():
         db_pages = []
         for number in range(1, 4):
@@ -268,7 +281,7 @@ def make_page(db_session: Session, user: orm.User):
 
 
 @pytest.fixture()
-def my_documents_folder(db_session: Session, user, make_folder):
+def my_documents_folder(db_session: AsyncSession, user, make_folder):
     my_docs = make_folder(title="My Documents", user=user, parent=user.home_folder)
     return my_docs
 
@@ -295,26 +308,32 @@ def get_app_with_routes():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    Base.metadata.create_all(engine)
+async def setup_database():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture(scope="function")
-def db_session():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
+async def db_session():
+    connection = await engine.connect()
+    transaction = await connection.begin()
+    session = AsyncSession(bind=connection, expire_on_commit=False)
 
     try:
         yield session
     finally:
-        session.close()
-        transaction.rollback()
-        connection.close()
+        await session.close()
+        await transaction.rollback()
+        await connection.close()
 
 
 @pytest.fixture()
-def api_client(db_session):
+async def api_client(db_session):
     """Unauthenticated REST API client"""
     app = get_app_with_routes()
 
@@ -323,14 +342,15 @@ def api_client(db_session):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app) as c:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
 
     app.dependency_overrides.clear()
 
 
 @pytest.fixture()
-def auth_api_client(db_session, user: orm.User):
+async def auth_api_client(db_session, user: orm.User):
     """Authenticated REST API client"""
     app = get_app_with_routes()
 
@@ -348,14 +368,18 @@ def auth_api_client(db_session, user: orm.User):
     token = f"abc.{middle_part}.xyz"
 
     app.dependency_overrides[get_db] = override_get_db
-    test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
 
-    yield AuthTestClient(test_client=test_client, user=user)
+    async with AsyncClient(
+            app=app,
+            base_url="http://test",
+            headers={"Authorization": f"Bearer {token}"}
+    ) as async_client:
+        yield AuthTestClient(test_client=async_client, user=user)
+
     app.dependency_overrides.clear()
 
-
 @pytest.fixture()
-def make_api_client(make_user, db_session):
+async def make_api_client(make_user, db_session):
     """Builds an authenticated client
     i.e. an instance of AuthTestClient with associated (and authenticated) user
     """
@@ -363,8 +387,8 @@ def make_api_client(make_user, db_session):
     def override_get_db():
         yield db_session
 
-    def _make(username: str):
-        user = make_user(username=username)
+    async def _make(username: str):
+        user = await make_user(username=username)  # Await the make_user call
         app = get_app_with_routes()
 
         middle_part = utils.base64.encode(
@@ -378,19 +402,22 @@ def make_api_client(make_user, db_session):
         token = f"abc.{middle_part}.xyz"
         app.dependency_overrides[get_db] = override_get_db
 
-        test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
+        async_client = AsyncClient(
+            app=app,
+            base_url="http://test",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-        return AuthTestClient(test_client=test_client, user=user)
+        return AuthTestClient(test_client=async_client, user=user)
 
     return _make
 
-
 @pytest.fixture()
-def login_as(db_session):
+async def login_as(db_session):
     def override_get_db():
         yield db_session
 
-    def _make(user):
+    async def _make(user):
         app = get_app_with_routes()
         app.dependency_overrides[get_db] = override_get_db
 
@@ -404,21 +431,25 @@ def login_as(db_session):
         )
         token = f"abc.{middle_part}.xyz"
 
-        test_client = TestClient(app, headers={"Authorization": f"Bearer {token}"})
+        async_client = AsyncClient(
+            app=app,
+            base_url="http://test",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-        return AuthTestClient(test_client=test_client, user=user)
+        return AuthTestClient(test_client=async_client, user=user)
 
     return _make
 
 
 @pytest.fixture()
-def user(make_user) -> orm.User:
-    return make_user(username="random")
+async def user(make_user) -> orm.User:
+    return await make_user(username="random")
 
 
 @pytest.fixture()
-def make_user(db_session: Session):
-    def _maker(username: str, is_superuser: bool = True):
+async def make_user(db_session: AsyncSession):
+    async def _maker(username: str, is_superuser: bool = True):
         user_id = uuid.uuid4()
         home_id = uuid.uuid4()
         inbox_id = uuid.uuid4()
@@ -450,10 +481,10 @@ def make_user(db_session: Session):
         db_session.add(db_inbox)
         db_session.add(db_home)
         db_session.add(db_user)
-        db_session.commit()
+        await db_session.commit()
         db_user.home_folder_id = db_home.id
         db_user.inbox_folder_id = db_inbox.id
-        db_session.commit()
+        await db_session.commit()
 
         return db_user
 
@@ -461,7 +492,7 @@ def make_user(db_session: Session):
 
 
 @pytest.fixture
-def document_type_groceries(db_session: Session, user, make_custom_field):
+def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
@@ -475,7 +506,7 @@ def document_type_groceries(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def make_document_type_without_cf(db_session: Session, user, make_custom_field):
+def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
     def _make_document_type(name: str):
         return dbapi.create_document_type(
             db_session,
@@ -488,7 +519,7 @@ def make_document_type_without_cf(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_zdf(db_session: Session, user, make_custom_field):
+def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Start Date", type=CustomFieldType.date)
     cf2 = make_custom_field(name="End Date", type=CustomFieldType.date)
     cf3 = make_custom_field(name="Total Due", type=CustomFieldType.monetary)
@@ -502,7 +533,7 @@ def document_type_zdf(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_salary(db_session: Session, user, make_custom_field):
+def document_type_salary(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Month", type=CustomFieldType.yearmonth)
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="Company", type=CustomFieldType.date)
@@ -516,7 +547,7 @@ def document_type_salary(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_tax(db_session: Session, user, make_custom_field):
+def document_type_tax(db_session: AsyncSession, user, make_custom_field):
     cf = make_custom_field(name="Year", type=CustomFieldType.int)
 
     return dbapi.create_document_type(
@@ -528,7 +559,7 @@ def document_type_tax(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def make_custom_field(db_session: Session, user):
+def make_custom_field(db_session: AsyncSession, user):
     def _make_custom_field(
         name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
     ):
@@ -601,7 +632,7 @@ def make_document_type(db_session, make_user, make_custom_field):
 
 
 @pytest.fixture
-def make_document_receipt(db_session: Session, document_type_groceries):
+def make_document_receipt(db_session: AsyncSession, document_type_groceries):
     def _make_receipt(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -629,7 +660,7 @@ def make_document_receipt(db_session: Session, document_type_groceries):
 
 
 @pytest.fixture
-def make_document_salary(db_session: Session, document_type_salary):
+def make_document_salary(db_session: AsyncSession, document_type_salary):
     def _make_salary(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -657,7 +688,7 @@ def make_document_salary(db_session: Session, document_type_salary):
 
 
 @pytest.fixture
-def make_document_tax(db_session: Session, document_type_tax):
+def make_document_tax(db_session: AsyncSession, document_type_tax):
     def _make_tax(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -707,12 +738,12 @@ def make_group(db_session):
 
 @pytest.fixture()
 def make_role(db_session):
-    def _maker(name: str, scopes: list[str] | None = None):
+    async def _maker(name: str, scopes: list[str] | None = None):
         if scopes is None:
             scopes = []
 
         stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
-        perms = db_session.execute(stmt).scalars().all()
+        perms = (await db_session.execute(stmt)).scalars().all()
         role = orm.Role(name=name, permissions=perms)
         db_session.add(role)
         db_session.commit()

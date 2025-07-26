@@ -1,10 +1,7 @@
-from papermerge.core.db.engine import Session
-
 from sqlalchemy import select
 
 from papermerge.core import schema, dbapi, orm
 from papermerge.core.tests.types import AuthTestClient
-
 from .utils import verify_password
 
 

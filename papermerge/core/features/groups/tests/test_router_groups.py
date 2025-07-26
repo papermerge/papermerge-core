@@ -1,12 +1,13 @@
-from sqlalchemy import func
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import schema, db
+from papermerge.core import schema
 from papermerge.core.features.groups.db import orm
 from papermerge.core.tests.types import AuthTestClient
 
 
-def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Session):
-    count_before = db_session.query(func.count(orm.Group.id)).scalar()
+async def test_create_group_route(auth_api_client: AuthTestClient, db_session: AsyncSession):
+    count_before = await db_session.scalar(select(func.count(orm.Group.id)))
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -15,9 +16,8 @@ def test_create_group_route(auth_api_client: AuthTestClient, db_session: db.Sess
     )
 
     assert response.status_code == 201, response.json()
-    count_after = db_session.query(func.count(orm.Group.id)).scalar()
+    count_after = await db_session.scalar(select(func.count(orm.Group.id)))
     assert count_after == 1
-
 
 def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_session):
     group = make_group(name="demo")
@@ -31,7 +31,7 @@ def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_sess
 
 
 def test_get_group_details(
-    make_group, auth_api_client: AuthTestClient, db_session: db.Session
+    make_group, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
     group = make_group(name="demo")
 

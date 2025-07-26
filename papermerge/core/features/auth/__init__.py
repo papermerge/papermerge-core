@@ -3,18 +3,17 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import exceptions as exc
 from papermerge.core import types
-
 from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.auth.remote_scheme import RemoteUserScheme
 from papermerge.core.features.auth import scopes
 from papermerge.core.db import exceptions as db_exc
-from papermerge.core.db.engine import Session
 from papermerge.core.utils import base64
-from papermerge.core.db import get_db
+from papermerge.core.db.engine import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="auth/token/",
@@ -53,11 +52,11 @@ def extract_token_data(token: str = Depends(oauth2_scheme)) -> types.TokenData |
         )
 
 
-def get_current_user(
+async def get_current_user(
     security_scopes: SecurityScopes,
     remote_user: users_schema.RemoteUser | None = Depends(remote_user_scheme),
     token: str | None = Depends(oauth2_scheme),
-    db_session: Session = Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> users_schema.User:
     user = None
     total_scopes = []
@@ -66,10 +65,10 @@ def get_current_user(
 
         if token_data is not None:
             try:
-                user = usr_dbapi.get_user(db_session, token_data.username)
+                user = await usr_dbapi.get_user(db_session, token_data.username)
             except db_exc.UserNotFound:
                 # create normal user
-                user = usr_dbapi.create_user(
+                user = await usr_dbapi.create_user(
                     db_session,
                     username=token_data.username,
                     email=token_data.email,
@@ -82,7 +81,7 @@ def get_current_user(
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local groups
         if len(token_data.groups) > 0:
-            s = usr_dbapi.get_user_scopes_from_groups(
+            s = await usr_dbapi.get_user_scopes_from_groups(
                 db_session,
                 user_id=UUID(token_data.user_id),
                 groups=token_data.groups,
@@ -95,7 +94,7 @@ def get_current_user(
         # If remote_user is not present in our DB then just create it
         # (with its home folder ID, inbox folder ID etc)
         try:
-            user = usr_dbapi.get_user(db_session, remote_user.username)
+            user = await usr_dbapi.get_user(db_session, remote_user.username)
         except db_exc.UserNotFound:
             # create normal user
             user = usr_dbapi.create_user(
@@ -109,7 +108,7 @@ def get_current_user(
             total_scopes.extend(scopes.SCOPES.keys())
         # augment user scopes with permissions associated to local roles
         if len(remote_user.roles) > 0:
-            s = usr_dbapi.get_user_scopes_from_roles(
+            s = await usr_dbapi.get_user_scopes_from_roles(
                 db_session, user_id=user.id, roles=remote_user.roles
             )
             total_scopes.extend(s)

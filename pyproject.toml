@@ -53,7 +53,8 @@ dependencies = [
     "pydantic-settings >=2",
     "alembic >=1.13.3",
     "fastapi[standard] >=0.115",
-    "taskipy >=1.14"
+    "taskipy >=1.14",
+    "asyncpg (>=0.30.0,<0.31.0)"
 ]
 
 [project.urls]

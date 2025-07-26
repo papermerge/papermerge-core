@@ -1,25 +1,22 @@
 import logging
 import uuid
 import math
-
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
 from sqlalchemy import func, select, delete, update, exists
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
-from papermerge.core.db.engine import Session
 from papermerge.core import schema
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
 from papermerge.core import orm
-
 from .orm import Folder
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +80,7 @@ def get_folder_by_id(db_session: Session, id: uuid.UUID) -> schema.Folder:
     return schema.Folder.model_validate(db_folder)
 
 
-def get_paginated_nodes(
+async def get_paginated_nodes(
     db_session: Session,
     parent_id: UUID,
     user_id: UUID,

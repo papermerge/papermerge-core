@@ -3,7 +3,6 @@ import uuid
 from typing import Annotated, Iterable, Union
 from uuid import UUID
 
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
@@ -13,7 +12,6 @@ from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.constants import INDEX_ADD_NODE
-from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -39,7 +37,7 @@ settings = config.get_settings()
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_node(
+async def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
@@ -54,7 +52,7 @@ def get_node(
     if params.order_by:
         order_by = [item.strip() for item in params.order_by.split(",")]
 
-    if not dbapi_common.has_node_perm(
+    if not await dbapi_common.has_node_perm(
         db_session,
         node_id=parent_id,
         codename=scopes.NODE_VIEW,
@@ -62,7 +60,7 @@ def get_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    nodes = nodes_dbapi.get_paginated_nodes(
+    nodes = await nodes_dbapi.get_paginated_nodes(
         db_session=db_session,
         parent_id=parent_id,
         user_id=user.id,

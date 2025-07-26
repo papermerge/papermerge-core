@@ -3,8 +3,8 @@ from uuid import UUID
 
 from sqlalchemy import select, exists, literal
 from sqlalchemy.orm import aliased
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core.db.engine import Session
 from papermerge.core.features.nodes.db import orm
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.features.groups.db import orm as groups_orm
@@ -12,8 +12,8 @@ from papermerge.core.features.roles.db import orm as roles_orm
 from papermerge.core.features.nodes import schema as nodes_schema
 
 
-def get_ancestors(
-    db_session: Session, node_id: UUID, include_self=True
+async def get_ancestors(
+    db_session: AsyncSession, node_id: UUID, include_self=True
 ) -> List[Tuple[UUID, str]]:
     """Returns all ancestors of the node
 
@@ -44,13 +44,13 @@ def get_ancestors(
     if not include_self:
         stmt = stmt.where(tree.c.id != node_id)
 
-    result = db_session.execute(stmt)
+    result = await db_session.execute(stmt)
 
     return [(row.id, row.title) for row in result]
 
 
-def get_descendants(
-    db_session: Session, node_ids: list[UUID], include_selfs=True
+async def get_descendants(
+    db_session: AsyncSession, node_ids: list[UUID], include_selfs=True
 ) -> list[Tuple[UUID, str]]:
     """Returns descendants of all `node_ids` nodes
 
@@ -82,13 +82,13 @@ def get_descendants(
     if not include_selfs:
         stmt = stmt.where(tree.c.id.not_in(node_ids))
 
-    result = db_session.execute(stmt)
+    result = await db_session.execute(stmt)
 
     return [(row.id, row.title) for row in result]
 
 
-def has_node_perm(
-    db_session: Session,
+async def has_node_perm(
+    db_session: AsyncSession,
     node_id: UUID,
     codename: str,
     user_id: UUID,
@@ -129,7 +129,7 @@ def has_node_perm(
         AND sn.node_id IN (<node_id> ancestors)
     )
     """
-    ancestor_ids = [item[0] for item in get_ancestors(db_session, node_id)]
+    ancestor_ids = [item[0] for item in await get_ancestors(db_session, node_id)]
 
     ug = aliased(groups_orm.user_groups_association)
     # groups user belongs to
@@ -160,12 +160,12 @@ def has_node_perm(
     )
     stmt = exists(node_access.union_all(node_shared_access)).select()
 
-    has_access = db_session.execute(stmt).scalar()
+    has_access = await db_session.execute(stmt).scalar()
 
     return has_access
 
 
-def get_node_owner(db_session: Session, node_id: UUID) -> nodes_schema.Owner:
+async def get_node_owner(db_session: AsyncSession, node_id: UUID) -> nodes_schema.Owner:
     stmt = (
         select(
             orm.Node.group_id,
@@ -178,7 +178,7 @@ def get_node_owner(db_session: Session, node_id: UUID) -> nodes_schema.Owner:
         .join(groups_orm.Group, groups_orm.Group.id == orm.Node.group_id, isouter=True)
     ).where(orm.Node.id == node_id)
 
-    row = db_session.execute(stmt).one()
+    row = await db_session.execute(stmt).one()
 
     if row.user_id is None:
         owner_name = row.group_name

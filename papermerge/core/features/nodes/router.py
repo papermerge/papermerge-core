@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
 from papermerge.core.constants import INDEX_REMOVE_NODE
@@ -19,7 +20,7 @@ from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
-from papermerge.core.db import get_db
+from papermerge.core.db.engine import get_db
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -41,7 +42,7 @@ async def get_node(
     parent_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[Union[schema.DocumentNode, schema.Folder]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
 
@@ -86,12 +87,12 @@ async def get_node(
 @utils.docstring_parameter(
     scope=scopes.NODE_CREATE,
 )
-def create_node(
+async def create_node(
     pynode: schema.NewFolder | schema.NewDocument,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.Folder | schema.Document | None:
     """Creates a node
 
@@ -114,7 +115,7 @@ def create_node(
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = schema.NewFolder(**attrs)
-        created_node, error = nodes_dbapi.create_folder(db_session, new_folder)
+        created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -136,7 +137,7 @@ def create_node(
 
         new_document = schema.NewDocument(**attrs)
 
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=pynode.parent_id,
             codename=scopes.NODE_CREATE,
@@ -144,7 +145,7 @@ def create_node(
         ):
             raise exc.HTTP403Forbidden()
 
-        created_node, error = doc_dbapi.create_document(db_session, new_document)
+        created_node, error = await doc_dbapi.create_document(db_session, new_document)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -163,13 +164,13 @@ def create_node(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def update_node(
+async def update_node(
     node_id: UUID,
     node: schema.UpdateNode,
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.Node:
     """Updates node
 
@@ -187,11 +188,12 @@ def update_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    updated_node = nodes_dbapi.update_node(
+    updated_node = await nodes_dbapi.update_node(
         db_session, node_id=node_id, user_id=user.id, attrs=node
     )
 
     send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
+
     return updated_node
 
 
@@ -206,12 +208,12 @@ def update_node(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_DELETE)
-def delete_nodes(
+async def delete_nodes(
     list_of_uuids: list[UUID],
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Deletes nodes with specified UUIDs
 
@@ -222,7 +224,7 @@ def delete_nodes(
     were found) - will return an empty list.
     """
     for node_id in list_of_uuids:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_DELETE,
@@ -230,7 +232,7 @@ def delete_nodes(
         ):
             raise exc.HTTP403Forbidden()
 
-    error = nodes_dbapi.delete_nodes(
+    error = await nodes_dbapi.delete_nodes(
         db_session, node_ids=list_of_uuids, user_id=user.id
     )
 
@@ -272,10 +274,10 @@ def delete_nodes(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_MOVE)
-def move_nodes(
+async def move_nodes(
     params: schema.MoveNode,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> list[UUID]:
     """Move source nodes into the target node.
 
@@ -295,7 +297,7 @@ def move_nodes(
     """
     try:
         for source_id in params.source_ids:
-            if not dbapi_common.has_node_perm(
+            if not await dbapi_common.has_node_perm(
                 db_session,
                 node_id=source_id,
                 codename=scopes.NODE_MOVE,
@@ -303,7 +305,7 @@ def move_nodes(
             ):
                 raise exc.HTTP403Forbidden()
 
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=params.target_id,
             codename=scopes.NODE_UPDATE,
@@ -358,13 +360,13 @@ def move_nodes(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def assign_node_tags(
+async def assign_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Assigns given list of tag names to the node.
@@ -379,7 +381,7 @@ def assign_node_tags(
     existing node tags** with the one from input list.
     """
     try:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_UPDATE,
@@ -387,7 +389,7 @@ def assign_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = nodes_dbapi.assign_node_tags(
+        node, error = await nodes_dbapi.assign_node_tags(
             db_session, node_id=node_id, tags=tags, user_id=user.id
         )
     except EntityNotFound:
@@ -412,10 +414,10 @@ def assign_node_tags(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_nodes_details(
+async def get_nodes_details(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     node_ids: list[uuid.UUID] | None = Query(default=None),
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.Folder | schema.Document]:
     """Returns detailed information about queried nodes
     (breadcrumb, tags)
@@ -432,7 +434,7 @@ def get_nodes_details(
         return []
 
     for node_id in node_ids:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_VIEW,
@@ -440,7 +442,7 @@ def get_nodes_details(
         ):
             raise exc.HTTP403Forbidden()
 
-    nodes = nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
+    nodes = await nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes
 
@@ -455,13 +457,13 @@ def get_nodes_details(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def update_node_tags(
+async def update_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Appends given list of tag names to the node.
@@ -487,7 +489,7 @@ def update_node_tags(
         are still assigned to N1.
     """
     try:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_UPDATE,
@@ -495,7 +497,7 @@ def update_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = nodes_dbapi.update_node_tags(
+        node, error = await nodes_dbapi.update_node_tags(
             db_session, node_id=node_id, tags=tags, user_id=user.id
         )
     except EntityNotFound:
@@ -519,7 +521,7 @@ def update_node_tags(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
-def get_node_tags(
+async def get_node_tags(
     node_id: UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     db_session=Depends(get_db),
@@ -530,7 +532,7 @@ def get_node_tags(
     Required scope: `{scope}`
     """
     try:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_VIEW,
@@ -538,7 +540,7 @@ def get_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        tags, error = nodes_dbapi.get_node_tags(
+        tags, error = await nodes_dbapi.get_node_tags(
             db_session, node_id=node_id, user_id=user.id
         )
     except EntityNotFound:
@@ -560,13 +562,13 @@ def get_node_tags(
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-def remove_node_tags(
+async def remove_node_tags(
     node_id: UUID,
     tags: list[str],
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
-    db_session=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document | schema.Folder:
     """
     Dissociate given tags the node.
@@ -576,7 +578,7 @@ def remove_node_tags(
     Tags models are not deleted - just dissociated from the node.
     """
     try:
-        if not dbapi_common.has_node_perm(
+        if not await dbapi_common.has_node_perm(
             db_session,
             node_id=node_id,
             codename=scopes.NODE_UPDATE,
@@ -584,7 +586,7 @@ def remove_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = nodes_dbapi.remove_node_tags(
+        node, error = await nodes_dbapi.remove_node_tags(
             db_session, node_id=node_id, tags=tags, user_id=user.id
         )
     except EntityNotFound:

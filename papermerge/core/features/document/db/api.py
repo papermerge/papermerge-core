@@ -472,7 +472,7 @@ async def version_bump_from_pages(
     return dst_doc, None
 
 
-def update_text_field(db_session, document_version_id: uuid.UUID, streams):
+async def update_text_field(db_session: AsyncSession, document_version_id: uuid.UUID, streams):
     """Update document versions's text field from IO streams.
 
     Arguments:
@@ -489,13 +489,13 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
         .order_by(orm.Page.number)
     )
 
-    pages = [(row.id, row.text, row.number) for row in db_session.execute(stmt)]
+    pages = [(row.id, row.text, row.number) for row in await db_session.execute(stmt)]
 
     for page, stream in zip(pages, streams):
         if page[1] is None:  # page.text
             txt = stream.read()
             sql = update(orm.Page).where(orm.Page.id == page[0]).values(text=txt)
-            db_session.execute(sql)
+            await db_session.execute(sql)
             text.append(txt.strip())
 
     stripped_text = " ".join(text)
@@ -506,8 +506,8 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
             .where(orm.DocumentVersion.id == document_version_id)
             .values(text=stripped_text)
         )
-        db_session.execute(sql)
-    db_session.commit()
+        await db_session.execute(sql)
+    await db_session.commit()
 
 
 class UploadStrategy:
@@ -549,8 +549,8 @@ def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
     return page_count
 
 
-def create_next_version(
-    db_session,
+async def create_next_version(
+    db_session: AsyncSession,
     doc: orm.Document,
     file_name,
     file_size,
@@ -564,7 +564,7 @@ def create_next_version(
         )
         .order_by(orm.DocumentVersion.number.desc())
     )
-    document_version = db_session.execute(stmt).scalar()
+    document_version = (await db_session.execute(stmt)).scalar()
 
     if not document_version:
         document_version = orm.DocumentVersion(
@@ -586,8 +586,8 @@ def create_next_version(
     return document_version
 
 
-def upload(
-    db_session,
+async def upload(
+    db_session: AsyncSession,
     document_id: uuid.UUID,
     content: io.BytesIO,
     size: int,
@@ -595,7 +595,7 @@ def upload(
     content_type: str | None = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
-    doc = db_session.get(orm.Document, document_id)
+    doc = await db_session.get(orm.Document, document_id)
     orig_ver = None
 
     if content_type != constants.ContentType.APPLICATION_PDF:
@@ -609,7 +609,7 @@ def upload(
             error = schema.Error(messages=[str(e)])
             return None, error
 
-        orig_ver = create_next_version(
+        orig_ver = await create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
 

@@ -7,22 +7,22 @@ from pathlib import Path
 from typing import List, Tuple
 
 from pikepdf import Pdf
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, ScalarResult
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import tasks
 from papermerge.core import constants as const
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.utils.decorators import if_redis_present
-from papermerge.core.db import Session
 from papermerge.core import orm, schema, types
 from papermerge.core.features.document.db import api as doc_dbapi
 
 logger = logging.getLogger(__name__)
 
 
-def copy_text_field(
-    db_session: Session,
+async def copy_text_field(
+    db_session: AsyncSession,
     src: schema.DocumentVersion,
     dst: schema.DocumentVersion,
     page_numbers: list[int],
@@ -33,7 +33,7 @@ def copy_text_field(
         page_numbers=page_numbers,
     )
     # updates page.text fields and document_version.text field
-    doc_dbapi.update_text_field(db_session, dst.id, streams)
+    await doc_dbapi.update_text_field(db_session, dst.id, streams)
 
 
 def collect_text_streams(
@@ -51,8 +51,8 @@ def collect_text_streams(
     return result
 
 
-def apply_pages_op(
-    db_session, items: List[schema.PageAndRotOp], user_id: uuid.UUID
+async def apply_pages_op(
+    db_session: AsyncSession, items: List[schema.PageAndRotOp], user_id: uuid.UUID
 ) -> List[schema.Document]:
     """Apply operations (operation = transformation) on the document
 
@@ -68,17 +68,17 @@ def apply_pages_op(
         - recreate the 'page' models (and copy text from old one to new ones)
         - recreate pdf file (and copy its pages from old one to new ones)
     """
-    pages = db_session.execute(
+    pages = (await db_session.execute(
         select(orm.Page).where(orm.Page.id.in_(item.page.id for item in items))
-    ).scalars()
+    )).scalars()
 
     pages = pages.all()
 
-    old_version = db_session.execute(
+    old_version = (await db_session.execute(
         select(orm.DocumentVersion)
         .where(orm.DocumentVersion.id == pages[0].document_version_id)
         .limit(1)
-    ).scalar()
+    )).scalar()
 
     doc = old_version.document
     new_version = doc_dbapi.version_bump(
@@ -87,7 +87,7 @@ def apply_pages_op(
 
     copy_pdf_pages(src=old_version.file_path, dst=new_version.file_path, items=items)
 
-    copy_text_field(
+    await copy_text_field(
         db_session,
         src=old_version,
         dst=new_version,
@@ -210,8 +210,8 @@ def reuse_ocr_data(
     return not_copied_ids
 
 
-def move_pages(
-    db_session: Session,
+async def move_pages(
+    db_session: AsyncSession,
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
     move_strategy: schema.MoveStrategy,
@@ -231,7 +231,7 @@ def move_pages(
             user_id=user_id,
         )
 
-    return move_pages_mix(
+    return await move_pages_mix(
         db_session,
         source_page_ids=source_page_ids,
         target_page_id=target_page_id,
@@ -239,8 +239,8 @@ def move_pages(
     )
 
 
-def move_pages_mix(
-    db_session,
+async def move_pages_mix(
+    db_session: AsyncSession,
     *,
     source_page_ids: List[uuid.UUID],
     target_page_id: uuid.UUID,
@@ -257,20 +257,20 @@ def move_pages_mix(
     document is deleted and None is yielded as first
     value of the returned tuple.
     """
-    [src_old_version, src_new_version, moved_pages_count] = copy_without_pages(
+    [src_old_version, src_new_version, moved_pages_count] = await copy_without_pages(
         db_session, source_page_ids, user_id=user_id
     )
-    moved_pages = db_session.execute(
+    moved_pages = (await db_session.execute(
         select(orm.Page)
         .where(orm.Page.id.in_(source_page_ids))
         .order_by(orm.Page.number)
-    ).scalars()
+    )).scalars()
     moved_pages = moved_pages.all()
     moved_page_ids = [page.id for page in moved_pages]
 
-    dst_page = db_session.execute(
+    dst_page = (await db_session.execute(
         select(orm.Page).where(orm.Page.id == target_page_id)
-    ).scalar()
+    )).scalar()
 
     dst_old_version = db_session.query(orm.DocumentVersion).where(
         orm.DocumentVersion.id == dst_page.document_version_id
@@ -318,10 +318,10 @@ def move_pages_mix(
         # Delete entire source and return None as first tuple element
         _dst_doc = dst_new_version.document
 
-        db_session.execute(
+        await db_session.execute(
             delete(orm.Node).where(orm.Node.id == src_old_version.document.id)
         )
-        db_session.commit()
+        await db_session.commit()
 
         return None, _dst_doc
 
@@ -601,9 +601,9 @@ def extract_to_multi_paged_doc(
     return new_doc
 
 
-def copy_without_pages(
-    db_session, page_ids: List[uuid.UUID], user_id: uuid.UUID
-) -> [schema.DocumentVersion, schema.DocumentVersion, int]:
+async def copy_without_pages(
+    db_session: AsyncSession, page_ids: List[uuid.UUID], user_id: uuid.UUID
+) -> Tuple[schema.DocumentVersion, schema.DocumentVersion, int]:
     """Copy all pages  WHICH ARE NOT in `page_ids` list from src to dst
 
     All pages are assumed to be from same source document version.
@@ -615,7 +615,7 @@ def copy_without_pages(
     Also sends INDEX UPDATE notification.
     """
     moved_pages = (
-        db_session.execute(select(orm.Page).where(orm.Page.id.in_(page_ids)))
+        (await db_session.execute(select(orm.Page).where(orm.Page.id.in_(page_ids))))
         .scalars()
         .all()
     )
@@ -626,7 +626,7 @@ def copy_without_pages(
     src_old_doc = src_old_version.document
     moved_pages_count = len(moved_pages)
 
-    src_new_version = doc_dbapi.version_bump(
+    src_new_version = await doc_dbapi.version_bump(
         db_session,
         doc_id=src_old_doc.id,
         page_count=len(src_old_version.pages) - moved_pages_count,
@@ -640,11 +640,11 @@ def copy_without_pages(
         page_numbers=[page.number for page in moved_pages],
     )
 
-    src_old_version_page_ids = db_session.execute(
+    src_old_version_page_ids = (await db_session.execute(
         select(orm.Page.id)
         .where(orm.Page.document_version_id == src_old_version.id)
         .order_by("number")
-    ).scalars()
+    )).scalars()
 
     src_keys = [  # IDs of the pages which were not removed
         page_id
@@ -652,11 +652,11 @@ def copy_without_pages(
         if not (page_id in moved_page_ids)  # Notice the negation
     ]
 
-    dst_values = db_session.execute(
+    dst_values = (await db_session.execute(
         select(orm.Page.id)
         .where(orm.Page.document_version_id == src_new_version.id)
         .order_by("number")
-    ).scalars()
+    )).scalars()
 
     if not_copied_ids := reuse_ocr_data(src_keys, dst_values.all()):
         logger.info(f"Pages with IDs {not_copied_ids} do not have OCR data")
@@ -667,7 +667,7 @@ def copy_without_pages(
         if not (p.id in moved_page_ids)  # Notice the negation
     ]
 
-    copy_text_field(
+    await copy_text_field(
         db_session, src=src_old_version, dst=src_new_version, page_numbers=page_numbers
     )
 
@@ -675,23 +675,24 @@ def copy_without_pages(
         remove_ver_id=str(src_old_version.id), add_ver_id=str(src_new_version.id)
     )
 
-    db_session.commit()
+    await db_session.commit()
 
-    return [
+    return (
         src_old_version,  # orig. ver where pages were copied from
         src_new_version,  # ver where pages were copied to
-        moved_pages_count,  # how many pages moved
-    ]
+        moved_pages_count  # how many pages moved
+    )
 
 
-def get_docver_ids(db_session, document_ids: list[uuid.UUID]) -> list[uuid.UUID]:
+
+async def get_docver_ids(db_session: AsyncSession, document_ids: list[uuid.UUID]) -> ScalarResult[uuid.UUID]:
     """Returns list of all document version IDs belonging to
     documents identified by IDs=document_ids
     """
     stmt = select(orm.DocumentVersion.id).where(
         orm.DocumentVersion.document_id.in_(document_ids)
     )
-    return db_session.execute(stmt).scalars()
+    return (await db_session.execute(stmt)).scalars()
 
 
 @if_redis_present

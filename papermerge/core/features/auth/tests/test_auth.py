@@ -12,10 +12,10 @@ async def test_get_current_user(token):
 
 
 async def test_remote_based_authentication(montaigne: User, api_client: AsyncClient):
-    response = await api_client.get("/users/me/", headers={"Remote-User": "montaigne"})
+    response = await api_client.get("/users/me", headers={"Remote-User": "montaigne"})
     assert response.status_code == 200
 
 
 async def test_remote_based_authentication_no_headers(api_client: AsyncClient):
-    response = await api_client.get("/users/me/")
+    response = await api_client.get("/users/me")
     assert response.status_code == 401

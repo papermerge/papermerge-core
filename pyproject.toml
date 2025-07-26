@@ -120,3 +120,4 @@ build-backend = "setuptools.build_meta"
 # $ pytest test_common.py
 [tool.pytest.ini_options]
 testpaths = ["papermerge/core/features/"]
+asyncio_mode = "auto"

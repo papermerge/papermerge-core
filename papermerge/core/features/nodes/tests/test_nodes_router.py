@@ -3,7 +3,6 @@ import uuid
 from sqlalchemy import select, func
 
 from core.features.conftest import make_document
-from papermerge.core.db.engine import Session
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core import orm, schema

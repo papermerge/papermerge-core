@@ -1,15 +1,16 @@
 import uuid
 
-from sqlalchemy import func
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core.db.engine import Session
 from papermerge.core import orm, schema
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 
 
-def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):
-    count_before = db_session.query(func.count(orm.Tag.id)).scalar()
+async def test_create_tag_route(auth_api_client: AuthTestClient, db_session: AsyncSession):
+    count_before_result = await db_session.execute(select(func.count(orm.Tag.id)))
+    count_before = count_before_result.scalar()
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -18,7 +19,8 @@ def test_create_tag_route(auth_api_client: AuthTestClient, db_session: Session):
     )
 
     assert response.status_code == 201, response.json()
-    count_after = db_session.query(func.count(orm.Tag.id)).scalar()
+    count_after_result = await db_session.execute(select(func.count(orm.Tag.id)))
+    count_after = count_after_result.scalar()
     assert count_after == 1
 
 

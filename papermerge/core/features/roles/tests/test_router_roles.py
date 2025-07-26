@@ -1,12 +1,13 @@
-from sqlalchemy import func
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import schema, db, dbapi
+from papermerge.core import schema, dbapi
 from papermerge.core.features.roles.db import orm
 from papermerge.core.tests.types import AuthTestClient
 
 
 def test_creating_role_when_no_perms_are_in_sys(
-    auth_api_client: AuthTestClient, db_session: db.Session
+    auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
     """If user attempts to create a role when there are
     no permissions in the system (e.g. permissions were not synced),
@@ -19,9 +20,10 @@ def test_creating_role_when_no_perms_are_in_sys(
     assert response.status_code == 500, response.json()
 
 
-def test_create_role_route(auth_api_client: AuthTestClient, db_session: db.Session):
-    dbapi.sync_perms(db_session)
-    count_before = db_session.query(func.count(orm.Role.id)).scalar()
+async def test_create_role_route(auth_api_client: AuthTestClient, db_session: AsyncSession):
+    await dbapi.sync_perms(db_session)
+
+    count_before = await db_session.scalar(select(func.count(orm.Role.id)))
     assert count_before == 0
 
     response = auth_api_client.post(
@@ -30,14 +32,15 @@ def test_create_role_route(auth_api_client: AuthTestClient, db_session: db.Sessi
     )
 
     assert response.status_code == 201, response.json()
-    count_after = db_session.query(func.count(orm.Role.id)).scalar()
+
+    count_after = await db_session.scalar(select(func.count(orm.Role.id)))
     assert count_after == 1
 
 
-def test_update_role_route(auth_api_client: AuthTestClient, make_role, db_session):
+async def test_update_role_route(auth_api_client: AuthTestClient, make_role, db_session: AsyncSession):
     role = make_role(name="demo")
 
-    dbapi.sync_perms(db_session)
+    await dbapi.sync_perms(db_session)
     response = auth_api_client.patch(
         f"/roles/{role.id}",
         json={"name": "Admin", "scopes": ["user.view", "custom_field.view"]},
@@ -46,13 +49,13 @@ def test_update_role_route(auth_api_client: AuthTestClient, make_role, db_sessio
     assert response.status_code == 200, response.json()
 
     db_session.expire_all()
-    updated_role = dbapi.get_role(db_session, role_id=role.id)
+    updated_role = await dbapi.get_role(db_session, role_id=role.id)
 
     assert set(updated_role.scopes) == {"user.view", "custom_field.view"}
 
 
-def test_get_role_details(
-    make_role, auth_api_client: AuthTestClient, db_session: db.Session
+async def test_get_role_details(
+    make_role, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
     role = make_role(name="demo")
 

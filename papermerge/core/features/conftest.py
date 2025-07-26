@@ -173,7 +173,7 @@ def make_document_from_resource(make_document, db_session):
 
 
 @pytest.fixture
-def make_document_with_pages(db_session: Session):
+def make_document_with_pages(db_session: AsyncSession):
     """Creates a document with one version
 
     Document Version has 3 pages and one associated PDF file (also with 3 pages)
@@ -204,7 +204,7 @@ def make_document_with_pages(db_session: Session):
 
 
 @pytest.fixture()
-def make_document_version(db_session: Session):
+def make_document_version(db_session: AsyncSession):
     def _maker(
         page_count: int,
         user: orm.User,
@@ -244,7 +244,7 @@ def make_document_version(db_session: Session):
 
 
 @pytest.fixture()
-def make_page(db_session: Session, user: orm.User):
+def make_page(db_session: AsyncSession, user: orm.User):
     def _make():
         db_pages = []
         for number in range(1, 4):
@@ -271,7 +271,7 @@ def make_page(db_session: Session, user: orm.User):
 
 
 @pytest.fixture()
-def my_documents_folder(db_session: Session, user, make_folder):
+def my_documents_folder(db_session: AsyncSession, user, make_folder):
     my_docs = make_folder(title="My Documents", user=user, parent=user.home_folder)
     return my_docs
 
@@ -303,17 +303,17 @@ def setup_database():
 
 
 @pytest.fixture(scope="function")
-def db_session():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
+async def db_session():
+    connection = await engine.connect()
+    transaction = await connection.begin()
+    session = AsyncSession(bind=connection)
 
     try:
         yield session
     finally:
-        session.close()
-        transaction.rollback()
-        connection.close()
+        await session.close()
+        await transaction.rollback()
+        await connection.close()
 
 
 @pytest.fixture()
@@ -420,7 +420,7 @@ def user(make_user) -> orm.User:
 
 
 @pytest.fixture()
-def make_user(db_session: Session):
+def make_user(db_session: AsyncSession):
     def _maker(username: str, is_superuser: bool = True):
         user_id = uuid.uuid4()
         home_id = uuid.uuid4()
@@ -464,7 +464,7 @@ def make_user(db_session: Session):
 
 
 @pytest.fixture
-def document_type_groceries(db_session: Session, user, make_custom_field):
+def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
@@ -478,7 +478,7 @@ def document_type_groceries(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def make_document_type_without_cf(db_session: Session, user, make_custom_field):
+def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
     def _make_document_type(name: str):
         return dbapi.create_document_type(
             db_session,
@@ -491,7 +491,7 @@ def make_document_type_without_cf(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_zdf(db_session: Session, user, make_custom_field):
+def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Start Date", type=CustomFieldType.date)
     cf2 = make_custom_field(name="End Date", type=CustomFieldType.date)
     cf3 = make_custom_field(name="Total Due", type=CustomFieldType.monetary)
@@ -505,7 +505,7 @@ def document_type_zdf(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_salary(db_session: Session, user, make_custom_field):
+def document_type_salary(db_session: AsyncSession, user, make_custom_field):
     cf1 = make_custom_field(name="Month", type=CustomFieldType.yearmonth)
     cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
     cf3 = make_custom_field(name="Company", type=CustomFieldType.date)
@@ -519,7 +519,7 @@ def document_type_salary(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_tax(db_session: Session, user, make_custom_field):
+def document_type_tax(db_session: AsyncSession, user, make_custom_field):
     cf = make_custom_field(name="Year", type=CustomFieldType.int)
 
     return dbapi.create_document_type(
@@ -531,7 +531,7 @@ def document_type_tax(db_session: Session, user, make_custom_field):
 
 
 @pytest.fixture
-def make_custom_field(db_session: Session, user):
+def make_custom_field(db_session: AsyncSession, user):
     def _make_custom_field(
         name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
     ):
@@ -604,7 +604,7 @@ def make_document_type(db_session, make_user, make_custom_field):
 
 
 @pytest.fixture
-def make_document_receipt(db_session: Session, document_type_groceries):
+def make_document_receipt(db_session: AsyncSession, document_type_groceries):
     def _make_receipt(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -632,7 +632,7 @@ def make_document_receipt(db_session: Session, document_type_groceries):
 
 
 @pytest.fixture
-def make_document_salary(db_session: Session, document_type_salary):
+def make_document_salary(db_session: AsyncSession, document_type_salary):
     def _make_salary(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -660,7 +660,7 @@ def make_document_salary(db_session: Session, document_type_salary):
 
 
 @pytest.fixture
-def make_document_tax(db_session: Session, document_type_tax):
+def make_document_tax(db_session: AsyncSession, document_type_tax):
     def _make_tax(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -710,12 +710,12 @@ def make_group(db_session):
 
 @pytest.fixture()
 def make_role(db_session):
-    def _maker(name: str, scopes: list[str] | None = None):
+    async def _maker(name: str, scopes: list[str] | None = None):
         if scopes is None:
             scopes = []
 
         stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
-        perms = db_session.execute(stmt).scalars().all()
+        perms = (await db_session.execute(stmt)).scalars().all()
         role = orm.Role(name=name, permissions=perms)
         db_session.add(role)
         db_session.commit()

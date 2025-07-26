@@ -4,11 +4,12 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from papermerge.core import utils, db
+from papermerge.core import utils
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -18,6 +19,7 @@ from papermerge.core.utils import image
 from papermerge.core.db.common import has_node_perm
 from papermerge.core.exceptions import HTTP403Forbidden, HTTP404NotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.db.engine import get_db
 
 router = APIRouter(
     prefix="/thumbnails",
@@ -53,30 +55,30 @@ class JPEGFileResponse(FileResponse):
     },
 )
 @utils.docstring_parameter(scope=scopes.PAGE_VIEW)
-def get_document_thumbnail(
+async def get_document_thumbnail(
     document_id: uuid.UUID,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Retrieves thumbnail of the document last version's first page
 
     Required scope: `{scope}`
     """
 
-    ok = has_node_perm(
+    ok = await has_node_perm(
         db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
     )
     if not ok:
         raise HTTP403Forbidden()
 
     try:
-        doc_ver = dbapi.get_last_doc_ver(db_session, doc_id=document_id)
+        doc_ver = await dbapi.get_last_doc_ver(db_session, doc_id=document_id)
     except NoResultFound:
         raise HTTP404NotFound
     try:
-        page = dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
+        page = await dbapi.get_first_page(db_session, doc_ver_id=doc_ver.id)
     except NoResultFound:
         raise HTTPException(
             status_code=309,

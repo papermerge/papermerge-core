@@ -3,7 +3,7 @@ import uuid
 from itertools import groupby
 
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.schemas.common import PaginatedResponse
@@ -17,8 +17,8 @@ from .orm import DocumentType
 logger = logging.getLogger(__name__)
 
 
-def get_document_types_without_pagination(
-    db_session: Session,
+async def get_document_types_without_pagination(
+    db_session: AsyncSession,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
 ) -> list[schema.DocumentType]:
@@ -31,7 +31,7 @@ def get_document_types_without_pagination(
     else:
         raise ValueError("Both: group_id and user_id are missing")
 
-    db_document_types = db_session.scalars(stmt).all()
+    db_document_types = (await db_session.scalars(stmt)).all()
     items = [
         schema.DocumentType.model_validate(db_document_type)
         for db_document_type in db_document_types
@@ -40,8 +40,8 @@ def get_document_types_without_pagination(
     return items
 
 
-def get_document_types_grouped_by_owner_without_pagination(
-    db_session: Session,
+async def get_document_types_grouped_by_owner_without_pagination(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
 ) -> list[dt_schema.GroupedDocumentType]:
     """
@@ -76,7 +76,7 @@ def get_document_types_grouped_by_owner_without_pagination(
         )
     )
 
-    db_document_types = db_session.execute(stmt)
+    db_document_types = await db_session.execute(stmt)
 
     def keyfunc(x):
         if x.user_id:
@@ -99,8 +99,8 @@ def get_document_types_grouped_by_owner_without_pagination(
     return results
 
 
-def get_document_types(
-    db_session: Session,
+async def get_document_types(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
     page_size: int,
     page_number: int,
@@ -129,7 +129,7 @@ def get_document_types(
         stmt_total_doc_types = stmt_total_doc_types.where(
             DocumentType.name.icontains(filter)
         )
-    total_doc_types = db_session.execute(stmt_total_doc_types).scalar()
+    total_doc_types = (await db_session.execute(stmt_total_doc_types)).scalar()
     order_by_value = ORDER_BY_MAP.get(order_by, DocumentType.name.asc())
 
     offset = page_size * (page_number - 1)
@@ -156,7 +156,7 @@ def get_document_types(
 
     items = []
 
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         kwargs = {
             "id": row.DocumentType.id,
             "name": row.DocumentType.name,
@@ -183,8 +183,8 @@ async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.U
     return len(dtype.custom_fields)
 
 
-def create_document_type(
-    session: Session,
+async def create_document_type(
+    session: AsyncSession,
     name: str,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
@@ -197,7 +197,7 @@ def create_document_type(
         cf_ids = custom_field_ids
 
     stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
-    custom_fields = session.execute(stmt).scalars().all()
+    custom_fields = (await session.execute(stmt)).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
         name=name,
@@ -207,20 +207,20 @@ def create_document_type(
         group_id=group_id,
     )
     session.add(dtype)
-    session.commit()
+    await session.commit()
 
     return dtype
 
 
-def get_document_type(
-    session: Session, document_type_id: uuid.UUID
+async def get_document_type(
+    session: AsyncSession, document_type_id: uuid.UUID
 ) -> schema.DocumentType:
     stmt = (
         select(DocumentType, orm.Group)
         .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
         .where(DocumentType.id == document_type_id)
     )
-    row = session.execute(stmt).unique().one()
+    row = (await session.execute(stmt)).unique().one()
     kwargs = {
         "id": row.DocumentType.id,
         "name": row.DocumentType.name,
@@ -235,26 +235,26 @@ def get_document_type(
     return result
 
 
-def delete_document_type(session: Session, document_type_id: uuid.UUID):
+async def delete_document_type(session: AsyncSession, document_type_id: uuid.UUID):
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    cfield = session.execute(stmt).scalars().one()
-    session.delete(cfield)
-    session.commit()
+    cfield = (await session.execute(stmt)).scalars().one()
+    await session.delete(cfield)
+    await session.commit()
 
 
-def update_document_type(
-    session: Session,
+async def update_document_type(
+    session: AsyncSession,
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
 ) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    doc_type: DocumentType = session.execute(stmt).scalars().one()
+    doc_type: DocumentType = (await session.execute(stmt)).scalars().one()
 
     if attrs.custom_field_ids:
         stmt = select(orm.CustomField).where(
             orm.CustomField.id.in_(attrs.custom_field_ids)
         )
-        custom_fields = session.execute(stmt).scalars().all()
+        custom_fields = (await session.execute(stmt)).scalars().all()
         if attrs.custom_field_ids:
             doc_type.custom_fields = custom_fields
 
@@ -278,7 +278,7 @@ def update_document_type(
         notify_path_tmpl_worker = True
 
     session.add(doc_type)
-    session.commit()
+    await session.commit()
 
     result = schema.DocumentType.model_validate(doc_type)
 

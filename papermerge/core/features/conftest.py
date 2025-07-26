@@ -9,19 +9,18 @@ from pathlib import Path
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import select, event
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
-from papermerge.core.db.engine import Session, engine, get_db
+from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.custom_fields import router as cf_router
-
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
-
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.nodes import router as nodes_router
 from papermerge.core.features.nodes import router_folders as folders_router
@@ -30,9 +29,11 @@ from papermerge.core.features.document import router_pages as pages_router
 from papermerge.core.features.document import (
     router_document_version as document_versions_router,
 )
-from papermerge.core.features.nodes import router_thumbnails as thumbnails_router
+from papermerge.core.features.nodes import \
+    router_thumbnails as thumbnails_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.features.document_types import router as document_types_router
+from papermerge.core.features.document_types import \
+    router as document_types_router
 from papermerge.core.features.groups import router as groups_router
 from papermerge.core.features.roles import router as roles_router
 from papermerge.core.features.tags import router as tags_router
@@ -43,8 +44,8 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.features.shared_nodes.router import router as shared_nodes_router
-
+from papermerge.core.features.shared_nodes.router import \
+    router as shared_nodes_router
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -72,8 +73,8 @@ def mock_media_root_env(monkeypatch):
 
 
 @pytest.fixture()
-def make_folder(db_session: Session):
-    def _maker(
+def make_folder(db_session: AsyncSession):
+    async def _maker(
         title: str,
         parent: orm.Folder,
         user: orm.User | None = None,
@@ -94,15 +95,17 @@ def make_folder(db_session: Session):
 
         folder = orm.Folder(**kwargs)
         db_session.add(folder)
-        db_session.commit()
+        await db_session.commit()
+        await db_session.refresh(folder)
+
         return folder
 
     return _maker
 
 
 @pytest.fixture
-def make_document(db_session: Session):
-    def _maker(
+def make_document(db_session: AsyncSession):
+    async def _maker(
         title: str,
         parent: orm.Folder,
         ocr_status: OCRStatusEnum = OCRStatusEnum.unknown,
@@ -112,7 +115,7 @@ def make_document(db_session: Session):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs)
 
         if doc is None:
             raise Exception("Document was not created")

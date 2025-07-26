@@ -4,6 +4,7 @@ from itertools import groupby
 
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session, aliased
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
@@ -11,10 +12,7 @@ from papermerge.core import constants as const
 from papermerge.core import orm
 from papermerge.core.tasks import send_task
 from papermerge.core.features.document_types import schema as dt_schema
-
-
 from .orm import DocumentType
-
 
 logger = logging.getLogger(__name__)
 
@@ -179,10 +177,10 @@ def get_document_types(
     )
 
 
-def document_type_cf_count(session: Session, document_type_id: uuid.UUID):
+async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.UUID):
     """count number of custom fields associated to document type"""
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    dtype = session.scalars(stmt).one()
+    dtype = (await session.scalars(stmt)).one()
     return len(dtype.custom_fields)
 
 

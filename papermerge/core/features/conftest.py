@@ -503,12 +503,12 @@ async def make_user(db_session: AsyncSession):
 
 
 @pytest.fixture
-def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
-    cf1 = make_custom_field(name="Shop", type=CustomFieldType.text)
-    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
+async def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
+    cf1 = await make_custom_field(name="Shop", type=CustomFieldType.text)
+    cf2 = await make_custom_field(name="Total", type=CustomFieldType.monetary)
+    cf3 = await make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
 
-    return dbapi.create_document_type(
+    return await dbapi.create_document_type(
         db_session,
         name="Groceries",
         custom_field_ids=[cf1.id, cf2.id, cf3.id],
@@ -558,10 +558,10 @@ def document_type_salary(db_session: AsyncSession, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_tax(db_session: AsyncSession, user, make_custom_field):
-    cf = make_custom_field(name="Year", type=CustomFieldType.int)
+async def document_type_tax(db_session: AsyncSession, user, make_custom_field):
+    cf = await make_custom_field(name="Year", type=CustomFieldType.int)
 
-    return dbapi.create_document_type(
+    return await dbapi.create_document_type(
         db_session,
         name="Tax",
         custom_field_ids=[cf.id],
@@ -611,8 +611,8 @@ def token():
 
 
 @pytest.fixture
-def make_document_type(db_session, make_user, make_custom_field):
-    cf = make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
+async def make_document_type(db_session, make_user, make_custom_field):
+    cf = await make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
     def _make_document_type(
         name: str,
@@ -644,7 +644,7 @@ def make_document_type(db_session, make_user, make_custom_field):
 
 @pytest.fixture
 def make_document_receipt(db_session: AsyncSession, document_type_groceries):
-    def _make_receipt(title: str, user: orm.User, parent=None):
+    async def _make_receipt(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
         else:
@@ -663,7 +663,7 @@ def make_document_receipt(db_session: AsyncSession, document_type_groceries):
 
         db_session.add(doc)
 
-        db_session.commit()
+        await db_session.commit()
 
         return doc
 
@@ -700,7 +700,7 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
 
 @pytest.fixture
 def make_document_tax(db_session: AsyncSession, document_type_tax):
-    def _make_tax(title: str, user: orm.User, parent=None):
+    async def _make_tax(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
         else:
@@ -719,7 +719,7 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 
         db_session.add(doc)
 
-        db_session.commit()
+        await db_session.commit()
 
         return doc
 

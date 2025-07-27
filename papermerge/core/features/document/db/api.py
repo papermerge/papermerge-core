@@ -11,7 +11,7 @@ import img2pdf
 from pikepdf import Pdf
 from sqlalchemy import delete, func, insert, select, update, distinct, Select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.document import s3
@@ -361,9 +361,6 @@ async def create_document(
             error = schema.Error(messages=[stre])
 
     doc.owner_name = owner.name
-    # Load tags, versions and pages
-    from sqlalchemy.orm import selectinload
-    from sqlalchemy import select
 
     stmt = select(orm.Document).options(
         selectinload(orm.Document.tags),
@@ -624,16 +621,16 @@ async def upload(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
 
-        pdf_ver = create_next_version(
+        pdf_ver = await create_next_version(
             db_session,
             doc=doc,
             file_name=f"{file_name}.pdf",
             file_size=len(pdf_content),
             short_description=f"{file_type(content_type)} -> pdf",
         )
-        copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
+        await copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
 
-        copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+        await copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(pdf_content)
         orig_ver.page_count = page_count
@@ -655,10 +652,10 @@ async def upload(
             db_session.add_all([db_page_orig, db_page_pdf])
 
     else:
-        pdf_ver = create_next_version(
+        pdf_ver = await create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
-        copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+        await copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(content)
 
@@ -674,14 +671,21 @@ async def upload(
         db_session.add(pdf_ver)
 
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    owner = get_node_owner(db_session, node_id=doc.id)
+    owner = await get_node_owner(db_session, node_id=doc.id)
     doc.owner_name = owner.name
-    validated_model = schema.Document.model_validate(doc)
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc.id)
+
+    result = await db_session.execute(stmt)
+    doc_with_relations = result.scalar_one()
+    validated_model = schema.Document.model_validate(doc_with_relations)
 
     if orig_ver:
         # non PDF document
@@ -870,7 +874,9 @@ async def get_last_doc_ver(
     """
 
     stmt = (
-        select(orm.DocumentVersion)
+        select(orm.DocumentVersion).options(
+            selectinload(orm.DocumentVersion.pages)
+        )
         .join(orm.Document)
         .where(
             orm.DocumentVersion.document_id == doc_id,

@@ -54,7 +54,8 @@ dependencies = [
     "alembic >=1.13.3",
     "fastapi[standard] >=0.115",
     "taskipy >=1.14",
-    "asyncpg (>=0.30.0,<0.31.0)"
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "aiofiles (>=24.1.0,<25.0.0)"
 ]
 
 [project.urls]

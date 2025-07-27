@@ -64,7 +64,7 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 [project.optional-dependencies]
 mysql = ["mysqlclient (>=2.2)"]
-pg = ["psycopg2 (>=2.9.2)"]
+pg = ["psycopg2-binary (>=2.9.2)"]
 databases = ["mysqlclient", "psycopg2"]
 cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
 

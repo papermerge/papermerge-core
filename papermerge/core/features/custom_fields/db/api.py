@@ -178,7 +178,7 @@ async def get_custom_field(
 
 async def delete_custom_field(session: AsyncSession, custom_field_id: uuid.UUID):
     stmt = select(orm.CustomField).where(orm.CustomField.id == custom_field_id)
-    cfield = session.execute(stmt).scalars().one()
+    cfield = (await session.execute(stmt)).scalars().one()
     await session.delete(cfield)
     await session.commit()
 

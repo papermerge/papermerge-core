@@ -368,9 +368,10 @@ async def auth_api_client(db_session, user: orm.User):
     token = f"abc.{middle_part}.xyz"
 
     app.dependency_overrides[get_db] = override_get_db
+    transport = ASGITransport(app=app)
 
     async with AsyncClient(
-            app=app,
+            transport=transport,
             base_url="http://test",
             headers={"Authorization": f"Bearer {token}"}
     ) as async_client:
@@ -560,18 +561,18 @@ def document_type_tax(db_session: AsyncSession, user, make_custom_field):
 
 @pytest.fixture
 def make_custom_field(db_session: AsyncSession, user):
-    def _make_custom_field(
+    async def _make_custom_field(
         name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
     ):
         if group_id:
-            return cf_dbapi.create_custom_field(
+            return await cf_dbapi.create_custom_field(
                 db_session,
                 name=name,
                 type=type,
                 group_id=group_id,
             )
         else:
-            return cf_dbapi.create_custom_field(
+            return await cf_dbapi.create_custom_field(
                 db_session,
                 name=name,
                 type=type,
@@ -716,21 +717,21 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 
 
 @pytest.fixture()
-def make_group(db_session):
-    def _maker(name: str, with_special_folders=False):
+def make_group(db_session: AsyncSession):
+    async def _maker(name: str, with_special_folders=False):
         if with_special_folders:
             group = orm.Group(name=name)
             uid = uuid.uuid4()
             db_session.add(group)
             folder = orm.Folder(id=uid, title="home", group=group, lang="de")
             db_session.add(folder)
-            db_session.commit()
+            await db_session.commit()
             group.home_folder_id = uid
-            db_session.commit()
+            await db_session.commit()
         else:
             group = orm.Group(name=name)
             db_session.add(group)
-            db_session.commit()
+            await db_session.commit()
         return group
 
     return _maker

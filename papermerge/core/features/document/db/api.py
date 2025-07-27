@@ -361,7 +361,18 @@ async def create_document(
             error = schema.Error(messages=[stre])
 
     doc.owner_name = owner.name
-    return schema.Document.model_validate(doc), error
+    # Load tags, versions and pages
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import select
+
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc_id)
+
+    result = await db_session.execute(stmt)
+    doc_with_relations = result.scalar_one()
+    return schema.Document.model_validate(doc_with_relations), error
 
 
 async def version_bump(
@@ -396,7 +407,7 @@ async def version_bump(
         )
         db_session.add(db_page)
 
-    db_session.commit()
+    await db_session.commit()
 
     return db_new_doc_ver
 

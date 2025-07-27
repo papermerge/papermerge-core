@@ -150,7 +150,7 @@ class DocumentVersion(BaseModel):
     short_description: str | None = None
     document_id: UUID
     download_url: DownloadUrl = None
-    pages: list[BasicPage] | None = []
+    pages: list[BasicPage] | None = Field(default_factory=list)
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
@@ -191,12 +191,12 @@ class DocumentNode(BaseModel):
     id: UUID
     title: str
     ctype: Literal["document"]
-    tags: list[Tag] = []
+    tags: list[Tag] = Field(default_factory=list)
     # created_at: datetime
     # updated_at: datetime
     parent_id: UUID | None
     document_type_id: UUID | None = None
-    breadcrumb: list[tuple[UUID, str]] = []
+    breadcrumb: list[tuple[UUID, str]] = Field(default_factory=list)
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     thumbnail_url: ThumbnailUrl = None
@@ -204,7 +204,7 @@ class DocumentNode(BaseModel):
     user_id: UUID | None = None
     group_id: UUID | None = None
     owner_name: str | None = None
-    perms: list[str] = []
+    perms: list[str] = Field(default_factory=list)
     is_shared: bool = False
 
     @field_validator("thumbnail_url", mode="before")
@@ -232,7 +232,7 @@ class DocumentNode(BaseModel):
 
 
 class Document(DocumentNode):
-    versions: list[DocumentVersion] | None = []
+    versions: list[DocumentVersion] = Field(default_factory=list)
 
 
 class DocumentWithoutVersions(DocumentNode):

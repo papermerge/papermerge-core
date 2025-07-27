@@ -160,7 +160,7 @@ async def has_node_perm(
     )
     stmt = exists(node_access.union_all(node_shared_access)).select()
 
-    has_access = await db_session.execute(stmt).scalar()
+    has_access = (await db_session.execute(stmt)).scalar_one()
 
     return has_access
 
@@ -178,7 +178,7 @@ async def get_node_owner(db_session: AsyncSession, node_id: UUID) -> nodes_schem
         .join(groups_orm.Group, groups_orm.Group.id == orm.Node.group_id, isouter=True)
     ).where(orm.Node.id == node_id)
 
-    row = await db_session.execute(stmt).one()
+    row = (await db_session.execute(stmt)).one()
 
     if row.user_id is None:
         owner_name = row.group_name

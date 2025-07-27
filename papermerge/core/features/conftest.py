@@ -487,7 +487,17 @@ async def make_user(db_session: AsyncSession):
         db_user.inbox_folder_id = db_inbox.id
         await db_session.commit()
 
-        return db_user
+        # Eagerly load the user with home_folder and inbox_folder relationships
+        from sqlalchemy.orm import selectinload
+        from sqlalchemy import select
+
+        stmt = select(orm.User).options(
+            selectinload(orm.User.home_folder),
+            selectinload(orm.User.inbox_folder)
+        ).where(orm.User.id == user_id)
+
+        result = await db_session.execute(stmt)
+        return result.scalar_one()
 
     return _maker
 

@@ -21,7 +21,7 @@ RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
 
 async def test_get_doc_last_ver(db_session: AsyncSession, make_document, user):
-    doc: schema.Document = make_document(
+    doc: schema.Document = await make_document(
         title="some doc", user=user, parent=user.home_folder
     )
     assert len(doc.versions) == 1
@@ -31,7 +31,7 @@ async def test_get_doc_last_ver(db_session: AsyncSession, make_document, user):
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
 
-    last_ver = dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
+    last_ver = await dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
     assert last_ver.number == 5
 
 

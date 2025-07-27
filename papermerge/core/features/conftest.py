@@ -530,12 +530,12 @@ def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_fi
 
 
 @pytest.fixture
-def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
-    cf1 = make_custom_field(name="Start Date", type=CustomFieldType.date)
-    cf2 = make_custom_field(name="End Date", type=CustomFieldType.date)
-    cf3 = make_custom_field(name="Total Due", type=CustomFieldType.monetary)
+async def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
+    cf1 = await make_custom_field(name="Start Date", type=CustomFieldType.date)
+    cf2 = await make_custom_field(name="End Date", type=CustomFieldType.date)
+    cf3 = await make_custom_field(name="Total Due", type=CustomFieldType.monetary)
 
-    return dbapi.create_document_type(
+    return await dbapi.create_document_type(
         db_session,
         name="ZDF",
         custom_field_ids=[cf1.id, cf2.id, cf3.id],
@@ -544,12 +544,12 @@ def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
 
 
 @pytest.fixture
-def document_type_salary(db_session: AsyncSession, user, make_custom_field):
-    cf1 = make_custom_field(name="Month", type=CustomFieldType.yearmonth)
-    cf2 = make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = make_custom_field(name="Company", type=CustomFieldType.date)
+async def document_type_salary(db_session: AsyncSession, user, make_custom_field):
+    cf1 = await make_custom_field(name="Month", type=CustomFieldType.yearmonth)
+    cf2 = await make_custom_field(name="Total", type=CustomFieldType.monetary)
+    cf3 = await make_custom_field(name="Company", type=CustomFieldType.date)
 
-    return dbapi.create_document_type(
+    return await dbapi.create_document_type(
         db_session,
         name="Salary",
         custom_field_ids=[cf1.id, cf2.id, cf3.id],
@@ -672,7 +672,7 @@ def make_document_receipt(db_session: AsyncSession, document_type_groceries):
 
 @pytest.fixture
 def make_document_salary(db_session: AsyncSession, document_type_salary):
-    def _make_salary(title: str, user: orm.User, parent=None):
+    async def _make_salary(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
         else:
@@ -691,7 +691,7 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
 
         db_session.add(doc)
 
-        db_session.commit()
+        await db_session.commit()
 
         return doc
 

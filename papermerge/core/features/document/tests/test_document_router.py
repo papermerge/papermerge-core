@@ -47,7 +47,7 @@ async def test_get_document_custom_fields_values(
 async def test_get_doc_versions_list_one_doc(auth_api_client, make_document, user):
     doc = await make_document(title="basic.pdf", user=user, parent=user.home_folder)
 
-    resp = await auth_api_client.get(f"/documents/{doc.id}/versions/")
+    resp = await auth_api_client.get(f"/documents/{doc.id}/versions")
     assert resp.status_code == 200, resp.json()
 
     data = resp.json()
@@ -64,7 +64,7 @@ async def test_get_doc_versions_list_two_docs(
     doc = await make_document(title="basic.pdf", user=user, parent=user.home_folder)
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id, page_count=3)
 
-    resp = await auth_api_client.get(f"/documents/{doc.id}/versions/")
+    resp = await auth_api_client.get(f"/documents/{doc.id}/versions")
     assert resp.status_code == 200, resp.json()
 
     data = resp.json()

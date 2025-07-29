@@ -242,7 +242,7 @@ async def get_document_last_version(
 
 
 @router.get(
-    "/{doc_id}/versions/",
+    "/{doc_id}/versions",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on the node",

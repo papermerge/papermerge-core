@@ -158,9 +158,9 @@ def three_pages_pdf(make_document, db_session, user) -> doc_schema.Document:
 
 
 @pytest.fixture
-def make_document_from_resource(make_document, db_session):
-    def _make(resource: ResourceFile, user, parent):
-        doc: doc_schema.Document = make_document(
+def make_document_from_resource(make_document, db_session: AsyncSession):
+    async def _make(resource: ResourceFile, user, parent):
+        doc: doc_schema.Document = await make_document(
             title=resource, user=user, parent=parent
         )
         PDF_PATH = RESOURCES / resource
@@ -168,7 +168,7 @@ def make_document_from_resource(make_document, db_session):
         with open(PDF_PATH, "rb") as file:
             content = file.read()
             size = os.stat(PDF_PATH).st_size
-            doc_dbapi.upload(
+            await doc_dbapi.upload(
                 db_session,
                 document_id=doc.id,
                 content=io.BytesIO(content),
@@ -215,7 +215,7 @@ def make_document_with_pages(db_session: AsyncSession):
 
 @pytest.fixture()
 def make_document_version(db_session: AsyncSession):
-    def _maker(
+    async def _maker(
         page_count: int,
         user: orm.User,
         lang: str | None = None,
@@ -246,7 +246,7 @@ def make_document_version(db_session: AsyncSession):
         db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc)
         db_session.add(db_doc_ver)
-        db_session.commit()
+        await db_session.commit()
 
         return db_doc_ver
 
@@ -518,8 +518,8 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
 
 @pytest.fixture
 def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
-    def _make_document_type(name: str):
-        return dbapi.create_document_type(
+    async def _make_document_type(name: str):
+        return await dbapi.create_document_type(
             db_session,
             name=name,
             custom_field_ids=[],  # no custom fields
@@ -614,7 +614,7 @@ def token():
 async def make_document_type(db_session, make_user, make_custom_field):
     cf = await make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
-    def _make_document_type(
+    async def _make_document_type(
         name: str,
         user: orm.User | None = None,
         path_template: str | None = None,
@@ -622,8 +622,8 @@ async def make_document_type(db_session, make_user, make_custom_field):
     ):
         if group_id is None:
             if user is None:
-                user = make_user("john")
-            return dbapi.create_document_type(
+                user = await make_user("john")
+            return await dbapi.create_document_type(
                 db_session,
                 name=name,
                 custom_field_ids=[cf.id],
@@ -631,7 +631,7 @@ async def make_document_type(db_session, make_user, make_custom_field):
                 user_id=user.id,
             )
         # document_type belongs to group_id
-        return dbapi.create_document_type(
+        return await dbapi.create_document_type(
             db_session,
             name=name,
             custom_field_ids=[cf.id],

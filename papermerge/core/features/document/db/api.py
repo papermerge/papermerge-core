@@ -727,7 +727,7 @@ async def get_doc(
         orm.Document.id == id
     )
     db_doc = (await session.execute(stmt_doc)).scalar_one()
-    breadcrumb = get_ancestors(session, id)
+    breadcrumb = await get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
 
     owner = await get_node_owner(session, node_id=id)

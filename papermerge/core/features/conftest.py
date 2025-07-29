@@ -431,9 +431,10 @@ async def login_as(db_session):
             }
         )
         token = f"abc.{middle_part}.xyz"
+        transport = ASGITransport(app=app)
 
         async_client = AsyncClient(
-            app=app,
+            transport=transport,
             base_url="http://test",
             headers={"Authorization": f"Bearer {token}"}
         )

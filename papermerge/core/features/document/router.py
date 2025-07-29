@@ -179,7 +179,7 @@ async def upload_file(
     """
     content = file.file.read()
 
-    if not dbapi_common.has_node_perm(
+    if not await dbapi_common.has_node_perm(
         db_session,
         node_id=document_id,
         codename=scopes.DOCUMENT_UPLOAD,

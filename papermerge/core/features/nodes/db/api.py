@@ -20,6 +20,18 @@ from .orm import Folder
 
 logger = logging.getLogger(__name__)
 
+async def load_node(db_session: AsyncSession, node: orm.Node) -> orm.Document | orm.Folder:
+    if node.ctype == 'document':
+        stmt = select(orm.Document).options(
+            selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+        ).where(orm.Document.id == node.id)
+        result =  await db_session.execute(stmt)
+        return result.scalar_one()
+
+    stmt = select(orm.Folder).where(orm.Folder.id == node.id)
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
 
 def str2colexpr(keys: list[str]):
     result = []
@@ -237,6 +249,7 @@ async def assign_node_tags(
         error = schema.Error(messages=[str(e)])
         return None, error
 
+    node = await load_node(db_session, node)
     if node.ctype == "document":
         return schema.Document.model_validate(node), error
 
@@ -401,8 +414,7 @@ async def move_nodes(db_session: AsyncSession, source_ids: list[UUID], target_id
     result = await db_session.execute(stmt)
     await db_session.execute(stmt_update_owner)
     await db_session.commit()
-
-    return await result.rowcount
+    return result.rowcount
 
 
 async def prepare_documents_s3_data_deletion(

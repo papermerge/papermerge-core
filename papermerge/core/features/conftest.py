@@ -13,6 +13,7 @@ from httpx import ASGITransport
 from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
@@ -189,18 +190,18 @@ def make_document_with_pages(db_session: AsyncSession):
     Document Version has 3 pages and one associated PDF file (also with 3 pages)
     """
 
-    def _maker(title: str, user: orm.User, parent: orm.Folder):
+    async def _maker(title: str, user: orm.User, parent: orm.Folder):
         attrs = doc_schema.NewDocument(
             title=title,
             parent_id=parent.id,
         )
-        doc, _ = doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:
             content = file.read()
             size = os.stat(PDF_PATH).st_size
-            doc_dbapi.upload(
+            await doc_dbapi.upload(
                 db_session,
                 document_id=doc.id,
                 content=io.BytesIO(content),
@@ -739,6 +740,9 @@ def make_group(db_session: AsyncSession):
             await db_session.commit()
             group.home_folder_id = uid
             await db_session.commit()
+            stmt = select(orm.Group).options(selectinload(orm.Group.home_folder)).where(orm.Group.id == group.id)
+            result = await db_session.execute(stmt)
+            group = result.scalar_one()
         else:
             group = orm.Group(name=name)
             db_session.add(group)

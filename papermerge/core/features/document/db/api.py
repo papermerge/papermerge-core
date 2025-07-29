@@ -39,6 +39,16 @@ settings = config.get_settings()
 logger = logging.getLogger(__name__)
 
 
+async def load_doc(db_session: AsyncSession, doc_id: uuid.UUID) -> orm.Document:
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc_id)
+
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
+
 async def count_docs(session: AsyncSession) -> int:
     stmt = select(func.count()).select_from(orm.Document)
 

@@ -51,6 +51,6 @@ async def test_router_extract_all_pages(
         "title_format": "whatever",
     }
 
-    response = await auth_api_client.post(f"/pages/extract/", json=data)
+    response = await auth_api_client.post(f"/pages/extract", json=data)
 
     assert response.status_code == 200, response.json()

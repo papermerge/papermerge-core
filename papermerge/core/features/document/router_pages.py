@@ -5,6 +5,7 @@ from fastapi import APIRouter, Security, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.config import get_settings
 from papermerge.core import utils, schema, orm
 from papermerge.core.features.auth import get_current_user
@@ -84,6 +85,10 @@ async def move_pages(
         move_strategy=arg.move_strategy,
         user_id=user.id,
     )
+    if source is not None:
+        source = await doc_dbapi.load_doc(db_session, doc_id=source.id)
+    target = await doc_dbapi.load_doc(db_session, doc_id=target.id)
+
     model = schema.MovePagesOut(source=source, target=target)
 
     return schema.MovePagesOut.model_validate(model)

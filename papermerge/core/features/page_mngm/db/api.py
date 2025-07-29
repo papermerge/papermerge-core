@@ -9,9 +9,11 @@ from typing import List, Tuple
 from pikepdf import Pdf
 from sqlalchemy import select, delete, ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from papermerge.core import tasks
 from papermerge.core import constants as const
+from papermerge.core.features.document.schema import DocumentVersion
 from papermerge.core.pathlib import abs_page_path
 from papermerge.core.storage import get_storage_instance
 from papermerge.core.utils.decorators import if_redis_present
@@ -19,6 +21,15 @@ from papermerge.core import orm, schema, types
 from papermerge.core.features.document.db import api as doc_dbapi
 
 logger = logging.getLogger(__name__)
+
+
+async def load_doc_ver(db_session: AsyncSession, doc_ver: DocumentVersion) -> DocumentVersion:
+    stmt = select(orm.DocumentVersion).options(
+        selectinload(orm.DocumentVersion.document)
+    ).where(orm.DocumentVersion.id == doc_ver.id)
+
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
 
 
 async def copy_text_field(
@@ -272,14 +283,14 @@ async def move_pages_mix(
         select(orm.Page).where(orm.Page.id == target_page_id)
     )).scalar()
 
-    dst_old_version = db_session.query(orm.DocumentVersion).where(
+    result = await db_session.execute(select(orm.DocumentVersion).where(
         orm.DocumentVersion.id == dst_page.document_version_id
-    )
-    dst_old_version = dst_old_version.one()
-
+    ))
+    dst_old_version = result.scalar_one_or_none()
+    dst_old_version = await load_doc_ver(db_session, dst_old_version)
     dst_old_doc = dst_old_version.document
 
-    dst_new_version = doc_dbapi.version_bump(
+    dst_new_version = await doc_dbapi.version_bump(
         db_session,
         doc_id=dst_old_doc.id,
         user_id=user_id,
@@ -409,8 +420,8 @@ def move_pages_replace(
     return [_src_doc, _dst_doc]
 
 
-def extract_pages(
-    db_session,
+async def extract_pages(
+    db_session: AsyncSession,
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     user_id: uuid.UUID,
@@ -424,12 +435,12 @@ def extract_pages(
     """
     # source document's source will bumped
     # source document's new version = old version minus extracted pages
-    [old_doc_ver, new_doc_ver, moved_pages_count] = copy_without_pages(
+    [old_doc_ver, new_doc_ver, moved_pages_count] = await copy_without_pages(
         db_session, source_page_ids, user_id=user_id
     )
 
     if strategy == schema.ExtractStrategy.ONE_PAGE_PER_DOC:
-        new_docs = extract_to_single_paged_docs(
+        new_docs = await extract_to_single_paged_docs(
             db_session,
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
@@ -438,7 +449,7 @@ def extract_pages(
         )
     else:
         # all pages in a single doc
-        new_docs = extract_to_multi_paged_doc(
+        new_docs = await extract_to_multi_paged_doc(
             db_session,
             source_page_ids=source_page_ids,
             target_folder_id=target_folder_id,
@@ -470,15 +481,15 @@ def extract_pages(
         logger.debug(
             f"DELETING source node: {delete_stmt}; document.id={old_doc_ver.document.id}"
         )
-        db_session.execute(delete_stmt)
-        db_session.commit()
+        await db_session.execute(delete_stmt)
+        await db_session.commit()
         return [None, target_docs]
 
     return [source_doc, target_docs]
 
 
-def extract_to_single_paged_docs(
-    db_session,
+async def extract_to_single_paged_docs(
+    db_session: AsyncSession,
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str,
@@ -490,17 +501,17 @@ def extract_to_single_paged_docs(
     located in target folder.
     """
     pages = (
-        db_session.execute(
+        (await db_session.execute(
             select(orm.Page)
             .where(orm.Page.id.in_(source_page_ids))
             .order_by(orm.Page.number)
-        )
+        ))
         .scalars()
         .all()
     )
-    dst_folder = db_session.execute(
+    dst_folder = (await db_session.execute(
         select(orm.Folder).where(orm.Folder.id == target_folder_id)
-    ).scalar()
+    )).scalar()
 
     result = []
 
@@ -513,21 +524,22 @@ def extract_to_single_paged_docs(
             parent_id=dst_folder.id,
             ocr_status=types.OCRStatusEnum.unknown,
         )
-        new_doc, error = doc_dbapi.create_document(
+        new_doc, error = await doc_dbapi.create_document(
             db_session,
             attrs=attrs,
         )
         result.append(new_doc)
         # create new document version with one page
-        dst_doc, error = doc_dbapi.version_bump_from_pages(
+        dst_doc, error = await doc_dbapi.version_bump_from_pages(
             db_session, dst_document_id=new_doc.id, pages=[page]
         )
 
+        dst_doc = await doc_dbapi.load_doc(db_session, doc_id=dst_doc.id)
         reuse_ocr_data(
             source_ids=[page.id], target_ids=[dst_doc.versions[0].pages[0].id]
         )
 
-        copy_text_field(
+        await copy_text_field(
             db_session=db_session,
             src=pages[0].document_version,
             dst=dst_doc.versions[0],
@@ -537,8 +549,8 @@ def extract_to_single_paged_docs(
     return result
 
 
-def extract_to_multi_paged_doc(
-    db_session,
+async def extract_to_multi_paged_doc(
+    db_session: AsyncSession,
     source_page_ids: List[uuid.UUID],
     target_folder_id: uuid.UUID,
     title_format: str,
@@ -623,6 +635,7 @@ async def copy_without_pages(
 
     src_first_page = moved_pages[0]
     src_old_version = src_first_page.document_version
+    src_old_version = await load_doc_ver(db_session, src_old_version)
     src_old_doc = src_old_version.document
     moved_pages_count = len(moved_pages)
 
@@ -737,3 +750,4 @@ def notify_add_docs(db_session, add_doc_ids: List[uuid.UUID]):
         kwargs={"doc_ver_ids": ids},
         route_name="s3",
     )
+

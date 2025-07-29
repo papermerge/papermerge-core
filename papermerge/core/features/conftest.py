@@ -495,7 +495,8 @@ async def make_user(db_session: AsyncSession):
 
         stmt = select(orm.User).options(
             selectinload(orm.User.home_folder),
-            selectinload(orm.User.inbox_folder)
+            selectinload(orm.User.inbox_folder),
+            selectinload(orm.User.groups)
         ).where(orm.User.id == user_id)
 
         result = await db_session.execute(stmt)
@@ -740,13 +741,18 @@ def make_group(db_session: AsyncSession):
             await db_session.commit()
             group.home_folder_id = uid
             await db_session.commit()
-            stmt = select(orm.Group).options(selectinload(orm.Group.home_folder)).where(orm.Group.id == group.id)
-            result = await db_session.execute(stmt)
-            group = result.scalar_one()
         else:
             group = orm.Group(name=name)
             db_session.add(group)
             await db_session.commit()
+
+        stmt = select(orm.Group).options(
+            selectinload(orm.Group.home_folder),
+            selectinload(orm.Group.inbox_folder)
+        ).where(orm.Group.id == group.id)
+        result = await db_session.execute(stmt)
+        group = result.scalar_one()
+
         return group
 
     return _maker

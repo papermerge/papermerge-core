@@ -414,6 +414,7 @@ async def move_nodes(db_session: AsyncSession, source_ids: list[UUID], target_id
     result = await db_session.execute(stmt)
     await db_session.execute(stmt_update_owner)
     await db_session.commit()
+
     return result.rowcount
 
 

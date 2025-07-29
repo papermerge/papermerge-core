@@ -313,7 +313,7 @@ async def move_nodes(
         ):
             raise exc.HTTP403Forbidden()
 
-        affected_row_count = nodes_dbapi.move_nodes(
+        affected_row_count = await nodes_dbapi.move_nodes(
             db_session,
             source_ids=params.source_ids,
             target_id=params.target_id,

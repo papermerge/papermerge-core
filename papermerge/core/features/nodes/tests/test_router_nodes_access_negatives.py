@@ -1,32 +1,33 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.tests.types import AuthTestClient
 
 
-def test_get_node(
-    auth_api_client: AuthTestClient, make_user, make_folder, make_document, db_session
+async def test_get_node(
+    auth_api_client: AuthTestClient, make_user, make_folder, make_document, db_session: AsyncSession
 ):
     """
     User A should not have access to user B's private nodes
     """
-    user_b = make_user("user_b", is_superuser=False)
-    user_b_folder = make_folder(
+    user_b = await make_user("user_b", is_superuser=False)
+    user_b_folder = await make_folder(
         "user_b_private_folder", user=user_b, parent=user_b.home_folder
     )
-    make_document("user_b_private_doc", user=user_b, parent=user_b_folder)
+    await make_document("user_b_private_doc", user=user_b, parent=user_b_folder)
 
     # Act
-    response = auth_api_client.get(f"/nodes/{user_b_folder.id}")
+    response = await auth_api_client.get(f"/nodes/{user_b_folder.id}")
 
     assert response.status_code == 403
 
 
-def test_post_node(login_as, make_user, make_folder):
+async def test_post_node(login_as, make_user, make_folder):
     """
     User B should not be able to create nodes in User A's private folders
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder_a", parent=user_a.home_folder, user=user_a
     )
 
@@ -36,21 +37,21 @@ def test_post_node(login_as, make_user, make_folder):
         "parent_id": str(user_a_private_folder.id),
     }
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.post("/nodes", json=payload)
+    response = await user_b_api_client.post("/nodes/", json=payload)
 
     assert response.status_code == 403
 
 
-def test_update_node(login_as, make_user, make_folder):
+async def test_update_node(login_as, make_user, make_folder):
     """
     User B should not be able to update User A's private nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder_a", parent=user_a.home_folder, user=user_a
     )
 
@@ -59,9 +60,9 @@ def test_update_node(login_as, make_user, make_folder):
         "parent_id": str(user_a_private_folder.id),
     }
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.patch(
+    response = await user_b_api_client.patch(
         f"/nodes/{user_a_private_folder.id}",
         json=payload,
     )
@@ -69,23 +70,23 @@ def test_update_node(login_as, make_user, make_folder):
     assert response.status_code == 403
 
 
-def test_delete_node(login_as, make_user, make_folder):
+async def test_delete_node(login_as, make_user, make_folder):
     """
     User B should not be able to delete User A's private nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder_1 = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder_1 = await make_folder(
         "folder_a_1", parent=user_a.home_folder, user=user_a
     )
-    user_a_private_folder_2 = make_folder(
+    user_a_private_folder_2 = await make_folder(
         "folder_a_2", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.delete(
+    response = await user_b_api_client.delete(
         "/nodes/",
         json=[
             str(user_a_private_folder_1.id),
@@ -96,52 +97,52 @@ def test_delete_node(login_as, make_user, make_folder):
     assert response.status_code == 403
 
 
-def test_get_node_details(login_as, make_user, make_folder):
+async def test_get_node_details(login_as, make_user, make_folder):
     """
     User B should not be able to retrieve details of User A's private nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder_1 = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder_1 = await make_folder(
         "folder_a_1", parent=user_a.home_folder, user=user_a
     )
-    user_a_private_folder_2 = make_folder(
+    user_a_private_folder_2 = await make_folder(
         "folder_a_2", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.get(
+    response = await user_b_api_client.get(
         f"/nodes/?node_ids={user_a_private_folder_1.id}&node_ids={user_a_private_folder_2.id}",
     )
 
     assert response.status_code == 403
 
 
-def test_move_node(login_as, make_user, make_folder, make_document):
+async def test_move_node(login_as, make_user, make_folder, make_document):
     """
     User B should not be able to move User A's private nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder_src = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder_src = await make_folder(
         "folder_src", parent=user_a.home_folder, user=user_a
     )
-    user_a_private_folder_dst = make_folder(
+    user_a_private_folder_dst = await make_folder(
         "folder_dst", parent=user_a.home_folder, user=user_a
     )
 
-    user_a_doc = make_document("src.pdf", parent=user_a_private_folder_src, user=user_a)
+    user_a_doc = await make_document("src.pdf", parent=user_a_private_folder_src, user=user_a)
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
     payload = {
         "source_ids": [str(user_a_doc.id)],
         "target_id": str(user_a_private_folder_dst.id),
     }
 
-    response = user_b_api_client.post(
+    response = await user_b_api_client.post(
         "/nodes/move",
         json=payload,
     )
@@ -149,21 +150,21 @@ def test_move_node(login_as, make_user, make_folder, make_document):
     assert response.status_code == 403, response.json()
 
 
-def test_assign_node_tags(login_as, make_user, make_folder):
+async def test_assign_node_tags(login_as, make_user, make_folder):
     """
     User B should not be able to assign tags to User A's private nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
     payload = ["coco", "jumbo"]
 
-    response = user_b_api_client.post(
+    response = await user_b_api_client.post(
         f"/nodes/{user_a_private_folder.id}/tags",
         json=payload,
     )
@@ -171,22 +172,22 @@ def test_assign_node_tags(login_as, make_user, make_folder):
     assert response.status_code == 403, response.json()
 
 
-def test_update_node_tags(login_as, make_user, make_folder):
+async def test_update_node_tags(login_as, make_user, make_folder):
     """
     User B should not be able to change tags associated to the User A's private
     nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
     payload = ["coco", "jumbo"]
 
-    response = user_b_api_client.patch(
+    response = await user_b_api_client.patch(
         f"/nodes/{user_a_private_folder.id}/tags",
         json=payload,
     )
@@ -194,42 +195,42 @@ def test_update_node_tags(login_as, make_user, make_folder):
     assert response.status_code == 403, response.json()
 
 
-def test_get_node_tags(login_as, make_user, make_folder):
+async def test_get_node_tags(login_as, make_user, make_folder):
     """
     User B should not be able to get tags associated to the User A's private
     nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.get(
+    response = await user_b_api_client.get(
         f"/nodes/{user_a_private_folder.id}/tags",
     )
 
     assert response.status_code == 403, response.json()
 
 
-def test_remove_node_tags(login_as, make_user, make_folder):
+async def test_remove_node_tags(login_as, make_user, make_folder):
     """
     User B should not be able to remove tags associated to the User A's private
     nodes
     """
 
-    user_a = make_user("user_a", is_superuser=True)
-    user_b = make_user("user_b", is_superuser=True)
-    user_a_private_folder = make_folder(
+    user_a = await make_user("user_a", is_superuser=True)
+    user_b = await make_user("user_b", is_superuser=True)
+    user_a_private_folder = await make_folder(
         "folder", parent=user_a.home_folder, user=user_a
     )
 
-    user_b_api_client = login_as(user_b)
+    user_b_api_client = await login_as(user_b)
 
-    response = user_b_api_client.delete(
+    response = await user_b_api_client.delete(
         f"/nodes/{user_a_private_folder.id}/tags", json=["tag1"]
     )
 

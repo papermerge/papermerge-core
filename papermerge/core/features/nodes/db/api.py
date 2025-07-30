@@ -33,6 +33,14 @@ async def load_node(db_session: AsyncSession, node: orm.Node) -> orm.Document | 
     return result.scalar_one()
 
 
+async def load_folder(db_session: AsyncSession, folder: orm.Folder) -> orm.Folder:
+    stmt = select(orm.Folder).options(
+        selectinload(orm.Folder.tags)
+    ).where(orm.Folder.id == folder.id)
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
+
 def str2colexpr(keys: list[str]):
     result = []
     ORDER_BY_MAP = {
@@ -76,7 +84,8 @@ async def get_nodes(
     nodes = (await db_session.scalars(stmt)).all()
 
     for node in nodes:
-        breadcrumb = get_ancestors(db_session, node.id, include_self=False)
+        breadcrumb = await get_ancestors(db_session, node.id, include_self=False)
+        node = await load_node(db_session, node)
         node.breadcrumb = breadcrumb
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
@@ -171,7 +180,7 @@ async def update_node(
         node.parent_id = attrs.parent_id
 
     await db_session.commit()
-
+    node = await load_node(db_session, node)
     return schema.Node.model_validate(node)
 
 
@@ -205,6 +214,7 @@ async def create_folder(
         folder = None
 
     if folder:
+        folder = await load_folder(db_session, folder)
         return schema.Folder.model_validate(folder), error
 
     return None, error

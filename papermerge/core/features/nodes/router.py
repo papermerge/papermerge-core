@@ -180,7 +180,7 @@ async def update_node(
     should be not empty string (UUID).
     """
 
-    if not dbapi_common.has_node_perm(
+    if not await dbapi_common.has_node_perm(
         db_session,
         node_id=node_id,
         codename=scopes.NODE_UPDATE,

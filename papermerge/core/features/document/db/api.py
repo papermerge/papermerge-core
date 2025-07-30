@@ -354,6 +354,7 @@ async def create_document(
         db_session.add(doc_ver)
         await db_session.commit()
     except IntegrityError as e:
+        await db_session.rollback()
         stre = str(e)
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
@@ -378,8 +379,15 @@ async def create_document(
     ).where(orm.Document.id == doc_id)
 
     result = await db_session.execute(stmt)
-    doc_with_relations = result.scalar_one()
-    return schema.Document.model_validate(doc_with_relations), error
+    doc_with_relations = result.scalar_one_or_none()
+    if doc_with_relations:
+        return schema.Document.model_validate(doc_with_relations), error
+
+    attr_err = schema.AttrError(
+        name="title", message="Within a folder title must be unique"
+    )
+    error = schema.Error(attrs=[attr_err])
+    return None, error
 
 
 async def version_bump(

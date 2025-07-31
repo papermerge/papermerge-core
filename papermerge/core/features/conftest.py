@@ -496,7 +496,8 @@ async def make_user(db_session: AsyncSession):
         stmt = select(orm.User).options(
             selectinload(orm.User.home_folder),
             selectinload(orm.User.inbox_folder),
-            selectinload(orm.User.groups)
+            selectinload(orm.User.groups),
+            selectinload(orm.User.roles)
         ).where(orm.User.id == user_id)
 
         result = await db_session.execute(stmt)
@@ -768,7 +769,7 @@ def make_role(db_session):
         perms = (await db_session.execute(stmt)).scalars().all()
         role = orm.Role(name=name, permissions=perms)
         db_session.add(role)
-        db_session.commit()
+        await db_session.commit()
 
         return role
 

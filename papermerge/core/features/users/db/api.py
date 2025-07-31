@@ -171,7 +171,6 @@ async def get_users_without_pagination(db_session: AsyncSession) -> list[schema.
 
     return items
 
-
 async def create_user(
     db_session: AsyncSession,
     username: str,
@@ -183,65 +182,47 @@ async def create_user(
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    if scopes is None:
-        scopes = []
-
-    if group_ids is None:
-        group_ids = []
-
+    scopes = scopes or []
+    group_ids = group_ids or []
     _user_id = user_id or uuid.uuid4()
-    home_folder_id = uuid.uuid4()
-    inbox_folder_id = uuid.uuid4()
 
-    db_user = User(
-        id=_user_id,
-        username=username,
-        email=email,
-        is_superuser=is_superuser,
-        is_active=is_active,
-        password=pbkdf2_sha256.hash(password),
-    )
-    db_inbox = orm.Folder(
-        id=inbox_folder_id,
-        title=constants.INBOX_TITLE,
-        ctype=constants.CTYPE_FOLDER,
-        user_id=_user_id,
-        lang="xxx",  # not used
-    )
-    db_home = orm.Folder(
-        id=home_folder_id,
-        title=constants.HOME_TITLE,
-        ctype=constants.CTYPE_FOLDER,
-        user_id=_user_id,
-        lang="xxx",  # not used
-    )
-    db_session.add(db_user)
-    db_session.add(db_home)
-    db_session.add(db_inbox)
-    await db_session.commit()
-    db_user.home_folder_id = db_home.id
-    db_user.inbox_folder_id = db_inbox.id
-    # fetch permissions from the DB
     try:
+        user = orm.User(
+            id=_user_id,
+            username=username,
+            email=email,
+            password=pbkdf2_sha256.hash(password),
+            is_superuser=is_superuser,
+            is_active=is_active,
+        )
+        db_session.add(user)
+        await db_session.flush()
+
+        # Create folders first and flush to get valid IDs
+        home = orm.Folder(
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user.id,
+            lang="xxx",
+        )
+        inbox = orm.Folder(
+            id=uuid.uuid4(),
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=user.id,
+            lang="xxx",
+        )
+        db_session.add_all([home, inbox])
+        await db_session.flush()  # inserts folders, IDs available now
+
         await db_session.commit()
+        await db_session.refresh(user)
 
-        stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
-        db_perms = (await db_session.execute(stmt)).scalars().all()
-        # fetch groups from the DB
+        return schema.User.model_validate(user), None
 
-        stmt = select(orm.Group).where(orm.Group.id.in_(group_ids))
-        db_groups = (await db_session.execute(stmt)).scalars().all()
-
-        db_user.permissions = db_perms
-        db_user.groups = db_groups
-        await db_session.commit()
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
-        return None, error
-
-    user = schema.User.model_validate(db_user)
-
-    return user, None
+        await db_session.rollback()
+        return None, err_schema.Error(messages=[str(e)])
 
 
 async def update_user(
@@ -250,18 +231,13 @@ async def update_user(
     groups = []
     roles = []
     scopes = set()
-    user = db_session.get(User, user_id)
-
+    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(orm.User.id == user_id)
+    user = (await db_session.execute(stmt)).scalar()
     if attrs.username is not None:
         user.username = attrs.username
 
     if attrs.email is not None:
         user.email = attrs.email
-
-    if attrs.scopes is not None:
-        stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
-        perms = (await db_session.execute(stmt)).scalars().all()
-        user.permissions = perms
 
     if attrs.is_superuser is not None:
         user.is_superuser = attrs.is_superuser
@@ -285,12 +261,15 @@ async def update_user(
     try:
         await db_session.commit()
     except Exception as e:
+        await db_session.rollback()
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
     for role in user.roles:
         for perm in role.permissions:
             scopes.add(perm.codename)
+
+    await db_session.refresh(user)
 
     result = schema.UserDetails(
         id=user.id,
@@ -364,8 +343,9 @@ async def get_users_count(db_session: AsyncSession) -> int:
 async def change_password(
     db_session: AsyncSession, user_id: uuid.UUID, password: str
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    db_user = db_session.get(User, user_id)
-
+    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(
+        orm.User.id == user_id)
+    db_user = (await db_session.execute(stmt)).scalar()
     db_user.password = pbkdf2_sha256.hash(password)
 
     try:
@@ -374,6 +354,7 @@ async def change_password(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
+    await db_session.refresh(db_user)
     user = schema.User.model_validate(db_user)
 
     return user, None

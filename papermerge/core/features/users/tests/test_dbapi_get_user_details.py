@@ -17,32 +17,33 @@ async def test_user_groups(db_session: AsyncSession, make_user, make_group):
     assert "family" in [g.name for g in user_details.groups]
 
 
-def test_user_roles(db_session, make_user, make_role):
+async def test_user_roles(db_session: AsyncSession, make_user, make_role):
     """User details should return all user's roles"""
-    user: orm.User = make_user("momo", is_superuser=False)
-    role: orm.Role = make_role("employee")
+    user: orm.User = await make_user("momo", is_superuser=False)
+    role: orm.Role = await make_role("employee")
 
+    db_session.add_all([user, role])
     user.roles.append(role)
     db_session.add(user)
-    db_session.commit()
+    await db_session.commit()
 
-    user_details, err = dbapi.get_user_details(db_session, user.id)
+    user_details, err = await dbapi.get_user_details(db_session, user.id)
 
     assert err is None
     assert "employee" in [r.name for r in user_details.roles]
 
 
-def test_user_scopes(db_session, make_user, make_role):
+async def test_user_scopes(db_session: AsyncSession, make_user, make_role):
     """User details should return all user's scopes"""
-    dbapi.sync_perms(db_session)
-    user: orm.User = make_user("momo", is_superuser=False)
-    role: orm.Role = make_role("employee", scopes=["node.create", "node.view"])
+    await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
+    role: orm.Role = await make_role("employee", scopes=["node.create", "node.view"])
 
     user.roles.append(role)
     db_session.add(user)
-    db_session.commit()
+    await db_session.commit()
 
-    user_details, err = dbapi.get_user_details(db_session, user.id)
+    user_details, err = await dbapi.get_user_details(db_session, user.id)
 
     assert err is None
     assert "node.create" in [scope for scope in user_details.scopes]

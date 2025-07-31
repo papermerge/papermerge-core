@@ -118,6 +118,6 @@ async def delete_group(
     group_id: uuid.UUID,
 ):
     stmt = select(orm.Group).where(orm.Group.id == group_id)
-    group = db_session.execute(stmt, params={"id": group_id}).scalars().one()
+    group = (await db_session.execute(stmt, params={"id": group_id})).scalars().one()
     await db_session.delete(group)
     await db_session.commit()

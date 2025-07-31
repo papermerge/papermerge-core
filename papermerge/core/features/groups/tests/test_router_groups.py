@@ -10,7 +10,7 @@ async def test_create_group_route(auth_api_client: AuthTestClient, db_session: A
     count_before = await db_session.scalar(select(func.count(orm.Group.id)))
     assert count_before == 0
 
-    response = auth_api_client.post(
+    response = await auth_api_client.post(
         "/groups/",
         json={"name": "Admin"},
     )
@@ -19,10 +19,10 @@ async def test_create_group_route(auth_api_client: AuthTestClient, db_session: A
     count_after = await db_session.scalar(select(func.count(orm.Group.id)))
     assert count_after == 1
 
-def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_session):
-    group = make_group(name="demo")
+async def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_session: AsyncSession):
+    group = await make_group(name="demo")
 
-    response = auth_api_client.patch(
+    response = await auth_api_client.patch(
         f"/groups/{group.id}",
         json={"name": "Admin"},
     )
@@ -30,32 +30,32 @@ def test_update_group_route(auth_api_client: AuthTestClient, make_group, db_sess
     assert response.status_code == 200, response.json()
 
 
-def test_get_group_details(
+async def test_get_group_details(
     make_group, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
-    group = make_group(name="demo")
+    group = await make_group(name="demo")
 
-    response = auth_api_client.get(f"/groups/{group.id}")
+    response = await auth_api_client.get(f"/groups/{group.id}")
 
     assert response.status_code == 200, response.json()
 
 
-def test_pagination_group_route_basic(auth_api_client: AuthTestClient):
+async def test_pagination_group_route_basic(auth_api_client: AuthTestClient):
     params = {"page_number": 1, "page_size": 1}
-    response = auth_api_client.get("/groups/", params=params)
+    response = await auth_api_client.get("/groups/", params=params)
 
     assert response.status_code == 200, response.json()
 
 
-def test_groups_paginated_result__8_items_first_page(
+async def test_groups_paginated_result__8_items_first_page(
     make_group, auth_api_client: AuthTestClient
 ):
     total_groups = 8
     for i in range(total_groups):
-        make_group(name=f"Group {i}")
+        await make_group(name=f"Group {i}")
 
     params = {"page_size": 5, "page_number": 1}
-    response = auth_api_client.get("/groups/", params=params)
+    response = await auth_api_client.get("/groups/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -67,15 +67,15 @@ def test_groups_paginated_result__8_items_first_page(
     assert len(paginated_items.items) == 5
 
 
-def test_groups_paginated_result__8_items_second_page(
+async def test_groups_paginated_result__8_items_second_page(
     make_group, auth_api_client: AuthTestClient
 ):
     total_groups = 8
     for i in range(total_groups):
-        make_group(name=f"Group {i}")
+        await make_group(name=f"Group {i}")
 
     params = {"page_size": 5, "page_number": 2}
-    response = auth_api_client.get("/groups/", params=params)
+    response = await auth_api_client.get("/groups/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -88,15 +88,15 @@ def test_groups_paginated_result__8_items_second_page(
     assert len(paginated_items.items) == 3
 
 
-def test_groups_paginated_result__8_items_4th_page(
+async def test_groups_paginated_result__8_items_4th_page(
     make_group, auth_api_client: AuthTestClient
 ):
     total_groups = 8
     for i in range(total_groups):
-        make_group(name=f"Group {i}")
+        await make_group(name=f"Group {i}")
 
     params = {"page_size": 5, "page_number": 4}
-    response = auth_api_client.get("/groups/", params=params)
+    response = await auth_api_client.get("/groups/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -108,12 +108,12 @@ def test_groups_paginated_result__8_items_4th_page(
     assert len(paginated_items.items) == 0
 
 
-def test_groups_list_without_pagination(make_group, auth_api_client: AuthTestClient):
+async def test_groups_list_without_pagination(make_group, auth_api_client: AuthTestClient):
     total_groups = 8
     for i in range(total_groups):
-        make_group(name=f"Group {i}")
+        await make_group(name=f"Group {i}")
 
-    response = auth_api_client.get("/groups/all")
+    response = await auth_api_client.get("/groups/all")
 
     assert response.status_code == 200, response.json()
 

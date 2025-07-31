@@ -4,7 +4,7 @@ import uuid
 from typing import Tuple
 
 from sqlalchemy import delete, select, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
@@ -14,13 +14,15 @@ logger = logging.getLogger(__name__)
 
 
 async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleDetails:
+
     stmt = (
         select(orm.Role)
-        .options(joinedload(orm.Role.permissions))
+        .options(selectinload(orm.Role.permissions))
         .where(orm.Role.id == role_id)
     )
     db_item = (await db_session.scalars(stmt)).unique().one()
     db_item.scopes = sorted([p.codename for p in db_item.permissions])
+
     result = schema.RoleDetails.model_validate(db_item)
 
     return result
@@ -30,7 +32,7 @@ async def get_roles(
     db_session: AsyncSession, *, page_size: int, page_number: int
 ) -> schema.PaginatedResponse[schema.Role]:
     stmt_total_users = select(func.count(orm.Role.id))
-    total_roles = (db_session.execute(stmt_total_users)).scalar()
+    total_roles = (await db_session.execute(stmt_total_users)).scalar()
 
     offset = page_size * (page_number - 1)
     stmt = select(orm.Role).limit(page_size).offset(offset)
@@ -99,11 +101,11 @@ async def update_role(
     db_session: AsyncSession, role_id: uuid.UUID, attrs: schema.UpdateRole
 ) -> schema.RoleDetails:
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
-    perms = db_session.execute(stmt).scalars().all()
+    perms = (await db_session.execute(stmt)).scalars().all()
 
-    stmt = select(orm.Role).where(orm.Role.id == role_id)
+    stmt = select(orm.Role).options(selectinload(orm.Role.permissions)).where(orm.Role.id == role_id)
     role = (await db_session.execute(stmt, params={"id": role_id})).scalars().one()
-    db_session.add(role)
+    db_session.add_all([role, *perms])
     role.name = attrs.name
     role.permissions = perms
 
@@ -127,10 +129,9 @@ async def delete_role(
 
 
 async def get_perms(db_session: AsyncSession) -> list[schema.Permission]:
-    with db_session as session:
-        db_perms = session.scalars(select(orm.Permission).order_by("codename"))
-        model_perms = [
-            schema.Permission.model_validate(db_perm) for db_perm in db_perms
+    db_perms = await db_session.execute(select(orm.Permission).order_by("codename"))
+    model_perms = [
+        schema.Permission.model_validate(db_perm) for db_perm in db_perms.scalars()
         ]
 
     return model_perms

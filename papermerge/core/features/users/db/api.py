@@ -110,7 +110,11 @@ async def get_user_group_inboxes(
 async def get_user_details(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
-    stmt = select(User).options(selectinload(User.roles).selectinload(orm.Role.permissions)).where(User.id == user_id)
+    stmt = select(User).options(
+        selectinload(User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.groups)
+    ).where(User.id == user_id)
+
     params = {"id": user_id}
 
     try:

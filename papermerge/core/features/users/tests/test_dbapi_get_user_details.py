@@ -1,16 +1,17 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import orm, dbapi
 
 
-def test_user_groups(db_session, make_user, make_group):
+async def test_user_groups(db_session: AsyncSession, make_user, make_group):
     """User details should return all user's groups"""
-    user: orm.User = make_user("momo", is_superuser=False)
-    group: orm.Group = make_group("family")
+    user: orm.User = await make_user("momo", is_superuser=False)
+    group: orm.Group = await make_group("family")
 
     user.groups.append(group)
     db_session.add(user)
-    db_session.commit()
+    await db_session.commit()
 
-    user_details, err = dbapi.get_user_details(db_session, user.id)
+    user_details, err = await dbapi.get_user_details(db_session, user.id)
 
     assert err is None
     assert "family" in [g.name for g in user_details.groups]

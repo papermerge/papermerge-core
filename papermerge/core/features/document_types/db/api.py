@@ -3,7 +3,7 @@ import uuid
 from itertools import groupby
 
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.schemas.common import PaginatedResponse
@@ -22,7 +22,9 @@ async def get_document_types_without_pagination(
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
 ) -> list[schema.DocumentType]:
-    stmt_base = select(DocumentType).order_by(DocumentType.name.asc())
+    stmt_base = select(DocumentType).options(
+        selectinload(orm.DocumentType.custom_fields)
+    ).order_by(DocumentType.name.asc())
 
     if group_id:
         stmt = stmt_base.where(DocumentType.group_id == group_id)
@@ -139,8 +141,9 @@ async def get_document_types(
             DocumentType,
             orm.Group.name.label("group_name"),
             orm.Group.id.label("group_id"),
-        )
-        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
+        ).options(
+            selectinload(orm.DocumentType.custom_fields)
+        ).join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
         .where(
             or_(
                 DocumentType.user_id == user_id,

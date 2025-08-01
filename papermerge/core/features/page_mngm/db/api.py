@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 
 async def load_doc_ver(db_session: AsyncSession, doc_ver: DocumentVersion) -> DocumentVersion:
     stmt = select(orm.DocumentVersion).options(
-        selectinload(orm.DocumentVersion.document)
+        selectinload(orm.DocumentVersion.document),
+        selectinload(orm.DocumentVersion.pages)
     ).where(orm.DocumentVersion.id == doc_ver.id)
 
     result = await db_session.execute(stmt)
@@ -57,7 +58,7 @@ def collect_text_streams(
     """
     pages_map = {page.number: page for page in version.pages}
 
-    result = [io.StringIO(pages_map[number].text) for number in page_numbers]
+    result = [io.StringIO(pages_map[number].text) for number in sorted(page_numbers)]
 
     return result
 
@@ -92,7 +93,7 @@ async def apply_pages_op(
     )).scalar()
 
     doc = old_version.document
-    new_version = doc_dbapi.version_bump(
+    new_version = await doc_dbapi.version_bump(
         db_session, doc_id=doc.id, user_id=user_id, page_count=len(items)
     )
 
@@ -235,7 +236,7 @@ async def move_pages(
     pages of the source document are moved out.
     """
     if move_strategy == schema.MoveStrategy.REPLACE:
-        return move_pages_replace(
+        return await move_pages_replace(
             db_session,
             source_page_ids=source_page_ids,
             target_page_id=target_page_id,
@@ -346,7 +347,7 @@ async def move_pages_mix(
     return _src_doc, _dst_doc
 
 
-def move_pages_replace(
+async def move_pages_replace(
     db_session,
     *,
     source_page_ids: List[uuid.UUID],
@@ -361,24 +362,25 @@ def move_pages_replace(
     In case all pages from the source are moved, the source
     document is deleted.
     """
-    [src_old_version, src_new_version, moved_pages_count] = copy_without_pages(
+    [src_old_version, src_new_version, moved_pages_count] = await copy_without_pages(
         db_session, source_page_ids, user_id=user_id
     )
-    moved_pages = db_session.execute(
+    moved_pages = (await db_session.execute(
         select(orm.Page)
         .where(orm.Page.id.in_(source_page_ids))
         .order_by(orm.Page.number)
-    ).scalars()
+    )).scalars()
     moved_pages = moved_pages.all()
     moved_page_ids = [page.id for page in moved_pages]
 
-    dst_page = db_session.execute(
+    dst_page = (await db_session.execute(
         select(orm.Page).where(orm.Page.id == target_page_id)
-    ).scalar()
+    )).scalar()
     dst_old_version = dst_page.document_version
+    dst_old_version = await load_doc_ver(db_session, dst_old_version)
     dst_old_doc = dst_old_version.document
 
-    dst_new_version = doc_dbapi.version_bump(
+    dst_new_version = await doc_dbapi.version_bump(
         db_session,
         doc_id=dst_old_doc.id,
         page_count=moved_pages_count,  # !!! Important
@@ -406,18 +408,18 @@ def move_pages_replace(
     if len(src_old_version.pages) == moved_pages_count:
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
-        db_session.execute(
+        await db_session.execute(
             delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
         )
         _dst_doc = dst_new_version.document
-        return [None, _dst_doc]
+        return None, _dst_doc
 
     notify_version_update(
         add_ver_id=str(dst_new_version.id), remove_ver_id=str(dst_old_version.id)
     )
     _src_doc = src_new_version.document
     _dst_doc = dst_new_version.document
-    return [_src_doc, _dst_doc]
+    return _src_doc, _dst_doc
 
 
 async def extract_pages(
@@ -485,7 +487,12 @@ async def extract_pages(
         await db_session.commit()
         return [None, target_docs]
 
-    return [source_doc, target_docs]
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.versions)
+    ).where(orm.Document.id == source_doc.id)
+    result = await db_session.execute(stmt)
+
+    return [result.scalar(), target_docs]
 
 
 async def extract_to_single_paged_docs(
@@ -564,18 +571,16 @@ async def extract_to_multi_paged_doc(
     title = f"{title_format}-{uuid.uuid4()}.pdf"
 
     pages = (
-        db_session.execute(
+        (await db_session.execute(
             select(orm.Page)
             .where(orm.Page.id.in_(source_page_ids))
             .order_by(orm.Page.number)
-        )
-        .scalars()
-        .all()
+        )).scalars().all()
     )
     first_page = pages[0]
-    dst_folder = db_session.execute(
+    dst_folder = (await db_session.execute(
         select(orm.Folder).where(orm.Folder.id == target_folder_id)
-    ).scalar()
+    )).scalar()
 
     attrs = schema.NewDocument(
         title=title,
@@ -583,27 +588,27 @@ async def extract_to_multi_paged_doc(
         parent_id=dst_folder.id,
         ocr_status=types.OCRStatusEnum.unknown,
     )
-    new_doc, error = doc_dbapi.create_document(
+    new_doc, error = await doc_dbapi.create_document(
         db_session,
         attrs=attrs,
     )
 
-    dst_version, error = doc_dbapi.version_bump_from_pages(
+    dst_version, error = await doc_dbapi.version_bump_from_pages(
         db_session, dst_document_id=new_doc.id, pages=pages
     )
 
-    dst_pages = db_session.execute(
+    dst_pages = (await db_session.execute(
         select(orm.Page)
         .where(orm.Page.document_version_id == dst_version.id)
         .order_by(orm.Page.number)
-    ).scalars()
+    )).scalars()
 
     reuse_ocr_data(
         source_ids=[page.id for page in pages],
         target_ids=[page.id for page in dst_pages],
     )
 
-    copy_text_field(
+    await copy_text_field(
         db_session,
         src=pages[0].document_version,
         dst=dst_version,
@@ -627,7 +632,9 @@ async def copy_without_pages(
     Also sends INDEX UPDATE notification.
     """
     moved_pages = (
-        (await db_session.execute(select(orm.Page).where(orm.Page.id.in_(page_ids))))
+        (await db_session.execute(select(orm.Page).options(
+            selectinload(orm.Page.document_version)
+        ).where(orm.Page.id.in_(page_ids))))
         .scalars()
         .all()
     )
@@ -671,7 +678,7 @@ async def copy_without_pages(
         .order_by("number")
     )).scalars()
 
-    if not_copied_ids := reuse_ocr_data(src_keys, dst_values.all()):
+    if not_copied_ids := reuse_ocr_data(src_keys, dst_values):
         logger.info(f"Pages with IDs {not_copied_ids} do not have OCR data")
 
     page_numbers = [

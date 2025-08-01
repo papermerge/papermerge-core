@@ -137,8 +137,8 @@ def make_document(db_session: AsyncSession):
 
 
 @pytest.fixture
-def three_pages_pdf(make_document, db_session, user) -> doc_schema.Document:
-    doc: doc_schema.Document = make_document(
+async def three_pages_pdf(make_document, db_session: AsyncSession, user) -> doc_schema.Document:
+    doc: doc_schema.Document = await make_document(
         title="thee-pages.pdf", user=user, parent=user.home_folder
     )
     PDF_PATH = RESOURCES / "three-pages.pdf"
@@ -146,7 +146,7 @@ def three_pages_pdf(make_document, db_session, user) -> doc_schema.Document:
     with open(PDF_PATH, "rb") as file:
         content = file.read()
         size = os.stat(PDF_PATH).st_size
-        doc_dbapi.upload(
+        await doc_dbapi.upload(
             db_session,
             document_id=doc.id,
             content=io.BytesIO(content),

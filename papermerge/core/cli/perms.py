@@ -15,7 +15,7 @@ app = typer.Typer(help="Permissions management")
 @async_command
 async def perms_list():
     """List database stored permissions"""
-    with AsyncSessionLocal() as db_session:
+    async with AsyncSessionLocal() as db_session:
         perms: list[schema.Permission] = await dbapi.get_perms(db_session)
         print_perms(perms)
 
@@ -24,7 +24,7 @@ async def perms_list():
 @async_command
 async def perms_sync():
     """Synchronizes permissions table with current scopes"""
-    with AsyncSessionLocal() as db_session:
+    async with AsyncSessionLocal() as db_session:
         await dbapi.sync_perms(db_session)
 
 

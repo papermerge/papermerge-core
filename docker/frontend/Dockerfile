@@ -1,11 +1,12 @@
-FROM node:20.13 as  frontend_build
+FROM node:20.19 AS frontend_build
+# ensure all packages are up-to-date
+RUN apt update && apt upgrade -y && rm -rf /var/cache/apk/*
 
-WORKDIR build_frontend_app
+WORKDIR /build_frontend_app
 COPY frontend/ .
 RUN yarn install
 RUN yarn workspace @papermerge/hooks build
 RUN yarn workspace ui build
-
 
 FROM nginx:alpine
 

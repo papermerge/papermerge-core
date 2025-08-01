@@ -19,5 +19,6 @@ app.add_typer(search.app, name="search")
 app.add_typer(index.app, name="index")
 app.add_typer(index_schema.app, name="index-schema")
 
-if __name__ == "__main__":
+
+def main():
     app()

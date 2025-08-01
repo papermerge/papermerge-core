@@ -129,7 +129,7 @@ async def get_paginated_shared_nodes(
         stmt = base_stmt
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
-    total_nodes = db_session.scalar(count_stmt)
+    total_nodes = await db_session.scalar(count_stmt)
 
     num_pages = math.ceil(total_nodes / page_size)
 

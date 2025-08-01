@@ -1,8 +1,8 @@
 from papermerge.core import schema
 
 
-def test_basic_tag(make_tag, user):
-    db_tag = make_tag(name="sent", user=user)
+async def test_basic_tag(make_tag, user):
+    db_tag = await make_tag(name="sent", user=user)
     tag = schema.Tag.model_validate(db_tag)
 
     assert tag.name == "sent"

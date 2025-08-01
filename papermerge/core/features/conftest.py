@@ -282,8 +282,8 @@ def make_page(db_session: AsyncSession, user: orm.User):
 
 
 @pytest.fixture()
-def my_documents_folder(db_session: AsyncSession, user, make_folder):
-    my_docs = make_folder(title="My Documents", user=user, parent=user.home_folder)
+async def my_documents_folder(db_session: AsyncSession, user, make_folder):
+    my_docs = await make_folder(title="My Documents", user=user, parent=user.home_folder)
     return my_docs
 
 
@@ -403,9 +403,9 @@ async def make_api_client(make_user, db_session):
         )
         token = f"abc.{middle_part}.xyz"
         app.dependency_overrides[get_db] = override_get_db
-
+        transport = ASGITransport(app=app)
         async_client = AsyncClient(
-            app=app,
+            transport=transport,
             base_url="http://test",
             headers={"Authorization": f"Bearer {token}"}
         )

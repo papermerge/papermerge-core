@@ -208,7 +208,7 @@ async def update_tag(
 
     try:
         await db_session.commit()
-        db_tag = db_session.get(orm.Tag, tag_id)
+        db_tag = await db_session.get(orm.Tag, tag_id)
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -222,7 +222,7 @@ async def delete_tag(
 ):
     stmt = select(orm.Tag).where(orm.Tag.id == tag_id)
     try:
-        tag = await (db_session.execute(stmt, params={"id": tag_id})).scalars().one()
+        tag = (await db_session.execute(stmt, params={"id": tag_id})).scalars().one()
         await db_session.delete(tag)
         await db_session.commit()
     except NoResultFound:

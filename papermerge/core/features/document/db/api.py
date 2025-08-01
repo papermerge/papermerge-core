@@ -5,16 +5,16 @@ from os.path import getsize
 import uuid
 import tempfile
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Sequence
 
 import img2pdf
 from pikepdf import Pdf
 from sqlalchemy import delete, func, insert, select, update, distinct, Select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.document import s3
-from papermerge.core.db.engine import Session
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.document_types.db.api import \
@@ -39,13 +39,25 @@ settings = config.get_settings()
 logger = logging.getLogger(__name__)
 
 
-def count_docs(session: Session) -> int:
+async def load_doc(db_session: AsyncSession, doc_id: uuid.UUID) -> orm.Document:
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc_id)
+
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
+
+async def count_docs(session: AsyncSession) -> int:
     stmt = select(func.count()).select_from(orm.Document)
 
-    return session.scalars(stmt).one()
+    result = await session.scalars(stmt)
+
+    return result.one()
 
 
-def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
+async def get_doc_cfv(session: AsyncSession, document_id: uuid.UUID) -> list[schema.CFV]:
     """
     Fetch document's custom field values for each CF name, even if CFV is NULL
 
@@ -64,7 +76,7 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
 
     stmt = select_doc_cfv(document_id)
     result = []
-    for row in session.execute(stmt):
+    for row in await session.execute(stmt):
         if row.cf_type == "date":
             value = str2date(row.cf_value)
         elif row.cf_type == "yearmonth":
@@ -88,15 +100,15 @@ def get_doc_cfv(session: Session, document_id: uuid.UUID) -> list[schema.CFV]:
     return result
 
 
-def update_doc_cfv(
-    session: Session,
+async def update_doc_cfv(
+    session: AsyncSession,
     document_id: uuid.UUID,
     custom_fields: dict,
 ) -> list[schema.CFV]:
     """
     Update document's custom field values
     """
-    items = get_doc_cfv(session, document_id=document_id)
+    items = await get_doc_cfv(session, document_id=document_id)
     insert_values = []
     update_values = []
 
@@ -106,7 +118,8 @@ def update_doc_cfv(
         .join(orm.CustomField)
         .where(orm.CustomFieldValue.document_id == document_id)
     )
-    existing_cf_name = [row[0] for row in session.execute(stmt).all()]
+    result = await session.execute(stmt)
+    existing_cf_name = [row[0] for row in result.all()]
     for item in items:
         if item.name not in custom_fields.keys():
             continue
@@ -137,18 +150,18 @@ def update_doc_cfv(
             update_values.append(v)
 
     if len(insert_values) > 0:
-        session.execute(insert(orm.CustomFieldValue), insert_values)
+        await session.execute(insert(orm.CustomFieldValue), insert_values)
 
     if len(update_values) > 0:
-        session.execute(update(orm.CustomFieldValue), update_values)
+        await session.execute(update(orm.CustomFieldValue), update_values)
 
-    session.commit()
+    await session.commit()
 
     return items
 
 
-def update_doc_type(
-    session: Session,
+async def update_doc_type(
+    session: AsyncSession,
     *,
     document_id: uuid.UUID,
     document_type_id: uuid.UUID | None,
@@ -156,7 +169,8 @@ def update_doc_type(
     stmt = select(orm.Document).where(
         orm.Document.id == document_id
     )
-    doc = session.scalars(stmt).one()
+    result = await session.scalars(stmt)
+    doc = result.one()
     if doc.document_type_id != document_type_id:
         # new value for document type
         doc.document_type_id = document_type_id
@@ -164,12 +178,12 @@ def update_doc_type(
         del_stmt = delete(orm.CustomFieldValue).where(
             orm.CustomFieldValue.document_id == document_id
         )
-        session.execute(del_stmt)
+        await session.execute(del_stmt)
 
-    session.commit()
+    await session.commit()
 
 
-def get_docs_count_by_type(session: Session, type_id: uuid.UUID):
+async def get_docs_count_by_type(session: AsyncSession, type_id: uuid.UUID):
     """Returns number of documents of specific document type"""
     stmt = (
         select(func.count())
@@ -177,15 +191,18 @@ def get_docs_count_by_type(session: Session, type_id: uuid.UUID):
         .where(orm.Document.document_type_id == type_id)
     )
 
-    return session.scalars(stmt).one()
+    result = await session.scalars(stmt)
+    return result.one()
 
 
-def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
-    value = db_session.execute(
+async def get_cfv_column_name(db_session: AsyncSession, cf_name: str) -> CFVValueColumn:
+    result = await db_session.execute(
         select(orm.CustomField.type).where(
             orm.CustomField.name == cf_name
         )
-    ).scalar()
+    )
+
+    value = result.scalar()
 
     match value:
         case "text":
@@ -208,8 +225,8 @@ def get_cfv_column_name(db_session, cf_name: str) -> CFVValueColumn:
     return ret
 
 
-def get_docs_by_type_no_cf(
-    session: Session,
+async def get_docs_by_type_no_cf(
+    session: AsyncSession,
     type_id: uuid.UUID,
     limit: int,
     offset: int,
@@ -227,7 +244,7 @@ def get_docs_by_type_no_cf(
 
     results = []
 
-    for doc in session.execute(stmt).scalars():
+    for doc in (await session.execute(stmt)).scalars():
         item = schema.DocumentCFV(
             id=doc.id,
             title=doc.title,
@@ -239,8 +256,8 @@ def get_docs_by_type_no_cf(
     return results
 
 
-def get_docs_by_type(
-    session: Session,
+async def get_docs_by_type(
+    session: AsyncSession,
     type_id: uuid.UUID,
     user_id: uuid.UUID,
     order_by: str | None = None,
@@ -257,10 +274,10 @@ def get_docs_by_type(
     if page_size < 1:
         raise ValueError(f"page_size must be >= 1; got value={page_size}")
 
-    cf_count = document_type_cf_count(session, document_type_id=type_id)
+    cf_count = await document_type_cf_count(session, document_type_id=type_id)
 
     if cf_count == 0:
-        return get_docs_by_type_no_cf(
+        return await get_docs_by_type_no_cf(
             session,
             type_id=type_id,
             order_by=order_by,
@@ -272,7 +289,7 @@ def get_docs_by_type(
     cfv_column_name = None
 
     if order_by is not None:
-        cfv_column_name = get_cfv_column_name(session, order_by)
+        cfv_column_name = await get_cfv_column_name(session, order_by)
 
     stmt = select_docs_by_type(
         document_type_id=type_id,
@@ -286,7 +303,7 @@ def get_docs_by_type(
 
     ordered_doc_cfvs = OrderedDocumentCFV()
     counter = 0
-    for row in session.execute(stmt).all():
+    for row in (await session.execute(stmt)).all():
         counter += 1
         entry = DocumentCFVRow(
             title=row.title,
@@ -302,13 +319,13 @@ def get_docs_by_type(
     return list(ordered_doc_cfvs)
 
 
-def create_document(
-    db_session: Session, attrs: schema.NewDocument
+async def create_document(
+    db_session: AsyncSession, attrs: schema.NewDocument
 ) -> Tuple[schema.Document | None, schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
-    owner = get_node_owner(db_session, node_id=attrs.parent_id)
+    owner = await get_node_owner(db_session, node_id=attrs.parent_id)
 
     doc = orm.Document(
         id=doc_id,
@@ -335,8 +352,9 @@ def create_document(
 
     try:
         db_session.add(doc_ver)
-        db_session.commit()
+        await db_session.commit()
     except IntegrityError as e:
+        await db_session.rollback()
         stre = str(e)
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
@@ -354,11 +372,26 @@ def create_document(
             error = schema.Error(messages=[stre])
 
     doc.owner_name = owner.name
-    return schema.Document.model_validate(doc), error
+
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc_id)
+
+    result = await db_session.execute(stmt)
+    doc_with_relations = result.scalar_one_or_none()
+    if doc_with_relations:
+        return schema.Document.model_validate(doc_with_relations), error
+
+    attr_err = schema.AttrError(
+        name="title", message="Within a folder title must be unique"
+    )
+    error = schema.Error(attrs=[attr_err])
+    return None, error
 
 
-def version_bump(
-    db_session: Session,
+async def version_bump(
+    db_session: AsyncSession,
     doc_id: uuid.UUID,
     user_id: uuid.UUID,
     page_count: int | None = None,
@@ -366,7 +399,7 @@ def version_bump(
 ) -> orm.DocumentVersion:
     """Increment document version"""
 
-    last_ver = get_last_doc_ver(db_session, doc_id=doc_id)
+    last_ver = await get_last_doc_ver(db_session, doc_id=doc_id)
     new_page_count = page_count or last_ver.page_count
     db_new_doc_ver = orm.DocumentVersion(
         document_id=doc_id,
@@ -389,13 +422,13 @@ def version_bump(
         )
         db_session.add(db_page)
 
-    db_session.commit()
+    await db_session.commit()
 
     return db_new_doc_ver
 
 
-def version_bump_from_pages(
-    db_session: Session,
+async def version_bump_from_pages(
+    db_session: AsyncSession,
     dst_document_id: uuid.UUID,
     pages: list[orm.Page],
 ) -> [orm.Document | None, schema.Error | None]:
@@ -416,8 +449,8 @@ def version_bump_from_pages(
         )
         .order_by(orm.DocumentVersion.number.desc())
     )
-    dst_doc = db_session.get(orm.Document, dst_document_id)
-    dst_document_version = db_session.execute(stmt).scalar()
+    dst_doc = await db_session.get(orm.Document, dst_document_id)
+    dst_document_version = (await db_session.execute(stmt)).scalar()
 
     if not dst_document_version:
         dst_document_version = orm.DocumentVersion(
@@ -452,7 +485,7 @@ def version_bump_from_pages(
         )
         db_session.add(db_page)
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
     finally:
@@ -465,7 +498,7 @@ def version_bump_from_pages(
     return dst_doc, None
 
 
-def update_text_field(db_session, document_version_id: uuid.UUID, streams):
+async def update_text_field(db_session: AsyncSession, document_version_id: uuid.UUID, streams):
     """Update document versions's text field from IO streams.
 
     Arguments:
@@ -482,13 +515,13 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
         .order_by(orm.Page.number)
     )
 
-    pages = [(row.id, row.text, row.number) for row in db_session.execute(stmt)]
+    pages = [(row.id, row.text, row.number) for row in await db_session.execute(stmt)]
 
     for page, stream in zip(pages, streams):
         if page[1] is None:  # page.text
             txt = stream.read()
             sql = update(orm.Page).where(orm.Page.id == page[0]).values(text=txt)
-            db_session.execute(sql)
+            await db_session.execute(sql)
             text.append(txt.strip())
 
     stripped_text = " ".join(text)
@@ -499,8 +532,8 @@ def update_text_field(db_session, document_version_id: uuid.UUID, streams):
             .where(orm.DocumentVersion.id == document_version_id)
             .values(text=stripped_text)
         )
-        db_session.execute(sql)
-    db_session.commit()
+        await db_session.execute(sql)
+    await db_session.commit()
 
 
 class UploadStrategy:
@@ -542,8 +575,8 @@ def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
     return page_count
 
 
-def create_next_version(
-    db_session,
+async def create_next_version(
+    db_session: AsyncSession,
     doc: orm.Document,
     file_name,
     file_size,
@@ -557,7 +590,7 @@ def create_next_version(
         )
         .order_by(orm.DocumentVersion.number.desc())
     )
-    document_version = db_session.execute(stmt).scalar()
+    document_version = (await db_session.execute(stmt)).scalar()
 
     if not document_version:
         document_version = orm.DocumentVersion(
@@ -579,8 +612,8 @@ def create_next_version(
     return document_version
 
 
-def upload(
-    db_session,
+async def upload(
+    db_session: AsyncSession,
     document_id: uuid.UUID,
     content: io.BytesIO,
     size: int,
@@ -588,7 +621,7 @@ def upload(
     content_type: str | None = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
-    doc = db_session.get(orm.Document, document_id)
+    doc = await db_session.get(orm.Document, document_id)
     orig_ver = None
 
     if content_type != constants.ContentType.APPLICATION_PDF:
@@ -602,20 +635,20 @@ def upload(
             error = schema.Error(messages=[str(e)])
             return None, error
 
-        orig_ver = create_next_version(
+        orig_ver = await create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
 
-        pdf_ver = create_next_version(
+        pdf_ver = await create_next_version(
             db_session,
             doc=doc,
             file_name=f"{file_name}.pdf",
             file_size=len(pdf_content),
             short_description=f"{file_type(content_type)} -> pdf",
         )
-        copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
+        await copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
 
-        copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+        await copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(pdf_content)
         orig_ver.page_count = page_count
@@ -637,10 +670,10 @@ def upload(
             db_session.add_all([db_page_orig, db_page_pdf])
 
     else:
-        pdf_ver = create_next_version(
+        pdf_ver = await create_next_version(
             db_session, doc=doc, file_name=file_name, file_size=size
         )
-        copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
+        await copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(content)
 
@@ -656,14 +689,21 @@ def upload(
         db_session.add(pdf_ver)
 
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    owner = get_node_owner(db_session, node_id=doc.id)
+    owner = await get_node_owner(db_session, node_id=doc.id)
     doc.owner_name = owner.name
-    validated_model = schema.Document.model_validate(doc)
+    stmt = select(orm.Document).options(
+        selectinload(orm.Document.tags),
+        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+    ).where(orm.Document.id == doc.id)
+
+    result = await db_session.execute(stmt)
+    doc_with_relations = result.scalar_one()
+    validated_model = schema.Document.model_validate(doc_with_relations)
 
     if orig_ver:
         # non PDF document
@@ -697,18 +737,18 @@ def upload(
     return validated_model, None
 
 
-def get_doc(
-    session: Session,
+async def get_doc(
+    session: AsyncSession,
     id: uuid.UUID,
-) -> schema.Document:
+) -> schema.DocumentWithoutVersions:
     stmt_doc = select(orm.Document).where(
         orm.Document.id == id
     )
-    db_doc = session.execute(stmt_doc).scalar_one()
-    breadcrumb = get_ancestors(session, id)
+    db_doc = (await session.execute(stmt_doc)).scalar_one()
+    breadcrumb = await get_ancestors(session, id)
     db_doc.breadcrumb = breadcrumb
 
-    owner = get_node_owner(session, node_id=id)
+    owner = await get_node_owner(session, node_id=id)
     db_doc.owner_name = owner.name
 
     # colored_tags = session.scalars(colored_tags_stmt).all()
@@ -719,18 +759,19 @@ def get_doc(
     return model_doc
 
 
-def get_doc_id_from_doc_ver_id(
-    db_session: Session,
+async def get_doc_id_from_doc_ver_id(
+    db_session: AsyncSession,
     doc_ver_id: uuid.UUID,
 ) -> uuid.UUID:
     stmt = select(orm.DocumentVersion.document_id).where(
         orm.DocumentVersion.id == doc_ver_id
     )
 
-    return db_session.execute(stmt).scalar()
+    return (await db_session.execute(stmt)).scalar()
 
-def get_doc_versions_list(
-    db_session: Session,
+
+async def get_doc_versions_list(
+    db_session: AsyncSession,
     doc_id: uuid.UUID,
 ) -> list[schema.DocVerListItem]:
     stmt = select(
@@ -741,7 +782,7 @@ def get_doc_versions_list(
         orm.DocumentVersion.document_id == doc_id
     ).order_by(orm.DocumentVersion.number.desc())
 
-    db_vers = db_session.execute(stmt).all()
+    db_vers = (await db_session.execute(stmt)).all()
     vers = [
         schema.DocVerListItem(
             id=ver[0],
@@ -753,8 +794,8 @@ def get_doc_versions_list(
 
     return vers
 
-def get_doc_version_download_url(
-    db_session: Session,
+async def get_doc_version_download_url(
+    db_session: AsyncSession,
     doc_ver_id: uuid.UUID
 ) -> schema.DownloadURL:
     file_server = settings.papermerge__main__file_server
@@ -766,13 +807,14 @@ def get_doc_version_download_url(
         orm.DocumentVersion.id==doc_ver_id
     )
 
-    file_name = db_session.execute(stmt).scalar()
+    file_name = (await db_session.execute(stmt)).scalar()
 
     url = s3.doc_ver_signed_url(doc_ver_id, file_name)
     return schema.DownloadURL(downloadURL=url)
 
-def get_document_last_version(
-    db_session: Session,
+
+async def get_document_last_version(
+    db_session: AsyncSession,
     doc_id: uuid.UUID,
 ) -> schema.DocumentVersion:
     ...
@@ -781,8 +823,8 @@ def get_document_last_version(
 
 
 
-def get_page_document_id(
-    db_session: Session, page_id: uuid.UUID
+async def get_page_document_id(
+    db_session: AsyncSession, page_id: uuid.UUID
 ) -> uuid.UUID:
     stmt = (
         select(orm.Document.id)
@@ -791,12 +833,12 @@ def get_page_document_id(
         .where(orm.Page.id == page_id)
     )
 
-    ret_id = db_session.execute(stmt).scalar()
+    ret_id = (await db_session.execute(stmt)).scalar()
     return ret_id
 
 
-def get_pages_document_id(
-    db_session: Session, page_ids: list[uuid.UUID]
+async def get_pages_document_id(
+    db_session: AsyncSession, page_ids: list[uuid.UUID]
 ) -> uuid.UUID:
     """Returns document ID whom all page_ids belong to"""
     stmt = (
@@ -806,12 +848,12 @@ def get_pages_document_id(
         .where(orm.Page.id.in_(page_ids))
     ).limit(1)
 
-    ret_id = db_session.execute(stmt).scalar()
+    ret_id = (await db_session.execute(stmt)).scalar()
     return ret_id
 
 
-def get_page(
-    db_session: Session, page_id: uuid.UUID
+async def get_page(
+    db_session: AsyncSession, page_id: uuid.UUID
 ) -> schema.Page:
 
     stmt = (
@@ -821,27 +863,27 @@ def get_page(
         .where(orm.Page.id == page_id)
     )
 
-    db_page = db_session.execute(stmt).scalar()
+    db_page = (await db_session.execute(stmt)).scalar()
     model = schema.Page.model_validate(db_page)
 
     return model
 
 
-def get_doc_ver_pages(db_session: Session, doc_ver_id: uuid.UUID) -> list[schema.Page]:
+async def get_doc_ver_pages(db_session: AsyncSession, doc_ver_id: uuid.UUID) -> list[schema.Page]:
     stmt = (
         select(orm.Page)
         .where(orm.Page.document_version_id == doc_ver_id)
         .order_by("number")
     )
 
-    db_pages = db_session.scalars(stmt).all()
+    db_pages = (await db_session.scalars(stmt)).all()
     models = [schema.Page.model_validate(db_page) for db_page in db_pages]
 
     return models
 
 
-def get_last_doc_ver(
-    db_session: Session,
+async def get_last_doc_ver(
+    db_session: AsyncSession,
     doc_id: uuid.UUID,  # noqa
 ) -> orm.DocumentVersion:
     """
@@ -850,7 +892,9 @@ def get_last_doc_ver(
     """
 
     stmt = (
-        select(orm.DocumentVersion)
+        select(orm.DocumentVersion).options(
+            selectinload(orm.DocumentVersion.pages)
+        )
         .join(orm.Document)
         .where(
             orm.DocumentVersion.document_id == doc_id,
@@ -858,18 +902,18 @@ def get_last_doc_ver(
         .order_by(orm.DocumentVersion.number.desc())
         .limit(1)
     )
-    return db_session.scalars(stmt).one()
+    return (await db_session.scalars(stmt)).one()
 
 
-def get_first_page(
-    db_session: Session,
+async def get_first_page(
+    db_session: AsyncSession,
     doc_ver_id: uuid.UUID,
 ) -> orm.Page:
     """
     Returns first page of the document version
     identified by doc_ver_id
     """
-    with db_session as session:  # noqa
+    async with db_session as session:  # noqa
         stmt = (
             select(orm.Page)
             .where(
@@ -879,13 +923,13 @@ def get_first_page(
             .limit(1)
         )
 
-        db_page = session.scalars(stmt).one()
+        db_page = (await session.scalars(stmt)).one()
 
     return db_page
 
 
-def get_doc_ver(
-    db_session: Session,
+async def get_doc_ver(
+    db_session: AsyncSession,
     *,
     document_version_id: uuid.UUID
 ) -> orm.DocumentVersion:
@@ -902,7 +946,7 @@ def get_doc_ver(
             orm.DocumentVersion.id == document_version_id,
         )
     )
-    db_doc_ver = db_session.scalars(stmt).unique().one()
+    db_doc_ver = (await db_session.scalars(stmt)).unique().one()
 
     return db_doc_ver
 
@@ -923,9 +967,9 @@ def select_last_doc_ver(document_id: uuid.UUID, user_id: uuid.UUID) -> Select:
     return stmt
 
 
-def get_last_ver_pages(
-    db_session: Session, document_id: uuid.UUID, user_id: uuid.UUID
-) -> list[orm.Page]:
+async def get_last_ver_pages(
+    db_session: AsyncSession, document_id: uuid.UUID, user_id: uuid.UUID
+) -> Sequence[orm.Page]:
     """Returns all pages of the last version of the document"""
     subq = select_last_doc_ver(document_id=document_id, user_id=user_id).subquery()
 
@@ -935,11 +979,11 @@ def get_last_ver_pages(
         .order_by(orm.Page.number)
     )
 
-    return db_session.execute(stmt).scalars().all()
+    return (await db_session.execute(stmt)).scalars().all()
 
 
-def get_docs_thumbnail_img_status(
-    db_session: Session,
+async def get_docs_thumbnail_img_status(
+    db_session: AsyncSession,
     doc_ids: list[uuid.UUID]
 ) -> Tuple[list[schema.DocumentPreviewImageStatus], list[uuid.UUID]]:
     """Gets image preview statuses for given docIDs
@@ -961,7 +1005,7 @@ def get_docs_thumbnail_img_status(
     doc_ids_not_yet_considered_for_preview = []
     items = []
     if fserver == config.FileServer.S3.value:
-        for row in db_session.execute(stmt):
+        for row in await db_session.execute(stmt):
             url = None
             if row.preview_status == ImagePreviewStatus.ready:
                 # image URL is returned if only and only if image
@@ -981,7 +1025,7 @@ def get_docs_thumbnail_img_status(
             items.append(item)
     else:
         # Non-CDN setup
-        for row in db_session.execute(stmt):
+        for row in await db_session.execute(stmt):
             item = schema.DocumentPreviewImageStatus(
                 doc_id=row.doc_id,
                 status=ImagePreviewStatus.ready,

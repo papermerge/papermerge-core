@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from pydantic import BaseModel, ConfigDict
 
 
@@ -7,7 +8,7 @@ from papermerge.core import orm
 
 class AuthTestClient(BaseModel):
     user: orm.User
-    test_client: TestClient
+    test_client: TestClient | AsyncClient
 
     # Config
     model_config = ConfigDict(arbitrary_types_allowed=True)

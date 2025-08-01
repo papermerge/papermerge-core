@@ -3,7 +3,8 @@ import uuid
 from itertools import groupby
 
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import aliased, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core import schema
@@ -11,29 +12,28 @@ from papermerge.core import constants as const
 from papermerge.core import orm
 from papermerge.core.tasks import send_task
 from papermerge.core.features.document_types import schema as dt_schema
-
-
 from .orm import DocumentType
-
 
 logger = logging.getLogger(__name__)
 
 
-def get_document_types_without_pagination(
-    db_session: Session,
+async def get_document_types_without_pagination(
+    db_session: AsyncSession,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
 ) -> list[schema.DocumentType]:
-    stmt_base = select(orm.DocumentType).order_by(orm.DocumentType.name.asc())
+    stmt_base = select(DocumentType).options(
+        selectinload(orm.DocumentType.custom_fields)
+    ).order_by(DocumentType.name.asc())
 
     if group_id:
-        stmt = stmt_base.where(orm.DocumentType.group_id == group_id)
+        stmt = stmt_base.where(DocumentType.group_id == group_id)
     elif user_id:
-        stmt = stmt_base.where(orm.DocumentType.user_id == user_id)
+        stmt = stmt_base.where(DocumentType.user_id == user_id)
     else:
         raise ValueError("Both: group_id and user_id are missing")
 
-    db_document_types = db_session.scalars(stmt).all()
+    db_document_types = (await db_session.scalars(stmt)).all()
     items = [
         schema.DocumentType.model_validate(db_document_type)
         for db_document_type in db_document_types
@@ -42,8 +42,8 @@ def get_document_types_without_pagination(
     return items
 
 
-def get_document_types_grouped_by_owner_without_pagination(
-    db_session: Session,
+async def get_document_types_grouped_by_owner_without_pagination(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
 ) -> list[dt_schema.GroupedDocumentType]:
     """
@@ -56,29 +56,29 @@ def get_document_types_grouped_by_owner_without_pagination(
     )
     stmt_base = (
         select(
-            orm.DocumentType.id,
-            orm.DocumentType.name,
-            orm.DocumentType.user_id,
-            orm.DocumentType.group_id,
+            DocumentType.id,
+            DocumentType.name,
+            DocumentType.user_id,
+            DocumentType.group_id,
             orm.Group.name.label("group_name"),
         )
-        .select_from(orm.DocumentType)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        .select_from(DocumentType)
+        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
         .order_by(
-            orm.DocumentType.user_id,
-            orm.DocumentType.group_id,
-            orm.DocumentType.name.asc(),
+            DocumentType.user_id,
+            DocumentType.group_id,
+            DocumentType.name.asc(),
         )
     )
 
     stmt = stmt_base.where(
         or_(
-            orm.DocumentType.user_id == user_id,
-            orm.DocumentType.group_id.in_(subquery),
+            DocumentType.user_id == user_id,
+            DocumentType.group_id.in_(subquery),
         )
     )
 
-    db_document_types = db_session.execute(stmt)
+    db_document_types = await db_session.execute(stmt)
 
     def keyfunc(x):
         if x.user_id:
@@ -101,22 +101,21 @@ def get_document_types_grouped_by_owner_without_pagination(
     return results
 
 
-ORDER_BY_MAP = {
-    "name": orm.DocumentType.name.asc(),
-    "-name": orm.DocumentType.name.desc(),
-    "group_name": orm.Group.name.asc().nullsfirst(),
-    "-group_name": orm.Group.name.desc().nullslast(),
-}
-
-
-def get_document_types(
-    db_session: Session,
+async def get_document_types(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
     page_size: int,
     page_number: int,
     filter: str | None = None,
     order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.DocumentType]:
+
+    ORDER_BY_MAP = {
+        "name": DocumentType.name.asc(),
+        "-name": DocumentType.name.desc(),
+        "group_name": orm.Group.name.asc().nullsfirst(),
+        "-group_name": orm.Group.name.desc().nullslast(),
+    }
 
     UserGroupAlias = aliased(orm.user_groups_association)
     subquery = select(UserGroupAlias.c.group_id).where(
@@ -125,29 +124,30 @@ def get_document_types(
 
     stmt_total_doc_types = select(func.count(DocumentType.id)).where(
         or_(
-            orm.DocumentType.user_id == user_id, orm.DocumentType.group_id.in_(subquery)
+            DocumentType.user_id == user_id, DocumentType.group_id.in_(subquery)
         )
     )
     if filter:
         stmt_total_doc_types = stmt_total_doc_types.where(
-            orm.DocumentType.name.icontains(filter)
+            DocumentType.name.icontains(filter)
         )
-    total_doc_types = db_session.execute(stmt_total_doc_types).scalar()
-    order_by_value = ORDER_BY_MAP.get(order_by, orm.DocumentType.name.asc())
+    total_doc_types = (await db_session.execute(stmt_total_doc_types)).scalar()
+    order_by_value = ORDER_BY_MAP.get(order_by, DocumentType.name.asc())
 
     offset = page_size * (page_number - 1)
 
     stmt = (
         select(
-            orm.DocumentType,
+            DocumentType,
             orm.Group.name.label("group_name"),
             orm.Group.id.label("group_id"),
-        )
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        ).options(
+            selectinload(orm.DocumentType.custom_fields)
+        ).join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
         .where(
             or_(
-                orm.DocumentType.user_id == user_id,
-                orm.DocumentType.group_id.in_(subquery),
+                DocumentType.user_id == user_id,
+                DocumentType.group_id.in_(subquery),
             )
         )
         .limit(page_size)
@@ -155,11 +155,11 @@ def get_document_types(
         .order_by(order_by_value)
     )
     if filter:
-        stmt = stmt.where(orm.DocumentType.name.icontains(filter))
+        stmt = stmt.where(DocumentType.name.icontains(filter))
 
     items = []
 
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         kwargs = {
             "id": row.DocumentType.id,
             "name": row.DocumentType.name,
@@ -179,28 +179,28 @@ def get_document_types(
     )
 
 
-def document_type_cf_count(session: Session, document_type_id: uuid.UUID):
+async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.UUID):
     """count number of custom fields associated to document type"""
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    dtype = session.scalars(stmt).one()
+    dtype = (await session.scalars(stmt)).one()
     return len(dtype.custom_fields)
 
 
-def create_document_type(
-    session: Session,
+async def create_document_type(
+    session: AsyncSession,
     name: str,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
     custom_field_ids: list[uuid.UUID] | None = None,
     path_template: str | None = None,
-) -> orm.DocumentType:
+) -> DocumentType:
     if custom_field_ids is None:
         cf_ids = []
     else:
         cf_ids = custom_field_ids
 
     stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
-    custom_fields = session.execute(stmt).scalars().all()
+    custom_fields = (await session.execute(stmt)).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
         name=name,
@@ -210,20 +210,20 @@ def create_document_type(
         group_id=group_id,
     )
     session.add(dtype)
-    session.commit()
+    await session.commit()
 
     return dtype
 
 
-def get_document_type(
-    session: Session, document_type_id: uuid.UUID
+async def get_document_type(
+    session: AsyncSession, document_type_id: uuid.UUID
 ) -> schema.DocumentType:
     stmt = (
-        select(orm.DocumentType, orm.Group)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        select(DocumentType, orm.Group)
+        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
         .where(DocumentType.id == document_type_id)
     )
-    row = session.execute(stmt).unique().one()
+    row = (await session.execute(stmt)).unique().one()
     kwargs = {
         "id": row.DocumentType.id,
         "name": row.DocumentType.name,
@@ -238,26 +238,26 @@ def get_document_type(
     return result
 
 
-def delete_document_type(session: Session, document_type_id: uuid.UUID):
+async def delete_document_type(session: AsyncSession, document_type_id: uuid.UUID):
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    cfield = session.execute(stmt).scalars().one()
-    session.delete(cfield)
-    session.commit()
+    cfield = (await session.execute(stmt)).scalars().one()
+    await session.delete(cfield)
+    await session.commit()
 
 
-def update_document_type(
-    session: Session,
+async def update_document_type(
+    session: AsyncSession,
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
 ) -> schema.DocumentType:
     stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    doc_type: DocumentType = session.execute(stmt).scalars().one()
+    doc_type: DocumentType = (await session.execute(stmt)).scalars().one()
 
     if attrs.custom_field_ids:
         stmt = select(orm.CustomField).where(
             orm.CustomField.id.in_(attrs.custom_field_ids)
         )
-        custom_fields = session.execute(stmt).scalars().all()
+        custom_fields = (await session.execute(stmt)).scalars().all()
         if attrs.custom_field_ids:
             doc_type.custom_fields = custom_fields
 
@@ -281,7 +281,7 @@ def update_document_type(
         notify_path_tmpl_worker = True
 
     session.add(doc_type)
-    session.commit()
+    await session.commit()
 
     result = schema.DocumentType.model_validate(doc_type)
 

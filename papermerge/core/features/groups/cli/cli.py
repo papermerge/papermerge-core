@@ -2,7 +2,7 @@ import typer
 from rich.console import Console
 from sqlalchemy import select
 
-from papermerge.core.db.engine import Session
+from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.groups.db import orm
 from papermerge.core.features.groups.db import api as dbapi
 from papermerge.core.features.groups import schema
@@ -12,16 +12,16 @@ app = typer.Typer(help="Groups basic management")
 
 
 @app.command()
-def create_admin(exists_ok: bool = True):
+async def create_admin(exists_ok: bool = True):
     """Creates group named 'admin'"""
-    with Session() as db_session:
-        dbapi.create_group(db_session, name="admin", exists_ok=exists_ok)
+    with AsyncSessionLocal() as db_session:
+        await dbapi.create_group(db_session, name="admin", exists_ok=exists_ok)
 
 
 @app.command("ls")
-def list_groups():
+async def list_groups():
     """List existing groups and their scopes"""
-    with Session() as session:
+    with AsyncSessionLocal() as session:
         stmt = select(orm.Group)
         db_items = session.scalars(stmt).unique()
         result = []

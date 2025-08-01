@@ -1,13 +1,11 @@
 import uuid
 import math
+from typing import Union, Tuple, Sequence
 
-
-from typing import Union, Tuple
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, delete, tuple_
 from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
 
-from papermerge.core.db.engine import Session
 from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.types import PaginatedResponse
@@ -35,14 +33,14 @@ def str2colexpr(keys: list[str]):
     return result
 
 
-def create_shared_nodes(
-    db_session: Session,
+async def create_shared_nodes(
+    db_session: AsyncSession,
     node_ids: list[uuid.UUID],
     role_ids: list[uuid.UUID],
     owner_id: uuid.UUID,
     user_ids: list[uuid.UUID] | None = None,
     group_ids: list[uuid.UUID] | None = None,
-) -> [list[sn_schema.SharedNode] | None, str | None]:
+) -> Tuple[list[sn_schema.SharedNode] | None, str | None]:
     if user_ids is None:
         user_ids = []
 
@@ -75,13 +73,13 @@ def create_shared_nodes(
                 )
 
     db_session.add_all(shared_nodes)
-    db_session.commit()
+    await db_session.commit()
 
     return shared_nodes, None
 
 
-def get_paginated_shared_nodes(
-    db_session: Session,
+async def get_paginated_shared_nodes(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
     page_size: int,
     page_number: int,
@@ -131,7 +129,7 @@ def get_paginated_shared_nodes(
         stmt = base_stmt
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
-    total_nodes = db_session.scalar(count_stmt)
+    total_nodes = await db_session.scalar(count_stmt)
 
     num_pages = math.ceil(total_nodes / page_size)
 
@@ -143,7 +141,7 @@ def get_paginated_shared_nodes(
     )
 
     perms = {}
-    for row in db_session.execute(perms_query):
+    for row in await db_session.execute(perms_query):
 
         if perms.get(row.node_id):
             perms[row.node_id].append(row.codename)
@@ -152,7 +150,7 @@ def get_paginated_shared_nodes(
 
     items = []
 
-    for row in db_session.execute(paginated_stmt):
+    for row in await db_session.execute(paginated_stmt):
         if row.Node.ctype == "folder":
             new_item = schema.Folder.model_validate(row.Node)
         else:
@@ -169,10 +167,10 @@ def get_paginated_shared_nodes(
     )
 
 
-def get_shared_node_ids(
-    db_session: Session,
+async def get_shared_node_ids(
+    db_session: AsyncSession,
     user_id: uuid.UUID,
-) -> list[uuid.UUID]:
+) -> Sequence[uuid.UUID]:
     UserGroupAlias = aliased(orm.user_groups_association)
     subquery = select(UserGroupAlias.c.group_id).where(
         UserGroupAlias.c.user_id == user_id
@@ -190,13 +188,13 @@ def get_shared_node_ids(
         )
     )
 
-    ids = db_session.scalars(stmt).all()
+    ids = (await db_session.scalars(stmt)).all()
 
     return ids
 
 
-def get_shared_node_access_details(
-    db_session: Session, node_id: uuid.UUID
+async def get_shared_node_access_details(
+    db_session: AsyncSession, node_id: uuid.UUID
 ) -> schema.SharedNodeAccessDetails:
     results = schema.SharedNodeAccessDetails(id=node_id)
 
@@ -217,7 +215,7 @@ def get_shared_node_access_details(
 
     users = {}
     groups = {}
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         if row.user_id is not None:
             if (user := users.get(row.user_id)) is not None:
                 user.roles.append(sn_schema.Role(name=row.role_name, id=row.role_id))
@@ -250,8 +248,8 @@ def get_shared_node_access_details(
     return results
 
 
-def update_shared_node_access(
-    db_session: Session,
+async def update_shared_node_access(
+    db_session: AsyncSession,
     node_id: uuid.UUID,
     access_update: schema.SharedNodeAccessUpdate,
     owner_id: uuid.UUID,
@@ -274,16 +272,16 @@ def update_shared_node_access(
         for role_id in group.role_ids:
             new_group_role_pairs.append((group.id, role_id))
 
-    existing_user_role_pairs = db_session.execute(
+    existing_user_role_pairs = (await db_session.execute(
         select(orm.SharedNode.user_id, orm.SharedNode.role_id).where(
             orm.SharedNode.node_id == node_id
         )
-    ).all()
-    existing_group_role_pairs = db_session.execute(
+    )).all()
+    existing_group_role_pairs = (await db_session.execute(
         select(orm.SharedNode.group_id, orm.SharedNode.role_id).where(
             orm.SharedNode.node_id == node_id
         )
-    ).all()
+    )).all()
 
     existing_user_set = set(existing_user_role_pairs)
     desired_user_set = set(new_user_role_pairs)
@@ -297,7 +295,7 @@ def update_shared_node_access(
 
     # Delete removed user pairs
     if to_remove_users:
-        db_session.execute(
+        await db_session.execute(
             delete(orm.SharedNode).where(
                 orm.SharedNode.node_id == node_id,
                 tuple_(orm.SharedNode.user_id, orm.SharedNode.role_id).in_(
@@ -308,7 +306,7 @@ def update_shared_node_access(
 
     # Delete removed group pairs
     if to_remove_groups:
-        db_session.execute(
+        await db_session.execute(
             delete(orm.SharedNode).where(
                 orm.SharedNode.node_id == node_id,
                 tuple_(orm.SharedNode.group_id, orm.SharedNode.role_id).in_(
@@ -329,13 +327,13 @@ def update_shared_node_access(
         )
         db_session.add(shared)
 
-    db_session.commit()
+    await db_session.commit()
 
 
-def get_shared_folder(
-    db_session: Session, folder_id: uuid.UUID, shared_root_id: uuid.UUID
+async def get_shared_folder(
+    db_session: AsyncSession, folder_id: uuid.UUID, shared_root_id: uuid.UUID
 ) -> Tuple[orm.Folder | None, schema.Error | None]:
-    breadcrumb = dbapi_common.get_ancestors(db_session, folder_id)
+    breadcrumb = await dbapi_common.get_ancestors(db_session, folder_id)
     shorted_breadcrumb = []
     # user will see path only until its ancestor which is marked as shared root
     for b in reversed(breadcrumb):
@@ -346,7 +344,7 @@ def get_shared_folder(
     shorted_breadcrumb.reverse()
     stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
     try:
-        db_model = db_session.scalars(stmt).one()
+        db_model = (await db_session.scalars(stmt)).one()
         db_model.breadcrumb = shorted_breadcrumb
     except Exception as e:
         error = schema.Error(messages=[str(e)])
@@ -355,15 +353,15 @@ def get_shared_folder(
     return db_model, None
 
 
-def get_shared_doc(
-    db_session: Session,
+async def get_shared_doc(
+    db_session: AsyncSession,
     document_id: uuid.UUID,
     user_id: uuid.UUID,
     shared_root_id: uuid.UUID | None = None,
 ) -> schema.Document:
     stmt_doc = select(orm.Document).where(orm.Document.id == document_id)
     db_doc = db_session.scalar(stmt_doc)
-    breadcrumb = dbapi_common.get_ancestors(db_session, document_id)
+    breadcrumb = await dbapi_common.get_ancestors(db_session, document_id)
     root_shared_node_ids = get_shared_node_ids(db_session, user_id=user_id)
     shorted_breadcrumb = []
     # user will see path only until its ancestor which is marked as shared root
@@ -375,7 +373,7 @@ def get_shared_doc(
         if shared_root_id is None and b[0] in root_shared_node_ids:
             break
 
-    owner = dbapi_common.get_node_owner(db_session, node_id=document_id)
+    owner = await dbapi_common.get_node_owner(db_session, node_id=document_id)
     shorted_breadcrumb.reverse()
 
     db_doc.breadcrumb = shorted_breadcrumb

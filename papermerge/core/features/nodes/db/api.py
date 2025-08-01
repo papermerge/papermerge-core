@@ -1,27 +1,44 @@
 import logging
 import uuid
 import math
-
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
 from sqlalchemy import func, select, delete, update, exists
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
-from papermerge.core.db.engine import Session
 from papermerge.core import schema
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
 from papermerge.core import orm
-
 from .orm import Folder
 
-
 logger = logging.getLogger(__name__)
+
+async def load_node(db_session: AsyncSession, node: orm.Node) -> orm.Document | orm.Folder:
+    if node.ctype == 'document':
+        stmt = select(orm.Document).options(
+            selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
+        ).where(orm.Document.id == node.id)
+        result =  await db_session.execute(stmt)
+        return result.scalar_one()
+
+    stmt = select(orm.Folder).where(orm.Folder.id == node.id)
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
+
+async def load_folder(db_session: AsyncSession, folder: orm.Folder) -> orm.Folder:
+    stmt = select(orm.Folder).options(
+        selectinload(orm.Folder.tags)
+    ).where(orm.Folder.id == folder.id)
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
 
 
 def str2colexpr(keys: list[str]):
@@ -45,8 +62,8 @@ def str2colexpr(keys: list[str]):
     return result
 
 
-def get_nodes(
-    db_session: Session, user_id: UUID | None = None, node_ids: list[UUID] | None = None
+async def get_nodes(
+    db_session: AsyncSession, user_id: UUID | None = None, node_ids: list[UUID] | None = None
 ) -> list[schema.Document | schema.Folder]:
     items = []
     if node_ids is None:
@@ -64,10 +81,11 @@ def get_nodes(
     if user_id is not None:
         stmt = stmt.filter(orm.Node.user_id == user_id)
 
-    nodes = db_session.scalars(stmt).all()
+    nodes = (await db_session.scalars(stmt)).all()
 
     for node in nodes:
-        breadcrumb = get_ancestors(db_session, node.id, include_self=False)
+        breadcrumb = await get_ancestors(db_session, node.id, include_self=False)
+        node = await load_node(db_session, node)
         node.breadcrumb = breadcrumb
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
@@ -77,14 +95,14 @@ def get_nodes(
     return items
 
 
-def get_folder_by_id(db_session: Session, id: uuid.UUID) -> schema.Folder:
+async def get_folder_by_id(db_session: AsyncSession, id: uuid.UUID) -> schema.Folder:
     stmt = select(Folder).where(Folder.id == id)
-    db_folder = db_session.scalars(stmt).one_or_none()
+    db_folder = (await db_session.scalars(stmt)).one_or_none()
     return schema.Folder.model_validate(db_folder)
 
 
-def get_paginated_nodes(
-    db_session: Session,
+async def get_paginated_nodes(
+    db_session: AsyncSession,
     parent_id: UUID,
     user_id: UUID,
     page_size: int,
@@ -125,8 +143,8 @@ def get_paginated_nodes(
         .where(orm.Node.parent_id == parent_id)
     )
 
-    total_nodes = db_session.scalar(count_stmt)
-    rows = db_session.execute(stmt).all()
+    total_nodes = await db_session.scalar(count_stmt)
+    rows = (await db_session.execute(stmt)).all()
 
     items = []
     num_pages = math.ceil(total_nodes / page_size)
@@ -147,27 +165,27 @@ def get_paginated_nodes(
     )
 
 
-def update_node(
-    db_session: Session,
+async def update_node(
+    db_session: AsyncSession,
     node_id: uuid.UUID,
     user_id: uuid.UUID,
     attrs: schema.UpdateNode,
 ) -> schema.Node:
     stmt = select(orm.Node).where(orm.Node.id == node_id)
-    node = db_session.scalars(stmt).one()
+    node = (await db_session.scalars(stmt)).one()
     if attrs.title is not None:
         node.title = attrs.title
 
     if attrs.parent_id is not None:
         node.parent_id = attrs.parent_id
 
-    db_session.commit()
-
+    await db_session.commit()
+    node = await load_node(db_session, node)
     return schema.Node.model_validate(node)
 
 
-def create_folder(
-    db_session: Session, attrs: schema.NewFolder
+async def create_folder(
+    db_session: AsyncSession, attrs: schema.NewFolder
 ) -> Tuple[schema.Folder | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
@@ -175,7 +193,7 @@ def create_folder(
     stmt = select(orm.Node.user_id, orm.Node.group_id).where(
         orm.Node.id == attrs.parent_id
     )
-    user_id, group_id = db_session.execute(stmt).fetchone()
+    user_id, group_id = (await db_session.execute(stmt)).fetchone()
 
     folder = orm.Folder(
         id=folder_id,
@@ -187,7 +205,7 @@ def create_folder(
     )
     db_session.add(folder)
     try:
-        db_session.commit()
+        await db_session.commit()
     except IntegrityError as e:
         error = schema.Error(messages=[str(e)])
         folder = None
@@ -196,13 +214,14 @@ def create_folder(
         folder = None
 
     if folder:
+        folder = await load_folder(db_session, folder)
         return schema.Folder.model_validate(folder), error
 
     return None, error
 
 
-def assign_node_tags(
-    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+async def assign_node_tags(
+    db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
     """Will assign tags with given name to the node
 
@@ -212,14 +231,14 @@ def assign_node_tags(
     error = None
 
     stmt = select(orm.Node).where(orm.Node.id == node_id)
-    node = db_session.scalars(stmt).one_or_none()
+    node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    existing_db_tags = db_session.execute(
+    existing_db_tags = (await db_session.execute(
         select(orm.Tag).where(orm.Tag.name.in_(tags))
-    ).scalars()
+    )).scalars()
     existing_db_tags_names = [t.name for t in existing_db_tags.all()]
     # create new tags if they don't exist
     new_db_tags = [
@@ -228,31 +247,32 @@ def assign_node_tags(
         if name not in existing_db_tags_names
     ]
     db_session.add_all(new_db_tags)
-    db_session.commit()
-    db_tags = db_session.execute(
+    await db_session.commit()
+    db_tags = (await db_session.execute(
         select(orm.Tag).where(orm.Tag.name.in_(tags))
-    ).scalars()
+    )).scalars()
 
     try:
         node.tags = db_tags.all()
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
 
+    node = await load_node(db_session, node)
     if node.ctype == "document":
         return schema.Document.model_validate(node), error
 
     return schema.Folder.model_validate(node), error
 
 
-def update_node_tags(
-    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+async def update_node_tags(
+    db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
     error = None
 
     stmt = select(orm.Node).where(orm.Node.id == node_id)
-    node = db_session.scalars(stmt).one_or_none()
+    node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
@@ -265,9 +285,9 @@ def update_node_tags(
     db_session.add_all(db_tags)
 
     try:
-        db_session.commit()
+        await db_session.commit()
         node.tags.extend(db_tags)
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -278,9 +298,9 @@ def update_node_tags(
     return schema.Folder.model_validate(node), error
 
 
-def get_node_tags(
-    db_session: Session, node_id: uuid.UUID, user_id: uuid.UUID
-) -> [Iterable[schema.Tag] | None, schema.Error | None]:
+async def get_node_tags(
+    db_session: AsyncSession, node_id: uuid.UUID, user_id: uuid.UUID
+) -> Tuple[Iterable[schema.Tag] | None, schema.Error | None]:
     """Retrieves all node's tags"""
 
     subq = select(orm.NodeTagsAssociation.tag_id).where(
@@ -290,7 +310,7 @@ def get_node_tags(
     stmt = select(orm.Tag).where(orm.Tag.id.in_(subq))
 
     try:
-        tags = db_session.execute(stmt).scalars()
+        tags = (await db_session.execute(stmt)).scalars()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -298,14 +318,14 @@ def get_node_tags(
     return [schema.Tag.model_validate(t) for t in tags], None
 
 
-def remove_node_tags(
-    db_session: Session, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
+async def remove_node_tags(
+    db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
 ) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
     """Disassociates node tags"""
     error = None
 
     stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
-    node = db_session.scalars(stmt).one_or_none()
+    node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
@@ -317,8 +337,8 @@ def remove_node_tags(
     )
 
     try:
-        db_session.execute(delete_stmt)
-        db_session.commit()
+        await db_session.execute(delete_stmt)
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -329,13 +349,13 @@ def remove_node_tags(
     return schema.Folder.model_validate(node), error
 
 
-def get_folder(
-    db_session: Session, folder_id: UUID
+async def get_folder(
+    db_session: AsyncSession, folder_id: UUID
 ) -> Tuple[orm.Folder | None, schema.Error | None]:
-    breadcrumb = get_ancestors(db_session, folder_id)
+    breadcrumb = await get_ancestors(db_session, folder_id)
     stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
     try:
-        db_model = db_session.scalars(stmt).one()
+        db_model = (await db_session.scalars(stmt)).one()
         db_model.breadcrumb = breadcrumb
     except Exception as e:
         error = schema.Error(messages=[str(e)])
@@ -344,14 +364,14 @@ def get_folder(
     return db_model, None
 
 
-def delete_nodes(
-    db_session: Session, node_ids: list[UUID], user_id: UUID
+async def delete_nodes(
+    db_session: AsyncSession, node_ids: list[UUID], user_id: UUID
 ) -> schema.Error | None:
     all_ids_to_be_deleted = [
-        item[0] for item in get_descendants(db_session, node_ids=node_ids)
+        item[0] for item in await get_descendants(db_session, node_ids=node_ids)
     ]
 
-    delete_details = prepare_documents_s3_data_deletion(
+    delete_details = await prepare_documents_s3_data_deletion(
         db_session, all_ids_to_be_deleted
     )
 
@@ -366,9 +386,9 @@ def delete_nodes(
     )
 
     try:
-        db_session.execute(stmt)
-        db_session.execute(sqlite_hack_stmt)
-        db_session.commit()
+        await db_session.execute(stmt)
+        await db_session.execute(sqlite_hack_stmt)
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return error
@@ -377,15 +397,15 @@ def delete_nodes(
     return None
 
 
-def move_nodes(db_session: Session, source_ids: list[UUID], target_id: UUID) -> int:
+async def move_nodes(db_session: AsyncSession, source_ids: list[UUID], target_id: UUID) -> int:
 
     # Sqlite does not raise "Integrity Error" during update
     # when target does not exist. Thus, we issue here one more
     # extra sql statement just to check the existence of target_id
     stmt = select(orm.Node).where(orm.Node.id == target_id)
-    target = db_session.execute(stmt).scalar()
+    target = (await db_session.execute(stmt)).scalar()
     descendants_ids = [
-        item[0] for item in get_descendants(db_session, node_ids=source_ids)
+        item[0] for item in await get_descendants(db_session, node_ids=source_ids)
     ]
     if target is None:
         raise EntityNotFound("Node target not found")
@@ -401,15 +421,15 @@ def move_nodes(db_session: Session, source_ids: list[UUID], target_id: UUID) -> 
         .values(user_id=target.user_id, group_id=target.group_id)
     )
 
-    result = db_session.execute(stmt)
-    db_session.execute(stmt_update_owner)
-    db_session.commit()
+    result = await db_session.execute(stmt)
+    await db_session.execute(stmt_update_owner)
+    await db_session.commit()
 
     return result.rowcount
 
 
-def prepare_documents_s3_data_deletion(
-    db_session: Session, node_ids: list[UUID]
+async def prepare_documents_s3_data_deletion(
+    db_session: AsyncSession, node_ids: list[UUID]
 ) -> DeleteDocumentsData:
     """Extract information from the list of `node_ids` about to be deleted
 
@@ -434,7 +454,7 @@ def prepare_documents_s3_data_deletion(
     page_ids = set()
     doc_ver_ids = set()
 
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         doc_ids.add(row[0])
         doc_ver_ids.add(row[1])
         page_ids.add(row[2])

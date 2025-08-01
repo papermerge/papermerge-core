@@ -53,7 +53,9 @@ dependencies = [
     "pydantic-settings >=2",
     "alembic >=1.13.3",
     "fastapi[standard] >=0.115",
-    "taskipy >=1.14"
+    "taskipy >=1.14",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "aiofiles (>=24.1.0,<25.0.0)"
 ]
 
 [project.urls]
@@ -63,7 +65,7 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 [project.optional-dependencies]
 mysql = ["mysqlclient (>=2.2)"]
-pg = ["psycopg2 (>=2.9.2)"]
+pg = ["psycopg2-binary (>=2.9.2)"]
 databases = ["mysqlclient", "psycopg2"]
 cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
 
@@ -88,7 +90,7 @@ server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
 
 [project.scripts]
-paper-cli = "papermerge.cli:app"
+paper-cli = "papermerge.cli:main"
 docs = 'papermerge.core.cli.docs:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 
@@ -119,3 +121,4 @@ build-backend = "setuptools.build_meta"
 # $ pytest test_common.py
 [tool.pytest.ini_options]
 testpaths = ["papermerge/core/features/"]
+asyncio_mode = "auto"

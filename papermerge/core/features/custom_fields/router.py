@@ -4,17 +4,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import utils, db
+from papermerge.core import utils
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
-from papermerge.core.db.engine import Session
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
-
+from papermerge.core.db.engine import get_db
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -36,12 +36,12 @@ logger = logging.getLogger(__name__)
     },
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
-def get_custom_fields_without_pagination(
+async def get_custom_fields_without_pagination(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     group_id: uuid.UUID | None = None,
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get all custom fields without pagination
 
@@ -57,11 +57,11 @@ def get_custom_fields_without_pagination(
     Required scope: `{scope}`
     """
     if group_id:
-        ok = user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-    result = dbapi.get_custom_fields_without_pagination(
+    result = await dbapi.get_custom_fields_without_pagination(
         db_session, user_id=user.id, group_id=group_id
     )
 
@@ -70,18 +70,18 @@ def get_custom_fields_without_pagination(
 
 @router.get("/")
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
-def get_custom_fields(
+async def get_custom_fields(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get paginated list of custom fields
 
     Required scope: `{scope}`
     """
-    result = dbapi.get_custom_fields(
+    result = await dbapi.get_custom_fields(
         db_session,
         user_id=user.id,
         page_size=params.page_size,
@@ -95,19 +95,19 @@ def get_custom_fields(
 
 @router.get("/{custom_field_id}", response_model=cf_schema.CustomField)
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
-def get_custom_field(
+async def get_custom_field(
     custom_field_id: uuid.UUID,
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get custom field
 
     Required scope: `{scope}`
     """
     try:
-        result = dbapi.get_custom_field(db_session, custom_field_id=custom_field_id)
+        result = await dbapi.get_custom_field(db_session, custom_field_id=custom_field_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
 
@@ -125,12 +125,12 @@ def get_custom_field(
     },
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_CREATE)
-def create_custom_field(
+async def create_custom_field(
     cfield: cf_schema.CreateCustomField,
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_CREATE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> cf_schema.CustomField:
     """Creates custom field
 
@@ -154,13 +154,13 @@ def create_custom_field(
 
     if cfield.group_id:
         group_id = cfield.group_id
-        ok = user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
     try:
-        custom_field = dbapi.create_custom_field(db_session, **kwargs)
+        custom_field = await dbapi.create_custom_field(db_session, **kwargs)
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate custom field name")
 
@@ -178,19 +178,19 @@ def create_custom_field(
     },
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_DELETE)
-def delete_custom_field(
+async def delete_custom_field(
     custom_field_id: uuid.UUID,
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_DELETE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> None:
     """Deletes custom field
 
     Required scope: `{scope}`
     """
     try:
-        dbapi.delete_custom_field(db_session, custom_field_id)
+        await dbapi.delete_custom_field(db_session, custom_field_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
 
@@ -207,13 +207,13 @@ def delete_custom_field(
     },
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_UPDATE)
-def update_custom_field(
+async def update_custom_field(
     custom_field_id: uuid.UUID,
     attrs: cf_schema.UpdateCustomField,
     cur_user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_UPDATE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> cf_schema.CustomField:
     """Updates custom field
 
@@ -221,7 +221,7 @@ def update_custom_field(
     """
     if attrs.group_id:
         group_id = attrs.group_id
-        ok = user_dbapi.user_belongs_to(
+        ok = await user_dbapi.user_belongs_to(
             db_session, user_id=cur_user.id, group_id=group_id
         )
         if not ok:
@@ -231,7 +231,7 @@ def update_custom_field(
     else:
         attrs.user_id = cur_user.id
     try:
-        cfield: cf_schema.CustomField = dbapi.update_custom_field(
+        cfield: cf_schema.CustomField = await dbapi.update_custom_field(
             db_session, custom_field_id=custom_field_id, attrs=attrs
         )
     except NoResultFound:

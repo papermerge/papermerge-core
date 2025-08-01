@@ -1,10 +1,10 @@
 from papermerge.core import schema
 
 
-def test_basic_document_version(make_document_version, user):
+async def test_basic_document_version(make_document_version, user):
     """assert that document version instance can be validated
     via pydantic mode_validate"""
-    db_doc_ver = make_document_version(page_count=2, lang="fra", user=user)
+    db_doc_ver = await make_document_version(page_count=2, lang="fra", user=user)
 
     doc_ver = schema.DocumentVersion.model_validate(db_doc_ver)
 
@@ -14,8 +14,8 @@ def test_basic_document_version(make_document_version, user):
     assert doc_ver.download_url
 
 
-def test_basic_document(make_document, user):
-    doc = make_document(
+async def test_basic_document(make_document, user):
+    doc = await make_document(
         title="invoice.pdf", lang="deu", user=user, parent=user.home_folder
     )
 

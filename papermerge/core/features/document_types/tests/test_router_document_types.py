@@ -1,19 +1,19 @@
-import uuid
-
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
 
 
-def test_create_document_type_with_path_template(
-    auth_api_client: AuthTestClient, db_session: Session
+async def test_create_document_type_with_path_template(
+    auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
-    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_before = (await db_session.execute(
+        select(func.count(orm.DocumentType.id))
+    )).scalar()
     assert count_before == 0
 
-    response = auth_api_client.post(
+    response = await auth_api_client.post(
         "/document-types/",
         json={
             "name": "Invoice",
@@ -23,7 +23,9 @@ def test_create_document_type_with_path_template(
     )
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_after =(
+        await db_session.execute(select(func.count(orm.DocumentType.id)))
+    ).scalar()
     assert count_after == 1
 
     document_type = schema.DocumentType.model_validate(response.json())
@@ -31,11 +33,11 @@ def test_create_document_type_with_path_template(
     assert document_type.path_template == "/home/My ZDF/"
 
 
-def test_update_document_type_with_path_template(
-    make_document_type, auth_api_client: AuthTestClient, db_session: Session
+async def test_update_document_type_with_path_template(
+    make_document_type, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
-    doc_type = make_document_type(name="ZDF", path_template="/home/")
-    response = auth_api_client.patch(
+    doc_type = await make_document_type(name="ZDF", path_template="/home/")
+    response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
         json={
             "name": "Invoice",
@@ -48,49 +50,51 @@ def test_update_document_type_with_path_template(
     assert document_type.path_template == "/home/My ZDF/updated/"
 
 
-def test_create_document_type_owned_by_user(
-    make_custom_field, auth_api_client: AuthTestClient, db_session: Session
+async def test_create_document_type_owned_by_user(
+    make_custom_field, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
-    cf1: schema.CustomField = make_custom_field(name="shop", type="text")
-    cf2: schema.CustomField = make_custom_field(name="total", type="monetary")
+    cf1: schema.CustomField = await make_custom_field(name="shop", type="text")
+    cf2: schema.CustomField = await make_custom_field(name="total", type="monetary")
 
-    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_before = (await db_session.execute(
+        select(func.count(orm.DocumentType.id))
+    )).scalar()
     assert count_before == 0
 
-    response = auth_api_client.post(
+    response = await auth_api_client.post(
         "/document-types/",
         json={"name": "Invoice", "custom_field_ids": [str(cf1.id), str(cf2.id)]},
     )
 
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_after == 1
 
     document_type = schema.DocumentType.model_validate(response.json())
-    db_document_type = db_session.get(orm.DocumentType, document_type.id)
+    db_document_type = await db_session.get(orm.DocumentType, document_type.id)
     assert document_type.name == "Invoice"
     assert db_document_type.user_id == auth_api_client.user.id
     assert len(document_type.custom_fields) == 2
     assert set([cf.name for cf in document_type.custom_fields]) == {"shop", "total"}
 
 
-def test_create_document_type_owned_by_group(
-    make_custom_field, auth_api_client: AuthTestClient, db_session: Session, make_group
+async def test_create_document_type_owned_by_group(
+    make_custom_field, auth_api_client: AuthTestClient, db_session: AsyncSession, make_group
 ):
     """Create a document type owned by the group"""
-    group: orm.Group = make_group("Family", with_special_folders=True)
-    cf1: schema.CustomField = make_custom_field(
+    group: orm.Group = await make_group("Family", with_special_folders=True)
+    cf1: schema.CustomField = await make_custom_field(
         name="shop", type="text", group_id=group.id
     )
-    cf2: schema.CustomField = make_custom_field(
+    cf2: schema.CustomField = await make_custom_field(
         name="total", type="monetary", group_id=group.id
     )
 
-    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_before = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_before == 0
 
-    response = auth_api_client.post(
+    response = await auth_api_client.post(
         "/document-types/",
         json={
             "name": "Invoice",
@@ -101,35 +105,35 @@ def test_create_document_type_owned_by_group(
 
     assert response.status_code == 201, response.json()
 
-    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_after == 1
 
     document_type = schema.DocumentType.model_validate(response.json())
-    db_document_type = db_session.get(orm.DocumentType, document_type.id)
+    db_document_type = await db_session.get(orm.DocumentType, document_type.id)
 
     assert document_type.name == "Invoice"
     assert db_document_type.user_id == None
     assert db_document_type.group_id == group.id
 
 
-def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):
-    make_document_type(name="Invoice")
-    response = auth_api_client.get("/document-types/")
+async def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):
+    await make_document_type(name="Invoice")
+    response = await auth_api_client.get("/document-types/")
 
     assert response.status_code == 200, response.json()
 
 
-def test_update_document_type(
+async def test_update_document_type(
     auth_api_client: AuthTestClient,
-    db_session: Session,
+    db_session: AsyncSession,
     make_document_type,
     make_custom_field,
 ):
-    cf1 = make_custom_field(name="cf1", type="text")
-    cf2 = make_custom_field(name="cf2", type="boolean")
-    doc_type = make_document_type(name="Invoice")
+    cf1 = await make_custom_field(name="cf1", type="text")
+    cf2 = await make_custom_field(name="cf2", type="boolean")
+    doc_type = await make_document_type(name="Invoice")
 
-    response = auth_api_client.patch(
+    response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
         json={
             "name": "Invoice-updated",
@@ -142,9 +146,9 @@ def test_update_document_type(
     assert set([cf.name for cf in updated_dtype.custom_fields]) == {"cf1", "cf2"}
 
 
-def test_update_group_id_field_in_document_type(
+async def test_update_group_id_field_in_document_type(
     auth_api_client: AuthTestClient,
-    db_session: Session,
+    db_session: AsyncSession,
     make_document_type,
     make_group,
 ):
@@ -153,53 +157,54 @@ def test_update_group_id_field_in_document_type(
     DocumentType is owned by user and user can transfer ownership to
     the group.
     """
-    doc_type = make_document_type(name="Invoice")
-    group: orm.Group = make_group("Familly", with_special_folders=True)
+    doc_type = await make_document_type(name="Invoice")
+    group: orm.Group = await make_group("Familly", with_special_folders=True)
     user = auth_api_client.user
 
     user.groups.append(group)
-    db_session.commit()
+    await db_session.commit()
 
-    response = auth_api_client.patch(
+    response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
         json={
             "group_id": str(group.id),
         },
     )
 
-    db_session.expire_all()
-    db_document_type = db_session.get(orm.DocumentType, doc_type.id)
-
+    result = await db_session.execute(
+        select(orm.DocumentType).where(orm.DocumentType.id == doc_type.id)
+    )
+    fresh_document_type = result.scalar_one()
     assert response.status_code == 200
-    assert db_document_type.group_id == group.id
-    assert db_document_type.user_id == None
+    assert fresh_document_type.group_id == group.id
+    assert fresh_document_type.user_id == None
 
 
-def test_delete_document_type(
+async def test_delete_document_type(
     auth_api_client: AuthTestClient,
-    db_session: Session,
+    db_session: AsyncSession,
     make_document_type,
 ):
-    doc_type = make_document_type(name="Invoice")
-    count_before = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    doc_type = await make_document_type(name="Invoice")
+    count_before = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_before == 1
 
-    response = auth_api_client.delete(f"/document-types/{doc_type.id}")
+    response = await auth_api_client.delete(f"/document-types/{doc_type.id}")
     assert response.status_code == 204, response.json()
-    count_after = db_session.query(func.count(orm.DocumentType.id)).scalar()
+    count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
 
     assert count_after == 0
 
 
-def test_paginated_result__9_items_first_page(
+async def test_paginated_result__9_items_first_page(
     make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
     for i in range(total_doc_type_items):
-        make_document_type(name=f"Invoice {i}", user=user)
+        await make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 1}
-    response = auth_api_client.get("/document-types/", params=params)
+    response = await auth_api_client.get("/document-types/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -211,15 +216,15 @@ def test_paginated_result__9_items_first_page(
     assert len(paginated_items.items) == 5
 
 
-def test_paginated_result__9_items_second_page(
+async def test_paginated_result__9_items_second_page(
     make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
     for i in range(total_doc_type_items):
-        make_document_type(name=f"Invoice {i}", user=user)
+        await make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 2}
-    response = auth_api_client.get("/document-types/", params=params)
+    response = await auth_api_client.get("/document-types/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -233,15 +238,15 @@ def test_paginated_result__9_items_second_page(
     assert len(paginated_items.items) == 4
 
 
-def test_paginated_result__9_items_3rd_page(
+async def test_paginated_result__9_items_3rd_page(
     make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
     for i in range(total_doc_type_items):
-        make_document_type(name=f"Invoice {i}", user=user)
+        await make_document_type(name=f"Invoice {i}", user=user)
 
     params = {"page_size": 5, "page_number": 3}
-    response = auth_api_client.get("/document-types/", params=params)
+    response = await auth_api_client.get("/document-types/", params=params)
 
     assert response.status_code == 200, response.json()
 
@@ -254,14 +259,14 @@ def test_paginated_result__9_items_3rd_page(
     assert len(paginated_items.items) == 0
 
 
-def test_document_types_all_route(
+async def test_document_types_all_route(
     make_document_type, auth_api_client: AuthTestClient, user
 ):
     total_doc_type_items = 9
     for i in range(total_doc_type_items):
-        make_document_type(name=f"Invoice {i}", user=user)
+        await make_document_type(name=f"Invoice {i}", user=user)
 
-    response = auth_api_client.get("/document-types/all")
+    response = await auth_api_client.get("/document-types/all")
 
     assert response.status_code == 200, response.json()
 
@@ -270,30 +275,30 @@ def test_document_types_all_route(
     assert len(items) == total_doc_type_items
 
 
-def test__positive__document_types_all_route_with_group_id_param(
-    db_session, make_document_type, auth_api_client: AuthTestClient, user, make_group
+async def test__positive__document_types_all_route_with_group_id_param(
+    db_session: AsyncSession, make_document_type, auth_api_client: AuthTestClient, user, make_group
 ):
     """In this scenario current user belongs to the
     group provided as parameter and there are two document types
     belonging to that group. In such case endpoint should
     return only two document types: the both belonging to the group
     """
-    group: orm.Group = make_group("research")
+    group: orm.Group = await make_group("research")
 
     total_doc_type_items = 9
     for i in range(total_doc_type_items):
         # privately owned document types
-        make_document_type(name=f"Invoice {i}", user=user)
+        await make_document_type(name=f"Invoice {i}", user=user)
 
-    make_document_type(name=f"Research 1", group_id=group.id)
-    make_document_type(name=f"Research 2", group_id=group.id)
+    await make_document_type(name=f"Research 1", group_id=group.id)
+    await make_document_type(name=f"Research 2", group_id=group.id)
 
     # user belongs to 'research' group
     user.groups.append(group)
     db_session.add(user)
-    db_session.commit()
+    await db_session.commit()
 
-    response = auth_api_client.get(
+    response = await auth_api_client.get(
         "/document-types/all", params={"group_id": str(group.id)}
     )
 

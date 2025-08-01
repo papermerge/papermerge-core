@@ -2,12 +2,13 @@ import uuid
 
 import pytest
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import orm
 
 
 @pytest.fixture()
-def make_tag(db_session):
-    def _maker(
+def make_tag(db_session: AsyncSession):
+    async def _maker(
         name: str,
         user: orm.User | None = None,
         bg_color: str = "red",
@@ -23,7 +24,7 @@ def make_tag(db_session):
                 name=name, bg_color=bg_color, fg_color=fg_color, user_id=user.id
             )
         db_session.add(db_tag)
-        db_session.commit()
+        await db_session.commit()
 
         return db_tag
 

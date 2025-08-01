@@ -1,21 +1,23 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core.features.roles.db import api as dbapi
 from papermerge.core.features.auth.scopes import NODE_VIEW, NODE_UPDATE
 from papermerge.core.features.shared_nodes.db import api as sn_dbapi
 from papermerge.core.features.shared_nodes import schema as sn_schema
 
 
-def test_basic(db_session, make_user, make_group, make_folder):
-    dbapi.sync_perms(db_session)
-    john = make_user("john", is_superuser=False)
-    david = make_user("david", is_superuser=False)
-    family = make_group("family")
-    friends = make_group("friends")
-    receipts = make_folder("John's Receipts", user=john, parent=john.home_folder)
-    role, err = dbapi.create_role(db_session, "RO", scopes=[NODE_VIEW])
+async def test_basic(db_session: AsyncSession, make_user, make_group, make_folder):
+    await dbapi.sync_perms(db_session)
+    john = await make_user("john", is_superuser=False)
+    david = await make_user("david", is_superuser=False)
+    family = await make_group("family")
+    friends = await make_group("friends")
+    receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
+    role, err = await dbapi.create_role(db_session, "RO", scopes=[NODE_VIEW])
 
-    db_session.commit()
+    await db_session.commit()
 
-    sn_dbapi.create_shared_nodes(
+    await sn_dbapi.create_shared_nodes(
         db_session,
         user_ids=[david.id],
         node_ids=[receipts.id],
@@ -23,7 +25,7 @@ def test_basic(db_session, make_user, make_group, make_folder):
         owner_id=john.id,
     )
 
-    sn_dbapi.create_shared_nodes(
+    await sn_dbapi.create_shared_nodes(
         db_session,
         group_ids=[family.id, friends.id],
         node_ids=[receipts.id],
@@ -31,7 +33,7 @@ def test_basic(db_session, make_user, make_group, make_folder):
         owner_id=john.id,
     )
 
-    access_details = sn_dbapi.get_shared_node_access_details(
+    access_details = await sn_dbapi.get_shared_node_access_details(
         db_session, node_id=receipts.id
     )
 
@@ -44,14 +46,14 @@ def test_basic(db_session, make_user, make_group, make_folder):
         id=receipts.id, users=users, groups=groups
     )
 
-    sn_dbapi.update_shared_node_access(
+    await sn_dbapi.update_shared_node_access(
         db_session=db_session,
         owner_id=john.id,
         node_id=receipts.id,
         access_update=access_update,
     )
 
-    access_details = sn_dbapi.get_shared_node_access_details(
+    access_details = await sn_dbapi.get_shared_node_access_details(
         db_session, node_id=receipts.id
     )
 
@@ -64,39 +66,39 @@ def test_basic(db_session, make_user, make_group, make_folder):
         id=receipts.id, users=users, groups=[]  # no groups access
     )
 
-    sn_dbapi.update_shared_node_access(
+    await sn_dbapi.update_shared_node_access(
         db_session=db_session,
         owner_id=john.id,
         node_id=receipts.id,
         access_update=access_update,
     )
 
-    access_details = sn_dbapi.get_shared_node_access_details(
+    access_details = await sn_dbapi.get_shared_node_access_details(
         db_session, node_id=receipts.id
     )
     assert len(access_details.groups) == 0  # no groups access
     assert len(access_details.users) == 1
 
 
-def test_remove_group_access(db_session, make_user, make_group, make_folder):
+async def test_remove_group_access(db_session: AsyncSession, make_user, make_group, make_folder):
     """
     In this scenario group and user access is added simultaneously (using
     same `create_shared_nodes` code). Then group access is removed. It is
     expected that user access will still be there.
     """
-    dbapi.sync_perms(db_session)
-    john = make_user("john", is_superuser=False)
-    david = make_user("david", is_superuser=False)
-    family = make_group("family")
-    friends = make_group("friends")
-    receipts = make_folder("John's Receipts", user=john, parent=john.home_folder)
-    role, err = dbapi.create_role(db_session, "RO", scopes=[NODE_VIEW])
+    await dbapi.sync_perms(db_session)
+    john = await make_user("john", is_superuser=False)
+    david = await make_user("david", is_superuser=False)
+    family = await make_group("family")
+    friends = await make_group("friends")
+    receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
+    role, err = await dbapi.create_role(db_session, "RO", scopes=[NODE_VIEW])
 
-    db_session.commit()
+    await db_session.commit()
 
     # this part is important - both user and group access
     # is granted using same `create_shared_node`
-    sn_dbapi.create_shared_nodes(
+    await sn_dbapi.create_shared_nodes(
         db_session,
         user_ids=[david.id],
         group_ids=[family.id, friends.id],
@@ -105,7 +107,7 @@ def test_remove_group_access(db_session, make_user, make_group, make_folder):
         owner_id=john.id,
     )
 
-    access_details = sn_dbapi.get_shared_node_access_details(
+    access_details = await sn_dbapi.get_shared_node_access_details(
         db_session, node_id=receipts.id
     )
 
@@ -117,14 +119,14 @@ def test_remove_group_access(db_session, make_user, make_group, make_folder):
         id=receipts.id, users=users, groups=[]
     )
     # group access is removed
-    sn_dbapi.update_shared_node_access(
+    await sn_dbapi.update_shared_node_access(
         db_session=db_session,
         owner_id=john.id,
         node_id=receipts.id,
         access_update=access_update,
     )
 
-    access_details = sn_dbapi.get_shared_node_access_details(
+    access_details = await sn_dbapi.get_shared_node_access_details(
         db_session, node_id=receipts.id
     )
 

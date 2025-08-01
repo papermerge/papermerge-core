@@ -5,11 +5,14 @@ from rich.table import Table
 from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core import dbapi
 from papermerge.core import schema
+from papermerge.core.utils.cli import async_command
+
 
 app = typer.Typer(help="Permissions management")
 
 
 @app.command("ls")
+@async_command
 async def perms_list():
     """List database stored permissions"""
     with AsyncSessionLocal() as db_session:
@@ -18,6 +21,7 @@ async def perms_list():
 
 
 @app.command("sync")
+@async_command
 async def perms_sync():
     """Synchronizes permissions table with current scopes"""
     with AsyncSessionLocal() as db_session:

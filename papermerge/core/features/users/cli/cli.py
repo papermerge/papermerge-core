@@ -12,16 +12,18 @@ from sqlalchemy.exc import NoResultFound
 from papermerge.core import orm, schema
 from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.users.db import api as usr_dbapi
-
+from papermerge.core.utils.cli import async_command
 
 app = typer.Typer(help="Users management")
 console = Console()
 
 
+
 @app.command(name="ls")
+@async_command
 async def list_users(page_size: int = 10, page_number: int = 1):
     """List users"""
-    with AsyncSessionLocal() as db_session:
+    async with AsyncSessionLocal() as db_session:
         users: schema.PaginatedResponse[schema.User] = await usr_dbapi.get_users(
             db_session, page_size=page_size, page_number=page_number
         )
@@ -42,6 +44,7 @@ Password = Annotated[
 
 
 @app.command(name="create")
+@async_command
 async def create_user_cmd(
     username: Username,
     password: Password,
@@ -52,7 +55,7 @@ async def create_user_cmd(
     if email is None:
         email = f"{username}@example.com"
 
-    with AsyncSessionLocal() as db_session:
+    async with AsyncSessionLocal() as db_session:
         user, error = await usr_dbapi.create_user(
             db_session,
             username=username,
@@ -74,7 +77,7 @@ async def delete_user_cmd(username: str):
     """Deletes user"""
 
     try:
-        with AsyncSessionLocal() as db_session:
+        async with AsyncSessionLocal() as db_session:
             await usr_dbapi.delete_user(
                 db_session,
                 username=username,
@@ -91,7 +94,7 @@ async def update_user_cmd(username: str, superuser: bool = False):
     """Update user"""
 
     try:
-        with AsyncSessionLocal() as db_session:
+        async with AsyncSessionLocal() as db_session:
             stmt = select(orm.User).where(orm.User.username == username)
             user = (await db_session.execute(stmt)).scalar()
             attrs = schema.UpdateUser(is_superuser=superuser)

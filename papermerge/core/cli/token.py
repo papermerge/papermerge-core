@@ -6,11 +6,13 @@ from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core import utils
+from papermerge.core.utils.cli import async_command
 
 app = typer.Typer(help="JWT tokens management")
 
 
 @app.command(name="encode")
+@async_command
 async def encode_cmd(username: str, scopes: str = None):
     """Encodes JWT token payload for given username"""
     try:
@@ -39,6 +41,7 @@ async def encode_cmd(username: str, scopes: str = None):
 
 
 @app.command(name="decode")
+@async_command
 def decode_cmd(token_payload: str):
     """Decode JWT token payload
 

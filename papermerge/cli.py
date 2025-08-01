@@ -22,3 +22,4 @@ app.add_typer(index_schema.app, name="index-schema")
 
 def main():
     app()
+

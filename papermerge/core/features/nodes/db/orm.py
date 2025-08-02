@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, func, UniqueConstraint, CheckConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, deferred
 
 from papermerge.core.features.users.db.orm import User
 from papermerge.core.db.base import Base
@@ -21,11 +21,15 @@ class Node(Base):
         back_populates="nodes",
         primaryjoin="User.id == Node.user_id",
         remote_side=User.id,
-        cascade="delete",
+        cascade="delete"
     )
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey(
-            "users.id", use_alter=True, name="nodes_user_id_fkey", ondelete="CASCADE"
+            "users.id",
+            use_alter=True,
+            name="nodes_user_id_fkey",
+            ondelete="CASCADE",
+            deferrable=True
         ),
         nullable=True,
     )

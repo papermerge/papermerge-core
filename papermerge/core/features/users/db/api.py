@@ -4,7 +4,7 @@ import logging
 from typing import Tuple
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -189,8 +189,27 @@ async def create_user(
     scopes = scopes or []
     group_ids = group_ids or []
     _user_id = user_id or uuid.uuid4()
+    await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
 
     try:
+        home_folder_id = uuid.uuid4()
+        inbox_folder_id = uuid.uuid4()
+
+        home = orm.Folder(
+            id=home_folder_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=_user_id,
+            lang="xxx",
+        )
+        inbox = orm.Folder(
+            id=inbox_folder_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=_user_id,
+            lang="xxx",
+        )
+
         user = orm.User(
             id=_user_id,
             username=username,
@@ -198,27 +217,12 @@ async def create_user(
             password=pbkdf2_sha256.hash(password),
             is_superuser=is_superuser,
             is_active=is_active,
+            home_folder_id=home_folder_id,  # Set immediately
+            inbox_folder_id=inbox_folder_id,  # Set immediately
         )
-        db_session.add(user)
+
+        db_session.add_all([user, home, inbox])
         await db_session.flush()
-
-        # Create folders first and flush to get valid IDs
-        home = orm.Folder(
-            title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=user.id,
-            lang="xxx",
-        )
-        inbox = orm.Folder(
-            id=uuid.uuid4(),
-            title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=user.id,
-            lang="xxx",
-        )
-        db_session.add_all([home, inbox])
-        await db_session.flush()  # inserts folders, IDs available now
-
         await db_session.commit()
         await db_session.refresh(user)
 

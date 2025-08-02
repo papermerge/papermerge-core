@@ -25,7 +25,10 @@ class Node(Base):
     )
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey(
-            "users.id", use_alter=True, name="nodes_user_id_fkey", ondelete="CASCADE"
+            "users.id",
+            use_alter=True,
+            name="nodes_user_id_fkey",
+            ondelete="CASCADE",
         ),
         nullable=True,
     )

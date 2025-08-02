@@ -1,4 +1,4 @@
-"""3.5.3: 0002 - Set home_folder_id and inbox_folder_id to NOT NULL
+"""v3.5.3: 0002 - Set home_folder_id and inbox_folder_id to NOT NULL
 
 Revision ID: ad7145f8e1d5
 Revises: 4756d6d67b0d

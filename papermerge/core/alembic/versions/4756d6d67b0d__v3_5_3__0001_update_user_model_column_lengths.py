@@ -1,4 +1,4 @@
-"""3.5.3: 0001 - Update user model column lengths
+"""v3.5.3: 0001 - Update user model column lengths
 
 Revision ID: 4756d6d67b0d
 Revises: b2350127890a

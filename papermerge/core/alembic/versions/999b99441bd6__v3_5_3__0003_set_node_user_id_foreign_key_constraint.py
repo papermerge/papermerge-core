@@ -1,4 +1,4 @@
-"""3.5.3: 0003 - Set node_user_id foreign key constraint as deferrable
+"""v3.5.3: 0003 - Set node_user_id foreign key constraint as deferrable
 
 Revision ID: 999b99441bd6
 Revises: ad7145f8e1d5

@@ -19,16 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # All existing users already have home_folder_id and inbox_folder_id set
-    # Safe to apply NOT NULL constraints
-    # Set home_folder_id to NOT NULL
+    """Set `home_folder_id` and `inbox_folder_id` to NOT NULL"""
     op.alter_column('users', 'home_folder_id',
                     existing_type=sa.UUID(),
                     nullable=False,
                     existing_nullable=True,
                     existing_server_default=None)
 
-    # Set inbox_folder_id to NOT NULL
     op.alter_column('users', 'inbox_folder_id',
                     existing_type=sa.UUID(),
                     nullable=False,
@@ -37,14 +34,12 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Revert home_folder_id back to nullable
     op.alter_column('users', 'home_folder_id',
                     existing_type=sa.UUID(),
                     nullable=True,
                     existing_nullable=False,
                     existing_server_default=None)
 
-    # Revert inbox_folder_id back to nullable
     op.alter_column('users', 'inbox_folder_id',
                     existing_type=sa.UUID(),
                     nullable=True,

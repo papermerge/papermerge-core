@@ -19,10 +19,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Drop the existing foreign key constraint
+    """make `nodes_user_id_fkey` constraint deferrable so that
+    user and its special folders can be created in one transaction with constraint
+    checks deferred
+    """
     op.drop_constraint('nodes_user_id_fkey', 'nodes', type_='foreignkey')
 
-    # Recreate the foreign key constraint as deferrable and initially deferred
     op.create_foreign_key(
         'nodes_user_id_fkey',
         'nodes',
@@ -38,7 +40,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_constraint('nodes_user_id_fkey', 'nodes', type_='foreignkey')
 
-    # Recreate the original foreign key constraint (non-deferrable)
     op.create_foreign_key(
         'nodes_user_id_fkey',
         'nodes',

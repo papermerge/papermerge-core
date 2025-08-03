@@ -20,7 +20,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-
     op.alter_column('users', 'email',
                    existing_type=sa.String(),
                    type_=sa.String(const.EMAIL_MAX_LENGTH),
@@ -29,6 +28,11 @@ def upgrade() -> None:
     op.alter_column('users', 'password',
                    existing_type=sa.String(),
                    type_=sa.String(const.PASSWORD_MAX_LENGTH),
+                   existing_nullable=False)
+
+    op.alter_column('users', 'username',
+                   existing_type=sa.String(),
+                   type_=sa.String(const.USERNAME_MAX_LENGTH),
                    existing_nullable=False)
 
     # Update first_name: change length to 100 and make nullable with NULL default
@@ -51,8 +55,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-
-    # Revert first_name: back to unlimited length, not nullable, empty string default
     op.alter_column('users', 'first_name',
                    existing_type=sa.String(const.NAME_MAX_LENGTH),
                    type_=sa.String(),
@@ -61,7 +63,6 @@ def downgrade() -> None:
                    existing_default=None,
                    server_default='')
 
-    # Revert last_name: back to unlimited length, not nullable, empty string default
     op.alter_column('users', 'last_name',
                    existing_type=sa.String(const.NAME_MAX_LENGTH),
                    type_=sa.String(),
@@ -70,13 +71,16 @@ def downgrade() -> None:
                    existing_default=None,
                    server_default='')
 
-    # Revert password column length (assuming it was unlimited before)
     op.alter_column('users', 'password',
                    existing_type=sa.String(const.PASSWORD_MAX_LENGTH),
                    type_=sa.String(),
                    existing_nullable=False)
 
-    # Revert email column length (assuming it was unlimited before)
+    op.alter_column('users', 'username',
+                   existing_type=sa.String(const.USERNAME_MAX_LENGTH),
+                   type_=sa.String(),
+                   existing_nullable=False)
+
     op.alter_column('users', 'email',
                    existing_type=sa.String(const.EMAIL_MAX_LENGTH),
                    type_=sa.String(),

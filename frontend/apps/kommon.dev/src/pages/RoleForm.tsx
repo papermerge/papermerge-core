@@ -5,7 +5,7 @@ export default function RoleFormContainer() {
   return (
     <Stack>
       <Group>
-        <RoleForm />
+        <RoleForm readOnly={true} />
       </Group>
     </Stack>
   )

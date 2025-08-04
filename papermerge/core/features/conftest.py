@@ -11,7 +11,7 @@ import pytest
 from httpx import AsyncClient
 from httpx import ASGITransport
 from fastapi import FastAPI
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -453,20 +453,12 @@ async def user(make_user) -> orm.User:
 @pytest.fixture()
 async def make_user(db_session: AsyncSession):
     async def _maker(username: str, is_superuser: bool = True):
+        await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+
         user_id = uuid.uuid4()
         home_id = uuid.uuid4()
         inbox_id = uuid.uuid4()
 
-        db_user = orm.User(
-            id=user_id,
-            username=username,
-            email=f"{username}@mail.com",
-            first_name=f"{username}_first",
-            last_name=f"{username}_last",
-            is_superuser=is_superuser,
-            is_active=True,
-            password="pwd",
-        )
         db_inbox = orm.Folder(
             id=inbox_id,
             title=constants.INBOX_TITLE,
@@ -481,13 +473,26 @@ async def make_user(db_session: AsyncSession):
             lang="de",
             user_id=user_id,
         )
-        db_session.add(db_inbox)
-        db_session.add(db_home)
+
+        db_session.add_all([db_home, db_inbox])
+        await db_session.flush()  # This ensures folders are inserted first
+
+        db_user = orm.User(
+            id=user_id,
+            username=username,
+            email=f"{username}@mail.com",
+            first_name=f"{username}_first",
+            last_name=f"{username}_last",
+            is_superuser=is_superuser,
+            is_active=True,
+            password="pwd",
+            home_folder_id=home_id,
+            inbox_folder_id=inbox_id
+        )
+
         db_session.add(db_user)
-        await db_session.commit()
-        db_user.home_folder_id = db_home.id
-        db_user.inbox_folder_id = db_inbox.id
-        await db_session.commit()
+        await db_session.flush()
+        await db_session.refresh(db_user)
 
         # Eagerly load the user with home_folder and inbox_folder relationships
         from sqlalchemy.orm import selectinload

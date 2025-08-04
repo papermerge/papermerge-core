@@ -45,3 +45,10 @@ class ContentType:
     IMAGE_JPEG = "image/jpeg"
     IMAGE_PNG = "image/png"
     IMAGE_TIFF = "image/tiff"
+
+# Define appropriate lengths for different field types
+USERNAME_MAX_LENGTH = 150
+EMAIL_MAX_LENGTH = 254  # RFC 5321 standard
+PASSWORD_MAX_LENGTH = 255  # Sufficient for hashed passwords
+NAME_MAX_LENGTH = 100  # Reasonable for first/last names
+

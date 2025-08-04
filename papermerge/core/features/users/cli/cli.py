@@ -73,6 +73,7 @@ async def create_user_cmd(
 
 
 @app.command(name="delete")
+@async_command
 async def delete_user_cmd(username: str):
     """Deletes user"""
 
@@ -90,6 +91,7 @@ async def delete_user_cmd(username: str):
 
 
 @app.command(name="update")
+@async_command
 async def update_user_cmd(username: str, superuser: bool = False):
     """Update user"""
 

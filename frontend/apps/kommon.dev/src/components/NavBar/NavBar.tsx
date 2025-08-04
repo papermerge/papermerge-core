@@ -11,6 +11,9 @@ export default function Navbar() {
         <NavLink to="/edit-node-modal" end>
           &lt;EditNodeTitleModal /&gt;
         </NavLink>
+        <NavLink to="/role-form" end>
+          &lt;RoleForm /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

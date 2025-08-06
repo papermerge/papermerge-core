@@ -17,6 +17,7 @@ interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
   initialName?: string
+  nameFieldError?: string
   isLoading: boolean
   txt?: {
     name: string
@@ -35,6 +36,7 @@ export default function RoleForm({
   onPermissionsChange,
   onNameChange,
   initialName,
+  nameFieldError,
   initialCheckedState,
   isLoading,
   readOnly = false
@@ -155,6 +157,7 @@ export default function RoleForm({
             value={name}
             onChange={onLocalNameChange}
             readOnly={readOnly}
+            error={nameFieldError}
             label={txt?.name || "Name"}
           />
           <Group>

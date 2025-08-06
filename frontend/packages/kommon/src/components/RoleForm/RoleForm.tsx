@@ -59,29 +59,6 @@ export default function RoleForm({
     [permissionDependencies]
   )
 
-  // Helper function to get all permissions that depend on a given permission
-  const getDependentPermissions = useCallback(
-    (permission: string, visited: Set<string> = new Set()): string[] => {
-      if (visited.has(permission)) {
-        return [] // Avoid circular dependencies
-      }
-
-      visited.add(permission)
-      const dependents: string[] = []
-
-      Object.entries(permissionDependencies).forEach(([perm, deps]) => {
-        if (deps.includes(permission) && !visited.has(perm)) {
-          dependents.push(perm)
-          // Also get permissions that depend on the dependent permissions
-          dependents.push(...getDependentPermissions(perm, new Set(visited)))
-        }
-      })
-
-      return [...new Set(dependents)]
-    },
-    [permissionDependencies]
-  )
-
   const tree = useTree({
     initialCheckedState: initialCheckedState,
     initialExpandedState: getTreeExpandedState(data, "*")
@@ -116,7 +93,7 @@ export default function RoleForm({
         } else {
           // When unchecking a permission, also uncheck permissions that depend on it
           tree.uncheckNode(node.value)
-          const dependents = getDependentPermissions(node.value)
+          const dependents = getAllDependencies(node.value)
           dependents.forEach(dep => tree.uncheckNode(dep))
         }
       }
@@ -144,7 +121,7 @@ export default function RoleForm({
         </Group>
       )
     },
-    [readOnly, getAllDependencies, getDependentPermissions] // Fixed: Added missing dependencies
+    [readOnly, getAllDependencies] // Fixed: Added missing dependencies
   )
 
   return (
@@ -293,8 +270,12 @@ const PERMISSIONS_TREE = [
 ]
 
 const PERMISSION_DEPENDENCIES = {
+  folder: ["document.view"],
+  document: ["folder.view"],
   "folder.view": ["document.view"],
   "document.view": ["tag.select", "folder.view"],
   "shared_node.create": ["user.select", "group.select", "role.select"],
-  "shared_node.update": ["user.select", "group.select", "role.select"]
+  "shared_node.update": ["user.select", "group.select", "role.select"],
+  "tag.select": ["document.view", "folder.view"],
+  tag: ["document.view", "folder.view"]
 }

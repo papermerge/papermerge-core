@@ -19,6 +19,11 @@ interface Args {
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
 }
 
+// Define permission dependencies type
+type PermissionDependencies = {
+  [key: string]: string[]
+}
+
 export default function RoleForm({
   txt,
   onPermissionsChange,
@@ -26,6 +31,56 @@ export default function RoleForm({
   readOnly = false
 }: Args) {
   const data = useMemo(() => PERMISSIONS_TREE, [])
+  const permissionDependencies = useMemo(
+    (): PermissionDependencies => PERMISSION_DEPENDENCIES,
+    []
+  )
+
+  const getAllDependencies = useCallback(
+    (permission: string, visited: Set<string> = new Set()): string[] => {
+      if (visited.has(permission)) {
+        return [] // Avoid circular dependencies
+      }
+
+      visited.add(permission)
+      const dependencies = permissionDependencies[permission] || []
+      const allDeps = [...dependencies]
+
+      // Recursively get dependencies of dependencies
+      dependencies.forEach(dep => {
+        if (!visited.has(dep)) {
+          allDeps.push(...getAllDependencies(dep, new Set(visited)))
+        }
+      })
+
+      // Remove duplicates
+      return [...new Set(allDeps)]
+    },
+    [permissionDependencies]
+  )
+
+  // Helper function to get all permissions that depend on a given permission
+  const getDependentPermissions = useCallback(
+    (permission: string, visited: Set<string> = new Set()): string[] => {
+      if (visited.has(permission)) {
+        return [] // Avoid circular dependencies
+      }
+
+      visited.add(permission)
+      const dependents: string[] = []
+
+      Object.entries(permissionDependencies).forEach(([perm, deps]) => {
+        if (deps.includes(permission) && !visited.has(perm)) {
+          dependents.push(perm)
+          // Also get permissions that depend on the dependent permissions
+          dependents.push(...getDependentPermissions(perm, new Set(visited)))
+        }
+      })
+
+      return [...new Set(dependents)]
+    },
+    [permissionDependencies]
+  )
 
   const tree = useTree({
     initialCheckedState: initialCheckedState,
@@ -37,7 +92,7 @@ export default function RoleForm({
       const checkedPermissions = tree.getCheckedNodes()
       onPermissionsChange(checkedPermissions)
     }
-  }, [tree.checkedState])
+  }, [tree.checkedState, onPermissionsChange]) // Fixed: Added missing dependency
 
   const renderTreeNode = useCallback(
     ({
@@ -50,17 +105,28 @@ export default function RoleForm({
       const checked = tree.isNodeChecked(node.value)
       const indeterminate = tree.isNodeIndeterminate(node.value)
 
+      const handleCheckboxClick = (): void => {
+        if (readOnly) return
+
+        if (!checked) {
+          // When checking a permission, also check its dependencies
+          tree.checkNode(node.value)
+          const dependencies = getAllDependencies(node.value)
+          dependencies.forEach(dep => tree.checkNode(dep))
+        } else {
+          // When unchecking a permission, also uncheck permissions that depend on it
+          tree.uncheckNode(node.value)
+          const dependents = getDependentPermissions(node.value)
+          dependents.forEach(dep => tree.uncheckNode(dep))
+        }
+      }
+
       return (
         <Group gap="xs" {...elementProps}>
           <Checkbox.Indicator
             checked={checked}
             indeterminate={indeterminate}
-            onClick={() => {
-              if (readOnly) return
-              !checked
-                ? tree.checkNode(node.value)
-                : tree.uncheckNode(node.value)
-            }}
+            onClick={handleCheckboxClick}
           />
 
           <Group gap={5} onClick={() => tree.toggleExpanded(node.value)}>
@@ -78,7 +144,7 @@ export default function RoleForm({
         </Group>
       )
     },
-    [readOnly]
+    [readOnly, getAllDependencies, getDependentPermissions] // Fixed: Added missing dependencies
   )
 
   return (
@@ -225,3 +291,10 @@ const PERMISSIONS_TREE = [
     ]
   }
 ]
+
+const PERMISSION_DEPENDENCIES = {
+  "folder.view": ["document.view"],
+  "document.view": ["tag.select", "folder.view"],
+  "shared_node.create": ["user.select", "group.select", "role.select"],
+  "shared_node.update": ["user.select", "group.select", "role.select"]
+}

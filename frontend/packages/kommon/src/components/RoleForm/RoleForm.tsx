@@ -338,14 +338,14 @@ function CollapseToggle({tree}: CollapseToggleArgs) {
 
   if (expanded) {
     return (
-      <Button size={"xs"} onClick={handleClick}>
+      <Button variant="light" size={"xs"} onClick={handleClick}>
         Collapse All
       </Button>
     )
   }
 
   return (
-    <Button size={"xs"} onClick={handleClick}>
+    <Button variant="light" size={"xs"} onClick={handleClick}>
       Expand All
     </Button>
   )
@@ -370,14 +370,14 @@ function CheckAllToggle({tree}: CheckAllToggleArgs) {
 
   if (allChecked) {
     return (
-      <Button size={"xs"} onClick={handleClick}>
+      <Button variant="light" size={"xs"} onClick={handleClick}>
         Uncheck All
       </Button>
     )
   }
 
   return (
-    <Button size={"xs"} onClick={handleClick}>
+    <Button variant="light" size={"xs"} onClick={handleClick}>
       Check All
     </Button>
   )

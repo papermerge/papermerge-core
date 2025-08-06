@@ -4,6 +4,7 @@ import {useState} from "react"
 
 export default function RoleFormContainer() {
   const [readOnly, setReadOnly] = useState<boolean>(false)
+  const initialCheckedState = ["folder.view", "user.view"]
 
   const onPermissionsChange = (checkedPermissions: CheckedNodeStatus[]) => {
     console.log(checkedPermissions)
@@ -17,6 +18,7 @@ export default function RoleFormContainer() {
 
       <Group>
         <RoleForm
+          initialCheckedState={initialCheckedState}
           readOnly={readOnly}
           onPermissionsChange={onPermissionsChange}
         />

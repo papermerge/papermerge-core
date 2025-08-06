@@ -12,6 +12,7 @@ import {useCallback, useMemo, useEffect} from "react"
 
 interface Args {
   readOnly?: boolean
+  initialCheckedState: string[]
   txt?: {
     name: string
   }
@@ -21,12 +22,13 @@ interface Args {
 export default function RoleForm({
   txt,
   onPermissionsChange,
+  initialCheckedState,
   readOnly = false
 }: Args) {
   const data = useMemo(() => PERMISSIONS_TREE, [])
 
   const tree = useTree({
-    initialCheckedState: ["folders.view", "users.view"],
+    initialCheckedState: initialCheckedState,
     initialExpandedState: getTreeExpandedState(data, "*")
   })
 
@@ -95,68 +97,68 @@ export default function RoleForm({
 
 const PERMISSIONS_TREE = [
   {
-    value: "folders",
+    value: "folder",
     label: "Folders",
     children: [
-      {value: "folders.view", label: "View"},
-      {value: "folders.create", label: "Create"},
-      {value: "folders.update", label: "Update"},
-      {value: "folders.move", label: "Move"},
-      {value: "folders.delete", label: "Delete"}
+      {value: "folder.view", label: "View"},
+      {value: "folder.create", label: "Create"},
+      {value: "folder.update", label: "Update"},
+      {value: "folder.move", label: "Move"},
+      {value: "folder.delete", label: "Delete"}
     ]
   },
   {
-    value: "documents",
+    value: "document",
     label: "Documents",
     children: [
       {
-        value: "documents.download",
+        value: "document.download",
         label: "Download",
         children: [
           {
-            value: "documents.download.all_versions",
+            value: "document.download.all_versions",
             label: "All versions"
           },
           {
-            value: "documents.download.last_version_only",
+            value: "document.download.last_version_only",
             label: "Only last version"
           }
         ]
       },
-      {value: "documents.upload", label: "Upload"},
-      {value: "documents.view", label: "View"},
+      {value: "document.upload", label: "Upload"},
+      {value: "document.view", label: "View"},
       {
-        value: "documents.update",
+        value: "document.update",
         label: "Update",
         children: [
-          {value: "documents.update.title", label: "Title"},
-          {value: "documents.update.cf", label: "Custom Fields"},
-          {value: "documents.update.tags", label: "Tags"}
+          {value: "document.update.title", label: "Title"},
+          {value: "document.update.cf", label: "Custom Fields"},
+          {value: "document.update.tags", label: "Tags"}
         ]
       },
-      {value: "documents.move", label: "Move"},
-      {value: "documents.delete", label: "Delete"},
+      {value: "document.move", label: "Move"},
+      {value: "document.delete", label: "Delete"},
       {
-        value: "documents.pages",
+        value: "document.page",
         label: "Page Management",
         children: [
-          {value: "documents.pages.extract", label: "Extract"},
-          {value: "documents.pages.rotate", label: "Rotate"},
-          {value: "documents.pages.reorder", label: "Reorder"},
-          {value: "documents.pages.delete", label: "Delete"}
+          {value: "document.page.extract", label: "Extract"},
+          {value: "document.page.rotate", label: "Rotate"},
+          {value: "document.page.reorder", label: "Reorder"},
+          {value: "document.page.delete", label: "Delete"}
         ]
       }
     ]
   },
   {
-    value: "tags",
+    value: "tag",
     label: "Tags",
     children: [
-      {value: "tags.view", label: "View"},
-      {value: "tags.select", label: "Select "},
-      {value: "tags.create", label: "Create"},
-      {value: "tags.update", label: "Update"},
-      {value: "tags.delete", label: "Delete"}
+      {value: "tag.view", label: "View"},
+      {value: "tag.select", label: "Select "},
+      {value: "tag.create", label: "Create"},
+      {value: "tag.update", label: "Update"},
+      {value: "tag.delete", label: "Delete"}
     ]
   },
   {
@@ -170,56 +172,56 @@ const PERMISSIONS_TREE = [
     ]
   },
   {
-    value: "categories",
+    value: "category",
     label: "Categories",
     children: [
-      {value: "categories.view", label: "View"},
-      {value: "categories.create", label: "Create"},
-      {value: "categories.update", label: "Update"},
-      {value: "categories.delete", label: "Delete"}
+      {value: "category.view", label: "View"},
+      {value: "category.create", label: "Create"},
+      {value: "category.update", label: "Update"},
+      {value: "category.delete", label: "Delete"}
     ]
   },
   {
-    value: "shared_nodes",
+    value: "shared_node",
     label: "Shares",
     children: [
-      {value: "shared_nodes.view", label: "View"},
-      {value: "shared_nodes.create", label: "Create"},
-      {value: "shared_nodes.update", label: "Update"},
-      {value: "shared_nodes.delete", label: "Delete"}
+      {value: "shared_node.view", label: "View"},
+      {value: "shared_node.create", label: "Create"},
+      {value: "shared_node.update", label: "Update"},
+      {value: "shared_node.delete", label: "Delete"}
     ]
   },
   {
-    value: "users",
+    value: "user",
     label: "Users",
     children: [
-      {value: "users.view", label: "View"},
-      {value: "users.select", label: "Select"},
-      {value: "users.create", label: "Create"},
-      {value: "users.update", label: "Update"},
-      {value: "users.delete", label: "Delete"}
+      {value: "user.view", label: "View"},
+      {value: "user.select", label: "Select"},
+      {value: "user.create", label: "Create"},
+      {value: "user.update", label: "Update"},
+      {value: "user.delete", label: "Delete"}
     ]
   },
   {
-    value: "roles",
+    value: "role",
     label: "Roles",
     children: [
-      {value: "roles.view", label: "View"},
-      {value: "roles.select", label: "Select"},
-      {value: "roles.create", label: "Create"},
-      {value: "roles.update", label: "Update"},
-      {value: "roles.delete", label: "Delete"}
+      {value: "role.view", label: "View"},
+      {value: "role.select", label: "Select"},
+      {value: "role.create", label: "Create"},
+      {value: "role.update", label: "Update"},
+      {value: "role.delete", label: "Delete"}
     ]
   },
   {
-    value: "groups",
+    value: "group",
     label: "Groups",
     children: [
-      {value: "groups.view", label: "View"},
-      {value: "groups.select", label: "Select"},
-      {value: "groups.create", label: "Create"},
-      {value: "groups.update", label: "Update"},
-      {value: "groups.delete", label: "Delete"}
+      {value: "group.view", label: "View"},
+      {value: "group.select", label: "Select"},
+      {value: "group.create", label: "Create"},
+      {value: "group.update", label: "Update"},
+      {value: "group.delete", label: "Delete"}
     ]
   }
 ]

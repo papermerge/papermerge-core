@@ -4,11 +4,13 @@ import {
   useTree,
   Stack,
   getTreeExpandedState,
-  CheckedNodeStatus
+  CheckedNodeStatus,
+  Button,
+  UseTreeReturnType
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
-import {useCallback, useMemo, useEffect} from "react"
+import {useCallback, useMemo, useEffect, useState} from "react"
 
 interface Args {
   readOnly?: boolean
@@ -60,8 +62,7 @@ export default function RoleForm({
   )
 
   const tree = useTree({
-    initialCheckedState: initialCheckedState,
-    initialExpandedState: getTreeExpandedState(data, "*")
+    initialCheckedState: initialCheckedState
   })
 
   useEffect(() => {
@@ -127,6 +128,10 @@ export default function RoleForm({
   return (
     <Stack>
       <TextInput readOnly={readOnly} label={txt?.name || "Name"} />
+      <Group>
+        <CollapseToggle tree={tree} />
+        <CheckAllToggle tree={tree} />
+      </Group>
       <Tree
         data={data}
         tree={tree}
@@ -278,4 +283,68 @@ const PERMISSION_DEPENDENCIES = {
   "shared_node.update": ["user.select", "group.select", "role.select"],
   "tag.select": ["document.view", "folder.view"],
   tag: ["document.view", "folder.view"]
+}
+
+interface CollapseToggleArgs {
+  tree: UseTreeReturnType
+}
+
+function CollapseToggle({tree}: CollapseToggleArgs) {
+  const [expanded, setExpanded] = useState<boolean>(false)
+
+  const handleClick = () => {
+    if (expanded) {
+      tree.collapseAllNodes()
+      setExpanded(false)
+    } else {
+      tree.expandAllNodes()
+      setExpanded(true)
+    }
+  }
+
+  if (expanded) {
+    return (
+      <Button size={"xs"} onClick={handleClick}>
+        Collapse All
+      </Button>
+    )
+  }
+
+  return (
+    <Button size={"xs"} onClick={handleClick}>
+      Expand All
+    </Button>
+  )
+}
+
+interface CheckAllToggleArgs {
+  tree: UseTreeReturnType
+}
+
+function CheckAllToggle({tree}: CheckAllToggleArgs) {
+  const [allChecked, setAllChecked] = useState<boolean>(false)
+
+  const handleClick = () => {
+    if (allChecked) {
+      tree.uncheckAllNodes()
+      setAllChecked(false)
+    } else {
+      tree.checkAllNodes()
+      setAllChecked(true)
+    }
+  }
+
+  if (allChecked) {
+    return (
+      <Button size={"xs"} onClick={handleClick}>
+        Uncheck All
+      </Button>
+    )
+  }
+
+  return (
+    <Button size={"xs"} onClick={handleClick}>
+      Check All
+    </Button>
+  )
 }

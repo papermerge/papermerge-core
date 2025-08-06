@@ -1,9 +1,10 @@
 import {
   TextInput,
+  Box,
+  LoadingOverlay,
   Tree,
   useTree,
   Stack,
-  getTreeExpandedState,
   CheckedNodeStatus,
   Button,
   UseTreeReturnType
@@ -15,10 +16,13 @@ import {useCallback, useMemo, useEffect, useState} from "react"
 interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
+  initialName?: string
+  isLoading: boolean
   txt?: {
     name: string
   }
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
+  onNameChange?: (value: string) => void
 }
 
 // Define permission dependencies type
@@ -29,10 +33,23 @@ type PermissionDependencies = {
 export default function RoleForm({
   txt,
   onPermissionsChange,
+  onNameChange,
+  initialName,
   initialCheckedState,
+  isLoading,
   readOnly = false
 }: Args) {
+  const [name, setName] = useState(initialName)
   const data = useMemo(() => PERMISSIONS_TREE, [])
+
+  const onLocalNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.currentTarget.value
+    setName(newValue)
+    if (onNameChange) {
+      onNameChange(newValue)
+    }
+  }
+
   const permissionDependencies = useMemo(
     (): PermissionDependencies => PERMISSION_DEPENDENCIES,
     []
@@ -126,20 +143,34 @@ export default function RoleForm({
   )
 
   return (
-    <Stack>
-      <TextInput readOnly={readOnly} label={txt?.name || "Name"} />
-      <Group>
-        <CollapseToggle tree={tree} />
-        <CheckAllToggle tree={tree} />
-      </Group>
-      <Tree
-        data={data}
-        tree={tree}
-        levelOffset={40}
-        expandOnClick={false}
-        renderNode={renderTreeNode}
-      />
-    </Stack>
+    <>
+      <Box pos="relative">
+        <LoadingOverlay
+          visible={isLoading}
+          zIndex={1000}
+          overlayProps={{radius: "sm", blur: 2}}
+        />
+        <Stack>
+          <TextInput
+            value={name}
+            onChange={onLocalNameChange}
+            readOnly={readOnly}
+            label={txt?.name || "Name"}
+          />
+          <Group>
+            <CollapseToggle tree={tree} />
+            {!readOnly && <CheckAllToggle tree={tree} />}
+          </Group>
+          <Tree
+            data={data}
+            tree={tree}
+            levelOffset={40}
+            expandOnClick={false}
+            renderNode={renderTreeNode}
+          />
+        </Stack>
+      </Box>
+    </>
   )
 }
 

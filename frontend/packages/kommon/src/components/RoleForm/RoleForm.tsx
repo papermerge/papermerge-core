@@ -7,7 +7,8 @@ import {
   Stack,
   CheckedNodeStatus,
   Button,
-  UseTreeReturnType
+  UseTreeReturnType,
+  ScrollArea
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
@@ -24,6 +25,8 @@ interface Args {
   }
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
   onNameChange?: (value: string) => void
+  withScrollArea?: boolean
+  scrollAreaHeight?: number
 }
 
 // Define permission dependencies type
@@ -39,7 +42,9 @@ export default function RoleForm({
   nameFieldError,
   initialCheckedState,
   isLoading,
-  readOnly = false
+  readOnly = false,
+  withScrollArea = true,
+  scrollAreaHeight = 480
 }: Args) {
   const [name, setName] = useState(initialName)
   const data = useMemo(() => PERMISSIONS_TREE, [])
@@ -89,7 +94,7 @@ export default function RoleForm({
       const checkedPermissions = tree.getCheckedNodes()
       onPermissionsChange(checkedPermissions)
     }
-  }, [tree.checkedState, onPermissionsChange]) // Fixed: Added missing dependency
+  }, [tree.checkedState])
 
   const renderTreeNode = useCallback(
     ({
@@ -164,13 +169,26 @@ export default function RoleForm({
             <CollapseToggle tree={tree} />
             {!readOnly && <CheckAllToggle tree={tree} />}
           </Group>
-          <Tree
-            data={data}
-            tree={tree}
-            levelOffset={40}
-            expandOnClick={false}
-            renderNode={renderTreeNode}
-          />
+          {!withScrollArea && (
+            <Tree
+              data={data}
+              tree={tree}
+              levelOffset={40}
+              expandOnClick={false}
+              renderNode={renderTreeNode}
+            />
+          )}
+          {withScrollArea && (
+            <ScrollArea h={scrollAreaHeight}>
+              <Tree
+                data={data}
+                tree={tree}
+                levelOffset={40}
+                expandOnClick={false}
+                renderNode={renderTreeNode}
+              />
+            </ScrollArea>
+          )}
         </Stack>
       </Box>
     </>
@@ -244,23 +262,23 @@ const PERMISSIONS_TREE = [
     ]
   },
   {
-    value: "cf",
+    value: "custom_field",
     label: "Custom Fields",
     children: [
-      {value: "cf.view", label: "View"},
-      {value: "cf.create", label: "Create"},
-      {value: "cf.update", label: "Update"},
-      {value: "cf.delete", label: "Delete"}
+      {value: "custom_field.view", label: "View"},
+      {value: "custom_field.create", label: "Create"},
+      {value: "custom_field.update", label: "Update"},
+      {value: "custom_field.delete", label: "Delete"}
     ]
   },
   {
-    value: "category",
+    value: "document_type",
     label: "Categories",
     children: [
-      {value: "category.view", label: "View"},
-      {value: "category.create", label: "Create"},
-      {value: "category.update", label: "Update"},
-      {value: "category.delete", label: "Delete"}
+      {value: "document_type.view", label: "View"},
+      {value: "document_type.create", label: "Create"},
+      {value: "document_type.update", label: "Update"},
+      {value: "document_type.delete", label: "Delete"}
     ]
   },
   {

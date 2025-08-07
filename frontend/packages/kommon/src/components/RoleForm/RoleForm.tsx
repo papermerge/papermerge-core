@@ -17,7 +17,7 @@ import {useCallback, useMemo, useEffect, useState} from "react"
 interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
-  initialName?: string
+  name?: string
   nameFieldError?: string
   isLoading: boolean
   txt?: {
@@ -38,7 +38,7 @@ export default function RoleForm({
   txt,
   onPermissionsChange,
   onNameChange,
-  initialName,
+  name,
   nameFieldError,
   initialCheckedState,
   isLoading,
@@ -46,12 +46,10 @@ export default function RoleForm({
   withScrollArea = true,
   scrollAreaHeight = 480
 }: Args) {
-  const [name, setName] = useState(initialName)
   const data = useMemo(() => PERMISSIONS_TREE, [])
 
   const onLocalNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.currentTarget.value
-    setName(newValue)
     if (onNameChange) {
       onNameChange(newValue)
     }

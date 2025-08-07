@@ -63,6 +63,7 @@ export default function NewRoleModalContaner({
       title={"New Role"}
       inProgress={isLoading}
       opened={opened}
+      name={name}
       initialCheckedState={[]}
       onSubmit={onLocalSubmit}
       onCancel={onLocalCancel}

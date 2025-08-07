@@ -18,6 +18,7 @@ interface Args {
   error?: string
   initialCheckedState: string[]
   title: string
+  name?: string // i.e. field "name" from the role form
   opened: boolean
   inProgress: boolean
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
@@ -33,6 +34,7 @@ export default function RoleFormModal({
   inProgress,
   title,
   opened,
+  name,
   initialCheckedState,
   onPermissionsChange,
   onNameChange,
@@ -56,6 +58,7 @@ export default function RoleFormModal({
       >
         <ScrollArea style={{flex: 1}}>
           <RoleForm
+            name={name}
             isLoading={inProgress}
             withScrollArea={false}
             initialCheckedState={initialCheckedState}

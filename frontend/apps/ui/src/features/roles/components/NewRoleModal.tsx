@@ -30,7 +30,7 @@ export default function NewRoleModalContaner({
 
   const onLocalSubmit = async () => {
     const updatedData = {
-      scopes: Object.keys(scopes),
+      scopes: scopes,
       name: name!
     }
     try {

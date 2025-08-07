@@ -5,6 +5,7 @@ from pathlib import Path
 from papermerge.core.types import ImagePreviewSize
 from papermerge.core import pathlib as plib
 from papermerge.core import config
+from papermerge.core.storage.factory import get_storage
 
 settings = config.get_settings()
 
@@ -12,17 +13,12 @@ VALID_FOR_SECONDS = 600
 
 
 def resource_sign_url(prefix, resource_path: Path):
-    from papermerge.core.cloudfront import sign_url
+    provider = get_storage()
 
-    encoded_path = quote(str(resource_path))
+    path = str(resource_path) if not prefix else f"{prefix}/{resource_path}"
 
-    if prefix:
-        url = f"https://{settings.papermerge__main__cf_domain}/{prefix}/{encoded_path}"
-    else:
-        url = f"https://{settings.papermerge__main__cf_domain}/{encoded_path}"
-
-    return sign_url(
-        url,
+    return provider.sign_url(
+        path,
         valid_for=VALID_FOR_SECONDS,
     )
 

@@ -59,6 +59,7 @@ export default function RoleFormModal({
         <ScrollArea style={{flex: 1}}>
           <RoleForm
             name={name}
+            error={error}
             isLoading={inProgress}
             withScrollArea={false}
             initialCheckedState={initialCheckedState}
@@ -66,7 +67,6 @@ export default function RoleFormModal({
             onNameChange={onNameChange}
           />
         </ScrollArea>
-        {error}
         <Space h="md" />
         <Box
           pt="sm"

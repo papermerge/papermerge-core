@@ -8,7 +8,8 @@ import {
   CheckedNodeStatus,
   Button,
   UseTreeReturnType,
-  ScrollArea
+  ScrollArea,
+  Text
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
@@ -18,7 +19,7 @@ interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
   name?: string
-  nameFieldError?: string
+  error?: string
   isLoading: boolean
   txt?: {
     name: string
@@ -39,7 +40,7 @@ export default function RoleForm({
   onPermissionsChange,
   onNameChange,
   name,
-  nameFieldError,
+  error,
   initialCheckedState,
   isLoading,
   readOnly = false,
@@ -156,11 +157,11 @@ export default function RoleForm({
           overlayProps={{radius: "sm", blur: 2}}
         />
         <Stack>
+          <Text c="red">{error}</Text>
           <TextInput
             value={name}
             onChange={onLocalNameChange}
             readOnly={readOnly}
-            error={nameFieldError}
             label={txt?.name || "Name"}
           />
           <Group>

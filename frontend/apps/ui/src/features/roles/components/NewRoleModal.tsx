@@ -29,17 +29,22 @@ export default function NewRoleModalContaner({
   }
 
   const onLocalSubmit = async () => {
+    setError("")
     const updatedData = {
       scopes: scopes,
       name: name!
     }
     try {
       await addNewRole(updatedData).unwrap()
+      onSubmit()
     } catch (err: unknown) {
-      // @ts-ignore
-      setError(err.data.detail)
+      if (err && typeof err === "object" && "data" in err) {
+        const apiError = err as {data: {detail: string}}
+        setError(apiError.data.detail)
+      } else {
+        setError("An unexpected error occurred")
+      }
     }
-    reset()
   }
 
   const onLocalCancel = () => {
@@ -63,6 +68,7 @@ export default function NewRoleModalContaner({
       title={"New Role"}
       inProgress={isLoading}
       opened={opened}
+      error={error}
       name={name}
       initialCheckedState={[]}
       onSubmit={onLocalSubmit}

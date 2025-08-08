@@ -6,6 +6,7 @@ from typing import Tuple
 from sqlalchemy import delete, select, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from papermerge.core import schema, orm
 from papermerge.core.features.auth import scopes
@@ -60,6 +61,7 @@ async def create_role(
     db_session: AsyncSession, name: str, scopes: list[str], exists_ok: bool = False
 ) -> Tuple[schema.Role | None, str | None]:
     """Creates a role with given scopes"""
+
     stmt_total_permissions = select(func.count(orm.Permission.id))
     perms_count = (await db_session.execute(stmt_total_permissions)).scalar()
     if perms_count == 0:
@@ -79,22 +81,33 @@ async def create_role(
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
     perms = (await db_session.execute(stmt)).scalars().all()
 
-    if len(perms) != len(scopes):
-        error = f"Some of the permissions did not match scopes. {perms=} {scopes=}"
+    found_codenames = {p.codename for p in perms}
+    missing = set(scopes) - found_codenames
+    if missing:
+        error = f"Unknown permission scopes: {', '.join(missing)}"
         return None, error
 
     role = orm.Role(name=name, permissions=perms)
     db_session.add(role)
     try:
         await db_session.commit()
+        await db_session.refresh(role, attribute_names=["permissions"])
+        result = schema.Role.model_validate(role)
+        return result, None
+    except IntegrityError as e:
+        await db_session.rollback()
+        error_msg = str(e).lower()
+        logger.warning(f"Role creation failed due to constraint violation: {e}")
+        if "unique" in error_msg:
+            return None, f"Role '{name}' already exists"
+        elif "role_name_not_empty" in error_msg or "check constraint" in error_msg:
+            return None, "Role name cannot be empty"
+        else:
+            return None, "Invalid role data"
     except Exception as e:
-        error_msg = str(e)
-        if "UNIQUE constraint failed" in error_msg:
-            return None, "Role already exists"
-
-    result = schema.Role.model_validate(role)
-
-    return result, None
+        await  db_session.rollback()
+        logger.error(f"Unexpected error creating role '{name}': {e}")
+        return None, "Failed to create role due to an internal error"
 
 
 async def update_role(

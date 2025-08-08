@@ -17,6 +17,46 @@ async def test_role_create(db_session: AsyncSession):
 
     await dbapi.delete_role(db_session, role.id)
 
+async def test_role_create_with_some_unknown_scopes(db_session: AsyncSession):
+    """
+    Pass `create_role` function a couple of scopes which are not present
+    in `auth.scopes` module. Instead of creating new role, method should
+    return an error stating which scopes are unknown.
+    """
+    await dbapi.sync_perms(db_session)
+
+    scopes = {"tag.update", "tag.create", "tag.delete", "i-am-not-present-in-auth-module", "momo"}
+
+    role, error = await dbapi.create_role(db_session, "G1", scopes=list(scopes))
+
+    assert role is None
+    assert "Unknown permission scopes: i-am-not-present-in-auth-module, momo"
+
+
+async def test_two_roles_with_same_name(db_session: AsyncSession):
+    """Roles names are unique
+
+    It should not be possible to create roles with duplicate names
+    """
+    await dbapi.sync_perms(db_session)
+
+    scopes = {"tag.update", "tag.create", "tag.delete"}
+    role1, error1 = await dbapi.create_role(db_session, "G1", scopes=list(scopes))
+    assert role1 is not None
+    assert error1 is None
+    role2, error2 = await dbapi.create_role(db_session, "G1", scopes=["tag.update"])
+    assert role2 is None
+    assert "Role 'G1' already exists" in error2
+
+async def test_roles_with_name_as_empty_string(db_session: AsyncSession):
+    """Roles names are non-empty strings"""
+    await dbapi.sync_perms(db_session)
+
+    scopes = {"tag.update", "tag.create", "tag.delete"}
+    role, error = await dbapi.create_role(db_session, "", scopes=list(scopes))
+    assert role is None
+    assert "Role name cannot be empty" in error
+
 
 async def test_role_create_and_delete(db_session: AsyncSession):
     """Deleting a role should preserve existing permission models"""

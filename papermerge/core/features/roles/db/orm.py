@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import CheckConstraint
 
 from papermerge.core.db.base import Base
 
@@ -51,10 +52,14 @@ class Role(Base):
     __tablename__ = "roles"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=roles_permissions_association, back_populates="roles"
     )
     users: Mapped[list["User"]] = relationship(  # noqa: F821
         secondary=users_roles_association, back_populates="roles"
+    )
+
+    __table_args__ = (
+        CheckConstraint("char_length(trim(name)) > 0", name="role_name_not_empty"),
     )

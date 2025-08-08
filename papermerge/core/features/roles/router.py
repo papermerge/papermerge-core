@@ -13,6 +13,7 @@ from papermerge.core.features.roles.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
+from papermerge.core.schemas.error import ErrorResponse
 
 router = APIRouter(
     prefix="/roles",
@@ -76,7 +77,15 @@ async def get_role(
     return result
 
 
-@router.post("/", status_code=201)
+@router.post(
+    "/", status_code=201,
+    responses={
+        400: {"model": ErrorResponse, "description": "Invalid permission scopes"},
+        409: {"model": ErrorResponse, "description": "Role already exists"},
+        422: {"model": ErrorResponse, "description": "Role name is empty"},
+        500: {"model": ErrorResponse, "description": "System configuration error or server error"}
+    }
+)
 @utils.docstring_parameter(scope=scopes.ROLE_CREATE)
 async def create_role(
     pyrole: schema.CreateRole,
@@ -88,6 +97,12 @@ async def create_role(
     """Creates role
 
     Required scope: `{scope}`
+
+    **Error Cases:**
+    - **400**: Invalid permission scopes provided
+    - **409**: Role with the same name already exists
+    - **422**: Role name is empty or contains only whitespace
+    - **500**: System configuration error or unexpected server error
     """
     role, error = await dbapi.create_role(
         db_session,
@@ -95,8 +110,32 @@ async def create_role(
         scopes=pyrole.scopes,
     )
     if error:
-        raise HTTPException(status_code=500, detail=error)
-
+        if "already exists" in error.lower():
+            raise HTTPException(
+                status_code=409,  # Conflict
+                detail=f"Role '{pyrole.name}' already exists"
+            )
+        elif "unknown permission" in error.lower():
+            raise HTTPException(
+                status_code=400,  # Bad Request
+                detail=error
+            )
+        elif "no permissions in the system" in error.lower():
+            raise HTTPException(
+                status_code=500,  # Internal Server Error
+                detail="System configuration error: No permissions available"
+            )
+        elif "cannot be empty" in error.lower() or "name_not_empty" in error.lower():
+            raise HTTPException(
+                status_code=422,  # Unprocessable Entity
+                detail="Role name cannot be empty"
+            )
+        else:
+            # Generic server error for unexpected cases
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to create role"
+            )
     return role
 
 

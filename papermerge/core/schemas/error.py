@@ -8,3 +8,7 @@ class AttrError(BaseModel):
 class Error(BaseModel):
     attrs: list[AttrError] | None = None
     messages: list[str] | None = None
+
+
+class ErrorResponse(BaseModel):
+    detail: str

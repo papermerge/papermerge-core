@@ -115,6 +115,7 @@ class Scopes:
     # Document type permissions
     DOCUMENT_TYPE_CREATE = "document_type.create"
     DOCUMENT_TYPE_VIEW = "document_type.view"
+    DOCUMENT_TYPE_SELECT = "document_type.select"
     DOCUMENT_TYPE_UPDATE = "document_type.update"
     DOCUMENT_TYPE_DELETE = "document_type.delete"
 

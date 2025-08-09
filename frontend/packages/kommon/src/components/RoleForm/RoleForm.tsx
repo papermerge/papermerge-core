@@ -273,6 +273,7 @@ const PERMISSIONS_TREE = [
     label: "Categories",
     children: [
       {value: "document_type.view", label: "View"},
+      {value: "document_type.select", label: "Select"},
       {value: "document_type.create", label: "Create"},
       {value: "document_type.update", label: "Update"},
       {value: "document_type.delete", label: "Delete"}
@@ -324,16 +325,30 @@ const PERMISSIONS_TREE = [
 ]
 
 const PERMISSION_DEPENDENCIES = {
-  folder: ["document.view"],
+  folder: [
+    "document.view",
+    "document.move",
+    "document.delete",
+    "document.update.title"
+  ],
   "folder.view": ["document.view"],
   "folder.move": ["document.move"],
   "folder.delete": ["document.delete"],
   "folder.update": ["document.update.title"],
-  document: ["folder.view"],
+  document: [
+    "folder.view",
+    "folder.create",
+    "folder.update",
+    "folder.delete",
+    "folder.move"
+  ],
   "document.view": ["tag.select", "folder.view"],
   "document.move": ["folder.move"],
   "document.delete": ["folder.delete"],
   "document.update.title": ["folder.update"],
+  "document.update.tags": ["tag.select"],
+  "document.update.document_type": ["document_type.select"],
+  shared_node: ["user.select", "group.select", "role.select"],
   "shared_node.create": ["user.select", "group.select", "role.select"],
   "shared_node.update": ["user.select", "group.select", "role.select"],
   "tag.select": ["document.view", "folder.view"],

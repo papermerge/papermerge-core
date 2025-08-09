@@ -5,6 +5,7 @@ import {
   Modal,
   Space,
   ScrollArea,
+  Text,
   CheckedNodeStatus
 } from "@mantine/core"
 import {RoleForm, SubmitButton} from "kommon"
@@ -35,12 +36,12 @@ export default function RoleFormModal({
   title,
   opened,
   name,
+  error,
   initialCheckedState,
   onPermissionsChange,
   onNameChange,
   onCancel,
-  onSubmit,
-  error
+  onSubmit
 }: Args) {
   return (
     <Modal
@@ -59,7 +60,6 @@ export default function RoleFormModal({
         <ScrollArea style={{flex: 1}}>
           <RoleForm
             name={name}
-            error={error}
             isLoading={inProgress}
             withScrollArea={false}
             initialCheckedState={initialCheckedState}
@@ -79,6 +79,7 @@ export default function RoleFormModal({
             padding: "1rem"
           }}
         >
+          <Text c="red">{error}</Text>
           <Group gap="lg" justify="space-between">
             <Button variant="default" onClick={onCancel}>
               {txt?.cancel || "Cancel"}

@@ -8,8 +8,7 @@ import {
   CheckedNodeStatus,
   Button,
   UseTreeReturnType,
-  ScrollArea,
-  Text
+  ScrollArea
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
@@ -19,7 +18,6 @@ interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
   name?: string
-  error?: string
   isLoading: boolean
   txt?: {
     name: string
@@ -40,7 +38,6 @@ export default function RoleForm({
   onPermissionsChange,
   onNameChange,
   name,
-  error,
   initialCheckedState,
   isLoading,
   readOnly = false,
@@ -157,7 +154,6 @@ export default function RoleForm({
           overlayProps={{radius: "sm", blur: 2}}
         />
         <Stack>
-          <Text c="red">{error}</Text>
           <TextInput
             value={name}
             onChange={onLocalNameChange}
@@ -231,7 +227,7 @@ const PERMISSIONS_TREE = [
         label: "Update",
         children: [
           {value: "document.update.title", label: "Title"},
-          {value: "document.update.cf", label: "Custom Fields"},
+          {value: "document.update.custom_fields", label: "Custom Fields"},
           {value: "document.update.tags", label: "Tags"}
         ]
       },
@@ -242,6 +238,7 @@ const PERMISSIONS_TREE = [
         label: "Page Management",
         children: [
           {value: "document.page.extract", label: "Extract"},
+          {value: "document.page.move", label: "Move"},
           {value: "document.page.rotate", label: "Rotate"},
           {value: "document.page.reorder", label: "Reorder"},
           {value: "document.page.delete", label: "Delete"}
@@ -327,9 +324,15 @@ const PERMISSIONS_TREE = [
 
 const PERMISSION_DEPENDENCIES = {
   folder: ["document.view"],
-  document: ["folder.view"],
   "folder.view": ["document.view"],
+  "folder.move": ["document.move"],
+  "folder.delete": ["document.delete"],
+  "folder.update": ["document.update.title"],
+  document: ["folder.view"],
   "document.view": ["tag.select", "folder.view"],
+  "document.move": ["folder.move"],
+  "document.delete": ["folder.delete"],
+  "document.update.title": ["folder.update"],
   "shared_node.create": ["user.select", "group.select", "role.select"],
   "shared_node.update": ["user.select", "group.select", "role.select"],
   "tag.select": ["document.view", "folder.view"],

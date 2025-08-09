@@ -4,6 +4,7 @@
 
 - Performance - async instead of sync: all REST API/DB operations are changed to async
 - add home/inbox folder DB level NOT NULL contraints
+- [FE] User friendly RoleForm (now is a tree of checkboxes)
 
 ## [3.5.2] - 2025-07-23
 

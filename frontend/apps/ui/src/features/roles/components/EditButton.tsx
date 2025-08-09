@@ -27,6 +27,7 @@ export default function EditButton({roleId}: Args) {
         {t("common.edit")}
       </Button>
       <EditRoleModal
+        key={`edit-${roleId}-${opened}`}
         opened={opened}
         onSubmit={close}
         onCancel={close}

@@ -36,6 +36,7 @@ export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
         <ActionButtons modelId={data?.id} />
       </Group>
       <RoleForm
+        key={`${data.id}-${data.scopes.join(",")}`}
         initialCheckedState={server2clientPerms(data.scopes)}
         name={data.name}
         isLoading={false}

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "apps/kommon.dev/src/**/*",
+    "apps/ui/src/**/*",
+    "packages/**/*"
+    // add all your source folders here
+  ]
+}

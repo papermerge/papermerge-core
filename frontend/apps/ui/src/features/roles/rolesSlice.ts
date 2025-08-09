@@ -105,20 +105,6 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
     }
   })
 
-  //create negative
-  startAppListening({
-    matcher: apiSliceWithRoles.endpoints.addNewRole.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
-      })
-    }
-  })
   // Update positive
   startAppListening({
     matcher: apiSliceWithRoles.endpoints.editRole.matchFulfilled,

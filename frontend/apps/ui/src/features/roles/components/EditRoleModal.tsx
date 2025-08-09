@@ -38,7 +38,7 @@ export default function EditRoleModalContainer({
     const updatedData = {
       id: roleID,
       scopes: scopes,
-      name: name!
+      name: name! || data?.name!
     }
     try {
       await updateRole(updatedData).unwrap()

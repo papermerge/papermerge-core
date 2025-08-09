@@ -59,7 +59,8 @@ class Scopes:
     DOCUMENT_DOWNLOAD_LAST_VERSION_ONLY = "document.download.last_version_only"
     DOCUMENT_UPDATE_TITLE = "document.update.title"
     DOCUMENT_UPDATE_TAGS = "document.update.tags"
-    DOCUMENT_UPDATE_METADATA = "document.update.custom_fields"
+    DOCUMENT_UPDATE_CUSTOM_FIELDS = "document.update.custom_fields"
+    DOCUMENT_UPDATE_CATEGORY = "document.update.document_type"
 
     # Tag permissions
     TAG_SELECT = "tag.select"  # User can pick from dropdown

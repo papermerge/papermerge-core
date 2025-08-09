@@ -228,7 +228,8 @@ const PERMISSIONS_TREE = [
         children: [
           {value: "document.update.title", label: "Title"},
           {value: "document.update.custom_fields", label: "Custom Fields"},
-          {value: "document.update.tags", label: "Tags"}
+          {value: "document.update.tags", label: "Tags"},
+          {value: "document.update.document_type", label: "Category"}
         ]
       },
       {value: "document.move", label: "Move"},

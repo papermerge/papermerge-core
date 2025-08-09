@@ -12,7 +12,7 @@ interface Args {
   onCancel: () => void
 }
 
-export default function NewRoleModalContaner({
+export default function NewRoleModalContainer({
   onCancel,
   onSubmit,
   opened

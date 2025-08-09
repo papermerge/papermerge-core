@@ -30,7 +30,7 @@ export default function EditButton({roleId}: Args) {
         opened={opened}
         onSubmit={close}
         onCancel={close}
-        roleId={roleId}
+        roleID={roleId}
       />
     </>
   )

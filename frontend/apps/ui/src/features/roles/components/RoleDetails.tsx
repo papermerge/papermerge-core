@@ -6,6 +6,7 @@ import type {RoleDetails} from "@/types"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import {RoleForm} from "kommon"
+import {server2clientPerms} from "@/features/roles/utils"
 
 interface RoleDetailsArgs {
   roleId: string
@@ -35,8 +36,8 @@ export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
         <ActionButtons modelId={data?.id} />
       </Group>
       <RoleForm
-        initialCheckedState={data.scopes}
-        initialName={data.name}
+        initialCheckedState={server2clientPerms(data.scopes)}
+        name={data.name}
         isLoading={false}
         readOnly={true}
       />

@@ -5,6 +5,7 @@ import {useTranslation} from "react-i18next"
 import {RoleFormModal} from "kommon"
 import {CheckedNodeStatus} from "@mantine/core"
 import {client2serverPerms} from "@/features/roles/utils"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 
 interface Args {
   opened: boolean
@@ -22,6 +23,7 @@ export default function NewRoleModalContainer({
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [scopes, setScopes] = useState<string[]>([])
+  const txt = useI18NText()
 
   const reset = () => {
     setName("")
@@ -66,11 +68,12 @@ export default function NewRoleModalContainer({
 
   return (
     <RoleFormModal
-      title={"New Role"}
+      title={t("roles.new.title")}
       inProgress={isLoading}
       opened={opened}
       error={error}
       name={name}
+      txt={txt}
       initialCheckedState={[]}
       onSubmit={onLocalSubmit}
       onCancel={onLocalCancel}

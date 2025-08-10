@@ -6,6 +6,7 @@ import {useTranslation} from "react-i18next"
 import {RoleFormModal} from "kommon"
 import {CheckedNodeStatus} from "@mantine/core"
 import {client2serverPerms, server2clientPerms} from "@/features/roles/utils"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 
 interface Args {
   roleID: string
@@ -26,6 +27,7 @@ export default function EditRoleModalContainer({
   const [name, setName] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [scopes, setScopes] = useState<string[]>([])
+  const txt = useI18NText()
 
   const reset = () => {
     setName("")
@@ -71,9 +73,10 @@ export default function EditRoleModalContainer({
 
   return (
     <RoleFormModal
-      title={"Edit Role"}
+      title={t("roles.edit.title")}
       inProgress={isLoading || isLoadingRoleUpdate}
       opened={opened}
+      txt={txt}
       error={error}
       name={name || data?.name}
       initialCheckedState={server2clientPerms(data?.scopes || [])}

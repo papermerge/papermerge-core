@@ -7,6 +7,7 @@ import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import {RoleForm} from "kommon"
 import {server2clientPerms} from "@/features/roles/utils"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 
 interface RoleDetailsArgs {
   roleId: string
@@ -14,6 +15,7 @@ interface RoleDetailsArgs {
 
 export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
   const {data, isLoading} = useGetRoleQuery(roleId)
+  const txt = useI18NText()
 
   if (isLoading || !data) {
     return (
@@ -24,7 +26,12 @@ export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
           overlayProps={{radius: "sm", blur: 2}}
         />
         <Path role={null} />
-        <RoleForm isLoading={true} readOnly={true} initialCheckedState={[]} />
+        <RoleForm
+          txt={txt?.roleForm}
+          isLoading={true}
+          readOnly={true}
+          initialCheckedState={[]}
+        />
       </Box>
     )
   }

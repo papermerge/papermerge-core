@@ -8,14 +8,10 @@ import {
   Text,
   CheckedNodeStatus
 } from "@mantine/core"
-import {RoleForm, SubmitButton} from "kommon"
+import {I18NRoleFormModal, RoleForm, SubmitButton} from "kommon"
 
 interface Args {
-  txt?: {
-    name: string
-    submit: string
-    cancel: string
-  }
+  txt?: I18NRoleFormModal
   error?: string
   initialCheckedState: string[]
   title: string
@@ -62,6 +58,7 @@ export default function RoleFormModal({
             name={name}
             isLoading={inProgress}
             withScrollArea={false}
+            txt={txt?.roleForm}
             initialCheckedState={initialCheckedState}
             onPermissionsChange={onPermissionsChange}
             onNameChange={onNameChange}

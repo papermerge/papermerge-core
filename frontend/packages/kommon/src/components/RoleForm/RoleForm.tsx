@@ -13,6 +13,11 @@ import {
 import {IconChevronDown} from "@tabler/icons-react"
 import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
 import {useCallback, useMemo, useEffect, useState} from "react"
+import type {
+  I18NCheckButton,
+  I18NCollapseButton,
+  I18NPermissionTree
+} from "./types"
 
 interface Args {
   readOnly?: boolean
@@ -21,6 +26,9 @@ interface Args {
   isLoading: boolean
   txt?: {
     name: string
+    permissionTree: I18NPermissionTree
+    collapseButton: I18NCollapseButton
+    checkButton: I18NCheckButton
   }
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
   onNameChange?: (value: string) => void
@@ -44,7 +52,7 @@ export default function RoleForm({
   withScrollArea = true,
   scrollAreaHeight = 480
 }: Args) {
-  const data = useMemo(() => PERMISSIONS_TREE, [])
+  const data = useMemo(() => getPermissionTree(txt?.permissionTree), [])
 
   const onLocalNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.currentTarget.value
@@ -161,8 +169,8 @@ export default function RoleForm({
             label={txt?.name || "Name"}
           />
           <Group>
-            <CollapseToggle tree={tree} />
-            {!readOnly && <CheckAllToggle tree={tree} />}
+            <CollapseToggle txt={txt?.collapseButton} tree={tree} />
+            {!readOnly && <CheckAllToggle txt={txt?.checkButton} tree={tree} />}
           </Group>
           {!withScrollArea && (
             <Tree
@@ -190,139 +198,148 @@ export default function RoleForm({
   )
 }
 
-const PERMISSIONS_TREE = [
-  {
-    value: "folder",
-    label: "Folders",
-    children: [
-      {value: "folder.view", label: "View"},
-      {value: "folder.create", label: "Create"},
-      {value: "folder.update", label: "Update"},
-      {value: "folder.move", label: "Move"},
-      {value: "folder.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "document",
-    label: "Documents",
-    children: [
-      {
-        value: "document.download",
-        label: "Download",
-        children: [
-          {
-            value: "document.download.all_versions",
-            label: "All versions"
-          },
-          {
-            value: "document.download.last_version_only",
-            label: "Only last version"
-          }
-        ]
-      },
-      {value: "document.upload", label: "Upload"},
-      {value: "document.view", label: "View"},
-      {
-        value: "document.update",
-        label: "Update",
-        children: [
-          {value: "document.update.title", label: "Title"},
-          {value: "document.update.custom_fields", label: "Custom Fields"},
-          {value: "document.update.tags", label: "Tags"},
-          {value: "document.update.document_type", label: "Category"}
-        ]
-      },
-      {value: "document.move", label: "Move"},
-      {value: "document.delete", label: "Delete"},
-      {
-        value: "document.page",
-        label: "Page Management",
-        children: [
-          {value: "document.page.extract", label: "Extract"},
-          {value: "document.page.move", label: "Move"},
-          {value: "document.page.rotate", label: "Rotate"},
-          {value: "document.page.reorder", label: "Reorder"},
-          {value: "document.page.delete", label: "Delete"}
-        ]
-      }
-    ]
-  },
-  {
-    value: "tag",
-    label: "Tags",
-    children: [
-      {value: "tag.view", label: "View"},
-      {value: "tag.select", label: "Select "},
-      {value: "tag.create", label: "Create"},
-      {value: "tag.update", label: "Update"},
-      {value: "tag.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "custom_field",
-    label: "Custom Fields",
-    children: [
-      {value: "custom_field.view", label: "View"},
-      {value: "custom_field.create", label: "Create"},
-      {value: "custom_field.update", label: "Update"},
-      {value: "custom_field.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "document_type",
-    label: "Categories",
-    children: [
-      {value: "document_type.view", label: "View"},
-      {value: "document_type.select", label: "Select"},
-      {value: "document_type.create", label: "Create"},
-      {value: "document_type.update", label: "Update"},
-      {value: "document_type.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "shared_node",
-    label: "Shares",
-    children: [
-      {value: "shared_node.view", label: "View"},
-      {value: "shared_node.create", label: "Create"},
-      {value: "shared_node.update", label: "Update"},
-      {value: "shared_node.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "user",
-    label: "Users",
-    children: [
-      {value: "user.view", label: "View"},
-      {value: "user.select", label: "Select"},
-      {value: "user.create", label: "Create"},
-      {value: "user.update", label: "Update"},
-      {value: "user.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "role",
-    label: "Roles",
-    children: [
-      {value: "role.view", label: "View"},
-      {value: "role.select", label: "Select"},
-      {value: "role.create", label: "Create"},
-      {value: "role.update", label: "Update"},
-      {value: "role.delete", label: "Delete"}
-    ]
-  },
-  {
-    value: "group",
-    label: "Groups",
-    children: [
-      {value: "group.view", label: "View"},
-      {value: "group.select", label: "Select"},
-      {value: "group.create", label: "Create"},
-      {value: "group.update", label: "Update"},
-      {value: "group.delete", label: "Delete"}
-    ]
-  }
-]
+function getPermissionTree(txt?: I18NPermissionTree) {
+  const PERMISSIONS_TREE = [
+    {
+      value: "folder",
+      label: txt?.folders || "Folders",
+      children: [
+        {value: "folder.view", label: txt?.view || "View"},
+        {value: "folder.create", label: txt?.create || "Create"},
+        {value: "folder.update", label: txt?.update || "Update"},
+        {value: "folder.move", label: txt?.move || "Move"},
+        {value: "folder.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "document",
+      label: txt?.documents || "Documents",
+      children: [
+        {
+          value: "document.download",
+          label: txt?.download || "Download",
+          children: [
+            {
+              value: "document.download.all_versions",
+              label: txt?.all_versions || "All versions"
+            },
+            {
+              value: "document.download.last_version_only",
+              label: txt?.only_last_version || "Only last version"
+            }
+          ]
+        },
+        {value: "document.upload", label: txt?.upload || "Upload"},
+        {value: "document.view", label: txt?.view || "View"},
+        {
+          value: "document.update",
+          label: txt?.update || "Update",
+          children: [
+            {value: "document.update.title", label: txt?.title || "Title"},
+            {
+              value: "document.update.custom_fields",
+              label: txt?.custom_fields || "Custom Fields"
+            },
+            {value: "document.update.tags", label: txt?.tags || "Tags"},
+            {
+              value: "document.update.document_type",
+              label: txt?.category || "Category"
+            }
+          ]
+        },
+        {value: "document.move", label: txt?.move || "Move"},
+        {value: "document.delete", label: txt?.delete || "Delete"},
+        {
+          value: "document.page",
+          label: txt?.page_management || "Page Management",
+          children: [
+            {value: "document.page.extract", label: txt?.extract || "Extract"},
+            {value: "document.page.move", label: txt?.move || "Move"},
+            {value: "document.page.rotate", label: txt?.rotate || "Rotate"},
+            {value: "document.page.reorder", label: txt?.reorder || "Reorder"},
+            {value: "document.page.delete", label: txt?.delete || "Delete"}
+          ]
+        }
+      ]
+    },
+    {
+      value: "tag",
+      label: txt?.tags || "Tags",
+      children: [
+        {value: "tag.view", label: txt?.view || "View"},
+        {value: "tag.select", label: txt?.select || "Select "},
+        {value: "tag.create", label: txt?.create || "Create"},
+        {value: "tag.update", label: txt?.update || "Update"},
+        {value: "tag.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "custom_field",
+      label: txt?.custom_fields || "Custom Fields",
+      children: [
+        {value: "custom_field.view", label: txt?.view || "View"},
+        {value: "custom_field.create", label: txt?.create || "Create"},
+        {value: "custom_field.update", label: txt?.update || "Update"},
+        {value: "custom_field.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "document_type",
+      label: txt?.categories || "Categories",
+      children: [
+        {value: "document_type.view", label: txt?.view || "View"},
+        {value: "document_type.select", label: txt?.select || "Select"},
+        {value: "document_type.create", label: txt?.create || "Create"},
+        {value: "document_type.update", label: txt?.update || "Update"},
+        {value: "document_type.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "shared_node",
+      label: txt?.shares || "Shares",
+      children: [
+        {value: "shared_node.view", label: txt?.view || "View"},
+        {value: "shared_node.create", label: txt?.create || "Create"},
+        {value: "shared_node.update", label: txt?.update || "Update"},
+        {value: "shared_node.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "user",
+      label: txt?.users || "Users",
+      children: [
+        {value: "user.view", label: txt?.view || "View"},
+        {value: "user.select", label: txt?.select || "Select"},
+        {value: "user.create", label: txt?.create || "Create"},
+        {value: "user.update", label: txt?.update || "Update"},
+        {value: "user.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "role",
+      label: txt?.roles || "Roles",
+      children: [
+        {value: "role.view", label: txt?.view || "View"},
+        {value: "role.select", label: txt?.select || "Select"},
+        {value: "role.create", label: txt?.create || "Create"},
+        {value: "role.update", label: txt?.update || "Update"},
+        {value: "role.delete", label: txt?.delete || "Delete"}
+      ]
+    },
+    {
+      value: "group",
+      label: txt?.groups || "Groups",
+      children: [
+        {value: "group.view", label: txt?.view || "View"},
+        {value: "group.select", label: txt?.select || "Select"},
+        {value: "group.create", label: txt?.create || "Create"},
+        {value: "group.update", label: txt?.update || "Update"},
+        {value: "group.delete", label: txt?.delete || "Delete"}
+      ]
+    }
+  ]
+  return PERMISSIONS_TREE
+}
 
 const PERMISSION_DEPENDENCIES = {
   folder: [
@@ -357,9 +374,10 @@ const PERMISSION_DEPENDENCIES = {
 
 interface CollapseToggleArgs {
   tree: UseTreeReturnType
+  txt?: I18NCollapseButton
 }
 
-function CollapseToggle({tree}: CollapseToggleArgs) {
+function CollapseToggle({tree, txt}: CollapseToggleArgs) {
   const [expanded, setExpanded] = useState<boolean>(false)
 
   const handleClick = () => {
@@ -375,23 +393,24 @@ function CollapseToggle({tree}: CollapseToggleArgs) {
   if (expanded) {
     return (
       <Button variant="light" size={"xs"} onClick={handleClick}>
-        Collapse All
+        {txt?.collapseAll || "Collapse All"}
       </Button>
     )
   }
 
   return (
     <Button variant="light" size={"xs"} onClick={handleClick}>
-      Expand All
+      {txt?.expandAll || "Expand All"}
     </Button>
   )
 }
 
 interface CheckAllToggleArgs {
   tree: UseTreeReturnType
+  txt?: I18NCheckButton
 }
 
-function CheckAllToggle({tree}: CheckAllToggleArgs) {
+function CheckAllToggle({tree, txt}: CheckAllToggleArgs) {
   const [allChecked, setAllChecked] = useState<boolean>(false)
 
   const handleClick = () => {
@@ -407,14 +426,14 @@ function CheckAllToggle({tree}: CheckAllToggleArgs) {
   if (allChecked) {
     return (
       <Button variant="light" size={"xs"} onClick={handleClick}>
-        Uncheck All
+        {txt?.uncheckAll || "Uncheck All"}
       </Button>
     )
   }
 
   return (
     <Button variant="light" size={"xs"} onClick={handleClick}>
-      Check All
+      {txt?.checkAll || "Check All"}
     </Button>
   )
 }

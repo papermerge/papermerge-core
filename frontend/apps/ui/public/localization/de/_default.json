@@ -212,6 +212,9 @@
   "users.delete.one.description": "Benutzer löschen?",
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
+  "roles": {
+    "create_new_role": "Rolle Erstellen"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",

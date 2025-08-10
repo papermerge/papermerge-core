@@ -169,8 +169,8 @@ export default function RoleForm({
             label={txt?.name || "Name"}
           />
           <Group>
-            <CollapseToggle tree={tree} />
-            {!readOnly && <CheckAllToggle tree={tree} />}
+            <CollapseToggle txt={txt?.collapseButton} tree={tree} />
+            {!readOnly && <CheckAllToggle txt={txt?.checkButton} tree={tree} />}
           </Group>
           {!withScrollArea && (
             <Tree

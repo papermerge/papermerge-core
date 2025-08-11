@@ -11,7 +11,7 @@ RUN corepack enable && \
     yarn install --immutable && \
     yarn workspace ui build
 
-FROM papermerge/auth-server:1.1.4 AS auth_server
+FROM papermerge/auth-server:1.1.5 AS auth_server
 FROM python:3.13-alpine AS papermerge_core
 
 ENV CORE_APP=/core_app

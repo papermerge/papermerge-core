@@ -1,11 +1,10 @@
-from uuid import UUID
-from urllib.parse import quote
 from pathlib import Path
+from uuid import UUID
 
-from papermerge.core.types import ImagePreviewSize
-from papermerge.core import pathlib as plib
 from papermerge.core import config
-from papermerge.core.storage.factory import get_storage
+from papermerge.core import pathlib as plib
+from papermerge.core.object_storage.factory import get_storage
+from papermerge.core.types import ImagePreviewSize
 
 settings = config.get_settings()
 

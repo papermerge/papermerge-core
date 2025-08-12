@@ -5,7 +5,9 @@ import {useGetRoleQuery} from "@/features/roles/apiSlice"
 import type {RoleDetails} from "@/types"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
-import RoleForm from "./RoleForm"
+import {RoleForm} from "kommon"
+import {server2clientPerms} from "@/features/roles/utils"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 
 interface RoleDetailsArgs {
   roleId: string
@@ -13,6 +15,7 @@ interface RoleDetailsArgs {
 
 export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
   const {data, isLoading} = useGetRoleQuery(roleId)
+  const txt = useI18NText()
 
   if (isLoading || !data) {
     return (
@@ -23,7 +26,12 @@ export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
           overlayProps={{radius: "sm", blur: 2}}
         />
         <Path role={null} />
-        <RoleForm role={null} />
+        <RoleForm
+          txt={txt?.roleForm}
+          isLoading={true}
+          readOnly={true}
+          initialCheckedState={[]}
+        />
       </Box>
     )
   }
@@ -34,7 +42,13 @@ export default function RoleDetailsComponent({roleId}: RoleDetailsArgs) {
         <Path role={data} />
         <ActionButtons modelId={data?.id} />
       </Group>
-      <RoleForm role={data} />
+      <RoleForm
+        key={`${data.id}-${data.scopes.join(",")}`}
+        initialCheckedState={server2clientPerms(data.scopes)}
+        name={data.name}
+        isLoading={false}
+        readOnly={true}
+      />
     </>
   )
 }

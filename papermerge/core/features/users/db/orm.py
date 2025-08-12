@@ -2,23 +2,23 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.base import Base
 from papermerge.core.features.groups.db.orm import user_groups_association
 from papermerge.core.features.roles.db.orm import users_roles_association
-
+from papermerge.core import constants as const
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
-    username: Mapped[str] = mapped_column(unique=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str] = mapped_column(nullable=False)
-    first_name: Mapped[str] = mapped_column(default=" ")
-    last_name: Mapped[str] = mapped_column(default=" ")
+    id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4)
+    username: Mapped[str] = mapped_column(String(const.USERNAME_MAX_LENGTH), unique=True)
+    email: Mapped[str] = mapped_column(String(const.EMAIL_MAX_LENGTH), unique=True)
+    password: Mapped[str] = mapped_column(String(const.PASSWORD_MAX_LENGTH), nullable=False)
+    first_name: Mapped[str | None] = mapped_column(String(const.NAME_MAX_LENGTH), default=None)
+    last_name: Mapped[str | None] = mapped_column(String(const.NAME_MAX_LENGTH), default=None)
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
@@ -27,7 +27,7 @@ class User(Base):
     )
     home_folder_id: Mapped[UUID] = mapped_column(
         ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
     )
     home_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.home_folder_id == Folder.id",
@@ -37,7 +37,7 @@ class User(Base):
     )
     inbox_folder_id: Mapped[UUID] = mapped_column(
         ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
     )
     inbox_folder: Mapped["Folder"] = relationship(
         primaryjoin="User.inbox_folder_id == Folder.id",

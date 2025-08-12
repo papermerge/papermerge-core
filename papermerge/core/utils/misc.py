@@ -1,8 +1,8 @@
 import io
 import logging
 import math
-import os
-import shutil
+import aiofiles
+import aiofiles.os
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -111,22 +111,27 @@ def float2str(value: float | str | None) -> Optional[str]:
     return f"{year}-{month:02d}"
 
 
-def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
+async def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
     """Copy source file to destination"""
     logger.debug(f"copying {src} to {dst}")
+
     if not dst.parent.exists():
-        os.makedirs(dst.parent, exist_ok=True)
+        await aiofiles.os.makedirs(dst.parent, exist_ok=True)
 
     if isinstance(src, Path):
         logger.debug(f"{src} is a Path instance")
-        shutil.copyfile(src, dst)
+        # For file-to-file copying, read and write asynchronously
+        async with aiofiles.open(src, "rb") as src_file:
+            async with aiofiles.open(dst, "wb") as dst_file:
+                content = await src_file.read()
+                await dst_file.write(content)
     elif isinstance(src, io.BytesIO):
-        with open(dst, "wb") as f:
-            f.write(src.getvalue())
+        async with aiofiles.open(dst, "wb") as f:
+            await f.write(src.getvalue())
     elif isinstance(src, bytes):
-        with open(dst, "wb") as f:
-            f.write(src)
+        async with aiofiles.open(dst, "wb") as f:
+            await f.write(src)
     else:
         raise ValueError(
-            f"src ({src}) is neither instance of DocumentPath, io.Bytes, bytes"
+            f"src ({src}) is neither instance of Path, io.BytesIO, nor bytes"
         )

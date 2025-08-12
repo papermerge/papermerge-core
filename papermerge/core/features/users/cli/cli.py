@@ -1,3 +1,4 @@
+import asyncio
 from typing import Sequence
 
 from prompt_toolkit import prompt
@@ -8,19 +9,22 @@ from rich.table import Table
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import orm, schema, db
+from papermerge.core import orm, schema
+from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.users.db import api as usr_dbapi
-
+from papermerge.core.utils.cli import async_command
 
 app = typer.Typer(help="Users management")
 console = Console()
 
 
+
 @app.command(name="ls")
-def list_users(page_size: int = 10, page_number: int = 1):
+@async_command
+async def list_users(page_size: int = 10, page_number: int = 1):
     """List users"""
-    with db.Session() as db_session:
-        users: schema.PaginatedResponse[schema.User] = usr_dbapi.get_users(
+    async with AsyncSessionLocal() as db_session:
+        users: schema.PaginatedResponse[schema.User] = await usr_dbapi.get_users(
             db_session, page_size=page_size, page_number=page_number
         )
 
@@ -40,7 +44,8 @@ Password = Annotated[
 
 
 @app.command(name="create")
-def create_user_cmd(
+@async_command
+async def create_user_cmd(
     username: Username,
     password: Password,
     email: Email = None,
@@ -50,8 +55,8 @@ def create_user_cmd(
     if email is None:
         email = f"{username}@example.com"
 
-    with db.Session() as db_session:
-        user, error = usr_dbapi.create_user(
+    async with AsyncSessionLocal() as db_session:
+        user, error = await usr_dbapi.create_user(
             db_session,
             username=username,
             password=password,
@@ -68,12 +73,13 @@ def create_user_cmd(
 
 
 @app.command(name="delete")
-def delete_user_cmd(username: str):
+@async_command
+async def delete_user_cmd(username: str):
     """Deletes user"""
 
     try:
-        with db.Session() as db_session:
-            usr_dbapi.delete_user(
+        async with AsyncSessionLocal() as db_session:
+            await usr_dbapi.delete_user(
                 db_session,
                 username=username,
             )
@@ -85,15 +91,16 @@ def delete_user_cmd(username: str):
 
 
 @app.command(name="update")
-def update_user_cmd(username: str, superuser: bool = False):
+@async_command
+async def update_user_cmd(username: str, superuser: bool = False):
     """Update user"""
 
     try:
-        with db.Session() as db_session:
+        async with AsyncSessionLocal() as db_session:
             stmt = select(orm.User).where(orm.User.username == username)
-            user = db_session.execute(stmt).scalar()
+            user = (await db_session.execute(stmt)).scalar()
             attrs = schema.UpdateUser(is_superuser=superuser)
-            usr_dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+            await usr_dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
     except NoResultFound:
         console.print(f"User [bold]{username}[/bold] not found", style="red")
         raise typer.Exit(1)
@@ -125,7 +132,3 @@ def print_users(users: Sequence[schema.User]):
         )
 
     console.print(table)
-
-
-if __name__ == "__main__":
-    app()

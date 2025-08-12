@@ -9,6 +9,8 @@ import {
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
 
+import {applyPageChangesThunk} from "@/features/document/actions/applyPageOpChanges"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   selectViewerPagesHaveChangedDialogVisibility,
   viewerPageHaveChangedDialogVisibilityChanged
@@ -16,8 +18,6 @@ import {
 import {PanelMode} from "@/types"
 import type {I18NPagesHaveChangedDialogText} from "viewer"
 import {PagesHaveChangedDialog} from "viewer"
-import {applyPageChangesThunk} from "../actions/applyPageOpChanges"
-import {useCurrentDocVer} from "../hooks"
 
 interface Args {
   docID: string

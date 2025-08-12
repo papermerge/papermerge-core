@@ -1,12 +1,12 @@
 [project]
 name = "papermerge"
-version = "3.5.1"
+version = "3.5.2"
 description = "Open source document management system for digital archives"
 authors = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 maintainers = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 license = "Apache 2.0"
 readme = "README.md"
@@ -19,15 +19,15 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 keywords = [
-  "PDF",
-  "OCR",
-  "optical character recognition",
-  "PDF/A",
-  "scanning",
-  "dms",
-  "document-management",
-  "paperless",
-  "archives"
+    "PDF",
+    "OCR",
+    "optical character recognition",
+    "PDF/A",
+    "scanning",
+    "dms",
+    "document-management",
+    "paperless",
+    "archives"
 ]
 packages = [
     { include = "papermerge/core" },
@@ -53,7 +53,9 @@ dependencies = [
     "pydantic-settings >=2",
     "alembic >=1.13.3",
     "fastapi[standard] >=0.115",
-    "taskipy >=1.14"
+    "taskipy >=1.14",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "aiofiles (>=24.1.0,<25.0.0)"
 ]
 
 [project.urls]
@@ -63,7 +65,7 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 [project.optional-dependencies]
 mysql = ["mysqlclient (>=2.2)"]
-pg = ["psycopg2 (>=2.9.2)"]
+pg = ["psycopg2-binary (>=2.9.2)"]
 databases = ["mysqlclient", "psycopg2"]
 cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
 
@@ -81,14 +83,14 @@ use_vars = true
 env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
 
 [tool.taskipy.tasks]
-test = {cmd = "{env_vars} pytest", cwd = "." }
+test = { cmd = "{env_vars} pytest", cwd = "." }
 # run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
 
 [project.scripts]
-paper-cli = "papermerge.cli:app"
+paper-cli = "papermerge.cli:main"
 docs = 'papermerge.core.cli.docs:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 
@@ -100,9 +102,9 @@ indent-width = 4
 
 [tool.ruff.lint]
 "select" = [
-    "F",    # pyflakes
+    "F", # pyflakes
     "I001", # isort
-    "UP",   # pyupgrade
+    "UP", # pyupgrade
 ]
 "ignore" = [
     "UP007"
@@ -119,3 +121,4 @@ build-backend = "setuptools.build_meta"
 # $ pytest test_common.py
 [tool.pytest.ini_options]
 testpaths = ["papermerge/core/features/"]
+asyncio_mode = "auto"

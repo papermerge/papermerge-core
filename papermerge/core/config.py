@@ -3,6 +3,7 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
+
 class FileServer(str, Enum):
     LOCAL = 'local'
     S3 = 's3'
@@ -22,10 +23,6 @@ class Settings(BaseSettings):
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_lang_code: str = 'deu'
     papermerge__preview__page_size_sm: int = 200  # pixels
-    papermerge__preview__page_size_md: int = 600  # pixels
-    papermerge__preview__page_size_lg: int = 900  # pixels
-    papermerge__preview__page_size_xl: int = 1600  # pixels
-    papermerge__thumbnail__size: int = 100  # pixels
     # When is OCR triggered ?
     # `ocr__automatic` = True means that OCR will be performed without
     #   end user intervention i.e. via background scheduler like celery scheduler

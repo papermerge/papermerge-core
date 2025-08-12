@@ -5,10 +5,9 @@ from typing import Tuple
 from sqlalchemy import select, func, or_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import aliased
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import EntityNotFound
-from papermerge.core.db.engine import Session
-
 from papermerge.core import schema
 from papermerge.core import orm
 
@@ -26,8 +25,8 @@ ORDER_BY_MAP = {
 }
 
 
-def get_tags_without_pagination(
-    db_session: Session,
+async def get_tags_without_pagination(
+    db_session: AsyncSession,
     *,
     user_id: uuid.UUID | None = None,
     group_id: uuid.UUID | None = None,
@@ -39,14 +38,14 @@ def get_tags_without_pagination(
     else:
         raise ValueError("Both: group_id and user_id are missing")
 
-    db_items = db_session.scalars(stmt).all()
+    db_items = (await db_session.scalars(stmt)).all()
     result = [schema.Tag.model_validate(db_item) for db_item in db_items]
 
     return result
 
 
-def get_tags(
-    db_session: Session,
+async def get_tags(
+    db_session: AsyncSession,
     *,
     user_id: uuid.UUID,
     page_size: int,
@@ -72,7 +71,7 @@ def get_tags(
             )
         )
 
-    total_tags = db_session.execute(stmt_total_tags).scalar()
+    total_tags = (await db_session.execute(stmt_total_tags)).scalar()
     order_by_value = ORDER_BY_MAP.get(order_by, orm.Tag.name.asc())
 
     offset = page_size * (page_number - 1)
@@ -103,7 +102,7 @@ def get_tags(
         )
 
     items = []
-    for row in db_session.execute(stmt):
+    for row in await db_session.execute(stmt):
         kwargs = {
             "id": row.Tag.id,
             "name": row.Tag.name,
@@ -125,8 +124,8 @@ def get_tags(
     )
 
 
-def get_tag(
-    db_session: Session, tag_id: uuid.UUID
+async def get_tag(
+    db_session: AsyncSession, tag_id: uuid.UUID
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     stmt = (
@@ -135,7 +134,7 @@ def get_tag(
         .where(orm.Tag.id == tag_id)
     )
     try:
-        row = db_session.execute(stmt).unique().one()
+        row = (await db_session.execute(stmt)).unique().one()
         kwargs = {
             "id": row.Tag.id,
             "name": row.Tag.name,
@@ -160,15 +159,15 @@ def get_tag(
     return schema.Tag.model_validate(kwargs), None
 
 
-def create_tag(
-    db_session, attrs: schema.CreateTag
+async def create_tag(
+    db_session: AsyncSession, attrs: schema.CreateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     db_tag = orm.Tag(**attrs.model_dump())
     db_session.add(db_tag)
 
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -176,12 +175,12 @@ def create_tag(
     return schema.Tag.model_validate(db_tag), None
 
 
-def update_tag(
-    db_session, tag_id: uuid.UUID, attrs: schema.UpdateTag
+async def update_tag(
+    db_session: AsyncSession, tag_id: uuid.UUID, attrs: schema.UpdateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     stmt = select(orm.Tag).where(orm.Tag.id == tag_id)
-    tag = db_session.execute(stmt).scalars().one()
+    tag = (await db_session.execute(stmt)).scalars().one()
     db_session.add(tag)
 
     if attrs.name:
@@ -208,8 +207,8 @@ def update_tag(
         )
 
     try:
-        db_session.commit()
-        db_tag = db_session.get(orm.Tag, tag_id)
+        await db_session.commit()
+        db_tag = await db_session.get(orm.Tag, tag_id)
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
@@ -217,14 +216,14 @@ def update_tag(
     return schema.Tag.model_validate(db_tag), None
 
 
-def delete_tag(
-    db_session: Session,
+async def delete_tag(
+    db_session: AsyncSession,
     tag_id: uuid.UUID,
 ):
     stmt = select(orm.Tag).where(orm.Tag.id == tag_id)
     try:
-        tag = db_session.execute(stmt, params={"id": tag_id}).scalars().one()
-        db_session.delete(tag)
-        db_session.commit()
+        tag = (await db_session.execute(stmt, params={"id": tag_id})).scalars().one()
+        await db_session.delete(tag)
+        await db_session.commit()
     except NoResultFound:
         raise EntityNotFound()

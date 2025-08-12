@@ -35,6 +35,67 @@
     "allowedExtentions": "Allowed extensions:",
     "caseSensitivity": "Uppercase and lowercase letters don't matter."
   },
+  "editNodeTitleModal": {
+    "title": "Edit Title",
+    "newTitleLabel": "New Title",
+    "placeholder": "Title"
+  },
+  "viewerContextMenu": {
+    "changeTitle": "Change Title",
+    "ocrText": "OCR Text",
+    "rotateClockwise": "Rotate clockwise",
+    "rotateCounterClockwise": "Rotate counter-clockwise",
+    "resetChanges": "Reset changes",
+    "saveChanges": "Save changes",
+    "moveDocument": "Move Document",
+    "extractPages": "Extract Pages",
+    "deletePages": "Delete pages",
+    "deleteDocument": "Delete document",
+    "dangerZone": "Danger Zone"
+  },
+  "deleteEntireDocumentConfirmDialog": {
+    "title": "Document Delete",
+    "mainMessage": "Do you really want to delete this document?",
+    "confirmButtonText": "Yes, delete this document"
+  },
+  "roleForm": {
+    "name": "Name",
+    "collapseButton": {
+      "collapseAll": "Collapse All",
+      "expandAll": "Expand All"
+    },
+    "checkButton": {
+      "checkAll": "Check All",
+      "uncheckAll": "Uncheck All"
+    },
+    "permissionTree": {
+      "folders": "Folders",
+      "documents": "Document",
+      "page_management": "Page Management",
+      "categories": "Categories",
+      "shares": "Shares",
+      "users": "Users",
+      "roles": "Rollen",
+      "groups": "Groups",
+      "view": "View",
+      "create": "Create",
+      "update": "Update",
+      "move": "Move",
+      "delete": "Delete",
+      "download": "Download",
+      "upload": "Upload",
+      "extract": "Extract",
+      "rotate": "Rotate",
+      "reorder": "Reorder",
+      "select": "Select",
+      "all_versions": "All Verisions",
+      "only_last_version": "Only Last Version",
+      "title": "Titel",
+      "custom_fields": "Custom Fields",
+      "tags": "Tags",
+      "category": "Categories"
+    }
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",
@@ -151,6 +212,9 @@
   "users.delete.one.description": "Are you sure you want to delete user?",
   "users.delete.many.title": "Delete Users",
   "users.delete.many.description": "Are you sure you want to delete selected users?",
+  "roles": {
+    "create_new_role": "New"
+  },
   "roles.name": "Roles",
   "roles.new.title": "New Role",
   "roles.edit.title": "Edit Role",

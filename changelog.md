@@ -1,8 +1,18 @@
 # Changelog
 
-## [3.5.2] - not yet released
+## 3.5.3 - not yet released
 
-- Fix [A 50-page pdf file is very slow to open](https://github.com/papermerge/papermerge-core/issues/55)
+- Performance - async instead of sync: all REST API/DB operations are changed to async
+- add home/inbox folder DB level NOT NULL contraints
+- [FE] User friendly RoleForm (now is a tree of checkboxes)
+- User latest version of auth-server (1.1.5 instead of 1.1.3)
+
+## [3.5.2] - 2025-07-23
+
+-
+
+Fix [A 50-page pdf file is very slow to open](https://github.com/papermerge/papermerge-core/issues/55)
+
 - Document previews (thumbnails as well as pages) rendered in frontend
 - Frontend refactoring - use monorepo structure
 - Frontend dependencies updates

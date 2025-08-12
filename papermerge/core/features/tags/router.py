@@ -3,20 +3,19 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core.db.engine import Session
-from papermerge.core import utils, db
+from papermerge.core import utils
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
-
+from papermerge.core.db.engine import get_db
 from papermerge.core.features.users.db import api as users_dbapi
 from papermerge.core.features.tags.db import api as tags_dbapi
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from .types import PaginatedQueryParams
-
 
 router = APIRouter(
     prefix="/tags",
@@ -37,12 +36,12 @@ logger = logging.getLogger(__name__)
     },
 )
 @utils.docstring_parameter(scope=scopes.TAG_SELECT)
-def retrieve_tags_without_pagination(
+async def retrieve_tags_without_pagination(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_SELECT])
     ],
     group_id: UUID | None = None,
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get all tags without pagination
 
@@ -58,7 +57,7 @@ def retrieve_tags_without_pagination(
 
     Required scope: `{scope}`
     """
-    tags = tags_dbapi.get_tags_without_pagination(
+    tags = await tags_dbapi.get_tags_without_pagination(
         db_session, user_id=user.id, group_id=group_id
     )
 
@@ -67,18 +66,18 @@ def retrieve_tags_without_pagination(
 
 @router.get("/")
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
-def retrieve_tags(
+async def retrieve_tags(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
-    db_session=Depends(db.get_db),
+    db_session=Depends(get_db),
 ):
     """Retrieves (paginated) list of tags
 
     Required scope: `{scope}`
     """
-    tags = tags_dbapi.get_tags(
+    tags = await tags_dbapi.get_tags(
         db_session,
         user_id=user.id,
         page_number=params.page_number,
@@ -92,19 +91,19 @@ def retrieve_tags(
 
 @router.get("/{tag_id}", response_model=tags_schema.Tag)
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
-def get_tag_details(
+async def get_tag_details(
     tag_id: UUID,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession=Depends(get_db),
 ):
     """Get tag details
 
     Required scope: `{scope}`
     """
     try:
-        tag, error = tags_dbapi.get_tag(db_session, tag_id=tag_id)
+        tag, error = await tags_dbapi.get_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -122,12 +121,12 @@ def get_tag_details(
     },
 )
 @utils.docstring_parameter(scope=scopes.TAG_CREATE)
-def create_tag(
+async def create_tag(
     attrs: tags_schema.CreateTag,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_CREATE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> tags_schema.Tag:
     """Creates tag
 
@@ -144,11 +143,11 @@ def create_tag(
 
     if attrs.group_id:
         group_id = attrs.group_id
-        ok = users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-    tag, error = tags_dbapi.create_tag(db_session, attrs=attrs)
+    tag, error = await tags_dbapi.create_tag(db_session, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -158,19 +157,19 @@ def create_tag(
 
 @router.delete("/{tag_id}", status_code=204)
 @utils.docstring_parameter(scope=scopes.TAG_DELETE)
-def delete_tag(
+async def delete_tag(
     tag_id: UUID,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_DELETE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession=Depends(get_db),
 ) -> None:
     """Deletes user tag
 
     Required scope: `{scope}`
     """
     try:
-        tags_dbapi.delete_tag(db_session, tag_id=tag_id)
+        await tags_dbapi.delete_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -186,13 +185,13 @@ def delete_tag(
     },
 )
 @utils.docstring_parameter(scope=scopes.TAG_UPDATE)
-def update_tag(
+async def update_tag(
     tag_id: UUID,
     attrs: tags_schema.UpdateTag,
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_UPDATE])
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession=Depends(get_db),
 ) -> tags_schema.Tag:
     """Updates user tag
 
@@ -200,14 +199,14 @@ def update_tag(
     """
     if attrs.group_id:
         group_id = attrs.group_id
-        ok = users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             user_id = user.id
             detail = f"User {user_id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
     else:
         attrs.user_id = user.id
-    tag, error = tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
+    tag, error = await tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

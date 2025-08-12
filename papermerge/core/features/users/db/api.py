@@ -4,9 +4,11 @@ import logging
 from typing import Tuple
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import db, orm, schema
+from papermerge.core import orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core import constants
@@ -19,7 +21,7 @@ DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 logger = logging.getLogger(__name__)
 
 
-def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
+async def get_user(db_session: AsyncSession, user_id_or_username: str) -> schema.User:
     logger.debug(f"user_id_or_username={user_id_or_username}")
 
     if is_valid_uuid(user_id_or_username):
@@ -29,7 +31,7 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
         stmt = select(User).where(User.username == user_id_or_username)
         params = {"username": user_id_or_username}
 
-    db_user = db_session.scalars(stmt, params).one()
+    db_user = (await db_session.scalars(stmt, params)).one()
 
     logger.debug(f"User {db_user} fetched")
     model_user = schema.User.model_validate(db_user)
@@ -37,8 +39,8 @@ def get_user(db_session: db.Session, user_id_or_username: str) -> schema.User:
     return model_user
 
 
-def get_user_group_homes(
-    db_session: db.Session, user_id: uuid.UUID
+async def get_user_group_homes(
+    db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group homes
 
@@ -60,7 +62,7 @@ def get_user_group_homes(
         )
     )
 
-    results = db_session.execute(stmt).all()
+    results = (await db_session.execute(stmt)).all()
 
     models = []
     for group_name, group_id, home_folder_id in results:
@@ -72,8 +74,8 @@ def get_user_group_homes(
     return models, None
 
 
-def get_user_group_inboxes(
-    db_session: db.Session, user_id: uuid.UUID
+async def get_user_group_inboxes(
+    db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[list[schema.UserHome] | None, str | None]:
     """Gets user group inboxes
 
@@ -93,7 +95,7 @@ def get_user_group_inboxes(
         )
     )
 
-    results = db_session.execute(stmt).all()
+    results = (await db_session.execute(stmt)).all()
 
     models = []
     for group_name, group_id, inbox_folder_id in results:
@@ -105,14 +107,18 @@ def get_user_group_inboxes(
     return models, None
 
 
-def get_user_details(
-    db_session, user_id: uuid.UUID
+async def get_user_details(
+    db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
-    stmt = select(User).where(User.id == user_id)
+    stmt = select(User).options(
+        selectinload(User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.groups)
+    ).where(User.id == user_id)
+
     params = {"id": user_id}
 
     try:
-        db_user = db_session.scalars(stmt, params).one()
+        db_user = (await db_session.scalars(stmt, params)).one()
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
@@ -142,16 +148,16 @@ def get_user_details(
     return model_user, None
 
 
-def get_users(
-    db_session: db.Session, *, page_size: int, page_number: int
+async def get_users(
+    db_session: AsyncSession, *, page_size: int, page_number: int
 ) -> schema.PaginatedResponse[schema.User]:
     stmt_total_users = select(func.count(orm.User.id))
-    total_users = db_session.execute(stmt_total_users).scalar()
+    total_users = (await db_session.execute(stmt_total_users)).scalar()
 
     offset = page_size * (page_number - 1)
     stmt = select(orm.User).limit(page_size).offset(offset)
 
-    db_users = db_session.scalars(stmt).all()
+    db_users = (await db_session.scalars(stmt)).all()
     items = [schema.User.model_validate(db_user) for db_user in db_users]
 
     total_pages = math.ceil(total_users / page_size)
@@ -161,17 +167,16 @@ def get_users(
     )
 
 
-def get_users_without_pagination(db_session: db.Session) -> list[schema.User]:
+async def get_users_without_pagination(db_session: AsyncSession) -> list[schema.User]:
     stmt = select(orm.User).order_by(orm.User.username.asc())
-    db_users = db_session.scalars(stmt).all()
+    db_users = (await db_session.scalars(stmt)).all()
 
     items = [schema.User.model_validate(db_user) for db_user in db_users]
 
     return items
 
-
-def create_user(
-    db_session: db.Session,
+async def create_user(
+    db_session: AsyncSession,
     username: str,
     email: str,
     password: str,
@@ -181,85 +186,66 @@ def create_user(
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    if scopes is None:
-        scopes = []
-
-    if group_ids is None:
-        group_ids = []
-
+    scopes = scopes or []
+    group_ids = group_ids or []
     _user_id = user_id or uuid.uuid4()
-    home_folder_id = uuid.uuid4()
-    inbox_folder_id = uuid.uuid4()
+    await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
 
-    db_user = User(
-        id=_user_id,
-        username=username,
-        email=email,
-        is_superuser=is_superuser,
-        is_active=is_active,
-        password=pbkdf2_sha256.hash(password),
-    )
-    db_inbox = orm.Folder(
-        id=inbox_folder_id,
-        title=constants.INBOX_TITLE,
-        ctype=constants.CTYPE_FOLDER,
-        user_id=_user_id,
-        lang="xxx",  # not used
-    )
-    db_home = orm.Folder(
-        id=home_folder_id,
-        title=constants.HOME_TITLE,
-        ctype=constants.CTYPE_FOLDER,
-        user_id=_user_id,
-        lang="xxx",  # not used
-    )
-    db_session.add(db_user)
-    db_session.add(db_home)
-    db_session.add(db_inbox)
-    db_session.commit()
-    db_user.home_folder_id = db_home.id
-    db_user.inbox_folder_id = db_inbox.id
-    # fetch permissions from the DB
     try:
-        db_session.commit()
+        home_folder_id = uuid.uuid4()
+        inbox_folder_id = uuid.uuid4()
 
-        stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
-        db_perms = db_session.execute(stmt).scalars().all()
-        # fetch groups from the DB
+        home = orm.Folder(
+            id=home_folder_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=_user_id,
+            lang="xxx",
+        )
+        inbox = orm.Folder(
+            id=inbox_folder_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            user_id=_user_id,
+            lang="xxx",
+        )
 
-        stmt = select(orm.Group).where(orm.Group.id.in_(group_ids))
-        db_groups = db_session.execute(stmt).scalars().all()
+        user = orm.User(
+            id=_user_id,
+            username=username,
+            email=email,
+            password=pbkdf2_sha256.hash(password),
+            is_superuser=is_superuser,
+            is_active=is_active,
+            home_folder_id=home_folder_id,  # Set immediately
+            inbox_folder_id=inbox_folder_id,  # Set immediately
+        )
 
-        db_user.permissions = db_perms
-        db_user.groups = db_groups
-        db_session.commit()
+        db_session.add_all([user, home, inbox])
+        await db_session.flush()
+        await db_session.commit()
+        await db_session.refresh(user)
+
+        return schema.User.model_validate(user), None
+
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
-        return None, error
-
-    user = schema.User.model_validate(db_user)
-
-    return user, None
+        await db_session.rollback()
+        return None, err_schema.Error(messages=[str(e)])
 
 
-def update_user(
-    db_session, user_id: uuid.UUID, attrs: schema.UpdateUser
+async def update_user(
+    db_session: AsyncSession, user_id: uuid.UUID, attrs: schema.UpdateUser
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     groups = []
     roles = []
     scopes = set()
-    user = db_session.get(User, user_id)
-
+    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(orm.User.id == user_id)
+    user = (await db_session.execute(stmt)).scalar()
     if attrs.username is not None:
         user.username = attrs.username
 
     if attrs.email is not None:
         user.email = attrs.email
-
-    if attrs.scopes is not None:
-        stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
-        perms = db_session.execute(stmt).scalars().all()
-        user.permissions = perms
 
     if attrs.is_superuser is not None:
         user.is_superuser = attrs.is_superuser
@@ -269,26 +255,29 @@ def update_user(
 
     if attrs.group_ids is not None:
         stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
-        groups = db_session.execute(stmt).scalars().all()
+        groups = (await db_session.execute(stmt)).scalars().all()
         user.groups = groups
 
     if attrs.role_ids is not None:
         stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
-        roles = db_session.execute(stmt).scalars().all()
+        roles = (await db_session.execute(stmt)).scalars().all()
         user.roles = roles
 
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
+        await db_session.rollback()
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
     for role in user.roles:
         for perm in role.permissions:
             scopes.add(perm.codename)
+
+    await db_session.refresh(user)
 
     result = schema.UserDetails(
         id=user.id,
@@ -310,10 +299,10 @@ def update_user(
     return model_user, None
 
 
-def get_user_scopes_from_roles(
-    db_session: db.Session, user_id: uuid.UUID, roles: list[str]
+async def get_user_scopes_from_roles(
+    db_session: AsyncSession, user_id: uuid.UUID, roles: list[str]
 ) -> list[str]:
-    db_user = db_session.get(User, user_id)
+    db_user = await db_session.get(User, user_id)
 
     if db_user is None:
         logger.debug(f"User with user_id {user_id} not found")
@@ -321,9 +310,9 @@ def get_user_scopes_from_roles(
 
     lowercase_roles = [role.lower() for role in roles]
 
-    db_roles = db_session.scalars(
+    db_roles = (await db_session.scalars(
         select(orm.Role).where(func.lower(orm.Role.name).in_(lowercase_roles))
-    ).all()
+    )).all()
 
     if db_user.is_superuser:
         # superuser has all permissions (permission = scope)
@@ -337,8 +326,8 @@ def get_user_scopes_from_roles(
     return list(result)
 
 
-def delete_user(
-    db_session: db.Session,
+async def delete_user(
+    db_session: AsyncSession,
     user_id: uuid.UUID | None = None,
     username: str | None = None,
 ):
@@ -349,36 +338,38 @@ def delete_user(
     else:
         raise ValueError("Either username or user_id parameter must be provided")
 
-    user = db_session.execute(stmt).scalars().one()
-    db_session.delete(user)
-    db_session.commit()
+    user = (await db_session.execute(stmt)).scalars().one()
+    await db_session.delete(user)
+    await db_session.commit()
 
 
-def get_users_count(db_session: db.Session) -> int:
+async def get_users_count(db_session: AsyncSession) -> int:
     stmt = select(func.count(orm.User.id))
-    return db_session.execute(stmt).scalar()
+    return (await db_session.execute(stmt)).scalar()
 
 
-def change_password(
-    db_session: db.Session, user_id: uuid.UUID, password: str
+async def change_password(
+    db_session: AsyncSession, user_id: uuid.UUID, password: str
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    db_user = db_session.get(User, user_id)
-
+    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(
+        orm.User.id == user_id)
+    db_user = (await db_session.execute(stmt)).scalar()
     db_user.password = pbkdf2_sha256.hash(password)
 
     try:
-        db_session.commit()
+        await db_session.commit()
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
+    await db_session.refresh(db_user)
     user = schema.User.model_validate(db_user)
 
     return user, None
 
 
-def user_belongs_to(
-    db_session: db.Session, group_id: uuid.UUID, user_id: uuid.UUID
+async def user_belongs_to(
+    db_session: AsyncSession, group_id: uuid.UUID, user_id: uuid.UUID
 ) -> bool:
     """Does user belong to group?"""
     stmt = (
@@ -389,5 +380,5 @@ def user_belongs_to(
             user_groups_association.c.group_id == group_id,
         )
     )
-    result = db_session.execute(stmt).scalar()
+    result = (await db_session.execute(stmt)).scalar()
     return result > 0

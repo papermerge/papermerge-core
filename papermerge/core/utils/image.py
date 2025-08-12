@@ -14,9 +14,6 @@ settings = config.get_settings()
 PREVIEW_IMAGE_MAP = {
     # size name        : size in pixels
     ImagePreviewSize.sm: settings.papermerge__preview__page_size_sm,
-    ImagePreviewSize.md: settings.papermerge__preview__page_size_md,
-    ImagePreviewSize.lg: settings.papermerge__preview__page_size_lg,
-    ImagePreviewSize.xl: settings.papermerge__preview__page_size_xl,
 }
 
 logger = logging.getLogger(__name__)
@@ -52,25 +49,6 @@ def gen_doc_thumbnail(
         size_px=settings.papermerge__preview__page_size_sm,
         size_name=ImagePreviewSize.sm.value,
     )
-
-
-def gen_page_preview(
-    doc_ver_id, file_name: str, page_id: UUID, page_number: int, size: ImagePreviewSize
-):
-    logger.info(f"Generating preview for {page_id=} {page_number=} {size=}")
-    pdf_path = core_pathlib.abs_docver_path(str(doc_ver_id), str(file_name))
-    abs_image_path = core_pathlib.rel2abs(
-        core_pathlib.page_preview_jpg_path(page_id, size=size)
-    )
-    generate_preview(
-        pdf_path=pdf_path,
-        output_folder=abs_image_path.parent,
-        size_px=PREVIEW_IMAGE_MAP[size],
-        size_name=size.value,
-        page_number=page_number,
-    )
-
-    return core_pathlib.page_preview_jpg_path(page_id, size=size)
 
 
 def generate_preview(

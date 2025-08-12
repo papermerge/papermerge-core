@@ -4,14 +4,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import utils, schema, dbapi, db
+from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document_types import schema as dt_schema
-
+from papermerge.core.db.engine import get_db
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -33,13 +34,13 @@ logger = logging.getLogger(__name__)
     },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
-def get_document_types_without_pagination(
+async def get_document_types_without_pagination(
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
     group_id: uuid.UUID | None = None,
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get all document types without pagination
 
@@ -54,7 +55,7 @@ def get_document_types_without_pagination(
 
     Required scope: `{scope}`
     """
-    result = dbapi.get_document_types_without_pagination(
+    result = await dbapi.get_document_types_without_pagination(
         db_session, user_id=user.id, group_id=group_id
     )
 
@@ -72,19 +73,19 @@ def get_document_types_without_pagination(
     },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
-def get_document_types_without_pagination(
+async def get_document_types_without_pagination(
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Returns all document types to which user has access to, grouped
     by owner. Results are not paginated.
 
     Required scope: `{scope}`
     """
-    result = dbapi.get_document_types_grouped_by_owner_without_pagination(
+    result = await dbapi.get_document_types_grouped_by_owner_without_pagination(
         db_session, user_id=user.id
     )
 
@@ -93,18 +94,18 @@ def get_document_types_without_pagination(
 
 @router.get("/")
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
-def get_document_types(
+async def get_document_types(
     user: Annotated[
         users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     params: PaginatedQueryParams = Depends(),
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.DocumentType]:
     """Get all (paginated) document types
 
     Required scope: `{scope}`
     """
-    paginated_response = dbapi.get_document_types(
+    paginated_response = await dbapi.get_document_types(
         db_session,
         user_id=user.id,
         page_size=params.page_size,
@@ -118,20 +119,20 @@ def get_document_types(
 
 @router.get("/{document_type_id}", response_model=schema.DocumentType)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
-def get_document_type(
+async def get_document_type(
     document_type_id: uuid.UUID,
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ):
     """Get document type
 
     Required scope: `{scope}`
     """
     try:
-        result = dbapi.get_document_type(db_session, document_type_id=document_type_id)
+        result = await dbapi.get_document_type(db_session, document_type_id=document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
     return result
@@ -139,13 +140,13 @@ def get_document_type(
 
 @router.post("/", status_code=201)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_CREATE)
-def create_document_type(
+async def create_document_type(
     dtype: schema.CreateDocumentType,
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE]),
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentType:
     """Creates document type
 
@@ -165,7 +166,7 @@ def create_document_type(
         kwargs["user_id"] = user.id
 
     try:
-        document_type = dbapi.create_document_type(db_session, **kwargs)
+        document_type = await dbapi.create_document_type(db_session, **kwargs)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
@@ -186,20 +187,20 @@ def create_document_type(
     },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_DELETE)
-def delete_document_type(
+async def delete_document_type(
     document_type_id: uuid.UUID,
     user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE]),
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> None:
     """Deletes document type
 
     Required scope: `{scope}`
     """
     try:
-        dbapi.delete_document_type(db_session, document_type_id)
+        await dbapi.delete_document_type(db_session, document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 
@@ -216,14 +217,14 @@ def delete_document_type(
     },
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_UPDATE)
-def update_document_type(
+async def update_document_type(
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
     cur_user: Annotated[
         users_schema.User,
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE]),
     ],
-    db_session=Depends(db.get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentType:
     """Updates document type
 
@@ -232,7 +233,7 @@ def update_document_type(
     try:
         if attrs.group_id:
             group_id = attrs.group_id
-            ok = dbapi.user_belongs_to(
+            ok = await dbapi.user_belongs_to(
                 db_session, user_id=cur_user.id, group_id=group_id
             )
             if not ok:
@@ -244,7 +245,7 @@ def update_document_type(
         else:
             attrs.user_id = cur_user.id
 
-        dtype: schema.DocumentType = dbapi.update_document_type(
+        dtype: schema.DocumentType = await dbapi.update_document_type(
             db_session,
             document_type_id=document_type_id,
             attrs=attrs,

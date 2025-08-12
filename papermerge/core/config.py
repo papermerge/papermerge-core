@@ -1,5 +1,4 @@
 from enum import Enum
-
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
@@ -37,7 +36,6 @@ class Settings(BaseSettings):
     papermerge__ocr__automatic: bool = False
     papermerge__search__url: str | None = None
 
-    papermerge__s3__provider: str = "aws"
     aws_access_key_id: str | None = None
     aws_secret_access_key: str | None = None
     aws_region_name: str | None = None

@@ -215,6 +215,7 @@ class DocumentNode(BaseModel):
             return f"/api/thumbnails/{info.data['id']}"
 
         # if it is not local, then it is s3 + CDN/cloudfront
+        # or just plain s3 without CDN
         if (
             "preview_status" in info.data
             and info.data["preview_status"] == ImagePreviewStatus.ready

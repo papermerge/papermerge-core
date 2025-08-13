@@ -3,7 +3,7 @@ import {RefObject, useCallback, useEffect, useState} from "react"
 const APP_SHELL_HEADER_HEIGHT_WITH_PADDING = 84
 
 // without this number remaining height is too big -> it pushes
-// pagination out of the view area. I don't know it why...
+// pagination out of the view area. I don't know why...
 const JUST_A_GUESS = 80 // this number is just a guess
 
 export function useDynamicHeight<T extends HTMLElement>(
@@ -14,7 +14,6 @@ export function useDynamicHeight<T extends HTMLElement>(
   const calculateHeight = useCallback(() => {
     const windowHeight = window.innerHeight
     const occupiedHeight = refs.reduce((sum, ref) => {
-      console.log(`h=${ref.current?.offsetHeight ?? 0}`)
       return sum + (ref.current?.offsetHeight ?? 0) // null safe
     }, 0)
     const totalOccupiedHeight =

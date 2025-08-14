@@ -5,9 +5,7 @@ from typing import Annotated
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Security, Depends, status
-from fastapi.responses import FileResponse
 
-from papermerge.core.constants import ContentType
 from papermerge.core import schema, utils, dbapi, orm
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -22,29 +20,26 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/document-versions", tags=["document-versions"])
 
 
-class PDFFileResponse(FileResponse):
-    media_type = ContentType.APPLICATION_PDF
-    content_disposition = "attachment"
-
-
-class JPEGFileResponse(FileResponse):
-    media_type = ContentType.IMAGE_JPEG
-    content_disposition = "attachment"
-
-
-class PNGFileResponse(FileResponse):
-    media_type = ContentType.IMAGE_PNG
-    content_disposition = "attachment"
-
-class TIFFFileResponse(FileResponse):
-    media_type = ContentType.IMAGE_TIFF
-    content_disposition = "attachment"
-
-
 @router.api_route(
     "/{document_version_id}/download",
     methods=["GET", "HEAD"],
-    response_class=PDFFileResponse
+    response_class=DocumentFileResponse,
+    status_code=200,
+    responses={
+        200: {
+            "description": "Binary file download",
+            "content": {
+                "application/octet-stream": {},
+                "application/pdf": {},
+                "image/png": {},
+                "image/jpeg": {},
+                "image/tiff": {}
+            }
+        },
+        404: {
+            "description": "Document version not found"
+        }
+    }
 )
 @utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
 async def download_document_version(

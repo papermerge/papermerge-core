@@ -1,15 +1,15 @@
 {
   "name": "hooks",
   "peerDependencies": {
-    "react": "^19.1.0"
+    "react": "^19.1.1"
   },
   "scripts": {
     "build": "tsc"
   },
   "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "react": "^19.1.0",
-    "typescript": "^5.8.3"
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "react": "^19.1.1",
+    "typescript": "^5.9.2"
   }
 }

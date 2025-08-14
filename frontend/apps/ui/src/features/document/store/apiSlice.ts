@@ -69,7 +69,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       ]
     }),
     getDocVersionsList: builder.query<DocVersList, string>({
-      query: nodeID => `/documents/${nodeID}/versions/`,
+      query: nodeID => `/documents/${nodeID}/versions`,
       providesTags: (_result, _error, arg) => [{type: "DocVersList", id: arg}]
     }),
     getDocument: builder.query<DocumentType, string>({

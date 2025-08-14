@@ -6,8 +6,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    assignees:
-      - "renehezser"
 
   - package-ecosystem: docker
     directories:
@@ -16,21 +14,15 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    assignees:
-      - "renehezser"
 
   - package-ecosystem: npm # also includes yarn and pnpm
     directory: "/frontend"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 100
-    assignees:
-      - "renehezser"
+    open-pull-requests-limit: 10
 
   - package-ecosystem: pip # also includes poetry
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    assignees:
-      - "renehezser"

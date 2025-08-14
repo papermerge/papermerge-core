@@ -5,9 +5,7 @@ from typing import Annotated
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Security, Depends, status
-from fastapi.responses import FileResponse
 
-from papermerge.core.constants import ContentType
 from papermerge.core import schema, utils, dbapi, orm
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -15,18 +13,34 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.document.response import DocumentFileResponse
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/document-versions", tags=["document-versions"])
 
 
-class PDFFileResponse(FileResponse):
-    media_type = ContentType.APPLICATION_PDF
-    content_disposition = "attachment"
-
-
-@router.get("/{document_version_id}/download", response_class=PDFFileResponse)
+@router.api_route(
+    "/{document_version_id}/download",
+    methods=["GET", "HEAD"],
+    response_class=DocumentFileResponse,
+    status_code=200,
+    responses={
+        200: {
+            "description": "Binary file download",
+            "content": {
+                "application/octet-stream": {},
+                "application/pdf": {},
+                "image/png": {},
+                "image/jpeg": {},
+                "image/tiff": {}
+            }
+        },
+        404: {
+            "description": "Document version not found"
+        }
+    }
+)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
 async def download_document_version(
     document_version_id: uuid.UUID,
@@ -63,10 +77,10 @@ async def download_document_version(
         error = schema.Error(messages=["Document version file not found"])
         raise HTTPException(status_code=404, detail=error.model_dump())
 
-    return PDFFileResponse(
+    return DocumentFileResponse(
         doc_ver.file_path,
-        filename=doc_ver.file_name,
-        content_disposition_type="attachment",
+        filename=doc_ver.file_name,  # Will be in Content-Disposition header
+        content_disposition_type="attachment"
     )
 
 @router.get(
@@ -112,7 +126,10 @@ async def get_doc_ver_download_url(
 
 
 
-@router.get("/{document_version_id}", response_model=schema.DocumentVersion)
+@router.get(
+    "/{document_version_id}",
+    response_model=schema.DocumentVersion
+)
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def document_version_details(
     document_version_id: uuid.UUID,

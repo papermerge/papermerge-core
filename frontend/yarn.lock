@@ -3025,9 +3025,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^25.3.2":
-  version: 25.3.2
-  resolution: "i18next@npm:25.3.2"
+"i18next@npm:^25.3.4":
+  version: 25.3.4
+  resolution: "i18next@npm:25.3.4"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
   peerDependencies:
@@ -3035,7 +3035,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/2ac3eaaf7eb0f713094265733f2371fd2631e8a0247049f2c5608d5f5b0a33720d90179de8bd4fb23e00e9b037fd548aa36e2f234bea9753061c51d87a0895bc
+  checksum: 10c0/874ea315e36c186a804d490250330ab5e76409b41387393cf141e41fa38769e3b73c841703103501889f031944075487b6ac89d3c57c2f22384e6ba10b440b28
   languageName: node
   linkType: hard
 
@@ -4486,7 +4486,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.13"
     hooks: "workspace:*"
-    i18next: "npm:^25.3.2"
+    i18next: "npm:^25.3.4"
     i18next-browser-languagedetector: "npm:^8.2.0"
     i18next-chained-backend: "npm:^4.6.2"
     i18next-localstorage-backend: "npm:^4.2.0"

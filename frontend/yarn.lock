@@ -2029,7 +2029,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    react-router: "npm:^7.6.3"
+    react-router: "npm:^7.8.0"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.39.1"
     vite: "npm:^7.1.2"
@@ -3205,7 +3205,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    react-router: "npm:^7.6.3"
+    react-router: "npm:^7.8.0"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.39.1"
     vite: "npm:^7.1.2"
@@ -3849,7 +3849,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:7.8.0":
+"react-router@npm:7.8.0, react-router@npm:^7.8.0":
   version: 7.8.0
   resolution: "react-router@npm:7.8.0"
   dependencies:
@@ -3862,22 +3862,6 @@ __metadata:
     react-dom:
       optional: true
   checksum: 10c0/e2d81a1d673ed5d0851810defc19b7db9d8350e31169e1938efe8392b0b995f4faf7b4c9416c257935e2f28c65297a412a053b39e68ac76095130808c5b24db1
-  languageName: node
-  linkType: hard
-
-"react-router@npm:^7.6.3":
-  version: 7.6.3
-  resolution: "react-router@npm:7.6.3"
-  dependencies:
-    cookie: "npm:^1.0.1"
-    set-cookie-parser: "npm:^2.6.0"
-  peerDependencies:
-    react: ">=18"
-    react-dom: ">=18"
-  peerDependenciesMeta:
-    react-dom:
-      optional: true
-  checksum: 10c0/43c8dd124d1c3f9fb11afa905fb0c87e19b73b04877e9be09f84eac34948ea90d6c4aae408c8030fe6dc4ed88c0bcf2e857b53a817ebbe5ce7d26e485a330c7d
   languageName: node
   linkType: hard
 
@@ -4417,7 +4401,7 @@ __metadata:
     react-dom: "npm:^19.1.0"
     react-i18next: "npm:^15.6.0"
     react-redux: "npm:^9.2.0"
-    react-router: "npm:^7.6.3"
+    react-router: "npm:^7.8.0"
     react-router-dom: "npm:^7.8.0"
     sass: "npm:^1.89.2"
     typescript: "npm:^5.8.3"
@@ -4584,7 +4568,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    react-router: "npm:^7.6.3"
+    react-router: "npm:^7.8.0"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.39.1"
     viewer: "workspace:*"

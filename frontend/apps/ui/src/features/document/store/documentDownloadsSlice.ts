@@ -41,18 +41,23 @@ export const fetchAndDownloadDocument = createAsyncThunk<
       const fileResponse = await axios.get(url, {
         responseType: "blob"
       })
+      // Extract filename from Content-Disposition header
+      let filename = extractFilenameFromHeader(
+        fileResponse.headers["content-disposition"]
+      )
 
-      let filename
-      const docVer = state.docVers.entities[docVerId]
-
-      if (docVer && docVer.file_name) {
-        filename = docVer.file_name
-      } else {
-        filename = `document-${docVerId}.pdf`
+      // Fallback to Redux state or default
+      if (!filename) {
+        const docVer = state.docVers.entities[docVerId]
+        filename = docVer?.file_name || `document-${docVerId}.pdf`
       }
 
+      // Get content type for proper blob creation
+      const contentType =
+        fileResponse.headers["content-type"] || "application/octet-stream"
+
       // Third: Create blob URL and trigger download
-      const blob = new Blob([fileResponse.data])
+      const blob = new Blob([fileResponse.data], {type: contentType})
       const blobUrl = window.URL.createObjectURL(blob)
 
       const anchor = document.createElement("a")
@@ -101,6 +106,37 @@ const documentDownloadsSlice = createSlice({
       })
   }
 })
+
+// Helper function to extract filename from Content-Disposition header
+function extractFilenameFromHeader(
+  contentDisposition: string | undefined
+): string | null {
+  if (!contentDisposition) return null
+
+  // Try to match filename*=UTF-8''encoded_filename first (for unicode filenames)
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/)
+  if (utf8Match) {
+    try {
+      return decodeURIComponent(utf8Match[1])
+    } catch {
+      // If decoding fails, continue to ASCII filename
+    }
+  }
+
+  // Try to match filename="ascii_filename"
+  const asciiMatch = contentDisposition.match(/filename="([^"]+)"/)
+  if (asciiMatch) {
+    return asciiMatch[1]
+  }
+
+  // Try to match filename=unquoted_filename
+  const unquotedMatch = contentDisposition.match(/filename=([^;]+)/)
+  if (unquotedMatch) {
+    return unquotedMatch[1].trim()
+  }
+
+  return null
+}
 
 export default documentDownloadsSlice.reducer
 export type {DocumentState}

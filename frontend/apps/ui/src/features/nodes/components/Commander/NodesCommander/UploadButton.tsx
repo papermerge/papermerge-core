@@ -11,15 +11,21 @@ import {
   SUPPORTED_EXTENSIONS,
   SUPPORTED_MIME_TYPES
 } from "@/features/nodes/constants"
+import {isSupportedFile} from "@/features/nodes/utils"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 import {DropFilesModal} from "./DropFiles"
+import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 const MIME_TYPES = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(",")
 
 export default function UploadButton() {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
+  const [
+    supportedFilesInfoOpened,
+    {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
+  ] = useDisclosure(false)
   const [uploadFiles, setUploadFiles] = useState<File[]>()
   const mode: PanelMode = useContext(PanelContext)
   const folderID = useAppSelector(s => selectCurrentNodeID(s, mode))
@@ -36,6 +42,12 @@ export default function UploadButton() {
     }
     if (!target) {
       console.error("Current folder is undefined")
+      return
+    }
+    const validFiles = files.filter(isSupportedFile)
+
+    if (validFiles.length === 0) {
+      supportedFilesInfoOpen()
       return
     }
     setUploadFiles(files)
@@ -60,6 +72,12 @@ export default function UploadButton() {
           target={target!}
           onSubmit={close}
           onCancel={close}
+        />
+      )}
+      {supportedFilesInfoOpened && (
+        <SupportedFilesInfoModal
+          opened={supportedFilesInfoOpened}
+          onClose={supportedFilesInfoClose}
         />
       )}
     </>

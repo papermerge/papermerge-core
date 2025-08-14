@@ -45,7 +45,10 @@ export const apiSliceWithRoles = apiSlice.injectEndpoints({
         method: "PATCH",
         body: role
       }),
-      invalidatesTags: (_result, _error, arg) => [{type: "Role", id: arg.id}]
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "Role", id: arg.id},
+        "Role"
+      ]
     }),
     deleteRole: builder.mutation<void, string>({
       query: roleID => ({

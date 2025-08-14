@@ -1,7 +1,4 @@
 {
   "files": [],
-  "references": [
-    { "path": "packages/hooks" },
-    { "path": "apps/hooks.dev" }
-  ]
+  "references": [{"path": "packages/hooks"}, {"path": "apps/hooks.dev"}]
 }

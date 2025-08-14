@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/store/apiSlice"
+import {useDynamicHeight} from "@/features/nodes/hooks/useDynamicHeight"
 import {
   commanderLastPageSizeUpdated,
   documentsByTypeCommanderColumnsUpdated,
@@ -15,6 +16,7 @@ import {
   Center,
   Checkbox,
   Group,
+  ScrollArea,
   Stack,
   Table,
   Text,
@@ -23,7 +25,7 @@ import {
 } from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
-import {useContext, useEffect, useState} from "react"
+import {useContext, useEffect, useRef, useState} from "react"
 import classes from "./TableSort.module.css"
 
 import {useTranslation} from "react-i18next"
@@ -42,6 +44,15 @@ export default function DocumentsByCategoryCommander() {
   const visibleColumns = useAppSelector(s =>
     selectDocumentsByTypeCommanderVisibleColumns(s, mode)
   )
+  const topActionsRef = useRef<HTMLDivElement>(null) // ActionButtons
+  const tableHeaderRef = useRef<HTMLTableSectionElement>(null) // Table.Thead
+  const paginationRef = useRef<HTMLDivElement>(null) // Pagination
+
+  const remainingHeight = useDynamicHeight([
+    topActionsRef,
+    tableHeaderRef,
+    paginationRef
+  ])
 
   const currentDocumentTypeID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, mode)
@@ -119,32 +130,36 @@ export default function DocumentsByCategoryCommander() {
 
   return (
     <Box>
-      <Stack>
+      <Stack ref={topActionsRef}>
         <ActionButtons />
       </Stack>
       <Stack>
-        <Table mt={"lg"}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>
-                <Checkbox />
-              </Table.Th>
-              <Table.Th>Title</Table.Th>
-              {customFieldsHeaderColumns}
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-        <Pagination
-          pagination={{
-            pageNumber: page,
-            pageSize: pageSize,
-            numPages: data.num_pages
-          }}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
-        />
+        <ScrollArea mt={"md"} h={remainingHeight} type="auto">
+          <Table layout="fixed" stickyHeader>
+            <Table.Thead ref={tableHeaderRef}>
+              <Table.Tr>
+                <Table.Th style={{width: 50}}>
+                  <Checkbox />
+                </Table.Th>
+                <Table.Th>Title</Table.Th>
+                {customFieldsHeaderColumns}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </ScrollArea>
+        <Box ref={paginationRef}>
+          <Pagination
+            pagination={{
+              pageNumber: page,
+              pageSize: pageSize,
+              numPages: data.num_pages
+            }}
+            onPageNumberChange={onPageNumberChange}
+            onPageSizeChange={onPageSizeChange}
+            lastPageSize={lastPageSize}
+          />
+        </Box>
       </Stack>
     </Box>
   )

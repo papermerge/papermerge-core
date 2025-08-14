@@ -181,7 +181,9 @@ async def get_document_types(
 
 async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.UUID):
     """count number of custom fields associated to document type"""
-    stmt = select(DocumentType).where(DocumentType.id == document_type_id)
+    stmt = select(DocumentType).options(
+        selectinload(orm.DocumentType.custom_fields)
+    ).where(DocumentType.id == document_type_id)
     dtype = (await session.scalars(stmt)).one()
     return len(dtype.custom_fields)
 

@@ -58,6 +58,44 @@
     "mainMessage": "Möchtest du dieses Dokument wirklich löschen?",
     "confirmButtonText": "Ja, lösche diese Dokument"
   },
+  "roleForm": {
+    "name": "Name",
+    "collapseButton": {
+      "collapseAll": "Alles einklappen",
+      "expandAll": "Alles ausklappen"
+    },
+    "checkButton": {
+      "checkAll": "Alle auswählen",
+      "uncheckAll": "Alle abwählen"
+    },
+    "permissionTree": {
+      "folders": "Ordner",
+      "documents": "Dokumente",
+      "page_management": "Seitenverwaltung",
+      "categories": "Kategorien",
+      "shares": "Freigaben",
+      "users": "Benutzer",
+      "roles": "Rollen",
+      "groups": "Gruppen",
+      "view": "Anzeigen",
+      "create": "Erstellen",
+      "update": "Bearbeiten",
+      "move": "Verschieben",
+      "delete": "Löschen",
+      "download": "Herunterladen",
+      "upload": "Hochladen",
+      "extract": "Extrahieren",
+      "rotate": "Drehen",
+      "reorder": "Neu anordnen",
+      "select": "Auswählen",
+      "all_versions": "Alle Versionen",
+      "only_last_version": "Nur letzte Version",
+      "title": "Titel",
+      "custom_fields": "Benutzerdefinierte Felder",
+      "tags": "Schlagwörter",
+      "category": "Kategorie"
+    }
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",
@@ -174,6 +212,9 @@
   "users.delete.one.description": "Benutzer löschen?",
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
+  "roles": {
+    "create_new_role": "Rolle Erstellen"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",

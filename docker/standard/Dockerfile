@@ -11,7 +11,7 @@ RUN corepack enable && \
     yarn install --immutable && \
     yarn workspace ui build
 
-FROM papermerge/auth-server:1.1.3 AS auth_server
+FROM papermerge/auth-server:1.1.5 AS auth_server
 FROM python:3.13-alpine AS papermerge_core
 
 ENV CORE_APP=/core_app
@@ -60,7 +60,7 @@ RUN chmod +x /usr/bin/*.sh && \
 COPY --from=auth_server /app/ /auth_server_app/
 COPY --from=auth_server /usr/share/nginx/html/ /usr/share/nginx/html/auth_server/
 
-# Copy frontend build artifacts  
+# Copy frontend build artifacts
 COPY --from=frontend_build /build_frontend_app/apps/ui/dist/ /usr/share/nginx/html/ui
 
 # Install dependencies for auth server and core app

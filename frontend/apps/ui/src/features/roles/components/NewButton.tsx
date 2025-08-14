@@ -11,7 +11,7 @@ export default function NewButton() {
   return (
     <>
       <Button leftSection={<IconPlus />} onClick={open} variant="default">
-        {t("common.new")}
+        {t("roles.create_new_role")}
       </Button>
       <NewRoleModal opened={opened} onSubmit={close} onCancel={close} />
     </>

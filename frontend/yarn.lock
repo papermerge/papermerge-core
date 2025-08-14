@@ -465,7 +465,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.31.0, @eslint/js@npm:^9.31.0":
+"@eslint/js@npm:9.31.0":
   version: 9.31.0
   resolution: "@eslint/js@npm:9.31.0"
   checksum: 10c0/f9d4c73d0fafe70679a418cbb25ab7ebcc8f1dba6c32456d6f8ba5a137d583ecff233cfe10f61f41d7d4d2220e94cff1f39fc7ed1fa3819d1888dee1cad678ea
@@ -476,6 +476,13 @@ __metadata:
   version: 9.32.0
   resolution: "@eslint/js@npm:9.32.0"
   checksum: 10c0/f71e8f9146638d11fb15238279feff98801120a4d4130f1c587c4f09b024ff5ec01af1ba88e97ba6b7013488868898a668f77091300cc3d4394c7a8ed32d2667
+  languageName: node
+  linkType: hard
+
+"@eslint/js@npm:^9.33.0":
+  version: 9.33.0
+  resolution: "@eslint/js@npm:9.33.0"
+  checksum: 10c0/4c42c9abde76a183b8e47205fd6c3116b058f82f07b6ad4de40de56cdb30a36e9ecd40efbea1b63a84d08c206aadbb0aa39a890197e1ad6455a8e542df98f186
   languageName: node
   linkType: hard
 
@@ -1956,7 +1963,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "commander.dev@workspace:apps/commander.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.33.0"
     "@mantine/core": "npm:^8.1.3"
     "@mantine/hooks": "npm:^8.1.3"
     "@tabler/icons-react": "npm:^3.34.0"
@@ -2833,7 +2840,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hooks.dev@workspace:apps/hooks.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.33.0"
     "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^19.1.6"
     "@vitejs/plugin-react": "npm:^4.6.0"
@@ -3183,7 +3190,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "kommon.dev@workspace:apps/kommon.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.33.0"
     "@mantine/core": "npm:^8.1.3"
     "@mantine/hooks": "npm:^8.1.3"
     "@tabler/icons-react": "npm:^3.34.0"
@@ -4546,7 +4553,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "viewer.dev@workspace:apps/viewer.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.33.0"
     "@mantine/core": "npm:^8.1.3"
     "@mantine/hooks": "npm:^8.1.3"
     "@tabler/icons-react": "npm:^3.34.0"

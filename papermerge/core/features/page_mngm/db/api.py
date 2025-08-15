@@ -376,7 +376,9 @@ async def move_pages_replace(
     moved_page_ids = [page.id for page in moved_pages]
 
     dst_page = (await db_session.execute(
-        select(orm.Page).where(orm.Page.id == target_page_id)
+        select(orm.Page).options(
+            selectinload(orm.Page.document_version)
+        ).where(orm.Page.id == target_page_id)
     )).scalar()
     dst_old_version = dst_page.document_version
     dst_old_version = await load_doc_ver(db_session, dst_old_version)
@@ -411,8 +413,9 @@ async def move_pages_replace(
         # !!!this means new source (src_new_version) has zero pages!!!
         # Delete entire source and return None as first tuple element
         await db_session.execute(
-            delete(orm.Document).where(orm.Document.id == src_old_version.document.id)
+            delete(orm.Node).where(orm.Node.id == src_old_version.document.id)
         )
+        await db_session.commit()
         _dst_doc = dst_new_version.document
         return None, _dst_doc
 

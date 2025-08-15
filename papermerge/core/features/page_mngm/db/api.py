@@ -87,8 +87,10 @@ async def apply_pages_op(
     pages = pages.all()
 
     old_version = (await db_session.execute(
-        select(orm.DocumentVersion)
-        .where(orm.DocumentVersion.id == pages[0].document_version_id)
+        select(orm.DocumentVersion).options(
+            selectinload(orm.DocumentVersion.document),
+            selectinload(orm.DocumentVersion.pages)
+        ).where(orm.DocumentVersion.id == pages[0].document_version_id)
         .limit(1)
     )).scalar()
 
@@ -109,7 +111,7 @@ async def apply_pages_op(
     notify_version_update(
         remove_ver_id=str(old_version.id), add_ver_id=str(new_version.id)
     )
-
+    doc = await doc_dbapi.load_doc(db_session, doc.id)
     return doc
 
 
@@ -757,4 +759,3 @@ def notify_add_docs(db_session, add_doc_ids: List[uuid.UUID]):
         kwargs={"doc_ver_ids": ids},
         route_name="s3",
     )
-

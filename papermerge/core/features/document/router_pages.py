@@ -122,6 +122,10 @@ async def extract_pages(
         orm.Document.id.in_([doc.id for doc in target_docs])
     )
     target_nodes = (await db_session.execute(stmt)).scalars()
+
+    if source is not None:
+        source = await doc_dbapi.load_doc(db_session, source.id)
+
     model = schema.ExtractPagesOut(source=source, target=target_nodes)
 
     return schema.ExtractPagesOut.model_validate(model)

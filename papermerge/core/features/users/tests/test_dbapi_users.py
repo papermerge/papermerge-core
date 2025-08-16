@@ -1,9 +1,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from papermerge.core.features.users.db import api as dbapi
-from papermerge.core import orm
-from papermerge.core import schema
+from papermerge.core import orm, schema, dbapi
 
 
 async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_group):
@@ -84,6 +83,40 @@ async def test_user_update(db_session: AsyncSession, make_user):
     updated_user = (await db_session.execute(stmt)).scalar()
 
     assert updated_user.is_superuser == True
+
+
+async def test_update_user_roles(db_session: AsyncSession, make_user, make_role):
+    """
+    Assign to the user initially 2 roles.
+    Afterwords assign only 1 role.
+    """
+    await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
+
+    role1 = await make_role(name="guest1", scopes=["node.create", "node.view"])
+    role2 = await make_role(name="guest2", scopes=["tags.create", "tags.view"])
+
+    attrs = schema.UpdateUser(is_superuser=True, role_ids=[role1.id, role2.id])
+    await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+
+    stmt = select(orm.User).options(
+        selectinload(orm.User.roles)
+    ).where(orm.User.id == user.id)
+
+    updated_user = (await db_session.execute(stmt)).scalar_one()
+
+    assert len(updated_user.roles) == 2
+
+    attrs = schema.UpdateUser(is_superuser=True, role_ids=[role1.id])
+    await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+
+    stmt = select(orm.User).options(
+        selectinload(orm.User.roles)
+    ).where(orm.User.id == user.id)
+
+    updated_user = (await db_session.execute(stmt)).scalar_one()
+
+    assert len(updated_user.roles) == 1
 
 
 async def test_change_password(db_session: AsyncSession, make_user):

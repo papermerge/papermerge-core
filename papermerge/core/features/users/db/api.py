@@ -260,7 +260,6 @@ async def create_user(
         await db_session.flush()
         await db_session.commit()
         await db_session.refresh(user)
-
         return schema.User.model_validate(user), None
 
     except Exception as e:
@@ -274,8 +273,14 @@ async def update_user(
     groups = []
     roles = []
     scopes = set()
-    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(orm.User.id == user_id)
-    user = (await db_session.execute(stmt)).scalar()
+
+    stmt = select(orm.User).options(
+        selectinload(orm.User.roles),
+        selectinload(orm.User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.groups)
+    ).where(orm.User.id == user_id)
+
+    user = (await db_session.execute(stmt)).scalar_one()
     if attrs.username is not None:
         user.username = attrs.username
 
@@ -308,28 +313,26 @@ async def update_user(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
-    for role in user.roles:
-        for perm in role.permissions:
+    stmt = select(orm.User).options(
+        selectinload(orm.User.roles),
+        selectinload(orm.User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.groups)
+    ).where(orm.User.id == user_id)
+
+    user = (await db_session.execute(stmt)).scalar_one()
+
+    for role in list(user.roles):
+        for perm in list(role.permissions):
             scopes.add(perm.codename)
 
-    await db_session.refresh(user)
-
-    result = schema.UserDetails(
-        id=user.id,
-        username=user.username,
-        email=user.email,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
-        home_folder_id=user.home_folder_id,
-        inbox_folder_id=user.inbox_folder_id,
-        is_superuser=user.is_superuser,
-        is_active=user.is_active,
-        scopes=sorted(scopes),
-        groups=groups,
-        roles=roles,
+    stmt = select(orm.User).options(
+        selectinload(orm.User.roles), selectinload(orm.User.groups)
+    ).where(
+        orm.User.id == user_id
     )
+    db_user = (await db_session.execute(stmt)).scalar_one()
 
-    model_user = schema.UserDetails.model_validate(result)
+    model_user = schema.UserDetails.model_validate(db_user)
 
     return model_user, None
 

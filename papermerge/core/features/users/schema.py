@@ -65,6 +65,7 @@ class UserDetails(BaseModel):
 
     # Config
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             "examples": [
                 {

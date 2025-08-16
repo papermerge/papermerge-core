@@ -76,6 +76,41 @@ async def test_create_user(
     assert response.status_code == 201, response.json()
 
 
+async def test_update_user_roles(
+    db_session: AsyncSession,
+    make_group,
+    make_role,
+    auth_api_client: AuthTestClient
+):
+    await dbapi.sync_perms(db_session)
+    role1 = await make_role(name="guest1", scopes=["node.create", "node.view"])
+    role2 = await make_role(name="guest2", scopes=["tag.create", "tag.view"])
+
+    data = {
+        "username": "friedrich",
+        "email": "friedrich@example.com",
+        "group_ids": [],
+        "role_ids": [str(role1.id), str(role2.id)],
+        "is_active": True,
+        "is_superuser": False,
+        "password": "blah",
+    }
+    response = await auth_api_client.post("/users/", json=data)
+    assert response.status_code == 201, response.json()
+
+    created_user_data = schema.User(**response.json())
+    update = {
+        "role_ids": [str(role1.id)],
+    }
+
+    response = await auth_api_client.patch(f"/users/{created_user_data.id}", json=update)
+    assert response.status_code == 200, response.json()
+
+    created_user_data = schema.UserDetails(**response.json())
+    assert len(created_user_data.roles) == 1
+
+
+
 async def test_get_user_details(
     make_user, make_group, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):

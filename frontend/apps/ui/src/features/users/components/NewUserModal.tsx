@@ -52,6 +52,9 @@ export default function NewUserModal({
     const group_ids = groupsData
       .filter(g => groups.includes(g.name))
       .map(g => g.id)
+    const role_ids = rolesData
+      .filter(r => roles.includes(r.name))
+      .map(r => r.id)
     const newUserData = {
       username: userFields.username,
       email: userFields.email,
@@ -59,7 +62,8 @@ export default function NewUserModal({
       is_superuser: userFields.is_superuser || false,
       password: makeRandomString(24),
       scopes: [],
-      group_ids: group_ids
+      group_ids: group_ids,
+      role_ids: role_ids
     }
     try {
       await addNewUser(newUserData).unwrap()

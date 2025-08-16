@@ -29,6 +29,7 @@ export type CreateUser = {
   is_superuser: boolean
   is_active: boolean
   group_ids: string[]
+  role_ids: string[]
 }
 
 export type NewUser = {

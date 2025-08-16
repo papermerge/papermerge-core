@@ -83,7 +83,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       />
       <Checkbox
         my="md"
-        onClick={onCheckboxClicked}
+        onChange={onCheckboxClicked}
         label="For this group create special folders: inbox and home"
       />
       {isError && <Text c="red">{`${error}`}</Text>}

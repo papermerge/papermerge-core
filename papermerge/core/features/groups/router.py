@@ -97,6 +97,7 @@ async def create_group(
         group = await dbapi.create_group(
             db_session,
             name=pygroup.name,
+            with_special_folders=pygroup.with_special_folders
         )
     except Exception as e:
         error_msg = str(e)

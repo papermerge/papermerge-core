@@ -180,14 +180,14 @@ async def create_user(
     username: str,
     email: str,
     password: str,
-    scopes: list[str] | None = None,
-    group_ids: list[int] | None = None,
+    role_ids: list[uuid.UUID] | None = None,
+    group_ids: list[uuid.UUID] | None = None,
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    scopes = scopes or []
     group_ids = group_ids or []
+    role_ids = role_ids or []
     _user_id = user_id or uuid.uuid4()
     await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
 
@@ -210,6 +210,36 @@ async def create_user(
             lang="xxx",
         )
 
+        # Associate groups if provided
+        groups = []
+        if group_ids:
+            # Fetch groups by IDs
+            groups_result = await db_session.execute(
+                select(orm.Group).where(orm.Group.id.in_(group_ids))
+            )
+            groups = groups_result.scalars().all()
+
+            # Check if all requested groups were found
+            found_group_ids = {group.id for group in groups}
+            missing_group_ids = set(group_ids) - found_group_ids
+            if missing_group_ids:
+                raise ValueError(f"Groups not found: {missing_group_ids}")
+
+        # Associate roles if provided
+        roles = []
+        if role_ids:
+            # Fetch roles by IDs
+            roles_result = await db_session.execute(
+                select(orm.Role).where(orm.Role.id.in_(role_ids))
+            )
+            roles = roles_result.scalars().all()
+
+            # Check if all requested roles were found
+            found_role_ids = {role.id for role in roles}
+            missing_role_ids = set(role_ids) - found_role_ids
+            if missing_role_ids:
+                raise ValueError(f"Roles not found: {missing_role_ids}")
+
         user = orm.User(
             id=_user_id,
             username=username,
@@ -220,6 +250,11 @@ async def create_user(
             home_folder_id=home_folder_id,  # Set immediately
             inbox_folder_id=inbox_folder_id,  # Set immediately
         )
+            # Set relationships before adding to session
+        if groups:
+            user.groups = list(groups)
+        if roles:
+            user.roles = list(roles)
 
         db_session.add_all([user, home, inbox])
         await db_session.flush()

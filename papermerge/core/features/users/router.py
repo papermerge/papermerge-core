@@ -132,7 +132,9 @@ async def create_user(
         username=pyuser.username,
         email=pyuser.email,
         password=pyuser.password,
-        scopes=pyuser.scopes,
+        role_ids=pyuser.role_ids,
+        is_active=pyuser.is_active,
+        is_superuser=pyuser.is_superuser,
         group_ids=pyuser.group_ids,
     )
 

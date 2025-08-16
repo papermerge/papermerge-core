@@ -2,9 +2,6 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from papermerge.core.features.groups.schema import Group
-from papermerge.core.features.roles.schema import Role
-
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -12,6 +9,9 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
+
+from papermerge.core.features.groups.schema import Group
+from papermerge.core.features.roles.schema import Role
 
 
 class RemoteUser(BaseModel):
@@ -92,7 +92,7 @@ class CreateUser(BaseModel):
     password: str
     is_superuser: bool
     is_active: bool
-    scopes: list[str]  # list of scope names e.g. "user.create", "user.delete"
+    role_ids: list[UUID]
     group_ids: list[UUID]
 
     # Config

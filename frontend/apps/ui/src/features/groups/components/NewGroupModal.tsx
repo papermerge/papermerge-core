@@ -40,6 +40,11 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
     setWithSpecialFolders(false)
   }
 
+  const onCheckboxClicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.checked
+    setWithSpecialFolders(value)
+  }
+
   const onLocalSubmit = async () => {
     const updatedData = {
       name: name!,
@@ -78,6 +83,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       />
       <Checkbox
         my="md"
+        onClick={onCheckboxClicked}
         label="For this group create special folders: inbox and home"
       />
       {isError && <Text c="red">{`${error}`}</Text>}

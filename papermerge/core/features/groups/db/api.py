@@ -2,7 +2,7 @@ import logging
 import math
 import uuid
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
@@ -48,7 +48,10 @@ async def get_groups_without_pagination(db_session: AsyncSession) -> list[schema
 
 
 async def create_group(
-    db_session: AsyncSession, name: str, exists_ok: bool = False
+    db_session: AsyncSession,
+    name: str,
+    with_special_folders: bool = False,
+    exists_ok: bool = False
 ) -> schema.Group:
     if exists_ok:
         stmt = select(orm.Group).where(orm.Group.name == name)
@@ -57,9 +60,41 @@ async def create_group(
             logger.info(f"Group {name} already exists")
             return schema.Group.model_validate(result[0])
 
-    group = orm.Group(name=name)
-    db_session.add(group)
+    group_id = uuid.uuid4()
+
+    if with_special_folders:
+        await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+
+        home_id = uuid.uuid4()
+        inbox_id = uuid.uuid4()
+        db_inbox = orm.Folder(
+            id=inbox_id,
+            title=constants.INBOX_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            group_id=group_id,  # owned by group
+            lang="xxx",  # not used
+        )
+        db_home = orm.Folder(
+            id=home_id,
+            title=constants.HOME_TITLE,
+            ctype=constants.CTYPE_FOLDER,
+            group_id=group_id,  # owned by group
+            lang="xxx",  # not used
+        )
+        group = orm.Group(
+            id=group_id,
+            name=name,
+            home_folder_id=home_id,
+            inbox_folder_id=inbox_id
+        )
+
+        db_session.add_all([db_home, db_inbox, group])
+    else:
+        group = orm.Group(id=group_id, name=name)
+        db_session.add(group)
+
     await db_session.commit()
+
     result = schema.Group.model_validate(group)
 
     return result

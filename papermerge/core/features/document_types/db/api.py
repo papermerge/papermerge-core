@@ -221,23 +221,29 @@ async def get_document_type(
     session: AsyncSession, document_type_id: uuid.UUID
 ) -> schema.DocumentType:
     stmt = (
-        select(DocumentType, orm.Group)
-        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
+        select(DocumentType)
+        .options(
+            selectinload(DocumentType.custom_fields),
+            selectinload(DocumentType.group)
+        )
         .where(DocumentType.id == document_type_id)
     )
-    row = (await session.execute(stmt)).unique().one()
-    kwargs = {
-        "id": row.DocumentType.id,
-        "name": row.DocumentType.name,
-        "path_template": row.DocumentType.path_template,
-        "custom_fields": row.DocumentType.custom_fields,
-    }
-    if row.Group and row.Group.id:
-        kwargs["group_id"] = row.Group.id
-        kwargs["group_name"] = row.Group.name
 
-    result = schema.DocumentType(**kwargs)
-    return result
+    result = await session.execute(stmt)
+    document_type = result.scalar_one()
+
+    kwargs = {
+        "id": document_type.id,
+        "name": document_type.name,
+        "path_template": document_type.path_template,
+        "custom_fields": document_type.custom_fields,
+    }
+
+    if document_type.group:
+        kwargs["group_id"] = document_type.group.id
+        kwargs["group_name"] = document_type.group.name
+
+    return schema.DocumentType(**kwargs)
 
 
 async def delete_document_type(session: AsyncSession, document_type_id: uuid.UUID):

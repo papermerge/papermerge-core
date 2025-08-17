@@ -54,11 +54,11 @@ class JPEGFileResponse(FileResponse):
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.PAGE_VIEW)
+@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_thumbnail(
     document_id: uuid.UUID,
     user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.PAGE_VIEW])
+        usr_schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])
     ],
     db_session: AsyncSession = Depends(get_db),
 ):
@@ -68,7 +68,7 @@ async def get_document_thumbnail(
     """
 
     ok = await has_node_perm(
-        db_session, user_id=user.id, codename=scopes.PAGE_VIEW, node_id=document_id
+        db_session, user_id=user.id, codename=scopes.NODE_VIEW, node_id=document_id
     )
     if not ok:
         raise HTTP403Forbidden()

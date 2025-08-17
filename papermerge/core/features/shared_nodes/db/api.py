@@ -9,7 +9,7 @@ from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
 from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.types import PaginatedResponse
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, dbapi
 from papermerge.core.db import common as dbapi_common
 
 
@@ -154,7 +154,8 @@ async def get_paginated_shared_nodes(
         if row.Node.ctype == "folder":
             new_item = schema.Folder.model_validate(row.Node)
         else:
-            new_item = schema.Document.model_validate(row.Node)
+            doc = await dbapi.load_doc(db_session, row.Node.id)
+            new_item = schema.Document.model_validate(doc)
 
         new_item.perms = perms[row.Node.id]
         items.append(new_item)
@@ -359,10 +360,9 @@ async def get_shared_doc(
     user_id: uuid.UUID,
     shared_root_id: uuid.UUID | None = None,
 ) -> schema.Document:
-    stmt_doc = select(orm.Document).where(orm.Document.id == document_id)
-    db_doc = db_session.scalar(stmt_doc)
+    db_doc = await dbapi.load_doc(db_session, document_id)
     breadcrumb = await dbapi_common.get_ancestors(db_session, document_id)
-    root_shared_node_ids = get_shared_node_ids(db_session, user_id=user_id)
+    root_shared_node_ids = await get_shared_node_ids(db_session, user_id=user_id)
     shorted_breadcrumb = []
     # user will see path only until its ancestor which is marked as shared root
 

@@ -29,7 +29,8 @@ from .features.document.db.api import (
     get_doc_versions_list,
     get_doc_version_download_url,
     get_doc_id_from_doc_ver_id,
-    version_bump
+    version_bump,
+    load_doc
 )
 from .features.nodes.db.api import get_nodes, get_folder
 from .features.roles.db.api import (
@@ -93,6 +94,7 @@ __all__ = [
     "get_doc_version_download_url",
     "get_doc_id_from_doc_ver_id",
     "version_bump",
+    "load_doc",
     # users
     "create_user",
     "update_user",

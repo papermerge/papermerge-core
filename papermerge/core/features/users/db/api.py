@@ -349,7 +349,9 @@ async def get_user_scopes_from_roles(
     lowercase_roles = [role.lower() for role in roles]
 
     db_roles = (await db_session.scalars(
-        select(orm.Role).where(func.lower(orm.Role.name).in_(lowercase_roles))
+        select(orm.Role).options(
+            selectinload(orm.Role.permissions)
+        ).where(func.lower(orm.Role.name).in_(lowercase_roles))
     )).all()
 
     if db_user.is_superuser:

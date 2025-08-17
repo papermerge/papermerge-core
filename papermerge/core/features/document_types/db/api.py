@@ -218,7 +218,7 @@ async def create_document_type(
 
 
 async def get_document_type(
-        session: AsyncSession, document_type_id: uuid.UUID
+    session: AsyncSession, document_type_id: uuid.UUID
 ) -> schema.DocumentType:
     stmt = (
         select(DocumentType)

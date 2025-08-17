@@ -26,6 +26,7 @@ class DocumentType(Base):
     custom_fields: Mapped[list["CustomField"]] = relationship(  #  noqa: F821
         secondary="document_types_custom_fields"
     )
+    group: Mapped["Group"] = relationship("Group")
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
     group_id: Mapped[UUID] = mapped_column(ForeignKey("groups.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())

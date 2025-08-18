@@ -1,0 +1,28 @@
+version: 2
+updates:
+
+  - package-ecosystem: github-actions
+    directory: "/.github/workflows"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: docker
+    directories:
+      - "/docker/frontend"
+      - "/docker/standard"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: npm # also includes yarn and pnpm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: pip # also includes poetry
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10

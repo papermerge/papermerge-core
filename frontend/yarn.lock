@@ -3723,9 +3723,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^15.6.0":
-  version: 15.6.0
-  resolution: "react-i18next@npm:15.6.0"
+"react-i18next@npm:^15.6.1":
+  version: 15.6.1
+  resolution: "react-i18next@npm:15.6.1"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
     html-parse-stringify: "npm:^3.0.1"
@@ -3740,7 +3740,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10c0/916b9afaa6e2c71ddc3ffb12ab47759a8ad0d6d2d36fc1c73a431554d51b6b66750f6f8c9814db5e12f91c3e68b97bf87de51ad303b4fc8c1b91eb245da8c9a9
+  checksum: 10c0/10cd131005a70a493e307f4f710ea9921d5a955a5281064cad79162e5051e2bcfc119f50c7bee0fad06e33a1795308a006089d5b67969d52b66afbe149514305
   languageName: node
   linkType: hard
 
@@ -4383,7 +4383,7 @@ __metadata:
     prettier: "npm:^3.6.2"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    react-i18next: "npm:^15.6.0"
+    react-i18next: "npm:^15.6.1"
     react-redux: "npm:^9.2.0"
     react-router: "npm:^7.6.3"
     react-router-dom: "npm:^7.6.3"

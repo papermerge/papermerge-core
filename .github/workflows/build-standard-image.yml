@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build ${{ github.ref_name }} Prod Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: papermerge/papermerge:${{ github.ref_name }}

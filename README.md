@@ -51,7 +51,7 @@ In order to start Papermerge App with the most basic setup use following command
     docker run -p 8000:80 \
         -e PAPERMERGE__SECURITY__SECRET_KEY=abc \
         -e PAPERMERGE__AUTH__PASSWORD=123 \
-        papermerge/papermerge:3.5
+        papermerge/papermerge:3.5.3
 
 For more info about various docker compose scenarios
 check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).

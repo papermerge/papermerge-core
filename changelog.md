@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.5.3 - not yet released
+## 3.5.3 - 2025-08-18
 
 - Performance - async instead of sync: all REST API/DB operations are changed to async
 - add home/inbox folder DB level NOT NULL constraints

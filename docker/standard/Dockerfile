@@ -12,7 +12,7 @@ RUN corepack enable && \
     yarn workspace ui build
 
 FROM papermerge/auth-server:1.1.5 AS auth_server
-FROM python:3.13-alpine AS papermerge_core
+FROM python:3.13.7-alpine AS papermerge_core
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3

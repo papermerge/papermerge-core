@@ -5,16 +5,20 @@ from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 
+from papermerge.core.utils.tz import tz_aware_datetime_now
+
 
 class AuditColumns:
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        server_default=func.now()
+        default=lambda: tz_aware_datetime_now(),
+        nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
+        default=lambda: tz_aware_datetime_now(),
+        onupdate=func.now(),
+        nullable=False
     )
     deleted_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),

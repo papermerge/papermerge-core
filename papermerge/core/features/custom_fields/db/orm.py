@@ -5,17 +5,17 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
 
-class CustomField(Base):
+class CustomField(Base, AuditColumns):
     __tablename__ = "custom_fields"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
     type: Mapped[str]
     extra_data: Mapped[str] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", name="custom_fields_user_id_fkey"), nullable=True
     )

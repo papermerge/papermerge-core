@@ -1,9 +1,9 @@
-from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func, UniqueConstraint, CheckConstraint
+from sqlalchemy import ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
 
@@ -17,7 +17,7 @@ class DocumentTypeCustomField(Base):
     )
 
 
-class DocumentType(Base):
+class DocumentType(Base, AuditColumns):
     __tablename__ = "document_types"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -29,7 +29,6 @@ class DocumentType(Base):
     group: Mapped["Group"] = relationship("Group")
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
     group_id: Mapped[UUID] = mapped_column(ForeignKey("groups.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
 
     __table_args__ = (
         UniqueConstraint("name", "user_id", name="unique document type per user"),

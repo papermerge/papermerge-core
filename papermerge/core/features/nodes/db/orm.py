@@ -1,16 +1,17 @@
 import uuid
-from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, func, UniqueConstraint, CheckConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship, deferred
+from sqlalchemy import ForeignKey, String, UniqueConstraint, \
+    CheckConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.features.users.db.orm import User
 from papermerge.core.db.base import Base
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.types import CType
 
 
-class Node(Base):
+class Node(Base, AuditColumns):
     __tablename__ = "nodes"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
@@ -50,10 +51,6 @@ class Node(Base):
     )
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
     tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(), onupdate=func.now()
-    )
 
     __mapper_args__ = {
         "polymorphic_identity": "node",

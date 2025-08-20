@@ -5,12 +5,14 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, func, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 from papermerge.core.features.groups.db.orm import user_groups_association
 from papermerge.core.features.roles.db.orm import users_roles_association
 from papermerge.core import constants as const
 
-class User(Base):
+
+class User(Base, AuditColumns):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4)
@@ -45,7 +47,6 @@ class User(Base):
         viewonly=True,
         cascade="delete",
     )
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     date_joined: Mapped[datetime] = mapped_column(insert_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         insert_default=func.now(), onupdate=func.now()

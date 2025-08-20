@@ -5,10 +5,11 @@ from pathlib import Path
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.nodes.db.orm import Node
-from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus
+from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus, MimeType
 from papermerge.core.pathlib import abs_docver_path
 
 
@@ -52,19 +53,26 @@ class Document(Node):
     }
 
 
-class DocumentVersion(Base):
+class DocumentVersion(Base, AuditColumns):
     __tablename__ = "document_versions"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int] = mapped_column(default=1)
     file_name: Mapped[str] = mapped_column(nullable=True)
+    size: Mapped[int] = mapped_column(default=0)
+    mime_type: Mapped[MimeType] = mapped_column(
+        Enum(MimeType, name="document_version_mime_type"),
+        nullable=True
+    )
+    checksum: Mapped[str] = mapped_column(nullable=True)
+    checksum_algorithm: Mapped[str] = mapped_column(nullable=True)
     document_id: Mapped[UUID] = mapped_column(
         ForeignKey("documents.node_id", ondelete="CASCADE")
     )
     document: Mapped[Document] = relationship(back_populates="versions")
     lang: Mapped[str] = mapped_column(default="deu")
     text: Mapped[str] = mapped_column(nullable=True)
-    size: Mapped[int] = mapped_column(default=0)
+
     page_count: Mapped[int] = mapped_column(default=0)
     short_description: Mapped[str] = mapped_column(nullable=True)
     pages: Mapped[list["Page"]] = relationship(

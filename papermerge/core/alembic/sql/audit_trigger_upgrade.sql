@@ -131,9 +131,7 @@ CREATE OR REPLACE FUNCTION set_audit_context(
     p_user_id uuid DEFAULT NULL,
     p_username text DEFAULT NULL,
     p_session_id text DEFAULT NULL,
-    p_ip_address text DEFAULT NULL,
-    p_reason text DEFAULT NULL,
-    p_correlation_id text DEFAULT NULL
+    p_reason text DEFAULT NULL
 )
 RETURNS void AS $$
 BEGIN

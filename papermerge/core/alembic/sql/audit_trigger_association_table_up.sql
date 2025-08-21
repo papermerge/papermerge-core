@@ -1,5 +1,6 @@
+-- Specialized trigger function for association tables with IDs in audit messages
 CREATE OR REPLACE FUNCTION audit_association_trigger_function()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     audit_row audit_log%ROWTYPE;
     audit_message text;
@@ -7,70 +8,104 @@ DECLARE
     entity2_name text;
     node_name_or_path text;
     custom_field_label text;
+    user_id_val uuid;
+    role_id_val uuid;
+    group_id_val uuid;
+    permission_id_val uuid;
+    node_id_val uuid;
+    tag_id_val uuid;
+    doc_type_id_val uuid;
+    custom_field_id_val uuid;
 BEGIN
-    -- Generate human-readable audit messages
+    -- Generate human-readable audit messages with IDs
     CASE TG_TABLE_NAME
         WHEN 'users_roles' THEN
-            SELECT username INTO entity1_name FROM users WHERE id = COALESCE(NEW.user_id, OLD.user_id);
-            SELECT name INTO entity2_name FROM roles WHERE id = COALESCE(NEW.role_id, OLD.role_id);
+            user_id_val = COALESCE(NEW.user_id, OLD.user_id);
+            role_id_val = COALESCE(NEW.role_id, OLD.role_id);
+
+            SELECT username INTO entity1_name FROM users WHERE id = user_id_val;
+            SELECT name INTO entity2_name FROM roles WHERE id = role_id_val;
 
             IF TG_OP = 'INSERT' THEN
-                audit_message = format('User "%s" was assigned role "%s"', entity1_name, entity2_name);
+                audit_message = format('User "%s" (%s) was assigned role "%s" (%s)',
+                    entity1_name, user_id_val, entity2_name, role_id_val);
             ELSIF TG_OP = 'DELETE' THEN
-                audit_message = format('User "%s" was removed from role "%s"', entity1_name, entity2_name);
+                audit_message = format('User "%s" (%s) was removed from role "%s" (%s)',
+                    entity1_name, user_id_val, entity2_name, role_id_val);
             END IF;
 
         WHEN 'users_groups' THEN
-            SELECT username INTO entity1_name FROM users WHERE id = COALESCE(NEW.user_id, OLD.user_id);
-            SELECT name INTO entity2_name FROM groups WHERE id = COALESCE(NEW.group_id, OLD.group_id);
+            user_id_val = COALESCE(NEW.user_id, OLD.user_id);
+            group_id_val = COALESCE(NEW.group_id, OLD.group_id);
+
+            SELECT username INTO entity1_name FROM users WHERE id = user_id_val;
+            SELECT name INTO entity2_name FROM groups WHERE id = group_id_val;
 
             IF TG_OP = 'INSERT' THEN
-                audit_message = format('User "%s" was added to group "%s"', entity1_name, entity2_name);
+                audit_message = format('User "%s" (%s) was added to group "%s" (%s)',
+                    entity1_name, user_id_val, entity2_name, group_id_val);
             ELSIF TG_OP = 'DELETE' THEN
-                audit_message = format('User "%s" was removed from group "%s"', entity1_name, entity2_name);
+                audit_message = format('User "%s" (%s) was removed from group "%s" (%s)',
+                    entity1_name, user_id_val, entity2_name, group_id_val);
             END IF;
 
         WHEN 'roles_permissions' THEN
-            SELECT name INTO entity1_name FROM roles WHERE id = COALESCE(NEW.role_id, OLD.role_id);
-            SELECT name INTO entity2_name FROM permissions WHERE id = COALESCE(NEW.permission_id, OLD.permission_id);
+            role_id_val = COALESCE(NEW.role_id, OLD.role_id);
+            permission_id_val = COALESCE(NEW.permission_id, OLD.permission_id);
+
+            SELECT name INTO entity1_name FROM roles WHERE id = role_id_val;
+            SELECT name INTO entity2_name FROM permissions WHERE id = permission_id_val;
 
             IF TG_OP = 'INSERT' THEN
-                audit_message = format('Permission "%s" was granted to role "%s"', entity2_name, entity1_name);
+                audit_message = format('Permission "%s" (%s) was granted to role "%s" (%s)',
+                    entity2_name, permission_id_val, entity1_name, role_id_val);
             ELSIF TG_OP = 'DELETE' THEN
-                audit_message = format('Permission "%s" was revoked from role "%s"', entity2_name, entity1_name);
+                audit_message = format('Permission "%s" (%s) was revoked from role "%s" (%s)',
+                    entity2_name, permission_id_val, entity1_name, role_id_val);
             END IF;
 
         WHEN 'nodes_tags' THEN
+            node_id_val = COALESCE(NEW.node_id, OLD.node_id);
+            tag_id_val = COALESCE(NEW.tag_id, OLD.tag_id);
+
             -- Get node name or path (assuming nodes table has name/path field)
-            SELECT COALESCE(name, path, 'Node ID: ' || id::text)
+            SELECT COALESCE(title, 'Unnamed Node')
             INTO node_name_or_path
             FROM nodes
-            WHERE id = COALESCE(NEW.node_id, OLD.node_id);
+            WHERE id = node_id_val;
 
-            SELECT name INTO entity2_name FROM tags WHERE id = COALESCE(NEW.tag_id, OLD.tag_id);
+            SELECT name INTO entity2_name FROM tags WHERE id = tag_id_val;
 
             IF TG_OP = 'INSERT' THEN
-                audit_message = format('Tag "%s" was added to node "%s"', entity2_name, node_name_or_path);
+                audit_message = format('Tag "%s" (%s) was added to node "%s" (%s)',
+                    entity2_name, tag_id_val, node_name_or_path, node_id_val);
             ELSIF TG_OP = 'DELETE' THEN
-                audit_message = format('Tag "%s" was removed from node "%s"', entity2_name, node_name_or_path);
+                audit_message = format('Tag "%s" (%s) was removed from node "%s" (%s)',
+                    entity2_name, tag_id_val, node_name_or_path, node_id_val);
             END IF;
 
         WHEN 'document_types_custom_fields' THEN
-            SELECT name INTO entity1_name FROM document_types WHERE id = COALESCE(NEW.document_type_id, OLD.document_type_id);
+            doc_type_id_val = COALESCE(NEW.document_type_id, OLD.document_type_id);
+            custom_field_id_val = COALESCE(NEW.custom_field_id, OLD.custom_field_id);
+
+            SELECT name INTO entity1_name FROM document_types WHERE id = doc_type_id_val;
 
             -- Get custom field name/label (assuming custom_fields table has name or label field)
-            SELECT COALESCE(label, name, 'Field ID: ' || id::text)
+            SELECT COALESCE(name, 'Unnamed Field')
             INTO custom_field_label
             FROM custom_fields
-            WHERE id = COALESCE(NEW.custom_field_id, OLD.custom_field_id);
+            WHERE id = custom_field_id_val;
 
             IF TG_OP = 'INSERT' THEN
-                audit_message = format('Custom field "%s" was added to document type "%s"', custom_field_label, entity1_name);
+                audit_message = format('Custom field "%s" (%s) was added to document type "%s" (%s)',
+                    custom_field_label, custom_field_id_val, entity1_name, doc_type_id_val);
             ELSIF TG_OP = 'DELETE' THEN
-                audit_message = format('Custom field "%s" was removed from document type "%s"', custom_field_label, entity1_name);
+                audit_message = format('Custom field "%s" (%s) was removed from document type "%s" (%s)',
+                    custom_field_label, custom_field_id_val, entity1_name, doc_type_id_val);
             ELSIF TG_OP = 'UPDATE' THEN
                 -- Handle case where association table has additional fields like sort_order, is_required, etc.
-                audit_message = format('Custom field "%s" configuration updated for document type "%s"', custom_field_label, entity1_name);
+                audit_message = format('Custom field "%s" (%s) configuration updated for document type "%s" (%s)',
+                    custom_field_label, custom_field_id_val, entity1_name, doc_type_id_val);
             END IF;
     END CASE;
 
@@ -82,7 +117,7 @@ BEGIN
     audit_row.timestamp = now();
     audit_row.old_values = CASE WHEN TG_OP != 'INSERT' THEN row_to_json(OLD)::jsonb END;
     audit_row.new_values = CASE WHEN TG_OP != 'DELETE' THEN row_to_json(NEW)::jsonb END;
-    audit_row.audit_message = audit_message; -- Human-readable message
+    audit_row.audit_message = audit_message; -- Human-readable message with IDs
 
     -- Get application context
     BEGIN
@@ -103,6 +138,7 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
 
 -- User-Role associations
 CREATE TRIGGER audit_users_roles_trigger

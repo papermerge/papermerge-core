@@ -26,11 +26,11 @@ BEGIN
         -- Calculate changed fields
         SELECT jsonb_agg(key) INTO changed_fields
         FROM (
-            SELECT key FROM jsonb_each(old_data)
-            EXCEPT
-            SELECT key FROM jsonb_each(new_data)
-            WHERE old_data->>key IS DISTINCT FROM new_data->>key
-        ) AS changed_keys(key);
+            SELECT o.key
+            FROM jsonb_each(old_data) o
+            JOIN jsonb_each(new_data) n USING (key)
+            WHERE o.value IS DISTINCT FROM n.value
+        ) diff;
     END IF;
 
     -- Populate audit record

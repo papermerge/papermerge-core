@@ -51,6 +51,8 @@ class AuditLog(Base):
     old_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     new_values: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     changed_fields: Mapped[Optional[list[str]]] = mapped_column(JSONB, nullable=True)  # List of changed field names
+    # Used by association tables trigger
+    audit_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Why (business context - application level only)
     reason: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)

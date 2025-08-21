@@ -258,7 +258,9 @@ async def update_document_type(
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
 ) -> schema.DocumentType:
-    stmt = select(DocumentType).where(DocumentType.id == document_type_id)
+    stmt = select(DocumentType).options(
+        selectinload(orm.DocumentType.custom_fields)
+    ).where(DocumentType.id == document_type_id)
     doc_type: DocumentType = (await session.execute(stmt)).scalars().one()
 
     if attrs.custom_field_ids:

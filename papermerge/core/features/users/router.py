@@ -14,6 +14,7 @@ from papermerge.core.tasks import delete_user_data
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 router = APIRouter(
     prefix="/users",
@@ -127,16 +128,21 @@ async def create_user(
 
     Required scope: `{scope}`
     """
-    user, error = await dbapi.create_user(
+    async with AsyncAuditContext(
         db_session,
-        username=pyuser.username,
-        email=pyuser.email,
-        password=pyuser.password,
-        role_ids=pyuser.role_ids,
-        is_active=pyuser.is_active,
-        is_superuser=pyuser.is_superuser,
-        group_ids=pyuser.group_ids,
-    )
+        user_id=cur_user.id,
+        username=cur_user.username
+    ):
+        user, error = await dbapi.create_user(
+            db_session,
+            username=pyuser.username,
+            email=pyuser.email,
+            password=pyuser.password,
+            role_ids=pyuser.role_ids,
+            is_active=pyuser.is_active,
+            is_superuser=pyuser.is_superuser,
+            group_ids=pyuser.group_ids,
+        )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -212,7 +218,12 @@ async def delete_user(
         if os.environ.get("PAPERMERGE__REDIS__URL"):
             delete_user_data.apply_async(kwargs={"user_id": str(user_id)})
         else:
-            await dbapi.delete_user(db_session, user_id=user_id)
+            async with AsyncAuditContext(
+                db_session,
+                user_id=user.id,
+                username=user.username
+            ):
+                await dbapi.delete_user(db_session, user_id=user_id)
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=469, detail=str(e))
@@ -232,7 +243,12 @@ async def update_user(
 
     Required scope: `{scope}`
     """
-    user, error = await dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
+    async with AsyncAuditContext(
+        db_session,
+        user_id=cur_user.id,
+        username=cur_user.username
+    ):
+        user, error = await dbapi.update_user(db_session, user_id=user_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=404, detail=error.model_dump())

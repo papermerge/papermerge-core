@@ -15,6 +15,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -160,7 +161,12 @@ async def create_custom_field(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
     try:
-        custom_field = await dbapi.create_custom_field(db_session, **kwargs)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            custom_field = await dbapi.create_custom_field(db_session, **kwargs)
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Duplicate custom field name")
 
@@ -190,7 +196,12 @@ async def delete_custom_field(
     Required scope: `{scope}`
     """
     try:
-        await dbapi.delete_custom_field(db_session, custom_field_id)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.delete_custom_field(db_session, custom_field_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
 
@@ -231,9 +242,14 @@ async def update_custom_field(
     else:
         attrs.user_id = cur_user.id
     try:
-        cfield: cf_schema.CustomField = await dbapi.update_custom_field(
-            db_session, custom_field_id=custom_field_id, attrs=attrs
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=cur_user.id,
+            username=cur_user.username
+        ):
+            cfield: cf_schema.CustomField = await dbapi.update_custom_field(
+                db_session, custom_field_id=custom_field_id, attrs=attrs
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Not found")
 

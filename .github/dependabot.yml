@@ -1,12 +1,23 @@
 version: 2
 updates:
 
+  # GitHub Actions - Master branch
   - package-ecosystem: github-actions
     directory: "/.github/workflows"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    target-branch: master
 
+  # GitHub Actions - v3.5 branch
+  - package-ecosystem: github-actions
+    directory: "/.github/workflows"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    target-branch: v3.5
+
+  # Docker - Master branch
   - package-ecosystem: docker
     directories:
       - "/docker/frontend"
@@ -14,15 +25,46 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    target-branch: master
 
+  # Docker - v3.5 branch
+  - package-ecosystem: docker
+    directories:
+      - "/docker/frontend"
+      - "/docker/standard"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    target-branch: v3.5
+
+  # NPM - Master branch
   - package-ecosystem: npm # also includes yarn and pnpm
     directory: "/frontend"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    target-branch: master
 
+  # NPM - v3.5 branch
+  - package-ecosystem: npm # also includes yarn and pnpm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    target-branch: v3.5
+
+  # Python pip - Master branch
   - package-ecosystem: pip # also includes poetry
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    target-branch: master
+
+  # Python pip - v3.5 branch
+  - package-ecosystem: pip # also includes poetry
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    target-branch: v3.5

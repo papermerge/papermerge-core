@@ -45,6 +45,7 @@ export const DOCUMENT_TYPE_CREATE = "document_type.create"
 export const DOCUMENT_TYPE_VIEW = "document_type.view"
 export const DOCUMENT_TYPE_UPDATE = "document_type.update"
 export const DOCUMENT_TYPE_DELETE = "document_type.delete"
+export const AUDIT_LOG_VIEW = "audit_log.view"
 
 export const ALL_PERMS = [
   DOCUMENT_DOWNLOAD,
@@ -85,5 +86,6 @@ export const ALL_PERMS = [
   NODE_UPDATE,
   NODE_DELETE,
   TASK_OCR,
-  OCRLANG_VIEW
+  OCRLANG_VIEW,
+  AUDIT_LOG_VIEW
 ]

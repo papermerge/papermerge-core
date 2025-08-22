@@ -107,6 +107,15 @@ async def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
+
+    if not await dbapi_common.has_node_perm(
+            db_session,
+            node_id=pynode.parent_id,
+            codename=scopes.NODE_CREATE,
+            user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
     if pynode.ctype == "folder":
         attrs = dict(
             title=pynode.title,
@@ -143,14 +152,6 @@ async def create_node(
             attrs["id"] = pynode.id
 
         new_document = schema.NewDocument(**attrs)
-
-        if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=pynode.parent_id,
-            codename=scopes.NODE_CREATE,
-            user_id=user.id,
-        ):
-            raise exc.HTTP403Forbidden()
 
         async with AsyncAuditContext(
             db_session,

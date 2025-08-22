@@ -1,7 +1,9 @@
 import uuid
+
 from sqlalchemy import ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
 
@@ -16,7 +18,7 @@ class NodeTagsAssociation(Base):
     )
 
 
-class Tag(Base):
+class Tag(Base, AuditColumns):
     __tablename__ = "tags"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

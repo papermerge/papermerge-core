@@ -14,6 +14,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
 from papermerge.core.schemas.error import ErrorResponse
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 router = APIRouter(
     prefix="/roles",
@@ -104,11 +105,16 @@ async def create_role(
     - **422**: Role name is empty or contains only whitespace
     - **500**: System configuration error or unexpected server error
     """
-    role, error = await dbapi.create_role(
+    async with AsyncAuditContext(
         db_session,
-        name=pyrole.name,
-        scopes=pyrole.scopes,
-    )
+        user_id=user.id,
+        username=user.username
+    ):
+        role, error = await dbapi.create_role(
+            db_session,
+            name=pyrole.name,
+            scopes=pyrole.scopes,
+        )
     if error:
         if "already exists" in error.lower():
             raise HTTPException(
@@ -162,7 +168,12 @@ async def delete_role(
     Required scope: `{scope}`
     """
     try:
-        await dbapi.delete_role(db_session, role_id)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.delete_role(db_session, role_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Role not found")
 
@@ -182,9 +193,14 @@ async def update_role(
     Required scope: `{scope}`
     """
     try:
-        role: schema.RoleDetails = await dbapi.update_role(
-            db_session, role_id=role_id, attrs=attrs
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=cur_user.id,
+            username=cur_user.username
+        ):
+            role: schema.RoleDetails = await dbapi.update_role(
+                db_session, role_id=role_id, attrs=attrs
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Role not found")
 

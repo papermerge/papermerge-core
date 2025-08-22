@@ -3,7 +3,6 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
 
 # this is the Alembic Config object, which provides
@@ -23,6 +22,16 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from papermerge.core.db.base import Base
+from papermerge.core.features.users.db.orm import User, user_groups_association  # noqa
+from papermerge.core.features.document.db.orm import Document, DocumentVersion, Page # noqa
+from papermerge.core.features.nodes.db.orm import Folder, Node # noqa
+from papermerge.core.features.tags.db.orm import Tag, NodeTagsAssociation # noqa
+from papermerge.core.features.custom_fields.db.orm import CustomField, CustomFieldValue # noqa
+from papermerge.core.features.groups.db.orm import Group # noqa
+from papermerge.core.features.roles.db.orm import Role, Permission, roles_permissions_association # noqa
+from papermerge.core.features.document_types.db.orm import DocumentType, DocumentTypeCustomField # noqa
+from papermerge.core.features.shared_nodes.db.orm import SharedNode # noqa
+from papermerge.core.features.audit.db.orm import AuditLog  # noqa
 
 target_metadata = Base.metadata
 

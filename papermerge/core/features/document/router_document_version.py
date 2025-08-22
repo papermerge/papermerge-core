@@ -60,7 +60,7 @@ async def download_document_version(
         if not await dbapi_common.has_node_perm(
                 db_session,
                 node_id=doc_id,
-                codename=scopes.DOCUMENT_DOWNLOAD,
+                codename=scopes.NODE_VIEW,
                 user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
@@ -102,6 +102,7 @@ async def get_doc_ver_download_url(
     Returns URL for downloading given document version
 
     Required scope: `{scope}`
+    For this action user requires "node.view" permission as well.
     """
     try:
         doc_id = await dbapi.get_doc_id_from_doc_ver_id(

@@ -1,13 +1,14 @@
 import uuid
+from datetime import datetime
 
 from sqlalchemy import ForeignKey, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
 
-class SharedNode(Base):
+class SharedNode(Base, AuditColumns):
     __tablename__ = "shared_nodes"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

@@ -13,6 +13,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -166,7 +167,12 @@ async def create_document_type(
         kwargs["user_id"] = user.id
 
     try:
-        document_type = await dbapi.create_document_type(db_session, **kwargs)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            document_type = await dbapi.create_document_type(db_session, **kwargs)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
@@ -200,7 +206,12 @@ async def delete_document_type(
     Required scope: `{scope}`
     """
     try:
-        await dbapi.delete_document_type(db_session, document_type_id)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.delete_document_type(db_session, document_type_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 
@@ -245,11 +256,16 @@ async def update_document_type(
         else:
             attrs.user_id = cur_user.id
 
-        dtype: schema.DocumentType = await dbapi.update_document_type(
+        async with AsyncAuditContext(
             db_session,
-            document_type_id=document_type_id,
-            attrs=attrs,
-        )
+            user_id=cur_user.id,
+            username=cur_user.username
+        ):
+            dtype: schema.DocumentType = await dbapi.update_document_type(
+                db_session,
+                document_type_id=document_type_id,
+                attrs=attrs,
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
 

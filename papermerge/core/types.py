@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from datetime import date
 from enum import Enum
 from typing import Generic, Literal, TypeAlias, TypeVar
-from fastapi import Query
 
+from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
@@ -88,3 +88,10 @@ class ImagePreviewSize(str, Enum):
     md = "md"  # medium
     lg = "lg"  # large
     xl = "xl"  # extra large
+
+
+class MimeType(str, Enum):
+    application_pdf = "application/pdf"
+    image_jpeg = "image/jpeg"
+    image_png = "image/png"
+    image_tiff = "image/tiff"

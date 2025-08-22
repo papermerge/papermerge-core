@@ -4,8 +4,8 @@ from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import CheckConstraint
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
-
 
 roles_permissions_association = Table(
     "roles_permissions",
@@ -48,7 +48,7 @@ class Permission(Base):
         return f"Permission({self.name=}, {self.codename=})"
 
 
-class Role(Base):
+class Role(Base, AuditColumns):
     __tablename__ = "roles"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

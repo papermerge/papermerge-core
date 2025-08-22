@@ -31,6 +31,7 @@ from papermerge.core.types import OrderEnum, PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 router = APIRouter(
     prefix="/documents",
@@ -78,11 +79,16 @@ async def update_document_custom_field_values(
         raise exc.HTTP403Forbidden()
 
     try:
-        updated_entries = await dbapi.update_doc_cfv(
-            db_session,
-            document_id=document_id,
-            custom_fields=custom_fields,
-        )
+        async with AsyncAuditContext(
+                db_session,
+                user_id=user.id,
+                username=user.username
+        ):
+            updated_entries = await dbapi.update_doc_cfv(
+                db_session,
+                document_id=document_id,
+                custom_fields=custom_fields,
+            )
     except NoResultFound:
         raise exc.HTTP404NotFound()
 
@@ -187,14 +193,19 @@ async def upload_file(
     ):
         raise exc.HTTP403Forbidden()
 
-    doc, error = await dbapi.upload(
-        db_session,
-        document_id=document_id,
-        size=file.size,
-        content=io.BytesIO(content),
-        file_name=file.filename,
-        content_type=file.headers.get("content-type"),
-    )
+    async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+    ):
+        doc, error = await dbapi.upload(
+            db_session,
+            document_id=document_id,
+            size=file.size,
+            content=io.BytesIO(content),
+            file_name=file.filename,
+            content_type=file.headers.get("content-type"),
+        )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -347,11 +358,16 @@ async def update_document_type(
         ):
             raise exc.HTTP403Forbidden()
 
-        await dbapi.update_doc_type(
-            db_session,
-            document_id=document_id,
-            document_type_id=document_type.document_type_id,
-        )
+        async with AsyncAuditContext(
+                db_session,
+                user_id=user.id,
+                username=user.username
+        ):
+            await dbapi.update_doc_type(
+                db_session,
+                document_id=document_id,
+                document_type_id=document_type.document_type_id,
+            )
     except NoResultFound:
         raise exc.HTTP404NotFound()
 

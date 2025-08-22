@@ -13,6 +13,7 @@ from papermerge.core.features.groups.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 router = APIRouter(
     prefix="/groups",
@@ -94,11 +95,16 @@ async def create_group(
     Required scope: `{scope}`
     """
     try:
-        group = await dbapi.create_group(
+        async with AsyncAuditContext(
             db_session,
-            name=pygroup.name,
-            with_special_folders=pygroup.with_special_folders
-        )
+            user_id=user.id,
+            username=user.username
+        ):
+            group = await dbapi.create_group(
+                db_session,
+                name=pygroup.name,
+                with_special_folders=pygroup.with_special_folders
+            )
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
@@ -131,7 +137,12 @@ async def delete_group(
     Required scope: `{scope}`
     """
     try:
-        await dbapi.delete_group(db_session, group_id)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.delete_group(db_session, group_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Group not found")
 
@@ -177,9 +188,14 @@ async def update_group(
     Required scope: `{scope}`
     """
     try:
-        group: schema.Group = await dbapi.update_group(
-            db_session, group_id=group_id, attrs=attrs
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=cur_user.id,
+            username=cur_user.username
+        ):
+            group: schema.Group = await dbapi.update_group(
+                db_session, group_id=group_id, attrs=attrs
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Group not found")
 

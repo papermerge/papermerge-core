@@ -203,6 +203,7 @@ async def create_folder(
         parent_id=attrs.parent_id,
         ctype="folder",
     )
+
     db_session.add(folder)
     try:
         await db_session.commit()

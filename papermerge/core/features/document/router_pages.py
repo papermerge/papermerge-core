@@ -27,11 +27,11 @@ router = APIRouter(
 )
 
 @router.post("/")
-@utils.docstring_parameter(scope=scopes.PAGE_UPDATE)
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def apply_page_operations(
     items: List[schema.PageAndRotOp],
     user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.PAGE_UPDATE])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
@@ -60,9 +60,9 @@ async def apply_page_operations(
 
 
 @router.post("/move")
-@utils.docstring_parameter(scope=scopes.PAGE_MOVE)
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def move_pages(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.PAGE_MOVE])],
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])],
     arg: schema.MovePagesIn,
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.MovePagesOut:
@@ -95,10 +95,10 @@ async def move_pages(
 
 
 @router.post("/extract")
-@utils.docstring_parameter(scope=scopes.PAGE_EXTRACT)
+@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def extract_pages(
     user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.PAGE_EXTRACT])
+        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     arg: schema.ExtractPagesIn,
     db_session: AsyncSession = Depends(get_db),

@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
-
 
 user_groups_association = Table(
     "users_groups",
@@ -21,7 +21,7 @@ user_groups_association = Table(
 )
 
 
-class Group(Base):
+class Group(Base, AuditColumns):
     __tablename__ = "groups"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

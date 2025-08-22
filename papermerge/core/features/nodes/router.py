@@ -21,6 +21,7 @@ from papermerge.core.types import PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -106,6 +107,15 @@ async def create_node(
     The only nodes with `parent_id` set to empty value are "user custom folders"
     like Home and Inbox.
     """
+
+    if not await dbapi_common.has_node_perm(
+            db_session,
+            node_id=pynode.parent_id,
+            codename=scopes.NODE_CREATE,
+            user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
     if pynode.ctype == "folder":
         attrs = dict(
             title=pynode.title,
@@ -115,7 +125,13 @@ async def create_node(
         if pynode.id:
             attrs["id"] = pynode.id
         new_folder = schema.NewFolder(**attrs)
-        created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
+
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
     else:
         # if user does not specify document's language, get that
         # value from user preferences
@@ -137,15 +153,12 @@ async def create_node(
 
         new_document = schema.NewDocument(**attrs)
 
-        if not await dbapi_common.has_node_perm(
+        async with AsyncAuditContext(
             db_session,
-            node_id=pynode.parent_id,
-            codename=scopes.NODE_CREATE,
             user_id=user.id,
+            username=user.username
         ):
-            raise exc.HTTP403Forbidden()
-
-        created_node, error = await doc_dbapi.create_document(db_session, new_document)
+            created_node, error = await doc_dbapi.create_document(db_session, new_document)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -188,9 +201,14 @@ async def update_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    updated_node = await nodes_dbapi.update_node(
-        db_session, node_id=node_id, user_id=user.id, attrs=node
-    )
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        updated_node = await nodes_dbapi.update_node(
+            db_session, node_id=node_id, user_id=user.id, attrs=node
+        )
 
     send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
 
@@ -232,9 +250,14 @@ async def delete_nodes(
         ):
             raise exc.HTTP403Forbidden()
 
-    error = await nodes_dbapi.delete_nodes(
-        db_session, node_ids=list_of_uuids, user_id=user.id
-    )
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        error = await nodes_dbapi.delete_nodes(
+            db_session, node_ids=list_of_uuids, user_id=user.id
+        )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -313,11 +336,16 @@ async def move_nodes(
         ):
             raise exc.HTTP403Forbidden()
 
-        affected_row_count = await nodes_dbapi.move_nodes(
-            db_session,
-            source_ids=params.source_ids,
-            target_id=params.target_id,
-        )
+        async with AsyncAuditContext(
+                db_session,
+                user_id=user.id,
+                username=user.username
+        ):
+            affected_row_count = await nodes_dbapi.move_nodes(
+                db_session,
+                source_ids=params.source_ids,
+                target_id=params.target_id,
+            )
     except NoResultFound as e:
         logger.error(e, exc_info=True)
         error = schema.Error(

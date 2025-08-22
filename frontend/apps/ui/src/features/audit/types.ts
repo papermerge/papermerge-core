@@ -1,0 +1,11 @@
+export type AuditOperation = "INSERT" | "UPDATE" | "DELETE" | "TRUNCATE"
+
+export type AuditLog = {
+  id: string
+  table_name: string
+  record_id: string
+  operation: AuditOperation
+  timestamp: string
+  user_id: string
+  username: string
+}

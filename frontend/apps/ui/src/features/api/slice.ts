@@ -1,7 +1,7 @@
-import { getBaseURL } from "@/utils"
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
+import {getBaseURL} from "@/utils"
+import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react"
 
-import type { RootState } from "@/app/types"
+import type {RootState} from "@/app/types"
 
 const getKeepUnusedDataFor = function () {
   const keep_unused_data_for = import.meta.env.VITE_KEEP_UNUSED_DATA_FOR
@@ -73,7 +73,8 @@ export const apiSlice = createApi({
     "DocumentCustomField", // custom fields associated to specific document (via document type)
     "DocumentCFV",
     "DocVersList",
-    "DocumentVersion"
+    "DocumentVersion",
+    "AuditLog"
   ],
   endpoints: _ => ({})
 })

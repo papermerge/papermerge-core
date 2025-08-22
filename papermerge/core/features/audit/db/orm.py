@@ -1,6 +1,5 @@
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Dict, Any
 
 from sqlalchemy import func, String, Text, Index
@@ -8,13 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, UUID as PG_UUID
 
 from papermerge.core.db.base import Base
+from papermerge.core.features.audit.types import AuditOperation
 
-
-class AuditOperation(str, Enum):
-    INSERT = "INSERT"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
-    TRUNCATE = "TRUNCATE"
 
 class AuditLog(Base):
     """

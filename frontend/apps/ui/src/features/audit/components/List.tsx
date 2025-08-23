@@ -1,17 +1,17 @@
 import {Container, Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useCallback, useEffect} from "react"
-import type {AuditLogItem, SortBy} from "../types"
+import {useCallback} from "react"
+import type {AuditLogItem, DropdownConfig, SortBy} from "../types"
 import auditLogColumns from "./auditLogColumns"
+import FilterSelector from "./DropdownSelector"
 import useAuditLogTable from "./useAuditLogTable"
 
-import {
-  ColumnSelector,
-  DataTable,
-  TableFilters,
-  TablePagination,
-  useTableData
-} from "kommon"
+import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
+
+let filtersConfig = [
+  {key: "timestamp", label: "Timestamp", visible: false},
+  {key: "user", label: "User", visible: false}
+]
 
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
@@ -38,20 +38,9 @@ export default function AuditLogsList() {
     [auditLogTable]
   )
 
-  // Debug logging
-  useEffect(() => {
-    console.log("=== AUDIT LOGS DEBUG ===")
-    console.log("auditLogTable.currentFilters:", auditLogTable.currentFilters)
-    console.log("state.columns:", state.columns)
-    console.log(
-      "filterable columns:",
-      state.columns.filter(col => col.filterable)
-    )
-    console.log(
-      "visible filterable columns:",
-      state.columns.filter(col => col.filterable && col.visible !== false)
-    )
-  }, [auditLogTable.currentFilters, state.columns])
+  const onFilterVisibilityChange = (items: DropdownConfig[]) => {
+    console.log(items)
+  }
 
   if (auditLogTable.isError) {
     return (
@@ -67,14 +56,11 @@ export default function AuditLogsList() {
   return (
     <Container size="xl" py="md">
       <Stack gap="lg">
-        <Group justify="space-between" align="flex-start">
-          <div style={{flex: 1}}>
-            <TableFilters
-              columns={state.columns}
-              filters={auditLogTable.currentFilters}
-              onFiltersChange={auditLogTable.setTableFilters}
-            />
-          </div>
+        <Group justify="end" align="flex-start">
+          <FilterSelector
+            onChange={onFilterVisibilityChange}
+            initialItems={filtersConfig}
+          />
 
           <ColumnSelector
             columns={state.columns}

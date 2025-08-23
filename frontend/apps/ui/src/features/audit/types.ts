@@ -28,3 +28,9 @@ export type SortBy =
   | "record_id"
   | "user_id"
   | "id"
+
+export interface DropdownConfig {
+  key: string
+  label: string
+  visible?: boolean
+}

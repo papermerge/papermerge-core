@@ -1,4 +1,4 @@
-import {Box, Paper, Stack, UnstyledButton} from "@mantine/core"
+import {Box, Group, Paper, UnstyledButton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import React, {useState} from "react"
 import {DropdownConfig} from "../types"
@@ -48,10 +48,26 @@ export default function FiltersCollapse({filters, className}: Args) {
     <Paper
       className={`filters-collapse ${className}`}
       withBorder
-      radius="sm"
+      radius={"xs"}
       style={{overflow: "hidden"}}
     >
-      <UnstyledButton onClick={toggleExpanded} w="100%" p="xs">
+      <UnstyledButton
+        onClick={toggleExpanded}
+        w="100%"
+        p="xs"
+        style={{
+          outline: "none",
+          boxShadow: "none",
+          "&:focus": {
+            outline: "none",
+            boxShadow: "none"
+          },
+          "&:active": {
+            outline: "none",
+            boxShadow: "none"
+          }
+        }}
+      >
         <Box
           style={{
             display: "flex",
@@ -71,7 +87,9 @@ export default function FiltersCollapse({filters, className}: Args) {
 
       {expanded && (
         <Box p="sm">
-          <Stack gap="sm">{filterComponents}</Stack>
+          <Group align={"baseline"} gap="sm">
+            {filterComponents}
+          </Group>
         </Box>
       )}
     </Paper>

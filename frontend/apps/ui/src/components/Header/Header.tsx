@@ -4,10 +4,10 @@ import logoURL from "/logo_transparent_bg.svg"
 import {ColorSchemeToggle} from "@/components/ColorSchemeToggle/ColorSchemeToggle"
 import classes from "./Header.module.css"
 
+import LanguageMenu from "./LanguageMenu"
 import Search from "./Search"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
-import LanguageMenu from "./LanguageMenu"
 
 function Header() {
   const theme = useMantineTheme()

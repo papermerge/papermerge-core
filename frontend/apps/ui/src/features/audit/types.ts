@@ -9,3 +9,13 @@ export type AuditLog = {
   user_id: string
   username: string
 }
+
+export interface AuditLogItem {
+  id: string
+  table_name: string
+  record_id: string
+  operation: "INSERT" | "UPDATE" | "DELETE" | "TRUNCATE"
+  timestamp: string
+  user_id: string
+  username: string
+}

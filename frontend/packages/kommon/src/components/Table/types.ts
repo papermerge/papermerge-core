@@ -13,7 +13,15 @@ export interface SortState {
 export interface FilterValue {
   column: string
   value: string | string[]
-  operator?: "equals" | "contains" | "in" | "startsWith" | "endsWith"
+  operator?:
+    | "equals"
+    | "contains"
+    | "startsWith"
+    | "endsWith"
+    | "in"
+    | "range"
+    | "from"
+    | "to"
 }
 
 export interface ColumnConfig<T = any> {

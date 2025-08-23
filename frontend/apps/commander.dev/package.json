@@ -16,13 +16,13 @@
     "clsx": "^2.1.1",
     "commander": "workspace:*",
     "kommon": "workspace:*",
-    "react": "^19.1.0",
+    "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
-    "@types/react": "^19.1.8",
+    "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.34.0",

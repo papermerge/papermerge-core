@@ -456,17 +456,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.34.0":
+"@eslint/js@npm:9.34.0, @eslint/js@npm:^9.34.0":
   version: 9.34.0
   resolution: "@eslint/js@npm:9.34.0"
   checksum: 10c0/53f1bfd2a374683d9382a6850354555f6e89a88416c34a5d34e9fbbaf717e97c2b06300e8f93e5eddba8bda8951ccab7f93a680e56ded1a3d21d526019e69bab
-  languageName: node
-  linkType: hard
-
-"@eslint/js@npm:^9.31.0":
-  version: 9.31.0
-  resolution: "@eslint/js@npm:9.31.0"
-  checksum: 10c0/f9d4c73d0fafe70679a418cbb25ab7ebcc8f1dba6c32456d6f8ba5a137d583ecff233cfe10f61f41d7d4d2220e94cff1f39fc7ed1fa3819d1888dee1cad678ea
   languageName: node
   linkType: hard
 
@@ -1885,7 +1878,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "commander.dev@workspace:apps/commander.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.34.0"
     "@mantine/core": "npm:^8.2.5"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"
@@ -2724,7 +2717,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hooks.dev@workspace:apps/hooks.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.34.0"
     "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^4.6.0"
@@ -3074,7 +3067,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "kommon.dev@workspace:apps/kommon.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.34.0"
     "@mantine/core": "npm:^8.2.5"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"
@@ -4437,7 +4430,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "viewer.dev@workspace:apps/viewer.dev"
   dependencies:
-    "@eslint/js": "npm:^9.31.0"
+    "@eslint/js": "npm:^9.34.0"
     "@mantine/core": "npm:^8.2.5"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"

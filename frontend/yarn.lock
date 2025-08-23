@@ -3752,14 +3752,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^15.6.1":
-  version: 15.6.1
-  resolution: "react-i18next@npm:15.6.1"
+"react-i18next@npm:^15.7.1":
+  version: 15.7.1
+  resolution: "react-i18next@npm:15.7.1"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
     html-parse-stringify: "npm:^3.0.1"
   peerDependencies:
-    i18next: ">= 23.2.3"
+    i18next: ">= 23.4.0"
     react: ">= 16.8.0"
     typescript: ^5
   peerDependenciesMeta:
@@ -3769,7 +3769,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10c0/10cd131005a70a493e307f4f710ea9921d5a955a5281064cad79162e5051e2bcfc119f50c7bee0fad06e33a1795308a006089d5b67969d52b66afbe149514305
+  checksum: 10c0/1f454e0e388af8879fa2cb76a7ddd849d3e68692aeb1786ef26e2a9419c0e0a943ab88c850b8e83bb346614101f11567f13a50f5171bf3cada587f0f6a7da4d8
   languageName: node
   linkType: hard
 
@@ -4429,7 +4429,7 @@ __metadata:
     prettier: "npm:^3.6.2"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.1"
-    react-i18next: "npm:^15.6.1"
+    react-i18next: "npm:^15.7.1"
     react-redux: "npm:^9.2.0"
     react-router: "npm:^7.8.1"
     react-router-dom: "npm:^7.6.3"

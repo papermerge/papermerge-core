@@ -17,7 +17,12 @@ import {
   TablePagination,
   useTableData
 } from "./components/Table"
-import type {ColumnConfig, PaginatedResponse} from "./components/Table/types"
+import type {
+  ColumnConfig,
+  FilterValue,
+  PaginatedResponse,
+  SortState
+} from "./components/Table/types"
 
 export {
   ColumnSelector,
@@ -32,10 +37,12 @@ export {
 }
 export type {
   ColumnConfig,
+  FilterValue,
   I18NCheckButton,
   I18NCollapseButton,
   I18NEditNodeTitleModal,
   I18NPermissionTree,
   I18NRoleFormModal,
-  PaginatedResponse
+  PaginatedResponse,
+  SortState
 }

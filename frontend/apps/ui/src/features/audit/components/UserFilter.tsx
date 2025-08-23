@@ -5,7 +5,7 @@ export default function UsersListFilter() {
     <Paper p="xs">
       <MultiSelect
         searchable
-        label="Table"
+        label="User"
         placeholder="Pick value"
         clearable
         data={["admin", "eugen", "coco"]}

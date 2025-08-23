@@ -741,9 +741,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/core@npm:^8.1.3":
-  version: 8.1.3
-  resolution: "@mantine/core@npm:8.1.3"
+"@mantine/core@npm:^8.2.7":
+  version: 8.2.7
+  resolution: "@mantine/core@npm:8.2.7"
   dependencies:
     "@floating-ui/react": "npm:^0.26.28"
     clsx: "npm:^2.1.1"
@@ -752,10 +752,10 @@ __metadata:
     react-textarea-autosize: "npm:8.5.9"
     type-fest: "npm:^4.27.0"
   peerDependencies:
-    "@mantine/hooks": 8.1.3
+    "@mantine/hooks": 8.2.7
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/7b6da408d05c6d29c073fb9a2d0ad9035d1e640c05c11ff6633b3c0626738ba61b5a4b539a3e014882a8499b064e302f2668c0aabc2713856a3ac4a405bf365a
+  checksum: 10c0/d10ba6ef7ac552b6bd5638b9a16c4d2405391102330d94c8df7a7d87756cdf4ec341a350eab252575eb5990f43dc4122ea13244753a9169338a43d2b996f7594
   languageName: node
   linkType: hard
 
@@ -1985,7 +1985,7 @@ __metadata:
   resolution: "commander.dev@workspace:apps/commander.dev"
   dependencies:
     "@eslint/js": "npm:^9.33.0"
-    "@mantine/core": "npm:^8.1.3"
+    "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.8"
@@ -3212,7 +3212,7 @@ __metadata:
   resolution: "kommon.dev@workspace:apps/kommon.dev"
   dependencies:
     "@eslint/js": "npm:^9.33.0"
-    "@mantine/core": "npm:^8.1.3"
+    "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.8"
@@ -4401,7 +4401,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ui@workspace:apps/ui"
   dependencies:
-    "@mantine/core": "npm:^8.1.3"
+    "@mantine/core": "npm:^8.2.7"
     "@mantine/dates": "npm:^8.2.5"
     "@mantine/form": "npm:^8.2.5"
     "@mantine/hooks": "npm:^8.2.5"
@@ -4584,7 +4584,7 @@ __metadata:
   resolution: "viewer.dev@workspace:apps/viewer.dev"
   dependencies:
     "@eslint/js": "npm:^9.33.0"
-    "@mantine/core": "npm:^8.1.3"
+    "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.5"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.8"

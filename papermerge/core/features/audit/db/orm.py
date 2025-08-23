@@ -59,6 +59,9 @@ class AuditLog(Base):
         Index('idx_audit_log_operation', 'operation'),
     )
 
+    def __str__(self):
+        return f"AuditLog(id={self.id}, username={self.username})"
+
 
 # Helper function to determine what fields changed
 def get_changed_fields(old_record: dict, new_record: dict) -> tuple[list[str], dict, dict]:

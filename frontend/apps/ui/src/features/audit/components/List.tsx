@@ -1,7 +1,8 @@
+import type {PaginatedArgs} from "@/types"
 import {Badge, Container, Group, Stack, Text} from "@mantine/core"
 import {IconClock, IconDatabase, IconUser} from "@tabler/icons-react"
 import type {ColumnConfig, FilterValue, SortState} from "kommon"
-import {useEffect, useState} from "react"
+import {useCallback, useState} from "react"
 import {useGetPaginatedAuditLogsQuery} from "../apiSlice"
 
 import {
@@ -13,62 +14,75 @@ import {
 } from "kommon"
 
 export default function AuditLogsList() {
-  const lastPageSize = 5
-  const [page, setPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  // Use the helper hook from the API slice
+  const auditLogTable = useAuditLogTable()
 
-  const [sorting, setSorting] = useState<SortState>({
-    column: null,
-    direction: null
-  })
-  const [filters, setFilters] = useState<FilterValue[]>([])
-
-  // Build API params
-  const apiParams = buildApiParams(page, pageSize, sorting, filters)
-
-  // RTK Query
-  const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedAuditLogsQuery(apiParams)
-
-  // Table state management (without pagination - RTK handles that)
+  // Table state management
   const {state, actions, visibleColumns} = useTableData<AuditLogItem>({
-    initialData: data || {
+    initialData: auditLogTable.data || {
       items: [],
       page_number: 1,
-      page_size: pageSize,
+      page_size: 15,
       num_pages: 0
     },
     initialColumns: auditLogColumns
-    // Don't use onDataChange - RTK handles data fetching
   })
-  // Update table data when RTK data changes
-  useEffect(() => {
-    if (data) {
-      // Update only the data and columns, keep local sorting/filtering state
-      actions.setColumns(state.columns) // Keep current column visibility
-    }
-  }, [data])
 
-  // Handle sorting changes (triggers new API call)
-  const handleSortChange = (newSorting: SortState) => {
-    setSorting(newSorting)
-    setPage(1) // Reset to first page when sorting changes
+  // Convert table filters to API format
+  const handleFiltersChange = useCallback(
+    (newFilters: FilterValue[]) => {
+      const apiFilters: Partial<AuditLogQueryParams> = {}
+
+      newFilters.forEach(filter => {
+        const value = Array.isArray(filter.value)
+          ? filter.value[0]
+          : filter.value
+
+        switch (filter.column) {
+          case "operation":
+            apiFilters.filter_operation = value as
+              | "INSERT"
+              | "UPDATE"
+              | "DELETE"
+            break
+          case "table_name":
+            apiFilters.filter_table_name = value
+            break
+          case "username":
+            apiFilters.filter_username = value
+            break
+          case "user_id":
+            apiFilters.filter_user_id = value
+            break
+          case "record_id":
+            apiFilters.filter_record_id = value
+            break
+        }
+      })
+
+      auditLogTable.setFilters(apiFilters)
+    },
+    [auditLogTable]
+  )
+
+  // Handle sorting changes
+  const handleSortChange = useCallback(
+    (newSorting: SortState) => {
+      auditLogTable.setSorting(newSorting.column as any, newSorting.direction)
+    },
+    [auditLogTable]
+  )
+
+  if (auditLogTable.isError) {
+    return (
+      <Container size="xl" py="md">
+        <div style={{textAlign: "center", padding: "2rem"}}>
+          <h3>Error loading audit logs</h3>
+          <p>{auditLogTable.error?.toString() || "An error occurred"}</p>
+        </div>
+      </Container>
+    )
   }
-
-  // Handle filter changes (triggers new API call)
-  const handleFiltersChange = (newFilters: FilterValue[]) => {
-    setFilters(newFilters)
-    setPage(1) // Reset to first page when filters change
-  }
-
-  // Handle page size changes
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize)
-    setPage(1) // Reset to first page when page size changes
-  }
-
-  // Calculate total items for pagination display
-  const totalItems = data ? data.num_pages * data.page_size : 0
 
   return (
     <Container size="xl" py="md">
@@ -78,7 +92,7 @@ export default function AuditLogsList() {
           <div style={{flex: 1}}>
             <TableFilters
               columns={state.columns}
-              filters={filters}
+              filters={[]} // Convert from API params if needed
               onFiltersChange={handleFiltersChange}
             />
           </div>
@@ -92,24 +106,31 @@ export default function AuditLogsList() {
 
         {/* Data Table */}
         <DataTable
-          data={data?.items || []}
+          data={auditLogTable.data?.items || []}
           columns={visibleColumns}
-          sorting={sorting}
+          sorting={{
+            column: auditLogTable.queryParams.sort_by || null,
+            direction: auditLogTable.queryParams.sort_direction || null
+          }}
           onSortChange={handleSortChange}
           columnWidths={state.columnWidths}
           onColumnResize={actions.setColumnWidth}
-          loading={isLoading || isFetching}
+          loading={auditLogTable.isLoading || auditLogTable.isFetching}
           emptyMessage="No audit logs found"
         />
 
         {/* Pagination */}
         <TablePagination
-          currentPage={page}
-          totalPages={data?.num_pages || 0}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={handlePageSizeChange}
-          totalItems={totalItems}
+          currentPage={auditLogTable.queryParams.page_number || 1}
+          totalPages={auditLogTable.data?.num_pages || 0}
+          pageSize={auditLogTable.queryParams.page_size || 15}
+          onPageChange={auditLogTable.setPage}
+          onPageSizeChange={auditLogTable.setPageSize}
+          totalItems={
+            auditLogTable.data
+              ? auditLogTable.data.num_pages * auditLogTable.data.page_size
+              : 0
+          }
           showPageSizeSelector
         />
       </Stack>
@@ -279,4 +300,142 @@ function buildApiParams(
   }
 
   return params
+}
+
+export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
+  // Pagination (inherited from PaginatedArgs)
+  page_number?: number
+  page_size?: number
+
+  // Sorting
+  sort_by?:
+    | "timestamp"
+    | "operation"
+    | "table_name"
+    | "username"
+    | "record_id"
+    | "user_id"
+    | "id"
+  sort_direction?: "asc" | "desc"
+
+  // Filters
+  filter_operation?: "INSERT" | "UPDATE" | "DELETE"
+  filter_table_name?: string
+  filter_username?: string
+  filter_user_id?: string
+  filter_record_id?: string
+  filter_timestamp_from?: string // ISO string format
+  filter_timestamp_to?: string // ISO string format
+}
+
+// Helper function to build clean query string
+function buildQueryString(params: AuditLogQueryParams): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append("page_size", String(params.page_size || 5))
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  // Add filters if provided
+  if (params.filter_operation) {
+    searchParams.append("filter_operation", params.filter_operation)
+  }
+  if (params.filter_table_name) {
+    searchParams.append("filter_table_name", params.filter_table_name)
+  }
+  if (params.filter_username) {
+    searchParams.append("filter_username", params.filter_username)
+  }
+  if (params.filter_user_id) {
+    searchParams.append("filter_user_id", params.filter_user_id)
+  }
+  if (params.filter_record_id) {
+    searchParams.append("filter_record_id", params.filter_record_id)
+  }
+  if (params.filter_timestamp_from) {
+    searchParams.append("filter_timestamp_from", params.filter_timestamp_from)
+  }
+  if (params.filter_timestamp_to) {
+    searchParams.append("filter_timestamp_to", params.filter_timestamp_to)
+  }
+
+  return searchParams.toString()
+}
+
+// Helper hook for table integration (optional but recommended)
+export function useAuditLogTable() {
+  const [queryParams, setQueryParams] = useState<AuditLogQueryParams>({
+    page_number: 1,
+    page_size: 5
+  })
+
+  // RTK Query
+  const {data, isLoading, isFetching, isError, error} =
+    useGetPaginatedAuditLogsQuery(queryParams)
+
+  // Helper functions
+  const setPage = useCallback((page_number: number) => {
+    setQueryParams(prev => ({...prev, page_number}))
+  }, [])
+
+  const setPageSize = useCallback((page_size: number) => {
+    setQueryParams(prev => ({...prev, page_size, page_number: 1})) // Reset to first page
+  }, [])
+
+  const setSorting = useCallback(
+    (sort_by: string | null, sort_direction: "asc" | "desc" | null) => {
+      setQueryParams(prev => ({
+        ...prev,
+        sort_by: sort_by || undefined,
+        sort_direction: sort_direction || undefined,
+        page_number: 1 // Reset to first page when sorting changes
+      }))
+    },
+    []
+  )
+
+  const setFilters = useCallback((filters: Partial<AuditLogQueryParams>) => {
+    setQueryParams(prev => ({
+      ...prev,
+      ...filters,
+      page_number: 1 // Reset to first page when filters change
+    }))
+  }, [])
+
+  const clearFilters = useCallback(() => {
+    setQueryParams(prev => ({
+      page_number: 1,
+      page_size: prev.page_size,
+      sort_by: prev.sort_by,
+      sort_direction: prev.sort_direction
+    }))
+  }, [])
+
+  return {
+    // Data
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+
+    // Current state
+    queryParams,
+
+    // Actions
+    setPage,
+    setPageSize,
+    setSorting,
+    setFilters,
+    clearFilters,
+    setQueryParams // Direct access for advanced use
+  }
 }

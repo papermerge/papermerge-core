@@ -14,12 +14,14 @@ interface TableFiltersProps<T> {
   columns: ColumnConfig<T>[]
   filters: FilterValue[]
   onFiltersChange: (filters: FilterValue[]) => void
+  getUniqueValues?: (columnKey: string) => string[]
 }
 
 export default function TableFilters<T>({
   columns,
   filters,
-  onFiltersChange
+  onFiltersChange,
+  getUniqueValues
 }: TableFiltersProps<T>) {
   const filterableColumns = columns.filter(
     col => col.filterable && col.visible !== false
@@ -56,62 +58,168 @@ export default function TableFilters<T>({
   }
 
   const getOperatorOptions = (columnKey: string) => {
-    // You can customize operators based on column type
-    return [
-      {value: "contains", label: "Contains"},
-      {value: "equals", label: "Equals"},
-      {value: "startsWith", label: "Starts with"},
-      {value: "endsWith", label: "Ends with"}
-    ]
-  }
-
-  const getUniqueValues = (columnKey: string): string[] => {
-    // This would typically come from your data or API
-    // For demo purposes, returning some sample values based on column
+    // Customize operators based on column type
     switch (columnKey) {
       case "operation":
-        return ["INSERT", "UPDATE", "DELETE"]
+        return [
+          {value: "equals", label: "Equals"},
+          {value: "in", label: "Is one of"}
+        ]
+      case "timestamp":
+        return [
+          {value: "range", label: "Date range"},
+          {value: "from", label: "From date"},
+          {value: "to", label: "Until date"}
+        ]
+      default:
+        return [
+          {value: "contains", label: "Contains"},
+          {value: "equals", label: "Equals"},
+          {value: "startsWith", label: "Starts with"},
+          {value: "endsWith", label: "Ends with"}
+        ]
+    }
+  }
+
+  // Get unique values for a column - uses the prop or falls back to default logic
+  const getUniqueValuesForColumn = (columnKey: string): string[] => {
+    // Use the provided function if available
+    if (getUniqueValues) {
+      return getUniqueValues(columnKey)
+    }
+
+    // Fall back to default/hardcoded values
+    switch (columnKey) {
+      case "operation":
+        return ["INSERT", "UPDATE", "DELETE", "TRUNCATE"]
       case "table_name":
-        return ["nodes", "document_versions", "roles", "custom_fields"]
+        return ["nodes", "document_versions", "roles", "custom_fields", "users"]
+      case "username":
+        return ["admin", "user", "system"]
       default:
         return []
     }
   }
 
   const renderFilterInput = (filter: FilterValue, index: number) => {
-    const uniqueValues = getUniqueValues(filter.column)
+    const uniqueValues = getUniqueValuesForColumn(filter.column)
 
-    if (uniqueValues.length > 0 && uniqueValues.length <= 20) {
-      // Use select for columns with limited unique values
+    // For operation column - always use select
+    if (filter.column === "operation") {
       return (
         <Select
-          placeholder="Select value"
-          data={uniqueValues.map(val => ({value: val, label: val}))}
+          placeholder="Select operation"
+          data={[
+            {value: "INSERT", label: "INSERT"},
+            {value: "UPDATE", label: "UPDATE"},
+            {value: "DELETE", label: "DELETE"},
+            {value: "TRUNCATE", label: "TRUNCATE"}
+          ]}
           value={Array.isArray(filter.value) ? filter.value[0] : filter.value}
           onChange={value => updateFilter(index, {value: value || ""})}
           clearable
-          searchable
         />
       )
     }
 
-    if (uniqueValues.length > 20) {
-      // Use multi-select for columns with many unique values
-      return (
-        <MultiSelect
-          placeholder="Select values"
-          data={uniqueValues.map(val => ({value: val, label: val}))}
-          value={Array.isArray(filter.value) ? filter.value : []}
-          onChange={values =>
-            updateFilter(index, {value: values, operator: "in"})
-          }
-          searchable
-          clearable
-        />
-      )
+    // For timestamp column - special handling
+    if (filter.column === "timestamp") {
+      if (filter.operator === "range") {
+        return (
+          <Group gap="xs">
+            <TextInput
+              placeholder="From (YYYY-MM-DD)"
+              value={
+                typeof filter.value === "string"
+                  ? filter.value.split(" - ")[0] || ""
+                  : ""
+              }
+              onChange={event => {
+                const from = event.currentTarget.value
+                const to =
+                  typeof filter.value === "string"
+                    ? filter.value.split(" - ")[1] || ""
+                    : ""
+                updateFilter(index, {
+                  value: from && to ? `${from} - ${to}` : from
+                })
+              }}
+              style={{width: 150}}
+            />
+            <span>to</span>
+            <TextInput
+              placeholder="To (YYYY-MM-DD)"
+              value={
+                typeof filter.value === "string"
+                  ? filter.value.split(" - ")[1] || ""
+                  : ""
+              }
+              onChange={event => {
+                const to = event.currentTarget.value
+                const from =
+                  typeof filter.value === "string"
+                    ? filter.value.split(" - ")[0] || ""
+                    : ""
+                updateFilter(index, {
+                  value: from && to ? `${from} - ${to}` : to
+                })
+              }}
+              style={{width: 150}}
+            />
+          </Group>
+        )
+      } else {
+        return (
+          <TextInput
+            placeholder="Date (YYYY-MM-DD)"
+            value={
+              Array.isArray(filter.value)
+                ? filter.value.join(",")
+                : filter.value
+            }
+            onChange={event =>
+              updateFilter(index, {value: event.currentTarget.value})
+            }
+            leftSection={<IconSearch size={16} />}
+          />
+        )
+      }
     }
 
-    // Default text input
+    // For columns with limited unique values (< 20) - use select
+    if (uniqueValues.length > 0 && uniqueValues.length <= 20) {
+      const operator = filter.operator || "contains"
+
+      if (operator === "in") {
+        // Multi-select for "in" operator
+        return (
+          <MultiSelect
+            placeholder="Select values"
+            data={uniqueValues.map(val => ({value: val, label: val}))}
+            value={Array.isArray(filter.value) ? filter.value : []}
+            onChange={values =>
+              updateFilter(index, {value: values, operator: "in"})
+            }
+            searchable
+            clearable
+          />
+        )
+      } else {
+        // Single select for other operators
+        return (
+          <Select
+            placeholder="Select value"
+            data={uniqueValues.map(val => ({value: val, label: val}))}
+            value={Array.isArray(filter.value) ? filter.value[0] : filter.value}
+            onChange={value => updateFilter(index, {value: value || ""})}
+            clearable
+            searchable
+          />
+        )
+      }
+    }
+
+    // Default text input for everything else
     return (
       <TextInput
         placeholder="Enter value"

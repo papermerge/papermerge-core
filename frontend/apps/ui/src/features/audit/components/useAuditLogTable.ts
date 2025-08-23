@@ -45,7 +45,6 @@ export default function useAuditLogTable() {
   // Convert API params to table filters format
   const currentFilters = useMemo((): FilterValue[] => {
     const filters: FilterValue[] = []
-
     if (queryParams.filter_operation) {
       filters.push({
         column: "operation",
@@ -190,7 +189,6 @@ export default function useAuditLogTable() {
             break
         }
       })
-
       setFilters(apiFilters)
     },
     [setFilters]

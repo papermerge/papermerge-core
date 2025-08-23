@@ -1,7 +1,7 @@
 import {Container, Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useCallback} from "react"
-import type {AuditLogItem} from "../types"
+import {useCallback, useEffect} from "react"
+import type {AuditLogItem, SortBy} from "../types"
 import auditLogColumns from "./auditLogColumns"
 import useAuditLogTable from "./useAuditLogTable"
 
@@ -12,15 +12,6 @@ import {
   TablePagination,
   useTableData
 } from "kommon"
-
-type SortBy =
-  | "timestamp"
-  | "operation"
-  | "table_name"
-  | "username"
-  | "record_id"
-  | "user_id"
-  | "id"
 
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
@@ -46,6 +37,21 @@ export default function AuditLogsList() {
     },
     [auditLogTable]
   )
+
+  // Debug logging
+  useEffect(() => {
+    console.log("=== AUDIT LOGS DEBUG ===")
+    console.log("auditLogTable.currentFilters:", auditLogTable.currentFilters)
+    console.log("state.columns:", state.columns)
+    console.log(
+      "filterable columns:",
+      state.columns.filter(col => col.filterable)
+    )
+    console.log(
+      "visible filterable columns:",
+      state.columns.filter(col => col.filterable && col.visible !== false)
+    )
+  }, [auditLogTable.currentFilters, state.columns])
 
   if (auditLogTable.isError) {
     return (

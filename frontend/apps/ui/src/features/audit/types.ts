@@ -19,3 +19,12 @@ export interface AuditLogItem {
   user_id: string
   username: string
 }
+
+export type SortBy =
+  | "timestamp"
+  | "operation"
+  | "table_name"
+  | "username"
+  | "record_id"
+  | "user_id"
+  | "id"

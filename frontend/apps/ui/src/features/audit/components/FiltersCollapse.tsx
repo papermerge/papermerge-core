@@ -1,4 +1,4 @@
-import {Stack} from "@mantine/core"
+import {Box, Paper, Stack, UnstyledButton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import React, {useState} from "react"
 import {DropdownConfig} from "../types"
@@ -45,47 +45,35 @@ export default function FiltersCollapse({filters, className}: Args) {
   })
 
   return (
-    <div className={`filters-collapse ${className}`} style={styles.container}>
-      <div style={styles.header} onClick={toggleExpanded}>
-        <IconChevronDown
-          size={20}
+    <Paper
+      className={`filters-collapse ${className}`}
+      withBorder
+      radius="sm"
+      style={{overflow: "hidden"}}
+    >
+      <UnstyledButton onClick={toggleExpanded} w="100%" p="xs">
+        <Box
           style={{
-            ...styles.icon,
-            transform: expanded ? "rotate(0deg)" : "rotate(90deg)"
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start"
           }}
-        />
-      </div>
+        >
+          <IconChevronDown
+            size={20}
+            style={{
+              transform: expanded ? "rotate(0deg)" : "rotate(90deg)",
+              transition: "transform 0.2s ease-in-out"
+            }}
+          />
+        </Box>
+      </UnstyledButton>
 
-      {expanded && <Stack>{filterComponents}</Stack>}
-    </div>
+      {expanded && (
+        <Box p="sm">
+          <Stack gap="sm">{filterComponents}</Stack>
+        </Box>
+      )}
+    </Paper>
   )
-}
-
-const styles: {[key: string]: React.CSSProperties} = {
-  container: {
-    width: "100%",
-    border: "1px solid #e0e0e0",
-    backgroundColor: "#ffffff",
-    overflow: "hidden"
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "4px 4px",
-    backgroundColor: "rgba(0, 0, 0, 0.03)",
-    cursor: "pointer",
-    borderBottom: "1px solid #e0e0e0",
-    transition: "background-color 0.2s ease"
-  },
-  icon: {
-    transition: "transform 0.2s ease-in-out",
-    color: "#666666"
-  },
-  content: {
-    overflow: "hidden",
-    transition:
-      "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out",
-    backgroundColor: "#ffffff"
-  }
 }

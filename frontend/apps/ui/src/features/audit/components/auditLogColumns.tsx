@@ -53,7 +53,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     label: "Table",
     sortable: true,
     filterable: true,
-    width: 150,
+    width: 100,
     render: value => (
       <Group gap="xs">
         <IconDatabase size={14} style={{opacity: 0.6}} />

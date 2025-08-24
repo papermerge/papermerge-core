@@ -1,6 +1,7 @@
-import {Container, Group, Stack} from "@mantine/core"
+import {useDynamicHeight} from "@/hooks/useDynamicHeight"
+import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useCallback, useState} from "react"
+import {useCallback, useRef, useState} from "react"
 import type {AuditLogItem, DropdownConfig, SortBy} from "../types"
 import auditLogColumns from "./auditLogColumns"
 import FilterSelector from "./DropdownSelector"
@@ -19,6 +20,9 @@ let initialFilters = [
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
   const [filtersList, setFiltersList] = useState<DropdownConfig[]>([])
+  const actionButtonsRef = useRef<HTMLDivElement>(null)
+  const filtersRef = useRef<HTMLDivElement>(null)
+  const paginationRef = useRef<HTMLDivElement>(null) // Pagination
 
   // Table state management
   const {state, actions, visibleColumns} = useTableData<AuditLogItem>({
@@ -30,6 +34,12 @@ export default function AuditLogsList() {
     },
     initialColumns: auditLogColumns
   })
+
+  const remainingHeight = useDynamicHeight([
+    actionButtonsRef,
+    filtersRef,
+    paginationRef
+  ])
 
   // Handle sorting changes
   const handleSortChange = useCallback(
@@ -61,10 +71,11 @@ export default function AuditLogsList() {
   return (
     <Stack gap="xs">
       <Filters
+        ref={filtersRef}
         filters={filtersList}
         setQueryParams={auditLogTable.setQueryParams}
       />
-      <Group justify="end" align="flex-start">
+      <Group ref={actionButtonsRef} justify="end" align="flex-start">
         <FilterSelector
           onChange={onFilterVisibilityChange}
           initialItems={initialFilters}
@@ -76,22 +87,24 @@ export default function AuditLogsList() {
           onToggleColumn={actions.toggleColumnVisibility}
         />
       </Group>
-
-      <DataTable
-        data={auditLogTable.data?.items || []}
-        columns={visibleColumns}
-        sorting={{
-          column: auditLogTable.queryParams.sort_by || null,
-          direction: auditLogTable.queryParams.sort_direction || null
-        }}
-        onSortChange={handleSortChange}
-        columnWidths={state.columnWidths}
-        onColumnResize={actions.setColumnWidth}
-        loading={auditLogTable.isLoading || auditLogTable.isFetching}
-        emptyMessage="No audit logs found"
-      />
+      <ScrollArea mt={"md"} h={remainingHeight} type="auto">
+        <DataTable
+          data={auditLogTable.data?.items || []}
+          columns={visibleColumns}
+          sorting={{
+            column: auditLogTable.queryParams.sort_by || null,
+            direction: auditLogTable.queryParams.sort_direction || null
+          }}
+          onSortChange={handleSortChange}
+          columnWidths={state.columnWidths}
+          onColumnResize={actions.setColumnWidth}
+          loading={auditLogTable.isLoading || auditLogTable.isFetching}
+          emptyMessage="No audit logs found"
+        />
+      </ScrollArea>
 
       <TablePagination
+        ref={paginationRef}
         currentPage={auditLogTable.queryParams.page_number || 1}
         totalPages={auditLogTable.data?.num_pages || 0}
         pageSize={auditLogTable.queryParams.page_size || 15}

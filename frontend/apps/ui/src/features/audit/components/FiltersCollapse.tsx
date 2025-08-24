@@ -2,14 +2,14 @@ import {Box, Group, Paper, UnstyledButton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import React, {forwardRef, useState} from "react"
 import type {AuditLogQueryParams} from "../types"
-import {DropdownConfig} from "../types"
+import {FilterListConfig} from "../types"
 import OperationFilter from "./OperationFilter"
 import TableNameFilter from "./TableNameFilter"
 import TimestampFilter from "./TimestampFilter"
 import UserFilter from "./UserFilter"
 
 interface Args {
-  filters: DropdownConfig[]
+  filters: FilterListConfig[]
   className?: string
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }

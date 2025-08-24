@@ -220,7 +220,7 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
-type AuditLogFilterKey = "timestamp" | "operation" | "table_name"
+type AuditLogFilterKey = "timestamp" | "operation" | "table_name" | "user"
 
 export interface UIState {
   uploader: UploaderState
@@ -284,14 +284,14 @@ export interface UIState {
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
-  mainAuditLogSelectedFilters?: Array<AuditLogFilterKey>
+  mainAuditLogVisibleFilters?: Array<string>
   mainAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
   mainAuditLogOperationFilterValue?: Array<AuditOperation>
   mainAuditLogTableNameFilterValue?: Array<string>
   mainAuditLogUsernameFilterValue?: Array<string>
   mainAuditLogPageNumber?: number
   mainAuditLogPageSize?: number
-  secondaryAuditLogSelectedFilters?: Array<AuditLogFilterKey>
+  secondaryAuditLogVisibleFilters?: Array<string>
   secondaryAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
   secondaryAuditLogOperationFilterValue?: Array<AuditOperation>
   secondaryAuditLogTableNameFilterValue?: Array<string>
@@ -920,6 +920,18 @@ const uiSlice = createSlice({
     ) {
       const newVisibility = action.payload.visibility
       state.viewerPageHaveChangedDialogVisibility = newVisibility
+    },
+    auditLogVisibleFilterUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; filterKeys: Array<string>}>
+    ) {
+      const {mode, filterKeys} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogVisibleFilters = filterKeys
+        return
+      }
+
+      state.secondaryAuditLogVisibleFilters = filterKeys
     }
   }
 })
@@ -971,7 +983,8 @@ export const {
   documentsByTypeCommanderColumnVisibilityToggled,
   lastHomeUpdated,
   lastInboxUpdated,
-  viewerPageHaveChangedDialogVisibilityChanged
+  viewerPageHaveChangedDialogVisibilityChanged,
+  auditLogVisibleFilterUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1371,6 +1384,17 @@ export const selectViewerPagesHaveChangedDialogVisibility = (
   state: RootState
 ) => {
   return state.ui.viewerPageHaveChangedDialogVisibility || "closed"
+}
+
+export const selectAuditLogVisibleFilters = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogVisibleFilters
+  }
+
+  return state.ui.secondaryAuditLogVisibleFilters
 }
 
 /* Load initial collapse state value from cookie */

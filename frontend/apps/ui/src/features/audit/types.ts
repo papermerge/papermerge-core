@@ -31,7 +31,7 @@ export type SortBy =
   | "user_id"
   | "id"
 
-export interface DropdownConfig {
+export interface FilterListConfig {
   key: string
   label: string
   visible?: boolean

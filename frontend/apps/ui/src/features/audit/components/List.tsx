@@ -1,16 +1,20 @@
+import {useAppDispatch} from "@/app/hooks"
+import {auditLogVisibleFilterUpdated} from "@/features/ui/uiSlice"
 import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useCallback, useRef, useState} from "react"
-import type {AuditLogItem, DropdownConfig, SortBy} from "../types"
+import {useCallback, useRef} from "react"
+import type {AuditLogItem, FilterListConfig, SortBy} from "../types"
 import auditLogColumns from "./auditLogColumns"
 import FilterSelector from "./DropdownSelector"
 import useAuditLogTable from "./useAuditLogTable"
 
+import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
+import useFilterList from "../hooks/useFilterList"
 import Filters from "./FiltersCollapse"
 
-let initialFilters = [
+let initialFilterConfig = [
   {key: "timestamp", label: "Timestamp", visible: false},
   {key: "operation", label: "Operation", visible: false},
   {key: "table_name", label: "Table", visible: false},
@@ -19,7 +23,9 @@ let initialFilters = [
 
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
-  const [filtersList, setFiltersList] = useState<DropdownConfig[]>([])
+  const dispatch = useAppDispatch()
+  const filtersList = useFilterList()
+  const mode = usePanelMode()
   const actionButtonsRef = useRef<HTMLDivElement>(null)
   const filtersRef = useRef<HTMLDivElement>(null)
   const paginationRef = useRef<HTMLDivElement>(null) // Pagination
@@ -52,9 +58,11 @@ export default function AuditLogsList() {
     [auditLogTable]
   )
 
-  const onFilterVisibilityChange = (items: DropdownConfig[]) => {
-    const visibleItems = items.filter(i => i.visible)
-    setFiltersList(visibleItems)
+  const onFilterVisibilityChange = (items: FilterListConfig[]) => {
+    const visibleFilterKeys = items.filter(i => i.visible).map(i => i.key)
+    dispatch(
+      auditLogVisibleFilterUpdated({filterKeys: visibleFilterKeys, mode})
+    )
   }
 
   if (auditLogTable.isError) {
@@ -78,7 +86,7 @@ export default function AuditLogsList() {
       <Group ref={actionButtonsRef} justify="end" align="flex-start">
         <FilterSelector
           onChange={onFilterVisibilityChange}
-          initialItems={initialFilters}
+          initialItems={initialFilterConfig}
         />
 
         <ColumnSelector

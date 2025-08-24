@@ -26,6 +26,7 @@ import type {
   SortMenuDirection
 } from "@/types"
 
+import type {AuditOperation} from "@/features/audit/types"
 import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
 import {DialogVisiblity} from "@/types.d/common"
 
@@ -219,6 +220,8 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
+type AuditLogFilterKey = "timestamp" | "operation" | "table_name"
+
 export interface UIState {
   uploader: UploaderState
   navbar: NavBarState
@@ -281,6 +284,20 @@ export interface UIState {
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
+  mainAuditLogSelectedFilters?: Array<AuditLogFilterKey>
+  mainAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
+  mainAuditLogOperationFilterValue?: Array<AuditOperation>
+  mainAuditLogTableNameFilterValue?: Array<string>
+  mainAuditLogUsernameFilterValue?: Array<string>
+  mainAuditLogPageNumber?: number
+  mainAuditLogPageSize?: number
+  secondaryAuditLogSelectedFilters?: Array<AuditLogFilterKey>
+  secondaryAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
+  secondaryAuditLogOperationFilterValue?: Array<AuditOperation>
+  secondaryAuditLogTableNameFilterValue?: Array<string>
+  secondaryAuditLogUsernameFilterValue?: Array<string>
+  secondaryAuditLogPageNumber?: number
+  secondaryAuditLogPageSize?: number
 }
 
 const initialState: UIState = {

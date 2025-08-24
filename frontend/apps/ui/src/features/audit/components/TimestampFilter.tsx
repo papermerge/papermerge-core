@@ -1,5 +1,7 @@
 import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
+import type {AuditLogQueryParams} from "../types"
+
 import React, {useState} from "react"
 
 type TimestampMode = "range" | "older" | "newer"
@@ -14,6 +16,7 @@ interface TimestampPickerProps {
     mode: TimestampMode
     range: TimestampRange
   }
+  setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
   onChange?: (value: {mode: TimestampMode; range: TimestampRange}) => void
 }
 

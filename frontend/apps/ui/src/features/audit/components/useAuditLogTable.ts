@@ -1,7 +1,7 @@
-import type {PaginatedArgs} from "@/types"
 import type {FilterValue} from "kommon"
 import {useCallback, useMemo, useState} from "react"
 import {useGetPaginatedAuditLogsQuery} from "../apiSlice"
+import type {AuditLogQueryParams} from "../types"
 
 type SortBy =
   | "timestamp"
@@ -11,25 +11,6 @@ type SortBy =
   | "record_id"
   | "user_id"
   | "id"
-
-export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
-  // Pagination (inherited from PaginatedArgs)
-  page_number?: number
-  page_size?: number
-
-  // Sorting
-  sort_by?: SortBy
-  sort_direction?: "asc" | "desc"
-
-  // Filters
-  filter_operation?: "INSERT" | "UPDATE" | "DELETE"
-  filter_table_name?: string
-  filter_username?: string
-  filter_user_id?: string
-  filter_record_id?: string
-  filter_timestamp_from?: string // ISO string format
-  filter_timestamp_to?: string // ISO string format
-}
 
 // Enhanced helper hook with filter support
 export default function useAuditLogTable() {

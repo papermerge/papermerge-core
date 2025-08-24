@@ -38,17 +38,6 @@ async def get_audit_logs(
     sort_direction: Optional[str] = None,
     filters: Optional[Dict[str, Dict[str, Any]]] = None
 ) -> schema.PaginatedResponse[schema.AuditLog]:
-    """
-    Advanced version that supports complex filtering with operators.
-
-    Expected filters format:
-    {
-        "operation": {"value": "INSERT", "operator": "equals"},
-        "table_name": {"value": "nodes", "operator": "contains"},
-        "username": {"value": ["admin", "user1"], "operator": "in"}
-    }
-    """
-
     base_query = select(orm.AuditLog)
     count_query = select(func.count(orm.AuditLog.id))
 
@@ -85,6 +74,8 @@ async def get_audit_logs(
 
             elif operator == "in" and isinstance(value, list):
                 filter_conditions.append(column_attr.in_(value))
+            elif operator == "in" and isinstance(value, str):
+                filter_conditions.append(column_attr.in_(value.split(",")))
 
             # Date range handling for timestamp
             elif column == "timestamp" and operator == "range" and isinstance(value, dict):
@@ -128,7 +119,6 @@ async def get_audit_logs(
     db_audit_logs = (await db_session.scalars(base_query)).all()
     items = []
     for db_audit_log in db_audit_logs:
-        print(db_audit_log)
         item = schema.AuditLog.model_validate(db_audit_log)
         items.append(item)
 

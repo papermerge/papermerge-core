@@ -21,7 +21,7 @@ export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
   sort_direction?: "asc" | "desc"
 
   // Filters
-  filter_operation?: "INSERT" | "UPDATE" | "DELETE"
+  filter_operation?: string
   filter_table_name?: string
   filter_username?: string
   filter_user_id?: string

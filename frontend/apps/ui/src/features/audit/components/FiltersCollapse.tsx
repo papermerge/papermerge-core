@@ -1,6 +1,7 @@
 import {Box, Group, Paper, UnstyledButton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 import React, {useState} from "react"
+import type {AuditLogQueryParams} from "../types"
 import {DropdownConfig} from "../types"
 import OperationFilter from "./OperationFilter"
 import TableNameFilter from "./TableNameFilter"
@@ -10,9 +11,14 @@ import UserFilter from "./UserFilter"
 interface Args {
   filters: DropdownConfig[]
   className?: string
+  setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }
 
-export default function FiltersCollapse({filters, className}: Args) {
+export default function FiltersCollapse({
+  filters,
+  className,
+  setQueryParams
+}: Args) {
   const [expanded, setExpanded] = useState(true)
 
   const toggleExpanded = () => {
@@ -29,13 +35,19 @@ export default function FiltersCollapse({filters, className}: Args) {
     if (f.visible) {
       switch (f.key) {
         case "timestamp":
-          filterComponents.push(<TimestampFilter key={f.key} />)
+          filterComponents.push(
+            <TimestampFilter key={f.key} setQueryParams={setQueryParams} />
+          )
           break
         case "operation":
-          filterComponents.push(<OperationFilter key={f.key} />)
+          filterComponents.push(
+            <OperationFilter key={f.key} setQueryParams={setQueryParams} />
+          )
           break
         case "table_name":
-          filterComponents.push(<TableNameFilter key={f.key} />)
+          filterComponents.push(
+            <TableNameFilter key={f.key} setQueryParams={setQueryParams} />
+          )
           break
         case "user":
           filterComponents.push(<UserFilter key={f.key} />)

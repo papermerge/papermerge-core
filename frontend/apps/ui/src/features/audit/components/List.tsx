@@ -60,7 +60,10 @@ export default function AuditLogsList() {
 
   return (
     <Stack gap="xs">
-      <Filters filters={filtersList} />
+      <Filters
+        filters={filtersList}
+        setQueryParams={auditLogTable.setQueryParams}
+      />
       <Group justify="end" align="flex-start">
         <FilterSelector
           onChange={onFilterVisibilityChange}

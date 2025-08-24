@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, Literal
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from .types import AuditOperation
 
@@ -52,13 +52,13 @@ class AuditLogParams(BaseModel):
     )
 
     # Filter parameters - individual query parameters
-    filter_operation: Optional[Literal["INSERT", "UPDATE", "DELETE"]] = Query(
-        None,
-        description="Filter by operation type: INSERT, UPDATE, or DELETE"
+    filter_operation: Optional[str] = Query(
+        default=None,
+        description="Comma-separated list of operations: INSERT,UPDATE,DELETE,TRUNCATE"
     )
     filter_table_name: Optional[str] = Query(
         None,
-        description="Filter by table name (partial match, case-insensitive)"
+        description="Comma-serarater list of table names"
     )
     filter_username: Optional[str] = Query(
         None,
@@ -82,42 +82,40 @@ class AuditLogParams(BaseModel):
         None,
         description="Filter to timestamp (ISO format: 2025-08-21T06:35:10Z)"
     )
+    @field_validator('filter_operation', mode='before')
+    @classmethod
+    def parse_operations(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            # Split by comma and validate each value
+            operations = [op.strip().upper() for op in v.split(',')]
+            valid_ops = {"INSERT", "UPDATE", "DELETE", "TRUNCATE"}
+            for op in operations:
+                if op not in valid_ops:
+                    raise ValueError(f"Invalid operation: {op}")
+            return v
+        return v
 
     def to_advanced_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
-        """
-        Convert simple filter parameters to advanced filter format
-        for use with get_audit_logs_advanced function.
-        """
         filters = {}
 
         if self.filter_operation:
             filters["operation"] = {
-                "value": self.filter_operation,
-                "operator": "equals"
+                "value": self.filter_operation.split(","),
+                "operator": "in"
             }
 
         if self.filter_table_name:
             filters["table_name"] = {
                 "value": self.filter_table_name,
-                "operator": "contains"
+                "operator": "in"
             }
 
         if self.filter_username:
             filters["username"] = {
                 "value": self.filter_username,
-                "operator": "contains"
-            }
-
-        if self.filter_user_id:
-            filters["user_id"] = {
-                "value": self.filter_user_id,
-                "operator": "equals"
-            }
-
-        if self.filter_record_id:
-            filters["record_id"] = {
-                "value": self.filter_record_id,
-                "operator": "contains"
+                "operator": "in"
             }
 
         # Handle timestamp range filtering

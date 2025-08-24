@@ -31,7 +31,6 @@ async def get_audit_logs(
 
     Required scope: `{scope}`
     """
-    # Convert to advanced format
     advanced_filters = params.to_advanced_filters()
 
     # Use your advanced database function

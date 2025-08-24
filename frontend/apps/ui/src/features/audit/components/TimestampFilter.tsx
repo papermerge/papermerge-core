@@ -87,12 +87,14 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
           <DateTimePicker
             label="From"
             value={range?.from}
+            miw={180}
             clearable
             withSeconds
             onChange={onChangeFrom}
           />
           <DateTimePicker
             label="To"
+            miw={180}
             value={range?.to}
             clearable
             withSeconds

@@ -58,7 +58,7 @@ class AuditLogParams(BaseModel):
     )
     filter_table_name: Optional[str] = Query(
         None,
-        description="Comma-serarater list of table names"
+        description="Comma-separated list of table names (e.g. users, groups, nodes)"
     )
     filter_username: Optional[str] = Query(
         None,
@@ -76,12 +76,13 @@ class AuditLogParams(BaseModel):
     # Date range filter parameters
     filter_timestamp_from: Optional[str] = Query(
         None,
-        description="Filter from timestamp (ISO format: 2025-08-20T06:35:10Z)"
+        description="Filter from timestamp (ISO 8601 format: 2025-08-20T06:35:10Z)"
     )
     filter_timestamp_to: Optional[str] = Query(
         None,
-        description="Filter to timestamp (ISO format: 2025-08-21T06:35:10Z)"
+        description="Filter to timestamp (ISO 8601 format: 2025-08-21T06:35:10Z)"
     )
+
     @field_validator('filter_operation', mode='before')
     @classmethod
     def parse_operations(cls, v):

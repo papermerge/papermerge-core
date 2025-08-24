@@ -2,9 +2,7 @@ import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
 import type {AuditLogQueryParams} from "../types"
 
-import React, {useState} from "react"
-
-type TimestampMode = "range" | "older" | "newer"
+import React, {useEffect, useState} from "react"
 
 interface TimestampRange {
   from?: Date | null
@@ -12,18 +10,50 @@ interface TimestampRange {
 }
 
 interface TimestampPickerProps {
-  value?: {
-    mode: TimestampMode
-    range: TimestampRange
-  }
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
-  onChange?: (value: {mode: TimestampMode; range: TimestampRange}) => void
 }
 
-const TimestampPicker: React.FC<TimestampPickerProps> = ({value, onChange}) => {
-  const [range, setRange] = useState<TimestampRange>(
-    value?.range || {from: null, to: null}
-  )
+const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
+  const [range, setRange] = useState<TimestampRange>()
+
+  const onChangeFrom = (value: string | null) => {
+    setQueryParams(prev => ({
+      ...prev,
+      filter_timestamp_from: value ? value : undefined
+    }))
+
+    setRange(prev => ({
+      ...prev,
+      from: value ? new Date(value) : null
+    }))
+  }
+
+  const onChangeTo = (value: string | null) => {
+    setQueryParams(prev => ({
+      ...prev,
+      filter_timestamp_from: value ? value : undefined
+    }))
+    setRange(prev => ({
+      ...prev,
+      to: value ? new Date(value) : null
+    }))
+  }
+
+  useEffect(() => {
+    if (range?.from) {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_from: range?.from?.toISOString()
+      }))
+    }
+
+    if (range?.to) {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_to: range?.to?.toISOString()
+      }))
+    }
+  }, [range])
 
   const handleQuickSelect = (type: "today" | "1hour" | "3hours") => {
     const now = new Date()
@@ -48,7 +78,6 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({value, onChange}) => {
     }
 
     setRange(newRange)
-    onChange?.({mode: "range", range: newRange})
   }
 
   return (
@@ -57,11 +86,18 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({value, onChange}) => {
         <Group justify={"start"}>
           <DateTimePicker
             label="From"
-            value={range.from}
+            value={range?.from}
             clearable
             withSeconds
+            onChange={onChangeFrom}
           />
-          <DateTimePicker label="To" value={range.to} clearable withSeconds />
+          <DateTimePicker
+            label="To"
+            value={range?.to}
+            clearable
+            withSeconds
+            onChange={onChangeTo}
+          />
         </Group>
 
         <Group>

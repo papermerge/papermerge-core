@@ -38,7 +38,7 @@ export default function useAuditLogTable() {
       filters.push({
         column: "table_name",
         value: queryParams.filter_table_name,
-        operator: "contains"
+        operator: "equals"
       })
     }
 

@@ -23,13 +23,20 @@ export default function TableNameFilter({setQueryParams}: Args) {
         clearable
         onChange={onChange}
         data={[
+          "nodes",
+          "document_versions",
+          "custom_fields",
+          "document_types",
+          "shared_nodes",
+          "tags",
+          "users",
+          "groups",
+          "users_roles",
           "users_groups",
           "roles_permissions",
-          "documents",
-          "document_types_custom_fields",
-          "nodes",
-          "users"
-        ]}
+          "nodes_tags",
+          "document_types_custom_fields"
+        ].sort()}
       />
     </Paper>
   )

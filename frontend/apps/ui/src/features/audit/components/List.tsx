@@ -11,13 +11,12 @@ import useAuditLogTable from "./useAuditLogTable"
 
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
-import useFilterList from "../hooks/useFilterList"
 import Filters from "./FiltersCollapse"
 
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
   const dispatch = useAppDispatch()
-  const filtersList = useFilterList()
+
   const mode = usePanelMode()
   const actionButtonsRef = useRef<HTMLDivElement>(null)
   const filtersRef = useRef<HTMLDivElement>(null)
@@ -53,6 +52,7 @@ export default function AuditLogsList() {
 
   const onFilterVisibilityChange = (items: FilterListConfig[]) => {
     const visibleFilterKeys = items.filter(i => i.visible).map(i => i.key)
+
     dispatch(
       auditLogVisibleFilterUpdated({filterKeys: visibleFilterKeys, mode})
     )
@@ -71,11 +71,7 @@ export default function AuditLogsList() {
 
   return (
     <Stack gap="xs">
-      <Filters
-        ref={filtersRef}
-        filters={filtersList}
-        setQueryParams={auditLogTable.setQueryParams}
-      />
+      <Filters ref={filtersRef} setQueryParams={auditLogTable.setQueryParams} />
       <Group ref={actionButtonsRef} justify="end" align="flex-start">
         <FilterSelector onChange={onFilterVisibilityChange} />
 

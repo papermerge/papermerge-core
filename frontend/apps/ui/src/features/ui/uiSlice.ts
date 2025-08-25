@@ -26,7 +26,7 @@ import type {
   SortMenuDirection
 } from "@/types"
 
-import type {AuditOperation} from "@/features/audit/types"
+import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
 import {DialogVisiblity} from "@/types.d/common"
 
@@ -285,14 +285,16 @@ export interface UIState {
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
   mainAuditLogVisibleFilters?: Array<string>
-  mainAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
+  mainAuditLogFiltersCollapse?: boolean
+  mainAuditLogTimestampFilterValue?: TimestampFilterType
   mainAuditLogOperationFilterValue?: Array<AuditOperation>
   mainAuditLogTableNameFilterValue?: Array<string>
   mainAuditLogUsernameFilterValue?: Array<string>
   mainAuditLogPageNumber?: number
   mainAuditLogPageSize?: number
   secondaryAuditLogVisibleFilters?: Array<string>
-  secondaryAuditLogTimestampFilterValue?: {from: Date | null; to: Date | null}
+  secondaryAuditLogFiltersCollapse?: boolean
+  secondaryAuditLogTimestampFilterValue?: TimestampFilterType
   secondaryAuditLogOperationFilterValue?: Array<AuditOperation>
   secondaryAuditLogTableNameFilterValue?: Array<string>
   secondaryAuditLogUsernameFilterValue?: Array<string>
@@ -932,6 +934,32 @@ const uiSlice = createSlice({
       }
 
       state.secondaryAuditLogVisibleFilters = filterKeys
+    },
+
+    auditLogFiltersCollapseUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: boolean}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogFiltersCollapse = value
+        return
+      }
+
+      state.secondaryAuditLogFiltersCollapse = value
+    },
+
+    auditLogTimestampFilterValueUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: TimestampFilterType}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogTimestampFilterValue = value
+        return
+      }
+
+      state.secondaryAuditLogTimestampFilterValue = value
     }
   }
 })
@@ -984,7 +1012,9 @@ export const {
   lastHomeUpdated,
   lastInboxUpdated,
   viewerPageHaveChangedDialogVisibilityChanged,
-  auditLogVisibleFilterUpdated
+  auditLogVisibleFilterUpdated,
+  auditLogFiltersCollapseUpdated,
+  auditLogTimestampFilterValueUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1395,6 +1425,28 @@ export const selectAuditLogVisibleFilters = (
   }
 
   return state.ui.secondaryAuditLogVisibleFilters
+}
+
+export const selectAuditLogFiltersCollapse = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogFiltersCollapse
+  }
+
+  return state.ui.secondaryAuditLogFiltersCollapse
+}
+
+export const selectAuditLogTimestampFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogTimestampFilterValue
+  }
+
+  return state.ui.secondaryAuditLogTimestampFilterValue
 }
 
 /* Load initial collapse state value from cookie */

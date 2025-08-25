@@ -1,8 +1,14 @@
 import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
-import type {AuditLogQueryParams} from "../types"
+import type {AuditLogQueryParams, TimestampFilterType} from "../types"
 
-import React, {useEffect, useState} from "react"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {
+  auditLogTimestampFilterValueUpdated,
+  selectAuditLogTimestampFilterValue
+} from "@/features/ui/uiSlice"
+import {usePanelMode} from "@/hooks"
+import React, {useEffect} from "react"
 
 interface TimestampRange {
   from?: Date | null
@@ -14,7 +20,9 @@ interface TimestampPickerProps {
 }
 
 const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
-  const [range, setRange] = useState<TimestampRange>()
+  const mode = usePanelMode()
+  const dispatch = useAppDispatch()
+  const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
 
   const onChangeFrom = (value: string | null) => {
     setQueryParams(prev => ({
@@ -22,10 +30,17 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
       filter_timestamp_from: value ? value : undefined
     }))
 
-    setRange(prev => ({
-      ...prev,
-      from: value ? new Date(value) : null
-    }))
+    const newFrom = value ? new Date(value) : null
+
+    dispatch(
+      auditLogTimestampFilterValueUpdated({
+        mode,
+        value: {
+          from: newFrom?.toDateString() || null,
+          to: range?.to || null
+        }
+      })
+    )
   }
 
   const onChangeTo = (value: string | null) => {
@@ -33,31 +48,48 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
       ...prev,
       filter_timestamp_from: value ? value : undefined
     }))
-    setRange(prev => ({
-      ...prev,
-      to: value ? new Date(value) : null
-    }))
+    const newTo = value ? new Date(value) : null
+
+    dispatch(
+      auditLogTimestampFilterValueUpdated({
+        mode,
+        value: {
+          to: newTo?.toISOString() || null,
+          from: range?.from || null
+        }
+      })
+    )
   }
 
   useEffect(() => {
     if (range?.from) {
       setQueryParams(prev => ({
         ...prev,
-        filter_timestamp_from: range?.from?.toISOString()
+        filter_timestamp_from: range?.from || undefined
+      }))
+    } else {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_from: undefined
       }))
     }
 
     if (range?.to) {
       setQueryParams(prev => ({
         ...prev,
-        filter_timestamp_to: range?.to?.toISOString()
+        filter_timestamp_to: range?.to || undefined
+      }))
+    } else {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_to: undefined
       }))
     }
   }, [range])
 
   const handleQuickSelect = (type: "today" | "1hour" | "3hours") => {
     const now = new Date()
-    let newRange: TimestampRange = {from: null, to: null}
+    let newRange: TimestampFilterType = {from: null, to: null}
 
     switch (type) {
       case "today":
@@ -65,19 +97,33 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(now)
         endOfDay.setHours(23, 59, 59, 999)
-        newRange = {from: startOfDay, to: endOfDay}
+        newRange = {from: startOfDay.toISOString(), to: endOfDay.toISOString()}
         break
       case "1hour":
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-        newRange = {from: oneHourAgo, to: now}
+        newRange = {from: oneHourAgo.toISOString(), to: now.toISOString()}
         break
       case "3hours":
         const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-        newRange = {from: threeHoursAgo, to: now}
+        newRange = {from: threeHoursAgo.toISOString(), to: now.toISOString()}
         break
     }
+    dispatch(
+      auditLogTimestampFilterValueUpdated({
+        mode,
+        value: newRange
+      })
+    )
+  }
 
-    setRange(newRange)
+  const handleClear = () => {
+    const newRange: TimestampFilterType = {from: null, to: null}
+    dispatch(
+      auditLogTimestampFilterValueUpdated({
+        mode,
+        value: newRange
+      })
+    )
   }
 
   return (
@@ -123,6 +169,9 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
             onClick={() => handleQuickSelect("3hours")}
           >
             Last 3 Hours
+          </Button>
+          <Button size="xs" variant="light" onClick={() => handleClear()}>
+            Clear
           </Button>
         </Group>
       </Stack>

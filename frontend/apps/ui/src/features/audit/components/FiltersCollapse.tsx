@@ -1,34 +1,44 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import useFilterList from "@/features/audit/hooks/useFilterList"
+import {
+  auditLogFiltersCollapseUpdated,
+  selectAuditLogFiltersCollapse
+} from "@/features/ui/uiSlice"
 import {Box, Group, Paper, UnstyledButton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
-import React, {forwardRef, useState} from "react"
+import React, {forwardRef} from "react"
 import type {AuditLogQueryParams} from "../types"
-import {FilterListConfig} from "../types"
+
+import {usePanelMode} from "@/hooks"
 import OperationFilter from "./OperationFilter"
 import TableNameFilter from "./TableNameFilter"
 import TimestampFilter from "./TimestampFilter"
 import UserFilter from "./UserFilter"
 
 interface Args {
-  filters: FilterListConfig[]
   className?: string
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }
 
 const FiltersCollapse = forwardRef<HTMLDivElement, Args>(
-  ({filters, className, setQueryParams}, ref) => {
-    const [expanded, setExpanded] = useState(true)
+  ({className, setQueryParams}, ref) => {
+    const mode = usePanelMode()
+    const dispatch = useAppDispatch()
+    const filtersList = useFilterList()
+    const visibleFiltersOnly = filtersList.filter(f => f.visible)
+    const expanded = useAppSelector(s => selectAuditLogFiltersCollapse(s, mode))
 
     const toggleExpanded = () => {
-      setExpanded(!expanded)
+      dispatch(auditLogFiltersCollapseUpdated({value: !expanded, mode}))
     }
 
     let filterComponents: React.ReactElement[] = []
 
-    if (filters.length == 0) {
+    if (visibleFiltersOnly.length == 0) {
       return <></>
     }
 
-    filters.forEach(f => {
+    visibleFiltersOnly.forEach(f => {
       if (f.visible) {
         switch (f.key) {
           case "timestamp":

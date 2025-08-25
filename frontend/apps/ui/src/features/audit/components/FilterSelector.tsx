@@ -26,7 +26,6 @@ export default function DropdownSelector({onChange}: FilterSelectorArgs) {
     const newItems = filtersList.map(i =>
       i.key === key ? {...i, visible: checked} : i
     )
-
     onChange(newItems)
   }
 

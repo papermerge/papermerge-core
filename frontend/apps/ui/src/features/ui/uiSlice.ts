@@ -960,6 +960,19 @@ const uiSlice = createSlice({
       }
 
       state.secondaryAuditLogTimestampFilterValue = value
+    },
+
+    auditLogOperationFilterValueUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Array<AuditOperation>}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogOperationFilterValue = value
+        return
+      }
+
+      state.secondaryAuditLogOperationFilterValue = value
     }
   }
 })
@@ -1014,7 +1027,8 @@ export const {
   viewerPageHaveChangedDialogVisibilityChanged,
   auditLogVisibleFilterUpdated,
   auditLogFiltersCollapseUpdated,
-  auditLogTimestampFilterValueUpdated
+  auditLogTimestampFilterValueUpdated,
+  auditLogOperationFilterValueUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1447,6 +1461,17 @@ export const selectAuditLogTimestampFilterValue = (
   }
 
   return state.ui.secondaryAuditLogTimestampFilterValue
+}
+
+export const selectAuditLogOperationFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogOperationFilterValue
+  }
+
+  return state.ui.secondaryAuditLogOperationFilterValue
 }
 
 /* Load initial collapse state value from cookie */

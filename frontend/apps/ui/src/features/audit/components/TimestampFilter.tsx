@@ -10,11 +10,6 @@ import {
 import {usePanelMode} from "@/hooks"
 import React, {useEffect} from "react"
 
-interface TimestampRange {
-  from?: Date | null
-  to?: Date | null
-}
-
 interface TimestampPickerProps {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }

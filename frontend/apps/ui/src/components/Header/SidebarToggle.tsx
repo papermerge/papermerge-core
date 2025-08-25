@@ -11,7 +11,21 @@ export default function SidebarToggle() {
     dispatch(toggleNavBar())
   }
   return (
-    <UnstyledButton onClick={() => onClick()}>
+    <UnstyledButton
+      onClick={() => onClick()}
+      style={{
+        outline: "none",
+        boxShadow: "none",
+        "&:focus": {
+          outline: "none",
+          boxShadow: "none"
+        },
+        "&:active": {
+          outline: "none",
+          boxShadow: "none"
+        }
+      }}
+    >
       <IconMenu2 />
     </UnstyledButton>
   )

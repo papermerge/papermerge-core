@@ -19,6 +19,7 @@ class ScopeCategory(Enum):
     CUSTOM_FIELD = "custom_field"
     DOCUMENT_TYPE = "document_type"
     SHARED_NODE = "shared_node"
+    AUDIT_LOG = "audit_log"
 
 
 class Action(Enum):
@@ -124,6 +125,9 @@ class Scopes:
     SHARED_NODE_VIEW = "shared_node.view"
     SHARED_NODE_UPDATE = "shared_node.update"
     SHARED_NODE_DELETE = "shared_node.delete"
+
+    # Audit log permissions
+    AUDIT_LOG_VIEW = "audit_log.view"
 
     @classmethod
     def all_scopes(cls) -> Set[str]:

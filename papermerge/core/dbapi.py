@@ -64,6 +64,7 @@ from .features.shared_nodes.db.api import (
     update_shared_node_access,
     get_shared_folder
 )
+from .features.audit.db.api import (get_audit_logs, get_audit_log)
 
 __all__ = [
     "get_nodes",
@@ -124,5 +125,8 @@ __all__ = [
     "create_shared_nodes",
     "get_shared_node_access_details",
     "update_shared_node_access",
-    "get_document_last_version"
+    "get_document_last_version",
+    # audit logs
+    "get_audit_logs",
+    "get_audit_log"
 ]

@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
@@ -9,6 +9,7 @@ import {
   selectNavBarCollapsed
 } from "@/features/ui/uiSlice"
 import {
+  AUDIT_LOG_VIEW,
   CUSTOM_FIELD_VIEW,
   DOCUMENT_TYPE_VIEW,
   GROUP_VIEW,
@@ -23,12 +24,13 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import { Center, Group, Loader, Text } from "@mantine/core"
+import {Center, Group, Loader, Text} from "@mantine/core"
 import {
   IconAlignJustified,
   IconCategory,
   IconHome,
   IconInbox,
+  IconLogs,
   IconMasksTheater,
   IconTag,
   IconTriangleSquareCircle,
@@ -36,13 +38,13 @@ import {
   IconUsersGroup,
   IconUserShare
 } from "@tabler/icons-react"
-import { useContext } from "react"
-import { useSelector } from "react-redux"
-import { NavLink } from "react-router-dom"
+import {useContext} from "react"
+import {useSelector} from "react-redux"
+import {NavLink} from "react-router-dom"
 
-import { useGetVersionQuery } from "@/features/version/apiSlice"
-import type { User } from "@/types.ts"
-import { useTranslation } from "react-i18next"
+import {useGetVersionQuery} from "@/features/version/apiSlice"
+import type {User} from "@/types.ts"
+import {useTranslation} from "react-i18next"
 
 function NavBarFull() {
   const {t} = useTranslation()
@@ -147,6 +149,11 @@ function NavBarFull() {
             {NavLinkWithFeedback(t("roles.name"), <IconMasksTheater />)}
           </NavLink>
         )}
+        {user.scopes.includes(AUDIT_LOG_VIEW) && (
+          <NavLink to="/audit-logs">
+            {NavLinkWithFeedback(t("audit_log.name"), <IconLogs />)}
+          </NavLink>
+        )}
       </div>
       <Center className="navbar-bg-color">
         <Text size="sm" c="dimmed">
@@ -242,6 +249,11 @@ function NavBarCollapsed() {
             {NavLinkWithFeedbackShort(<IconMasksTheater />)}
           </NavLink>
         )}
+        {user.scopes.includes(AUDIT_LOG_VIEW) && (
+          <NavLink to="/audit-logs">
+            {NavLinkWithFeedbackShort(<IconLogs />)}
+          </NavLink>
+        )}
       </div>
       <Center className="navbar-bg-color">
         <Text size="sm" c="dimmed">
@@ -269,7 +281,10 @@ type NavLinkState = {
 
 type ResponsiveLink = ({isActive, isPending}: NavLinkState) => React.JSX.Element
 
-function NavLinkWithFeedback(text: string, icon: React.JSX.Element): ResponsiveLink {
+function NavLinkWithFeedback(
+  text: string,
+  icon: React.JSX.Element
+): ResponsiveLink {
   return ({isActive, isPending}) => {
     if (isActive) {
       return (

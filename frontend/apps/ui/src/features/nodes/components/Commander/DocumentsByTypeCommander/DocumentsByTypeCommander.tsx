@@ -2,7 +2,6 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import Pagination from "@/components/Pagination"
 import PanelContext from "@/contexts/PanelContext"
 import {useGetDocsByTypeQuery} from "@/features/document/store/apiSlice"
-import {useDynamicHeight} from "@/features/nodes/hooks/useDynamicHeight"
 import {
   commanderLastPageSizeUpdated,
   documentsByTypeCommanderColumnsUpdated,
@@ -10,6 +9,7 @@ import {
   selectDocumentsByTypeCommanderVisibleColumns,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
+import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import type {PanelMode} from "@/types"
 import {
   Box,

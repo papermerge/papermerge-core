@@ -4,7 +4,7 @@ import {selectAuditLogVisibleFilters} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useEffect, useState} from "react"
 
-let allFiltersConfig = [
+const FILTERS: FilterListConfig[] = [
   {key: "timestamp", label: "Timestamp", visible: false},
   {key: "operation", label: "Operation", visible: false},
   {key: "table_name", label: "Table", visible: false},
@@ -16,14 +16,12 @@ export default function useFilterList(): FilterListConfig[] {
   const selectedFilterKeys = useAppSelector(s =>
     selectAuditLogVisibleFilters(s, mode)
   )
-  const [filtersList, setFiltersList] = useState<FilterListConfig[]>([])
+  const [filtersList, setFiltersList] = useState<FilterListConfig[]>(FILTERS)
 
   useEffect(() => {
-    let newFilters: FilterListConfig[] = []
-    allFiltersConfig.forEach(f => {
-      if (selectedFilterKeys && selectedFilterKeys?.includes(f.key)) {
-        newFilters.push({...f, visible: true})
-      }
+    const newFilters = FILTERS.map(f => {
+      const visible = selectedFilterKeys && selectedFilterKeys.includes(f.key)
+      return {...f, visible}
     })
 
     setFiltersList(newFilters)

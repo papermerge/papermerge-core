@@ -34,7 +34,7 @@
     "js-cookie": "^3.0.5",
     "kommon": "workspace:*",
     "pdfjs-dist": "^5.3.93",
-    "react": "^19.1.0",
+    "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^15.7.1",
     "react-redux": "^9.2.0",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
-    "@types/react": "^19.1.8",
+    "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.1",

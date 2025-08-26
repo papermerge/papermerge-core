@@ -1428,12 +1428,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^19.1.8":
+"@types/react@npm:*":
   version: 19.1.8
   resolution: "@types/react@npm:19.1.8"
   dependencies:
     csstype: "npm:^3.0.2"
   checksum: 10c0/4908772be6dc941df276931efeb0e781777fa76e4d5d12ff9f75eb2dcc2db3065e0100efde16fde562c5bafa310cc8f50c1ee40a22640459e066e72cd342143e
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^19.1.11":
+  version: 19.1.11
+  resolution: "@types/react@npm:19.1.11"
+  dependencies:
+    csstype: "npm:^3.0.2"
+  checksum: 10c0/639b225c2bbcd4b8a30e1ea7a73aec81ae5b952a4c432460b48c9881c9d12e76645c9032d24f15eefae9985a12d5cb26557fe10e9850b2da0fabfb0a1e2d16bd
   languageName: node
   linkType: hard
 
@@ -2109,7 +2118,7 @@ __metadata:
     "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.7"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"
@@ -2119,7 +2128,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:^0.4.20"
     globals: "npm:^16.3.0"
     kommon: "workspace:*"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     react-router: "npm:^7.8.1"
     typescript: "npm:^5.9.2"
@@ -2983,14 +2992,14 @@ __metadata:
   resolution: "hooks.dev@workspace:apps/hooks.dev"
   dependencies:
     "@eslint/js": "npm:^9.33.0"
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     eslint: "npm:^9.31.0"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.20"
     globals: "npm:^16.3.0"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     typescript: "npm:~5.9.2"
     typescript-eslint: "npm:^8.41.0"
@@ -3003,12 +3012,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hooks@workspace:packages/hooks"
   dependencies:
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     typescript: "npm:^5.9.2"
   peerDependencies:
-    react: ^19.1.0
+    react: ^19.1.1
   languageName: unknown
   linkType: soft
 
@@ -3336,7 +3345,7 @@ __metadata:
     "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.7"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"
@@ -3345,7 +3354,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:^0.4.20"
     globals: "npm:^16.3.0"
     kommon: "workspace:*"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     react-router: "npm:^7.8.1"
     typescript: "npm:^5.9.2"
@@ -4060,10 +4069,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^19.1.0":
-  version: 19.1.0
-  resolution: "react@npm:19.1.0"
-  checksum: 10c0/530fb9a62237d54137a13d2cfb67a7db6a2156faed43eecc423f4713d9b20c6f2728b026b45e28fcd72e8eadb9e9ed4b089e99f5e295d2f0ad3134251bdd3698
+"react@npm:^19.1.1":
+  version: 19.1.1
+  resolution: "react@npm:19.1.1"
+  checksum: 10c0/8c9769a2dfd02e603af6445058325e6c8a24b47b185d0e461f66a6454765ddcaecb3f0a90184836c68bb509f3c38248359edbc42f0d07c23eb500a5c30c87b4e
   languageName: node
   linkType: hard
 
@@ -4530,7 +4539,7 @@ __metadata:
     "@reduxjs/toolkit": "npm:^2.8.2"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/js-cookie": "npm:^3.0.6"
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
     "@types/react-router-dom": "npm:^5.3.3"
     "@vitejs/plugin-react": "npm:^5.0.1"
@@ -4548,7 +4557,7 @@ __metadata:
     kommon: "workspace:*"
     pdfjs-dist: "npm:^5.3.93"
     prettier: "npm:^3.6.2"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     react-i18next: "npm:^15.7.1"
     react-redux: "npm:^9.2.0"
@@ -4708,7 +4717,7 @@ __metadata:
     "@mantine/core": "npm:^8.2.7"
     "@mantine/hooks": "npm:^8.2.7"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.8"
+    "@types/react": "npm:^19.1.11"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"
@@ -4717,7 +4726,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:^0.4.20"
     globals: "npm:^16.3.0"
     kommon: "workspace:*"
-    react: "npm:^19.1.0"
+    react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     react-router: "npm:^7.8.1"
     typescript: "npm:^5.9.2"

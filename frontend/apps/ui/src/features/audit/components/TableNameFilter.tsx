@@ -42,6 +42,22 @@ export default function TableNameFilter({setQueryParams}: Args) {
     selectAuditLogTableNameFilterValue(s, mode)
   )
 
+  const ALL_TABLES = [
+    "nodes",
+    "document_versions",
+    "custom_fields",
+    "document_types",
+    "shared_nodes",
+    "tags",
+    "users",
+    "groups",
+    "users_roles",
+    "users_groups",
+    "roles_permissions",
+    "nodes_tags",
+    "document_types_custom_fields"
+  ]
+
   const onChange = (values: string[]) => {
     setQueryParams(prev => ({
       ...prev,
@@ -69,19 +85,3 @@ export default function TableNameFilter({setQueryParams}: Args) {
     </Paper>
   )
 }
-
-const ALL_TABLES = [
-  "nodes",
-  "document_versions",
-  "custom_fields",
-  "document_types",
-  "shared_nodes",
-  "tags",
-  "users",
-  "groups",
-  "users_roles",
-  "users_groups",
-  "roles_permissions",
-  "nodes_tags",
-  "document_types_custom_fields"
-].sort()

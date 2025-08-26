@@ -82,7 +82,7 @@ const TimestampFilter: React.FC<TimestampFilterArgs> = ({setQueryParams}) => {
       auditLogTimestampFilterValueUpdated({
         mode,
         value: {
-          from: newFrom?.toDateString() || null,
+          from: newFrom?.toISOString() || null,
           to: range?.to || null
         }
       })

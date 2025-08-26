@@ -3,6 +3,7 @@ import useFilterList from "@/features/audit/hooks/useFilterList"
 import {
   auditLogFiltersCollapseUpdated,
   auditLogOperationFilterValueCleared,
+  auditLogTableNameFilterValueCleared,
   auditLogTimestampFilterValueCleared,
   selectAuditLogFiltersCollapse
 } from "@/features/ui/uiSlice"
@@ -13,7 +14,7 @@ import type {AuditLogQueryParams} from "../types"
 
 import {usePanelMode} from "@/hooks"
 import OperationFilter, {useOperationFilter} from "./OperationFilter"
-import TableNameFilter from "./TableNameFilter"
+import TableNameFilter, {useTableNameFilter} from "./TableNameFilter"
 import TimestampFilter, {useTimestampFilter} from "./TimestampFilter"
 import UserFilter from "./UserFilter"
 
@@ -41,6 +42,7 @@ const FiltersCollapse = forwardRef<HTMLDivElement, Args>(
     of the filters visible - then filters should be applied anyway */
     const {clear: clearTimestampFilter} = useTimestampFilter({setQueryParams})
     const {clear: clearOperationFilter} = useOperationFilter({setQueryParams})
+    const {clear: clearTableNameFilter} = useTableNameFilter({setQueryParams})
 
     const toggleExpanded = () => {
       dispatch(auditLogFiltersCollapseUpdated({value: !expanded, mode}))
@@ -65,6 +67,14 @@ const FiltersCollapse = forwardRef<HTMLDivElement, Args>(
                 })
               )
               clearOperationFilter()
+              break
+            case TABLE_NAME_FILTER_KEY:
+              dispatch(
+                auditLogTableNameFilterValueCleared({
+                  mode
+                })
+              )
+              clearTableNameFilter()
               break
           }
         }

@@ -1,6 +1,10 @@
+import type {
+  AuditLogQueryParams,
+  FilterHookReturn,
+  TimestampFilterType
+} from "@/features/audit/types"
 import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
-import type {AuditLogQueryParams, TimestampFilterType} from "../types"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
@@ -14,13 +18,9 @@ interface TimestampFilterArgs {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }
 
-interface TimestampFilterReturn {
-  clear: () => void
-}
-
 export function useTimestampFilter({
   setQueryParams
-}: TimestampFilterArgs): TimestampFilterReturn {
+}: TimestampFilterArgs): FilterHookReturn {
   const mode = usePanelMode()
   const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
 

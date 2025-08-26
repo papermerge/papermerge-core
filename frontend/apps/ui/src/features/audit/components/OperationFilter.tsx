@@ -1,5 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {AuditLogQueryParams, AuditOperation} from "@/features/audit/types"
+import type {
+  AuditLogQueryParams,
+  AuditOperation,
+  FilterHookReturn
+} from "@/features/audit/types"
 import {
   auditLogOperationFilterValueUpdated,
   selectAuditLogOperationFilterValue
@@ -12,11 +16,7 @@ interface Args {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }
 
-interface ReturnValue {
-  clear: () => void
-}
-
-export function useOperationFilter({setQueryParams}: Args): ReturnValue {
+export function useOperationFilter({setQueryParams}: Args): FilterHookReturn {
   const mode = usePanelMode()
   const operations = useAppSelector(s =>
     selectAuditLogOperationFilterValue(s, mode)

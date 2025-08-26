@@ -60,3 +60,7 @@ export type TimestampFilterType = {
   from: string | null // Date().toISOString()
   to: string | null // Date().toISOString()
 }
+
+export interface FilterHookReturn {
+  clear: () => void
+}

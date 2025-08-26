@@ -997,6 +997,31 @@ const uiSlice = createSlice({
       }
 
       state.secondaryAuditLogOperationFilterValue = undefined
+    },
+
+    auditLogTableNameFilterValueUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogTableNameFilterValue = value
+        return
+      }
+
+      state.secondaryAuditLogTableNameFilterValue = value
+    },
+    auditLogTableNameFilterValueCleared(
+      state,
+      action: PayloadAction<{mode: PanelMode}>
+    ) {
+      const {mode} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogTableNameFilterValue = undefined
+        return
+      }
+
+      state.secondaryAuditLogTableNameFilterValue = undefined
     }
   }
 })
@@ -1054,7 +1079,9 @@ export const {
   auditLogTimestampFilterValueUpdated,
   auditLogTimestampFilterValueCleared,
   auditLogOperationFilterValueUpdated,
-  auditLogOperationFilterValueCleared
+  auditLogOperationFilterValueCleared,
+  auditLogTableNameFilterValueCleared,
+  auditLogTableNameFilterValueUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1498,6 +1525,17 @@ export const selectAuditLogOperationFilterValue = (
   }
 
   return state.ui.secondaryAuditLogOperationFilterValue
+}
+
+export const selectAuditLogTableNameFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogTableNameFilterValue
+  }
+
+  return state.ui.secondaryAuditLogTableNameFilterValue
 }
 
 /* Load initial collapse state value from cookie */

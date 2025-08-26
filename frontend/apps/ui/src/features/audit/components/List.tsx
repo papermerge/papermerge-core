@@ -99,9 +99,9 @@ export default function AuditLogsList() {
 
       <TablePagination
         ref={paginationRef}
-        currentPage={auditLogTable.queryParams.page_number || 1}
+        currentPage={auditLogTable.data?.page_number || 1}
         totalPages={auditLogTable.data?.num_pages || 0}
-        pageSize={auditLogTable.queryParams.page_size || 15}
+        pageSize={auditLogTable.data?.page_size || 15}
         onPageChange={auditLogTable.setPage}
         onPageSizeChange={auditLogTable.setPageSize}
         totalItems={

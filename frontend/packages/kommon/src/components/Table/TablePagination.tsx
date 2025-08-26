@@ -21,7 +21,7 @@ const TablePagination = forwardRef<HTMLDivElement, TablePaginationArgs>(
       pageSize,
       onPageChange,
       onPageSizeChange,
-      pageSizeOptions = [10, 15, 25, 50, 100],
+      pageSizeOptions = [5, 10, 15, 25, 50, 100],
       showPageSizeSelector = true,
       totalItems
     },

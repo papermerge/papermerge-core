@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import useFilterList from "@/features/audit/hooks/useFilterList"
 import {
   auditLogFiltersCollapseUpdated,
+  auditLogOperationFilterValueCleared,
   auditLogTimestampFilterValueCleared,
   selectAuditLogFiltersCollapse
 } from "@/features/ui/uiSlice"
@@ -56,6 +57,15 @@ const FiltersCollapse = forwardRef<HTMLDivElement, Args>(
                 })
               )
               clearTimestampFilter()
+              break
+            case OPERATION_FILTER_KEY:
+              dispatch(
+                auditLogOperationFilterValueCleared({
+                  mode
+                })
+              )
+              clearOperationFilter()
+              break
           }
         }
       })

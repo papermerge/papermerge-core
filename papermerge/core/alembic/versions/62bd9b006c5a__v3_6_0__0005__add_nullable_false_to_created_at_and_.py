@@ -1,4 +1,4 @@
-"""v3.6.0: 0005-- add nullable=False to created_at and updated_at
+"""v3.6.0: 0005 -- add nullable=False to created_at and updated_at
 
 Revision ID: 62bd9b006c5a
 Revises: 93c83c34d446

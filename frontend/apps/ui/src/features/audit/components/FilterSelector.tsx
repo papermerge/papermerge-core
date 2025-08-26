@@ -1,8 +1,8 @@
+import useFilterList from "@/features/audit/hooks/useFilterList"
 import type {FilterListConfig} from "@/features/audit/types"
 import {ActionIcon, Checkbox, Popover, ScrollArea, Stack} from "@mantine/core"
 import {IconFilter} from "@tabler/icons-react"
 import {useState} from "react"
-import useFilterList from "../hooks/useFilterList"
 
 interface FilterSelectorArgs {
   onChange: (items: FilterListConfig[]) => void

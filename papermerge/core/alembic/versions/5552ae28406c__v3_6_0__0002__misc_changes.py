@@ -1,4 +1,4 @@
-"""3.6.0: 0002 -- misc changes
+"""v3.6.0: 0002 -- misc changes
 
 Revision ID: 5552ae28406c
 Revises: 2973d27f1e0d

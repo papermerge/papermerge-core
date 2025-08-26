@@ -15,6 +15,7 @@ from papermerge.core.features.tags.db import api as tags_dbapi
 from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .types import PaginatedQueryParams
 
 router = APIRouter(
@@ -147,7 +148,13 @@ async def create_tag(
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-    tag, error = await tags_dbapi.create_tag(db_session, attrs=attrs)
+
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        tag, error = await tags_dbapi.create_tag(db_session, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -169,7 +176,12 @@ async def delete_tag(
     Required scope: `{scope}`
     """
     try:
-        await tags_dbapi.delete_tag(db_session, tag_id=tag_id)
+        async with AsyncAuditContext(
+                db_session,
+                user_id=user.id,
+                username=user.username
+        ):
+            await tags_dbapi.delete_tag(db_session, tag_id=tag_id)
     except EntityNotFound:
         raise HTTPException(status_code=404, detail="Does not exists")
 
@@ -206,7 +218,13 @@ async def update_tag(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
     else:
         attrs.user_id = user.id
-    tag, error = await tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
+
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        tag, error = await tags_dbapi.update_tag(db_session, tag_id=tag_id, attrs=attrs)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

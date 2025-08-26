@@ -1,4 +1,4 @@
-"""v3.6: 0001: add audit columns
+"""v3.6.0: 0001 -- add audit columns
 
 Revision ID: 2973d27f1e0d
 Revises: 50ef5a403d27

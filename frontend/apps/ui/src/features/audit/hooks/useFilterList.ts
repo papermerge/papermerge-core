@@ -20,7 +20,9 @@ export default function useFilterList(): FilterListConfig[] {
 
   useEffect(() => {
     const newFilters = FILTERS.map(f => {
-      const visible = selectedFilterKeys && selectedFilterKeys.includes(f.key)
+      const visible = Boolean(
+        selectedFilterKeys && selectedFilterKeys.includes(f.key)
+      )
       return {...f, visible}
     })
 

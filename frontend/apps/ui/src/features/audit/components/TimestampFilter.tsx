@@ -12,7 +12,7 @@ import {
   selectAuditLogTimestampFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import React, {useEffect} from "react"
+import React, {useCallback, useEffect, useMemo} from "react"
 
 interface TimestampFilterArgs {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
@@ -24,145 +24,131 @@ export function useTimestampFilter({
   const mode = usePanelMode()
   const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
 
-  const clear = () => {
+  const clear = useCallback(() => {
+    // Single batch update instead of two separate calls
     setQueryParams(prev => ({
       ...prev,
-      filter_timestamp_from: undefined
-    }))
-
-    setQueryParams(prev => ({
-      ...prev,
+      filter_timestamp_from: undefined,
       filter_timestamp_to: undefined
     }))
-  }
+  }, [setQueryParams])
 
   useEffect(() => {
-    if (range?.from) {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_from: range?.from || undefined
-      }))
-    } else {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_from: undefined
-      }))
-    }
-
-    if (range?.to) {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_to: range?.to || undefined
-      }))
-    } else {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_to: undefined
-      }))
-    }
-  }, [range])
+    // Single batch update instead of separate calls
+    setQueryParams(prev => ({
+      ...prev,
+      filter_timestamp_from: range?.from || undefined,
+      filter_timestamp_to: range?.to || undefined
+    }))
+  }, [range, setQueryParams])
 
   return {clear}
 }
 
-const TimestampFilter: React.FC<TimestampFilterArgs> = ({setQueryParams}) => {
+// Memoize the main component
+const TimestampFilter = React.memo<TimestampFilterArgs>(({setQueryParams}) => {
   const mode = usePanelMode()
   const dispatch = useAppDispatch()
   const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
 
-  const onChangeFrom = (value: string | null) => {
-    setQueryParams(prev => ({
-      ...prev,
-      filter_timestamp_from: value ? value : undefined
-    }))
+  // Memoize handlers to prevent unnecessary re-renders
+  const onChangeFrom = useCallback(
+    (value: string | null) => {
+      const newFrom = value ? new Date(value) : null
 
-    const newFrom = value ? new Date(value) : null
-
-    dispatch(
-      auditLogTimestampFilterValueUpdated({
-        mode,
-        value: {
-          from: newFrom?.toISOString() || null,
-          to: range?.to || null
-        }
-      })
-    )
-  }
-
-  const onChangeTo = (value: string | null) => {
-    setQueryParams(prev => ({
-      ...prev,
-      filter_timestamp_from: value ? value : undefined
-    }))
-    const newTo = value ? new Date(value) : null
-
-    dispatch(
-      auditLogTimestampFilterValueUpdated({
-        mode,
-        value: {
-          to: newTo?.toISOString() || null,
-          from: range?.from || null
-        }
-      })
-    )
-  }
-
-  useEffect(() => {
-    if (range?.from) {
       setQueryParams(prev => ({
         ...prev,
-        filter_timestamp_from: range?.from || undefined
+        filter_timestamp_from: value || undefined
       }))
-    } else {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_from: undefined
-      }))
-    }
 
-    if (range?.to) {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_to: range?.to || undefined
-      }))
-    } else {
-      setQueryParams(prev => ({
-        ...prev,
-        filter_timestamp_to: undefined
-      }))
-    }
-  }, [range])
+      dispatch(
+        auditLogTimestampFilterValueUpdated({
+          mode,
+          value: {
+            from: newFrom?.toISOString() || null,
+            to: range?.to || null
+          }
+        })
+      )
+    },
+    [setQueryParams, dispatch, mode, range?.to]
+  )
 
-  const handleQuickSelect = (type: "today" | "1hour" | "3hours") => {
+  const onChangeTo = useCallback(
+    (value: string | null) => {
+      const newTo = value ? new Date(value) : null
+
+      // BUG FIX: This was setting filter_timestamp_from instead of filter_timestamp_to
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_to: value || undefined // Fixed: was filter_timestamp_from
+      }))
+
+      dispatch(
+        auditLogTimestampFilterValueUpdated({
+          mode,
+          value: {
+            from: range?.from || null,
+            to: newTo?.toISOString() || null
+          }
+        })
+      )
+    },
+    [setQueryParams, dispatch, mode, range?.from]
+  )
+
+  // Remove duplicate useEffect - already handled in hook
+
+  // Memoize date calculations to prevent recalculation on every render
+  const quickSelectRanges = useMemo(() => {
     const now = new Date()
-    let newRange: TimestampFilterType = {from: null, to: null}
 
-    switch (type) {
-      case "today":
+    return {
+      today: () => {
         const startOfDay = new Date(now)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(now)
         endOfDay.setHours(23, 59, 59, 999)
-        newRange = {from: startOfDay.toISOString(), to: endOfDay.toISOString()}
-        break
-      case "1hour":
+        return {from: startOfDay.toISOString(), to: endOfDay.toISOString()}
+      },
+      oneHour: () => {
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-        newRange = {from: oneHourAgo.toISOString(), to: now.toISOString()}
-        break
-      case "3hours":
+        return {from: oneHourAgo.toISOString(), to: now.toISOString()}
+      },
+      threeHours: () => {
         const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-        newRange = {from: threeHoursAgo.toISOString(), to: now.toISOString()}
-        break
+        return {from: threeHoursAgo.toISOString(), to: now.toISOString()}
+      }
     }
-    dispatch(
-      auditLogTimestampFilterValueUpdated({
-        mode,
-        value: newRange
-      })
-    )
-  }
+  }, []) // Empty dependency - recalculate only when component mounts
 
-  const handleClear = () => {
+  const handleQuickSelect = useCallback(
+    (type: "today" | "1hour" | "3hours") => {
+      let newRange: TimestampFilterType
+
+      switch (type) {
+        case "today":
+          newRange = quickSelectRanges.today()
+          break
+        case "1hour":
+          newRange = quickSelectRanges.oneHour()
+          break
+        case "3hours":
+          newRange = quickSelectRanges.threeHours()
+          break
+      }
+
+      dispatch(
+        auditLogTimestampFilterValueUpdated({
+          mode,
+          value: newRange
+        })
+      )
+    },
+    [dispatch, mode, quickSelectRanges]
+  )
+
+  const handleClear = useCallback(() => {
     const newRange: TimestampFilterType = {from: null, to: null}
     dispatch(
       auditLogTimestampFilterValueUpdated({
@@ -170,12 +156,16 @@ const TimestampFilter: React.FC<TimestampFilterArgs> = ({setQueryParams}) => {
         value: newRange
       })
     )
-  }
+  }, [dispatch, mode])
+
+  // Memoize static props
+  const paperProps = useMemo(() => ({p: "xs" as const}), [])
+  const groupProps = useMemo(() => ({justify: "start" as const}), [])
 
   return (
-    <Paper p="xs">
+    <Paper {...paperProps}>
       <Stack>
-        <Group justify={"start"}>
+        <Group {...groupProps}>
           <DateTimePicker
             label="From"
             value={range?.from}
@@ -216,13 +206,15 @@ const TimestampFilter: React.FC<TimestampFilterArgs> = ({setQueryParams}) => {
           >
             Last 3 Hours
           </Button>
-          <Button size="xs" variant="light" onClick={() => handleClear()}>
+          <Button size="xs" variant="light" onClick={handleClear}>
             Clear
           </Button>
         </Group>
       </Stack>
     </Paper>
   )
-}
+})
+
+TimestampFilter.displayName = "TimestampFilter"
 
 export default TimestampFilter

@@ -2,7 +2,7 @@ import useFilterList from "@/features/audit/hooks/useFilterList"
 import type {FilterListConfig} from "@/features/audit/types"
 import {ActionIcon, Checkbox, Popover, ScrollArea, Stack} from "@mantine/core"
 import {IconFilter} from "@tabler/icons-react"
-import {useState} from "react"
+import {useCallback, useState} from "react"
 
 interface FilterSelectorArgs {
   onChange: (items: FilterListConfig[]) => void
@@ -22,12 +22,15 @@ export default function DropdownSelector({onChange}: FilterSelectorArgs) {
     />
   ))
 
-  const onLocalChange = (key: FilterListConfig["key"], checked: boolean) => {
-    const newItems = filtersList.map(i =>
-      i.key === key ? {...i, visible: checked} : i
-    )
-    onChange(newItems)
-  }
+  const onLocalChange = useCallback(
+    (key: FilterListConfig["key"], checked: boolean) => {
+      const newItems = filtersList.map(i =>
+        i.key === key ? {...i, visible: checked} : i
+      )
+      onChange(newItems)
+    },
+    [filtersList, onChange]
+  )
 
   return (
     <Popover

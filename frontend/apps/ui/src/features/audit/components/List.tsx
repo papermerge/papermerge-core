@@ -50,13 +50,16 @@ export default function AuditLogsList() {
     [auditLogTable]
   )
 
-  const onFilterVisibilityChange = (items: FilterListConfig[]) => {
-    const visibleFilterKeys = items.filter(i => i.visible).map(i => i.key)
+  const onFilterVisibilityChange = useCallback(
+    (items: FilterListConfig[]) => {
+      const visibleFilterKeys = items.filter(i => i.visible).map(i => i.key)
 
-    dispatch(
-      auditLogVisibleFilterUpdated({filterKeys: visibleFilterKeys, mode})
-    )
-  }
+      dispatch(
+        auditLogVisibleFilterUpdated({filterKeys: visibleFilterKeys, mode})
+      )
+    },
+    [dispatch, mode]
+  )
 
   if (auditLogTable.isError) {
     return (

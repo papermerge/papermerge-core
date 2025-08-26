@@ -10,11 +10,62 @@ import {
 import {usePanelMode} from "@/hooks"
 import React, {useEffect} from "react"
 
-interface TimestampPickerProps {
+interface TimestampFilterArgs {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
 }
 
-const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
+interface TimestampFilterReturn {
+  clear: () => void
+}
+
+export function useTimestampFilter({
+  setQueryParams
+}: TimestampFilterArgs): TimestampFilterReturn {
+  const mode = usePanelMode()
+  const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
+
+  const clear = () => {
+    setQueryParams(prev => ({
+      ...prev,
+      filter_timestamp_from: undefined
+    }))
+
+    setQueryParams(prev => ({
+      ...prev,
+      filter_timestamp_to: undefined
+    }))
+  }
+
+  useEffect(() => {
+    if (range?.from) {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_from: range?.from || undefined
+      }))
+    } else {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_from: undefined
+      }))
+    }
+
+    if (range?.to) {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_to: range?.to || undefined
+      }))
+    } else {
+      setQueryParams(prev => ({
+        ...prev,
+        filter_timestamp_to: undefined
+      }))
+    }
+  }, [range])
+
+  return {clear}
+}
+
+const TimestampFilter: React.FC<TimestampFilterArgs> = ({setQueryParams}) => {
   const mode = usePanelMode()
   const dispatch = useAppDispatch()
   const range = useAppSelector(s => selectAuditLogTimestampFilterValue(s, mode))
@@ -174,4 +225,4 @@ const TimestampPicker: React.FC<TimestampPickerProps> = ({setQueryParams}) => {
   )
 }
 
-export default TimestampPicker
+export default TimestampFilter

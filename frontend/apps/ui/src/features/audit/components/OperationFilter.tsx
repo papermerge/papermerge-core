@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import type {AuditLogQueryParams, AuditOperation} from "@/features/audit/types"
 import {
   auditLogOperationFilterValueUpdated,
   selectAuditLogOperationFilterValue
@@ -6,10 +7,36 @@ import {
 import {usePanelMode} from "@/hooks"
 import {MultiSelect, Paper} from "@mantine/core"
 import React, {useEffect} from "react"
-import type {AuditLogQueryParams, AuditOperation} from "../types"
 
 interface Args {
   setQueryParams: React.Dispatch<React.SetStateAction<AuditLogQueryParams>>
+}
+
+interface ReturnValue {
+  clear: () => void
+}
+
+export function useOperationFilter({setQueryParams}: Args): ReturnValue {
+  const mode = usePanelMode()
+  const operations = useAppSelector(s =>
+    selectAuditLogOperationFilterValue(s, mode)
+  )
+
+  const clear = () => {
+    setQueryParams(prev => ({
+      ...prev,
+      filter_operation: undefined
+    }))
+  }
+
+  useEffect(() => {
+    setQueryParams(prev => ({
+      ...prev,
+      filter_operation: operations?.join(",")
+    }))
+  }, [])
+
+  return {clear}
 }
 
 export default function OperationFilter({setQueryParams}: Args) {

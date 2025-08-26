@@ -2,7 +2,7 @@ import {useAppSelector} from "@/app/hooks"
 import type {FilterListConfig} from "@/features/audit/types"
 import {selectAuditLogVisibleFilters} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import {useEffect, useState} from "react"
+import {useMemo} from "react"
 
 const FILTERS: FilterListConfig[] = [
   {key: "timestamp", label: "Timestamp", visible: false},
@@ -16,17 +16,12 @@ export default function useFilterList(): FilterListConfig[] {
   const selectedFilterKeys = useAppSelector(s =>
     selectAuditLogVisibleFilters(s, mode)
   )
-  const [filtersList, setFiltersList] = useState<FilterListConfig[]>(FILTERS)
 
-  useEffect(() => {
-    const newFilters = FILTERS.map(f => {
-      const visible = Boolean(
-        selectedFilterKeys && selectedFilterKeys.includes(f.key)
-      )
-      return {...f, visible}
-    })
-
-    setFiltersList(newFilters)
+  const filtersList = useMemo(() => {
+    return FILTERS.map(filter => ({
+      ...filter,
+      visible: Boolean(selectedFilterKeys?.includes(filter.key))
+    }))
   }, [selectedFilterKeys])
 
   return filtersList

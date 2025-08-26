@@ -961,6 +961,18 @@ const uiSlice = createSlice({
 
       state.secondaryAuditLogTimestampFilterValue = value
     },
+    auditLogTimestampFilterValueCleared(
+      state,
+      action: PayloadAction<{mode: PanelMode}>
+    ) {
+      const {mode} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogTimestampFilterValue = undefined
+        return
+      }
+
+      state.secondaryAuditLogTimestampFilterValue = undefined
+    },
 
     auditLogOperationFilterValueUpdated(
       state,
@@ -973,6 +985,18 @@ const uiSlice = createSlice({
       }
 
       state.secondaryAuditLogOperationFilterValue = value
+    },
+    auditLogOperationFilterValueCleared(
+      state,
+      action: PayloadAction<{mode: PanelMode}>
+    ) {
+      const {mode} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogOperationFilterValue = undefined
+        return
+      }
+
+      state.secondaryAuditLogOperationFilterValue = undefined
     }
   }
 })
@@ -1028,7 +1052,9 @@ export const {
   auditLogVisibleFilterUpdated,
   auditLogFiltersCollapseUpdated,
   auditLogTimestampFilterValueUpdated,
-  auditLogOperationFilterValueUpdated
+  auditLogTimestampFilterValueCleared,
+  auditLogOperationFilterValueUpdated,
+  auditLogOperationFilterValueCleared
 } = uiSlice.actions
 export default uiSlice.reducer
 

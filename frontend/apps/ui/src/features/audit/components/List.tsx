@@ -6,12 +6,11 @@ import type {SortState} from "kommon"
 import {useCallback, useRef} from "react"
 import type {AuditLogItem, FilterListConfig, SortBy} from "../types"
 import auditLogColumns from "./auditLogColumns"
-import FilterSelector from "./FilterSelector"
+import Search from "./Search"
 import useAuditLogTable from "./useAuditLogTable"
 
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
-import Filters from "./FiltersCollapse"
 
 export default function AuditLogsList() {
   const auditLogTable = useAuditLogTable()
@@ -74,10 +73,8 @@ export default function AuditLogsList() {
 
   return (
     <Stack gap="xs">
-      <Filters ref={filtersRef} setQueryParams={auditLogTable.setQueryParams} />
-      <Group ref={actionButtonsRef} justify="end" align="flex-start">
-        <FilterSelector onChange={onFilterVisibilityChange} />
-
+      <Group ref={actionButtonsRef} justify={"space-between"} align="center">
+        <Search />
         <ColumnSelector
           columns={state.columns}
           onColumnsChange={actions.setColumns}

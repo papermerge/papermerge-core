@@ -266,5 +266,6 @@
   "notifications.role.updated.success": "Rolle wurde aktualisiert",
   "notifications.role.created.success": "Rolle wurde erstellt",
   "notifications.role.deleted.success": "Rolle wurde gelöscht",
-  "audit_log.name": "Audit-Protokolle"
+  "audit_log.name": "Audit-Protokolle",
+  "documents": "Dokumente"
 }

@@ -27,7 +27,7 @@ import {
 import {Center, Group, Loader, Text} from "@mantine/core"
 import {
   IconAlignJustified,
-  IconCategory,
+  IconFile,
   IconHome,
   IconInbox,
   IconLogs,
@@ -105,7 +105,7 @@ function NavBarFull() {
         )}
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
-            {NavLinkWithFeedback(t("by_document_type.name"), <IconCategory />)}
+            {NavLinkWithFeedback(t("documents"), <IconFile />)}
           </NavLink>
         )}
         {user.scopes.includes(SHARED_NODE_VIEW) && (
@@ -213,7 +213,7 @@ function NavBarCollapsed() {
         )}
         {user.scopes.includes(NODE_VIEW) && (
           <NavLink to={categoryURL} onClick={onClick}>
-            {NavLinkWithFeedbackShort(<IconCategory />)}
+            {NavLinkWithFeedbackShort(<IconFile />)}
           </NavLink>
         )}
         {user.scopes.includes(SHARED_NODE_VIEW) && (

@@ -266,5 +266,6 @@
   "notifications.role.updated.success": "Role successfully updated",
   "notifications.role.created.success": "Role successfully created",
   "notifications.role.deleted.success": "Role successfully deleted",
-  "audit_log.name": "Audit Logs"
+  "audit_log.name": "Audit Logs",
+  "documents": "Documents"
 }

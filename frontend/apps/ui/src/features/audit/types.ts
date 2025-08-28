@@ -39,8 +39,8 @@ export interface FilterListConfig {
 
 export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
   // Pagination (inherited from PaginatedArgs)
-  page_number?: number
-  page_size?: number
+  page_number: number
+  page_size: number
 
   // Sorting
   sort_by?: SortBy

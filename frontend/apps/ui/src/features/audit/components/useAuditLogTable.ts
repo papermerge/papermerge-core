@@ -1,5 +1,11 @@
+import {useAppSelector} from "@/app/hooks"
+import {
+  selectAuditLogPageNumber,
+  selectAuditLogPageSize
+} from "@/features/ui/uiSlice"
+import {usePanelMode} from "@/hooks"
 import type {FilterValue} from "kommon"
-import {useCallback, useMemo, useState} from "react"
+import {useCallback, useMemo} from "react"
 import {useGetPaginatedAuditLogsQuery} from "../apiSlice"
 import type {AuditLogQueryParams} from "../types"
 
@@ -12,12 +18,18 @@ type SortBy =
   | "user_id"
   | "id"
 
+function useQueryParams(): AuditLogQueryParams {
+  const mode = usePanelMode()
+  const pageSize = useAppSelector(s => selectAuditLogPageSize(s, mode)) || 10
+  const pageNumber = useAppSelector(s => selectAuditLogPageNumber(s, mode)) || 1
+  const queryParams = {page_size: pageSize, page_number: pageNumber}
+
+  return queryParams
+}
+
 // Enhanced helper hook with filter support
 export default function useAuditLogTable() {
-  const [queryParams, setQueryParams] = useState<AuditLogQueryParams>({
-    page_number: 1,
-    page_size: 5
-  })
+  const queryParams = useQueryParams()
 
   // RTK Query
   const {data, isLoading, isFetching, isError, error} =
@@ -90,33 +102,28 @@ export default function useAuditLogTable() {
     return filters
   }, [queryParams])
 
-  // Helper functions
-  const setPage = useCallback((page_number: number) => {
-    setQueryParams(prev => ({...prev, page_number}))
-  }, [])
-
-  const setPageSize = useCallback((page_size: number) => {
-    setQueryParams(prev => ({...prev, page_size, page_number: 1})) // Reset to first page
-  }, [])
-
   const setSorting = useCallback(
     (sort_by: SortBy | null, sort_direction: "asc" | "desc" | null) => {
+      /*
       setQueryParams(prev => ({
         ...prev,
         sort_by: sort_by || undefined,
         sort_direction: sort_direction || undefined,
         page_number: 1 // Reset to first page when sorting changes
       }))
+        */
     },
     []
   )
 
   const setFilters = useCallback((filters: Partial<AuditLogQueryParams>) => {
+    /*
     setQueryParams(prev => ({
       ...prev,
       ...filters,
       page_number: 1 // Reset to first page when filters change
     }))
+      */
   }, [])
 
   // Convert table filters to API format
@@ -176,12 +183,14 @@ export default function useAuditLogTable() {
   )
 
   const clearFilters = useCallback(() => {
+    /*
     setQueryParams(prev => ({
       page_number: 1,
       page_size: prev.page_size,
       sort_by: prev.sort_by,
       sort_direction: prev.sort_direction
     }))
+      */
   }, [])
 
   return {
@@ -197,12 +206,9 @@ export default function useAuditLogTable() {
     currentFilters, // ← NEW: Filters in table format
 
     // Actions
-    setPage,
-    setPageSize,
     setSorting,
     setFilters, // API format
     setTableFilters, // Table format (NEW)
-    clearFilters,
-    setQueryParams // Direct access for advanced use
+    clearFilters
   }
 }

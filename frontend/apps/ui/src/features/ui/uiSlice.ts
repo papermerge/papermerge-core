@@ -29,6 +29,7 @@ import type {
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
 import {DialogVisiblity} from "@/types.d/common"
+import {SortState} from "kommon"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
@@ -234,6 +235,7 @@ interface AuditLogPanel {
   usernameFilterValue?: Array<string>
   pageNumber?: number
   pageSize?: number
+  sorting?: SortState
 }
 
 export interface UIState {
@@ -923,113 +925,36 @@ const uiSlice = createSlice({
       const newVisibility = action.payload.visibility
       state.viewerPageHaveChangedDialogVisibility = newVisibility
     },
-    auditLogTimestampFilterValueUpdated(
+    auditLogTableFiltersUpdated(
       state,
-      action: PayloadAction<{mode: PanelMode; value: TimestampFilterType}>
+      action: PayloadAction<{
+        mode: PanelMode
+        timestampFilterValue?: TimestampFilterType
+        tableNameFilterValue?: Array<string>
+        operationFilterValue?: Array<AuditOperation>
+      }>
     ) {
-      const {mode, value} = action.payload
+      const {
+        mode,
+        tableNameFilterValue,
+        operationFilterValue,
+        timestampFilterValue
+      } = action.payload
       if (mode == "main") {
         state.mainAuditLog = {
           ...state.mainAuditLog,
-          timestampFilterValue: value
+          tableNameFilterValue,
+          operationFilterValue,
+          timestampFilterValue
         }
         return
       }
 
       state.secondaryAuditLog = {
         ...state.secondaryAuditLog,
-        timestampFilterValue: value
-      }
-    },
-    auditLogTimestampFilterValueCleared(
-      state,
-      action: PayloadAction<{mode: PanelMode}>
-    ) {
-      const {mode} = action.payload
-      if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
-          timestampFilterValue: undefined
-        }
-        return
-      }
-
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
-        timestampFilterValue: undefined
-      }
-    },
-    auditLogOperationFilterValueUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<AuditOperation>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
-          operationFilterValue: value
-        }
-        return
-      }
-
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
-        operationFilterValue: value
-      }
-    },
-    auditLogOperationFilterValueCleared(
-      state,
-      action: PayloadAction<{mode: PanelMode}>
-    ) {
-      const {mode} = action.payload
-      if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
-          operationFilterValue: undefined
-        }
-        return
-      }
-
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
-        operationFilterValue: undefined
-      }
-    },
-
-    auditLogTableNameFilterValueUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
-          tableNameFilterValue: value
-        }
-        return
-      }
-
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
-        tableNameFilterValue: value
-      }
-    },
-    auditLogTableNameFilterValueCleared(
-      state,
-      action: PayloadAction<{mode: PanelMode}>
-    ) {
-      const {mode} = action.payload
-      if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
-          tableNameFilterValue: undefined
-        }
-        return
-      }
-
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
-        tableNameFilterValue: undefined
+        tableNameFilterValue,
+        operationFilterValue,
+        timestampFilterValue
       }
     },
     auditLogPaginationUpdated(
@@ -1090,6 +1015,24 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLog,
         pageNumber: value
       }
+    },
+    auditLogSortingUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: SortState}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLog = {
+          ...state.mainAuditLog,
+          sorting: value
+        }
+        return
+      }
+
+      state.secondaryAuditLog = {
+        ...state.secondaryAuditLog,
+        sorting: value
+      }
     }
   }
 })
@@ -1142,14 +1085,10 @@ export const {
   lastHomeUpdated,
   lastInboxUpdated,
   viewerPageHaveChangedDialogVisibilityChanged,
-  auditLogTimestampFilterValueUpdated,
-  auditLogTimestampFilterValueCleared,
-  auditLogOperationFilterValueUpdated,
-  auditLogOperationFilterValueCleared,
-  auditLogTableNameFilterValueCleared,
-  auditLogTableNameFilterValueUpdated,
+  auditLogTableFiltersUpdated,
   auditLogPaginationUpdated,
-  auditLogPageNumberValueUpdated
+  auditLogPageNumberValueUpdated,
+  auditLogSortingUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1598,6 +1537,14 @@ export const selectAuditLogPageNumber = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryAuditLog?.pageNumber
+}
+
+export const selectAuditLogSorting = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLog?.sorting
+  }
+
+  return state.ui.secondaryAuditLog?.sorting
 }
 
 /* Load initial collapse state value from cookie */

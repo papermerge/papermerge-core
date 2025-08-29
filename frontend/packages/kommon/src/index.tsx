@@ -21,6 +21,7 @@ import type {
   ColumnConfig,
   FilterValue,
   PaginatedResponse,
+  SortDirection,
   SortState
 } from "./components/Table/types"
 
@@ -44,5 +45,6 @@ export type {
   I18NPermissionTree,
   I18NRoleFormModal,
   PaginatedResponse,
+  SortDirection,
   SortState
 }

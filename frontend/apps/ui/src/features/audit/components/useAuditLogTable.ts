@@ -1,7 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
 import {
+  selectAuditLogOperationFilterValue,
   selectAuditLogPageNumber,
-  selectAuditLogPageSize
+  selectAuditLogPageSize,
+  selectAuditLogSorting,
+  selectAuditLogTableNameFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import type {FilterValue} from "kommon"
@@ -20,9 +23,24 @@ type SortBy =
 
 function useQueryParams(): AuditLogQueryParams {
   const mode = usePanelMode()
+  const tableNames = useAppSelector(s =>
+    selectAuditLogTableNameFilterValue(s, mode)
+  )
+  const operations = useAppSelector(s =>
+    selectAuditLogOperationFilterValue(s, mode)
+  )
   const pageSize = useAppSelector(s => selectAuditLogPageSize(s, mode)) || 10
   const pageNumber = useAppSelector(s => selectAuditLogPageNumber(s, mode)) || 1
-  const queryParams = {page_size: pageSize, page_number: pageNumber}
+  const sorting = useAppSelector(s => selectAuditLogSorting(s, mode))
+  const column = sorting?.column as SortBy | undefined
+  const queryParams: AuditLogQueryParams = {
+    page_size: pageSize,
+    page_number: pageNumber,
+    sort_by: column,
+    sort_direction: sorting?.direction || undefined,
+    filter_table_name: tableNames?.join(","),
+    filter_operation: operations?.join(",")
+  }
 
   return queryParams
 }

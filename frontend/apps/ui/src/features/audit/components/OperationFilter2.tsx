@@ -1,7 +1,8 @@
 import {MultiSelect, Paper} from "@mantine/core"
+import {AuditOperation} from "../types"
 
 interface Args {
-  operations?: string[]
+  operations?: AuditOperation[]
   onChange?: (value: string[]) => void
 }
 

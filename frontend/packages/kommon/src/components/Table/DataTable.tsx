@@ -79,7 +79,7 @@ export default function DataTable<T>({
       if (sorting.direction === "asc") {
         newDirection = "desc"
       } else if (sorting.direction === "desc") {
-        newDirection = null
+        newDirection = "asc"
       }
     }
 

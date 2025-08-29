@@ -19,6 +19,7 @@ export default function SearchContainer({children, onSearch, onClear}: Args) {
           position="bottom-start"
           closeOnItemClick={false}
           transitionProps={{duration: 0}}
+          onClose={onSearch}
         >
           <Menu.Target>
             <ActionIcon

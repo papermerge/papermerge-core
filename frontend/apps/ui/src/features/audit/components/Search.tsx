@@ -1,7 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import type {AuditOperation} from "@/features/audit/types"
 import {
-  auditLogTableNameFilterValueCleared,
-  auditLogTableNameFilterValueUpdated,
+  auditLogTableFiltersUpdated,
+  selectAuditLogOperationFilterValue,
   selectAuditLogTableNameFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
@@ -17,29 +18,45 @@ export default function Search() {
   const tableNames = useAppSelector(s =>
     selectAuditLogTableNameFilterValue(s, mode)
   )
+  const operations = useAppSelector(s =>
+    selectAuditLogOperationFilterValue(s, mode)
+  )
   const [localTableNames, setLocalTableNames] = useState<string[]>(
     tableNames || []
+  )
+  const [localOperations, setLocalOperations] = useState<AuditOperation[]>(
+    operations || []
   )
 
   const onLocalTableNamesChange = (values: string[]) => {
     setLocalTableNames(values)
   }
 
+  const onLocalOperationChange = (values: string[]) => {
+    setLocalOperations(values as AuditOperation[])
+  }
+
   const onSearch = () => {
     dispatch(
-      auditLogTableNameFilterValueUpdated({
+      auditLogTableFiltersUpdated({
         mode,
-        value: localTableNames
+        tableNameFilterValue: localTableNames,
+        operationFilterValue: localOperations,
+        timestampFilterValue: undefined
       })
     )
   }
 
   const onClear = () => {
     setLocalTableNames([])
+    setLocalOperations([])
 
     dispatch(
-      auditLogTableNameFilterValueCleared({
-        mode
+      auditLogTableFiltersUpdated({
+        mode,
+        tableNameFilterValue: undefined,
+        operationFilterValue: undefined,
+        timestampFilterValue: undefined
       })
     )
   }
@@ -51,7 +68,10 @@ export default function Search() {
         tableNames={localTableNames}
         onChange={onLocalTableNamesChange}
       />
-      <OperationFilter />
+      <OperationFilter
+        operations={localOperations}
+        onChange={onLocalOperationChange}
+      />
     </SearchContainer>
   )
 }

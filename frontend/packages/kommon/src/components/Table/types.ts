@@ -5,9 +5,11 @@ export interface PaginatedResponse<T> {
   items: T[]
 }
 
+export type SortDirection = "asc" | "desc"
+
 export interface SortState {
-  column: string | null
-  direction: "asc" | "desc" | null
+  column?: string | null
+  direction?: SortDirection | null
 }
 
 export interface FilterValue {

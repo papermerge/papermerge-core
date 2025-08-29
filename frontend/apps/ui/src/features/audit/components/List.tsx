@@ -2,20 +2,23 @@ import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {useRef} from "react"
-import type {AuditLogItem, SortBy} from "../types"
+import type {AuditLogItem} from "../types"
 import auditLogColumns from "./auditLogColumns"
 import Search from "./Search"
 import useAuditLogTable from "./useAuditLogTable"
 
 import {useAppDispatch} from "@/app/hooks"
-import {auditLogPaginationUpdated} from "@/features/ui/uiSlice"
+import {
+  auditLogPaginationUpdated,
+  auditLogSortingUpdated
+} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
 
 export default function AuditLogsList() {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
-  const {setSorting, isError, data, queryParams, error, isLoading, isFetching} =
+  const {isError, data, queryParams, error, isLoading, isFetching} =
     useAuditLogTable()
   const actionButtonsRef = useRef<HTMLDivElement>(null)
 
@@ -32,9 +35,8 @@ export default function AuditLogsList() {
 
   const remainingHeight = useDynamicHeight([actionButtonsRef])
 
-  // Handle sorting changes
-  const handleSortChange = (newSorting: SortState) => {
-    setSorting(newSorting.column as SortBy, newSorting.direction)
+  const handleSortChange = (value: SortState) => {
+    dispatch(auditLogSortingUpdated({mode, value}))
   }
 
   const handlePageSizeChange = (newValue: number) => {
@@ -89,7 +91,7 @@ export default function AuditLogsList() {
           data={data?.items || []}
           columns={visibleColumns}
           sorting={{
-            column: queryParams.sort_by || null,
+            column: queryParams.sort_by,
             direction: queryParams.sort_direction || null
           }}
           onSortChange={handleSortChange}

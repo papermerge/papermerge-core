@@ -417,9 +417,21 @@ async def assign_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = await nodes_dbapi.assign_node_tags(
-            db_session, node_id=node_id, tags=tags, user_id=user.id
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            node, error = await nodes_dbapi.assign_node_tags(
+                db_session, node_id=node_id, tags=tags, user_id=user.id
+            )
+            if error:
+                await db_session.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Failed to assign tags: {error}"
+                )
+            await db_session.commit()  # Single commit with audit context active
     except EntityNotFound:
         raise HTTP404NotFound
 

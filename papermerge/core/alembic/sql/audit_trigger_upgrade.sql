@@ -128,19 +128,23 @@ CREATE TRIGGER audit_groups_trigger
 
 -- Helper function to set application context
 CREATE OR REPLACE FUNCTION set_audit_context(
-    p_user_id uuid DEFAULT NULL,
-    p_username text DEFAULT NULL,
+    p_user_id uuid,
+    p_username text,
     p_session_id text DEFAULT NULL,
     p_reason text DEFAULT NULL
 )
 RETURNS void AS $$
 BEGIN
-    IF p_user_id IS NOT NULL THEN
-        PERFORM set_config('app.user_id', p_user_id::text, false);
+    IF p_user_id IS NULL THEN
+        RAISE EXCEPTION 'p_user_id cannot be NULL';
     END IF;
-    IF p_username IS NOT NULL THEN
-        PERFORM set_config('app.username', p_username, false);
+
+    IF p_username IS NULL OR trim(p_username) = '' THEN
+        RAISE EXCEPTION 'p_username cannot be NULL or empty';
     END IF;
+
+    PERFORM set_config('app.user_id', p_user_id::text, false);
+    PERFORM set_config('app.username', p_username, false);
     IF p_session_id IS NOT NULL THEN
         PERFORM set_config('app.session_id', p_session_id, false);
     END IF;

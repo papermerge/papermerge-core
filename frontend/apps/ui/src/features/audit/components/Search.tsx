@@ -55,6 +55,7 @@ export default function Search() {
   const onClear = () => {
     setLocalTableNames([])
     setLocalOperations([])
+    setLocalRange({from: null, to: null})
 
     dispatch(
       auditLogTableFiltersUpdated({

@@ -1,5 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {AuditOperation} from "@/features/audit/types"
+import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {
   auditLogTableFiltersUpdated,
   selectAuditLogOperationFilterValue,
@@ -27,6 +27,7 @@ export default function Search() {
   const [localOperations, setLocalOperations] = useState<AuditOperation[]>(
     operations || []
   )
+  const [localRange, setLocalRange] = useState<TimestampFilterType>()
 
   const onLocalTableNamesChange = (values: string[]) => {
     setLocalTableNames(values)
@@ -36,13 +37,17 @@ export default function Search() {
     setLocalOperations(values as AuditOperation[])
   }
 
+  const onLocalRangeChange = (value: TimestampFilterType) => {
+    setLocalRange(value)
+  }
+
   const onSearch = () => {
     dispatch(
       auditLogTableFiltersUpdated({
         mode,
         tableNameFilterValue: localTableNames,
         operationFilterValue: localOperations,
-        timestampFilterValue: undefined
+        timestampFilterValue: localRange
       })
     )
   }
@@ -63,7 +68,7 @@ export default function Search() {
 
   return (
     <SearchContainer onClear={onClear} onSearch={onSearch}>
-      <TimestampFilter />
+      <TimestampFilter range={localRange} onChange={onLocalRangeChange} />
       <TableNameFilter
         tableNames={localTableNames}
         onChange={onLocalTableNamesChange}

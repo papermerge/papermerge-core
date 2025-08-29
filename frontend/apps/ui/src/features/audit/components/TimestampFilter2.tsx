@@ -3,16 +3,28 @@ import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
 
 interface Args {
-  range?: {
-    from: string | null
-    to: string | null
-  }
+  range?: TimestampFilterType
+  onChange?: (range: TimestampFilterType) => void
 }
 
-export default function TimestampFilter({range}: Args) {
-  const onChangeFrom = (value: string | null) => {}
+export default function TimestampFilter({range, onChange}: Args) {
+  const onChangeFrom = (valueFrom: string | null) => {
+    if (onChange) {
+      onChange({
+        from: valueFrom,
+        to: range?.to || null
+      })
+    }
+  }
 
-  const onChangeTo = (value: string | null) => {}
+  const onChangeTo = (valueTo: string | null) => {
+    if (onChange) {
+      onChange({
+        to: valueTo,
+        from: range?.from || null
+      })
+    }
+  }
 
   const handleQuickSelect = (type: "today" | "1hour" | "3hours") => {
     const now = new Date()
@@ -25,24 +37,39 @@ export default function TimestampFilter({range}: Args) {
         const endOfDay = new Date(now)
         endOfDay.setHours(23, 59, 59, 999)
         newRange = {from: startOfDay.toISOString(), to: endOfDay.toISOString()}
+        if (onChange) {
+          onChange(newRange)
+        }
         break
       case "1hour":
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
         newRange = {from: oneHourAgo.toISOString(), to: now.toISOString()}
+        if (onChange) {
+          onChange(newRange)
+        }
         break
       case "3hours":
         const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000)
         newRange = {from: threeHoursAgo.toISOString(), to: now.toISOString()}
+        if (onChange) {
+          onChange(newRange)
+        }
         break
     }
   }
 
   const handleClear = () => {
     const newRange: TimestampFilterType = {from: null, to: null}
+    if (onChange) {
+      onChange(newRange)
+    }
   }
 
   return (
-    <Paper>
+    <Paper
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+    >
       <Stack>
         <Group justify={"start"}>
           <DateTimePicker

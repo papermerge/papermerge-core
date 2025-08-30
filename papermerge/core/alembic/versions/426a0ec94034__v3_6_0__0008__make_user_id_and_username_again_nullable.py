@@ -1,4 +1,4 @@
-"""v3.6.0: 0007 -- make user_id and username again nullable
+"""v3.6.0: 0008 -- make user_id and username again nullable
 
 Revision ID: 426a0ec94034
 Revises: f3c6512081b1

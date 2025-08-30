@@ -19,7 +19,7 @@ import React, {useEffect, useRef} from "react"
 import {ColumnConfig, SortState} from "./types"
 import {useColumnResize} from "./useDataTable"
 
-interface DataTableProps<T> {
+interface Args<T> {
   data: T[]
   columns: ColumnConfig<T>[]
   sorting: SortState
@@ -29,6 +29,7 @@ interface DataTableProps<T> {
   loading?: boolean
   emptyMessage?: string
   style?: React.CSSProperties
+  onRowClick?: (row: T, otherPanel: boolean) => void
 }
 
 export default function DataTable<T>({
@@ -40,8 +41,9 @@ export default function DataTable<T>({
   onColumnResize,
   loading = false,
   emptyMessage = "No data available",
-  style
-}: DataTableProps<T>) {
+  style,
+  onRowClick
+}: Args<T>) {
   const tableRef = useRef<HTMLTableElement>(null)
   const {isResizing, startResize, stopResize, getNewWidth} = useColumnResize()
 
@@ -264,7 +266,7 @@ export default function DataTable<T>({
                         }}
                       >
                         {column.render
-                          ? column.render(value, row)
+                          ? column.render(value, row, onRowClick)
                           : String(value)}
                       </Table.Td>
                     )

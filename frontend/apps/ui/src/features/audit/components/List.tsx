@@ -64,6 +64,11 @@ export default function AuditLogsList() {
     dispatch(auditLogPaginationUpdated({mode, value: {pageNumber}}))
   }
 
+  const onTableRowClick = (row: AuditLogItem, details: boolean) => {
+    console.log(row)
+    console.log(details)
+  }
+
   if (isError) {
     return (
       <Container size="xl" py="md">
@@ -110,6 +115,7 @@ export default function AuditLogsList() {
           loading={isLoading || isFetching}
           emptyMessage="No audit logs found"
           style={{minWidth: `${calculateMinTableWidth}px`}}
+          onRowClick={onTableRowClick}
         />
       </ScrollArea>
     </Stack>

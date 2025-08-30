@@ -1,7 +1,8 @@
 import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useRef} from "react"
+import {useMemo, useRef} from "react"
+import {useTranslation} from "react-i18next"
 import type {AuditLogItem} from "../types"
 import auditLogColumns from "./auditLogColumns"
 import Search from "./Search"
@@ -16,6 +17,7 @@ import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
 
 export default function AuditLogsList() {
+  const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
   const {isError, data, queryParams, error, isLoading, isFetching} =
@@ -32,6 +34,13 @@ export default function AuditLogsList() {
     },
     initialColumns: auditLogColumns
   })
+  const calculateMinTableWidth = useMemo(() => {
+    return visibleColumns.reduce((totalWidth, column) => {
+      // Assuming your column definition has a minWidth property
+      const minWidth = column.minWidth || 150 // fallback to 150px if not defined
+      return totalWidth + minWidth
+    }, 0)
+  }, [visibleColumns])
 
   const remainingHeight = useDynamicHeight([actionButtonsRef])
 
@@ -77,7 +86,8 @@ export default function AuditLogsList() {
             pageSize={data?.page_size || 15}
             onPageChange={handlePageNumberChange}
             onPageSizeChange={handlePageSizeChange}
-            totalItems={data ? data.num_pages * data.page_size : 0}
+            totalItems={data?.total_items}
+            t={t}
           />
           <ColumnSelector
             columns={state.columns}
@@ -99,6 +109,7 @@ export default function AuditLogsList() {
           onColumnResize={actions.setColumnWidth}
           loading={isLoading || isFetching}
           emptyMessage="No audit logs found"
+          style={{minWidth: `${calculateMinTableWidth}px`}}
         />
       </ScrollArea>
     </Stack>

@@ -2,6 +2,7 @@ export interface PaginatedResponse<T> {
   page_size: number
   page_number: number
   num_pages: number
+  total_items?: number
   items: T[]
 }
 
@@ -44,6 +45,7 @@ export interface TableState<T> {
     page: number
     pageSize: number
     totalPages: number
+    totalItems: number
   }
   sorting: SortState
   filters: FilterValue[]

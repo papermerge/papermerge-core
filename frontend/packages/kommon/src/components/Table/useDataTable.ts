@@ -19,7 +19,8 @@ export default function useTableData<T>({
     pagination: {
       page: initialData?.page_number || 1,
       pageSize: initialData?.page_size || 15,
-      totalPages: initialData?.num_pages || 1
+      totalPages: initialData?.num_pages || 1,
+      totalItems: initialData?.total_items || 1
     },
     sorting: {column: null, direction: null},
     filters: [],
@@ -88,6 +89,7 @@ export default function useTableData<T>({
         page_number: number
         page_size: number
         num_pages: number
+        total_items: number
       }
     ) => {
       setState(prev => ({
@@ -97,7 +99,8 @@ export default function useTableData<T>({
           ? {
               page: pagination.page_number,
               pageSize: pagination.page_size,
-              totalPages: pagination.num_pages
+              totalPages: pagination.num_pages,
+              totalItems: pagination.total_items
             }
           : prev.pagination,
         loading: false

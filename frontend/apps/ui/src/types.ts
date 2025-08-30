@@ -197,6 +197,7 @@ export type Paginated<T> = {
   page_size: number
   page_number: number
   num_pages: number
+  total_items: number
   items: Array<T>
 }
 

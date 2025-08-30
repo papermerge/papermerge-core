@@ -1,7 +1,55 @@
-import {Badge, Group, Text} from "@mantine/core"
-import {IconClock, IconDatabase, IconUser} from "@tabler/icons-react"
+import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
+import {useClipboard} from "@mantine/hooks"
+import {
+  IconCheck,
+  IconClock,
+  IconCopy,
+  IconDatabase,
+  IconUser
+} from "@tabler/icons-react"
 import type {ColumnConfig} from "kommon"
+import {useState} from "react"
 import type {AuditLogItem} from "../types"
+
+// Helper component for truncated text with copy functionality
+const TruncatedTextWithCopy = ({
+  value,
+  maxLength = 8
+}: {
+  value: string
+  maxLength?: number
+}) => {
+  const clipboard = useClipboard({timeout: 2000})
+  const [isHovered, setIsHovered] = useState(false)
+  const truncatedValue = value.substring(0, maxLength) + "..."
+
+  return (
+    <Group
+      gap="xs"
+      wrap="nowrap"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Text size="xs" ff="monospace" title={value}>
+        {truncatedValue}
+      </Text>
+      <Tooltip label={clipboard.copied ? "Copied!" : "Copy"}>
+        <ActionIcon
+          size="xs"
+          variant="subtle"
+          color={clipboard.copied ? "green" : "gray"}
+          onClick={() => clipboard.copy(value)}
+          style={{
+            opacity: isHovered || clipboard.copied ? 1 : 0,
+            transition: "opacity 0.2s ease"
+          }}
+        >
+          {clipboard.copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
+        </ActionIcon>
+      </Tooltip>
+    </Group>
+  )
+}
 
 const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
   {
@@ -10,6 +58,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: false,
     width: 180,
+    minWidth: 180,
     render: value => {
       const date = new Date(value as string)
       return (
@@ -31,6 +80,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: true,
     width: 100,
+    minWidth: 120,
     render: value => {
       const colors: Record<string, string> = {
         INSERT: "green",
@@ -53,7 +103,8 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     label: "Table",
     sortable: true,
     filterable: true,
-    width: 100,
+    width: 120,
+    minWidth: 120,
     render: value => (
       <Group gap="xs">
         <IconDatabase size={14} style={{opacity: 0.6}} />
@@ -69,11 +120,8 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: false,
     filterable: true,
     width: 200,
-    render: value => (
-      <Text size="xs" ff="monospace" title={value as string}>
-        {(value as string).substring(0, 8)}...
-      </Text>
-    )
+    minWidth: 100,
+    render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
     key: "username",
@@ -81,6 +129,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: true,
     width: 120,
+    minWidth: 100,
     render: value => (
       <Group gap="xs">
         <IconUser size={14} style={{opacity: 0.6}} />
@@ -95,11 +144,8 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: true,
     visible: false, // Hidden by default
     width: 200,
-    render: value => (
-      <Text size="xs" ff="monospace" title={value as string}>
-        {(value as string).substring(0, 8)}...
-      </Text>
-    )
+    minWidth: 100,
+    render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
     key: "id",
@@ -108,11 +154,8 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: false,
     visible: false, // Hidden by default
     width: 200,
-    render: value => (
-      <Text size="xs" ff="monospace" title={value as string}>
-        {(value as string).substring(0, 8)}...
-      </Text>
-    )
+    minWidth: 100,
+    render: value => <TruncatedTextWithCopy value={value as string} />
   }
 ]
 

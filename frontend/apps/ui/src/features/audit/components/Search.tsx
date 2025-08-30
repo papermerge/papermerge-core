@@ -7,13 +7,14 @@ import {
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useState} from "react"
-import OperationFilter from "./OperationFilter2"
+import OperationFilter from "./OperationFilter"
 import SearchContainer from "./SearchContainer"
-import TableNameFilter from "./TableNameFilter2"
-import TimestampFilter from "./TimestampFilter2"
+import TableNameFilter from "./TableNameFilter"
+import TimestampFilter from "./TimestampFilter"
 
 export default function Search() {
   const mode = usePanelMode()
+
   const dispatch = useAppDispatch()
   const tableNames = useAppSelector(s =>
     selectAuditLogTableNameFilterValue(s, mode)

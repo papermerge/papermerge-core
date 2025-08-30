@@ -86,7 +86,13 @@ export const apiSliceWithAuditLogs = apiSlice.injectEndpoints({
         return `/audit-logs/?${queryString}`
       },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         _arg
       ) => [

@@ -267,5 +267,15 @@
   "notifications.role.created.success": "Rolle wurde erstellt",
   "notifications.role.deleted.success": "Rolle wurde gelöscht",
   "audit_log.name": "Audit-Protokolle",
-  "documents": "Dokumente"
+  "documents": "Dokumente",
+  "pagination": {
+    "pageSize": "Seitengröße",
+    "itemsRange": "{{start}} - {{end}} von {{total}}",
+    "itemsRangeNoTotal": "{{start}} - {{end}}",
+    "noItems": "Keine Einträge",
+    "firstPage": "Erste Seite",
+    "lastPage": "Letzte Seite",
+    "previousPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite"
+  }
 }

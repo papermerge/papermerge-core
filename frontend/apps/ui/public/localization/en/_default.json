@@ -267,5 +267,15 @@
   "notifications.role.created.success": "Role successfully created",
   "notifications.role.deleted.success": "Role successfully deleted",
   "audit_log.name": "Audit Logs",
-  "documents": "Documents"
+  "documents": "Documents",
+  "pagination": {
+    "pageSize": "Page size",
+    "itemsRange": "{{start}} - {{end}} of {{total}}",
+    "itemsRangeNoTotal": "{{start}} - {{end}}",
+    "noItems": "No items",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
+  }
 }

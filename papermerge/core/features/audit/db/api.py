@@ -128,5 +128,6 @@ async def get_audit_logs(
         items=items,
         page_size=page_size,
         page_number=page_number,
-        num_pages=total_pages
+        num_pages=total_pages,
+        total_items=total_audit_logs
     )

@@ -33,8 +33,8 @@ class AuditLog(Base):
     )
 
     # Who (multiple sources of truth)
-    user_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
-    username: Mapped[str] = mapped_column(String(150), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    username: Mapped[str] = mapped_column(String(150), nullable=True)
     session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Session tracking
 
     # Where/How

@@ -135,16 +135,14 @@ CREATE OR REPLACE FUNCTION set_audit_context(
 )
 RETURNS void AS $$
 BEGIN
-    IF p_user_id IS NULL THEN
-        RAISE EXCEPTION 'p_user_id cannot be NULL';
+    IF p_user_id IS NOT NULL THEN
+        PERFORM set_config('app.user_id', p_user_id::text, false);
     END IF;
 
-    IF p_username IS NULL OR trim(p_username) = '' THEN
-        RAISE EXCEPTION 'p_username cannot be NULL or empty';
+    IF p_username IS NOT NULL AND trim(p_username) != '' THEN
+        PERFORM set_config('app.username', p_username, false);
     END IF;
 
-    PERFORM set_config('app.user_id', p_user_id::text, false);
-    PERFORM set_config('app.username', p_username, false);
     IF p_session_id IS NOT NULL THEN
         PERFORM set_config('app.session_id', p_session_id, false);
     END IF;

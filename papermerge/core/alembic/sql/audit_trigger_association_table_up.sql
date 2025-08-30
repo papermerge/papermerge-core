@@ -119,8 +119,8 @@ BEGIN
     audit_row.new_values = CASE WHEN TG_OP != 'DELETE' THEN row_to_json(NEW)::jsonb END;
     audit_row.audit_message = audit_message; -- Human-readable message with IDs
 
-    audit_row.user_id = current_setting('app.user_id', false);
-    audit_row.username = current_setting('app.username', false);
+    audit_row.user_id = nullif(current_setting('app.user_id', true), '');
+    audit_row.username = nullif(current_setting('app.username', true), '');
     audit_row.session_id = nullif(current_setting('app.session_id', true), '');
     audit_row.reason = nullif(current_setting('app.reason', true), '');
 

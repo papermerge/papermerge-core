@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   onColumnResize: (columnKey: string, width: number) => void
   loading?: boolean
   emptyMessage?: string
+  style?: React.CSSProperties
 }
 
 export default function DataTable<T>({
@@ -38,7 +39,8 @@ export default function DataTable<T>({
   columnWidths,
   onColumnResize,
   loading = false,
-  emptyMessage = "No data available"
+  emptyMessage = "No data available",
+  style
 }: DataTableProps<T>) {
   const tableRef = useRef<HTMLTableElement>(null)
   const {isResizing, startResize, stopResize, getNewWidth} = useColumnResize()
@@ -154,7 +156,10 @@ export default function DataTable<T>({
           striped
           highlightOnHover
           withTableBorder
-          style={{cursor: isResizing ? "col-resize" : "default"}}
+          style={{
+            cursor: isResizing ? "col-resize" : "default",
+            ...style
+          }}
         >
           <Table.Thead>
             <Table.Tr>

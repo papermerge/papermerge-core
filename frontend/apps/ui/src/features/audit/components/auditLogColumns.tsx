@@ -58,6 +58,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: false,
     width: 180,
+    minWidth: 180,
     render: value => {
       const date = new Date(value as string)
       return (
@@ -79,6 +80,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: true,
     width: 100,
+    minWidth: 120,
     render: value => {
       const colors: Record<string, string> = {
         INSERT: "green",
@@ -101,7 +103,8 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     label: "Table",
     sortable: true,
     filterable: true,
-    width: 100,
+    width: 120,
+    minWidth: 120,
     render: value => (
       <Group gap="xs">
         <IconDatabase size={14} style={{opacity: 0.6}} />
@@ -117,6 +120,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: false,
     filterable: true,
     width: 200,
+    minWidth: 100,
     render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
@@ -125,6 +129,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     sortable: true,
     filterable: true,
     width: 120,
+    minWidth: 100,
     render: value => (
       <Group gap="xs">
         <IconUser size={14} style={{opacity: 0.6}} />
@@ -139,6 +144,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: true,
     visible: false, // Hidden by default
     width: 200,
+    minWidth: 100,
     render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
@@ -148,6 +154,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: false,
     visible: false, // Hidden by default
     width: 200,
+    minWidth: 100,
     render: value => <TruncatedTextWithCopy value={value as string} />
   }
 ]

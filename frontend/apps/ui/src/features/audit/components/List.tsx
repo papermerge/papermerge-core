@@ -1,7 +1,7 @@
 import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useRef} from "react"
+import {useMemo, useRef} from "react"
 import {useTranslation} from "react-i18next"
 import type {AuditLogItem} from "../types"
 import auditLogColumns from "./auditLogColumns"
@@ -34,6 +34,13 @@ export default function AuditLogsList() {
     },
     initialColumns: auditLogColumns
   })
+  const calculateMinTableWidth = useMemo(() => {
+    return visibleColumns.reduce((totalWidth, column) => {
+      // Assuming your column definition has a minWidth property
+      const minWidth = column.minWidth || 150 // fallback to 150px if not defined
+      return totalWidth + minWidth
+    }, 0)
+  }, [visibleColumns])
 
   const remainingHeight = useDynamicHeight([actionButtonsRef])
 
@@ -102,6 +109,7 @@ export default function AuditLogsList() {
           onColumnResize={actions.setColumnWidth}
           loading={isLoading || isFetching}
           emptyMessage="No audit logs found"
+          style={{minWidth: `${calculateMinTableWidth}px`}}
         />
       </ScrollArea>
     </Stack>

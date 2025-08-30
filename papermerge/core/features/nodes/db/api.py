@@ -248,14 +248,15 @@ async def assign_node_tags(
         if name not in existing_db_tags_names
     ]
     db_session.add_all(new_db_tags)
-    await db_session.commit()
+    await db_session.flush()
+
     db_tags = (await db_session.execute(
         select(orm.Tag).where(orm.Tag.name.in_(tags))
     )).scalars()
 
     try:
         node.tags = db_tags.all()
-        await db_session.commit()
+        await db_session.flush()
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error

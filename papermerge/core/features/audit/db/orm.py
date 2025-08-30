@@ -1,6 +1,5 @@
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Dict, Any
 
 from sqlalchemy import func, String, Text, Index
@@ -8,13 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, UUID as PG_UUID
 
 from papermerge.core.db.base import Base
+from papermerge.core.features.audit.types import AuditOperation
 
-
-class AuditOperation(str, Enum):
-    INSERT = "INSERT"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
-    TRUNCATE = "TRUNCATE"
 
 class AuditLog(Base):
     """
@@ -39,8 +33,8 @@ class AuditLog(Base):
     )
 
     # Who (multiple sources of truth)
-    user_id: Mapped[Optional[UUID]] = mapped_column(PG_UUID(as_uuid=True), nullable=True)  # App user
-    username: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)  # App username
+    user_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    username: Mapped[str] = mapped_column(String(150), nullable=False)
     session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Session tracking
 
     # Where/How
@@ -64,6 +58,9 @@ class AuditLog(Base):
         Index('idx_audit_log_user_id', 'user_id'),
         Index('idx_audit_log_operation', 'operation'),
     )
+
+    def __str__(self):
+        return f"AuditLog(id={self.id}, username={self.username})"
 
 
 # Helper function to determine what fields changed

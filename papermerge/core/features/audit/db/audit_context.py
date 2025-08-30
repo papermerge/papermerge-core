@@ -15,12 +15,12 @@ class AsyncAuditContext:
     captured by PostgreSQL triggers.
     """
     def __init__(
-            self,
-            session: AsyncSession,
-            user_id: Optional[UUID] = None,
-            username: Optional[str] = None,
-            session_id: Optional[str] = None,
-            reason: Optional[str] = None,
+        self,
+        session: AsyncSession,
+        user_id: UUID,
+        username:str,
+        session_id: Optional[str] = None,
+        reason: Optional[str] = None,
     ):
         self.session = session
         self.user_id = user_id
@@ -39,16 +39,14 @@ class AsyncAuditContext:
             :reason
         )
         """
-
         try:
             await self.session.execute(text(sql), {
-                'user_id': str(self.user_id) if self.user_id else None,
+                'user_id': self.user_id,
                 'username': self.username,
                 'session_id': self.session_id,
                 'reason': self.reason
             })
             self._context_set = True
-            logger.debug(f"Set audit context for user {self.username} ({self.user_id})")
         except SQLAlchemyError as e:
             logger.warning(f"Failed to set audit context: {e}")
             self._context_set = False

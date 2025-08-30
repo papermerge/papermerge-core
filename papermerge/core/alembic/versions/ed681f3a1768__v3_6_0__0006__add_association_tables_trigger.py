@@ -1,4 +1,4 @@
-"""v3.6.0 - 0006: add association tables trigger
+"""v3.6.0: 0006 -- add association tables trigger
 
 Revision ID: ed681f3a1768
 Revises: 62bd9b006c5a

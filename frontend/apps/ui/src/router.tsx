@@ -30,6 +30,7 @@ import SharedNodesListView, {
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
+import {AuditLogDetails, AuditLogsList} from "./features/audit/pages"
 
 import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
@@ -144,6 +145,14 @@ const router = createBrowserRouter([
       {
         path: "/users/:userId",
         element: <UserDetails />
+      },
+      {
+        path: "/audit-logs/",
+        element: <AuditLogsList />
+      },
+      {
+        path: "/audit-logs/:auditLogId",
+        element: <AuditLogDetails />
       },
       {
         path: ERRORS_403_ACCESS_FORBIDDEN,

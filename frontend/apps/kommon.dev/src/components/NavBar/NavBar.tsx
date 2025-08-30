@@ -17,6 +17,9 @@ export default function Navbar() {
         <NavLink to="/role-form-modal" end>
           &lt;RoleFormModal /&gt;
         </NavLink>
+        <NavLink to="/data-table" end>
+          &lt;DataTable /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

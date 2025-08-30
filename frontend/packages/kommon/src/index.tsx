@@ -7,15 +7,44 @@ import type {
 } from "./components/RoleForm/types"
 import type {I18NRoleFormModal} from "./components/RoleFormModal/types"
 
-import SubmitButton from "./components/SubmitButton/SubmitButton"
 import RoleForm from "./components/RoleForm"
 import RoleFormModal from "./components/RoleFormModal"
+import SubmitButton from "./components/SubmitButton/SubmitButton"
+import {
+  ColumnSelector,
+  DataTable,
+  TableFilters,
+  TablePagination,
+  useTableData
+} from "./components/Table"
+import type {
+  ColumnConfig,
+  FilterValue,
+  PaginatedResponse,
+  SortDirection,
+  SortState
+} from "./components/Table/types"
 
-export {EditNodeTitleModal, SubmitButton, RoleForm, RoleFormModal}
+export {
+  ColumnSelector,
+  DataTable,
+  EditNodeTitleModal,
+  RoleForm,
+  RoleFormModal,
+  SubmitButton,
+  TableFilters,
+  TablePagination,
+  useTableData
+}
 export type {
-  I18NEditNodeTitleModal,
+  ColumnConfig,
+  FilterValue,
   I18NCheckButton,
   I18NCollapseButton,
+  I18NEditNodeTitleModal,
   I18NPermissionTree,
-  I18NRoleFormModal
+  I18NRoleFormModal,
+  PaginatedResponse,
+  SortDirection,
+  SortState
 }

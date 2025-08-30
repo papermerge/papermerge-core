@@ -27,6 +27,8 @@ export interface FilterValue {
     | "to"
 }
 
+type ClickFunc<T> = (row: T, otherPanel: boolean) => void
+
 export interface ColumnConfig<T = any> {
   key: keyof T
   label: string
@@ -36,7 +38,12 @@ export interface ColumnConfig<T = any> {
   width?: number
   minWidth?: number
   maxWidth?: number
-  render?: (value: T[keyof T], row: T) => React.ReactNode
+  render?: (
+    value: T[keyof T],
+    row: T,
+    onClick?: ClickFunc<T>
+  ) => React.ReactNode
+  clickable?: boolean
 }
 
 export interface TableState<T> {

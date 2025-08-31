@@ -8,6 +8,7 @@ import type {PanelMode} from "@/types"
 
 import Viewer from "@/features/document/components/Viewer"
 
+import {AuditLogDetails, AuditLogsList} from "@/features/audit/components"
 import Commander from "@/features/nodes/components/Commander"
 import SearchResults from "@/features/search/components/SearchResults"
 import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
@@ -82,6 +83,14 @@ export default function SinglePanel() {
 
   if (panelComponent == "sharedViewer") {
     return <SharedViewer />
+  }
+
+  if (panelComponent == "auditLogDetails") {
+    return <AuditLogDetails />
+  }
+
+  if (panelComponent == "auditLogList") {
+    return <AuditLogsList />
   }
 
   return <>Error: neither viewer nor commander</>

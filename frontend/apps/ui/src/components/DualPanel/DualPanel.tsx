@@ -1,6 +1,6 @@
-import {Group} from "@mantine/core"
 import {useAppSelector} from "@/app/hooks"
 import SinglePanel from "@/components/SinglePanel"
+import {Group} from "@mantine/core"
 
 import PanelContext from "@/contexts/PanelContext"
 import {selectPanelComponent} from "@/features/ui/uiSlice"

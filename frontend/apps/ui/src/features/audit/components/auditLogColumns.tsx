@@ -2,7 +2,7 @@ import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
 import {
   IconCheck,
-  IconClock,
+  IconColumns2,
   IconCopy,
   IconDatabase,
   IconUser
@@ -51,6 +51,41 @@ const TruncatedTextWithCopy = ({
   )
 }
 
+type ClickableFunc<T> = (row: T, details: boolean) => void
+
+interface ClickableProps<T> {
+  onClickHandler?: ClickableFunc<T>
+  row: T
+  children: React.ReactNode
+}
+
+const Clickable = <T,>({onClickHandler, row, children}: ClickableProps<T>) => {
+  return (
+    <Group gap="xs">
+      <IconColumns2
+        size={14}
+        style={{
+          opacity: 0,
+          cursor: "pointer"
+        }}
+        onClick={() => onClickHandler?.(row, true)}
+        onMouseEnter={e => {
+          e.currentTarget.style.opacity = "0.6"
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.opacity = "0"
+        }}
+      />
+      <div
+        style={{cursor: "pointer"}}
+        onClick={() => onClickHandler?.(row, false)}
+      >
+        {children}
+      </div>
+    </Group>
+  )
+}
+
 const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
   {
     key: "timestamp",
@@ -59,18 +94,18 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: false,
     width: 180,
     minWidth: 180,
-    render: value => {
+    render: (value, row, onClick) => {
       const date = new Date(value as string)
+
       return (
-        <Group gap="xs">
-          <IconClock size={14} style={{opacity: 0.6}} />
-          <div>
-            <Text size="xs">{date.toLocaleDateString()}</Text>
-            <Text size="xs" c="dimmed">
-              {date.toLocaleTimeString()}
-            </Text>
-          </div>
-        </Group>
+        <Clickable row={row} onClickHandler={onClick}>
+          <Text component="a" size="xs">
+            {date.toLocaleDateString()}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {date.toLocaleTimeString()}
+          </Text>
+        </Clickable>
       )
     }
   },

@@ -21,6 +21,16 @@ class AuditLog(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AuditLogDetails(AuditLog):
+    old_values: dict | None = None
+    new_values: dict | None = None
+    changed_fields: list[str] | None = None
+    audit_message: str | None = None
+    reason: str | None = None
+    user_agent: str | None = None
+    application: str | None = None
+
+
 class AuditLogParams(BaseModel):
     """
     Simple parameter class for audit log queries.

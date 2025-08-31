@@ -1,8 +1,21 @@
-import {AuditLogDetails} from "@/features/audit/components"
-import {useParams} from "react-router"
+import {store} from "@/app/store"
+import DualPanel from "@/components/DualPanel"
+import {mainPanelAuditLogDetailsUpdated} from "@/features/ui/uiSlice"
+import {LoaderFunctionArgs} from "react-router"
 
 export default function AuditLogDetailsPage() {
-  const {auditLogId} = useParams()
+  return <DualPanel />
+}
 
-  return <AuditLogDetails id={auditLogId!} />
+export async function loader({params, request}: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  let entryID = "whatever"
+
+  if (params.id) {
+    entryID = params.id
+  }
+
+  store.dispatch(mainPanelAuditLogDetailsUpdated(entryID))
+
+  return {entryID, urlParams: url.searchParams}
 }

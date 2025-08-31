@@ -228,7 +228,7 @@ interface Pagination {
   pageSize?: number
 }
 
-interface AuditLogPanel {
+interface AuditLogPanelList {
   timestampFilterValue?: TimestampFilterType
   operationFilterValue?: Array<AuditOperation>
   tableNameFilterValue?: Array<string>
@@ -236,6 +236,10 @@ interface AuditLogPanel {
   pageNumber?: number
   pageSize?: number
   sorting?: SortState
+}
+
+interface AuditLogPanelDetails {
+  id: string
 }
 
 export interface UIState {
@@ -300,8 +304,10 @@ export interface UIState {
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
-  mainAuditLog?: AuditLogPanel
-  secondaryAuditLog?: AuditLogPanel
+  mainAuditLogList?: AuditLogPanelList
+  secondaryAuditLogList?: AuditLogPanelList
+  mainAuditLogDetails?: AuditLogPanelDetails
+  secondaryAuditLogDetails?: AuditLogPanelDetails
 }
 
 const initialState: UIState = {
@@ -459,6 +465,31 @@ const uiSlice = createSlice({
     },
     mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
       state.mainPanelComponent = action.payload
+    },
+    secondaryPanelComponentUpdated(
+      state,
+      action: PayloadAction<PanelComponent>
+    ) {
+      state.secondaryPanelComponent = action.payload
+    },
+    mainPanelAuditLogDetailsUpdated(state, action: PayloadAction<string>) {
+      const auditLogID = action.payload
+      state.mainPanelComponent = "auditLogDetails"
+      state.mainAuditLogDetails = {id: auditLogID}
+    },
+    secondaryPanelAuditLogDetailsUpdated(
+      state,
+      action: PayloadAction<string | undefined>
+    ) {
+      const auditLogID = action.payload
+
+      if (auditLogID) {
+        state.secondaryPanelComponent = "auditLogDetails"
+        state.secondaryAuditLogDetails = {id: auditLogID}
+      } else {
+        state.secondaryPanelComponent = undefined
+        state.secondaryAuditLogDetails = undefined
+      }
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
@@ -941,8 +972,8 @@ const uiSlice = createSlice({
         timestampFilterValue
       } = action.payload
       if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
+        state.mainAuditLogList = {
+          ...state.mainAuditLogList,
           tableNameFilterValue,
           operationFilterValue,
           timestampFilterValue
@@ -950,8 +981,8 @@ const uiSlice = createSlice({
         return
       }
 
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
+      state.secondaryAuditLogList = {
+        ...state.secondaryAuditLogList,
         tableNameFilterValue,
         operationFilterValue,
         timestampFilterValue
@@ -968,12 +999,12 @@ const uiSlice = createSlice({
       let newValue: Pagination = {
         pageSize:
           mode == "main"
-            ? state.mainAuditLog?.pageSize
-            : state.secondaryAuditLog?.pageSize,
+            ? state.mainAuditLogList?.pageSize
+            : state.secondaryAuditLogList?.pageSize,
         pageNumber:
           mode == "main"
-            ? state.mainAuditLog?.pageSize
-            : state.secondaryAuditLog?.pageSize
+            ? state.mainAuditLogList?.pageSize
+            : state.secondaryAuditLogList?.pageSize
       }
       // if non empty value received as parameter - use it
       // to update the state
@@ -986,15 +1017,15 @@ const uiSlice = createSlice({
       }
 
       if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
+        state.mainAuditLogList = {
+          ...state.mainAuditLogList,
           ...newValue
         }
         return
       }
 
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
+      state.secondaryAuditLogList = {
+        ...state.secondaryAuditLogList,
         ...newValue
       }
     },
@@ -1004,15 +1035,15 @@ const uiSlice = createSlice({
     ) {
       const {mode, value} = action.payload
       if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
+        state.mainAuditLogList = {
+          ...state.mainAuditLogList,
           pageNumber: value
         }
         return
       }
 
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
+      state.secondaryAuditLogList = {
+        ...state.secondaryAuditLogList,
         pageNumber: value
       }
     },
@@ -1022,15 +1053,15 @@ const uiSlice = createSlice({
     ) {
       const {mode, value} = action.payload
       if (mode == "main") {
-        state.mainAuditLog = {
-          ...state.mainAuditLog,
+        state.mainAuditLogList = {
+          ...state.mainAuditLogList,
           sorting: value
         }
         return
       }
 
-      state.secondaryAuditLog = {
-        ...state.secondaryAuditLog,
+      state.secondaryAuditLogList = {
+        ...state.secondaryAuditLogList,
         sorting: value
       }
     }
@@ -1049,6 +1080,9 @@ export const {
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
+  secondaryPanelComponentUpdated,
+  mainPanelAuditLogDetailsUpdated,
+  secondaryPanelAuditLogDetailsUpdated,
   searchResultsLastPageSizeUpdated,
   /* Main panel switched to show search results.
   This happens when user clicks enter in search field
@@ -1495,10 +1529,10 @@ export const selectAuditLogTimestampFilterValue = (
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.timestampFilterValue
+    return state.ui.mainAuditLogList?.timestampFilterValue
   }
 
-  return state.ui.secondaryAuditLog?.timestampFilterValue
+  return state.ui.secondaryAuditLogList?.timestampFilterValue
 }
 
 export const selectAuditLogOperationFilterValue = (
@@ -1506,10 +1540,10 @@ export const selectAuditLogOperationFilterValue = (
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.operationFilterValue
+    return state.ui.mainAuditLogList?.operationFilterValue
   }
 
-  return state.ui.secondaryAuditLog?.operationFilterValue
+  return state.ui.secondaryAuditLogList?.operationFilterValue
 }
 
 export const selectAuditLogTableNameFilterValue = (
@@ -1517,34 +1551,42 @@ export const selectAuditLogTableNameFilterValue = (
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.tableNameFilterValue
+    return state.ui.mainAuditLogList?.tableNameFilterValue
   }
 
-  return state.ui.secondaryAuditLog?.tableNameFilterValue
+  return state.ui.secondaryAuditLogList?.tableNameFilterValue
 }
 
 export const selectAuditLogPageSize = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.pageSize
+    return state.ui.mainAuditLogList?.pageSize
   }
 
-  return state.ui.secondaryAuditLog?.pageSize
+  return state.ui.secondaryAuditLogList?.pageSize
 }
 
 export const selectAuditLogPageNumber = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.pageNumber
+    return state.ui.mainAuditLogList?.pageNumber
   }
 
-  return state.ui.secondaryAuditLog?.pageNumber
+  return state.ui.secondaryAuditLogList?.pageNumber
 }
 
 export const selectAuditLogSorting = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
-    return state.ui.mainAuditLog?.sorting
+    return state.ui.mainAuditLogList?.sorting
   }
 
-  return state.ui.secondaryAuditLog?.sorting
+  return state.ui.secondaryAuditLogList?.sorting
+}
+
+export const selectAuditLogDetailsID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogDetails?.id
+  }
+
+  return state.ui.secondaryAuditLogDetails?.id
 }
 
 /* Load initial collapse state value from cookie */

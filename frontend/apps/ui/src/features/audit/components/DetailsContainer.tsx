@@ -2,9 +2,10 @@ import {useAppSelector} from "@/app/hooks"
 import {useGetAuditLogQuery} from "@/features/audit/apiSlice"
 import {selectAuditLogDetailsID} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import {Stack} from "@mantine/core"
-import AuditLogDetails from "./Details"
+import {Group, Stack} from "@mantine/core"
 import AuditLogDetailsBreadcrumb from "./auditLogDetailsBreadcrumb"
+import CloseSecondaryPanel from "./CloseSecondaryPanel"
+import AuditLogDetails from "./Details"
 
 export default function AuditLogDetailsContainer() {
   const mode = usePanelMode()
@@ -23,7 +24,10 @@ export default function AuditLogDetailsContainer() {
 
   return (
     <Stack>
-      <AuditLogDetailsBreadcrumb auditLogID={data.id} mode={mode} />
+      <Group justify="space-between">
+        <AuditLogDetailsBreadcrumb auditLogID={data.id} mode={mode} />
+        <CloseSecondaryPanel />
+      </Group>
       <AuditLogDetails auditLog={data} />
     </Stack>
   )

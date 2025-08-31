@@ -8,11 +8,12 @@ import auditLogColumns from "./auditLogColumns"
 import Search from "./Search"
 import useAuditLogTable from "./useAuditLogTable"
 
-import {useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   auditLogPaginationUpdated,
   auditLogSortingUpdated,
-  secondaryPanelAuditLogDetailsUpdated
+  secondaryPanelAuditLogDetailsUpdated,
+  selectAuditLogDetailsID
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
@@ -26,6 +27,9 @@ export default function AuditLogsList() {
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useAuditLogTable()
   const actionButtonsRef = useRef<HTMLDivElement>(null)
+  const auditLogDetailsID = useAppSelector(s =>
+    selectAuditLogDetailsID(s, "secondary")
+  )
 
   // Table state management
   const {state, actions, visibleColumns} = useTableData<AuditLogItem>({
@@ -93,22 +97,12 @@ export default function AuditLogsList() {
     <Stack gap="xs">
       <Group ref={actionButtonsRef} justify={"space-between"} align="center">
         <Search />
-        <Group>
-          <TablePagination
-            currentPage={data?.page_number || 1}
-            totalPages={data?.num_pages || 0}
-            pageSize={data?.page_size || 15}
-            onPageChange={handlePageNumberChange}
-            onPageSizeChange={handlePageSizeChange}
-            totalItems={data?.total_items}
-            t={t}
-          />
-          <ColumnSelector
-            columns={state.columns}
-            onColumnsChange={actions.setColumns}
-            onToggleColumn={actions.toggleColumnVisibility}
-          />
-        </Group>
+
+        <ColumnSelector
+          columns={state.columns}
+          onColumnsChange={actions.setColumns}
+          onToggleColumn={actions.toggleColumnVisibility}
+        />
       </Group>
       <ScrollArea mt={"md"} h={remainingHeight} type="auto">
         <DataTable
@@ -125,8 +119,18 @@ export default function AuditLogsList() {
           emptyMessage="No audit logs found"
           style={{minWidth: `${calculateMinTableWidth}px`}}
           onRowClick={onTableRowClick}
+          highlightRowID={auditLogDetailsID}
         />
       </ScrollArea>
+      <TablePagination
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
+        totalItems={data?.total_items}
+        t={t}
+      />
     </Stack>
   )
 }

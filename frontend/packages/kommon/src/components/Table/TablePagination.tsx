@@ -63,7 +63,7 @@ export default function TablePagination({
   }
 
   return (
-    <Group justify="space-between" wrap="wrap">
+    <Group justify="end" wrap="wrap">
       <Group>
         <Group gap="xs">
           <Select

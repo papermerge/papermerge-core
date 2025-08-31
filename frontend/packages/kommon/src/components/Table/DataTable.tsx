@@ -6,7 +6,9 @@ import {
   ScrollArea,
   Skeleton,
   Table,
-  Text
+  Text,
+  useMantineColorScheme,
+  useMantineTheme
 } from "@mantine/core"
 import {
   IconChevronDown,
@@ -48,6 +50,8 @@ export default function DataTable<T>({
 }: Args<T>) {
   const tableRef = useRef<HTMLTableElement>(null)
   const {isResizing, startResize, stopResize, getNewWidth} = useColumnResize()
+  const theme = useMantineTheme()
+  const {colorScheme} = useMantineColorScheme()
 
   // Only show visible columns
   const visibleColumns = columns.filter(col => col.visible !== false)
@@ -121,6 +125,21 @@ export default function DataTable<T>({
     startResize(columnKey, e.clientX, currentWidth)
   }
 
+  // Helper function to check if row should be highlighted
+  const isRowHighlighted = (row: T): boolean => {
+    if (!highlightRowID) return false
+    return String((row as any).id) === highlightRowID
+  }
+
+  // Get theme-aware colors for highlighting
+  const getHighlightColors = () => {
+    return {
+      backgroundColor:
+        colorScheme === "dark" ? theme.colors.blue[9] : theme.colors.blue[1],
+      borderColor: theme.colors.blue[6]
+    }
+  }
+
   if (loading && data.length === 0) {
     return (
       <Box pos="relative" mih={400}>
@@ -150,6 +169,8 @@ export default function DataTable<T>({
       </Box>
     )
   }
+
+  const highlightColors = getHighlightColors()
 
   return (
     <Box pos="relative">
@@ -212,7 +233,7 @@ export default function DataTable<T>({
                           cursor: "col-resize",
                           backgroundColor:
                             isResizing === String(column.key)
-                              ? "var(--mantine-color-blue-6)"
+                              ? theme.colors.blue[6]
                               : "transparent",
                           opacity: 0.7
                         }}
@@ -249,32 +270,45 @@ export default function DataTable<T>({
                 </Table.Td>
               </Table.Tr>
             ) : (
-              data.map((row, index) => (
-                <Table.Tr key={index}>
-                  {visibleColumns.map(column => {
-                    const value = row[column.key]
-                    const width = getColumnWidth(column)
+              data.map((row, index) => {
+                const highlighted = isRowHighlighted(row)
+                return (
+                  <Table.Tr
+                    key={index}
+                    style={{
+                      backgroundColor: highlighted
+                        ? highlightColors.backgroundColor
+                        : undefined,
+                      borderLeft: highlighted
+                        ? `3px solid ${highlightColors.borderColor}`
+                        : undefined
+                    }}
+                  >
+                    {visibleColumns.map(column => {
+                      const value = row[column.key]
+                      const width = getColumnWidth(column)
 
-                    return (
-                      <Table.Td
-                        key={String(column.key)}
-                        style={{
-                          width,
-                          minWidth: column.minWidth || 50,
-                          maxWidth: column.maxWidth,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap"
-                        }}
-                      >
-                        {column.render
-                          ? column.render(value, row, onRowClick)
-                          : String(value)}
-                      </Table.Td>
-                    )
-                  })}
-                </Table.Tr>
-              ))
+                      return (
+                        <Table.Td
+                          key={String(column.key)}
+                          style={{
+                            width,
+                            minWidth: column.minWidth || 50,
+                            maxWidth: column.maxWidth,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          {column.render
+                            ? column.render(value, row, onRowClick)
+                            : String(value)}
+                        </Table.Td>
+                      )
+                    })}
+                  </Table.Tr>
+                )
+              })
             )}
           </Table.Tbody>
         </Table>

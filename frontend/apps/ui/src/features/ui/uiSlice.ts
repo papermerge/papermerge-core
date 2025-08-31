@@ -477,10 +477,19 @@ const uiSlice = createSlice({
       state.mainPanelComponent = "auditLogDetails"
       state.mainAuditLogDetails = {id: auditLogID}
     },
-    secondaryPanelAuditLogDetailsUpdated(state, action: PayloadAction<string>) {
+    secondaryPanelAuditLogDetailsUpdated(
+      state,
+      action: PayloadAction<string | undefined>
+    ) {
       const auditLogID = action.payload
-      state.secondaryPanelComponent = "auditLogDetails"
-      state.secondaryAuditLogDetails = {id: auditLogID}
+
+      if (auditLogID) {
+        state.secondaryPanelComponent = "auditLogDetails"
+        state.secondaryAuditLogDetails = {id: auditLogID}
+      } else {
+        state.secondaryPanelComponent = undefined
+        state.secondaryAuditLogDetails = undefined
+      }
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload

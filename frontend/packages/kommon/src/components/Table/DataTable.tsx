@@ -1,4 +1,3 @@
-// components/DataTable/DataTable.tsx
 import {
   ActionIcon,
   Box,
@@ -30,6 +29,8 @@ interface Args<T> {
   emptyMessage?: string
   style?: React.CSSProperties
   onRowClick?: (row: T, otherPanel: boolean) => void
+  //the ID of the row to highlight
+  highlightRowID?: string
 }
 
 export default function DataTable<T>({
@@ -42,7 +43,8 @@ export default function DataTable<T>({
   loading = false,
   emptyMessage = "No data available",
   style,
-  onRowClick
+  onRowClick,
+  highlightRowID
 }: Args<T>) {
   const tableRef = useRef<HTMLTableElement>(null)
   const {isResizing, startResize, stopResize, getNewWidth} = useColumnResize()

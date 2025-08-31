@@ -16,11 +16,13 @@ import {
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
+import {useNavigate} from "react-router"
 
 export default function AuditLogsList() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
+  const navigate = useNavigate()
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useAuditLogTable()
   const actionButtonsRef = useRef<HTMLDivElement>(null)
@@ -71,6 +73,8 @@ export default function AuditLogsList() {
   ) => {
     if (openInSecondaryPanel) {
       dispatch(secondaryPanelAuditLogDetailsUpdated(row.id))
+    } else {
+      navigate(`/audit-logs/${row.id}`)
     }
   }
 

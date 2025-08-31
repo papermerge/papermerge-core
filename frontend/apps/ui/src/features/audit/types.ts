@@ -12,6 +12,16 @@ export type AuditLog = {
   username: string
 }
 
+export type AuditLogDetails = AuditLog & {
+  old_values?: string
+  new_values?: string
+  changed_fields?: string
+  audit_message?: string
+  reason?: string
+  user_agent?: string
+  application?: string
+}
+
 export interface AuditLogItem {
   id: string
   table_name: string

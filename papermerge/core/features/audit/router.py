@@ -46,7 +46,7 @@ async def get_audit_logs(
     return result
 
 
-@router.get("/{audit_log_id}", response_model=schema.AuditLog)
+@router.get("/{audit_log_id}", response_model=schema.AuditLogDetails)
 @utils.docstring_parameter(scope=scopes.AUDIT_LOG_VIEW)
 async def get_audit_log(
     audit_log_id: uuid.UUID,

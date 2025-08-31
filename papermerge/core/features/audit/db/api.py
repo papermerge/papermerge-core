@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 async def get_audit_log(
     db_session: AsyncSession,
     audit_log_id: uuid.UUID
-) -> schema.AuditLog:
+) -> schema.AuditLogDetails:
 
     stmt = (
         select(orm.AuditLog)
@@ -23,7 +23,7 @@ async def get_audit_log(
     )
     db_item = (await db_session.scalars(stmt)).unique().one()
 
-    result = schema.AuditLog.model_validate(db_item)
+    result = schema.AuditLogDetails.model_validate(db_item)
 
     return result
 

@@ -4,3 +4,5 @@ export type PanelComponent =
   | "searchResults"
   | "sharedCommander"
   | "sharedViewer"
+  | "auditLogList"
+  | "auditLogDetails"

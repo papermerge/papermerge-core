@@ -34,6 +34,8 @@ import {AuditLogDetails, AuditLogsList} from "./features/audit/pages"
 
 import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
+import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
+import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
 import {loader as documentLoader} from "@/pages/Document"
 
 import ErrorPage from "@/pages/Error.tsx"
@@ -147,12 +149,14 @@ const router = createBrowserRouter([
         element: <UserDetails />
       },
       {
-        path: "/audit-logs/",
-        element: <AuditLogsList />
+        path: "/audit-logs",
+        element: <AuditLogsList />,
+        loader: auditLogsListLoader
       },
       {
-        path: "/audit-logs/:auditLogId",
-        element: <AuditLogDetails />
+        path: "/audit-logs/:id",
+        element: <AuditLogDetails />,
+        loader: auditLogDetailsLoader
       },
       {
         path: ERRORS_403_ACCESS_FORBIDDEN,

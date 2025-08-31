@@ -39,7 +39,7 @@ from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGroup
 from .features.roles.schema import Role, RoleDetails, CreateRole, UpdateRole, Permission
-from .features.audit.schema import AuditLog
+from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
 from .schemas.common import PaginatedResponse
 from .schemas.version import Version
@@ -111,5 +111,6 @@ __all__ = [
     'Pagination',
     'DocVerListItem',
     'DownloadURL',
-    'AuditLog'
+    'AuditLog',
+    'AuditLogDetails'
 ]

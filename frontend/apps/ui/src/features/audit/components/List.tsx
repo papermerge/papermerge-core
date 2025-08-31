@@ -11,7 +11,8 @@ import useAuditLogTable from "./useAuditLogTable"
 import {useAppDispatch} from "@/app/hooks"
 import {
   auditLogPaginationUpdated,
-  auditLogSortingUpdated
+  auditLogSortingUpdated,
+  secondaryPanelAuditLogDetailsUpdated
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
@@ -64,9 +65,13 @@ export default function AuditLogsList() {
     dispatch(auditLogPaginationUpdated({mode, value: {pageNumber}}))
   }
 
-  const onTableRowClick = (row: AuditLogItem, details: boolean) => {
-    console.log(row)
-    console.log(details)
+  const onTableRowClick = (
+    row: AuditLogItem,
+    openInSecondaryPanel: boolean
+  ) => {
+    if (openInSecondaryPanel) {
+      dispatch(secondaryPanelAuditLogDetailsUpdated(row.id))
+    }
   }
 
   if (isError) {

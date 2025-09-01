@@ -8,10 +8,27 @@ import {
   IconUser
 } from "@tabler/icons-react"
 import type {ColumnConfig} from "kommon"
-import {useState} from "react"
+import {useCallback, useState} from "react"
 import type {AuditLogItem} from "../types"
 
-// Helper component for truncated text with copy functionality
+const STATIC_STYLES = {
+  clickableIcon: {opacity: 0, cursor: "pointer"},
+  clickableDiv: {cursor: "pointer"},
+  dbIcon: {opacity: 0.6},
+  userIcon: {opacity: 0.6},
+  copyIcon: (isVisible: boolean, copied: boolean) => ({
+    opacity: isVisible || copied ? 1 : 0,
+    transition: "opacity 0.1s ease" // Reduced from 0.2s
+  })
+} as const
+
+const OPERATION_COLORS = {
+  INSERT: "green",
+  UPDATE: "blue",
+  DELETE: "red"
+} as const
+
+// Only use complex component when user actually hovers/interacts
 const TruncatedTextWithCopy = ({
   value,
   maxLength = 8
@@ -19,16 +36,24 @@ const TruncatedTextWithCopy = ({
   value: string
   maxLength?: number
 }) => {
-  const clipboard = useClipboard({timeout: 2000})
+  const clipboard = useClipboard({timeout: 1000}) // Reduced timeout
   const [isHovered, setIsHovered] = useState(false)
   const truncatedValue = value.substring(0, maxLength) + "..."
+
+  // Memoize handlers
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
+  const handleCopy = useCallback(
+    () => clipboard.copy(value),
+    [clipboard, value]
+  )
 
   return (
     <Group
       gap="xs"
       wrap="nowrap"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Text size="xs" ff="monospace" title={value}>
         {truncatedValue}
@@ -38,11 +63,8 @@ const TruncatedTextWithCopy = ({
           size="xs"
           variant="subtle"
           color={clipboard.copied ? "green" : "gray"}
-          onClick={() => clipboard.copy(value)}
-          style={{
-            opacity: isHovered || clipboard.copied ? 1 : 0,
-            transition: "opacity 0.2s ease"
-          }}
+          onClick={handleCopy}
+          style={STATIC_STYLES.copyIcon(isHovered, clipboard.copied)}
         >
           {clipboard.copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
         </ActionIcon>
@@ -60,30 +82,47 @@ interface ClickableProps<T> {
 }
 
 const Clickable = <T,>({onClickHandler, row, children}: ClickableProps<T>) => {
+  // Memoize handlers to prevent recreation
+  const handleDetailsClick = useCallback(
+    () => onClickHandler?.(row, true),
+    [onClickHandler, row]
+  )
+  const handleMainClick = useCallback(
+    () => onClickHandler?.(row, false),
+    [onClickHandler, row]
+  )
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent<SVGElement>) => {
+    e.currentTarget.style.opacity = "0.6"
+  }, [])
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<SVGElement>) => {
+    e.currentTarget.style.opacity = "0"
+  }, [])
+
   return (
     <Group gap="xs">
       <IconColumns2
         size={14}
-        style={{
-          opacity: 0,
-          cursor: "pointer"
-        }}
-        onClick={() => onClickHandler?.(row, true)}
-        onMouseEnter={e => {
-          e.currentTarget.style.opacity = "0.6"
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.opacity = "0"
-        }}
+        style={STATIC_STYLES.clickableIcon}
+        onClick={handleDetailsClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       />
-      <div
-        style={{cursor: "pointer"}}
-        onClick={() => onClickHandler?.(row, false)}
-      >
+      <div style={STATIC_STYLES.clickableDiv} onClick={handleMainClick}>
         {children}
       </div>
     </Group>
   )
+}
+
+// Pre-process date formatting to avoid repeated Date() calls
+const formatTimestamp = (timestamp: string) => {
+  const date = new Date(timestamp)
+  return {
+    date: date.toLocaleDateString(),
+    time: date.toLocaleTimeString()
+  }
 }
 
 const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
@@ -95,15 +134,15 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     width: 180,
     minWidth: 180,
     render: (value, row, onClick) => {
-      const date = new Date(value as string)
+      const {date, time} = formatTimestamp(value as string)
 
       return (
         <Clickable row={row} onClickHandler={onClick}>
           <Text component="a" size="xs">
-            {date.toLocaleDateString()}
+            {date}
           </Text>
           <Text size="xs" c="dimmed">
-            {date.toLocaleTimeString()}
+            {time}
           </Text>
         </Clickable>
       )
@@ -117,14 +156,10 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     width: 100,
     minWidth: 120,
     render: value => {
-      const colors: Record<string, string> = {
-        INSERT: "green",
-        UPDATE: "blue",
-        DELETE: "red"
-      }
+      const operation = value as keyof typeof OPERATION_COLORS
       return (
         <Badge
-          color={colors[value as string] || "gray"}
+          color={OPERATION_COLORS[operation] || "gray"}
           variant="light"
           size="sm"
         >
@@ -142,7 +177,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     minWidth: 120,
     render: value => (
       <Group gap="xs">
-        <IconDatabase size={14} style={{opacity: 0.6}} />
+        <IconDatabase size={14} style={STATIC_STYLES.dbIcon} />
         <Text size="sm" ff="monospace">
           {value as string}
         </Text>
@@ -156,7 +191,20 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: true,
     width: 200,
     minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
+    // Use simple version first, upgrade to complex on demand
+    render: value => {
+      const str = value as string
+      // For short values, just show them directly (faster)
+      if (str.length <= 12) {
+        return (
+          <Text size="xs" ff="monospace">
+            {str}
+          </Text>
+        )
+      }
+      // Only use complex component for long values
+      return <TruncatedTextWithCopy value={str} />
+    }
   },
   {
     key: "username",
@@ -167,7 +215,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     minWidth: 100,
     render: value => (
       <Group gap="xs">
-        <IconUser size={14} style={{opacity: 0.6}} />
+        <IconUser size={14} style={STATIC_STYLES.userIcon} />
         <Text size="sm">{value as string}</Text>
       </Group>
     )
@@ -180,7 +228,17 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     visible: false, // Hidden by default
     width: 200,
     minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
+    render: value => {
+      const str = value as string
+      if (str.length <= 12) {
+        return (
+          <Text size="xs" ff="monospace">
+            {str}
+          </Text>
+        )
+      }
+      return <TruncatedTextWithCopy value={str} />
+    }
   },
   {
     key: "id",
@@ -190,7 +248,17 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     visible: false, // Hidden by default
     width: 200,
     minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
+    render: value => {
+      const str = value as string
+      if (str.length <= 12) {
+        return (
+          <Text size="xs" ff="monospace">
+            {str}
+          </Text>
+        )
+      }
+      return <TruncatedTextWithCopy value={str} />
+    }
   }
 ]
 

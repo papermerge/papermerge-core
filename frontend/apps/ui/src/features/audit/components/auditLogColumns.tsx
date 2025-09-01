@@ -191,20 +191,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: true,
     width: 200,
     minWidth: 100,
-    // Use simple version first, upgrade to complex on demand
-    render: value => {
-      const str = value as string
-      // For short values, just show them directly (faster)
-      if (str.length <= 12) {
-        return (
-          <Text size="xs" ff="monospace">
-            {str}
-          </Text>
-        )
-      }
-      // Only use complex component for long values
-      return <TruncatedTextWithCopy value={str} />
-    }
+    render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
     key: "username",
@@ -228,17 +215,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     visible: false, // Hidden by default
     width: 200,
     minWidth: 100,
-    render: value => {
-      const str = value as string
-      if (str.length <= 12) {
-        return (
-          <Text size="xs" ff="monospace">
-            {str}
-          </Text>
-        )
-      }
-      return <TruncatedTextWithCopy value={str} />
-    }
+    render: value => <TruncatedTextWithCopy value={value as string} />
   },
   {
     key: "id",
@@ -248,17 +225,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     visible: false, // Hidden by default
     width: 200,
     minWidth: 100,
-    render: value => {
-      const str = value as string
-      if (str.length <= 12) {
-        return (
-          <Text size="xs" ff="monospace">
-            {str}
-          </Text>
-        )
-      }
-      return <TruncatedTextWithCopy value={str} />
-    }
+    render: value => <TruncatedTextWithCopy value={value as string} />
   }
 ]
 

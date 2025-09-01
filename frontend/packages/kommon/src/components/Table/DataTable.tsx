@@ -134,7 +134,6 @@ interface CellArgs {
   value: React.ReactNode
 }
 
-// Memoize TableCell
 const TableCell = React.memo<CellArgs>(function TableCell({
   width,
   minWidth,
@@ -208,7 +207,6 @@ const TableRow = React.memo(
       [row, highlightRowID]
     )
 
-    // Memoize row style
     const rowStyle = useMemo(
       () => ({
         backgroundColor: highlighted
@@ -221,7 +219,6 @@ const TableRow = React.memo(
       [highlighted, highlightColors]
     )
 
-    // Memoize rendered columns
     const renderedColumns = useMemo(
       () =>
         visibleColumns.map(column => {

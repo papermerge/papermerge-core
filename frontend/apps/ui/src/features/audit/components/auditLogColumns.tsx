@@ -1,12 +1,6 @@
 import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
-import {
-  IconCheck,
-  IconColumns2,
-  IconCopy,
-  IconDatabase,
-  IconUser
-} from "@tabler/icons-react"
+import {IconCheck, IconColumns2, IconCopy} from "@tabler/icons-react"
 import type {ColumnConfig} from "kommon"
 import {useCallback, useState} from "react"
 import type {AuditLogItem} from "../types"
@@ -176,12 +170,9 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     width: 120,
     minWidth: 120,
     render: value => (
-      <Group gap="xs">
-        <IconDatabase size={14} style={STATIC_STYLES.dbIcon} />
-        <Text size="sm" ff="monospace">
-          {value as string}
-        </Text>
-      </Group>
+      <Text size="sm" ff="monospace">
+        {value as string}
+      </Text>
     )
   },
   {
@@ -200,12 +191,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     filterable: true,
     width: 120,
     minWidth: 100,
-    render: value => (
-      <Group gap="xs">
-        <IconUser size={14} style={STATIC_STYLES.userIcon} />
-        <Text size="sm">{value as string}</Text>
-      </Group>
-    )
+    render: value => <Text size="sm">{value as string}</Text>
   },
   {
     key: "user_id",

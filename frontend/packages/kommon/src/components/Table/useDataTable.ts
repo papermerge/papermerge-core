@@ -28,7 +28,6 @@ export default function useTableData<T>({
       ...col,
       visible: col.visible !== false
     })),
-    columnWidths: {},
     loading: false
   }))
 
@@ -64,13 +63,6 @@ export default function useTableData<T>({
 
   const setColumns = useCallback((columns: ColumnConfig<T>[]) => {
     setState(prev => ({...prev, columns}))
-  }, [])
-
-  const setColumnWidth = useCallback((columnKey: string, width: number) => {
-    setState(prev => ({
-      ...prev,
-      columnWidths: {...prev.columnWidths, [columnKey]: width}
-    }))
   }, [])
 
   const toggleColumnVisibility = useCallback((columnKey: keyof T) => {
@@ -137,7 +129,6 @@ export default function useTableData<T>({
     setPage,
     setPageSize,
     setColumns,
-    setColumnWidth,
     toggleColumnVisibility
   }
 
@@ -149,41 +140,5 @@ export default function useTableData<T>({
     // Computed values
     visibleColumns: state.columns.filter(col => col.visible !== false),
     totalItems: state.pagination.totalPages * state.pagination.pageSize // Approximate
-  }
-}
-
-// Hook for column resizing
-export function useColumnResize() {
-  const [isResizing, setIsResizing] = useState<string | null>(null)
-  const [startX, setStartX] = useState(0)
-  const [startWidth, setStartWidth] = useState(0)
-
-  const startResize = useCallback(
-    (columnKey: string, startX: number, startWidth: number) => {
-      setIsResizing(columnKey)
-      setStartX(startX)
-      setStartWidth(startWidth)
-    },
-    []
-  )
-
-  const stopResize = useCallback(() => {
-    setIsResizing(null)
-    setStartX(0)
-    setStartWidth(0)
-  }, [])
-
-  const getNewWidth = useCallback(
-    (currentX: number) => {
-      return Math.max(50, startWidth + (currentX - startX)) // Minimum width of 50px
-    },
-    [startX, startWidth]
-  )
-
-  return {
-    isResizing,
-    startResize,
-    stopResize,
-    getNewWidth
   }
 }

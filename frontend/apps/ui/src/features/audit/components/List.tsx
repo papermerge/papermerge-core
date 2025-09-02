@@ -113,8 +113,6 @@ export default function AuditLogsList() {
             direction: queryParams.sort_direction || null
           }}
           onSortChange={handleSortChange}
-          columnWidths={state.columnWidths}
-          onColumnResize={actions.setColumnWidth}
           loading={isLoading || isFetching}
           emptyMessage="No audit logs found"
           style={{minWidth: `${calculateMinTableWidth}px`}}

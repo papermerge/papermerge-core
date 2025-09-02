@@ -1,32 +1,24 @@
+import type {MantineColorScheme, MantineTheme} from "@mantine/core"
 import {
   ActionIcon,
   Box,
   Group,
   LoadingOverlay,
-  ScrollArea,
   Skeleton,
   Table,
   Text,
   useMantineColorScheme,
   useMantineTheme
 } from "@mantine/core"
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconGripVertical,
-  IconSelector
-} from "@tabler/icons-react"
-import React, {useEffect, useRef} from "react"
+import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
+import React from "react"
 import {ColumnConfig, SortState} from "./types"
-import {useColumnResize} from "./useDataTable"
 
 interface Args<T> {
   data: T[]
   columns: ColumnConfig<T>[]
   sorting: SortState
   onSortChange: (sort: SortState) => void
-  columnWidths: Record<string, number>
-  onColumnResize: (columnKey: string, width: number) => void
   loading?: boolean
   emptyMessage?: string
   style?: React.CSSProperties
@@ -40,44 +32,27 @@ export default function DataTable<T>({
   columns,
   sorting,
   onSortChange,
-  columnWidths,
-  onColumnResize,
   loading = false,
   emptyMessage = "No data available",
   style,
   onRowClick,
   highlightRowID
 }: Args<T>) {
-  const tableRef = useRef<HTMLTableElement>(null)
-  const {isResizing, startResize, stopResize, getNewWidth} = useColumnResize()
   const theme = useMantineTheme()
   const {colorScheme} = useMantineColorScheme()
 
-  // Only show visible columns
   const visibleColumns = columns.filter(col => col.visible !== false)
 
-  useEffect(() => {
-    if (!isResizing) return
+  const highlightColors = {
+    backgroundColor:
+      colorScheme === "dark" ? theme.colors.blue[9] : theme.colors.blue[1],
+    borderColor: theme.colors.blue[6]
+  }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isResizing) {
-        const newWidth = getNewWidth(e.clientX)
-        onColumnResize(isResizing, newWidth)
-      }
-    }
-
-    const handleMouseUp = () => {
-      stopResize()
-    }
-
-    document.addEventListener("mousemove", handleMouseMove)
-    document.addEventListener("mouseup", handleMouseUp)
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove)
-      document.removeEventListener("mouseup", handleMouseUp)
-    }
-  }, [isResizing, getNewWidth, onColumnResize, stopResize])
+  const getColumnWidth = (column: ColumnConfig<T>) => {
+    if (column.width) return column.width
+    return 150 // Default width
+  }
 
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
@@ -99,6 +74,233 @@ export default function DataTable<T>({
     })
   }
 
+  if (loading && data.length === 0) {
+    return <LoadingTable visibleColumns={visibleColumns} loading={loading} />
+  }
+
+  return (
+    <Box pos="relative">
+      <LoadingOverlay visible={loading} />
+      <Table striped highlightOnHover withTableBorder style={style}>
+        <TableHeader
+          visibleColumns={visibleColumns}
+          sorting={sorting}
+          handleSort={handleSort}
+        />
+
+        <TableBody
+          data={data}
+          emptyMessage={emptyMessage}
+          visibleColumns={visibleColumns}
+          highlightRowID={highlightRowID}
+          onRowClick={onRowClick}
+          theme={theme}
+          colorScheme={colorScheme}
+          highlightColors={highlightColors}
+        />
+      </Table>
+    </Box>
+  )
+}
+
+interface CellArgs {
+  width: number
+  minWidth: number
+  maxWidth?: number
+  value: React.ReactNode
+}
+
+const TableCell = function TableCell({
+  width,
+  minWidth,
+  maxWidth,
+  value
+}: CellArgs) {
+  const style = {
+    width,
+    minWidth: minWidth,
+    maxWidth: maxWidth,
+    overflow: "hidden" as const,
+    textOverflow: "ellipsis" as const,
+    whiteSpace: "nowrap" as const
+  }
+
+  return <Table.Td style={style}>{value}</Table.Td>
+}
+
+interface EmptyRowArgs {
+  message: string
+  visibleColumnsCount: number
+}
+
+const EmptyTableBody = function EmptyTableBody({
+  message,
+  visibleColumnsCount
+}: EmptyRowArgs) {
+  return (
+    <Table.Tr>
+      <Table.Td
+        colSpan={visibleColumnsCount}
+        style={{textAlign: "center", padding: "3rem"}}
+      >
+        <Text c="dimmed">{message}</Text>
+      </Table.Td>
+    </Table.Tr>
+  )
+}
+
+function isRowHighlighted<T>(row: T, highlightRowID?: string): boolean {
+  if (!highlightRowID) {
+    return false
+  }
+
+  return String((row as any).id) === highlightRowID
+}
+
+interface RowArgs<T> {
+  highlightRowID?: string
+  row: T
+  visibleColumns: ColumnConfig<T>[]
+  onRowClick?: (row: T, otherPanel: boolean) => void
+  highlightColors: {backgroundColor: string; borderColor: string}
+}
+
+const TableRow = <T,>({
+  row,
+  visibleColumns,
+  onRowClick,
+  highlightRowID,
+  highlightColors
+}: RowArgs<T>) => {
+  const highlighted = isRowHighlighted(row, highlightRowID)
+
+  const rowStyle = {
+    backgroundColor: highlighted ? highlightColors.backgroundColor : undefined,
+    borderLeft: highlighted
+      ? `3px solid ${highlightColors.borderColor}`
+      : undefined
+  }
+
+  const renderedColumns = visibleColumns.map(column => {
+    const value = row[column.key]
+    const renderedValue = column.render
+      ? (() => {
+          const start = performance.now()
+          const result = column.render(value, row, onRowClick)
+          const end = performance.now()
+          if (end - start > 1) {
+            console.log(
+              `Slow render for column ${String(column.key)}: ${end - start}ms`
+            )
+          }
+          return result
+        })()
+      : String(value)
+
+    return (
+      <TableCell
+        key={String(column.key)}
+        width={column.width || 50}
+        value={renderedValue}
+        minWidth={column.minWidth || 50}
+        maxWidth={column.maxWidth}
+      />
+    )
+  })
+
+  return <Table.Tr style={rowStyle}>{renderedColumns}</Table.Tr>
+}
+
+interface TBodyArgs<T> {
+  data: T[]
+  emptyMessage: string
+  highlightRowID?: string
+  visibleColumns: ColumnConfig<T>[]
+  onRowClick?: (row: T, otherPanel: boolean) => void
+  theme: MantineTheme
+  colorScheme: MantineColorScheme
+  highlightColors: {backgroundColor: string; borderColor: string}
+}
+
+function TableBody<T>({
+  data,
+  emptyMessage,
+  highlightRowID,
+  visibleColumns,
+  onRowClick,
+  highlightColors
+}: TBodyArgs<T>) {
+  if (data.length === 0) {
+    return (
+      <Table.Tbody>
+        <EmptyTableBody
+          message={emptyMessage}
+          visibleColumnsCount={visibleColumns.length}
+        />
+      </Table.Tbody>
+    )
+  }
+
+  const rows = data.map(row => (
+    <TableRow
+      key={(row as any).id || JSON.stringify(row)}
+      visibleColumns={visibleColumns}
+      row={row}
+      highlightRowID={highlightRowID}
+      onRowClick={onRowClick}
+      highlightColors={highlightColors}
+    />
+  ))
+
+  return <Table.Tbody>{rows}</Table.Tbody>
+}
+
+interface LoadingTableArgs<T> {
+  visibleColumns: ColumnConfig<T>[]
+  loading: boolean
+}
+
+const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
+  const headerColumns = visibleColumns.map(column => (
+    <Table.Th key={String(column.key)}>
+      <Skeleton height={20} />
+    </Table.Th>
+  ))
+
+  const bodyColumns = Array.from({length: 5}).map((_, index) => (
+    <Table.Tr key={index}>
+      {visibleColumns.map(column => (
+        <Table.Td key={String(column.key)}>
+          <Skeleton height={16} />
+        </Table.Td>
+      ))}
+    </Table.Tr>
+  ))
+
+  return (
+    <Box pos="relative" mih={400}>
+      <LoadingOverlay visible={loading} />
+      <Table>
+        <Table.Thead>
+          <Table.Tr>{headerColumns}</Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{bodyColumns}</Table.Tbody>
+      </Table>
+    </Box>
+  )
+}
+
+interface TableThArgs<T> {
+  column: ColumnConfig<T>
+  sorting: SortState
+  handleSort: (columnKey: string) => void
+}
+
+const TableTh = function TableTh<T>({
+  column,
+  sorting,
+  handleSort
+}: TableThArgs<T>) {
   const getSortIcon = (columnKey: string) => {
     if (sorting.column !== columnKey) {
       return <IconSelector size={14} />
@@ -110,209 +312,66 @@ export default function DataTable<T>({
     )
   }
 
-  const getColumnWidth = (column: ColumnConfig<T>) => {
-    const customWidth = columnWidths[String(column.key)]
-    if (customWidth) return customWidth
-    if (column.width) return column.width
-    return 150 // Default width
-  }
-
-  const handleResizeStart = (e: React.MouseEvent, columnKey: string) => {
-    e.preventDefault()
-    const currentWidth = getColumnWidth(
-      columns.find(col => col.key === columnKey)!
-    )
-    startResize(columnKey, e.clientX, currentWidth)
-  }
-
-  // Helper function to check if row should be highlighted
-  const isRowHighlighted = (row: T): boolean => {
-    if (!highlightRowID) return false
-    return String((row as any).id) === highlightRowID
-  }
-
-  // Get theme-aware colors for highlighting
-  const getHighlightColors = () => {
-    return {
-      backgroundColor:
-        colorScheme === "dark" ? theme.colors.blue[9] : theme.colors.blue[1],
-      borderColor: theme.colors.blue[6]
+  const handleClick = () => {
+    if (column.sortable) {
+      handleSort(String(column.key))
     }
   }
 
-  if (loading && data.length === 0) {
-    return (
-      <Box pos="relative" mih={400}>
-        <LoadingOverlay visible={loading} />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              {visibleColumns.map(column => (
-                <Table.Th key={String(column.key)}>
-                  <Skeleton height={20} />
-                </Table.Th>
-              ))}
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {Array.from({length: 5}).map((_, index) => (
-              <Table.Tr key={index}>
-                {visibleColumns.map(column => (
-                  <Table.Td key={String(column.key)}>
-                    <Skeleton height={16} />
-                  </Table.Td>
-                ))}
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Box>
-    )
+  const thStyle = {
+    width: column.width,
+    minWidth: column.minWidth || 50,
+    maxWidth: column.maxWidth,
+    position: "relative" as const,
+    userSelect: "none" as const
   }
 
-  const highlightColors = getHighlightColors()
+  const groupStyle = {
+    cursor: column.sortable ? "pointer" : "default",
+    flex: 1
+  }
 
   return (
-    <Box pos="relative">
-      <LoadingOverlay visible={loading} />
-      <ScrollArea>
-        <Table
-          ref={tableRef}
-          striped
-          highlightOnHover
-          withTableBorder
-          style={{
-            cursor: isResizing ? "col-resize" : "default",
-            ...style
-          }}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              {visibleColumns.map(column => {
-                const width = getColumnWidth(column)
-                return (
-                  <Table.Th
-                    key={String(column.key)}
-                    style={{
-                      width,
-                      minWidth: column.minWidth || 50,
-                      maxWidth: column.maxWidth,
-                      position: "relative",
-                      userSelect: "none"
-                    }}
-                  >
-                    <Group gap="xs" wrap="nowrap" justify="space-between">
-                      <Group
-                        gap="xs"
-                        style={{
-                          cursor: column.sortable ? "pointer" : "default",
-                          flex: 1
-                        }}
-                        onClick={() =>
-                          column.sortable && handleSort(String(column.key))
-                        }
-                      >
-                        <Text size="sm" fw={500}>
-                          {column.label}
-                        </Text>
-                        {column.sortable && (
-                          <ActionIcon variant="subtle" color="gray" size="xs">
-                            {getSortIcon(String(column.key))}
-                          </ActionIcon>
-                        )}
-                      </Group>
+    <Table.Th style={thStyle}>
+      <Group gap="xs" wrap="nowrap" justify="space-between">
+        <Group gap="xs" style={groupStyle} onClick={handleClick}>
+          <Text size="sm" fw={500}>
+            {column.label}
+          </Text>
+          {column.sortable && (
+            <ActionIcon variant="subtle" color="gray" size="xs">
+              {getSortIcon(String(column.key))}
+            </ActionIcon>
+          )}
+        </Group>
+      </Group>
+    </Table.Th>
+  )
+}
 
-                      {/* Resize handle */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: 6,
-                          cursor: "col-resize",
-                          backgroundColor:
-                            isResizing === String(column.key)
-                              ? theme.colors.blue[6]
-                              : "transparent",
-                          opacity: 0.7
-                        }}
-                        onMouseDown={e =>
-                          handleResizeStart(e, String(column.key))
-                        }
-                      >
-                        <IconGripVertical
-                          size={12}
-                          style={{
-                            position: "absolute",
-                            right: -3,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            opacity: 0.5
-                          }}
-                        />
-                      </div>
-                    </Group>
-                  </Table.Th>
-                )
-              })}
-            </Table.Tr>
-          </Table.Thead>
+interface TableHeaderArgs<T> {
+  visibleColumns: ColumnConfig<T>[]
+  sorting: SortState
+  handleSort: (columnKey: string) => void
+}
 
-          <Table.Tbody>
-            {data.length === 0 ? (
-              <Table.Tr>
-                <Table.Td
-                  colSpan={visibleColumns.length}
-                  style={{textAlign: "center", padding: "3rem"}}
-                >
-                  <Text c="dimmed">{emptyMessage}</Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              data.map((row, index) => {
-                const highlighted = isRowHighlighted(row)
-                return (
-                  <Table.Tr
-                    key={index}
-                    style={{
-                      backgroundColor: highlighted
-                        ? highlightColors.backgroundColor
-                        : undefined,
-                      borderLeft: highlighted
-                        ? `3px solid ${highlightColors.borderColor}`
-                        : undefined
-                    }}
-                  >
-                    {visibleColumns.map(column => {
-                      const value = row[column.key]
-                      const width = getColumnWidth(column)
+const TableHeader = function TableHeader<T>({
+  visibleColumns,
+  sorting,
+  handleSort
+}: TableHeaderArgs<T>) {
+  const columns = visibleColumns.map(column => (
+    <TableTh
+      key={String(column.key)}
+      column={column}
+      sorting={sorting}
+      handleSort={handleSort}
+    />
+  ))
 
-                      return (
-                        <Table.Td
-                          key={String(column.key)}
-                          style={{
-                            width,
-                            minWidth: column.minWidth || 50,
-                            maxWidth: column.maxWidth,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap"
-                          }}
-                        >
-                          {column.render
-                            ? column.render(value, row, onRowClick)
-                            : String(value)}
-                        </Table.Td>
-                      )
-                    })}
-                  </Table.Tr>
-                )
-              })
-            )}
-          </Table.Tbody>
-        </Table>
-      </ScrollArea>
-    </Box>
+  return (
+    <Table.Thead>
+      <Table.Tr>{columns}</Table.Tr>
+    </Table.Thead>
   )
 }

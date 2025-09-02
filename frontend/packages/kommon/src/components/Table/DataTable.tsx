@@ -19,7 +19,6 @@ interface Args<T> {
   columns: ColumnConfig<T>[]
   sorting: SortState
   onSortChange: (sort: SortState) => void
-  columnWidths: Record<string, number>
   loading?: boolean
   emptyMessage?: string
   style?: React.CSSProperties
@@ -33,7 +32,6 @@ export default function DataTable<T>({
   columns,
   sorting,
   onSortChange,
-  columnWidths,
   loading = false,
   emptyMessage = "No data available",
   style,
@@ -52,8 +50,6 @@ export default function DataTable<T>({
   }
 
   const getColumnWidth = (column: ColumnConfig<T>) => {
-    const customWidth = columnWidths[String(column.key)]
-    if (customWidth) return customWidth
     if (column.width) return column.width
     return 150 // Default width
   }
@@ -88,10 +84,8 @@ export default function DataTable<T>({
       <Table striped highlightOnHover withTableBorder style={style}>
         <TableHeader
           visibleColumns={visibleColumns}
-          columnWidths={columnWidths}
           sorting={sorting}
           handleSort={handleSort}
-          getColumnWidth={getColumnWidth}
         />
 
         <TableBody
@@ -100,11 +94,9 @@ export default function DataTable<T>({
           visibleColumns={visibleColumns}
           highlightRowID={highlightRowID}
           onRowClick={onRowClick}
-          columnWidths={columnWidths}
           theme={theme}
           colorScheme={colorScheme}
           highlightColors={highlightColors}
-          getColumnWidth={getColumnWidth}
         />
       </Table>
     </Box>
@@ -171,7 +163,6 @@ interface RowArgs<T> {
   visibleColumns: ColumnConfig<T>[]
   onRowClick?: (row: T, otherPanel: boolean) => void
   highlightColors: {backgroundColor: string; borderColor: string}
-  getColumnWidth: (column: ColumnConfig<T>) => number
 }
 
 const TableRow = <T,>({
@@ -179,8 +170,7 @@ const TableRow = <T,>({
   visibleColumns,
   onRowClick,
   highlightRowID,
-  highlightColors,
-  getColumnWidth
+  highlightColors
 }: RowArgs<T>) => {
   const highlighted = isRowHighlighted(row, highlightRowID)
 
@@ -210,7 +200,7 @@ const TableRow = <T,>({
     return (
       <TableCell
         key={String(column.key)}
-        width={getColumnWidth(column)}
+        width={column.width || 50}
         value={renderedValue}
         minWidth={column.minWidth || 50}
         maxWidth={column.maxWidth}
@@ -226,12 +216,10 @@ interface TBodyArgs<T> {
   emptyMessage: string
   highlightRowID?: string
   visibleColumns: ColumnConfig<T>[]
-  columnWidths: Record<string, number>
   onRowClick?: (row: T, otherPanel: boolean) => void
   theme: MantineTheme
   colorScheme: MantineColorScheme
   highlightColors: {backgroundColor: string; borderColor: string}
-  getColumnWidth: (column: ColumnConfig<T>) => number
 }
 
 function TableBody<T>({
@@ -240,8 +228,7 @@ function TableBody<T>({
   highlightRowID,
   visibleColumns,
   onRowClick,
-  highlightColors,
-  getColumnWidth
+  highlightColors
 }: TBodyArgs<T>) {
   if (data.length === 0) {
     return (
@@ -262,7 +249,6 @@ function TableBody<T>({
       highlightRowID={highlightRowID}
       onRowClick={onRowClick}
       highlightColors={highlightColors}
-      getColumnWidth={getColumnWidth}
     />
   ))
 
@@ -306,14 +292,12 @@ const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
 
 interface TableThArgs<T> {
   column: ColumnConfig<T>
-  width: number
   sorting: SortState
   handleSort: (columnKey: string) => void
 }
 
 const TableTh = function TableTh<T>({
   column,
-  width,
   sorting,
   handleSort
 }: TableThArgs<T>) {
@@ -335,7 +319,7 @@ const TableTh = function TableTh<T>({
   }
 
   const thStyle = {
-    width,
+    width: column.width,
     minWidth: column.minWidth || 50,
     maxWidth: column.maxWidth,
     position: "relative" as const,
@@ -369,21 +353,17 @@ interface TableHeaderArgs<T> {
   visibleColumns: ColumnConfig<T>[]
   sorting: SortState
   handleSort: (columnKey: string) => void
-  columnWidths: Record<string, number>
-  getColumnWidth: (column: ColumnConfig<T>) => number // Added this prop
 }
 
 const TableHeader = function TableHeader<T>({
   visibleColumns,
   sorting,
-  handleSort,
-  getColumnWidth // Use the passed function instead of defining locally
+  handleSort
 }: TableHeaderArgs<T>) {
   const columns = visibleColumns.map(column => (
     <TableTh
       key={String(column.key)}
       column={column}
-      width={getColumnWidth(column)}
       sorting={sorting}
       handleSort={handleSort}
     />

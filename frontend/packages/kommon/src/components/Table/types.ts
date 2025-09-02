@@ -57,7 +57,6 @@ export interface TableState<T> {
   sorting: SortState
   filters: FilterValue[]
   columns: ColumnConfig<T>[]
-  columnWidths: Record<string, number>
   loading?: boolean
 }
 
@@ -67,7 +66,6 @@ export interface TableActions<T> {
   setPage: (page: number) => void
   setPageSize: (size: number) => void
   setColumns: (columns: ColumnConfig<T>[]) => void
-  setColumnWidth: (columnKey: string, width: number) => void
   toggleColumnVisibility: (columnKey: keyof T) => void
 }
 

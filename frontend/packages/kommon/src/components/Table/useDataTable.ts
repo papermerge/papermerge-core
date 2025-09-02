@@ -28,7 +28,6 @@ export default function useTableData<T>({
       ...col,
       visible: col.visible !== false
     })),
-    columnWidths: {},
     loading: false
   }))
 
@@ -64,13 +63,6 @@ export default function useTableData<T>({
 
   const setColumns = useCallback((columns: ColumnConfig<T>[]) => {
     setState(prev => ({...prev, columns}))
-  }, [])
-
-  const setColumnWidth = useCallback((columnKey: string, width: number) => {
-    setState(prev => ({
-      ...prev,
-      columnWidths: {...prev.columnWidths, [columnKey]: width}
-    }))
   }, [])
 
   const toggleColumnVisibility = useCallback((columnKey: keyof T) => {
@@ -137,7 +129,6 @@ export default function useTableData<T>({
     setPage,
     setPageSize,
     setColumns,
-    setColumnWidth,
     toggleColumnVisibility
   }
 

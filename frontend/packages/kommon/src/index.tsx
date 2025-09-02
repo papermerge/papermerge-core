@@ -13,7 +13,6 @@ import SubmitButton from "./components/SubmitButton/SubmitButton"
 import {
   ColumnSelector,
   DataTable,
-  TableFilters,
   TablePagination,
   useTableData
 } from "./components/Table"
@@ -32,7 +31,6 @@ export {
   RoleForm,
   RoleFormModal,
   SubmitButton,
-  TableFilters,
   TablePagination,
   useTableData
 }

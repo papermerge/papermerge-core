@@ -10,12 +10,7 @@ import type {I18NRoleFormModal} from "./components/RoleFormModal/types"
 import RoleForm from "./components/RoleForm"
 import RoleFormModal from "./components/RoleFormModal"
 import SubmitButton from "./components/SubmitButton/SubmitButton"
-import {
-  ColumnSelector,
-  DataTable,
-  TablePagination,
-  useTableData
-} from "./components/Table"
+import {ColumnSelector, DataTable, TablePagination} from "./components/Table"
 import type {
   ColumnConfig,
   FilterValue,
@@ -31,8 +26,7 @@ export {
   RoleForm,
   RoleFormModal,
   SubmitButton,
-  TablePagination,
-  useTableData
+  TablePagination
 }
 export type {
   ColumnConfig,

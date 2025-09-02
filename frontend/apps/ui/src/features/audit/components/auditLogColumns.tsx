@@ -198,7 +198,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     label: "User ID",
     sortable: false,
     filterable: true,
-    visible: false, // Hidden by default
+    visible: false,
     width: 200,
     minWidth: 100,
     render: value => <TruncatedTextWithCopy value={value as string} />
@@ -208,7 +208,7 @@ const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
     label: "Log ID",
     sortable: false,
     filterable: false,
-    visible: false, // Hidden by default
+    visible: false,
     width: 200,
     minWidth: 100,
     render: value => <TruncatedTextWithCopy value={value as string} />

@@ -49,11 +49,6 @@ export default function DataTable<T>({
     borderColor: theme.colors.blue[6]
   }
 
-  const getColumnWidth = (column: ColumnConfig<T>) => {
-    if (column.width) return column.width
-    return 150 // Default width
-  }
-
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!column?.sortable) return

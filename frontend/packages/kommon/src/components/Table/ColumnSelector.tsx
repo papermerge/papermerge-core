@@ -7,25 +7,19 @@ import {ColumnConfig} from "./types"
 interface ColumnSelectorArgs<T> {
   columns: ColumnConfig<T>[]
   onColumnsChange: (columns: ColumnConfig<T>[]) => void
-  onToggleColumn?: (columnKey: keyof T) => void
 }
 
 export default function ColumnSelector<T>({
   columns,
-  onColumnsChange,
-  onToggleColumn
+  onColumnsChange
 }: ColumnSelectorArgs<T>) {
   const [opened, setOpened] = useState(false)
 
   const handleToggle = (columnKey: keyof T) => {
-    if (onToggleColumn) {
-      onToggleColumn(columnKey)
-    } else {
-      const newColumns = columns.map(col =>
-        col.key === columnKey ? {...col, visible: !col.visible} : col
-      )
-      onColumnsChange(newColumns)
-    }
+    const newColumns = columns.map(col =>
+      col.key === columnKey ? {...col, visible: !col.visible} : col
+    )
+    onColumnsChange(newColumns)
   }
 
   return (

@@ -7,7 +7,7 @@ interface Args {
 
 export default function AuditLogDetailsComponent({auditLog}: Args) {
   return (
-    <Paper>
+    <Paper px="md">
       <ScrollArea h={800}>
         <TextInput
           value={auditLog?.id}

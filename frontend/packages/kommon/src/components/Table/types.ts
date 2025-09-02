@@ -48,23 +48,13 @@ export interface ColumnConfig<T = any> {
 
 export interface TableState<T> {
   data: T[]
-  pagination: {
-    page: number
-    pageSize: number
-    totalPages: number
-    totalItems: number
-  }
   sorting: SortState
-  filters: FilterValue[]
   columns: ColumnConfig<T>[]
   loading?: boolean
 }
 
 export interface TableActions<T> {
   setSorting: (sort: SortState) => void
-  setFilters: (filters: FilterValue[]) => void
-  setPage: (page: number) => void
-  setPageSize: (size: number) => void
   setColumns: (columns: ColumnConfig<T>[]) => void
   toggleColumnVisibility: (columnKey: keyof T) => void
 }
@@ -72,10 +62,5 @@ export interface TableActions<T> {
 export interface UseTableDataProps<T> {
   initialData?: PaginatedResponse<T>
   initialColumns: ColumnConfig<T>[]
-  onDataChange?: (state: {
-    page: number
-    pageSize: number
-    sorting: SortState
-    filters: FilterValue[]
-  }) => void
+  onDataChange?: (state: {sorting: SortState}) => void
 }

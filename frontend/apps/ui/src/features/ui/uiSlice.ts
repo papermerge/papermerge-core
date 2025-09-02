@@ -221,8 +221,6 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
-type AuditLogFilterKey = "timestamp" | "operation" | "table_name" | "user"
-
 interface Pagination {
   pageNumber?: number
   pageSize?: number
@@ -236,6 +234,7 @@ interface AuditLogPanelList {
   pageNumber?: number
   pageSize?: number
   sorting?: SortState
+  visibleColumns?: Array<string>
 }
 
 interface AuditLogPanelDetails {
@@ -1064,6 +1063,24 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLogList,
         sorting: value
       }
+    },
+    auditLogVisibleColumnsUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainAuditLogList = {
+          ...state.mainAuditLogList,
+          visibleColumns: value
+        }
+        return
+      }
+
+      state.secondaryAuditLogList = {
+        ...state.secondaryAuditLogList,
+        visibleColumns: value
+      }
     }
   }
 })
@@ -1122,7 +1139,8 @@ export const {
   auditLogTableFiltersUpdated,
   auditLogPaginationUpdated,
   auditLogPageNumberValueUpdated,
-  auditLogSortingUpdated
+  auditLogSortingUpdated,
+  auditLogVisibleColumnsUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1587,6 +1605,17 @@ export const selectAuditLogDetailsID = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryAuditLogDetails?.id
+}
+
+export const selectAuditLogVisibleColumns = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogList?.visibleColumns
+  }
+
+  return state.ui.secondaryAuditLogList?.visibleColumns
 }
 
 /* Load initial collapse state value from cookie */

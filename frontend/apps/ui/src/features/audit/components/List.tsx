@@ -4,7 +4,6 @@ import type {SortState} from "kommon"
 import {useMemo, useRef} from "react"
 import {useTranslation} from "react-i18next"
 import type {AuditLogItem} from "../types"
-import auditLogColumns from "./auditLogColumns"
 import Search from "./Search"
 import useAuditLogTable from "./useAuditLogTable"
 
@@ -16,8 +15,11 @@ import {
   selectAuditLogDetailsID
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import {ColumnSelector, DataTable, TablePagination, useTableData} from "kommon"
+import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router"
+import auditLogColumns from "./auditLogColumns"
+import ColumnSelector from "./ColumnSelectorContainer"
+import useVisibleColumns from "./useVisibleColumns"
 
 export default function AuditLogsList() {
   const {t} = useTranslation()
@@ -31,16 +33,8 @@ export default function AuditLogsList() {
     selectAuditLogDetailsID(s, "secondary")
   )
 
-  // Table state management
-  const {state, actions, visibleColumns} = useTableData<AuditLogItem>({
-    initialData: data || {
-      items: [],
-      page_number: 1,
-      page_size: 15,
-      num_pages: 0
-    },
-    initialColumns: auditLogColumns
-  })
+  const visibleColumns = useVisibleColumns(auditLogColumns)
+
   const calculateMinTableWidth = useMemo(() => {
     return visibleColumns.reduce((totalWidth, column) => {
       // Assuming your column definition has a minWidth property
@@ -97,12 +91,7 @@ export default function AuditLogsList() {
     <Stack gap="xs">
       <Group ref={actionButtonsRef} justify={"space-between"} align="center">
         <Search />
-
-        <ColumnSelector
-          columns={state.columns}
-          onColumnsChange={actions.setColumns}
-          onToggleColumn={actions.toggleColumnVisibility}
-        />
+        <ColumnSelector />
       </Group>
       <ScrollArea mt={"md"} h={remainingHeight} type="auto">
         <DataTable

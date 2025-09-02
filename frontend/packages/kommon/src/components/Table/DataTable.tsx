@@ -11,7 +11,7 @@ import {
   useMantineTheme
 } from "@mantine/core"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
-import React, {useCallback, useMemo} from "react"
+import React from "react"
 import {ColumnConfig, SortState} from "./types"
 
 interface Args<T> {
@@ -43,56 +43,40 @@ export default function DataTable<T>({
   const theme = useMantineTheme()
   const {colorScheme} = useMantineColorScheme()
 
-  // Memoize visibleColumns
-  const visibleColumns = useMemo(
-    () => columns.filter(col => col.visible !== false),
-    [columns]
-  )
+  const visibleColumns = columns.filter(col => col.visible !== false)
 
-  // Memoize highlight colors
-  const highlightColors = useMemo(
-    () => ({
-      backgroundColor:
-        colorScheme === "dark" ? theme.colors.blue[9] : theme.colors.blue[1],
-      borderColor: theme.colors.blue[6]
-    }),
-    [colorScheme, theme]
-  )
+  const highlightColors = {
+    backgroundColor:
+      colorScheme === "dark" ? theme.colors.blue[9] : theme.colors.blue[1],
+    borderColor: theme.colors.blue[6]
+  }
 
-  // Memoize getColumnWidth function
-  const getColumnWidth = useCallback(
-    (column: ColumnConfig<T>) => {
-      const customWidth = columnWidths[String(column.key)]
-      if (customWidth) return customWidth
-      if (column.width) return column.width
-      return 150 // Default width
-    },
-    [columnWidths]
-  )
+  const getColumnWidth = (column: ColumnConfig<T>) => {
+    const customWidth = columnWidths[String(column.key)]
+    if (customWidth) return customWidth
+    if (column.width) return column.width
+    return 150 // Default width
+  }
 
-  // Memoize handleSort function
-  const handleSort = useCallback(
-    (columnKey: string) => {
-      const column = columns.find(col => col.key === columnKey)
-      if (!column?.sortable) return
+  const handleSort = (columnKey: string) => {
+    const column = columns.find(col => col.key === columnKey)
+    if (!column?.sortable) return
 
-      let newDirection: "asc" | "desc" | null = "asc"
+    let newDirection: "asc" | "desc" | null = "asc"
 
-      if (sorting.column === columnKey) {
-        if (sorting.direction === "asc") {
-          newDirection = "desc"
-        } else if (sorting.direction === "desc") {
-          newDirection = "asc"
-        }
+    if (sorting.column === columnKey) {
+      if (sorting.direction === "asc") {
+        newDirection = "desc"
+      } else if (sorting.direction === "desc") {
+        newDirection = "asc"
       }
+    }
 
-      onSortChange({
-        column: newDirection ? columnKey : null,
-        direction: newDirection
-      })
-    },
-    [columns, sorting, onSortChange]
-  )
+    onSortChange({
+      column: newDirection ? columnKey : null,
+      direction: newDirection
+    })
+  }
 
   if (loading && data.length === 0) {
     return <LoadingTable visibleColumns={visibleColumns} loading={loading} />
@@ -134,36 +118,33 @@ interface CellArgs {
   value: React.ReactNode
 }
 
-const TableCell = React.memo<CellArgs>(function TableCell({
+const TableCell = function TableCell({
   width,
   minWidth,
   maxWidth,
   value
-}) {
-  const style = useMemo(
-    () => ({
-      width,
-      minWidth: minWidth,
-      maxWidth: maxWidth,
-      overflow: "hidden" as const,
-      textOverflow: "ellipsis" as const,
-      whiteSpace: "nowrap" as const
-    }),
-    [width, minWidth, maxWidth]
-  )
+}: CellArgs) {
+  const style = {
+    width,
+    minWidth: minWidth,
+    maxWidth: maxWidth,
+    overflow: "hidden" as const,
+    textOverflow: "ellipsis" as const,
+    whiteSpace: "nowrap" as const
+  }
 
   return <Table.Td style={style}>{value}</Table.Td>
-})
+}
 
 interface EmptyRowArgs {
   message: string
   visibleColumnsCount: number
 }
 
-const EmptyTableBody = React.memo<EmptyRowArgs>(function EmptyTableBody({
+const EmptyTableBody = function EmptyTableBody({
   message,
   visibleColumnsCount
-}) {
+}: EmptyRowArgs) {
   return (
     <Table.Tr>
       <Table.Td
@@ -174,7 +155,7 @@ const EmptyTableBody = React.memo<EmptyRowArgs>(function EmptyTableBody({
       </Table.Td>
     </Table.Tr>
   )
-})
+}
 
 function isRowHighlighted<T>(row: T, highlightRowID?: string): boolean {
   if (!highlightRowID) {
@@ -193,66 +174,52 @@ interface RowArgs<T> {
   getColumnWidth: (column: ColumnConfig<T>) => number
 }
 
-const TableRow = React.memo(
-  <T,>({
-    row,
-    visibleColumns,
-    onRowClick,
-    highlightRowID,
-    highlightColors,
-    getColumnWidth
-  }: RowArgs<T>) => {
-    const highlighted = useMemo(
-      () => isRowHighlighted(row, highlightRowID),
-      [row, highlightRowID]
-    )
+const TableRow = <T,>({
+  row,
+  visibleColumns,
+  onRowClick,
+  highlightRowID,
+  highlightColors,
+  getColumnWidth
+}: RowArgs<T>) => {
+  const highlighted = isRowHighlighted(row, highlightRowID)
 
-    const rowStyle = useMemo(
-      () => ({
-        backgroundColor: highlighted
-          ? highlightColors.backgroundColor
-          : undefined,
-        borderLeft: highlighted
-          ? `3px solid ${highlightColors.borderColor}`
-          : undefined
-      }),
-      [highlighted, highlightColors]
-    )
-
-    const renderedColumns = useMemo(
-      () =>
-        visibleColumns.map(column => {
-          const value = row[column.key]
-          const renderedValue = column.render
-            ? (() => {
-                const start = performance.now()
-                const result = column.render(value, row, onRowClick)
-                const end = performance.now()
-                if (end - start > 1) {
-                  console.log(
-                    `Slow render for column ${String(column.key)}: ${end - start}ms`
-                  )
-                }
-                return result
-              })()
-            : String(value)
-
-          return (
-            <TableCell
-              key={String(column.key)}
-              width={getColumnWidth(column)}
-              value={renderedValue}
-              minWidth={column.minWidth || 50}
-              maxWidth={column.maxWidth}
-            />
-          )
-        }),
-      [visibleColumns, row, onRowClick, getColumnWidth]
-    )
-
-    return <Table.Tr style={rowStyle}>{renderedColumns}</Table.Tr>
+  const rowStyle = {
+    backgroundColor: highlighted ? highlightColors.backgroundColor : undefined,
+    borderLeft: highlighted
+      ? `3px solid ${highlightColors.borderColor}`
+      : undefined
   }
-) as <T>(props: RowArgs<T>) => React.ReactElement
+
+  const renderedColumns = visibleColumns.map(column => {
+    const value = row[column.key]
+    const renderedValue = column.render
+      ? (() => {
+          const start = performance.now()
+          const result = column.render(value, row, onRowClick)
+          const end = performance.now()
+          if (end - start > 1) {
+            console.log(
+              `Slow render for column ${String(column.key)}: ${end - start}ms`
+            )
+          }
+          return result
+        })()
+      : String(value)
+
+    return (
+      <TableCell
+        key={String(column.key)}
+        width={getColumnWidth(column)}
+        value={renderedValue}
+        minWidth={column.minWidth || 50}
+        maxWidth={column.maxWidth}
+      />
+    )
+  })
+
+  return <Table.Tr style={rowStyle}>{renderedColumns}</Table.Tr>
+}
 
 interface TBodyArgs<T> {
   data: T[]
@@ -287,28 +254,17 @@ function TableBody<T>({
     )
   }
 
-  const rows = useMemo(
-    () =>
-      data.map(row => (
-        <TableRow
-          key={(row as any).id || JSON.stringify(row)}
-          visibleColumns={visibleColumns}
-          row={row}
-          highlightRowID={highlightRowID}
-          onRowClick={onRowClick}
-          highlightColors={highlightColors}
-          getColumnWidth={getColumnWidth}
-        />
-      )),
-    [
-      data,
-      visibleColumns,
-      highlightRowID,
-      onRowClick,
-      highlightColors,
-      getColumnWidth
-    ]
-  )
+  const rows = data.map(row => (
+    <TableRow
+      key={(row as any).id || JSON.stringify(row)}
+      visibleColumns={visibleColumns}
+      row={row}
+      highlightRowID={highlightRowID}
+      onRowClick={onRowClick}
+      highlightColors={highlightColors}
+      getColumnWidth={getColumnWidth}
+    />
+  ))
 
   return <Table.Tbody>{rows}</Table.Tbody>
 }
@@ -318,33 +274,22 @@ interface LoadingTableArgs<T> {
   loading: boolean
 }
 
-const LoadingTable = React.memo(function LoadingTable<T>({
-  visibleColumns,
-  loading
-}: LoadingTableArgs<T>) {
-  const headerColumns = useMemo(
-    () =>
-      visibleColumns.map(column => (
-        <Table.Th key={String(column.key)}>
-          <Skeleton height={20} />
-        </Table.Th>
-      )),
-    [visibleColumns]
-  )
+const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
+  const headerColumns = visibleColumns.map(column => (
+    <Table.Th key={String(column.key)}>
+      <Skeleton height={20} />
+    </Table.Th>
+  ))
 
-  const bodyColumns = useMemo(
-    () =>
-      Array.from({length: 5}).map((_, index) => (
-        <Table.Tr key={index}>
-          {visibleColumns.map(column => (
-            <Table.Td key={String(column.key)}>
-              <Skeleton height={16} />
-            </Table.Td>
-          ))}
-        </Table.Tr>
-      )),
-    [visibleColumns]
-  )
+  const bodyColumns = Array.from({length: 5}).map((_, index) => (
+    <Table.Tr key={index}>
+      {visibleColumns.map(column => (
+        <Table.Td key={String(column.key)}>
+          <Skeleton height={16} />
+        </Table.Td>
+      ))}
+    </Table.Tr>
+  ))
 
   return (
     <Box pos="relative" mih={400}>
@@ -357,7 +302,7 @@ const LoadingTable = React.memo(function LoadingTable<T>({
       </Table>
     </Box>
   )
-}) as <T>(props: LoadingTableArgs<T>) => React.ReactElement
+}
 
 interface TableThArgs<T> {
   column: ColumnConfig<T>
@@ -366,50 +311,41 @@ interface TableThArgs<T> {
   handleSort: (columnKey: string) => void
 }
 
-const TableTh = React.memo(function TableTh<T>({
+const TableTh = function TableTh<T>({
   column,
   width,
   sorting,
   handleSort
 }: TableThArgs<T>) {
-  const getSortIcon = useCallback(
-    (columnKey: string) => {
-      if (sorting.column !== columnKey) {
-        return <IconSelector size={14} />
-      }
-      return sorting.direction === "asc" ? (
-        <IconChevronUp size={14} />
-      ) : (
-        <IconChevronDown size={14} />
-      )
-    },
-    [sorting]
-  )
+  const getSortIcon = (columnKey: string) => {
+    if (sorting.column !== columnKey) {
+      return <IconSelector size={14} />
+    }
+    return sorting.direction === "asc" ? (
+      <IconChevronUp size={14} />
+    ) : (
+      <IconChevronDown size={14} />
+    )
+  }
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     if (column.sortable) {
       handleSort(String(column.key))
     }
-  }, [column.sortable, column.key, handleSort])
+  }
 
-  const thStyle = useMemo(
-    () => ({
-      width,
-      minWidth: column.minWidth || 50,
-      maxWidth: column.maxWidth,
-      position: "relative" as const,
-      userSelect: "none" as const
-    }),
-    [width, column.minWidth, column.maxWidth]
-  )
+  const thStyle = {
+    width,
+    minWidth: column.minWidth || 50,
+    maxWidth: column.maxWidth,
+    position: "relative" as const,
+    userSelect: "none" as const
+  }
 
-  const groupStyle = useMemo(
-    () => ({
-      cursor: column.sortable ? "pointer" : "default",
-      flex: 1
-    }),
-    [column.sortable]
-  )
+  const groupStyle = {
+    cursor: column.sortable ? "pointer" : "default",
+    flex: 1
+  }
 
   return (
     <Table.Th style={thStyle}>
@@ -427,7 +363,7 @@ const TableTh = React.memo(function TableTh<T>({
       </Group>
     </Table.Th>
   )
-}) as <T>(props: TableThArgs<T>) => React.ReactElement
+}
 
 interface TableHeaderArgs<T> {
   visibleColumns: ColumnConfig<T>[]
@@ -437,29 +373,25 @@ interface TableHeaderArgs<T> {
   getColumnWidth: (column: ColumnConfig<T>) => number // Added this prop
 }
 
-const TableHeader = React.memo(function TableHeader<T>({
+const TableHeader = function TableHeader<T>({
   visibleColumns,
   sorting,
   handleSort,
   getColumnWidth // Use the passed function instead of defining locally
 }: TableHeaderArgs<T>) {
-  const columns = useMemo(
-    () =>
-      visibleColumns.map(column => (
-        <TableTh
-          key={String(column.key)}
-          column={column}
-          width={getColumnWidth(column)}
-          sorting={sorting}
-          handleSort={handleSort}
-        />
-      )),
-    [visibleColumns, getColumnWidth, sorting, handleSort]
-  )
+  const columns = visibleColumns.map(column => (
+    <TableTh
+      key={String(column.key)}
+      column={column}
+      width={getColumnWidth(column)}
+      sorting={sorting}
+      handleSort={handleSort}
+    />
+  ))
 
   return (
     <Table.Thead>
       <Table.Tr>{columns}</Table.Tr>
     </Table.Thead>
   )
-}) as <T>(props: TableHeaderArgs<T>) => React.ReactElement
+}
